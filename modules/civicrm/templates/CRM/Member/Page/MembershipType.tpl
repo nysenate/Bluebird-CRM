@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
    {include file="CRM/Member/Form/MembershipType.tpl"}
 {else}
     <div id="help">
-        <p>{ts}Membership types are used to categorize memberships. You can define an unlimited number of types. Each type incorporates a 'name' (Gold Member, Honor Society Member...), a description, a minimum fee (can be $0), and a duration (can be 'lifetime'). Each member type is specifically linked to the membership entity (organization) - e.g. Bay Area Chapter.{/ts} {docURL page="CiviMember Admin"}</p>
+        <p>{ts}Membership types are used to categorize memberships. You can define an unlimited number of types. Each type incorporates a 'name' (Gold Member, Honor Society Member...), a description, a minimum fee (can be $0), and a duration (can be 'lifetime'). Each member type is specifically linked to the membership entity (organization) - e.g. Bay Area Chapter.{/ts} {docURL page="user/membership/setup"}</p>
     </div>
 
     {if $rows}
@@ -44,7 +44,8 @@
                     <th>{ts}Fixed Start{/ts}</th>
                     <th>{ts}Minimum Fee{/ts}</th>
                     <th>{ts}Duration{/ts}</th>
-                    <th>{ts}Relationship Type{/ts}</th>   
+										<th>{ts}Auto-renew Option{/ts}</th>
+                    <th>{ts}Related{/ts}</th>   
                     <th>{ts}Visibility{/ts}</th>
                     <th id="order" class="sortable">{ts}Order{/ts}</th>
          	        <th>{ts}Enabled?{/ts}</th>
@@ -59,6 +60,7 @@
                     <td class="crm-membership-type-fixed_period_start_day">{$row.fixed_period_start_day}</td>
                     <td class="crm-membership-type-minimum_fee" align="right">{$row.minimum_fee|crmMoney}</td>
                     <td class="crm-membership-type-duration_interval_unit">{$row.duration_interval} {$row.duration_unit}</td>
+										<td class="crm-membership-type-auto-renew">{if $row.auto_renew EQ 2}{ts}Required{/ts}{elseif $row.auto_renew EQ 1}{ts}Optional{/ts}{else}{ts}No{/ts}{/if}</td>
                     <td class="crm-membership-type-relationship_type_name">{$row.relationshipTypeName}</td>
                     <td class="crm-membership-type-visibility">{$row.visibility}</td>
                     <td class="nowrap crm-membership_type-order">{$row.order}</td>

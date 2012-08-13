@@ -63,6 +63,7 @@ function activity__expectedresult(){
           'is_deleted' => '',
           'campaign_id' => '',
           'engagement_level' => '',
+          'weight' => '',
         ),
     ),
 );
@@ -77,7 +78,7 @@ function activity__expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testActivityReturnTargetAssignee and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ActivityTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ActivityTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

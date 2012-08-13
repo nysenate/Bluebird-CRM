@@ -45,7 +45,8 @@ function event_getsingle_expectedresult(){
   'is_multiple_registrations' => 0,
   'allow_same_participant_emails' => 0,
   'is_template' => 0,
-  'created_date' => '2011-08-18 08:31:47',
+  'created_date' => '2012-05-13 12:17:16',
+  'is_share' => '1',
   'available_places' => 0,
   'is_full' => 1,
 );
@@ -60,7 +61,7 @@ function event_getsingle_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testGetSingleReturnIsFull and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3EventTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/EventTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

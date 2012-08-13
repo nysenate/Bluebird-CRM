@@ -78,7 +78,7 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
         if ( ! $this->getAttribute('id') ) {
             //hack to add 'id' for checkbox
             static $idTextStr = 1;
-            $this->_attributes['id'] = CRM_Utils_String::munge( "CIVICRM_QFID_{$value}_{$idTextStr}" );
+            $this->updateAttributes( array('id' => CRM_Utils_String::munge( "CIVICRM_QFID_{$value}_{$idTextStr}" ) ) );
             $idTextStr++;
         }
     } //end constructor
@@ -97,9 +97,9 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
     function setChecked($checked)
     {
         if (!$checked) {
-            unset($this->_attributes['checked']);
+            $this->removeAttribute('checked');
         } else {
-            $this->_attributes['checked']='checked';
+            $this->updateAttributes(array('checked'=>'checked'));
         }
     } //end func setChecked
 
@@ -209,14 +209,16 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
         switch ($event) {
             case 'updateValue':
                 // constant values override both default and submitted ones
+                $value = $this->_findValue($caller->_constantValues);
+                if (null === $value) {
                     // we should retrieve value from submitted values when form is submitted,
                     // else set value from defaults values
                     if ( $caller->isSubmitted( ) ) { 
-                    $value = $this->_findValue($caller->_csValues);
+                        $value = $this->_findValue($caller->_submitValues);
                     } else {
-                    $value = $this->_findValue($caller->_cdValues);
+                        $value = $this->_findValue($caller->_defaultValues);
+                    }
                 }
-
                 if (!is_null($value) && $value == $this->getValue()) {
                     $this->setChecked(true);
                 } else {

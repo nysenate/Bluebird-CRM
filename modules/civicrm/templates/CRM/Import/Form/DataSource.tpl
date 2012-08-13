@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -86,7 +86,7 @@
                <span class="description">
                 {ts}This option is not recommended for large imports. Use the command-line geocoding script instead.{/ts} 
                </span>
-               {docURL page="Batch Geocoding Script"}
+               {docURL page="Managing Scheduled Jobs" resource="wiki"}
             </td>
          </tr>
         {/if}

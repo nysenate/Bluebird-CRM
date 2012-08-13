@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,150 +36,155 @@
 /**
  * Helper class to build navigation links
  */
-class CRM_Contribute_Form_ContributionPage_TabHeader 
-{
-    static function build( &$form ) 
-    {
-        $tabs = $form->get( 'tabHeader' );
-        if ( !$tabs || !CRM_Utils_Array::value('reset', $_GET) ) {
-            $tabs =& self::process( $form );
-            $form->set( 'tabHeader', $tabs );
-        }
-        $form->assign_by_ref( 'tabHeader', $tabs );
-        $form->assign_by_ref( 'selectedTab', self::getCurrentTab($tabs) );
-        return $tabs;
+class CRM_Contribute_Form_ContributionPage_TabHeader {
+  static
+  function build(&$form) {
+    $tabs = $form->get('tabHeader');
+    if (!$tabs || !CRM_Utils_Array::value('reset', $_GET)) {
+      $tabs = self::process($form);
+      $form->set('tabHeader', $tabs);
     }
-    
-    static function process( &$form ) 
-    {
-        if ( $form->getVar( '_id' ) <= 0 ) {
-            return null;
-        }
-        
-        $tabs = array(
-                      'settings'     => array( 'title'   => ts( 'Title' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'amount'       => array( 'title'   => ts( 'Amounts' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'membership'   => array( 'title'   => ts( 'Memberships' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'thankYou'     => array( 'title'   => ts( 'Receipt' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'friend'       => array( 'title'   => ts( 'Tell a Friend' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'custom'       => array( 'title'   => ts( 'Profiles' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),  
-                      'premium'      => array( 'title'   => ts( 'Premiums' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'widget'       => array( 'title'   => ts( 'Widgets' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      'pcp'          => array( 'title'   => ts( 'Personal Campaigns' ),
-                                               'link'    => null,
-                                               'valid'   => false,
-                                               'active'  => false,
-                                               'current' => false,
-                                               ),
-                      );
+    $form->assign_by_ref('tabHeader', $tabs);
+    $form->assign_by_ref('selectedTab', self::getCurrentTab($tabs));
+    return $tabs;
+  }
 
-        $contribPageId = $form->getVar( '_id' );
-        $fullName      = $form->getVar( '_name' );
-        $className     = CRM_Utils_String::getClassName( $fullName );
-        
-        if ( $className == 'ThankYou' ) {
-            $class = 'thankYou';
-        } else if ( $className == 'Contribute' ) {
-            $class = 'friend';
-        } else if ( $className == 'MembershipBlock' ) {
-            $class = 'membership';
-        } else {
-            $class = strtolower($className) ;
-        }
-
-        $qfKey = $form->get( 'qfKey' );
-        $form->assign( 'qfKey', $qfKey );
-
-        if ( array_key_exists( $class, $tabs ) ) {
-            $tabs[$class]['current'] = true;
-        }
-
-        if ( $contribPageId ) {
-            $reset = CRM_Utils_Array::value( 'reset', $_GET ) ? 'reset=1&' : '';
-            
-            foreach ( $tabs as $key => $value ) {
-                $tabs[$key]['link']   = CRM_Utils_System::url( "civicrm/admin/contribute/{$key}",
-                                                               "{$reset}action=update&snippet=4&id={$contribPageId}&qfKey={$qfKey}" );
-                $tabs[$key]['active'] = $tabs[$key]['valid'] = true;
-            }
-            //get all section info.
-            require_once 'CRM/Contribute/BAO/ContributionPage.php';
-            $contriPageInfo = CRM_Contribute_BAO_ContributionPage::getSectionInfo( array( $contribPageId ) );
-            
-            foreach ( $contriPageInfo[$contribPageId] as $section => $info ) {
-                if ( !$info ) {
-                    $tabs[$section]['valid'] = false;
-                }
-            }
-        }
-        return $tabs;
+  static
+  function process(&$form) {
+    if ($form->getVar('_id') <= 0) {
+      return NULL;
     }
 
-    static function reset( &$form ) 
-    {
-        $tabs =& self::process( $form );
-        $form->set( 'tabHeader', $tabs );
+    $tabs = array(
+      'settings' => array('title' => ts('Title'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'amount' => array('title' => ts('Amounts'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'membership' => array('title' => ts('Memberships'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'thankyou' => array('title' => ts('Receipt'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'friend' => array('title' => ts('Tell a Friend'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'custom' => array('title' => ts('Profiles'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'premium' => array('title' => ts('Premiums'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'widget' => array('title' => ts('Widgets'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+      'pcp' => array('title' => ts('Personal Campaigns'),
+        'link' => NULL,
+        'valid' => FALSE,
+        'active' => FALSE,
+        'current' => FALSE,
+      ),
+    );
+
+    $contribPageId = $form->getVar('_id');
+    $fullName      = $form->getVar('_name');
+    $className     = CRM_Utils_String::getClassName($fullName);
+
+    // Hack for special cases.
+    switch ($className) {
+      case 'Contribute':
+        $attributes = $form->getVar('_attributes');
+        $class = strtolower(basename(CRM_Utils_Array::value('action', $attributes)));
+        break;
+
+      case 'MembershipBlock':
+        $class = 'membership';
+        break;
+
+      default:
+        $class = strtolower($className);
+        break;
     }
 
-    static function getCurrentTab( $tabs ) 
-    {
-        static $current = false;
+    $qfKey = $form->get('qfKey');
+    $form->assign('qfKey', $qfKey);
 
-        if ( $current ) {
-            return $current;
-        }
-        
-        if ( is_array($tabs) ) {
-            foreach ( $tabs as $subPage => $pageVal ) {
-                if ( $pageVal['current'] === true ) {
-                    $current = $subPage;
-                    break;
-                }
-            }
-        }
-        
-        $current = $current ? $current : 'settings';
-        return $current;
-
+    if (array_key_exists($class, $tabs)) {
+      $tabs[$class]['current'] = TRUE;
     }
+
+    if ($contribPageId) {
+      $reset = CRM_Utils_Array::value('reset', $_GET) ? 'reset=1&' : '';
+
+      foreach ($tabs as $key => $value) {
+        $tabs[$key]['link'] = CRM_Utils_System::url("civicrm/admin/contribute/{$key}",
+          "{$reset}action=update&snippet=4&id={$contribPageId}&qfKey={$qfKey}"
+        );
+        $tabs[$key]['active'] = $tabs[$key]['valid'] = TRUE;
+      }
+      //get all section info.
+      $contriPageInfo = CRM_Contribute_BAO_ContributionPage::getSectionInfo(array($contribPageId));
+
+      foreach ($contriPageInfo[$contribPageId] as $section => $info) {
+        if (!$info) {
+          $tabs[$section]['valid'] = FALSE;
+        }
+      }
+    }
+    return $tabs;
+  }
+
+  static
+  function reset(&$form) {
+    $tabs = self::process($form);
+    $form->set('tabHeader', $tabs);
+  }
+
+  static
+  function getCurrentTab($tabs) {
+    static $current = FALSE;
+
+    if ($current) {
+      return $current;
+    }
+
+    if (is_array($tabs)) {
+      foreach ($tabs as $subPage => $pageVal) {
+        if ($pageVal['current'] === TRUE) {
+          $current = $subPage;
+          break;
+        }
+      }
+    }
+
+    $current = $current ? $current : 'settings';
+    return $current;
+  }
 }
+

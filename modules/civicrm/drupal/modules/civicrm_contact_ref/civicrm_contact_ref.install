@@ -1,0 +1,15 @@
+<?php
+/*
+ * Implemenation of hook_field_schema()
+ */
+function civicrm_contact_ref_field_schema($field) {
+  return array(
+    'columns' =>
+    array(
+      'contact_id' => array('type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      )),
+  );
+}
+

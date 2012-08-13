@@ -13,9 +13,13 @@
     <authorUrl>civicrm.org</authorUrl>
     <version>3.2</version>
     <description>Use this link to allow users to signup for mailing lists by being added to public access groups. Note that the addition of contacts to groups will respect your single or double opt-in settings in CiviCRM.</description>
-    <params>
-      <param name="task" type="hidden" default="civicrm/mailing/subscribe" />
-      <param name="reset" type="hidden" size="5" default="1"  />
-    </params>
+   <config> 
+    <fields name="params">
+      <fieldset name="advanced">
+       <field name="task" type="hidden" default="civicrm/mailing/subscribe" />
+       <field name="reset" type="hidden" size="5" default="1"  />
+      </fieldset>
+    </fields>
+   </config>
   </state>
 </metadata>

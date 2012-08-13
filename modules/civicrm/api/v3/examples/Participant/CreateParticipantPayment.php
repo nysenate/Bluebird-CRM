@@ -12,7 +12,7 @@ $params = array(
   'display_name' => 'dlobo',
   'version' => 3,
   'api.participant' => array( 
-      'event_id' => 35,
+      'event_id' => 38,
       'status_id' => 1,
       'role_id' => 1,
       'format.only_id' => 1,
@@ -48,7 +48,7 @@ function participant_create_expectedresult(){
       '5' => array( 
           'id' => 5,
           'contact_type' => 'Individual',
-          'contact_sub_type' => '',
+          'contact_sub_type' => 'null',
           'do_not_email' => '',
           'do_not_phone' => '',
           'do_not_mail' => '',
@@ -71,13 +71,13 @@ function participant_create_expectedresult(){
           'last_name' => '',
           'prefix_id' => '',
           'suffix_id' => '',
-          'email_greeting_id' => '',
+          'email_greeting_id' => '1',
           'email_greeting_custom' => '',
           'email_greeting_display' => '',
-          'postal_greeting_id' => '',
+          'postal_greeting_id' => '1',
           'postal_greeting_custom' => '',
           'postal_greeting_display' => '',
-          'addressee_id' => '',
+          'addressee_id' => '1',
           'addressee_custom' => '',
           'addressee_display' => '',
           'job_title' => '',
@@ -90,7 +90,7 @@ function participant_create_expectedresult(){
           'organization_name' => '',
           'sic_code' => '',
           'user_unique_id' => '',
-          'api.participant' => 110,
+          'api.participant' => 122,
           'api.contribution.create' => 1,
           'api.participant_payment.create' => array( 
               'is_error' => 0,
@@ -100,7 +100,7 @@ function participant_create_expectedresult(){
               'values' => array( 
                   '0' => array( 
                       'id' => 1,
-                      'participant_id' => 110,
+                      'participant_id' => 122,
                       'contribution_id' => 1,
                     ),
                 ),

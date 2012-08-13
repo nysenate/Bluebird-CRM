@@ -34,7 +34,7 @@ function group_contact_get_expectedresult(){
           'title' => 'New Test Group Created',
           'visibility' => 'Public Pages',
           'is_hidden' => 0,
-          'in_date' => '2011-07-11 19:49:50',
+          'in_date' => '2012-05-13 07:29:12',
           'in_method' => 'API',
         ),
     ),
@@ -48,11 +48,14 @@ function group_contact_get_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* group_contact_get 
+* 
+* testGet and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/GroupContactTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

@@ -71,7 +71,7 @@ class HTML_QuickForm_input extends HTML_QuickForm_element
     function setType($type)
     {
         $this->_type = $type;
-        $this->_attributes['type']=$type;
+        $this->updateAttributes(array('type'=>$type));
     } // end func setType
     
     // }}}
@@ -87,7 +87,7 @@ class HTML_QuickForm_input extends HTML_QuickForm_element
      */
     function setName($name)
     {
-        $this->_attributes['name']=$name;
+        $this->updateAttributes(array('name'=>$name));
     } //end func setName
     
     // }}}
@@ -102,7 +102,7 @@ class HTML_QuickForm_input extends HTML_QuickForm_element
      */
     function getName()
     {
-        return isset($this->_attributes['name']) ? $this->_attributes['name'] : null;
+        return $this->getAttribute('name');
     } //end func getName
     
     // }}}
@@ -118,7 +118,7 @@ class HTML_QuickForm_input extends HTML_QuickForm_element
      */
     function setValue($value)
     {
-        $this->_attributes['value']=$value;
+        $this->updateAttributes(array('value'=>$value));
     } // end func setValue
 
     // }}}
@@ -177,7 +177,10 @@ class HTML_QuickForm_input extends HTML_QuickForm_element
             ('submit' != $type && 'reset' != $type && 'image' != $type && 'button' != $type)) {
             parent::onQuickFormEvent($event, $arg, $caller);
         } else {
-            $value = $this->_findValue($caller->_cdValues);
+            $value = $this->_findValue($caller->_constantValues);
+            if (null === $value) {
+                $value = $this->_findValue($caller->_defaultValues);
+            }
             if (null !== $value) {
                 $this->setValue($value);
             }

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,11 +23,11 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* this template is used for adding/editing a tag (admin)  *}
+{* this template is used for adding/editing a saved mapping *}
+<h3>{if $action eq 1}{ts}New Tag{/ts}{elseif $action eq 2}{ts}Edit Mapping{/ts}{else}{ts}Delete Mapping{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-mapping-form-block">
-<fieldset><legend>{if $action eq 1}{ts}New Tag{/ts}{elseif $action eq 2}{ts}Edit Mapping{/ts}{else}{ts}Delete Mapping{/ts}{/if}</legend>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>                  
     {if $action eq 1 or $action eq 2 }
+      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>                  
       <table class="form-layout-compressed">
        <tr class="crm-mapping-form-block-name">
           <td class="label">{$form.name.label}</td>
@@ -43,11 +43,12 @@
        </tr>
       </table>
     {else}
-        <div class="status">
-        <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
-        {ts 1=$mappingName}WARNING: Are you sure you want to delete mapping '<b>%1</b>'?{/ts} {ts}This action cannot be undone.{/ts}</div>
+        <div class="messages status">
+            <div class="icon inform-icon"></div> &nbsp;
+            {ts 1=$mappingName}WARNING: Are you sure you want to delete mapping '<b>%1</b>'?{/ts} {ts}This action cannot be undone.{/ts}
+        </div>
+        <br />
     {/if}
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" loaction="bottom"}</div>
     <div class="spacer"></div>
-</fieldset>
 </div>

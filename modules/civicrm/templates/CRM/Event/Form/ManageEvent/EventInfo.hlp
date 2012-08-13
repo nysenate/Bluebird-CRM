@@ -43,7 +43,7 @@
 {htxt id="id-listing"}
     {ts}To allow users to see a listing of participants, set this field to 'Name' (list names only), 'Name and Email', or 'Name, Status and Register Date'.{/ts}
     {if ! $isTemplate}
-        {if $config->userFramework EQ 'Drupal'}
+        {if $config->userSystem->is_drupal}
             {ts}You will need to set Drupal Access Control permissions to include 'view event participants' for any Roles you want to access this listing.{/ts}
             {if $action eq 2 AND $entityId}
                 {ts}Create links to the listing page by copying the following URL, and adding it to the Event Description below and / or as a menu item or links elsewhere on your site:{/ts}<br />
@@ -84,4 +84,10 @@
 {htxt id="id-is_map"}
 {capture assign=mapURL}{crmURL p='civicrm/admin/setting/mapping' q="reset=1"}{/capture} 
 {ts 1=$mapURL}Include map presenting event location on event information page? (A map provider must be configured under <a href='%1'>Global Settings &raquo; Mapping</a>){/ts}
+{/htxt}
+
+{htxt id="id-is_share"}
+<p>{ts}When enabled, links allowing people to share this event with their social network will be displayed (e.g. Facebook "Like", Google+, and Twitter).{/ts}</p>
+<p>{ts}Social media links will be included on the Event Info page, Thank-you page, Tell-a-Friend page (if enabled), and in event confirmation emails.{/ts}</p>
+
 {/htxt}

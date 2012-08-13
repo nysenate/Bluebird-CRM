@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,98 +25,93 @@
  +--------------------------------------------------------------------+
 */
 
-
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Campaign_Page_Petition_Confirm extends CRM_Core_Page {
+  function run() {
+    $contact_id   = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
+    $subscribe_id = CRM_Utils_Request::retrieve('sid', 'Integer', CRM_Core_DAO::$_nullObject);
+    $hash         = CRM_Utils_Request::retrieve('h', 'String', CRM_Core_DAO::$_nullObject);
+    $activity_id  = CRM_Utils_Request::retrieve('a', 'String', CRM_Core_DAO::$_nullObject);
+    $petition_id  = CRM_Utils_Request::retrieve('p', 'String', CRM_Core_DAO::$_nullObject);
 
-require_once 'CRM/Core/Config.php';
-require_once 'CRM/Core/Error.php';
-require_once 'CRM/Core/Page.php';
-
-class CRM_Campaign_Page_Petition_Confirm extends CRM_Core_Page 
-{
-    function run( ) {
-        require_once 'CRM/Utils/Request.php';
-        $contact_id   = CRM_Utils_Request::retrieve( 'cid', 'Integer', CRM_Core_DAO::$_nullObject );
-        $subscribe_id = CRM_Utils_Request::retrieve( 'sid', 'Integer', CRM_Core_DAO::$_nullObject );
-        $hash         = CRM_Utils_Request::retrieve( 'h'  , 'String' , CRM_Core_DAO::$_nullObject );
-        $activity_id  = CRM_Utils_Request::retrieve( 'a'  , 'String' , CRM_Core_DAO::$_nullObject );
-        $petition_id = CRM_Utils_Request::retrieve( 'p'  , 'String' , CRM_Core_DAO::$_nullObject );
-        
-        if ( ! $contact_id   ||
-             ! $subscribe_id ||
-             ! $hash ) {
-            CRM_Core_Error::fatal( ts( "Missing input parameters" ) );
-        }
-
-        require_once 'CRM/Mailing/Event/BAO/Confirm.php';
-        $result = $this->confirm( $contact_id, $subscribe_id, $hash, $activity_id, $petition_id );
-        if ( $result === false ) {
-            $this->assign( 'success', $result );
-        } else {
-            $this->assign( 'success', true    );
-            // $this->assign( 'group'  , $result );
-        }
-
-		require_once 'CRM/Contact/BAO/Contact/Location.php';
-        list( $displayName, $email ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $contact_id );
-        $this->assign( 'display_name', $displayName);
-        $this->assign( 'email'       , $email );
-        $this->assign( 'petition_id'       , $petition_id );
-
-		$this->assign('survey_id', $petition_id);
-		
-		// send thank you email
-		require_once 'CRM/Campaign/Form/Petition/Signature.php';
-		$params['contactId'] = $contact_id;
-		$params['email-Primary'] = $email;
-		$params['sid'] =  $petition_id;
-		$params['activityId'] = $activity_id;
-		CRM_Campaign_BAO_Petition::sendEmail( $params, CRM_Campaign_Form_Petition_Signature::EMAIL_THANK );
-
-        parent::run();
+    if (!$contact_id ||
+      !$subscribe_id ||
+      !$hash
+    ) {
+      CRM_Core_Error::fatal(ts("Missing input parameters"));
     }
+
+    $result = $this->confirm($contact_id, $subscribe_id, $hash, $activity_id, $petition_id);
+    if ($result === FALSE) {
+      $this->assign('success', $result);
+    }
+    else {
+      $this->assign('success', TRUE);
+      // $this->assign( 'group'  , $result );
+    }
+
+    list($displayName, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contact_id);
+    $this->assign('display_name', $displayName);
+    $this->assign('email', $email);
+    $this->assign('petition_id', $petition_id);
+
+    $this->assign('survey_id', $petition_id);
     
-    /**
-     * Confirm email verification
-     *
-     * @param int $contact_id       The id of the contact
-     * @param int $subscribe_id     The id of the subscription event
-     * @param string $hash          The hash
-     * @return boolean              True on success
-     * @access public
-     * @static
-     */
-    public static function confirm($contact_id, $subscribe_id, $hash, $activity_id, $petition_id) 
-    {
-        require_once 'CRM/Mailing/Event/BAO/Subscribe.php';
-        $se =& CRM_Mailing_Event_BAO_Subscribe::verify($contact_id, $subscribe_id, $hash);
-        
-        if (! $se) {
-            return false;
-        }
-        
-        require_once 'CRM/Core/Transaction.php';
-        $transaction = new CRM_Core_Transaction( );
-        
-        $ce = new CRM_Mailing_Event_BAO_Confirm();
-        $ce->event_subscribe_id = $se->id;
-        $ce->time_stamp = date('YmdHis');
-        $ce->save();
-        
-        
-        require_once 'CRM/Contact/BAO/GroupContact.php';
-        CRM_Contact_BAO_GroupContact::updateGroupMembershipStatus( $contact_id, $se->group_id,
-                                                                   'Email',$ce->id);
+    $pparams['id']   = $petition_id;
+    $this->petition = array();
+    CRM_Campaign_BAO_Survey::retrieve($pparams, $this->petition);
+    $this->assign('thankyou_title', CRM_Utils_Array::value('thankyou_title', $this->petition));
+    $this->assign('thankyou_text', CRM_Utils_Array::value('thankyou_text', $this->petition));
+    CRM_Utils_System::setTitle(CRM_Utils_Array::value('thankyou_title', $this->petition));
 
-        require_once 'CRM/Campaign/BAO/Petition.php';
-        $bao = new CRM_Campaign_BAO_Petition ();
-        $bao->confirmSignature($activity_id,$contact_id,$petition_id);
+    // send thank you email
+    $params['contactId'] = $contact_id;
+    $params['email-Primary'] = $email;
+    $params['sid'] = $petition_id;
+    $params['activityId'] = $activity_id;
+    CRM_Campaign_BAO_Petition::sendEmail($params, CRM_Campaign_Form_Petition_Signature::EMAIL_THANK);
+
+    return parent::run();
+  }
+
+  /**
+   * Confirm email verification
+   *
+   * @param int $contact_id       The id of the contact
+   * @param int $subscribe_id     The id of the subscription event
+   * @param string $hash          The hash
+   *
+   * @return boolean              True on success
+   * @access public
+   * @static
+   */
+  public static function confirm($contact_id, $subscribe_id, $hash, $activity_id, $petition_id) {
+    $se = CRM_Mailing_Event_BAO_Subscribe::verify($contact_id, $subscribe_id, $hash);
+
+    if (!$se) {
+      return FALSE;
     }
+
+    $transaction = new CRM_Core_Transaction();
+
+    $ce = new CRM_Mailing_Event_BAO_Confirm();
+    $ce->event_subscribe_id = $se->id;
+    $ce->time_stamp = date('YmdHis');
+    $ce->save();
+
+
+    CRM_Contact_BAO_GroupContact::updateGroupMembershipStatus($contact_id, $se->group_id,
+      'Email', $ce->id
+    );
+
+    $bao = new CRM_Campaign_BAO_Petition();
+    $bao->confirmSignature($activity_id, $contact_id, $petition_id);
+  }
 }
 

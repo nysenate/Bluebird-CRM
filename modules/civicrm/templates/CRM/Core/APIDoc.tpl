@@ -25,6 +25,9 @@ restURL = restURL + '?';
 else 
 restURL = restURL + '&';
 {literal}
+if (typeof $ == "undefined") {
+  $ = cj;
+} 
 
 function APIDoc(entity){
   $detail=$('#detail_'+entity);

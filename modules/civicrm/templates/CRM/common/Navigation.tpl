@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,6 +41,9 @@
 <script type="text/javascript">
 //CRM-6776, enter-to-submit functionality is broken for IE due to hidden field
 cj( document ).ready( function( ) {
+   cj("#civicrm-menu >li").each(function(i){ 
+      cj(this).attr("tabIndex",i+2); 
+   });
    var htmlContent = '';
       if ( cj.browser.msie ) {
           if( cj.browser.version.substr( 0,1 ) == '7' ) {
@@ -115,6 +118,10 @@ if ( framework != 'Joomla') {
 	   cj('#civicrm-menu').css({top: "scroll", position: "fixed", top: "0px"}); 
 	   cj('div.sticky-header').css({ 'top' : "23px", position: "fixed" });
 	});
+
+	if ( cj('#edit-shortcuts').length > 0 ) {
+	   cj('#civicrm-menu').css({ 'width': '97%' });
+	}
 } else {
 	   cj('div#toolbar-box div.m').html(cj("#menu-container").html());
 	   cj('#civicrm-menu').ready( function(){ 

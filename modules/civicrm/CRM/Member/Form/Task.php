@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,152 +28,155 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
 /**
- * Class for civimember task actions 
- * 
+ * Class for civimember task actions
+ *
  */
-class CRM_Member_Form_Task extends CRM_Core_Form
-{
-    /**
-     * the task being performed
-     *
-     * @var int
-     */
-    protected $_task;
+class CRM_Member_Form_Task extends CRM_Core_Form {
 
-    /**
-     * The additional clause that we restrict the search with
-     *
-     * @var string
-     */
-    protected $_componentClause = null;
+  /**
+   * the task being performed
+   *
+   * @var int
+   */
+  protected $_task;
 
-    /**
-     * The array that holds all the component ids
-     *
-     * @var array
-     */
-    protected $_componentIds;
+  /**
+   * The additional clause that we restrict the search with
+   *
+   * @var string
+   */
+  protected $_componentClause = NULL;
 
-    /**
-     * The array that holds all the contact ids
-     *
-     * @var array
-     */
-    public $_contactIds;
+  /**
+   * The array that holds all the component ids
+   *
+   * @var array
+   */
+  protected $_componentIds;
 
-    /**
-     * The array that holds all the member ids
-     *
-     * @var array
-     */
-    protected $_memberIds;
+  /**
+   * The array that holds all the contact ids
+   *
+   * @var array
+   */
+  public $_contactIds;
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @param
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        self::preProcessCommon( $this );
-    }
+  /**
+   * The array that holds all the member ids
+   *
+   * @var array
+   */
+  protected $_memberIds;
 
-    static function preProcessCommon( &$form, $useTable = false )
-    {
-        $form->_memberIds = array();
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @param
+   *
+   * @return void
+   * @access public
+   */
+  function preProcess() {
+    self::preProcessCommon($this);
+  }
 
-        $values = $form->controller->exportValues( $form->get( 'searchFormName' ) );
-        
-        $form->_task = $values['task'];
-        $memberTasks = CRM_Member_Task::tasks();
-        $form->assign( 'taskName', $memberTasks[$form->_task] );
+  static function preProcessCommon(&$form, $useTable = FALSE) {
+    $form->_memberIds = array();
 
-        $ids = array();
-        if ( $values['radio_ts'] == 'ts_sel' ) {
-            foreach ( $values as $name => $value ) {
-                if ( substr( $name, 0, CRM_Core_Form::CB_PREFIX_LEN ) == CRM_Core_Form::CB_PREFIX ) {
-                    $ids[] = substr( $name, CRM_Core_Form::CB_PREFIX_LEN );
-                }
-            }
-        } else {
-            $queryParams =  $form->get( 'queryParams' );
-            $query       = new CRM_Contact_BAO_Query( $queryParams, null, null, false, false, 
-                                                       CRM_Contact_BAO_Query::MODE_MEMBER);
-            $query->_distinctComponentClause = " DISTINCT(civicrm_membership.id)";
-            $result = $query->searchQuery(0, 0, null);
+    $values = $form->controller->exportValues($form->get('searchFormName'));
 
-            while ($result->fetch()) {
-                $ids[] = $result->membership_id;
-            }
+    $form->_task = $values['task'];
+    $memberTasks = CRM_Member_Task::tasks();
+    $form->assign('taskName', $memberTasks[$form->_task]);
+
+    $ids = array();
+    if ($values['radio_ts'] == 'ts_sel') {
+      foreach ($values as $name => $value) {
+        if (substr($name, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX) {
+          $ids[] = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
         }
-        
-        if ( ! empty( $ids ) ) {
-            $form->_componentClause =
-                ' civicrm_membership.id IN ( ' .
-                implode( ',', $ids ) . ' ) ';
-            $form->assign( 'totalSelectedMembers', count( $ids ) );
-        }
-        
-        $form->_memberIds = $form->_componentIds = $ids;
+      }
+    }
+    else {
+      $queryParams = $form->get('queryParams');
+      $query = new CRM_Contact_BAO_Query($queryParams, NULL, NULL, FALSE, FALSE,
+        CRM_Contact_BAO_Query::MODE_MEMBER
+      );
+      $query->_distinctComponentClause = " civicrm_membership.id";
+      $query->_groupByComponentClause = " GROUP BY civicrm_membership.id ";
+      $result = $query->searchQuery(0, 0, NULL);
 
-        //set the context for redirection for any task actions
-        $session = CRM_Core_Session::singleton( );
-        
-        $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String', $form );
-        require_once 'CRM/Utils/Rule.php';
-        $urlParams = 'force=1';
-        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
-
-        $searchFormName = strtolower( $form->get( 'searchFormName' ) );
-        if ( $searchFormName == 'search' ) {
-            $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/member/search', $urlParams ) );
-        } else {
-            $session->replaceUserContext( CRM_Utils_System::url( "civicrm/contact/search/$searchFormName",
-                                                                 $urlParams ) );
-        }
+      while ($result->fetch()) {
+        $ids[] = $result->membership_id;
+      }
     }
 
-    /**
-     * Given the membership id, compute the contact id
-     * since its used for things like send email
-     */
-    public function setContactIDs( ) 
-    {
-        $this->_contactIds =& CRM_Core_DAO::getContactIDsFromComponent( $this->_memberIds,
-                                                                        'civicrm_membership' );
+    if (!empty($ids)) {
+      $form->_componentClause = ' civicrm_membership.id IN ( ' . implode(',', $ids) . ' ) ';
+      $form->assign('totalSelectedMembers', count($ids));
     }
 
-    /**
-     * simple shell that derived classes can call to add buttons to
-     * the form with a customized title for the main Submit
-     *
-     * @param string $title title of the main button
-     * @param string $type  button type for the form after processing
-     * @return void
-     * @access public
-     */
-    function addDefaultButtons( $title, $nextType = 'next', $backType = 'back' ) 
-    {
-        $this->addButtons( array(
-                                 array ( 'type'      => $nextType,
-                                         'name'      => $title,
-                                         'isDefault' => true   ),
-                                 array ( 'type'      => $backType,
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
+    $form->_memberIds = $form->_componentIds = $ids;
+
+    //set the context for redirection for any task actions
+    $session = CRM_Core_Session::singleton();
+
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
+    $urlParams = 'force=1';
+    if (CRM_Utils_Rule::qfKey($qfKey)) {
+      $urlParams .= "&qfKey=$qfKey";
     }
 
+    $searchFormName = strtolower($form->get('searchFormName'));
+    if ($searchFormName == 'search') {
+      $session->replaceUserContext(CRM_Utils_System::url('civicrm/member/search', $urlParams));
+    }
+    else {
+      $session->replaceUserContext(CRM_Utils_System::url("civicrm/contact/search/$searchFormName",
+          $urlParams
+        ));
+    }
+  }
+
+  /**
+   * Given the membership id, compute the contact id
+   * since its used for things like send email
+   */
+  public function setContactIDs() {
+    $this->_contactIds = &CRM_Core_DAO::getContactIDsFromComponent($this->_memberIds,
+      'civicrm_membership'
+    );
+  }
+
+  /**
+   * simple shell that derived classes can call to add buttons to
+   * the form with a customized title for the main Submit
+   *
+   * @param string $title title of the main button
+   * @param string $type  button type for the form after processing
+   *
+   * @return void
+   * @access public
+   */
+  function addDefaultButtons($title, $nextType = 'next', $backType = 'back') {
+    $this->addButtons(array(
+        array(
+          'type' => $nextType,
+          'name' => $title,
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => $backType,
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
 }
-
 

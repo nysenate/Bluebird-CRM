@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,6 +39,10 @@
           <td>{$form.name.html}<br />
                <span class="description">{ts}WARNING: Do NOT use spaces in the Location Name.{/ts}</span>
           </td>
+      </tr>
+      <tr class="crm-location-type-form-block-display_name">
+          <td class="label">{$form.display_name.label}</td>
+          <td>{$form.display_name.html}</td>
       </tr>
       <tr class="crm-location-type-form-block-vcard_name">
           <td class="label">{$form.vcard_name.label}</td>

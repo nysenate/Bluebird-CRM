@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,96 +28,92 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Grant/Form/Task.php';
 
 /**
  * This class provides the functionality to update a group of
  * grants. This class provides functionality for the actual
  * update.
  */
-class CRM_Grant_Form_Task_Update extends CRM_Grant_Form_Task 
-{
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        parent::preProcess( );
+class CRM_Grant_Form_Task_Update extends CRM_Grant_Form_Task {
 
-        //check permission for update.
-        if ( !CRM_Core_Permission::checkActionPermission( 'CiviGrant', CRM_Core_Action::UPDATE ) ) {
-            CRM_Core_Error::fatal( ts( 'You do not have permission to access this page' ) );  
-        }
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */
+  function preProcess() {
+    parent::preProcess();
+
+    //check permission for update.
+    if (!CRM_Core_Permission::checkActionPermission('CiviGrant', CRM_Core_Action::UPDATE)) {
+      CRM_Core_Error::fatal(ts('You do not have permission to access this page'));
+    }
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    $grantStatus = CRM_Grant_PseudoConstant::grantStatus();
+    $this->addElement('select', 'status_id', ts('Grant Status'), array('' => '') + $grantStatus);
+
+    $this->addElement('text', 'amount_granted', ts('Amount Granted'));
+    $this->addRule('amount_granted', ts('Please enter a valid amount.'), 'money');
+
+    $this->addDate('decision_date', ts('Grant Decision'), FALSE, array('formatType' => 'custom'));
+
+    $this->assign('elements', array('status_id', 'amount_granted', 'decision_date'));
+    $this->assign('totalSelectedGrants', count($this->_grantIds));
+
+    $this->addDefaultButtons(ts('Update Grants'), 'done');
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    $updatedGrants = 0;
+
+    // get the submitted form values.
+    $params = $this->controller->exportValues($this->_name);
+    $qfKey = $params['qfKey'];
+    foreach ($params as $key => $value) {
+      if ($value == '' || $key == 'qfKey') {
+        unset($params[$key]);
+      }
     }
 
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( ) 
-    {
-        require_once 'CRM/Grant/PseudoConstant.php';
-        $grantStatus = CRM_Grant_PseudoConstant::grantStatus();
-        $this->addElement('select', 'status_id', ts('Grant Status'), array( '' => '' ) + $grantStatus);
+    if (!empty($params)) {
+      foreach ($params as $key => $value) {
+        $values[$key] = $value;
+      }
+      foreach ($this->_grantIds as $grantId) {
+        $ids['grant'] = $grantId;
 
-        $this->addElement('text', 'amount_granted', ts('Amount Granted') );
-        $this->addRule('amount_granted', ts('Please enter a valid amount.'), 'money'); 
-
-        $this->addDate( 'decision_date', ts('Grant Decision'), false, array( 'formatType' => 'custom') );
-
-        $this->assign( 'elements', array( 'status_id', 'amount_granted', 'decision_date' ) );
-        $this->assign( 'totalSelectedGrants', count($this->_grantIds) );
-
-        $this->addDefaultButtons( ts( 'Update Grants' ), 'done' );
+        CRM_Grant_BAO_Grant::add($values, $ids);
+        $updatedGrants++;
+      }
     }
 
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( ) 
-    {
-        $updatedGrants = 0;
-
-        // get the submitted form values.  
-        $params = $this->controller->exportValues( $this->_name );
-        $qfKey = $params['qfKey'];
-        foreach ( $params as $key => $value ) {
-            if ( $value == '' || $key == 'qfKey' ) {
-                unset( $params[$key] );
-            }
-        }
-
-        if ( ! empty( $params ) ) {
-            require_once 'CRM/Grant/BAO/Grant.php';
-            foreach ( $params as $key => $value ) {
-                $values[$key] = $value;
-            }
-            foreach ( $this->_grantIds as $grantId ) {
-                $ids['grant'] = $grantId;
-                
-                CRM_Grant_BAO_Grant::add( $values, $ids );
-                $updatedGrants++;
-            }
-        }
-        
-        $status = array(
-                        ts( 'Updated Grant(s): %1',        array( 1 => $updatedGrants ) ),
-                        ts( 'Total Selected Grant(s): %1', array( 1 => count($this->_grantIds ) ) ),
-                        );
-        CRM_Core_Session::setStatus( $status );
-        CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/grant/search', 'force=1&qfKey=' . $qfKey ) );
-    }
+    $status = array(
+      ts('Updated Grant(s): %1', array(1 => $updatedGrants)),
+      ts('Total Selected Grant(s): %1', array(1 => count($this->_grantIds))),
+    );
+    CRM_Core_Session::setStatus($status);
+    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/grant/search', 'force=1&qfKey=' . $qfKey));
+  }
 }
+

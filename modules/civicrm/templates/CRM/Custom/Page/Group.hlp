@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {htxt id="id-group_intro"}
-    {ts}Use this form to set the title, the type of record the fields will be used for, and set-level help. You will then be able to add any number of fields to the set.{/ts} {docURL page="Custom Data Sets & Fields"}
+    {ts}Use this form to set the title, the type of record the fields will be used for, and set-level help. You will then be able to add any number of fields to the set.{/ts} {docURL page="user/organising-your-data/custom-fields"}
 {/htxt}
 {htxt id="id-title"}
     {ts}For 'inline' display custom sets, this title will appear as the fieldset legend. If you choose the 'tab' display style (which is available for Contact record custom fields), the title will be used for the navigation tab.{/ts}

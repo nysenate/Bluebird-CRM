@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -43,15 +42,13 @@
  *                                      'submit', 'done', 'display', 'jump' 'process'
  * @access public
  */
-function smarty_modifier_crmBtnType( $btnName )
-{
-    // split the string into 5 or more
-    // button name are typically: '_qf_Contact_refresh' OR '_qf_Contact_refresh_dedupe'
-    // button type is always the 3rd element
-    // note the first _
-    $substr = CRM_Utils_System::explode( '_', $btnName, 5 );
-    
-    return $substr[3];
-}
+function smarty_modifier_crmBtnType($btnName) {
+  // split the string into 5 or more
+  // button name are typically: '_qf_Contact_refresh' OR '_qf_Contact_refresh_dedupe'
+  // button type is always the 3rd element
+  // note the first _
+  $substr = CRM_Utils_System::explode('_', $btnName, 5);
 
+  return $substr[3];
+}
 

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,85 +25,84 @@
  +--------------------------------------------------------------------+
 */
 
-require_once 'CRM/Core/Component/Info.php';
-
 /**
- * This class introduces component to the system and provides all the 
+ * This class introduces component to the system and provides all the
  * information about it. It needs to extend CRM_Core_Component_Info
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Pledge_Info extends CRM_Core_Component_Info
-{
+class CRM_Pledge_Info extends CRM_Core_Component_Info {
 
-    // docs inherited from interface
-    protected $keyword = 'pledge';
+  // docs inherited from interface
+  protected $keyword = 'pledge';
 
-    // docs inherited from interface
-    public function getInfo()
-    {
-        return array( 'name'	             => 'CiviPledge',
-                      'translatedName'       => ts('CiviPledge'),
-                      'title'                => ts('CiviCRM Pledge Engine'),
-                      'search'               => 1,
-                      'showActivitiesInCore' => 1 
-                      );
-    }
+  // docs inherited from interface
+  public function getInfo() {
+    return array(
+      'name' => 'CiviPledge',
+      'translatedName' => ts('CiviPledge'),
+      'title' => ts('CiviCRM Pledge Engine'),
+      'search' => 1,
+      'showActivitiesInCore' => 1,
+    );
+  }
 
 
-    // docs inherited from interface
-    public function getPermissions()
-    {
-        return array( 'access CiviPledge',
-                      'edit pledges',
-                      'delete in CiviPledge' );
-    }
+  // docs inherited from interface
+  public function getPermissions() {
+    return array(
+      'access CiviPledge',
+      'edit pledges',
+      'delete in CiviPledge',
+    );
+  }
 
-    // docs inherited from interface
-    public function getUserDashboardElement()
-    {
-        return array( 'name'    => ts( 'Pledges' ),
-                      'title'   => ts( 'Your Pledge(s)' ),
-                      // we need to check this permission since you can click on contribution page link for making payment
-                      'perm'    => array( 'make online contributions' ), 
-                      'weight'  => 15 );
-    }
+  // docs inherited from interface
+  public function getUserDashboardElement() {
+    return array('name' => ts('Pledges'),
+      'title' => ts('Your Pledge(s)'),
+      // we need to check this permission since you can click on contribution page link for making payment
+      'perm' => array('make online contributions'),
+      'weight' => 15,
+    );
+  }
 
-    // docs inherited from interface  
-    public function registerTab()
-    {
-        return array( 'title'   => ts( 'Pledges' ),
-                      'url'	    => 'pledge',
-                      'weight'  => 25 );
-    }
+  // docs inherited from interface
+  public function registerTab() {
+    return array('title' => ts('Pledges'),
+      'url' => 'pledge',
+      'weight' => 25,
+    );
+  }
 
-    // docs inherited from interface  
-    public function registerAdvancedSearchPane()
-    {
-        return array( 'title'   => ts( 'Pledges' ),
-                      'weight'  => 25 );
+  // docs inherited from interface
+  public function registerAdvancedSearchPane() {
+    return array('title' => ts('Pledges'),
+      'weight' => 25,
+    );
+  }
+
+  // docs inherited from interface
+  public function getActivityTypes() {
+    return NULL;
+  }
+
+  // add shortcut to Create New
+  public function creatNewShortcut(&$shortCuts) {
+    if (CRM_Core_Permission::check('access CiviPledge') &&
+      CRM_Core_Permission::check('edit pledges')
+    ) {
+      $shortCuts = array_merge($shortCuts, array(
+        array('path' => 'civicrm/pledge/add',
+            'query' => 'reset=1&action=add&context=standalone',
+            'ref' => 'new-pledge',
+            'title' => ts('Pledge'),
+          )));
     }
-    
-    // docs inherited from interface    
-    public function getActivityTypes()
-    {
-        return null;
-    }
-    
-    // add shortcut to Create New
-    public function creatNewShortcut( &$shortCuts ) {
-        if ( CRM_Core_Permission::check('access CiviPledge') &&
-             CRM_Core_Permission::check('edit pledges') ) {
-            $shortCuts = 
-                array_merge($shortCuts, array( array( 'path'  => 'civicrm/pledge/add',
-                                                      'query' => "reset=1&action=add&context=standalone",
-                                                      'ref'   => 'new-pledge',
-                                                      'title' => ts('Pledge') ) ));
-        }
-    }
-    
+  }
 }
+

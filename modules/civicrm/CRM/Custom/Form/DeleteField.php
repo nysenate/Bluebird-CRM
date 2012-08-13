@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,95 +28,96 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/BAO/CustomField.php';
 
 /**
  * This class is to build the form for deleting a field
  */
 class CRM_Custom_Form_DeleteField extends CRM_Core_Form {
 
-    /**
-     * the group id
-     *
-     * @var int
-     */
-    protected $_id;
+  /**
+   * the group id
+   *
+   * @var int
+   */
+  protected $_id;
 
-    /**
-     * The title of the group being deleted
-     *
-     * @var string
-     */
-    protected $_title;
+  /**
+   * The title of the group being deleted
+   *
+   * @var string
+   */
+  protected $_title;
 
-    /**
-     * set up variables to build the form
-     *
-     * @param null
-     * @return void
-     * @acess protected
-     */
-    function preProcess( ) {
-        $this->_id    = $this->get( 'id' );
-        
-       
-        $defaults = array( );
-        $params   = array( 'id' => $this->_id );
-        CRM_Core_BAO_CustomField::retrieve( $params, $defaults );
-        
-        $this->_title = CRM_Utils_Array::value( 'label', $defaults );
-        $this->assign( 'title' , $this->_title );
-        
-        CRM_Utils_System::setTitle( ts('Confirm Custom Field Delete') );
-    }
+  /**
+   * set up variables to build the form
+   *
+   * @param null
+   *
+   * @return void
+   * @acess protected
+   */ 
+  function preProcess() {
+    $this->_id = $this->get('id');
 
-    /**
-     * Function to actually build the form
-     *
-     * @param null
-     * 
-     * @return void
-     * @access public
-     */
-    public function buildQuickForm( ) {
 
-        $this->addButtons( array(
-                                 array ( 'type'      => 'next',
-                                         'name'      => ts('Delete Custom Field'),
-                                         'isDefault' => true   ),
-                                 array ( 'type'       => 'cancel',
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
-    }
+    $defaults = array();
+    $params = array('id' => $this->_id);
+    CRM_Core_BAO_CustomField::retrieve($params, $defaults);
 
-    /**
-     * Process the form when submitted
-     *
-     * @param null
-     * 
-     * @return void
-     * @access public
-     */
-    public function postProcess( ) {
-        $field = new CRM_Core_DAO_CustomField();
-        $field->id = $this->_id;
-        $field->find( true );
-        
-        CRM_Core_BAO_CustomField::deleteField( $field );
+    $this->_title = CRM_Utils_Array::value('label', $defaults);
+    $this->assign('title', $this->_title);
 
-        // also delete any profiles associted with this custom field
-        require_once "CRM/Core/BAO/UFField.php";
-        CRM_Core_BAO_UFField::delUFField($this->_id);
-        CRM_Core_Session::setStatus( ts('The custom field \'%1\' has been deleted.', array(1 => $field->label)) );        
+    CRM_Utils_System::setTitle(ts('Confirm Custom Field Delete'));
+  }
 
-        CRM_Utils_Weight::correctDuplicateWeights('CRM_Core_DAO_CustomField');  
-    }
+  /**
+   * Function to actually build the form
+   *
+   * @param null
+   *
+   * @return void
+   * @access public
+   */
+  public function buildQuickForm() {
+
+    $this->addButtons(array(
+        array(
+          'type' => 'next',
+          'name' => ts('Delete Custom Field'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
+
+  /**
+   * Process the form when submitted
+   *
+   * @param null
+   *
+   * @return void
+   * @access public
+   */
+  public function postProcess() {
+    $field = new CRM_Core_DAO_CustomField();
+    $field->id = $this->_id;
+    $field->find(TRUE);
+
+    CRM_Core_BAO_CustomField::deleteField($field);
+
+    // also delete any profiles associted with this custom field
+    CRM_Core_BAO_UFField::delUFField($this->_id);
+    CRM_Core_Session::setStatus(ts('The custom field \'%1\' has been deleted.', array(1 => $field->label)));
+
+    CRM_Utils_Weight::correctDuplicateWeights('CRM_Core_DAO_CustomField');
+  }
 }
 

@@ -1,7 +1,9 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright Tech To The People (c) 2010                              |
  +--------------------------------------------------------------------+
@@ -49,35 +51,35 @@ require_once 'CRM/Campaign/BAO/Petition.php';
  * @access public
  * @deprecated - api currently not supported
  */
-function &civicrm_api3_survey_respondant_get( $params ) {
+function &civicrm_api3_survey_respondant_get($params) {
 
-    civicrm_api3_verify_one_mandatory($params,'CRM_Campaign_BAO_Petition',array('survey_id','id'));
+  civicrm_api3_verify_one_mandatory($params, 'CRM_Campaign_BAO_Petition', array('survey_id', 'id'));
 
-    if (array_key_exists ( 'status_id', $params ) ) {
-      $status_id=$params['status_id'];
-    } else {
-      $status_id=null;
-    }
-    $surveyID = empty($params['survey_id'])?$params['id']:$params['survey_id'];
-    $petition = new CRM_Campaign_BAO_Petition();
-    $signatures = $petition->getPetitionSignature($surveyID,$status_id);
-    return (civicrm_api3_create_success($signatures,$params));
-
-
+  if (array_key_exists('status_id', $params)) {
+    $status_id = $params['status_id'];
+  }
+  else {
+    $status_id = NULL;
+  }
+  $surveyID   = empty($params['survey_id']) ? $params['id'] : $params['survey_id'];
+  $petition   = new CRM_Campaign_BAO_Petition();
+  $signatures = $petition->getPetitionSignature($surveyID, $status_id);
+  return (civicrm_api3_create_success($signatures, $params));
 }
 /*
  * @deprecated - api currently not supported
  */
-function &civicrm_api3_survey_respondant_count( $params ) {
+function &civicrm_api3_survey_respondant_count($params) {
 
-    $petition = new CRM_Campaign_BAO_Petition();
-    if (array_key_exists ('groupby',$params) &&
-        $params['groupby'] == 'country' ) {
-      $signaturesCount = $petition->getPetitionSignatureTotalbyCountry($params['survey_id']);
-    } else {
-      $signaturesCount = $petition->getPetitionSignatureTotal($params['survey_id']);
-    }
-    return ($signaturesCount);
-
-
+  $petition = new CRM_Campaign_BAO_Petition();
+  if (array_key_exists('groupby', $params) &&
+    $params['groupby'] == 'country'
+  ) {
+    $signaturesCount = $petition->getPetitionSignatureTotalbyCountry($params['survey_id']);
+  }
+  else {
+    $signaturesCount = $petition->getPetitionSignatureTotal($params['survey_id']);
+  }
+  return ($signaturesCount);
 }
+

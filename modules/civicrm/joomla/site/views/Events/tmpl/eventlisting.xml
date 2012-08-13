@@ -2,7 +2,7 @@
 
 <metadata>
   <layout title="Event Listing">
-    <message/>
+   <message>Display a list of current/future public events.</message>
   </layout>
   
   <state>
@@ -15,14 +15,22 @@
     <version>3.3</version>
     <description>List of all active, current, public events.</description>
     <name>Event Listing</name>
-    <url>
-      <param name="html" type="hidden" default="1"/>
-      <param name="page" type="hidden" default="1"/>
-    </url>
-    
-    <params>
-      <param name="task" type="hidden" default="civicrm/event/ical"/>
-      <param name="reset" type="hidden" size="5" default="1"/>
-    </params>
+  <fields name="params">
+     <fieldset name="basic">
+        <field name="spacer" type="spacer" class="text" 
+               label="The event listing page has no parameter options to configure." />
+	<field name="task"  type="hidden" default="civicrm/event/ical" />
+	<field name="reset" type="hidden" size="1" default="1" />
+     </fieldset> 
+    </fields>
+  <fields name="request">
+      <fieldset name="request">
+	 <field name="spacer" type="spacer" class="text"
+	        label="The event listing page has no parameter options to configure." />
+   	 <field name="html" type="hidden" default="1" />
+	 <field name="page" type="hidden" default="1" />
+      </fieldset>
+  </fields>
+
   </state>
 </metadata>

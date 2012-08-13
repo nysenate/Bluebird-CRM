@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,56 +28,57 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
 /**
- * form helper class for a phone object 
+ * form helper class for a phone object
  */
-class CRM_Contact_Form_Edit_Phone 
-{
-    /**
-     * build the form elements for a phone object
-     *
-     * @param CRM_Core_Form $form       reference to the form object
-     * @param array         $location   the location object to store all the form elements in
-     * @param int           $locationId the locationId we are dealing with
-     * @param int           $count      the number of blocks to create
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function buildQuickForm( &$form, $addressBlockCount = null ) {
-        
-        // passing this via the session is AWFUL. we need to fix this
-        if ( ! $addressBlockCount ) {
-            $blockId = ( $form->get( 'Phone_Block_Count' ) ) ? $form->get( 'Phone_Block_Count' ) : 1;
-        } else {
-            $blockId = $addressBlockCount;
-        }
-        
-        $form->applyFilter('__ALL__','trim');
-        
-        //phone type select
-        $form->addElement('select', "phone[$blockId][phone_type_id]", ts('Phone'), CRM_Core_PseudoConstant::phoneType( ) );
+class CRM_Contact_Form_Edit_Phone {
 
-		//main phone number with crm_phone class
-		$form->addElement('text', "phone[$blockId][phone]", ts('Phone'), array_merge( CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone'), array( 'class' => 'crm_phone twelve' ) ) );
-        // phone extension
-		$form->addElement('text', "phone[$blockId][phone_ext]", ts('Extension'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone_ext'));
-		
-		if( isset( $form->_contactType ) ) {
-			//Block type select
-			$form->addElement('select',"phone[$blockId][location_type_id]", '' , CRM_Core_PseudoConstant::locationType());
-			
-			//is_Primary radio
-			$js = array( 'id' => 'Phone_'.$blockId.'_IsPrimary', 'onClick' => 'singleSelect( this.id );');
-            $form->addElement( 'radio', "phone[$blockId][is_primary]", '', '', '1', $js );
-		}           
-        // TODO: set this up as a group, we need a valid phone_type_id if we have a  phone number
-        // $form->addRule( "location[$locationId][phone][$locationId][phone]", ts('Phone number is not valid.'), 'phone' );
+  /**
+   * build the form elements for a phone object
+   *
+   * @param CRM_Core_Form $form       reference to the form object
+   * @param int           $addressBlockCount block number to build
+   * @param boolean       $blockEdit         is it block edit
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  static
+  function buildQuickForm(&$form, $addressBlockCount = NULL, $blockEdit = FALSE) {
+    // passing this via the session is AWFUL. we need to fix this
+    if (!$addressBlockCount) {
+      $blockId = ($form->get('Phone_Block_Count')) ? $form->get('Phone_Block_Count') : 1;
     }
+    else {
+      $blockId = $addressBlockCount;
+    }
+
+    $form->applyFilter('__ALL__', 'trim');
+
+    //phone type select
+    $form->addElement('select', "phone[$blockId][phone_type_id]", ts('Phone'), CRM_Core_PseudoConstant::phoneType());
+
+    //main phone number with crm_phone class
+    $form->addElement('text', "phone[$blockId][phone]", ts('Phone'), array_merge(CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone'), array('class' => 'crm_phone twelve')));
+    // phone extension
+    $form->addElement('text', "phone[$blockId][phone_ext]", ts('Extension'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone_ext'));
+
+    if (isset($form->_contactType) || $blockEdit) {
+      //Block type select
+      $form->addElement('select', "phone[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
+
+      //is_Primary radio
+      $js = array('id' => 'Phone_' . $blockId . '_IsPrimary', 'onClick' => 'singleSelect( this.id );');
+      $form->addElement('radio', "phone[$blockId][is_primary]", '', '', '1', $js);
+    }
+    // TODO: set this up as a group, we need a valid phone_type_id if we have a  phone number
+    // $form->addRule( "location[$locationId][phone][$locationId][phone]", ts('Phone number is not valid.'), 'phone' );
+  }
 }
+

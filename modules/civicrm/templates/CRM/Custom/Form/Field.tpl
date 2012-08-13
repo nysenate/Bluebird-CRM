@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,13 @@ function custom_option_html_type( ) {
 
     if ( !html_type_name && !data_type_id ) {
         return;
+    }
+	
+    if ( data_type_id == 11) {
+      toggleContactRefFilter( );
+    } else {
+      cj('#field_advance_filter').hide();
+      cj('#contact_reference_group').hide();      
     }
 
     if ( data_type_id < 4 ) {
@@ -160,6 +167,24 @@ function custom_option_html_type( ) {
             </table>
             </td>
         </tr>
+        <tr id='contact_reference_group'>
+            <td class="label">{$form.group_id.label}</td>	
+            <td class="html-adjust">
+              {$form.group_id.html}
+	          &nbsp;&nbsp;<span><a href="javascript:toggleContactRefFilter('Advance')">{ts}Advanced Filter{/ts}</a></span>
+              {capture assign=searchPreferences}{crmURL p="civicrm/admin/setting/search" q="reset=1"}{/capture}
+	          <div class="messages status"><div class="icon alert-icon"></div> {ts 1=$searchPreferences}If you are planning on using this field in front-end profile, event registration or contribution forms, you should 'Limit List to Group' or configure an 'Advanced Filter'  (so that you do not unintentionally expose your entire set of contacts). Users must have either 'access contact reference fields' OR 'access CiviCRM' permission in order to use contact reference autocomplete fields. You can assign 'access contact reference fields' to the anonymous role if you want un-authenticated visitors to use this field. Use <a href='%1'>Search Preferences - Contact Reference Options</a> to control the fields included in the search results.{/ts}
+	        </td>
+        </tr>	
+	    <tr id='field_advance_filter'>
+            <td class="label">{$form.filter.label}</td>	
+            <td class="html-adjust">
+              {$form.filter.html}
+              &nbsp;&nbsp;<span><a href="javascript:toggleContactRefFilter('Group')">{ts}Filter by Group{/ts}</a></span>
+	      <br />
+	      <span class="description">{ts}Filter contact search results for this field using Contact Lookup API parameters. EXAMPLE: To list Students in group 3:{/ts} "action=lookup&group=3&contact_sub_type=Student" {docURL page="developer/techniques/api"}</span> 
+            </td>
+        </tr>
         <tr  class="crm-custom-field-form-block-options_per_line" id="optionsPerLine" {if $action neq 2 && ($form.data_type.value.0.0 >= 4 && $form.data_type.value.1.0 neq 'CheckBox' || $form.data_type.value.1.0 neq 'Radio' )}class="hide-block"{/if}>
             <td class="label">{$form.options_per_line.label}</td>	
             <td class="html-adjust">{$form.options_per_line.html|crmReplace:class:two}</td>
@@ -225,7 +250,7 @@ function custom_option_html_type( ) {
             <td class="label">{$form.is_searchable.label}</td>
             <td class="html-adjust">{$form.is_searchable.html}
                 {if $action neq 4}
-                    <br /><span class="description">{ts}Can you search on this field in the Advanced and component search forms? NOTE: This feature is available to custom fields used for <strong>Contacts (individuals, organizations and househoulds), Contributions, Pledges, Memberships, Event Participants, Activities, and Relationships</strong>.{/ts}</span>
+                    <br /><span class="description">{ts}Can you search on this field in the Advanced and component search forms? Also determines whether you can include this field as a display column and / or filter in related detail reports.{/ts}</span>
                 {/if}        
             </td>
         </tr>
@@ -275,6 +300,21 @@ function custom_option_html_type( ) {
     	document.getElementsByName("is_searchable")[0].checked   = false; 
 	    document.getElementsByName("is_search_range")[1].checked = true;
         cj("#searchByRange").hide();
+    }
+
+    function toggleContactRefFilter(setSelected) {
+      if ( !setSelected ) {
+        setSelected =  cj('#filter_selected').val();
+      } else {
+        cj('#filter_selected').val(setSelected);
+      }
+      if ( setSelected == 'Advance' ) {
+        cj('#contact_reference_group').hide( );
+        cj('#field_advance_filter').show( );
+      } else {
+        cj('#field_advance_filter').hide( );
+        cj('#contact_reference_group').show( );
+      }
     }
 </script>
 {/literal}

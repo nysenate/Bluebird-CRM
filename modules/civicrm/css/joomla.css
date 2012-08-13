@@ -89,6 +89,7 @@ td.active {
 #crm-container td.menu-disabled {
   background: #ccc;
 }
+
 /* Tab navigation */
 #crm-container .tabs {
   margin: 0 0 0.5em 0.5em;
@@ -205,6 +206,10 @@ tr.light .form-item, tr.dark .form-item {
 /* Override .9em field help size from civicrm.css - CiviCRM 2.0 */
 #crm-container div.description, #crm-container span.description, #crm-container dd.description {
   font-size: 1em;
+}
+#crm-container div.description, #crm-container span.description {
+   margin: 2px 0 15px 0;
+   display: block;
 }
 .form-item label {
   font-weight: bold;
@@ -392,8 +397,12 @@ table {
   padding: 10px;
   vertical-align: top;
 }
+
+#content-right {
+	background-color: #FFFFFF;
+}
+
 #footer {
-  background-color: #eee;
   padding: 1em;
   font-size: 0.8em;
 }
@@ -461,11 +470,13 @@ ul#civicrm-menu {
     padding: 2px 0px 22px 2px !important;
     padding-bottom:22px !important; /*moz bottom */
     padding-bottom:2px; /*ie bottom */
-	}
+}
 
-
-div#toolbar-box div.m{
-    padding: 0px 8px !important;
+div#toolbar-box div.m {
+    padding: 0px !important;
+	min-height: 0;
+	border: 0;
+	margin-top: 8px;
 }
 
 div#toolbar-box, div#toolbar-box div.m{

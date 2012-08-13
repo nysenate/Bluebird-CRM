@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,86 +26,94 @@
 {* Custom Data view mode*}
 {assign var="showEdit" value=1}
 {foreach from=$viewCustomData item=customValues key=customGroupId}
-    {foreach from=$customValues item=cd_edit key=cvID}
-	<table class="no-border">
-	    {assign var='index' value=$groupId|cat:"_$cvID"}
-	    {if $editOwnCustomData or ($showEdit and $editCustomData and $groupId)}	
-		<tr>
-		    <td>
-			<a href="{crmURL p="civicrm/contact/view/cd/edit" q="tableId=`$contactId`&cid=`$contactId`&groupId=`$groupId`&action=update&reset=1"}" class="button" style="margin-left: 6px;"><span><div class="icon edit-icon"></div>{ts 1=$cd_edit.title}Edit %1{/ts}</span></a><br/><br/>
-		    </td>
-		</tr>      
-	    {/if}
-	    {assign var="showEdit" value=0}
-	    <tr id="statusmessg_{$index}" class="hiddenElement">
-		<td><span class="success-status"></span></td>
-	    </tr>	    
-	    <tr>
-		<td id="{$cd_edit.name}_{$index}" class="section-shown form-item">
-		    <div class="crm-accordion-wrapper crm-accordion_title-accordion {if $cd_edit.collapse_display eq 0 }crm-accordion-open{else}crm-accordion-closed{/if}">
-             <div class="crm-accordion-header">
-              <div class="icon crm-accordion-pointer"></div> 
-		      {$cd_edit.title}
-             </div>
-            <div class="crm-accordion-body">			   
-	        {if $groupId and $cvID and $editCustomData}
-	        <div class="crm-submit-buttons">
-			<a href="javascript:showDelete( {$cvID}, '{$cd_edit.name}_{$index}', {$customGroupId}, {$contactId} );" class="button delete-button" title="{ts 1=$cd_edit.title}Delete this %1 record{/ts}">
-			 <span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span>
+  {foreach from=$customValues item=cd_edit key=cvID}
+    <table class="no-border">
+      {assign var='index' value=$groupId|cat:"_$cvID"}
+      {if $editOwnCustomData or ($showEdit and $editCustomData and $groupId)}
+        <tr>
+          <td>
+            <a href="{crmURL p="civicrm/contact/view/cd/edit" q="tableId=`$contactId`&cid=`$contactId`&groupID=`$groupId`&action=update&reset=1"}" class="button" style="margin-left: 6px;"><span><div class="icon edit-icon"></div>{ts 1=$cd_edit.title}Edit %1{/ts}</span></a><br/><br/>
+          </td>
+        </tr>
+      {/if}
+      {assign var="showEdit" value=0}
+      <tr id="statusmessg_{$index}" class="hiddenElement">
+        <td><span class="success-status"></span></td>
+      </tr>
+      <tr>
+        <td id="{$cd_edit.name}_{$index}" class="section-shown form-item">
+        <div class="crm-accordion-wrapper crm-accordion_title-accordion {if $cd_edit.collapse_display eq 0 or $skipTitle}crm-accordion-open{else}crm-accordion-closed{/if}">
+        {if !$skipTitle}
+          <div class="crm-accordion-header">
+          <div class="icon crm-accordion-pointer"></div>
+            {$cd_edit.title}
+          </div>
+        {/if}
+        <div class="crm-accordion-body">
+        {if $groupId and $cvID and $editCustomData}
+          <div class="crm-submit-buttons">
+            <a href="javascript:showDelete( {$cvID}, '{$cd_edit.name}_{$index}', {$customGroupId}, {$contactId} );" class="button delete-button" title="{ts 1=$cd_edit.title}Delete this %1 record{/ts}">
+       <span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span>
             </a>
-            </div>
+          </div>
+        {/if}
+        {foreach from=$cd_edit.fields item=element key=field_id}
+         <table class="crm-info-panel">
+          <tr>
+            {if $element.options_per_line != 0}
+              <td class="label">{$element.field_title}</td>
+              <td class="html-adjust">
+              {* sort by fails for option per line. Added a variable to iterate through the element array*}
+              {foreach from=$element.field_value item=val}
+                {$val}<br/>
+              {/foreach}
+              </td>
+            {else}
+              <td class="label">{$element.field_title}</td>
+              {if $element.field_type == 'File'}
+                {if $element.field_value.displayURL}
+                  <td class="html-adjust"><a href="javascript:imagePopUp('{$element.field_value.imageURL}')" ><img src="{$element.field_value.displayURL}" height = "100" width="100"></a></td>
+                {else}
+                  <td class="html-adjust"><a href="{$element.field_value.fileURL}">{$element.field_value.fileName}</a></td>
+                {/if}
+              {else}
+                {if $element.field_data_type == 'Money'}
+                  {if $element.field_type == 'Text'}
+                    <td class="html-adjust">{$element.field_value|crmMoney}</td>
+                  {else}
+                    <td class="html-adjust">{$element.field_value}</td>
+                  {/if}
+                {else}
+                  <td class="html-adjust">
+                    {if $element.contact_ref_id}
+                      <a href='/civicrm/contact/view?reset=1&cid={$element.contact_ref_id}'>
+                  {/if}
+                  {$element.field_value}
+                  {if $element.contact_ref_id}
+                    </a>
+                  {/if}
+                  </td>
+                {/if}
+              {/if}
             {/if}
-			{foreach from=$cd_edit.fields item=element key=field_id}
-			    <table class="crm-info-panel">
-				<tr>
-				    {if $element.options_per_line != 0}
-					<td class="label">{$element.field_title}</td>
-					<td class="html-adjust">
-					    {* sort by fails for option per line. Added a variable to iterate through the element array*}
-					    {foreach from=$element.field_value item=val}
-						{$val}<br/>
-					    {/foreach}
-					</td>
-				    {else}
-					<td class="label">{$element.field_title}</td>
-					{if $element.field_type == 'File'}
-					    {if $element.field_value.displayURL}
-						<td class="html-adjust"><a href="javascript:imagePopUp('{$element.field_value.imageURL}')" ><img src="{$element.field_value.displayURL}" height = "100" width="100"></a></td>
-					    {else}
-						<td class="html-adjust"><a href="{$element.field_value.fileURL}">{$element.field_value.fileName}</a></td>
-					    {/if}
-					{else}
-					    <td class="html-adjust">
-                        {if $element.contact_ref_id}
-                            <a href='/civicrm/contact/view?reset=1&cid={$element.contact_ref_id}'>
-                        {/if}
-                        {$element.field_value}
-                        {if $element.contact_ref_id}
-                            </a>
-                        {/if}
-                        </td>
-					{/if}
-				    {/if}
-				</tr>
-			    </table>
-			{/foreach}
-			</div>
-			<div class="clear"></div>
-		    </div>
-		  </div>
-		</td>
-	    </tr>
-	</table>
-
-    {/foreach}
+          </tr>
+         </table>
+        {/foreach}
+      </div> <!-- end of body -->
+      <div class="clear"></div>
+     </div> <!-- end of main accordian -->
+     </td>
+    </tr>
+  </table>
+  {/foreach}
 {/foreach}
-    {literal}
-	<script type="text/javascript">
-	cj(function() {
-        cj().crmaccordions(); 
-        });
-	</script>
-    {/literal}
+  {literal}
+  <script type="text/javascript">
+  cj(function() {
+    cj().crmaccordions();
+  });
+  </script>
+  {/literal}
 {*currently delete is available only for tab custom data*}
 {if $groupId}
 <script type="text/javascript">
@@ -121,15 +129,15 @@
         var postUrl = {/literal}"{crmURL p='civicrm/ajax/customvalue' h=0 }"{literal};
         cj.ajax({
           type: "POST",
-          data:  "valueID=" + valueID + "&groupID=" + groupID +"&contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/customvalue'}{literal}",    
+          data:  "valueID=" + valueID + "&groupID=" + groupID +"&contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/customvalue'}{literal}",
           url: postUrl,
           success: function(html){
               cj( '#' + elementID ).hide( );
               var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
               var successMsg = '{/literal}{ts escape="js"}The selected record has been deleted.{/ts}{literal} &nbsp;&nbsp;<a href="javascript:hideStatus( ' + valueID + ',' + groupID + ');"><img title="{/literal}{ts}close{/ts}{literal}" src="' +resourceBase+'i/close.png"/></a>';
               cj( 'tr#statusmessg_'  + groupID + '_' + valueID ).show( ).children().find('span').html( successMsg );
-			  var element = cj( '.ui-tabs-nav #tab_custom_' + groupID + ' a' );
-			  cj(element).html(cj(element).attr('title') + ' ('+ html+') ');
+        var element = cj( '.ui-tabs-nav #tab_custom_' + groupID + ' a' );
+        cj(element).html(cj(element).attr('title') + ' ('+ html+') ');
           }
         });
     }

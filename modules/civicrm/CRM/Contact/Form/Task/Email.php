@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,104 +28,96 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Contact/Form/Task.php';
-require_once 'CRM/Contact/Form/Task/EmailCommon.php';
-require_once 'CRM/Core/Menu.php';
-require_once 'CRM/Core/BAO/CustomGroup.php';
-require_once 'CRM/Contact/BAO/Contact.php';
 /**
  * This class provides the functionality to email a group of
- * contacts. 
+ * contacts.
  */
 class CRM_Contact_Form_Task_Email extends CRM_Contact_Form_Task {
 
-    /**
-     * Are we operating in "single mode", i.e. sending email to one
-     * specific contact?
-     *
-     * @var boolean
-     */
-    public $_single = false;
+  /**
+   * Are we operating in "single mode", i.e. sending email to one
+   * specific contact?
+   *
+   * @var boolean
+   */
+  public $_single = FALSE;
 
-    /**
-     * Are we operating in "single mode", i.e. sending email to one
-     * specific contact?
-     *
-     * @var boolean
-     */
-    public $_noEmails = false;
+  /**
+   * Are we operating in "single mode", i.e. sending email to one
+   * specific contact?
+   *
+   * @var boolean
+   */
+  public $_noEmails = FALSE;
 
-    /**
-     * all the existing templates in the system
-     *
-     * @var array
-     */
-    public $_templates = null;
+  /**
+   * all the existing templates in the system
+   *
+   * @var array
+   */
+  public $_templates = NULL;
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    
-    function preProcess( ) {
-        // store case id if present
-        $this->_caseId  = CRM_Utils_Request::retrieve( 'caseid', 'Positive', $this, false );
-        $this->_context = CRM_Utils_Request::retrieve( 'context', 'String', $this );
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    // store case id if present
+    $this->_caseId = CRM_Utils_Request::retrieve('caseid', 'Positive', $this, FALSE);
+    $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this);
 
-        $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false );
-        if ( $cid ) {
-            require_once 'CRM/Contact/Page/View.php';
-            CRM_Contact_Page_View::setTitle( $cid );
-        }
-
-        CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress( $this );
-
-        if ( !$cid && $this->_context != 'standalone' ) {
-            parent::preProcess( );
-        }
-        
-        //early prevent, CRM-6209
-        if ( count( $this->_contactIds ) > CRM_Contact_Form_Task_EmailCommon::MAX_EMAILS_KILL_SWITCH ) {
-            CRM_Core_Error::statusBounce( ts( 'Please do not use this task to send a lot of emails (greater than %1). We recommend using CiviMail instead.', array( 1 => CRM_Contact_Form_Task_EmailCommon::MAX_EMAILS_KILL_SWITCH ) ) );
-        }
-        
-        $this->assign( 'single', $this->_single );
-        require_once 'CRM/Core/Permission.php';
-        if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
-            $this->assign( 'isAdmin', 1 );
-        }
-    }
-    
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    public function buildQuickForm()
-    {
-        //enable form element
-        $this->assign( 'suppressForm', false );
-        $this->assign( 'emailTask', true );
-         
-        CRM_Contact_Form_Task_EmailCommon::buildQuickForm( $this );
+    $cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this, FALSE);
+    if ($cid) {
+      CRM_Contact_Page_View::setTitle($cid);
     }
 
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() {
-        CRM_Contact_Form_Task_EmailCommon::postProcess( $this );
+    CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
+
+    if (!$cid && $this->_context != 'standalone') {
+      parent::preProcess();
     }
 
+    //early prevent, CRM-6209
+    if (count($this->_contactIds) > CRM_Contact_Form_Task_EmailCommon::MAX_EMAILS_KILL_SWITCH) {
+      CRM_Core_Error::statusBounce(ts('Please do not use this task to send a lot of emails (greater than %1). We recommend using CiviMail instead.', array(1 => CRM_Contact_Form_Task_EmailCommon::MAX_EMAILS_KILL_SWITCH)));
+    }
+
+    $this->assign('single', $this->_single);
+    if (CRM_Core_Permission::check('administer CiviCRM')) {
+      $this->assign('isAdmin', 1);
+    }
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  public function buildQuickForm() {
+    //enable form element
+    $this->assign('suppressForm', FALSE);
+    $this->assign('emailTask', TRUE);
+
+    CRM_Contact_Form_Task_EmailCommon::buildQuickForm($this);
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    CRM_Contact_Form_Task_EmailCommon::postProcess($this);
+  }
 }
+

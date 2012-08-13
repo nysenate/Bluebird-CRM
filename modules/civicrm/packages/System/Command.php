@@ -184,7 +184,7 @@ class System_Command {
 
             // see if we still have no shell
             if (empty($this->options['SHELL'])) {
-            	$this->_initError =& PEAR::raiseError(null, SYSTEM_COMMAND_NO_SHELL, null, E_USER_WARNING, null, 'System_Command_Error', true);
+            	$this->_initError = PEAR::raiseError(null, SYSTEM_COMMAND_NO_SHELL, null, E_USER_WARNING, null, 'System_Command_Error', true);
                 return;
             }
         }
@@ -192,7 +192,7 @@ class System_Command {
         // Caputre a temporary directory for capturing stderr from commands
         $this->tmpDir = System::tmpdir();
         if (!System::mkDir("-p {$this->tmpDir}")) {
-            $this->_initError =& PEAR::raiseError(null, SYSTEM_COMMAND_TMPDIR_ERROR, null, E_USER_WARNING, null, 'System_Command_Error', true);
+            $this->_initError = PEAR::raiseError(null, SYSTEM_COMMAND_TMPDIR_ERROR, null, E_USER_WARNING, null, 'System_Command_Error', true);
             return;
         }
     }

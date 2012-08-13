@@ -33,7 +33,6 @@ function contact_get_expectedresult(){
   'values' => array( 
       '1' => array( 
           'contact_id' => '1',
-          'contact_is_deleted' => 0,
           'civicrm_value_testgetwithcustom_2_id' => '1',
           'custom_2' => 'custom string',
           'id' => '1',

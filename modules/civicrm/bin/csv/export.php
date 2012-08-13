@@ -1,8 +1,7 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright Tech To The People http:tttp.eu (c) 2011                 |
  +--------------------------------------------------------------------+
@@ -24,57 +23,18 @@
  +--------------------------------------------------------------------+
 */
 
-// call this script from civicrm_root
-require_once ('bin/cli.php');
-require_once 'api/api.php';
-require_once 'api/v3/utils.php';
 
-class EntityExporter extends civicrm_cli {
+/** 
+ *
+ * Export records in a csv format to standard out. Optionally
+ * limit records by field/value pairs passed as arguments.
+ *
+ * Usage:
+ * php bin/csv/export.php -e <entity> [ --field=value --field=value ] [ -s site.org ]
+ * e.g.: php bin/csv/export.php -e Contact --email=jamie@progressivetech.org
+ *
+ **/
+require_once (dirname(__DIR__) . '/cli.class.php');
 
-    function __construct() {
-       parent::__construct ();
-
-       $this->separator = ",";
-       $this->params = array ('version' => 3);
-       if (sizeof($this->args >= 1)) {
-         $this->entity = $this->args [0];
-         // first one is an Entity ?
-         $dao = _civicrm_api3_get_DAO ($this->entity);
-
-         if (!$dao) 
-           die ("\nusage: cd /your/civicrm_root;php bin/csv/export.php -u{username} -p{password} -s{site (or default)} {entity} and optionnaly field=value\n");
-       }
-
-       $result = civicrm_api ($this->entity , 'getfields', array ('version' => 3) );
-       if ($result['is_error']) 
-          die ("\n'$this->entity' isn't a recognized Entity\n");
-       $this->columns =   array_keys ($result['values']);
-       
-       $argv = sizeof($this->args);
-       for ($i =1; $i<$argv;$i++) {
-           $t=split ('=',$this->args[$i]);
-           if (sizeof ($t) == 2) {
-             $this->params [$t[0]]= $t[1];
-           } else {
-             echo "\nWARNING: invalid param '".$this->args[$i]."' (expected field=value)\n";
-           }
-       }
-    }
-
-  function run() {
-    $out = fopen("php://output", 'w');
-    fputcsv($out, $this->columns, $this->separator, '"');
-
-    $this->row = 1;
-    $result = civicrm_api ($this->entity,'Get',$this->params);
-    foreach ($result['values'] as $row) {
-      fputcsv($out, $row, $this->separator, '"');
-    }
-    fclose($out);
-  }
-}
-
-$entityExporter = new EntityExporter ();
+$entityExporter = new civicrm_cli_csv_exporter();
 $entityExporter->run();
-echo "\n";
-?>

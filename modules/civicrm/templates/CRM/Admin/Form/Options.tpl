@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@
            <tr class="crm-admin-options-form-block-custom_search_path">
              <td class="label">{ts}Custom Search Path{/ts}</td>
              <td>{$form.label.html}<br />
-                <span class="description">{ts}Enter the "class path" for this custom search here.{/ts} {docURL page="Custom Search Components"}
+                <span class="description">{ts}Enter the "class path" for this custom search here.{/ts} {docURL page="developer/the-extensions-framework/custom-searches"}
              </td>
            </tr>
         {elseif $gName eq 'from_email_address'} 
@@ -84,7 +84,7 @@
                    <span class="description">{ts}Matched values are replaced with this prefix plus a unique code. EX: If replacement prefix for &quot;Vancouver&quot; is <em>city_</em>, occurrences will be replaced with <em>city_39121</em>.{/ts}</span>
                  </td>
               </tr>
-            {else}
+            {elseif $form.value.html}
               <tr class="crm-admin-options-form-block-value">
                 <td class="label">{$form.value.label}</td>
                 <td>{$form.value.html}<br />

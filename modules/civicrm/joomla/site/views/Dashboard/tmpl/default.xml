@@ -13,9 +13,13 @@
     <authorUrl>civicrm.org</authorUrl>
     <version>2.2</version>
     <description>CiviCRM Dashboard</description>
-    <params>
-      <param name="task" type="hidden" default="civicrm/user" />
-      <param name="reset" type="hidden" size="5" default="1"  />
-    </params>
+    <config>
+    <fields name="params">
+    <fieldset name="advanced"> 
+      <field name="task" type="hidden" default="civicrm/user" />
+      <field name="reset" type="hidden" size="5" default="1"  />
+    </fieldset>
+    </fields>
+    </config>
   </state>
 </metadata>

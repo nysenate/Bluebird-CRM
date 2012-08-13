@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,121 +28,114 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Event/Form/Task.php';
 
 /**
  * This class provides the functionality to save a search
  * Saved Searches are used for saving frequently used queries
  * regarding the event participations
  */
-class CRM_Event_Form_Task_SaveSearch extends CRM_Event_Form_Task 
-{
-    /**
-     * saved search id if any
-     *
-     * @var int
-     */
-    protected $_id;
+class CRM_Event_Form_Task_SaveSearch extends CRM_Event_Form_Task {
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess()
-    {
-        parent::preProcess( );        
-        $this->_id  = null;
+  /**
+   * saved search id if any
+   *
+   * @var int
+   */
+  protected $_id;
+
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    parent::preProcess();
+    $this->_id = NULL;
+  }
+
+  /**
+   * Build the form - it consists of
+   *    - displaying the QILL (query in local language)
+   *    - displaying elements for saving the search
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    CRM_Utils_System::setTitle(ts('Smart Group'));
+    // get the qill
+    $query = new CRM_Event_BAO_Query($this->get('formValues'));
+    $qill = $query->qill();
+
+    // need to save qill for the smarty template
+    $this->assign('qill', $qill);
+
+    // the name and description are actually stored with the group and not the saved search
+    $this->add('text', 'title', ts('Name'),
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Group', 'title'), TRUE
+    );
+
+    $this->addElement('text', 'description', ts('Description'),
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Group', 'description')
+    );
+
+    // get the group id for the saved search
+    $groupId = NULL;
+    if (isset($this->_id)) {
+      $params = array('saved_search_id' => $this->_id);
+      CRM_Contact_BAO_Group::retrieve($params, $values);
+      $groupId = $values['id'];
+
+      $this->addDefaultButtons(ts('Update Smart Group'));
+    }
+    else {
+      $this->addDefaultButtons(ts('Save Smart Group'));
     }
 
-    /**
-     * Build the form - it consists of
-     *    - displaying the QILL (query in local language)
-     *    - displaying elements for saving the search
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm()
-    {
-        CRM_Utils_System::setTitle( ts('Smart Group') );
-        require_once "CRM/Event/BAO/Query.php";
-        // get the qill 
-        $query = new CRM_Event_BAO_Query( $this->get( 'formValues' ) );
-        $qill = $query->qill( );
-        
-        // need to save qill for the smarty template
-        $this->assign('qill', $qill);
-        
-        // the name and description are actually stored with the group and not the saved search
-        $this->add('text', 'title', ts('Name'),
-                   CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Group', 'title'), true);
+    $this->addRule('title', ts('Name already exists in Database.'),
+      'objectExists', array('CRM_Contact_DAO_Group', $groupId, 'title')
+    );
+  }
 
-        $this->addElement('text', 'description', ts('Description'),
-                          CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Group', 'description'));
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return void
+   */
+  public function postProcess() {
+    // saved search form values
+    $formValues = $this->controller->exportValues();
 
-        // get the group id for the saved search
-        $groupId = null;
-        if ( isset( $this->_id ) ) { 
-            $params = array( 'saved_search_id' => $this->_id );
-            require_once "CRM/Contact/BAO/Group.php";
-            CRM_Contact_BAO_Group::retrieve( $params, $values );
-            $groupId = $values['id'];
+    $session = CRM_Core_Session::singleton();
 
-            $this->addDefaultButtons( ts('Update Smart Group') );
-        } else {
-            $this->addDefaultButtons( ts('Save Smart Group') );
-        }
+    //save the search
+    $savedSearch = new CRM_Contact_BAO_SavedSearch();
+    $savedSearch->id = $this->_id;
+    $savedSearch->form_values = serialize($this->get('formValues'));
+    $savedSearch->mapping_id = $mappingId;
+    $savedSearch->save();
+    $this->set('ssID', $savedSearch->id);
+    CRM_Core_Session::setStatus(ts('Your smart group has been saved as \'%1\'.', array(1 => $formValues['title'])));
 
-        $this->addRule( 'title', ts('Name already exists in Database.'),
-                        'objectExists', array( 'CRM_Contact_DAO_Group', $groupId, 'title' ) );
+    // also create a group that is associated with this saved search only if new saved search
+    $params = array();
+    $params['title'] = $formValues['title'];
+    $params['description'] = $formValues['description'];
+    $params['visibility'] = 'User and User Admin Only';
+    $params['saved_search_id'] = $savedSearch->id;
+    $params['is_active'] = 1;
 
+    if ($this->_id) {
+      $params['id'] = CRM_Contact_BAO_SavedSearch::getName($this->_id, 'id');
     }
-
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return void
-     */
-    public function postProcess()
-    {
-        // saved search form values
-        $formValues = $this->controller->exportValues();
-
-        $session = CRM_Core_Session::singleton();
- 
-        //save the search
-        require_once "CRM/Contact/BAO/SavedSearch.php";
-        $savedSearch = new CRM_Contact_BAO_SavedSearch();
-        $savedSearch->id          = $this->_id;
-        $savedSearch->form_values = serialize($this->get( 'formValues' ));
-        $savedSearch->mapping_id  = $mappingId;
-        $savedSearch->save();
-        $this->set('ssID', $savedSearch->id);
-        CRM_Core_Session::setStatus( ts('Your smart group has been saved as \'%1\'.', array(1 => $formValues['title'])) );
-
-        // also create a group that is associated with this saved search only if new saved search
-        $params = array( );
-        $params['title'      ]     = $formValues['title'];
-        $params['description']     = $formValues['description'];
-        $params['visibility' ]     = 'User and User Admin Only';
-        $params['saved_search_id'] = $savedSearch->id;
-        $params['is_active']       = 1;
-        
-        if ( $this->_id ) {
-            $params['id'] = CRM_Contact_BAO_SavedSearch::getName( $this->_id, 'id' );
-        }
-        require_once "CRM/Contact/BAO/Group.php";
-        $group =& CRM_Contact_BAO_Group::create( $params );
-
-    }
+    $group = CRM_Contact_BAO_Group::create($params);
+  }
 }
-
 

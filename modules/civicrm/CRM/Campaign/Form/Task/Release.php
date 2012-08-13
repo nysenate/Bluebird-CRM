@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,14 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Campaign/Form/Task.php';
-require_once 'CRM/Campaign/BAO/Survey.php';
-require_once 'CRM/Core/PseudoConstant.php';
 
 /**
  * This class provides the functionality to add contacts for
@@ -44,129 +39,131 @@ require_once 'CRM/Core/PseudoConstant.php';
  */
 class CRM_Campaign_Form_Task_Release extends CRM_Campaign_Form_Task {
 
-    /**
-     * survet id
-     *
-     * @var int
-     */
-    protected $_surveyId;
-    
-    /**
-     * number of voters
-     *
-     * @var int
-     */
-    protected $_interviewerId;
+  /**
+   * survet id
+   *
+   * @var int
+   */
+  protected $_surveyId;
 
-    /**
-     * survey details
-     *
-     * @var object
-     */
-    protected $_surveyDetails;
-    
-    protected $_surveyActivities;
-    
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        $this->_interviewToRelease = $this->get( 'interviewToRelease' );
-        if ( $this->_interviewToRelease ) {
-            //user came from interview form.
-            foreach ( array( 'surveyId', 'contactIds', 'interviewerId' ) as $fld ) {
-                $this->{"_$fld"} = $this->get( $fld ); 
-            }
+  /**
+   * number of voters
+   *
+   * @var int
+   */
+  protected $_interviewerId;
 
-            if ( !empty($this->_contactIds) ) {
-                $this->assign( 'totalSelectedContacts', count($this->_contactIds) );
-            }
-        } else {
-            parent::preProcess( );
-            //get the survey id from user submitted values.
-            $this->_surveyId      = CRM_Utils_Array::value( 'campaign_survey_id',    $this->get( 'formValues' ) );
-            $this->_interviewerId = CRM_Utils_Array::value( 'survey_interviewer_id', $this->get( 'formValues' ) );
-        }
-        
-        if ( !$this->_surveyId ) {
-            CRM_Core_Error::statusBounce( ts( "Please search with 'Survey', to apply this action.") );
-        }
-        if ( !$this->_interviewerId ) {
-            CRM_Core_Error::statusBounce( ts( 'Missing Interviewer contact.' ) );
-        }
-        if ( !is_array( $this->_contactIds ) || empty( $this->_contactIds ) ) {
-            CRM_Core_Error::statusBounce( ts( 'Could not find respondents to release.') );
-        }
-        
-        $surveyDetails = array( );
-        $params        = array( 'id' => $this->_surveyId );
-        $this->_surveyDetails = CRM_Campaign_BAO_Survey::retrieve( $params, $surveyDetails );
-        
-        require_once 'CRM/Core/PseudoConstant.php';
-        $activityStatus = CRM_Core_PseudoConstant::activityStatus( 'name' );
-        $statusIds = array( );
-        foreach ( array( 'Scheduled' ) as $name ) {
-            if ( $statusId = array_search( $name, $activityStatus ) ) $statusIds[] = $statusId; 
-        }
-        //fetch the target survey activities.
-        $this->_surveyActivities = CRM_Campaign_BAO_Survey::voterActivityDetails( $this->_surveyId, 
-                                                                                  $this->_contactIds,
-                                                                                  $this->_interviewerId,
-                                                                                  $statusIds );
-        if ( count( $this->_surveyActivities ) < 1 ) {
-            CRM_Core_Error::statusBounce( ts( 'We could not found respondent for this survey to release.') );
-        }
-        
-        $this->assign( 'surveyTitle', $surveyDetails['title'] );
-        
-        //append breadcrumb to survey dashboard.
-        require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
-            $url = CRM_Utils_System::url( 'civicrm/campaign', 'reset=1&subPage=survey' );
-            CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Survey(s)'), 'url' => $url ) ) );
-        }
-        
-        //set the title.
-        CRM_Utils_System::setTitle( ts( 'Release Respondents' ) );
+  /**
+   * survey details
+   *
+   * @var object
+   */
+  protected $_surveyDetails;
+
+  protected $_surveyActivities;
+
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    $this->_interviewToRelease = $this->get('interviewToRelease');
+    if ($this->_interviewToRelease) {
+      //user came from interview form.
+      foreach (array(
+        'surveyId', 'contactIds', 'interviewerId') as $fld) {
+        $this->{"_$fld"} = $this->get($fld);
+      }
+
+      if (!empty($this->_contactIds)) {
+        $this->assign('totalSelectedContacts', count($this->_contactIds));
+      }
+    }
+    else {
+      parent::preProcess();
+      //get the survey id from user submitted values.
+      $this->_surveyId = CRM_Utils_Array::value('campaign_survey_id', $this->get('formValues'));
+      $this->_interviewerId = CRM_Utils_Array::value('survey_interviewer_id', $this->get('formValues'));
     }
 
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( ) {
-       
-        $this->addDefaultButtons( ts('Release Respondents'), 'done' );
+    if (!$this->_surveyId) {
+      CRM_Core_Error::statusBounce(ts("Please search with 'Survey', to apply this action."));
     }
-    
-    function postProcess( ) 
-    {
-        $deleteActivityIds = array( );
-        foreach ( $this->_contactIds as $cid ) {
-            if ( array_key_exists( $cid, $this->_surveyActivities ) ) {
-                $deleteActivityIds[] = $this->_surveyActivities[$cid]['activity_id'];
-            }
-        }
-        
-        //set survey activites as deleted = true.
-        if ( !empty( $deleteActivityIds ) ) {
-            $query = 'UPDATE civicrm_activity SET is_deleted = 1 WHERE id IN ( '. implode(', ',$deleteActivityIds ) .' )';
-            CRM_Core_DAO::executeQuery( $query );
-            
-            $status = array( ts("%1 respondent(s) have been released.", array( 1 => count( $deleteActivityIds ) ) ) );
-            if ( count( $this->_contactIds ) > count( $deleteActivityIds ) ) {
-                $status[] = ts("%1 respondents did not release.", 
-                               array( 1 => ( count( $this->_contactIds ) - count( $deleteActivityIds ) ) ) );  
-            }
-            CRM_Core_Session::setStatus( implode('&nbsp;', $status) );
-        }
-        
+    if (!$this->_interviewerId) {
+      CRM_Core_Error::statusBounce(ts('Missing Interviewer contact.'));
     }
-    
+    if (!is_array($this->_contactIds) || empty($this->_contactIds)) {
+      CRM_Core_Error::statusBounce(ts('Could not find respondents to release.'));
+    }
+
+    $surveyDetails = array();
+    $params = array('id' => $this->_surveyId);
+    $this->_surveyDetails = CRM_Campaign_BAO_Survey::retrieve($params, $surveyDetails);
+
+    $activityStatus = CRM_Core_PseudoConstant::activityStatus('name');
+    $statusIds = array();
+    foreach (array(
+      'Scheduled') as $name) {
+      if ($statusId = array_search($name, $activityStatus)) {
+        $statusIds[] = $statusId;
+      }
+    }
+    //fetch the target survey activities.
+    $this->_surveyActivities = CRM_Campaign_BAO_Survey::voterActivityDetails($this->_surveyId,
+      $this->_contactIds,
+      $this->_interviewerId,
+      $statusIds
+    );
+    if (count($this->_surveyActivities) < 1) {
+      CRM_Core_Error::statusBounce(ts('We could not found respondent for this survey to release.'));
+    }
+
+    $this->assign('surveyTitle', $surveyDetails['title']);
+
+    //append breadcrumb to survey dashboard.
+    if (CRM_Campaign_BAO_Campaign::accessCampaign()) {
+      $url = CRM_Utils_System::url('civicrm/campaign', 'reset=1&subPage=survey');
+      CRM_Utils_System::appendBreadCrumb(array(array('title' => ts('Survey(s)'), 'url' => $url)));
+    }
+
+    //set the title.
+    CRM_Utils_System::setTitle(ts('Release Respondents'));
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+
+    $this->addDefaultButtons(ts('Release Respondents'), 'done');
+  }
+
+  function postProcess() {
+    $deleteActivityIds = array();
+    foreach ($this->_contactIds as $cid) {
+      if (array_key_exists($cid, $this->_surveyActivities)) {
+        $deleteActivityIds[] = $this->_surveyActivities[$cid]['activity_id'];
+      }
+    }
+
+    //set survey activites as deleted = true.
+    if (!empty($deleteActivityIds)) {
+      $query = 'UPDATE civicrm_activity SET is_deleted = 1 WHERE id IN ( ' . implode(', ', $deleteActivityIds) . ' )';
+      CRM_Core_DAO::executeQuery($query);
+
+      $status = array(ts("%1 respondent(s) have been released.", array(1 => count($deleteActivityIds))));
+      if (count($this->_contactIds) > count($deleteActivityIds)) {
+        $status[] = ts("%1 respondents did not release.",
+          array(1 => (count($this->_contactIds) - count($deleteActivityIds)))
+        );
+      }
+      CRM_Core_Session::setStatus(implode('&nbsp;', $status));
+    }
+  }
 }
+

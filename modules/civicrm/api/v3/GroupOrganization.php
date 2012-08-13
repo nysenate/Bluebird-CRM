@@ -1,9 +1,11 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,16 +33,14 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Group
  *
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * @version $Id: GroupContact.php 21624 2009-06-04 22:02:55Z mover $
  *
  */
 
-/**
- * Include utility functions
- */
-require_once 'api/v3/utils.php';
-require_once 'CRM/Contact/DAO/GroupOrganization.php';
+
+require_once 'CRM/Contact/BAO/GroupOrganization.php';
+
 /**
  * This API will give list of the groups for particular contact
  * Particualr status can be sent in params array
@@ -48,59 +48,62 @@ require_once 'CRM/Contact/DAO/GroupOrganization.php';
  * to fetch the records
  *
  * @param  array $params  name value pair of contact information
+ * {@getfields GroupOrganization_get}
+ * @example GroupOrganizationGet.php
  *
  * @return  array  list of groups, given contact subsribed to
  */
-function civicrm_api3_group_organization_get( $params )
-{
-    civicrm_api3_verify_one_mandatory($params);
-    return _civicrm_api3_basic_get('CRM_Contact_DAO_GroupOrganization', $params);
-
+function civicrm_api3_group_organization_get($params) {
+  return _civicrm_api3_basic_get('CRM_Contact_DAO_GroupOrganization', $params);
 }
 
 /**
+ * @example GroupOrganizationCreate.php
+ * {@getfields GroupOrganization_create}
  *
  * @param $params array
- * @return <type>
+ *
+ * @return array
+ *
  */
-function civicrm_api3_group_organization_create( $params )
-{
+function civicrm_api3_group_organization_create($params) {
 
+  $groupOrgBAO = CRM_Contact_BAO_GroupOrganization::add($params);
 
-    civicrm_api3_verify_mandatory($params,null,array('organization_id','group_id'));  
+  if (is_null($groupOrgBAO)) {
+    return civicrm_api3_create_error("group organization not created");
+  }
 
-    require_once 'CRM/Contact/BAO/GroupOrganization.php';
-    $groupOrgBAO = CRM_Contact_BAO_GroupOrganization::add( $params );
-
-    if (is_null($groupOrgBAO)){
-      return civicrm_api3_create_error("group organization not created");     
-    }
-
-    _civicrm_api3_object_to_array( $groupOrgBAO, $values );
-    return civicrm_api3_create_success( $values,$params, 'group_organization','get',$groupOrgBAO);
-
-
+  _civicrm_api3_object_to_array($groupOrgBAO, $values);
+  return civicrm_api3_create_success($values, $params, 'group_organization', 'get', $groupOrgBAO);
 }
 
+/*
+ * Adjust Metadata for Create action
+ * 
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_group_organization_create_spec(&$params) {
+  $params['organization_id']['api.required'] = 1;
+  $params['group_id']['api.required'] = 1;
+}
 
 /**
  * Deletes an existing Group Organization
  *
  * This API is used for deleting a Group Organization
  *
- * @param  array  $params  ID of the Group Organization to be deleted
+ * @param  array  $params  with 'id' = ID of the Group Organization to be deleted
  *
- * @return null if successfull, array with is_error = 1 otherwise
+ * @return array API Result
+ * {@getfields GroupOrganization_delete}
+ * @example GroupOrganizationDelete.php
  * @access public
  */
+function civicrm_api3_group_organization_delete($params) {
 
-function civicrm_api3_group_organization_delete( $params )
-{
-
-
-    civicrm_api3_verify_mandatory($params,null,array('id'));  
-    require_once 'CRM/Contact/BAO/GroupOrganization.php';
-    $result = CRM_Contact_BAO_GroupOrganization::delete( $params['id'] );
-    return $result ? civicrm_api3_create_success(  'Deleted Group Organization successfully'  ):civicrm_api3_create_error(  'Could not delete Group Organization'  );
-
+  $result = CRM_Contact_BAO_GroupOrganization::deleteGroupOrganization($params['id']);
+  return $result ? civicrm_api3_create_success('Deleted Group Organization successfully') : civicrm_api3_create_error('Could not delete Group Organization');
 }
+

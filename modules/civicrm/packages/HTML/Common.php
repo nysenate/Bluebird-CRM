@@ -137,6 +137,7 @@ class HTML_Common
     function _getAttrString($attributes)
     {
         $strAttr = '';
+
         if (is_array($attributes)) {
             $charset = HTML_Common::charset();
             foreach ($attributes as $key => $value) {
@@ -158,10 +159,11 @@ class HTML_Common
             $ret = array();
             foreach ($attributes as $key => $value) {
                 if (is_int($key)) {
-                    $ret[$value]=$value;
+                    $key = $value = strtolower($value);
                 } else {
+                    $key = strtolower($key);
+                }
                 $ret[$key] = $value;
-            }
             }
             return $ret;
 
@@ -174,12 +176,12 @@ class HTML_Common
                     $check = $regs[0][$counter];
                     $value = $regs[7][$counter];
                     if (trim($name) == trim($check)) {
-                        $arrAttr[trim($name)] = trim($name);
+                        $arrAttr[strtolower(trim($name))] = strtolower(trim($name));
                     } else {
                         if (substr($value, 0, 1) == "\"" || substr($value, 0, 1) == "'") {
-                            $arrAttr[trim($name)] = substr($value, 1, -1);
+                            $arrAttr[strtolower(trim($name))] = substr($value, 1, -1);
                         } else {
-                            $arrAttr[trim($name)] = trim($value);
+                            $arrAttr[strtolower(trim($name))] = trim($value);
                         }
                     }
                 }
@@ -199,7 +201,7 @@ class HTML_Common
      */
     function _getAttrKey($attr, $attributes)
     {
-        if (isset($attributes[$attr])) {
+        if (isset($attributes[strtolower($attr)])) {
             return true;
         } else {
             return null;
@@ -233,7 +235,7 @@ class HTML_Common
      */
     function _removeAttr($attr, &$attributes)
     {
-        $attr = $attr;
+        $attr = strtolower($attr);
         if (isset($attributes[$attr])) {
             unset($attributes[$attr]);
         }
@@ -249,7 +251,11 @@ class HTML_Common
      */
     function getAttribute($attr)
     {
-        return isset($this->_attributes[$attr]) ? $this->_attributes[$attr] : null;
+        $attr = strtolower($attr);
+        if (isset($this->_attributes[$attr])) {
+            return $this->_attributes[$attr];
+        }
+        return null;
     } //end func getAttribute
 
     /**
@@ -261,7 +267,7 @@ class HTML_Common
      */
     function setAttribute($name, $value = null)
     {
-        $name = $name;
+        $name = strtolower($name);
         if (is_null($value)) {
             $value = $name;
         }

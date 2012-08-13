@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
     static $_links = null;
     /**
      * static instance to hold the values that can
-     * be imported / apu
+     * be imported
      *
      * @var array
      * @static
@@ -66,7 +66,7 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
     static $_import = null;
     /**
      * static instance to hold the values that can
-     * be exported / apu
+     * be exported
      *
      * @var array
      * @static
@@ -129,6 +129,12 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      */
     public $permission;
     /**
+     * role required to be able to run this instance
+     *
+     * @var string
+     */
+    public $grouprole;
+    /**
      * Submitted form values for this report
      *
      * @var text
@@ -177,6 +183,11 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      */
     public $navigation_id;
     /**
+     *
+     * @var boolean
+     */
+    public $is_reserved;
+    /**
      * class constructor
      *
      * @access public
@@ -184,6 +195,7 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      */
     function __construct()
     {
+        $this->__table = 'civicrm_report_instance';
         parent::__construct();
     }
     /**
@@ -192,7 +204,7 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &links()
+    function links()
     {
         if (!(self::$_links)) {
             self::$_links = array(
@@ -208,7 +220,7 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &fields()
+    static function &fields()
     {
         if (!(self::$_fields)) {
             self::$_fields = array(
@@ -263,6 +275,13 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Permission') ,
                     'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
+                ) ,
+                'grouprole' => array(
+                    'name' => 'grouprole',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Grouprole') ,
+                    'maxlength' => 1024,
                     'size' => CRM_Utils_Type::HUGE,
                 ) ,
                 'form_values' => array(
@@ -321,6 +340,10 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
                     'export' => true,
                     'FKClassName' => 'CRM_Core_DAO_Navigation',
                 ) ,
+                'is_reserved' => array(
+                    'name' => 'is_reserved',
+                    'type' => CRM_Utils_Type::T_BOOLEAN,
+                ) ,
             );
         }
         return self::$_fields;
@@ -329,9 +352,10 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      * returns the names of this table
      *
      * @access public
+     * @static
      * @return string
      */
-    function getTableName()
+    static function getTableName()
     {
         return self::$_tableName;
     }
@@ -350,12 +374,13 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &import($prefix = false)
+    static function &import($prefix = false)
     {
         if (!(self::$_import)) {
             self::$_import = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('import', $field)) {
                     if ($prefix) {
@@ -373,12 +398,13 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &export($prefix = false)
+    static function &export($prefix = false)
     {
         if (!(self::$_export)) {
             self::$_export = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('export', $field)) {
                     if ($prefix) {

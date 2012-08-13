@@ -24,17 +24,17 @@
  +--------------------------------------------------------------------+
 *}
 {htxt id='id-used_for'}
-{ts}Profiles can be used in many different ways{/ts}:<br />
+{ts}Profiles can be used in many different ways (and a single profile can be used in multiple contexts){/ts}:<br />
     <ul class="left-alignment">
-    <li>{ts}You can collect additional information about a donor or event participant by including a profile in Online Contribution Pages and Event Registration forms.{/ts}</li> 
-    <li>{ts}Check <strong>Profile</strong> if you want it to use this profile for customized listings and view screens for the civicrm/profile path.{/ts}</li>
+    <li>{ts}You can collect additional information about a donor or event participant by including profiles directly in Online Contribution Pages and Event Registration forms. When using a profile in this manner you do not need to check any of the "Used For" checkboxes.{/ts}</li> 
+    <li>{ts}Check <strong>Standalone Form or Directory</strong> if you want it to use this profile for custom forms, or contact listing and view screens (from the civicrm/profile path).{/ts}</li>
     <li>{ts}Check <strong>Search Results</strong> to use this profile to display an alternate set of results columns for CiviCRM Basic and Advanced Search.{/ts}</li>
-    {if $config->userFramework EQ 'Drupal'}
+    {if $config->userSystem->supports_form_extensions EQ '1'}
         <li>{ts}Check <strong>User Registration</strong> if you want this Profile to be included in the New Account registration form.{/ts}</li>
         <li>{ts}Check <strong>View/Edit User Account</strong> to include it in the view and edit screens for existing user accounts.{/ts}</li>
     {/if}
     </ul>
-    {docURL page="Profiles Admin"}
+    {docURL page="user/the-user-interface/profiles"}
 {/htxt}
 
 {htxt id='id-profile_weight'}
@@ -72,26 +72,26 @@
 {capture assign="miscURL"}{crmURL p="civicrm/admin/setting/misc" q="reset=1"}{/capture}
 {htxt id='id-add_captcha'}
 {ts}When reCAPTCHA is included in an add / edit profile form, users are required to read an image with letters and numbers and enter the value in a field. This helps prevent abuse by automated scripts.{/ts}
-<p>{ts 1="http://recaptcha.net/api/getkey" 2=$miscURL}To use reCAPTCHA you must get an API key from <a href="%1" target="_blank">reCAPTCHA.net</a>, and enter the key information in <a href="%2">Administer CiviCRM &raquo; Global Settings &raquo; Miscellaneous Settings</a>.{/ts}</p>
+<p>{ts 1="http://recaptcha.net/api/getkey" 2=$miscURL}To use reCAPTCHA you must get an API key from <a href="%1" target="_blank">reCAPTCHA.net</a>, and enter the key information in <a href="%2">Administer CiviCRM &raquo; System Settings &raquo; Undelete, Logging and ReCAPTCHA</a>.{/ts}</p>
 <p><strong>{ts}Do not enable this feature for stand-alone profile forms. reCAPTCHA requires dynamic page generation. Submitting a stand-alone form with reCAPTCHA included will always result in a reCAPTCHA validation error.{/ts}</strong></p>
-{if $config->userFramework EQ 'Drupal'} 
+{if $config->userSystem->supports_form_extensions EQ '1'} 
     <p><strong>{ts}reCAPTCHA is also not available when a profile is used inside the User Registration and My Account screens.{/ts}</strong></p>
 {/if}
 {/htxt}
 
 {htxt id='id-is_cms_user'}
 {ts 1=`$config->userFramework`}If you are using this profile as a contact signup form, using it in an online contribution page OR an event registration page, anonymous users will be given the option to create a %1 User Account as part of completing the form.{/ts}
-{if $config->userFramework EQ 'Drupal'}
+{if $config->userSystem->is_drupal EQ '1'}
     {ts}This feature requires your Drupal User Settings to allow 'vistors to create accounts' (with or without administrator approval). The 'Email Verification' option may be enabled or disabled.{/ts}
     {ts}If the 'Email Verification' option is enabled, users will receive a welcome email from Drupal with login information. Otherwise they will select a Password inline, and if administrator approval is not required they will be automatically logged in as soon as the transaction is completed.{/ts}
 {elseif $config->userFramework EQ 'Joomla'}
     {ts}This feature requires the 'Allow User Registration' setting to be 'Yes' in Joomla Global Configuration >> System Settings.{/ts}
 {/if}
-{ts}In addition, you must include a Primary Email Address field in the profile.{/ts} {docURL page="How to Create Profiles"}
+ {ts}In addition, you must include a Primary Email Address field in the profile.{/ts}
 {/htxt}
 
 {htxt id='id-is_update_dupe'}
-<p>{ts}If you are using the profile as a contact signup and editing form - this option controls what happens if the data matches an existing contact record. Using this option user can update the matching record or create a duplicate record or otherwise he will get a 'duplicate record' warning, and their input will not be saved. Contact matching is based on your configured 'Strict' rule for identifying duplicate contacts.{/ts} {docURL page="Find and Merge Duplicate Contacts"}</p>
+<p>{ts}If you are using the profile as a contact signup and editing form - this option controls what happens if the data matches an existing contact record. Using this option user can update the matching record or create a duplicate record or otherwise he will get a 'duplicate record' warning, and their input will not be saved. Contact matching is based on your configured 'Strict' rule for identifying duplicate contacts.{/ts} {docURL page="user/common-workflows/deduping-and-merging"}</p>
 <p>{ts}This setting is ignored if the profile is embedded in an online contribution, membership signup or event registration form. In this case a contact match always results in the transaction being linked to the matching contact.</p>{/ts}
 <p>{ts}In all cases, the check for an existing matching contact uses the default "Individual Strict Duplicate Matching Rule" (match on email address). If you are concerned with existing contact data being over-written by anonymous visitors, you can modify this rule to make matches less likely (or even impossible).
 For example, if you NEVER want anonymous input to match (i.e. always create a new contact record) - edit that rule and set the 'weight threshold' higher than 10. You will then need to run Find Duplicates periodically using a different rule, and merge any duplicate records with their associated memberships, contributions, etc.{/ts}</p>

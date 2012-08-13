@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -153,6 +153,9 @@
 <div id="view-related-cases">
      <div id="related-cases-content"></div>
 </div>
+
+<div class="clear"></div>
+{include file="CRM/Case/Page/CustomDataView.tpl"}            
 
 <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-case-roles-block">
  <div class="crm-accordion-header">
@@ -398,7 +401,7 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
 			} else {
 			   html = '<img src="' +resourceBase+'i/edit.png" title="edit case role" onclick="createRelationship( ' + relType +','+ data.cid +', ' + data.rel_id +', ' + rowNumber +', \''+ relTypeName +'\' );">&nbsp;&nbsp;';
 			   var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			   var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '" }The relationship type definition for the %1 case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			   var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '" }The relationship type definition for the %1 case role is not valid for the client and / or staff contact types. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   //display error message.
 			   var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="ui-icon ui-icon-close" style="float:left"></div>' + '</a>';
@@ -640,7 +643,7 @@ function addRole() {
 							} else {
 							     var relTypeName = cj("#role_type :selected").text();  
 							     var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			  				     var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '"  }The relationship type definition for the %1 case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			  				     var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '"  }The relationship type definition for the %1 case role is not valid for the client and / or staff contact types. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   				     //display error message.
 			   				     var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="ui-icon ui-icon-close" style="float:left"></div>' + '</a>';
@@ -664,6 +667,7 @@ function addRole() {
 </script>
 {/literal}
 {include file="CRM/Case/Form/ActivityToCase.tpl"}
+{include file="CRM/Case/Form/ActivityChangeStatus.tpl"}
 
 {* pane to display / edit regular tags or tagsets for cases *}
 {if $showTags OR $showTagsets }
@@ -738,7 +742,7 @@ function addTags() {
                 var caseID      = {/literal}{$caseID}{literal};	
 
                 cj("#manageTags #tags option").each( function() {
-                    if ( cj(this).attr('selected') == true) {
+                    if ( cj(this).prop('selected') ) {
                         if ( !tagsChecked ) {
                             tagsChecked = cj(this).val() + '';
                         } else {
@@ -962,6 +966,7 @@ function buildCaseActivities( filterSearch ) {
             "aoColumns"  : columns,
 	    	"bProcessing": true,
             "bJQueryUI": true,
+            "asStripClasses" : [ "odd-row", "even-row" ],
             "sPaginationType": "full_numbers",
             "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
             "bServerSide": true,
@@ -1001,12 +1006,15 @@ function setSelectorClass( ) {
     });
 }
 
-function printCaseReport( ){
- 
- 	var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print'}"{literal};
- 	dataUrl     = dataUrl+ '&all=1&cid={/literal}{$contactID}{literal}' 
-                      +'&caseID={/literal}{$caseID}{literal}';
-        window.location = dataUrl;
+function printCaseReport( ) {
+
+    var asn = 'standard_timeline';
+    var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print' q='all=1&redact=0' h='0'}"{literal};
+    dataUrl     = dataUrl + '&cid={/literal}{$contactID}{literal}' 
+                  + '&caseID={/literal}{$caseID}{literal}'
+                  + '&asn={/literal}' + asn + '{literal}';
+
+    window.location = dataUrl;
 }
 	
 </script>

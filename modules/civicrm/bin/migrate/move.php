@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,25 +24,23 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+function run() {
+  session_start();
 
-function run( ) {
-    session_start( );                               
-                                            
-    require_once '../../civicrm.config.php'; 
-    require_once 'CRM/Core/Config.php'; 
-    
-    $config =& CRM_Core_Config::singleton(); 
+  require_once '../../civicrm.config.php';
+  require_once 'CRM/Core/Config.php';
 
-    // this does not return on failure
-    CRM_Utils_System::authenticateScript( true );
+  $config = CRM_Core_Config::singleton();
 
-    require_once 'CRM/Core/BAO/Setting.php';
-    $moveStatus = CRM_Core_BAO_Setting::doSiteMove( );
+  // this does not return on failure
+  CRM_Utils_System::authenticateScript(TRUE);
 
-    echo $moveStatus . '<br />';
-    echo ts("If no errors are displayed above, the site move steps have completed successfully. Please visit <a href=\"{$config->userFrameworkBaseURL}\">your moved site</a> and test the move.");
+  require_once 'CRM/Core/BAO/ConfigSetting.php';
+  $moveStatus = CRM_Core_BAO_ConfigSetting::doSiteMove();
+
+  echo $moveStatus . '<br />';
+  echo ts("If no errors are displayed above, the site move steps have completed successfully. Please visit <a href=\"{$config->userFrameworkBaseURL}\">your moved site</a> and test the move.");
 }
 
-run( );
-
+run();
 

@@ -16,11 +16,12 @@
       Participant listing page. Be sure to enable this option in your event settings and select a listing template before creating a menu item.
     </description>
     <name>Participant Listing</name>
-    
-    <params addpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
-      <param name="id" type="civieventsonline" label="Select Event" description="Configured CiviCRM Event"/>
-      <param name="task" type="hidden" default="civicrm/event/participant" label=""/>
-      <param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly."/>
-    </params>
+  <fields name="params"  addfieldpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
+     <fieldset name="basic">
+        <field name="id" type="civieventsonline" label="Select Event" description="Configured CiviCRM Event"/>
+        <field name="task" type="hidden" default="civicrm/event/participant" label=""/>
+        <field name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly."/>
+     </fieldset>
+  </fields>
   </state>
 </metadata>

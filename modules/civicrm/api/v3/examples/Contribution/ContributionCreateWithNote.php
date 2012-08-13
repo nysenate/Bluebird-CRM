@@ -8,7 +8,7 @@
 function contribution_create_example(){
 $params = array( 
   'contact_id' => 1,
-  'receive_date' => '20110728',
+  'receive_date' => '20120530',
   'total_amount' => '100',
   'contribution_type_id' => 11,
   'payment_instrument_id' => 1,
@@ -46,7 +46,7 @@ function contribution_create_expectedresult(){
           'contribution_type_id' => 11,
           'contribution_page_id' => '',
           'payment_instrument_id' => 1,
-          'receive_date' => '20110728000000',
+          'receive_date' => '20120530000000',
           'non_deductible_amount' => '10',
           'total_amount' => '100',
           'fee_amount' => '50',
@@ -83,7 +83,7 @@ function contribution_create_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testCreateContributionWithNote and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ContributionTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ContributionTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

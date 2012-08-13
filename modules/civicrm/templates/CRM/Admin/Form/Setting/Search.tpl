@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -65,7 +65,12 @@
         <tr class="crm-search-setting-form-block-autocompleteContactSearch">
             <td class="label">{$form.autocompleteContactSearch.label}</td>
             <td>{$form.autocompleteContactSearch.html}<br/>
-            <span class="description">{ts}Selected fields will be displayed in autocomplete dropdown lists. Contact Name is always included.{/ts}</span></td>
+            <span class="description">{ts}Selected fields will be displayed in back-office autocomplete dropdown search results (Quick Search, etc.). Contact Name is always included.{/ts}</span></td>
+        </tr>
+        <tr class="crm-search-setting-form-block-autocompleteContactReference">
+            <td class="label">{$form.autocompleteContactReference.label}</td>
+            <td>{$form.autocompleteContactReference.html}<br/>
+            <span class="description">{ts}Selected fields will be displayed in autocomplete dropdown search results for 'Contact Reference' custom fields. Contact Name is always included. NOTE: You must assign 'access contact reference fields' permission to the anonymous role if you want to use custom contact reference fields in profiles on public pages. For most situations, you should use the 'Limit List to Group' setting when configuring a contact reference field which will be used in public forms to prevent exposing your entire contact list.{/ts}</span></td>
         </tr>
        </table>
             <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,39 +35,38 @@
     {/if}
     
     <div id="field_page">
-     <p></p>
-        <div class="form-item">
+      <p></p>
+      <div class="form-item">
         {strip}
-	{* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
+	      {* handle enable/disable actions*}
+ 	      {include file="CRM/common/enableDisable.tpl"}
         <table class="selector">
-        <tr class="columnheader">
-        <th>{ts}Label{/ts}</th>
-        <th>{ts}Value{/ts}</th>
-	<th>{ts}Default{/ts}</th>
-        <th>{ts}Order{/ts}</th>
-	<th>{ts}Enabled?{/ts}</th>
-        <th>&nbsp;</th>
-        </tr>
-        {foreach from=$customOption item=row key=id}
-	<tr id="row_{$id}"class="{cycle values="odd-row,even-row"} {$row.class} crm-custom_option {if NOT $row.is_active} disabled{/if}">
-            <td class="crm-custom_option-label">{$row.label}</td>
-            <td class="crm-custom_option-value">{$row.value}</td>
-            <td class="crm-custom_option-default_value">{$row.default_value}</td>
-            <td class="nowrap crm-custom_option-weight">{$row.weight}</td>
-	        <td id="row_{$id}_status" class="crm-custom_option-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-            <td>{$row.action|replace:'xx':$id}</td>
-        </tr>
-        {/foreach}
-        </table>
+          <tr class="columnheader">
+            <th>{ts}Label{/ts}</th>
+            <th>{ts}Value{/ts}</th>
+    	      <th>{ts}Default{/ts}</th>
+            <th>{ts}Order{/ts}</th>
+    	      <th>{ts}Enabled?{/ts}</th>
+            <th>&nbsp;</th>
+          </tr>
+          {foreach from=$customOption item=row key=id}
+  	        <tr id="OptionValue-{$id}"class="crm-entity {cycle values="odd-row,even-row"} {$row.class} crm-custom_option {if NOT $row.is_active} disabled{/if}">
+              <td><span class="crm-custom_option-label crm-editable crmf-label">{$row.label}</span></td>
+              <td><span class="crm-custom_option-value crm-editable crmf-value">{$row.value}</span></td>
+              <td class="crm-custom_option-default_value crmf-value">{$row.default_value}</td>
+              <td class="nowrap crm-custom_option-weight crmf-weight">{$row.weight}</td>
+  	          <td id="row_{$id}_status" class="crm-custom_option-is_active crmf-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+              <td>{$row.action|replace:'xx':$id}</td>
+            </tr>
+          {/foreach}
+          </table>
         {/strip}
         
         <div class="action-link">
             <a href="{crmURL q="reset=1&action=add&fid=$fid&gid=$gid"}" class="button"><span><div class="icon add-icon"></div> {ts 1=$fieldTitle}Add Option for '%1'{/ts}</span></a>
         </div>
-
-        </div>
-     </div>
+      </div>
+    </div>
 
 {else}
     {if $action eq 16}
@@ -77,3 +76,6 @@
         </div>
     {/if}
 {/if}
+
+{include file="CRM/common/crmeditable.tpl"} 
+

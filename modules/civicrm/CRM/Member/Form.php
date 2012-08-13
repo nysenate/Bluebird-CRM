@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,118 +28,173 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * This class generates form components generic to Mobile provider
- * 
+ *
  */
-class CRM_Member_Form extends CRM_Core_Form
-{
-    /**
-     * The id of the object being edited / created
-     *
-     * @var int
-     */
-    protected $_id;
+class CRM_Member_Form extends CRM_Core_Form {
 
-    /**
-     * The name of the BAO object for this form
-     *
-     * @var string
-     */
-    protected $_BAOName;
+  /**
+   * The id of the object being edited / created
+   *
+   * @var int
+   */
+  protected $_id;
 
-    function preProcess( ) {
-        $this->_id      = $this->get( 'id'      );
-        $this->_BAOName = $this->get( 'BAOName' );
+  /**
+   * The name of the BAO object for this form
+   *
+   * @var string
+   */
+  protected $_BAOName; 
+
+  function preProcess() {
+    $this->_id = $this->get('id');
+    $this->_BAOName = $this->get('BAOName');
+  }
+
+  /**
+   * This function sets the default values for the form. MobileProvider that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues() {
+    $defaults = array();
+    $params = array();
+
+    if (isset($this->_id)) {
+      $params = array('id' => $this->_id);
+      require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->_BAOName) . ".php");
+      eval($this->_BAOName . '::retrieve( $params, $defaults );');
     }
 
-    /**
-     * This function sets the default values for the form. MobileProvider that in edit/view mode
-     * the default values are retrieved from the database
-     * 
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( ) {
-        $defaults = array( );
-        $params   = array( );
-
-        if ( isset ( $this->_id ) ) {
-            $params = array( 'id' => $this->_id );
-            require_once(str_replace('_', DIRECTORY_SEPARATOR, $this->_BAOName) . ".php");
-            eval( $this->_BAOName . '::retrieve( $params, $defaults );' );
-        }
-
-        if (isset($defaults['minimum_fee'])) {
-            require_once 'CRM/Utils/Money.php';
-            $defaults['minimum_fee'] = CRM_Utils_Money::format($defaults['minimum_fee'], null, '%a');
-        }
-        
-        
-        if ( isset ($defaults['status'] ) ) {
-            $this->assign( 'membershipStatus', $defaults['status'] );
-        }
-        
-        if ( $this->_action & CRM_Core_Action::ADD ) {
-            $defaults['is_active'] = 1;
-        }
-        
-        if ( isset( $defaults['member_of_contact_id'] ) &&
-             $defaults['member_of_contact_id'] ) {
-            $defaults['member_org'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', 
-                                                                  $defaults['member_of_contact_id'], 'display_name');
-        }
-        return $defaults;
+    if (isset($defaults['minimum_fee'])) {
+      $defaults['minimum_fee'] = CRM_Utils_Money::format($defaults['minimum_fee'], NULL, '%a');
     }
 
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        if ( $this->_action & CRM_Core_Action::RENEW ) {
-        	$this->addButtons( array(
-                                 array ( 'type'      => 'upload',
-                                         'name'      => ts('Renew'),
-                                         'isDefault' => true   ),
-                                 array ( 'type'      => 'cancel',
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
-        } elseif ( $this->_action & CRM_Core_Action::DELETE ) {
-            $this->addButtons(array(
-                                    array ('type'      => 'next',
-                                           'name'      => ts('Delete'),
-                                           'isDefault' => true),
-                                    array ('type'      => 'cancel',
-                                           'name'      => ts('Cancel')),
-                                    )
-                              );
-        } else {
-            $this->addButtons( array(
-                             array ( 'type'      => 'upload',
-                                     'name'      => ts('Save'),
-                                     'isDefault' => true   ),
-                             array ( 'type'      => 'upload',
-                                     'name'      => ts('Save and New'), 
-                                     'subName'   => 'new' ),
-                             array ( 'type'      => 'cancel',
-                                     'name'      => ts('Cancel') ),
-                             )
-                       );
-        }
+
+    if (isset($defaults['status'])) {
+      $this->assign('membershipStatus', $defaults['status']);
     }
 
+    if ($this->_action & CRM_Core_Action::ADD) {
+      $defaults['is_active'] = 1;
+    }
+
+    if (isset($defaults['member_of_contact_id']) &&
+      $defaults['member_of_contact_id']
+    ) {
+      $defaults['member_org'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+        $defaults['member_of_contact_id'], 'display_name'
+      );
+    }
+    return $defaults;
+  }
+
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    if ($this->_action & CRM_Core_Action::RENEW) {
+      $this->addButtons(array(
+          array(
+            'type' => 'upload',
+            'name' => ts('Renew'),
+            'isDefault' => TRUE,
+          ),
+          array(
+            'type' => 'cancel',
+            'name' => ts('Cancel'),
+          ),
+        )
+      );
+    }
+    elseif ($this->_action & CRM_Core_Action::DELETE) {
+      $this->addButtons(array(
+          array(
+            'type' => 'next',
+            'name' => ts('Delete'),
+            'isDefault' => TRUE,
+          ),
+          array(
+            'type' => 'cancel',
+            'name' => ts('Cancel'),
+          ),
+        )
+      );
+    }
+    else {
+      $this->addButtons(array(
+          array(
+            'type' => 'upload',
+            'name' => ts('Save'),
+            'isDefault' => TRUE,
+          ),
+          array(
+            'type' => 'upload',
+            'name' => ts('Save and New'),
+            'subName' => 'new',
+          ),
+          array(
+            'type' => 'cancel',
+            'name' => ts('Cancel'),
+          ),
+        )
+      );
+    }
+  }
+  /*
+   * Function to extract values from the contact create boxes on the form and assign appropriatley  to
+   *
+   *  - $this->_contributorEmail,
+   *  - $this->_memberEmail &
+   *  - $this->_contributonName
+   *  - $this->_memberName
+   *  - $this->_contactID (effectively memberContactId but changing might have spin-off effects)
+   *  - $this->_contributorContactId - id of the contributor
+   *  - $this->_receiptContactId
+   *
+   * If the member & contributor are the same then the values will be the same. But if different people paid
+   * then they weill differ
+   *
+   * @param $formValues array values from form. The important values we are looking for are
+   *  - contact_select_id[1]
+   *  - contribution_contact_select_id[1]
+   */
+  function storeContactFields($formValues){
+
+    // in a 'standalone form' (contact id not in the url) the contact will be in the form values
+    if (CRM_Utils_Array::value('contact_select_id', $formValues)) {
+      $this->_contactID = $formValues['contact_select_id'][1];
+    }
+
+    list($this->_memberDisplayName,
+         $this->_memberEmail
+    ) = CRM_Contact_BAO_Contact_Location::getEmailDetails($this->_contactID);
+
+    //CRM-10375 Where the payer differs to the member the payer should get the email.
+    // here we store details in order to do that
+    if (CRM_Utils_Array::value('contribution_contact_select_id', $formValues) && CRM_Utils_Array::value('1', $formValues['contribution_contact_select_id'])) {
+      $this->_receiptContactId = $this->_contributorContactID = $formValues['contribution_contact_select_id'][1];
+       list( $this->_contributorDisplayName,
+         $this->_contributorEmail ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $this->_contributorContactID );
+    }
+    else{
+      $this->_receiptContactId = $this->_contributorContactID = $this->_contactID;
+      $this->_contributorDisplayName = $this->_memberDisplayName;
+      $this->_contributorEmail = $this->_memberEmail;
+    }
+  }
 }
-
 

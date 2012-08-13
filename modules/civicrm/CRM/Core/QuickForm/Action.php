@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,59 +30,57 @@
  * integrated with the StateMachine, Controller and State objects
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-require_once 'HTML/QuickForm/Action.php' ;
-
+require_once 'HTML/QuickForm/Action.php';
 class CRM_Core_QuickForm_Action extends HTML_QuickForm_Action {
-    /**
-     * reference to the state machine i belong to
-     * @var object
-     */
-    protected $_stateMachine;
 
-    /**
-     * constructor
-     *
-     * @param object    $stateMachine    reference to state machine object
-     *
-     * @return object
-     * @access public
-     */
-    function __construct( &$stateMachine ) {
-        $this->_stateMachine =& $stateMachine;
+  /**
+   * reference to the state machine i belong to
+   * @var object
+   */
+  protected $_stateMachine;
+
+  /**
+   * constructor
+   *
+   * @param object    $stateMachine    reference to state machine object
+   *
+   * @return object
+   * @access public
+   */ function __construct(&$stateMachine) {
+    $this->_stateMachine = &$stateMachine;
+  }
+
+  /**
+   * returns the user to the top of the user context stack.
+   *
+   * @return void
+   * @access public
+   */
+  function popUserContext() {
+    $session = CRM_Core_Session::singleton();
+    $config = CRM_Core_Config::singleton();
+
+    // check if destination is set, if so goto destination
+    $destination = $this->_stateMachine->getDestination();
+    if ($destination) {
+      $destination = urldecode($destination);
+    }
+    else {
+      $destination = $session->popUserContext();
+
+      if (empty($destination)) {
+        $destination = $config->userFrameworkBaseURL;
+      }
     }
 
-    /**
-     * returns the user to the top of the user context stack.
-     *
-     * @return void
-     * @access public
-     */
-    function popUserContext( ) {
-        $session = CRM_Core_Session::singleton( );
-        $config  = CRM_Core_Config::singleton( );
-
-        // check if destination is set, if so goto destination
-        $destination = $this->_stateMachine->getDestination( );
-        if ( $destination ) {
-            $destination = urldecode( $destination );
-        } else {
-            $destination = $session->popUserContext( );
-
-            if ( empty( $destination ) ) {
-                $destination = $config->userFrameworkBaseURL;
-            }
-        }
-        
-        //CRM-5839 -do not redirect control.
-        if ( !$this->_stateMachine->getSkipRedirection( ) ) {
-            CRM_Utils_System::redirect( $destination );
-        }
+    //CRM-5839 -do not redirect control.
+    if (!$this->_stateMachine->getSkipRedirection()) {
+      CRM_Utils_System::redirect($destination);
     }
-
+  }
 }
-
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,9 +26,8 @@
 {if !empty($form.address.$blockId.name)}
   <tr>
       <td colspan="2">
-        {$form.address.$blockId.name.label}<br />
-        {$form.address.$blockId.name.html}<br />
-        <span class="description font-italic">{ts}Name of this address block like "My House, Work Place,.." which can be used in address book {/ts}</span>
+        {$form.address.$blockId.name.label} {help id="id-address-name" file="CRM/Contact/Form/Contact.hlp"}<br />
+        {$form.address.$blockId.name.html}
       </td>
   </tr>
 {/if}

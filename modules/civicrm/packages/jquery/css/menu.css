@@ -1,7 +1,7 @@
 html>body div.outerbox
 {
 	padding: 0 5px 5px 0;
-	z-index:9998;
+	z-index:999999;
 	font-size: 13px;
 	margin-top:2px;
 }
@@ -35,7 +35,7 @@ html>body div.outerbox div.shadowbox3
 html>body .innerbox
 {
     margin: 0;
-	z-index:9998;
+	z-index:999999;
 	margin-left:10px;
 }
 
@@ -70,7 +70,7 @@ html>body .innerbox
     background:#1B1B1B repeat-x;
     width:100%;
     height:23px;
-    z-index:1000;
+    z-index:999999;
     overflow: hidden;
 }
 
@@ -113,6 +113,7 @@ li.menumain {
 
 div.menu-item {
 	padding: 1px 10px 1px 4px;
+	height: auto;
 }
 img.menu-item-arrow{
 	position: absolute;

@@ -31,6 +31,7 @@ function participant_get_expectedresult(){
       '14' => array( 
           'contact_id' => '2',
           'contact_type' => 'Individual',
+          'contact_sub_type' => '',
           'sort_name' => 'Anderson, Anthony',
           'display_name' => 'Mr. Anthony Anderson II',
           'event_id' => '5',
@@ -38,14 +39,21 @@ function participant_get_expectedresult(){
           'event_start_date' => '2008-10-21 00:00:00',
           'event_end_date' => '2008-10-23 00:00:00',
           'participant_id' => '14',
+          'participant_fee_level' => '',
+          'participant_fee_amount' => '',
+          'participant_fee_currency' => '',
           'event_type' => 'Conference',
           'participant_status_id' => '2',
           'participant_status' => 'Attended',
           'participant_role_id' => '1',
           'participant_register_date' => '2007-02-19 00:00:00',
           'participant_source' => 'Wimbeldon',
+          'participant_note' => '',
           'participant_is_pay_later' => 0,
           'participant_is_test' => 0,
+          'participant_registered_by_id' => '',
+          'participant_discount_name' => '',
+          'participant_campaign_id' => '',
           'id' => '14',
         ),
     ),
@@ -59,11 +67,14 @@ function participant_get_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* participant_get 
+* 
+* testGetParamsAsIdOnly and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ParticipantTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

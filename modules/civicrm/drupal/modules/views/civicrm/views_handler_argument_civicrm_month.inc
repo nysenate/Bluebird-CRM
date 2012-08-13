@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,13 +27,14 @@
  * Argument handler for a month (MM)
  */
 class views_handler_argument_civicrm_month extends views_handler_argument_date {
+
   /**
    * Constructor implementation
    */
   function construct() {
     parent::construct();
-    $this->formula = views_date_sql_extract('MONTH', "***table***.$this->real_field","datetime",'0');
-    $this->format = 'F';
+    $this->formula    = views_date_sql_extract('MONTH', "***table***.$this->real_field", "datetime", '0');
+    $this->format     = 'F';
     $this->arg_format = 'm';
   }
 
@@ -58,3 +59,4 @@ class views_handler_argument_civicrm_month extends views_handler_argument_date {
     return str_pad($data->{$this->base_alias}, 2, '0', STR_PAD_LEFT);
   }
 }
+

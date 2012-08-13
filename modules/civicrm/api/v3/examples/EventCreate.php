@@ -40,10 +40,10 @@ function event_create_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 2,
+  'id' => 3,
   'values' => array( 
-      '2' => array( 
-          'id' => 2,
+      '3' => array( 
+          'id' => 3,
           'title' => 'Annual CiviCRM meet',
           'summary' => 'If you have any CiviCRM realted issues or want to track where CiviCRM is heading, Sign up now',
           'description' => 'This event is intended to give brief idea about progess of CiviCRM and giving solutions to common user issues',
@@ -60,7 +60,7 @@ function event_create_expectedresult(){
           'event_full_text' => 'Sorry! We are already full',
           'is_monetary' => '',
           'contribution_type_id' => '',
-          'payment_processor_id' => '',
+          'payment_processor' => '',
           'is_map' => '',
           'is_active' => 1,
           'fee_label' => '',
@@ -93,12 +93,15 @@ function event_create_expectedresult(){
           'expiration_time' => '',
           'waitlist_text' => '',
           'approval_req_text' => '',
-          'is_template' => '',
+          'is_template' => 0,
           'template_title' => '',
           'created_id' => '',
-          'created_date' => '20110711194944',
+          'created_date' => '20120511225515',
           'currency' => '',
           'campaign_id' => '',
+          'is_share' => '',
+          'parent_event_id' => '',
+          'slot_label_id' => '',
         ),
     ),
 );
@@ -111,11 +114,14 @@ function event_create_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* event_create 
+* 
+* testCreateEventSuccess and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/EventTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

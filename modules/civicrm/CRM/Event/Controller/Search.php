@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Controller.php';
-require_once 'CRM/Core/Session.php';
 
 /**
  * This class is used by the Search functionality.
@@ -48,39 +44,37 @@ require_once 'CRM/Core/Session.php';
  * The second form is used to process search results with the asscociated actions
  *
  */
-class CRM_Event_Controller_Search extends CRM_Core_Controller
-{
-    /**
-     * class constructor
-     */
-    function __construct( $title = null, $action = CRM_Core_Action::NONE, $modal = true )
-    {
-        require_once 'CRM/Event/StateMachine/Search.php';
-        
-        parent::__construct( $title, $modal );
-        
-        $this->_stateMachine = new CRM_Event_StateMachine_Search( $this, $action );
-        
-        // create and instantiate the pages
-        $this->addPages( $this->_stateMachine, $action );
-        
-        require_once 'CRM/Core/BAO/File.php';
+class CRM_Event_Controller_Search extends CRM_Core_Controller {
 
-        $session = CRM_Core_Session::singleton( );
-        $uploadNames = $session->get( 'uploadNames' );
-        if ( ! empty( $uploadNames ) ) {
-            $uploadNames = array_merge( $uploadNames,
-                                        CRM_Core_BAO_File::uploadNames( ) );
-            
-        } else {
-            $uploadNames = CRM_Core_BAO_File::uploadNames( );
-        }
+  /**
+   * class constructor
+   */
+  function __construct($title = NULL, $action = CRM_Core_Action::NONE, $modal = TRUE) {
 
-        $config  = CRM_Core_Config::singleton( );
-        $uploadDir = $config->uploadDir;
+    parent::__construct($title, $modal);
 
-        // add all the actions
-        $this->addActions( $uploadDir, $uploadNames );
+    $this->_stateMachine = new CRM_Event_StateMachine_Search($this, $action);
+
+    // create and instantiate the pages
+    $this->addPages($this->_stateMachine, $action);
+
+
+    $session = CRM_Core_Session::singleton();
+    $uploadNames = $session->get('uploadNames');
+    if (!empty($uploadNames)) {
+      $uploadNames = array_merge($uploadNames,
+        CRM_Core_BAO_File::uploadNames()
+      );
     }
+    else {
+      $uploadNames = CRM_Core_BAO_File::uploadNames();
+    }
+
+    $config = CRM_Core_Config::singleton();
+    $uploadDir = $config->uploadDir;
+
+    // add all the actions
+    $this->addActions($uploadDir, $uploadNames);
+  }
 }
 

@@ -1991,16 +1991,15 @@ class Smarty
 		}
 	}
 
-    //NYSS
-    function add_strip_tags($source, &$smarty)
-    {
-        $template_vars = $this->get_template_vars();
-        if(!$template_vars['config']->debug) {
-          require_once 'CRM/Utils/String.php';
-          $source = CRM_Utils_String::stripSpaces($source, TRUE);
-        }
-        return $source;
+  //NYSS
+  function add_strip_tags($source, &$smarty)
+  {
+    $template_vars = $this->get_template_vars();
+    if(!$template_vars['config']->debug) {
+      $source = CRM_Utils_String::stripSpaces($source, TRUE);
     }
+    return $source;
+  }
   
     /**#@-*/
 

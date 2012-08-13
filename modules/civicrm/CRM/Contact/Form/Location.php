@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,93 +28,92 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Contact_Form_Location {
 
-class CRM_Contact_Form_Location
-{  
-    /** 
-     * Function to set variables up before form is built 
-     *                                                           
-     * @return void 
-     */ 
-    function preProcess( &$form ) 
-    {  
-        $form->_addBlockName  = CRM_Utils_Request::retrieve('block', 'String',   CRM_Core_DAO::$_nullObject );
-        $additionalblockCount = CRM_Utils_Request::retrieve('count', 'Positive', CRM_Core_DAO::$_nullObject );
-        
-        $form->assign( 'addBlock', false );
-        if ( $form->_addBlockName && $additionalblockCount ) {
-            $form->assign( 'addBlock', true );
-            $form->assign( 'blockName', $form->_addBlockName );
-            $form->assign( 'blockId',  $additionalblockCount );
-            $form->set( $form->_addBlockName.'_Block_Count', $additionalblockCount );
-        }
-        
-        $className = CRM_Utils_System::getClassName( $form );
-        if ( in_array( $className, array( 'CRM_Event_Form_ManageEvent_Location', 'CRM_Contact_Form_Domain' ) ) ) {
-            $form->_blocks = array( 'Address' => ts( 'Address' ), 
-                                    'Email'   => ts( 'Email'   ), 
-                                    'Phone'   => ts( 'Phone'   ) );
-        }
-        
-        $form->assign( 'blocks',    $form->_blocks );
-        $form->assign( 'className', $className );
-        
-        // get address sequence.
-        if ( !$addressSequence = $form->get( 'addressSequence' ) ) {
-            require_once 'CRM/Core/BAO/Address.php';
-            $addressSequence = CRM_Core_BAO_Address::addressSequence( );
-            $form->set( 'addressSequence', $addressSequence );
-        }
-        $form->assign( 'addressSequence', $addressSequence  );
+  /**
+   * Function to set variables up before form is built
+   *
+   * @return void
+   */
+  function preProcess(&$form) {
+    $form->_addBlockName = CRM_Utils_Request::retrieve('block', 'String', CRM_Core_DAO::$_nullObject);
+    $additionalblockCount = CRM_Utils_Request::retrieve('count', 'Positive', CRM_Core_DAO::$_nullObject);
+
+    $form->assign('addBlock', FALSE);
+    if ($form->_addBlockName && $additionalblockCount) {
+      $form->assign('addBlock', TRUE);
+      $form->assign('blockName', $form->_addBlockName);
+      $form->assign('blockId', $additionalblockCount);
+      $form->set($form->_addBlockName . '_Block_Count', $additionalblockCount);
     }
-    
-    /** 
-     * Function to build the form 
-     * 
-     * @return None 
-     * @access public 
-     */ 
-    function buildQuickForm ( &$form ) 
-    { 
-        // required for subsequent AJAX requests.
-        $ajaxRequestBlocks   = array( );
-        $generateAjaxRequest = 0;
-        
-        //build 1 instance of all blocks, without using ajax ...
-        foreach ( $form->_blocks as $blockName => $label ) {
-            require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $blockName ) . '.php');
-            $name = strtolower($blockName);
-            
-            $instances = array( 1 );
-            if ( CRM_Utils_Array::value( $name, $_POST ) && is_array( $_POST[$name] ) ) {
-                $instances = array_keys( $_POST[$name] );
-            } else if ( CRM_Utils_Array::value( $name, $form->_values ) && is_array( $form->_values[$name] ) ) {
-                $instances = array_keys( $form->_values[$name] );
-            }
-            
-            foreach ( $instances as $instance ) {
-                if ( $instance == 1 ) {
-                    $form->assign( 'addBlock', false );
-                    $form->assign( 'blockId',  $instance );
-                } else {
-                    //we are going to build other block instances w/ AJAX
-                    $generateAjaxRequest++;
-                    $ajaxRequestBlocks[$blockName][$instance] = true;
-                }
-                
-                $form->set( $blockName.'_Block_Count', $instance );
-                eval( 'CRM_Contact_Form_Edit_' . $blockName . '::buildQuickForm( $form );' );
-            }
-        }
-        
-        //assign to generate AJAX request for building extra blocks.
-        $form->assign( 'generateAjaxRequest', $generateAjaxRequest );
-        $form->assign( 'ajaxRequestBlocks',   $ajaxRequestBlocks   ); 
+
+    $className = CRM_Utils_System::getClassName($form);
+    if (in_array($className, array(
+      'CRM_Event_Form_ManageEvent_Location', 'CRM_Contact_Form_Domain'))) {
+      $form->_blocks = array('Address' => ts('Address'),
+        'Email' => ts('Email'),
+        'Phone' => ts('Phone'),
+      );
     }
+
+    $form->assign('blocks', $form->_blocks);
+    $form->assign('className', $className);
+
+    // get address sequence.
+    if (!$addressSequence = $form->get('addressSequence')) {
+      $addressSequence = CRM_Core_BAO_Address::addressSequence();
+      $form->set('addressSequence', $addressSequence);
+    }
+    $form->assign('addressSequence', $addressSequence);
+  }
+
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  static function buildQuickForm(&$form) {
+    // required for subsequent AJAX requests.
+    $ajaxRequestBlocks = array();
+    $generateAjaxRequest = 0;
+
+    //build 1 instance of all blocks, without using ajax ...
+    foreach ($form->_blocks as $blockName => $label) {
+      require_once (str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $blockName) . '.php');
+      $name = strtolower($blockName);
+
+      $instances = array(1);
+      if (CRM_Utils_Array::value($name, $_POST) && is_array($_POST[$name])) {
+        $instances = array_keys($_POST[$name]);
+      }
+      elseif (property_exists($form, '_values') && CRM_Utils_Array::value($name, $form->_values) && is_array($form->_values[$name])) {
+        $instances = array_keys($form->_values[$name]);
+      }
+
+      foreach ($instances as $instance) {
+        if ($instance == 1) {
+          $form->assign('addBlock', FALSE);
+          $form->assign('blockId', $instance);
+        }
+        else {
+          //we are going to build other block instances w/ AJAX
+          $generateAjaxRequest++;
+          $ajaxRequestBlocks[$blockName][$instance] = TRUE;
+        }
+
+        $form->set($blockName . '_Block_Count', $instance);
+        eval('CRM_Contact_Form_Edit_' . $blockName . '::buildQuickForm( $form );');
+      }
+    }
+
+    //assign to generate AJAX request for building extra blocks.
+    $form->assign('generateAjaxRequest', $generateAjaxRequest);
+    $form->assign('ajaxRequestBlocks', $ajaxRequestBlocks);
+  }
 }
-
 

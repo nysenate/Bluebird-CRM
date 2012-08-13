@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,41 +28,36 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/StateMachine.php';
-
 class CRM_Group_StateMachine extends CRM_Core_StateMachine {
 
-    /**
-     * class constructor
-     */
-    function __construct( $controller, $action = CRM_Core_Action::NONE ) {
-        parent::__construct( $controller, $action );
-        
-        $this->_pages = array(
-                              'CRM_Group_Form_Edit' => null,
-                              'CRM_Contact_Form_Search_Basic' => null,
-                              'CRM_Contact_Form_Task_AddToGroup' => null,
-                              'CRM_Contact_Form_Task_Result' => null,
-                              );
+  /**
+   * class constructor
+   */
+  function __construct($controller, $action = CRM_Core_Action::NONE) {
+    parent::__construct($controller, $action);
 
-        $this->addSequentialPages( $this->_pages, $action );
-    }
+    $this->_pages = array(
+      'CRM_Group_Form_Edit' => NULL,
+      'CRM_Contact_Form_Search_Basic' => NULL,
+      'CRM_Contact_Form_Task_AddToGroup' => NULL,
+      'CRM_Contact_Form_Task_Result' => NULL,
+    );
 
-    /**
-     * return the form name of the task. This is 
-     *
-     * @return string
-     * @access public
-     */
-    function getTaskFormName( ) {
-        return CRM_Utils_String::getClassName( 'CRM_Contact_Form_Task_AddToGroup' );
-    }
+    $this->addSequentialPages($this->_pages, $action);
+  }
 
+  /**
+   * return the form name of the task. This is
+   *
+   * @return string
+   * @access public
+   */
+  function getTaskFormName() {
+    return CRM_Utils_String::getClassName('CRM_Contact_Form_Task_AddToGroup');
+  }
 }
-
 

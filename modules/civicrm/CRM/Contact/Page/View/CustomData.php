@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,116 +28,115 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Page.php';
 
 /**
  * Page for displaying custom data
  *
  */
 class CRM_Contact_Page_View_CustomData extends CRM_Core_Page {
-    /**
-     * the id of the object being viewed (note/relationship etc)
-     *
-     * @int
-     * @access protected
-     */
-    public $_groupId;
 
-    /**
-     * class constructor
-     *
-     * @return CRM_Contact_Page_View_CustomData
-     */
-    public function __construct( )
-    {
-        parent::__construct();
+  /**
+   * the id of the object being viewed (note/relationship etc)
+   *
+   * @int
+   * @access protected
+   */
+  public $_groupId;
+
+  /**
+   * class constructor
+   *
+   * @return CRM_Contact_Page_View_CustomData
+   */
+  public function __construct() {
+    parent::__construct();
+  }
+
+  /**
+   * add a few specific things to view contact
+   *
+   * @return void
+   * @access public
+   *
+   */
+  function preProcess() {
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+    $this->assign('contactId', $this->_contactId);
+
+    // check logged in url permission
+    CRM_Contact_Page_View::checkUserPermission($this);
+
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
+    $this->assign('action', $this->_action);
+
+    $this->_groupId = CRM_Utils_Request::retrieve('gid', 'Positive', $this, TRUE);
+    $this->assign('groupId', $this->_groupId);
+  }
+
+  /**
+   * Run the page.
+   *
+   * This method is called after the page is created. It checks for the
+   * type of action and executes that action.
+   *
+   * @access public
+   *
+   * @param object $page - the view page which created this one
+   *
+   * @return none
+   * @static
+   *
+   */
+  function run() {
+    $this->preProcess();
+
+    //set the userContext stack
+    $doneURL = 'civicrm/contact/view';
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url($doneURL, 'action=browse&selectedChild=custom_' . $this->_groupId), FALSE);
+
+    // get permission detail view or edit
+    $permUser = CRM_Core_Permission::getPermission();
+
+    $editCustomData = (CRM_Core_Permission::VIEW == $permUser) ? 0 : 1;
+    $this->assign('editCustomData', $editCustomData);
+
+    //allow to edit own customdata CRM-5518
+    $editOwnCustomData = FALSE;
+    if ($session->get('userID') == $this->_contactId) {
+      $editOwnCustomData = TRUE;
     }
+    $this->assign('editOwnCustomData', $editOwnCustomData);
 
-
-    /**
-     * add a few specific things to view contact
-     *
-     * @return void 
-     * @access public 
-     * 
-     */ 
-    function preProcess( ) 
-    { 
-        $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true );
-        $this->assign( 'contactId', $this->_contactId );
-
-        // check logged in url permission
-        require_once 'CRM/Contact/Page/View.php';
-        CRM_Contact_Page_View::checkUserPermission( $this );
-        
-        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
-        $this->assign( 'action', $this->_action);
-
-        $this->_groupId = CRM_Utils_Request::retrieve( 'gid', 'Positive', $this, true ); 
-        $this->assign( 'groupId', $this->_groupId );
+    if ($this->_action == CRM_Core_Action::BROWSE) {
+      //Custom Groups Inline
+      $entityType    = CRM_Contact_BAO_Contact::getContactType($this->_contactId);
+      $entitySubType = CRM_Contact_BAO_Contact::getContactSubType($this->_contactId);
+      $groupTree     = &CRM_Core_BAO_CustomGroup::getTree($entityType, $this, $this->_contactId,
+        $this->_groupId, $entitySubType
+      );
+      CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree);
     }
+    else {
 
-    /**
-     * Run the page.
-     *
-     * This method is called after the page is created. It checks for the  
-     * type of action and executes that action. 
-     *
-     * @access public
-     * @param object $page - the view page which created this one 
-     * @return none
-     * @static
-     *
-     */
-    function run( )
-    {
-        $this->preProcess( );
+      $controller = new CRM_Core_Controller_Simple('CRM_Contact_Form_CustomData',
+        ts('Custom Data'),
+        $this->_action
+      );
+      $controller->setEmbedded(TRUE);
 
-        //set the userContext stack
-        $doneURL = 'civicrm/contact/view';
-        $session = CRM_Core_Session::singleton();
-        $session->pushUserContext( CRM_Utils_System::url( $doneURL, 'action=browse&selectedChild=custom_' . $this->_groupId ), false );
-        
-        // get permission detail view or edit
-        $permUser = CRM_Core_Permission::getPermission();
-        
-        $editCustomData = ( CRM_Core_Permission::VIEW == $permUser ) ? 0 : 1;
-        $this->assign('editCustomData', $editCustomData);
-        
-        //allow to edit own customdata CRM-5518
-        $editOwnCustomData = false;
-        if ( $session->get( 'userID' ) == $this->_contactId ) {
-            $editOwnCustomData = true;
-        }
-        $this->assign( 'editOwnCustomData', $editOwnCustomData );
-        
-        if ( $this->_action == CRM_Core_Action::BROWSE ) {
-            //Custom Groups Inline
-            $entityType = CRM_Contact_BAO_Contact::getContactType( $this->_contactId );
-            $entitySubType = CRM_Contact_BAO_Contact::getContactSubType( $this->_contactId );
-            $groupTree =& CRM_Core_BAO_CustomGroup::getTree( $entityType, $this, $this->_contactId, 
-                                                             $this->_groupId, $entitySubType );
-            CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $groupTree );
-        } else {
-            
-            $controller = new CRM_Core_Controller_Simple('CRM_Contact_Form_CustomData',
-                                                          ts('Custom Data'),
-                                                          $this->_action );
-            $controller->setEmbedded(true);
-           
-            $controller->set('tableId'   , $this->_contactId );
-            $controller->set('groupId'   , $this->_groupId);
-            $controller->set('entityType', CRM_Contact_BAO_Contact::getContactType( $this->_contactId ) );
-            $controller->set('entitySubType', CRM_Contact_BAO_Contact::getContactSubType( $this->_contactId ) );
-            $controller->process();
-            $controller->run();
-        }
-        return parent::run();
+      $controller->set('tableId', $this->_contactId);
+      $controller->set('groupId', $this->_groupId);
+      $controller->set('entityType', CRM_Contact_BAO_Contact::getContactType($this->_contactId));
+      $controller->set('entitySubType', CRM_Contact_BAO_Contact::getContactSubType($this->_contactId, ','));
+      $controller->process();
+      $controller->run();
     }
+    return parent::run();
+  }
 }
 

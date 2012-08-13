@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,58 +28,59 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
- 
-require_once 'CRM/Core/Page.php';
 
 /**
  * CiviCRM Dashlet
  *
  */
-class CRM_Contact_Page_Dashlet extends CRM_Core_Page
-{
-        
-    /**
-     * Run dashboard
-     *
-     * @return none
-     * @access public
-     */
-    function run( ) {
-        CRM_Utils_System::setTitle( ts('Dashlets') );
+class CRM_Contact_Page_Dashlet extends CRM_Core_Page {
 
-        $this->assign( 'admin', CRM_Core_Permission::check( 'administer CiviCRM' ) );
+  /**
+   * Run dashboard
+   *
+   * @return none
+   * @access public
+   */
+  function run() {
+    CRM_Utils_System::setTitle(ts('Dashlets'));
 
-        // get all dashlets
-        require_once 'CRM/Core/BAO/Dashboard.php';
-        $allDashlets = CRM_Core_BAO_Dashboard::getDashlets( false );
+    $this->assign('admin', CRM_Core_Permission::check('administer CiviCRM'));
 
-        // get dashlets for logged in contact
-        $currentDashlets  = CRM_Core_BAO_Dashboard::getContactDashlets( );
-        $contactDashlets  = $availableDashlets = array( );
+    // get all dashlets
+    $allDashlets = CRM_Core_BAO_Dashboard::getDashlets(FALSE);
 
-        foreach( $currentDashlets as $columnNo => $values ) {
-            foreach ( $values as $val => $isMinimized ) {
-                list( $weight, $dashletID ) = explode( '-', $val);
-                $key = "{$dashletID}-{$isMinimized}";
-                $contactDashlets[$columnNo][$key] = array( 'label'       => $allDashlets[$dashletID]['label'],
-                                                           'is_reserved' => $allDashlets[$dashletID]['is_reserved'] );                
-                unset( $allDashlets[$dashletID] );
-            }
-        }
+    // get dashlets for logged in contact
+    $currentDashlets = CRM_Core_BAO_Dashboard::getContactDashlets();
+    $contactDashlets = $availableDashlets = array();
 
-        foreach ( $allDashlets as $dashletID => $values ) {
-            $key = "{$dashletID}-0";
-            $availableDashlets[$key] = array( 'label'       => $values['label'],
-                                              'is_reserved' => $values['is_reserved'] );                
-        }
-
-        $this->assign( 'contactDashlets'  , $contactDashlets   );
-        $this->assign( 'availableDashlets', $availableDashlets );
-
-        return parent::run( );
+    foreach ($currentDashlets as $columnNo => $values) {
+      foreach ($values as $val => $isMinimized) {
+        list($weight, $dashletID) = explode('-', $val);
+        $key = "{$dashletID}-{$isMinimized}";
+        $contactDashlets[$columnNo][$key] = array(
+          'label' => $allDashlets[$dashletID]['label'],
+          'is_reserved' => $allDashlets[$dashletID]['is_reserved'],
+        );
+        unset($allDashlets[$dashletID]);
+      }
     }
+
+    foreach ($allDashlets as $dashletID => $values) {
+      $key = "{$dashletID}-0";
+      $availableDashlets[$key] = array(
+        'label' => $values['label'],
+        'is_reserved' => $values['is_reserved'],
+      );
+    }
+
+    $this->assign('contactDashlets', $contactDashlets);
+    $this->assign('availableDashlets', $availableDashlets);
+
+    return parent::run();
+  }
 }
+

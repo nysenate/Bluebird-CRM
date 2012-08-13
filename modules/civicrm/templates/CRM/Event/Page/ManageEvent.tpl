@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,9 +25,9 @@
 *}
 {capture assign=newEventURL}{crmURL p='civicrm/event/add' q="action=add&reset=1"}{/capture}
 {capture assign=icalFile}{crmURL p='civicrm/event/ical' q="reset=1" fe=1}{/capture}
-{capture assign=icalFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1" fe=1}{/capture}
-{capture assign=rssFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&rss=1" fe=1}{/capture}
-{capture assign=htmlFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&html=1" fe=1}{/capture}
+{capture assign=icalFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1" fe=1}{/capture}
+{capture assign=rssFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1&rss=1" fe=1}{/capture}
+{capture assign=htmlFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1&html=1" fe=1}{/capture}
 <div class="float-right">
     <a href="{$htmlFeed}" target="_blank" title="{ts}HTML listing of current and future public events.{/ts}">
     <img src="{$config->resourceBase}i/applications-internet.png" alt="{ts}HTML listing of current and future public events.{/ts}" /></a>&nbsp;&nbsp;
@@ -71,7 +71,7 @@
          </tr>
          </thead>
         {foreach from=$rows item=row}
-          <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+          <tr id="row_{$row.id}" class="{if NOT $row.is_active} disabled{/if}">
             <td class="crm-event_{$row.id}"><a href="{crmURL p='civicrm/event/info' q="id=`$row.id`&reset=1"}" title="{ts}View event info page{/ts}" class="bold">{$row.title}</a>&nbsp;&nbsp;({ts}ID:{/ts} {$row.id})</td> 
             <td class="crm-event-city">{$row.city}</td>  
             <td class="crm-event-state_province">{$row.state_province}</td>	
@@ -86,15 +86,21 @@
         	    <div class="crm-configure-actions">
         	    <span id="event-configure-{$row.id}" class="btn-slide">{ts}Configure{/ts}
         	    	<ul class="panel" id="panel_info_{$row.id}">
-        		    <li><a title="Info and Settings" class="action-item-wrap" href="{crmURL p='civicrm/event/manage/eventInfo' q="reset=1&action=update&id=`$row.id`"}">{ts}Info and Settings{/ts}</a></li>
-        		    <li><a title="Location" class="action-item-wrap {if NOT $row.is_show_location} disabled{/if}" href="{crmURL p='civicrm/event/manage/location' q="reset=1&action=update&id=`$row.id`"}">{ts}Location{/ts}</a></li>
-        		    <li><a title="Fees" class="action-item {if NOT $row.is_monetary} disabled{/if}" href="{crmURL p='civicrm/event/manage/fee' q="reset=1&action=update&id=`$row.id`"}">{ts}Fees{/ts}</a></li>
-        		    <li><a title="Online Registration" class="action-item-wrap {if NOT $row.is_online_registration} disabled{/if}" href="{crmURL p='civicrm/event/manage/registration' q="reset=1&action=update&id=`$row.id`"}">{ts}Online Registration{/ts}</a></li>
-        		    <li><a title="Tell a Friend" class="action-item-wrap {if NOT $row.friend} disabled{/if}" href="{crmURL p='civicrm/event/manage/friend' q="reset=1&action=update&id=`$row.id`"}">{ts}Tell a Friend{/ts}</a></li>
-			</ul> 
+        		    <li><a title="{ts}Info and Settings{/ts}" class="action-item-wrap" href="{crmURL p='civicrm/event/manage/settings' q="reset=1&action=update&id=`$row.id`"}">{ts}Info and Settings{/ts}</a></li>
+        		    <li><a title="{ts}Location{/ts}" class="action-item-wrap {if NOT $row.is_show_location} disabled{/if}" href="{crmURL p='civicrm/event/manage/location' q="reset=1&action=update&id=`$row.id`"}">{ts}Location{/ts}</a></li>
+        		    <li><a title="{ts}Fees{/ts}" class="action-item {if NOT $row.is_monetary} disabled{/if}" href="{crmURL p='civicrm/event/manage/fee' q="reset=1&action=update&id=`$row.id`"}">{ts}Fees{/ts}</a></li>
+        		    <li><a title="{ts}Online Registration{/ts}" class="action-item-wrap {if NOT $row.is_online_registration} disabled{/if}" href="{crmURL p='civicrm/event/manage/registration' q="reset=1&action=update&id=`$row.id`"}">{ts}Online Registration{/ts}</a></li>
+			        <li><a title="{ts}Schedule Reminders{/ts}" class="action-item-wrap {if NOT $row.reminder} disabled{/if}" href="{crmURL p='civicrm/event/manage/reminder' q="reset=1&action=update&id=`$row.id`"}">{ts}Schedule Reminders{/ts}</a></li>
+			        {if $eventCartEnabled}
+                    <li><a title="{ts}Conference Slots{/ts}" class="action-item-wrap {if NOT $row.slot_label_id} disabled{/if}" href="{crmURL p='civicrm/event/manage/conference' q="reset=1&action=update&id=`$row.id`"}">{ts}Conference Slots{/ts}</a></li>
+                    {/if}
+        		    <li><a title="{ts}Tell a Friend{/ts}" class="action-item-wrap {if NOT $row.friend} disabled{/if}" href="{crmURL p='civicrm/event/manage/friend' q="reset=1&action=update&id=`$row.id`"}">{ts}Tell a Friend{/ts}</a></li>
+                    <li><a title="{ts}Personal Campaign Pages{/ts}" class="action-item-wrap {if NOT $row.is_pcp_enabled} disabled{/if}" href="{crmURL p='civicrm/event/manage/pcp' q="reset=1&action=update&id=`$row.id`"}">{ts}Personal Campaign Pages{/ts}</a></li>
+			        </ul> 
         	    </span>
         	    </div>
-        	    <div class=crm-event-participants>
+
+                <div class=crm-event-participants>
         	    <span id="event-participants-{$row.id}" class="btn-slide">{ts}Participants{/ts}
         	    	<ul class="panel" id="panel_participants_{$row.id}">
         		    {if $findParticipants.statusCounted}
@@ -112,7 +118,8 @@
                         </ul> 
         	    </span>
         	    </div> 
-        	    <div class="crm-event-links">
+        	    
+                <div class="crm-event-links">
         	    <span id="event-links-{$row.id}" class="btn-slide">{ts}Event Links{/ts}
         	    	<ul class="panel" id="panel_links_{$row.id}">
         		    <li><a title="Register Participant" class="action-item" href="{crmURL p='civicrm/participant/add' q="reset=1&action=add&context=standalone&eid=`$row.id`"}">{ts}Register Participant{/ts}</a></li>

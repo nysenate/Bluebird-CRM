@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +33,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Note
  *
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * @version $Id: Note.php 30879 2010-11-22 15:45:55Z shot $
  *
  */
@@ -40,7 +41,7 @@
 /**
  * Files required for this package
  */
-require_once 'api/v3/utils.php';
+
 require_once 'CRM/Core/BAO/Note.php';
 
 /**
@@ -50,41 +51,42 @@ require_once 'CRM/Core/BAO/Note.php';
  * Required parameters : entity_id AND note
  *
  * @param   array  $params  an associative array of name/value property values of civicrm_note
+ * {@getfields note_create}
  *
- * @return array note id if note is created otherwise is_error = 1
+ * @return array API result array
  * @access public
- * @example NoteCreate.php
- * {@example NoteCreate.php
+ * @example NoteCreate.php Create example
+ *
+ *
  */
 function civicrm_api3_note_create($params) {
 
-		if (! isset ( $params ['entity_table'] )) {
-			$params ['entity_table'] = "civicrm_contact";
-		}
-		
-		civicrm_api3_verify_mandatory ( $params, null, array ('note','entity_id', ) );
-		
-		$contactID = CRM_Utils_Array::value ( 'contact_id', $params );
-		
-		if (! isset ( $params ['modified_date'] )) {
-			$params ['modified_date'] = date ( "Ymd" );
-		}
-		
-		$ids = array ();
-		$ids = array ('id' => CRM_Utils_Array::value ( 'id', $params ) );
-		$noteBAO = CRM_Core_BAO_Note::add ( $params, $ids );
-		
-		if (is_a ( $noteBAO, 'CRM_Core_Error' )) {
-			$error = civicrm_api3_create_error ( "Note could not be created" );
-			return $error;
-		} else {
-			$note = array ();
-			_civicrm_api3_object_to_array ( $noteBAO, $note [$noteBAO->id] );
-		
-		}
-		$result = civicrm_api3_create_success ( $note, $params );
-		return civicrm_api3_create_success ( $note, $params );
+  $ids     = array();
+  $ids     = array('id' => CRM_Utils_Array::value('id', $params));
+  $noteBAO = CRM_Core_BAO_Note::add($params, $ids);
 
+  if (is_a($noteBAO, 'CRM_Core_Error')) {
+    $error = civicrm_api3_create_error("Note could not be created");
+    return $error;
+  }
+  else {
+    $note = array();
+    _civicrm_api3_object_to_array($noteBAO, $note[$noteBAO->id]);
+  }
+  $result = civicrm_api3_create_success($note, $params);
+  return civicrm_api3_create_success($note, $params);
+}
+/*
+ * Adjust Metadata for Create action
+ * 
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_note_create_spec(&$params) {
+  $params['entity_table']['api.default'] = "civicrm_contact";
+  $params['modified_date']['api.default'] = "now";
+  $params['note']['api.required'] = 1;
+  $params['entity_id']['api.required'] = 1;
 }
 
 /**
@@ -92,61 +94,64 @@ function civicrm_api3_note_create($params) {
  *
  * This API is used for deleting a note
  *
- * @param  Int  $noteID   Id of the note to be deleted
+ * @params  array  $paramsarray including id of the note to be deleted
+ * {@getfields note_delete}
  *
  * @return null
  * @access public
  */
 function civicrm_api3_note_delete($params) {
 
-		civicrm_api3_verify_mandatory ( $params, null, array ('id' ) );
-		
-		$result = new CRM_Core_BAO_Note ();
-		return $result->del ( $params ['id'] ) ? civicrm_api3_create_success () : civicrm_api3_create_error ( 'Error while deleting Note' );
-
+  $result = new CRM_Core_BAO_Note();
+  return $result->del($params['id']) ? civicrm_api3_create_success() : civicrm_api3_create_error('Error while deleting Note');
 }
 
 /**
  * Retrieve a specific note, given a set of input params
  *
- * @param  array   $params (reference ) input parameters
+ * @param  array   $params  input parameters
  *
- * @return array (reference ) array of properties,
+ * @return array  array of properties,
  * if error an array with an error id and error message
- *
+ * {@getfields note_get}
  * @static void
  * @access public
  */
-
 function civicrm_api3_note_get($params) {
 
-		
-		if (empty ( $params ['entity_table'] )) {
-			$params ['entity_table'] = "civicrm_contact";
-		}
-		
-		civicrm_api3_verify_mandatory ( $params );
-    return _civicrm_api3_basic_get('CRM_Core_BAO_Note', $params);		
-	
+  return _civicrm_api3_basic_get('CRM_Core_BAO_Note', $params);
+}
+/*
+ * Adjust Metadata for Get action
+ * 
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_note_get_spec(&$params) {
+  $params['entity_table']['api.default'] = "civicrm_contact";
 }
 
 /**
  * Get all descendents of given note
+ *
  * @param array $params Associative array; only required 'id' parameter is used
+ *
  * @return array Nested associative array beginning with direct children of given note.
  */
 function &civicrm_api3_note_tree_get($params) {
 
-		civicrm_api3_verify_mandatory ( $params, null, array ('id' ) );
-		
-		if (! is_numeric ( $params ['id'] )) {
-			return civicrm_api3_create_error ( ts ( "Invalid note ID" ) );
-		}
-		if (! isset ( $params ['max_depth'] ))
-			$params ['max_depth'] = 0;
-		if (! isset ( $params ['snippet'] ))
-			$params ['snippet'] = FALSE;
-		$noteTree = CRM_Core_BAO_Note::getNoteTree ( $params ['id'], $params ['max_depth'], $params ['snippet'] );
-		return civicrm_api3_create_success ( $noteTree, $params );
+  civicrm_api3_verify_mandatory($params, NULL, array('id'));
 
+  if (!is_numeric($params['id'])) {
+    return civicrm_api3_create_error(ts("Invalid note ID"));
+  }
+  if (!isset($params['max_depth'])) {
+    $params['max_depth'] = 0;
+  }
+  if (!isset($params['snippet'])) {
+    $params['snippet'] = FALSE;
+  }
+  $noteTree = CRM_Core_BAO_Note::getNoteTree($params['id'], $params['max_depth'], $params['snippet']);
+  return civicrm_api3_create_success($noteTree, $params);
 }
+

@@ -8,9 +8,7 @@
 function activity_get_example(){
 $params = array( 
   'version' => 3,
-  'filters' => array( 
-      'activity_date_time_low' => '20120101000000',
-    ),
+  'filter.activity_date_time_low' => '20120101000000',
   'sequential' => 1,
 );
 
@@ -34,7 +32,7 @@ function activity_get_expectedresult(){
       '0' => array( 
           'id' => '2',
           'source_contact_id' => '17',
-          'activity_type_id' => '1',
+          'activity_type_id' => '40',
           'subject' => 'Make-it-Happen Meeting',
           'activity_date_time' => '2012-02-16 00:00:00',
           'duration' => '120',
@@ -60,7 +58,7 @@ function activity_get_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testGetFilterMaxDate and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ActivityTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ActivityTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

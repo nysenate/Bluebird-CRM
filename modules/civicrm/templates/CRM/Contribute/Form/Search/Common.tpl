@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,12 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<tr>
-	<td>{$form.contribution_date_low.label} <br />
-	{include file="CRM/common/jcalendar.tpl" elementName=contribution_date_low}</td>
-
-	<td>{$form.contribution_date_high.label}<br />
-	{include file="CRM/common/jcalendar.tpl" elementName=contribution_date_high}</td>
+<tr>	
+	<tr><td><label>{ts}Contribution Dates{/ts}</label></td></tr>
+	{include file="CRM/Core/DateRange.tpl" fieldName="contribution_date" from='_low' to='_high'}
 </tr>
 <tr>
 	<td><label>{ts}Contribution Amounts{/ts}</label> <br />
@@ -56,6 +53,7 @@
 	<td>
 	{$form.contribution_pay_later.html}&nbsp;{$form.contribution_pay_later.label}<br />
 	{$form.contribution_recurring.html}&nbsp;{$form.contribution_recurring.label}<br />
+        {$form.contribution_recurring_isnull.html}&nbsp;{$form.contribution_recurring_isnull.label}<br />
 	{$form.contribution_test.html}&nbsp;{$form.contribution_test.label}</td>
 </tr>
 <tr>
@@ -80,6 +78,10 @@
 <tr>
 	<td><label>{ts}Currency{/ts}</label> <br />
 	{$form.contribution_currency_type.html}</td>
+  {if $form.contribution_batch_id.html }
+	  <td>{$form.contribution_batch_id.label} <br />
+	  {$form.contribution_batch_id.html}</td>
+  {/if}
 </tr>
 
 {* campaign in contribution search *}

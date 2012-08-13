@@ -212,15 +212,6 @@ class HTML_QuickForm extends HTML_Common
     var $_submitValues = array();
 
     /**
-     * Array of merged form values
-     * @since   Just now
-     * @var array
-     * @access private
-     */
-    var $_finalValues = array();
-    var $_csValues = array();
-    var $_cdValues = array();
-    /**
      * Array of submitted form files
      * @since     1.0
      * @var  integer
@@ -282,13 +273,6 @@ class HTML_QuickForm extends HTML_Common
      */
     var $_flagSubmitted = false;
 
-    function refreshFinalValues() {
-        #Do this just a couple times and save a LOT of work!
-        $this->_csValues = array_merge($this->_submitValues,$this->_constantValues);
-        $this->_cdValues = array_merge($this->_defaultValues,$this->_constantValues);
-        $this->_finalValues = array_merge($this->_defaultValues,$this->_csValues);
-    }
-
     // }}}
     // {{{ constructor
 
@@ -349,7 +333,6 @@ class HTML_QuickForm extends HTML_Common
                     $this->_maxFileSize = $matches['1'];
             }
         }    
-        $this->refreshFinalValues();
     } // end constructor
 
     // }}}
@@ -402,7 +385,7 @@ class HTML_QuickForm extends HTML_Common
     function registerRule($ruleName, $type, $data1, $data2 = null)
     {
         include_once('HTML/QuickForm/RuleRegistry.php');
-        $registry =& HTML_QuickForm_RuleRegistry::singleton();
+        $registry = HTML_QuickForm_RuleRegistry::singleton();
         $registry->registerRule($ruleName, $type, $data1, $data2);
     } // end func registerRule
 
@@ -486,7 +469,6 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
             $this->_defaultValues = HTML_QuickForm::arrayMerge($this->_defaultValues, $defaultValues);
-            $this->refreshFinalValues();
             foreach (array_keys($this->_elements) as $key) {
                 $this->_elements[$key]->onQuickFormEvent('updateValue', null, $this);
             }
@@ -527,7 +509,6 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
             $this->_constantValues = HTML_QuickForm::arrayMerge($this->_constantValues, $constantValues);
-            $this->refreshFinalValues();
             foreach (array_keys($this->_elements) as $key) {
                 $this->_elements[$key]->onQuickFormEvent('updateValue', null, $this);
             }
@@ -554,7 +535,7 @@ class HTML_QuickForm extends HTML_Common
             $this->addElement('hidden', 'MAX_FILE_SIZE', $this->_maxFileSize);
         } else {
             $el =& $this->getElement('MAX_FILE_SIZE');
-            $el->_attributes['value']=$this->_maxFileSize;
+            $el->updateAttributes(array('value' => $this->_maxFileSize));
         }
     } // end func setMaxFileSize
 
@@ -591,7 +572,7 @@ class HTML_QuickForm extends HTML_Common
     function &createElement($elementType)
     {
         $args    =  func_get_args();
-        $element =& HTML_QuickForm::_loadElement('createElement', $elementType, array_slice($args, 1));
+        $element = HTML_QuickForm::_loadElement('createElement', $elementType, array_slice($args, 1));
         return $element;
     } // end func createElement
 
@@ -1297,7 +1278,6 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
         }
-        $this->refreshFinalValues();
     } // end func applyFilter
 
     // }}}
@@ -1424,7 +1404,7 @@ class HTML_QuickForm extends HTML_Common
             } while ($parent = get_parent_class($parent));
         }
         if ($ruleName) {
-            $registry =& HTML_QuickForm_RuleRegistry::singleton();
+            $registry = HTML_QuickForm_RuleRegistry::singleton();
             $registry->registerRule($ruleName, null, $name);
         }
         return $ruleName;
@@ -1549,7 +1529,7 @@ class HTML_QuickForm extends HTML_Common
         }
 
         include_once('HTML/QuickForm/RuleRegistry.php');
-        $registry =& HTML_QuickForm_RuleRegistry::singleton();
+        $registry = HTML_QuickForm_RuleRegistry::singleton();
 
         foreach ($this->_rules as $target => $rules) {
             $submitValue = $this->getSubmitValue($target);
@@ -1784,7 +1764,7 @@ class HTML_QuickForm extends HTML_Common
         }
 
         include_once('HTML/QuickForm/RuleRegistry.php');
-        $registry =& HTML_QuickForm_RuleRegistry::singleton();
+        $registry = HTML_QuickForm_RuleRegistry::singleton();
         $test = array();
         $js_escape = array(
             "\r"    => '\r',
@@ -1959,6 +1939,7 @@ class HTML_QuickForm extends HTML_Common
                              'description',
                              'intro',
                              'thankyou_text',
+                             'tf_thankyou_text',
                              'intro_text',
                              'page_text',
                              'body_text',
@@ -1989,7 +1970,9 @@ class HTML_QuickForm extends HTML_Common
                              'msg_text', // message templates’ text versions
                              'text_message', // (send an) email to contact’s and CiviMail’s text version
                              'data', // data i/p of persistent table
-                             'sqlQuery' // CRM-6673
+                             'sqlQuery', // CRM-6673
+                             'pcp_title',
+                             'pcp_intro_text',
                              );
                                   
         $values = array();

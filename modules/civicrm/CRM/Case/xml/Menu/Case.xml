@@ -35,6 +35,11 @@
      <access_arguments>access all cases and activities</access_arguments>
   </item>  
   <item>
+     <path>civicrm/case/cd/edit</path>
+     <title>Case Custom Set</title>
+     <page_callback>CRM_Case_Form_CustomData</page_callback>
+  </item>  
+  <item>
      <path>civicrm/contact/view/case</path>
      <title>Case</title>
      <page_callback>CRM_Case_Page_Tab</page_callback>

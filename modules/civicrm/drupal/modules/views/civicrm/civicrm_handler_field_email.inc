@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
  * Unchanged anonymous code contribution. No claim.
  *
@@ -29,12 +30,13 @@
  * Displays Email and links to email address.
  *
  */
+
 /**
  * Field handler to provide acess control for the email field
  *
  * @ingroup civicrm_field_handlers
  */
-class civicrm_handler_field_email extends views_handler_field {
+class civicrm_handler_field_email extends civicrm_handler_field_location {
   function option_definition() {
     $options = parent::option_definition();
     $options['link_to_user'] = array('default' => 'mailto');
@@ -60,9 +62,10 @@ class civicrm_handler_field_email extends views_handler_field {
     }
     return check_plain($values->{$this->field_alias});
   }
-  
+
   function render_link($input, $values) {
-     return $input;
+    return $input;
   }
 }
-?>
+
+

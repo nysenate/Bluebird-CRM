@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Event/Form/Task/SaveSearch.php';
 
 /**
  * This class provides the functionality to update a saved search
@@ -42,42 +39,40 @@ require_once 'CRM/Event/Form/Task/SaveSearch.php';
  */
 class CRM_Event_Form_Task_SaveSearch_Update extends CRM_Event_Form_Task_SaveSearch {
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess()
-    {
-        parent::preProcess( );
-        
-        $this->_id = $this->get( 'ssID' );
-        if ( ! $this->_id ) {
-            // fetch the value from the group id gid
-            $gid = $this->get( 'gid' );
-            $this->_id = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $gid, 'saved_search_id' );
-        }
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */
+  function preProcess() {
+    parent::preProcess();
+
+    $this->_id = $this->get('ssID');
+    if (!$this->_id) {
+      // fetch the value from the group id gid
+      $gid = $this->get('gid');
+      $this->_id = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $gid, 'saved_search_id');
     }
+  }
 
-    /**
-     * This function sets the default values for the form.
-     * the default values are retrieved from the database
-     *
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( ) {
+  /**
+   * This function sets the default values for the form.
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues() {
 
-        $defaults = array( );
-        $params   = array( );
-        
-        $params = array( 'saved_search_id' => $this->_id );
-        CRM_Contact_BAO_Group::retrieve( $params, $defaults );
+    $defaults = array();
+    $params = array();
 
-        return $defaults;
-    }
+    $params = array('saved_search_id' => $this->_id);
+    CRM_Contact_BAO_Group::retrieve($params, $defaults);
 
+    return $defaults;
+  }
 }
-
 

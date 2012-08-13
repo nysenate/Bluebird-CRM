@@ -28,51 +28,51 @@ function custom_value_get_expectedresult(){
   'version' => 3,
   'count' => 7,
   'values' => array( 
-      '8' => array( 
+      '1' => array( 
           'entity_id' => 2,
           'latest' => 'value 1',
-          'id' => '8',
+          'id' => '1',
           '0' => 'value 1',
         ),
-      '9' => array( 
+      '2' => array( 
           'entity_id' => 2,
           'latest' => 'value 3',
-          'id' => '9',
+          'id' => '2',
           '1' => 'value 2',
           '2' => 'value 3',
         ),
-      '10' => array( 
+      '3' => array( 
           'entity_id' => 2,
           'latest' => '',
-          'id' => '10',
+          'id' => '3',
           '1' => 'warm beer',
           '2' => '',
         ),
-      '11' => array( 
+      '4' => array( 
           'entity_id' => 2,
           'latest' => '',
-          'id' => '11',
+          'id' => '4',
           '1' => 'fl* w*',
           '2' => '',
         ),
-      '12' => array( 
+      '5' => array( 
           'entity_id' => 2,
           'latest' => 'coffee',
-          'id' => '12',
+          'id' => '5',
           '1' => '',
           '2' => 'coffee',
         ),
-      '13' => array( 
+      '6' => array( 
           'entity_id' => 2,
           'latest' => 'value 4',
-          'id' => '13',
+          'id' => '6',
           '1' => '',
           '2' => 'value 4',
         ),
-      '14' => array( 
+      '7' => array( 
           'entity_id' => 2,
           'latest' => '',
-          'id' => '14',
+          'id' => '7',
           '1' => 'vegemite',
           '2' => '',
         ),

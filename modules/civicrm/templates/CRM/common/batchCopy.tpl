@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,141 +25,140 @@
 *}
 {literal}
 <script type="text/javascript">
-function setStatusesTo(statusId)
-{
-    var cId = new Array();
-    var i = 0;
-    {/literal}
-    {foreach from=$componentIds item=field}
-    {literal}cId[i++]{/literal} = {$field}
-    {/foreach}
-    {literal}
-    for (k = 0; k < cId.length; k++) {
-        document.getElementById("field_"+cId[k]+"_participant_status").value = statusId;
-    }
-}
+cj( function() {
+    //bind the click event for action icon
+    cj('.action-icon').click( function( ) {
+        copyFieldValues( cj(this).attr('fname') );
+    });
+});
 
-function copyValues(fieldName, source)
-{
-    var cId = new Array();
-    var i = 0;
-    var editor = {/literal}"{$editor}"{literal};
-    {/literal}
-    {foreach from=$componentIds item=field}
-        {literal}cId[i++]{/literal} = {$field}
-    {/foreach}
-    {literal}
+/**
+ * This function use to copy fieldsi
+ *
+ * @param fname string field name
+ * @return void
+ */
+function copyFieldValues( fname ) {
+    // this is the most common pattern for elements, so first check if it exits
+    // this check field starting with "field[" and contains [fname] and is not
+    // hidden ( for checkbox hidden element is created )
+    var elementId    = cj('.crm-copy-fields [name^="field["][name*="[' + fname +']"][type!=hidden]');
+    
+    // get the first element and it's value
+    var firstElement = elementId.eq(0);
+    var firstElementValue = firstElement.val();
+    
+    //console.log( elementId );
+    //console.log( firstElement );
+    //console.log( firstElementValue );
+    
+    //check if it is date element
+    var isDateElement     = elementId.attr('format');
 
-    if (source === undefined) source = "field_"+cId[0]+"_"+fieldName;
+    // check if it is wysiwyg element
+    var editor = elementId.attr('editor');
 
-    if ( document.getElementById(source) ) {
-        if ( document.getElementById(source).type == 'select-multiple' ) {
-            var multiSelectList = document.getElementById(source).options;
-            for ( k=0; k<cId.length; k++ ) {
-                for ( i=0; i<multiSelectList.length; i++ ){
-                    if ( multiSelectList[i].selected == true ){
-                        document.getElementById( "field_"+cId[k]+"_"+fieldName ).options[i].selected = true ;
-                    } else {
-                        document.getElementById( "field_"+cId[k]+"_"+fieldName ).options[i].selected = false ;
-                    }
-                }
-            }
-        } else if ( document.getElementById(source).getAttribute("class") == "tinymce" ) {
-            if ( editor == "tinymce" ) {
-                for ( k=0; k<cId.length; k++ ) {
-                    cj( '#field_' + cId[k] + '_' + fieldName ).html( cj('#'+ source).html( ) );
-                }
-            }
+    //get the element type
+    var elementType       = elementId.attr('type'); 
+    
+    // set the value for all the elements, elements needs to be handled are
+    // select, checkbox, radio, date fields, text, textarea, multi-select
+    // wysiwyg editor, advanced multi-select ( to do )
+    if ( elementType == 'radio' ) {
+        firstElementValue = elementId.filter(':checked').eq(0).val();
+        elementId.filter("[value=" + firstElementValue + "]").prop("checked",true).change();
+    } else if ( elementType == 'checkbox' ) {
+        // handle checkbox
+        // get the entity id of first element
+        var firstEntityId = cj('.crm-copy-fields > tbody > tr');
+        
+        if ( firstEntityId.length == 0 ) {
+          firstEntityId = firstElement.closest('div.crm-grid-row');
+        }
+
+        firstEntityId = firstEntityId.attr('entity_id');
+        
+        var firstCheckElement = cj('.crm-copy-fields [type=checkbox][name^="field['+ firstEntityId +']['+ fname +']"][type!=hidden]');
+        
+        if ( firstCheckElement.length > 1 ) {
+            // lets uncheck all the checkbox except first one
+            cj('.crm-copy-fields [type=checkbox][name^="field["][name*="[' + fname +']"][type=checkbox]:not([name^="field['+ firstEntityId +']['+ fname +']["])').removeAttr('checked');
+        
+            //here for each checkbox for first row, check if it is checked and set remaining checkboxes
+            firstCheckElement.each(function() {
+               if (cj(this).prop('checked') ) {
+                 var elementName = cj(this).attr('name');
+                 var correctIndex = elementName.split('field['+ firstEntityId +']['+ fname +'][');
+                 correctIndexValue = correctIndex[1].replace(']', '');
+                 cj('.crm-copy-fields [type=checkbox][name^="field["][name*="['+ fname +']['+ correctIndexValue+']"][type!=hidden]').attr('checked',true).change();
+               }
+            });
         } else {
-	    var copyHidden = false;
-            if ( document.getElementById(source).type == 'text' &&
-	         cj('#'+ source +'_id').length > 0 &&
-		 cj('#field_'+ cId[1] + '_' + fieldName + '_id').length > 0 ) {
-		 copyHidden = true;
-            }
-            for ( k=0; k<cId.length; k++ ) {
-                document.getElementById("field_"+cId[k]+"_"+fieldName).value = document.getElementById(source).value;
-		if ( copyHidden ) {
-		  document.getElementById("field_"+cId[k]+"_"+fieldName+'_id').value = document.getElementById(source+'_id').value;
-		}
+            if ( firstCheckElement.prop('checked') ) {
+                cj('.crm-copy-fields [type=checkbox][name^="field["][name*="['+ fname +']"][type!=hidden]').attr('checked',true).change();
+            } else {
+                cj('.crm-copy-fields [type=checkbox][name^="field["][name*="['+ fname +']"][type!=hidden]').removeAttr('checked').change();
             }
         }
-    } else if ( document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]") &&
-            document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]").length > 0 ) {
-        if ( document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]")[0].type == "radio" ) {
-            for ( t=0; t<document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]").length; t++ ) {
-                if  (document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]")[t].checked == true ) {break}
-            }
-            if ( t == document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]").length ) {
-                for ( k=0; k<cId.length; k++ ) {
-                    for ( t=0; t<document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]").length; t++ ) {
-                        document.getElementsByName("field"+"["+cId[k]+"]"+"["+fieldName+"]")[t].checked = false;
-                    }
-                }
-            } else {
-                for ( k=0; k<cId.length; k++ ) {
-                    document.getElementsByName("field"+"["+cId[k]+"]"+"["+fieldName+"]")[t].checked = document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]")[t].checked;
-                }
-            }
-        } else if ( document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]")[0].type == "checkbox" ) {
-            for ( k=0; k<cId.length; k++ ) {
-                document.getElementsByName("field"+"["+cId[k]+"]"+"["+fieldName+"]")[0].checked = document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]")[0].checked;
-            }
-        } else if ( document.getElementById( "field"+"["+cId[0]+"]"+"["+fieldName+"]___Frame" ) ) {
-            //currently FckEditor field is mapped accross ___frames. It can also be mapped accross ___config.
-            if ( editor == "fckeditor" ) {
-                fckEditor = FCKeditorAPI.GetInstance( "field"+"["+cId[0]+"]"+"["+fieldName+"]" );
-                for ( k=0; k<cId.length; k++ ) {
-                    FCKeditorAPI.GetInstance( "field"+"["+cId[k]+"]"+"["+fieldName+"]" ).SetHTML( fckEditor.GetHTML() );
-                }
-            }
+    } else if ( editor ) {
+        var firstElementId = firstElement.attr('id');
+        switch ( editor ) {
+            case 'ckeditor':
+                //get the content of first element
+                oEditor = CKEDITOR.instances[firstElementId];
+                var htmlContent = oEditor.getData( );
+                
+                // copy first element content to all the elements
+                elementId.each( function() {
+                    var elemtId = cj(this).attr('id');
+                    oEditor = CKEDITOR.instances[elemtId];
+                    oEditor.setData( htmlContent );
+                });
+                break;
+            case 'tinymce':
+                //get the content of first element
+                var htmlContent = tinyMCE.get( firstElementId ).getContent();
+                
+                // copy first element content to all the elements
+                elementId.each( function() {
+                    var elemtId = cj(this).attr('id');
+                    tinyMCE.get( elemtId ).setContent( htmlContent ); 
+                });
+                break;
+            case 'joomlaeditor':
+                 // TO DO
+            case 'drupalwysiwyg':
+                 // TO DO
+            default:
+                elementId.val( firstElementValue ).change();
+
         }
     } else {
-        if ( f = document.getElementById('Batch') ) {
-            if ( ts = f.getElementsByTagName('table') ) {
-                if ( t = ts[0] ) {
-                    tRows = t.getElementsByTagName('tr') ;
-                    if ( tRows[1] ) {
-                        secondRow = tRows[1] ;
-                        inputs = secondRow.getElementsByTagName('input') ;
-                        for ( ii = 0 ; ii<inputs.length ; ii++ ) {
-                            pattern = 'field['+cId[0]+']['+fieldName+']';
-                            if ( inputs[ii].name.search(pattern) && inputs[ii].type == 'checkbox' ) {
-                                for ( k=1; k<cId.length; k++ ) {
-                                    target = document.getElementsByName(inputs[ii].name.replace('field['+cId[0]+']', 'field['+cId[k]+']')) ;
-                                    if ( target.length > 0 ) {
-                                        target[1].checked = inputs[ii].checked ;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        elementId.val( firstElementValue ).change();
+    }
+
+    // since we use different display field for date we also need to set it.
+    // also check for date time field and set the value correctly
+    if ( isDateElement ) {
+        copyValuesDate( fname );
     }
 }
 
+/**
+ * Special function to handle setting values for date fields
+ *
+ * @param fname string field name
+ * @return void
+ */
+function copyValuesDate(fname) {
+    var fnameDisplay = fname + '_display';
+    var fnameTime    = fname + '_time';
+    
+    var displayElement = cj('.crm-copy-fields [name^="field_"][name$="_' + fnameDisplay +'"][type!=hidden]');
+    var timeElement    = cj('.crm-copy-fields [name^="field["][name*="[' + fnameTime +']"][type!=hidden]');
 
-function copyValuesDate(fieldName)
-{
-    var cId = new Array();
-    var i = 0;
-    {/literal}
-    {foreach from=$componentIds item=field}
-        {literal}cId[i++]{/literal} = {$field}
-    {/foreach}
-    {literal}
-    var firstDate = cj( "#field_" + cId[0] + '_' + fieldName + '_display' ).val( );
-    var firstTime = null;
-    if( cj( "#field_" + cId[0] + '_' + fieldName + '_time') ){
-    	firstTime = cj( "#field_" + cId[0] + '_' + fieldName + '_time' ).val( );
-    }
- 	cj(cId).each(function(i,id){
-        cj( '#field_' + id + '_' + fieldName + '_display' ).val( firstDate );
-        cj( '#field_' + id + '_' + fieldName ).val( firstDate );
-        cj( '#field_' + id + '_' + fieldName + '_time').val( firstTime );
- 	});    
+    displayElement.val( displayElement.eq(0).val() );
+    timeElement.val( timeElement.eq(0).val() );
 }
 
 </script>

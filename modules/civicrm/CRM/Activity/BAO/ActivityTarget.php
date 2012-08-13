@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,111 +28,102 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Activity/DAO/ActivityTarget.php';
 
 /**
  * This class is for activity assignment functions
  *
  */
-class CRM_Activity_BAO_ActivityTarget extends CRM_Activity_DAO_ActivityTarget
-{
+class CRM_Activity_BAO_ActivityTarget extends CRM_Activity_DAO_ActivityTarget {
 
-    /**
-     * class constructor
-     */
-    function __construct( ) 
-    {
-        parent::__construct( );
+  /**
+   * class constructor
+   */
+  function __construct() {
+    parent::__construct();
+  }
+
+  /**
+   * funtion to add activity target
+   *
+   * @param array  $activity_id           (reference ) an assoc array of name/value pairs
+   * @param array  $target_contact_id     (reference ) the array that holds all the db ids
+   *
+   * @return object activity type of object that is added
+   * @access public
+   *
+   */
+  public static function create(&$params) {
+    $target = new CRM_Activity_BAO_ActivityTarget();
+
+    $target->copyValues($params);
+    return $target->save();
+  }
+
+  /**
+   * function to retrieve id of target contact by activity_id
+   *
+   * @param int    $id  ID of the activity
+   *
+   * @return mixed
+   *
+   * @access public
+   *
+   */
+  static
+  function retrieveTargetIdsByActivityId($activity_id) {
+    $targetArray = array();
+    if (!CRM_Utils_Rule::positiveInteger($activity_id)) {
+      return $targetArray;
     }
 
-    /**
-     * funtion to add activity target
-     *
-     * @param array  $activity_id           (reference ) an assoc array of name/value pairs
-     * @param array  $target_contact_id     (reference ) the array that holds all the db ids
-     *
-     * @return object activity type of object that is added
-     * @access public
-     * 
-     */
-    public function create( &$params ) 
-    {
-        require_once 'CRM/Activity/BAO/ActivityTarget.php';
-        $target = new CRM_Activity_BAO_ActivityTarget();
-
-        $target->copyValues( $params );
-        return $target->save();
-    }
-
-    /**
-     * function to retrieve id of target contact by activity_id
-     *
-     * @param int    $id  ID of the activity
-     * 
-     * @return mixed
-     * 
-     * @access public
-     * 
-     */
-    static function retrieveTargetIdsByActivityId( $activity_id ) 
-    {
-        $targetArray = array();
-        require_once 'CRM/Utils/Rule.php';
-        if ( ! CRM_Utils_Rule::positiveInteger( $activity_id ) ) {
-            return $targetArray;
-        }
-
-        $sql = '
+    $sql = '
             SELECT target_contact_id
             FROM civicrm_activity_target
             JOIN civicrm_contact ON target_contact_id = civicrm_contact.id
             WHERE activity_id = %1 AND civicrm_contact.is_deleted = 0
         ';
-        $target =& CRM_Core_DAO::executeQuery($sql, array(1 => array($activity_id, 'Integer')));
-        while ( $target->fetch() ) {
-            $targetArray[] = $target->target_contact_id;
-        }
-        return $targetArray;
+    $target = CRM_Core_DAO::executeQuery($sql, array(1 => array($activity_id, 'Integer')));
+    while ($target->fetch()) {
+      $targetArray[] = $target->target_contact_id;
+    }
+    return $targetArray;
+  }
+
+  /**
+   * function to retrieve names of target contact by activity_id
+   *
+   * @param int    $id  ID of the activity
+   *
+   * @return array
+   *
+   * @access public
+   *
+   */
+  static
+  function getTargetNames($activityID) {
+    $targetNames = array();
+
+    if (empty($activityID)) {
+      return $targetNames;
     }
 
-    /**
-     * function to retrieve names of target contact by activity_id
-     *
-     * @param int    $id  ID of the activity
-     * 
-     * @return array
-     * 
-     * @access public
-     * 
-     */
-    static function getTargetNames( $activityID ) 
-    {
-        $targetNames = array();
-
-        if ( empty( $activityID ) ) {
-            return $targetNames;
-        }
-
-        $query = "SELECT contact_a.id, contact_a.sort_name 
+    $query = "SELECT contact_a.id, contact_a.sort_name 
                   FROM civicrm_contact contact_a 
                   LEFT JOIN civicrm_activity_target 
                          ON civicrm_activity_target.target_contact_id = contact_a.id
                   WHERE civicrm_activity_target.activity_id = %1 AND contact_a.is_deleted = 0";
-        $queryParam = array( 1 => array( $activityID, 'Integer' ) );
+    $queryParam = array(1 => array($activityID, 'Integer'));
 
-        $dao = CRM_Core_DAO::executeQuery($query,$queryParam);
-        while ( $dao->fetch() ) {
-            $targetNames[$dao->id] =  $dao->sort_name;
-        }
-
-        return $targetNames;
+    $dao = CRM_Core_DAO::executeQuery($query, $queryParam);
+    while ($dao->fetch()) {
+      $targetNames[$dao->id] = $dao->sort_name;
     }
 
+    return $targetNames;
+  }
 }
-
 

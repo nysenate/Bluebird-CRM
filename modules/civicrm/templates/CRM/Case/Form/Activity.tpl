@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,10 +28,19 @@
 {if $cdType }
    {include file="CRM/Custom/Form/CustomData.tpl"}
 {else}
+<h3>{if $action eq 1 or $action eq 1024}
+        {ts 1=$activityTypeName}New %1{/ts}
+    {elseif $action eq 8}{ts 1=$activityTypeName}Delete %1{/ts}
+    {elseif $action eq 32768}{ts 1=$activityTypeName}Restore %1{/ts}
+    {else}{ts 1=$activityTypeName}Edit %1{/ts}{/if}
+</h3> 
 <div class="crm-block crm-form-block crm-case-activity-form-block">
-    {if $action neq 8 and $action  neq 32768 }
 
-{* added onload javascript for source contact*}
+{if $action neq 8 and $action  neq 32768 }
+    {* Include form buttons on top for new and edit modes. *}
+    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+
+    {* added onload javascript for source contact*}
 {literal}
 <script type="text/javascript">
 var target_contact = assignee_contact = target_contact_id = '';
@@ -73,11 +82,12 @@ cj(document).ready( function( ) {
 {literal}
 
 var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
-var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
+var tokenDataUrl_target  = "{/literal}{$tokenUrl}&context=case_activity_target{literal}";
+var tokenDataUrl_assignee  = "{/literal}{$tokenUrl}&context=case_activity_assignee{literal}";
 
 var hintText = "{/literal}{ts}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
-cj( "#assignee_contact_id").tokenInput( tokenDataUrl, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
-cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
+cj( "#assignee_contact_id").tokenInput( tokenDataUrl_assignee, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
+cj( "#target_contact_id"  ).tokenInput( tokenDataUrl_target, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
 cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
 cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirst : false, matchContains:true
                             }).result( function(event, data, formatted) { cj( "#source_contact_qid" ).val( data[1] );
@@ -88,15 +98,6 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
 
     {/if}
 
-        <legend>
-           {if $action eq 8}
-              {ts}Delete{/ts}
-           {elseif $action eq 4}
-              {ts}View{/ts}
-           {elseif $action eq 32768}
-              {ts}Restore{/ts}
-           {/if}
-        </legend>
         {if $action eq 8 or $action eq 32768 }
             <div class="messages status"> 
               <div class="icon inform-icon"></div> &nbsp;
@@ -258,8 +259,10 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
 
                     <table class="form-layout-compressed">
                         <tr class="crm-case-activity-form-block-followup_activity_type_id">
-			    <td class="label">{ts}Schedule Follow-up Activity{/ts}</td>
-                            <td>{$form.followup_activity_type_id.html}&nbsp;{$form.interval.label}&nbsp;{$form.interval.html}&nbsp;{$form.interval_unit.html}</td>
+			                <td class="label">{ts}Schedule Follow-up Activity{/ts}</td>
+                            <td>{$form.followup_activity_type_id.html}&nbsp;&nbsp;{ts}on{/ts}
+                                {include file="CRM/common/jcalendar.tpl" elementName=followup_date}
+                            </td>
                         </tr>
                         <tr class="crm-case-activity-form-block-followup_activity_subject">
                            <td class="label">{$form.followup_activity_subject.label}</td>
@@ -276,14 +279,19 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 {$form.duration.html}
                  <span class="description">{ts}Total time spent on this activity (in minutes).{/ts}
               </td>
-           </tr> 
+           </tr>
+    {* Suppress activity status and priority for changes to status, case type and start date. PostProc will force status to completed. *}
+    {if $activityTypeFile NEQ 'ChangeCaseStatus'
+        && $activityTypeFile NEQ 'ChangeCaseType'
+        && $activityTypeFile NEQ 'ChangeCaseStartDate'} 
            <tr class="crm-case-activity-form-block-status_id">
               <td class="label">{$form.status_id.label}</td><td class="view-value">{$form.status_id.html}</td>
            </tr>
-	   <tr class="crm-case-activity-form-block-priority_id">
+	       <tr class="crm-case-activity-form-block-priority_id">
               <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
            </tr>
-	   {if $form.tag.html}
+    {/if}
+	{if $form.tag.html}
              <tr class="crm-case-activity-form-block-tag">
                 <td class="label">{$form.tag.label}</td>
                 <td class="view-value"><div class="crm-select-container">{$form.tag.html}</div>

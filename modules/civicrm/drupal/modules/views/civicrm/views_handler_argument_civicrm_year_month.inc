@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,18 +22,20 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /**
  * Argument handler for a year plus month (CCYYMM)
  */
 class views_handler_argument_civicrm_year_month extends views_handler_argument_date {
+
   /**
    * Constructor implementation
    */
   function construct() {
     parent::construct();
-    $this->format = 'F Y';
+    $this->format     = 'F Y';
     $this->arg_format = 'Ym';
-    $this->formula = views_date_sql_format($this->arg_format, "***table***.$this->real_field","datetime",'0');
+    $this->formula    = views_date_sql_format($this->arg_format, "***table***.$this->real_field", "datetime", '0');
   }
 
   /**
@@ -51,3 +53,4 @@ class views_handler_argument_civicrm_year_month extends views_handler_argument_d
     return format_date(strtotime($this->argument . "15"), 'custom', $this->format, 0);
   }
 }
+

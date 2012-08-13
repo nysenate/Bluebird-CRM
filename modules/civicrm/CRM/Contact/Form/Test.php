@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,72 +28,58 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
-
 /**
  * This class generates form components generic to all the contact types.
- * 
+ *
  * It delegates the work to lower level subclasses and integrates the changes
  * back in. It also uses a lot of functionality with the CRM API's, so any change
  * made here could potentially affect the API etc. Be careful, be aware, use unit tests.
  *
  */
-class CRM_Contact_Form_Test extends CRM_Core_Form
-{
+class CRM_Contact_Form_Test extends CRM_Core_Form {
+  function preProcess() {}
 
-    function preProcess( ) 
-    {
+  /**
+   * This function sets the default values for the form. Note that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues() {
+    $defaults = array();
+    $params = array();
+  }
 
-    }
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
 
-    /**
-     * This function sets the default values for the form. Note that in edit/view mode
-     * the default values are retrieved from the database
-     * 
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( ) 
-    {
-        $defaults = array( );
-        $params   = array( );
-    }
+    $this->addElement('text', "state", ts('State / Province'), 'onkeyup="getState(this,event, false);"  onblur="getState(this,event, false);" autocomplete="off"');
 
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        
-        $this->addElement('text', "state", ts('State / Province'), 'onkeyup="getState(this,event, false);"  onblur="getState(this,event, false);" autocomplete="off"' );
-        
-        $this->addElement('text', "state_id", ts('State / Province Id'));
-        //$this->addElement('text', "country", ts('Country'));
-        // $this->addElement('text', "country_id", ts('Country  Id'));
-        $this->addElement('select', "country", ts('Country'), array('' => ts('- select -')), 'onblur="getState(this,event, true);"');
+    $this->addElement('text', "state_id", ts('State / Province Id'));
+    //$this->addElement('text', "country", ts('Country'));
+    // $this->addElement('text', "country_id", ts('Country  Id'));
+    $this->addElement('select', "country", ts('Country'), array('' => ts('- select -')), 'onblur="getState(this,event, true);"');
+  }
 
-    }
-
-       
-    /**
-     * Form submission of new/edit contact is processed.
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() 
-    {
-        
-    }
+  /**
+   * Form submission of new/edit contact is processed.
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {}
 }
-
 

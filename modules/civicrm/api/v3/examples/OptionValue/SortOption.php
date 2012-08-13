@@ -5,7 +5,7 @@
 /*
  demonstrates use of Sort param (available in many api functions). Also, getsingle
  */
-function option_value_getvalue_example(){
+function option_value_getsingle_example(){
 $params = array( 
   'option_group_id' => 1,
   'version' => 3,
@@ -16,7 +16,7 @@ $params = array(
 );
 
   require_once 'api/api.php';
-  $result = civicrm_api( 'option_value','getvalue',$params );
+  $result = civicrm_api( 'option_value','getsingle',$params );
 
   return $result;
 }
@@ -24,7 +24,7 @@ $params = array(
 /*
  * Function returns array of result expected from previous function
  */
-function option_value_getvalue_expectedresult(){
+function option_value_getsingle_expectedresult(){
 
   $expectedResult = array( 
   'id' => '4',
@@ -47,8 +47,8 @@ function option_value_getvalue_expectedresult(){
 /*
 * This example has been generated from the API test suite. The test that created it is called
 * 
-* testGetValueOptionValueSort and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3OptionValueTest.php
+* testGetSingleValueOptionValueSort and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/OptionValueTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

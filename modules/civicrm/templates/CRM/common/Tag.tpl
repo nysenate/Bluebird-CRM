@@ -1,10 +1,8 @@
 {if !$tagsetType or $tagsetType eq 'contact'}
 {foreach from=$tagsetInfo_contact item=tagset}
 <div class="crm-section tag-section contact-tagset-{$tagset.parentID}-section">
-<div class="label">
 <label>{$tagset.parentName}</label>
-</div>
-<div class="content">
+<div{if $context EQ "contactTab"} style="margin-top:-15px;"{/if}>
 {assign var=elemName  value = $tagset.tagsetElementName}
 {assign var=parID     value = $tagset.parentID}
 {assign var=editTagSet value=false}

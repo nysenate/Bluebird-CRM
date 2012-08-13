@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,15 +24,17 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing/deleting Message Templates *}
-{capture assign=tokenDocsRepeated}{docURL page="Mail-merge Tokens for Contact Data" text="token documentation"}{/capture}
+{capture assign=tokenDocsRepeated}{docURL page="user/common-workflows/tokens-and-mail-merge" text="token documentation"}{/capture}
+
+<h3>{if $action eq 1}{ts}New Message Template{/ts}{elseif $action eq 2}{ts}Edit Message Template{/ts}{else}{ts}Delete Message Template{/ts}{/if}</h3>
 {if $action neq 8}
 <div id="help">
     {ts}Use this form to add or edit re-usable message templates.{/ts} {help id="id-msgTplIntro" file="CRM/Admin/Page/MessageTemplates.hlp"}
 </div>
 {/if}
+
 <div class="crm-block crm-form-block"> 
 <div class="form-item" id="message_templates">
-<h3>{if $action eq 1}{ts}New Message Template{/ts}{elseif $action eq 2}{ts}Edit Message Template{/ts}{else}{ts}Delete Message Template{/ts}{/if}</h3>
 {if $action eq 8}
    <div class="messages status">
        <div class="icon inform-icon"></div>

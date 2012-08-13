@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,11 +36,11 @@
      <tr class="crm-pledge-form-block-displayName"><td class="label">{ts}Pledge By{/ts}</td><td class="bold"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId"}">{$displayName}</a></td></tr>
      <tr class="crm-pledge-form-block-amount">
         <td class="label">{ts}Total Pledge Amount{/ts}</td>
-        <td><span class="bold">{$amount|crmMoney}</span>
-            {if $originalPledgeAmount}<div class="messages status"><div class="icon inform-icon"></div>{ts 1=$originalPledgeAmount|crmMoney} Pledge total has changed due to payment adjustments. Original pledge amount was %1.{/ts}</div>{/if}
+        <td><span class="bold">{$amount|crmMoney:$currency}</span>
+            {if $originalPledgeAmount}<div class="messages status"><div class="icon inform-icon"></div>{ts 1=$originalPledgeAmount|crmMoney:$currency} Pledge total has changed due to payment adjustments. Original pledge amount was %1.{/ts}</div>{/if}
         </td>
      </tr>
-     <tr class="crm-pledge-form-block-installments"><td class="label">{ts}To be paid in{/ts}</td><td>{$installments}{ts} installments of {/ts}{$original_installment_amount|crmMoney}{ts} every {/ts} {$frequency_interval} {$frequencyUnit}</td></tr>
+     <tr class="crm-pledge-form-block-installments"><td class="label">{ts}To be paid in{/ts}</td><td>{$installments}{ts} installments of {/ts}{$original_installment_amount|crmMoney:$currency}{ts} every {/ts} {$frequency_interval} {$frequencyUnit}</td></tr>
  	 <tr><td class="label">{ts}Payments are due on the{/ts}</td><td>{$frequency_day} day of the period</td></tr>
 
     {if $start_date}     

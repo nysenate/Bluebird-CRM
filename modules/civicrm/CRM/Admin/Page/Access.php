@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,26 +28,33 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Page/Basic.php';
 
 /**
  * Dashboard page for managing Access Control
  * For initial version, this page only contains static links - so this class is empty for now.
  */
-class CRM_Admin_Page_Access extends CRM_Core_Page 
-{
-    function run( ) {
-        $config = CRM_Core_Config::singleton( );
-        $ufAccessURL = CRM_Utils_System::url( 'admin/user/permissions' );
-        
-        $this->assign('ufAccessURL', $ufAccessURL);
-        return parent::run();
-    }
-}
+class CRM_Admin_Page_Access extends CRM_Core_Page {
+  function run() {
+    $config = CRM_Core_Config::singleton();
 
+    if ($config->userFramework == 'Drupal') {
+      $this->assign('ufAccessURL', CRM_Utils_System::url('admin/people/permissions'));
+    }
+    elseif ($config->userFramework == 'Drupal6') {
+      $this->assign('ufAccessURL', CRM_Utils_System::url('admin/user/permissions'));
+    }
+    elseif ($config->userFramework == 'Joomla') {
+      JHTML::_('behavior.modal');
+      $url = $config->userFrameworkBaseURL . "index.php?option=com_config&view=component&component=com_civicrm&tmpl=component";
+      $jparams = 'rel="{handler: \'iframe\', size: {x: 875, y: 550}, onClose: function() {}}" class="modal"';
+      $this->assign('ufAccessURL', $url);
+      $this->assign('jAccessParams', $jparams);
+    }
+    return parent::run();
+  }
+}
 

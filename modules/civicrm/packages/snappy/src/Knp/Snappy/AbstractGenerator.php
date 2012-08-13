@@ -1,6 +1,6 @@
 <?php
 
-//namespace Knp\Snappy;
+namespace Knp\Snappy;
 
 /**
  * Base generator class for medias
@@ -10,7 +10,7 @@
  * @author  Matthieu Bontemps <matthieu.bontemps@knplabs.com>
  * @author  Antoine Hérault <antoine.herault@knplabs.com>
  */
-abstract class Knp_Snappy_AbstractGenerator implements Knp_Snappy_GeneratorInterface
+abstract class AbstractGenerator implements GeneratorInterface
 {
     private $binary;
     private $options = array();
@@ -307,7 +307,7 @@ abstract class Knp_Snappy_AbstractGenerator implements Knp_Snappy_GeneratorInter
      */
     protected function createTemporaryFile($content = null, $extension = null)
     {
-        $filename = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('knp_snappy', true);
+        $filename = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('knp_snappy');
 
         if (null !== $extension) {
             $filename .= '.'.$extension;
@@ -387,7 +387,7 @@ abstract class Knp_Snappy_AbstractGenerator implements Knp_Snappy_GeneratorInter
         $stdout = $stderr = $status = null;
         $descriptorspec = array(
            1 => array('pipe', 'w'),  // stdout is a pipe that the child will write to
-           2 => array('pipe', 'a') // stderr is a pipe that the child will append to
+           2 => array('pipe', 'w') // stderr is a pipe that the child will write to
         );
 
         $process = proc_open($command, $descriptorspec, $pipes);

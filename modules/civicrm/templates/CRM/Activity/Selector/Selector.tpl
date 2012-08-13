@@ -2,8 +2,8 @@
 <div class="crm-activity-selector-{$context}">
 <div class="crm-accordion-wrapper crm-search_filters-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-	{ts}Filter by Activity Type{/ts}</a>
+  <div class="icon crm-accordion-pointer"></div>
+  {ts}Filter by Activity Type{/ts}</a>
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
 
@@ -13,8 +13,8 @@
             {$form.activity_type_filter_id.html}
         </td>
         <!--td style="vertical-align: bottom;">
-		<span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="buildContactActivities( true )"; /></span>
-	</td-->
+    <span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="buildContactActivities( true )"; /></span>
+  </td-->
     </tr>
   </table>
  </div><!-- /.crm-accordion-body -->
@@ -41,8 +41,8 @@
 var {/literal}{$context}{literal}oTable;
 
 cj( function ( ) {
-   cj().crmaccordions(); 
-   var context = {/literal}"{$context}"{literal}; 
+   cj().crmaccordions();
+   var context = {/literal}"{$context}"{literal};
    buildContactActivities{/literal}{$context}{literal}( false );
    cj('.crm-activity-selector-'+ context +' #activity_type_filter_id').change( function( ) {
        buildContactActivities{/literal}{$context}{literal}( true );
@@ -53,7 +53,7 @@ function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
     if ( filterSearch ) {
         {/literal}{$context}{literal}oTable.fnDestroy();
     }
-    var context = {/literal}"{$context}"{literal}; 
+    var context = {/literal}"{$context}"{literal};
     var columns = '';
     var sourceUrl = {/literal}'{crmURL p="civicrm/ajax/contactactivity" h=0 q="snippet=4&context=$context&cid=$contactId"}'{literal};
 
@@ -81,29 +81,44 @@ function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
                        ],
         "bProcessing": true,
         "sPaginationType": "full_numbers",
-        "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
+        "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
         "bServerSide": true,
         "bJQueryUI": true,
         "sAjaxSource": sourceUrl,
         "iDisplayLength": 25,
-        "oLanguage": { "sZeroRecords":  ZeroRecordText },
+        "oLanguage": { "sZeroRecords":  ZeroRecordText,
+                       "sProcessing":   {/literal}"{ts escape='js'}Processing...{/ts}"{literal},
+                       "sLengthMenu":   {/literal}"{ts escape='js'}Show _MENU_ entries{/ts}"{literal},
+                       "sInfo":         {/literal}"{ts escape='js'}Showing _START_ to _END_ of _TOTAL_ entries{/ts}"{literal},
+                       "sInfoEmpty":    {/literal}"{ts escape='js'}Showing 0 to 0 of 0 entries{/ts}"{literal},
+                       "sInfoFiltered": {/literal}"{ts escape='js'}(filtered from _MAX_ total entries){/ts}"{literal},
+                       "sSearch":       {/literal}"{ts escape='js'}Search:{/ts}"{literal},
+                       "oPaginate": {
+                            "sFirst":    {/literal}"{ts escape='js'}First{/ts}"{literal},
+                            "sPrevious": {/literal}"{ts escape='js'}Previous{/ts}"{literal},
+                            "sNext":     {/literal}"{ts escape='js'}Next{/ts}"{literal},
+                            "sLast":     {/literal}"{ts escape='js'}Last{/ts}"{literal}
+                        }
+                    },
         "fnDrawCallback": function() { setSelectorClass{/literal}{$context}{literal}( context ); },
         "fnServerData": function ( sSource, aoData, fnCallback ) {
             aoData.push( {name:'contact_id', value: {/literal}{$contactId}{literal}},
                          {name:'admin',   value: {/literal}'{$admin}'{literal}}
             );
             if ( filterSearch ) {
-                aoData.push(	     
+                aoData.push(
                     {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()}
-                );                
-            }	
+                );
+            }
             cj.ajax( {
-                "dataType": 'json', 
-                "type": "POST", 
-                "url": sSource, 
-                "data": aoData, 
-                "success": fnCallback
-            } ); 
+                "dataType": 'json',
+                "type": "POST",
+                "url": sSource,
+                "data": aoData,
+                "success": fnCallback,
+    // CRM-10244
+    "dataFilter": function(data, type) { return data.replace(/[\n\v\t]/g, " "); }
+            } );
         }
     });
 }

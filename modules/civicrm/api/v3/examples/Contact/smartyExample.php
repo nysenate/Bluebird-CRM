@@ -1,23 +1,26 @@
 <?php
+// $Id$
 
 /*
  * disabled for now while I check out security issues
  */
 
+
+
 /*
  demonstrates use of smarty as output
  */
-function contact_get_example(){
-$params = array( 
-  'id' => 1,
-  'version' => 3,
-  'api_Contribution_get' => array(),
-  'sequential' => 1,
-  'format.smarty' => 'api/v3/exampleLetter.tpl',
-);
+function contact_get_example() {
+  $params = array(
+    'id' => 1,
+    'version' => 3,
+    'api_Contribution_get' => array(),
+    'sequential' => 1,
+    'format.smarty' => 'api/v3/exampleLetter.tpl',
+  );
 
   require_once 'api/api.php';
-  $result = civicrm_api( 'contact','get',$params );
+  $result = civicrm_api('contact', 'get', $params);
 
   return $result;
 }
@@ -25,7 +28,7 @@ $params = array(
 /*
  * Function returns array of result expected from previous function
  */
-function contact_get_expectedresult(){
+function contact_get_expectedresult() {
 
   $expectedResult = '
 
@@ -40,7 +43,7 @@ to a complementary free beer.
     USD  120.00  Saturday, January  1, 2011
 ';
 
-  return $expectedResult  ;
+  return $expectedResult;
 }
 
 
@@ -59,3 +62,4 @@ to a complementary free beer.
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */
+

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,107 +28,103 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Utils_Cache_Memcache {
+  const DEFAULT_HOST    = 'localhost';
+  const DEFAULT_PORT    = 11211;
+  const DEFAULT_TIMEOUT = 3600;
+  const DEFAULT_PREFIX  = '';
 
-class CRM_Utils_Cache_Memcache
-{
-    const DEFAULT_HOST = 'localhost';
-    const DEFAULT_PORT = 11211;
-    const DEFAULT_TIMEOUT = 3600;
-    const DEFAULT_PREFIX = '';
+  /**
+   * The host name of the memcached server
+   *
+   * @var string
+   */
+  protected $_host = self::DEFAULT_HOST;
 
-    /**
-     * The host name of the memcached server
-     *
-     * @var string
-     */
-    protected $_host = self::DEFAULT_HOST;
+  /**
+   * The port on which to connect on
+   *
+   * @var int
+   */
+  protected $_port = self::DEFAULT_PORT;
 
-    /**
-     * The port on which to connect
-     *
-     * @var int
-     */
-    protected $_port = self::DEFAULT_PORT;
+  /**
+   * The default timeout to use
+   *
+   * @var int
+   */
+  protected $_timeout = self::DEFAULT_TIMEOUT;
 
-    /**
-     * The default timeout to use
-     *
-     * @var int
-     */
-    protected $_timeout = self::DEFAULT_TIMEOUT;
+  /**
+   * The prefix prepended to cache keys.
+   *
+   * If we are using the same memcache instance for multiple CiviCRM
+   * installs, we must have a unique prefix for each install to prevent
+   * the keys from clobbering each other.
+   *
+   * @var string
+   */
+  protected $_prefix = self::DEFAULT_PREFIX;
 
-    /**
-     * The actual memcache object
-     *
-     * @var resource
-     */
-    protected $_cache;
+  /**
+   * The actual memcache object
+   *
+   * @var resource
+   */
+  protected $_cache;
 
-    /**
-     * The prefix prepended to cache keys.
-     *
-     * If we are using the same memcache instance for multiple CiviCRM
-     * installs, we must have a unique prefix for each install to prevent
-     * the keys from clobbering each other.
-     *
-     * @var string
-     */
-    protected $_prefix = self::DEFAULT_PREFIX;
-
-    /**
-     * Constructor
-     *
-     * @param array   $config  an array of configuration params
-     * @return void
-     */
-    function __construct($config)
-    {
-        if (isset($config['host'])) {
-            $this->_host = $config['host'];
-        }
-        if (isset($config['port'])) {
-            $this->_port = $config['port'];
-        }
-        if (isset($config['timeout'])) {
-            $this->_timeout = $config['timeout'];
-        }
-        if (isset($config['prefix'])) {
-            $this->_prefix = $config['prefix'];
-        }
-
-        $this->_cache = new Memcache();
-        
-        if (!$this->_cache->connect($this->_host, $this->_port)) {
-            // dont use fatal here since we can go in an infinite loop
-            echo 'Could not connect to Memcached server';
-            CRM_Utils_System::civiExit();
-        }
+  /**
+   * Constructor
+   *
+   * @param array   $config  an array of configuration params
+   *
+   * @return void
+   */
+  function __construct(&$config) {
+    if (isset($config['host'])) {
+      $this->_host = $config['host'];
+    }
+    if (isset($config['port'])) {
+      $this->_port = $config['port'];
+    }
+    if (isset($config['timeout'])) {
+      $this->_timeout = $config['timeout'];
+    }
+    if (isset($config['prefix'])) {
+      $this->_prefix = $config['prefix'];
     }
 
-    function set($key, &$value) {
-        $key = $this->_prefix.$key;
-        if (!$this->_cache->set($key, $value, false, $this->_timeout)) {
-            return false;
-        }
-        return true;
-    }
+    $this->_cache = new Memcache();
 
-    function &get($key) {
-        $key = $this->_prefix.$key;
-        $result =& $this->_cache->get($key);
-        return $result;
+    if (!$this->_cache->connect($this->_host, $this->_port)) {
+      // dont use fatal here since we can go in an infinite loop
+      echo 'Could not connect to Memcached server';
+      CRM_Utils_System::civiExit();
     }
+  }
 
-    function delete($key) {
-        $key = $this->_prefix.$key;
-        return $this->_cache->delete($key);
+  function set($key, &$value) {
+    if (!$this->_cache->set($this->_prefix . $key, $value, FALSE, $this->_timeout)) {
+      return FALSE;
     }
+    return TRUE;
+  }
 
-    function flush() {
-        return $this->_cache->flush();
-    }
+  function &get($key) {
+    $result = $this->_cache->get($this->_prefix . $key);
+    return $result;
+  }
+
+  function delete($key) {
+    return $this->_cache->delete($this->_prefix . $key);
+  }
+
+  function flush() {
+    return $this->_cache->flush();
+  }
 }
+

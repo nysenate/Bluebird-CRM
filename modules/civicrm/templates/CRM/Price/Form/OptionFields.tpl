@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,7 +43,7 @@
         <th>{ts}Amount{/ts} {if $useForEvent}{help id="id-negative-options"}{/if}</th>
     {if $useForEvent}
 	    <th>{ts}Participant Count{/ts} {help id="id-participant-count"}</th>
-	    <th>{ts}Max Participant{/ts}</th>
+	    <th>{ts}Max Participant{/ts} {help id="id-participant-max"}</th>
 	{/if}
         <th>{ts}Weight{/ts}</th>
 	    <th>{ts}Active?{/ts}</th>

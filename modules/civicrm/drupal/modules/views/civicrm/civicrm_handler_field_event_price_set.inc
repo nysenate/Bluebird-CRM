@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,8 @@
  +--------------------------------------------------------------------+
 */
 
-  /*
+
+/*
  * Copyright (C) 2009 James Rakich
  * Licensed to CiviCRM under the Academic Free License version 3.0.
  *
@@ -37,59 +38,59 @@ class civicrm_handler_field_event_price_set extends views_handler_field_prerende
     $this->additional_fields['event_page_id'] = array('table' => 'civicrm_event_page', 'field' => 'id');
   }
 
-    function query() {
+  function query() {
     $this->add_additional_fields();
     $this->field_alias = $this->aliases['event_page_id'];
   }
 
-    function pre_render ($values) {
+  function pre_render($values) {
 
-      if ( ! civicrm_initialize( ) ) {
-          return;
-      }
-      require_once 'CRM/Utils/Money.php';
-      require_once 'CRM/Price/BAO/Set.php';
-      require_once 'CRM/Core/OptionGroup.php';
-      require_once 'CRM/Core/BAO/Discount.php';
+    if (!civicrm_initialize()) {
+      return;
+    }
+    require_once 'CRM/Utils/Money.php';
+    require_once 'CRM/Price/BAO/Set.php';
+    require_once 'CRM/Core/OptionGroup.php';
+    require_once 'CRM/Core/BAO/Discount.php';
 
-     $eventPageIDs = array();
-     $this->items = array();
+    $eventPageIDs = array();
+    $this->items = array();
 
-     foreach ($values as $result) {
-       $eventPageIDs[] = $result->{$this->aliases['event_page_id']};
-     }
-
-
-     if ($eventPageIDs) {
-       foreach ($eventPageIDs as $eventPageID) {
-           $priceSet = array();
+    foreach ($values as $result) {
+      $eventPageIDs[] = $result->{$this->aliases['event_page_id']};
+    }
 
 
-           if ( isset ($eventPageID ) ) {
-            if ( ! CRM_Price_BAO_Set::getFor( 'civicrm_event_page', $eventPageID ) ) {
-                //retrieve event fees.
-                $discountId = CRM_Core_BAO_Discount::findSet( $eventPageID, 'civicrm_event' );
-                if ( $discountId ) {
-                    CRM_Core_OptionGroup::getAssoc(
-                                                   CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Discount',
-                                                                                $discountId,
-                                                                                'option_group_id' ),
-                                                   $priceSet, 'id' );
-                } else {
-                    CRM_Core_OptionGroup::getAssoc( "civicrm_event_page.amount.{$eventPageID}", $priceSet );
-                }
+    if ($eventPageIDs) {
+      foreach ($eventPageIDs as $eventPageID) {
+        $priceSet = array();
+
+
+        if (isset($eventPageID)) {
+          if (!CRM_Price_BAO_Set::getFor('civicrm_event_page', $eventPageID)) {
+            //retrieve event fees.
+            $discountId = CRM_Core_BAO_Discount::findSet($eventPageID, 'civicrm_event');
+            if ($discountId) {
+              CRM_Core_OptionGroup::getAssoc(
+                CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Discount',
+                  $discountId,
+                  'option_group_id'
+                ),
+                $priceSet, 'id'
+              );
             }
+            else {
+              CRM_Core_OptionGroup::getAssoc("civicrm_event_page.amount.{$eventPageID}", $priceSet);
+            }
+          }
         }
 
 
-           for ($i = 1; $i <= count($priceSet[label]); $i++) {
-             $this->items[$eventPageID][] = $priceSet[label][$i] . " " . CRM_Utils_Money::format($priceSet[value][$i]);
-             }
-             
-       }
-     }
-
-      
+        for ($i = 1; $i <= count($priceSet[label]); $i++) {
+          $this->items[$eventPageID][] = $priceSet[label][$i] . " " . CRM_Utils_Money::format($priceSet[value][$i]);
+        }
+      }
     }
-
+  }
 }
+

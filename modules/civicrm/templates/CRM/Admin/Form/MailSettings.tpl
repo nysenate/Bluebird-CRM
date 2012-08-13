@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,8 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing email settings.  *}
+<h3>{if $action eq 1}{ts}New Email Settings{/ts}{elseif $action eq 2}{ts}Edit Email Settings{/ts}{else}{ts}Delete Email Settings{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-mail-settings-form-block">
-<fieldset><legend>{if $action eq 1}{ts}New Email Settings{/ts}{elseif $action eq 2}{ts}Edit Email Settings{/ts}{else}{ts}Delete Email Settings{/ts}{/if}</legend>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 8}
   <div class="messages status">
@@ -71,6 +71,4 @@
     </table>
 	<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 {/if}		
-<div class="spacer"></div>
-</fieldset>
 </div>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,8 +25,13 @@
 *}
 {* Configure Membership signup/renewal block for an Online Contribution page *}
 <div id="form" class="crm-block crm-form-block crm-member-membershipblock-form-block">
+{if $isQuick}
+    <div id="memPopupContainer">
+    {ts}Once you switch to using a Price Set, you won't be able to switch back to your existing settings below except by re-entering them. Are you sure you want to switch to a Price Set?{/ts}
+    </div>
+{/if}
 <div id="help">
-    {ts}Use this form to enable and configure a Membership Signup and Renewal section for this Online Contribution Page. If you're not using this page for membership signup, leave the <strong>Enabled</strong> box un-checked..{/ts} {docURL page="Configure Membership"}
+    {ts}Use this form to enable and configure a Membership Signup and Renewal section for this Online Contribution Page. If you're not using this page for membership signup, leave the <strong>Enabled</strong> box un-checked..{/ts} {docURL page="user/membership/setup"}
 </div>
   {if $form.membership_type.html}   
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
@@ -69,14 +74,19 @@
 		      {/if}
 		      </td>
     	  </tr>   
+	  {if $isQuick}
+	  <tr>
+	  <td></td><td><div class="status message">{ts}Click <a id = 'memQuickconfig' href='#'>here</a> if you want to configure the Membership Types below as part of a Price Set, with the added flexibility and complexity that entails.{/ts}</div></td>
+	  </tr>
+	  {/if}
           <tr id="membership_type-block" class="crm-member-membershipblock-form-block-membership_type">
               <td class="label">{$form.membership_type.label}</td> 
               <td>
                 {assign var="count" value="1"}
                 {strip}
-                  <table class="report">
-                    <tr class="columnheader" style="vertical-align:top;"><th style="border-right: 1px solid #4E82CF;">{ts}Include these membership types{/ts}:</th><th>{ts}Default{/ts}:<br />
-                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('membership_type_default', 'MembershipBlock'); return false;" >unselect</a>)</span></th>{if $is_recur}<th>{ts}Auto-renew:{/ts}</th>{/if}</tr>
+                  <table class="report">	
+                    <tr class="columnheader" style="vertical-align:top;"><th style="border-right: 1px solid #4E82CF;">{ts}Include these membership types{/ts}</th><th{if $is_recur} style="border-right: 1px solid #4E82CF;"{/if}>{ts}Default{/ts}<br />
+                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('membership_type_default', 'MembershipBlock'); return false;" >unselect</a>)</span></th>{if $is_recur}<th>{ts}Auto-renew{/ts}</th>{/if}</tr>
                       {assign var="index" value="1"}
                       {foreach name=outer key=key item=item from=$form.membership_type}
                         {if $index < 10}
@@ -86,7 +96,7 @@
                           <td class="labels font-light">{$form.membership_type.$key.html}</td>
                           <td class="labels font-light">{$form.membership_type_default.$key.html}</td>
                           {if $is_recur}
-                              <td class="labels font-light">
+                               <td class="labels font-light">
                                 {if $auto_renew.$key}
                                    {assign var="element" value="auto_renew"|cat:_|cat:$key}{$form.$element.html}
                                 {else} 
@@ -118,8 +128,8 @@
    </div>
   {else}
       <div class="status message">
-         {capture assign=docURL}{crmURL p="civicrm/admin/member/membershipType" q="reset=1"}{/capture}
-         {ts 1=$docURL}You need to have at least one <a href="%1">Membership Type</a> to enable Member Signup.{/ts}
+         {capture assign=linkURL}{crmURL p="civicrm/admin/member/membershipType" q="reset=1"}{/capture}
+         {ts 1=$linkURL}You need to have at least one <a href="%1">Membership Type</a> with 'Public' visibility in order to enable self-service Membership Signup and Renewal.{/ts}
       </div>
   {/if} 
       <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
@@ -169,3 +179,45 @@
 
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
+{if $isQuick}
+{literal}
+<script type="text/javascript">
+cj( document ).ready( function( ) {    
+  cj("#memPopupContainer").hide();
+});    
+cj("#memQuickconfig").click(function(){
+  cj("#memPopupContainer").dialog({
+	title: "Selected Price Set",
+	width:400,
+	height:220,
+	modal: true,
+	overlay: {
+            	   opacity: 0.5,
+             	   background: "black"
+        },
+        buttons: { 
+                   "Ok": function() {
+		   var dataUrl  = {/literal}'{crmURL p="civicrm/ajax/rest" h=0 q="className=CRM_Core_Page_AJAX&fnName=setIsQuickConfig&context=civicrm_contribution_page&id=$contributionPageID" }';
+		   var redirectUrl = '{crmURL p="civicrm/admin/price/field" h=0 q="reset=1&action=browse&sid=" }';							       {literal}
+		   
+		   cj.ajax({
+			url: dataUrl,
+			async: false,
+			global: false,
+			success: function ( result ) {
+			  if (result) {
+			    window.location= redirectUrl+eval(result);
+			  }
+			}	
+		   });
+                   },
+		   "Close": function() { 
+                     cj(this).dialog("close");
+                   }
+	}	
+  });
+return false;
+});
+</script>
+{/literal}
+{/if}

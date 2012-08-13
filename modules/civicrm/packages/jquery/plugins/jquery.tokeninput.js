@@ -159,7 +159,7 @@ $.TokenList = function (input, url_or_data, settings) {
     var input_val;
 
     //NYSS keep track of focus to improve IE8
-	var keep_focus=new Array();
+    var keep_focus=new Array();
 
     // Create a new text input an attach keyup events
     var input_box = $("<input type=\"text\" autocomplete=\"off\" maxlength=\"64\">") //NYSS 3550
@@ -167,24 +167,24 @@ $.TokenList = function (input, url_or_data, settings) {
             outline: "none"
         })
         .attr("id", settings.idPrefix + input.id)
-		.click(function () { //NYSS
-			if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
+        .click(function () {
+            if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
                 show_dropdown_hint();
             }
-			keep_focus[input.id] = true; //NYSS
+            keep_focus[input.id] = true; //NYSS
         })
         .blur(function () {
-			if (!keep_focus[input.id]) {
-			    hide_dropdown();
-                $(this).val("");
-			} else {
-				keep_focus[input.id] = false;
-			}
+          //NYSS
+          if (!keep_focus[input.id]) {
+            hide_dropdown();
+            $(this).val("");
+          } else {
+            keep_focus[input.id] = false;
+          }
         })
-		//NYSS end
         .bind("keyup keydown blur update", resize_input)
         .keydown(function (event) {
-		    keep_focus[input.id] = true; //NYSS
+            keep_focus[input.id] = true; //NYSS
             var previous_token;
             var next_token;
 

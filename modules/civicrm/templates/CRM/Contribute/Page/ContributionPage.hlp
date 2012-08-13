@@ -34,6 +34,6 @@
     <li>{ts}If your page is enabled, click <strong>Live Page</strong> to view to the page in <strong>live mode</strong>.{/ts}</li>
     </ul>
     <p>{ts 1=$newPageURL}Click <a href='%1'>New Contribution Page</a> to create and configure a new online contribution page using the step-by-step wizard.{/ts}</p>
-    <p>{docURL page="CiviContribute Admin"}</p>
+    <p>{docURL page="user/contributions/what-you-need-to-know"}</p>
 </div>
 {/htxt}

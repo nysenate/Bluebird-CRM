@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,76 +28,80 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
 require_once 'ezc/Base/src/ezc_bootstrap.php';
 require_once 'ezc/autoload/mail_autoload.php';
-require_once 'CRM/Mailing/MailStore.php';
+class CRM_Mailing_MailStore_Mbox extends CRM_Mailing_MailStore {
 
-class CRM_Mailing_MailStore_Mbox extends CRM_Mailing_MailStore
-{
-    /**
-     * Connect to and lock the supplied file and make sure the two mail dirs exist
-     *
-     * @param string $file  mbox to operate upon
-     * @return void
-     */
-    function __construct($file)
-    {
-        $this->_transport = new ezcMailMboxTransport($file);
-        flock($this->_transport->fh, LOCK_EX);
+  /**
+   * Connect to and lock the supplied file and make sure the two mail dirs exist
+   *
+   * @param string $file  mbox to operate upon
+   *
+   * @return void
+   */
+  function __construct($file) {
+    $this->_transport = new ezcMailMboxTransport($file);
+    flock($this->_transport->fh, LOCK_EX);
 
-        $this->_leftToProcess = count($this->_transport->listMessages());
+    $this->_leftToProcess = count($this->_transport->listMessages());
 
-        $this->_ignored   = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.ignored',   date('Y'), date('m'), date('d'))));
-        $this->_processed = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.processed', date('Y'), date('m'), date('d'))));
+    $this->_ignored = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.ignored', date('Y'), date('m'), date('d'))));
+    $this->_processed = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.processed', date('Y'), date('m'), date('d'))));
+  }
+
+  /**
+   * Empty the mail source (if it was processed fully) and unlock the file
+   *
+   * @return void
+   */
+  function __destruct() {
+    if ($this->_leftToProcess === 0) {
+      // FIXME: the ftruncate() call does not work for some reason
+      if ($this->_debug) {
+        print "trying to delete the mailbox\n";
+      }
+      ftruncate($this->_transport->fh, 0);
     }
+    flock($this->_transport->fh, LOCK_UN);
+  }
 
-    /**
-     * Empty the mail source (if it was processed fully) and unlock the file
-     *
-     * @return void
-     */
-    function __destruct()
-    {
-        if ($this->_leftToProcess === 0) {
-            // FIXME: the ftruncate() call does not work for some reason
-            if ($this->_debug) print "trying to delete the mailbox\n";
-            ftruncate($this->_transport->fh, 0);
-        }
-        flock($this->_transport->fh, LOCK_UN);
+  /**
+   * Fetch the specified message to the local ignore folder
+   *
+   * @param integer $nr  number of the message to fetch
+   *
+   * @return void
+   */
+  function markIgnored($nr) {
+    if ($this->_debug) {
+      print "copying message $nr to ignored folder\n";
     }
+    $set = new ezcMailStorageSet($this->_transport->fetchByMessageNr($nr), $this->_ignored);
+    $parser = new ezcMailParser;
+    $parser->parseMail($set);
+    $this->_leftToProcess--;
+  }
 
-    /**
-     * Fetch the specified message to the local ignore folder
-     *
-     * @param integer $nr  number of the message to fetch
-     * @return void
-     */
-    function markIgnored($nr)
-    {
-        if ($this->_debug) print "copying message $nr to ignored folder\n";
-        $set = new ezcMailStorageSet($this->_transport->fetchByMessageNr($nr), $this->_ignored);
-        $parser = new ezcMailParser;
-        $parser->parseMail($set);
-        $this->_leftToProcess--;
+  /**
+   * Fetch the specified message to the local processed folder
+   *
+   * @param integer $nr  number of the message to fetch
+   *
+   * @return void
+   */
+  function markProcessed($nr) {
+    if ($this->_debug) {
+      print "copying message $nr to processed folder\n";
     }
-
-    /**
-     * Fetch the specified message to the local processed folder
-     *
-     * @param integer $nr  number of the message to fetch
-     * @return void
-     */
-    function markProcessed($nr)
-    {
-        if ($this->_debug) print "copying message $nr to processed folder\n";
-        $set = new ezcMailStorageSet($this->_transport->fetchByMessageNr($nr), $this->_processed);
-        $parser = new ezcMailParser;
-        $parser->parseMail($set);
-        $this->_leftToProcess--;
-    }
+    $set = new ezcMailStorageSet($this->_transport->fetchByMessageNr($nr), $this->_processed);
+    $parser = new ezcMailParser;
+    $parser->parseMail($set);
+    $this->_leftToProcess--;
+  }
 }
+

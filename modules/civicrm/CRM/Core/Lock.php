@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,68 +28,84 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
 class CRM_Core_Lock {
 
-    // lets have a 1 second timeout for now
-    const TIMEOUT = 1;
+  // lets have a 1 second timeout for now
+  CONST TIMEOUT = 1;
 
-    protected $_hasLock = false;
+  protected $_hasLock = FALSE;
 
-    protected $_name;
+  protected $_name;
 
-    function __construct( $name, $timeout = null ) {
-        $config         = CRM_Core_Config::singleton( );
-        $dsnArray       = DB::parseDSN($config->dsn);
-        $database       = $dsnArray['database'];
-        $domainID       = CRM_Core_Config::domainID( );
-        $this->_name    = $database . '.' . $domainID . '.' . $name;
-        $this->_timeout = $timeout ? $timeout : self::TIMEOUT;
-
-        $this->acquire( );
+  /**
+   * Initialize the constants used during lock acquire / release
+   *
+   * @param string  $name name of the lock. Please prefix with component / functionality
+   *                      e.g. civimail.cronjob.JOB_ID
+   * @param int     $timeout the number of seconds to wait to get the lock. 1 if not set
+   * @param boolean $serverWideLock should this lock be applicable across your entire mysql server
+   *                                this is useful if you have mutliple sites running on the same
+   *                                mysql server and you want to limit the number of parallel cron
+   *                                jobs - CRM-91XX
+   *
+   * @return object the lock object
+   *
+   */ function __construct($name, $timeout = NULL, $serverWideLock = FALSE) {
+    $config   = CRM_Core_Config::singleton();
+    $dsnArray = DB::parseDSN($config->dsn);
+    $database = $dsnArray['database'];
+    $domainID = CRM_Core_Config::domainID();
+    if ($serverWideLock) {
+      $this->_name = $name;
     }
-
-    function __destruct( ) {
-        $this->release( );
+    else {
+      $this->_name = $database . '.' . $domainID . '.' . $name;
     }
+    $this->_timeout = $timeout !== NULL ? $timeout : self::TIMEOUT;
 
-    function acquire( ) {
-        if ( ! $this->_hasLock ) {
-            $query  = "SELECT GET_LOCK( %1, %2 )";
-            $params = array( 1 => array( $this->_name   , 'String'  ),
-                             2 => array( $this->_timeout, 'Integer' ) );
-            $res = CRM_Core_DAO::singleValueQuery( $query, $params );
-            if ( $res ) {
-                $this->_hasLock = true;
-            }
-        }
-        return $this->_hasLock;
+    $this->acquire();
+  }
+
+  function __destruct() {
+    $this->release();
+  }
+
+  function acquire() {
+    if (!$this->_hasLock) {
+      $query = "SELECT GET_LOCK( %1, %2 )";
+      $params = array(1 => array($this->_name, 'String'),
+        2 => array($this->_timeout, 'Integer'),
+      );
+      $res = CRM_Core_DAO::singleValueQuery($query, $params);
+      if ($res) {
+        $this->_hasLock = TRUE;
+      }
     }
+    return $this->_hasLock;
+  }
 
-    function release( ) {
-        if ( $this->_hasLock ) {
-            $this->_hasLock = false;
+  function release() {
+    if ($this->_hasLock) {
+      $this->_hasLock = FALSE;
 
-            $query = "SELECT RELEASE_LOCK( %1 )";
-            $params = array( 1 => array( $this->_name, 'String' ) );
-            return CRM_Core_DAO::singleValueQuery( $query, $params );
-        }
+      $query = "SELECT RELEASE_LOCK( %1 )";
+      $params = array(1 => array($this->_name, 'String'));
+      return CRM_Core_DAO::singleValueQuery($query, $params);
     }
+  }
 
-    function isFree( ) {
-        $query = "SELECT IS_FREE_LOCK( %1 )";
-        $params = array( 1 => array( $this->_name, 'String' ) );
-        return CRM_Core_DAO::singleValueQuery( $query, $params );
-    }
+  function isFree() {
+    $query = "SELECT IS_FREE_LOCK( %1 )";
+    $params = array(1 => array($this->_name, 'String'));
+    return CRM_Core_DAO::singleValueQuery($query, $params);
+  }
 
-    function isAcquired( ) {
-        return $this->_hasLock;
-    }
-
+  function isAcquired() {
+    return $this->_hasLock;
+  }
 }
-
 

@@ -73,7 +73,7 @@ class HTML_QuickForm_text extends HTML_QuickForm_input
      */
     function setSize($size)
     {
-        $this->_attributes['size']=$size;
+        $this->updateAttributes(array('size'=>$size));
     } //end func setSize
 
     // }}}
@@ -89,7 +89,7 @@ class HTML_QuickForm_text extends HTML_QuickForm_input
      */
     function setMaxlength($maxlength)
     {
-        $this->_attributes['maxlength']=$maxlength;
+        $this->updateAttributes(array('maxlength'=>$maxlength));
     } //end func setMaxlength
 
     // }}}

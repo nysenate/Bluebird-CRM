@@ -8,11 +8,14 @@
 function activity_create_example(){
 $params = array( 
   'source_contact_id' => 17,
-  'activity_type_id' => 1,
+  'activity_type_id' => 40,
   'subject' => 'test activity type id',
   'activity_date_time' => '2011-06-02 14:36:13',
   'status_id' => 2,
   'priority_id' => 1,
+  'duration' => 120,
+  'location' => 'Pensulvania',
+  'details' => 'a test activity',
   'version' => 3,
   'custom_1' => 'custom string',
 );
@@ -38,14 +41,14 @@ function activity_create_expectedresult(){
           'id' => 1,
           'source_contact_id' => 17,
           'source_record_id' => '',
-          'activity_type_id' => 1,
+          'activity_type_id' => 40,
           'subject' => 'test activity type id',
           'activity_date_time' => '20110602143613',
-          'duration' => '',
-          'location' => '',
+          'duration' => 120,
+          'location' => 'Pensulvania',
           'phone_id' => '',
           'phone_number' => '',
-          'details' => '',
+          'details' => 'a test activity',
           'status_id' => 2,
           'priority_id' => 1,
           'parent_id' => '',
@@ -59,6 +62,7 @@ function activity_create_expectedresult(){
           'is_deleted' => '',
           'campaign_id' => '',
           'engagement_level' => '',
+          'weight' => '',
         ),
     ),
 );
@@ -73,7 +77,7 @@ function activity_create_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testActivityCreateCustom and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ActivityTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ActivityTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

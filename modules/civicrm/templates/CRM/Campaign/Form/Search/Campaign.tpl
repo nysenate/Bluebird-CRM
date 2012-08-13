@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -84,7 +84,7 @@
    
     <div id="{$searchForm}" class="crm-accordion-wrapper crm-campaign_search_form-accordion crm-accordion-open">
     <div class="crm-accordion-header">
-    <div class="icon crm-accordion-pointer"></div> 
+    <div id="campaignsSearch" class="icon crm-accordion-pointer"></div> 
         {ts}Search Campaigns{/ts}
     </div><!-- /.crm-accordion-header -->
 
@@ -202,13 +202,13 @@ function loadCampaignList( )
      noRecordFoundMsg += searchQill.join( '<span class="font-italic"> ...AND... </span></div><div class="qill">' );
      
      cj( '#campaigns' ).dataTable({
-     	        "bFilter"    : false,
-		"bAutoWidth" : false,
-	    	"bProcessing": false,
-		"bLengthChange": false,
-                "aaSorting": [],
-		"aoColumns":[{sClass:'crm-campaign-id                   hiddenElement' },
-		             {sClass:'crm-campaign-name                 hiddenElement' },
+             "bFilter"    : false,
+             "bAutoWidth" : false,
+             "bProcessing": false,
+             "bLengthChange": false,
+             "aaSorting": [],
+             "aoColumns":[{sClass:'crm-campaign-id                   hiddenElement' },
+                 {sClass:'crm-campaign-name                 hiddenElement' },
 			     {sClass:'crm-campaign-title'                              },			     
 			     {sClass:'crm-campaign-description'                        },
 			     {sClass:'crm-campaign-start_date'                         },
@@ -221,15 +221,16 @@ function loadCampaignList( )
 			     {sClass:'crm-campaign-campaign-isAactive'                 },
 			     {sClass:'crm-campaign-action',             bSortable:false}
 			     ],
-		"sPaginationType": "full_numbers",
-		"sDom"       : 'rt<"crm-datatable-pager-bottom"ip>',
-	   	"bServerSide": true,
-                "bJQueryUI": true,
-	   	"sAjaxSource": sourceUrl,
-		"oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
-		             "sZeroRecords" : noRecordFoundMsg },
-		"fnDrawCallback": function() { cj().crmtooltip(); },
-		"fnRowCallback": function( nRow, aData, iDisplayIndex ) { 
+             "sPaginationType": "full_numbers",
+             "sDom"       : 'rt<"crm-datatable-pager-bottom"ip>',
+             "bServerSide": true,
+             "bJQueryUI": true,
+             "sAjaxSource": sourceUrl,
+             "asStripClasses" : [ "odd-row", "even-row" ],
+             "oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
+                          "sZeroRecords" : noRecordFoundMsg },
+             "fnDrawCallback": function() { cj().crmtooltip(); },
+             "fnRowCallback": function( nRow, aData, iDisplayIndex ) { 
 				 //insert the id for each row for enable/disable.
 				 var rowId = 'campaign_row_' + aData[0];
 				 cj(nRow).attr( 'id', rowId );

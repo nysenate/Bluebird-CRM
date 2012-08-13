@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,26 +31,26 @@
 {if $honorRows}
     {strip}
     <table class="selector">
-        <tr class="columnheader">
-	    <th scope="col">{ts}Contributor{/ts}</th> 
-	    <th scope="col">{ts}Amount{/ts}</th>
-	    <th scope="col">{ts}Type{/ts}</th>
-	    <th scope="col">{ts}Source{/ts}</th>
-	    <th scope="col">{ts}Received{/ts}</th>
-	    <th scope="col">{ts}Status{/ts}</th>
-	    <th>&nbsp;</th>   
-        </tr>
-       	{foreach from=$honorRows item=row}
+      <tr class="columnheader">
+  	    <th scope="col">{ts}Contributor{/ts}</th> 
+  	    <th scope="col">{ts}Amount{/ts}</th>
+  	    <th scope="col">{ts}Type{/ts}</th>
+  	    <th scope="col">{ts}Source{/ts}</th>
+  	    <th scope="col">{ts}Received{/ts}</th>
+  	    <th scope="col">{ts}Status{/ts}</th>
+  	    <th>&nbsp;</th>   
+      </tr>
+    {foreach from=$honorRows item=row}
 	    <tr id='rowid{$row.honorId}' class="{cycle values="odd-row,even-row"}">
-		<td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$row.honorId`"}" id="view_contact">{$row.display_name}</a></td>
-		<td>{$row.amount}</td>
-		<td>{$row.type}</td>
-		<td>{$row.source}</td>
-		<td>{$row.receive_date|truncate:10:''|crmDate}</td>
-		<td>{$row.contribution_status}</td>
-	        <td>{$row.action|replace:'xx':$row.honorId}</td>
+    		<td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$row.honorId`"}" id="view_contact">{$row.display_name}</a></td>
+    		<td>{$row.amount}</td>
+    		<td>{$row.type}</td>
+    		<td>{$row.source}</td>
+    		<td>{$row.receive_date|truncate:10:''|crmDate}</td>
+    		<td>{$row.contribution_status}</td>
+	      <td>{$row.action|replace:'xx':$row.honorId}</td>
 	    </tr>
-        {/foreach}
+    {/foreach}
     </table>
     {/strip}
 {/if}

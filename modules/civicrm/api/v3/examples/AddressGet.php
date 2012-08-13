@@ -7,8 +7,8 @@
  */
 function address_get_example(){
 $params = array( 
-  'contact_id' => '',
-  'address' => '',
+  'contact_id' => 1,
+  'street_name' => 'Ambachtstraat',
   'version' => 3,
 );
 
@@ -26,42 +26,21 @@ function address_get_expectedresult(){
   $expectedResult = array( 
   'is_error' => 0,
   'version' => 3,
-  'count' => 2,
+  'count' => 1,
+  'id' => 7,
   'values' => array( 
-      '1' => array( 
-          'id' => '1',
-          'location_type_id' => '1',
-          'is_primary' => '1',
-          'is_billing' => '1',
-          'street_address' => '15S El Camino Way E',
-          'street_number' => '14',
-          'street_number_suffix' => 'S',
-          'street_name' => 'El Camino',
-          'street_type' => 'Way',
-          'city' => 'Collinsville',
-          'state_province_id' => '1006',
-          'postal_code' => '6022',
-          'country_id' => '1228',
-          'geo_code_1' => '41.8328',
-          'geo_code_2' => '-72.9253',
-        ),
-      '4' => array( 
-          'id' => '4',
-          'location_type_id' => '8',
+      '7' => array( 
+          'id' => '7',
+          'contact_id' => '1',
+          'location_type_id' => '12',
           'is_primary' => '1',
           'is_billing' => 0,
           'street_address' => 'Ambachtstraat 23',
           'street_number' => '23',
-          'street_number_suffix' => 'S',
           'street_name' => 'Ambachtstraat',
-          'street_type' => 'Way',
           'city' => 'Brummen',
-          'state_province_id' => '1006',
           'postal_code' => '6971 BN',
           'country_id' => '1152',
-          'geo_code_1' => '41.8328',
-          'geo_code_2' => '-72.9253',
-          'contact_id' => '1',
         ),
     ),
 );

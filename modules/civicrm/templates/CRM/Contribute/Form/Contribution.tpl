@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -85,7 +85,7 @@
         {/if} {help id="id-contribution_type"}
         </td></tr>
 	
-	{if $action eq 2 and $lineItem}
+	{if $action eq 2 and $lineItem and !$defaultContribution}
 	    <tr>
             <td class="label">{ts}Contribution Amount{/ts}</td>
             <td>{include file="CRM/Price/Page/LineItem.tpl" context="Contribution"}</td>
@@ -228,7 +228,7 @@
         	    {/if}
             </td>
         </tr>
-        {* Credit contribution to PCP. *}
+        {if $siteHasPCPs}{* Credit contribution to PCP. *}
         <tr id="pcpID" class="crm-contribution-form-block-pcp_made_through_id">
             <td class="label">{$form.pcp_made_through.label}</td>
             <td>
@@ -256,6 +256,7 @@
             	</div>
             </td>
         </tr>
+        {/if}
       </table>
 
     <div id="customData" class="crm-contribution-form-block-customData"></div>
@@ -291,6 +292,9 @@ function loadPanes( id ) {
     {/literal}
         {if $contributionMode}
             url = url + "&mode={$contributionMode}";
+        {/if}
+	{if $qfKey}
+            url = url + "&qfKey={$qfKey}";
         {/if}
     {literal}
    if ( ! cj('div.'+id).html() ) {

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,164 +28,161 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  *
  */
-
-require_once 'CRM/Utils/Type.php';
 
 /**
  * This class contains all case related functions that are called using AJAX (jQuery)
  */
-class CRM_Case_Page_AJAX
-{
-    /**
-     * Retrieve unclosed cases.
-     */
-    static function unclosedCases( ) 
-    {
-        $criteria =  explode( '-', CRM_Utils_Type::escape( CRM_Utils_Array::value( 's', $_GET ), 'String' ) );
-        
-        $limit = null;
-        if ( $limit = CRM_Utils_Array::value( 'limit', $_GET ) ) {
-            $limit =  CRM_Utils_Type::escape( $limit, 'Integer' );
-        }
-        
-        $params   =  array( 'limit'     => $limit, 
-                            'case_type' => trim( CRM_Utils_Array::value( 1, $criteria ) ),
-                            'sort_name' => trim( CRM_Utils_Array::value( 0, $criteria ) ) );
-        
-        $excludeCaseIds = array( );
-        if ( $caseIdStr = CRM_Utils_Array::value( 'excludeCaseIds', $_GET ) ) {
-            $excludeIdStr   = CRM_Utils_Type::escape( $caseIdStr, 'String' );
-            $excludeCaseIds = explode( ',', $excludeIdStr );
-        }
-        require_once 'CRM/Case/BAO/Case.php';
-        $unclosedCases = CRM_Case_BAO_Case::getUnclosedCases( $params, $excludeCaseIds );
-        
-        foreach ( $unclosedCases as $caseId => $details ) {
-            echo $details['sort_name'].' ('.$details['case_type'].': '.$details['case_subject'].') '."|$caseId|".$details['contact_id'].'|'.$details['case_type'].'|'.$details['sort_name']."\n";
-        }
-        
-        CRM_Utils_System::civiExit( );
+class CRM_Case_Page_AJAX {
+
+  /**
+   * Retrieve unclosed cases.
+   */
+  static
+  function unclosedCases() {
+    $criteria = explode('-', CRM_Utils_Type::escape(CRM_Utils_Array::value('s', $_GET), 'String'));
+
+    $limit = NULL;
+    if ($limit = CRM_Utils_Array::value('limit', $_GET)) {
+      $limit = CRM_Utils_Type::escape($limit, 'Integer');
     }
 
-    function processCaseTags( ) {
-        require_once 'CRM/Core/BAO/EntityTag.php';
-        
-        $caseId    = CRM_Utils_Type::escape($_POST['case_id'], 'Integer');
-        $tags      = CRM_Utils_Type::escape($_POST['tag'], 'String');
+    $params = array(
+      'limit' => $limit,
+      'case_type' => trim(CRM_Utils_Array::value(1, $criteria)),
+      'sort_name' => trim(CRM_Utils_Array::value(0, $criteria)),
+    );
 
-        if ( empty($caseId) ) {
-            echo 'false';
-            CRM_Utils_System::civiExit( );
-        }
-        
-        $tagIds = array( );
-        if ( $tags ) {   
-            $tagIds = explode( ',', $tags );
-        }
+    $excludeCaseIds = array();
+    if ($caseIdStr = CRM_Utils_Array::value('excludeCaseIds', $_GET)) {
+      $excludeIdStr = CRM_Utils_Type::escape($caseIdStr, 'String');
+      $excludeCaseIds = explode(',', $excludeIdStr);
+    }
+    $unclosedCases = CRM_Case_BAO_Case::getUnclosedCases($params, $excludeCaseIds);
 
-        $params = array( 'entity_id'    => $caseId,
-                         'entity_table' => 'civicrm_case' );
-        
-        CRM_Core_BAO_EntityTag::del( $params );
-        
-        foreach( $tagIds as $tagid ) {
-            if ( is_numeric( $tagid ) ) {
-                $params['tag_id'] = $tagid;
-                CRM_Core_BAO_EntityTag::add( $params );
-            }
-        }
-        
-        $session =& CRM_Core_Session::singleton( );
-
-        require_once "CRM/Activity/BAO/Activity.php";
-        require_once "CRM/Core/OptionGroup.php";
-        $activityParams = array( );
-        
-        $activityParams['source_contact_id']  = $session->get( 'userID' ); 
-        $activityParams['activity_type_id']   = CRM_Core_OptionGroup::getValue( 'activity_type', 'Change Case Tags', 'name' );
-        $activityParams['activity_date_time'] = date('YmdHis');
-        $activityParams['status_id']          = CRM_Core_OptionGroup::getValue( 'activity_status', 'Completed', 'name' );
-        $activityParams['case_id']            = $caseId;
-        $activityParams['is_auto']            = 0;
-        $activityParams['subject']            = 'Change Case Tags';
- 
-        $activity = CRM_Activity_BAO_Activity::create( $activityParams );
-        
-        require_once "CRM/Case/BAO/Case.php";
-        $caseParams = array( 'activity_id' => $activity->id,
-                             'case_id'     => $caseId );
-        
-        CRM_Case_BAO_Case::processCaseActivity( $caseParams );
-
-        echo 'true';
-        CRM_Utils_System::civiExit( );
+    foreach ($unclosedCases as $caseId => $details) {
+      echo $details['sort_name'] . ' (' . $details['case_type'] . ': ' . $details['case_subject'] . ') ' . "|$caseId|" . $details['contact_id'] . '|' . $details['case_type'] . '|' . $details['sort_name'] . "\n";
     }
 
-    function caseDetails( ) {
-        $caseId    = CRM_Utils_Type::escape( $_GET['caseId'], 'Integer' );
-        $contactId = CRM_Utils_Type::escape( $_GET['contactId'], 'Integer' );
-        require_once 'CRM/Case/BAO/Case.php';
-        $sql = "SELECT * FROM civicrm_case where id = %1";
-        $dao = CRM_Core_DAO::executeQuery( $sql , array( 1 => array( $caseId,  'Integer' ) ) );
-        
-        if ( $dao->fetch( ) ) {
-            $caseType = CRM_Case_BAO_Case::getCaseType( ( str_replace( CRM_Core_DAO::VALUE_SEPARATOR,
-                                                                        "", 
-                                                                        $dao->case_type_id) ) );
-             $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
-             $cs = $caseStatuses[$dao->status_id];
-             $caseDetails = "<table><tr><td>". ts('Case Subject') ."</td><td>{$dao->subject}</td></tr>
-                                    <tr><td>". ts('Case Type') ."</td><td>{$caseType}</td></tr> 
-                                    <tr><td>". ts('Case Status') ."</td><td>{$cs}</td></tr>
-                                    <tr><td>". ts('Case Start Date') ."</td><td>" . CRM_Utils_Date::customFormat($dao->start_date) ."</td></tr>
-                                    <tr><td>". ts('Case End Date') ."</td><td></td></tr>". CRM_Utils_Date::customFormat($dao->end_date) ."</table>";        
-             echo $caseDetails;
-        } else {
-            echo ts('Could not find valid Case!');
-        }
-        CRM_Utils_System::civiExit( ); 
+    CRM_Utils_System::civiExit();
+  }
+
+  function processCaseTags() {
+
+    $caseId = CRM_Utils_Type::escape($_POST['case_id'], 'Integer');
+    $tags = CRM_Utils_Type::escape($_POST['tag'], 'String');
+
+    if (empty($caseId)) {
+      echo 'false';
+      CRM_Utils_System::civiExit();
     }
 
+    $tagIds = array();
+    if ($tags) {
+      $tagIds = explode(',', $tags);
+    }
 
-    function addClient( ) {
+    $params = array(
+      'entity_id' => $caseId,
+      'entity_table' => 'civicrm_case',
+    );
 
-        $caseId = CRM_Utils_Type::escape( $_POST['caseID'], 'Integer' );
-        $contactId = CRM_Utils_Type::escape( $_POST['contactID'], 'Integer' );
+    CRM_Core_BAO_EntityTag::del($params);
 
-        $params = array(
-            'case_id'    => $caseId,
-            'contact_id' => $contactId
-        );
-        
-        require_once 'CRM/Case/BAO/Case.php';
-        $result = CRM_Case_BAO_Case::addCaseToContact( $params );
+    foreach ($tagIds as $tagid) {
+      if (is_numeric($tagid)) {
+        $params['tag_id'] = $tagid;
+        CRM_Core_BAO_EntityTag::add($params);
+      }
+    }
 
-        $session =& CRM_Core_Session::singleton( );
+    $session = CRM_Core_Session::singleton();
 
-        require_once "CRM/Activity/BAO/Activity.php";
-        require_once "CRM/Core/OptionGroup.php";
-        $activityParams = array( );
-        
-        $activityParams['source_contact_id']  = $session->get( 'userID' );
-        $activityParams['activity_type_id']   = CRM_Core_OptionGroup::getValue( 'activity_type', 'Add Client To Case', 'name' );
-        $activityParams['activity_date_time'] = date('YmdHis');
-        $activityParams['status_id']          = CRM_Core_OptionGroup::getValue( 'activity_status', 'Completed', 'name' );
-        $activityParams['case_id']            = $caseId;
-        $activityParams['is_auto']            = 0;
-        $activityParams['subject']            = 'Client Added To Case';
- 
-        $activity = CRM_Activity_BAO_Activity::create( $activityParams );
-        
-        require_once "CRM/Case/BAO/Case.php";
-        $caseParams = array( 'activity_id' => $activity->id,
-                             'case_id'     => $caseId );
-        
-        CRM_Case_BAO_Case::processCaseActivity( $caseParams );
-        echo json_encode( true );
-        CRM_Utils_System::civiExit( );        
-    }    
-    
+    $activityParams = array();
+
+    $activityParams['source_contact_id'] = $session->get('userID');
+    $activityParams['activity_type_id'] = CRM_Core_OptionGroup::getValue('activity_type', 'Change Case Tags', 'name');
+    $activityParams['activity_date_time'] = date('YmdHis');
+    $activityParams['status_id'] = CRM_Core_OptionGroup::getValue('activity_status', 'Completed', 'name');
+    $activityParams['case_id'] = $caseId;
+    $activityParams['is_auto'] = 0;
+    $activityParams['subject'] = 'Change Case Tags';
+
+    $activity = CRM_Activity_BAO_Activity::create($activityParams);
+
+    $caseParams = array(
+      'activity_id' => $activity->id,
+      'case_id' => $caseId,
+    );
+
+    CRM_Case_BAO_Case::processCaseActivity($caseParams);
+
+    echo 'true';
+    CRM_Utils_System::civiExit();
+  }
+
+  function caseDetails() {
+    $caseId    = CRM_Utils_Type::escape($_GET['caseId'], 'Integer');
+    $contactId = CRM_Utils_Type::escape($_GET['contactId'], 'Integer');
+    $sql       = "SELECT * FROM civicrm_case where id = %1";
+    $dao       = CRM_Core_DAO::executeQuery($sql, array(1 => array($caseId, 'Integer')));
+
+    if ($dao->fetch()) {
+      $caseType = CRM_Case_BAO_Case::getCaseType((str_replace(CRM_Core_DAO::VALUE_SEPARATOR,
+            "",
+            $dao->case_type_id
+          )));
+      $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
+      $cs           = $caseStatuses[$dao->status_id];
+      $caseDetails  = "<table><tr><td>" . ts('Case Subject') . "</td><td>{$dao->subject}</td></tr>
+                                    <tr><td>" . ts('Case Type') . "</td><td>{$caseType}</td></tr> 
+                                    <tr><td>" . ts('Case Status') . "</td><td>{$cs}</td></tr>
+                                    <tr><td>" . ts('Case Start Date') . "</td><td>" . CRM_Utils_Date::customFormat($dao->start_date) . "</td></tr>
+                                    <tr><td>" . ts('Case End Date') . "</td><td></td></tr>" . CRM_Utils_Date::customFormat($dao->end_date) . "</table>";
+      echo $caseDetails;
+    }
+    else {
+      echo ts('Could not find valid Case!');
+    }
+    CRM_Utils_System::civiExit();
+  }
+
+  function addClient() {
+
+    $caseId = CRM_Utils_Type::escape($_POST['caseID'], 'Integer');
+    $contactId = CRM_Utils_Type::escape($_POST['contactID'], 'Integer');
+
+    $params = array(
+      'case_id' => $caseId,
+      'contact_id' => $contactId,
+    );
+
+    $result = CRM_Case_BAO_Case::addCaseToContact($params);
+
+    $session = CRM_Core_Session::singleton();
+
+    $activityParams = array();
+
+    $activityParams['source_contact_id'] = $session->get('userID');
+    $activityParams['activity_type_id'] = CRM_Core_OptionGroup::getValue('activity_type', 'Add Client To Case', 'name');
+    $activityParams['activity_date_time'] = date('YmdHis');
+    $activityParams['status_id'] = CRM_Core_OptionGroup::getValue('activity_status', 'Completed', 'name');
+    $activityParams['case_id'] = $caseId;
+    $activityParams['is_auto'] = 0;
+    $activityParams['subject'] = 'Client Added To Case';
+
+    $activity = CRM_Activity_BAO_Activity::create($activityParams);
+
+    $caseParams = array(
+      'activity_id' => $activity->id,
+      'case_id' => $caseId,
+    );
+
+    CRM_Case_BAO_Case::processCaseActivity($caseParams);
+    echo json_encode(TRUE);
+    CRM_Utils_System::civiExit();
+  }
 }
+

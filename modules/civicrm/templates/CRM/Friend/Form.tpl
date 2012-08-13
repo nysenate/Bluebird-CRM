@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -90,3 +90,11 @@
 </table>
 </div>
 {/if}
+
+{if $context EQ 'event'}
+{capture assign=pageURL}{crmURL p='civicrm/event/info' q="id=`$entityID`&amp;reset=1" a=true fe=1 h=1}{/capture}
+{/if}
+{if $context EQ 'contribution'}
+{capture assign=pageURL}{crmURL p='civicrm/contribute/transact' q="reset=1&amp;id=`$entityID`" a=true fe=1 h=1}{/capture}
+{/if}
+{include file="CRM/common/SocialNetwork.tpl" url=$pageURL title=$title pageURL=$pageURL}

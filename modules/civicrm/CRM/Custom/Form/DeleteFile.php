@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,66 +28,66 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-
 class CRM_Custom_Form_DeleteFile extends CRM_Core_Form {
 
-    /**
-     * the file id
-     *
-     * @var int
-     */
-    protected $_id;
+  /**
+   * the file id
+   *
+   * @var int
+   */
+  protected $_id;
 
-    /**
-     * the entity id 
-     *
-     * @var array
-     */
-    protected $_eid;
+  /**
+   * the entity id
+   *
+   * @var array
+   */
+  protected $_eid;
+  
+  function preProcess() {
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this, TRUE);
+    $this->_eid = CRM_Utils_Request::retrieve('eid', 'Positive', $this, TRUE);
+  }
 
-    function preProcess( ) {
-        require_once 'CRM/Utils/Request.php';
-        $this->_id  = CRM_Utils_Request::retrieve( 'id' , 'Positive', $this, true );
-        $this->_eid = CRM_Utils_Request::retrieve( 'eid', 'Positive', $this, true );
-    }
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
 
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) {
-        
-        $this->addButtons( array(
-                                 array ( 'type'      => 'next',
-                                         'name'      => ts('Delete'),
-                                         'subName'   => 'view',
-                                         'isDefault' => true   ),
-                                 array ( 'type'       => 'cancel',
-                                         'name'      => ts('Cancel') ) ) );
-    }
-    
-    /**
-     * Process the form when submitted
-     *
-     * @return void
-     * @access public
-     */
-    public function postProcess( ) {
-        require_once 'CRM/Core/BAO/File.php';
-        CRM_Core_BAO_File::delete($this->_id, $this->_eid);
-        CRM_Core_Session::setStatus( ts('The attached file has been deleted.') );
-        
-        $session = CRM_Core_Session::singleton();   
-        $toUrl   = $session->popUserContext();
-        CRM_Utils_System::redirect($toUrl);
-    }
+    $this->addButtons(array(
+        array(
+          'type' => 'next',
+          'name' => ts('Delete'),
+          'subName' => 'view',
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      ));
+  }
+
+  /**
+   * Process the form when submitted
+   *
+   * @return void
+   * @access public
+   */
+  public function postProcess() {
+    CRM_Core_BAO_File::delete($this->_id, $this->_eid);
+    CRM_Core_Session::setStatus(ts('The attached file has been deleted.'));
+
+    $session = CRM_Core_Session::singleton();
+    $toUrl = $session->popUserContext();
+    CRM_Utils_System::redirect($toUrl);
+  }
 }
 

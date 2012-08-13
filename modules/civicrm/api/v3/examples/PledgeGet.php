@@ -31,18 +31,24 @@ function pledge_get_expectedresult(){
       '1' => array( 
           'contact_id' => '1',
           'contact_type' => 'Individual',
+          'contact_sub_type' => '',
           'sort_name' => 'Anderson, Anthony',
           'display_name' => 'Mr. Anthony Anderson II',
           'pledge_id' => '1',
           'pledge_amount' => '100.00',
-          'pledge_create_date' => '2011-07-29 00:00:00',
+          'pledge_create_date' => '2012-05-11 00:00:00',
           'pledge_status' => 'Pending',
-          'pledge_next_pay_date' => '2011-07-31 00:00:00',
+          'pledge_total_paid' => '',
+          'pledge_next_pay_date' => '2012-05-13 00:00:00',
           'pledge_next_pay_amount' => '20.00',
+          'pledge_outstanding_amount' => '',
           'pledge_contribution_type' => 'Donation',
+          'pledge_contribution_page_id' => '',
           'pledge_frequency_interval' => '5',
           'pledge_frequency_unit' => 'year',
           'pledge_is_test' => 0,
+          'pledge_campaign_id' => '',
+          'pledge_currency' => 'USD',
           'id' => '1',
         ),
     ),
@@ -58,7 +64,7 @@ function pledge_get_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testGetPledge and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3PledgeTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/PledgeTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

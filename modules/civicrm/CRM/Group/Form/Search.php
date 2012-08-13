@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,69 +28,78 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-
 class CRM_Group_Form_Search extends CRM_Core_Form {
 
-    public function preProcess( ) {
-        parent::preProcess( );
+  public function preProcess() {
+    parent::preProcess();
+  }
+
+  function setDefaultValues() {
+    $defaults = array();
+    $defaults['group_status[1]'] = 1;
+    return $defaults;
+  }
+
+  public function buildQuickForm() {
+    $this->add('text', 'title', ts('Find'),
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Group', 'title')
+    );
+
+    $groupTypes = CRM_Core_OptionGroup::values('group_type', TRUE);
+    $config = CRM_Core_Config::singleton();
+    if ($config->userFramework == 'Joomla') {
+      unset($groupTypes['Access Control']);
     }
 
-   function setDefaultValues( ) {
-        $defaults = array( );
-        $defaults['active_status'] = 1;
-        return $defaults;
-    }
+    $this->addCheckBox('group_type',
+      ts('Type'),
+      $groupTypes,
+      NULL, NULL, NULL, NULL, '&nbsp;&nbsp;&nbsp;'
+    );
 
-    public function buildQuickForm( ) {
-        $this->add( 'text', 'title', ts( 'Find' ),
-                    CRM_Core_DAO::getAttribute( 'CRM_Contact_DAO_Group', 'title' ) );
+    $this->add('select', 'visibility', ts('Visibility'),
+      array('' => ts('- any visibility -')) + CRM_Core_SelectValues::ufVisibility(TRUE)
+    );
 
-        require_once 'CRM/Core/OptionGroup.php';
-        $groupTypes = CRM_Core_OptionGroup::values( 'group_type', true );
-        $config= CRM_Core_Config::singleton( );
-        if ( $config->userFramework == 'Joomla' ) {
-            unset( $groupTypes['Access Control'] );
+    $groupStatuses = array(ts('Enabled') => 1, ts('Disabled') => 2);
+    $this->addCheckBox('group_status',
+      ts('Status'),
+      $groupStatuses,
+      NULL, NULL, NULL, NULL, '&nbsp;&nbsp;&nbsp;'
+    );
+
+    $this->addButtons(array(
+        array(
+          'type' => 'refresh',
+          'name' => ts('Search'),
+          'isDefault' => TRUE,
+        ),
+      ));
+
+    parent::buildQuickForm();
+    $this->assign('suppressForm', TRUE);
+  }
+
+  function postProcess() {
+    $params = $this->controller->exportValues($this->_name);
+    $parent = $this->controller->getParent();
+    if (!empty($params)) {
+      $fields = array('title', 'group_type', 'visibility', 'active_status', 'inactive_status');
+      foreach ($fields as $field) {
+        if (isset($params[$field]) &&
+          !CRM_Utils_System::isNull($params[$field])
+        ) {
+          $parent->set($field, $params[$field]);
         }
-        
-        $this->addCheckBox( 'group_type',
-                            ts( 'Type' ),
-                            $groupTypes,
-                            null, null, null, null, '&nbsp;&nbsp;&nbsp;' );
-        
-        $this->add( 'select', 'visibility', ts('Visibility'        ),
-                    array( '' => ts('- any visibility -' ) ) + CRM_Core_SelectValues::ufVisibility( true ) );
-        $this->addElement( 'checkbox', 'active_status' , ts( 'Enabled' ) );
-        $this->addElement( 'checkbox', 'inactive_status' , ts( 'Disabled' ) );
-        $this->addButtons(array( 
-                                array ('type'      => 'refresh', 
-                                       'name'      => ts('Search'), 
-                                       'isDefault' => true ), 
-                                ) ); 
-
-        parent::buildQuickForm( );
-    }
-
-    function postProcess( ) {
-        $params = $this->controller->exportValues( $this->_name );
-        $parent = $this->controller->getParent( );
-        if ( ! empty( $params ) ) {
-            $fields = array( 'title', 'group_type', 'visibility','active_status','inactive_status' );
-            foreach ( $fields as $field ) {
-                if ( isset( $params[$field] ) &&
-                     ! CRM_Utils_System::isNull( $params[$field] ) ) {
-                    $parent->set( $field, $params[$field] );
-                } else {
-                    $parent->set( $field, null );
-                }
-            }
+        else {
+          $parent->set($field, NULL);
         }
+      }
     }
+  }
 }
-
 

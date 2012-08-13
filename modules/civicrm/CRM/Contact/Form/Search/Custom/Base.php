@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,131 +28,137 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Contact/Form/Search/Interface.php';
-
 class CRM_Contact_Form_Search_Custom_Base {
 
-    protected $_formValues;
+  protected $_formValues;
 
-    protected $_columns;
+  protected $_columns;
 
-    function __construct( &$formValues ) {
-        $this->_formValues =& $formValues;
+  protected $_stateID; function __construct(&$formValues) {
+    $this->_formValues = &$formValues;
+  }
+
+  function count() {
+    return CRM_Core_DAO::singleValueQuery($this->sql('count(distinct contact_a.id) as total'),
+      CRM_Core_DAO::$_nullArray
+    );
+  }
+
+  function summary() {
+    return NULL;
+  }
+
+  function contactIDs($offset = 0, $rowcount = 0, $sort = NULL) {
+    $sql = $this->sql('contact_a.id as contact_id',
+      $offset, $rowcount, $sort
+    );
+    $this->validateUserSQL($sql);
+
+    return CRM_Core_DAO::composeQuery($sql,
+      CRM_Core_DAO::$_nullArray,
+      TRUE
+    );
+  }
+
+  function sql($selectClause,
+    $offset            = 0, $rowcount = 0, $sort = NULL,
+    $includeContactIDs = FALSE,
+    $groupBy           = NULL
+  ) {
+
+    $sql = "SELECT $selectClause " . $this->from();
+    $where = $this->where();
+    if (!empty($where)) {
+      $sql .= " WHERE " . $where;
     }
 
-    function count( ) {
-        return CRM_Core_DAO::singleValueQuery( $this->sql( 'count(distinct contact_a.id) as total' ),
-                                               CRM_Core_DAO::$_nullArray );
+    if ($includeContactIDs) {
+      $this->includeContactIDs($sql,
+        $this->_formValues
+      );
     }
 
-    function summary( ) {
-        return null;
+    if ($groupBy) {
+      $sql .= " $groupBy ";
     }
 
-    function contactIDs( $offset = 0, $rowcount = 0, $sort = null) {
-        $sql    = $this->sql( 'contact_a.id as contact_id',
-                              $offset, $rowcount, $sort );
-        $this->validateUserSQL( $sql );
+    $this->addSortOffset($sql, $offset, $rowcount, $sort);
+    return $sql;
+  }
 
-        return CRM_Core_DAO::composeQuery( $sql,
-                                           CRM_Core_DAO::$_nullArray,
-                                           true );
+  function templateFile() {
+    return NULL;
+  }
+
+  function &columns() {
+    return $this->_columns;
+  }
+
+  static
+  function includeContactIDs(&$sql, &$formValues) {
+    $contactIDs = array();
+    foreach ($formValues as $id => $value) {
+      if ($value &&
+        substr($id, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX
+      ) {
+        $contactIDs[] = substr($id, CRM_Core_Form::CB_PREFIX_LEN);
+      }
     }
 
-    function sql( $selectClause,
-                  $offset = 0, $rowcount = 0, $sort = null,
-                  $includeContactIDs = false,
-                  $groupBy = null ) {
+    if (!empty($contactIDs)) {
+      $contactIDs = implode(', ', $contactIDs);
+      $sql .= " AND contact_a.id IN ( $contactIDs )";
+    }
+  }
 
-        $sql = "SELECT $selectClause ".$this->from ( );
-        $where = $this->where();
-        if (!empty($where)) {
-		$sql .= " WHERE ".$where;
-	}	
-
-        if ( $includeContactIDs ) {
-            $this->includeContactIDs( $sql,
-                                      $this->_formValues );
-        }
-
-        if ( $groupBy ) {
-            $sql .= " $groupBy ";
-        }
-        
-        $this->addSortOffset( $sql, $offset, $rowcount, $sort );
-        return $sql;
+  function addSortOffset(&$sql,
+    $offset, $rowcount, $sort
+  ) {
+    if (!empty($sort)) {
+      if (is_string($sort)) {
+        $sql .= " ORDER BY $sort ";
+      }
+      else {
+        $sql .= " ORDER BY " . trim($sort->orderBy());
+      }
     }
 
-    function templateFile( ) {
-        return null;
+    if ($rowcount > 0 && $offset >= 0) {
+      $sql .= " LIMIT $offset, $rowcount ";
+    }
+  }
+
+  function validateUserSQL(&$sql, $onlyWhere = FALSE) {
+    $includeStrings = array('contact_a');
+    $excludeStrings = array('insert', 'delete', 'update');
+
+    if (!$onlyWhere) {
+      $includeStrings += array('select', 'from', 'where', 'civicrm_contact');
     }
 
-    function &columns( ) {
-        return $this->_columns;
+    foreach ($includeStrings as $string) {
+      if (stripos($sql, $string) === FALSE) {
+        CRM_Core_Error::fatal(ts('Could not find \'%1\' string in SQL clause.',
+            array(1 => $string)
+          ));
+      }
     }
 
-    static function includeContactIDs( &$sql, &$formValues ) {
-        $contactIDs = array( );
-        foreach ( $formValues as $id => $value ) {
-            if ( $value &&
-                 substr( $id, 0, CRM_Core_Form::CB_PREFIX_LEN ) == CRM_Core_Form::CB_PREFIX ) {
-                $contactIDs[] = substr( $id, CRM_Core_Form::CB_PREFIX_LEN );
-            }
-        }
-        
-        if ( ! empty( $contactIDs ) ) {
-            $contactIDs = implode( ', ', $contactIDs );
-            $sql .= " AND contact_a.id IN ( $contactIDs )";
-        }
+    foreach ($excludeStrings as $string) {
+      if (preg_match('/(\s' . $string . ')|(' . $string . '\s)/i', $sql)) {
+        CRM_Core_Error::fatal(ts('Found illegal \'%1\' string in SQL clause.',
+            array(1 => $string)
+          ));
+      }
     }
+  }
 
-    function addSortOffset( &$sql,
-                            $offset, $rowcount, $sort ) {
-        if ( ! empty( $sort ) ) {
-            if ( is_string( $sort ) ) {
-                $sql .= " ORDER BY $sort ";
-            } else {
-                $sql .= " ORDER BY " . trim( $sort->orderBy() );
-            }
-        }
-        
-        if ( $rowcount > 0 && $offset >= 0 ) {
-            $sql .= " LIMIT $offset, $rowcount ";
-        }
-    }
-
-    function validateUserSQL( &$sql, $onlyWhere = false ) {
-        $includeStrings = array( 'contact_a' );
-        $excludeStrings = array( 'insert', 'delete', 'update' );
-
-        if ( ! $onlyWhere ) {
-            $includeStrings += array( 'select', 'from', 'where', 'civicrm_contact' );
-        }
-
-        foreach ( $includeStrings as $string ) {
-            if ( stripos( $sql, $string ) === false ) {
-                CRM_Core_Error::fatal( ts( 'Could not find \'%1\' string in SQL clause.',
-                                           array( 1 => $string ) ) );
-            }
-        }
-
-        foreach ( $excludeStrings as $string ) {
-            if ( preg_match('/(\s' . $string . ')|(' .$string . '\s)/i', $sql ) ) {
-                CRM_Core_Error::fatal( ts( 'Found illegal \'%1\' string in SQL clause.',
-                                           array( 1 => $string ) ) );
-            }
-        }
-    }
-
-    function whereClause( &$where, &$params ) {
-        return CRM_Core_DAO::composeQuery( $where, $params, true );
-    }
-
+  function whereClause(&$where, &$params) {
+    return CRM_Core_DAO::composeQuery($where, $params, TRUE);
+  }
 }
-
 

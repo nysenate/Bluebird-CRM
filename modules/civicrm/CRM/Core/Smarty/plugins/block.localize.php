@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -45,24 +44,24 @@
  *
  * @return string  multilingualized query
  */
-function smarty_block_localize($params, $text, &$smarty)
-{
-    if (!$smarty->_tpl_vars['multilingual']) {
-        return $text;
-    }
+function smarty_block_localize($params, $text, &$smarty) {
+  if (!$smarty->_tpl_vars['multilingual']) {
+    return $text;
+  }
 
-    $lines = array();
-    foreach ($smarty->_tpl_vars['locales'] as $locale) {
-        $line = $text;
-        if ($params['field']) {
-            $fields = explode(',', $params['field']);
-            foreach ($fields as $field) {
-                $field = trim($field);
-                $line = preg_replace('/\b' . preg_quote($field) . '\b/', "{$field}_{$locale}", $line);
-            }
-        }
-        $lines[] = $line;
+  $lines = array();
+  foreach ($smarty->_tpl_vars['locales'] as $locale) {
+    $line = $text;
+    if ($params['field']) {
+      $fields = explode(',', $params['field']);
+      foreach ($fields as $field) {
+        $field = trim($field);
+        $line = preg_replace('/\b' . preg_quote($field) . '\b/', "{$field}_{$locale}", $line);
+      }
     }
+    $lines[] = $line;
+  }
 
-    return implode(', ', $lines);
+  return implode(', ', $lines);
 }
+

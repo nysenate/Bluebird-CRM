@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -57,47 +57,97 @@
     </div>
     {/if}
     {if $rows}
-    <div class="crm-content-block">
-    <div id="uf_profile">
-        {strip}
+    <div id='mainTabContainer'>
+        <ul>
+            <li id='tab_user'>    <a href='#user-profiles'     title='{ts}User-defined Profile{/ts}'>{ts}User-defined Profiles{/ts}</a></li>
+            <li id='tab_reserved'><a href='#reserved-profiles' title='{ts}Reserved Profiles{/ts}'>{ts}Reserved Profiles{/ts}</a></li>
+        </ul>
+    
         {* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
-    {include file="CRM/common/jsortable.tpl"}
-      <table id="options" class="display">
-        <thead>
-          <tr>
-            <th id="sortable">{ts}Profile Title{/ts}</th>
-            <th>{ts}Type{/ts}</th>
-            <th>{ts}ID{/ts}</th>
-            <th id="nosort">{ts}Used For{/ts}</th>
-            <th>{ts}Enabled?{/ts}</th>
-            <th>{ts}Reserved{/ts}</th>
-            <th></th>
-          </tr>
-        </thead> 
-        <tbody>
-        {foreach from=$rows item=row}
-	    <tr id="row_{$row.id}"class="{$row.class}{if NOT $row.is_active} disabled{/if}">
-            <td>{$row.title}</td>
-            <td>{$row.group_type}</td>
-            <td>{$row.id}</td>
-            <td>{$row.module}</td>
-            <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-            <td>{if $row.is_reserved}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}</td>
-            <td>{$row.action|replace:'xx':$row.id}</td>
-        </tr>
-        {/foreach}
-        </tbody>
-        </table>
+        {include file="CRM/common/enableDisable.tpl"}
+        {include file="CRM/common/jsortable.tpl"}
+        <div id="user-profiles">
+           <div class="crm-content-block">
+           <table class="display">
+             <thead>
+              <tr>
+                <th id="sortable">{ts}Profile Title{/ts}</th>
+                <th>{ts}Type{/ts}</th>
+                <th>{ts}ID{/ts}</th>
+                <th id="nosort">{ts}Used For{/ts}</th>
+                <th></th>
+              </tr>
+            </thead> 
+            <tbody>
+            {foreach from=$rows item=row}
+            {if !$row.is_reserved }
+  	          <tr id="UFGroup-{$row.id}"class="crm-entity {$row.class}{if NOT $row.is_active} disabled{/if}">
+                <td><span class="crmf-title crm-editable">{$row.title}</span></td>
+                <td>{$row.group_type}</td>
+                <td>{$row.id}</td>
+                <td>{$row.module}</td>
+                <td>{$row.action|replace:'xx':$row.id}</td>
+              </tr>
+            {/if}
+            {/foreach}
+            </tbody>
+            </table>
         
-        {if NOT ($action eq 1 or $action eq 2)}
-        <div class="crm-submit-buttons">
-            <a href="{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}" id="newCiviCRMProfile-bottom" class="button"><span><div class="icon add-icon"></div>{ts}Add Profile{/ts}</span></a>
-        </div>
-        {/if}
-        {/strip}
-    </div>
-    </div>
+            {if NOT ($action eq 1 or $action eq 2)}
+            <div class="crm-submit-buttons">
+                <a href="{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}" id="newCiviCRMProfile-bottom" class="button"><span><div class="icon add-icon"></div>{ts}Add Profile{/ts}</span></a>
+            </div>
+            {/if}
+            </div>
+        </div>{* user profile*}
+
+        <div id="reserved-profiles">
+        <div class="crm-content-block">
+            <table class="display">
+             <thead>
+              <tr>
+                <th id="sortable">{ts}Profile Title{/ts}</th>
+                <th>{ts}Type{/ts}</th>
+                <th>{ts}ID{/ts}</th>
+                <th id="nosort">{ts}Used For{/ts}</th>
+                <th></th>
+              </tr>
+            </thead> 
+            <tbody>
+            {foreach from=$rows item=row}
+            {if $row.is_reserved}
+  	          <tr id="row_{$row.id}"class="{$row.class}{if NOT $row.is_active} disabled{/if}">
+                <td>{$row.title}</td>
+                <td>{$row.group_type}</td>
+                <td>{$row.id}</td>
+                <td>{$row.module}</td>
+                <td>{$row.action|replace:'xx':$row.id}</td>
+              </tr>
+            {/if}
+            {/foreach}
+            </tbody>
+            </table>
+        
+            {if NOT ($action eq 1 or $action eq 2)}
+            <div class="crm-submit-buttons">
+                <a href="{crmURL p='civicrm/admin/uf/group/add' q='action=add&reset=1'}" id="newCiviCRMProfile-bottom" class="button"><span><div class="icon add-icon"></div>{ts}Add Profile{/ts}</span></a>
+            </div>
+            {/if}
+            </div>
+        </div>{* reserved profile*}
+
+  </div> {* maincontainer*}
+  <script type='text/javascript'>
+    var selectedTab = 'user-profiles';
+    {if $selectedChild}selectedTab = '{$selectedChild}';{/if}
+    {literal}
+      cj( function() {
+        var tabIndex = cj('#tab_' + selectedTab).prevAll().length
+        cj("#mainTabContainer").tabs( {selected: tabIndex} );
+      });
+    {/literal}
+  </script>
+
     {else}
     {if $action ne 1} {* When we are adding an item, we should not display this message *}
        <div class="messages status">
@@ -107,3 +157,4 @@
     {/if}
     {/if}
 {/if}
+{include file="CRM/common/crmeditable.tpl"} 

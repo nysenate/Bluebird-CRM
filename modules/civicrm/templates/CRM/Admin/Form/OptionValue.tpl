@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,15 +24,15 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing/deleting activity type  *}
+<h3>{if $action eq 1}{ts}New Option Value{/ts}{elseif $action eq 2}{ts}Edit Option Value{/ts}{else}{ts}Delete Option Value{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-admin-optionvalue-form-block">
-<fieldset><legend>{if $action eq 1}{ts}New Option Value{/ts}{elseif $action eq 2}{ts}Edit Option Value{/ts}{else}{ts}Delete Option Value{/ts}{/if}</legend>
- <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
    {if $action eq 8}
       <div class="messages status">
           <div class="icon inform-icon"></div>
           {ts}WARNING: Deleting this option value will result in the loss of all records which use the option value.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
-     {else}    
+   {else}
+      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
       <table class="form-layout-compressed">
         <tr class="crm-admin-optionvalue-form-block-label">
             <td class="label">{$form.label.label} 
@@ -82,6 +82,5 @@
        {/if}  
       </table> 
      {/if}
-         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>      
-</fieldset>
+     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>      
 </div>

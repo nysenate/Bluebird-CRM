@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,23 +23,21 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $action eq 1 or $action eq 2 or $action eq 4}
+{if ($action eq 1 or $action eq 2 or $action eq 4) and !$isReserved}
     {include file="CRM/Price/Form/Field.tpl"}
-{elseif $action eq 8 and !$usedBy}
+{elseif $action eq 8 and !$usedBy and !$isReserved}
     {include file="CRM/Price/Form/DeleteField.tpl"}
 {elseif $action eq 1024 }
     {include file="CRM/Price/Form/Preview.tpl"}
 {else}
-
- {if $usedBy}
-    <div class='spacer'></div>
+	{if ($usedBy and $action eq 8) or $usedBy.civicrm_event or $usedBy.civicrm_contribution_page}
     <div id="price_set_used_by" class="messages status">
       <div class="icon inform-icon"></div>     
         {if $action eq 8}
             {ts 1=$usedPriceSetTitle}Unable to delete the '%1' Price Field - it is currently in use by one or more active events or contribution pages or contributions.{/ts}
        	{/if}      
         
-	    {if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
+	    	{if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
             {include file="CRM/Price/Page/table.tpl"} 
         {/if}
     </div>
@@ -49,7 +47,9 @@
 
   {if $priceField}
     <div class="action-link">
+      {if !$isReserved}
         <a href="{crmURL q="reset=1&action=add&sid=$sid"}" id="newPriceField" class="button"><span><div class="icon add-icon"></div>{ts}Add Price Field{/ts}</span></a>
+      {/if}	
         <a href="{crmURL p="civicrm/admin/price" q="action=preview&sid=`$sid`&reset=1&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>
     </div>
     <div id="field_page">
@@ -81,8 +81,8 @@
             <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
             <td>{if $row.active_on}{$row.active_on|date_format:"%Y-%m-%d %T"}{/if}</td>
             <td>{if $row.expire_on}{$row.expire_on|date_format:"%Y-%m-%d %T"}{/if}</td>
-            <td>{if $row.html_type eq "Text / Numeric Quantity"}{$row.price|crmMoney}{else}<a href="{crmURL p="civicrm/admin/price/field/option" q="action=browse&reset=1&sid=$sid&fid=$fid"}">{ts}Edit Price Options{/ts}</a>{/if}</td>
-            <td>{$row.action|replace:'xx':$row.id}</td>
+            <td>{if $row.html_type eq "Text / Numeric Quantity"}{$row.price|crmMoney}{else}<a href="{crmURL p="civicrm/admin/price/field/option" q="action=browse&reset=1&sid=$sid&fid=$fid"}">{if $isReserved}{ts}View Price Options{/ts}{else}{ts}Edit Price Options{/ts}{/if}</a>{/if}</td>
+            <td class="field-action">{$row.action|replace:'xx':$row.id}</td>
             <td class="order hiddenElement">{$row.weight}</td>
         </tr>
         {/foreach}
@@ -90,7 +90,9 @@
         {/strip}
      </div>
      <div class="action-link">
+      {if !$isReserved}
          <a href="{crmURL q="reset=1&action=add&sid=$sid"}" id="newPriceField" class="button"><span><div class="icon add-icon"></div>{ts}Add Price Field{/ts}</span></a>
+	 {/if}
          <a href="{crmURL p="civicrm/admin/price" q="action=preview&sid=`$sid`&reset=1&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>
      </div>
 

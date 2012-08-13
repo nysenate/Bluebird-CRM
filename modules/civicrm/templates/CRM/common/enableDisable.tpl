@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,16 +28,21 @@
 {literal}
 <script type="text/javascript">
 function modifyLinkAttributes( recordID, op, recordBAO, reloadPage, rowId ) {
+
+    var selector = '#' + rowId + '_' + recordID;
+    if (cj(selector).length ==0) 
+      selector = '#' + rowId + '-' + recordID;
+
     //we changed record from enable to disable
     if ( op == 'enable-disable' ) {
-        var fieldID     = '#' + rowId + '_' + recordID + " a." + "disable-action";
+        var fieldID     = selector + " a." + "disable-action";
         var operation   = "disable-enable";
         var htmlContent = {/literal}'{ts escape="js"}Enable{/ts}'{literal};
         var newClass    = 'action-item enable-action';
         var newTitle    = {/literal}'{ts escape="js"}Enable{/ts}'{literal};
         var newText     = {/literal}' {ts escape="js"}No{/ts} '{literal};
     } else if ( op == 'disable-enable' ) {
-        var fieldID     = '#' + rowId + '_' + recordID + " a." + "enable-action";
+        var fieldID     = selector + " a." + "enable-action";
         var operation   = "enable-disable";
         var htmlContent = {/literal}'{ts escape="js"}Disable{/ts}'{literal};
         var newClass    = 'action-item disable-action';
@@ -50,13 +55,12 @@ function modifyLinkAttributes( recordID, op, recordBAO, reloadPage, rowId ) {
 
     //change title
     cj( fieldID ).attr( 'title', newTitle );
-
     //need to update js - change op from js to new allow operation. 
     //set updated js
     var newAction = 'enableDisable( ' + recordID    + ',"'  + 
                                         recordBAO   + '","' + 
-                                        operation   + '","' + 
-                                        reloadPage  + '","' + 
+                                        operation   + '",' + 
+                                        reloadPage  + ',"' + 
                                         rowId       + '"'   + ' );';
     cj( fieldID ).attr("onClick", newAction );
     
@@ -68,8 +72,25 @@ function modifyLinkAttributes( recordID, op, recordBAO, reloadPage, rowId ) {
     cj( fieldID ).attr( 'class', newClass );
 }
 
+function removeLinkAttributes( recordID, op, rowId ) {
+    if ( op == 'enable-disable' ) {
+        var fieldID     = '#' + rowId + '_' + recordID + " a." + "disable-action";
+    } else if ( op == 'disable-enable' ) {
+        var fieldID     = '#' + rowId + '_' + recordID + " a." + "enable-action";
+    }
+
+    cj( fieldID ).html( '' );
+    
+}
+
 function modifySelectorRow( recordID, op, rowId ) {
     var elementID =  '#' + rowId + '_' + recordID;
+    if (cj(elementID).length ==0 ) { // trying the new syntax {EntityName}-{ID}
+      elementID =  '#' + rowId + '-' + recordID;
+    }
+    if (cj(elementID).length ==0 ) {
+      document.location.reload( );//force update if can't find the row
+    }
     if ( op == "disable-enable" ) {
         cj( elementID ).removeClass("disabled");
     } else if ( op == "enable-disable" )  {
@@ -167,8 +188,12 @@ function saveEnableDisable( recordID, recordBAO, op, reloadPage, rowId ) {
             //change row class and show/hide action links.
             modifySelectorRow( recordID, op, rowId );
 
-            //modify action link html        
-            modifyLinkAttributes( recordID, op, recordBAO, reloadPage, rowId ); 
+            //modify action link html
+            if ( recordBAO == 'CRM_Contribute_BAO_ContributionRecur' ) {
+                removeLinkAttributes( recordID, op, rowId );
+            } else {
+                modifyLinkAttributes( recordID, op, recordBAO, reloadPage, rowId ); 
+            }
         } 
 
             //cj( '#enableDisableStatusMsg' ).show( ).html( successMsg );

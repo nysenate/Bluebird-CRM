@@ -1,8 +1,8 @@
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -75,7 +75,7 @@ function on_load_init_blocks(showBlocks, hideBlocks, elementType)
         if (myElement != null) {
             myElement.style.display = elementType;
         } else {
-	  alert('showBlocks array item not in .tpl = ' + showBlocks[i]);
+            alert('showBlocks array item not in .tpl = ' + showBlocks[i]);
         }
     }
     
@@ -86,10 +86,9 @@ function on_load_init_blocks(showBlocks, hideBlocks, elementType)
         if (myElement != null) {
             myElement.style.display = 'none';
         } else {
-	  alert('showBlocks array item not in .tpl = ' + hideBlocks[i]);
+            alert('showBlocks array item not in .tpl = ' + hideBlocks[i]);
         }
     }
-    
 }
 
 /** 
@@ -109,7 +108,7 @@ function showHideByValue(trigger_field_id, trigger_value, target_element_id, tar
     if ( target_element_type == null ) {
         var target_element_type = 'block';
     } else if ( target_element_type == 'table-row' ) {
-	var target_element_type = '';
+        var target_element_type = '';
     }
     
     if (field_type == 'select') {
@@ -135,191 +134,22 @@ function showHideByValue(trigger_field_id, trigger_value, target_element_id, tar
         }
  
     } else if (field_type == 'radio') {
-
         var target = target_element_id.split("|");
         for(var j = 0; j < target.length; j++) {
-	    if (document.getElementsByName(trigger_field_id)[0].checked) {
-		if ( invert ) {  
-		    hide(target[j], target_element_type);
-		} else {
-		    show(target[j], target_element_type);
-		 }
-	    } else {
-		if ( invert ) {  
-		    show(target[j], target_element_type);
-		} else {
-		    hide(target[j], target_element_type);
-		}
-	    }
-	}
-    }
-}
-
-/** 
- *  This function is called when we need to enable or disable a related form element (target_element)
- *  based on the value (trigger_value) of another form field (trigger_field).
- * 
- * @access public
- * @param  trigger_field_id     HTML id of field whose onchange is the trigger
- * @param  trigger_value        List of integers - option value(s) which trigger enable-element action for target_field
- * @param  target_element_id    HTML id of element to be enabled or disabled
- * @param  target_element_type  Type of element to be enabled or disabled ('block' or 'table-row')
- * @param  field_type           Type of element radio/select
- * @param  invert               Boolean - if true, we DISABLE target on value match; if false, we ENABLE target on value match
- * @return none 
-*/
-function enableDisableByValue(trigger_field_id, trigger_value, target_element_id, target_element_type, field_type, invert ) {
-    if ( target_element_type == null ) {
-        var target_element_type = 'block';
-    } else if ( target_element_type == 'table-row' ) {
-	var target_element_type = '';
-    }
-    
-    if (field_type == 'select') {
-        var trigger = trigger_value.split("|");
-        var selectedOptionValue = document.getElementById(trigger_field_id).options[document.getElementById(trigger_field_id).selectedIndex].value;	
-        
-        var target = target_element_id.split("|");
-        for(var j = 0; j < target.length; j++) {
-  	    if (document.getElementById(target[j])) {
-              if ( invert ) {  
-                 document.getElementById(target[j]).disabled = false;
-              } else {
-                 document.getElementById(target[j]).disabled = true;
-              }
-	    }
-            for(var i = 0; i < trigger.length; i++) {
-                if (selectedOptionValue == trigger[i]) {
-    	            if (document.getElementById(target[j])) {
-                       if ( invert ) {  
-			  document.getElementById(target[j]).disabled = true;
-	               } else {
-			  document.getElementById(target[j]).disabled = false;
-	               }	
-		    }
+            if (document.getElementsByName(trigger_field_id)[0].checked) {
+                if ( invert ) {  
+                    hide(target[j], target_element_type);
+                } else {
+                    show(target[j], target_element_type);
+                }
+            } else {
+                if ( invert ) {  
+                    show(target[j], target_element_type);
+                } else {
+                    hide(target[j], target_element_type);
                 }
             }
         }
- 
-    } else if (field_type == 'radio') {
-        var target = target_element_id.split("|");
-        for(var j = 0; j < target.length; j++) {
-	    if (document.getElementsByName(trigger_field_id)[0].checked) {
-	       if (document.getElementById(target[j])) {
-		   if ( invert ) {  
-			document.getElementById(target[j]).disabled = true;
-		   } else {
-			document.getElementById(target[j]).disabled = false;
-		   }
-		}
-	    } else {
-	       if (document.getElementById(target[j])) {
-		   if ( invert ) {  
-			document.getElementById(target[j]).disabled = false;
- 		   } else {
-			document.getElementById(target[j]).disabled = true;
-	    	   }
-		}
-	    }
-	}
-    }
-}
-
-/** 
- *  This function is called when we need to Reset a related form element (target_element)
- *  based on the value (trigger_value) of another form field (trigger_field).
- * 
- * @access public
- * @param  trigger_field_id     HTML id of field whose onchange is the trigger
- * @param  trigger_value        List of integers - option value(s) which trigger reset action for target_field
- * @param  target_element_id    HTML id of element to be reset
- * @param  target_field_type    Field-Type of element to be reset ('radio' or 'text')
- * @param  field_type           Type of element radio/select
- * @param  invert               Boolean - if true, we RESET target on value-match; if false, we RESET target on No-value-match
- * @return none 
-*/
-function resetByValue(trigger_field_id, trigger_value, target_element_id, target_field_type, field_type, invert) {
-    
-    if (field_type == 'select') {
-        var trigger = trigger_value.split("|");
-        var selectedOptionValue = document.getElementById(trigger_field_id).options[document.getElementById(trigger_field_id).selectedIndex].value;	
-        
-        var target = target_element_id.split("|");
-        for(var j = 0; j < target.length; j++) {
-            for(var i = 0; i < trigger.length; i++) {
-		if ( invert ) {
-                  if (selectedOptionValue == trigger[i]) {
-		       if (target_field_type == 'radio') {	
-			   if (document.getElementsByName(target[j])) {
-				for (var i=0; i<document.getElementsByName(target[j]).length; i++) {
-				   if (document.getElementsByName(target[j])[i].checked) {
- 				       document.getElementsByName(target[j])[i].checked = null;
-				   }
-				}
-			   }
-		       } else {	
-	    	           if (document.getElementById(target[j])) {
-			       document.getElementById(target[j]).value = "";
-			   }
-		       }
-                  }
-		} else {
-		    if (selectedOptionValue != trigger[i]) {
-		       if (target_field_type == 'radio') {	
-			   if (document.getElementsByName(target[j])) {
-				for (var i=0; i<document.getElementsByName(target[j]).length; i++) {
-				   if (document.getElementsByName(target[j])[i].checked) {
- 				       document.getElementsByName(target[j])[i].checked = null;
-				   }
-				}
-			   }
-		       } else {	
-	    	           if (document.getElementById(target[j])) {
-			       document.getElementById(target[j]).value = "";
-			   }
-		       }
-		    }
-		}
-            }
-        }
-
-     } else if (field_type == 'radio') {
-        var target = target_element_id.split("|");
-        for(var j = 0; j < target.length; j++) {
-	      if ( invert ) {
-		   if (document.getElementsByName(trigger_field_id)[0].checked) {
-		       if (target_field_type == 'radio') {	
-			   if (document.getElementsByName(target[j])) {
-				for (var i=0; i<document.getElementsByName(target[j]).length; i++) {
-				   if (document.getElementsByName(target[j])[i].checked) {
- 				       document.getElementsByName(target[j])[i].checked = null;
-				   }
-				}
-			   }
-		       } else {	
-			       if (document.getElementById(target[j])) {
-		  		   document.getElementById(target[j]).value = "";
-			      }
-		       }
-		   }
-	      } else {
-		   if (!document.getElementsByName(trigger_field_id)[0].checked) {
-		       if (target_field_type == 'radio') {	
-			   if (document.getElementsByName(target[j])) {
-				for (var i=0; i<document.getElementsByName(target[j]).length; i++) {
-				   if (document.getElementsByName(target[j])[i].checked) {
- 				       document.getElementsByName(target[j])[i].checked = null;
-				   }
-				}
-			   }
-		       } else {	
-			       if (document.getElementById(target[j])) {
-		  		   document.getElementById(target[j]).value = "";
-			      }
-		       }
-		   }
-	      }
-	}
     }
 }
 
@@ -341,7 +171,7 @@ function show(block_id,elementType)
     if ( elementType == null ) {
         var elementType = 'block';
     } else if ( elementType == "table-row" && navigator.appName == 'Microsoft Internet Explorer' ) {
- 	var elementType = "block";
+        var elementType = "block";
     }
     var myElement = document.getElementById(block_id);
     if (myElement != null) {
@@ -350,7 +180,6 @@ function show(block_id,elementType)
         alert('Request to show() function failed. Element id undefined = '+ block_id);
     }
 }
-
 
 /** 
  * This function is used to hide a block. 
@@ -371,8 +200,6 @@ function hide(block_id)
     } else {
         alert('Request to hide() function failed. Element id undefined = ' + block_id);
     }
-    
-    //    document.getElementById(block_id).style.display = 'none';
 }
 
 /**
@@ -415,22 +242,22 @@ function countSelectedCheckboxes(fldPrefix, form) {
 function toggleTaskAction( status ) {
     var radio_ts = document.getElementsByName('radio_ts');
     if (!radio_ts[1]) {
-	radio_ts[0].checked = true;
+        radio_ts[0].checked = true;
     }
     if ( radio_ts[0].checked || radio_ts[1].checked ) {
-	status = true;
+        status = true;
     }
 
     var formElements = ['task', 'Go', 'Print'];
     for(var i=0; i<formElements.length; i++ ) {
-	var element = document.getElementById( formElements[i] );
-	if ( element ) {
-	    if ( status ) {
-		element.disabled = false;
-	    } else {
-		element.disabled = true;
-	    }
-	}
+        var element = document.getElementById( formElements[i] );
+        if ( element ) {
+            if ( status ) {
+                element.disabled = false;
+            } else {
+                element.disabled = true;
+            }
+        }
     }
 }
 
@@ -444,7 +271,7 @@ function toggleTaskAction( status ) {
  * Sample usage: onClick="javascript:checkPerformAction('chk_', myForm );"
  *
  */
-function checkPerformAction (fldPrefix, form, taskButton) {
+function checkPerformAction (fldPrefix, form, taskButton, selection) {
     var cnt;
     var gotTask = 0;
     
@@ -452,17 +279,17 @@ function checkPerformAction (fldPrefix, form, taskButton) {
     if (taskButton == 1) {
         gotTask = 1;
     } else if (document.forms[form].task.selectedIndex) {
-	//force user to select all search contacts, CRM-3711
-	if ( document.forms[form].task.value == 13 || document.forms[form].task.value == 14 ) {
-	    var toggleSelect = document.getElementsByName('toggleSelect');
-	    if ( toggleSelect[0].checked || document.forms[form].radio_ts[0].checked ) {
-		return true;
-	    } else {
-		alert( "Please select all contacts for this action.\n\nTo use the entire set of search results, click the 'all records' radio button." );
-		return false;
-	    }
-	}
-	gotTask = 1; 
+        //force user to select all search contacts, CRM-3711
+        if ( document.forms[form].task.value == 13 || document.forms[form].task.value == 14 ) {
+            var toggleSelect = document.getElementsByName('toggleSelect');
+            if ( toggleSelect[0].checked || document.forms[form].radio_ts[0].checked ) {
+                return true;
+            } else {
+                alert( "Please select all contacts for this action.\n\nTo use the entire set of search results, click the 'all records' radio button." );
+                return false;
+            }
+        }
+        gotTask = 1; 
     }
     
     if (gotTask == 1) {
@@ -471,7 +298,7 @@ function checkPerformAction (fldPrefix, form, taskButton) {
             return true;
         }
 	
-        cnt = countSelectedCheckboxes(fldPrefix, document.forms[form]);
+        cnt = (selection == 1) ? countSelections() : countSelectedCheckboxes(fldPrefix, document.forms[form]);
         if (!cnt) {
             alert ("Please select one or more contacts for this action.\n\nTo use the entire set of search results, click the 'all records' radio button.");
             return false;
@@ -492,13 +319,12 @@ function checkPerformAction (fldPrefix, form, taskButton) {
 function checkSelectedBox( chkName ) {
     var checkElement = cj('#' + chkName );
     if ( checkElement.attr('checked') ) {
-	cj('input[value=ts_sel]:radio').attr('checked',true );
-	checkElement.parents('tr').addClass('crm-row-selected');
+        cj('input[value=ts_sel]:radio').attr('checked',true );
+        checkElement.parents('tr').addClass('crm-row-selected');
     } else {
         checkElement.parents('tr').removeClass('crm-row-selected');
     }
 }
-
 
 /**
  * This function is to show the row with  selected checkbox in different color
@@ -507,18 +333,16 @@ function checkSelectedBox( chkName ) {
  * @access public
  * @return null
  */
-
 function on_load_init_checkboxes(form) 
 {
     var formName = form;
     var fldPrefix = 'mark_x';
     for( i=0; i < document.forms[formName].elements.length; i++) {
-	fpLen = fldPrefix.length;
-	if (document.forms[formName].elements[i].type == 'checkbox' && document.forms[formName].elements[i].name.slice(0,fpLen) == fldPrefix ) {
-	    checkSelectedBox (document.forms[formName].elements[i].name, formName); 
-	}
+        fpLen = fldPrefix.length;
+        if (document.forms[formName].elements[i].type == 'checkbox' && document.forms[formName].elements[i].name.slice(0,fpLen) == fldPrefix ) {
+            checkSelectedBox (document.forms[formName].elements[i].name, formName); 
+        }
     }
-    
 }
 
 /**
@@ -530,22 +354,19 @@ function on_load_init_checkboxes(form)
  * @access public
  * @return null
  */
-
 function changeRowColor (rowid, form) {
-
     switch (document.getElementById(rowid).className) 	{
-    case 'even-row'          : 	document.getElementById(rowid).className = 'selected even-row';
-	break;
-    case 'odd-row'           : 	document.getElementById(rowid).className = 'selected odd-row';
-	break;
-    case 'selected even-row' : 	document.getElementById(rowid).className = 'even-row';
-	break;
-    case 'selected odd-row'  : 	document.getElementById(rowid).className = 'odd-row';
-	break;
-    case 'form-item'         : 	document.getElementById(rowid).className = 'selected';
-	break;
-    case 'selected'          : 	document.getElementById(rowid).className = 'form-item';
-	
+        case 'even-row'          : 	document.getElementById(rowid).className = 'selected even-row';
+                                    break;
+        case 'odd-row'           : 	document.getElementById(rowid).className = 'selected odd-row';
+                                    break;
+        case 'selected even-row' : 	document.getElementById(rowid).className = 'even-row';
+                                    break;
+        case 'selected odd-row'  : 	document.getElementById(rowid).className = 'odd-row';
+                                    break;
+        case 'form-item'         : 	document.getElementById(rowid).className = 'selected';
+                                    break;
+        case 'selected'          : 	document.getElementById(rowid).className = 'form-item';
     }
 }
 
@@ -556,20 +377,17 @@ function changeRowColor (rowid, form) {
  * @access public
  * @return null
  */
-
 function on_load_init_check(form) 
 {
     for( i=0; i < document.forms[form].elements.length; i++) {
-	
-      if (
-          ( document.forms[form].elements[i].type == 'checkbox' && document.forms[form].elements[i].checked == true )
-           ||
-          ( document.forms[form].elements[i].type == 'hidden' && document.forms[form].elements[i].value == 1 )
-         ) {
-              var ss = document.forms[form].elements[i].id;
-		      var row = 'rowid' + ss;
-		      changeRowColor(row, form);
-           }
+      if ( ( document.forms[form].elements[i].type == 'checkbox' 
+                  && document.forms[form].elements[i].checked == true )
+           || ( document.forms[form].elements[i].type == 'hidden' 
+               && document.forms[form].elements[i].value == 1 ) ) {
+        var ss = document.forms[form].elements[i].id;
+        var row = 'rowid' + ss;
+        changeRowColor(row, form);
+      }
     }
 }
 
@@ -580,14 +398,13 @@ function on_load_init_check(form)
  * @param object form
  * @return null
  */
-function unselectRadio(fieldName, form)
-{
-  for( i=0; i < document.forms[form].elements.length; i++) {
-    if (document.forms[form].elements[i].name == fieldName) {
-      document.forms[form].elements[i].checked = false;
+function unselectRadio(fieldName, form) {
+    for( i=0; i < document.forms[form].elements.length; i++) {
+        if (document.forms[form].elements[i].name == fieldName) {
+            document.forms[form].elements[i].checked = false;
+        }
     }
-  }
-  return;
+    return;
 }
 
 /**
@@ -610,8 +427,7 @@ function submitOnce(obj,formId,procText) {
         obj.disabled = true;
         document.getElementById(formId).submit();
         return true;
-    }
-    else { // for older browsers
+    } else { // for older browsers
         if (submitcount == 0) {
             submitcount++;
             return true;
@@ -683,32 +499,8 @@ function popUp(URL) {
   eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=0,width=640,height=420,left = 202,top = 184');");
 }
 
-/**
- * Function to execute javascript that is assigned to element using innerHTML property
- *
- * @param elementName element name, that whose innerHTML is set
- */
-function executeInnerHTML ( elementName ) 
-{
-    var element   = document.getElementById( elementName );
-    var content   = element.getElementsByTagName('script');
-    var tagLength = content.length;
-    
-    for (var x=0; x<tagLength; x++ ) {
-	var newScript = document.createElement('script');
-	newScript.type = "text/javascript";
-	newScript.text = content[x].text;
-	//execute script
-	element.appendChild(newScript);
-    }
-    
-    for ( var y=0; y<tagLength-1; y++ ) {
-	element.removeChild(element.getElementsByTagName('script')[y]);
-    }
-}
-
-function imagePopUp ( path ) 
-{      window.open(path,'popupWindow','toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=yes,copyhistory=no,screenX=150,screenY=150,top=150,left=150');
+function imagePopUp ( path ) {
+    window.open(path,'popupWindow','toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=yes,copyhistory=no,screenX=150,screenY=150,top=150,left=150');
 }
 
 /**
@@ -716,15 +508,14 @@ function imagePopUp ( path )
  *
  * @param element name index, that whose innerHTML is to hide else will show the hidden row.
  */
-function showHideRow( index )
-{
-   if( index) {
-    cj( 'tr#optionField_' + index ).hide( );
-    if( cj( 'table#optionField tr:hidden:first' ).length )  cj( 'div#optionFieldLink' ).show( );
-   } else {
-    cj( 'table#optionField tr:hidden:first' ).show( );
-    if( ! cj( 'table#optionField tr:hidden:last' ).length ) cj( 'div#optionFieldLink' ).hide( );
-   }
+function showHideRow( index ) {
+    if ( index ) {
+        cj( 'tr#optionField_' + index ).hide( );
+        if( cj( 'table#optionField tr:hidden:first' ).length )  cj( 'div#optionFieldLink' ).show( );
+    } else {
+        cj( 'table#optionField tr:hidden:first' ).show( );
+        if( ! cj( 'table#optionField tr:hidden:last' ).length ) cj( 'div#optionFieldLink' ).hide( );
+    }
     return false; 
 }
 
@@ -733,8 +524,7 @@ function showHideRow( index )
  *
  * @param element message JSON object.
  */
-function activityStatus( message )
-{
+function activityStatus( message ) {
     var d = new Date(), time = [], i;
     var currentDateTime = d.getTime()
     var activityTime    = cj("input#activity_date_time_time").val().replace(":", "");
@@ -774,3 +564,60 @@ function activityStatus( message )
         }
     } 
 }
+
+/**
+ * Function to make multiselect boxes behave as fields in small screens
+ */
+
+function advmultiselectResize() {
+  var amswidth = cj("#crm-container form:has(table.advmultiselect)").width();
+  if (amswidth < 700) {
+    cj("form table.advmultiselect td").each( function() {
+      cj(this).css('display', 'block');
+    });
+  } else {
+    cj("form table.advmultiselect td").each( function() {
+      cj(this).css('display', 'table-cell');
+    });
+  }
+  var contactwidth = cj('#crm-container #mainTabContainer').width();
+  if (contactwidth < 600) {
+    cj('#crm-container #mainTabContainer').addClass('narrowpage');
+    cj('#crm-container #mainTabContainer').addClass('narrowpage');
+    cj('#crm-container #mainTabContainer.narrowpage #contactTopBar td').each( function(index) {
+      if (index > 1) {
+        if (index%2 == 0) {
+          cj(this).parent().after('<tr class="narrowadded"></tr>');
+        }
+        var item = cj(this);
+        cj(this).parent().next().append(item);
+      }
+    });
+  } else {
+    cj('#crm-container #mainTabContainer.narrowpage').removeClass('narrowpage');
+    cj('#crm-container #mainTabContainer #contactTopBar tr.narrowadded td').each( function() {
+      var nitem = cj(this);
+      var parent = cj(this).parent();
+      cj(this).parent().prev().append(nitem);
+      if ( parent.children().size() == 0 ) {
+        parent.remove();
+      }
+    }); 
+    cj('#crm-container #mainTabContainer.narrowpage #contactTopBar tr.added').detach();
+  }
+  var cformwidth = cj('#crm-container #Contact .contact_basic_information-section').width();
+ 
+  if (cformwidth < 720) {
+    cj('#crm-container .contact_basic_information-section').addClass('narrowform');
+    cj('#crm-container .contact_basic_information-section table.form-layout-compressed td .helpicon').parent().addClass('hashelpicon');
+    if (cformwidth < 480) {
+      cj('#crm-container .contact_basic_information-section').addClass('xnarrowform');
+    } else {
+      cj('#crm-container .contact_basic_information-section.xnarrowform').removeClass('xnarrowform');
+    }
+  } else {
+    cj('#crm-container .contact_basic_information-section.narrowform').removeClass('narrowform');
+    cj('#crm-container .contact_basic_information-section.xnarrowform').removeClass('xnarrowform');
+  }
+}
+

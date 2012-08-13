@@ -8,7 +8,7 @@
 function address_delete_example(){
 $params = array( 
   'contact_id' => 1,
-  'location_type_id' => 7,
+  'location_type_id' => 11,
   'street_name' => 'Ambachtstraat',
   'street_number' => '23',
   'street_address' => 'Ambachtstraat 23',

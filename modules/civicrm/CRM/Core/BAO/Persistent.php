@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,86 +28,85 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Core_BAO_Persistent extends CRM_Core_DAO_Persistent {
 
-require_once 'CRM/Core/DAO/Persistent.php';
+  /**
+   * Takes a bunch of params that are needed to match certain criteria and
+   * retrieves the relevant objects. Typically the valid params are only
+   * contact_id. We'll tweak this function to be more full featured over a period
+   * of time. This is the inverse function of create. It also stores all the retrieved
+   * values in the default array
+   *
+   * @param array $params   (reference ) an assoc array of name/value pairs
+   * @param array $defaults (reference ) an assoc array to hold the flattened values
+   *
+   * @return object CRM_Core_BAO_Persistent object
+   * @access public
+   * @static
+   */
+  static
+  function retrieve(&$params, &$defaults) {
+    $dao = new CRM_Core_DAO_Persistent();
+    $dao->copyValues($params);
 
-class CRM_Core_BAO_Persistent extends CRM_Core_DAO_Persistent
-{
-    /**
-     * Takes a bunch of params that are needed to match certain criteria and
-     * retrieves the relevant objects. Typically the valid params are only
-     * contact_id. We'll tweak this function to be more full featured over a period
-     * of time. This is the inverse function of create. It also stores all the retrieved
-     * values in the default array
-     *
-     * @param array $params   (reference ) an assoc array of name/value pairs
-     * @param array $defaults (reference ) an assoc array to hold the flattened values
-     *
-     * @return object CRM_Core_BAO_Persistent object
-     * @access public
-     * @static
-     */
-    static function retrieve( &$params, &$defaults ) 
-    {
-        $dao = new CRM_Core_DAO_Persistent( );    
-        $dao->copyValues($params);
-        
-        if( $dao->find( true ) ) {
-            CRM_Core_DAO::storeValues( $dao, $defaults );
-            if( CRM_Utils_Array::value('is_config', $defaults ) == 1 ) {
-                $defaults['data'] =  unserialize($defaults['data']);
-            }
-            return $dao;
-        }
-        return null;  
+    if ($dao->find(TRUE)) {
+      CRM_Core_DAO::storeValues($dao, $defaults);
+      if (CRM_Utils_Array::value('is_config', $defaults) == 1) {
+        $defaults['data'] = unserialize($defaults['data']);
+      }
+      return $dao;
     }
+    return NULL;
+  }
 
-    /**
-     * function to add the Persistent Record
-     *
-     * @param array $params reference array contains the values submitted by the form
-     * @param array $ids    reference array contains the id
-     * 
-     * @access public
-     * @static 
-     * @return object
-     */
-    static function add(&$params, &$ids)
-    {
-        if ( CRM_Utils_Array::value('is_config', $params) == 1 ) {
-            $params['data'] = serialize( explode(',', $params['data']) );
-        }
-        $persistentDAO  = new CRM_Core_DAO_Persistent( );
-        $persistentDAO->copyValues( $params );
-
-        $persistentDAO->id = CRM_Utils_Array::value( 'persistent', $ids );
-        $persistentDAO->save( );
-        return $persistentDAO;
+  /**
+   * function to add the Persistent Record
+   *
+   * @param array $params reference array contains the values submitted by the form
+   * @param array $ids    reference array contains the id
+   *
+   * @access public
+   * @static
+   *
+   * @return object
+   */
+  static
+  function add(&$params, &$ids) {
+    if (CRM_Utils_Array::value('is_config', $params) == 1) {
+      $params['data'] = serialize(explode(',', $params['data']));
     }
+    $persistentDAO = new CRM_Core_DAO_Persistent();
+    $persistentDAO->copyValues($params);
 
-    static function getContext( $context, $name = null ) 
-    {     
-        static $contextNameData = array();
+    $persistentDAO->id = CRM_Utils_Array::value('persistent', $ids);
+    $persistentDAO->save();
+    return $persistentDAO;
+  }
 
-        if ( ! array_key_exists($context, $contextNameData) ) {
-            $contextNameData[$context] = array( );
-            $persisntentDAO  = new CRM_Core_DAO_Persistent( );
-            $persisntentDAO->context = $context;
-            $persisntentDAO->find();
-            
-            while ( $persisntentDAO->fetch( ) ) {
-                $contextNameData[$context][$persisntentDAO->name] = 
-                    $persisntentDAO->is_config == 1 ? unserialize($persisntentDAO->data) : $persisntentDAO->data;
-            }
-        }
-        if ( empty( $name ) ) {
-            return $contextNameData[$context];
-        } else {
-            return CRM_Utils_Array::value( $name, $contextNameData[$context] );
-        }
+  static
+  function getContext($context, $name = NULL) {
+    static $contextNameData = array();
+
+    if (!array_key_exists($context, $contextNameData)) {
+      $contextNameData[$context] = array();
+      $persisntentDAO = new CRM_Core_DAO_Persistent();
+      $persisntentDAO->context = $context;
+      $persisntentDAO->find();
+
+      while ($persisntentDAO->fetch()) {
+        $contextNameData[$context][$persisntentDAO->name] = $persisntentDAO->is_config == 1 ? unserialize($persisntentDAO->data) : $persisntentDAO->data;
+      }
     }
+    if (empty($name)) {
+      return $contextNameData[$context];
+    }
+    else {
+      return CRM_Utils_Array::value($name, $contextNameData[$context]);
+    }
+  }
 }
+

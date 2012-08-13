@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,108 +28,126 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Admin/Form/Setting.php';
-
 /**
  * This class generates form components for Error Handling and Debugging
- * 
+ *
  */
-class CRM_Admin_Form_Setting_UpdateConfigBackend extends CRM_Admin_Form_Setting
-{  
-    protected $_oldBaseDir;
-    protected $_oldBaseURL;
-    protected $_oldSiteName;
-  
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) {
-        CRM_Utils_System::setTitle(ts('Settings - Update Directory Path and URL'));
-        
-        require_once 'CRM/Core/BAO/Setting.php';
-        list( $this->_oldBaseURL,
-              $this->_oldBaseDir,
-              $this->_oldSiteName ) = CRM_Core_BAO_Setting::getConfigSettings( );
+class CRM_Admin_Form_Setting_UpdateConfigBackend extends CRM_Admin_Form_Setting {
+  protected $_oldBaseDir;
+  protected $_oldBaseURL;
+  protected $_oldSiteName;
 
-        $this->assign( 'oldBaseURL', $this->_oldBaseURL );
-        $this->assign( 'oldBaseDir', $this->_oldBaseDir );
-        $this->assign( 'oldSiteName', $this->_oldSiteName );
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    CRM_Utils_System::setTitle(ts('Settings - Cleanup Caches and Update Paths'));
 
-        $this->add( 'text', 'newBaseURL', ts( 'New Base URL' ), null, true );
-        $this->add( 'text', 'newBaseDir', ts( 'New Base Directory' ), null, true );
-        if ( $this->_oldSiteName ) {
-            $this->add( 'text', 'newSiteName', ts( 'New Site Name' ), null, true );
-        }
-        $this->addFormRule( array( 'CRM_Admin_Form_Setting_UpdateConfigBackend', 'formRule' ) );
+    list($this->_oldBaseURL,
+      $this->_oldBaseDir,
+      $this->_oldSiteName
+    ) = CRM_Core_BAO_ConfigSetting::getConfigSettings();
 
-        parent::buildQuickForm();     
+    $this->assign('oldBaseURL', $this->_oldBaseURL);
+    $this->assign('oldBaseDir', $this->_oldBaseDir);
+    $this->assign('oldSiteName', $this->_oldSiteName);
+
+    $this->addElement('submit', $this->getButtonName('next', 'cleanup'), 'Cleanup Caches', array('class' => 'form-submit', 'id' => 'cleanup-cache'));
+
+    $this->add('text', 'newBaseURL', ts('New Base URL'), NULL, TRUE);
+    $this->add('text', 'newBaseDir', ts('New Base Directory'), NULL, TRUE);
+    if ($this->_oldSiteName) {
+      $this->add('text', 'newSiteName', ts('New Site Name'), NULL, TRUE);
+    }
+    $this->addFormRule(array('CRM_Admin_Form_Setting_UpdateConfigBackend', 'formRule'));
+
+    parent::buildQuickForm();
+  }
+
+  function setDefaultValues() {
+    if (!$this->_defaults) {
+      parent::setDefaultValues();
+
+      $config = CRM_Core_Config::singleton();
+      list($this->_defaults['newBaseURL'],
+        $this->_defaults['newBaseDir'],
+        $this->_defaults['newSiteName']
+      ) = CRM_Core_BAO_ConfigSetting::getBestGuessSettings();
     }
 
-    function setDefaultValues( ) 
-    {
-        if ( ! $this->_defaults ) {
-            parent::setDefaultValues( );
+    return $this->_defaults;
+  }
 
-            $config =& CRM_Core_Config::singleton( );
-            list( $this->_defaults['newBaseURL'],
-                  $this->_defaults['newBaseDir'],
-                  $this->_defaults['newSiteName'] ) = CRM_Core_BAO_Setting::getBestGuessSettings( );
-        }
+  static
+  function formRule($fields) {
+    $tmpDir = trim($fields['newBaseDir']);
 
-        return $this->_defaults;
+    $errors = array();
+    if (!is_writeable($tmpDir)) {
+      $errors['newBaseDir'] = ts('%1 directory does not exist or cannot be written by webserver',
+        array(1 => $tmpDir)
+      );
+    }
+    return $errors;
+  }
+
+  function postProcess() {
+    if (CRM_Utils_Array::value('_qf_UpdateConfigBackend_next_cleanup', $_POST)) {
+
+      $config = CRM_Core_Config::singleton();
+
+      // cleanup templates_c directory
+      $config->cleanup(1, FALSE);
+
+      // clear db caching
+      $config->clearDBCache();
+      parent::rebuildMenu();
+
+      CRM_Core_Session::setStatus(ts('Cache has been cleared and menu has been rebuilt successfully.'));
+      return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/setting/updateConfigBackend', 'reset=1'));
     }
 
-    static function formRule( $fields) {
-        $tmpDir = trim( $fields['newBaseDir'] );
+    // redirect to admin page after saving
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url('civicrm/admin'));
 
-        $errors = array( );
-        if ( ! is_writeable( $tmpDir ) ) {
-            $errors['newBaseDir'] = ts( '%1 directory does not exist or cannot be written by webserver',
-                                        array( 1 => $tmpDir ) );
-        }
-        return $errors;
+    $params = $this->controller->exportValues($this->_name);
+
+    //CRM-5679
+    foreach ($params as $name => & $val) {
+      if ($val && in_array($name, array(
+        'newBaseURL', 'newBaseDir', 'newSiteName'))) {
+        $val = CRM_Utils_File::addTrailingSlash($val);
+      }
     }
 
-    function postProcess( ) {
-        // redirect to admin page after saving
-        $session = CRM_Core_Session::singleton();
-        $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin') );
-
-        $params = $this->controller->exportValues( $this->_name );
-
-        //CRM-5679
-        foreach ( $params as $name => &$val ) {
-            if ( $val && in_array( $name, array( 'newBaseURL', 'newBaseDir', 'newSiteName' ) ) ) {
-                $val = CRM_Utils_File::addTrailingSlash( $val );
-            }
-        }
-
-        $from = array( $this->_oldBaseURL, $this->_oldBaseDir );
-        $to   = array( trim( $params['newBaseURL'] ),
-                       trim( $params['newBaseDir'] ) );
-        if ( $this->_oldSiteName &&
-             $params['newSiteName'] ) {
-            $from[] = $this->_oldSiteName;
-            $to[]   = $params['newSiteName'];
-        }
-
-        $newValues = str_replace( $from,
-                                  $to,
-                                  $this->_defaults );
-
-        parent::commonProcess( $newValues );
-
-        parent::rebuildMenu( );
+    $from = array($this->_oldBaseURL, $this->_oldBaseDir);
+    $to = array(trim($params['newBaseURL']),
+      trim($params['newBaseDir']),
+    );
+    if ($this->_oldSiteName &&
+      $params['newSiteName']
+    ) {
+      $from[] = $this->_oldSiteName;
+      $to[] = $params['newSiteName'];
     }
 
+    $newValues = str_replace($from,
+      $to,
+      $this->_defaults
+    );
+
+    parent::commonProcess($newValues);
+
+    parent::rebuildMenu();
+  }
 }
-
 

@@ -109,8 +109,8 @@ foreach ($opts as $opt) {
 }
 
 PEAR_Command::setFrontendType($fetype);
-$ui = &PEAR_Command::getFrontendObject();
-$config = &PEAR_Config::singleton($pear_user_config, $pear_system_config);
+$ui = PEAR_Command::getFrontendObject();
+$config = PEAR_Config::singleton($pear_user_config, $pear_system_config);
 
 if (PEAR::isError($config)) {
     $_file = '';

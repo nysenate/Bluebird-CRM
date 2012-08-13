@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -59,8 +59,8 @@
   {if $taskName eq 'Export Contacts' OR $component eq false}
   <div class="crm-section crm-export-mergeOptions-section">
     <div class="label crm-label-mergeOptions">{ts}Merge Options{/ts} {help id="id-export_merge_options"}</div>
-    <div class="content crm-content-mergeSameAddress">
-        &nbsp;{$form.merge_same_address.html}
+    <div class="content crm-content-mergeOptions">
+        &nbsp;{$form.mergeOption.html}
     </div>
     <div id='greetings' class="content crm-content-greetings class='hiddenElement'">
       <table class="form-layout-compressed">
@@ -128,9 +128,9 @@
 
      function showGreetingOptions( )
      {
-        var mergeAddress = cj( "input:checkbox[name='merge_same_address[merge_same_address]']:checked" ).val( );
+        var mergeAddress = cj( "input[name='mergeOption']:checked" ).val( );
 	
-        if ( matchingContacts && mergeAddress ) {
+        if ( mergeAddress == 1 ) {
             cj( "#greetings" ).show( );
         } else {
             cj( "#greetings" ).hide( );

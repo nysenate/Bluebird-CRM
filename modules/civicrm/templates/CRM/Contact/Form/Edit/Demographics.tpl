@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 <div class="crm-accordion-wrapper crm-demographics-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
-	{$title} 
+        <a href="#" class="whiteanchor">{$title}</a>
   </div><!-- /.crm-accordion-header -->
   <div id="demographics" class="crm-accordion-body">
   <div class="form-item">
@@ -34,7 +34,7 @@
         
 	<span class="value">
         {$form.gender_id.html}
-        <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
+        <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}Clear{/ts} {$form.gender_id.label|@strip_tags}</a>)</span>
         </span>
   </div>
   <div class="form-item">

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,207 +28,207 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/ShowHideBlocks.php';
-require_once 'CRM/Custom/Form/CustomData.php';
-
 /**
  * This class generates form components for custom data
- * 
+ *
  * It delegates the work to lower level subclasses and integrates the changes
  * back in. It also uses a lot of functionality with the CRM API's, so any change
  * made here could potentially affect the API etc. Be careful, be aware, use unit tests.
  *
  */
-class CRM_Contact_Form_CustomData extends CRM_Core_Form
-{
-    /**
-     * The table id, used when editing/creating custom data
-     *
-     * @var int
-     */
-    protected $_tableId;
-    
-    /**
-     * entity type of the table id
-     *
-     * @var string
-     */
-    protected $_entityType;
-    
-    /**
-     * entity sub type of the table id
-     *
-     * @var string
-     * @access protected
-     */
-    protected $_entitySubType;
-    
-    
-    /**
-     * the group tree data
-     *
-     * @var array
-     */
-    //protected $_groupTree;
+class CRM_Contact_Form_CustomData extends CRM_Core_Form {
 
-    /**
-     * Which blocks should we show and hide.
-     *
-     * @var CRM_Core_ShowHideBlocks
-     */
-    protected $_showHide;
+  /**
+   * The table id, used when editing/creating custom data
+   *
+   * @var int
+   */
+  protected $_tableId;
 
-    /**
-     * Array group titles.
-     *
-     * @var array
-     */
-    protected $_groupTitle;
+  /**
+   * entity type of the table id
+   *
+   * @var string
+   */
+  protected $_entityType;
 
-    /**
-     * Array group display status.
-     *
-     * @var array
-     */
-    protected $_groupCollapseDisplay;
+  /**
+   * entity sub type of the table id
+   *
+   * @var string
+   * @access protected
+   */
+  protected $_entitySubType;
 
-    /**
-     * the id of the object being viewed (note/relationship etc)
-     *
-     * @int
-     * @access protected
-     */
-    public $_groupID;
+  /**
+   * the group tree data
+   *
+   * @var array
+   */
+  //protected $_groupTree;
 
-    /**
-     * pre processing work done here.
-     *
-     * gets session variables for table name, id of entity in table, type of entity and stores them.
-     *
-     * @param
-     * @return void
-     *
-     * @access public
-     *
-     */
-    function preProcess()
-    {
-        $this->_cdType = CRM_Utils_Array::value( 'type', $_GET );
-        
-        $this->assign('cdType', false);
-        if ( $this->_cdType ) {
-            $this->assign('cdType', true);
-            return CRM_Custom_Form_CustomData::preProcess( $this );
-        }
+  /**
+   * Which blocks should we show and hide.
+   *
+   * @var CRM_Core_ShowHideBlocks
+   */
+  protected $_showHide;
 
-		$this->_groupID = CRM_Utils_Request::retrieve( 'groupId', 'Positive', $this, true );
-		$this->_tableID  = CRM_Utils_Request::retrieve( 'tableId', 'Positive', $this, true );
+  /**
+   * Array group titles.
+   *
+   * @var array
+   */
+  protected $_groupTitle;
 
-		require_once 'CRM/Contact/BAO/Contact.php';
-		$this->_contactType = CRM_Contact_BAO_Contact::getContactType($this->_tableID);
-		$this->_contactSubType = CRM_Contact_BAO_Contact::getContactSubType($this->_tableID);
-		$this->assign( 'contact_type', $this->_contactType);
-		$this->assign( 'contact_subtype', $this->_contactSubType);
-        list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_tableID );        
-        CRM_Utils_System::setTitle( $displayName, $contactImage . ' ' . $displayName );
-	
-        // when custom data is included in this page
-        if ( CRM_Utils_Array::value( 'hidden_custom', $_POST ) ) {
-            for ( $i = 0; $i <= $_POST['hidden_custom_group_count'][$this->_groupID]; $i++ )  {
-                CRM_Custom_Form_CustomData::preProcess( $this, null, null, $i );
-                CRM_Custom_Form_CustomData::buildQuickForm( $this );
-                CRM_Custom_Form_CustomData::setDefaultValues( $this );
-            }
-        }
+  /**
+   * Array group display status.
+   *
+   * @var array
+   */
+  protected $_groupCollapseDisplay;
+
+  /**
+   * custom group id 
+   *
+   * @int
+   * @access public
+   */
+  public $_groupID;
+
+  /**
+   * pre processing work done here.
+   *
+   * gets session variables for table name, id of entity in table, type of entity and stores them.
+   *
+   * @param
+   *
+   * @return void
+   *
+   * @access public
+   *
+   */ 
+  function preProcess() {
+    $this->_cdType = CRM_Utils_Array::value('type', $_GET);
+
+    $this->assign('cdType', FALSE);
+    if ($this->_cdType) {
+      $this->assign('cdType', TRUE);
+      return CRM_Custom_Form_CustomData::preProcess($this);
     }
-    
-    /**
-     * Function to actually build the form
-     *
-     * @return void
-     * @access public
-     */
-    public function buildQuickForm()
-    {
-        if ( $this->_cdType ) {
-            return CRM_Custom_Form_CustomData::buildQuickForm( $this );
-        }
 
-        //need to assign custom data type and subtype to the template
-        $this->assign('entityID',  $this->_tableID );
-		$this->assign('groupID',   $this->_groupID );
+    $this->_groupID = CRM_Utils_Request::retrieve('groupID', 'Positive', $this, TRUE);
+    $this->_tableID = CRM_Utils_Request::retrieve('tableId', 'Positive', $this, TRUE);
 
-        // make this form an upload since we dont know if the custom data injected dynamically
-        // is of type file etc
-        $this->addButtons(array(
-                                array ( 'type'      => 'upload',
-                                        'name'      => ts('Save'),
-                                        'isDefault' => true   ),
-                                array ( 'type'       => 'cancel',
-                                        'name'      => ts('Cancel') ),
-                                )
-                          );        
+    $this->_contactType = CRM_Contact_BAO_Contact::getContactType($this->_tableID);
+    $this->_contactSubType = CRM_Contact_BAO_Contact::getContactSubType($this->_tableID, ',');
+    $this->assign('contact_type', $this->_contactType);
+    $this->assign('contact_subtype', $this->_contactSubType);
+    list($displayName, $contactImage) = CRM_Contact_BAO_Contact::getDisplayAndImage($this->_tableID);
+    CRM_Utils_System::setTitle($displayName, $contactImage . ' ' . $displayName);
+
+    // when custom data is included in this page
+    if (CRM_Utils_Array::value('hidden_custom', $_POST)) {
+      for ($i = 0; $i <= $_POST['hidden_custom_group_count'][$this->_groupID]; $i++) {
+        CRM_Custom_Form_CustomData::preProcess($this, NULL, NULL, $i);
+        CRM_Custom_Form_CustomData::buildQuickForm($this);
+        CRM_Custom_Form_CustomData::setDefaultValues($this);
+      }
     }
-    
-    /**
-     * Set the default form values
-     *
-     * @access protected
-     * @return array the default array reference
-     */
-    function &setDefaultValues()
-    { 
-        if ( $this->_cdType ) {
-            $customDefaultValue = CRM_Custom_Form_CustomData::setDefaultValues( $this );
-            return $customDefaultValue;
-        }
+  }
 
-		$groupTree =& CRM_Core_BAO_CustomGroup::getTree( $this->_contactType,
-                                                         $this,
-                                                         $this->_tableID,
-                                                         $this->_groupID,
-                                                         $this->_contactSubType );
-                                                     
-        if ( !CRM_Utils_Array::value( 'hidden_custom_group_count', $_POST ) ) { 
-            // custom data building in edit mode (required to handle multi-value)
-            $groupTree =& CRM_Core_BAO_CustomGroup::getTree( $this->_contactType, $this, $this->_tableID, 
-                                                             $this->_groupID, $this->_contactSubType   );
-            $customValueCount = CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $groupTree, true, $this->_groupID );
-        } else {
-            $customValueCount = $_POST['hidden_custom_group_count'][$this->_groupID];
-        }
-        
-        $this->assign('customValueCount', $customValueCount );
-	    
-        $defaults = array();
-        return $defaults;
+  /**
+   * Function to actually build the form
+   *
+   * @return void
+   * @access public
+   */
+  public function buildQuickForm() {
+    if ($this->_cdType) {
+      return CRM_Custom_Form_CustomData::buildQuickForm($this);
     }
-    
-    /**
-     * Process the user submitted custom data values.
-     *
-     * @access public
-     * @return void
-     */
-    public function postProcess() 
-    {
-        // Get the form values and groupTree
-        $params = $this->controller->exportValues( $this->_name );
-        require_once 'CRM/Core/BAO/CustomValueTable.php';
-        CRM_Core_BAO_CustomValueTable::postProcess( $params,
-                                                    $this->_groupTree[$this->_groupID]['fields'],
-                                                    'civicrm_contact',
-                                                    $this->_tableID,
-                                                    $this->_entityType );
 
-        // reset the group contact cache for this group
-        require_once 'CRM/Contact/BAO/GroupContactCache.php';
-        CRM_Contact_BAO_GroupContactCache::remove( );
+    //need to assign custom data type and subtype to the template
+    $this->assign('entityID', $this->_tableID);
+    $this->assign('groupID', $this->_groupID);
+
+    // make this form an upload since we dont know if the custom data injected dynamically
+    // is of type file etc
+    $this->addButtons(array(
+        array(
+          'type' => 'upload',
+          'name' => ts('Save'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
+
+  /**
+   * Set the default form values
+   *
+   * @access protected
+   *
+   * @return array the default array reference
+   */
+  function &setDefaultValues() {
+    if ($this->_cdType) {
+      $customDefaultValue = CRM_Custom_Form_CustomData::setDefaultValues($this);
+      return $customDefaultValue;
     }
+
+    $groupTree = &CRM_Core_BAO_CustomGroup::getTree($this->_contactType,
+      $this,
+      $this->_tableID,
+      $this->_groupID,
+      $this->_contactSubType
+    );
+
+    if (!CRM_Utils_Array::value('hidden_custom_group_count', $_POST)) {
+      // custom data building in edit mode (required to handle multi-value)
+      $groupTree = &CRM_Core_BAO_CustomGroup::getTree($this->_contactType, $this, $this->_tableID,
+        $this->_groupID, $this->_contactSubType
+      );
+      $customValueCount = CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, TRUE, $this->_groupID);
+    }
+    else {
+      $customValueCount = $_POST['hidden_custom_group_count'][$this->_groupID];
+    }
+
+    $this->assign('customValueCount', $customValueCount);
+
+    $defaults = array();
+    return $defaults;
+  }
+
+  /**
+   * Process the user submitted custom data values.
+   *
+   * @access public
+   *
+   * @return void
+   */
+  public function postProcess() {
+    // Get the form values and groupTree
+    $params = $this->controller->exportValues($this->_name);
+    CRM_Core_BAO_CustomValueTable::postProcess($params,
+      $this->_groupTree[$this->_groupID]['fields'],
+      'civicrm_contact',
+      $this->_tableID,
+      $this->_entityType
+    );
+
+    // reset the group contact cache for this group
+    CRM_Contact_BAO_GroupContactCache::remove();
+  }
 }
+

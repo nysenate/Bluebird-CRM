@@ -7,7 +7,7 @@
  */
 function pledge_delete_example(){
 $params = array( 
-  'id' => 10,
+  'id' => 1,
   'version' => 3,
 );
 
@@ -26,9 +26,9 @@ function pledge_delete_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 10,
+  'id' => '',
   'values' => array( 
-      '10' => 10,
+      '' => 1,
     ),
 );
 
@@ -42,7 +42,7 @@ function pledge_delete_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testDeletePledgeUseID and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3PledgeTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/PledgeTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

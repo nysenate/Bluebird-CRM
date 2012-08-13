@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,8 +27,7 @@
    <tr>
       <td colspan="2">
           {$form.address.$blockId.supplemental_address_2.label}<br />
-          {$form.address.$blockId.supplemental_address_2.html} <br >
-          <span class="description font-italic">{ts}Supplemental address info, e.g. c/o, department name, building name, etc.{/ts}</span>
+          {$form.address.$blockId.supplemental_address_2.html}
       </td>
    </tr>
 {/if}

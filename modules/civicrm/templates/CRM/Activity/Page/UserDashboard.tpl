@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,7 +37,6 @@
                     <th>{ts}With{/ts}</th>
                     <th>{ts}Date{/ts}</th>
                     <th>{ts}Status{/ts}</th>
-                    <th></th>
                 </tr>
                 {counter start=0 skip=1 print=false}
                 {capture assign="no_subject"}{ts}(no subject){/ts}{/capture}
@@ -63,7 +62,7 @@ q="action=view&reset=1&id=`$row.activity_id`&cid=`$row.contact_id`&context=dashb
     {else}
         <div class="messages status">
            <div class="icon inform-icon"></div>&nbsp;
-                 {ts}There are no scheduled activities for you.{/ts}
+                 {ts}There are no scheduled activities assigned to you.{/ts}
 
         </div>
     {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,6 +35,9 @@
     {include file="CRM/common/Navigation.tpl" }
 {/if}
 
+{* include wysiwyg related files*}
+{include file="CRM/common/wysiwyg.tpl"}
+
 <table border="0" cellpadding="0" cellspacing="0" id="crm-content">
   <tr>
 {if $sidebarLeft}
@@ -43,7 +46,7 @@
        {$sidebarLeft}
     </td>
 {/if}
-    <td valign="top">
+    <td id="content-right" valign="top">
     {if $breadcrumb}
     <div class="breadcrumb">
       {foreach from=$breadcrumb item=crumb key=key}
@@ -69,6 +72,9 @@
 	</div>    
 {/if}
 
+    {crmRegion name='page-header'}
+    {/crmRegion}
+
 {*{include file="CRM/common/langSwitch.tpl"}*}
 
     <div class="clear"></div>
@@ -80,15 +86,19 @@
     {include file="CRM/common/status.tpl"}
 
     <!-- .tpl file invoked: {$tplFile}. Call via form.tpl if we have a form in the page. -->
+    {crmRegion name='page-body'}
     {if $isForm}
         {include file="CRM/Form/$formTpl.tpl"}
     {else}
         {include file=$tplFile}
     {/if}
+    {/crmRegion}
 
+    {crmRegion name='page-footer'}
     {if ! $urlIsPublic}
     {include file="CRM/common/footer.tpl"}
     {/if}
+    {/crmRegion}
 
     </td>
 
@@ -99,6 +109,14 @@
 <script type="text/javascript">
 cj(function() {
    cj().crmtooltip(); 
+});
+
+cj(document).ready(function() {
+  advmultiselectResize();
+});
+
+cj(window).resize(function() {
+  advmultiselectResize();
 });
 </script>
 {/literal}

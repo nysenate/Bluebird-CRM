@@ -8,7 +8,7 @@
 function pledge_get_example(){
 $params = array( 
   'version' => 3,
-  'pledge_start_date_high' => '20110919111130',
+  'pledge_start_date_high' => '20120511122145',
 );
 
   require_once 'api/api.php';
@@ -26,25 +26,30 @@ function pledge_get_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 5,
+  'id' => 2,
   'values' => array( 
-      '5' => array( 
+      '2' => array( 
           'contact_id' => '1',
           'contact_type' => 'Individual',
+          'contact_sub_type' => '',
           'sort_name' => 'Anderson, Anthony',
           'display_name' => 'Mr. Anthony Anderson II',
-          'pledge_id' => '5',
+          'pledge_id' => '2',
           'pledge_amount' => '100.00',
-          'pledge_create_date' => '2011-09-21 00:00:00',
+          'pledge_create_date' => '2012-05-13 00:00:00',
           'pledge_status' => 'Overdue',
-          'pledge_next_pay_date' => '2010-03-05 00:00:00',
+          'pledge_total_paid' => '',
+          'pledge_next_pay_date' => '2011-03-03 00:00:00',
           'pledge_next_pay_amount' => '20.00',
           'pledge_outstanding_amount' => '20.00',
           'pledge_contribution_type' => 'Donation',
+          'pledge_contribution_page_id' => '',
           'pledge_frequency_interval' => '5',
           'pledge_frequency_unit' => 'year',
           'pledge_is_test' => 0,
-          'id' => '5',
+          'pledge_campaign_id' => '',
+          'pledge_currency' => 'USD',
+          'id' => '2',
         ),
     ),
 );

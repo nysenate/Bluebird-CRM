@@ -3,7 +3,7 @@
 
 
 /*
- This demonstrates use of the 'format.id_only' param. 
+ This demonstrates use of the 'format.id_only' param.
     /* This param causes the id of the only entity to be returned as an integer.
     /* it will be ignored if there is not exactly 1 result
  */

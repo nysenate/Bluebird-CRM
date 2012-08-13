@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@
         <td>
 			{$form.name.label}{help id="domain-name"}<br />
 			{$form.name.html} 
-			<br /><span class="description">{ts}The name of the organization or entity which owns this CiviCRM domain.{/ts}</span>
+			<br /><span class="description">{ts}The name of the organization or entity which owns this CiviCRM site or domain.{/ts}</span>
 		</td>
 	</tr>
 	<tr>
@@ -59,10 +59,10 @@
 		</tr>
 		</table>
     
-    <h3>{ts}Domain Address{/ts}</h3>
+    <h3>{ts}Primary Organization Address{/ts}</h3>
         <div class="description">{ts 1=&#123;domain.address&#125;}CiviMail mailings must include the sending organization's address. This is done by putting the %1 token in either the body or footer of the mailing. This token may also be used in regular 'Send Email to Contacts' messages and in other Message Templates. The token is replaced by the address entered below when the message is sent.{/ts}</div>
         {include file="CRM/Contact/Form/Edit/Address.tpl"} 
-    <h3>{ts}Additional Domain Contact Information{/ts}</h3>
+    <h3>{ts}Organization Contact Information{/ts}</h3>
         <div class="description">{ts}You can also include general email and/or phone contact information in mailings.{/ts} {help id="additional-contact"}</div>
         <table class="form-layout-compressed">
             {* Display the email block *}  

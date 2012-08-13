@@ -8,7 +8,7 @@
 function contribution_create_example(){
 $params = array( 
   'contact_id' => 1,
-  'receive_date' => '20110814',
+  'receive_date' => '20120511',
   'total_amount' => '100',
   'contribution_type_id' => 11,
   'non_deductible_amount' => '10',
@@ -35,15 +35,15 @@ function contribution_create_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 5,
+  'id' => 1,
   'values' => array( 
-      '5' => array( 
-          'id' => 5,
+      '1' => array( 
+          'id' => 1,
           'contact_id' => 1,
           'contribution_type_id' => 11,
           'contribution_page_id' => '',
           'payment_instrument_id' => '',
-          'receive_date' => '20110814000000',
+          'receive_date' => '20120511000000',
           'non_deductible_amount' => '10',
           'total_amount' => '100',
           'fee_amount' => '51',
@@ -80,7 +80,7 @@ function contribution_create_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testCreateContributionWithSoftCredt and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ContributionTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ContributionTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,14 +33,14 @@
 	    {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
 	    {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}  
 	    {/if}
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div> {ts}Edit{/ts}</span></a>
+            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-top"><span><div class="icon edit-icon"></div> {ts}Edit{/ts}</span></a>
         {/if}
         {if ! $owner_contact_id AND call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviMember')}
             {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context"}  
 	    {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
 	    {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}  
 	    {/if}
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
+            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-top"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
         {/if}
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
@@ -69,19 +69,18 @@
     <div class="crm-submit-buttons">
         {* Check permissions and make sure this is not an inherited membership (edit and delete not allowed for inherited memberships) *}
         {if ! $owner_contact_id AND call_user_func(array('CRM_Core_Permission','check'), 'edit memberships') }
-	    {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context"}  
-	    {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
-	    {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}  
-	    {/if}
-
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div> {ts}Edit{/ts}</span></a>
+	        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context"}  
+	        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
+	          {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}  
+	        {/if}
+          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-bottom"><span><div class="icon edit-icon"></div> {ts}Edit{/ts}</span></a>
         {/if}
         {if ! $owner_contact_id AND call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviMember')}
-            {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context"}  
-	    {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
-	    {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}  
-	    {/if}
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
+          {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context"}  
+	        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
+	          {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}  
+	        {/if}
+          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-bottom"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
         {/if}
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>

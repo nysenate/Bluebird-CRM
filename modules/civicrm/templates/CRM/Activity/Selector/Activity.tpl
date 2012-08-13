@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 {* Displays Activities. *}
 
 <div>
-  {if empty($noFieldSet)}	
+  {if empty($noFieldSet)}
   <h3 class="crm-table-title">{ts}Activities{/ts}</h3>
   {/if}
 {if $rows}
@@ -53,7 +53,7 @@
       {foreach from=$rows item=row}
       <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-activity crm-activity_status-{$row.activity_status_id} crm-activity-type_{$row.activity_type_id}" id="crm-activity_{$row.activity_id}">
         <td class="crm-activity-type crm-activity-type_{$row.activity_type_id}">{$row.activity_type}</td>
-      	<td class="crm-activity-subject">{$row.subject}</td>
+        <td class="crm-activity-subject">{$row.subject}</td>
         <td class="crm-activity-source_contact_name">
         {if $contactId == $row.source_contact_id}
           {$row.source_contact_name}
@@ -61,7 +61,7 @@
           <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts}View contact{/ts}">{$row.source_contact_name}</a>
         {else}
           <em>n/a</em>
-        {/if}			
+        {/if}
         </td>
 
         <td class="crm-activity-target_contact_name">
@@ -95,7 +95,7 @@
                 {/if}
             {/foreach}
             {if count($row.assignee_contact_name) > 5}({ts}more{/ts}){/if}
-        {/if}	
+        {/if}
         </td>
 
         <td class="crm-activity-date_time">{$row.activity_date_time|crmDate}</td>
@@ -108,7 +108,7 @@
   {/strip}
 
   {include file="CRM/common/pager.tpl" location="bottom"}
-  
+
   {include file="CRM/Case/Form/ActivityToCase.tpl" contactID=$contactId}
   </form>
 {else}

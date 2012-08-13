@@ -1,8 +1,8 @@
 /*
 * +--------------------------------------------------------------------+
-* | CiviCRM version 3.4                                                |
+* | CiviCRM version 4.2                                                |
 * +--------------------------------------------------------------------+
-* | Copyright CiviCRM LLC (c) 2004-2011                                |
+* | Copyright CiviCRM LLC (c) 2004-2012                                |
 * +--------------------------------------------------------------------+
 * | This file is a part of CiviCRM.                                    |
 * |                                                                    |
@@ -24,19 +24,12 @@
 * +--------------------------------------------------------------------+
 */ 
 (function($){ $.fn.crmaccordions = function(){
-	if ($('.crm-accordion-processed').length == 0 ||
-	    $('.crm-accordion-processed').length < $('.crm-accordion-wrapper').length ){
-	  var crmAccordionWrapper = $('.crm-accordion-wrapper');  
-	  crmAccordionWrapper.delegate('div.crm-accordion-header', 'mouseover', function() {$(this).addClass('crm-accordion-header-hover')});
-	  crmAccordionWrapper.delegate('div.crm-accordion-header', 'mouseout', function() {$(this).removeClass('crm-accordion-header-hover')});
-	  crmAccordionWrapper.undelegate('click');
-	  crmAccordionWrapper.delegate('div.crm-accordion-header', 'click', function () {
-		$(this).parent().toggleClass('crm-accordion-open');
-		$(this).parent().toggleClass('crm-accordion-closed');
-		//return false to prevent wiring of click event
-		return false;
-		});
-	$('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
-	};
+  var crmAccordionWrapper = $('.crm-accordion-wrapper').not('.crm-accordion-processed, .crm-accordion-wrapper div');  
+    crmAccordionWrapper.on('click', 'div.crm-accordion-header', function () {
+      $(this).parent().toggleClass('crm-accordion-open').toggleClass('crm-accordion-closed');
+      //return false to prevent wiring of click event
+      return false;
+    });
+  crmAccordionWrapper.addClass('crm-accordion-processed');
 };
 })(jQuery);

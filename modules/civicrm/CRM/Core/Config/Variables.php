@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,539 +26,552 @@
 */
 
 /**
- * Variables class contains definitions of all the core config settings that are allowed on 
+ * Variables class contains definitions of all the core config settings that are allowed on
  * CRM_Core_Config. If you want a config variable to be present in run time config object,
  * it need to be defined here first.
- * 
+ *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults {
 
-require_once 'CRM/Core/Config/Defaults.php';
+  /**
+   * the debug level for civicrm
+   * @var int
+   */
+  public $debug = 0;
+  public $backtrace = 0;
 
-class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
-{
+  /**
+   * the directory where Smarty and plugins are installed
+   * @var string
+   */
+  public $smartyDir = NULL;
+  public $pluginsDir = NULL;
 
+  /**
+   * the root directory of our template tree
+   * @var string
+   */
+  public $templateDir = NULL;
 
-    /** 
-     * the debug level for civicrm
-     * @var int 
-     */ 
-    public $debug             = 0; 
-    public $backtrace         = 0;
+  /**
+   * The resourceBase of our application. Used when we want to compose
+   * url's for things like js/images/css
+   * @var string
+   */
+  public $resourceBase = NULL;
 
-    /**
-     * the directory where Smarty and plugins are installed
-     * @var string
-     */
-    public $smartyDir           = null;
-    public $pluginsDir          = null;
+  /**
+   * The directory to store uploaded files
+   */
+  public $uploadDir = NULL;
 
-    /**
-     * the root directory of our template tree
-     * @var string
-     */
-    public $templateDir		  = null;
+  /**
+   * The directory to store uploaded image files
+   */
+  public $imageUploadDir = NULL;
 
-    /**
-     * The resourceBase of our application. Used when we want to compose
-     * url's for things like js/images/css
-     * @var string
-     */
-    public $resourceBase        = null;
+  /**
+   * The directory to store uploaded  files in custom data
+   */
+  public $customFileUploadDir = NULL;
 
-    /**
-     * The directory to store uploaded files
-     */
-    public $uploadDir         = null;
-    
-    /**
-     * The directory to store uploaded image files
-     */
-    public $imageUploadDir   = null;
-    
-    /**
-     * The directory to store uploaded  files in custom data 
-     */
-    public $customFileUploadDir   = null;
-    
-    /**
-     * The url that we can use to display the uploaded images
-     */
-    public $imageUploadURL   = null;
+  /**
+   * The url that we can use to display the uploaded images
+   */
+  public $imageUploadURL = NULL;
 
-    /**
-     * Are we generating clean url's and using mod_rewrite
-     * @var string
-     */
-    public $cleanURL = false;
+  /**
+   * The url for resources defined by extensions
+   */
+  public $extensionsURL = NULL;
 
-    /**
-     * List of country codes limiting the country list.
-     * 1228 is an id for United States.
-     * @var string
-     */
-    public $countryLimit = array( '1228' );
+  /**
+   * Are we generating clean url's and using mod_rewrite
+   * @var string
+   */
+  public $cleanURL = FALSE;
 
-    /**
-     * List of country codes limiting the province list.
-     * 1228 is an id for United States.     
-     * @var string
-     */
-    public $provinceLimit = array( '1228' );
+  /**
+   * List of country codes limiting the country list.
+   * 1228 is an id for United States.
+   * @var string
+   */
+  public $countryLimit = array('1228');
 
-    /**
-     * ISO code of default country for contact.
-     * 1228 is an id for United States.     
-     * @var int
-     */
-    public $defaultContactCountry = '1228';
+  /**
+   * List of country codes limiting the province list.
+   * 1228 is an id for United States.
+   * @var string
+   */
+  public $provinceLimit = array('1228');
 
-    /**
-     * ISO code of default currency.
-     * @var int
-     */
-    public $defaultCurrency = 'USD';
+  /**
+   * ISO code of default country for contact.
+   * 1228 is an id for United States.
+   * @var int
+   */
+  public $defaultContactCountry = '1228';
 
-    /**
-     * Locale for the application to run with.
-     * @var string
-     */
-    public $lcMessages = 'en_US';
+  /**
+   * ISO code of default currency.
+   * @var int
+   */
+  public $defaultCurrency = 'USD';
 
-    /**
-     * String format for date+time
-     * @var string
-     */
-    public $dateformatDatetime = '%B %E%f, %Y %l:%M %P';
+  /**
+   * Locale for the application to run with.
+   * @var string
+   */
+  public $lcMessages = 'en_US';
 
-    /**
-     * String format for a full date (one with day, month and year)
-     * @var string
-     */
-    public $dateformatFull = '%B %E%f, %Y';
+  /**
+   * String format for date+time
+   * @var string
+   */
+  public $dateformatDatetime = '%B %E%f, %Y %l:%M %P';
 
-    /**
-     * String format for a partial date (one with month and year)
-     * @var string
-     */
-    public $dateformatPartial = '%B %Y';
+  /**
+   * String format for a full date (one with day, month and year)
+   * @var string
+   */
+  public $dateformatFull = '%B %E%f, %Y';
 
-    /**
-     * String format for a year-only date
-     * @var string
-     */
-    public $dateformatYear = '%Y';
+  /**
+   * String format for a partial date (one with month and year)
+   * @var string
+   */
+  public $dateformatPartial = '%B %Y';
 
-    /**
-     * Display format for time
-     * @var string
-     */
-    public $dateformatTime = '%l:%M %P';
+  /**
+   * String format for a year-only date
+   * @var string
+   */
+  public $dateformatYear = '%Y';
 
-    /**
-     * Input format for time 
-     * @var string
-     */
-    public $timeInputFormat = 1;
+  /**
+   * Display format for time
+   * @var string
+   */
+  public $dateformatTime = '%l:%M %P';
 
-    /**
-     * Input format for date plugin
-     * @var string
-     */
-    public $dateInputFormat = 'mm/dd/yy';
+  /**
+   * Input format for time
+   * @var string
+   */
+  public $timeInputFormat = 1;
 
-    /**
-     * Month and day on which fiscal year starts.
-     *
-     * @var array
-     */
-    public $fiscalYearStart = array(
-                                    'M' => 01,
-                                    'd' => 01
-                                    );
+  /**
+   * Input format for date plugin
+   * @var string
+   */
+  public $dateInputFormat = 'mm/dd/yy';
 
-    /**
-     * String format for monetary amounts
-     * @var string
-     */
-    public $moneyformat = '%c %a';
+  /**
+   * Month and day on which fiscal year starts.
+   *
+   * @var array
+   */
+  public $fiscalYearStart = array(
+    'M' => 01,
+    'd' => 01,
+  );
 
-    /**
-     * String format for monetary values
-     * @var string
-     */
-    public $moneyvalueformat = '%!i';
+  /**
+   * String format for monetary amounts
+   * @var string
+   */
+  public $moneyformat = '%c %a';
 
-    /**
-     * Format for monetary amounts
-     * @var string
-     */
-    public $currencySymbols = '';
-    
-    /**
-     * Format for monetary amounts
-     * @var string
-     */
-    public $defaultCurrencySymbol = '$';
-   
-    /**
-     * Monetary decimal point character
-     * @var string
-     */
-    public $monetaryDecimalPoint = '.';
+  /**
+   * String format for monetary values
+   * @var string
+   */
+  public $moneyvalueformat = '%!i';
 
-    /**
-     * Monetary thousands separator
-     * @var string
-     */
-    public $monetaryThousandSeparator = ',';
-    /**
-     * Default encoding of strings returned by gettext
-     * @var string
-     */
-    public $gettextCodeset = 'utf-8';
+  /**
+   * Format for monetary amounts
+   * @var string
+   */
+  public $currencySymbols = '';
 
+  /**
+   * Format for monetary amounts
+   * @var string
+   */
+  public $defaultCurrencySymbol = '$';
 
-    /**
-     * Default name for gettext domain.
-     * @var string
-     */
-    public $gettextDomain = 'civicrm';
+  /**
+   * Monetary decimal point character
+   * @var string
+   */
+  public $monetaryDecimalPoint = '.';
 
-    /**
-     * Default location of gettext resource files.
-     */
-    public $gettextResourceDir = './l10n/';
+  /**
+   * Monetary thousands separator
+   * @var string
+   */
+  public $monetaryThousandSeparator = ',';
 
-    /**
-     * Default user framework
-     */
-    public $userFramework               = 'Drupal';
-    public $userFrameworkVersion        = 'Unknown';
-    public $userFrameworkUsersTableName = 'users';
-    public $userFrameworkClass          = 'CRM_Utils_System_Drupal';
-    public $userHookClass               = 'CRM_Utils_Hook_Drupal';
-    public $userPermissionClass         = 'CRM_Core_Permission_Drupal';
-    public $userFrameworkURLVar         = 'q';
-    public $userFrameworkDSN            = null;
-    public $userFrameworkBaseURL        = null;
-    public $userFrameworkResourceURL    = null;
-    public $userFrameworkFrontend       = false;
-    public $userFrameworkLogging        = false;
+  /**
+   * Default encoding of strings returned by gettext
+   * @var string
+   */
+  public $gettextCodeset = 'utf-8';
 
-    /**
-     * the handle for import file size 
-     * @var int
-     */
-    public $maxImportFileSize = 1048576;
-    public $maxAttachments    = 3;
-    public $maxFileSize       = 2;
+  /**
+   * Default name for gettext domain.
+   * @var string
+   */
+  public $gettextDomain = 'civicrm';
 
-    /**
-     * The custom locale strings. Note that these locale strings are stored
-     * in a separate column in civicrm_domain
-     * @var array
-     */
-    public $localeCustomStrings = null;
+  /**
+   * Default location of gettext resource files.
+   */
+  public $gettextResourceDir = './l10n/';
 
-    /**
-     * Map Provider 
-     *
-     * @var string //NYSS
-     */
-    public $mapProvider = null;
+  /**
+   * Default user framework. This basically makes Drupal 7 the default
+   */
+  public $userFramework = 'Drupal';
+  public $userFrameworkVersion = 'Unknown';
+  public $userFrameworkUsersTableName = 'users';
+  public $userFrameworkClass = 'CRM_Utils_System_Drupal';
+  public $userHookClass = 'CRM_Utils_Hook_Drupal';
+  public $userPermissionClass = 'CRM_Core_Permission_Drupal';
+  public $userFrameworkURLVar = 'q';
+  public $userFrameworkDSN = NULL;
+  public $userFrameworkBaseURL = NULL;
+  public $userFrameworkResourceURL = NULL;
+  public $userFrameworkFrontend = FALSE;
+  public $userFrameworkLogging = FALSE;
 
-    /**
-     * Map API Key 
-     *
-     * @var string //NYSS
-     */
-    public $mapAPIKey = null;
+  /**
+   * the handle for import file size
+   * @var int
+   */
+  public $maxImportFileSize = 1048576;
+  public $maxAttachments = 3;
+  public $maxFileSize = 2;
 
-    /** //NYSS
-     * Geocoding Provider 
-     *
-     * @var string
-     */
-    public $geoProvider = null;
+  /**
+   * The custom locale strings. Note that these locale strings are stored
+   * in a separate column in civicrm_domain
+   * @var array
+   */
+  public $localeCustomStrings = NULL;
 
-    /**
-     * Geocoding API Key 
-     *
-     * @var string
-     */
-    public $geoAPIKey = null;
-	    
-    /**
-     * How should we get geo code information if google map support needed
-     *
-     * @var string //NYSS
-     */
-    public $geocodeMethod    = '';
-    
-    /**
-     *
-     * 
-     * @var boolean
-     */
-    public $mapGeoCoding = 1;
-    
-    /**
-     * Whether deleted contacts should be moved to trash instead
-     * @var boolean
-     */
-    public $contactUndelete = true;
+  /**
+   * Map Provider
+   *
+   * @var string
+   */
+  public $mapProvider = NULL;
 
-    /**
-     * Whether database-level logging should be performed
-     * @var boolean
-     */
-    public $logging = false;
+  /**
+   * Map API Key
+   *
+   * @var string
+   */
+  public $mapAPIKey = NULL;
 
-    /**
-     * Whether CiviCRM should check for newer versions
-     *
-     * @var boolean
-     */
-    public $versionCheck = true;
+  /**
+   * Geocoding Provider
+   *
+   * @var string
+   */
+  public $geoProvider = NULL;
 
-    /**
-     * Array of enabled add-on components (e.g. CiviContribute, CiviMail...)
-     *
-     * @var array
-     */
-    public $enableComponents   = array( 'CiviContribute','CiviPledge','CiviMember',
-                                        'CiviEvent', 'CiviMail', 'CiviReport' );
-    public $enableComponentIDs = array( 1, 6, 2, 3, 4, 8 );
+  /**
+   * Geocoding API Key
+   *
+   * @var string
+   */
+  public $geoAPIKey = NULL;
 
-    /**
-     * Should payments be accepted only via SSL?
-     *
-     * @var boolean
-     */
-    public $enableSSL = false;
+  /**
+   * How should we get geo code information if google map support needed
+   *
+   * @var string
+   */
+  public $geocodeMethod = '';
 
-    /**
-     * error template to use for fatal errors
-     *
-     * @var string
-     */
-    public $fatalErrorTemplate = 'CRM/common/fatal.tpl';
+  /**
+   *
+   *
+   * @var boolean
+   */
+  public $mapGeoCoding = 1;
 
-    /**
-     * fatal error handler
-     *
-     * @var string
-     */
-    public $fatalErrorHandler = null;
+  /**
+   * Whether deleted contacts should be moved to trash instead
+   * @var boolean
+   */
+  public $contactUndelete = TRUE;
 
-    /**
-     * legacy encoding for file encoding conversion
-     *
-     * @var string
-     */
-    public $legacyEncoding = 'Windows-1252';
+  /**
+   * Whether database-level logging should be performed
+   * @var boolean
+   */
+  public $logging = FALSE;
 
-    /**
-     * field separator for import/export csv file
-     *
-     * @var string
-     */
-    public $fieldSeparator = ',';
+  /**
+   * Whether CiviCRM should check for newer versions
+   *
+   * @var boolean
+   */
+  public $versionCheck = TRUE;
 
-    /**
-     * max location blocks in address
-     *
-     * @var integer
-     */
-    public $maxLocationBlocks        = 2;
+  /**
+   * Array of enabled add-on components (e.g. CiviContribute, CiviMail...)
+   *
+   * @var array
+   */
+  public $enableComponents = array(
+    'CiviContribute', 'CiviPledge', 'CiviMember',
+    'CiviEvent', 'CiviMail', 'CiviReport',
+  );
+  public $enableComponentIDs = array(1, 6, 2, 3, 4, 8);
 
-    /**
-     * the font path where captcha fonts are stored
-     *
-     * @var string
-     */
-    public $captchaFontPath = '/usr/X11R6/lib/X11/fonts/';
+  /**
+   * Should payments be accepted only via SSL?
+   *
+   * @var boolean
+   */
+  public $enableSSL = FALSE;
 
-    /**
-     * the font to use for captcha
-     *
-     * @var string
-     */
-    public $captchaFont = 'HelveticaBold.ttf';
+  /**
+   * error template to use for fatal errors
+   *
+   * @var string
+   */
+  public $fatalErrorTemplate = 'CRM/common/fatal.tpl';
 
-    /**
-     * Some search settings
-     */
-    public $includeWildCardInName  = 1;
-    public $includeEmailInName     = 1;
-    public $includeNickNameInName  = 0;
-    public $smartGroupCacheTimeout = 0;
+  /**
+   * fatal error handler
+   *
+   * @var string
+   */
+  public $fatalErrorHandler = NULL;
 
-    public $defaultSearchProfileID = null;
-    
-    /**
-     * Dashboard timeout
-     */
-    public $dashboardCacheTimeout = 1440;    
-    
-    /**
-     * flag to indicate if acl cache is NOT to be reset 
-     */
-    public $doNotResetCache       = 0;    
+  /**
+   * legacy encoding for file encoding conversion
+   *
+   * @var string
+   */
+  public $legacyEncoding = 'Windows-1252';
 
-    /**
-     * Optimization related variables
-     */
-    public $includeAlphabeticalPager = 1;
-    public $includeOrderByClause     = 1;
-    public $oldInputStyle            = 1;
+  /**
+   * field separator for import/export csv file
+   *
+   * @var string
+   */
+  public $fieldSeparator = ',';
 
-    /**
-     * should we disbable key generation for forms
-     *
-     * @var boolean
-     */
-    public $formKeyDisable = false;
+  /**
+   * max location blocks in address
+   *
+   * @var integer
+   */
+  public $maxLocationBlocks = 2;
 
-    /**
-     * to determine wether the call is from cms or civicrm 
-     */
-    public $inCiviCRM  = false;
+  /**
+   * the font path where captcha fonts are stored
+   *
+   * @var string
+   */
+  public $captchaFontPath = '/usr/X11R6/lib/X11/fonts/';
 
-    /**
-     * component registry object (of CRM_Core_Component type)
-     */
-    public $componentRegistry  = null;
+  /**
+   * the font to use for captcha
+   *
+   * @var string
+   */
+  public $captchaFont = 'HelveticaBold.ttf';
 
-    /**
-     * PDF reciept as attachment is disabled by default (CRM-8350) 
-     */
-    public $doNotAttachPDFReceipt = false;
+  /**
+   * Some search settings
+   */
+  public $includeWildCardInName = 1;
+  public $includeEmailInName = 1;
+  public $includeNickNameInName = 0;
+  public $smartGroupCacheTimeout = 0;
 
-    //NYSS 5097
-	/**
-     * Path to wkhtmltopdf if available
-     */
-    public $wkhtmltopdfPath = false;
+  public $defaultSearchProfileID = NULL;
 
-    /**
-     * Provide addressSequence
-     *
-     * @param
-     * @return string
-     */
-    public function addressSequence( ) {
-        require_once 'CRM/Core/BAO/Preferences.php';
-        return CRM_Core_BAO_Preferences::value( 'address_sequence' );
+  /**
+   * Dashboard timeout
+   */
+  public $dashboardCacheTimeout = 1440;
+
+  /**
+   * flag to indicate if acl cache is NOT to be reset
+   */
+  public $doNotResetCache = 0;
+
+  /**
+   * Optimization related variables
+   */
+  public $includeAlphabeticalPager = 1;
+  public $includeOrderByClause = 1;
+  public $oldInputStyle = 1;
+
+  /**
+   * should we disbable key generation for forms
+   *
+   * @var boolean
+   */
+  public $formKeyDisable = FALSE;
+
+  /**
+   * to determine wether the call is from cms or civicrm
+   */
+  public $inCiviCRM = FALSE;
+
+  /**
+   * component registry object (of CRM_Core_Component type)
+   */
+  public $componentRegistry = NULL;
+
+  /**
+   * PDF reciept as attachment is disabled by default (CRM-8350)
+   */
+  public $doNotAttachPDFReceipt = FALSE;
+
+  /**
+   * Path to wkhtmltopdf if available
+   */
+  public $wkhtmltopdfPath = FALSE;
+
+  /**
+   * Provide addressSequence
+   *
+   * @param
+   *
+   * @return string
+   */
+  public function addressSequence() {
+    $addressFormat = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'address_format'
+    );
+
+    return CRM_Utils_Address::sequence($addressFormat);
+  }
+
+  /**
+   * Provide cached default currency symbol
+   *
+   * @param
+   *
+   * @return string
+   */
+  public function defaultCurrencySymbol($defaultCurrency = NULL) {
+    static $cachedSymbol = NULL;
+    if (!$cachedSymbol || $defaultCurrency) {
+      if ($this->defaultCurrency || $defaultCurrency) {
+        $currencySymbolName = CRM_Core_PseudoConstant::currencySymbols('name');
+        $currencySymbol = CRM_Core_PseudoConstant::currencySymbols();
+
+        $this->currencySymbols = array_combine($currencySymbolName, $currencySymbol);
+        $currency = $defaultCurrency ? $defaultCurrency : $this->defaultCurrency;
+        $cachedSymbol = CRM_Utils_Array::value($currency, $this->currencySymbols, '');
+      }
+      else {
+        $cachedSymbol = '$';
+      }
     }
+    return $cachedSymbol;
+  }
 
-    /**
-     * Provide cached default currency symbol
-     *
-     * @param
-     * @return string
-     */
-    public function defaultCurrencySymbol( $defaultCurrency = null ) {
-        static $cachedSymbol = null;
-        if ( ! $cachedSymbol || $defaultCurrency ) {
-            if ( $this->defaultCurrency || $defaultCurrency ) {
-                require_once "CRM/Core/PseudoConstant.php";
-                $currencySymbolName = CRM_Core_PseudoConstant::currencySymbols( 'name' );
-                $currencySymbol     = CRM_Core_PseudoConstant::currencySymbols( );
-                
-                $this->currencySymbols = array_combine( $currencySymbolName, $currencySymbol );
-                $currency     = $defaultCurrency ? $defaultCurrency : $this->defaultCurrency;
-                $cachedSymbol = CRM_Utils_Array::value( $currency, $this->currencySymbols, '');
-            } else {
-                $cachedSymbol = '$';
-            }
+  /**
+   * Provide cached default currency symbol
+   *
+   * @param
+   *
+   * @return string
+   */
+  public function defaultContactCountry() {
+    static $cachedContactCountry = NULL;
+
+    if (!empty($this->defaultContactCountry) &&
+      !$cachedContactCountry
+    ) {
+      $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode();
+      $cachedContactCountry = CRM_Utils_Array::value($this->defaultContactCountry,
+        $countryIsoCodes
+      );
+    }
+    return $cachedContactCountry;
+  }
+
+  /**
+   * Provide cached default country name
+   *
+   * @param
+   *
+   * @return string
+   */
+  public function defaultContactCountryName() {
+    static $cachedContactCountryName = NULL;
+    if (!$cachedContactCountryName) {
+      $countryCodes = CRM_Core_PseudoConstant::country();
+      $cachedContactCountryName = $countryCodes[$this->defaultContactCountry];
+    }
+    return $cachedContactCountryName;
+  }
+
+  /**
+   * Provide cached country limit translated to names
+   *
+   * @param
+   *
+   * @return array
+   */
+  public function countryLimit() {
+    static $cachedCountryLimit = NULL;
+    if (!$cachedCountryLimit) {
+      $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode();
+      $country = array();
+      if (is_array($this->countryLimit)) {
+        foreach ($this->countryLimit as $val) {
+          $country[] = $countryIsoCodes[$val];
         }
-        return $cachedSymbol;
+      }
+      else {
+        $country[] = $countryIsoCodes[$this->countryLimit];
+      }
+      $cachedCountryLimit = $country;
     }
+    return $cachedCountryLimit;
+  }
 
-    /**
-     * Provide cached default currency symbol
-     *
-     * @param
-     * @return string
-     */
-    public function defaultContactCountry( ) {
-        static $cachedContactCountry = null;
-        
-        if ( ! empty ($this->defaultContactCountry) &&
-             ! $cachedContactCountry ) {
-            $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode( );
-            $cachedContactCountry = CRM_Utils_Array::value( $this->defaultContactCountry,
-                                                            $countryIsoCodes );
+  /**
+   * Provide cached province limit translated to names
+   *
+   * @param
+   *
+   * @return array
+   */
+  public function provinceLimit() {
+    static $cachedProvinceLimit = NULL;
+    if (!$cachedProvinceLimit) {
+      $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode();
+      $country = array();
+      if (is_array($this->provinceLimit)) {
+        foreach ($this->provinceLimit as $val) {
+          $country[] = $countryIsoCodes[$val];
         }
-        return $cachedContactCountry;
+      }
+      else {
+        $country[] = $countryIsoCodes[$this->provinceLimit];
+      }
+      $cachedProvinceLimit = $country;
     }
-
-    /**
-     * Provide cached default country name
-     *
-     * @param
-     * @return string
-     */
-    public function defaultContactCountryName( ) {
-        static $cachedContactCountryName = null;
-        if ( ! $cachedContactCountryName ) {
-            $countryCodes = CRM_Core_PseudoConstant::country( );
-            $cachedContactCountryName = $countryCodes[$this->defaultContactCountry];
-        }
-        return $cachedContactCountryName;
-    }
-
-    /**
-     * Provide cached country limit translated to names
-     *
-     * @param
-     * @return array
-     */
-    public function countryLimit( ) {
-        static $cachedCountryLimit = null;
-        if ( ! $cachedCountryLimit ) {
-            $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode( );
-            $country = array();
-            if ( is_array( $this->countryLimit ) ) {
-                foreach( $this->countryLimit as $val ) {
-                    $country[] = $countryIsoCodes[$val]; 
-                }
-            } else {
-                $country[] = $countryIsoCodes[$this->countryLimit];
-            }
-            $cachedCountryLimit = $country;
-        }
-        return $cachedCountryLimit;
-    }
-
-    /**
-     * Provide cached province limit translated to names
-     *
-     * @param
-     * @return array
-     */
-    public function provinceLimit( ) {
-        static $cachedProvinceLimit = null;
-        if ( ! $cachedProvinceLimit ) {
-            $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode( );
-            $country = array();
-            if ( is_array( $this->provinceLimit ) ) {
-                foreach( $this->provinceLimit as $val ) {
-                    $country[] = $countryIsoCodes[$val]; 
-                }
-            } else {
-                $country[] = $countryIsoCodes[$this->provinceLimit];
-            }
-            $cachedProvinceLimit = $country;
-        }
-        return $cachedProvinceLimit;
-    }
-
-} // end CRM_Core_Config
-
+    return $cachedProvinceLimit;
+  }
+}
+// end CRM_Core_Config
 

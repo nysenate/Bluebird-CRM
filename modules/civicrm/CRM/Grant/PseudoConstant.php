@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,75 +28,73 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/OptionGroup.php';
 
 /**
  * This class holds all the Pseudo constants that are specific to Grant. This avoids
  * polluting the core class and isolates the Grant
  */
-class CRM_Grant_PseudoConstant extends CRM_Core_PseudoConstant 
-{
-    /**
-     * Grant Status 
-     *
-     * @var array
-     * @static
-     */
-    private static $grantStatus; 
-    
-    /**
-     * grant Type
-     *
-     * @var array
-     * @static
-     */
-    private static $grantType; 
-  
-    /**
-     * Get all the n grant statuses
-     *
-     * @access public
-     * @return array - array reference of all grant statuses if any
-     * @static
-     */
-    public static function &grantStatus( $id = null )
-    {
-        if ( ! self::$grantStatus ) {
-            self::$grantStatus = array( );
-            self::$grantStatus = CRM_Core_OptionGroup::values( 'grant_status' );
-        }
-        
-        if( $id ) {
-            return self::$grantStatus[$id];
-        }
-        
-        return self::$grantStatus ;
+class CRM_Grant_PseudoConstant extends CRM_Core_PseudoConstant {
+
+  /**
+   * Grant Status
+   *
+   * @var array
+   * @static
+   */
+  private static $grantStatus;
+
+  /**
+   * grant Type
+   *
+   * @var array
+   * @static
+   */
+  private static $grantType;
+
+  /**
+   * Get all the n grant statuses
+   *
+   * @access public
+   *
+   * @return array - array reference of all grant statuses if any
+   * @static
+   */
+  public static function &grantStatus($id = NULL) {
+    if (!self::$grantStatus) {
+      self::$grantStatus = array();
+      self::$grantStatus = CRM_Core_OptionGroup::values('grant_status');
     }
-    
-    /**
-     * Get all the n grant types
-     *
-     * @access public
-     * @return array - array reference of all grant types if any
-     * @static
-     */
-    public static function &grantType( $id = null )
-    {
-        if ( ! self::$grantType ) {
-            self::$grantType = array( );
-            self::$grantType = CRM_Core_OptionGroup::values( 'grant_type' );
-        }
-        
-        If( $id ) {
-            return self::$grantType[$id];
-        }
-        
-        return self::$grantType ;
+
+    if ($id) {
+      return self::$grantStatus[$id];
     }
+
+    return self::$grantStatus;
+  }
+
+  /**
+   * Get all the n grant types
+   *
+   * @access public
+   *
+   * @return array - array reference of all grant types if any
+   * @static
+   */
+  public static function &grantType($id = NULL) {
+    if (!self::$grantType) {
+      self::$grantType = array();
+      self::$grantType = CRM_Core_OptionGroup::values('grant_type');
+    }
+
+    If ($id) {
+      return self::$grantType[$id];
+    }
+
+    return self::$grantType;
+  }
 }
 

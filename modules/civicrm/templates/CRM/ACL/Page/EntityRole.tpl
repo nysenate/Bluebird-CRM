@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {capture assign=aclURL}{crmURL p='civicrm/acl' q='reset=1'}{/capture}
 {capture assign=rolesURL}{crmURL p='civicrm/admin/options/acl_role' q='group=acl_role&reset=1'}{/capture}
-{capture assign=docLink}{docURL page='Access Control' text='Access Control Documentation'}{/capture}
+{capture assign=docLink}{docURL page='user/initial-set-up/access-control' text='Access Control Documentation'}{/capture}
 
 <div id="help" class="crm-block">
     <p>{ts 1=$docLink}ACLs allow you control access to CiviCRM data. An ACL consists of an <strong>Operation</strong> (e.g. 'View' or 'Edit'), a <strong>set of data</strong> that the operation can be performed on (e.g. a group of contacts), and a <strong>Role</strong> that has permission to do this operation. Refer to the %1 for more info.{/ts}</p>
@@ -40,9 +40,9 @@
 {if $rows}
 <div id="ltype">
     {strip}
-	{* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
-    {include file="CRM/common/jsortable.tpl"}   
+  {* handle enable/disable actions*}
+   {include file="CRM/common/enableDisable.tpl"}
+    {include file="CRM/common/jsortable.tpl"}
     <table id="options" class="display">
         <thead>
         <tr class="columnheader">
@@ -54,11 +54,11 @@
         </thead>
         <tbody>
         {foreach from=$rows item=row}
-	    <tr id="row_{$row.id}"class="{cycle values="odd-row,even-row"} {$row.class} crm-acl_entity_role {if NOT $row.is_active} disabled{/if}">
-	        <td class="crm-acl_entity_role-acl_role">{$row.acl_role}</td>	
-	        <td class="crm-acl_entity_role-entity">{$row.entity}</td>	
-	        <td class="crm-acl_entity_role-is_active" id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-	        <td>{$row.action|replace:'xx':$row.id}</td>
+      <tr id="row_{$row.id}"class="{cycle values="odd-row,even-row"} {$row.class} crm-acl_entity_role {if NOT $row.is_active} disabled{/if}">
+          <td class="crm-acl_entity_role-acl_role">{$row.acl_role}</td>
+          <td class="crm-acl_entity_role-entity">{$row.entity}</td>
+          <td class="crm-acl_entity_role-is_active" id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+          <td>{$row.action|replace:'xx':$row.id}</td>
             </tr>
         {/foreach}
         </tbody>
@@ -66,7 +66,7 @@
     {/strip}
 
         {if $action ne 1 and $action ne 2}
-	    <div class="crm-submit-buttons">
+      <div class="crm-submit-buttons">
             <a href="{crmURL q="action=add&reset=1"}" id="newACL" class="button"><span><div class="icon add-icon"></div>{ts}Add Role Assignment{/ts}</span></a>
         </div>
         {/if}
@@ -76,6 +76,6 @@
          <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
         {capture assign=crmURL}{crmURL q="action=add&reset=1"}{/capture}
         {ts 1=$crmURL}There are no Role Assignments. You can <a href='%1'>add one</a> now.{/ts}
-    </div>    
+    </div>
 {/if}
 </div>

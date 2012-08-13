@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,75 +28,72 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id: Email.php 26615 2010-03-21 21:05:35Z kurund $
  *
  */
 
-require_once 'CRM/Activity/Form/Task.php';
-require_once 'CRM/Contact/Form/Task/EmailCommon.php';
-
 /**
  * This class provides the functionality to email a group of
- * contacts. 
+ * contacts.
  */
 class CRM_Activity_Form_Task_Email extends CRM_Activity_Form_Task {
 
-    /**
-     * Are we operating in "single mode", i.e. sending email to one
-     * specific contact?
-     *
-     * @var boolean
-     */
-    public $_single = false;
+  /**
+   * Are we operating in "single mode", i.e. sending email to one
+   * specific contact?
+   *
+   * @var boolean
+   */
+  public $_single = FALSE;
 
-    public $_noEmails = false;
+  public $_noEmails = FALSE;
 
-    /**
-     * all the existing templates in the system
-     *
-     * @var array
-     */
-    public $_templates = null;
+  /**
+   * all the existing templates in the system
+   *
+   * @var array
+   */
+  public $_templates = NULL;
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    
-    function preProcess( ) {
-        CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress( $this );
-        parent::preProcess( );
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
+    parent::preProcess();
 
-        // we have all the contribution ids, so now we get the contact ids
-        parent::setContactIDs( );
-        
-        $this->assign( 'single', $this->_single );
-    }
-    
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    public function buildQuickForm( )
-    {
-        //enable form element
-        $this->assign( 'emailTask', true );
+    // we have all the contribution ids, so now we get the contact ids
+    parent::setContactIDs();
 
-        CRM_Contact_Form_Task_EmailCommon::buildQuickForm( $this );
-    }
+    $this->assign('single', $this->_single);
+  }
 
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( ) {
-        CRM_Contact_Form_Task_EmailCommon::postProcess( $this );
-    }
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  public function buildQuickForm() {
+    //enable form element
+    $this->assign('emailTask', TRUE);
+
+    CRM_Contact_Form_Task_EmailCommon::buildQuickForm($this);
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    CRM_Contact_Form_Task_EmailCommon::postProcess($this);
+  }
 }
+

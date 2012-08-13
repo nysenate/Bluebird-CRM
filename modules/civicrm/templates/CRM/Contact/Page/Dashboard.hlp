@@ -25,8 +25,9 @@
 *}
 {htxt id="id-dash_welcome"}
 <p>
-  {ts}To include a dashlet displaying scheduled activities, click 'Configure Dashboard' and drag the 'Activities' dashlet onto one of the dashboard columns (use the right column for a better fit).{/ts}
+  {ts}To include a dashlet report click "Configure Dashboard" and drag the desired dashlet from the "Available Dashlets" block to one of the columns (use the right column for a better fit).{/ts}
 </p>
+<p>
   {ts}To add reports to your dashboard:{/ts}
   <ul>
     <li>{ts}Navigate to a report instance and verify the report filters and display type (Tabular, Bar or Pie Chart). OR create a new report instance from the Reports menu » Create Reports from Templates.{/ts}</li>
@@ -36,12 +37,14 @@
     <li>{ts}Navigate back to the 'Home' dashboard and click 'Configure Dashboard' again.{/ts}</li>
     <li>{ts}You can now drag the reports onto the right or left columns and click 'Done' to save your layout.{/ts}</li>
   </ul>
+</p>
 {/htxt}
 
 {htxt id="id-dash_configure"}
 <p>
-  {ts}To include a dashlet displaying scheduled activities, drag the 'Activities' dashlet onto one of the dashboard columns (use the right column for a better fit).{/ts}
+  {ts}To include a dashlet report drag it from the "Available Dashlets" block to one of the two columns (use the right column for a better fit).{/ts}
 </p>
+<p>
   {ts}To add reports to your dashboard:{/ts}
   <ul>
     <li>{ts}Navigate to a report instance and verify the report filters and display type (Tabular, Bar or Pie Chart). OR create a new report instance from the Reports menu &raquo; Create Reports from Templates.{/ts}</li>
@@ -51,6 +54,7 @@
     <li>{ts}Navigate back to the 'Home' dashboard and click 'Configure Dashboard' again.{/ts}</li>
     <li>{ts}You can now drag the reports onto the right or left columns and click 'Done' to save your layout.{/ts}</li>
   </ul>
+</p>
 {if $admin}
   <p>
     {ts}If you want to remove dashlets from the set of 'Available Dashlets' you can click the 'x' in the right corner of any dashlet. This will also remove the dashlet from any users' dashboards that currently include it. You can make a dashlet available again by checking the 'Available for Dashboard' box in the Report Settings of the associated report instance.{/ts}

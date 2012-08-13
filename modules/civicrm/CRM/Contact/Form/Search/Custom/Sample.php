@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,78 +28,79 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Contact_Form_Search_Custom_Sample extends CRM_Contact_Form_Search_Custom_Base implements CRM_Contact_Form_Search_Interface {
+  function __construct(&$formValues) {
+    parent::__construct($formValues);
 
-require_once 'CRM/Contact/Form/Search/Custom/Base.php';
-
-class CRM_Contact_Form_Search_Custom_Sample
-   extends    CRM_Contact_Form_Search_Custom_Base
-   implements CRM_Contact_Form_Search_Interface {
-
-    function __construct( &$formValues ) {
-        parent::__construct( $formValues );
-
-        if ( ! isset( $formValues['state_province_id'] ) ) {
-            $this->_stateID = CRM_Utils_Request::retrieve( 'stateID', 'Integer',
-                                                           CRM_Core_DAO::$_nullObject );
-            if ( $this->_stateID ) {
-                $formValues['state_province_id'] = $this->_stateID;
-            }
-        }
-
-        $this->_columns = array( ts('Contact Id')   => 'contact_id'  ,
-                                 ts('Contact Type') => 'contact_type',
-                                 ts('Name')         => 'sort_name',
-                                 ts('State')        => 'state_province' );
+    if (!isset($formValues['state_province_id'])) {
+      $this->_stateID = CRM_Utils_Request::retrieve('stateID', 'Integer',
+        CRM_Core_DAO::$_nullObject
+      );
+      if ($this->_stateID) {
+        $formValues['state_province_id'] = $this->_stateID;
+      }
     }
 
-    function buildForm( &$form ) {
+    $this->_columns = array(
+      ts('Contact Id') => 'contact_id',
+      ts('Contact Type') => 'contact_type',
+      ts('Name') => 'sort_name',
+      ts('State') => 'state_province',
+    );
+  }
 
-        $form->add( 'text',
-                    'household_name',
-                    ts( 'Household Name' ),
-                    true );
+  function buildForm(&$form) {
 
-        $stateProvince = array('' => ts('- any state/province -')) + CRM_Core_PseudoConstant::stateProvince( );
-        $form->addElement('select', 'state_province_id', ts('State/Province'), $stateProvince);        
-        
-        /**
-         * You can define a custom title for the search form
-         */
-         $this->setTitle('My Search Title');
-         
-         /**
-         * if you are using the standard template, this array tells the template what elements
-         * are part of the search criteria
-         */
-        $form->assign( 'elements', array( 'household_name', 'state_province_id' ) );
-    }
+    $form->add('text',
+      'household_name',
+      ts('Household Name'),
+      TRUE
+    );
 
-    function summary( ) {
-        $summary = array( 'summary' => 'This is a summary',
-                          'total' => 50.0 );
-        return $summary;
-    }
+    $stateProvince = array('' => ts('- any state/province -')) + CRM_Core_PseudoConstant::stateProvince();
+    $form->addElement('select', 'state_province_id', ts('State/Province'), $stateProvince);
 
-    function all( $offset = 0, $rowcount = 0, $sort = null,
-                  $includeContactIDs = false ) {
-        $selectClause = "
+    /**
+     * You can define a custom title for the search form
+     */
+    $this->setTitle('My Search Title');
+
+    /**
+     * if you are using the standard template, this array tells the template what elements
+     * are part of the search criteria
+     */
+    $form->assign('elements', array('household_name', 'state_province_id'));
+  }
+
+  function summary() {
+    $summary = array(
+      'summary' => 'This is a summary',
+      'total' => 50.0,
+    );
+    return $summary;
+  }
+
+  function all($offset = 0, $rowcount = 0, $sort = NULL,
+    $includeContactIDs = FALSE
+  ) {
+    $selectClause = "
 contact_a.id           as contact_id  ,
 contact_a.contact_type as contact_type,
 contact_a.sort_name    as sort_name,
 state_province.name    as state_province
 ";
-        return $this->sql( $selectClause,
-                           $offset, $rowcount, $sort,
-                           $includeContactIDs, null );
+    return $this->sql($selectClause,
+      $offset, $rowcount, $sort,
+      $includeContactIDs, NULL
+    );
+  }
 
-    }
-    
-    function from( ) {
-        return "
+  function from() {
+    return "
 FROM      civicrm_contact contact_a
 LEFT JOIN civicrm_address address ON ( address.contact_id       = contact_a.id AND
                                        address.is_primary       = 1 )
@@ -108,63 +108,68 @@ LEFT JOIN civicrm_email           ON ( civicrm_email.contact_id = contact_a.id A
                                        civicrm_email.is_primary = 1 )
 LEFT JOIN civicrm_state_province state_province ON state_province.id = address.state_province_id
 ";
+  }
+
+  function where($includeContactIDs = FALSE) {
+    $params = array();
+    $where = "contact_a.contact_type   = 'Household'";
+
+    $count  = 1;
+    $clause = array();
+    $name   = CRM_Utils_Array::value('household_name',
+      $this->_formValues
+    );
+    if ($name != NULL) {
+      if (strpos($name, '%') === FALSE) {
+        $name = "%{$name}%";
+      }
+      $params[$count] = array($name, 'String');
+      $clause[] = "contact_a.household_name LIKE %{$count}";
+      $count++;
     }
 
-    function where( $includeContactIDs = false ) {
-        $params = array( );
-        $where  = "contact_a.contact_type   = 'Household'";
-
-        $count  = 1;
-        $clause = array( );
-        $name   = CRM_Utils_Array::value( 'household_name',
-                                          $this->_formValues );
-        if ( $name != null ) {
-            if ( strpos( $name, '%' ) === false ) {
-                $name = "%{$name}%";
-            }
-            $params[$count] = array( $name, 'String' );
-            $clause[] = "contact_a.household_name LIKE %{$count}";
-            $count++;
-        }
-
-        $state = CRM_Utils_Array::value( 'state_province_id',
-                                         $this->_formValues );
-        if ( ! $state &&
-             $this->_stateID ) {
-            $state = $this->_stateID;
-        }
-
-        if ( $state ) {
-            $params[$count] = array( $state, 'Integer' );
-            $clause[] = "state_province.id = %{$count}";
-        }
-
-        if ( ! empty( $clause ) ) {
-            $where .= ' AND ' . implode( ' AND ', $clause );
-        }
-
-        return $this->whereClause( $where, $params );
+    $state = CRM_Utils_Array::value('state_province_id',
+      $this->_formValues
+    );
+    if (!$state &&
+      $this->_stateID
+    ) {
+      $state = $this->_stateID;
     }
 
-    function templateFile( ) {
-        return 'CRM/Contact/Form/Search/Custom.tpl';
+    if ($state) {
+      $params[$count] = array($state, 'Integer');
+      $clause[] = "state_province.id = %{$count}";
     }
 
-    function setDefaultValues( ) {
-        return array( 'household_name'    => '', );
+    if (!empty($clause)) {
+      $where .= ' AND ' . implode(' AND ', $clause);
     }
 
-    function alterRow( &$row ) {
-        $row['sort_name'] .= ' ( altered )';
+    return $this->whereClause($where, $params);
+  }
+
+  function templateFile() {
+    return 'CRM/Contact/Form/Search/Custom.tpl';
+  }
+
+  function setDefaultValues() {
+    return array(
+      'household_name' => '',
+    );
+  }
+
+  function alterRow(&$row) {
+    $row['sort_name'] .= ' ( altered )';
+  }
+
+  function setTitle($title) {
+    if ($title) {
+      CRM_Utils_System::setTitle($title);
     }
-    
-    function setTitle( $title ) {
-        if ( $title ) {
-            CRM_Utils_System::setTitle( $title );
-        } else {
-            CRM_Utils_System::setTitle(ts('Search'));
-        }
+    else {
+      CRM_Utils_System::setTitle(ts('Search'));
     }
+  }
 }
-
 

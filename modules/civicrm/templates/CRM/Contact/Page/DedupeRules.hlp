@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=docLink}{docURL page="Find and Merge Duplicate Contacts"}{/capture}
+{capture assign=docLink}{docURL page="user/common-workflows/deduping-and-merging"}{/capture}
 {htxt id="id-dedupe-intro"}
 <p>{ts}Manage the rules used to identify potentially duplicate contact records. Scan for duplicates using a selected rule and merge duplicate contact data as needed. Click <strong>Edit Rule</strong> to review or modify the rules for each type of contact. You will generally want to maintain both 'fuzzy' and 'strict' rules for each contact type.{/ts} {$docLink}</p>
 

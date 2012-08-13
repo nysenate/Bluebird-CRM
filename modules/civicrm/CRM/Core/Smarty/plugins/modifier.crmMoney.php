@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Utils/Money.php';
 
 /**
  * Format the given monetary amount (and currency) for display
@@ -45,9 +42,7 @@ require_once 'CRM/Utils/Money.php';
  * @return string  formatted monetary amount
  * @access public
  */
-function smarty_modifier_crmMoney($amount, $currency = null, $format = null, $onlyNumber = false )
-{
-    return CRM_Utils_Money::format($amount, $currency, $format, $onlyNumber );
+function smarty_modifier_crmMoney($amount, $currency = NULL, $format = NULL, $onlyNumber = FALSE) {
+  return CRM_Utils_Money::format($amount, $currency, $format, $onlyNumber);
 }
-
 

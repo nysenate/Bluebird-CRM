@@ -25,7 +25,7 @@
 *}
 {htxt id='id-advanced-intro'}
     <p>{ts}Use <strong>&#37;</strong> wildcard(s) for partial matches. EXAMPLE: Enter 'Volunteer&#37;' as your Activity Type to match any activity whose type is 'Volunteer' + any other words (e.g. Volunteer for Open House).{/ts}</p>
-    <p>{ts}If multiple boxes are checked for Contact Types, Groups, Tags and Location Types, the selections are combined as <strong>OR</strong> criteria (e.g. checking 'Group A' and 'Group B' will find contacts who are either in 'Group A' OR 'Group B'). All other search fields are combined as <strong>AND</strong> criteria (e.g. selecting Tag is 'Major Donor' AND Country is 'Mexico' returns only those contacts who meet both criteria).{/ts}</p>
+    <p>{ts}If multiple boxes are checked for Contact Types, Groups, Tags and Location Types, the selections are combined as <strong>OR</strong> criteria (e.g. checking 'Group A' and 'Group B' will find contacts who are either in 'Group A' OR 'Group B'). All other search fields are combined as <strong>AND</strong> criteria (e.g. selecting Tag is 'Age' AND Country is 'Canada' returns only those contacts who meet both criteria).{/ts}</p>
 {/htxt}
 
 {htxt id='id-advanced-smart'}
@@ -33,18 +33,28 @@
 {/htxt}
 
 {htxt id="id-privacy"}
-    <p>{ts}Contacts with any of the checked privacy options are EXCLUDED from your search results by default. EXAMPLE: If you check 'Do not phone', and search for contacts with an address in a specific city - then contacts in that city who have 'Do not phone' selected as a privacy option will be excluded from the search results.{/ts}</p>
-    <p>{ts}If you want to FIND (include) contacts with a particular privacy option set, then check 'Include contacts who have these privacy option(s)'.{/ts}</p>
+    <p>{ts}Contacts with any of the checked privacy options are EXCLUDED from your search results by default. EXAMPLE: If you select 'Do not phone', and search for contacts with an address in a specific city - then contacts in that city who have 'Do not phone' selected as a privacy option will be excluded from the search results.{/ts}</p>
+    <p>{ts}If you want to FIND (include) contacts with a particular privacy option set, then click the 'Include' radio button.{/ts}</p>
+    <p>{ts}If you select multiple privacy options, your choices are combined with OR statements by default. EXAMPLE: If you select 'Do not phone' and 'Do not email', results will include contacts who have either or both preferences. If you want to return only contacts with both preferences, select the AND operator.{/ts}</p>
 {/htxt}
 
 {htxt id="id-display-results"}
-    <p>{ts}Advanced Search returns your results as Contact records by default. However, you may want to get another record type instead. For example, you may want to see all the Contribution records which match your search criteria.{/ts}</p>
+    <p>{ts}Advanced Search returns your results as Contact records by default. However, you may want to get another record type instead. For example, you may want to see all the Activity records which match your search criteria.{/ts}</p>
 {/htxt}
 
 {htxt id="id-search-views"}
-    <p>{ts}You can modify the columns displayed in your search results by creating a Profile containing a different set of contact fields and then selecting that Profile here. For example you may want to include columns for Gender and Date of Birth, while eliminating Country.{/ts} {docURL page="Profiles FAQ's, How Do I...."}</p>
+    <p>{ts}You can modify the columns displayed in your search results by creating a Profile containing a different set of contact fields and then selecting that Profile here. For example you may want to include columns for Gender and Date of Birth, while eliminating Country.{/ts} {docURL page="user/the-user-interface/profiles"}</p>
 {/htxt}
 
 {htxt id="id-search-operator"}
     <p>{ts}Use the Search Operator to determine whether your criteria are combined with AND statements, or combined with OR statements. For example, you may want to find all individuals who are in the Volunteers group AND who have a Volunteer Training activity recorded for them. In this case use the AND operator. If you need to find everyone who is in the Volunteers group OR has a Volunteer Training activity recorded, use the OR operator.{/ts}</p>
-{/htxt}   
+{/htxt}
+
+{htxt id="id-relationship-target-group"}
+    <p>{ts}Use this filter to limit search results to relationships where the related contacts are part of a specific group or groups.
+    For example, you might want to find all individuals who are employees ('Employee of' relationship type) of organizations which are in your 'Corporate Sponsors' group.{/ts}</p>
+{/htxt}
+
+{htxt id="id-all-tags"}
+    <p>{ts}Find records with tags (regular or tagset tag) which contain a complete or partial word or phrase. EXAMPLE: If you have several tags that contain the word 'Donor', you can find contacts tagged with any of them by entering 'Donor' in this field.{/ts}</p>
+{/htxt}

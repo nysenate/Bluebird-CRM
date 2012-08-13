@@ -443,7 +443,7 @@ class HTML_QuickForm_group extends HTML_QuickForm_element
                 $elementName = $element->getName();
                 if (isset($elementName)) {
                     $element->setName($name . '['. (strlen($elementName)? $elementName: $key) .']');
-                    $element->_attributes['id']=$name . '['. (strlen($elementName)? $elementName: $key) .']';
+                    $element->updateAttributes( array( 'id' => $name . '['. (strlen($elementName)? $elementName: $key) .']' ) );
                 } else {
                     $element->setName($name);
                 }

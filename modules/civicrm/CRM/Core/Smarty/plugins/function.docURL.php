@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -39,17 +38,17 @@
  * an HTML link to documentation.
  *
  * @param array  $params the function params
- * @param object $smarty reference to the smarty object 
+ * @param object $smarty reference to the smarty object
  *
  * @return string HTML code of a link to documentation
  * @access public
  */
-function smarty_function_docURL( $params, &$smarty ) {
-    if ( ! isset( $smarty ) ) {
-        return;
-    } else {
-        require_once 'CRM/Utils/System.php';
-        return CRM_Utils_System::docURL( $params );
-    }
-    
+function smarty_function_docURL($params, &$smarty) {
+  if (!isset($smarty)) {
+    return;
+  }
+  else {
+    return CRM_Utils_System::docURL($params);
+  }
 }
+

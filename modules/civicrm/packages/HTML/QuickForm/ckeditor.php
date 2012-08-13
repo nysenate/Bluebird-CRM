@@ -63,6 +63,10 @@ class HTML_QuickForm_CKeditor extends HTML_QuickForm_textarea
             return $this->getFrozenHtml();
         } else {
             $elementId = $this->getAttribute('id');
+            $config = CRM_Core_Config::singleton( );
+            $browseUrl = $config->userFrameworkResourceURL . 'packages/kcfinder/browse.php';
+            $uploadUrl = $config->userFrameworkResourceURL . 'packages/kcfinder/upload.php';
+ 
             $html = parent::toHtml() . "<script type='text/javascript'>
                 cj( function( ) {
                     cj('#{$elementId}').removeClass();
@@ -76,8 +80,14 @@ class HTML_QuickForm_CKeditor extends HTML_QuickForm_textarea
                         editor.on( 'key', function( evt ){
                             global_formNavigate = false;
                         } );
-                        editor.config.width  = '".$this->width."';
-                        editor.config.height = '".$this->height."';
+                        editor.config.width              = '".$this->width."';
+                        editor.config.height             = '".$this->height."';
+                        editor.config.filebrowserBrowseUrl      = '".$browseUrl."?cms=civicrm&type=files';
+                        editor.config.filebrowserImageBrowseUrl = '".$browseUrl."?cms=civicrm&type=images';
+                        editor.config.filebrowserFlashBrowseUrl = '".$browseUrl."?cms=civicrm&type=flash';
+                        editor.config.filebrowserUploadUrl      = '".$uploadUrl."?cms=civicrm&type=files';
+                        editor.config.filebrowserImageUploadUrl = '".$uploadUrl."?cms=civicrm&type=images';
+                        editor.config.filebrowserFlashUploadUrl = '".$uploadUrl."?cms=civicrm&type=flash';
                     }
                 }); 
             </script>";

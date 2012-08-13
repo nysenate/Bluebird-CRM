@@ -1,18 +1,9 @@
-* {
-	font-family: Arial;
-}
-
-body {
-  background: url(block_small.png) 4.2em 4em no-repeat #fff;
-  border: 1px #CCC solid;
-  margin: 3em;
-  padding: 1em 1em 1em 185px;
-}
-
 #All {
-	width: auto;
+    font-family: Arial;
+    width: auto;
 	margin: 2em auto;
 	padding: 1em;
+    border: 1px #CCC solid;
 }
 form {
 	margin: 0;

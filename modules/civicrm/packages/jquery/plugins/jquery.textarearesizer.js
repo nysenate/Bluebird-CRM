@@ -18,8 +18,8 @@
 $(document).ready(function() {
 	cj('#crm-container textarea.huge:not(.textarea-processed), #crm-container textarea.form-textarea:not(.textarea-processed)').each(function() {
         $this = cj(this);
-        if ($this.parents('div.civicrm-drupal-wysiwyg').length == 0) 
-			$this.TextAreaResizer();
+		if ($this.parents('div.civicrm-drupal-wysiwyg').length == 0) 
+        $this.TextAreaResizer();
     });
 });
 
@@ -35,7 +35,7 @@ $(document).ready(function() {
     /* TextAreaResizer plugin */
     $.fn.TextAreaResizer = function() {
 	return this.each(function() {
-	    textarea = $(this).addClass('textarea-processed'), staticOffset = null;
+        textarea = $(this).addClass('textarea-processed'), staticOffset = null;  
 	    
         // When wrapping the text area, work around an IE margin bug.  See:
 	    // http://jaspan.com/ie-inherited-margin-bug-form-elements-and-haslayout

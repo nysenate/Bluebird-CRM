@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,60 +28,54 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Member_BAO_MembershipLog extends CRM_Member_DAO_MembershipLog {
 
-require_once 'CRM/Member/DAO/MembershipLog.php';
+  /**
+   * function to add the membership log record
+   *
+   * @param array $params reference array contains the values submitted by the form
+   * @param array $ids    reference array contains the id
+   *
+   * @access public
+   * @static
+   *
+   * @return object
+   */
+  static function add(&$params, &$ids) {
+    $membershipLog = new CRM_Member_DAO_MembershipLog();
+    $membershipLog->copyValues($params);
 
-class CRM_Member_BAO_MembershipLog extends CRM_Member_DAO_MembershipLog 
-{
+    $membershipLog->save();
+    $membershipLog->free();
 
-    /**
-     * function to add the membership log record
-     *
-     * @param array $params reference array contains the values submitted by the form
-     * @param array $ids    reference array contains the id
-     * 
-     * @access public
-     * @static 
-     * @return object
-     */
-    static function add(&$params, &$ids) 
-    {
-        $membershipLog              = new CRM_Member_DAO_MembershipLog( );
-        $membershipLog->copyValues( $params );
-        
-        $membershipLog->save( );
-        $membershipLog->free( );
-        
-        return $membershipLog;
-    }
-    
-    /**
-     * Function to delete membership log record 
-     * 
-     * @param int $membershipTypeId
-     * @static
-     */
-    
-    static function del( $membershipID ) 
-    {
-        $membershipLog  = new CRM_Member_DAO_MembershipLog( );
-        $membershipLog->membership_id = $membershipID ;
-        return $membershipLog->delete();
-    }
+    return $membershipLog;
+  }
 
-    static function resetModifiedID( $contactID ) {
-        $query = "
+  /**
+   * Function to delete membership log record
+   *
+   * @param int $membershipTypeId
+   * @static
+   */
+
+  static function del($membershipID) {
+    $membershipLog = new CRM_Member_DAO_MembershipLog();
+    $membershipLog->membership_id = $membershipID;
+    return $membershipLog->delete();
+  }
+
+  static function resetModifiedID($contactID) {
+    $query = "
 UPDATE civicrm_membership_log
    SET modified_id = null
  WHERE modified_id = %1";
 
-        $params = array( 1 => array( $contactID, 'Integer' ) );
-        CRM_Core_DAO::executeQuery( $query, $params );
-    }
-
+    $params = array(1 => array($contactID, 'Integer'));
+    CRM_Core_DAO::executeQuery($query, $params);
+  }
 }
 

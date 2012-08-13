@@ -1,6 +1,6 @@
 <?php
 
-//namespace Knp\Snappy;
+namespace Knp\Snappy;
 
 /**
  * Use this class to create a snapshot / thumbnail from a HTML page
@@ -10,7 +10,7 @@
  * @author  Matthieu Bontemps <matthieu.bontemps@knplabs.com>
  * @author  Antoine Hérault <antoine.herault@knplabs.com>
  */
-class Knp_Snappy_Image extends Knp_Snappy_AbstractGenerator
+class Image extends AbstractGenerator
 {
     /**
      * {@inheritDoc}

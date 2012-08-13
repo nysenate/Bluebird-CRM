@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,10 +39,10 @@
   </tr>
 
   {foreach from=$rows item=row}
-   <tr class="{cycle values="odd-row,even-row"} {if $row.status eq 'Overdue' } disabled{/if}">
-    <td class="right">{$row.scheduled_amount|crmMoney}</td>	
+   <tr class="{cycle values="odd-row,even-row"} {if $row.status eq 'Overdue' } status-overdue{/if}">
+    <td class="right">{$row.scheduled_amount|crmMoney:$row.currency}</td>	
     <td>{$row.scheduled_date|truncate:10:''|crmDate}</td>
-    <td class="right">{$row.total_amount|crmMoney}</td>	
+    <td class="right">{$row.total_amount|crmMoney:$row.currency}</td>	
     <td>{$row.receive_date|truncate:10:''|crmDate}</td>
     <td>{$row.reminder_date|truncate:10:''|crmDate}</td>
     <td class="right">{if $row.reminder_count}{$row.reminder_count}{/if}</td>

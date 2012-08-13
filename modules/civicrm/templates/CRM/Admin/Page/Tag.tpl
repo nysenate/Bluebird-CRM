@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 
-{capture assign=docLink}{docURL page="Tags Admin"}{/capture}
+{capture assign=docLink}{docURL page="user/organising-your-data/groups-and-tags"}{/capture}
 
 {if $action eq 1 or $action eq 2 or $action eq 8}
     {include file="CRM/Admin/Form/Tag.tpl"}	
@@ -64,14 +64,14 @@
                     </tr>
                 </thead>
                 {foreach from=$rows item=row key=id }
-                <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-tag" id="tag_row_{$row.id}">
-                    <td class="crm-tag-name">{$row.name}</td>
+                <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-tag crm-entity" id="tag-{$row.id}" >
+                    <td class="crm-tag-name crm-editable crmf-name">{$row.name}</td>
                     <td class="crm-tag-id">{$row.id}</td>	
-                    <td class="crm-tag-description">{$row.description} </td>
-                    <td class="crm-tag-parent">{$row.parent} {if $row.parent_id}({$row.parent_id}){/if}</td>
+                    <td class="crm-tag-description crm-editable crmf-description">{$row.description} </td>
+                    <td class="crm-tag-parent">{$row.parent} {if $row.parent_id}(<span class='crmf-parent_id crm-editable'>{$row.parent_id}</span>){/if}</td>
         	    <td class="crm-tag-used_for">{$row.used_for}</td>
-                    <td class="crm-tag-is_tagset">{if $row.is_tagset}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Tag Set{/ts}" />{/if}</td>
-                    <td class="crm-tag-is_reserved">{if $row.is_reserved}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Reserved{/ts}" />{/if}</td>
+                    <td class="crm-tag-is_tagset">{if $row.is_tagset}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Tag Set{/ts}" />{/if}</td>
+                    <td class="crm-tag-is_reserved">{if $row.is_reserved}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Reserved{/ts}" />{/if}</td>
                     <td>{$row.action|replace:'xx':$row.id}</td>
                 </tr>
                 {/foreach}
@@ -117,7 +117,7 @@ cj( function() {
 });
 
 function mergeTag( fromId ) {
-    var fromTag = cj('#tag_row_' + fromId).children('td.crm-tag-name').text();
+    var fromTag = cj('#tag-' + fromId).children('td.crm-tag-name').text();
     cj('#used_for_warning').html('');
 
     cj("#mergeTagDialog").show( );
@@ -135,8 +135,7 @@ function mergeTag( fromId ) {
 			cj("#tag_name").val( "" );
 			cj("#tag_name_id").val( null );
 
-			var tagUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTagList' h=0}"{literal};
-                        tagUrl = tagUrl + "&fromId=" + fromId;
+			var tagUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTagList' h=0 q='fromId='}"{literal} + fromId;
 
 			cj("#tag_name").autocomplete( tagUrl, {
 				width: 260,
@@ -169,16 +168,16 @@ function mergeTag( fromId ) {
 				
                 /* send synchronous request so that disabling any actions for slow servers*/
 				var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
-				var data    = 'fromId='+ fromId + '&toId='+ toId + "&key={/literal}{crmKey name='civicrm/ajax/mergeTags'}{literal}";
+				var data    = '{fromId:'+ fromId + ',toId:'+ toId + ",key:{/literal}{crmKey name='civicrm/ajax/mergeTags'}{literal}}";
                 cj.ajax({ type     : "POST", 
 					  url      : postUrl, 
 					  data     : data, 
 					  dataType : "json",
 					  success  : function( values ) {
                         if ( values.status == true ) {
-                            cj('#tag_row_' + toId).children('td.crm-tag-used_for').text(values.tagB_used_for);
+                            cj('#tag-' + toId).children('td.crm-tag-used_for').text(values.tagB_used_for);
                             var msg = "'" + values.tagA + "' has been merged with '" + values.tagB + "'. All records previously tagged with '" + values.tagA + "' are now tagged with '" + values.tagB + "'.";
-                            cj('#tag_row_' + fromId).html('<td colspan="8"><div class="status message"><div class="icon inform-icon"></div>' + msg + '</div></td>'); 
+                            cj('#tag-' + fromId).html('<td colspan="8"><div class="status message"><div class="icon inform-icon"></div>' + msg + '</div></td>'); 
                         }
                       }
                 });
@@ -198,3 +197,4 @@ function mergeTag( fromId ) {
 {/literal}
 
 {/if}
+{include file="CRM/common/crmeditable.tpl"}

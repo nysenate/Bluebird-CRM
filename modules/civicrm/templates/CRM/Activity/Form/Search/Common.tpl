@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
   {if $form.activity_type_id}
      <td><label>{ts}Activity Type(s){/ts}</label>
         <div id="Activity" class="listing-box">
-          {foreach from=$form.activity_type_id item="activity_type_val"} 
+          {foreach from=$form.activity_type_id item="activity_type_val"}
              <div class="{cycle values="odd-row,even-row"}">
                {$activity_type_val.html}
              </div>
@@ -36,7 +36,7 @@
      </td>
   {else}
       <td>&nbsp;</td>
-  {/if} 
+  {/if}
   {if $form.activity_survey_id || $buildEngagementLevel}
     <td>
         {if $form.activity_survey_id}
@@ -47,71 +47,65 @@
             <label>{$form.activity_engagement_level.label}</label><br />{$form.activity_engagement_level.html}
         {/if}
     </td>
-  {/if} 
+  {/if}
 
   {if $form.activity_tags }
     <td><label>{ts}Activity Tag(s){/ts}</label>
       <div id ="Tags" class="listing-box">
-         {foreach from=$form.activity_tags item="tag_val"} 
+         {foreach from=$form.activity_tags item="tag_val"}
               <div class="{cycle values="odd-row,even-row"}">
                    {$tag_val.html}
               </div>
          {/foreach}
     </td>
   {else}
-  	 <td>&nbsp;</td>
-  {/if} 
+     <td>&nbsp;</td>
+  {/if}
+</tr>
+<tr>
+        <tr><td><label>{ts}Activity Dates{/ts}</label></td></tr>
+  {include file="CRM/Core/DateRange.tpl" fieldName="activity_date" from='_low' to='_high'}
 </tr>
 <tr>
    <td>
-          {$form.activity_date_low.label}<br/>
-	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_low} 
-   </td>
-   <td>
-   	  {$form.activity_date_high.label}<br/>
-	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_high}
-   </td>
-</tr>
-<tr>
-   <td>
-	  {$form.activity_role.html}
+    {$form.activity_role.html}
       <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('activity_role', '{$form.formName}'); document.getElementById('activity_contact_name').value = ''; return false;" >{ts}clear{/ts}</a>)</span><br />
    </td>
    <td colspan="2"><br />
-	  {$form.activity_contact_name.html}<br />
+    {$form.activity_contact_name.html}<br />
       <span class="description font-italic">{ts}Complete OR partial Name of the Source Contact or the Assignee Contact.{/ts}</span><br /><br />
-	  {$form.activity_test.label} &nbsp; {$form.activity_test.html} 
+    {$form.activity_test.label} &nbsp; {$form.activity_test.html}
    </td>
 </tr>
 <tr>
    <td>
-	  {$form.activity_subject.label}<br />
-      	  {$form.activity_subject.html|crmReplace:class:big} 
+    {$form.activity_subject.label}<br />
+          {$form.activity_subject.html|crmReplace:class:big}
    </td>
    <td colspan="2">
           {$form.activity_status.label}<br />
-          {$form.activity_status.html} 
+          {$form.activity_status.html}
    </td>
 </tr>
 
 <tr><td colspan="3">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>
 
 {* campaign in activity search *}
-{include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+{include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
 campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
 
 {if $activityGroupTree}
 <tr id="activityCustom">
    <td id="activityCustomData" colspan="2">
-	  {include file="CRM/Custom/Form/Search.tpl" groupTree=$activityGroupTree showHideLinks=false}
+    {include file="CRM/Custom/Form/Search.tpl" groupTree=$activityGroupTree showHideLinks=false}
    </td>
 </tr>
 {/if}
 
 {literal}
 <script type="text/javascript">
-    cj(document).ready(function() { 
-        //Searchable activity custom fields which extend ALL activity types are always displayed in the form 
+    cj(document).ready(function() {
+        //Searchable activity custom fields which extend ALL activity types are always displayed in the form
         //hence hide remaining activity custom data
         cj( '#activityCustom' ).children( ).each( function( ) {
             cj( '#'+cj( this ).attr( 'id' )+' div' ).each( function( ) {
@@ -138,8 +132,8 @@ campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
                         }
                     });
                     if ( show < 1 ) {
-			            cj( '#'+activityCustomdataGroup ).hide( );
-			        }
+                  cj( '#'+activityCustomdataGroup ).hide( );
+              }
                 }
             });
         });
@@ -148,22 +142,22 @@ campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
 
 
 <script type="text/javascript">
-function showCustomData( chkbox ) 
-{		 
+function showCustomData( chkbox )
+{
     if ( document.getElementById( chkbox ).checked ) {
         //inject Searchable activity custom fields according to activity type selected
         var element = chkbox.split("[");
-        var splitElement = element[1].split("]");    
+        var splitElement = element[1].split("]");
         cj( '#activityCustom').children().each( function( ) {
             cj( '#'+cj( this ).attr( 'id' )+' div' ).each( function( ) {
                 if ( cj( this ).children().attr( 'id' ) ) {
                     if ( cj( '#'+cj( this ).attr( 'id' )+( ' fieldset' )).attr( 'id' ) ) {
                         var fieldsetId = cj('#'+cj( this ).attr( 'id' )+( ' fieldset' )).attr( 'id' ).split( "" );
-                        var activityTypeId = jQuery.inArray( splitElement[0], fieldsetId );                                     
+                        var activityTypeId = jQuery.inArray( splitElement[0], fieldsetId );
                         if ( fieldsetId[activityTypeId] == splitElement[0] ) {
                             cj( this ).show();
-                        }                            
-                    } 
+                        }
+                    }
                 }
             });
         });
@@ -181,7 +175,7 @@ function showCustomData( chkbox )
                                 if ( fieldsetId[activityTypeId] ==  splitElement[0] ) {
                                     cj( '#'+cj( this ).attr( 'id' ) ).each( function() {
                                         if ( cj( this ).children().attr( 'id' ) ) {
-                                        //if activity custom data extends more than one activity types then 
+                                        //if activity custom data extends more than one activity types then
                                         //hide that only when all the extended activity types are unchecked
                                             cj( '#'+cj( this ).attr( 'id' )+( ' fieldset' ) ).each( function( ) {
                                                 var splitFieldsetId = cj( this ).attr( 'id' ).split( "" );
@@ -195,20 +189,20 @@ function showCustomData( chkbox )
                                                             } else {
                                                                 setcount++;
                                                             }
-                                                        }                   
-                                                }                                  
+                                                        }
+                                                }
                                                 if ( setcount > 0 ) {
                                                     cj( '#'+cj( this ).parent().attr( 'id' ) ).hide();
-                                                }                                  
+                                                }
                                             });
                                         }
                                     });
                                 }
-                        } 
+                        }
                     }
                 });
             });
-    } 
+    }
 }
-{/literal}	     
+{/literal}
 </script>

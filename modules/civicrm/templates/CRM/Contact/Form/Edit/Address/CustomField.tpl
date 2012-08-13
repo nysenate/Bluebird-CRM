@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -98,7 +98,11 @@
                     {/if} 
                 {elseif $element.html_type eq 'Autocomplete-Select'}
 		    {assign var="element_name" value="address[$blockId][$element_name]" }
-                    {include file="CRM/Custom/Form/AutoComplete.tpl"}
+                    {if $element.data_type eq 'ContactReference'}
+                      {include file="CRM/Custom/Form/ContactReference.tpl"}
+                    {else}
+                      {include file="CRM/Custom/Form/AutoComplete.tpl"}
+                    {/if}
                 {/if}
             </td>
         </tr>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 <tr><td colspan="3" style="padding:0;">
-<table style="border:none;">
+<table class="crm-address-element">
 <tr>
     {if !empty($form.address.$blockId.city)}
        <td>
@@ -34,10 +34,9 @@
     {/if}
     {if !empty($form.address.$blockId.postal_code)}
        <td>
-          {$form.address.$blockId.postal_code.label}<br />
-          {$form.address.$blockId.postal_code.html}
-          {$form.address.$blockId.postal_code_suffix.html}<br />
-          <span class="description font-italic" style="white-space:nowrap;">{ts}Enter optional 'add-on' code after the dash ('plus 4' code for U.S. addresses).{/ts}</span>
+          {$form.address.$blockId.postal_code.label}&nbsp;<span>{ts}Suffix{/ts}</span><br />
+          {$form.address.$blockId.postal_code.html}&nbsp;&nbsp;
+          {$form.address.$blockId.postal_code_suffix.html} {help id="id-postal-code-suffix" file="CRM/Contact/Form/Contact.hlp"}
        </td>
     {/if}
     <td colspan="2">&nbsp;&nbsp;</td>

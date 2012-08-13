@@ -1,9 +1,11 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +33,7 @@
  *
  * @package CiviCRM_APIv2
  * @subpackage API_Contact
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id: Contact.php 30415 2010-10-29 12:02:47Z shot $
  *
  */
@@ -54,8 +56,8 @@ require_once 'api/v2/utils.php';
  *
  * @todo Requires some work
  */
-function civicrm_relationship_type_update( $params ) {
-    return civicrm_relationship_type_add( $params );
+function civicrm_relationship_type_update($params) {
+  return civicrm_relationship_type_add($params);
 }
 /*
  * Deprecated function to create relationship type
@@ -68,10 +70,11 @@ function civicrm_relationship_type_update( $params ) {
  * 
  * @deprecated
  */
-function civicrm_relationship_type_add( $params ) {
-  $result = civicrm_relationship_type_create( $params );
+function civicrm_relationship_type_add($params) {
+  $result = civicrm_relationship_type_create($params);
   return $result;
 }
+
 /**
  * Function to create relationship type
  *
@@ -82,46 +85,52 @@ function civicrm_relationship_type_add( $params ) {
  * @access public
  *
  */
-function civicrm_relationship_type_create( $params ) {
-    
-    if ( empty( $params ) ) {
-        return civicrm_create_error( ts( 'No input parameters present' ) );
-    }
+function civicrm_relationship_type_create($params) {
 
-    if ( ! is_array( $params ) ) {
-        return civicrm_create_error( ts( 'Parameter is not an array' ) );
-    }
+  if (empty($params)) {
+    return civicrm_create_error(ts('No input parameters present'));
+  }
 
-    if( ! isset( $params['contact_types_a'] ) &&
-        ! isset( $params['contact_types_b'] ) && 
-        ! isset( $params['name_a_b'] ) &&
-        ! isset( $params['name_b_a'] )) { 
-        
-        return civicrm_create_error( ts('Missing some required parameters (contact_types_a contact_types_b name_a_b name b_a)'));
-    }
+  if (!is_array($params)) {
+    return civicrm_create_error(ts('Parameter is not an array'));
+  }
 
-    if (! isset( $params['label_a_b']) ) 
-        $params['label_a_b'] = $params['name_a_b'];
-    
-    if (! isset( $params['label_b_a']) ) 
-        $params['label_b_a'] = $params['name_b_a'];
-    
-    require_once 'CRM/Utils/Rule.php';
-    
-    $ids = array( );
-    if( isset( $params['id'] ) && ! CRM_Utils_Rule::integer(  $params['id'] ) ) {
-        return civicrm_create_error( 'Invalid value for relationship type ID' );
-    } else {
-        $ids['relationshipType'] = CRM_Utils_Array::value( 'id', $params );
-    }
-    
-    require_once 'CRM/Contact/BAO/RelationshipType.php';
-    $relationType = CRM_Contact_BAO_RelationshipType::add( $params, $ids );
-    
-    $relType = array( );
-    _civicrm_object_to_array( $relationType, $relType );
-    
-    return $relType;
+  if (!isset($params['contact_types_a']) &&
+    !isset($params['contact_types_b']) &&
+    !isset($params['name_a_b']) &&
+    !isset($params['name_b_a'])
+  ) {
+
+    return civicrm_create_error(ts('Missing some required parameters (contact_types_a contact_types_b name_a_b name b_a)'));
+  }
+
+  if (!isset($params['label_a_b'])) {
+
+    $params['label_a_b'] = $params['name_a_b'];
+  }
+
+  if (!isset($params['label_b_a'])) {
+
+    $params['label_b_a'] = $params['name_b_a'];
+  }
+
+  require_once 'CRM/Utils/Rule.php';
+
+  $ids = array();
+  if (isset($params['id']) && !CRM_Utils_Rule::integer($params['id'])) {
+    return civicrm_create_error('Invalid value for relationship type ID');
+  }
+  else {
+    $ids['relationshipType'] = CRM_Utils_Array::value('id', $params);
+  }
+
+  require_once 'CRM/Contact/BAO/RelationshipType.php';
+  $relationType = CRM_Contact_BAO_RelationshipType::add($params, $ids);
+
+  $relType = array();
+  _civicrm_object_to_array($relationType, $relType);
+
+  return $relType;
 }
 
 /**
@@ -129,29 +138,27 @@ function civicrm_relationship_type_create( $params ) {
  * retruns  An array of Relationship_type
  * * @access  public
  */
-function civicrm_relationship_types_get( $params = null ) 
-{
-    _civicrm_initialize();
-    require_once 'CRM/Contact/DAO/RelationshipType.php';
-    $relationshipTypes = array();
-    $relationshipType  = array();
-    $relationType      = new CRM_Contact_DAO_RelationshipType();
-    if ( !empty( $params ) && is_array( $params ) ) {
-        $properties = array_keys( $relationType->fields() );
-        foreach ($properties as $name) {
-            if ( array_key_exists( $name, $params ) ) {
-                $relationType->$name = $params[$name];
-            }
-        }
+function civicrm_relationship_types_get($params = NULL) {
+  _civicrm_initialize();
+  require_once 'CRM/Contact/DAO/RelationshipType.php';
+  $relationshipTypes = array();
+  $relationshipType  = array();
+  $relationType      = new CRM_Contact_DAO_RelationshipType();
+  if (!empty($params) && is_array($params)) {
+    $properties = array_keys($relationType->fields());
+    foreach ($properties as $name) {
+      if (array_key_exists($name, $params)) {
+        $relationType->$name = $params[$name];
+      }
     }
-    $relationType->find();
-    while( $relationType->fetch() ) {
-        _civicrm_object_to_array( clone($relationType), $relationshipType );
-        $relationshipTypes[] = $relationshipType; 
-    }
-    return $relationshipTypes;
+  }
+  $relationType->find();
+  while ($relationType->fetch()) {
+    _civicrm_object_to_array(clone($relationType), $relationshipType);
+    $relationshipTypes[] = $relationshipType;
+  }
+  return $relationshipTypes;
 }
-
 
 /**
  * Delete a relationship type delete
@@ -162,18 +169,18 @@ function civicrm_relationship_types_get( $params = null )
  * @static void
  * @access public
  */
-function civicrm_relationship_type_delete( &$params ) {
+function civicrm_relationship_type_delete(&$params) {
 
-    if( ! CRM_Utils_Array::value( 'id',$params )  ) {
-        return civicrm_create_error( 'Missing required parameter' );
-    }
-    require_once 'CRM/Utils/Rule.php';
-    if( $params['id'] != null && ! CRM_Utils_Rule::integer( $params['id'] ) ) {
-        return civicrm_create_error( 'Invalid value for relationship type ID' );
-    }
-    
-    $relationTypeBAO = new CRM_Contact_BAO_RelationshipType( );
-    return $relationTypeBAO->del( $params['id'] ) ? civicrm_create_success( ts( 'Deleted relationship type successfully' )  ):civicrm_create_error( ts( 'Could not delete relationship type' ) );
+  if (!CRM_Utils_Array::value('id', $params)) {
+    return civicrm_create_error('Missing required parameter');
+  }
+  require_once 'CRM/Utils/Rule.php';
+  if ($params['id'] != NULL && !CRM_Utils_Rule::integer($params['id'])) {
+    return civicrm_create_error('Invalid value for relationship type ID');
+  }
+
+  $relationTypeBAO = new CRM_Contact_BAO_RelationshipType();
+  return $relationTypeBAO->del($params['id']) ? civicrm_create_success(ts('Deleted relationship type successfully')) : civicrm_create_error(ts('Could not delete relationship type'));
 }
 
 /**
@@ -181,7 +188,7 @@ function civicrm_relationship_type_delete( &$params ) {
  * return An array of Relationship_type
  * * @access  public
  */
-function civicrm_relationshipType_get( $params = null ) 
-{
-    return civicrm_relationship_types_get( $params );
+function civicrm_relationshipType_get($params = NULL) {
+  return civicrm_relationship_types_get($params);
 }
+

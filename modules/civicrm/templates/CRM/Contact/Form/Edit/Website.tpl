@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,14 +31,23 @@
 <tr>
     <td>{ts}Website{/ts}
         &nbsp;&nbsp;{help id="id-website" file="CRM/Contact/Form/Contact.hlp"}
-        &nbsp;&nbsp;<a href="#" title={ts}Add{/ts} onClick="buildAdditionalBlocks( 'Website', '{$className}');return false;">{ts}add{/ts}</a>
     </td>
+    <td>{ts}Website Type{/ts}</td>
     <td colspan="2"></td>
     <td id="Website-Primary" class="hiddenElement"></td>
 </tr>
 {/if}
 
 <tr id="Website_Block_{$blockId}">
-    <td>{$form.website.$blockId.url.html|crmReplace:class:twenty}&nbsp;{$form.website.$blockId.website_type_id.html}</td>
+    <td>{$form.website.$blockId.url.html|crmReplace:class:twenty}&nbsp;</td>
+    <td>{$form.website.$blockId.website_type_id.html}</td>
     <td colspan="3">{if $blockId > 1} <a href="#" title="{ts}Delete Website Block{/ts}" onClick="removeBlock('Website','{$blockId}'); return false;">{ts}delete{/ts}</a>{/if}</td>
 </tr>
+{if !$addBlock}
+<tr>
+<td colspan="4">
+&nbsp;&nbsp;<a href="#" title={ts}Add{/ts} onClick="buildAdditionalBlocks( 'Website', '{$className}');return false;">{ts}Add another website{/ts}</a>
+</td>
+</tr>
+{/if}
+

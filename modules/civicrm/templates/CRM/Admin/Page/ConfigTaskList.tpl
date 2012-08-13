@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,7 +43,8 @@
         <td>{ts}Localization settings include user language, default currency and available countries for address input.{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/domain" q="action=update&reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Domain Information{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/domain" q="action=update&reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Organization Address and Contact Info
+        {/ts}</a></td>
         <td>{ts}Organization name, email address for system-generated emails, organization address{/ts}</li>
     </tr>
 
@@ -51,7 +52,7 @@
         <td colspan="2">{ts}Viewing and Editing Contacts{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Site Preferences{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Display Preferences{/ts}</a></td>
         <td>{ts}Configure screen and form elements for Viewing Contacts, Editing Contacts, Advanced Search, Contact Dashboard and WYSIWYG Editor.{/ts}</td>
     </tr>
     <tr class="even">
@@ -67,7 +68,7 @@
         <td>{ts}Adjust search behaviors including wildcards, and data to include in quick search results. Adjusting search settings can improve performance for larger datasets.{/ts}</li>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/misc" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Miscellaneous{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/misc" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Undelete, Logging and ReCAPTCHA{/ts}</a></td>
         <td>{ts}Version reporting and alerts, reCAPTCHA configuration and attachments.{/ts}</li>
     </tr>
     <tr class="even">
@@ -94,10 +95,14 @@
         <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/paymentProcessor" q="action=add&reset=1&pp=PayPal&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Payment Processors{/ts}</a></td>
         <td>{ts}Select and configure one or more payment processing services for online contributions, events and / or membership fees.{/ts}</td>
     </tr>  
-    {if $config->userFramework EQ 'Drupal'}
+    {if $config->userSystem->is_drupal EQ '1'}
         <tr class="even">
-            <td class="tasklist"><a href="{$config->userFrameworkBaseURL}?q=admin/user/permissions&civicrmDestination=civicrm/admin/configtask">{ts}Permissions for Anonymous Users{/ts}</a></td>
-            <td>{ts}You will also need to change Drupal permissions so anonymous users can make contributions, register for events and / or use profiles to enter contact information.{/ts} {docURL page="Default Permissions and Roles"}</li>
+            {if $config->userFramework EQ 'Drupal'}
+                <td class="tasklist"><a href="{$config->userFrameworkBaseURL}?q=admin/people/permissions&civicrmDestination=civicrm/admin/configtask">{ts}Permissions for Anonymous Users{/ts}</a></td>
+            {else}
+                <td class="tasklist"><a href="{$config->userFrameworkBaseURL}?q=admin/user/permissions&civicrmDestination=civicrm/admin/configtask">{ts}Permissions for Anonymous Users{/ts}</a></td>
+            {/if}
+            <td>{ts}You will also need to change Drupal permissions so anonymous users can make contributions, register for events and / or use profiles to enter contact information.{/ts} {docURL page="Default Permissions and Roles" resource="wiki"}</li>
         </tr>
     {/if}
     <tr class="even">
@@ -108,8 +113,8 @@
 <br />
 
 <div class="description">
-    {capture assign=docLink}{docURL page="Getting Started" text="Getting Started"}{/capture}
-    {ts 1=$adminMenu 2=$docLink}The next set of tasks involve planning and have multiple steps. You may want to check out the %2 documentation before you begin. You will not be returned to this page after completing these tasks, but you can always get back here from the <a href="%1">Administer CiviCRM</a> menu.{/ts}
+    {capture assign=docLink}{docURL page="user/organising-your-data/overview" text="Organizing Your Data"}{/capture}
+    {ts 1=$adminMenu 2=$docLink}The next set of tasks involve planning and have multiple steps. You may want to check out the %2 section in the User and Administrator Guide before you begin. You will not be returned to this page after completing these tasks, but you can always get back here from the <a href="%1">Administer CiviCRM</a> menu.{/ts}
 </div>  
 
 <table class="selector">
@@ -129,7 +134,7 @@
         <td colspan="2">{ts}Customize Data, Forms and Screens{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/custom/group" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Custom Data{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/custom/group" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Custom Fields{/ts}</a></td>
         <td>{ts}Configure custom fields to collect and store custom data which is not included in the standard CiviCRM forms.{/ts}</td>
     </tr>
     <tr class="even">
@@ -147,27 +152,35 @@
         <td colspan="2">{ts}Components{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap" style="width: 10%;">{docURL page="CiviContribute Admin" text="CiviContribute"}</td>
+        <td class="tasklist nowrap" style="width: 10%;">{docURL page="user/contributions/what-is-civicontribute" text="CiviContribute"}</td>
         <td>{ts}Online fundraising and donor management, as well as offline contribution processing and tracking.{/ts}</td>    
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap" style="width: 10%;">{docURL page="Manage Pledges" text="CiviPledge"}</td>
+        <td class="tasklist nowrap" style="width: 10%;">{docURL page="user/pledges/what-is-civipledge" text="CiviPledge"}</td>
         <td>{ts}Accept and track pledges (for recurring gifts).{/ts}</td>    
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap">{docURL page="CiviEvent Admin" text="CiviEvent"}</td>
+        <td class="tasklist nowrap">{docURL page="user/events/what-is-civievent" text="CiviEvent"}</td>
         <td>{ts}Online event registration and participant tracking.{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap">{docURL page="CiviMember Admin" text="CiviMember"}</td>
+        <td class="tasklist nowrap">{docURL page="user/membership/what-is-civimember" text="CiviMember"}</td>
         <td>{ts}Online signup and membership management.{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap">{docURL page="CiviMail Admin" text="CiviMail"}</td>
+        <td class="tasklist nowrap">{docURL page="user/email/what-is-civimail" text="CiviMail"}</td>
         <td>{ts}Personalized email blasts and newsletters.{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap">{docURL page="CiviCase Admin" text="CiviCase"}</td>
+        <td class="tasklist nowrap">{docURL page="user/campaign/what-is-civicampaign" text="CiviCampaign"}</td>
+        <td>{ts}Link together events, mailings, activities, and contributions. Create surveys and online petitions.{/ts}</td>
+    </tr>
+    <tr class="even">
+        <td class="tasklist nowrap">{docURL page="user/case-management/what-is-civicase" text="CiviCase"}</td>
         <td>{ts}Integrated case management for human service providers{/ts}</td>
+    </tr>
+    <tr class="even">
+        <td class="tasklist nowrap">{docURL page="user/grants/what-is-civigrant" text="CiviGrant"}</td>
+        <td>{ts}Distribute funds to others, for example foundations, grant givers, etc.{/ts}</td>
     </tr>
 </table>

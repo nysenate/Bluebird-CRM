@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
     static $_links = null;
     /**
      * static instance to hold the values that can
-     * be imported / apu
+     * be imported
      *
      * @var array
      * @static
@@ -66,7 +66,7 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
     static $_import = null;
     /**
      * static instance to hold the values that can
-     * be exported / apu
+     * be exported
      *
      * @var array
      * @static
@@ -110,6 +110,12 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      */
     public $hash;
     /**
+     * FK to Phone
+     *
+     * @var int unsigned
+     */
+    public $phone_id;
+    /**
      * class constructor
      *
      * @access public
@@ -117,6 +123,7 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      */
     function __construct()
     {
+        $this->__table = 'civicrm_mailing_event_queue';
         parent::__construct();
     }
     /**
@@ -125,13 +132,14 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &links()
+    function links()
     {
         if (!(self::$_links)) {
             self::$_links = array(
                 'job_id' => 'civicrm_mailing_job:id',
                 'email_id' => 'civicrm_email:id',
                 'contact_id' => 'civicrm_contact:id',
+                'phone_id' => 'civicrm_phone:id',
             );
         }
         return self::$_links;
@@ -142,7 +150,7 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &fields()
+    static function &fields()
     {
         if (!(self::$_fields)) {
             self::$_fields = array(
@@ -160,7 +168,7 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
                 'email_id' => array(
                     'name' => 'email_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'required' => true,
+                    'default' => 'UL',
                     'FKClassName' => 'CRM_Core_DAO_Email',
                 ) ,
                 'contact_id' => array(
@@ -177,6 +185,12 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
                     'maxlength' => 255,
                     'size' => CRM_Utils_Type::HUGE,
                 ) ,
+                'phone_id' => array(
+                    'name' => 'phone_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'default' => 'UL',
+                    'FKClassName' => 'CRM_Core_DAO_Phone',
+                ) ,
             );
         }
         return self::$_fields;
@@ -185,9 +199,10 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      * returns the names of this table
      *
      * @access public
+     * @static
      * @return string
      */
-    function getTableName()
+    static function getTableName()
     {
         return self::$_tableName;
     }
@@ -206,12 +221,13 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &import($prefix = false)
+    static function &import($prefix = false)
     {
         if (!(self::$_import)) {
             self::$_import = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('import', $field)) {
                     if ($prefix) {
@@ -229,12 +245,13 @@ class CRM_Mailing_Event_DAO_Queue extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &export($prefix = false)
+    static function &export($prefix = false)
     {
         if (!(self::$_export)) {
             self::$_export = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('export', $field)) {
                     if ($prefix) {

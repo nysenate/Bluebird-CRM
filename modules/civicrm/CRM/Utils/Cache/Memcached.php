@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,17 +28,16 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Utils_Cache_Memcached
-{
-  const DEFAULT_HOST = 'localhost';
-  const DEFAULT_PORT = 11211;
+class CRM_Utils_Cache_Memcached {
+  const DEFAULT_HOST    = 'localhost';
+  const DEFAULT_PORT    = 11211;
   const DEFAULT_TIMEOUT = 3600;
-  const DEFAULT_PREFIX = '';
-  const MAX_KEY_LEN = 62;
+  const DEFAULT_PREFIX  = '';
+  const MAX_KEY_LEN     = 62;
 
   /**
    * The host name of the memcached server
@@ -48,7 +47,7 @@ class CRM_Utils_Cache_Memcached
   protected $_host = self::DEFAULT_HOST;
 
   /**
-   * The port on which to connect
+   * The port on which to connect on
    *
    * @var int
    */
@@ -62,13 +61,6 @@ class CRM_Utils_Cache_Memcached
   protected $_timeout = self::DEFAULT_TIMEOUT;
 
   /**
-   * The actual memcache object
-   *
-   * @var resource
-   */
-  protected $_cache;
-
-  /**
    * The prefix prepended to cache keys.
    *
    * If we are using the same memcache instance for multiple CiviCRM
@@ -80,13 +72,19 @@ class CRM_Utils_Cache_Memcached
   protected $_prefix = self::DEFAULT_PREFIX;
 
   /**
+   * The actual memcache object
+   *
+   * @var resource
+   */
+  protected $_cache;
+
+  /**
    * Constructor
    *
    * @param array   $config  an array of configuration params
    * @return void
    */
-  function __construct($config)
-  {
+  function __construct(&$config) {
     if (isset($config['host'])) {
       $this->_host = $config['host'];
     }
@@ -112,16 +110,16 @@ class CRM_Utils_Cache_Memcached
   function set($key, &$value) {
     $key = $this->cleanKey($key);
     if (!$this->_cache->set($key, $value, $this->_timeout)) {
-      CRM_Core_Error::debug('Result Code: ', $this->_cache->getResultMessage());
-      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value);
-      return false;
+      CRM_Core_Error::debug( 'Result Code: ', $this->_cache->getResultMessage());
+      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value );
+      return FALSE;
     }
-    return true;
+    return TRUE;
   }
 
   function &get($key) {
     $key = $this->cleanKey($key);
-    $result =& $this->_cache->get($key);
+    $result = $this->_cache->get($key);
     return $result;
   }
 
@@ -132,10 +130,10 @@ class CRM_Utils_Cache_Memcached
 
   function cleanKey($key) {
     $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
-    if (strlen($key) > self::MAX_KEY_LEN) {
-      $md5key = md5($key);  // this should be 32 characters in length
-      $subkeylen = self::MAX_KEY_LEN - 1 - strlen($md5key);
-      $key = substr($key, 0, $subkeylen) . "_" . $md5key;
+    if ( strlen($key) > self::MAX_KEY_LEN ) {
+      $md5Key = md5($key);  // this should be 32 characters in length
+      $subKeyLen = self::MAX_KEY_LEN - 1 - strlen($md5Key);
+      $key = substr($key, 0, $subKeyLen) . "_" . $md5Key;
     }
     return $key;
   }

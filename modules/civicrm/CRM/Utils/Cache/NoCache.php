@@ -33,30 +33,41 @@
  *
  */
 
-class CRM_Utils_Cache_NoCache
-{
+class CRM_Utils_Cache_NoCache {
+
+  /**
+   * We only need one instance of this object. So we use the singleton
+   * pattern and cache the instance in this variable
+   *
+   * @var object
+   * @static
+   */
+  static private $_singleton = NULL;
+
   /**
    * Constructor
    *
    * @param array   $config  an array of configuration params
+   *
    * @return void
    */
   function __construct(&$config) {
   }
 
   function set($key, &$value) {
-    return false;
+    return FALSE;
   }
 
   function get($key) {
-    return null;
+    return NULL;
   }
 
   function delete($key) {
-    return false;
+    return FALSE;
   }
 
   function flush() {
-    return false;
+    return FALSE;
   }
 }
+

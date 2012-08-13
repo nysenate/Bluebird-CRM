@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,7 @@
     <table cellpadding="0" cellspacing="0" border="0">
       <thead class="sticky">
         <th>{ts}Label{/ts}</th>
-        <th>{ts}Name{/ts}</th>
+        <th>{ts}Name (Status ID){/ts}</th>
         <th>{ts}Class{/ts}</th>
         <th>{ts}Reserved?{/ts}</th>
         <th>{ts}Active?{/ts}</th>
@@ -47,11 +47,11 @@
       {foreach from=$rows item=row}
        <tr id="row_{$row.id}" class=" crm-particpant crm-participant_{$row.id} {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
           <td class="crm-particpant-label">{$row.label}</td>
-          <td class="crm-particpant-name">{$row.name}</td>
+          <td class="crm-particpant-name">{$row.name} ({$row.id})</td>
           <td class="crm-particpant-class">{$row.class}</td>
-          <td class="yes-no crm-participant-is_reserved">{if $row.is_reserved}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Reserved{/ts}" />{/if}</td>
-	  <td id="row_{$row.id}_status" class="crm-participant-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-          <td class="yes-no crm-participant-is_counted">{if $row.is_counted} <img src="{$config->resourceBase}/i/check.gif" alt="{ts}Counted{/ts}" />{/if}</td>
+          <td class="yes-no crm-participant-is_reserved">{if $row.is_reserved}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Reserved{/ts}" />{/if}</td>
+	      <td id="row_{$row.id}_status" class="crm-participant-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+          <td class="yes-no crm-participant-is_counted">{if $row.is_counted} <img src="{$config->resourceBase}i/check.gif" alt="{ts}Counted{/ts}" />{/if}</td>
           <td class="crm-particpant-weight">{$row.weight}</td>
           <td class="crm-particpant-visibility">{$row.visibility}</td>
           <td>{$row.action|replace:'xx':$row.id}</td>

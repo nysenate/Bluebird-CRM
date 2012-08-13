@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,11 +53,11 @@
             <td>{$form.is_view.html}<br />
             <span class="description">&nbsp;{ts}If checked, users can view but not edit this field.{/ts}<br />&nbsp;{ts}NOTE: View Only fields can not be included in Profile Search forms.{/ts}</span></td>
         </tr>
-        <tr class="crm-uf-field-form-block-visibility">
+        <tr  id="profile_visibility" class="crm-uf-field-form-block-visibility">
             <td class="label">{$form.visibility.label}</td>
             <td>{$form.visibility.html}<br />
             <span class="description">&nbsp;{ts}Is this field hidden from other users ('User and User Admin Only'), or is it visible to others and potentially searchable in the Profile Search form ('Public Pages' or 'Public Pages and Listings')? When visibility is 'Public Pages and Listings', users can also click the field value when viewing a contact in order to locate other contacts with the same value(s) (i.e. other contacts who live in Poland).{/ts}</span></td>
-        </tr>                                                     
+        </tr>
         <tr class="crm-uf-field-form-block-is_searchable">
             <td class="label"><div id="is_search_label">{$form.is_searchable.label}</div></td>
             <td><div id="is_search_html">{$form.is_searchable.html}<br />
@@ -67,7 +67,7 @@
             <td class="label"><div id="in_selector_label">{$form.in_selector.label}</div></td>
             <td><div id="in_selector_html">{$form.in_selector.html}<br />         
             <span id="in_selector_desSpan" class="description">{ts}Is this field included as a column in the search results table? This setting applies only to fields with 'Public Pages' or 'Public Pages and Listings' visibility.{/ts}</span></div></td>
-        </tr>
+        </tr>     
         <tr class="crm-uf-field-form-block-help_pre">
             <td class="label">{$form.help_pre.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_uf_field' field='help_pre' id=$fieldId}{/if}</td>
             <td>{$form.help_pre.html|crmReplace:class:huge}<br /> 
@@ -96,7 +96,45 @@
 
 {literal}
 <script type="text/javascript">
+var otherModule = new Array( );
+{/literal}{foreach from=$otherModules item="mval" key="mkey"}{literal}
+    otherModule[{/literal}{$mkey}{literal}] = '{/literal}{$mval}{literal}';
+{/literal}{/foreach}{literal}
+
+cj( function() {
+   if ( cj.inArray( "Profile", otherModule ) > -1 && cj.inArray( "Search Profile", otherModule ) == -1 ){       
+        cj('#profile_visibility').show();
+   } else if( cj.inArray( "Search Profile", otherModule ) > -1 ){
+        cj('#profile_visibility').show();
+        cj("#in_selector").attr('checked',true);
+   } else if( cj.inArray( "Profile", otherModule ) == -1 && cj.inArray( "Search Profile", otherModule ) == -1 ){
+        cj('#profile_visibility').hide();
+   }                         
+});
+
+var preHelpLabel = "";
 function showLabel( ) {
+
+	if(preHelpLabel) { cj(".crm-uf-field-form-block-help_pre .label").html(preHelpLabel); }
+	cj(".crm-uf-field-form-block-is_view").show();
+	cj(".crm-uf-field-form-block-is_required").show();
+	cj(".crm-uf-field-form-block-visibility").show();
+	cj(".crm-uf-field-form-block-is_searchable").show();
+	cj(".crm-uf-field-form-block-in_selector").show();
+	cj(".crm-uf-field-form-block-help_post").show();
+
+    if("Formatting" == document.forms.Field['field_name[0]'].options[document.forms.Field['field_name[0]'].selectedIndex].value)
+    		     {
+    		     if(!preHelpLabel) { preHelpLabel = cj(".crm-uf-field-form-block-help_post .label").html();  }
+    		     cj(".crm-uf-field-form-block-help_pre .label").html('<label for="help_pre">HTML Code</label>');
+		     	     cj(".crm-uf-field-form-block-is_view").hide();
+			     cj(".crm-uf-field-form-block-is_required").hide();
+			     cj(".crm-uf-field-form-block-visibility").hide();
+			     cj(".crm-uf-field-form-block-is_searchable").hide();
+			     cj(".crm-uf-field-form-block-in_selector").hide();
+			     cj(".crm-uf-field-form-block-help_post").hide();
+    		     }
+
     var labelValue = '';
     /* Code to set the Field Label */		
     if (document.forms.Field['field_name[0]'].options[document.forms.Field['field_name[0]'].selectedIndex].value) { 

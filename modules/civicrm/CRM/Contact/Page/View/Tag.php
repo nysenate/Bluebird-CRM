@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,60 +28,56 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Page.php';
-
 class CRM_Contact_Page_View_Tag extends CRM_Core_Page {
 
-   /**
-     * This function is called when action is browse
-     * 
-     * return null
-     * @access public
-     */
-    function browse( ) {
-        $controller = new CRM_Core_Controller_Simple( 'CRM_Tag_Form_Tag', ts('Contact Tags'), $this->_action );
-        $controller->setEmbedded( true );
-        
-        // set the userContext stack
-        $session = CRM_Core_Session::singleton();
-        
-        $session->pushUserContext( CRM_Utils_System::url('civicrm/contact/view', 'action=browse&selectedChild=tag' ) ,false);
-        $controller->reset( );
-        $controller->set( 'contactId'  , $this->_contactId );
-        $controller->process( );
-        $controller->run( );
-    }
+  /**
+   * This function is called when action is browse
+   *
+   * return null
+   * @access public
+   */
+  function browse() {
+    $controller = new CRM_Core_Controller_Simple('CRM_Tag_Form_Tag', ts('Contact Tags'), $this->_action);
+    $controller->setEmbedded(TRUE);
 
-    function preProcess() {
-        $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true );
-        $this->assign( 'contactId', $this->_contactId );
+    // set the userContext stack
+    $session = CRM_Core_Session::singleton();
 
-        // check logged in url permission
-        require_once 'CRM/Contact/Page/View.php';
-        CRM_Contact_Page_View::checkUserPermission( $this );
-        
-        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
-        $this->assign( 'action', $this->_action);
-    }    
+    $session->pushUserContext(CRM_Utils_System::url('civicrm/contact/view', 'action=browse&selectedChild=tag'), FALSE);
+    $controller->reset();
+    $controller->set('contactId', $this->_contactId);
+    $controller->process();
+    $controller->run();
+  }
 
-    /**
-     * This function is the main function that is called when the page loads
-     * it decides the which action has to be taken for the page.
-     * 
-     * return null
-     * @access public
-     */
-    function run( ) {
-        $this->preProcess( );
+  function preProcess() {
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+    $this->assign('contactId', $this->_contactId);
 
-        $this->browse( );
+    // check logged in url permission
+    CRM_Contact_Page_View::checkUserPermission($this);
 
-        return parent::run( );
-    }
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
+    $this->assign('action', $this->_action);
+  }
 
+  /**
+   * This function is the main function that is called when the page loads
+   * it decides the which action has to be taken for the page.
+   *
+   * return null
+   * @access public
+   */
+  function run() {
+    $this->preProcess();
+
+    $this->browse();
+
+    return parent::run();
+  }
 }
+

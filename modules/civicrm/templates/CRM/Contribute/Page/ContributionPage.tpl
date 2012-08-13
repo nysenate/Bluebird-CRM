@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@
     	<table class="form-layout-compressed">
     	<tr>
 	    <td><a href="{$newPageURL}" class="button"><span><div class="icon add-icon"></div>{ts}Add Contribution Page{/ts}</span></a></td>
-            <td style="vertical-align: top"><a class="button" href="{crmURL p="civicrm/admin/pcp" q="reset=1"}"><span>{ts}Manage Personal Campaign Pages{/ts}</span></a> {help id="id-pcp-intro" file="CRM/Contribute/Page/PCP.hlp"}</td>
+            <td style="vertical-align: top"><a class="button" href="{crmURL p="civicrm/admin/pcp" q="reset=1"}"><span>{ts}Manage Personal Campaign Pages{/ts}</span></a> {help id="id-pcp-intro" file="CRM/PCP/Page/PCP.hlp"}</td>
     	</tr>
     	</table>
     {/if}
@@ -53,29 +53,29 @@
                  <th id="sortable">{ts}Title{/ts}</th>
             	 <th>{ts}ID{/ts}</th>
             	 <th>{ts}Enabled?{/ts}</th>
-		 {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
-		 <th>{ts}Campaign{/ts}</th>
-		 {/if}
-		 <th></th>
+		         {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+		         <th>{ts}Campaign{/ts}</th>
+		        {/if}
+		        <th></th>
                </tr>
                </thead>
                {foreach from=$rows item=row}
-                 <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+                 <tr id="row_{$row.id}" class="{if NOT $row.is_active} disabled{/if}">
                      <td><strong>{$row.title}</strong></td>
                      <td>{$row.id}</td>
                      <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-		     {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
-		     <td>{$row.campaign}</td>
-		     {/if}
-		     <td class="crm-contribution-page-actions right nowrap">
+		      {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+		      <td>{$row.campaign}</td>
+		      {/if}
+		      <td class="crm-contribution-page-actions right nowrap">
 		
-			{if $row.configureActionLinks}	
-		  	<div class="crm-contribution-page-configure-actions">
+			 {if $row.configureActionLinks}	
+		  	 <div class="crm-contribution-page-configure-actions">
 		       	     {$row.configureActionLinks|replace:'xx':$row.id}
-		  	</div>
-                  	{/if}
+		  	 </div>
+             {/if}
 
-                  	{if $row.contributionLinks}	
+            {if $row.contributionLinks}	
 		  	<div class="crm-contribution-online-contribution-actions">
 		       	     {$row.contributionLinks|replace:'xx':$row.id}
 		  	</div>
@@ -88,16 +88,16 @@
 		  	{/if}
 
 		  	<div class="crm-contribution-page-more">
-                       	     {$row.action|replace:'xx':$row.id}
-                  	</div>
+                    {$row.action|replace:'xx':$row.id}
+            </div>
 
-		     </td>
+		  </td>
 
-            	 </tr>
-               {/foreach}
-	     </table>
+         </tr>
+         {/foreach}
+	    </table>
         
-             {/strip}
+        {/strip}
     	</div>
     {else}
 	{if $isSearch eq 1}

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,54 +28,45 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Case_Page_CaseDetails extends CRM_Core_Page {
 
-require_once 'CRM/Core/Page.php';
+  /**
+   * This function is the main function that is called when the page loads,
+   * it decides the which action has to be taken for the page.
+   *
+   * return null
+   * @access public
+   */
+  function run() {
+    $this->_action  = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
+    $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this);
+    $type           = CRM_Utils_Request::retrieve('type', 'String', CRM_Core_DAO::$_nullObject);
 
-class CRM_Case_Page_CaseDetails extends CRM_Core_Page
-{
+    $this->assign('action', $this->_action);
+    $this->assign('context', $this->_context);
 
-    /**
-     * This function is the main function that is called when the page loads, 
-     * it decides the which action has to be taken for the page.
-     * 
-     * return null
-     * @access public
-     */
-    function run( ) 
-    {
-        $this->_action  = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
-        $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this ) ;
-        $type           = CRM_Utils_Request::retrieve('type', 'String', CRM_Core_DAO::$_nullObject ) ;
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
 
-        $this->assign( 'action', $this->_action );
-        $this->assign( 'context', $this->_context );
-        
-        $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
+    $caseId = CRM_Utils_Request::retrieve('caseId', 'Positive', $this);
 
-        $caseId = CRM_Utils_Request::retrieve( 'caseId', 'Positive', $this );
-       
-        require_once 'CRM/Case/Page/Tab.php';
-        CRM_Case_Page_Tab::setContext( );
-            
-        require_once 'CRM/Case/BAO/Case.php';
-        $params = array( 'date_range' => 0 );
-        
-        $caseDetails = array( );
-        if ( CRM_Case_BAO_Case::accessCiviCase( ) ) {
-            $caseDetails = CRM_Case_BAO_Case::getCaseActivity( $caseId, $params, $this->_contactId, null, null, $type );
-        }
-        
-        $this->assign( 'rows',      $caseDetails );
-        $this->assign( 'caseId' ,   $caseId );
-        $this->assign( 'contactId', $this->_contactId );
-        
-        return parent::run();
+    CRM_Case_Page_Tab::setContext();
+
+    $params = array('date_range' => 0);
+
+    $caseDetails = array();
+    if (CRM_Case_BAO_Case::accessCiviCase()) {
+      $caseDetails = CRM_Case_BAO_Case::getCaseActivity($caseId, $params, $this->_contactId, NULL, NULL, $type);
     }
 
-}
+    $this->assign('rows', $caseDetails);
+    $this->assign('caseId', $caseId);
+    $this->assign('contactId', $this->_contactId);
 
+    return parent::run();
+  }
+}
 

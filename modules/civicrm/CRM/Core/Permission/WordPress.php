@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -38,89 +37,131 @@
  *
  */
 class CRM_Core_Permission_WordPress {
-    /**
-     * get the current permission of this user
-     *
-     * @return string the permission of the user (edit or view or null)
-     */
-    public static function getPermission( ) {
-        return CRM_Core_Permission::EDIT;
+
+  /**
+   * get the current permission of this user
+   *
+   * @return string the permission of the user (edit or view or null)
+   */
+  public static function getPermission() {
+    return CRM_Core_Permission::EDIT;
+  }
+
+  /**
+   * Get the permissioned where clause for the user
+   *
+   * @param int $type the type of permission needed
+   * @param  array $tables (reference ) add the tables that are needed for the select clause
+   * @param  array $whereTables (reference ) add the tables that are needed for the where clause
+   *
+   * @return string the group where clause for this user
+   * @access public
+   */
+  public static function whereClause($type, &$tables, &$whereTables) {
+    return '( 1 )';
+  }
+
+  /**
+   * Get all groups from database, filtered by permissions
+   * for this user
+   *
+   * @param string $groupType     type of group(Access/Mailing)
+   * @param boolen $excludeHidden exclude hidden groups.
+   *
+   * @access public
+   * @static
+   *
+   * @return array - array reference of all groups.
+   *
+   */
+  public static function &group($groupType = NULL, $excludeHidden = TRUE) {
+    return CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
+  }
+
+  /**
+   * given a permission string, check for access requirements
+   *
+   * @param string $str the permission to check
+   *
+   * @return boolean true if yes, else false
+   * @static
+   * @access public
+   */
+  static
+  function check($str) {
+    // for administrators give them all permissions
+    if (!function_exists('current_user_can')) {
+      return TRUE;
     }
 
-    /**
-     * Get the permissioned where clause for the user
-     *
-     * @param int $type the type of permission needed
-     * @param  array $tables (reference ) add the tables that are needed for the select clause
-     * @param  array $whereTables (reference ) add the tables that are needed for the where clause
-     *
-     * @return string the group where clause for this user
-     * @access public
-     */
-    public static function whereClause( $type, &$tables, &$whereTables ) {
-        return '( 1 )';
+    if (current_user_can('super admin') ||
+      current_user_can('administrator') ||
+      current_user_can('editor')
+    ) {
+      return TRUE;
     }
 
-    /**
-     * Get all groups from database, filtered by permissions
-     * for this user
-     *
-     * @param string $groupType     type of group(Access/Mailing) 
-     * @param boolen $excludeHidden exclude hidden groups.
-     *
-     * @access public
-     * @static
-     *
-     * @return array - array reference of all groups.
-     *
-     */
-    public static function &group( $groupType = null, $excludeHidden = true ) {
-        return CRM_Core_PseudoConstant::allGroup( $groupType, $excludeHidden );
+    static $otherPerms = NULL;
+    if (!$otherPerms) {
+      $otherPerms = array(
+        'access CiviMail subscribe/unsubscribe pages' => 1,
+        'access all custom data' => 1,
+        'access uploaded files' => 1,
+        'make online contributions' => 1,
+        'profile create' => 1,
+        'profile edit' => 1,
+        'profile view' => 1,
+        'register for events' => 1,
+        'view event info' => 1,
+        'access Contact Dashboard' => 1,
+        'sign CiviCRM Petition' => 1,
+        'view public CiviMail content' => 1,
+      );
     }
 
-    /**
-     * given a permission string, check for access requirements
-     *
-     * @param string $str the permission to check
-     *
-     * @return boolean true if yes, else false
-     * @static
-     * @access public
-     */
-    static function check( $str ) {
-        $config = CRM_Core_Config::singleton( );
-        $adminPerm = array( 'administer users',
-                            'edit all contacts',
-                            'view all contacts' );
-        
-        if ( $config->userFrameworkFrontend && in_array( $str, $adminPerm ) ) {
-            return false;
-        }
-        return true;
+    // for everyone else, give them permission only for
+    // some public pages
+    if (array_key_exists($str, $otherPerms)) {
+      return TRUE;
     }
 
-    /**
-     * Get all the contact emails for users that have a specific permission
-     *
-     * @param string $permissionName name of the permission we are interested in
-     *
-     * @return string a comma separated list of email addresses
-     */
-    public static function permissionEmails( $permissionName ) {
-        return '';
-    }
+    return FALSE;
+  }
 
-    /**
-     * Get all the contact emails for users that have a specific role
-     *
-     * @param string $roleName name of the role we are interested in
-     *
-     * @return string a comma separated list of email addresses
-     */
-    public static function roleEmails( $roleName ) {
-        return '';
-    }
-    
+  /**
+   * Given a roles array, check for access requirements
+   *
+   * @param array $array the roles to check
+   *
+   * @return boolean true if yes, else false
+   * @static
+   * @access public
+   */
+  static
+  function checkGroupRole($array) {
+    return FALSE;
+  }
+
+  /**
+   * Get all the contact emails for users that have a specific permission
+   *
+   * @param string $permissionName name of the permission we are interested in
+   *
+   * @return string a comma separated list of email addresses
+   */
+  public static function permissionEmails($permissionName) {
+    return '';
+  }
+
+  /**
+   * Get all the contact emails for users that have a specific role
+   *
+   * @param string $roleName name of the role we are interested in
+   *
+   * @return string a comma separated list of email addresses
+   */
+  public static function roleEmails($roleName) {
+    return '';
+  }
 }
-
 

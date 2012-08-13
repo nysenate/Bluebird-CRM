@@ -1,9 +1,11 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,8 +32,8 @@
  *
  * @package CiviCRM_APIv3
  * @subpackage API_UF
- * 
- * @copyright CiviCRM LLC (c) 2004-2011
+ *
+ * @copyright CiviCRM LLC (c) 2004-2012
  * @version $Id: UFGroup.php 30171 2010-10-14 09:11:27Z mover $
  *
  */
@@ -39,32 +41,37 @@
 /**
  * Files required for this package
  */
-require_once 'api/v3/utils.php';
+
 require_once 'CRM/Core/BAO/UFGroup.php';
 
+function _civicrm_api3_uf_group_create_spec(&$params) {
+  $session = CRM_Core_Session::singleton();
+  $params['title']['api.required'] = 1;
+  $params['is_active']['api.default'] = 1;
+  $params['is_update_dupe']['api.default'] = 1;
+  $params['created_id']['api.default'] = 'user_contact_id';//the current user
+  $params['created_date']['api.default'] = 'now';
+}
 /**
  * Use this API to create a new group. See the CRM Data Model for uf_group property definitions
  *
  * @param $params  array   Associative array of property name/value pairs to insert in group.
  *
  * @return   Newly create $ufGroupArray array
- *
- * @access public 
+ * {@getfields UFGroup_create}
+ * @example UFGroupCreate.php
+ * @access public
  */
 function civicrm_api3_uf_group_create($params) {
 
-		civicrm_api3_verify_mandatory ( $params, 'CRM_Core_DAO_UFGroup' );
-		
-		$ids = array ();
-		$ids ['ufgroup'] = $params ['id'];
-		
-		require_once 'CRM/Core/BAO/UFGroup.php';
-		
-		$ufGroup = CRM_Core_BAO_UFGroup::add ( $params, $ids );
-		_civicrm_api3_object_to_array ( $ufGroup, $ufGroupArray [$ufGroup->id] );
-		
-		return civicrm_api3_create_success ( $ufGroupArray, $params );
+  $ids = array();
+  $ids['ufgroup'] = $params['id'];
 
+
+  $ufGroup = CRM_Core_BAO_UFGroup::add($params, $ids);
+  _civicrm_api3_object_to_array($ufGroup, $ufGroupArray[$ufGroup->id]);
+
+  return civicrm_api3_create_success($ufGroupArray, $params);
 }
 
 /**
@@ -74,32 +81,29 @@ function civicrm_api3_uf_group_create($params) {
  *                       property_name=>value pairs. If $params is set
  *                       as null, all surveys will be returned
  *
- * @return array  (reference) Array of matching profiles
+ * @return array   Array of matching profiles
+ * {@getfields UFGroup_get}
+ * @example UFGroupGet.php
  * @access public
  */
-function civicrm_api3_uf_group_get( $params )
-{
+function civicrm_api3_uf_group_get($params) {
 
-    civicrm_api3_verify_mandatory($params);
-    return _civicrm_api3_basic_get('CRM_Core_BAO_UFGroup', $params);
-
+  return _civicrm_api3_basic_get('CRM_Core_BAO_UFGroup', $params);
 }
-
 
 /**
  * Delete uf group
- * 
+ *
  * @param $groupId int  Valid uf_group id that to be deleted
  *
  * @return true on successful delete or return error
  * @todo doesnt rtn success or error properly
  * @access public
- *
+ * {@getfields UFGroup_delete}
+ * @example UFGroupDelete.php
  */
 function civicrm_api3_uf_group_delete($params) {
 
-		civicrm_api3_verify_mandatory ( $params, null, array ('id' ) );
-		require_once 'CRM/Core/BAO/UFGroup.php';
-		return CRM_Core_BAO_UFGroup::del ( $params ['id'] );
-
+  return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
+

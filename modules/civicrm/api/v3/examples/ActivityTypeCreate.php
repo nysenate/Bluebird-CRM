@@ -31,13 +31,13 @@ function activity_type_create_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 570,
+  'id' => 680,
   'values' => array( 
-      '570' => array( 
-          'id' => 570,
+      '680' => array( 
+          'id' => 680,
           'option_group_id' => '2',
           'label' => 'send out letters',
-          'value' => 33,
+          'value' => 40,
           'name' => 'send out letters',
           'grouping' => '',
           'filter' => 0,
@@ -64,7 +64,7 @@ function activity_type_create_expectedresult(){
 * This example has been generated from the API test suite. The test that created it is called
 * 
 * testActivityTypeCreate and can be found in 
-* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3ActivityTypeTest.php
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ActivityTypeTest.php
 * 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
