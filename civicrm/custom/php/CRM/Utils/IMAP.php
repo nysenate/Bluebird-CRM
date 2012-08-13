@@ -125,4 +125,16 @@ class CRM_Utils_IMAP {
         }
         return $success;
     }
+
+    public function deletemsg_uid($uid) {
+        return $this->deletemsg(imap_msgno($this->conn, $uid));
+    }
+
+    public function deletemsg($id) {
+        $success = imap_delete($this->conn, $id);
+        if($success) {
+            imap_expunge($this->conn);
+        }
+        return $success;
+    }
 }

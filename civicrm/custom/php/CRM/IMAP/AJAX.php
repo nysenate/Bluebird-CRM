@@ -45,24 +45,25 @@ class CRM_IMAP_AJAX {
         $ids = imap_search($conn,"",SE_UID);
         $headers = imap_fetch_overview($conn,implode(',',$ids),FT_UID);
         $messages = array();
+        require_once 'CRM/Utils/IMAP.php';
+        
+        $imap = new CRM_Utils_IMAP(self::$server,
+                                    self::$imap_accounts[0]['user'],
+                                    self::$imap_accounts[0]['pass']);
         foreach($headers as $header) {
             if( in_array($header->uid,$ids)) {
+                $message = $imap->getmsg_uid($header->uid);
+                $matches = array();
 
-                //Clean up the date to Mon DD, YYYY format
-                $date_parts = explode(' ',$header->date);
-                $header->date_fmt = "{$date_parts[2]} {$date_parts[1]}, {$date_parts[3]}";
+                $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $message->plainmsg, $matches);
 
-                //Parse out the name and email portions of the from header argument
-                //Generally these fall into one of the two forms
-                //    crmdev@nysenate.gov
-                //    CRM Dev <crmdev@nysenate.gov>
-                $from_parts = explode(' ',$header->from);
-                if(count($from_parts)==1) {
-                    $header->from_email = $header->from;
-                    $header->from_name = '';
+                //use the forward address, otherwise use the direct from address
+                if ($count > 0) {
+                    $header->from_email = $matches[2];
+                    $header->from_name = $matches[1];
                 } else {
-                    $header->from_email = str_replace(array('<','>'),'',array_pop($from_parts));
-                    $header->from_name = implode(' ',$from_parts);
+                    $header->from_email = $header->from_email;
+                    $header->from_name = $header->from_name;
                 }
 
                 $messages[$header->uid] = $header;
@@ -81,6 +82,17 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
         $email = $imap->getmsg_uid($id);
         echo ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
+        CRM_Utils_System::civiExit();
+    }
+
+    public static function deleteMessage() {
+        self::setupImap();
+        $id = self::get('id');
+        $imap_id = self::get('imap_id');
+        $imap = new CRM_Utils_IMAP(self::$server,
+                                    self::$imap_accounts[$imap_id]['user'],
+                                    self::$imap_accounts[$imap_id]['pass']);
+        $email = $imap->getmsg_uid($id);
         CRM_Utils_System::civiExit();
     }
 
