@@ -5,8 +5,6 @@ function nyss_imapper_init() {
     $module_path = drupal_get_path('module', 'nyss_imapper');
     drupal_add_css($module_path.'/nyss_imapper.css');
     drupal_add_js($module_path.'/nyss_imapper.js');
-    drupal_add_css($module_path.'/jquery-impromptu.css');
-    drupal_add_js($module_path.'/jquery-impromptu.4.0.min.js');
 }
 
 function nyss_imapper_civicrm_xmlMenu( &$files ) {
