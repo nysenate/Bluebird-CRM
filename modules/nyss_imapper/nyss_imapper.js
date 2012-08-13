@@ -92,9 +92,41 @@ $(document).ready(function(){
 	});
 
 	pullMessageHeaders();
+	cj(".delete").live('click', function() {
+		var messageId = cj(this).parent().parent().attr('data-id');
+		var imapId = cj(this).parent().parent().attr('data-imap_id');
+
+		var dialog2 = cj('<div></div>').dialog({
+			resizable: false,
+			height:140,
+			modal: true,
+			autoOpen: false,
+
+			buttons: {
+				"Delete": function() {
+					cj( this ).dialog( "close" );
+					cj.ajax({
+						url: '/civicrm/imap/ajax/deleteMessage',
+						data: {id: messageId,
+					    imapId: imapId },
+						success: function(data,status) {
+							console.log(data);
+							cj("#"+messageId+'_'+imapId).remove();
+							var old_total = parseInt(cj("#total_number").html(),10);
+							cj("#total_number").html(old_total-1);
+						} 
+					});
+				},
+				Cancel: function() {
+					cj( this ).dialog( "close" );
+				}
+			}
+		});
+		dialog2.dialog('open');
+	});
 
 	cj(".find_match").live('click', function() {
-			var dialog = cj('<div><div id="message_left"></div><div id="message_right"><div id="tabs"><ul><li><a href="#tabs-1">Nunc tincidunt</a></li><li><a href="#tabs-2">Proin dolor</a></li></ul><div id="tabs-1">1</div><div id="tabs-2">2</div></div></div></div>')
+			var dialog = cj('<div><div id="message_left"></div><div id="message_right"><div id="tabs"><ul><li><a href="#tabs-1">Find Contact</a></li><li><a href="#tabs-2">Add Contact</a></li></ul><div id="tabs-1">1</div><div id="tabs-2">2</div></div></div></div>')
 				.dialog({
 					modal: true,
 					height: 500,
@@ -153,7 +185,7 @@ function buildMessageList() {
 	var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
 		if( value.from_name != ''){
 			messagesHtml += '<td class="name">'+value.from_name +'</td>';
 		}else {
@@ -165,7 +197,7 @@ function buildMessageList() {
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
-	cj("#total_results").html(total_results+' results');
+	cj("#total_number").html(total_results);
 	makeListSortable();
 }
 
