@@ -64,3 +64,55 @@
 .imapperbox .full .details .hidden_content{ margin:4px 3px 4px 25px;}
 .delete a{color:red !important;}
 
+#assign_container {
+	padding-left: 100px;
+}
+
+#imapper-messages {
+	scrollbar: always;
+	overflow: auto;
+	height: 600px;
+	float: left;
+}
+
+.imapper-message-box {
+	background-color: #eeeeee;
+	margin: 2px;
+}
+
+.imapper-message-box:hover {
+	cursor: pointer;
+}
+
+.imapper-message-box .imapper-select-button {
+	padding-top: 4px;
+}
+
+.imapper-contact-box {
+	background-color: #eeeeee;
+	height: 48px;
+	margin-bottom: 4px;
+}
+
+.imapper-contact-box:hover {
+	cursor: pointer;
+}
+
+.imapper-address-select-box {
+	height: 16px;
+	width: 20px;
+	float: left;
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+
+.imapper-address-box {
+	float: left;
+	width: 400px;
+	padding-left: 5px;
+}
+
+.clear {
+	clear: both;
+}
+

@@ -92,10 +92,17 @@
     		<div id="city_name_container" class="imapper-input-container">
     			{$form.city.label}<br/>{$form.city.html}</div>
 			<div id="search_container" class="imapper-input-container">
+<<<<<<< Updated upstream
 				<input type="submit" name="filter" value="Search" id="filter" class="imapper-submit"/></div>
+=======
+				<input type="submit" name="filter" value="Filter" id="filter" class="imapper-submit"/></div>
+			<div id="assign_container" class="imapper-input-container">
+				<input type="button" name="assign" value="Assign" id="assign" class="imapper-submit"/></div>
+>>>>>>> Stashed changes
 			<div class="imapper-clear"></div>
 		</form> -->
 	</div>
+<<<<<<< Updated upstream
 	<div id="imapper-contacts"> <!--
 		<div class="imapper-title"><h2>Contacts</h2></div>
 		<div id="imapper-contacts-list"></div> -->
@@ -111,5 +118,16 @@
         	</div>
         {/foreach} -->
 	</div>
+=======
+	<div id="imapper-messages">
+		<div class="imapper-title">Messages</div>
+		<div id="imapper-messages-list">
+    	</div>
+	</div>
+	<div id="imapper-contacts">
+		<div class="imapper-title">Contacts</div>
+		<div id="imapper-contacts-list"></div>
+	</div>
+>>>>>>> Stashed changes
 	<div class="imapper-clear"></div>
 </div>

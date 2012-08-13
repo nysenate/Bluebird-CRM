@@ -12,6 +12,9 @@ define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
 define('IMAP_CMD_DELETE', 3);
 
+define('INVALID_EMAIL_FROM', 'Bluebird');
+define('INVALID_EMAIL_SUBJECT', "You don't have permission to forward emails");
+
 //email address of the contact to file unknown emails against.
 define('UNKNOWN_CONTACT_EMAIL', 'unknown.contact@nysenate.gov');
 
@@ -53,6 +56,7 @@ require_once 'CRM/Core/Error.php';
 */
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
+$imap_validsenders = $bbconfig['imap.validsenders'];
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -99,7 +103,7 @@ else {
   exit(1);
 }
 
-global $activityPriority, $activityStatus, $activityType;
+global $activityPriority, $activityStatus, $activityType, $inboxPollingTagId;
 
 $aActivityPriority = CRM_Core_PseudoConstant::priority();
 $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
@@ -108,6 +112,8 @@ $aActivityType = CRM_Core_PseudoConstant::activityType();
 $activityPriority = array_search('Normal', $aActivityPriority);
 $activityStatus = array_search('Not Required', $aActivityStatus);
 $activityType = array_search('Email (incoming)', $aActivityType);
+
+$inboxPollingTagId = getInboxPollingTagId();
 
 //set the session ID for who created the activity
 $session->set('userID', 1);
@@ -122,6 +128,7 @@ if (empty($imap_accounts)) {
 
 foreach (explode(",", $imap_accounts) as $imap_account) {
   list($imapUser, $imapPass) = explode("|", $imap_account);
+  $tempValidsenders = explode('|', $imap_validsenders);
   $imap_params = array(
     'site' => $site,
     'server' => $imap_server,
@@ -131,7 +138,8 @@ foreach (explode(",", $imap_accounts) as $imap_account) {
     'mailbox' => $imap_mailbox,
     'archivebox' => $imap_archivebox,
     'unreadonly' => $imap_process_unread_only,
-    'archivemail' => $imap_archive_mail
+    'archivemail' => $imap_archive_mail,
+    'validsenders' => $tempValidsenders
   );
 
   $rc = processMailboxCommand($cmd, $imap_params);
@@ -148,7 +156,7 @@ exit(0);
 
 function processMailboxCommand($cmd, $params)
 {
-  $serverspec = '{'.$params['server'].$params['opts'].'}';
+  $serverspec = '{'.$params['server'].$params['opts'].'}'.$params['mailbox'];
   echo "Opening IMAP connection to {$params['user']}@$serverspec\n";
   $imap_conn = imap_open($serverspec, $params['user'], $params['pass']);
 
@@ -206,14 +214,33 @@ function checkImapAccount($conn, $params)
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     echo "Retrieving message $msg_num / $msg_count\n";
     $email = retrieveMessage($conn, $msg_num);
+
+    // check if it's a valid sender, continue if is not
+    if (!in_array($email->replyTo, $params['validsenders'])) {
+      require_once 'CRM/Utils/Mail.php';
+      $invalidEmailText = "You do not have permission to forward emails to this CRM instance.";
+      $mailParams = array(  'from'  =>  INVALID_EMAIL_FROM,
+                            'toEmail'    =>  $email->replyTo,
+                            'subject' =>  INVALID_EMAIL_SUBJECT,
+                            'text'  =>  $invalidEmailText,
+                          );
+      $return = CRM_Utils_Mail::send($mailParams);
+      if(!$return) {
+        error_log("COULD NOT SEND DENIAL EMAIL");
+      } else {
+        error_log("SENT DENIAL EMAIL TO: {$email->replyTo}");
+      }
+      continue;
+    }
+
     // retrieved msg, now store to Civi and if successful move to archive
     if (civiProcessEmail($email, null) == true) {
       //mark as read
       imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
       //move to folder if necessary
-      if ($params['archivemail'] == true) {
-        imap_mail_move($conn, $msg_num, $params['archivebox']);
-      }
+      // if ($params['archivemail'] == true) {
+      //   imap_mail_move($conn, $msg_num, $params['archivebox']);
+      // }
     }
   }
 
@@ -342,11 +369,13 @@ function civiProcessEmail($email, $customHandler)
   $domain = "$sub_domain(\\x2e$sub_domain)*";
   $local_part = "$word(\\x2e$word)*";
   $addr_spec = "$local_part\\x40$domain";
+
   $count = preg_match("/$addr_spec/i", $email->body, $matches);
 
   //use the forward address, otherwise use the direct from address
   if ($count > 0) {
     $email->body = "Forwarded by: " . $email->replyTo."\n\n".$email->body;
+    $email->forwardedBy = $email->replyTo;
     $email->replyTo = $matches[0];
   } 
 
@@ -362,16 +391,18 @@ function civiProcessEmail($email, $customHandler)
   if (isset($cobj->contact_id)) {
     $contactID = $cobj->contact_id;
   }
-
+  
   if ($contactID) {
     $bSuccess = true;
   }
   else { 
-    echo "No match on {$email->replyTo}; assigning to anonymous contact.\n";
-    $cobj = $c->matchContactOnEmail(UNKNOWN_CONTACT_EMAIL);
-    if (isset($cobj->contact_id)) {
-      $contactID = $cobj->contact_id;
-    }
+    //echo "No match on {$email->replyTo}; assigning to anonymous contact.\n";
+    $bSuccess = false;
+    error_log("{$email->replyTo} is not in this instance. Leaving for manual addition.");
+    //$cobj = $c->matchContactOnEmail(UNKNOWN_CONTACT_EMAIL);
+    //if (isset($cobj->contact_id)) {
+    //  $contactID = $cobj->contact_id;
+    //}
   }
   
   //process any custom mailbox specific rules
@@ -381,26 +412,52 @@ function civiProcessEmail($email, $customHandler)
   //standard handling, add activity if we found a match
   elseif ($bSuccess) {
     echo "Adding standard activity to contact $contactID\n";
-    $params = array(
-                "source_contact_id" => $session->get("userID"),
+
+    // Let's find the user ID of the person who forwarded the message
+
+    $apiParams = array( 
+      'email' => $email->forwardedBy,
+      'version' => 3,
+    );
+
+    $result = civicrm_api('contact', 'get', $apiParams);
+
+    if($result) {
+      $userId = $result['values'][ $result['id'] ]['contact_id'];  
+    } else {
+      $userId = 1;
+    }
+    
+
+
+    $apiParams = array(
+                "source_contact_id" => $userId,
                 "subject" => $email->subject,
                 "details" => $email->body,
                 "activity_date_time" => date('YmdHis',strtotime($email->date)),
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
-                "target_contact_id" => array($contactID)
+                "duration" => 1,
+                "target_contact_id" => array($contactID),
+                "version" => 3,
     );
 
-    $activity = new CRM_Activity_BAO_Activity();
-
-    $result = $activity->create($params);
-    if (is_a($result, 'CRM_Core_Error')) {
+    $result = civicrm_api('activity' , 'create', $apiParams);
+    if ($result['is_error']) {
       error_log("COULD NOT SAVE ACTIVITY!\n".print_r($params, true));
       return false;
     }
     else {
-      echo "Created e-mail activity id=".$result->id." for contact id=".$contactID."\n";
+      echo "Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
+      require_once 'api/api.php';
+      $apiParams = array( 
+        'entity_table'  =>  'civicrm_activity',
+        'entity_id'     =>  $activityId,
+        'tag_id'        =>  $inboxPollingTagId,
+        'version'       =>  3,
+        );
+      civicrm_api('entity_tag', 'create', $apiParams);
     }
   }
 
@@ -426,5 +483,31 @@ function deleteArchiveBox($conn, $params)
   echo "Deleting archive mailbox: $crm_archivebox\n";
   return imap_deletemailbox($conn, $crm_archivebox);
 } // deleteArchiveBox()
+
+function getInboxPollingTagId() {
+  require_once 'api/api.php';
+
+  // Check if the tag exists
+  $apiParams = array(
+    'name' => 'Inbox Polling Unprocessed',
+    'version' => 3,
+  );
+  $result = civicrm_api('tag', 'get', $apiParams);
+
+  if($result && isset($result['id'])) {
+    return $result['id'];
+  }
+
+  // If there's no tag, create it.
+  $apiParams = array( 
+  'name' => 'Inbox Polling Unprocessed',
+  'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
+  'version' => 3,
+  );
+  $result = civicrm_api('tag', 'create', $apiParams);
+  if($result && isset($result['id'])) {
+    return $result['id'];
+  }
+}
 
 ?>

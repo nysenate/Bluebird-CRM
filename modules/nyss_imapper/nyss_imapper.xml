@@ -16,4 +16,14 @@
     <page_callback>CRM_IMAP_AJAX::contacts</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/messageHeaders</path>
+    <page_callback>CRM_IMAP_AJAX::messageHeaders</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/assignMessage</path>
+    <page_callback>CRM_IMAP_AJAX::assignMessage</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

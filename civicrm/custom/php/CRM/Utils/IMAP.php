@@ -20,7 +20,7 @@ class CRM_Utils_IMAP {
         $email->charset = '';
 
         // HEADER
-        $h = imap_header($this->conn,$id);
+        $header = imap_header($this->conn,$id);
         $email->to = $header->to;
         $email->cc = $header->cc;
         $email->bcc = $header->bcc;
@@ -112,5 +112,17 @@ class CRM_Utils_IMAP {
                 $pnum = $partno.'.'.($partno0+1);
                 self::getpart($email,$id,$p2,$pnum);
         }
+    }
+
+    public function movemsg_uid($uid, $newBox) {
+        return $this->movemsg(imap_msgno($this->conn,$uid), $newBox);
+    }
+
+    public function movemsg($id, $newBox) {
+        $success = imap_mail_move($this->conn, $id, $newBox);
+        if($success) {
+            imap_expunge($this->conn);
+        }
+        return $success;
     }
 }
