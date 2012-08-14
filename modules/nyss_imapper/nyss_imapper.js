@@ -193,7 +193,7 @@ function buildMessageList() {
 		}
 		messagesHtml += '<td class="email">'+value.from_email +'</td>';
 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
-		messagesHtml += '<td class="date">'+value.date_fmt +'</td>';
+		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);

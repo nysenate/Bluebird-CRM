@@ -69,7 +69,18 @@ class CRM_IMAP_AJAX {
                         $header->from_name = $matches[1];
                     }
 
+                    $header->subject = preg_replace("/(fwd:|fw:|re:) /i", "", $header->subject);
+
                     $header->imap_id = $imap_id;
+
+                    $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
+
+                    if(isset($matches[1])) {
+                        $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
+                    } else {
+                        $header->date = '';
+                    }
+
 
                     $messages[$header->uid] = $header;
                 }
