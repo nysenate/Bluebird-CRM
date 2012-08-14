@@ -42,6 +42,9 @@
 .contactList .contactItem .right {float:right; margin-top:5px;}
 
 
+.find-match-popup, .delete-confirm{ display: none;}
+.contacts-list{height:265px; overflow-y:scroll; }
+
 .imapperbox .full{ width:940px; float:left; border-bottom:solid 1px #e1e1e1; margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
@@ -58,9 +61,14 @@
 
 .delete a{color:red !important;}
 
-#message_left{ width:650px; float:left; border:1px solid red; margin:0 10px 0 0; overflow: hidden;}
 
-#message_right{ width:246px; float:left; border-left: 1px solid #ccc;}
+.ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
+
+#message_left{ width:640px; height:456px;  float:left; margin:10px 10px 0 10px;  overflow:auto;  }
+
+#message_right{ width:275px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:455px;}
+#find-match-popup .ui-tabs-panel { padding:0;}
+#first_name,#last_name {width:46%;}
 
 #assign_container {
 	padding-left: 100px;
@@ -88,7 +96,7 @@
 
 .imapper-contact-box {
 	background-color: #eeeeee;
-	height: 48px;
+	height: 60px;
 	margin-bottom: 4px;
 }
 
@@ -106,7 +114,7 @@
 
 .imapper-address-box {
 	float: left;
-	width: 400px;
+	width: 230px;
 	padding-left: 5px;
 }
 

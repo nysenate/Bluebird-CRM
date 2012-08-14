@@ -12,6 +12,33 @@ $(document).ready(function(){
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	
+placeholderSupport = ("placeholder" in document.createElement("input"));
+
+if(!placeholderSupport ){
+	 console.log('no placeholder Support');
+	 $('[placeholder]').focus(function() {
+	  var input = $(this);
+	  if (input.val() == input.attr('placeholder')) {
+	    input.val('');
+	    input.removeClass('placeholder');
+	  }
+	}).blur(function() {
+	  var input = $(this);
+	  if (input.val() == '' || input.val() == input.attr('placeholder')) {
+	    input.addClass('placeholder');
+	    input.val(input.attr('placeholder'));
+	  }
+	}).blur().parents('form').submit(function() {
+	  $(this).find('[placeholder]').each(function() {
+	    var input = $(this);
+	    if (input.val() == input.attr('placeholder')) {
+	      input.val('');
+	    }
+	  })
+	});
+}else{
+	 console.log('placeholder Support');
+}
 
 	reset.click(function() {
 		city.val("");
@@ -27,9 +54,7 @@ $(document).ready(function(){
 		return false;
 	});
 	
-	filter.click(function() {
-		cj('.contactList').show();
-		loading('.contactList');
+	filter.live('click', function() {
 		cj.ajax({
 			url: '/civicrm/imap/ajax/contacts',
 			data: {
@@ -41,8 +66,11 @@ $(document).ready(function(){
 				last_name: last_name.val()
 			},
 			success: function(data,status) {
-				contacts = cj.parseJSON(data);
-				buildContactList();
+				console.log(data);
+				if(data != null || data != ''){
+					contacts = cj.parseJSON(data);
+					buildContactList();
+				}
 			}
 		});
 		return false;
@@ -51,15 +79,16 @@ $(document).ready(function(){
 	assign.click(function() {
 		var messageIds = cj('input[name=message_uid]');
 		var messageId = -1;
-		cj.each(messageIds, function(idx, val) {
-			if(cj(val).attr('checked')) {
-				messageId = cj(val).val();
-			}
-		});
-		if(messageId == -1) {
-			alert("Please select a message.");
-			return false;
-		}
+		// cj.each(messageIds, function(idx, val) {
+		// 	if(cj(val).attr('checked')) {
+		// 		messageId = cj(val).val();
+		// 	}
+		// });
+		// if(messageId == -1) {
+		// 	alert("Please select a message.");
+		// 	return false;
+		// }
+		
 		var contactIds = cj('input[name=contact_id]');
 		var contactId = -1;
 		cj.each(contactIds, function(idx, val) {
@@ -92,16 +121,21 @@ $(document).ready(function(){
 	});
 
 	pullMessageHeaders();
+
+	// add a delete conform popup
+	cj( "#delete-confirm" ).dialog({
+		modal: true,
+		width: 250,
+		autoOpen: false,
+		resizable: false	
+	});
+	
+	//
 	cj(".delete").live('click', function() {
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 
-		var dialog2 = cj('<div></div>').dialog({
-			resizable: false,
-			height:140,
-			modal: true,
-			autoOpen: false,
-
+		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
@@ -110,10 +144,11 @@ $(document).ready(function(){
 						data: {id: messageId,
 					    imapId: imapId },
 						success: function(data,status) {
-							console.log(data);
 							cj("#"+messageId+'_'+imapId).remove();
+							// update count on top
 							var old_total = parseInt(cj("#total_number").html(),10);
 							cj("#total_number").html(old_total-1);
+							//	makeListSortable();
 						} 
 					});
 				},
@@ -122,37 +157,34 @@ $(document).ready(function(){
 				}
 			}
 		});
-		dialog2.dialog('open');
+		cj( "#delete-confirm" ).dialog('open');
 	});
 
-	cj(".find_match").live('click', function() {
-			var dialog = cj('<div><div id="message_left"></div><div id="message_right"><div id="tabs"><ul><li><a href="#tabs-1">Find Contact</a></li><li><a href="#tabs-2">Add Contact</a></li></ul><div id="tabs-1">1</div><div id="tabs-2">2</div></div></div></div>')
-				.dialog({
-					modal: true,
-					height: 500,
-					width: 950,
-					autoOpen: false,
-					title: 'Loading Data'
-			});
+	// add a find match popup
+	cj( "#find-match-popup" ).dialog({
+		modal: true,
+		height: 500,
+		width: 950,
+		autoOpen: false,
+		resizable: false,
+		title: 'Loading Data'
+	});
 
+	// what happens when we click find match
+	cj(".find_match").live('click', function() {
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
-
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
-				console.log(data);
+			//	console.log(data);
 				cj('#message_left').html(data);
-				dialog.dialog({ 
-					title:  messageId, 
-					 close: function(event, ui) { 
-					 	cj(this).remove();
-
-					 }	
+				cj( "#find-match-popup" ).dialog({
+					title:  messageId
 				});
-				dialog.dialog('open');
+				cj( "#find-match-popup" ).dialog('open');
  				cj( "#tabs" ).tabs();
 			}
 		});
@@ -176,6 +208,7 @@ function pullMessageHeaders() {
 }
 function makeListSortable(){
 	cj("#sortable_results").dataTable(); 
+	console.log('makeListSortable called ');
 }
 
 function buildMessageList() {
