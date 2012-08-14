@@ -73,11 +73,19 @@ class CRM_IMAP_AJAX {
 
                     $header->imap_id = $imap_id;
 
-                    $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
+                    $header->date = '';
 
-                    if(isset($matches[1])) {
-                        $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
+                    $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
+                    if($count == 0) {
+                        $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $message->plainmsg, $matches);
+                        if($countOnAt > 0) {
+                            $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
+                        }
                     } else {
+                        $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
+                    }
+
+                    if(is_null($header->date)) {
                         $header->date = '';
                     }
 
