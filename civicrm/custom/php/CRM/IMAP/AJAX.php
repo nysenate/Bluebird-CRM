@@ -226,7 +226,7 @@ class CRM_IMAP_AJAX {
             // It's not forwarded, pull from header
             $dateSent = date("Y-m-d H:i A", strtotime($email->date));
         }
-        $details = $email->plainmsg;
+        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
