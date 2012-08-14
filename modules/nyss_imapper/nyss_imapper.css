@@ -43,7 +43,7 @@
 
 
 .find-match-popup, .delete-confirm{ display: none;}
-.contacts-list{height:265px; overflow-y:scroll; }
+.contacts-list{height:265px; overflow:auto; }
 
 .imapperbox .full{ width:940px; float:left; border-bottom:solid 1px #e1e1e1; margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
@@ -65,8 +65,8 @@
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
 
 #message_left {float:left; margin:10px 10px 0 10px ; }
-#message_left_header{ width:640px; height:50px; border-bottom: 1px solid #ccc;  }
-#message_left_email{ width:640px; height:400px; overflow:auto;  }
+#message_left_header{ width:640px; height:70px; border-bottom: 1px solid #ccc;  }
+#message_left_email{ width:640px; height:380px; overflow:auto;  }
 
 #message_right{ width:275px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:455px;}
 

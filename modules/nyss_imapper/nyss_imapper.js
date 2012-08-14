@@ -181,7 +181,7 @@ if(!placeholderSupport ){
 			success: function(data,status) {
 				console.log(data);
 				messages = cj.parseJSON(data);
-				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/>");
+				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				cj('#message_left_email').html(messages.details);
 				cj("#find-match-popup").dialog({
 					title:  "Reading: "+messages.subject
