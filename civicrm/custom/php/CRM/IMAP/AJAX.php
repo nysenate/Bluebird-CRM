@@ -176,8 +176,67 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
         // Pull the message via the UID and output it as plain text if possible
         $email = $imap->getmsg_uid($id);
-        echo ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
-        CRM_Utils_System::civiExit();
+
+        $matches = array();
+
+        // HAVE MERCY. I copied and pasted this from the previous section,
+        // this should be separated into a function.
+
+        // Read the from: sender in the format:
+        // From: "First Last" <email address>
+        // or
+        // From: First Last mailto:emailaddress
+        $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $email->plainmsg, $matches);
+
+        // Was this message forwarded or is this a raw message from the sender?
+        $forwarded = false;
+
+        // If you can find the From: text that means it was forwarded,
+        // so parse it out and use that.
+        if ($count > 0) {
+            $fromName = $matches[1];
+            $fromEmail = $matches[2];
+            $forwarded = true;
+        } else {
+            // Otherwise, search for a name and email address from
+            // the header and assume the person who sent it in
+            // is submitting the activity.
+
+            $fromName = $email->sender[0]->personal;
+            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        }
+
+        $subject = preg_replace("/(fwd:|fw:|re:) /i", "", $email->subject);
+
+        // Search for the format "Date: blah blah blah"
+        // This is most formats from Lotus Notes and iNotes
+        if($forwarded) {
+            $count = preg_match("/Date:\s+(.*)/", $email->plainmsg, $matches);
+            if($count == 0) {
+                // Uhoh, that one didn't work, let's try this format that gmail uses:
+                // "On Month Day, Year, at Hour:Min AMPM, "
+                $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $email->plainmsg, $matches);
+                if($countOnAt > 0) {
+                    $dateSent = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
+                }
+            } else if(isset($matches[1])) {
+                $dateSent = date("Y-m-d H:i A", strtotime($matches[1]));
+            }
+        }
+        else {
+            // It's not forwarded, pull from header
+            $dateSent = date("Y-m-d H:i A", strtotime($email->date));
+        }
+
+        $returnMessage = array('uid'    =>  $id,
+                               'imapId' =>  $imap_id,
+                               'fromName'   =>  $fromName,
+                               'fromEmail'  =>  $fromEmail,
+                               'subject'    =>  $subject,
+                               'email'  =>  ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg,
+                               'date'   =>  $dateSent);
+        //var_dump($email);
+        echo json_encode($returnMessage);CRM_Utils_System::civiExit();
     }
 
     /* deleteMessage()
