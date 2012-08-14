@@ -412,10 +412,13 @@ function _addEmailSeeds( $mailingID ) {
               AND gc.status = 'Added'
               AND e.on_hold = 0
               AND ( e.is_primary = 1 OR e.is_bulkmail = 1 )
+            JOIN civicrm_contact c
+              ON gc.contact_id = c.id
             LEFT JOIN civicrm_mailing_recipients mr
               ON gc.contact_id = mr.contact_id
               AND mr.mailing_id = $mailingID
-            WHERE mr.id IS NULL;"; 
+            WHERE mr.id IS NULL
+              AND c.is_deleted = 0;";
     //CRM_Core_Error::debug($sql);exit();
     CRM_Core_DAO::executeQuery($sql);
 
