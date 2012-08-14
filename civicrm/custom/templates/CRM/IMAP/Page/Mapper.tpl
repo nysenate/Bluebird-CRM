@@ -24,6 +24,10 @@
 
 <div id="find-match-popup" title="Loading Data">
 	<div id="message_left">
+		<div id="message_left_header">
+		</div>
+		<div id="message_left_email">
+		</div>
 	</div>
 	<div id="message_right">
 		<div id="tabs">
@@ -53,7 +57,7 @@
 </div>
 
 <div id="delete-confirm" title="Delete Message from Unmatched Messages?">
- <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 </div>
 <div class="imapper-clear"></div>
 <div id="imapper-filter"> &nbsp; </div>

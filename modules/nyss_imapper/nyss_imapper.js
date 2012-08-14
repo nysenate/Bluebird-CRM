@@ -179,10 +179,12 @@ if(!placeholderSupport ){
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
-			//	console.log(data);
-				cj('#message_left').html(data);
-				cj( "#find-match-popup" ).dialog({
-					title:  messageId
+				console.log(data);
+				messages = cj.parseJSON(data);
+				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/>");
+				cj('#message_left_email').html(messages.details);
+				cj("#find-match-popup").dialog({
+					title:  "Reading: "+messages.subject
 				});
 				cj( "#find-match-popup" ).dialog('open');
  				cj( "#tabs" ).tabs();
