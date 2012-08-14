@@ -72,6 +72,7 @@
 
 #find-match-popup .ui-tabs-panel { padding:0;}
 #first_name,#last_name {width:46%;}
+.hidden{display:none;}
 
 #assign_container {
 	padding-left: 100px;

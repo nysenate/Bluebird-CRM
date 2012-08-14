@@ -37,6 +37,8 @@
 			</ul>
 			<div id="tabs-1">
 				<form>
+					<input type="text" class="hidden" id="email_id" name="email_id">
+					<input type="text" class="hidden" id="imap_id" name="imap_id">
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">

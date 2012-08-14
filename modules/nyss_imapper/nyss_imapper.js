@@ -66,10 +66,17 @@ if(!placeholderSupport ){
 				last_name: last_name.val()
 			},
 			success: function(data,status) {
-				console.log(data);
+				console.log('itcame back'+data.length);
 				if(data != null || data != ''){
 					contacts = cj.parseJSON(data);
-					buildContactList();
+					console.log(contacts.length);
+					if(contacts.length < 1){
+						cj('#imapper-contacts-list').html('Not Found');
+					}else{
+						buildContactList();
+					}
+						
+					
 				}
 			}
 		});
@@ -77,35 +84,24 @@ if(!placeholderSupport ){
 	});
 
 	assign.click(function() {
-		var messageIds = cj('input[name=message_uid]');
-		var messageId = -1;
-		// cj.each(messageIds, function(idx, val) {
-		// 	if(cj(val).attr('checked')) {
-		// 		messageId = cj(val).val();
-		// 	}
-		// });
-		// if(messageId == -1) {
-		// 	alert("Please select a message.");
-		// 	return false;
-		// }
-		
-		var contactIds = cj('input[name=contact_id]');
-		var contactId = -1;
-		cj.each(contactIds, function(idx, val) {
+		var messageId = cj('#email_id').val();
+		var imapId = cj('#imap_id').val();
+		var contactRadios = cj('input[name=contact_id]');
+		var contactIds = new Array();
+
+		cj.each(contactRadios, function(idx, val) {
 			if(cj(val).attr('checked')) {
-				contactId = cj(val).val();
+				contactIds.push(cj(val).val());
 			}
 		});
-		if(contactId == -1) {
-			alert("Please select a contact.");
-			return false;
-		}
+		alert(contactIds);
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/assignMessage',
 			data: {
 				messageId: messageId,
-				contactId: contactId
+				imapId: imapId,
+				contactId: contactIds
 			},
 			success: function(data, status) {
 				cj.each(messages,	function (idx, val) { 
@@ -114,7 +110,7 @@ if(!placeholderSupport ){
                 		buildMessageList();
                 	}
                 });
-				alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactId + ").");
+				alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
 			}
 		});
 		return false;
@@ -125,7 +121,7 @@ if(!placeholderSupport ){
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
 		modal: true,
-		width: 250,
+		width: 350,
 		autoOpen: false,
 		resizable: false	
 	});
@@ -148,7 +144,7 @@ if(!placeholderSupport ){
 							// update count on top
 							var old_total = parseInt(cj("#total_number").html(),10);
 							cj("#total_number").html(old_total-1);
-							//	makeListSortable();
+								makeListSortable();
 						} 
 					});
 				},
@@ -179,10 +175,14 @@ if(!placeholderSupport ){
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
-				console.log(data);
+			//	console.log(data);
 				messages = cj.parseJSON(data);
+				switchName(messages.fromName);
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				cj('#message_left_email').html(messages.details);
+				cj('#email_id').val(messageId);
+				cj('#imap_id').val(imapId);
+
 				cj("#find-match-popup").dialog({
 					title:  "Reading: "+messages.subject
 				});
@@ -199,6 +199,20 @@ if(!placeholderSupport ){
 
 });
 
+function switchName(nameVal){
+    var nameLength = nameVal.length;
+    var nameSplit = nameVal.split(" ");
+    var lastLength = nameLength - nameSplit[0].length;
+    var lastNameLength = nameSplit[0].length + 1;
+    var lastName = nameVal.slice(lastNameLength);
+    cj('#first_name').val(nameSplit[0]);
+    cj('#last_name').val(lastName);
+
+//	cj('.imapper-submit').click();
+}
+
+
+
 function pullMessageHeaders() {
 	cj.ajax({
 		url: '/civicrm/imap/ajax/unmatchedMessages',
@@ -209,7 +223,10 @@ function pullMessageHeaders() {
 	});
 }
 function makeListSortable(){
-	cj("#sortable_results").dataTable(); 
+	//cj("#sortable_results").fnDestroy();
+	cj("#sortable_results").dataTable({
+		"aaSorting": [[ 4, "desc" ]]
+	}); 
 	console.log('makeListSortable called ');
 }
 
