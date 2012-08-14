@@ -176,7 +176,6 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
         // Pull the message via the UID and output it as plain text if possible
         $email = $imap->getmsg_uid($id);
-
         $matches = array();
 
         // HAVE MERCY. I copied and pasted this from the previous section,
@@ -227,16 +226,16 @@ class CRM_IMAP_AJAX {
             // It's not forwarded, pull from header
             $dateSent = date("Y-m-d H:i A", strtotime($email->date));
         }
-
+        $details = $email->plainmsg;
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
-                               'fromName'   =>  $fromName,
+                               'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
                                'fromEmail'  =>  $fromEmail,
-                               'subject'    =>  $subject,
-                               'email'  =>  ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg,
+                               'subject'    =>  mb_convert_encoding($subject, 'UTF-8'),
+                               'details'  =>  mb_convert_encoding($details, 'UTF-8'),
                                'date'   =>  $dateSent);
-        //var_dump($email);
-        echo json_encode($returnMessage);CRM_Utils_System::civiExit();
+        echo json_encode($returnMessage);
+        CRM_Utils_System::civiExit();
     }
 
     /* deleteMessage()
