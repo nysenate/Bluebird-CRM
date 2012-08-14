@@ -10,10 +10,21 @@ class CRM_IMAP_AJAX {
     private static $imap_accounts = array();
     private static $bbconfig = null;
 
+    /* setupImap()
+     * Parameters: None.
+     * Returns: None.
+     * This function loads the Bluebird config then parses out the
+     * listed IMAP accounts and stores the data in an array
+     * so they can be looped through later.
+     */
     private static function setupImap() {
+        // Pull Bluebird config and assign it to the $bbconfig variable in case we need it later
         require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
         self::$bbconfig = get_bluebird_instance_config();
 
+        // The format of the accounts is:
+        // user1|pass1,user2|pass2,user3|pass3
+        // So we'll split on commas then split on pipes to assign to user and pass variables
         $imapAccounts = explode(',', self::$bbconfig['imap.accounts']);
         foreach($imapAccounts as $imapAccount) {
             list($user, $pass) = explode('|', $imapAccount);
@@ -23,9 +34,15 @@ class CRM_IMAP_AJAX {
 
     }
 
+    /* db()
+     * Parameters: None.
+     * Returns: The database object for the instance.
+     * Occasionally we'll need the raw database connection to do
+     * some processing, this will get the database connection from
+     * CiviCRM and set it to a static variable.
+     */
     private static function db() {
-        // Load the configuration for this instance
- 
+        // Load the DAO Object and pull the connection
         if (self::$db == null) {
             $nyss_conn = new CRM_Core_DAO();
             $nyss_conn = $nyss_conn->getDatabaseConnection();
@@ -34,104 +51,169 @@ class CRM_IMAP_AJAX {
         return self::$db;
     }
 
+    /* get($key)
+     * Parameters: $key: The name of the input in the GET message.
+     * Returns: The escaped string.
+     * We want to be able to escape the string so when we use
+     * the key in a query, it's already sanitized.
+     */
     private static function get($key) {
+        // Call mysql_real_escape_string using the db() connection object
         return mysql_real_escape_string($_GET[$key], self::db());
     }
 
+    /* getUnmatchedMessages()
+     * Parameters: None.
+     * Returns: A JSON Object of messages in all IMAP inboxes.
+     * This function grabs all of the messages in each IMAP Inbox,
+     * populates and parses the variables to send back, and then
+     * encodes it as a JSON object and shoots it back.
+     */
     public static function getUnmatchedMessages() {
-        self::setupImap();
-        //Fetch the IMAP Headers
-       $messages = array();
         require_once 'CRM/Utils/IMAP.php';
+        // Pull all of the IMAP usernames into the $imap_accounts variable
+        self::setupImap();
+        $messages = array();
 
+        // Loop through the imap accounts and assign an "imap id"
         for($imap_id = 0; $imap_id < count(self::$imap_accounts); $imap_id++) {
+            // $imap will be your connection to the IMAP server
             $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
+            // Search for all UIDs that meet the criteria of ""
+            // Then get the headers for some basic information.
             $ids = imap_search($imap->conn(),"",SE_UID);
             $headers = imap_fetch_overview($imap->conn(),implode(',',$ids),FT_UID);
 
+            // Loop through the headers and check to make sure they're valid UIDs
             foreach($headers as $header) {
                 if( in_array($header->uid,$ids)) {
+                    // Get the message based on the UID of the header.
                     $message = $imap->getmsg_uid($header->uid);
+
                     $matches = array();
 
+                    // Read the from: sender in the format:
+                    // From: "First Last" <email address>
+                    // or
+                    // From: First Last mailto:emailaddress
                     $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $message->plainmsg, $matches);
 
-                    //use the forward address, otherwise use the direct from address
+                    // Was this message forwarded or is this a raw message from the sender?
+                    $forwarded = false;
+
+                    // If you can find the From: text that means it was forwarded,
+                    // so parse it out and use that.
                     if ($count > 0) {
                         $header->from_email = $matches[2];
                         $header->from_name = $matches[1];
+                        $forwarded = true;
                     } else {
+                        // Otherwise, search for a name and email address from
+                        // the header and assume the person who sent it in
+                        // is submitting the activity.
                         $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
 
                         $header->from_email = $matches[2];
                         $header->from_name = $matches[1];
                     }
 
+                    // We don't want the fwd: or re: on any messages, that's silly
                     $header->subject = preg_replace("/(fwd:|fw:|re:) /i", "", $header->subject);
 
+                    // Set the imap_id of this message (the mailbox it came from)
+                    // And then set the date to be blank because we'll just pull
+                    // it from the forwarded message.
                     $header->imap_id = $imap_id;
 
-                    $header->date = '';
-
-                    $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
-                    if($count == 0) {
-                        $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $message->plainmsg, $matches);
-                        if($countOnAt > 0) {
-                            $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
-                        }
-                    } else {
-                        $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
+                    // Search for the format "Date: blah blah blah"
+                    // This is most formats from Lotus Notes and iNotes
+                    if($forwarded) {
+                        $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
+                        if($count == 0) {
+                            // Uhoh, that one didn't work, let's try this format that gmail uses:
+                            // "On Month Day, Year, at Hour:Min AMPM, "
+                            $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $message->plainmsg, $matches);
+                            if($countOnAt > 0) {
+                                $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
+                            }
+                        } else if(isset($matches[1])) {
+                            $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
+                        } 
+                    }
+                    else {
+                        // It's not forwarded, pull from header
+                        $header->date = date("Y-m-d H:i A", strtotime($header->date));
                     }
 
-                    if(is_null($header->date)) {
-                        $header->date = '';
-                    }
-
-
+                    // Assign the header variable into the $messages array.
+                    // The reason we stored our variables in $header is
+                    // because there's already existing information we want in there.
                     $messages[$header->uid] = $header;
                 }
             }
         }
-       
+        
+        // Encode the messages variable and return it to the AJAX call
         echo json_encode($messages);
         CRM_Utils_System::civiExit();
     }
 
+    /* getMessageDetails()
+     * Parameters: None.
+     * Returns: None.
+     * This function sets up a connection to the IMAP server with the
+     * specified connection ID, and retrieves the message based on UID
+     */
     public static function getMessageDetails() {
+        // Setup the IMAP variables and connect to the IMAP server
         self::setupImap();
         $id = self::get('id');
         $imap_id = self::get('imapId');
-        $imap_id = 0;
         $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
+        // Pull the message via the UID and output it as plain text if possible
         $email = $imap->getmsg_uid($id);
         echo ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
         CRM_Utils_System::civiExit();
     }
 
+    /* deleteMessage()
+     * Parameters: None.
+     * Returns: None.
+     * This function connects to the IMAP server with the specified user name
+     * and password, then deletes the message based on the UID
+     */
     public static function deleteMessage() {
+        // Set up IMAP variables
         self::setupImap();
         $id = self::get('id');
         $imap_id = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
+        // Delete the message with the specified UID
         $status = $imap->deletemsg_uid($id);
         CRM_Utils_System::civiExit();
     }
 
+    /* getContacts
+     * Paramters: None.
+     * Returns: None.
+     * This function will grab the inputs from the GET variable and
+     * do a search for contacts and return them as a JSON object.
+     */
     public static function getContacts() {
         $start = microtime(true);
         $s = self::get('s');
-        $phone = self::get('phone');
-        $city = self::get('city');
-        $state_id = self::get('state');
         $first_name = self::get('first_name');
         $last_name = self::get('last_name');
         $street_address = self::get('street_address');
+        $city = self::get('city');
+        $state_id = self::get('state');
+        $phone = self::get('phone');
         $query = <<<EOQ
 SELECT DISTINCT *
 FROM civicrm_contact AS contact
@@ -159,14 +241,18 @@ EOQ;
         CRM_Utils_System::civiExit();
     }
 
+    /* assignMessage()
+     * Parameters: None.
+     * Returns: None.
+     * Takes message information and saves it as an activity and assigns it to
+     * the selected contact ID.
+     */ 
     public static function assignMessage() {
-        //take UID in messageUid, read message from IMAP
-        //assign to contactId in Bluebird
-        //move message to deleted/archived folder
         self::setupImap();
         $messageUid = self::get('messageId');
         $contactId = self::get('contactId');
-        $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[0]['user'], self::$imap_accounts[0]['pass']);
+        $imapId = self::get('imapId');
+        $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[$imapId]['user'], self::$imap_accounts[$imapId]['pass']);
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
@@ -175,9 +261,21 @@ EOQ;
         $body = ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
         
         require_once 'api/api.php';
+
+        // Get the user information for the person who forwarded the email.
+        $params = array( 
+            'email' => $senderEmailAddress,
+            'version' => 3,
+        );
+
+        $result = civicrm_api('contact', 'get', $params );
+
+        $sourceContactId = $result['id'];
+
+        // Submit the activity information and assign it to the right user
         $params = array(
             'activity_type_id' => 12,
-            'source_contact_id' => 1,
+            'source_contact_id' => $sourceContactId,
             'assignee_contact_id' => 1,
             'target_contact_id' => $contactId,
             'subject' => $subject,
@@ -187,6 +285,7 @@ EOQ;
             'version' => 3
         );
         $activity = civicrm_api('activity', 'create', $params);
+        // Move the message to the archive folder!
         $imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }

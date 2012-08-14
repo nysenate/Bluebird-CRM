@@ -19,7 +19,7 @@
 
   <item>
     <path>civicrm/imap/ajax/contacts</path>
-    <page_callback>CRM_IMAP_AJAX::contacts</page_callback>
+    <page_callback>CRM_IMAP_AJAX::getContacts</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
