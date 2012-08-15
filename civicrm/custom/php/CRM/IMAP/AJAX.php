@@ -98,16 +98,18 @@ class CRM_IMAP_AJAX {
                     // From: "First Last" <email address>
                     // or
                     // From: First Last mailto:emailaddress
-                    $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $message->plainmsg, $matches);
 
+                    $details = ($message->plainmsg) ? $message->plainmsg : strip_tags($message->htmlmsg);
+
+                    $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $details, $matches);
                     // Was this message forwarded or is this a raw message from the sender?
                     $forwarded = false;
 
                     // If you can find the From: text that means it was forwarded,
                     // so parse it out and use that.
                     if ($count > 0) {
-                        $header->from_email = $matches[2];
-                        $header->from_name = $matches[1];
+                        $header->from_email = $matches[3];
+                        $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
@@ -130,11 +132,11 @@ class CRM_IMAP_AJAX {
                     // Search for the format "Date: blah blah blah"
                     // This is most formats from Lotus Notes and iNotes
                     if($forwarded) {
-                        $count = preg_match("/Date:\s+(.*)/", $message->plainmsg, $matches);
+                        $count = preg_match("/Date:\s*(.*)/", $details, $matches);
                         if($count == 0) {
                             // Uhoh, that one didn't work, let's try this format that gmail uses:
                             // "On Month Day, Year, at Hour:Min AMPM, "
-                            $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $message->plainmsg, $matches);
+                            $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
                             if($countOnAt > 0) {
                                 $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
                             }
@@ -180,21 +182,28 @@ class CRM_IMAP_AJAX {
 
         // HAVE MERCY. I copied and pasted this from the previous section,
         // this should be separated into a function.
+        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
 
         // Read the from: sender in the format:
         // From: "First Last" <email address>
         // or
         // From: First Last mailto:emailaddress
-        $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $email->plainmsg, $matches);
+        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $details, $matches);
 
         // Was this message forwarded or is this a raw message from the sender?
         $forwarded = false;
 
+        $forwardedName = '';
+        $forwardedEmail = '';
+
         // If you can find the From: text that means it was forwarded,
         // so parse it out and use that.
         if ($count > 0) {
-            $fromName = $matches[1];
-            $fromEmail = $matches[2];
+            $fromEmail = $matches[3];
+            $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
+            $forwardedName = $email->sender[0]->personal;
+            $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+
             $forwarded = true;
         } else {
             // Otherwise, search for a name and email address from
@@ -226,11 +235,12 @@ class CRM_IMAP_AJAX {
             // It's not forwarded, pull from header
             $dateSent = date("Y-m-d H:i A", strtotime($email->date));
         }
-        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
                                'fromEmail'  =>  $fromEmail,
+                               'forwardedName'  =>  mb_convert_encoding($forwardedName, 'UTF-8'),
+                               'forwardedEmail' =>  $forwardedEmail,
                                'subject'    =>  mb_convert_encoding($subject, 'UTF-8'),
                                'details'  =>  mb_convert_encoding($details, 'UTF-8'),
                                'date'   =>  $dateSent);
