@@ -39,6 +39,16 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 
 ### Drupal ###
 
+## create blockedips table manually to avoid upgrade script issues
+blockedips="DROP TABLE IF EXISTS blocked_ips;
+            CREATE TABLE IF NOT EXISTS `blocked_ips` (
+              iid int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Primary Key: unique ID for IP addresses.',
+              ip varchar(40) NOT NULL DEFAULT '' COMMENT 'IP address',
+              PRIMARY KEY (iid),
+              KEY blocked_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores blocked IP addresses.' AUTO_INCREMENT=1 ;"
+$execSql -i $instance -c "$blockedips" --drupal
+
 ## disable some modules we are not using
 echo "disabling modules for: $instance"
 $drush $instance dis color -y
@@ -54,10 +64,12 @@ $drush $instance en apc -y
 $drush $instance en ldap -y
 
 ## run drupal upgrade
-$drush $instance civicrm-upgrade-db
+
 
 ### CiviCRM ###
 
+## run civicrm upgrade
+$drush $instance civicrm-upgrade-db
 
 
 ### Cleanup ###
