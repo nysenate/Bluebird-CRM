@@ -15,46 +15,33 @@ $(document).ready(function(){
 placeholderSupport = ("placeholder" in document.createElement("input"));
 
 if(!placeholderSupport ){
-	 console.log('no placeholder Support');
-	 $('[placeholder]').focus(function() {
-	  var input = $(this);
-	  if (input.val() == input.attr('placeholder')) {
-	    input.val('');
-	    input.removeClass('placeholder');
-	  }
+	console.log('no placeholder Support');
+	$('[placeholder]').focus(function() {
+		var input = $(this);
+		if (input.val() == input.attr('placeholder')) {
+			input.val('');
+		    input.removeClass('placeholder');
+		}
 	}).blur(function() {
-	  var input = $(this);
-	  if (input.val() == '' || input.val() == input.attr('placeholder')) {
-	    input.addClass('placeholder');
-	    input.val(input.attr('placeholder'));
-	  }
+		var input = $(this);
+		if (input.val() == '' || input.val() == input.attr('placeholder')) {
+			input.addClass('placeholder');
+			input.val(input.attr('placeholder'));
+		}
 	}).blur().parents('form').submit(function() {
-	  $(this).find('[placeholder]').each(function() {
-	    var input = $(this);
-	    if (input.val() == input.attr('placeholder')) {
-	      input.val('');
-	    }
-	  })
+		$(this).find('[placeholder]').each(function() {
+			var input = $(this);
+			if (input.val() == input.attr('placeholder')) {
+				input.val('');
+			}
+		})
 	});
 }else{
-	 console.log('placeholder Support');
+	console.log('placeholder Support');
 }
 
-	reset.click(function() {
-		city.val("");
-		last_name.val("");
-		first_name.val("");
-		phone.val("");
-		street_address.val("");
-		cj('.contactList').hide();
-		cj('.contactList .contactItem').remove();
-		cj('.showContactNumResult span').empty();
-		cj('.contactsContainer .linkContact').slideUp('fast');
-		cj('.showContactNumResult').slideUp('fast');
-		return false;
-	});
-	
 	filter.live('click', function() {
+		cj('#imapper-contacts-list').html('Searching...');
 		cj.ajax({
 			url: '/civicrm/imap/ajax/contacts',
 			data: {
@@ -66,17 +53,14 @@ if(!placeholderSupport ){
 				last_name: last_name.val()
 			},
 			success: function(data,status) {
-				console.log('itcame back'+data.length);
 				if(data != null || data != ''){
 					contacts = cj.parseJSON(data);
-					console.log(contacts.length);
 					if(contacts.length < 1){
-						cj('#imapper-contacts-list').html('Not Found');
+						cj('#imapper-contacts-list').html('No Results Found');
 					}else{
+						cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
 						buildContactList();
 					}
-						
-					
 				}
 			}
 		});
@@ -123,7 +107,8 @@ if(!placeholderSupport ){
 		modal: true,
 		width: 350,
 		autoOpen: false,
-		resizable: false	
+		resizable: false,
+		draggable: false	
 	});
 	
 	//
@@ -163,13 +148,15 @@ if(!placeholderSupport ){
 		width: 950,
 		autoOpen: false,
 		resizable: false,
-		title: 'Loading Data'
+		title: 'Loading Data',
+		draggable: false
 	});
 
 	// what happens when we click find match
 	cj(".find_match").live('click', function() {
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
+		cj('#imapper-contacts-list').html('');
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
 			data: {id: messageId,
@@ -205,8 +192,8 @@ function switchName(nameVal){
     var lastLength = nameLength - nameSplit[0].length;
     var lastNameLength = nameSplit[0].length + 1;
     var lastName = nameVal.slice(lastNameLength);
-    cj('#first_name').val(nameSplit[0]);
-    cj('#last_name').val(lastName);
+    cj('#tabs-1 #first_name,#tabs-2 #first_name').val(nameSplit[0]);
+    cj('#tabs-1 #last_name, #tabs-2 #last_name').val(lastName);
 
 //	cj('.imapper-submit').click();
 }
@@ -267,5 +254,5 @@ function buildContactList() {
 		contactsHtml += '</div></div>';
 		contactsHtml += '<div class="clear"></div>';
 	});
-	cj('#imapper-contacts-list').html(contactsHtml);
+	cj('#imapper-contacts-list').append(contactsHtml);
 }

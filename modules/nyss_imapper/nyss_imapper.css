@@ -43,7 +43,7 @@
 
 
 .find-match-popup, .delete-confirm{ display: none;}
-.contacts-list{height:265px; overflow:auto; }
+.contacts-list{height:245px; overflow:auto; }
 
 .imapperbox .full{ width:940px; float:left; border-bottom:solid 1px #e1e1e1; margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}

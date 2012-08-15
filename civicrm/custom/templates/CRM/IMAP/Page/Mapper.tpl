@@ -36,11 +36,14 @@
 				<li><a href="#tabs-2">Add Contact</a></li>
 			</ul>
 			<div id="tabs-1">
-				<form>
-					<input type="text" class="hidden" id="email_id" name="email_id">
-					<input type="text" class="hidden" id="imap_id" name="imap_id">
+				<form onsbumit="return false;">
+					<input type="hidden" class="hidden" id="email_id" name="email_id">
+					<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
+					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
+
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
 					<input type="text" placeholder="City" class="form-text" id="city" name="city">
@@ -52,7 +55,19 @@
 				<input type="button" class="imapper-submit" id="assign" value="Assign" name="Assign">
 			</div>
 			<div id="tabs-2">
+				<form onsbumit="return false;">
+					<input type="hidden" class="hidden" id="email_id" name="email_id">
+					<input type="hidden" class="hidden" id="imap_id" name="imap_id">
 
+					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
+					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
+					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
+
+					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
+					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
+					<input type="text" placeholder="City" class="form-text" id="city" name="city">
+					<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
+			    </form>
 			</div>
 		</div>
 	</div>

@@ -268,6 +268,7 @@ class CRM_IMAP_AJAX {
         $s = self::get('s');
         $first_name = self::get('first_name');
         $last_name = self::get('last_name');
+        $email_address = self::get('email_address');
         $street_address = self::get('street_address');
         $city = self::get('city');
         $state_id = self::get('state');
