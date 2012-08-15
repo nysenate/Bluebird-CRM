@@ -80,8 +80,7 @@
        <!--</fieldset>-->
     {/if}
   
-
-    
+   
 </div>
 
 <script type="text/javascript">
@@ -100,111 +99,8 @@ function hideStatus( ) {
     cj( '#restmsg' ).hide( );
 }
 cj(document).ready(function() {	
-	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
-	callTagAjax();
+	callTagAjax('.BBtree.edit.tab', '2', '291');
 });
-function addControlBox(tagLabel, IDChecked) {
-	var floatControlBox;
-	var tagMouse = '.BBtree.edit dt#'+tagLabel;
-	var displayChecked = '';
-	if(IDChecked == ' checked'){displayChecked = 'display:inline;"';}
-	floatControlBox = '<span class="fCB" style="padding:1px 0; float:right; '+displayChecked+'">';
-	floatControlBox += '<ul>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';*/
-	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
-	
-	if(IDChecked == ' checked'){
-		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	} else {
-		floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	}
-	floatControlBox += '</span>';
-	if(tagMouse != '.BBtree.edit dt#tagLabel_291')
-	{
-		return(floatControlBox);
-	} else { return ''; }
-}
-function checkRemoveAdd(tagLabel) {
-	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-	tagLabelID = tagLabel.replace('tagLabel_', '');
-	if(n == false)
-	{
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/create',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-				var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
-				temp += '; display:inline';
-				cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
-				giveParentsIndicator(tagLabel,'add');
-				var tabCounter = cj('li#tab_tag em').html();
-				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
-			}
-		});
-		
-	} else {
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/delete',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				findIDLv(tagLabel);
-				var tabCounter = cj('li#tab_tag em').html();
-				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
-			}
-		});
-	}
-}
-function findIDLv(tagLabel) {
-	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');
-	if(idLv.length > 0)
-	{
-		for(var i = 0; i < idLv.length; i++){
-			var checkForLv = idLv[i].search('lv\-.*');
-			if(checkForLv >= 0)
-			{
-				var tagLv = idLv[i].replace('lv\-','');
-				break;
-			}
-			else
-			{
-				alert('Error During Untagging');
-			}
-			
-		}
-	}
-	var tagLvLabel = tagLabel;
-	for(tagLv; tagLv >= 0; tagLv--){
-		var findSibMatch = 0;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.subChecked').length;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.checked').length;
-		if(findSibMatch == 0){
-			tagLvLabel = cj('dt#'+tagLvLabel).parent().attr('id');
-			cj('dt#'+tagLvLabel).removeClass('checked');
-			cj('dt#'+tagLvLabel).removeClass('subChecked');
-			break;
-		}
-		else{ break;}
-	}
-	cj('dt#'+tagLabel).removeClass('checked');
-	cj('dt#'+tagLabel+' .fCB').attr('style', 'padding:1px 0;float:right;'); 
-}
 </script>
 {/literal}
 
