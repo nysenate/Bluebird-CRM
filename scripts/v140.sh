@@ -39,31 +39,29 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 
 ### Drupal ###
 
-## create blockedips table manually to avoid upgrade script issues
-blockedips="DROP TABLE IF EXISTS blocked_ips;
-            CREATE TABLE IF NOT EXISTS `blocked_ips` (
-              iid int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Primary Key: unique ID for IP addresses.',
-              ip varchar(40) NOT NULL DEFAULT '' COMMENT 'IP address',
-              PRIMARY KEY (iid),
-              KEY blocked_ip (ip)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores blocked IP addresses.' AUTO_INCREMENT=1 ;"
-$execSql -i $instance -c "$blockedips" --drupal
-
-## disable some modules we are not using
-echo "disabling modules for: $instance"
-$drush $instance dis color -y
-$drush $instance dis comment -y
-$drush $instance dis help -y
-$drush $instance dis taxonomy -y
-$drush $instance dis update -y
-$drush $instance dis admin_menu -y
-$drush $instance dis imce -y
-
-echo "enabling modules for: $instance"
-$drush $instance en apc -y
-$drush $instance en ldap -y
+## manually disable various modules before running drupal upgrade
+dismods="
+UPDATE system
+SET status = 0
+WHERE name IN
+  ('civicrm', 'userprotect', 'civicrm_rules', 'rules', 'rules_admin', 'apachesolr', 'apachesolr_search', 'color',
+  'comment', 'help', 'taxonomy', 'update', 'admin_menu', 'imce');"
+$execSql -i $instance -c "$dismods" --drupal
 
 ## run drupal upgrade
+$drush $instance updb
+
+## enable modules
+echo "enabling modules for: $instance"
+$drush $instance en civicrm -y
+$drush $instance en userprotect -y
+$drush $instance en civicrm_rules -y
+$drush $instance en rules -y
+$drush $instance en rules_admin -y
+$drush $instance en apachesolr -y
+$drush $instance en apachesolr_search -y
+$drush $instance en apc -y
+$drush $instance en ldap -y
 
 
 ### CiviCRM ###
