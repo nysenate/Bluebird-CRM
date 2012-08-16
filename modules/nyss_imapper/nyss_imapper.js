@@ -153,8 +153,20 @@ if(!placeholderSupport ){
 		draggable: false
 	});
 
+	// add a loading icon popup
+	cj( "#loading-popup" ).dialog({
+		modal: true,
+		width: 100,
+		autoOpen: false,
+		resizable: false,
+		title: 'Please Wait',
+		draggable: false
+	});
+
 	// what happens when we click find match
 	cj(".find_match").live('click', function() {
+		cj( "#loading-popup" ).dialog('open');
+
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		cj('#imapper-contacts-list').html('');
@@ -164,6 +176,8 @@ if(!placeholderSupport ){
 				   imapId: imapId },
 			success: function(data,status) {
 			//	console.log(data);
+				cj( "#loading-popup" ).dialog('close');
+
 				messages = cj.parseJSON(data);
 				switchName(messages.fromName);
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
