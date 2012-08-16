@@ -319,14 +319,14 @@ EOQ;
     public static function assignMessage() {
         self::setupImap();
         $messageUid = self::get('messageId');
-        $contactId = self::get('contactId');
+        $contactIds = self::get('contactId');
         $imapId = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[$imapId]['user'], self::$imap_accounts[$imapId]['pass']);
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
         $date = $email->date;
-        $subject = $email->subject;
+        $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
         $body = ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
         
         require_once 'api/api.php';
@@ -339,30 +339,40 @@ EOQ;
 
         $result = civicrm_api('contact', 'get', $params );
 
-        $sourceContactId = $result['id'];
+        $forwarderId = 1;
+        if($result)
+            $forwarderId = $result['id'];
 
-        // Submit the activity information and assign it to the right user
-        $params = array(
-            'activity_type_id' => 12,
-            'source_contact_id' => $sourceContactId,
-            'assignee_contact_id' => 1,
-            'target_contact_id' => $contactId,
-            'subject' => $subject,
-            'status_id' => 2,
-            'activity_date_time' => $date,
-            'details' => $body,
-            'version' => 3
-        );
-        $activity = civicrm_api('activity', 'create', $params);
+        $contactIds = explode(',', $contactIds);
+        foreach($contactIds as $contactId) {
+            // Submit the activity information and assign it to the right user
+            $params = array(
+                'activity_type_id' => 12,
+                'source_contact_id' => $forwarderId,
+                'assignee_contact_id' => $forwarderId,
+                'target_contact_id' => $contactId,
+                'subject' => $subject,
+                'status_id' => 2,
+                'activity_date_time' => $date,
+                'details' => $body,
+                'version' => 3
+            );
+
+            $activity = civicrm_api('activity', 'create', $params);
+            
+            self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
+            // Now we need to assign the tag to the activity.
+
+        }
         // Move the message to the archive folder!
-        $imap->movemsg_uid($messageUid, 'Archive');
+        //$imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }
 
-    public static function assignTag() {
-        $activityIds    =   self::get('activityIds');
-        $contactIds     =   self::get('contactIds');
-        $tagIds         =   self::get('tagIds');
+    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null) {
+        $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
+        $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
+        $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
         $activityIds    =   split(',', $activityIds);
         $contactIds     =   split(',', $contactIds);
         $tagIds         =   split(',', $tagIds);
@@ -375,42 +385,46 @@ EOQ;
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
         }
-
         require_once 'api/api.php';
-        foreach($contactIds as $contactId) {
-            $params = array( 
-                            'entity_table'  =>  'civicrm_contact',
-                            'entity_id'     =>  $contactId,
-                            'tag_id'        =>  $tagIds,
-                            'version'       =>  3,
-                            );
 
-            $result = civicrm_api('entity_tag', 'create', $params );
-            if($result['is_error']) {
-                $returnCode = array('code'      =>  'ERROR',
-                                    'message'   =>  "Problem with Contact ID: {$contactId}");
-                echo json_encode($returnCode);
-                CRM_Utils_System::civiExit();
+        foreach($tagIds as $tagId) {
+            foreach($contactIds as $contactId) {
+                if($contactId == 0)
+                    break;
+                $params = array( 
+                                'entity_table'  =>  'civicrm_contact',
+                                'entity_id'     =>  $contactId,
+                                'tag_id'        =>  $tagId,
+                                'version'       =>  3,
+                                );
+
+                $result = civicrm_api('entity_tag', 'create', $params );
+                if($result['is_error']) {
+                    $returnCode = array('code'      =>  'ERROR',
+                                        'message'   =>  "Problem with Contact ID: {$contactId}");
+                    echo json_encode($returnCode);
+                    CRM_Utils_System::civiExit();
+                }
+            }
+            foreach($activityIds as $activityId) {
+                if($activityId == 0)
+                    break;
+                $params = array('entity_table'  =>  'civicrm_activty',
+                                'entity_id'     =>  $activityId,
+                                'tag_id'        =>  $tagId,
+                                'version'       =>  3,
+                                );
+                CRM_Core_Error::debug_var('params',$params);
+                $result = civicrm_api('entity_tag', 'create', $params );
+
+                if($result['is_error']) {
+                    $returnCode = array('code'      =>  'ERROR',
+                                        'message'   =>  "Problem with Activity ID: {$activityId}");
+                    echo json_encode($returnCode);
+                    CRM_Utils_System::civiExit();
+                }
             }
         }
-
-        foreach($activityIds as $activityId) {
-            $params = array( 
-                            'entity_table'  =>  'civicrm_activity',
-                            'entity_id'     =>  $activityId,
-                            'tag_id'        =>  $tagIds,
-                            'version'       =>  3,
-                            );
-
-            $result = civicrm_api('entity_tag', 'create', $params );
-            if($result['is_error']) {
-                $returnCode = array('code'      =>  'ERROR',
-                                    'message'   =>  "Problem with Activity ID: {$activityId}");
-                echo json_encode($returnCode);
-                CRM_Utils_System::civiExit();
-            }
-        }
-
         $returnCode = array('code'    =>  'SUCCESS');
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();

@@ -71,14 +71,15 @@ if(!placeholderSupport ){
 		var messageId = cj('#email_id').val();
 		var imapId = cj('#imap_id').val();
 		var contactRadios = cj('input[name=contact_id]');
-		var contactIds = new Array();
+		var contactIds = '';
 
 		cj.each(contactRadios, function(idx, val) {
 			if(cj(val).attr('checked')) {
-				contactIds.push(cj(val).val());
+				if(contactIds != '')
+					contactIds = contactIds+',';
+				contactIds = contactIds + cj(val).val();
 			}
 		});
-		alert(contactIds);
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/assignMessage',
@@ -88,8 +89,8 @@ if(!placeholderSupport ){
 				contactId: contactIds
 			},
 			success: function(data, status) {
-				cj.each(messages,	function (idx, val) { 
-                	if(val.uid == messageId) {
+				cj.each(messages, function (idx, val) {
+					if(val.uid == messageId && val.imap_id == imapId) {
                 		delete messages[idx];
                 		buildMessageList();
                 	}
