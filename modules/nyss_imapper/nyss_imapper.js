@@ -177,6 +177,14 @@ $(document).ready(function(){
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 				switchName(messages.fromName);
+
+				if ((messages.forwardedName ==null && messages.forwardedEmail ==null )|| messages.forwardedEmail ==null){
+					messages.forwardedName ='Direct Message';
+					messages.forwardedEmail ='';
+				}else{
+					if (messages.forwardedName ==null){ messages.forwardedName = 'N/A'}
+				}
+			
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(messageId);
