@@ -100,8 +100,10 @@ class CRM_IMAP_AJAX {
                     // From: First Last mailto:emailaddress
 
                     $details = ($message->plainmsg) ? $message->plainmsg : strip_tags($message->htmlmsg);
+                    $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  
 
-                    $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $details, $matches);
+                    $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
                     // Was this message forwarded or is this a raw message from the sender?
                     $forwarded = false;
 
@@ -183,12 +185,13 @@ class CRM_IMAP_AJAX {
         // HAVE MERCY. I copied and pasted this from the previous section,
         // this should be separated into a function.
         $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
-
+        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  
         // Read the from: sender in the format:
         // From: "First Last" <email address>
         // or
         // From: First Last mailto:emailaddress
-        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $details, $matches);
+        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
 
         // Was this message forwarded or is this a raw message from the sender?
         $forwarded = false;
@@ -219,11 +222,11 @@ class CRM_IMAP_AJAX {
         // Search for the format "Date: blah blah blah"
         // This is most formats from Lotus Notes and iNotes
         if($forwarded) {
-            $count = preg_match("/Date:\s+(.*)/", $email->plainmsg, $matches);
+            $count = preg_match("/Date:\s+(.*)/", $details, $matches);
             if($count == 0) {
                 // Uhoh, that one didn't work, let's try this format that gmail uses:
                 // "On Month Day, Year, at Hour:Min AMPM, "
-                $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $email->plainmsg, $matches);
+                $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
                 if($countOnAt > 0) {
                     $dateSent = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
                 }

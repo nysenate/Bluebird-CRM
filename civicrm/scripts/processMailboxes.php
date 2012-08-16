@@ -348,14 +348,14 @@ function getAttachments($conn, $num, $parts)
 
 function civiProcessEmail($email, $customHandler)
 {
-  global $activityPriority, $activityType, $activityStatus;
+  global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = false;
 
   //match against allowed email list
   //parse out the first email address which will be the "from" address of the forwarded email
   $matches = array();
-
+/*
   $qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]';
   $dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]';
   $atom = '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c'.
@@ -371,12 +371,37 @@ function civiProcessEmail($email, $customHandler)
   $addr_spec = "$local_part\\x40$domain";
 
   $count = preg_match("/$addr_spec/i", $email->body, $matches);
+*/
+  $details = $email->body;
+  $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  //var_dump($details);
+  //var_dump($tempDetails);
+  $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
+  // Was this message forwarded or is this a raw message from the sender?
+
+  $forwarded = false;
+
+  // If you can find the From: text that means it was forwarded,
+  // so parse it out and use that.
+  if ($count > 0) {
+      $fromEmail = $matches[3];
+      //$header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
+      $forwarded = true;
+  } else {
+      // Otherwise, search for a name and email address from
+      // the header and assume the person who sent it in
+      // is submitting the activity.
+      $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $email->replyTo, $matches);
+
+      $fromEmail = $matches[2];
+      //$header->from_name = $matches[1];
+  }
 
   //use the forward address, otherwise use the direct from address
   if ($count > 0) {
     $email->body = "Forwarded by: " . $email->replyTo."\n\n".$email->body;
     $email->forwardedBy = $email->replyTo;
-    $email->replyTo = $matches[0];
+    $email->replyTo = $fromEmail;
   } 
 
   // Force e-mail body to display cleanly in UI.
@@ -433,13 +458,14 @@ function civiProcessEmail($email, $customHandler)
     $apiParams = array(
                 "source_contact_id" => $userId,
                 "subject" => $email->subject,
-                "details" => $email->body,
+                "details" => imap_qprint($email->body),
                 "activity_date_time" => date('YmdHis',strtotime($email->date)),
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
                 "duration" => 1,
-                "target_contact_id" => array($contactID),
+              //  "target_contact_id" => array($contactID),
+                "target_contact_id" => $contactID,
                 "version" => 3,
     );
 
@@ -447,17 +473,21 @@ function civiProcessEmail($email, $customHandler)
     if ($result['is_error']) {
       error_log("COULD NOT SAVE ACTIVITY!\n".print_r($params, true));
       return false;
-    }
-    else {
+    } else {
       echo "Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       require_once 'api/api.php';
       $apiParams = array( 
         'entity_table'  =>  'civicrm_activity',
-        'entity_id'     =>  $activityId,
+        'entity_id'     =>  $result['id'],
         'tag_id'        =>  $inboxPollingTagId,
         'version'       =>  3,
         );
-      civicrm_api('entity_tag', 'create', $apiParams);
+      $result = civicrm_api('entity_tag', 'create', $apiParams);
+      var_dump($apiParams);
+      if($result['is_error']) {
+        error_log("COULD NOT TAG ACTIVITY!\n".print_r($apiarams, true));
+        return false;
+      }
     }
   }
 
@@ -502,6 +532,9 @@ function getInboxPollingTagId() {
   $apiParams = array( 
   'name' => 'Inbox Polling Unprocessed',
   'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
+  'parent_id' => 296,
+  'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+  'created_id' => 1,
   'version' => 3,
   );
   $result = civicrm_api('tag', 'create', $apiParams);
