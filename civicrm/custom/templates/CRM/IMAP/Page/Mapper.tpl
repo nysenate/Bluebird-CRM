@@ -79,6 +79,9 @@
 <div id="loading-popup" title="please wait">
 	<p> Loading message details.</p>
 </div>
+<!-- <div id="assign-confirm" title="Message Assigned">
+	<p>Your message was assigned to the contact.</p>
+</div> -->
 <div class="imapper-clear"></div>
 <div id="imapper-filter"> &nbsp; </div>
 
