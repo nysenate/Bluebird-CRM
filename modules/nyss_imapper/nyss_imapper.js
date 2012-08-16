@@ -12,33 +12,33 @@ $(document).ready(function(){
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	
-placeholderSupport = ("placeholder" in document.createElement("input"));
-
-if(!placeholderSupport ){
-	console.log('no placeholder Support');
-	$('[placeholder]').focus(function() {
-		var input = $(this);
-		if (input.val() == input.attr('placeholder')) {
-			input.val('');
-		    input.removeClass('placeholder');
-		}
-	}).blur(function() {
-		var input = $(this);
-		if (input.val() == '' || input.val() == input.attr('placeholder')) {
-			input.addClass('placeholder');
-			input.val(input.attr('placeholder'));
-		}
-	}).blur().parents('form').submit(function() {
-		$(this).find('[placeholder]').each(function() {
+	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
+	placeholderSupport = ("placeholder" in document.createElement("input"));
+	if(!placeholderSupport ){
+		console.log('no placeholder Support');
+		$('[placeholder]').focus(function() {
 			var input = $(this);
 			if (input.val() == input.attr('placeholder')) {
 				input.val('');
+			    input.removeClass('placeholder');
 			}
-		})
-	});
-}else{
-	console.log('placeholder Support');
-}
+		}).blur(function() {
+			var input = $(this);
+			if (input.val() == '' || input.val() == input.attr('placeholder')) {
+				input.addClass('placeholder');
+				input.val(input.attr('placeholder'));
+			}
+		}).blur().parents('form').submit(function() {
+			$(this).find('[placeholder]').each(function() {
+				var input = $(this);
+				if (input.val() == input.attr('placeholder')) {
+					input.val('');
+				}
+			})
+		});
+	}else{
+		console.log('placeholder Support');
+	}
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -112,7 +112,7 @@ if(!placeholderSupport ){
 		draggable: false	
 	});
 	
-	//
+	// delete confirm & processing 
 	cj(".delete").live('click', function() {
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
@@ -156,17 +156,16 @@ if(!placeholderSupport ){
 	// add a loading icon popup
 	cj( "#loading-popup" ).dialog({
 		modal: true,
-		width: 100,
+		width: 200,
 		autoOpen: false,
 		resizable: false,
 		title: 'Please Wait',
 		draggable: false
 	});
 
-	// what happens when we click find match
+	// opening find match window
 	cj(".find_match").live('click', function() {
-		cj( "#loading-popup" ).dialog('open');
-
+		cj("#loading-popup").dialog('open');
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		cj('#imapper-contacts-list').html('');
@@ -175,21 +174,24 @@ if(!placeholderSupport ){
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
-			//	console.log(data);
-				cj( "#loading-popup" ).dialog('close');
-
+				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 				switchName(messages.fromName);
+
+				if ((messages.forwardedName ==null && messages.forwardedEmail ==null )|| messages.forwardedEmail ==null){
+					messages.forwardedName ='Direct Message';
+					messages.forwardedEmail ='';
+				}else{
+					if (messages.forwardedName ==null){ messages.forwardedName = 'N/A'}
+				}
+			
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
-
-				cj("#find-match-popup").dialog({
-					title:  "Reading: "+messages.subject
-				});
-				cj( "#find-match-popup" ).dialog('open');
- 				cj( "#tabs" ).tabs();
+				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
+				cj("#find-match-popup").dialog('open');
+ 				cj("#tabs").tabs();
 			}
 		});
 	});
@@ -209,8 +211,6 @@ function switchName(nameVal){
     var lastName = nameVal.slice(lastNameLength);
     cj('#tabs-1 #first_name,#tabs-2 #first_name').val(nameSplit[0]);
     cj('#tabs-1 #last_name, #tabs-2 #last_name').val(lastName);
-
-//	cj('.imapper-submit').click();
 }
 
 
@@ -225,11 +225,9 @@ function pullMessageHeaders() {
 	});
 }
 function makeListSortable(){
-	//cj("#sortable_results").fnDestroy();
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 4, "desc" ]]
 	}); 
-	console.log('makeListSortable called ');
 }
 
 function buildMessageList() {
