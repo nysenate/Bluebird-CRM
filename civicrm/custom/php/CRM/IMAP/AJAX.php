@@ -212,9 +212,9 @@ class CRM_IMAP_AJAX {
             // Otherwise, search for a name and email address from
             // the header and assume the person who sent it in
             // is submitting the activity.
-
             $fromName = $email->sender[0]->personal;
             $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+            $forwardedName = $forwardedEmail = '';
         }
 
         $subject = preg_replace("/(fwd:|fw:|re:) /i", "", $email->subject);
@@ -390,6 +390,11 @@ EOQ;
         }
         require_once 'api/api.php';
 
+        require_once 'CRM/Core/DAO.php';
+        $nyss_conn = new CRM_Core_DAO();
+        $nyss_conn = $nyss_conn->getDatabaseConnection();
+        $conn = $nyss_conn->connection;
+
         foreach($tagIds as $tagId) {
             foreach($contactIds as $contactId) {
                 if($contactId == 0)
@@ -412,19 +417,21 @@ EOQ;
             foreach($activityIds as $activityId) {
                 if($activityId == 0)
                     break;
-                $params = array('entity_table'  =>  'civicrm_activty',
-                                'entity_id'     =>  $activityId,
-                                'tag_id'        =>  $tagId,
-                                'version'       =>  3,
-                                );
-                CRM_Core_Error::debug_var('params',$params);
-                $result = civicrm_api('entity_tag', 'create', $params );
+                $query = "SELECT * FROM civicrm_entity_tag
+                            WHERE entity_table='civicrm_activity'
+                            AND entity_id={$activityId}
+                            AND tag_id={$tagId};";
+                $result = mysql_query($query, $conn);
 
-                if($result['is_error']) {
-                    $returnCode = array('code'      =>  'ERROR',
-                                        'message'   =>  "Problem with Activity ID: {$activityId}");
-                    echo json_encode($returnCode);
-                    CRM_Utils_System::civiExit();
+                if(mysql_num_rows($result) == 0) {
+                    $query = "INSERT INTO civicrm_entity_tag(entity_table,entity_id,tag_id)
+                              VALUES('civicrm_activity',{$activityId},{$tagId});";
+                    $result = mysql_query($query, $conn);
+                    if($result) {
+                      echo "ADDED TAG TO ACTIVITY!\n";
+                    } else {
+                      error_log("COULD NOT ADD TAG TO ACTIVITY!\n");
+                    }
                 }
             }
         }

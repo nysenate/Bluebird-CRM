@@ -475,7 +475,8 @@ function civiProcessEmail($email, $customHandler)
       return false;
     } else {
       echo "Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
-      require_once 'api/api.php';
+      $activityId = $result['id'];
+      /*
       $apiParams = array( 
         'entity_table'  =>  'civicrm_activity',
         'entity_id'     =>  $result['id'],
@@ -487,6 +488,27 @@ function civiProcessEmail($email, $customHandler)
       if($result['is_error']) {
         error_log("COULD NOT TAG ACTIVITY!\n".print_r($apiarams, true));
         return false;
+      }
+      */
+      require_once 'CRM/Core/DAO.php';
+      $nyss_conn = new CRM_Core_DAO();
+      $nyss_conn = $nyss_conn->getDatabaseConnection();
+      $conn = $nyss_conn->connection;
+      $query = "SELECT * FROM civicrm_entity_tag
+                WHERE entity_table='civicrm_activity'
+                      AND entity_id={$activityId}
+                      AND tag_id={$inboxPollingTagId};";
+      $result = mysql_query($query, $conn);
+
+      if(mysql_num_rows($result) == 0) {
+        $query = "INSERT INTO civicrm_entity_tag(entity_table,entity_id,tag_id)
+                  VALUES('civicrm_activity',{$activityId},{$inboxPollingTagId});";
+        $result = mysql_query($query, $conn);
+        if($result) {
+          echo "ADDED TAG TO ACTIVITY!\n";
+        } else {
+          error_log("COULD NOT ADD TAG TO ACTIVITY!\n");
+        }
       }
     }
   }
