@@ -2,28 +2,6 @@
 if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
 ?>
 
-<?php // $Id: page.tpl.php,v 1.15.4.7 2008/12/23 03:40:02 designerbrent Exp $ ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" lang="<?php print $language->language ?>">
-<head>
-	<title><?php print strip_tags($title) ?> | Bluebird</title>
-	<meta http-equiv="content-language" content="<?php print $language->language ?>" />
-	<?php print $meta; ?>
-  <?php print $head; ?>
-  <?php print $styles; ?>
-  <!--[if lte IE 8]>
-  	<link href="<?php print $path; ?>css/ie.css" rel="stylesheet"  type="text/css"  media="screen, projection" />
-  <![endif]-->
-  <!--[if lte IE 6]>
-  	<link href="<?php print $path; ?>css/ie6.css" rel="stylesheet"  type="text/css"  media="screen, projection" />
-  <![endif]-->
-
-  <?php print $scripts ?>
-
-</head>
-
 <?php
 	$rolesList = implode(', ',$user->roles);
 	$role      = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
@@ -37,51 +15,44 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
 	}
 ?>
 
-<body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
+<div class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
 <?php //print_r($_SESSION); ?>
+
 <?php if ($user->uid && arg(0) == 'civicrm') { ?>
- <?php if ( $env ) { //4343 ?>
-           <div class="<?php echo $env; ?>"></div>
- <?php } ?>
- <?php if ($footer): ?>
-      <div id="footer-bg"></div>
-      <?php if ($user->uid) { ?>
-    <?php if ($footer_message | $footer): ?>
+
+  <?php if ( $env ) { //4343 ?>
+    <div class="<?php echo $env; ?>"></div>
+  <?php } ?>
+
+  <?php if ($page['footer']): ?>
+    <div id="footer-bg"></div>
+    <?php if ($user->uid) { ?>
       <div id="footer" class="clear span-24">
       	<div id="dashboard-link-wrapper">
       		<a href="<?php print base_path(); ?>civicrm?reset=1"><div class="icon dashboard-icon"></div> Dashboard</a>
       	</div>
-        <?php if ($footer): ?>
-          <?php print $footer; ?>
-        <?php endif; ?>
-        <?php if ($footer_message): ?>
-          <div id="footer-message"><?php print $footer_message; ?></div>
-        <?php endif; ?>
+        <?php print render($page['footer']); ?>
       </div>
-    <?php endif; ?>
-  </div>
+    <?php } ?>
+  <?php endif; ?>
 <?php } ?>
 
- <?php endif; ?>
-<?php } ?>
 <div class="container">
-   <div id="status">
+  <div id="status">
    	<div class="messages-container">
-       <?php	if ($messages != '') {?>
-   		<div id="messages">
-   		 <?php print $messages; ?>
-   		 </div>
-
-       <?php } ?>
-       </div>
-   </div>
-
+      <?php	if ($messages != '') {?>
+   		  <div id="messages">
+   		    <?php print $messages; ?>
+   		  </div>
+      <?php } ?>
+    </div>
+  </div>
 
   <div id="header">
    <!-- <h1 id="logo">
       <a title="<?php print $site_name; ?><?php if ($site_slogan != '') print ' &ndash; '. $site_slogan; ?>" href="<?php print url(); ?>"><?php print $site_name; ?><?php if ($site_slogan != '') print ' &ndash; '. $site_slogan; ?></a>
     </h1> -->
-    <?php print $header; ?>
+    <?php print render($page['header']); ?>
     <?php if (isset($main_menu)) : ?>
       <?php print theme('links', $main_menu, array('id' => 'nav', 'class' => 'links')) ?>
     <?php endif; ?>
@@ -90,8 +61,8 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php endif; ?>
   </div>
 
-  <?php if ($left): ?>
-    <div class="<?php print $left_classes; ?>"><?php print $left; ?></div>
+  <?php if ($sidebar_first): ?>
+    <div class="<?php print $left_classes; ?>"><?php print $sidebar_first; ?></div>
   <?php endif ?>
   <?php
   if ($head_title != '' && arg(0) != 'civicrm' && $user->uid) {
@@ -136,7 +107,7 @@ $now = time() + (60 * 60 * $offset);
   			</div>
   			<div class="user-name">
   				<?php //print $user->name; ?>
-                <?php //insert first name in header greeting; #2288
+          <?php //insert first name in header greeting; #2288
 					civicrm_initialize( );
 					require_once 'CRM/Core/Config.php';
 					$config =& CRM_Core_Config::singleton( );
@@ -172,57 +143,54 @@ $now = time() + (60 * 60 * $offset);
     <?php
 
       if ($tabs != '') {
-        print '<div class="tabs">'. $tabs .'</div>';
+        print '<div class="tabs">'. render($tabs) .'</div>';
       }
 
-      print $help; // Drupal already wraps this one in a class
+      print render($page['help']); // Drupal already wraps this one in a class
       ?>
      <!-- <div class="crm-title">
-		<h1 class="title"><?php print $title; ?></h1>
+		 <h1 class="title"><?php print $title; ?></h1>
       </div> -->
     <?php
-      print $content;
-
+      print render($page['content']);
       print $feed_icons;
     ?>
     <script>
-       $('.messages br').remove();
-       $('.messages').each(function(index){
-           if($(this).html() == '') { $(this).remove();}
-           });
-	   $('.messages').appendTo('#status .messages-container');
-	   if($('#status .messages-container').children().length > 0) {
+    $('.messages br').remove();
+    $('.messages').each(function(index){
+      if($(this).html() == '') { $(this).remove();}
+    });
+	  $('.messages').appendTo('#status .messages-container');
+	  if($('#status .messages-container').children().length > 0) {
 	   	$('#status').append('<div id="status-handle"><span class="ui-icon ui-icon-arrowthickstop-1-n"></span></div>');
-	   }
-	   $('#status-handle').click(function(){
+	  }
+	  $('#status-handle').click(function(){
 	   	$('.messages-container').slideToggle('fast');
 	   	$('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
 	   	$('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
-	   });
+	  });
     </script>
-
 
   <?php print $closure; ?>
 
 </div>
 
 <div id="dialogJobID" style="display: none;">
-     <form action="" method="post" id="formSetJob">
-        Enter a new SOS Job ID<br/>
-     	<input type="text" id="set_jobID" name="set_JobID" />
-     </form>
+  <form action="" method="post" id="formSetJob">
+    Enter a new SOS Job ID<br/>
+    <input type="text" id="set_jobID" name="set_JobID" />
+  </form>
 </div>
 
 <script type="text/javascript">
 function setJobID( ) {
-    cj("#dialogJobID").show( );
-    cj("#dialogJobID").dialog({
-		title: "Set SOS Job ID",
-		modal: true,
-		bgiframe: true,
-		overlay: { opacity: 0.5, background: "black" },
-		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
-		buttons: { "Set ID": function() { $("#formSetJob").submit(); cj(this).dialog("close"); }}
+  cj("#dialogJobID").show( );
+  cj("#dialogJobID").dialog({
+	  modal: true,
+	  bgiframe: true,
+	  overlay: { opacity: 0.5, background: "black" },
+	  beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
+	  buttons: { "Set ID": function() { $("#formSetJob").submit(); cj(this).dialog("close"); }}
 	})
 }
 </script>
@@ -230,14 +198,13 @@ function setJobID( ) {
 <?php
 //store job id in db variable
 if ( $_SESSION['CiviCRM']['jobID'] ) {
-    $jobID = CRM_Core_DAO::singleValueQuery('SELECT @jobID');
-    if ( !$jobID ) {
-        $jobID = $_SESSION['CiviCRM']['jobID'];
-        CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($jobID, 'String')));
-    }
-    //CRM_Core_Error::debug_var('jobID',CRM_Core_DAO::singleValueQuery('SELECT @jobID'));
+  $jobID = CRM_Core_DAO::singleValueQuery('SELECT @jobID');
+  if ( !$jobID ) {
+      $jobID = $_SESSION['CiviCRM']['jobID'];
+      CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($jobID, 'String')));
+  }
+  //CRM_Core_Error::debug_var('jobID',CRM_Core_DAO::singleValueQuery('SELECT @jobID'));
 }
 ?>
 
-</body>
-</html>
+</div>

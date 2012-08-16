@@ -599,7 +599,7 @@ blockquote p {
 div.node {
   margin: 0 0 1.5em 0;
   padding: 0 0 1.417em 0;
-  border-bottom: 1px solid #ccc;
+  /*border-bottom: 1px solid #ccc;*/
 }
 div#node-1 {
   border: none;

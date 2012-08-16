@@ -19,13 +19,11 @@ function Bluebird_preprocess_page(&$vars) {
   $vars['path'] = base_path() . path_to_theme() .'/';
   $vars['user'] = $user;
 
-  
-
   //Play nicely with the page_title module if it is there.
   if (!module_exists('page_title')) {
     // Fixup the $head_title and $title vars to display better.
-    $title = drupal_get_title();
-    $headers = implode(',', drupal_set_header()); //LCD
+    $title   = drupal_get_title();
+    $headers = implode(',', drupal_get_http_header()); //LCD
     
     // wrap taxonomy listing pages in quotes and prefix with topic
     if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
@@ -46,6 +44,8 @@ function Bluebird_preprocess_page(&$vars) {
   }
 
   // determine layout
+  $vars['body_classes'] = ''; //define index
+
   // 3 columns
   if ($vars['layout'] == 'both') {
     $vars['left_classes'] = 'col-left span-6';
@@ -305,7 +305,7 @@ function Bluebird_breadcrumb($breadcrumb) {
 /**
  * Rewrite of theme_form_element() to suppress ":" if the title ends with a punctuation mark.
  */
-function Bluebird_form_element($element, $value) {
+function Bluebird_form_element($variables) {
   $args = func_get_args();
   return preg_replace('@([.!?]):\s*(</label>)@i', '$1$2', call_user_func_array('theme_form_element', $args));
 }
