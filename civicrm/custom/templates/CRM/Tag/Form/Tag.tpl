@@ -47,7 +47,7 @@
     </div>
     {*NYSS add list of Issue Codes*}
     {if $contactIssueCode_list}
-    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong><span>{$contactIssueCode_list}</span></div>
     	<div class="clear"></div>
     {/if}
     <div id="crm-tagListWrap">
@@ -95,7 +95,7 @@ entityTable='{$entityTable}';
 var pageType = 'edit';
 var cidpre = /cid=\d*/.exec(document.location.search);
 var cidsplit = /\d.*/.exec(cidpre);
-var cid = cidsplit[0];
+cid = cidsplit[0];
 function hideStatus( ) {
     cj( '#restmsg' ).hide( );
 }
@@ -149,6 +149,14 @@ function checkRemoveAdd(tagLabel) {
 				cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
 				giveParentsIndicator(tagLabel,'add');
 				var tabCounter = cj('li#tab_tag em').html();
+				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag').html();
+				var headList = cj('.contactTagsList.help span').html();
+				var headSplit = headList.split(" • ");
+				var appendAfter = headSplit.length;
+				headSplit[appendAfter] = tagLiteralName;
+				headSplit.sort();
+				headList = headSplit.join(" • ");
+				cj('.contactTagsList.help span').html(headList);
 				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 			}
 		});
@@ -166,6 +174,17 @@ function checkRemoveAdd(tagLabel) {
 				if(data.code != 1) {alert('fails');}
 				findIDLv(tagLabel);
 				var tabCounter = cj('li#tab_tag em').html();
+				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag').html();
+				var headList = cj('.contactTagsList.help span').html();
+				var headSplit = headList.split(" • ");
+				var appendAfter = headSplit.length;
+				for(var i=0; i<headSplit.length;i++ )
+				{ 
+				if(headSplit[i]==tagLiteralName)
+					headSplit.splice(i,1); 
+				} 
+				headList = headSplit.join(" • ");
+				cj('.contactTagsList.help span').html(headList);
 				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
 			}
 		});

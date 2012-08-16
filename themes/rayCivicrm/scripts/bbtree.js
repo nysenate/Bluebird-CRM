@@ -4,15 +4,15 @@ function checkForTagTypes (treeData) {
 }
 /*Acquires Ajax Block*/
 function callTagAjax (local, modalTreeTop) {
-	
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
-			entity_type: 'civicrm_contact'
+			entity_type: 'civicrm_contact',
+			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
-			/*set variables*/
+			/*set variables
 			var displayObj = [];
 			displayObj.tLvl = 0;
 			/*error handler goes here*/

@@ -71,9 +71,7 @@ function checkRemoveAdd(tagLabel) {
 		cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
 		var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
 		temp += '; display:inline';
-		cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
-
-		console.log(temp);			
+		cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);			
 		giveParentsIndicator(tagLabel,'add');
 	} else {
 		findIDLv(tagLabel);
