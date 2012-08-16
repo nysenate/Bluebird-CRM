@@ -63,6 +63,11 @@ $drush $instance en apachesolr_search -y
 $drush $instance en apc -y
 $drush $instance en ldap -y
 
+## set theme
+echo "setting theme for: $instance"
+$drush $instance en Blueprint
+$drush $instance vset theme_default Blueprint
+
 
 ### CiviCRM ###
 
