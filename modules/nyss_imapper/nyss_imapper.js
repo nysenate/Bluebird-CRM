@@ -232,8 +232,9 @@ function pullMessageHeaders() {
 	});
 }
 function makeListSortable(){
-	cj("#sortable_results").dataTable({
-		"aaSorting": [[ 4, "desc" ]]
+cj("#sortable_results").dataTable({
+		"aaSorting": [[ 5, "desc" ]],
+		"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ] 
 	}); 
 }
 
@@ -251,6 +252,8 @@ function buildMessageList() {
 			messagesHtml += '<td class="name"> N/A </td>';
 		}
 		messagesHtml += '<td class="email">'+value.from_email +'</td>';
+		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
+
 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
