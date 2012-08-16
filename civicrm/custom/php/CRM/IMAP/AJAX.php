@@ -112,6 +112,7 @@ class CRM_IMAP_AJAX {
                     if ($count > 0) {
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
+                        $header->forwarder = $header->from;
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
@@ -121,6 +122,7 @@ class CRM_IMAP_AJAX {
 
                         $header->from_email = $matches[2];
                         $header->from_name = $matches[1];
+                        $header->forwarder = $header->from;
                     }
 
                     // We don't want the fwd: or re: on any messages, that's silly
