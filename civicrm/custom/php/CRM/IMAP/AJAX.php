@@ -294,12 +294,14 @@ FROM civicrm_contact AS contact
   JOIN civicrm_address AS address ON contact.id=address.contact_id
   JOIN civicrm_state_province AS state ON address.state_province_id=state.id
   JOIN civicrm_phone as phone ON phone.contact_id=contact.id
+  JOIN civicrm_email as email ON email.contact_id=contact.id
 WHERE contact.is_deleted=0
   AND state.id='$state_id'
   AND address.city LIKE '%$city%'
   AND contact.first_name LIKE '%$first_name%'
   AND contact.last_name LIKE '%$last_name%'
   AND address.street_address LIKE '%$street_address%'
+  AND email.email LIKE '%$email_address%'
   AND phone.phone LIKE '%$phone%'
 ORDER BY contact.sort_name
 EOQ;

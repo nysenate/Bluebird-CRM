@@ -43,7 +43,7 @@
 
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
-					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
+					<input type="text" placeholder="Email Address" class="email-address" id="email_address" name="email_address">
 
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
@@ -62,7 +62,7 @@
 
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
-					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
+					<input type="text" placeholder="Email Address" class="email-address" id="email_address" name="email_address">
 
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
