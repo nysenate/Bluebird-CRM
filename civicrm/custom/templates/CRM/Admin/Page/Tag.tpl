@@ -36,7 +36,9 @@
 {/literal}
 {literal}
 <script type="text/javascript">
+cid = 0;
 cj(document).ready(function() {	
+
 	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
 	callTagAjax();
 });
@@ -106,7 +108,10 @@ function makeModalMerge(tagLabel){
 					dataType : "json",
 					success  : function( values ) {
 						if ( values.status == true ) {
-							cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+							if(cj('.contactTagsList.help').length < 1)
+							{
+								cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+							}
 							var toIdTag = cj('#tagLabel_' + toId).attr('description');
 							var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
 							cj('#tagLabel_' + tagInfo.tid).html(''); 
