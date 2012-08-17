@@ -61,6 +61,18 @@
 
 .delete a{color:red !important;}
 
+/*.dataTables_filter {
+    display: inline;
+    float: left !important;
+    width: 80% !important;
+    clear: both;
+}
+.dataTables_length {
+    float: left !important;
+    width: 20% !important;
+    display: inline;
+	clear: both;
+}*/
 
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
 

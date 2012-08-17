@@ -193,12 +193,15 @@ $(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
+
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
+
+
 			}
 		});
 	});
@@ -268,7 +271,7 @@ function buildContactList() {
 	$.each(contacts, function(key, value) {
 		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
-		contactsHtml += '<input type="radio" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
+		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
 		contactsHtml += '</div>';
 		contactsHtml += '<div class="imapper-address-box">';
 		contactsHtml += value.display_name + '<br />';
