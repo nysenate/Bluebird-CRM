@@ -11,7 +11,8 @@ $(document).ready(function(){
 	var reset = cj('#reset');
 	var filter = cj('#filter');
 	var assign = cj('#assign');
-	
+	var email_address = cj('#email_address');
+
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
 	if(!placeholderSupport ){
@@ -48,6 +49,7 @@ $(document).ready(function(){
 				state: '1031', //always use nystate for now
 				city: city.val(),
 				phone: phone.val(),
+				email_address: email_address.val(),
 				street_address: street_address.val(),
 				first_name: first_name.val(),
 				last_name: last_name.val()
@@ -187,7 +189,6 @@ $(document).ready(function(){
 			success: function(data,status) {
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
-				switchName(messages.fromName);
 
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
@@ -200,6 +201,9 @@ $(document).ready(function(){
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
+ 				cj('#tabs-1 #email-address').val(messages.fromEmail);
+ 				cj('#filter').click();
+				switchName(messages.fromName);
 
 
 			}
@@ -256,7 +260,6 @@ function buildMessageList() {
 		}
 		messagesHtml += '<td class="email">'+value.from_email +'</td>';
 		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
-
 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
