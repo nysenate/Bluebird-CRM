@@ -201,7 +201,7 @@ $(document).ready(function(){
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email-address').val(messages.fromEmail);
+ 				cj('#tabs-1 #email_address').val(messages.fromEmail);
  				cj('#filter').click();
 				switchName(messages.fromName);
 
