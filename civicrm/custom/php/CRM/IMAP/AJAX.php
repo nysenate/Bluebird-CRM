@@ -441,7 +441,8 @@ EOQ;
         }
         $returnCode = array('code'    =>  'SUCCESS');
         echo json_encode($returnCode);
-        CRM_Utils_System::civiExit();
+        //the following causes exit before the loop in assignMessage can complete. commenting it allows multi-match
+        //CRM_Utils_System::civiExit();
     }
 
     public function getMatchedMessages() {
