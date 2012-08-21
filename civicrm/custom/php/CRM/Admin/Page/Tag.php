@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,18 +28,15 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page/Basic.php';
-
 /**
  * Page for displaying list of categories
  */
-class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic 
-{
+class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic {
 
     /**
      * The action links that we need to display for the browse screen
@@ -48,33 +44,30 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      * @var array
      * @static
      */
-    static $_links = null;
+  static $_links = NULL;
 
     /**
      * Get BAO
      *
      * @return string Classname of BAO.
      */
-    function getBAOName() 
-    {
+  function getBAOName() {
         return 'CRM_Core_BAO_Tag';
     }
-
 
     /**
      * Get action Links
      *
      * @return array (reference) of action links
      */
-    function &links()
-    {
+  function &links() {
         if (!(self::$_links)) {
             self::$_links = array(
                                   CRM_Core_Action::UPDATE  => array(
                                                                     'name'  => ts('Edit'),
                                                                     'url'   => 'civicrm/admin/tag',
                                                                     'qs'    => 'action=update&id=%%id%%&reset=1',
-                                                                    'title' => ts('Edit Tag') 
+          'title' => ts('Edit Tag'),
                                                                    ),
                                   CRM_Core_Action::DELETE  => array(
                                                                     'name'  => ts('Delete'),
@@ -86,7 +79,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
                                                                     'name'  => ts('Merge'),
                                                                     'class' => 'merge_tag',
                                                                     'url'   => 'javascript:',
-                                                                    'title' => ts('Merge Tag')
+          'title' => ts('Merge Tag'),
                                                                     ),
                                   );
         }
@@ -98,8 +91,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      *
      * @return string Classname of edit form.
      */
-    function editForm() 
-    {
+  function editForm() {
         return 'CRM_Admin_Form_Tag';
     }
 
@@ -108,8 +100,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      *
      * @return string name of this page.
      */
-    function editName() 
-    {
+  function editName() {
         return 'Tag';
     }
 
@@ -118,8 +109,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      *
      * @return string name of this page.
      */
-    function deleteName() 
-    {
+  function deleteName() {
         return 'Tag';
     }
 
@@ -128,8 +118,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      *
      * @return string user context.
      */
-    function userContext( $mode = null ) 
-    {
+  function userContext($mode = NULL) {
         return 'civicrm/admin/tag';
     }
 
@@ -138,18 +127,17 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
      *
      * @return string Classname of delete form.
      */
-   function deleteForm() 
-   {
+  function deleteForm() {
         return 'CRM_Admin_Form_Tag';
    }
 
    /**
     * override function browse()
     */
-   function browse( $action = null, $sort ) {
-       $adminTagSet = false;
+  function browse($action = NULL, $sort) {
+    $adminTagSet = FALSE;
        if ( CRM_Core_Permission::check('administer Tagsets') ) {
-           $adminTagSet = true;
+      $adminTagSet = TRUE;
        }
        $this->assign( 'adminTagSet', $adminTagSet );
        
@@ -164,14 +152,14 @@ WHERE t2.id IS NULL {$reservedClause}";
            $mergeableTags[$tag->id] = 1;
        }
 
-       require_once 'CRM/Core/OptionGroup.php';
        $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
        
+       //NYSS - LCD exclude positions from tag management screen
        $query = "SELECT t1.name, t1.id, t2.name as parent, t1.description, t1.used_for, t1.is_tagset,
                         t1.is_reserved, t1.parent_id, t1.used_for
                  FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
 				 WHERE t1.parent_id <> 292
-                 GROUP BY t1.parent_id, t1.id"; //NYSS - LCD exclude positions from tag management screen
+                 GROUP BY t1.parent_id, t1.id"; 
                  
        $tag = CRM_Core_DAO::executeQuery( $query );
        $values = array( );
@@ -209,8 +197,9 @@ WHERE t2.id IS NULL {$reservedClause}";
 
            // populate action links
            if ( $newAction ) {           
-               $this->action( $tag, $newAction, $values[$tag->id], self::links( ), $permission, true );
-           } else {
+        $this->action($tag, $newAction, $values[$tag->id], self::links(), $permission, TRUE);
+      }
+      else {
                $values[$tag->id]['action'] = '';
            }   
        }
@@ -218,3 +207,4 @@ WHERE t2.id IS NULL {$reservedClause}";
        $this->assign( 'rows', $values );
    }
 }
+

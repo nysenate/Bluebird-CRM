@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,71 +36,67 @@
 /**
  * This class contains all the function that are called using AJAX
  */
-class CRM_Admin_Page_AJAX
-{
-    const OPENLEG_BASE_URL = 'http://open.nysenate.gov/legislation';
-
+class CRM_Admin_Page_AJAX {
 
     /**
      * Function to build menu tree     
      */    
-    static function getNavigationList( ) {
-        require_once 'CRM/Core/BAO/Navigation.php';
-        echo CRM_Core_BAO_Navigation::buildNavigation( true, false );           
+  static
+  function getNavigationList() {
+    echo CRM_Core_BAO_Navigation::buildNavigation(TRUE, FALSE);
         CRM_Utils_System::civiExit();
     }
     
-
-
     /**
      * Function to process drag/move action for menu tree
      */
-    static function menuTree( ) {
-        require_once 'CRM/Core/BAO/Navigation.php';
+  static
+  function menuTree() {
         echo CRM_Core_BAO_Navigation::processNavigation( $_GET );           
         CRM_Utils_System::civiExit();
     }
-
-
 
     /**
      * Function to build status message while 
      * enabling/ disabling various objects
      */
-    static function getStatusMsg( ) 
-    {        
+  static
+  function getStatusMsg() {
         $recordID  = CRM_Utils_Type::escape( $_POST['recordID'], 'Integer' );
         $recordBAO = CRM_Utils_Type::escape( $_POST['recordBAO'], 'String' );
         $op        = CRM_Utils_Type::escape( $_POST['op'], 'String' );
-        $show      = null;
+    $show      = NULL;
 
         if ($op == 'disable-enable') {
             $status = ts('Are you sure you want to enable this record?');
-        } else {
+    }
+    else {
             switch ($recordBAO) {
-                
             case 'CRM_Core_BAO_UFGroup':
-                require_once(str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . ".php");
+          require_once (str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . '.php');
                 $method = 'getUFJoinRecord'; 
                 $result = array($recordBAO,$method);
-                $ufJoin = call_user_func_array(($result), array($recordID,true));
+          $ufJoin = call_user_func_array(($result), array($recordID, TRUE));
                 if (!empty($ufJoin)) {
                     $status = ts('This profile is currently used for %1.', array(1 => implode (', ' , $ufJoin))) . ' <br/><br/>' . ts('If you disable the profile - it will be removed from these forms and/or modules. Do you want to continue?');
-                } else {
+          }
+          else {
                     $status = ts('Are you sure you want to disable this profile?');   
                 }
                 break;
             
             case 'CRM_Price_BAO_Set':
-                require_once(str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . ".php");
+          require_once (str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . '.php');
                 $usedBy   = CRM_Price_BAO_Set::getUsedBy( $recordID );
                 $priceSet = CRM_Price_BAO_Set::getTitle( $recordID );
                 
                 if ( !CRM_Utils_System::isNull( $usedBy ) ) {
                     $template = CRM_Core_Smarty::singleton( );
                     $template->assign( 'usedBy', $usedBy );
-                    $comps = array( "Event"        => "civicrm_event", 
-                                    "Contribution" => "civicrm_contribution_page" );
+            $comps = array(
+              'Event' => 'civicrm_event',
+              'Contribution' => 'civicrm_contribution_page',
+            );
                     $contexts = array( );
                     foreach ( $comps as $name => $table ) {
                         if ( array_key_exists( $table, $usedBy ) ) {
@@ -110,10 +105,12 @@ class CRM_Admin_Page_AJAX
                     }
                     $template->assign( 'contexts', $contexts );
                     
-                    $show   = "noButton";
+            $show   = 'noButton';
                     $table  = $template->fetch( 'CRM/Price/Page/table.tpl' );
-                    $status = ts('Unable to disable the \'%1\' price set - it is currently in use by one or more active events, contribution pages or contributions.', array(1 => $priceSet)) . "<br/> $table";
-                } else {
+            $status = ts('Unable to disable the \'%1\' price set - it is currently in use by one or more active events, contribution pages or contributions.', array(
+              1 => $priceSet)) . "<br/> $table";
+          }
+          else {
                     $status = ts('Are you sure you want to disable \'%1\' Price Set?', array(1 => $priceSet));
                 }
                 break;
@@ -177,6 +174,7 @@ class CRM_Admin_Page_AJAX
             case 'CRM_ACL_BAO_EntityRole':
                 $status = ts('Are you sure you want to disable this ACL Role Assignment?');
                 break;
+
             case 'CRM_Member_BAO_MembershipType':
                 $status = ts('Are you sure you want to disable this membership type?');
                 break;
@@ -202,9 +200,19 @@ class CRM_Admin_Page_AJAX
                 break;
                 
             case 'CRM_Core_BAO_OptionValue':
-                require_once(str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . ".php");
+          require_once (str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . '.php');
                 $label = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionValue', $recordID, 'label' );
-                $status = ts('Are you sure you want to disable this \'%1\' record ?', array(1 => $label));
+          $status = ts('Are you sure you want to disable the \'%1\' option ?', array(1 => $label));
+          $status .= '<br /><br />' . ts('WARNING - Disabling an option which has been assigned to existing records will result in that option being cleared when the record is edited.');
+          break;
+
+        case 'CRM_Contribute_BAO_ContributionRecur':
+          $recurDetails = CRM_Contribute_BAO_ContributionRecur::getSubscriptionDetails($recordID);
+          $status = ts('Are you sure you want to mark this recurring contribution as cancelled?');
+          $status .= '<br /><br /><strong>' . ts('WARNING - This action sets the CiviCRM recurring contribution status to Cancelled, but does NOT send a cancellation request to the payment processor. You will need to ensure that this recurring payment (subscription) is cancelled by the payment processor.') . '</strong>';
+          if ($recurDetails->membership_id) {
+            $status .= '<br /><br /><strong>' . ts('This recurring contribution is linked to an auto-renew membership. If you cancel it, the associated membership will no longer renew automatically. However, the current membership status will not be affected.') . '</strong>';
+          }
                 break;
 
             default:
@@ -219,14 +227,12 @@ class CRM_Admin_Page_AJAX
         CRM_Utils_System::civiExit();
     }
 
-
-
-    static function getTagList()
-    {
+  static
+  function getTagList() {
         $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
         
-        $isSearch = null;
+    $isSearch = NULL;
         if ( isset( $_GET['search'] ) ) {
             $isSearch = CRM_Utils_Type::escape( $_GET['search'], 'Integer' );
         }
@@ -238,7 +244,10 @@ class CRM_Admin_Page_AJAX
             // always add current search term as possible tag
             // here we append :::value to determine if existing / new tag should be created
             if ( !$isSearch ) {
-              $tags[] = array( 'name' => $name, 'id' => $name.":::value" );
+      $tags[] = array(
+        'name' => $name,
+        'id' => $name . ":::value",
+      );
             }
 
             $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
@@ -251,7 +260,8 @@ class CRM_Admin_Page_AJAX
                 }
                 // escape double quotes, which break results js
                 $tags[] = array( 'name' => addcslashes($dao->name, '"'),
-                                 'id'   => $dao->id );
+        'id' => $dao->id,
+      );
             }
         
             echo json_encode($tags);
@@ -340,8 +350,8 @@ class CRM_Admin_Page_AJAX
     
 
 
-    static function mergeTagList()
-    {
+  static
+  function mergeTagList() {
         $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
         $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
         $limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
@@ -355,7 +365,7 @@ class CRM_Admin_Page_AJAX
                 $usedForClause[] = "t1.used_for LIKE '%{$value}%'";
             }
         }
-        $usedForClause  = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
+    $usedForClause = !empty($usedForClause) ? implode(' OR ', $usedForClause) : '1';
         sort($usedForTagA);
 
         // query to list mergable tags
@@ -385,11 +395,9 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     }
 
-
-
-    static function processTags()
-    {
-        $skipTagCreate = $skipEntityAction = $entityId = null;
+  static
+  function processTags() {
+    $skipTagCreate = $skipEntityAction = $entityId = NULL;
         $action           = CRM_Utils_Type::escape( $_POST['action'], 'String' );
         $parentId         = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
         if ( $_POST['entityId'] ) {
@@ -410,10 +418,10 @@ LIMIT $limit";
         // this is done to allow numeric tags etc. 
         $tagValue = explode( ':::', $_POST['tagID'] );
         
-        $createNewTag = false;
+    $createNewTag = FALSE;
         $tagID  = $tagValue[0];
         if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
-            $createNewTag = true;
+      $createNewTag = TRUE;
         }
         
         //NYSS - retrieve OpenLeg ID and construct URL
@@ -426,8 +434,7 @@ LIMIT $limit";
             $sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
             $bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
         }
-                
-        require_once 'CRM/Core/BAO/EntityTag.php';
+
         $tagInfo = array( );
         // if action is select
         if ( $action == 'select' ) {
@@ -443,47 +450,53 @@ LIMIT $limit";
                                  'parent_id' => $parentId,
                                  'description' => $bill_url ); //LCD
 
-                require_once 'CRM/Core/BAO/Tag.php';
                 $tagObject = CRM_Core_BAO_Tag::add( $params, CRM_Core_DAO::$_nullArray );
                 
-                $tagInfo = array( 'name'   => $tagID,
-                                  'id'     => $tagObject->id,
-                                  'action' => $action );
+        $tagInfo = array(
+          'name' => $tagID,
+          'id'     => $tagObject->id,
+          'action' => $action,
+        );
                 $tagID = $tagObject->id;                         
             }
             
             if ( !$skipEntityAction && $entityId ) {
                 // save this tag to contact
-                $params = array( 'entity_table' => $entityTable,
+        $params = array(
+          'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
-                                 'tag_id'       => $tagID);
+          'tag_id' => $tagID,
+        );
                              
                 CRM_Core_BAO_EntityTag::add( $params );
             }
-        } elseif ( $action == 'delete' ) {  // if action is delete
+      // if action is delete
+    }
+    elseif ($action == 'delete') {
             if ( !is_numeric( $tagID ) ) {
                 $tagID = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag', $tagID, 'id',  'name' );
             }
             if ( $entityId ) {
                 // delete this tag entry for the entity
-                $params = array( 'entity_table' => $entityTable,
+        $params = array(
+          'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
-                                 'tag_id'       => $tagID);
+          'tag_id' => $tagID,
+        );
                              
                 CRM_Core_BAO_EntityTag::del( $params );
             }
-            $tagInfo = array( 'id'     => $tagID,
-                              'action' => $action );
+      $tagInfo = array(
+        'id' => $tagID,
+        'action' => $action,
+      );
         }
         
         echo json_encode( $tagInfo );
         CRM_Utils_System::civiExit( );
     } 
 
-
-
-    function mappingList()
-    {
+  function mappingList() {
         $params = array( 'mappingID' );
         foreach ( $params as $param ) {
             $$param = CRM_Utils_Array::value( $param, $_POST );
@@ -494,21 +507,20 @@ LIMIT $limit";
             CRM_Utils_System::civiExit( );
         }
 
-        require_once "CRM/Core/BAO/ScheduleReminders.php";
-        list( $sel1, $sel2 ) = CRM_Core_BAO_ScheduleReminders::getSelection1( $mappingID );
+    $selectionOptions = CRM_Core_BAO_ActionSchedule::getSelection1($mappingID);
+    extract($selectionOptions);
 
         $elements = array( );
-        foreach ( $sel1 as $id => $name ) {
-            $elements[] = array( 'name'  => $name,
-                                 'value' => $id );
+    foreach ($sel4 as $id => $name) {
+      $elements[] = array(
+        'name' => $name,
+        'value' => $id,
+      );
         }
 
-        require_once "CRM/Utils/JSON.php";
         echo json_encode( $elements );
         CRM_Utils_System::civiExit( );
     } 
-
-
 
     function mappingList1(  ) {
         $params = array( 'mappingID' );
@@ -521,32 +533,30 @@ LIMIT $limit";
             CRM_Utils_System::civiExit( );
         }
 
-        require_once "CRM/Core/BAO/ScheduleReminders.php";
-        list( $sel1, $sel2 ) =  CRM_Core_BAO_ScheduleReminders::getSelection1( $mappingID );
+    $selectionOptions = CRM_Core_BAO_ActionSchedule::getSelection1($mappingID);
+    extract($selectionOptions);
 
         $elements = array( );
-        foreach ( $sel2 as $id => $name ) {
-            $elements[] = array( 'name'  => $name,
-                                 'value' => $id );
+    foreach ($sel5 as $id => $name) {
+      $elements['sel5'][] = array(
+        'name' => $name,
+        'value' => $id,
+      );
         }
+    $elements['recipientMapping'] = $recipientMapping;
 
-        require_once "CRM/Utils/JSON.php";
         echo json_encode( $elements );
         CRM_Utils_System::civiExit( );
     } 
    
-
-
-    static function mergeTags()
-    {
+  static
+  function mergeTags() {
         $tagAId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
         $tagBId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
         
-        require_once 'CRM/Core/BAO/EntityTag.php';
         $result = CRM_Core_BAO_EntityTag::mergeTags( $tagAId, $tagBId );
 
         if ( !empty( $result['tagB_used_for'] ) ) {
-            require_once 'CRM/Core/OptionGroup.php';
             $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
             foreach ( $result['tagB_used_for'] as &$val ) {
                 $val = $usedFor[$val];
@@ -558,4 +568,40 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     } 
 
+  function recipient() {
+    $params = array('recipient');
+    foreach ($params as $param) {
+      $$param = CRM_Utils_Array::value($param, $_POST);
+    }
+
+    if (!$recipient) {
+      echo json_encode(array('error_msg' => 'required params missing.'));
+      CRM_Utils_System::civiExit();
+    }
+
+    switch ($recipient) {
+      case 'Participant Status':
+        $values = CRM_Event_PseudoConstant::participantStatus();
+        break;
+
+      case 'Participant Role':
+        $values = CRM_Event_PseudoConstant::participantRole();
+        break;
+
+      default:
+        exit;
+    }
+
+    $elements = array();
+    foreach ($values as $id => $name) {
+      $elements[] = array(
+        'name' => $name,
+        'value' => $id,
+      );
+    }
+
+    echo json_encode($elements);
+    CRM_Utils_System::civiExit();
+  }
 }
+
