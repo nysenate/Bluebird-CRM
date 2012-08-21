@@ -448,35 +448,49 @@ EOQ;
     public static function getMatchedMessages() {
         require_once 'CRM/Core/BAO/Tag.php';
         require_once 'CRM/Core/BAO/EntityTag.php';
+
+
+         
         $tag     = new CRM_Core_BAO_Tag();
         $tag->id = self::getInboxPollingTagId();
-        
+    
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
 
-        error_log(print_r($result, TRUE), 0);
-        // here we're logging the output to /var/log/apache2 ( run "tail -f /var/log/apache2/error.log" to check it)
-        // $result = an array that accurately represents how many occurances of the getInboxPollingTagId() your instance has, but they are empty
-
         $activities = array();
-
+        echo"<pre>";
         foreach($result as $id) {
+
+
             error_log(print_r($id, TRUE), 0);
+
             $params = array('version'   =>  3,
                             'activity'  =>  'get',
+                           'id' => $id,
                             );
             $activity = civicrm_api('activity', 'get', $params);
+            print_r($activity);
+            
+            // activities working ! 
 
-            $params = array('version'   =>  3,
-                            'id'        =>  $activity['contact_id'],
-                            );
+            // here we're logging the output to /var/log/apache2 ( run "tail -f /var/log/apache2/error.log" to check it)
+            // $result = an array that accurately represents how many occurances of the getInboxPollingTagId() your instance has, but they are empty
 
-            $contact = civicrm_api('contact', 'get', $params);
+            // //error_log(print_r($activity, TRUE), 0);
 
-            $activities[$result['id']]['activity'] = $activity;
-            $activities[$result['id']]['contact'] = $contact;
+            // $params = array('version'   =>  3,
+            //                 'activity' => 'get',
+            //                 'id'        =>  $activity['source_contact_id'],
+            //                 );
+
+            // $contact = civicrm_api('contact', 'get', $params);
+            // print_r($contact);
+
+            // $activities[$result['id']]['activity'] = $activity;
+            // $activities[$result['id']]['contact'] = $contact;
         }
-        echo json_encode($activities);
-        CRM_Utils_System::civiExit();
+         echo"</pre>";
+      //  echo json_encode($activities);
+      //  CRM_Utils_System::civiExit();
     }
 
     function getInboxPollingTagId() {
@@ -488,9 +502,6 @@ EOQ;
         'version' => 3,
       );
       $result = civicrm_api('tag', 'get', $params);
-
-    //  error_log(print_r($result['id'], TRUE), 0);
-
       if($result && isset($result['id'])) {
         return $result['id'];
       }
