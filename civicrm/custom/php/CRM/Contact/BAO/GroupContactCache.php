@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+  | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+  | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Contact/DAO/GroupContactCache.php';
-
 class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCache {
 
     /**
@@ -48,7 +44,7 @@ class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCach
      */
     static function check( $groupID ) {
         if ( empty( $groupID ) ) {
-            return true;
+      return TRUE;
         }
 
         if ( ! is_array( $groupID ) ) {
@@ -60,10 +56,7 @@ class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCach
         $groupID = CRM_Core_DAO::escapeString( implode( ', ', $groupID ) );
 
         $config  = CRM_Core_Config::singleton( );
-        $smartGroupCacheTimeout = 
-            isset( $config->smartGroupCacheTimeout ) && 
-            is_numeric(  $config->smartGroupCacheTimeout ) ?
-            $config->smartGroupCacheTimeout : 0;
+    $smartGroupCacheTimeout = isset($config->smartGroupCacheTimeout) && is_numeric($config->smartGroupCacheTimeout) ? $config->smartGroupCacheTimeout : 0;
         
         //make sure to give original timezone settings again.
         $originalTimezone = date_default_timezone_get( );
@@ -82,17 +75,18 @@ AND     ( g.cache_date IS NULL OR
         )
 ";
 
-        $dao      =& CRM_Core_DAO::executeQuery( $query );
+    $dao = CRM_Core_DAO::executeQuery($query);
         $groupIDs = array( );
         while ( $dao->fetch() ) {
             $groupIDs[] = $dao->id;
         }
 
         if ( empty( $groupIDs ) ) {
-            return true;
-        } else {
+      return TRUE;
+    }
+    else {
             self::add( $groupIDs );
-            return false;
+      return FALSE;
         }
     }
 
@@ -103,30 +97,38 @@ AND     ( g.cache_date IS NULL OR
             $groupID = array( $groupID );
         }
 
-        require_once 'CRM/Contact/BAO/Query.php';
         $returnProperties = array('contact_id');
         foreach ($groupID as $gid) {
             $params = array(array('group', 'IN', array($gid => 1), 0, 0));
             // the below call update the cache table as a byproduct of the query
-            CRM_Contact_BAO_Query::apiQuery($params, $returnProperties, null, null, 0, 0, false);
+      CRM_Contact_BAO_Query::apiQuery($params, $returnProperties, NULL, NULL, 0, 0, FALSE);
         }
     }
 
     static function store( &$groupID, &$values ) {
-        $processed = false;
+    $processed = FALSE;
 
         // NYSS 4769 - sort the values to avoid concurrent queries deadlocking with each other.
         //sort($values); //NYSS 4777 - not a meaningful sort
 
         // to avoid long strings, lets do BULK_INSERT_COUNT values at a time
         while ( ! empty( $values ) ) {
-            $processed = true;
+      $processed = TRUE;
             $input = array_splice( $values, 0, CRM_Core_DAO::BULK_INSERT_COUNT );
             $str   = implode( ',', $input );
             $sql = "INSERT IGNORE INTO civicrm_group_contact_cache (group_id,contact_id) VALUES $str;";
             CRM_Core_DAO::executeQuery( $sql );
         }
+    self::updateCacheTime($groupID, $processed);
+  }
 
+  /**
+   * Change the cache_date
+   *
+   * @param $groupID array(int)
+   * @param $processed bool, whether the cache data was recently modified
+   */
+  static function updateCacheTime($groupID, $processed) {
         // only update cache entry if we had any values
         if ( $processed ) {
             // also update the group with cache date information
@@ -135,7 +137,8 @@ AND     ( g.cache_date IS NULL OR
             date_default_timezone_set('UTC');
             $now = date('YmdHis');
             date_default_timezone_set( $originalTimezone );
-        } else {
+    }
+    else {
             $now = 'null';
         }
 
@@ -146,11 +149,12 @@ SET    cache_date = $now
 WHERE  id IN ( $groupIDs )
 ";
         CRM_Core_DAO::executeQuery( $sql,
-                                    CRM_Core_DAO::$_nullArray );
+      CRM_Core_DAO::$_nullArray
+    );
     }
 
-    static function remove( $groupID = null, $onceOnly = true ) {
-        static $invoked = false;
+  static function remove($groupID = NULL, $onceOnly = TRUE) {
+    static $invoked = FALSE;
 
         // typically this needs to happy only once per instance
         // this is especially true in import, where we dont need 
@@ -159,12 +163,13 @@ WHERE  id IN ( $groupIDs )
         // i.e. cache is reset for all groups
         if ( $onceOnly &&
              $invoked  &&
-             $groupID == null ) {
+      $groupID == NULL
+    ) {
             return;
         }
         
-        if ( $groupID == null ) {
-            $invoked = true;
+    if ($groupID == NULL) {
+      $invoked = TRUE;
         }
         
         //when there are difference in timezones for mysql and php.
@@ -178,10 +183,7 @@ WHERE  id IN ( $groupIDs )
         
         if ( ! isset( $groupID ) ) {
             $config = CRM_Core_Config::singleton( );
-            $smartGroupCacheTimeout = 
-                isset( $config->smartGroupCacheTimeout ) && 
-                is_numeric(  $config->smartGroupCacheTimeout ) ?
-            $config->smartGroupCacheTimeout : 0;
+      $smartGroupCacheTimeout = isset($config->smartGroupCacheTimeout) && is_numeric($config->smartGroupCacheTimeout) ? $config->smartGroupCacheTimeout : 0;
 
             if ( $smartGroupCacheTimeout == 0 ) {
                 $query  = "
@@ -191,7 +193,8 @@ TRUNCATE civicrm_group_contact_cache
 UPDATE civicrm_group g
 SET    cache_date = null
 ";
-            } else {
+      }
+      else {
                 $query = "
 DELETE     gc
 FROM       civicrm_group_contact_cache gc
@@ -205,12 +208,13 @@ WHERE  TIMESTAMPDIFF(MINUTE, cache_date, $now) >= $smartGroupCacheTimeout
 ";
             }
             $params = array( );
-        } else if ( is_array( $groupID ) ) {
+    }
+    elseif (is_array($groupID)) {
             $query = "
-DELETE
-FROM       civicrm_group_contact_cache
-WHERE      group_id IN ( %1 )
-ORDER BY   contact_id
+DELETE     g
+FROM       civicrm_group_contact_cache g
+WHERE      g.group_id IN ( %1 )
+ORDER BY   g.contact_id
 "; //NYSS 4777
             $update = "
 UPDATE civicrm_group g
@@ -219,7 +223,8 @@ WHERE  id IN ( %1 )
 ";
             $groupIDs = implode( ', ', $groupID );
             $params = array( 1 => array( $groupIDs, 'String' ) );
-        } else {
+    }
+    else {
             $query = "
 DELETE     g
 FROM       civicrm_group_contact_cache g
@@ -242,21 +247,23 @@ WHERE  id = %1
     /**
      * load the smart group cache for a saved search
      */
-    static function load( &$group ) {
+  static function load(&$group, $fresh = FALSE) {
         $groupID       = $group->id;
         $savedSearchID = $group->saved_search_id;
-
-        $sql         = null;
+    static $alreadyLoaded = array();
+    if (in_array($groupID, $alreadyLoaded) && !$fresh) {
+      return;
+    }
+    $alreadyLoaded[] = $groupID;
+    $sql         = NULL;
         $idName      = 'id';
-        $customClass = null;
+    $customClass = NULL;
         if ( $savedSearchID ) {
-            require_once 'CRM/Contact/BAO/SavedSearch.php';
-            $ssParams =& CRM_Contact_BAO_SavedSearch::getSearchParams($savedSearchID);
+      $ssParams = CRM_Contact_BAO_SavedSearch::getSearchParams($savedSearchID);
 
             // rectify params to what proximity search expects if there is a value for prox_distance
             // CRM-7021
             if ( !empty( $ssParams ) ) { 
-                require_once 'CRM/Contact/BAO/ProximityQuery.php';
                 CRM_Contact_BAO_ProximityQuery::fixInputParams( $ssParams );
             }
 
@@ -264,70 +271,84 @@ WHERE  id = %1
             $returnProperties = array();
             if (CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_SavedSearch',
                                              $savedSearchID,
-                                             'mapping_id' ) ) {
-                require_once "CRM/Core/BAO/Mapping.php";
-                $fv =& CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
+          'mapping_id'
+        )) {
+        $fv = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
                 $returnProperties = CRM_Core_BAO_Mapping::returnProperties( $fv );
             }
 
             if ( isset( $ssParams['customSearchID'] ) ) {
                 // if custom search
-                require_once 'CRM/Contact/BAO/SearchCustom.php';
                 
                 // we split it up and store custom class
                 // so temp tables are not destroyed if they are used
                 // hence customClass is defined above at top of function
                 $customClass = CRM_Contact_BAO_SearchCustom::customClass( $ssParams['customSearchID'],
-                                                                          $savedSearchID );
+                       $savedSearchID
+        );
                 $searchSQL   = $customClass->contactIDs( );
                 $idName = 'contact_id';
-            } else {
-                require_once 'CRM/Contact/BAO/Query.php';
-                $query = new CRM_Contact_BAO_Query($ssParams, $returnProperties, null,
-                                                    false, false, 1,
-                                                    true, true, false );
-                $query->_useDistinct = false;
-                $query->_useGroupBy = false;
-				$query->_useOrderBy = false; //NYSS 4846
-                $searchSQL =& $query->searchQuery( 0, 0, null,
-                                                   false, false,
-                                                   false, true,
-                                                   true,
-                                                   null, null, null,
-                                                   true ); //NYSS
+      } 
+      else {
+        $formValues = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
+
+
+        $query = new CRM_Contact_BAO_Query($ssParams, $returnProperties, NULL,
+                 FALSE, FALSE, 1,
+                 TRUE, TRUE,
+                 FALSE,
+                 CRM_Utils_Array::value('display_relationship_type',
+                   $formValues
+                 ),
+                 CRM_Utils_Array::value('operator',
+                   $formValues, 'AND'
+                 )
+        );
+        $query->_useDistinct = FALSE;
+        $query->_useGroupBy  = FALSE;
+        $query->_useOrderBy = false; //NYSS 4846
+        $searchSQL           = $query->searchQuery(0, 0, NULL,
+                               FALSE, FALSE,
+                               FALSE, TRUE,
+                               TRUE,
+                               NULL, NULL, NULL,
+                               TRUE
+        );
             }
             $groupID = CRM_Utils_Type::escape($groupID, 'Integer');
-            $sql = $searchSQL . 
-                " AND contact_a.id NOT IN ( 
+      $sql = $searchSQL . " AND contact_a.id NOT IN (
                               SELECT contact_id FROM civicrm_group_contact 
                               WHERE civicrm_group_contact.status = 'Removed' 
                               AND   civicrm_group_contact.group_id = $groupID ) ";
 		}
 
         if ( $sql ) {
-            $sql .= " UNION ";
+      // $sql .= " UNION ";
+      $sql = preg_replace("/^SELECT/", "SELECT $groupID as group_id, ", $sql);
         }
 
         // lets also store the records that are explicitly added to the group
         // this allows us to skip the group contact LEFT JOIN
-        $sql .= "
-SELECT contact_id as $idName
+    $sqlB = "
+SELECT $groupID as group_id, contact_id as $idName
 FROM   civicrm_group_contact
 WHERE  civicrm_group_contact.status = 'Added'
   AND  civicrm_group_contact.group_id = $groupID
 ORDER BY $idName "; //NYSS 4777
 
-        $dao = CRM_Core_DAO::executeQuery( $sql );
+    $groupIDs = array($groupID);
+    self::remove($groupIDs);
 
-        $values = array( );
-        while ( $dao->fetch( ) ) {
-            $values[] = "({$groupID},{$dao->$idName})";
+    foreach (array($sql, $sqlB) as $selectSql) {
+      if (!$selectSql) {
+        continue;
         }
-        array_unique($values); //NYSS 4777
-
-        $groupIDs = array( $groupID );
-        self::remove( $groupIDs );
-        self::store ( $groupIDs, $values );
+      $insertSql = "INSERT IGNORE INTO civicrm_group_contact_cache (group_id,contact_id) ($selectSql);";
+      // CRM_Core_Error::debug_var('insertSql', $insertSql);
+      $processed = TRUE; // FIXME
+      $result = CRM_Core_DAO::executeQuery($insertSql);
+    }
+    self::updateCacheTime($groupIDs, $processed);
 
         if ( $group->children ) {
 
@@ -343,10 +364,9 @@ AND  civicrm_group_contact.group_id = $groupID ";
                 $removed_contacts[] = $dao->contact_id;
             }
 
-            require_once 'CRM/Contact/BAO/Group.php';
             $childrenIDs = explode( ',', $group->children );
             foreach ( $childrenIDs as $childID ) {
-                $contactIDs =& CRM_Contact_BAO_Group::getMember( $childID, false );
+        $contactIDs = CRM_Contact_BAO_Group::getMember($childID, FALSE);
                 //Unset each contact that is removed from the parent group
                 foreach($removed_contacts as $removed_contact) {
                     unset($contactIDs[$removed_contact]);
@@ -361,6 +381,4 @@ AND  civicrm_group_contact.group_id = $groupID ";
         }
     }
 }
-
-
 

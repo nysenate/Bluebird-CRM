@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/ShowHideBlocks.php';
-require_once 'CRM/Core/PseudoConstant.php';
 
 /**
  * Auxilary class to provide support to the Contact Form class. Does this by implementing
@@ -43,14 +39,15 @@ require_once 'CRM/Core/PseudoConstant.php';
  *
  */
 class CRM_Contact_Form_Edit_Individual {
+
     /**
      * This function provides the HTML form elements that are specific to the Individual Contact Type
      * 
      * @access public
+   *
      * @return None 
      */
-    public function buildQuickForm( &$form, $action = null )
-    {
+  public function buildQuickForm(&$form, $action = NULL) {
         $form->applyFilter('__ALL__','trim');
         
         //prefix
@@ -78,7 +75,8 @@ class CRM_Contact_Form_Edit_Individual {
         
         // nick_name
         $form->addElement('text', 'nick_name', ts('Nick Name'),
-                          CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'nick_name') );
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'nick_name')
+    );
       
         // job title
         // override the size for UI to look better
@@ -86,25 +84,34 @@ class CRM_Contact_Form_Edit_Individual {
         $form->addElement('text', 'job_title', ts('Job title'), $attributes['job_title'], 'size="30"');
                 
         //Current Employer Element
-        $employerDataURL =  CRM_Utils_System::url( 'civicrm/ajax/rest', 'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&employee_id='.$this->_contactId, false, null, false );
+    $employerDataURL = CRM_Utils_System::url('civicrm/ajax/rest', 'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&employee_id=' . $this->_contactId, FALSE, NULL, FALSE);
         $form->assign('employerDataURL',$employerDataURL );
         
         $form->addElement('text', 'current_employer', ts('Current Employer'), '' );
         $form->addElement('hidden', 'current_employer_id', '', array( 'id' => 'current_employer_id') );
         $form->addElement('text', 'contact_source', ts('Source'));
 
-        $checkSimilar = defined( 'CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' ) ? CIVICRM_CONTACT_AJAX_CHECK_SIMILAR : true;
+    $checkSimilar = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'contact_ajax_check_similar',
+      NULL,
+      TRUE
+    );
+        if ( $checkSimilar == null ) {
+          $checkSimilar = 0;
+        }
         $form->assign('checkSimilar',$checkSimilar );
  
 
         //External Identifier Element
         $form->add('text', 'external_identifier', ts('External Id'), 
-                   CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'external_identifier'), false);
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'external_identifier'), FALSE
+    );
 
         $form->addRule( 'external_identifier',
                         ts('External ID already exists in Database.'), 
                         'objectExists', 
-                        array( 'CRM_Contact_DAO_Contact', $form->_contactId, 'external_identifier' ) );
+      array('CRM_Contact_DAO_Contact', $form->_contactId, 'external_identifier')
+    );
         $config = CRM_Core_Config::singleton();
         CRM_Core_ShowHideBlocks::links($form, 'demographics', '' , '');
     }
@@ -120,8 +127,8 @@ class CRM_Contact_Form_Edit_Individual {
      * @access public
      * @static
      */
-    static function formRule( $fields, $files, $contactID = null ) 
-    {
+  static
+  function formRule($fields, $files, $contactID = NULL) {
         $errors = array( );
         $primaryID = CRM_Contact_Form_Contact::formRule( $fields, $errors, $contactID );
         
@@ -135,6 +142,7 @@ class CRM_Contact_Form_Edit_Individual {
         //check for duplicate - dedupe rules
         CRM_Contact_Form_Contact::checkDuplicateContacts( $fields, $errors, $contactID, 'Individual' );
         
-        return empty($errors) ? true : $errors; 
+    return empty($errors) ? TRUE : $errors;
     }
 }
+

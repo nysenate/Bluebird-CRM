@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,23 +28,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Contact_Form_Edit_TagsandGroups {
 
-
-class CRM_Contact_Form_Edit_TagsandGroups
-{
     /**
      * constant to determine which forms we are generating
      *
      * Used by both profile and edit contact
      */
-    const
-        GROUP = 1,
-        TAG   = 2,
-        ALL   = 3;
+  CONST GROUP = 1, TAG = 2, ALL = 3;
 
     /**
      * This function is to build form elements
@@ -62,15 +56,16 @@ class CRM_Contact_Form_Edit_TagsandGroups
      * @static
      * @access public
      */
-    static function buildQuickForm(&$form,
+  static
+  function buildQuickForm(&$form,
                                    $contactId = 0,
                                    $type = CRM_Contact_Form_Edit_TagsandGroups::ALL,
-                                   $visibility = false,
-                                   $isRequired = null,
+    $visibility = FALSE,
+    $isRequired = NULL,
                                    $groupName = 'Group(s)',
                                    $tagName   = 'Tag(s)',
-                                   $fieldName = null ) 
-    {
+    $fieldName  = NULL
+  ) {
         if ( ! isset( $form->_tagGroup ) ) {
             $form->_tagGroup = array( );
         }
@@ -84,14 +79,16 @@ class CRM_Contact_Form_Edit_TagsandGroups
             }
             
             $elements = array( );
-            $groupID  = isset( $form->_grid ) ? $form->_grid : null ;
+      $groupID = isset($form->_grid) ? $form->_grid : NULL;
             if ( $groupID && $visibility ) {
-                $ids = '= '.$groupID;
-            } else {
+        $ids = "= {$groupID}";
+      }
+      else {
                 if ( $visibility ) {
-                    $group  =& CRM_Core_PseudoConstant::allGroup( );
-                } else {
-                    $group  =& CRM_Core_PseudoConstant::group( );
+          $group = CRM_Core_PseudoConstant::allGroup();
+        }
+        else {
+          $group = CRM_Core_PseudoConstant::group();
                 }
                 $ids = implode( ',', array_keys( $group ) );
                 $ids = 'IN ('.$ids.')';
@@ -105,15 +102,16 @@ class CRM_Contact_Form_Edit_TagsandGroups
     ORDER BY title
     ";
                 $dao = CRM_Core_DAO::executeQuery( $sql );
-                $attributes['skiplabel'] = true;
+        $attributes['skiplabel'] = TRUE;
                 while ( $dao->fetch( ) ) {
                     // make sure that this group has public visibility
     		        if ( $visibility &&
-                         $dao->visibility == 'User and User Admin Only' ) {
+            $dao->visibility == 'User and User Admin Only'
+          ) {
                         continue;
                     }
                     $form->_tagGroup[$fName][$dao->id]['description'] = $dao->description;
-                    $elements[] =& $form->addElement('advcheckbox', $dao->id, null, $dao->title, $attributes );
+          $elements[] = &$form->addElement('advcheckbox', $dao->id, NULL, $dao->title, $attributes);
                 }
             
     	        if ( ! empty( $elements ) ) {
@@ -133,11 +131,10 @@ class CRM_Contact_Form_Edit_TagsandGroups
             }
             $form->_tagGroup[$fName] = 1;
             $elements = array( );
-            require_once 'CRM/Core/BAO/Tag.php';            
             $tag = CRM_Core_BAO_Tag::getTags( );
             
             foreach ($tag as $id => $name) {
-                $elements[] =& HTML_QuickForm::createElement('checkbox', $id, null, $name);
+        $elements[] = $form->createElement('checkbox', $id, NULL, $name);
             }
             if ( ! empty( $elements ) ) { 
                 $form->addGroup( $elements, $fName, $tagName, '<br />' );
@@ -149,12 +146,10 @@ class CRM_Contact_Form_Edit_TagsandGroups
             }
             
             // build tag widget
-            require_once 'CRM/Core/Form/Tag.php';
-            require_once 'CRM/Core/BAO/Tag.php';
             $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_contact' );
             
 			//NYSS #3726 - accommodate additional params
-            CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', $form->_contactId, false, false, false );
+            CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, FALSE, FALSE);
         }
         $form->assign('tagGroup', $form->_tagGroup); 
     }
@@ -171,8 +166,8 @@ class CRM_Contact_Form_Edit_TagsandGroups
      * @access public
      * @static
      */
-    static function setDefaults( $id, &$defaults, $type = CRM_Contact_Form_Edit_TagsandGroups::ALL, $fieldName = null ) 
-    {
+  static
+  function setDefaults($id, &$defaults, $type = CRM_Contact_Form_Edit_TagsandGroups::ALL, $fieldName = NULL) {
         $type = (int ) $type; 
         if ( $type & self::GROUP ) { 
             $fName = 'group';
@@ -180,8 +175,7 @@ class CRM_Contact_Form_Edit_TagsandGroups
                 $fName = $fieldName; 
             }
 
-            require_once 'CRM/Contact/BAO/GroupContact.php';
-            $contactGroup =& CRM_Contact_BAO_GroupContact::getContactGroup( $id, 'Added', null, false, true );  
+      $contactGroup = CRM_Contact_BAO_GroupContact::getContactGroup($id, 'Added', NULL, FALSE, TRUE);
             if ( $contactGroup ) {  
                 foreach ( $contactGroup as $group ) {  
                     $defaults[$fName .'['. $group['group_id'] .']'] = 1;  
@@ -195,15 +189,13 @@ class CRM_Contact_Form_Edit_TagsandGroups
                 $fName = $fieldName; 
             }
             
-            require_once 'CRM/Core/BAO/EntityTag.php';
-            $contactTag =& CRM_Core_BAO_EntityTag::getTag($id);  
+      $contactTag = CRM_Core_BAO_EntityTag::getTag($id);
             if ( $contactTag ) {  
                 foreach ( $contactTag as $tag ) {  
                     $defaults[$fName .'[' . $tag . ']' ] = 1;  
                 }  
             }  
         }
-
     }
     
     /**
@@ -211,10 +203,10 @@ class CRM_Contact_Form_Edit_TagsandGroups
      * the default values are retrieved from the database
      * 
      * @access public
+   *
      * @return None
      */
-    function setDefaultValues( &$form, &$defaults ) 
-    {
+  function setDefaultValues(&$form, &$defaults) {
         $contactEditOptions = $form->get( 'contactEditOptions' );
         if ( $form->_action & CRM_Core_Action::ADD ) {
             if ( array_key_exists( 'TagsAndGroups', $contactEditOptions ) ) {
@@ -226,15 +218,13 @@ class CRM_Contact_Form_Edit_TagsandGroups
                     $defaults['tag'][$form->_tid] = 1;
                 }
             }
-        } else {
+    }
+    else {
             if ( array_key_exists( 'TagsAndGroups', $contactEditOptions ) ) {
                 // set the group and tag ids
                 self::setDefaults( $form->_contactId, $defaults, self::ALL );
             }
         }
     }
-
 }
-
-
 
