@@ -449,11 +449,13 @@ EOQ;
         require_once 'CRM/Core/BAO/Tag.php';
         require_once 'CRM/Core/BAO/EntityTag.php';
         $tag     = new CRM_Core_BAO_Tag();
-        $tag->id = 101254; // self::getInboxPollingTagId();
-        //error_log(print_r($tag, TRUE), 0);
-
+        $tag->id = self::getInboxPollingTagId();
+        
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
+
         error_log(print_r($result, TRUE), 0);
+        // here we're logging the output to /var/log/apache2 ( run "tail -f /var/log/apache2/error.log" to check it)
+        // $result = an array that accurately represents how many occurances of the getInboxPollingTagId() your instance has, but they are empty
 
         $activities = array();
 
