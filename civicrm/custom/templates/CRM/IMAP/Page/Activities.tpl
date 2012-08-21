@@ -1,6 +1,6 @@
-<div class="crm-content-block imapperbox">
+<div class="crm-content-block imapperbox" id="Activities">
 	<div class='full'>
-	<h1>Unmatched Results<small id='total_results'><span id="total_number">Loading</span> results</small></h1>
+	<h1>Unprocessed Activities <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
 	</div>
 	<div class='full'>
 		<table id="sortable_results" class=""> 
@@ -43,7 +43,7 @@
 
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
-					<input type="text" placeholder="Email Address" class="email-address" id="email_address" name="email_address">
+					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
 
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
@@ -62,7 +62,7 @@
 
 					<input type="text" placeholder="First name" class="form-text" id="first_name" name="first_name">
 					<input type="text" placeholder="Last Name"  class="form-text" id="last_name" name="last_name">
-					<input type="text" placeholder="Email Address" class="email-address" id="email_address" name="email_address">
+					<input type="text" placeholder="Email Address" class="email-address" id="email-address" name="email_address">
 
 					<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 					<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">

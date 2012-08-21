@@ -6,6 +6,12 @@
      <page_callback>CRM_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
+    <item>
+     <path>civicrm/imap/activities</path>
+     <title>Activities</title>
+     <page_callback>CRM_IMAP_Page_Activities</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
   <item>
      <path>civicrm/imap/ajax/message</path>
      <page_callback>CRM_IMAP_AJAX::getMessageDetails</page_callback>
@@ -30,6 +36,11 @@
   <item>
     <path>civicrm/imap/ajax/assignMessage</path>
     <page_callback>CRM_IMAP_AJAX::assignMessage</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/getMatchedMessages</path>
+    <page_callback>CRM_IMAP_AJAX::getMatchedMessages</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

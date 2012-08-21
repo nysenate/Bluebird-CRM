@@ -15,6 +15,7 @@ $(document).ready(function(){
 
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
+
 	if(!placeholderSupport ){
 		console.log('no placeholder Support');
 		$('[placeholder]').focus(function() {
@@ -114,7 +115,16 @@ $(document).ready(function(){
 		return false;
 	});
 
-	pullMessageHeaders();
+
+	// 
+	
+	if(cj("#Activities").length){
+		pullActivitiesHeaders();
+	}else{
+		pullMessageHeaders();
+	}
+
+	
 
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
@@ -238,6 +248,18 @@ function pullMessageHeaders() {
 		}
 	});
 }
+
+function pullActivitiesHeaders() {
+	cj.ajax({
+		url: '/civicrm/imap/ajax/getMatchedMessages',
+		success: function(data,status) {
+			//messages = cj.parseJSON(data);
+			console.log(data);
+			//buildMessageList();
+		}
+	});
+}
+
 function makeListSortable(){
 cj("#sortable_results").dataTable({
 		"aaSorting": [[ 5, "desc" ]],

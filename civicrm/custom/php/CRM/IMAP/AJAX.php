@@ -445,15 +445,20 @@ EOQ;
         //CRM_Utils_System::civiExit();
     }
 
-    public function getMatchedMessages() {
-        require_once 'api/api.php';
-        $params = array('version'   =>  3,
-                        'tag_id'    =>  getInboxPollingTagId(),
-                        );
-        $result = civicrm_api('entity_tag', 'get', $params);
+    public static function getMatchedMessages() {
+        require_once 'CRM/Core/BAO/Tag.php';
+        require_once 'CRM/Core/BAO/EntityTag.php';
+        $tag     = new CRM_Core_BAO_Tag();
+        $tag->id = 101254; // self::getInboxPollingTagId();
+        //error_log(print_r($tag, TRUE), 0);
+
+        $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
+        error_log(print_r($result, TRUE), 0);
 
         $activities = array();
+
         foreach($result as $id) {
+            error_log(print_r($id, TRUE), 0);
             $params = array('version'   =>  3,
                             'activity'  =>  'get',
                             );
@@ -481,6 +486,8 @@ EOQ;
         'version' => 3,
       );
       $result = civicrm_api('tag', 'get', $params);
+
+    //  error_log(print_r($result['id'], TRUE), 0);
 
       if($result && isset($result['id'])) {
         return $result['id'];
