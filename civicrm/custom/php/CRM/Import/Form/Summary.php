@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
 
 /**
  * This class summarizes the import results
@@ -59,7 +56,7 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
         $dao->find();
         $this->fuzzyRules = array();
         while($dao->fetch())
-            $this->fuzzyRules[$dao->id] = $dao->name;
+          $this->fuzzyRules[$dao->id] = $dao->name;
 
         $totalRowCount     = $this->get('totalRowCount');
         $relatedCount      = $this->get('relatedCount');
@@ -74,10 +71,12 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
         if ($duplicateRowCount > 0) {
             $urlParams = 'type='. CRM_Import_Parser::DUPLICATE .'&parser=CRM_Import_Parser';
             $this->set('downloadDuplicateRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams ) );
-        }else if($mismatchCount) {
+    }
+    elseif ($mismatchCount) {
             $urlParams = 'type='. CRM_Import_Parser::NO_MATCH .'&parser=CRM_Import_Parser';
             $this->set('downloadMismatchRecordsUrl', CRM_Utils_System::url('civicrm/export', $urlParams ) );
-        } else {
+    }
+    else {
             $duplicateRowCount = 0;
             $this->set('duplicateRowCount', $duplicateRowCount);
         }
@@ -87,27 +86,28 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
             $unparsedStreetAddressString = ts( 'Records imported successfully but unable to parse some of the street addresses' ); 
             $this->assign('unparsedStreetAddressString', $unparsedStreetAddressString );
         }
-        $this->assign('dupeError', false);
+    $this->assign('dupeError', FALSE);
         
         if ($onDuplicate == CRM_Import_Parser::DUPLICATE_UPDATE) {
-            $dupeActionString = 
-                ts('These records have been updated with the imported data.');   
-        } else if ($onDuplicate == CRM_Import_Parser::DUPLICATE_REPLACE) {
-            $dupeActionString =
-                ts('These records have been replaced with the imported data.');
-        } else if ($onDuplicate == CRM_Import_Parser::DUPLICATE_FILL) {
-            $dupeActionString =
-                ts('These records have been filled in with the imported data.');
-        } else {
+      $dupeActionString = ts('These records have been updated with the imported data.');
+    }
+    elseif ($onDuplicate == CRM_Import_Parser::DUPLICATE_REPLACE) {
+      $dupeActionString = ts('These records have been replaced with the imported data.');
+    }
+    elseif ($onDuplicate == CRM_Import_Parser::DUPLICATE_FILL) {
+      $dupeActionString = ts('These records have been filled in with the imported data.');
+    }
+    else {
             /* Skip by default */
-            $dupeActionString = 
-                ts('These records have not been imported.');
 
-            $this->assign('dupeError', true);
+      $dupeActionString = ts('These records have not been imported.');
+
+      $this->assign('dupeError', TRUE);
         }
         //now we also create relative contact in update and fill mode
         $this->set('validRowCount', $totalRowCount - $invalidRowCount -
-                   $conflictRowCount - $duplicateRowCount - $mismatchCount);
+      $conflictRowCount - $duplicateRowCount - $mismatchCount
+    );
         
         $this->assign('dupeActionString', $dupeActionString);
         
@@ -135,9 +135,11 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
         $this->add('select', 'fuzzyRules', ts('Dedupe with a different rule'), $this->fuzzyRules, false, array());
 
         $this->addButtons( array(
-                                 array ( 'type'      => 'next',
+        array(
+          'type' => 'next',
                                          'name'      => ts('Done'),
-                                         'isDefault' => true   ),
+          'isDefault' => TRUE,
+        ),
                                  )
                            );
     }
@@ -169,5 +171,5 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
     public function getTitle( ) {
         return ts('Summary');
     }
-
 }
+

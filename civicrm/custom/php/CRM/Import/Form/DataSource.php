@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Import/Parser/Contact.php';
 
 /**
  * This class delegates to the chosen DataSource to grab the data to be
@@ -45,7 +41,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
     
     private $_dataSource;
     
-    private $_dataSourceIsValid = false;
+  private $_dataSourceIsValid = FALSE;
     
     private $_dataSourceClassFile;
     
@@ -76,7 +72,8 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
 
         while ($file = readdir($handler)) {
             if ( $file != '.' && $file != '..' &&
-                 in_array( $file, $errorFiles) && !is_writable( $config->uploadDir . $file ) ) {
+        in_array($file, $errorFiles) && !is_writable($config->uploadDir . $file)
+      ) {
                 $results[] = $file;
             }
         }
@@ -85,9 +82,10 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             CRM_Core_Error::fatal (ts('<b>%1</b> file(s) in %2 directory are not writable. Listed file(s) might be used during the import to log the errors occurred during Import process. Contact your site administrator for assistance.', array( 1 => implode(', ', $results), 2 => $config->uploadDir ) ) );
         }
         
-        $this->_dataSourceIsValid = false;
+    $this->_dataSourceIsValid = FALSE;
         $this->_dataSource = CRM_Utils_Request::retrieve( 'dataSource', 'String',
-                                                          CRM_Core_DAO::$_nullObject );
+      CRM_Core_DAO::$_nullObject
+    );
 
         $this->_params = $this->controller->exportValues( $this->_name );
         if ( ! $this->_dataSource ) {
@@ -95,15 +93,18 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             $this->_dataSource = CRM_Utils_Array::value( 'dataSource',
                                                          $_POST,
                                                          CRM_Utils_Array::value( 'dataSource',
-                                                                                 $this->_params ) );
-            $this->assign( 'showOnlyDataSourceFormPane', false );
-        } else {
-            $this->assign( 'showOnlyDataSourceFormPane', true );
+          $this->_params
+        )
+      );
+      $this->assign('showOnlyDataSourceFormPane', FALSE);
+    }
+    else {
+      $this->assign('showOnlyDataSourceFormPane', TRUE);
         }
         
         if ( strpos( $this->_dataSource, 'CRM_Import_DataSource_' ) === 0 ) {
-            $this->_dataSourceIsValid = true;
-            $this->assign( 'showDataSourceFormPane', true );
+      $this->_dataSourceIsValid = TRUE;
+      $this->assign('showDataSourceFormPane', TRUE);
             $dataSourcePath = explode( '_', $this->_dataSource );
             $templateFile = "CRM/Import/Form/" . $dataSourcePath[3] . ".tpl";
             $this->assign( 'dataSourceFormTemplateFile', $templateFile );
@@ -133,31 +134,35 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $this->assign( 'urlPath'   , "civicrm/import" );
         $this->assign( 'urlPathVar', 'snippet=4' );
         
-        $this->add('select', 'dataSource', ts('Data Source'), $dataSources, true,
-                   array('onchange' => 'buildDataSourceFormBlock(this.value);'));
-            
+    $this->add('select', 'dataSource', ts('Data Source'), $dataSources, TRUE,
+      array('onchange' => 'buildDataSourceFormBlock(this.value);')
+    );
         // NYSS - Have them enter a human readable (and unique) name!
         $this->add('text', 'import_job_name', 'Import Job Name', '', true);
 
         // duplicate handling options
         $duplicateOptions = array();        
-        $duplicateOptions[] = HTML_QuickForm::createElement('radio',
-            null, null, ts('Skip'), CRM_Import_Parser::DUPLICATE_SKIP);
-        $duplicateOptions[] = HTML_QuickForm::createElement('radio',
-            null, null, ts('Update'), CRM_Import_Parser::DUPLICATE_UPDATE);
-        $duplicateOptions[] = HTML_QuickForm::createElement('radio',
-            null, null, ts('Fill'), CRM_Import_Parser::DUPLICATE_FILL);
-        $duplicateOptions[] = HTML_QuickForm::createElement('radio',
-            null, null, ts('No Duplicate Checking'), CRM_Import_Parser::DUPLICATE_NOCHECK);
+    $duplicateOptions[] = $this->createElement('radio',
+      NULL, NULL, ts('Skip'), CRM_Import_Parser::DUPLICATE_SKIP
+    );
+    $duplicateOptions[] = $this->createElement('radio',
+      NULL, NULL, ts('Update'), CRM_Import_Parser::DUPLICATE_UPDATE
+    );
+    $duplicateOptions[] = $this->createElement('radio',
+      NULL, NULL, ts('Fill'), CRM_Import_Parser::DUPLICATE_FILL
+    );
+    $duplicateOptions[] = $this->createElement('radio',
+      NULL, NULL, ts('No Duplicate Checking'), CRM_Import_Parser::DUPLICATE_NOCHECK
+    );
 
         $this->addGroup($duplicateOptions, 'onDuplicate', 
-                        ts('For Duplicate Contacts'));
+      ts('For Duplicate Contacts')
+    );
                           
-        require_once "CRM/Core/BAO/Mapping.php";
-        require_once "CRM/Core/OptionGroup.php";
         $mappingArray = CRM_Core_BAO_Mapping::getMappings( CRM_Core_OptionGroup::getValue( 'mapping_type',
                                                                                            'Import Contact',
-                                                                                           'name' ) );
+        'name'
+      ));
 
         $this->assign('savedMapping',$mappingArray);
         $this->addElement('select','savedMapping', ts('Mapping Option'), array('' => ts('- select -'))+$mappingArray);
@@ -165,34 +170,36 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
 
         $js = array('onClick' => "buildSubTypes();buildDedupeRules();");    
         // contact types option
-        require_once 'CRM/Contact/BAO/ContactType.php';
         $contactOptions = array();
         if ( CRM_Contact_BAO_ContactType::isActive( 'Individual' ) ) {
-            $contactOptions[] = HTML_QuickForm::createElement('radio',
-                null, null, ts('Individual'), CRM_Import_Parser::CONTACT_INDIVIDUAL, $js);        
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Individual'), CRM_Import_Parser::CONTACT_INDIVIDUAL, $js
+      );
         }
         if ( CRM_Contact_BAO_ContactType::isActive( 'Household' ) ) {
-            $contactOptions[] = HTML_QuickForm::createElement('radio',
-                null, null, ts('Household'), CRM_Import_Parser::CONTACT_HOUSEHOLD, $js);
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Household'), CRM_Import_Parser::CONTACT_HOUSEHOLD, $js
+      );
         }
         if ( CRM_Contact_BAO_ContactType::isActive( 'Organization' ) ) {
-            $contactOptions[] = HTML_QuickForm::createElement('radio',
-                null, null, ts('Organization'), CRM_Import_Parser::CONTACT_ORGANIZATION, $js);
+      $contactOptions[] = $this->createElement('radio',
+        NULL, NULL, ts('Organization'), CRM_Import_Parser::CONTACT_ORGANIZATION, $js
+      );
         } 
 
         $this->addGroup($contactOptions, 'contactType', 
-                        ts('Contact Type'));
+      ts('Contact Type')
+    );
         
         $this->addElement( 'select', 'subType', ts( 'Subtype'     ) );
         $this->addElement( 'select', 'dedupe' , ts( 'Dedupe Rule' ) );
 
-        require_once 'CRM/Core/Form/Date.php';
         CRM_Core_Form_Date::buildAllowedDateFormats($this);
         
         $config = CRM_Core_Config::singleton();
-        $geoCode = false;
+    $geoCode = FALSE;
         if ( ! empty( $config->geocodeMethod ) ) {
-            $geoCode = true;
+      $geoCode = TRUE;
             $this->addElement('checkbox', 'doGeocodeAddress', ts('Lookup mapping info during import?'));
         }
         $this->assign( 'geoCode',$geoCode );
@@ -200,22 +207,28 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $this->addElement('text','fieldSeparator', ts('Import Field Separator'), array('size' => 2)); 
 
         $this->addButtons( array( 
-                                 array ( 'type'         => 'upload',
+        array(
+          'type' => 'upload',
                                          'name'         => ts('Continue >>'),
                                          'spacing'      => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-                                         'isDefault'    => true ),
-                                 array ( 'type'         => 'cancel',
-                                         'name'         => ts('Cancel') ),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
                                  )
                          );
     }
 
     function setDefaultValues( ) {
-        $config =& CRM_Core_Config::singleton( );
-        $defaults = array( 'dataSource'     => 'CRM_Import_DataSource_CSV',
+    $config = CRM_Core_Config::singleton();
+    $defaults = array(
+      'dataSource' => 'CRM_Import_DataSource_CSV',
                            'onDuplicate'    => CRM_Import_Parser::DUPLICATE_SKIP,
                            'contactType'    => CRM_Import_Parser::CONTACT_INDIVIDUAL,
-                           'fieldSeparator' => $config->fieldSeparator );
+      'fieldSeparator' => $config->fieldSeparator,
+    );
 
         if ( $loadeMapping = $this->get('loadedMapping') ) {
             $this->assign('loadedMapping', $loadeMapping );
@@ -237,14 +250,15 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             CRM_Core_Error::fatal( "Unable to access DataSource directory $dataSourceDir" );
         }
 
-        while (($dataSourceFile = readdir($dataSourceHandle)) !== false) {
+    while (($dataSourceFile = readdir($dataSourceHandle)) !== FALSE) {
             $fileType = filetype($dataSourceDir . $dataSourceFile);
             $matches = array( );
             if (($fileType == 'file' || $fileType == 'link') &&
-                preg_match('/^(.+)\.php$/',$dataSourceFile,$matches)) {
+        preg_match('/^(.+)\.php$/', $dataSourceFile, $matches)
+      ) {
                 $dataSourceClass = "CRM_Import_DataSource_" . $matches[1];
                 require_once $dataSourceDir . DIRECTORY_SEPARATOR . $dataSourceFile;
-                eval("\$info = $dataSourceClass::getInfo();");
+        eval("\$object = new $dataSourceClass(); \$info = \$object->getInfo();");
                 $dataSources[$dataSourceClass] = $info['title'];
             }
         }
@@ -266,16 +280,13 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             // Setup the params array 
             $this->_params = $this->controller->exportValues( $this->_name );
 
-            // NYSS - Reformat and add the import_job_name parameter
-            // Request the following additional parameters from the import controller
-            // Also persist these values in the session for future pages
-            $storeParams = array( 'onDuplicate'     => 'onDuplicate',
+      $storeParams = array(
+        'onDuplicate' => 'onDuplicate',
                                   'dedupe'          => 'dedupe',
                                   'contactType'     => 'contactType',
                                   'contactSubType'  => 'subType',
                                   'dateFormats'     => 'dateFormats',
                                   'savedMapping'    => 'savedMapping',
-                                  'import_job_name' => 'import_job_name'
                                   );
 
             foreach ( $storeParams as $storeName => $storeValueName ) {
@@ -283,12 +294,11 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                 $this->set( $storeName, $$storeName );
             }
 
-            // NYSS - Why was it being inconsistent in setting the values to the session?
-            // A couple values from the controller page need to be added to the session as well
             $this->set('dataSource', $this->_params['dataSource'] );
             $this->set('skipColumnHeader', CRM_Utils_Array::value( 'skipColumnHeader', $this->_params ) );
-            $this->set('dateTypes', $dateFormats);
 
+      $session = CRM_Core_Session::singleton();
+      $session->set('dateTypes', $dateFormats);
             
             // NYSS
             // Make a record for the preferences with a unique name and user id!
@@ -319,7 +329,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             //hack to prevent multiple tables.
             $this->_params['import_table_name'] = $this->get( 'importTableName' );
             if ( !$this->_params['import_table_name'] ) {
-                $this->_params['import_table_name'] = 'civicrm_import_job_' . md5(uniqid(rand(), true));
+        $this->_params['import_table_name'] = 'civicrm_import_job_' . md5(uniqid(rand(), TRUE));
             }
             
             require_once $this->_dataSourceClassFile;
@@ -339,7 +349,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                           $fieldNames['pk'],
                           $fieldNames['status'], 
                           CRM_Import_Parser::DUPLICATE_SKIP,
-                          null, null, false,
+        NULL, NULL, FALSE,
                           CRM_Import_Parser::DEFAULT_TIMEOUT,
                           $contactSubType,
                           $dedupe
@@ -347,7 +357,8 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                           
             // add all the necessary variables to the form
             $parser->set( $this );
-        } else {
+    }
+    else {
             CRM_Core_Error::fatal("Invalid DataSource on form post. This shouldn't happen!");
         }
     }
@@ -363,6 +374,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         /* TODO: Add a check for an existing _status field;
          *  if it exists, create __status instead and return that
          */
+
         $statusFieldName = '_status';
         $primaryKeyName  = '_id';
         
@@ -376,6 +388,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
          * turn complicate matters for some DataSources, which
          * would also not be good. Decisions, decisions...
          */
+
         $alterQuery = "ALTER TABLE $importTableName
                        ADD COLUMN $statusFieldName VARCHAR(32)
                             DEFAULT 'NEW' NOT NULL,
@@ -397,5 +410,5 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
     public function getTitle( ) {
         return ts('Choose Data Source');
     }
-    
 }
+    
