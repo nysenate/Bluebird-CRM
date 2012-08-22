@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,19 +28,16 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/DAO/MappingField.php';
-
 /**
  * This class gets the name of the file to upload
  */
-class CRM_Export_Form_Map extends CRM_Core_Form 
-{
+class CRM_Export_Form_Map extends CRM_Core_Form {
+
     /**
      * mapper fields
      *
@@ -72,12 +68,12 @@ class CRM_Export_Form_Map extends CRM_Core_Form
      * @return None
      * @access public
      */
-    public function preProcess()
-    {
+  public function preProcess() {
         $this->_exportColumnCount = $this->get('exportColumnCount');
         if (! $this->_exportColumnCount ) {
             $this->_exportColumnCount = 10;
-        } else {
+    }
+    else {
             $this->_exportColumnCount = $this->_exportColumnCount + 10;
         }
         
@@ -88,24 +84,29 @@ class CRM_Export_Form_Map extends CRM_Core_Form
 		//CRM_Core_Error::debug('this',$this);exit();
     }
     
-    public function buildQuickForm( ) 
-    {
-        require_once 'CRM/Core/BAO/Mapping.php';
+  public function buildQuickForm() {
         CRM_Core_BAO_Mapping::buildMappingForm( $this, 
                                                 'Export', 
                                                 $this->_mappingId, 
                                                 $this->_exportColumnCount, 
                                                 $blockCnt = 2, 
-                                                $this->get('exportMode') );
+      $this->get('exportMode')
+    );
 
         $this->addButtons( array(
-                                 array ( 'type'      => 'back',
-                                         'name'      => ts('<< Previous') ),
-                                 array ( 'type'      => 'next',
+        array(
+          'type' => 'back',
+          'name' => ts('<< Previous'),
+        ),
+        array(
+          'type' => 'next',
                                          'name'      => ts('Export >>'),
-                                         'spacing'   => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' ),
-                                 array ( 'type'      => 'done',
-                                         'name'      => ts('Done') ),
+          'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+        ),
+        array(
+          'type' => 'done',
+          'name' => ts('Done'),
+        ),
                                  )
                            );
     }
@@ -119,15 +120,16 @@ class CRM_Export_Form_Map extends CRM_Core_Form
      * @static
      * @access public
      */
-    static function formRule( $fields, $values, $mappingTypeId ) 
-    {
+  static
+  function formRule($fields, $values, $mappingTypeId) {
         $errors  = array( );
 
-        if ( CRM_Utils_Array::value( 'saveMapping', $fields ) && $fields['_qf_Map_next'] ) {
+    if (CRM_Utils_Array::value('saveMapping', $fields) && CRM_Utils_Array::value('_qf_Map_next', $fields)) {
             $nameField = CRM_Utils_Array::value( 'saveMappingName', $fields );
             if ( empty( $nameField ) ) {
                 $errors['saveMappingName'] = ts('Name is required to save Export Mapping');
-            } else {
+      }
+      else {
                 //check for Duplicate mappingName
                 if ( CRM_Core_BAO_Mapping::checkMapping( $nameField,  $mappingTypeId ) ) {
                     $errors['saveMappingName'] = ts('Duplicate Export Mapping Name');
@@ -137,12 +139,12 @@ class CRM_Export_Form_Map extends CRM_Core_Form
         
         if ( !empty($errors) ) {
             $_flag = 1;
-            require_once 'CRM/Core/Page.php';
             $assignError = new CRM_Core_Page(); 
             $assignError->assign('mappingDetailsError', $_flag);
             return $errors;
-        } else {
-            return true;
+    }
+    else {
+      return TRUE;
         }
     }    
 
@@ -152,28 +154,22 @@ class CRM_Export_Form_Map extends CRM_Core_Form
      * @return void
      * @access public
      */
-    public function postProcess( )
-    {
+  public function postProcess() {
         $params = $this->controller->exportValues( $this->_name );
         $exportParams = $this->controller->exportValues( 'Select' );
 
-        require_once 'CRM/Export/Form/Select.php';
         $greetingOptions = CRM_Export_Form_Select::getGreetingOptions( );
 
         if ( !empty( $greetingOptions ) ) {
             foreach ( $greetingOptions as $key => $value ) {
                 if ( $option = CRM_Utils_Array::value( $key, $exportParams ) ) {
-                    /*if ( $greetingOptions[$key][$option] == 'Other' ) {
-                        $exportParams[$key] = '';
-                    } else {
-                        $exportParams[$key] = $greetingOptions[$key][$option];
-                    }*/
 					//NYSS 5026
 					if ( $greetingOptions[$key][$option] == ts('Other') ) {
                         $exportParams[$key] = $exportParams["{$key}_other"];
                     } else if ( $greetingOptions[$key][$option] == ts('List of names') ) {
                         $exportParams[$key] = '';
-                    } else {
+          }
+          else {
                         $exportParams[$key] = $greetingOptions[$key][$option];
                     }
                 }
@@ -182,16 +178,17 @@ class CRM_Export_Form_Map extends CRM_Core_Form
         
         $currentPath = CRM_Utils_System::currentPath( );
         
-        $urlParams = null;
+    $urlParams = NULL;
         $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String', $this );
-        require_once 'CRM/Utils/Rule.php';
-        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey"; 
+    if (CRM_Utils_Rule::qfKey($qfKey)) {
+      $urlParams = "&qfKey=$qfKey";
+    }
         
         //get the button name
         $buttonName = $this->controller->getButtonName('done');
         $buttonName1 = $this->controller->getButtonName('next');
         if ( $buttonName == '_qf_Map_done') {
-            $this->set('exportColumnCount',null);
+      $this->set('exportColumnCount', NULL);
             $this->controller->resetPage( $this->_name );
             return CRM_Utils_System::redirect( CRM_Utils_System::url($currentPath, 'force=1'.$urlParams ) );
         }
@@ -211,8 +208,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form
         }
 
         if ( !$checkEmpty ) {
-            $this->set('mappingId', null);
-            require_once 'CRM/Utils/System.php';            
+      $this->set('mappingId', NULL);
             CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, '_qf_Map_display=true'.$urlParams ) );
         }
 
@@ -223,9 +219,11 @@ class CRM_Export_Form_Map extends CRM_Core_Form
             }
             
             if ( CRM_Utils_Array::value('saveMapping', $params) ) { 
-                $mappingParams = array('name'            => $params['saveMappingName'],
+        $mappingParams = array(
+          'name' => $params['saveMappingName'],
                                        'description'     => $params['saveMappingDesc'],
-                                       'mapping_type_id' => $this->get( 'mappingTypeId') );
+          'mapping_type_id' => $this->get('mappingTypeId'),
+        );
                 
                 $saveMapping = CRM_Core_BAO_Mapping::add( $mappingParams );
                 
@@ -235,7 +233,6 @@ class CRM_Export_Form_Map extends CRM_Core_Form
         }
 
         //get the csv file
-        require_once 'CRM/Export/BAO/Export.php';
         CRM_Export_BAO_Export::exportComponents( $this->get( 'selectAll' ),
                                                  $this->get( 'componentIds' ),
                                                  $this->get( 'queryParams' ),
@@ -260,7 +257,5 @@ class CRM_Export_Form_Map extends CRM_Core_Form
     public function getTitle( ) {
         return ts('Select Fields to Export');
     }
-
 }
-
 
