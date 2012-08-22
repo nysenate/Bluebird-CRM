@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,24 +28,19 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/DAO/Log.php';
-
 /**
  * BAO object for crm_log table
  */
+class CRM_Core_BAO_Log extends CRM_Core_DAO_Log {
+  static $_processed = NULL;
 
-class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
-{
-    static $_processed = null;
-
-    static function &lastModified( $id, $table = 'civicrm_contact' )
-    {
-        require_once 'CRM/Core/DAO/Log.php';
+  static
+  function &lastModified($id, $table = 'civicrm_contact') {
         
         $log = new CRM_Core_DAO_Log( );
         
@@ -55,12 +49,14 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
         $log->orderBy( 'modified_date desc' );
         $log->limit( 1 );
         $result = CRM_Core_DAO::$_nullObject;
-        if ( $log->find( true ) ) {
+    if ($log->find(TRUE)) {
             list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $log->modified_id );
-            $result = array( 'id'    => $log->modified_id,
+      $result = array(
+        'id' => $log->modified_id,
                              'name'  => $displayName,
                              'image' => $contactImage,
-                             'date'  => $log->modified_date );
+        'date' => $log->modified_date,
+      );
         }
         return $result;
     }
@@ -72,9 +68,8 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
      * 
      * @static
      */
-    static function add( &$params)
-    {
-        require_once 'CRM/Core/DAO/Log.php';
+  static
+  function add(&$params) {
         
         //NYSS - LCD #2365
         $session = & CRM_Core_Session::singleton();
@@ -89,10 +84,12 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
         $log->save();
     }
 
-    static function register( $contactID,
+  static
+  function register($contactID,
                               $tableName,
                               $tableID  ,
-                              $userID = null ) {
+    $userID = NULL
+  ) {
         if ( ! self::$_processed ) {
             self::$_processed = array( );
         }
@@ -111,14 +108,15 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
         }
 
         $log = new CRM_Core_DAO_Log( );
-        $log->id = null;
+    $log->id = NULL;
 
         if ( isset( self::$_processed[$contactID] ) ) {
             if ( isset( self::$_processed[$contactID][$userID] ) ) {
                 $log->id = self::$_processed[$contactID][$userID];
             }
             self::$_processed[$contactID][$userID] = 1;
-        } else {
+    }
+    else {
             self::$_processed[$contactID] = array( $userID => 1 );
         }
 
@@ -139,7 +137,8 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
             $log->modified_date = date( "YmdHis" );
             $log->data          = $logData;
             $log->save( );
-        } else {
+    }
+    else {
             $query = "
 UPDATE civicrm_log
    SET data = concat( data, ':$logData' )
@@ -160,7 +159,8 @@ UPDATE civicrm_log
      * @access public
      * @static
      */
-     static function getContactLogCount( $contactID ) {
+  static
+  function getContactLogCount($contactID) {
          //NYSS 4574 include activity logs in count
          $query = "SELECT count(*) FROM civicrm_log 
                    WHERE civicrm_log.entity_table = 'civicrm_contact' AND civicrm_log.entity_id = {$contactID}";
@@ -282,32 +282,31 @@ UPDATE civicrm_log
      * @access public
      * @static
      */
-     static function useLoggingReport( ) {
-
+  static
+  function useLoggingReport() {
          // first check if logging is enabled
-         $config =& CRM_Core_Config::singleton( );
+    $config = CRM_Core_Config::singleton();
          if ( ! $config->logging ) {
-             return false;
+      return FALSE;
          }
 
-         require_once 'CRM/Logging/Schema.php';
          $loggingSchema = new CRM_Logging_Schema( );
          
          if ( $loggingSchema->isEnabled() ) {
-             require_once 'CRM/Report/BAO/Instance.php';
              $params   = array( 'report_id' => 'logging/contact/summary' );
              $instance = array( );
              CRM_Report_BAO_Instance::retrieve($params, $instance);
              
              if ( !empty($instance) &&
                   ( !CRM_Utils_Array::value('permission', $instance) ||
-                    ( CRM_Utils_Array::value('permission', $instance) && CRM_Core_Permission::check( $instance['permission'] ) ) ) ) {
+          (CRM_Utils_Array::value('permission', $instance) && CRM_Core_Permission::check($instance['permission']))
+        )
+      ) {
                  return $instance['id'];
              }
+    }
              
+    return FALSE;
          }
-         
-         return false;
      }  
      
-}
