@@ -189,6 +189,7 @@ $(document).ready(function(){
 	// opening find match window
 	cj(".find_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
+
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		cj('#imapper-contacts-list').html('');
@@ -199,27 +200,54 @@ $(document).ready(function(){
 			success: function(data,status) {
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
-
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
-
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email_address').val(messages.fromEmail);
+ 				cj('#tabs-1 #email-address').val(messages.fromEmail);
  				cj('#filter').click();
 				switchName(messages.fromName);
-
-
 			}
 		});
 	});
+	// if it was a already matches message 
+cj(".pre_find_match").live('click', function() {
+		cj("#loading-popup").dialog('open');
 
+		var activityId = cj(this).parent().parent().attr('data-id');
+		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		cj('#imapper-contacts-list').html('');
+		console.log(activityId+" / "+contactId)
+
+		cj.ajax({
+			url: '/civicrm/imap/ajax/activityDetails',
+			data: {id: activityId, contact: contactId },
+			success: function(data,status) {
+				console.log(data);
+		 		cj("#loading-popup").dialog('close');
+		 		messages = cj.parseJSON(data);
+		 		cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				if ((messages.forwardedEmail != '')){
+					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+				}
+				cj('#message_left_email').html(messages.details);
+		// 		cj('#email_id').val(messageId);
+		// 		cj('#imap_id').val(imapId);
+				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
+				cj("#find-match-popup").dialog('open');
+ 				cj("#tabs").tabs();
+ 	// 			cj('#tabs-1 #email-address').val(messages.fromEmail);
+ 	// 			cj('#filter').click();
+		// 		switchName(messages.fromName);
+			}
+		 });
+	});
 	cj(".imapper-contact-box").live('click', function() {
 		var radioButton = cj(this).find(".imapper-contact-select-button");
 		radioButton.attr('checked', 'checked');
@@ -253,9 +281,9 @@ function pullActivitiesHeaders() {
 	cj.ajax({
 		url: '/civicrm/imap/ajax/getMatchedMessages',
 		success: function(data,status) {
-			//messages = cj.parseJSON(data);
-			console.log(data);
-			//buildMessageList();
+			messages = cj.parseJSON(data);
+			//console.log(data);
+			buildActivitiesList();
 		}
 	});
 }
@@ -290,6 +318,31 @@ function buildMessageList() {
 	cj("#total_number").html(total_results);
 	makeListSortable();
 }
+
+function buildActivitiesList() {
+	if(messages == '' || messages == null)
+		return;
+	var messagesHtml = '';
+	var total_results =0;
+	$.each(messages, function(key, value) {
+		total_results++;
+		messagesHtml += '<tr id="'+value.activitId+'_'+value.contactId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		if( value.fromName != ''){
+			messagesHtml += '<td class="name">'+value.fromName +'</td>';
+		}else {
+			messagesHtml += '<td class="name"> N/A </td>';
+		}
+		messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
+		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
+		messagesHtml += '<td class="subject">'+value.subject +'</td>';
+		messagesHtml += '<td class="date">'+value.date +'</td>';
+		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Rematch</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+	});
+	cj('#imapper-messages-list').html(messagesHtml);
+	cj("#total_number").html(total_results);
+	makeListSortable();
+}
+
 
 function buildContactList() {
 	var contactsHtml = '';
