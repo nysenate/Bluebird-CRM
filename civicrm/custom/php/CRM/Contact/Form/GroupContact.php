@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,20 +28,16 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/SelectValues.php';
-require_once 'CRM/Core/Form.php';
 
 /**
  * This class generates form components for groupContact
  * 
  */
-class CRM_Contact_Form_GroupContact extends CRM_Core_Form
-{
+class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
 
     /**
      * The groupContact id, used when editing the groupContact
@@ -56,11 +51,8 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
      *
      * @var int
      */
-    protected $_contactId;
+  protected $_contactId; function preProcess() {
     
-    function preProcess( ) 
-    {
-
         $this->_contactId      = $this->get('contactId');
         $this->_groupContactId = $this->get('groupContactId');
         $this->_context        = CRM_Utils_Request::retrieve( 'context', 'String', $this );
@@ -71,28 +63,23 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
      * the default values are retrieved from the database
      * 
      * @access public
+   *
      * @return None
      */
-    function setDefaultValues( ) 
-    {
+  function setDefaultValues() {
         $defaults = array( );
         $params   = array( );
 
         return $defaults;
     }
     
-
     /**
      * This function is used to add the rules for form.
      *
      * @return None
      * @access public
      */
-    function addRules( )
-    {
-
-    }
-
+  function addRules() {}
 
     /**
      * Function to build the form
@@ -100,13 +87,13 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
      * @return None
      * @access public
      */
-    public function buildQuickForm( ) 
-    {
+  public function buildQuickForm() {
         // get the list of all the groups
         if ( $this->_context == 'user' ) {
-            $onlyPublicGroups = CRM_Utils_Request::retrieve( 'onlyPublicGroups', 'Boolean', $this, false );
+      $onlyPublicGroups = CRM_Utils_Request::retrieve('onlyPublicGroups', 'Boolean', $this, FALSE);
             $allGroups = CRM_Core_PseudoConstant::staticGroup( $onlyPublicGroups );
-        } else {
+    }
+    else {
             $allGroups = CRM_Core_PseudoConstant::group( );
         }
 	
@@ -115,11 +102,12 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
 	
         if ( is_array( $currentGroups ) ) {
             $groupList = array_diff( $allGroups, $currentGroups );
-        } else {
+    }
+    else {
             $groupList = $allGroups;
         }
         //NYSS 5429 sort groups then prepend 'select'
-        asort($groupList);
+        asort($groupList, SORT_NATURAL | SORT_FLAG_CASE);
         $groupList = array( '' => ts('- select group -')) + $groupList;
 
         if ( count( $groupList ) > 1 ) {
@@ -127,29 +115,31 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
             // user dashboard
             if ( strstr( $session->readUserContext( ) ,'user') ) {
                 $msg = ts('Join a Group');            
-            } else {
+      }
+      else {
                 $msg = ts('Add to a group');
             }
             
-            $this->add('select', 'group_id', $msg, $groupList, true);
+      $this->add('select', 'group_id', $msg, $groupList, TRUE);
             
             $this->addButtons( array(
-                                     array ( 'type'      => 'next',
+          array(
+            'type' => 'next',
                                              'name'      => ts('Add'),
-                                             'isDefault' => true   ),
+            'isDefault' => TRUE,
+          ),
                                     )
                              );
         }
     }
 
-    
     /**
      *
      * @access public
+   *
      * @return None
      */
-    public function postProcess() 
-    {
+  public function postProcess() {
         $contactID = array($this->_contactId);
         $groupId = $this->controller->exportValue( 'GroupContact', 'group_id'  );
         $method = 'Admin';
@@ -167,11 +157,7 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form
         if ($groupContact &&  $this->_context != 'user') {
             CRM_Core_Session::setStatus( ts('Contact has been added to the selected group.') );
         }
-    }//end of function
-
-
-    
-
 }
-
+  //end of function
+}
 

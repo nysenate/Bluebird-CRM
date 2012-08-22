@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,19 +28,17 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Admin/Form.php';
 
 /**
  * This class generates form components for DedupeRules
  * 
  */
-class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
-{
+class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form {
+
     /**
      * defined defaults
      * 
@@ -54,10 +51,8 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
      *
      * @return None
      * @access public
-     */
-    function preProcess()
-    {
-        $this->rgid   = CRM_Utils_Request::retrieve('rgid', 'Positive', $this, false, 0);
+   */ function preProcess() {
+    $this->rgid = CRM_Utils_Request::retrieve('rgid', 'Positive', $this, FALSE, 0);
     }
 
     /**
@@ -66,8 +61,8 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
      * @return None
      * @access public
      */
-    public function buildQuickForm()
-    {
+  public function buildQuickForm() {
+
         //NYSS 4053 - Allow crunching on import groups too!
         require_once 'api/api.php';
         $params = array('version'=>3, 'group_type'=>'imported_contacts');
@@ -83,18 +78,21 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
         
         $this->add('select'  , 'group_id', ts('Select Group'), $groupList );
         $this->addButtons( array(
-                                 array ( 'type'      => 'next',
+        array(
+          'type' => 'next',
                                          'name'      => ts('Continue'),
-                                         'isDefault' => true   ),
+          'isDefault' => TRUE,
+        ),
                                  //hack to support cancel button functionality
-                                 array ( 'type'      => 'submit', 
-                                         'name'      => ts('Cancel') ),
+        array(
+          'type' => 'submit',
+          'name' => ts('Cancel'),
+        ),
                                  )
                            );
     }
     
-    function setDefaultValues()
-    {
+  function setDefaultValues() {
         return $this->_defaults;
     }
 
@@ -102,10 +100,10 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
      * Function to process the form
      *
      * @access public
+   *
      * @return None
      */
-    public function postProcess() 
-    {
+  public function postProcess() {
         $values = $this->exportValues();
         if ( CRM_Utils_Array::value( '_qf_DedupeFind_submit', $_POST ) ) {
             //used for cancel button
@@ -124,7 +122,5 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
         
         CRM_Utils_System::redirect($url);
     }
-    
 }
-
 
