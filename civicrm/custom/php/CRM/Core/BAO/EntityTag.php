@@ -305,11 +305,11 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         $entityTagDAO->tag_id = $tag->id;
         $entityTagDAO->find();
         while($entityTagDAO->fetch()) {
-            $contactIds[] = $entityTagDAO->entity_id;
+            $entityIds[] = $entityTagDAO->entity_id;
             // was previously $entityTag->contact_id, but getEntitiesByTag() should return the entity, not the contact. 
             // If its meant to match on the contact_id, it should be named getEntitiesByConcatId
         }
-        return $contactIds;
+        return $entityIds;
     }
     
     /** 
