@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,20 +28,16 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Contact/Form/Task.php';
 
 /**
  * Choose include / exclude groups and mailings
  *
  */
-class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
-{
+class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
     
     /** 
      * Function to set variables up before form is built 
@@ -50,15 +45,12 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
      * @return void 
      * @access public 
      */ 
-    public function preProcess()  
-    {
+  public function preProcess() {
         //NYSS 4216 we don't want to block with this
-        /*require_once 'CRM/Core/BAO/MailSettings.php';
-        if (CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
+        /*if (CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
           CRM_Core_Error::fatal( ts( 'The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in our book</a>', array( 1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2=> "http://en.flossmanuals.net/civicrm/ch042_system-configuration/")));
         }*/
         //when user come from search context.
-        require_once 'CRM/Contact/Form/Search.php';
         $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext( $this->get( 'context' ) );
         if ( $this->_searchBasedMailing ) {
             $searchParams = $this->controller->exportValues( );
@@ -71,7 +63,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         
         // use previous context unless mailing is not schedule, CRM-4290
         $session = CRM_Core_Session::singleton( ); 
-        if ( strpos( $session->readUserContext( ), 'civicrm/mailing' ) === false ) { 
+    if (strpos($session->readUserContext(), 'civicrm/mailing') === FALSE) {
             $session->pushUserContext( CRM_Utils_System::url( 'civicrm/mailing','reset=1' ) );
         }
     }
@@ -81,15 +73,14 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
      * the default values are retrieved from the database
      * 
      * @access public
+   *
      * @return None
      */
-    function setDefaultValues( ) 
-    {
-        $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $this, false, null );
-        $continue  = CRM_Utils_Request::retrieve('continue', 'String', $this, false, null );
+  function setDefaultValues() {
+    $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);
+    $continue = CRM_Utils_Request::retrieve('continue', 'String', $this, FALSE, NULL);
         
         // check that the user has permission to access mailing id
-        require_once 'CRM/Mailing/BAO/Mailing.php';
         CRM_Mailing_BAO_Mailing::checkPermission( $mailingID );
         
         $defaults = array( );
@@ -98,20 +89,20 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
             $mailing = new CRM_Mailing_DAO_Mailing( );
             $mailing->id = $mailingID;
             $mailing->addSelect( 'name', 'campaign_id' );
-            $mailing->find( true );
+      $mailing->find(TRUE);
             
             $defaults['name'] = $mailing->name;
             if ( ! $continue ) {
                 $defaults['name'] = ts('Copy of %1', array( 1 => $mailing->name ) );
-            } else {
+      }
+      else {
                 // CRM-7590, reuse same mailing ID if we are continuing
                 $this->set('mailing_id', $mailingID);
             }
              
             $defaults['campaign_id']  = $mailing->campaign_id;
-            $defaults['dedupe_email'] = $mailing->dedupe_email; //NYSS
+      $defaults['dedupe_email'] = $mailing->dedupe_email;
 
-            require_once 'CRM/Mailing/DAO/Group.php';
             $dao = new CRM_Mailing_DAO_Group();
             
             $mailingGroups = array();
@@ -129,16 +120,15 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         }
         
         //when the context is search hide the mailing recipients.
-        require_once 'CRM/Core/ShowHideBlocks.php';
         $showHide = new CRM_Core_ShowHideBlocks( );
-        $showGroupSelector = true;
+    $showGroupSelector = TRUE;
         if ( $this->_searchBasedMailing ) {
-            $showGroupSelector = false;
+      $showGroupSelector = FALSE;
             $formElements = array( 'includeGroups', 'excludeGroups', 'includeMailings', 'excludeMailings' );
             $formValues = $this->controller->exportValues( $this->_name );
             foreach ( $formElements as $element ) {
                 if ( !empty( $formValues[$element] ) ) {
-                    $showGroupSelector = true;
+          $showGroupSelector = TRUE;
                     break;
                 }
             }
@@ -147,7 +137,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         if ( $showGroupSelector ) {
             $showHide->addShow( "id-additional" );
             $showHide->addHide( "id-additional-show" ); 
-        } else {
+    }
+    else {
             $showHide->addShow( "id-additional-show" );
             $showHide->addHide( "id-additional" ); 
         }
@@ -162,59 +153,62 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
      * @return None
      * @access public
      */
-    public function buildQuickForm( ) 
-    {
-        require_once 'CRM/Mailing/PseudoConstant.php';
+  public function buildQuickForm() {
         
         //get the context
         $context = $this->get( 'context' );
-        if ( $this->_searchBasedMailing ) $context = 'search'; 
+    if ($this->_searchBasedMailing) {
+      $context = 'search';
+    }
         $this->assign( 'context', $context );
         
         $this->add( 'text', 'name', ts('Name Your Mailing'),
                     CRM_Core_DAO::getAttribute( 'CRM_Mailing_DAO_Mailing', 'name' ),
-                    true );
+      TRUE
+    );
                     
         //CRM-7362 --add campaigns.
-        $mailingId = CRM_Utils_Request::retrieve('mid', 'Integer', $this, false, null );
-        require_once 'CRM/Campaign/BAO/Campaign.php';
-        $campaignId = null;
+    $mailingId = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);
+    $campaignId = NULL;
         if ( $mailingId ) {
             $campaignId = CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Mailing', $mailingId, 'campaign_id' ); 
         }
         CRM_Campaign_BAO_Campaign::addCampaign( $this, $campaignId );
         
-        //NYSS dedupe on email option
+    //dedupe on email option
         $this->addElement('checkbox', 'dedupe_email', ts('Remove duplicate emails?'));
         
         //get the mailing groups.
-        $groups =& CRM_Core_PseudoConstant::group('Mailing');
+    $groups = CRM_Core_PseudoConstant::group('Mailing');
 
-        $mailings =& CRM_Mailing_PseudoConstant::completed();
+    $mailings = CRM_Mailing_PseudoConstant::completed();
         if (! $mailings) {
             $mailings = array();
         }
 
         // run the groups through a hook so users can trim it if needed
-        require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::mailingGroups( $this, $groups, $mailings );
         
         //when the context is search add base group's.
         if ( $this->_searchBasedMailing ) {
             //get the static groups
-            $staticGroups = CRM_Core_PseudoConstant::staticGroup( false, 'Mailing' );
+      $staticGroups = CRM_Core_PseudoConstant::staticGroup(FALSE, 'Mailing');
             $this->add( 'select', 'baseGroup',
                         ts( 'Unsubscription Group' ), 
-                        array(''=>ts( '- select -' )) + $staticGroups,
-                        true );
+        array(
+          '' => ts('- select -')) + $staticGroups,
+        TRUE
+      );
         }
         
         $inG =& $this->addElement('advmultiselect', 'includeGroups', 
                                   ts('Include Group(s)') . ' ', 
                                   $groups,
-                                  array('size' => 5,
+      array(
+        'size' => 5,
                                         'style' => 'width:240px',
-                                        'class' => 'advmultiselect')
+        'class' => 'advmultiselect',
+      )
                                   );
         
         //as we are having hidden smart group so no need.
@@ -225,9 +219,11 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $outG =& $this->addElement('advmultiselect', 'excludeGroups', 
                                    ts('Exclude Group(s)') . ' ',
                                    $groups,
-                                   array('size' => 5,
+      array(
+        'size' => 5,
                                          'style' => 'width:240px',
-                                         'class' => 'advmultiselect')
+        'class' => 'advmultiselect',
+      )
                                    );
 
         $inG->setButtonAttributes ('add'   , array('value' => ts('Add >>'   )));
@@ -238,16 +234,20 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $inM =& $this->addElement('advmultiselect', 'includeMailings', 
                                   ts('INCLUDE Recipients of These Mailing(s)') . ' ',
                                   $mailings,
-                                  array('size' => 5,
+      array(
+        'size' => 5,
                                         'style' => 'width:240px',
-                                        'class' => 'advmultiselect')
+        'class' => 'advmultiselect',
+      )
                                   );
         $outM =& $this->addElement('advmultiselect', 'excludeMailings', 
                                    ts('EXCLUDE Recipients of These Mailing(s)') . ' ',
                                    $mailings,
-                                   array('size' => 5,
+      array(
+        'size' => 5,
                                          'style' => 'width:240px',
-                                         'class' => 'advmultiselect')
+        'class' => 'advmultiselect',
+      )
                                    );
         
         $inM->setButtonAttributes ('add'   , array('value' => ts('Add >>'   )));
@@ -255,33 +255,40 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $inM->setButtonAttributes ('remove', array('value' => ts('<< Remove')));
         $outM->setButtonAttributes('remove', array('value' => ts('<< Remove')));
 
-        require_once 'CRM/Contact/Page/CustomSearch.php';
-        $urls = 
-            array( '' => ts('- select -'),
-                   -1 => ts( 'CiviCRM Search' ) ) +
-            CRM_Contact_Page_CustomSearch::info( );
+    $urls = array('' => ts('- select -'), -1 => ts('CiviCRM Search'),
+    ) + CRM_Contact_Page_CustomSearch::info();
             
         $this->addFormRule( array( 'CRM_Mailing_Form_Group', 'formRule' ));
         
         //FIXME : currently we are hiding save an continue later when
         //search base mailing, we should handle it when we fix CRM-3876
-        $buttons = array( array ( 'type'      => 'next',
+    $buttons = array(
+      array('type' => 'next',
                                   'name'      => ts('Next >>'),
                                   'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-                                  'isDefault' => true   ),
-                          array ( 'type'      => 'submit',
-                                  'name'      => ts('Save & Continue Later') ),
-                          array ( 'type'      => 'cancel',
-                                  'name'      => ts('Cancel') ),
+        'isDefault' => TRUE,
+      ),
+      array(
+        'type' => 'submit',
+        'name' => ts('Save & Continue Later'),
+      ),
+      array(
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+      ),
                           );
         
         if ( $this->_searchBasedMailing ) {
-            $buttons = array( array ( 'type'      => 'next',
+      $buttons = array(
+        array('type' => 'next',
                                       'name'      => ts('Next >>'),
                                       'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
-                                      'isDefault' => true   ),
-                              array ( 'type'      => 'cancel',
-                                      'name'      => ts('Cancel') ),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
                               );
         }
         $this->addButtons( $buttons );
@@ -290,8 +297,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $this->assign('mailingCount', count($mailings));
     }
 
-    public function postProcess() 
-    {
+  public function postProcess() {
         $values = $this->controller->exportValues( $this->_name );
         
         //build hidden smart group. when user want to send  mailing
@@ -299,7 +305,6 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $groups = array( );
         if ( $this->_searchBasedMailing && $this->_contactIds ) {
             $session = CRM_Core_Session::singleton( );
-            require_once "CRM/Contact/BAO/Group.php";
 
             if ( $this->_resultSelectOption == 'ts_sel' ) {
                 // create a static grp if only a subset of result set was selected:
@@ -309,10 +314,12 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
                 $grpID    = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $grpTitle, 'id', 'title' );
 
                 if ( !$grpID ) {
-                    $groupParams = array( 'title'           => $grpTitle,
+          $groupParams = array(
+            'title' => $grpTitle,
                                           'is_active'       => 1,
                                           'is_hidden'       => 1, 
-                                          'group_type'      => array( '2' => 1 ) );
+            'group_type' => array('2' => 1),
+          );
 
                     $group = CRM_Contact_BAO_Group::create( $groupParams );
                     $grpID = $group->id;
@@ -322,7 +329,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
 
                 // note at this point its a static group
                 $smartGroupId = $grpID; 
-            } else {
+      }
+      else {
                 //get the hidden smart group id.
                 $ssId = $this->get( 'ssID' );
                 $hiddenSmartParams = array( 'group_type'       => array( '2' => 1),
@@ -338,7 +346,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
                 if ( !$ssId ) {
                     if ( $savedSearchId ) {
                         $this->set( 'ssID', $savedSearchId );
-                    } else {
+          }
+          else {
                         CRM_Core_Error::fatal( );
                     }
                 }
@@ -348,8 +357,9 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
             $groups['base'] = array( $values['baseGroup'] );
             $values['includeGroups'][] = $smartGroupId;
         }
-        //NYSS
-        foreach ( array( 'name', 'group_id', 'search_id', 'search_args', 'campaign_id', 'dedupe_email' ) as $n ) {
+
+    foreach (array(
+      'name', 'group_id', 'search_id', 'search_args', 'campaign_id', 'dedupe_email') as $n) {
             if ( CRM_Utils_Array::value( $n, $values ) ) {
                 $params[$n] = $values[$n];
             } elseif ( $n == 'dedupe_email' ) {
@@ -357,6 +367,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
 			}
         }
         
+
         $qf_Group_submit = $this->controller->exportValue($this->_name, '_qf_Group_submit');
         $this->set('name', $params['name']);
 
@@ -409,32 +420,28 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
             $mailingTableName = CRM_Mailing_BAO_Mailing::getTableName( ); 
 
             // delete previous includes/excludes, if mailing already existed
-            require_once 'CRM/Contact/DAO/Group.php';
-            foreach( array( 'groups', 'mailings' ) as $entity ) {
+      foreach (array(
+        'groups', 'mailings') as $entity) {
                 $mg = new CRM_Mailing_DAO_Group();
                 $mg->mailing_id     = $ids['mailing_id'];                        
-                $mg->entity_table   =
-                    ( $entity == 'groups' )
-                    ? $groupTableName
-                    : $mailingTableName;
+        $mg->entity_table = ($entity == 'groups') ? $groupTableName : $mailingTableName;
                 $mg->find();
                 while ( $mg->fetch() ) {
                     $mg->delete( );
                 }
             }
-        } else {
+    }
+    else {
             // new mailing, so lets set the created_id
             $session = CRM_Core_Session::singleton( );
             $params['created_id']   = $session->get( 'userID' );
             $params['created_date'] = date('YmdHis');
         }
 
-        require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = CRM_Mailing_BAO_Mailing::create($params, $ids);
         $this->set('mailing_id', $mailing->id);
 
-        //NYSS
-        $dedupeEmail = false;
+    $dedupeEmail = FALSE;
         if ( isset($params['dedupe_email']) ) {
             $dedupeEmail = $params['dedupe_email'];
         }
@@ -452,10 +459,12 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         // also compute the recipients and store them in the mailing recipients table
         CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id,
                                                 $mailing->id,
-                                                null, null, true,
-                                                $dedupeEmail ); //NYSS
+      NULL,
+      NULL,
+      TRUE,
+      $dedupeEmail
+    );
 
-        require_once 'CRM/Mailing/BAO/Recipients.php';
         $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailing->id );
         $this->set   ('count'   , $count   );
         $this->assign('count'   , $count   );
@@ -470,20 +479,27 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
             if ( $ssID && $this->_searchBasedMailing ) {
                 if ( $this->_action == CRM_Core_Action::BASIC ) {
                     $fragment = 'search';
-                } else if ( $this->_action == CRM_Core_Action::PROFILE ) {
+        }
+        elseif ($this->_action == CRM_Core_Action::PROFILE) {
                     $fragment = 'search/builder';
-                } else if ( $this->_action == CRM_Core_Action::ADVANCED ) {
+        }
+        elseif ($this->_action == CRM_Core_Action::ADVANCED) {
                     $fragment = 'search/advanced';
-                } else {
+        }
+        else {
                     $fragment = 'search/custom';
                 }
                 
                 $context = $this->get( 'context' );
-                if ( !CRM_Contact_Form_Search::isSearchContext( $context ) ) $context = 'search';
+        if (!CRM_Contact_Form_Search::isSearchContext($context)) {
+          $context = 'search';
+        }
                 $urlParams = "force=1&reset=1&ssID={$ssID}&context={$context}";
                 
                 $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String', $this );
-                if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
+        if (CRM_Utils_Rule::qfKey($qfKey)) {
+          $urlParams .= "&qfKey=$qfKey";
+        }
                 
                 $draftURL = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
                 $status = ts("Your mailing has been saved. You can continue later by clicking the 'Continue' action to resume working on it.<br /> From <a href='%1'>Draft and Unscheduled Mailings</a>.", array( 1 => $draftURL ) );
@@ -492,7 +508,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
                 //replace user context to search.
                 $url = CRM_Utils_System::url( 'civicrm/contact/' . $fragment, $urlParams );
                 return $this->controller->setDestination($url);
-            } else { 
+      }
+      else {
                 $status = ts("Your mailing has been saved. Click the 'Continue' action to resume working on it.");
                 CRM_Core_Session::setStatus( $status );
                 $url = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
@@ -505,10 +522,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
      * Display Name of the form
      *
      * @access public
+   *
      * @return string
      */
-    public function getTitle( ) 
-    {
+  public function getTitle() {
         return ts( 'Select Recipients' );
     }
 
@@ -521,13 +538,14 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
      * @static
      * @access public
      */
-    static function formRule( $fields ) 
-    {
+  static
+  function formRule($fields) {
         $errors = array( );
         if ( isset( $fields['includeGroups'] )    &&
              is_array( $fields['includeGroups'] ) &&
              isset( $fields['excludeGroups'] )    &&
-             is_array( $fields['excludeGroups'] ) ) {
+      is_array($fields['excludeGroups'])
+    ) {
             $checkGroups = array();
             $checkGroups = array_intersect($fields['includeGroups'], $fields['excludeGroups']);
             if (!empty($checkGroups)) {
@@ -538,7 +556,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         if ( isset( $fields['includeMailings'] )    &&
              is_array( $fields['includeMailings'] ) &&
              isset( $fields['excludeMailings'] )    &&
-             is_array( $fields['excludeMailings'] ) ) {
+      is_array($fields['excludeMailings'])
+    ) {
             $checkMailings = array();
             $checkMailings = array_intersect($fields['includeMailings'], $fields['excludeMailings']);
             if (!empty($checkMailings)) {
@@ -547,17 +566,18 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         }
 
         if ( ! empty ( $fields['search_id'] ) &&
-             empty( $fields['group_id'] ) ) {
+      empty($fields['group_id'])
+    ) {
             $errors['group_id'] = ts('You must select a group to filter on');
         }
 
         if ( empty( $fields['search_id'] ) &&
-             ! empty( $fields['group_id'] ) ) {
+      !empty($fields['group_id'])
+    ) {
             $errors['search_id'] = ts('You must select a search to filter');
         }
 
-        return empty($errors) ? true : $errors;
+    return empty($errors) ? TRUE : $errors;
     }
 }
-
 

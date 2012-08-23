@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,31 +28,23 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/Selector/Base.php';
-require_once 'CRM/Core/Selector/API.php';
-require_once 'CRM/Utils/Pager.php';
-require_once 'CRM/Utils/Sort.php';
-require_once 'CRM/Contact/BAO/Contact.php';
-
 /**
  * This class is used to browse past mailings.
  */
-class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base 
-                                    implements CRM_Core_Selector_API 
-{
+class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_Core_Selector_API {
+
     /**
      * array of supported links, currenly null
      *
      * @var array
      * @static
      */
-    static $_links = null;
+  static $_links = NULL;
 
     /**
      * we use desc to remind us what that column is, name is used in the tpl
@@ -72,10 +63,8 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
      *
      * @return CRM_Contact_Selector_Profile
      * @access public
-     */
-    function __construct( )
-    {
-    }//end of constructor
+   */ function __construct() {}
+  //end of constructor
 
     /**
      * This method returns the links that are given for each search row.
@@ -84,10 +73,11 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
      * @access public
      *
      */
-    static function &links()
-    {
+  static
+  function &links() {
         return self::$_links;
-    } //end of function
+  }
+  //end of function
 
     /**
      * getter for array of the parameters required for creating pager.
@@ -95,14 +85,14 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
      * @param 
      * @access public
      */
-    function getPagerParams( $action, &$params ) 
-    {
-        $params['csvString']    = null;
+  function getPagerParams($action, &$params) {
+    $params['csvString'] = NULL;
         $params['rowCount']     = CRM_Utils_Pager::ROWCOUNT;
         $params['status']       = ts('Mailings %%StatusMessage%%');
         $params['buttonTop']    = 'PagerTopButton';
         $params['buttonBottom'] = 'PagerBottomButton';
-    }//end of function
+  }
+  //end of function
 
     /**
      * returns the column headers as an array of tuples:
@@ -114,22 +104,21 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
      * @return array the column headers that need to be displayed
      * @access public
      */
-    function &getColumnHeaders( $action = null, $output = null ) 
-    {
-        require_once 'CRM/Mailing/BAO/Mailing.php';
-        require_once 'CRM/Mailing/BAO/Job.php';
+  function &getColumnHeaders($action = NULL, $output = NULL) {
         $mailing = CRM_Mailing_BAO_Mailing::getTableName();
         $job = CRM_Mailing_BAO_Job::getTableName();
         if ( ! isset( self::$_columnHeaders ) ) {
-            $completedOrder = null;
+      $completedOrder = NULL;
             
             // Set different default sort depending on type of mailings (CRM-7652)
             $unscheduledOrder = $scheduledOrder = $archivedOrder = CRM_Utils_Sort::DONTCARE;
             if ( $this->_parent->get( 'unscheduled' ) ) {
                 $unscheduledOrder = CRM_Utils_Sort::DESCENDING;
-            } elseif ( $this->_parent->get( 'scheduled' ) ) {
+      }
+      elseif ($this->_parent->get('scheduled')) {
                 $scheduledOrder = CRM_Utils_Sort::DESCENDING;
-            } else {
+      }
+      else {
                 // sort by completed date for archived and undefined get
                 $completedOrder = CRM_Utils_Sort::DESCENDING;
             }
@@ -174,14 +163,14 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
                                                 'name'      => ts('Completed'),
                                                 'sort'      => 'end_date',
                                                 'direction' => $completedOrder,
-                                                )
+        ),
                                           );
             
-            require_once 'CRM/Campaign/BAO/Campaign.php';
             if ( CRM_Campaign_BAO_Campaign::isCampaignEnable( ) ) {
                 self::$_columnHeaders[] = array( 'name' => ts('Campaign'),
                                                  'sort' => 'campaign_id',
-                                                 'direction' => CRM_Utils_Sort::DONTCARE );
+          'direction' => CRM_Utils_Sort::DONTCARE,
+        );
             }
             
             if ( $output != CRM_Core_Selector_Controller::EXPORT ) {
@@ -195,13 +184,11 @@ class CRM_Mailing_Selector_Browse   extends CRM_Core_Selector_Base
      * Returns total number of rows for the query.
      *
      * @param 
+   *
      * @return int Total number of rows 
      * @access public
      */
-    function getTotalCount( $action )
-    {
-        require_once 'CRM/Mailing/BAO/Job.php';
-        require_once 'CRM/Mailing/BAO/Mailing.php';
+  function getTotalCount($action) {
         $job        = CRM_Mailing_BAO_Job::getTableName( );
         $mailing    = CRM_Mailing_BAO_Mailing::getTableName( );
         $mailingACL = CRM_Mailing_BAO_Mailing::mailingACL( );
@@ -232,9 +219,8 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
      *
      * @return int   the total number of rows for this action
      */
-    function &getRows( $action, $offset, $rowCount, $sort, $output = null )
-    {
-        static $actionLinks = null;
+  function &getRows($action, $offset, $rowCount, $sort, $output = NULL) {
+    static $actionLinks = NULL;
         if ( empty( $actionLinks ) ) {
             $cancelExtra  = ts('Are you sure you want to cancel this mailing?');
             $deleteExtra  = ts('Are you sure you want to delete this mailing?');
@@ -245,82 +231,82 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
                     'name'  => ts('Approve/Reject'),
                     'url'   => 'civicrm/mailing/approve',
                     'qs'    => 'mid=%%mid%%&reset=1',
-                    'title' => ts('Approve/Reject Mailing')
+          'title' => ts('Approve/Reject Mailing'),
                     ),
                  CRM_Core_Action::VIEW => array(
                     'name'  => ts('Report'),
                     'url'   => 'civicrm/mailing/report',
                     'qs'    => 'mid=%%mid%%&reset=1',
-                    'title' => ts('View Mailing Report')
+          'title' => ts('View Mailing Report'),
                     ),
                 CRM_Core_Action::UPDATE => array(
                     'name'  => ts('Re-Use'),
                     'url'   => 'civicrm/mailing/send',
                     'qs'    => 'mid=%%mid%%&reset=1',
-                    'title' => ts('Re-Send Mailing')
+          'title' => ts('Re-Send Mailing'),
                     ),
                 CRM_Core_Action::DISABLE => array(
                     'name'  => ts('Cancel'),
                     'url'   => 'civicrm/mailing/browse',
                     'qs'    => 'action=disable&mid=%%mid%%&reset=1',
                     'extra' => 'onclick="if (confirm(\''. $cancelExtra .'\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
-                    'title' => ts('Cancel Mailing')
+          'title' => ts('Cancel Mailing'),
                     ),
                 CRM_Core_Action::PREVIEW => array(
                     'name'  => ts('Continue'),
                     'url'   => 'civicrm/mailing/send',
                     'qs'    => 'mid=%%mid%%&continue=true&reset=1',
-                    'title' => ts('Continue Mailing')                    
+          'title' => ts('Continue Mailing'),
                     ),
                 CRM_Core_Action::DELETE => array(
                     'name'  => ts('Delete'),
                     'url'   => 'civicrm/mailing/browse',
                     'qs'    => 'action=delete&mid=%%mid%%&reset=1',
                     'extra' => 'onclick="if (confirm(\''. $deleteExtra .'\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
-                    'title' => ts('Delete Mailing')                    
+          'title' => ts('Delete Mailing'),
                     ),
                 CRM_Core_Action::RENEW => array(
                     'name'  => ts('Archive'),
                     'url'   => 'civicrm/mailing/browse/archived',
                     'qs'    => 'action=renew&mid=%%mid%%&reset=1',
                     'extra' => 'onclick="if (confirm(\''. $archiveExtra .'\')) this.href+=\'&amp;confirmed=1\'; else return false;"',
-                    'title' => ts('Archive Mailing')                    
+          'title' => ts('Archive Mailing'),
                     ),
                 );
         }
 
-        $allAccess = true;
-        $workFlow = $showApprovalLinks = $showScheduleLinks = $showCreateLinks = false;
-        require_once 'CRM/Mailing/Info.php';
+    $allAccess = TRUE;
+    $workFlow = $showApprovalLinks = $showScheduleLinks = $showCreateLinks = FALSE;
         if ( CRM_Mailing_Info::workflowEnabled( ) ) {
-            $allAccess = false;
-            $workFlow  = true;
+      $allAccess = FALSE;
+      $workFlow = TRUE;
             //supercedes all permission
             if ( CRM_Core_Permission::check( 'access CiviMail' ) ) {
-                $allAccess = true;
+        $allAccess = TRUE;
             }           
 
             if ( CRM_Core_Permission::check( 'approve mailings' ) ) {
-                $showApprovalLinks = true;
+        $showApprovalLinks = TRUE;
             } 
             
             if ( CRM_Core_Permission::check( 'create mailings' ) ) {
-                $showCreateLinks = true;
+        $showCreateLinks = TRUE;
             }
             
             if ( CRM_Core_Permission::check( 'schedule mailings' ) ) {
-                $showScheduleLinks = true;
+        $showScheduleLinks = TRUE;
             }
-            
         } 
         $mailing = new CRM_Mailing_BAO_Mailing();
         
         $params = array( );
+
         $whereClause = ' AND ' . $this->whereClause( $params );
 
         if ( empty( $params ) ) {
             $this->_parent->assign( 'isSearch', 0 );
-        } else {
+    }
+    else {
             $this->_parent->assign( 'isSearch', 1 );
         }
         $rows =& $mailing->getRows( $offset, $rowCount, $sort, $whereClause, $params );
@@ -329,7 +315,6 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         $searchMailings = $mailing->searchMailingIDs( );
         
         //check for delete CRM-4418
-        require_once 'CRM/Core/Permission.php'; 
         $allowToDelete = CRM_Core_Permission::check( 'delete in CiviMail' );
         
         if ( $output != CRM_Core_Selector_Controller::EXPORT ) {
@@ -348,8 +333,12 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
             $opString = implode('.', $pageTypes);
 
             foreach ( $rows as $key => $row ) {
-                $actionMask = null;
-                if ( !( $row['status'] == 'Not scheduled' ) ) {
+        $actionMask = NULL;
+        if ($row['sms_provider_id']) {
+          $actionLinks[CRM_Core_Action::PREVIEW]['url'] = 'civicrm/sms/send';
+        }
+
+        if (!($row['status'] == 'Not scheduled') && !$row['sms_provider_id']) {
                     if ( $allAccess || $showCreateLinks ) {
                         $actionMask = CRM_Core_Action::VIEW;
                     }
@@ -359,7 +348,8 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
                             $actionMask |= CRM_Core_Action::UPDATE;
                         }
                     }
-                } else {
+        }
+        else {
                     //FIXME : currently we are hiding continue action for
                     //search base mailing, we should handle it when we fix CRM-3876
                     if ( !in_array( $row['id'], $searchMailings ) ) {
@@ -368,14 +358,17 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
                         }
                     }
                 }
-                if ( in_array( $row['status'], array( 'Scheduled', 'Running', 'Paused' ) ) ) {
+        if (in_array($row['status'], array(
+          'Scheduled', 'Running', 'Paused'))) {
                     if ( $allAccess || 
-                         ( $showApprovalLinks && $showCreateLinks && $showScheduleLinks ) ) {
+            ($showApprovalLinks && $showCreateLinks && $showScheduleLinks)
+          ) {
                         
                         $actionMask |= CRM_Core_Action::DISABLE;
                     }
                     if ( $row['status'] == 'Scheduled' &&
-                         empty( $row['approval_status_id'] ) ) {
+            empty($row['approval_status_id'])
+          ) {
                         if ( $workFlow && ( $allAccess || $showApprovalLinks ) ) {
                             $actionMask |= CRM_Core_Action::ENABLE;
                         }
@@ -393,21 +386,21 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
                     $actionMask |= CRM_Core_Action::DELETE;
                 }
                 
-                if ( $actionMask == null ) {
+        if ($actionMask == NULL) {
                     $actionMask = CRM_Core_Action::ADD;
                 }
                 //get status strings as per locale settings CRM-4411.
                 $rows[$key]['status'] = CRM_Mailing_BAO_Job::status( $row['status'] );
                 
-                $rows[$key]['action'] = 
-                    CRM_Core_Action::formLink( $actionLinks,
+        $rows[$key]['action'] = CRM_Core_Action::formLink($actionLinks,
                                                $actionMask,
                                                array( 'mid' => $row['id']),
                                                "more",
-                                               false,
+          FALSE,
                                                $opString,
                                                "Mailing",
-                                               $row['id'] );
+          $row['id']
+        );
 
                 //unset($rows[$key]['id']);
                 // if the scheduled date is 0, replace it with an empty string
@@ -421,148 +414,150 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         // also initialize the AtoZ pager
         $this->pagerAtoZ( );
         return $rows;
-        
     }
 
     /**
      * name of export file.
      *
      * @param string $output type of output
+   *
      * @return string name of the file
      */
-    function getExportFileName( $output = 'csv')
-    {
+  function getExportFileName($output = 'csv') {
         return ts('CiviMail Mailings');
     }
 
-    function setParent( $parent )
-    {
+  function setParent($parent) {
         $this->_parent = $parent;
     }
 
-    function whereClause( &$params, $sortBy = true )
-    {
-        $values = $clauses = array( );
-        $title  = $this->_parent->get( 'mailing_name' );
+  function whereClause(&$params, $sortBy = TRUE) {
+     $values = $clauses = array( );
 
-        if ( $title ) {
-            $clauses[] = 'name LIKE %1';
-            if ( strpos( $title, '%' ) !== false ) {
-                $params[1] = array( $title, 'String', false );
-            } else {
-                $params[1] = array( $title, 'String', true );
-            }
-        }
+     $title  = $this->_parent->get( 'mailing_name' );
 
-        //NYSS 4845
-        $subject  = $this->_parent->get( 'mailing_subject' );
-        if ( $subject ) {
-            $clauses[] = 'subject LIKE %1';
-            if ( strpos( $subject, '%' ) !== false ) {
-                $params[1] = array( $subject, 'String', false );
-            } else {
-                $params[1] = array( $subject, 'String', true );
-            }
-        }
+    if ( $title ) {
+      $clauses[] = 'name LIKE %1';
+      if (strpos($title, '%') !== FALSE) {
+        $params[1] = array($title, 'String', FALSE);
+      }
 
-        require_once 'CRM/Utils/Date.php';
-
-        $from = $this->_parent->get( 'mailing_from' );
-        if ( ! CRM_Utils_System::isNull( $from ) ) {
-            $dateClause1[] = 'civicrm_mailing_job.start_date >= %2';
-            $dateClause2[] = 'civicrm_mailing_job.scheduled_date >= %2';
-            $params[2] = array( $from, 'String' );
+      //NYSS 4845
+      $subject  = $this->_parent->get( 'mailing_subject' );
+      if ( $subject ) {
+        $clauses[] = 'subject LIKE %1';
+        if ( strpos( $subject, '%' ) !== false ) {
+          $params[1] = array( $subject, 'String', false );
         }
-
-        $to = $this->_parent->get( 'mailing_to' );
-        if ( ! CRM_Utils_System::isNull( $to ) ) {
-            $dateClause1[] = 'civicrm_mailing_job.start_date <= %3';
-            $dateClause2[] = 'civicrm_mailing_job.scheduled_date <= %3';
-            $params[3] = array( $to, 'String' );
+        else {
+        $params[1] = array($title, 'String', TRUE);
         }
-
-        if ( !empty($dateClause1) ) {
-            $dateClause1[] = "civicrm_mailing_job.status IN ('Complete', 'Running')";
-            $dateClause2[] = "civicrm_mailing_job.status IN ('Scheduled')";
-            $dateClause1   = implode( ' AND ', $dateClause1 );
-            $dateClause2   = implode( ' AND ', $dateClause2 );
-            $clauses[] = "( ({$dateClause1}) OR ({$dateClause2}) )";
-        }
-
-        if ( $this->_parent->get( 'unscheduled' ) ) {
-            $clauses[] = "civicrm_mailing_job.status is null";
-            $clauses[] = "civicrm_mailing.scheduled_id IS NULL";
-        }
-
-        if ( $this->_parent->get( 'archived' ) ) {
-            // CRM-6446: archived view should also show cancelled mailings
-            $clauses[] = "(civicrm_mailing.is_archived = 1 OR civicrm_mailing_job.status = 'Canceled')";
-        }
-        
-        // CRM-4290, do not show archived or unscheduled mails 
-        // on 'Scheduled and Sent Mailing' page selector 
-        if( $this->_parent->get( 'scheduled' ) ) { 
-            $clauses[] = "civicrm_mailing.scheduled_id IS NOT NULL";
-            $clauses[] = "( civicrm_mailing.is_archived IS NULL OR civicrm_mailing.is_archived = 0 )";
-            $status = $this->_parent->get('mailing_status');
-            if ( !empty( $status ) ) {
-                $status = array_keys($status);
-                $status = implode("','", $status);
-                $clauses[] = "civicrm_mailing_job.status IN ('$status')";
-            } else {
-                $clauses[] = "civicrm_mailing_job.status IN ('Scheduled', 'Complete', 'Running')";
-            }
-        }
-            
-        if ( $sortBy &&
-             $this->_parent->_sortByCharacter !== null ) { //NYSS 4142
-            $clauses[] = 
-                "name LIKE '" . 
-                strtolower(CRM_Core_DAO::escapeWildCardString($this->_parent->_sortByCharacter)) .
-                "%'";
-        }
-
-        // dont do a the below assignement when doing a 
-        // AtoZ pager clause
-        if ( $sortBy ) {
-            if ( count( $clauses ) > 1 ) {
-                $this->_parent->assign( 'isSearch', 1 );
-            } else {
-                $this->_parent->assign( 'isSearch', 0 );
-            }
-        }
-        
-        $createOrSentBy = $this->_parent->get( 'sort_name' );
-        if ( !CRM_Utils_System::isNull( $createOrSentBy ) ) {
-            $clauses[] = '(createdContact.sort_name LIKE %4 OR scheduledContact.sort_name LIKE %4)';
-            $params[4] = array( '%' . $createOrSentBy . '%', 'String' );
-        }
-        
-        $createdId = $this->_parent->get( 'createdId' );
-        if ( $createdId ) {
-            $clauses[] = "(created_id = {$createdId})";
-            $params[5] = array( $createdId, 'Integer' );
-        }
-        
-        $campainIds = $this->_parent->get( 'campaign_id' );
-        if ( !CRM_Utils_System::isNull( $campainIds ) ) {
-            if ( !is_array( $campainIds ) ) $campaignIds = array( $campaignIds );
-            $clauses[] = '( campaign_id IN ( ' . implode( ' , ', array_values( $campainIds ) ). ' ) )';
-        }
-        
-        if ( empty( $clauses ) ) {
-            return 1;
-        }
-
-        return implode( ' AND ', $clauses );
+      }
     }
 
-    function pagerAtoZ( )
-    {
-        require_once 'CRM/Utils/PagerAToZ.php';
+    $from = $this->_parent->get( 'mailing_from' );
+    if ( ! CRM_Utils_System::isNull( $from ) ) {
+      $dateClause1[] = 'civicrm_mailing_job.start_date >= %2';
+      $dateClause2[] = 'civicrm_mailing_job.scheduled_date >= %2';
+      $params[2] = array( $from, 'String' );
+    }
+
+    $to = $this->_parent->get( 'mailing_to' );
+    if ( ! CRM_Utils_System::isNull( $to ) ) {
+      $dateClause1[] = 'civicrm_mailing_job.start_date <= %3';
+      $dateClause2[] = 'civicrm_mailing_job.scheduled_date <= %3';
+      $params[3] = array( $to, 'String' );
+    }
+
+    if ( !empty($dateClause1) ) {
+      $dateClause1[] = "civicrm_mailing_job.status IN ('Complete', 'Running')";
+      $dateClause2[] = "civicrm_mailing_job.status IN ('Scheduled')";
+      $dateClause1   = implode( ' AND ', $dateClause1 );
+      $dateClause2   = implode( ' AND ', $dateClause2 );
+      $clauses[] = "( ({$dateClause1}) OR ({$dateClause2}) )";
+    }
+
+    if ( $this->_parent->get( 'unscheduled' ) ) {
+      $clauses[] = "civicrm_mailing_job.status is null";
+      $clauses[] = "civicrm_mailing.scheduled_id IS NULL";
+    }
+
+    if ( $this->_parent->get( 'archived' ) ) {
+      // CRM-6446: archived view should also show cancelled mailings
+      $clauses[] = "(civicrm_mailing.is_archived = 1 OR civicrm_mailing_job.status = 'Canceled')";
+    }
+        
+    if ($this->_parent->get('sms')) {
+      $clauses[] = "(civicrm_mailing.sms_provider_id IS NOT NULL)";
+    }
+    else {
+      $clauses[] = "(civicrm_mailing.sms_provider_id IS NULL)";
+    }
+
+    // CRM-4290, do not show archived or unscheduled mails
+    // on 'Scheduled and Sent Mailing' page selector
+    if( $this->_parent->get( 'scheduled' ) ) {
+      $clauses[] = "civicrm_mailing.scheduled_id IS NOT NULL";
+      $clauses[] = "( civicrm_mailing.is_archived IS NULL OR civicrm_mailing.is_archived = 0 )";
+      $status = $this->_parent->get('mailing_status');
+      if ( !empty( $status ) ) {
+        $status = array_keys($status);
+        $status = implode("','", $status);
+        $clauses[] = "civicrm_mailing_job.status IN ('$status')";
+      }
+      else {
+        $clauses[] = "civicrm_mailing_job.status IN ('Scheduled', 'Complete', 'Running')";
+      }
+    }
+            
+    if ( $sortBy &&
+      $this->_parent->_sortByCharacter !== NULL
+    ) {
+      $clauses[] = "name LIKE '" . strtolower(CRM_Core_DAO::escapeWildCardString($this->_parent->_sortByCharacter)) . "%'";
+    }
+
+    // dont do a the below assignement when doing a
+    // AtoZ pager clause
+    if ( $sortBy ) {
+      if ( count( $clauses ) > 1 ) {
+        $this->_parent->assign( 'isSearch', 1 );
+      }
+      else {
+        $this->_parent->assign( 'isSearch', 0 );
+      }
+    }
+        
+    $createOrSentBy = $this->_parent->get( 'sort_name' );
+    if ( !CRM_Utils_System::isNull( $createOrSentBy ) ) {
+      $clauses[] = '(createdContact.sort_name LIKE %4 OR scheduledContact.sort_name LIKE %4)';
+      $params[4] = array( '%' . $createOrSentBy . '%', 'String' );
+    }
+        
+    $createdId = $this->_parent->get( 'createdId' );
+    if ( $createdId ) {
+      $clauses[] = "(created_id = {$createdId})";
+      $params[5] = array( $createdId, 'Integer' );
+    }
+        
+    $campainIds = $this->_parent->get( 'campaign_id' );
+    if ( !CRM_Utils_System::isNull( $campainIds ) ) {
+      if (!is_array($campainIds)) {
+        $campaignIds = array($campaignIds);
+      }
+      $clauses[] = '( campaign_id IN ( ' . implode( ' , ', array_values( $campainIds ) ). ' ) )';
+    }
+        
+    if ( empty( $clauses ) ) {
+      return 1;
+    }
+
+    return implode( ' AND ', $clauses );
+  }
+
+  function pagerAtoZ() {
         
         $params      = array( );
-        $whereClause = $this->whereClause( $params, false );
+    $whereClause = $this->whereClause($params, FALSE);
         
         $query = "
 SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
@@ -576,11 +571,9 @@ ORDER BY LEFT(name, 1)
 
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
         
-        $aToZBar = CRM_Utils_PagerAToZ::getAToZBar( $dao, $this->_parent->_sortByCharacter, true );
+    $aToZBar = CRM_Utils_PagerAToZ::getAToZBar($dao, $this->_parent->_sortByCharacter, TRUE);
         $this->_parent->assign( 'aToZ', $aToZBar );
-        
     }
-    
-}//end of class
-
+}
+//end of class
 

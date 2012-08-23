@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Mailing/Event/DAO/Delivered.php';
-
 class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
     /**
@@ -45,10 +41,11 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
         parent::__construct( );
     }
 
-
     /**
      * Create a new delivery event
+   *
      * @param array $params     Associative array of delivery event values
+   *
      * @return void
      * @access public
      * @static
@@ -56,10 +53,11 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
     public static function &create(&$params) {
         $q =& CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
                                                   $params['event_queue_id'],
-                                                  $params['hash']);
+      $params['hash']
+    );
 
         if (! $q) {
-            return null;
+      return NULL;
         }
         $q->free( );
 
@@ -70,7 +68,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
         
         $queue = new CRM_Mailing_Event_BAO_Queue();
         $queue->id = $params['event_queue_id'];
-        $queue->find(true);
+    $queue->find(TRUE);
         
         while ( $queue->fetch() ) {
             $email = new CRM_Core_BAO_Email();
@@ -89,12 +87,14 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
      * @param int $mailing_id       ID of the mailing
      * @param int $job_id           Optional ID of a job to filter on
      * @param boolean $is_distinct  Group by queue ID?
+   *
      * @return int                  Number of rows in result set
      * @access public
      * @static
      */
-    public static function getTotalCount($mailing_id, $job_id = null,
-                                            $is_distinct = false) {
+  public static function getTotalCount($mailing_id, $job_id = NULL,
+    $is_distinct = FALSE
+  ) {
         $dao = new CRM_Core_DAO();
         
         //$delivered  = self::getTableName();
@@ -117,25 +117,24 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
             INNER JOIN  $mailing
                     ON  $job.mailing_id = $mailing.id
             WHERE       $bounce.id IS null
-                AND     $mailing.id = " 
-            . CRM_Utils_Type::escape($mailing_id, 'Integer');
+                AND     $mailing.id = " . CRM_Utils_Type::escape($mailing_id, 'Integer');
 
         if (!empty($job_id)) {
-            $query  .= " AND $job.id = " 
-                    . CRM_Utils_Type::escape($job_id, 'Integer');
+      $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
         }
         
         if ($is_distinct) {
             $query .= " GROUP BY $queue.id ";
         }
         
-        $dao->query($query);//query was missing
+    // query was missing
+    $dao->query($query);
 
         if ( $dao->fetch() ) {
             return $dao->delivered;
         }
         
-        return null;
+    return NULL;
     }
 
     /**
@@ -147,12 +146,14 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
      * @param int $offset           Offset
      * @param int $rowCount         Number of rows
      * @param array $sort           sort array
+   *
      * @return array                Result set
      * @access public
      * @static
      */
-    public static function &getRows($mailing_id, $job_id = null, 
-        $is_distinct = false, $offset = null, $rowCount = null, $sort = null) {
+  public static function &getRows($mailing_id, $job_id = NULL,
+    $is_distinct = FALSE, $offset = NULL, $rowCount = NULL, $sort = NULL
+  ) {
         
         $dao = new CRM_Core_Dao();
         
@@ -185,12 +186,10 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
             INNER JOIN  $mailing
                     ON  $job.mailing_id = $mailing.id
             WHERE       $bounce.id IS null
-                AND     $mailing.id = " 
-            . CRM_Utils_Type::escape($mailing_id, 'Integer');
+                AND     $mailing.id = " . CRM_Utils_Type::escape($mailing_id, 'Integer');
     
         if (!empty($job_id)) {
-            $query .= " AND $job.id = " 
-                    . CRM_Utils_Type::escape($job_id, 'Integer');
+      $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
         }
 
         if ($is_distinct) {
@@ -201,17 +200,17 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
         if ($sort) {
             if ( is_string( $sort ) ) {
                 $orderBy = $sort;
-            } else {
+      }
+      else {
                 $orderBy = trim( $sort->orderBy() );
             }
         }
 
         $query .= " ORDER BY {$orderBy} ";
 
-        if ($offset||$rowCount) {//Added "||$rowCount" to avoid displaying all records on first page
-            $query .= ' LIMIT ' 
-                    . CRM_Utils_Type::escape($offset, 'Integer') . ', ' 
-                    . CRM_Utils_Type::escape($rowCount, 'Integer');
+    if ($offset || $rowCount) {
+      //Added "||$rowCount" to avoid displaying all records on first page
+      $query .= ' LIMIT ' . CRM_Utils_Type::escape($offset, 'Integer') . ', ' . CRM_Utils_Type::escape($rowCount, 'Integer');
         }
 
         $dao->query($query);
@@ -220,17 +219,18 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
         while ($dao->fetch()) {
             $url = CRM_Utils_System::url('civicrm/contact/view',
-                                "reset=1&cid={$dao->contact_id}");
+        "reset=1&cid={$dao->contact_id}"
+      );
             $results[] = array(
                 'name'      => "<a href=\"$url\">{$dao->display_name}</a>",
                 'email'     => $dao->email,
-                'date'      => CRM_Utils_Date::customFormat($dao->date)
+        'date' => CRM_Utils_Date::customFormat($dao->date),
             );
         }
         return $results;
     }
 
-    static function bulkCreate( $eventQueueIDs, $time = null ) {
+  static function bulkCreate($eventQueueIDs, $time = NULL) {
         if ( ! $time ) {
             $time = date( 'YmdHis' );
         }
@@ -248,7 +248,5 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
             CRM_Core_DAO::executeQuery( $sql );
         }
     }
-
 }
-
 
