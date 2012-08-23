@@ -6,7 +6,7 @@
 		<table id="sortable_results" class=""> 
 			<thead> 
 				<tr class='list_header'> 
-				    <th class='checkbox' ><input type="checkbox" name="" value="" /></th> 
+				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th> 
 				    <th class='Name'>Name</th> 
 				    <th class='Email'>Email</th> 
 				    <th class='Forwarded'>Forwarded by</th> 

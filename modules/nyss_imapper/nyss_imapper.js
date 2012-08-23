@@ -42,6 +42,21 @@ $(document).ready(function(){
 		console.log('placeholder Support');
 	}
 
+    cj('.checkbox_switch').toggle(function(){
+        cj('input:checkbox').attr('checked','checked');
+        cj('.checkbox_switch').attr('checked','checked');
+       // if(cj('.checkbox_switch').is(':checked')){}
+    },function(){
+        cj('input:checkbox').removeAttr('checked');
+    	
+    	if(cj('.checkbox_switch').is(':checked')){
+    		cj('.checkbox_switch').removeAttr('checked');
+    	};
+    
+    })
+
+
+
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
 		cj.ajax({
@@ -150,19 +165,19 @@ $(document).ready(function(){
 					if(cj("#Activities").length){
 						
 
-						cj.ajax({
-							url: '/civicrm/imap/ajax/deleteActivity',
-							data: {id: messageId},
-							success: function(data,status) {
-								console.log(data);
+						// cj.ajax({
+						// 	url: '/civicrm/imap/ajax/deleteActivity',
+						// 	data: {id: messageId},
+						// 	success: function(data,status) {
+						// 		console.log(data);
 								
-								//console.log("#"+messageId+'_'+contactId);
-								// update count on top
-								var old_total = parseInt(cj("#total_number").html(),10);
-								cj("#total_number").html(old_total-1);
-								//destroyReSortable();
-							} 
-						});
+						// 		//console.log("#"+messageId+'_'+contactId);
+						// 		// update count on top
+						// 		var old_total = parseInt(cj("#total_number").html(),10);
+						// 		cj("#total_number").html(old_total-1);
+						// 		//destroyReSortable();
+						// 	} 
+						//});
 					}else{
 						cj.ajax({
 							url: '/civicrm/imap/ajax/deleteMessage',
@@ -372,7 +387,8 @@ cj("#sortable_results").dataTable({
 		"aaSorting": [[ 5, "desc" ]],
 		"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"iDisplayLength": 50,
-		"bStateSave": true,
+	//	"bStateSave": true,
+		'aTargets': [ 1 ] 
 	}); 
 }
 
