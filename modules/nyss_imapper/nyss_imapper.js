@@ -294,7 +294,7 @@ cj(".pre_find_match").live('click', function() {
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		cj('#imapper-contacts-list').html('');
-	//	console.log(activityId+" / "+contactId)
+ 
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
@@ -313,11 +313,9 @@ cj(".pre_find_match").live('click', function() {
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
+ 
   				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> "+messages.fromAddress);
-  				
- 	// 			cj('#tabs-1 #email-address').val(messages.fromEmail);
- 	// 			cj('#filter').click();
-		// 		switchName(messages.fromName);
+  
 			}
 		 });
 	});
@@ -409,7 +407,7 @@ function buildActivitiesList() {
 	var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+ 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
 		if( value.fromName != ''){
 			messagesHtml += '<td class="name">'+value.fromName +'</td>';
 		}else {

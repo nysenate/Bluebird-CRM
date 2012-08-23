@@ -476,6 +476,7 @@ EOQ;
                 $contact_node = $contact['values'][$user_id[0]];
             }
 
+
             // find out who the forwarder is
             $params = array('version'   =>  3,
                             'id' => $activity_node['source_contact_id'],
@@ -521,7 +522,8 @@ EOQ;
                     );
             $contact = civicrm_api('contact', 'get', $params);
             $contact_node = $contact['values'][$userId];
-          //  print_r($contact_node);
+ 
+
             $params = array('version'   =>  3,
                             'id' => $activity_node['source_contact_id'],
             );
@@ -532,7 +534,6 @@ EOQ;
         $returnMessage = array('uid'    =>  $activitId,
                                 'fromName'   =>  $contact_node['display_name'],
                                 'fromEmail'  =>  $contact_node['email'],
-                                'fromAddress' => $contact_node['street_address'].', '. $contact_node['city'].' '.$contact_node['state_province'].', '.$contact_node['postal_code'],
                                 'forwardedName' => $forwarder_node['display_name'],
                                 'forwardedEmail' => $forwarder_node['email'],
                                 'subject'    =>  $activity_node['subject'],
@@ -561,6 +562,7 @@ EOQ;
         CRM_Utils_System::civiExit();
 
     }
+
 
 
     function getInboxPollingTagId() {
