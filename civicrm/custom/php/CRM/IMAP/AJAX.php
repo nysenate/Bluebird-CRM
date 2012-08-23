@@ -448,50 +448,122 @@ EOQ;
     public static function getMatchedMessages() {
         require_once 'CRM/Core/BAO/Tag.php';
         require_once 'CRM/Core/BAO/EntityTag.php';
+        require_once 'CRM/Activity/BAO/ActivityTarget.php';
 
-
-         
+        // getEntitiesByTag  = get activities id's that are tagged with inbox polling tag
         $tag     = new CRM_Core_BAO_Tag();
         $tag->id = self::getInboxPollingTagId();
-    
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
 
-        $activities = array();
-        echo"<pre>";
         foreach($result as $id) {
-
-
-            error_log(print_r($id, TRUE), 0);
-
+            // pull in full activity record 
             $params = array('version'   =>  3,
                             'activity'  =>  'get',
                            'id' => $id,
                             );
             $activity = civicrm_api('activity', 'get', $params);
-            print_r($activity);
-            
-            // activities working ! 
+            $activity_node = $activity['values'][$id];
+           // print_r($activity_node);
 
-            // here we're logging the output to /var/log/apache2 ( run "tail -f /var/log/apache2/error.log" to check it)
-            // $result = an array that accurately represents how many occurances of the getInboxPollingTagId() your instance has, but they are empty
+            // get the user the activity is attached to
+            $user_id = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId($id);
+            if($user_id){
+                $params = array('version'   =>  3,
+                            'activity' => 'get',
+                            'id' => $user_id[0],
+                        );
+                $contact = civicrm_api('contact', 'get', $params);
+                $contact_node = $contact['values'][$user_id[0]];
+            }
 
-            // //error_log(print_r($activity, TRUE), 0);
 
-            // $params = array('version'   =>  3,
-            //                 'activity' => 'get',
-            //                 'id'        =>  $activity['source_contact_id'],
-            //                 );
+            // find out who the forwarder is
+            $params = array('version'   =>  3,
+                            'id' => $activity_node['source_contact_id'],
+            );
+            $forwarder = civicrm_api('contact', 'get', $params );
+            $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-            // $contact = civicrm_api('contact', 'get', $params);
-            // print_r($contact);
-
-            // $activities[$result['id']]['activity'] = $activity;
-            // $activities[$result['id']]['contact'] = $contact;
-        }
-         echo"</pre>";
-      //  echo json_encode($activities);
-      //  CRM_Utils_System::civiExit();
+            // message to return 
+            $returnMessage[$id] = array('activitId'    =>  $id,
+                            'contactId' =>  $contact_node['contact_id'],
+                            'fromName'   =>  $contact_node['display_name'],
+                            'fromEmail'  =>  $contact_node['email'],
+                            'forwarderName' => $forwarder_node['display_name'],
+                            'forwarder' => $forwarder_node['email'],
+                            'activityId' => $activity_node['id'],
+                            'subject'    =>  $activity_node['subject'],
+                            'details'  =>  $activity_node['details'],
+                            'date'   =>  $activity_node['activity_date_time']);
+         }
+    echo json_encode($returnMessage);
+    CRM_Utils_System::civiExit();
     }
+
+    public static function getActivityDetails() {
+
+        $activitId = self::get('id');
+        $userId = self::get('contact');
+
+        require_once 'CRM/Core/BAO/Tag.php';
+        require_once 'CRM/Core/BAO/EntityTag.php';
+        require_once 'CRM/Activity/BAO/ActivityTarget.php';
+
+            $params = array('version'   =>  3,
+                            'activity'  =>  'get',
+                           'id' => $activitId,
+            );
+            $activity = civicrm_api('activity', 'get', $params);
+            $activity_node = $activity['values'][$activitId];
+
+            $params = array('version'   =>  3,
+                        'activity' => 'get',
+                        'id' => $userId,
+                    );
+            $contact = civicrm_api('contact', 'get', $params);
+            $contact_node = $contact['values'][$userId];
+ 
+
+            $params = array('version'   =>  3,
+                            'id' => $activity_node['source_contact_id'],
+            );
+            $forwarder = civicrm_api('contact', 'get', $params );
+            $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
+
+
+        $returnMessage = array('uid'    =>  $activitId,
+                                'fromName'   =>  $contact_node['display_name'],
+                                'fromEmail'  =>  $contact_node['email'],
+                                'forwardedName' => $forwarder_node['display_name'],
+                                'forwardedEmail' => $forwarder_node['email'],
+                                'subject'    =>  $activity_node['subject'],
+                                'details'  =>  $activity_node['details'],
+                                'date'   =>  $activity_node['activity_date_time']);
+
+
+        echo json_encode($returnMessage);
+        CRM_Utils_System::civiExit();
+    }
+    
+
+
+
+    public static function deleteActivity() {
+        require_once 'api/api.php';
+        $id = self::get('id');
+        
+        $params = array( 
+          'id' => $id,
+          'version' => 3,
+        );
+        $result = civicrm_api( 'activity','delete',$params );
+
+        echo json_encode($result);
+        CRM_Utils_System::civiExit();
+
+    }
+
+
 
     function getInboxPollingTagId() {
       require_once 'api/api.php';

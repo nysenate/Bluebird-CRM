@@ -1,12 +1,12 @@
 <div class="crm-content-block imapperbox" id="Activities">
 	<div class='full'>
-	<h1>Unprocessed Activities <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
+	<h1>Matches Messages <small id='total_results'><span id="total_number">Loading</span> Activities</small></h1>
 	</div>
 	<div class='full'>
 		<table id="sortable_results" class=""> 
 			<thead> 
 				<tr class='list_header'> 
-				    <th class='checkbox' ><input type="checkbox" name="" value="" /></th> 
+				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th> 
 				    <th class='Name'>Name</th> 
 				    <th class='Email'>Email</th> 
 				    <th class='Forwarded'>Forwarded by</th> 
@@ -78,6 +78,9 @@
 	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 </div>
 <div id="loading-popup" title="please wait">
+	<p> Loading message details.</p>
+</div>
+<div id="tagging-popup" title="Tagging">
 	<p> Loading message details.</p>
 </div>
 <!-- <div id="assign-confirm" title="Message Assigned">

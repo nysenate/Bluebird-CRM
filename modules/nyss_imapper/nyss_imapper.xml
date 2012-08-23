@@ -43,4 +43,14 @@
     <page_callback>CRM_IMAP_AJAX::getMatchedMessages</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+   <item>
+    <path>civicrm/imap/ajax/activityDetails</path>
+    <page_callback>CRM_IMAP_AJAX::getActivityDetails</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+   <item>
+    <path>civicrm/imap/ajax/deleteActivity</path>
+    <page_callback>CRM_IMAP_AJAX::deleteActivity</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
