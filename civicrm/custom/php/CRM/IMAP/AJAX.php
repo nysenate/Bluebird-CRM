@@ -599,7 +599,7 @@ EOQ;
         if(!($first_name) && !($last_name) && !($email))
         {
             $returnCode = array('code'      =>  'ERROR',
-                                'status'    =>  '0',
+                                'status'    =>  '1',
                                 'message'   =>  'Required: First Name, Last Name, and Email');
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
@@ -632,12 +632,21 @@ EOQ;
         );
 
         $address = civicrm_api('address', 'create', $address_params);
-        print_r($contact);
-        echo $contact['id'];
-        print_r($address);
-        echo "<pre>";
-        //return('$result');
-        //CRM_Utils_System::civiExit();
+        if(($contact['is_error'] == 0) && ($address['is_error'] == 0))
+        {
+            $returnCode = array('code'      =>  'SUCCESS',
+                                'status'    =>  '0',
+                                );
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        } else {
+            $returnCode = array('code'      =>  'ERROR',
+                                'status'    =>  '1',
+                                'message'   =>  'Error adding Contact or Address Details'
+                                );
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        }
     }
 
 }
