@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,49 +30,57 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 
-    protected $_summary      = null;
+  protected $_summary = NULL;
 
-    protected $_emailField   = false;
+  protected $_emailField = FALSE;
     
-    protected $_phoneField   = false;
+  protected $_phoneField = FALSE;
     
-    protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
+  protected $_customGroupExtends = array(
+    'Contact', 'Individual', 'Household', 'Organization');
     
     function __construct( ) {
         $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
-        $this->_columns = 
-            array( 'civicrm_contact' =>
-                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
+    $this->_columns = array(
+      'civicrm_contact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'sort_name' => 
+        array(
+          'sort_name' =>
                                  array( 'title'     => ts( 'Contact Name' ),
-                                        'required'  => true,
-                                        'no_repeat' => true ),
-
+            'required' => TRUE,
+            'no_repeat' => TRUE,
+          ),
                                  'id'           => 
-                                 array( 'no_display'=> true,
-                                        'required'  => true, ), ),
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+        ),
                           'filters'   =>             
-                          array( 'sort_name'    => 
+        array(
+          'sort_name' =>
                                  array( 'title'      => ts( 'Contact Name' )  ),
                                  'source'       => 
                                  array( 'title'      => ts( 'Contact Source' ),
-                                        'type'       => CRM_Utils_Type::T_STRING ),
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
                                  'id'           => 
                                  array( 'title'      => ts( 'Contact ID' ),
-                                        'no_display' => true ), ),
+            'no_display' => TRUE,
+          ),
+        ),
                           'grouping'  => 'contact-fields',
                           'order_bys'  =>
-                          array( 'sort_name' =>
+        array(
+          'sort_name' =>
                                  //NYSS 4236 alter defaults
 								 array( 'title' => ts( 'Contact Name'), 
 								        'default' => '1', 
@@ -82,11 +91,13 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           ),
                           ),
                    'civicrm_email'   =>
-                   array( 'dao'       => 'CRM_Core_DAO_Email',
+      array(
+        'dao' => 'CRM_Core_DAO_Email',
                           'fields'    =>
-                          array( 'email' => 
+        array(
+          'email' =>
                                  array( 'title'      => ts( 'Email' ),
-                                        'no_repeat'  => true 
+            'no_repeat' => TRUE,
                                         ),
                                  ),
                           'grouping'  => 'contact-fields', 
@@ -98,17 +109,20 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           ),
                    
                    'civicrm_address' =>
-                   array( 'dao'       => 'CRM_Core_DAO_Address',
+      array(
+        'dao' => 'CRM_Core_DAO_Address',
                           'grouping'  => 'contact-fields',
                           'fields'    =>
-                          array( 'street_address'    => 
-                                 array( 'default' => true ),
+        array(
+          'street_address' =>
+          array('default' => TRUE),
                                  'city'              => 
-                                 array( 'default' => true ),
-                                 'postal_code'       => null,
+          array('default' => TRUE),
+          'postal_code' => NULL,
                                  'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
+          array('title' => ts('State/Province'),
                                  ),
+        ),
                           'filters'   =>             
                           array( /*'country_id' => 
                                  array( 'title'   => ts( 'Country' ),
@@ -118,12 +132,14 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                  'state_province_id' =>  
                                  array( 'title'   => ts( 'State / Province' ), 
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'options' => CRM_Core_PseudoConstant::stateProvince( ), ), 
+            'options' => CRM_Core_PseudoConstant::stateProvince(),
                                  ),
+        ),
                           'order_bys'   =>
                           array( 'state_province_id' => array( 'title' => 'State/Province'),
                                  'city' => array( 'title' => 'City'),
                                  'postal_code' => array( 'title' => 'Postal Code'),
+                                 //NYSS
                                  'street_address' => array( 'title' => 'Street Address'),
                                  ),
                            ),
@@ -140,28 +156,31 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           'grouping' => 'contact-fields',
                           ),*/
                    'civicrm_phone' => 
-                   array( 'dao'       => 'CRM_Core_DAO_Phone',
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
                           'fields'    =>
-                          array( 'phone'  => null),
+        array('phone' => NULL),
                           'grouping'  => 'contact-fields',
                           ),
-
                    'civicrm_group' => 
-                   array( 'dao'    => 'CRM_Contact_DAO_Group',
+      array(
+        'dao' => 'CRM_Contact_DAO_Group',
                           'alias'  => 'cgroup',
                           'filters' =>             
-                          array( 'gid' => 
-                                 array( 'name'    => 'group_id',
+        array(
+          'gid' =>
+          array(
+            'name' => 'group_id',
                                         'title'   => ts( 'Group' ),
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'group'   => true,
-                                        'options' => CRM_Core_PseudoConstant::group( ) 
+            'group' => TRUE,
+            'options' => CRM_Core_PseudoConstant::group(),
                                         ), 
                                  ), 
                           ),
                    );
 
-        $this->_tagFilter = true;
+    $this->_tagFilter = TRUE;
         parent::__construct( );
     }
     
@@ -201,13 +220,16 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
-                         CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
+            CRM_Utils_Array::value($fieldName, $this->_params['fields'])
+          ) {
                         if ( $tableName == 'civicrm_email' ) {
-                            $this->_emailField = true;
-                        } else if ( $tableName == 'civicrm_phone' ) {
-                            $this->_phoneField = true;
-                        } else if ( $tableName == 'civicrm_country' ) {
-                            $this->_countryField = true;
+              $this->_emailField = TRUE;
+            }
+            elseif ($tableName == 'civicrm_phone') {
+              $this->_phoneField = TRUE;
+            }
+            elseif ($tableName == 'civicrm_country') {
+              $this->_countryField = TRUE;
                         }
 
                         $alias = "{$tableName}_{$fieldName}";
@@ -223,7 +245,8 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
         $this->_select = "SELECT " . implode( ', ', $select ) . " ";
     }
 
-    static function formRule( $fields, $files, $self ) {  
+  static
+  function formRule($fields, $files, $self) {
         $errors = $grouping = array( );
         return $errors;
     }
@@ -257,7 +280,6 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
     }
     }
     
-    
     function postProcess( ) {
 
         $this->beginPostProcess( );
@@ -265,7 +287,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
         // get the acl clauses built before we assemble the query
         $this->buildACLClause( $this->_aliases['civicrm_contact'] );
 
-        $sql  = $this->buildQuery( true );
+    $sql = $this->buildQuery(TRUE);
              
         $rows = $graphRows = array();
         $this->buildRows ( $sql, $rows );
@@ -277,12 +299,13 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 
     function alterDisplay( &$rows ) {
         // custom code to alter rows
-        $entryFound = false;
+    $entryFound = FALSE;
         foreach ( $rows as $rowNum => $row ) {
             // make count columns point to detail report
             // convert sort name to links
-            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
-                 array_key_exists('civicrm_contact_id', $row) ) {
+            if ( array_key_exists('civicrm_contact_sort_name', $row) &&
+        array_key_exists('civicrm_contact_id', $row)
+      ) {
                 //NYSS - LCD #2059
 				/*$url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
                                               'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
@@ -291,14 +314,14 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 				//NYSS end
                 $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
                 $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Constituent Detail Report for this contact.");
-                $entryFound = true;
+        $entryFound = TRUE;
             }
 
             if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
                 if ( $value = $row['civicrm_address_state_province_id'] ) {
-                    $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );
+          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
                 }
-                $entryFound = true;
+        $entryFound = TRUE;
             }
 
 
@@ -310,3 +333,4 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
         }
     }
 }
+

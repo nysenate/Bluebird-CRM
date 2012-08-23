@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,28 +30,24 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 
-    protected $_summary      = null;
+  protected $_summary = NULL;
     
 	# just a toggle we use to build the from
-	protected $_mailingidField = false;
+  protected $_mailingidField = FALSE;
 	
     protected $_customGroupExtends = array();
     
     
-    protected $_charts  = array( ''            => 'Tabular',
-                                 'bar_3dChart' => 'Bar Chart'
-                                 );
-
-    function __construct( ) {
+  protected $_charts = array(
+    '' => 'Tabular',
+    'bar_3dChart' => 'Bar Chart',
+  ); function __construct() {
         $this->_columns = array(); 
 		
 		$this->_columns['civicrm_mailing'] = array(
@@ -58,7 +55,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 			'fields' => array(
 				'name' => array(
 					'title' => ts('Mailing Name'),
-                    'required' => true,
+          'required' => TRUE,
                 ),
                 //NYSS 4935
                 'mailing_subject' => array(
@@ -84,7 +81,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
                 ),
                 'mailing_name' => array(
                     'name' => 'name',
-                    'title' => ts('Mailing Name'),
+                    'title' => ts('Mailing Name'),//NYSS
                     'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                     'type'=> CRM_Utils_Type::T_STRING,
                     'options' => self::mailing_select( ),
@@ -261,12 +258,11 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     }
     
     function mailing_select() {
-		require_once('CRM/Mailing/BAO/Mailing.php');
 		
 		$data = array( );
 		
 		$mailing = new CRM_Mailing_BAO_Mailing();
-		$query = "SELECT name FROM civicrm_mailing ";
+    $query = "SELECT name FROM civicrm_mailing WHERE sms_provider_id IS NULL";
 		$mailing->query($query);
 		
 		while($mailing->fetch()) {
@@ -277,7 +273,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 	}
 
     function preProcess( ) {
-        $this->assign( 'chartSupported', true );
+    $this->assign('chartSupported', TRUE);
         parent::preProcess( );
     }
     
@@ -299,7 +295,8 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
-                         CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
+            CRM_Utils_Array::value($fieldName, $this->_params['fields'])
+          ) {
  						
 						# for statistics 
 						if(CRM_Utils_Array::value('statistics', $field)) {
@@ -314,14 +311,14 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 									), '%') as {$tableName}_{$fieldName}"; 
 								break;
 							}
-						} else {
+            }
+            else {
 							if(in_array($tableName, $count_tables)) {
 								$select[] = "count(DISTINCT {$field['dbAlias']}) as {$tableName}_{$fieldName}";
 							}
 							else {
 								$select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
 							}
-							
 						}
 							$this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
 							$this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
@@ -361,28 +358,34 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 	
     function where( ) {
         $clauses = array( );
+    //to avoid the sms listings
+    $clauses[] = "{$this->_aliases['civicrm_mailing']}.sms_provider_id IS NULL";
+
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('filters', $table) ) {
                 foreach ( $table['filters'] as $fieldName => $field ) {
-                    $clause = null;
-                    if ( $field['type'] & CRM_Utils_Type::T_DATE ) {
+          $clause = NULL;
+          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
                         $relative = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params );
                         $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
                         $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
                         
                         $clause = $this->dateClause( $field['name'], $relative, $from, $to, $field['type'] );
-                    } else {
+          }
+          else {
                         $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
+
                         if ( $op ) {
                             if( $fieldName == 'relationship_type_id' ) {
                                 $clause =  "{$this->_aliases['civicrm_relationship']}.relationship_type_id=".$this->relationshipId;
-                            } else {
-                            $clause = 
-                                $this->whereClause( $field,
+              }
+              else {
+                $clause = $this->whereClause($field,
                                                     $op,
                                                     CRM_Utils_Array::value( "{$fieldName}_value", $this->_params ),
                                                     CRM_Utils_Array::value( "{$fieldName}_min", $this->_params ),
-                                                    CRM_Utils_Array::value( "{$fieldName}_max", $this->_params ) );
+                  CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                );
                             }
                         }
                     }
@@ -396,7 +399,8 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 
         if ( empty( $clauses ) ) {
             $this->_where = "WHERE ( 1 )";
-        } else {
+    }
+    else {
             $this->_where = "WHERE "  . implode( ' AND ', $clauses );
         }
 
@@ -421,7 +425,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         // get the acl clauses built before we assemble the query
         $this->buildACLClause( CRM_Utils_Array::value( 'civicrm_contact', $this->_aliases ) );
 
-        $sql  = $this->buildQuery( true );
+    $sql = $this->buildQuery(TRUE);
 		
 		// print_r($sql);
              
@@ -433,17 +437,20 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         $this->endPostProcess( $rows );	
     }
 
-    static function getChartCriteria( ) {
-        return array( 'count' => array( 'civicrm_mailing_event_sendgrid_delivered_delivered_count'      => ts('Delivered'), //NYSS
+  static
+  function getChartCriteria( ) {
+    return array( 'count' => array( 'civicrm_mailing_event_sendgrid_delivered_delivered_count'      => ts('Delivered'), //NYSS
                                         'civicrm_mailing_event_bounce_bounce_count'            => ts('Bounce'), 
                                         'civicrm_mailing_event_opened_open_count'              => ts('Opened'),
                                         'civicrm_mailing_event_trackable_url_open_click_count' => ts('Clicks'),
-                                        'civicrm_mailing_event_unsubscribe_unsubscribe_count'  => ts('Unsubscribe') ),
+        'civicrm_mailing_event_unsubscribe_unsubscribe_count' => ts('Unsubscribe'),
+      ),
                       'rate' => array( 'civicrm_mailing_event_sendgrid_delivered_accepted_rate'        => ts('Accepted Rate'), //NYSS
                                         'civicrm_mailing_event_bounce_bounce_rate'             => ts('Bounce Rate'), 
                                         'civicrm_mailing_event_opened_open_rate'               => ts('Confirmed Open Rate'),
                                         'civicrm_mailing_event_trackable_url_open_CTR'         => ts('Click through Rate'),
-                                        'civicrm_mailing_event_trackable_url_open_CTO'         => ts('Click to Open Rate') )
+        'civicrm_mailing_event_trackable_url_open_CTO' => ts('Click to Open Rate'),
+      ),
                       ); 
     }
 
@@ -455,10 +462,11 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         }
 
         $criterias = self::getChartCriteria( );
-        $isError   = true;
+    $isError = TRUE;
         foreach ( $fields['fields'] as $fld => $isActive ) {
-            if ( in_array( $fld, array( 'delivered_count', 'bounce_count', 'open_count', 'click_count', 'unsubscribe_count', 'accepted_rate', 'bounce_rate', 'open_rate', 'CTR', 'CTO' ) ) ) {
-                $isError = false;
+      if (in_array($fld, array(
+        'delivered_count', 'bounce_count', 'open_count', 'click_count', 'unsubscribe_count', 'accepted_rate', 'bounce_rate', 'open_rate', 'CTR', 'CTO'))) {
+        $isError = FALSE;
             }
         }
 
@@ -480,10 +488,10 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
                              'xname'       => ts('Mailing'),
                              'yname'       => ts('Statistics'),
                              'xLabelAngle' => 20,
-                             'tip'         => array( )
+      'tip' => array(),
                              );
 
-        $plotRate  = $plotCount = true;
+    $plotRate = $plotCount = TRUE;
         foreach( $rows as $row ) {
             $chartInfo['values'][$row['civicrm_mailing_name']] = array( );
             if ( $plotCount ) {
@@ -491,8 +499,9 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
                     if ( isset($row[$criteria]) ) {
                         $chartInfo['values'][$row['civicrm_mailing_name']][$label] = $row[$criteria];
                         $chartInfo['tip'][$label] = "{$label} #val#";
-                        $plotRate = false;
-                    } elseif( isset($criterias['count'][$criteria] ) ) {
+            $plotRate = FALSE;
+          }
+          elseif (isset($criterias['count'][$criteria])) {
                         unset($criterias['count'][$criteria]);
                     }
                 }
@@ -502,8 +511,9 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
                     if ( isset($row[$criteria]) ) {
                         $chartInfo['values'][$row['civicrm_mailing_name']][$label] = $row[$criteria];
                         $chartInfo['tip'][$label] = "{$label} #val#";
-                        $plotCount = false;
-                    } elseif( isset($criterias['rate'][$criteria] ) ) {
+            $plotCount = FALSE;
+          }
+          elseif (isset($criterias['rate'][$criteria])) {
                         unset($criterias['rate'][$criteria]);
                     }
                 }   
@@ -512,7 +522,8 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 
         if ( $plotCount ) {
             $criterias = $criterias['count'];
-        } else {
+    }
+    else {
             $criterias = $criterias['rate']; 
         }
 
@@ -522,39 +533,40 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         $chartInfo['xSize']    = ( (count($rows) * 125) + ( count($rows) * count($criterias)* 40 ) );
         
         // build the chart.
-        require_once 'CRM/Utils/OpenFlashChart.php';
         CRM_Utils_OpenFlashChart::buildChart( $chartInfo, $this->_params['charts'] );
         $this->assign( 'chartType', $this->_params['charts'] ); 
     }
 
     function alterDisplay( &$rows ) {
         // custom code to alter rows
-        $entryFound = false;
+    $entryFound = FALSE;
         foreach ( $rows as $rowNum => $row ) {
             // make count columns point to detail report
             // convert display name to links
             if ( array_key_exists('civicrm_contact_display_name', $row) && 
-                 array_key_exists('civicrm_contact_id', $row) ) {
+        array_key_exists('civicrm_contact_id', $row)
+      ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
                                               'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-                                              $this->_absoluteUrl, $this->_id );
+          $this->_absoluteUrl, $this->_id
+        );
                 $rows[$rowNum]['civicrm_contact_display_name_link' ] = $url;
                 $rows[$rowNum]['civicrm_contact_display_name_hover'] = ts("View Contact details for this contact.");
-                $entryFound = true;
+        $entryFound = TRUE;
             }
 
             // handle country
             if ( array_key_exists('civicrm_address_country_id', $row) ) {
                 if ( $value = $row['civicrm_address_country_id'] ) {
-                    $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country( $value, false );
+          $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country($value, FALSE);
                 }
-                $entryFound = true;
+        $entryFound = TRUE;
             }
             if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
                 if ( $value = $row['civicrm_address_state_province_id'] ) {
-                    $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );
+          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
                 }
-                $entryFound = true;
+        $entryFound = TRUE;
             }
 
 
@@ -566,3 +578,4 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         }
     }
 }
+

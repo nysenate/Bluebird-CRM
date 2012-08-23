@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,69 +30,77 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
+  CONST ROW_COUNT_LIMIT = 10;
 
-    const  
-        ROW_COUNT_LIMIT = 10;
-    
-    protected $_summary = null;
+  protected $_summary = NULL;
 
-    protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
+  protected $_customGroupExtends = array(
+    'Contact', 'Individual', 'Household', 'Organization');
 
     function __construct( ) {
         $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
-        $this->_columns = 
-            array( 'civicrm_contact' =>
-                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
+    $this->_columns = array(
+      'civicrm_contact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'sort_name' => 
+        array(
+          'sort_name' =>
                                  array( 'title' => ts( 'Contact Name' ),
-                                        'required'  => true,
-                                        'no_repeat' => true ),
+            'required' => TRUE,
+            'no_repeat' => TRUE,
+          ),
                                  'id'           => 
-                                 array( 'no_display'=> true,
-                                        'required'  => true, ), ),
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+        ),
                           'filters'   =>             
-                          array( 'id'           => 
+        array(
+          'id' =>
                                  array( 'title'      => ts( 'Contact ID' ),
-                                        'no_display' => true ),
+            'no_display' => TRUE,
+          ),
                                  'sort_name' =>
-                                 array( 'title'      => ts( 'Contact Name' ),),),
+          array('title' => ts('Contact Name'),
+          ),
+        ),
                           'grouping'  => 'contact-fields',
                           'order_bys'  =>
-                          array( 'sort_name' =>
+        array(
+          'sort_name' =>
                                  array( 'title'          => ts( 'Contact Name'),
 								        'default'        => '1',
 										'default_weight' => '0',
 										'default_order'  => 'ASC' )
                                         ),
                           ),
-                   
                    'civicrm_address' =>
-                   array( 'dao'       => 'CRM_Core_DAO_Address',
+      array(
+        'dao' => 'CRM_Core_DAO_Address',
                           'grouping'  => 'contact-fields',
                           'fields'    =>
-                          array( 'street_address'    => null,
-                                 'city'              => null,
-                                 'postal_code'       => null,
+        array(
+          'street_address' => NULL,
+          'city' => NULL,
+          'postal_code' => NULL,
                                  'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
+          array('title' => ts('State/Province'),
                                  ),
+        ),
                           'order_bys'   =>
                           array( 'state_province_id' => array( 'title' => 'State/Province'),
                                  'city' => array( 'title' => 'City'),
                                  'postal_code' => array( 'title' => 'Postal Code'),
-                                 'street_address' => array( 'title' => 'Street Address'),
+                                 'street_address' => array( 'title' => 'Street Address'),//NYSS
                                  ),
                           ),
-
                    /*'civicrm_country' =>
                    array( 'dao'      => 'CRM_Core_DAO_Country',
                           'fields'   =>
@@ -106,11 +115,13 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                           ),*/
                    
                    'civicrm_email'   =>
-                   array( 'dao'       => 'CRM_Core_DAO_Email',
+      array(
+        'dao' => 'CRM_Core_DAO_Email',
                           'fields'    =>
-                          array( 'email' => 
+        array(
+          'email' =>
                                  array( 'title'      => ts( 'Email' ),
-                                        'no_repeat'  => true 
+            'no_repeat' => TRUE,
                                         ),
                                  ),
                           'grouping'  => 'contact-fields',
@@ -120,7 +131,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                         )
                                  ),*/
                           ),
-//NYSS - RAY                   
+//NYSS                   
                    'civicrm_contribution'   =>
                    array( 'dao'       => 'CRM_Contribute_DAO_Contribution',
                           'fields'    =>
@@ -198,108 +209,127 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  ), 
                           ),
                    'civicrm_relationship' =>
-                   array( 'dao'    => 'CRM_Contact_DAO_Relationship',
+      array(
+        'dao' => 'CRM_Contact_DAO_Relationship',
                           'fields' =>
-                          array('relationship_id' =>
-                                array( 'name'       => 'id',
+        array(
+          'relationship_id' =>
+          array(
+            'name' => 'id',
                                        'title'      => ts( 'Relationship' ),
-                                       'no_repeat'  => true,
-                                       'default'    => true ,
+            'no_repeat' => TRUE,
+            'default' => TRUE,
                                        ),
                                 'relationship_type_id' => 
                                 array( 'title'   => ts('Relationship Type'),
-                                       'default' => true ),
+            'default' => TRUE,
+          ),
                                 'contact_id_b' => 
                                 array( 'title'      => ts('Relationship With'),
-                                       'default'    => true ),
+            'default' => TRUE,
+          ),
                                 'start_date' => 
-                                array( 'title'   => 'Start Date ',
-                                       'type'    => CRM_Report_Form::OP_DATE
+          array(
+            'title' => 'Start Date ',
+            'type' => CRM_Report_Form::OP_DATE,
                                  ),
                                 'end_date' => 
-                                array( 'title'   => 'End Date ',
-                                       'type'    => CRM_Report_Form::OP_DATE
+          array(
+            'title' => 'End Date ',
+            'type' => CRM_Report_Form::OP_DATE,
                                  ),
-                                ),),
-                   
+        ),
+      ),
                    'civicrm_activity'   =>
-                   array( 'dao'       => 'CRM_Activity_DAO_Activity',
+      array(
+        'dao' => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
-                          array(  'id'    => 
+        array(
+          'id' =>
                                   array( 'title'      => ts( 'Activity' ),
-                                         'no_repeat'  => true,
-                                         'default'    => true 
+            'no_repeat' => TRUE,
+            'default' => TRUE,
                                          ),
                                   'activity_type_id'  => 
                                   array( 'title'      => ts( 'Activity Type' ),
-                                         'default'    => true 
+            'default' => TRUE,
                                          ),
                                   'subject'     => 
                                   array( 'title'      => ts('Subject'),
-                                         'default'    => true ),
+            'default' => TRUE,
+          ),
                                   'source_contact_id' => 
                                   array( 'title'      => ts('Added By'),
-                                         'default'    => true, ),
+            'default' => TRUE,
+          ),
                                   'activity_date_time'  => 
                                   array( 'title'      => ts('Activity Date'),
-                                         'default'    => true ),
+            'default' => TRUE,
+          ),
                                   'activity_status_id' =>
-                                  array( 'name'       => 'status_id', 
+          array(
+            'name' => 'status_id',
                                          'title'      => ts( 'Activity Status' ),
-                                         'default'    => true 
+            'default' => TRUE,
                                          ),
                                   ), 
                           'grouping'  => 'activity-fields',
                           ),
-                   
                    'civicrm_activity_target' =>
-                   array( 'dao'      => 'CRM_Activity_DAO_ActivityTarget',
+      array(
+        'dao' => 'CRM_Activity_DAO_ActivityTarget',
                           'fields'    =>
-                          array( 'target_contact_id' =>
+        array(
+          'target_contact_id' =>
                                  array( 'title'      => ts( 'With Contact' ),
-                                        'default'    => true )
+            'default' => TRUE,
                                  ),
+        ),
                           'grouping' => 'activity-fields',
                           ),
-                   
                    'civicrm_activity_assignment' => 
-                   array( 'dao'      => 'CRM_Activity_DAO_ActivityAssignment',
+      array(
+        'dao' => 'CRM_Activity_DAO_ActivityAssignment',
                           'fields'    =>
-                          array( 'assignee_contact_id' =>
+        array(
+          'assignee_contact_id' =>
                                  array( 'title'      => ts( 'Assigned To' ),
-                                        'default'    => true )
+            'default' => TRUE,
                                  ),
+        ),
                           'grouping' => 'activity-fields',
                           ),
-                   
                    'civicrm_group' => 
-                   array( 'dao'    => 'CRM_Contact_DAO_Group',
+      array(
+        'dao' => 'CRM_Contact_DAO_Group',
                           'alias'  => 'cgroup',
                           'filters' =>             
-                          array( 'gid' => 
-                                 array( 'name'    => 'group_id',
+        array(
+          'gid' =>
+          array(
+            'name' => 'group_id',
                                         'title'   => ts( 'Group' ),
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'group'   => true,
-                                        'options' => CRM_Core_PseudoConstant::group( ) 
+            'group' => TRUE,
+            'options' => CRM_Core_PseudoConstant::group(),
                                         ), 
                                  ), 
                           ),
-                   
                    'civicrm_phone' => 
-                   array( 'dao'       => 'CRM_Core_DAO_Phone',
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
                           'fields'    =>
-                          array( 'phone'  => null),
+        array('phone' => NULL),
                           'grouping'  => 'contact-fields',
                           ),
                    );
 
-        $this->_tagFilter = true;
+    $this->_tagFilter = TRUE;
         parent::__construct( );
     }
     
     function preProcess( ) {
-        $this->_csvSupported = false;
+    $this->_csvSupported = FALSE;
         parent::preProcess( );
     }
 
@@ -336,28 +366,29 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
-                         CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
+            CRM_Utils_Array::value($fieldName, $this->_params['fields'])
+          ) {
                         //isolate the select clause compoenent wise
                         if ( in_array( $table['alias'], $this->_component ) ) {
                             $select[$table['alias']][] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
-                            $this->_columnHeadersComponent[$table['alias']]["{$tableName}_{$fieldName}"]['type'] = 
-                                CRM_Utils_Array::value( 'type', $field );
-                            $this->_columnHeadersComponent[$table['alias']]["{$tableName}_{$fieldName}"]['title'] =
-                                CRM_Utils_Array::value( 'title', $field );
-                        } elseif ( $table['alias'] == $this->_aliases['civicrm_activity_target'] ||
-                                   $table['alias'] == $this->_aliases['civicrm_activity_assignment'] ) {
+              $this->_columnHeadersComponent[$table['alias']]["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+              $this->_columnHeadersComponent[$table['alias']]["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+            }
+            elseif ($table['alias'] == $this->_aliases['civicrm_activity_target'] ||
+              $table['alias'] == $this->_aliases['civicrm_activity_assignment']
+            ) {
                             if( $table['alias'] == $this->_aliases['civicrm_activity_target'] ) {
                                 $addCotactId = 'target_contact_id';
-                            } else {
+              }
+              else {
                                 $addCotactId = 'assignee_contact_id';
                             }
                             $tableName = $table['alias'];
                             $select['activity_civireport'][] = "$tableName.display_name as {$tableName}_{$fieldName}, $addCotactId ";
-                            $this->_columnHeadersComponent['activity_civireport']["{$tableName}_{$fieldName}"]['type'] = 
-                                CRM_Utils_Array::value( 'type', $field );
-                            $this->_columnHeadersComponent['activity_civireport']["{$tableName}_{$fieldName}"]['title'] =
-                                CRM_Utils_Array::value( 'title', $field );
-                        } else {
+              $this->_columnHeadersComponent['activity_civireport']["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+              $this->_columnHeadersComponent['activity_civireport']["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
+            }
+            else {
                             $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                             $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value( 'type', $field );
                             $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
@@ -377,7 +408,8 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         $this->_select = "SELECT " . implode( ', ', $select ) . " ";
     }
     
-    static function formRule( $fields, $files, $self ) {  
+  static
+  function formRule($fields, $files, $self) {
         $errors = array( );
         return $errors;
     }
@@ -419,8 +451,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         
         foreach( $this->_component as $val ) {
             if ( CRM_Utils_Array::value( 'contribution_civireport', $this->_selectComponent ) ) {
-                $this->_formComponent['contribution_civireport'] = 
-                    " FROM 
+        $this->_formComponent['contribution_civireport'] = " FROM 
                             civicrm_contact  {$this->_aliases['civicrm_contact']}
                             INNER JOIN civicrm_contribution       {$this->_aliases['civicrm_contribution']} 
                                     ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id 
@@ -428,16 +459,14 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                     ";
             } 
             if ( CRM_Utils_Array::value( 'membership_civireport', $this->_selectComponent ) ) {
-                $this->_formComponent['membership_civireport'] = 
-                    " FROM 
+        $this->_formComponent['membership_civireport'] = " FROM 
                             civicrm_contact  {$this->_aliases['civicrm_contact']}
                             INNER JOIN civicrm_membership       {$this->_aliases['civicrm_membership']} 
                                     ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_membership']}.contact_id 
                             {$group} ";
             }
             if ( CRM_Utils_Array::value( 'participant_civireport', $this->_selectComponent ) ) {
-                $this->_formComponent['participant_civireport'] = 
-                    " FROM 
+        $this->_formComponent['participant_civireport'] = " FROM 
                             civicrm_contact  {$this->_aliases['civicrm_contact']}
                             INNER JOIN civicrm_participant       {$this->_aliases['civicrm_participant']} 
                                     ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_participant']}.contact_id 
@@ -445,8 +474,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             }
 
             if ( CRM_Utils_Array::value( 'activity_civireport', $this->_selectComponent ) ) {
-                $this->_formComponent['activity_civireport'] =  
-                    "FROM
+        $this->_formComponent['activity_civireport'] = "FROM
                         civicrm_activity {$this->_aliases['civicrm_activity']}
                         LEFT JOIN civicrm_activity_target ON 
                             {$this->_aliases['civicrm_activity']}.id = civicrm_activity_target.activity_id 
@@ -472,8 +500,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             }
             
             if ( CRM_Utils_Array::value( 'relationship_civireport', $this->_selectComponent ) ) {
-                $this->_formComponent['relationship_civireport'] = 
-                    "FROM 
+        $this->_formComponent['relationship_civireport'] = "FROM 
                             civicrm_relationship {$this->_aliases['civicrm_relationship']}
                             
                             LEFT JOIN civicrm_contact  {$this->_aliases['civicrm_contact']} ON 
@@ -490,15 +517,15 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('filters', $table) ) {
                 foreach ( $table['filters'] as $fieldName => $field ) {
-                    $clause = null;
+          $clause = NULL;
                     $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
                     if ( $op ) {
-                        $clause = 
-                            $this->whereClause( $field,
+            $clause = $this->whereClause($field,
                                                 $op,
                                                 CRM_Utils_Array::value( "{$fieldName}_value", $this->_params ),
                                                 CRM_Utils_Array::value( "{$fieldName}_min", $this->_params ),
-                                                CRM_Utils_Array::value( "{$fieldName}_max", $this->_params ) );
+              CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+            );
                     }
                     if ( ! empty( $clause ) ) {
                         $clauses[ ] = $clause;
@@ -509,7 +536,8 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
        
         if ( empty( $clauses ) ) {
             $this->_where = "WHERE ( 1 ) ";
-        } else {
+    }
+    else {
             $this->_where = "WHERE " . implode( ' AND ', $clauses );
         }
 
@@ -522,7 +550,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
 
     function clauseComponent( ) {
         $selectedContacts = implode( ',', $this->_contactSelected );
-        $contribution = $membership =  $participant = null;
+    $contribution     = $membership = $participant = NULL;
         $eligibleResult = $rows = $tempArray= array();
         foreach( $this->_component as $val ) {
             if ( CRM_Utils_Array::value( $val, $this->_selectComponent ) && ($val != 'activity_civireport' && $val != 'relationship_civireport') ) {
@@ -553,8 +581,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         
         if ( CRM_Utils_Array::value( 'relationship_civireport', $this->_selectComponent ) ) {
             
-            require_once 'CRM/Contact/BAO/Relationship.php';
-            $relTypes = CRM_Contact_BAO_Relationship::getContactRelationshipType( null, 'null', null, null, true);
+      $relTypes = CRM_Contact_BAO_Relationship::getContactRelationshipType(NULL, 'null', NULL, NULL, TRUE);
 
             $val  = 'relationship_civireport';
             $eligibleResult[$val] = $val;
@@ -587,19 +614,17 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                 $row['civicrm_relationship_relationship_type_id'] = $relTypes[$relTitle];
                 }
                 $rows[$dao->civicrm_relationship_contact_id_b][$val][] = $row ;
-
             }
         }
         
         if ( CRM_Utils_Array::value( 'activity_civireport', $this->_selectComponent ) ) {
             
             $componentClause = "civicrm_option_value.component_id IS NULL";
-            $componentsIn    = null;
+      $componentsIn    = NULL;
             $compInfo        = CRM_Core_Component::getEnabledComponents();
             foreach ( $compInfo as $compObj ) {
                 if ( $compObj->info['showActivitiesInCore'] ) {
-                    $componentsIn = $componentsIn ? 
-                        ($componentsIn . ', ' . $compObj->componentID) : $compObj->componentID;
+          $componentsIn = $componentsIn ? ($componentsIn . ', ' . $compObj->componentID) : $compObj->componentID;
                 }
             }
             if ( $componentsIn ) {
@@ -609,8 +634,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             
             $val = 'activity_civireport';
             $eligibleResult[$val] = $val;
-            $sql = 
-                "{$this->_selectComponent[$val]} , 
+      $sql = "{$this->_selectComponent[$val]} , 
                  sourceContact.display_name as added_by {$this->_formComponent[$val]}
 
                  WHERE ( {$this->_aliases['civicrm_activity']}.source_contact_id IN ($selectedContacts) OR 
@@ -689,7 +713,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         // get the acl clauses built before we assemble the query
         $this->buildACLClause( $this->_aliases['civicrm_contact'] );
 
-        $sql = $this->buildQuery( true );
+    $sql = $this->buildQuery(TRUE);
         
         $rows  = $graphRows = $this->_contactSelected = array();
         $this->buildRows ( $sql, $rows );
@@ -727,14 +751,15 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     function alterDisplay( &$rows ) {
         // custom code to alter rows
         
-        $entryFound = false;
+    $entryFound = FALSE;
 
         foreach ( $rows as $rowNum => $row ) {
             // make count columns point to detail report
             
             // change contact name with link
             if ( array_key_exists('civicrm_contact_sort_name', $row) && 
-                 array_key_exists('civicrm_contact_id', $row) ) {
+        array_key_exists('civicrm_contact_id', $row)
+      ) {
                 //NYSS - LCD #2059
                 /*$url = CRM_Utils_System::url( "civicrm/contact/view",  
                                               'reset=1&cid=' . $row['civicrm_contact_id'],
@@ -742,16 +767,15 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                 $url = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$row['civicrm_contact_id'] );
 				//NYSS end
                 $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = 
-                    ts("View Contact Summary for this Contact");
-                $entryFound = true;
+        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact Summary for this Contact");
+        $entryFound = TRUE;
             }
             
             if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
                 if ( $value = $row['civicrm_address_state_province_id'] ) {
-                    $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );
+          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
                 }
-                $entryFound = true;
+        $entryFound = TRUE;
             }
             
             
@@ -762,73 +786,64 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             }
         }
     }
+
     function alterComponentDisplay( &$componentRows ) {
         // custom code to alter rows
-        require_once 'CRM/Core/PseudoConstant.php';
-        $activityTypes  = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
+    $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
         $activityStatus = CRM_Core_PseudoConstant::activityStatus();
 
-        $entryFound = false;
+    $entryFound = FALSE;
         foreach ( $componentRows as $contactID => $components) {
             foreach ( $components as $component => $rows) { 
                 foreach ( $rows as $rowNum => $row ) {
                     // handle contribution
                     if ( $component == 'contribution_civireport' ) {
-                        require_once 'CRM/Contribute/PseudoConstant.php';
                         if ( $val = CRM_Utils_Array::value('civicrm_contribution_contribution_type_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_contribution_contribution_type_id'] = 
-                                CRM_Contribute_PseudoConstant::contributionType( $val, false );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_contribution_contribution_type_id'] = CRM_Contribute_PseudoConstant::contributionType($val, FALSE);
                         }
                         
                         if ( $val = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_contribution_contribution_status_id'] = 
-                                CRM_Contribute_PseudoConstant::contributionStatus( $val );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_contribution_contribution_status_id'] = CRM_Contribute_PseudoConstant::contributionStatus($val);
                         }
-                        $entryFound = true;
+            $entryFound = TRUE;
                     }
                     
                     if ( $component == 'membership_civireport' ) {
-                        require_once 'CRM/Member/PseudoConstant.php';
                         if ( $val = CRM_Utils_Array::value('civicrm_membership_membership_type_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_membership_membership_type_id'] = 
-                                CRM_Member_PseudoConstant::membershipType( $val, false );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_membership_membership_type_id'] = CRM_Member_PseudoConstant::membershipType($val, FALSE);
                         }
                         
                         if ( $val = CRM_Utils_Array::value('civicrm_membership_status_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_membership_status_id'] = 
-                                CRM_Member_PseudoConstant::membershipStatus( $val, false );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_membership_status_id'] = CRM_Member_PseudoConstant::membershipStatus($val, FALSE);
                         }
-                        $entryFound = true;
+            $entryFound = TRUE;
                     }
                     
                     if ( $component == 'participant_civireport' ) {
-                        require_once 'CRM/Event/PseudoConstant.php';
                         if ( $val = CRM_Utils_Array::value('civicrm_participant_event_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_participant_event_id'] = 
-                                CRM_Event_PseudoConstant::event( $val, false );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_participant_event_id'] = CRM_Event_PseudoConstant::event($val, FALSE);
                             $url = CRM_Report_Utils_Report::getNextUrl( 'event/income', 
                                                                         'reset=1&force=1&id_op=in&id_value='.$val,
-                                                                        $this->_absoluteUrl, $this->_id);
+                $this->_absoluteUrl, $this->_id
+              );
                             $componentRows[$contactID][$component][$rowNum]['civicrm_participant_event_id_link' ] = $url;
                             $componentRows[$contactID][$component][$rowNum]['civicrm_participant_event_id_hover'] = ts("View Event Income details for this Event.");
-                            $entryFound = true;
+              $entryFound = TRUE;
                         }
                         
                         if ( $val = CRM_Utils_Array::value('civicrm_participant_participant_status_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_participant_participant_status_id'] = 
-                                CRM_Event_PseudoConstant::participantStatus( $val, false );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_participant_participant_status_id'] = CRM_Event_PseudoConstant::participantStatus($val, FALSE);
                         }
                         if ( $val = CRM_Utils_Array::value('civicrm_participant_role_id', $row ) ) {
                             $roles = explode( CRM_Core_DAO::VALUE_SEPARATOR, $val ); 
                             $value = array( );
                             foreach( $roles as $role) {
-                                $value[$role] = CRM_Event_PseudoConstant::participantRole( $role, false );
+                $value[$role] = CRM_Event_PseudoConstant::participantRole($role, FALSE);
                             }
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_participant_role_id'] = 
-                                implode( ', ', $value );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_participant_role_id'] = implode(', ', $value);
                         }
                         
-                        $entryFound = true;
+            $entryFound = TRUE;
                     }
                     
                     if ( $component == 'activity_civireport' ) {
@@ -839,14 +854,13 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                             $componentRows[$contactID][$component][$rowNum]['civicrm_activity_activity_status_id'] = $activityStatus[$val];     
                         }
                         
-                        $entryFound = true;
+            $entryFound = TRUE;
                     }
                     if ( $component == 'membership_civireport' ) {
                         if ( $val = CRM_Utils_Array::value('civicrm_membership_membership_status_id', $row ) ) {
-                            $componentRows[$contactID][$component][$rowNum]['civicrm_membership_membership_status_id'] =
-                                CRM_Member_PseudoConstant::membershipStatus( $val );
+              $componentRows[$contactID][$component][$rowNum]['civicrm_membership_membership_status_id'] = CRM_Member_PseudoConstant::membershipStatus($val);
                         }
-                        $entryFound = true;
+            $entryFound = TRUE;
                     }
                     
                     // skip looking further in rows, if first row itself doesn't 
@@ -859,3 +873,4 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         }
     }
 }
+

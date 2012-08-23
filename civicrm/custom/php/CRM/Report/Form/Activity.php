@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,25 +30,19 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Activity extends CRM_Report_Form {
   
 	protected $_phoneField         = false; //NYSS
-    protected $_customGroupExtends = array( 'Activity' );
-
-    function __construct( ) {
+  protected $_customGroupExtends = array(
+    'Activity'); function __construct() {
         $config = CRM_Core_Config::singleton( );
         $campaignEnabled = in_array( "CiviCampaign", $config->enableComponents );
         if ( $campaignEnabled ){
-            require_once 'CRM/Campaign/BAO/Campaign.php';
-            require_once 'CRM/Campaign/PseudoConstant.php';
-            $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns( null, null, true, false, true );
+      $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
             $this->activeCampaigns = $getCampaigns['campaigns'];
             asort( $this->activeCampaigns );
             $this->engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
@@ -58,32 +53,39 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 		//NYSS altered titles to be trimmed and consistent
         $this->_columns = array(  
                                 'civicrm_contact'      =>
-                                array( 'dao'     => 'CRM_Contact_DAO_Contact',
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
                                        'fields'  =>
                                        array(
                                              'source_contact_id' =>
-                                             array( 'name'       => 'id',
+          array(
+            'name' => 'id',
                                                     'alias'      => 'contact_civireport',
-                                                    'no_display' => true, 
+            'no_display' => TRUE,
                                                     ),
                                              'contact_source'    =>
-                                              array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Added By' ),
-                                                     'alias'     => 'contact_civireport',
-                                                     'no_repeat' => true ),
+          array(
+            'name' => 'sort_name',
+            'title'     => ts( 'Added By' ),//NYSS
+            'alias'     => 'contact_civireport',
+            'no_repeat' => TRUE,
+          ),
                                               'contact_assignee' =>
-                                              array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Assigned' ),
-                                                     'alias'     => 'civicrm_contact_assignee',
-                                                     'default'   => true ),
+          array(
+            'name' => 'sort_name',
+            'title'     => ts( 'Assigned' ),
+            'alias'     => 'civicrm_contact_assignee',
+            'default' => TRUE,
+          ),
                                               'contact_target'   =>
-                                              array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Target (With)' ),
-                                                     'alias'     => 'civicrm_contact_target',
-                                                     'default'   => true ),
+          array(
+            'name' => 'sort_name',
+            'title'     => ts( 'Target (With)' ),//NYSS
+            'alias'     => 'civicrm_contact_target',
+            'default' => TRUE,
                                               ),
-                                       
-                                       'filters' =>             
+        ),
+        'filters' =>             
                                        array( 'contact_source'   =>
                                               array('name'       => 'sort_name' ,
                                                     'alias'      => 'contact_civireport',
@@ -103,11 +105,13 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'operator'  => 'like',
                                                      'type'      => CRM_Report_Form::OP_STRING  ),
                                               'current_user'     => 
-                                              array( 'name'      => 'current_user',
+          array(
+            'name' => 'current_user',
                                                      'title'     => ts('Limit To Current User'),
                                                      'type'      => CRM_Utils_Type::T_INT,
                                                      'operatorType' => CRM_Report_Form::OP_SELECT,
-                                                     'options'   => array('0'=>ts('No'), '1'=>ts('Yes') ) ) ),
+                                                     'options' => array('0' => ts('No'), '1' => ts('Yes')),
+          ),
                                        //NYSS 5059
 									   'order_bys' =>             
                                        array( 'contact_target'  =>
@@ -116,26 +120,31 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'title' => ts( 'Target (With)' ),
                                                      )
 											  ),
-
 									   'grouping' => 'contact-fields',
                                        ),
-                                
                                 'civicrm_email'         =>
-                                array( 'dao'     => 'CRM_Core_DAO_Email',
+      array(
+        'dao' => 'CRM_Core_DAO_Email',
                                        'fields'  =>
-                                       array( 'contact_source_email'   =>
-                                              array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Added By Email' ),
-                                                     'alias'     => 'civicrm_email_source', ),
+        array(
+          'contact_source_email' =>
+          array(
+            'name'      => 'email' ,
+            'title'     => ts( 'Added By Email' ),
+            'alias'     => 'civicrm_email_source', ),
                                               'contact_assignee_email' =>
-                                              array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Assigned Email' ),
-                                                     'alias'     => 'civicrm_email_assignee', ),
+          array(
+            'name' => 'email',
+            'title' => ts('Assignee Contact Email'),
+            'alias' => 'civicrm_email_assignee',
+          ),
                                               'contact_target_email'   =>
-                                              array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Target Email' ),
-                                                     'alias'     => 'civicrm_email_target', ),
+          array(
+            'name' => 'email',
+            'title' => ts('Target Contact Email'),
+            'alias' => 'civicrm_email_target',
                                               ),
+        ),
                                        'order_bys' =>             
                                        array( 'source_contact_email'  =>
                                               array('name'  => 'email',
@@ -173,57 +182,73 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 									   ),
 								
 								'civicrm_activity'      =>
-                                array( 'dao'     => 'CRM_Activity_DAO_Activity',
+      array(
+        'dao' => 'CRM_Activity_DAO_Activity',
                                        'fields'  =>
-                                       array(  'id'                => 
-                                               array( 'no_display' => true,
-                                                      'required'   => true   
+        array(
+          'id' =>
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
                                                       ),
-                                               //NYSS 3983
 											   'source_record_id'  => 
-                                               array( 'no_display' => true,
-                                                      'required'   => true   
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
                                                       ),
 											   'activity_type_id'  => 
-                                               array( 'title'      => ts( 'Type' ),
-                                                      'default'    => true,
-                                                      'type'       => CRM_Utils_Type::T_STRING
+          array('title' => ts('Activity Type'),
+            'default' => TRUE,
+            'type' => CRM_Utils_Type::T_STRING,
                                                       ),
                                                'activity_subject'  => 
                                                array( 'title'      => ts('Subject'),
-                                                      'default'    => true,
+            'default' => TRUE,
                                                       ),
                                                //NYSS add details
 											   'activity_details'  => 
                                                array( 'title'      => ts('Details'),
                                                       'default'    => true,
                                                       ),
-											   'source_contact_id' => 
-                                               array( 'no_display' => true ,
-                                                      'required'   => true , ),
+          'source_contact_id' =>
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
                                                'activity_date_time'=> 
                                                array( 'title'      => ts( 'Activity Date'),
-                                                      'default'    => true ),
+            'default' => TRUE,
+          ),
                                                'status_id'         => 
                                                array( 'title'      => ts( 'Activity Status' ),
-                                                      'default'    => true ,
-                                                      'type'       =>  CRM_Utils_Type::T_STRING ), 
+            'default' => TRUE,
+            'type' => CRM_Utils_Type::T_STRING,
 											   ),
+          'duration' =>
+          array('title' => ts('Duration'),
+            'type' => CRM_Utils_Type::T_INT,
+          ),
+        ),
                                        'filters' =>   
-                                       array( 'activity_date_time'  => 
-                                              array( 'default'      => 'this.month',
-                                                     'operatorType' => CRM_Report_Form::OP_DATE),
+        array(
+          'activity_date_time' =>
+          array(
+            'default' => 'this.month',
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
                                               'activity_subject'    =>
-                                              array( 'title'        => ts( 'Subject' ) ),
+          array('title' => ts('Activity Subject')),
                                               'activity_type_id'    => 
-                                              array( 'title'        => ts( 'Type' ),
+          array('title' => ts('Activity Type'),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                     'options'      => $this->activityTypes, ), //NYSS 4921
+            'options' => $this->activityTypes,
+          ),
                                               'status_id'           => 
                                               array( 'title'        => ts( 'Status' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                     'options'      => CRM_Core_PseudoConstant::activityStatus(), ),
+            'options' => CRM_Core_PseudoConstant::activityStatus(),
                                               ),
+        ),
                                        'order_bys' =>             
                                        array( 'source_contact_id'  =>
                                               array('title'    => ts( 'Added by Contact' ), 'default_weight' => '0' ), //NYSS
