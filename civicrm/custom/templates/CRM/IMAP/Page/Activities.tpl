@@ -1,6 +1,6 @@
 <div class="crm-content-block imapperbox" id="Activities">
 	<div class='full'>
-	<h1>Matches Messages <small id='total_results'><span id="total_number">Loading</span> Activities</small></h1>
+	<h1>Matched Messages <small id='total_results'><span id="total_number">Loading</span> Activities</small></h1>
 	</div>
 	<div class='full'>
 		<table id="sortable_results" class=""> 
