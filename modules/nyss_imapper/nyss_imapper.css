@@ -45,7 +45,7 @@
 .find-match-popup, .delete-confirm{ display: none;}
 .contacts-list{height:245px; overflow:auto; }
 
-.imapperbox .full{ width:940px; float:left; border-bottom:solid 1px #e1e1e1; margin-bottom: 10px;}
+.imapperbox .full{  margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
 
@@ -61,6 +61,22 @@
 
 .delete a{color:red !important;}
 
+
+.dataTables_info {
+    float: none !important;
+    width: 90% !important;
+}
+.dataTables_paginate {
+    float: none !important;
+    width: 10% !important;
+    display: block;
+    padding-left: 90%;
+}
+
+.page_actions{
+	    padding-left: 70%;
+
+}
 /*.dataTables_filter {
     display: inline;
     float: left !important;

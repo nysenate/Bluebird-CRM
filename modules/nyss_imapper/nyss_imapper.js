@@ -225,13 +225,14 @@ $(document).ready(function(){
 		// add a loading icon popup
 	cj( "#tagging-popup" ).dialog({
 		modal: true,
-		height: 500,
-		width: 600,
+		height: 400,
+		width: 500,
 		autoOpen: false,
 		resizable: false,
 		title: 'Loading Data',
 		draggable: false
 	});
+
 
 //
 	cj(".add_tag").live('click', function() { 
@@ -253,10 +254,13 @@ $(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#tagging-popup').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
-				if ((messages.fromAddress.length > 6 )){
+				if ((messages.fromAddress)){
 					cj('#tagging-popup').append("<strong>Address by: </strong>"+messages.fromAddress);
 				}
- 				cj('#tagging-popup').append("<hr/><input type='text'/><br/>"+'<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
+ 				cj('#tagging-popup').append("<hr/><input type='text'/><br/>");
+ 				cj('#tagging-popup').append('<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br>');
+ 				cj('#tagging-popup').append('<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
+
 				cj("#tagging-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#tagging-popup").dialog('open');
  				cj("#tabs").tabs();
@@ -269,6 +273,67 @@ $(document).ready(function(){
 
 
 	});
+
+
+	cj(".multi_tag").live('click', function() { 
+		cj("#loading-popup").dialog('open');
+		var selected = new Array();
+		$('input:checked').each(function() {
+			selected.push($(this).attr('name'));
+		});
+		console.log(selected.length);
+ 		cj("#loading-popup").dialog('close');
+ 		cj('#tagging-popup').html('');
+ 		cj("#tagging-popup").dialog({ title: "Tagging "+selected.length+" Matched messages"});
+ 		cj('#tagging-popup').append("<hr/><input type='text'/><br/>");
+ 		cj('#tagging-popup').append('<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br>');
+ 				cj('#tagging-popup').append('<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
+
+ 		cj("#tagging-popup").dialog('open');
+
+	});
+
+	cj(".multi_clear").live('click', function() { 
+		cj("#loading-popup").dialog('open');
+		var selected = new Array();
+		$('input:checked').each(function() {
+			selected.push($(this).attr('name'));
+		});
+		cj( "#delete-confirm" ).dialog({
+			buttons: {
+				"Delete": function() {
+					cj.each(selected, function(key, value) { 
+ 						cj('#'+value).remove();
+						var old_total = parseInt(cj("#total_number").html(),10);
+						cj("#total_number").html(old_total-1);
+					});
+					cj( this ).dialog( "close" );
+						// cj.ajax({
+						// 	url: '/civicrm/imap/ajax/deleteMessage',
+						// 	data: {id: messageId,
+						//     imapId: imapId },
+						// 	success: function(data,status) {
+						// 		cj("#"+messageId+'_'+imapId).remove();
+						// 		// update count on top
+						// 		var old_total = parseInt(cj("#total_number").html(),10);
+						// 		cj("#total_number").html(old_total-1);
+						// 		//destroyReSortable();
+						// 	} 
+						// });
+					
+				},
+				Cancel: function() {
+					cj( this ).dialog( "close" );
+				}
+			}
+		});
+		cj("#delete-confirm").dialog({ title:  "Clear "+selected.length+" Messages ?"});
+		cj("#loading-popup").dialog('close');
+		cj( "#delete-confirm" ).dialog('open');
+
+	});
+
+
 
 
 
@@ -291,12 +356,15 @@ $(document).ready(function(){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
+				cj('#tabs-1 #first_name, #tabs-1 #last_name, #tabs-1 #phone, #tabs-1 #street_address, #tabs-1 #city, ').val('');
+
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email-address').val(messages.fromEmail);
+ 				cj('#tabs-1 #email_address').val(messages.fromEmail);
+
  				cj('#filter').click();
 				switchName(messages.fromName);
 			}
@@ -423,7 +491,7 @@ function buildActivitiesList() {
 	var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
- 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+ 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
 		if( value.fromName != ''){
 			messagesHtml += '<td class="name">'+value.fromName +'</td>';
 		}else {
