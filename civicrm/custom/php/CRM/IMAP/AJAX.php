@@ -589,5 +589,64 @@ EOQ;
         return $result['id'];
       }
     }
+    public static function createNewContact() {
+        //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes
+        $first_name = $_GET["first_name"];
+        $last_name = $_GET["last_name"];
+        $email = $_GET["email"];
+        $street_address = $_GET["street_address"];
+        $city = $_GET["city"];
+        if(!($first_name) && !($last_name) && !($email))
+        {
+            $returnCode = array('code'      =>  'ERROR',
+                                'status'    =>  '1',
+                                'message'   =>  'Required: First Name, Last Name, and Email');
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        }
+
+        require_once 'api/api.php';
+        require_once 'CRM/Core/BAO/Address.php';
+
+        //First, you make the contact
+        $params = array(
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'contact_type' => 'Individual',
+            'version' => 3,
+        );
+
+        $contact = civicrm_api('contact','create', $params);
+
+        //And then you attach the contact to the Address! which is at $contact['id']
+
+        $address_params = array(
+            'contact_id' => $contact['id'],
+            'street_address' => $street_address,
+            'city' => $city,
+            'is_primary' => 1,
+            'country_id' => 1228,
+            'location_type_id' => 1,
+            'version' => 3,
+        );
+
+        $address = civicrm_api('address', 'create', $address_params);
+        if(($contact['is_error'] == 0) && ($address['is_error'] == 0))
+        {
+            $returnCode = array('code'      =>  'SUCCESS',
+                                'status'    =>  '0',
+                                );
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        } else {
+            $returnCode = array('code'      =>  'ERROR',
+                                'status'    =>  '1',
+                                'message'   =>  'Error adding Contact or Address Details'
+                                );
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        }
+    }
 
 }
