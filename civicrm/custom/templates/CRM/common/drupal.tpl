@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,7 @@
 <div class="clear"></div>
 
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+
 
 {include file="CRM/common/action.tpl"}
 {*NYSS remove nav*}
@@ -99,10 +100,14 @@
 cj(function() {
    cj().crmtooltip(); 
    cj().crmaccordions(); 
+
+cj(document).ready(function() {
+  advmultiselectResize();
+});
+
+cj(window).resize(function() {
+  advmultiselectResize();
 });
 </script>
 {/literal}
-{* We need to set jquery $ object back to $*}
-{*<script type="text/javascript">jQuery.noConflict(true);</script>*}
 </div> {* end crm-container div *}
-

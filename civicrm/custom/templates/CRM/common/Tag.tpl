@@ -35,7 +35,7 @@
             onAdd: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
 				
-				//NYSS 2415 update count of tags in summary tab
+                //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                     var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
                     var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
@@ -45,7 +45,7 @@
             onDelete: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'delete', item.id );
 				
-				//NYSS 2415 update count of tags in summary tab
+                //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                     var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
                     var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
