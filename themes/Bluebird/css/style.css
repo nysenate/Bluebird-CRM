@@ -377,16 +377,6 @@ table.sticky-header {
 	color: #4EBAFF;
 	}
 
-#footer .block-civicrm div#recently-viewed ul li {
-	background-color:transparent;
-	border:none;
-	margin:0 1em 0 0;
-	overflow:hidden;
-	padding:1px 1px 1px 3px;
-	white-space:nowrap;
-	float: left;
-	}
-
 .page-admin #breadcrumb {display: none;}
 
 /* ============================================================================================================== */

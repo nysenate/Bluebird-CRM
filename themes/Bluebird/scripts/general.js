@@ -1,4 +1,5 @@
 // generic JS fixes
+var $ = jQuery.noConflict();
 
 // various JavaScript object.
 var Blueprint = {};

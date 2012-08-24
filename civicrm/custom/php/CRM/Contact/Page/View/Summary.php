@@ -350,7 +350,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
           'count' => CRM_Contact_BAO_Contact::getCountComponent($k, $this->_contactId),
                                 );
                 if($k == 'log') {
-                    $tempTab['count'] = '<script>$().ready( function() { getChangeLogCount(); } );</script>';
+                    $tempTab['count'] = '<script>cj().ready( function() { getChangeLogCount(); } );</script>';
                 } else {
                     $tempTab['count'] = CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId );
                 }

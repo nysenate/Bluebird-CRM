@@ -342,11 +342,17 @@ div.messages ul {
  * unless they are inside a tab panel 
  * (cause they might get pulled by ajax and are context-sensitive 
  */
-.messages {display: none;}
+.messages {
+  display: none;
+}
+
 #status .messages,
 #civicrm-dashboard .messages,
-.ui-tabs-panel .messages {display:block;}
-
+.ui-tabs-panel .messages {
+  display:block;
+  margin-top: 0;
+  border-width: 0 0 1px 0;
+}
 
 /* @end */
 
@@ -1269,17 +1275,26 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*recently viewed block*/
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li {
+#footer .block-civicrm div#recently-viewed ul li {
+  background-color:transparent;
+  border:none;
+  margin:0 1em 0 0;
+  overflow:hidden;
+  padding:1px 1px 1px 3px;
+  white-space:nowrap;
+  float: left;
+}
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
 	-moz-border-radius: 0px 4px 4px 4px; 
  	-webkit-border-radius: 0px 4px 4px 4px;   
  	-khtml-border-radius: 0px 4px 4px 4px; 
  	border-radius:0px 4px 4px 4px;
  	padding: 2px 4px;
 }
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li a {
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed div a {
 	padding: 0 2px;
 }
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul {
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
 	background-color: #131A1C;
 	position: fixed;
 	margin-top: -40px !important;

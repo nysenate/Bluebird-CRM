@@ -1,3 +1,4 @@
+var $ = jQuery.noConflict();
 $(document).ready(function() {
     $('h1.title[innerHTML=CiviCRM Home]').html('Dashboard');
 

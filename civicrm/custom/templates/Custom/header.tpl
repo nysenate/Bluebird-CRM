@@ -66,22 +66,15 @@ $role = str_replace('authenticated user','', $rolesList);
 //CRM-6776, enter-to-submit functionality is broken for IE due to hidden field
 //NYSS-2455
 
-$(function(){
-    $('input').keydown(function(e){
-        if (e.keyCode == 13) {
-            $(this).parents('form').submit();
-            return false;
-        }
-    });
+cj(function(){
+  cj('input').keydown(function(e){
+    if (e.keyCode == 13) {
+      cj(this).parents('form').submit();
+      return false;
+    }
+  });
 });
 
-/*$('.civi-general-search').append('<div id="general-form-hack"></div>');
-	$('#general-form-hack').hide()
-		.load('{/literal}{crmURL p='civicrm/contact/search/custom&csid=15&reset=1&snippet=1'}{literal}', 
-			function(){
-				$('#general-form-hack #Custom input[type=hidden]').appendTo('#gen-search-wrapper');
-			});
-*/
 cj( document ).ready( function( ) {
    var htmlContent = '';
       htmlContent = '<input type="hidden" name="_qf_Basic_refresh">' +
