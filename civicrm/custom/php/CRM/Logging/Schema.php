@@ -97,13 +97,13 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
      * Disable logging by dropping the triggers (but keep the log tables intact).
      */
   function disableLogging() {
-        $this->dropTriggers();
+    $this->dropTriggers();
 
     // invoke the meta trigger creation call
-        CRM_Core_DAO::triggerRebuild( );
+    CRM_Core_DAO::triggerRebuild( );
 
-        $this->deleteReports();
-    }
+    $this->deleteReports();
+  }
 
     /**
      * Drop triggers for all logged tables.

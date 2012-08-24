@@ -30,20 +30,21 @@ $dropList = array( 'civicrm_domain_after_update',
                    'civicrm_menu_after_insert',
                    );
 foreach ( $dropList as $triggerName ) {
-    CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
+  CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
 }
 
 //set logging value in config and settings
 require_once "CRM/Core/BAO/Setting.php";
 $config->logging = 0;
-$params = array('logging' => 0);
-CRM_Core_BAO_Setting::add($params);
+CRM_Core_DAO::executeQuery(
+  'UPDATE civicrm_domain
+   SET config_backend = REPLACE(config_backend, "\"logging\";i:1;", "\"logging\";i:0;")
+   WHERE id = 1;');
 
 echo "Disable Logging...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->disableLogging();
-$logging->dropTriggers();
 
 //CRM_Core_Error::debug('logging',$logging);
 

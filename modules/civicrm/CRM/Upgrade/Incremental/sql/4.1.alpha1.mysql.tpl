@@ -99,7 +99,8 @@ SELECT @adminlastID := id   FROM civicrm_navigation where name = 'Administer';
 SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize';
 SELECT @configureOld := id  FROM civicrm_navigation where name = 'Configure';
 SELECT @globalOld := id     FROM civicrm_navigation where name = 'Global Settings';
-SELECT @manageOld := id     FROM civicrm_navigation where name = 'Manage';
+-- NYSS select correct menu item
+SELECT @manageOld := id     FROM civicrm_navigation where name = 'Manage' AND parent_id IS NOT NULL;
 SELECT @optionsOld := id    FROM civicrm_navigation where name = 'Option Lists';
 SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize';
 
@@ -253,7 +254,8 @@ VALUES
     ( @domainID, 'civicrm/admin/options/event_badge&group=event_badge&reset=1', '{ts escape="sql" skip="true"}Event Badge Formats{/ts}', 'Event Badge Formats', 'access CiviEvent,administer CiviCRM', 'AND', @eventAdminID, '1', NULL, 11 ); 
 
 -- CRM-9113
-ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
+-- NYSS remove as already present
+-- ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
 
 -- CRM-8762 Fix option_group table
 ALTER TABLE civicrm_option_group CHANGE `is_reserved` `is_reserved` TINYINT DEFAULT 1;

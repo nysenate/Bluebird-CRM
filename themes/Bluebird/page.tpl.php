@@ -80,7 +80,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php /*?><a href="<?php print base_path(); ?>user/<?php print $user->uid; ?>/edit">
   		<div class="icon settings-icon"></div>Update your Profile
   	</a><?php */?> <!--#2288-->
-  		<a href="<?php print base_path(); ?>logout" class="logout">
+  		<a href="<?php print base_path(); ?>user/logout" class="logout">
   			<div class="icon logout-icon"></div> Logout
   		</a>
         <div class="sitedetails"><div class="icon key-icon"></div><span> <?php echo $role; ?> </span></div>
