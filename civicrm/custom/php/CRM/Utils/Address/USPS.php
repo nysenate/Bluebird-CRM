@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,38 +28,44 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-
 
 /**
  * Address utilties
  */
 class CRM_Utils_Address_USPS {
     
-    static function checkAddress( &$values ) {
+  static
+  function checkAddress(&$values) {
         if ( ! isset($values['street_address'])     || 
                ( ! isset($values['city']           )   &&
                  ! isset($values['state_province'] )   &&
-                 ! isset($values['postal_code']    )      ) ) {
-            return false;
+        !isset($values['postal_code'])
+      )
+    ) {
+      return FALSE;
         }
         
-        require_once 'CRM/Core/BAO/Preferences.php';
-        $userID = CRM_Core_BAO_Preferences::value( 'address_standardization_userid' );
-        $url    = CRM_Core_BAO_Preferences::value( 'address_standardization_url'    );
+
+    $userID = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::ADDRESS_STANDARDIZATION_PREFERENCES_NAME,
+      'address_standardization_userid'
+    );
+    $url = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::ADDRESS_STANDARDIZATION_PREFERENCES_NAME,
+      'address_standardization_url'
+    );
 
         if ( empty( $userID ) ||
-             empty( $url ) ) {
-            return false;
+      empty($url)
+    ) {
+      return FALSE;
         }
 
         $address2 = str_replace( ',', '', $values['street_address'] );
         
-        //NYSS - LCD current code passes supp add 1 to Address1 field; but API intends address unit data for that field
+        //NYSS current code passes supp add 1 to Address1 field; but API intends address unit data for that field
 		//altered to pass street_unit
 		//http://senatedev.senate.state.ny.us/issues/show/2388
         $XMLQuery = '<AddressValidateRequest USERID="'.$userID.'"><Address ID="0"><Address1>'.$values['street_unit'].'</Address1><Address2>'.$address2.'</Address2><City>'.$values['city'].'</City><State>'.$values['state_province'].'</State><Zip5>'.$values['postal_code'].'</Zip5><Zip4>'.$values['postal_code_suffix'].'</Zip4></Address></AddressValidateRequest>';
@@ -80,8 +85,9 @@ class CRM_Utils_Address_USPS {
         $code = $request->getResponseCode();
         if ($code != 200) {
             $session->setStatus( ts( 'USPS Address Lookup Failed with HTTP status code: %1',
-                                     array(1 => $code ) ) );
-            return false;
+          array(1 => $code)
+        ));
+      return FALSE;
         }
         
         $responseBody = $request->getResponseBody( );
@@ -90,17 +96,17 @@ class CRM_Utils_Address_USPS {
 
         if (is_null($xml) || is_null($xml->Address)) {
             $session->setStatus( ts( 'Your USPS API Lookup has Failed.' ) );
-            return false;
+      return FALSE;
         }
 
         if ( $xml->Number == '80040b1a' ) {
             $session->setStatus( ts( 'Your USPS API Authorization has Failed.' ) );
-            return false;
+      return FALSE;
         }
         
         if (array_key_exists('Error', $xml->Address)) {
             $session->setStatus( ts( 'Address not found in USPS database.' ) );
-            return false;
+      return FALSE;
         }
                 
         $values['street_address']     = (string)$xml->Address->Address2;
@@ -110,10 +116,11 @@ class CRM_Utils_Address_USPS {
         $values['postal_code_suffix'] = (string)$xml->Address->Zip4;
         
         if (array_key_exists('Address1', $xml->Address)) {
-			$values['street_unit'] = (string)$xml->Address->Address1; //NYSS - LCD modified per above
+            //NYSS modified per above
+			$values['street_unit'] = (string)$xml->Address->Address1;
         }
                 
-        return true;
+    return TRUE;
     }
 }
 
