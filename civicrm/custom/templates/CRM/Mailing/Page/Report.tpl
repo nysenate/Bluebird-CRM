@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,6 @@
 {if $report.jobs.0.start_date}
   {strip}
   <table class="crm-info-panel">
-  {*NYSS 4718*}
   <tr><td class="label"><a href="{$report.event_totals.links.queue}">{ts}Intended Recipients{/ts}</a></td>
         <td>{$report.event_totals.queue}</td>
         <td>{$report.event_totals.actionlinks.queue}</td></tr>
@@ -76,7 +75,7 @@
   {/strip}
 {else}
     <div class="messages status">
-        {ts}<strong>Delivery has not yet begun for this mailing.</strong> If the scheduled delivery date and time is past, ask the system administrator or technical support contact for your site to verify that the automated mailer task ('cron job') is running - and how frequently.{/ts} {docURL page="CiviMail Installation"}
+        {ts}<strong>Delivery has not yet begun for this mailing.</strong> If the scheduled delivery date and time is past, ask the system administrator or technical support contact for your site to verify that the automated mailer task ('cron job') is running - and how frequently.{/ts} {docURL page="user/initial-set-up/email-system-configuration"}
     </div>
 {/if}
 </fieldset>
@@ -215,7 +214,7 @@
 <tr><td class="label">{ts}Mailing Name{/ts}</td><td>{$report.mailing.name}</td></tr>
 <tr><td class="label">{ts}Subject{/ts}</td><td>{$report.mailing.subject}</td></tr>
 <tr><td class="label">{ts}From{/ts}</td><td>{$report.mailing.from_name} &lt;{$report.mailing.from_email}&gt;</td></tr>
-<tr><td class="label">{ts}Reply-to email{/ts}</td><td>&lt;{$report.mailing.replyto_email}&gt;</td></tr>
+<tr><td class="label">{ts}Reply-to email{/ts}</td><td>{$report.mailing.replyto_email|htmlentities}</td></tr>
 
 {*NYSS 3895*}{*
 <tr><td class="label">{ts}Forward replies{/ts}</td><td>{if $report.mailing.forward_replies}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
@@ -235,3 +234,7 @@
     <a href="{$backUrl}" >&raquo; {$backUrlTitle}</a>
 </div>
 </div> <!--end block-->
+
+
+
+

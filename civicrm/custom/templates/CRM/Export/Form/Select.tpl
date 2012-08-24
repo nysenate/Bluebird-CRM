@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -118,10 +118,11 @@
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
 {literal}
-
   <script type="text/javascript">
-     function showMappingOption( ) {
+     function showMappingOption( )
+     {
 		var element = document.getElementsByName("exportOption");
+        //NYSS button renaming
 		if ( element[1].checked ) { 
 	  		show('map');
 			cj('#_qf_Select_next-top').val('Continue >> ');

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout">
         <tr class="crm-group-form-block-title">
-	    <td class="label">{$form.title.label}</td>
+	    <td class="label">{$form.title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_group' field='title' id=$group.id}{/if}</td>
             <td>{$form.title.html|crmReplace:class:huge}
                 {if $group.saved_search_id}&nbsp;({ts}Smart Group{/ts}){/if}
             </td>
@@ -60,6 +60,13 @@
 	    <td class="label">{$form.visibility.label}</td>
 	    <td>{$form.visibility.html|crmReplace:class:huge} {help id="id-group-visibility" file="CRM/Group/Page/Group.hlp"}</td>
 	</tr>
+	
+  <tr class="crm-group-form-block-isReserved">
+    <td class="report-label">{$form.is_reserved.label}</td>
+    <td>{$form.is_reserved.html}
+      <span class="description">{ts}If reserved, only users with 'administer reserved groups' permission can disable, delete, or change settings for this group. The reserved flag does NOT affect users ability to add or remove contacts from a group.{/ts}</span>
+    </td>
+  </tr>
 	
 	<tr>
 	    <td colspan=2>{include file="CRM/Custom/Form/CustomData.tpl"}</td>
