@@ -25,22 +25,21 @@
 *}
 {htxt id="id-email_settings"}
 <p>
-  {ts}A copy of this report can be automatically generated and delivered via email to specified recipients. Use the settings in this section to control Subject of the email containing the report, as well as the recipient list (To and Cc fields). Multiple email addresses should be separated by commas.{/ts}
+  {ts}A copy of this report can be automatically generated and delivered via email to specified recipients. Use the settings in this section to control Subject of the email containing the report, as well as the recipient list (To and Cc fields). Multiple 'To' email addresses are not allowed.{/ts}
 </p>
 
-{capture assign=siteRoot}&lt;{ts}site root{/ts}&gt;{/capture}
 <p>
-  {ts 1=$siteRoot 2='sites/all/modules/civicrm/bin/CiviReportMail.php?' 3='instanceId=3&amp;reset=1&amp;sendmail=1' 4='&amp;output=csv'}Your site administrator will need to setup a server 'cron job' (automatically scheduled task) to trigger creation and delivery of each report. The cron job should use invoke the URL: <strong><em>%1/%2%3</em></strong>. (This example url is specific to report ID = 3. When invoked, this URL will deliver email to the recipients specified for this report.) To email the report as a CSV file, add <strong><em>%4</em></strong> to the URL. The cron job will also need to include authentication parameters which can be set by providing user-name, password and site key.{/ts} {docURL page="Command-line Script Configuration"}
+  {ts}Your site administrator will need to setup an instance of the Scheduled Job "Mail Reports" to trigger creation and delivery of each report. When invoked, this job will deliver email to the recipients specified for the report. The report can be attached to the email as a PDF file (default), as a CSV file, or included in HTML format.{/ts} {docURL page="Managing Scheduled Jobs" resource="wiki"}
 </p>
 {/htxt}
 
 {htxt id="id-report_title"}
-  {ts}This title and the description below will be displayed to users in the reports list when they click the 'Reports Listing' menu. The title should reflect the report's default criteria.{/ts}
+  {ts}This title and the description below will be displayed to users in the reports list when they click the 'Reports Listing' menu. The title should reflect the report's default criteria. EXAMPLE: Activity Report - Current Month{/ts}
 {/htxt}
 
 {htxt id="id-report_header"}
-<p>{ts}The Report Header contains HTML code that will be output at the beginning of the document whenever this report is printed or downloaded in PDF format. The default values will work for most situations. However you may want to enter the actual report title in the &lt;title&gt; tag. You can include a logo by adding an &lt;img&gt; tag. You can also modify the look and feel of the printed report by including a custom CSS file (instead of print.css).{/ts}</p>
-<p>{ts}The Report Footer HTML code will be output at the end of the document. You can add any additional footer text or make other changes as needed.{/ts}</p>
+<p>{ts}The Report Header contains HTML code that will be output at the beginning of the document whenever this report is printed or downloaded in PDF format. The default values will work for most situations. However you may want to enter the actual report title in the &lt;title&gt; tag (replacing 'CiviCRM Report'). You can include a logo by adding an &lt;img&gt; tag. You can also modify the look and feel of the printed report by including a custom CSS file (instead of print.css).{/ts}</p>
+<p>{ts}The Report Footer HTML code will be output at the end of the document. You can add any additional footer text, replace the CiviCRM logo, or make other changes as needed.{/ts}</p>
 {/htxt}
 
 {htxt id="id-report_perms"}
@@ -53,3 +52,10 @@
   {ts}If you need to make a dashlet NOT available, AND remove it from existing user dashboards - you can do that from the 'Configure' screen on your dashboard. Click the 'x' on the right side of the dashlet's icon.{/ts}
 </p>
 {/htxt}
+
+{htxt id="id-is_reserved""}
+{ts}Users with 'administer reserved reports' permission can mark a report instance as reserved, which prevents other users from accessing or modifying Report Criteria and Report Settings.
+This is particularly useful for report instances whose criteria affect the data available on non-report screens. For example, the display columns configured for the 
+Contact Logging Summary affect the columns shown under each contact's Change Log tab.{/ts}
+{/htxt}
+

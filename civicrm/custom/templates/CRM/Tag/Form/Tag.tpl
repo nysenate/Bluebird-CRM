@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,8 +27,8 @@
 <style>
 /*.hit {ldelim}padding-left:10px;{rdelim}*/ /*NYSS*/
 .tree li {ldelim}padding-left:10px;{rdelim}
-#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
+#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
+#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
 #Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
 .jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
 </style>
@@ -148,7 +148,6 @@ function initTagTree() {
 
     cj("#tagtree input").change(function(){
         tagid = this.id.replace("check_", "");
-
         //get current tags from Summary and convert to array
         var tagLabels = cj.trim( cj("#tags").text( ) );
         if ( tagLabels ) {
@@ -173,6 +172,7 @@ function initTagTree() {
                  }
              });
         }
+		
 		//showing count of tags in summary tab
 		//cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + cj("#tagtree input:checkbox:checked").length + '</em>');
 		//NYSS 2415
