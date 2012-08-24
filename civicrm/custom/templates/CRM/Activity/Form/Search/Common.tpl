@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,14 +53,8 @@
 {*NYSS move everything here*}
 </tr>
 <tr>
-   <td>
-          {$form.activity_date_low.label}<br/>
-	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_low} 
-   </td>
-   <td>
-   	  {$form.activity_date_high.label}<br/>
-	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_high}
-   </td>
+        <tr><td><label>{ts}Activity Dates{/ts}</label></td></tr>
+  {include file="CRM/Core/DateRange.tpl" fieldName="activity_date" from='_low' to='_high'}
 </tr>
 <tr>
    <td>
@@ -69,19 +63,15 @@
    </td>
    <td colspan="2"><br />
 	  {$form.activity_contact_name.html}<br />
-      <span class="description font-italic">{ts}Complete OR partial Name of the Source Contact or the Assignee Contact.{/ts}</span>
+      <span class="description font-italic">{ts}Complete OR partial Name of the Source Contact or the Assignee Contact.{/ts}</span>{*<br /><br />
+    {$form.activity_test.label} &nbsp; {$form.activity_test.html}*}{*NYSS 4595*}
    </td>
 </tr>
 <tr>
 	<td>
-    	{*{$form.activity_test.label} &nbsp; {$form.activity_test.html}*}{*NYSS 4595*}
-    </td>
-    <td>
     	{$form.activity_subject.label}<br />
-      	{$form.activity_subject.html|crmReplace:class:huge} 
+      	{$form.activity_subject.html|crmReplace:class:huge} {*NYSS*}
     </td>
-</tr>
-<tr>
    <td colspan="2">
           {$form.activity_status.label}<br />
           {$form.activity_status.html} 

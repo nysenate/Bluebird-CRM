@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -286,7 +286,9 @@
 					 	<div class="crm-accordion-body">
                         <table class="form-layout-compressed">
                            <tr><td class="label">{ts}Schedule Follow-up Activity{/ts}</td>
-                               <td>{$form.followup_activity_type_id.html}&nbsp;{$form.interval.label}&nbsp;{$form.interval.html}&nbsp;{$form.interval_unit.html}                          </td>
+                               <td>{$form.followup_activity_type_id.html}&nbsp;&nbsp;{ts}on{/ts}
+                                {include file="CRM/common/jcalendar.tpl" elementName=followup_date}
+                               </td>
                            </tr>
                            <tr>
                               <td class="label">{$form.followup_activity_subject.label}</td>
@@ -299,6 +301,12 @@
 					<script type="text/javascript">
 					cj(function() {
 					   cj().crmaccordions(); 
+                         cj('.crm-accordion-body').each( function() {
+                           //open tab if form rule throws error
+                           if ( cj(this).children( ).find('span.crm-error').text( ).length > 0 ) {
+                             cj(this).parent( ).removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
+                           }
+                         });
 					});
 					</script>
 					{/literal}
@@ -318,7 +326,7 @@
 		            {if ($context eq 'fulltext' || $context eq 'search') && $searchKey}
 		                {assign var='urlParams' value="reset=1&atype=$atype&action=update&reset=1&id=$entityID&cid=$contactId&context=$context&key=$searchKey"}
 		            {/if}
-                    <a href="{crmURL p='civicrm/contact/view/activity' q=$urlParams}" class="edit button" title="{ts}Edit{/ts}"><span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span></a>
+                    <a href="{crmURL p='civicrm/activity/add' q=$urlParams}" class="edit button" title="{ts}Edit{/ts}"><span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span></a>
                  {/if}
                  
                  {if call_user_func(array('CRM_Core_Permission','check'), 'delete activities')}
