@@ -43,17 +43,15 @@ $(document).ready(function(){
 	}
 
     cj('.checkbox_switch').toggle(function(){
-        cj('input:checkbox').attr('checked','checked');
-        cj('.checkbox_switch').attr('checked','checked');
-       // if(cj('.checkbox_switch').is(':checked')){}
-    },function(){
+        cj('input:checkbox').attr('checked',true);
+        cj('.checkbox_switch').prop("checked", true);
+
+     },function(){
         cj('input:checkbox').removeAttr('checked');
-    	
-    	if(cj('.checkbox_switch').is(':checked')){
-    		cj('.checkbox_switch').removeAttr('checked');
+    	if(cj('input.checkbox_switch').is(':checked')){
+    		cj('input.checkbox_switch').removeAttr('checked');
     	};
-    
-    })
+    }); 
 
 
 
@@ -402,6 +400,7 @@ cj(".pre_find_match").live('click', function() {
 			}
 		 });
 	});
+
 	cj(".imapper-contact-box").live('click', function() {
 		var radioButton = cj(this).find(".imapper-contact-select-button");
 		radioButton.attr('checked', 'checked');
@@ -452,8 +451,8 @@ function destroyReSortable(){
 
 function makeListSortable(){
 cj("#sortable_results").dataTable({
-		"aaSorting": [[ 5, "desc" ]],
-		"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
+		"aaSorting": [[ 4, "desc" ]],
+	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"iDisplayLength": 50,
 	//	"bStateSave": true,
 		'aTargets': [ 1 ] 
@@ -467,16 +466,16 @@ function buildMessageList() {
 	var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
 		if( value.from_name != ''){
 			messagesHtml += '<td class="name">'+value.from_name +'</td>';
 		}else {
 			messagesHtml += '<td class="name"> N/A </td>';
 		}
 		messagesHtml += '<td class="email">'+value.from_email +'</td>';
-		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
-		messagesHtml += '<td class="subject">'+value.subject +'</td>';
+ 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
+		messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
@@ -498,9 +497,9 @@ function buildActivitiesList() {
 			messagesHtml += '<td class="name"> N/A </td>';
 		}
 		messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
-		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
+		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
 		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Edit</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);

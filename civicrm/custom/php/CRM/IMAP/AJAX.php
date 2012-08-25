@@ -113,6 +113,8 @@ class CRM_IMAP_AJAX {
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
                         $header->forwarder = $header->from;
+                        $header->forwarder_time = date("Y-m-d H:i A", $header->udate); 
+
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
@@ -208,7 +210,9 @@ class CRM_IMAP_AJAX {
             $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
             $forwardedName = $email->sender[0]->personal;
             $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+            $forwardedTime = $dateSent = date("Y-m-d H:i A", $email->time); 
 
+            // print_r($email);
             $forwarded = true;
         } else {
             // Otherwise, search for a name and email address from
@@ -246,6 +250,7 @@ class CRM_IMAP_AJAX {
                                'fromEmail'  =>  $fromEmail,
                                'forwardedName'  =>  mb_convert_encoding($forwardedName, 'UTF-8'),
                                'forwardedEmail' =>  $forwardedEmail,
+                               'forwardedDate' =>  $forwardedTime,
                                'subject'    =>  mb_convert_encoding($subject, 'UTF-8'),
                                'details'  =>  mb_convert_encoding($details, 'UTF-8'),
                                'date'   =>  $dateSent);
@@ -484,6 +489,7 @@ EOQ;
             $forwarder = civicrm_api('contact', 'get', $params );
             $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
+            $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
             // message to return 
             $returnMessage[$id] = array('activitId'    =>  $id,
                             'contactId' =>  $contact_node['contact_id'],
@@ -494,7 +500,7 @@ EOQ;
                             'activityId' => $activity_node['id'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
-                            'date'   =>  $activity_node['activity_date_time']);
+                            'date'   =>  $date);
          }
     echo json_encode($returnMessage);
     CRM_Utils_System::civiExit();
@@ -530,6 +536,7 @@ EOQ;
             $forwarder = civicrm_api('contact', 'get', $params );
             $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
+            $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
 
         $returnMessage = array('uid'    =>  $activitId,
                                 'fromName'   =>  $contact_node['display_name'],
@@ -538,7 +545,7 @@ EOQ;
                                 'forwardedEmail' => $forwarder_node['email'],
                                 'subject'    =>  $activity_node['subject'],
                                 'details'  =>  $activity_node['details'],
-                                'date'   =>  $activity_node['activity_date_time']);
+                                'date'   =>  $date);
 
 
         echo json_encode($returnMessage);

@@ -52,11 +52,13 @@
 
 .imapperbox .full .list_header{ font-weight: bold;}
 
-.imapperbox .full .checkboxieout{ width:25px;}
-.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}
+.imapperbox .full .checkboxieout{ left:17px;  }
+/*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
+
 .imapperbox .full .subject { width:330px;}
-
-
+.forwarder{max-width: 60px; overflow: hidden;}
+.date{max-width: 100px; overflow: hidden;}
+.checkbox_switch{ margin-left: 10px;}
 .imapperbox .full .Actions{ width:150px; text-align: right !important;}
 
 .delete a{color:red !important;}

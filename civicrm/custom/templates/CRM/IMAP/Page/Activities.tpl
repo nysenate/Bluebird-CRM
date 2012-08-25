@@ -9,9 +9,9 @@
 				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th> 
 				    <th class='Name'>Name</th> 
 				    <th class='Email'>Email</th> 
-				    <th class='Forwarded'>Forwarded by</th> 
 				    <th class='Subject'>Subject</th> 
 				    <th class='Date'>Date</th> 
+				    <th class='Forwarded'>Fwd:</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr> 
 			</thead> 
