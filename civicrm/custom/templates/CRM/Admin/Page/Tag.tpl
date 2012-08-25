@@ -27,11 +27,25 @@
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
 <script src="/sites/default/themes/rayCivicrm/scripts/bbtree.js" type="text/javascript"></script>
 <style>
-.crm-tagTabHeader {height:15px;}
+.crm-tagTabHeader {height:15px; clear:both;}
 .crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer;}
 .crm-tagTabHeader li:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
 #crm-container #crm-tagListWrap {clear:both;}
 .BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
+.crm-tagLegend td div {
+	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png') transparent no-repeat;
+	height:16px;
+	width:16px;
+	float:left;
+	margin:0 10px 0 0;
+}
+.crm-tagLegend td.addTag div {}
+.crm-tagLegend td.removeTag div {background-position: -17px 0px;}
+.crm-tagLegend td.moveTag div {background-position: -34px 0px; }
+.crm-tagLegend td.updateTag div {background-position: -50px 0px;}
+.crm-tagLegend td.mergeTag div {background-position: -66px 0px;}
+#crm-container .crm-tagLegend th {border: 0px;}
+#crm-container .crm-tagLegend * {border:0px;}
 </style>
 {/literal}
 {literal}
@@ -242,7 +256,23 @@ function findIDLv(tagLabel) {
     <div id="help">
         {ts 1=$docLink}Tags can be assigned to any contact record, and are a convenient way to find contacts. You can create as many tags as needed to organize and segment your records.{/ts} {$docLink}
     </div>
-        <div id="dialog"></div>
+    <div id="dialog"></div>
+    <div class="crm-tagLegend">
+    	<table>
+    		<tr>
+    			<th>Legend</th>
+    		</tr>
+    		<tr>
+    			<td class="addTag"><div></div>Add Tag</td>
+    			<td class="removeTag"><div></div>Remove Tag</td>
+    			<td class="mergeTag"><div></div>Merge Tag & Convert Keywords</td>
+    		</tr>
+    		<tr>
+    			<td class="updateTag"><div></div>Update Tag</td>
+    			<td class="moveTag"><div></div>Move Tag</td>
+    		</tr>
+    	</table>
+    </div>
 	<div class="crm-tagTabHeader">
 		<ul>
 		</ul>
@@ -257,7 +287,7 @@ function findIDLv(tagLabel) {
 			<div class="tagId">Tag ID: <span></span></div>
 			<div class="tagDescription">Tag Description: <span></span></div>
 			<div class="tagReserved">Reserved: <span></span></div>
-			<!--<div class="tagCount">Records with this Tag: <span></span></div>-->
+			<div class="tagCount">Records with this Tag: <span></span></div>
 		</div>
             </div>
             <div class="BBtree edit manage">

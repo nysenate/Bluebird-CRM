@@ -36,7 +36,6 @@
 .jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
 /*to add to tags.css*/
 #crm-tagListWrap {padding:10px; height:auto;}
-.BBtree.edit.tab { padding: 0px; border: 1px solid #ccc; width:347px; padding-left:10px;}
 </style>
 {/literal}
 {*NYSS*}
@@ -51,12 +50,9 @@
     	<div class="clear"></div>
     {/if}
     <div id="crm-tagListWrap">
-	    <div class="BBtree edit tab" style="float:right">
-	    			
-	    </div>
-	    <div style="float:left; width:350px; padding-left:20px;">
+
     {include file="CRM/common/Tag.tpl"}
-    </div>
+    <script>cj('<div class="BBtree edit tab"></div>').insertAfter('.crm-section.tag-section.contact-tagset-296-section');</script>
         {*NYSS add list of leg positions with descriptions*}
         {if $legpositions}
         <div class="clear_left"></div>

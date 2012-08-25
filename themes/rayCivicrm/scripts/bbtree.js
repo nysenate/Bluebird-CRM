@@ -8,7 +8,8 @@ function callTagAjax (local, modalTreeTop) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
-			entity_id: cid
+			entity_id: cid,
+			entity_counts: 1
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -102,7 +103,7 @@ function callTagListMain(treeLoc, treeData) {
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
 		cj.each(tID.children, function(i, cID){
 			var cIDChecked = isItemChecked(cID.is_checked,cID.id);
-			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>';
+			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+cID.name+'</span><span class="entityCount">('+cID.entity_count+')</span></div>';
 			var cIDLabel = 'tagLabel_'+cID.id;
 			displayObj.output += addControlBox(cIDLabel, cIDChecked, tID.id)+'</dt>';
 			if(cID.children.length > 0){
@@ -110,7 +111,7 @@ function callTagListMain(treeLoc, treeData) {
 				displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
 				cj.each(cID.children, function(i, iID){
 					var iIDChecked = isItemChecked(iID.is_checked,iID.id);
-					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div>';
+					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+iID.name+'</span><span class="entityCount">('+iID.entity_count+')</span></div>';
 					var iIDLabel = 'tagLabel_'+iID.id;
 					displayObj.output += addControlBox(iIDLabel, iIDChecked, tID.id)+'</dt>';
 					if(iID.children.length > 0){
@@ -118,7 +119,7 @@ function callTagListMain(treeLoc, treeData) {
 						displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
 						cj.each(iID.children, function(i, jID){
 							var jIDChecked = isItemChecked(jID.is_checked,jID.id);
-							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div>';
+							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+jID.name+'</span><span class="entityCount">('+jID.entity_count+')</span></div>';
 							var jIDLabel = 'tagLabel_'+jID.id;
 							displayObj.output += addControlBox(jIDLabel, jIDChecked, tID.id)+'</dt>';
 							if(jID.children.length > 0){
@@ -126,7 +127,7 @@ function callTagListMain(treeLoc, treeData) {
 								displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
 								cj.each(jID.children, function(i, kID){
 									var kIDChecked = isItemChecked(kID.is_checked,kID.id);
-									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div>';
+									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+kID.name+'</span><span class="entityCount">('+kID.entity_count+')</span></div>';
 									var kIDLabel = 'tagLabel_'+kID.id;
 									displayObj.output += addControlBox(kIDLabel, kIDChecked, tID.id)+'</dt>';
 								});
@@ -226,11 +227,11 @@ tag and binds/unbindes their click functionality to slide up/down... and stops t
 individual boxes inside the functionality or radio buttons. Last portion is for the Admin console that tells
 number of tags named*/
 function hoverTreeSlider(treeLoc){
-	cj(treeLoc + ' dt').unbind('click');
-	cj(treeLoc + ' dt').click(function() {
-		if(cj(this).hasClass('lv-0'))
+	cj(treeLoc + ' dt .treeButton').unbind('click');
+	cj(treeLoc + ' dt .treeButton').click(function() {
+		if(cj(this).parent().hasClass('lv-0'))
 		{
-			if(cj(this).hasClass('open'))
+			if(cj(this).parent().hasClass('open'))
 			{
 				cj(treeLoc + ' dt.lv-0').removeClass('open');
 				cj(treeLoc + ' dt.lv-0 .treeButton').removeClass('open');
@@ -243,7 +244,7 @@ function hoverTreeSlider(treeLoc){
 			}
 		} else {
 
-			var tagLabel = cj(this).attr('id');
+			var tagLabel = cj(this).parent().attr('id');
 			var isOpen = cj('dl#'+tagLabel).hasClass('open');
 			switch(isOpen)
 			{
@@ -261,6 +262,24 @@ function hoverTreeSlider(treeLoc){
 			}
 		}
 	});
+	if(cj(treeLoc).hasClass('manage'))
+	{
+
+	} else {
+		cj(treeLoc + ' dt .tag').click(function(e){
+			if(cj(this).parent().find('input:checked').length == 0){
+				cj(this).parent().find('input').attr('checked', true);
+				var tagLabelCheckRA = cj(this).parent().attr('id');
+				checkRemoveAdd(tagLabelCheckRA);
+			}
+			else{
+				cj(this).parent().find('input:checked').attr('checked', false);
+				var tagLabelCheckRA = cj(this).parent().attr('id');
+				checkRemoveAdd(tagLabelCheckRA);
+			}
+		});
+	}
+
 	cj(treeLoc + ' dt .fCB li').click(function(e) {
 		e.stopPropagation();
 	});
@@ -270,8 +289,8 @@ function hoverTreeSlider(treeLoc){
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
 	function(){
-		var tagCount = 0;
-		var tagName = cj(this).children('.tag').html();
+		var tagCount = cj('span.entityCount', this).html();
+		var tagName = cj('span.name', this).html();
 		var tagId = cj(this).attr('tid');
 		var isReserved = 'False';
 		if(cj(this).hasClass('isReserved') == true)
@@ -301,7 +320,8 @@ function postJSON(treeLoc){
 
 			if(cj(treeLoc + ' dl#'+ idGrab).length == 0)
 			{
-				cj(treeLoc + ' dt#' + idGrab + ' div').addClass('stub');
+				//if the length = 0, add a stub dot, only relevant when checkbox is at right, instead just removes the button
+				cj(treeLoc + ' dt#' + idGrab + ' div').removeClass('treeButton');
 			}
 		}
 	});
@@ -375,7 +395,7 @@ function makeModalAdd(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			tagInfo.name = cj('dt#' + tagLabel + ' .tag').html();
+			tagInfo.name = cj('dt#' + tagLabel + ' .tag .name').html();
 			
 			var addDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
 			addDialogInfo += '<div class="modalInputs">';
@@ -441,7 +461,7 @@ function makeModalRemove(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
+			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.isReserved = cj('.BBtree.edit dt#' + tagLabel).hasClass('isReserved');
 			if(tagInfo.isReserved == false) {
 				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">Remove Tag: ' + tagInfo.name + '</span></div>';
@@ -513,14 +533,14 @@ function makeModalUpdate(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
+			tagInfo.name = cj('.BBtree.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
 			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
 			var updateDialogInfo = '';
 			if(tagInfo.reserved == true){
 			tagInfo.reserved = 'checked';} else {
 			tagInfo.reserved = '';}
-			updateDialogInfo += '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
+			updateDialogInfo += '<div class="modalHeader">Update Tag ' + tagInfo.name + '</div>';
 			updateDialogInfo += '<div class="modalInputs">';
 			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+tagInfo.name+'" /></div>';
 			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tagInfo.description+'"/></div>';
@@ -585,7 +605,7 @@ function makeModalTree(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag').html();
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
 			var treeDialogInfo;
 			if(tagInfo.reserved == true){

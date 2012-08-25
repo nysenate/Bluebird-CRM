@@ -1,11 +1,11 @@
 #mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
   width: 310px;
 }
-#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
+/*#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
   float: right;
   margin-right: 50px;
   width: 310px;
-}
+}*/
 #crm-container div.form-item .BBtree *, #crm-container .crm-form-block .BBtree * {
 	text-align:left; float:left; font-size: 1em; padding:0px;
 }
@@ -22,14 +22,21 @@
 	font-size:95%;
 }
 .BBtree.edit {
-	width:335px;
+	clear:both;
+	width:540px;
 	padding:10px;
 	line-height:150%;
 	overflow-x:hidden;
 	overflow-y:scroll;
-	height:580px;
+	height:400px;
 	background-color:#fff;
-	
+	border:1px solid #ccc;
+	margin: 0 auto;
+
+}
+.BBtree.manage {
+	clear:none;
+	border:0px solid #ccc;
 }
 .BBtree.modal {
 	height:95%;
@@ -37,10 +44,6 @@
 .BBtree.hidden {
 	display:none;
 }
-.BBtree.edit.tab {
-	width:336px;
-}
-
 .BBtree.edit.manage {
 	width: 455px;
 	float:left;
@@ -49,7 +52,7 @@
 	margin: 0; padding-left:25px; width:250px;
 
 }
-.BBtree dt .fCB {display:none;}
+.BBtree.manage dt .fCB {display:none;}
 .BBtree dt:hover .fCB {display:inline;}
 .BBtree.ui-dialog-content dt:hover .fCB {display:none;}
 .BBtree dt .treeButton {
@@ -85,11 +88,19 @@
 }
 
 .BBtree dt div.tag {
-	width:150px;
+	width:380px;
+	padding-left:40px;
+}
+.BBtree.manage dt div.tag {
+	width:380px;
+	padding-left:20px;
+}
+.BBtree.modal dt div.tag {
+	width:210px;
 	padding-left:20px;
 }
 .BBtree.manage dt div.tag {
-	width:170px;
+	width:250px;
 }
 .BBtree dt {
 	cursor:pointer;padding-left:5px;font-weight:normal;font-size:12px; line-height:18px; clear:both;
@@ -119,7 +130,12 @@
 .BBtree.tab dt, .BBtree.manage dt {
 	position:relative;
 }
-.BBtree.tab .fCB, .BBtree.manage .fCB{
+.BBtree.tab.edit .fCB{
+	position:absolute;
+	left:23px;
+	top:-1px;
+}
+.BBtree.manage .fCB {
 	position:absolute;
 	right:0px;
 	top:0px;
@@ -158,7 +174,10 @@ margin:0;
 }
 /*this will remove check boxes from individual levels*/
 .BBtree dl.lv-0{
-	width:320px !important;
+	width:525px !important;
+}
+.BBtree.modal dl.lv-0{
+	width:345px !important;
 }
 .BBtree.manage dl.lv-0{
 	margin-left:-25px;
@@ -167,7 +186,7 @@ margin:0;
 	width:295px !important;
 }
 .BBtree.edit.tab dl.lv-0{
-	margin-left:-35px;
+	margin-left:-25px;
 }
 .BBtree.edit dl.lv-1{
 	width:285px !important;
@@ -200,41 +219,41 @@ margin:0;
 	width:245px !important;
 }
 .BBtree.tab dt.lv-0{
-	width:335px !important;
+	width:520px !important;
 }
 .BBtree.tab dl.lv-0{
-	width:340px !important;
+	width:520px !important;
 	margin-left:-35px;
 }
 .BBtree.tab dl.lv-1{
-	width:315px !important;
+	width:500px !important;
 }
 .BBtree.tab dt.lv-1{
-	width:310px !important;
+	width:495px !important;
 }
 .BBtree.tab dl.lv-2{
-	width:290px !important;
+	width:480px !important;
 }
 .BBtree.tab dt.lv-2{
-	width:285px !important;
+	width:475px !important;
 }
 .BBtree.tab dl.lv-3{
-	width:265px !important;
+	width:460px !important;
 }
 .BBtree.tab dt.lv-3{
-	width:260px !important;
+	width:465px !important;
 }
 .BBtree.tab dl.lv-4{
-	width:240px !important;
+	width:440px !important;
 }
 .BBtree.tab dt.lv-4 {
-	width:235px !important;
+	width:435px !important;
 }
 .BBtree.tab dl.lv-5{
-	width:215px !important;
+	width:420px !important;
 }
 .BBtree.tab dt.lv-5{
-	width:205px !important;
+	width:415px !important;
 }
 .BBtree.manage dt.lv-0{
 	width:420px !important;
@@ -303,4 +322,28 @@ margin:0;
 .tagInfoBody div {
 	margin-top:2px;
 	line-height:24px;
+}
+#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
+width: 560px;
+margin: 20px auto;
+float:none;
+}
+#mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
+width: 558px;
+}
+#crm-container #crm-tagListWrap
+{
+	height:auto;
+}
+.BBtree dt.lv-0 div.tag{padding-left: 10px;}
+
+#crm-container .crm-tagLegend table
+{
+	width: 380px;
+	float:right;
+	margin-bottom:-10px;
+}
+.BBtree.manage .tag span.entityCount {
+	margin-left:5px;
+	font-weight:bold;
 }
