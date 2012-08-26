@@ -48,10 +48,10 @@ cj(document).ready(function(){
 
 
     cj('.checkbox_switch').toggle(function(){
-        cj('input:checkbox').attr('checked',true);
+        cj('#imapper-messages-list input:checkbox').attr('checked',true);
       	cj('.checkbox_switch').attr("checked", true);
      },function(){
-        cj('input:checkbox').removeAttr('checked');
+        cj('#imapper-messages-list input:checkbox').removeAttr('checked');
     	if(cj('input.checkbox_switch').is(':checked')){
     		cj('input.checkbox_switch').removeAttr('checked');
     	};
@@ -291,9 +291,18 @@ cj(document).ready(function(){
 	// function works for multi contact tagging and single
 	cj(".push_tag").live('click', function(){
 		var tags = new Array();
-		var activityId = cj("#activityId").val();
-		var contactId = cj("#contactId").val();
-		var dialog = cj(".push_tag").parent();
+		// add to activity, contact, or both ?
+		if((cj('.Activity-checkbox').attr('checked')) && (!cj('.Contact-checkbox').attr('checked'))){
+			var activityId = cj("#activityId").val();
+		}else if((cj('.Contact-checkbox').attr('checked')) && (!cj('.Activity-checkbox').attr('checked'))){
+			var contactId = cj("#contactId").val();
+		}else{
+			var activityId = cj("#activityId").val();
+			var contactId = cj("#contactId").val();
+		}
+
+		console.log(activityId);
+		console.log(contactId);
 
 		cj('.autocomplete-tags-bank a').each(function(index) {
 			var tagId = cj(this).attr('data-id');
@@ -302,7 +311,7 @@ cj(document).ready(function(){
 				data: {activityId: activityId, contactId: contactId, tags: tagId},
 				success: function(data,status) {
 				//	console.log(dialog);
-					cj(dialog).dialog('close');
+					cj(".tagging-popup").dialog('close');
 				}
 		 	});
 		});
@@ -373,7 +382,6 @@ cj(document).ready(function(){
 		
 		console.log(contactIds.length);
 		console.log(contactIds);
-
 		console.log(activityIds);
 
  		cj("#loading-popup").dialog('close');

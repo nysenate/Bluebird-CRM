@@ -98,7 +98,7 @@
 
 		<div class="autocomplete-dropdown" style=""></div>
 
-		<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br> 
+		<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="Contact" class="Contact-checkbox" value="Contact">Contact<br/><input type="checkbox" class="Activity-checkbox" name="Activity" value="Activity"> Activity<br> 
 		<input type="button" class="tagger-submit push_tag" id="add-tag" value="Add Tag" name="add-tag"> 
 	</div> 
 
