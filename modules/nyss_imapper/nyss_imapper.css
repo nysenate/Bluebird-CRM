@@ -63,6 +63,16 @@
 
 .delete a{color:red !important;}
 
+#autocomplete_tag,.autocomplete-tags-bank{ width: 464px; padding: 10px 4px; margin: 0 0 10px 0; float:left;}
+#autocomplete-tags-bank{ padding: 5px 0px; }
+.tag-item a{ color: #666}
+
+.tag-item a:hover{ color: #336699}
+
+.tag-selected{ 	background: #336699; padding:  2px 5px; float:left; margin:0 4px 4px 0; }
+.tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
+a.tag-selected { color: #fff!important; }
+a.tag-selected:hover { color: #fff!important; background-color: red; }
 
 .dataTables_info {
     float: none !important;

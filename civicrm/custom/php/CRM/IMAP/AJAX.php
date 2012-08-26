@@ -603,8 +603,9 @@ EOQ;
     public static function getTags() {
         require_once 'api/api.php';
         $name = self::get('s');
-
+        $i = 0;
         $results = array();
+
 
         $query = <<<EOQ
 SELECT id, name
@@ -613,13 +614,43 @@ WHERE `parent_id` ='296' && `name` LIKE '%$name%'
 EOQ;
         $result = mysql_query($query, self::db());
         while($row = mysql_fetch_assoc($result)) {
-            array_push( $results, array("label"=>$row['name'], "value"=>$row['id']));
+            //array_push( $results,   array("label"=>$row['name'], "value"=>$row['id'])) ;
+            array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));
+            $i++;
          //   print_r($row);
         }
-        echo json_encode($results);
+        $final_results = array('items'=> $results);
+
+
+        echo json_encode($final_results);
+//         echo ('{"items": [
+//         {
+//             "name": "type de lieux",
+//             "value":  "maison individuelle"
+             
+//         },
+//         {
+//             "name": "surface",
+//             "value": "maison individuelle"
+//         }
+//     ]
+// }');
         CRM_Utils_System::civiExit();
     }
 
+
+
+
+    public static function addTags() {
+        require_once 'api/api.php';
+        $tag_ids = self::get('tags');
+        $activityId = self::get('activityId');
+        $contactId = self::get('contactId');
+        //$tag_ids = urldecode($tag_ids);
+       // print_r($tag_ids);
+
+        self::assignTag($activityId, $contactId, $tag_ids);
+    }
 
     function getInboxPollingTagId() {
       require_once 'api/api.php';

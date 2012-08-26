@@ -13,6 +13,7 @@ cj(document).ready(function(){
 	var assign = cj('#assign');
 	var email_address = cj('#email_address');
 	var create = cj('#add-contact');
+
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
 
@@ -193,7 +194,6 @@ cj(document).ready(function(){
 	
 	if(cj("#Activities").length){
 		pullActivitiesHeaders();
-		autocomplete_setup();
  	}else if(cj("#Unmatched").length){
 		pullMessageHeaders();
 	}
@@ -275,10 +275,10 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
-		// add a loading icon popup
+	// add a loading icon popup
 	cj( "#tagging-popup" ).dialog({
 		modal: true,
-		height: 400,
+		height: 500,
 		width: 500,
 		autoOpen: false,
 		resizable: false,
@@ -287,15 +287,48 @@ cj(document).ready(function(){
 	});
 
 
-//
+	// adding (single / multiple) tags to (single / multiple) contacts,
+	// function works for multi contact tagging and single
+	cj(".push_tag").live('click', function(){
+		var tags = new Array();
+		var activityId = cj("#activityId").val();
+		var contactId = cj("#contactId").val();
+		var dialog = cj(".push_tag").parent();
+
+		cj('.autocomplete-tags-bank a').each(function(index) {
+			var tagId = cj(this).attr('data-id');
+	    	cj.ajax({
+				url: '/civicrm/imap/ajax/addTags',
+				data: {activityId: activityId, contactId: contactId, tags: tagId},
+				success: function(data,status) {
+				//	console.log(dialog);
+					cj(dialog).dialog('close');
+				}
+		 	});
+		});
+	});
+
+
+	// adding from list of tags to selected tag area 
+	cj(".tag-item").live('click', function() { 
+ 		var tag_id = cj(this).attr('data-id');
+		var tag_text = cj(this).html();
+ 		if( cj(".autocomplete-tags-bank ."+tag_id).length < 1 )  {
+			cj(".autocomplete-tags-bank").append('<a data-id="'+tag_id+'" class="tag-selected '+tag_id+'" href="#">'+tag_text+'<span class="tag-delete-icon">&nbsp;</span></a>');
+		}		
+	});
+
+	// remove from list of tags
+	cj(".tag-selected").live('click', function() { 
+		cj(this).remove();		
+	});
+
+
+	// add tag modal 
 	cj(".add_tag").live('click', function() { 
 		cj("#loading-popup").dialog('open');
-
-			var activityId = cj(this).parent().parent().attr('data-id');
+		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
-		//scj('#tagging-popup').html('');
-	//	console.log(activityId+" / "+contactId)
-
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
@@ -303,7 +336,11 @@ cj(document).ready(function(){
 			//	console.log(data);
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
+		 		cj('#tagging-popup-header').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+
 		 		cj('#tagging-popup-header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
+
 				if ((messages.forwardedEmail != '')){
 					cj('#tagging-popup-header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
@@ -311,36 +348,38 @@ cj(document).ready(function(){
 					cj('#tagging-popup-header').append("<strong>Address by: </strong>"+messages.fromAddress);
 				}
  			
-				cj("#tagging-popup").dialog({ title:  "Reading: "+messages.subject });
+				cj("#tagging-popup").dialog({ title:  "Tagging: "+messages.subject });
 				cj("#tagging-popup").dialog('open');
  				 
- 				//cj( "#autocomplete_tag" ).autocomplete({  });
-				autocomplete_setup();
- 	// 			cj('#tabs-1 #email-address').val(messages.fromEmail);
- 	// 			cj('#filter').click();
-		// 		switchName(messages.fromName);
+ 				autocomplete_setup();
 			}
 		 });
-
-
-
 	});
 
-
+	// dropdown functions on the matched Messages page
+	// modal for tagging multiple contacts, different header info is shown
 	cj(".multi_tag").live('click', function() { 
-		cj("#loading-popup").dialog('open');
-		var selected = new Array();
-		cj('input:checked').each(function() {
-			selected.push(cj(this).attr('name'));
-		});
-		console.log(selected.length);
- 		cj("#loading-popup").dialog('close');
- 		cj('#tagging-popup').html('');
- 		cj("#tagging-popup").dialog({ title: "Tagging "+selected.length+" Matched messages"});
- 		cj('#tagging-popup').append("<hr/><input type='text' id='autocomplete_tag'/><br/>");
- 		cj('#tagging-popup').append('<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br>');
- 				cj('#tagging-popup').append('<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
+		//console.log('multi_tag');
 
+		cj("#loading-popup").dialog('open');
+		var contactIds = new Array();
+		var activityIds = new Array();
+
+		cj('#imapper-messages-list input:checked').each(function() {
+			activityIds.push(cj(this).attr('name'));
+			contactIds.push(cj(this).attr('data-id'));
+		});
+		//cj("#contactId").val(selected);
+		
+		console.log(contactIds.length);
+		console.log(contactIds);
+
+		console.log(activityIds);
+
+ 		cj("#loading-popup").dialog('close');
+ 		cj('#tagging-popup-header').html('');
+ 		cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
+ 		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
  		cj("#tagging-popup").dialog('open');
 
 	});
@@ -543,7 +582,7 @@ function buildActivitiesList() {
 	var total_results =0;
 	cj.each(messages, function(key, value) {
 		total_results++;
- 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
+ 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'" value="" /></td>';
 		if( value.fromName != ''){
 			messagesHtml += '<td class="name">'+value.fromName +'</td>';
 		}else {
@@ -580,9 +619,8 @@ function buildContactList() {
   
  	
 function autocomplete_setup () {
-		console.log('autocomplete');
+		//console.log('autocomplete setup');
 		var value = cj("#autocomplete_tag").val();
-
 		cj("#autocomplete_tag").autocomplete("/civicrm/imap/ajax/getTags",  {
         width: 320,
         data: {  name: value },
@@ -590,26 +628,31 @@ function autocomplete_setup () {
         scroll: true,
         scrollHeight: 300,
         parse: function(data) {
-                // var array = new Array();
-                // for(var i=0;i<data.length;i++)
-                // {
-                //         array[array.length] = { data: data.items[i], value: data.items[i], result: data.items[i].username };
-                // }
-                // return array;
-                console.log(data);
+       		messagesHtml = '';
+
+			var array = new Array();
+			cj(".autocomplete-dropdown").html('');
+
+			cj(data.items).each(function(i, item) {
+			//	console.log(item.label+" : "+item.value);
+				messagesHtml += '<a data-id="'+item.value+'" class="tag-item" href="#">'+item.label+'</a><br/>'
+				//cj("#autocomplete-dropdown").html('<a href="#tag'+item.value+'">'+item.label+'</><br/>');
+			});
+			cj(".autocomplete-dropdown").html(messagesHtml);
+			return array;
         },
 
-        formatItem: function(row) {                     
-                var name = '';
-                if (row.first_name && row.last_name)
-                        name = '('+row.first_name+', '+row.last_name+')';
-                else if (row.first_name)
-                        name = '('+row.first_name+')';
-                else if (row.last_name)
-                        name = '('+row.last_name+')';
+        // formatItem: function(row) {                     
+        //         var name = '';
+        //         if (row.first_name && row.last_name)
+        //                 name = '('+row.first_name+', '+row.last_name+')';
+        //         else if (row.first_name)
+        //                 name = '('+row.first_name+')';
+        //         else if (row.last_name)
+        //                 name = '('+row.last_name+')';
 
-                return row.username+' '+name;
-        }
+        //         return row.username+' '+name;
+        // }
     });
 
 

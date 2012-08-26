@@ -63,9 +63,14 @@
     <page_callback>CRM_IMAP_AJAX::unproccessedActivity</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
-    <item>
+  <item>
     <path>civicrm/imap/ajax/getTags</path>
     <page_callback>CRM_IMAP_AJAX::getTags</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/addTags</path>
+    <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

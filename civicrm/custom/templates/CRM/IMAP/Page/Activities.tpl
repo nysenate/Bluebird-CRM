@@ -21,12 +21,11 @@
 		</table> 
 		<hr/>
 		<div class='page_actions'>
-			<input type="button" class="multi_tag" id="add-contact" value="Add Tag" name="add-contact"> | 
-			<input type="button" class="multi_clear" id="add-contact" value="Clear" name="add-contact"> | 
-			<input type="button" class="multi_delete" id="delete" value="Delete" name="delete">
+			<input type="button" class="multi_tag" id="" value="Add Tag" name="add-contact"> | 
+			<input type="button" class="multi_clear" id="" value="Clear" name="add-contact"> | 
+			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
 
 		</div>
-				<hr/><input type='text' id='autocomplete_tag'/><br/>  <hr/><div class='autocomplete_log'/></div><br/>  
 
 	</div>
 
@@ -93,10 +92,14 @@
 		<div id="tagging-popup-header">
 		</div>
 
-		<hr/><input type='text' id='autocomplete_tag'/><br/>  <hr/><div class='autocomplete_log'/></div><br/>  
+		<hr/>
+		<input type='text' id='autocomplete_tag'/><br/>  <hr/>
+		<div class="autocomplete-tags-bank" style=""><strong>Adding: </strong> </div>
+
+		<div class="autocomplete-dropdown" style=""></div>
 
 		<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br> 
-		<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag"> 
+		<input type="button" class="tagger-submit push_tag" id="add-tag" value="Add Tag" name="add-tag"> 
 	</div> 
 
 </div>
