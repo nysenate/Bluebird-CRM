@@ -1,4 +1,4 @@
-<div class="crm-content-block imapperbox">
+<div class="crm-content-block imapperbox " id="Unmatched">
 	<div class='full'>
 	<h1>Unmatched Results <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
 	</div>
@@ -63,6 +63,8 @@
 
 						<input type="text" placeholder="Phone Number" class="form-text" id="phone" name="phone">
 						<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
+						<input type="text" placeholder="Street Address (2)"  class="form-text" id="street_address_2" name="street_address_2">
+						<input type="text" placeholder="Zicode"  class="form-text" id="zip" name="zip">
 						<input type="text" placeholder="City" class="form-text" id="city" name="city">
 						<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
 				    </form>
@@ -75,7 +77,7 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
-		<p> Loading message details.</p>
+ 		<p> Loading message details.</p>
 	</div>
 	 
 </div>

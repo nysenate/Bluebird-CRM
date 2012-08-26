@@ -26,6 +26,8 @@
 			<input type="button" class="multi_delete" id="delete" value="Delete" name="delete">
 
 		</div>
+				<hr/><input type='text' id='autocomplete_tag'/><br/>  <hr/><div class='autocomplete_log'/></div><br/>  
+
 	</div>
 
 
@@ -81,14 +83,20 @@
 		</div>
 	</div>
 
-	<div id="delete-confirm" title="Delete Message from Unmatched Messages?">
+	<div id="delete-confirm" title="Delete Message from Matched Messages?">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
-		<p> Loading message details.</p>
+ 		<p> Loading message details. </p>
 	</div>
 	<div id="tagging-popup" title="Tagging">
-		<p> Loading message details.</p>
+		<div id="tagging-popup-header">
+		</div>
+
+		<hr/><input type='text' id='autocomplete_tag'/><br/>  <hr/><div class='autocomplete_log'/></div><br/>  
+
+		<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br> 
+		<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag"> 
 	</div> 
 
 </div>

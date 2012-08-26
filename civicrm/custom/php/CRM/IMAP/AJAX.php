@@ -274,6 +274,7 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
         // Delete the message with the specified UID
         $status = $imap->deletemsg_uid($id);
+        echo json_encode($status);
         CRM_Utils_System::civiExit();
     }
 
@@ -437,7 +438,7 @@ EOQ;
                               VALUES('civicrm_activity',{$activityId},{$tagId});";
                     $result = mysql_query($query, $conn);
                     if($result) {
-                      echo "ADDED TAG TO ACTIVITY!\n";
+                     // echo "ADDED TAG TO ACTIVITY!\n";
                     } else {
                       error_log("COULD NOT ADD TAG TO ACTIVITY!\n");
                     }
@@ -502,8 +503,8 @@ EOQ;
                             'details'  =>  $activity_node['details'],
                             'date'   =>  $date);
          }
-    echo json_encode($returnMessage);
-    CRM_Utils_System::civiExit();
+        echo json_encode($returnMessage);
+        CRM_Utils_System::civiExit();
     }
 
     public static function getActivityDetails() {
@@ -552,24 +553,72 @@ EOQ;
         CRM_Utils_System::civiExit();
     }
     
-
-
-
+    // delete activit and enttity ref 
     public static function deleteActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
         
+        // deleteing a activity
         $params = array( 
-          'id' => $id,
-          'version' => 3,
+            'id' => $id,
+            'activity_type_id' => 1,
+            'version' => 3,
         );
         $result = civicrm_api( 'activity','delete',$params );
 
+        // deleteing a entity is hard via api without entity id, time to use sql 
+        $tagid = self::getInboxPollingTagId();
+        $query = <<<EOQ
+DELETE FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $id
+AND `tag_id` = $tagid
+EOQ;
+        $result = mysql_query($query, self::db());
+        $results = array();
+        while($row = mysql_fetch_assoc($result)) {
+            $results[] = $row;
+        }
         echo json_encode($result);
         CRM_Utils_System::civiExit();
 
     }
 
+    // remove the activity tag
+    public static function unproccessedActivity() {
+        require_once 'api/api.php';
+        $id = self::get('id');
+        
+        // $params = array( 
+        //   'id' => $id,
+        //   'version' => 3,
+        // );
+        // $result = civicrm_api( 'activity','delete',$params );
+
+        // echo json_encode($result);
+        // CRM_Utils_System::civiExit();
+
+    }
+
+
+    public static function getTags() {
+        require_once 'api/api.php';
+        $name = self::get('s');
+
+        $results = array();
+
+        $query = <<<EOQ
+SELECT id, name
+FROM `civicrm_tag`
+WHERE `parent_id` ='296' && `name` LIKE '%$name%'
+EOQ;
+        $result = mysql_query($query, self::db());
+        while($row = mysql_fetch_assoc($result)) {
+            array_push( $results, array("label"=>$row['name'], "value"=>$row['id']));
+         //   print_r($row);
+        }
+        echo json_encode($results);
+        CRM_Utils_System::civiExit();
+    }
 
 
     function getInboxPollingTagId() {
@@ -600,9 +649,13 @@ EOQ;
         //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes
         $first_name = $_GET["first_name"];
         $last_name = $_GET["last_name"];
-        $email = $_GET["email"];
+        $email = $_GET["email_address"];
+        $phone = $_GET["phone"];
         $street_address = $_GET["street_address"];
+        $street_address_2 = $_GET["street_address_2"];
+        $postal_code = $_GET["postal_code"];
         $city = $_GET["city"];
+ 
         if(!($first_name) && !($last_name) && !($email))
         {
             $returnCode = array('code'      =>  'ERROR',
@@ -630,8 +683,10 @@ EOQ;
 
         $address_params = array(
             'contact_id' => $contact['id'],
-            'street_address' => $street_address,
+            'street_address' => $street_address,        
+            'supplemental_address_1' => $street_address_2,
             'city' => $city,
+            'postal_code' => $postal_code,
             'is_primary' => 1,
             'country_id' => 1228,
             'location_type_id' => 1,
@@ -643,6 +698,7 @@ EOQ;
         {
             $returnCode = array('code'      =>  'SUCCESS',
                                 'status'    =>  '0',
+                                'contact' => $contact['id']
                                 );
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();

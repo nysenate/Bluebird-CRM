@@ -1,7 +1,7 @@
 var messages = [];
 var contacts = [];
 
-$(document).ready(function(){
+cj(document).ready(function(){
 	var first_name = cj('#first_name');
 	var last_name = cj('#last_name');
 	var city = cj('#city');
@@ -12,27 +12,27 @@ $(document).ready(function(){
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	var email_address = cj('#email_address');
-
+	var create = cj('#add-contact');
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
 
 	if(!placeholderSupport ){
 		console.log('no placeholder Support');
-		$('[placeholder]').focus(function() {
-			var input = $(this);
+		cj('[placeholder]').focus(function() {
+			var input = cj(this);
 			if (input.val() == input.attr('placeholder')) {
 				input.val('');
 			    input.removeClass('placeholder');
 			}
 		}).blur(function() {
-			var input = $(this);
+			var input = cj(this);
 			if (input.val() == '' || input.val() == input.attr('placeholder')) {
 				input.addClass('placeholder');
 				input.val(input.attr('placeholder'));
 			}
 		}).blur().parents('form').submit(function() {
-			$(this).find('[placeholder]').each(function() {
-				var input = $(this);
+			cj(this).find('[placeholder]').each(function() {
+				var input = cj(this);
 				if (input.val() == input.attr('placeholder')) {
 					input.val('');
 				}
@@ -42,10 +42,13 @@ $(document).ready(function(){
 		console.log('placeholder Support');
 	}
 
+
+
+
+
     cj('.checkbox_switch').toggle(function(){
         cj('input:checkbox').attr('checked',true);
-        cj('.checkbox_switch').prop("checked", true);
-
+      	cj('.checkbox_switch').attr("checked", true);
      },function(){
         cj('input:checkbox').removeAttr('checked');
     	if(cj('input.checkbox_switch').is(':checked')){
@@ -129,11 +132,69 @@ $(document).ready(function(){
 	});
 
 
+	create.click(function() {
+		var messageId = cj('#email_id').val();
+		var imap_id = cj('#imap_id').val();
+		var first_name = cj("#first_name").val();
+		var last_name = cj("#last_name").val();
+		var email_address = cj("#email_address").val();
+		var phone = cj("#phone").val();
+		var street_address = cj("#street_address").val();
+		var street_address_2 = cj("#street_address_2").val();
+		var zip = cj("#zip").val();
+		var city = cj("#city").val();
+		
+ 
+		cj.ajax({
+			url: '/civicrm/imap/ajax/createNewContact',
+			data: {
+				messageId: messageId,
+				imap_id: imap_id,
+				first_name: first_name,
+				last_name: last_name, 
+				email_address: email_address, 
+				phone: phone, 
+				street_address: street_address, 
+				street_address_2: street_address_2,
+				postal_code: zip,
+				city: city
+			},
+			success: function(data, status) {
+			//	console.log(data);
+				contactData = cj.parseJSON(data);
+
+
+
+				cj.ajax({
+					url: '/civicrm/imap/ajax/assignMessage',
+					data: {
+						messageId: messageId,
+						imapId: imap_id,
+						contactId: contactData.contact
+					},
+					success: function(data, status) {
+						cj("#find-match-popup").dialog('close');  
+						cj.each(messages, function (idx, val) {
+							if(val.uid == messageId && val.imap_id == imapId) {
+		                		delete messages[idx];
+		                		buildMessageList();
+		                	}
+		               });
+				}
+			//	alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
+			});
+			}			
+		});
+		return false;
+	});
+
+
 	// 
 	
 	if(cj("#Activities").length){
 		pullActivitiesHeaders();
-	}else{
+		autocomplete_setup();
+ 	}else if(cj("#Unmatched").length){
 		pullMessageHeaders();
 	}
 
@@ -161,21 +222,16 @@ $(document).ready(function(){
 					cj( this ).dialog( "close" );
 					row.remove();
 					if(cj("#Activities").length){
-						
-
-						// cj.ajax({
-						// 	url: '/civicrm/imap/ajax/deleteActivity',
-						// 	data: {id: messageId},
-						// 	success: function(data,status) {
-						// 		console.log(data);
-								
-						// 		//console.log("#"+messageId+'_'+contactId);
-						// 		// update count on top
-						// 		var old_total = parseInt(cj("#total_number").html(),10);
-						// 		cj("#total_number").html(old_total-1);
-						// 		//destroyReSortable();
-						// 	} 
-						//});
+						cj.ajax({
+							url: '/civicrm/imap/ajax/deleteActivity',
+							data: {id: messageId},
+							success: function(data,status) {
+								console.log(data);
+								var old_total = parseInt(cj("#total_number").html(),10);
+								cj("#total_number").html(old_total-1);
+								//destroyReSortable();
+							} 
+						});
 					}else{
 						cj.ajax({
 							url: '/civicrm/imap/ajax/deleteMessage',
@@ -183,8 +239,7 @@ $(document).ready(function(){
 						    imapId: imapId },
 							success: function(data,status) {
 								cj("#"+messageId+'_'+imapId).remove();
-								// update count on top
-								var old_total = parseInt(cj("#total_number").html(),10);
+ 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
 								//destroyReSortable();
 							} 
@@ -238,30 +293,29 @@ $(document).ready(function(){
 
 			var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
-		cj('#tagging-popup').html('');
+		//scj('#tagging-popup').html('');
 	//	console.log(activityId+" / "+contactId)
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
-				console.log(data);
+			//	console.log(data);
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
-		 		cj('#tagging-popup').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+		 		cj('#tagging-popup-header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
-					cj('#tagging-popup').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					cj('#tagging-popup-header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				if ((messages.fromAddress)){
-					cj('#tagging-popup').append("<strong>Address by: </strong>"+messages.fromAddress);
+					cj('#tagging-popup-header').append("<strong>Address by: </strong>"+messages.fromAddress);
 				}
- 				cj('#tagging-popup').append("<hr/><input type='text'/><br/>");
- 				cj('#tagging-popup').append('<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br>');
- 				cj('#tagging-popup').append('<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
-
+ 			
 				cj("#tagging-popup").dialog({ title:  "Reading: "+messages.subject });
 				cj("#tagging-popup").dialog('open');
- 				cj("#tabs").tabs();
+ 				 
+ 				//cj( "#autocomplete_tag" ).autocomplete({  });
+				autocomplete_setup();
  	// 			cj('#tabs-1 #email-address').val(messages.fromEmail);
  	// 			cj('#filter').click();
 		// 		switchName(messages.fromName);
@@ -276,14 +330,14 @@ $(document).ready(function(){
 	cj(".multi_tag").live('click', function() { 
 		cj("#loading-popup").dialog('open');
 		var selected = new Array();
-		$('input:checked').each(function() {
-			selected.push($(this).attr('name'));
+		cj('input:checked').each(function() {
+			selected.push(cj(this).attr('name'));
 		});
 		console.log(selected.length);
  		cj("#loading-popup").dialog('close');
  		cj('#tagging-popup').html('');
  		cj("#tagging-popup").dialog({ title: "Tagging "+selected.length+" Matched messages"});
- 		cj('#tagging-popup').append("<hr/><input type='text'/><br/>");
+ 		cj('#tagging-popup').append("<hr/><input type='text' id='autocomplete_tag'/><br/>");
  		cj('#tagging-popup').append('<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="group1" value="Contact">Contact<br/><input type="checkbox" name="group1" value="Activity"> Activity<br>');
  				cj('#tagging-popup').append('<input type="button" class="tagger-submit" id="add-tag" value="Add Tag" name="add-tag">');
 
@@ -294,8 +348,8 @@ $(document).ready(function(){
 	cj(".multi_clear").live('click', function() { 
 		cj("#loading-popup").dialog('open');
 		var selected = new Array();
-		$('input:checked').each(function() {
-			selected.push($(this).attr('name'));
+		cj('input:checked').each(function() {
+			selected.push(cj(this).attr('name'));
 		});
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
@@ -354,8 +408,7 @@ $(document).ready(function(){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
-				cj('#tabs-1 #first_name, #tabs-1 #last_name, #tabs-1 #phone, #tabs-1 #street_address, #tabs-1 #city, ').val('');
-
+				cj('#first_name, #last_name, #phone, #street_address, #city, ').val('');
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
@@ -464,7 +517,7 @@ function buildMessageList() {
 		return;
 	var messagesHtml = '';
 	var total_results =0;
-	$.each(messages, function(key, value) {
+	cj.each(messages, function(key, value) {
 		total_results++;
 		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
 		if( value.from_name != ''){
@@ -488,7 +541,7 @@ function buildActivitiesList() {
 		return;
 	var messagesHtml = '';
 	var total_results =0;
-	$.each(messages, function(key, value) {
+	cj.each(messages, function(key, value) {
 		total_results++;
  		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
 		if( value.fromName != ''){
@@ -500,7 +553,7 @@ function buildActivitiesList() {
 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
-		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Edit</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Edit</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
 	cj("#total_number").html(total_results);
@@ -510,7 +563,7 @@ function buildActivitiesList() {
 
 function buildContactList() {
 	var contactsHtml = '';
-	$.each(contacts, function(key, value) {
+	cj.each(contacts, function(key, value) {
 		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
@@ -524,3 +577,42 @@ function buildContactList() {
 	});
 	cj('#imapper-contacts-list').append(contactsHtml);
 }
+  
+ 	
+function autocomplete_setup () {
+		console.log('autocomplete');
+		var value = cj("#autocomplete_tag").val();
+
+		cj("#autocomplete_tag").autocomplete("/civicrm/imap/ajax/getTags",  {
+        width: 320,
+        data: {  name: value },
+        dataType: 'json',
+        scroll: true,
+        scrollHeight: 300,
+        parse: function(data) {
+                // var array = new Array();
+                // for(var i=0;i<data.length;i++)
+                // {
+                //         array[array.length] = { data: data.items[i], value: data.items[i], result: data.items[i].username };
+                // }
+                // return array;
+                console.log(data);
+        },
+
+        formatItem: function(row) {                     
+                var name = '';
+                if (row.first_name && row.last_name)
+                        name = '('+row.first_name+', '+row.last_name+')';
+                else if (row.first_name)
+                        name = '('+row.first_name+')';
+                else if (row.last_name)
+                        name = '('+row.last_name+')';
+
+                return row.username+' '+name;
+        }
+    });
+
+
+
+		 
+ }

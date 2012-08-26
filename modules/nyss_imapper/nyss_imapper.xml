@@ -53,4 +53,19 @@
     <page_callback>CRM_IMAP_AJAX::deleteActivity</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/createNewContact</path>
+    <page_callback>CRM_IMAP_AJAX::createNewContact</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/imap/ajax/unproccessedActivity</path>
+    <page_callback>CRM_IMAP_AJAX::unproccessedActivity</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+    <item>
+    <path>civicrm/imap/ajax/getTags</path>
+    <page_callback>CRM_IMAP_AJAX::getTags</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
