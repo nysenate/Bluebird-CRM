@@ -272,11 +272,11 @@ cj(document).ready(function(){
 		var rows = new Array();
 
 		cj('#imapper-messages-list input:checked').each(function() {
- 			delete_secondary.push(cj(this).attr('data-id'));
-			delete_ids.push(cj(this).attr('name'));
+ 			delete_ids.push(cj(this).attr('name'));
+			delete_secondary.push(cj(this).attr('data-id'));
 			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
 		});
-		
+
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Delete": function() {
@@ -319,8 +319,8 @@ cj(document).ready(function(){
 					cj( this ).dialog( "close" );
 				}
 			}
-		});
-
+		});	
+		cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj( "#delete-confirm" ).dialog('open');
 	});
@@ -476,7 +476,7 @@ cj(document).ready(function(){
 
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
-				"Delete": function() {
+				"Clear": function() {
 					cj.ajax({
 						url: '/civicrm/imap/ajax/unproccessedActivity',
 						data: {id: activityId},
@@ -502,39 +502,33 @@ cj(document).ready(function(){
 
 	cj(".multi_clear").live('click', function() { 
 		cj("#loading-popup").dialog('open');
-		var selected = new Array();
+ 		var delete_ids = new Array();
+
 		cj('#imapper-messages-list input:checked').each(function() {
-			selected.push(cj(this).attr('name'));
+			delete_ids.push(cj(this).attr('name'));
 		});
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
-				"Delete": function() {
-					cj.each(selected, function(key, value) { 
- 						cj('#'+value).remove();
-						var old_total = parseInt(cj("#total_number").html(),10);
-						cj("#total_number").html(old_total-1);
+				"Clear": function() {
+					cj.each(delete_ids, function(key, value) {
+						cj.ajax({
+							url: '/civicrm/imap/ajax/unproccessedActivity',
+							data: {id: value},
+							success: function(data,status) { 
+								cj('#'+value).remove();
+								var old_total = parseInt(cj("#total_number").html(),10);
+								cj("#total_number").html(old_total-1);
+								cj("#delete-confirm").dialog( "close" );
+							}
+						});
 					});
-					cj( this ).dialog( "close" );
-						// cj.ajax({
-						// 	url: '/civicrm/imap/ajax/deleteMessage',
-						// 	data: {id: messageId,
-						//     imapId: imapId },
-						// 	success: function(data,status) {
-						// 		cj("#"+messageId+'_'+imapId).remove();
-						// 		// update count on top
-						// 		var old_total = parseInt(cj("#total_number").html(),10);
-						// 		cj("#total_number").html(old_total-1);
-						// 		//destroyReSortable();
-						// 	} 
-						// });
-					
 				},
 				Cancel: function() {
 					cj( this ).dialog( "close" );
 				}
 			}
 		});
-		cj("#delete-confirm").dialog({ title:  "Clear "+selected.length+" Messages ?"});
+		cj("#delete-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj( "#delete-confirm" ).dialog('open');
 
