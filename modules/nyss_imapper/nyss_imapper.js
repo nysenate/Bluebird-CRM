@@ -122,16 +122,7 @@ cj(document).ready(function(){
 				cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 				var old_total = parseInt(cj("#total_number").html(),10);
 				cj("#total_number").html(old_total-1);
-
-				// cj.each(messages, function (idx, val) {
-				// 	if(val.uid == messageId && val.imap_id == imapId) {
-    //             		delete messages[idx];
-    //             		buildMessageList();
-    //             	}
-    //             });
-
-            cj("#find-match-popup").dialog('close');  
-			//	alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
+           		cj("#find-match-popup").dialog('close');  
 			}
 		});
 		return false;
@@ -357,7 +348,6 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
-
 	// adding (single / multiple) tags to (single / multiple) contacts,
 	// function works for multi contact tagging and single
 	cj(".push_tag").live('click', function(){
@@ -368,35 +358,72 @@ cj(document).ready(function(){
 			var activityId = cj("#activityId").val();
 		}else if((cj('.Contact-checkbox').attr('checked')) && (!cj('.Activity-checkbox').attr('checked'))){
 			var contactId = cj("#contactId").val();
-		}else{
+		}else if((cj('.Contact-checkbox').attr('checked')) && (cj('.Activity-checkbox').attr('checked'))){
 			var activityId = cj("#activityId").val();
 			var contactId = cj("#contactId").val();
+		}else{
+			alert("please check Contact or Activity");
+			return;
 		}
-		//console.log(activityId);
-		//console.log(contactId);
-		cj('.autocomplete-tags-bank a').each(function(index) {
-			var tagId = cj(this).attr('data-id');
-	    	cj.ajax({
-				url: '/civicrm/imap/ajax/addTags',
-				data: {activityId: activityId, contactId: contactId, tags: tagId},
-				success: function(data,status) {
-				//	console.log(dialog);
-				// help_message('tag added!');
-				}
-		 	});
+
+		// delete_ids = message id / activity id 
+		// delete_secondary = imap id / contact id 
+		var delete_ids = new Array();
+		var delete_secondary = new Array();
+		var rows = new Array();
+
+		cj('#imapper-messages-list input:checked').each(function() {
+ 			delete_ids.push(cj(this).attr('name'));
+			delete_secondary.push(cj(this).attr('data-id'));
+			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
 		});
-		// TODO - remove activity 
-		var activityId = cj("#activityId").val();
-		cj.ajax({
-			url: '/civicrm/imap/ajax/unproccessedActivity',
-			data: {id: activityId},
-			success: function(data,status) { 
-				cj("#tagging-popup").dialog('close');
-				help_message('tag added!');
-				cj("#"+activityId).remove();
-	
-			}
-		});
+
+		// if there are tags selected
+		// we can either have multiple rows, or single rows selected 
+		if(cj(".autocomplete-tags-bank").html().length){
+			cj('.autocomplete-tags-bank a').each(function(index) {
+				var tagId = cj(this).attr('data-id');
+		    	cj.ajax({
+					url: '/civicrm/imap/ajax/addTags',
+					data: {activityId: activityId, contactId: contactId, tags: tagId},
+					success: function(data,status) {
+					//	console.log(dialog);
+					// help_message('tag added!');
+					// TODO - remove activity 
+						if(delete_ids.length > 0 ){
+							cj.each(delete_ids, function(key, value) { 
+								cj.ajax({
+									url: '/civicrm/imap/ajax/unproccessedActivity',
+									data: {id: value},
+									success: function(data,status) { 
+										cj("#tagging-popup").dialog('close');
+										help_message('tag added!');
+										cj("#"+value).remove();
+							
+									}
+								});
+							});
+						}else{
+							var activityId = cj("#activityId").val();
+							cj.ajax({
+								url: '/civicrm/imap/ajax/unproccessedActivity',
+								data: {id: activityId},
+								success: function(data,status) { 
+									cj("#tagging-popup").dialog('close');
+									help_message('tag added!');
+									cj("#"+activityId).remove();
+						
+								}
+							});
+						}
+						
+					}
+			 	});
+			});
+		}else{
+			alert("please select a tag");
+			return;
+		}
 	});
 
 
@@ -448,6 +475,7 @@ cj(document).ready(function(){
 
 	// dropdown functions on the matched Messages page
 	// modal for tagging multiple contacts, different header info is shown
+	// opens the add_tag popup
 	cj(".multi_tag").live('click', function() { 
 		//console.log('multi_tag');
 
