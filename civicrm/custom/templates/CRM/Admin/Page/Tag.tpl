@@ -44,8 +44,30 @@
 .crm-tagLegend td.moveTag div {background-position: -34px 0px; }
 .crm-tagLegend td.updateTag div {background-position: -50px 0px;}
 .crm-tagLegend td.mergeTag div {background-position: -66px 0px;}
+.crm-tagLegend td.printTag div, #crm-container .BBtree dt.lv-0 .fCB ul li.printTag {
+
+	background-image: url('/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png'); 
+	background-position: -160px -96px;
+}
+dt.lv-0 .fCB ul li.printTag {
+	height:16px;
+	width:16px;
+}
 #crm-container .crm-tagLegend th {border: 0px;}
 #crm-container .crm-tagLegend * {border:0px;}
+@media print {
+  body * {
+    visibility:hidden;
+  }
+  #BBtree.edit.manage, #BBtree.edit.manage * {
+    visibility:visible;
+  }
+  #BBtree.edit.manage {
+    position:absolute;
+    left:0;
+    top:0;
+  }
+}
 </style>
 {/literal}
 {literal}
@@ -56,91 +78,179 @@ cj(document).ready(function() {
 	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
 	callTagAjax();
 });
-function makeModalMerge(tagLabel){
-	tagInfo = new Object();
-	tagInfo.id = tagLabel;
-	tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
-	tagInfo.tid = cj('.BBtree.edit dt#' + tagLabel).attr('tid');
+function makeModalTree(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
+		closeOnEscape: true,
 		draggable: false,
-		height: 300,
-		width: 300,
-		title: "Merge Tag",
+		height: 500,
+		width: 400,
+		title: "Move Tag",
 		modal: true, 
 		bgiframe: true,
-		close: function(event, ui) { cj("#tag_name_modal").unautocomplete( ); },
+		close:{ },
 		overlay: { 
 			opacity: 0.2, 
 			background: "black" 
 		},
 		open: function() {
-			var updateDialogInfo = '';
-			updateDialogInfo += '<div class="modalHeader">Merge Tag ' + tagInfo.name + ' Into:</div>';
-			updateDialogInfo += '<input id="tag_name_modal" class="ac_input" type="text" autocomplete="off">';
-			updateDialogInfo += '<input id="tag_name_id" type="hidden" value="">';
-			cj('#dialog').html(updateDialogInfo);
-			cj("#tag_name_modal").val( "" );
-			cj("#tag_name_id").val( null );
-
-			var tagUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTagList' h=0}"{literal};
-			tagUrl = tagUrl + "&fromId=" + tagInfo.tid;
-
-			cj("#tag_name_modal").autocomplete( tagUrl, {
-				width: 260,
-				selectFirst: false,
-				matchContains: true 
-			});
-
-			cj("#tag_name_modal").focus();
-			cj("#tag_name_modal").result(function(event, data, formatted) {
-				cj("input[id=tag_name_id]").val(data[1]);
-				if ( data[2] == 1 ) {
-				    cj('#used_for_warning').html("Warning: '" + fromTag + "' has different used-for options than the selected tag, which would be merged into the selected tag. Click Ok to proceed.");
-				} else {
-				    cj('#used_for_warning').html('');
-				}
-			});	
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+			var treeDialogInfo;
+			if(tagInfo.reserved == true){
+			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
+			cj('#dialog').html(treeDialogInfo);
+			} else {
+			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
+			treeDialogInfo += '<div class="BBtree modal move"></div>';
+			cj('#dialog').html(treeDialogInfo);
+			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+			
+			callTagAjax('modal', modalTreeTop);
+			}
 		},
 		buttons: {
-			"Ok": function() { 	    
-				if ( ! cj("#tag_name_modal").val( ) ) {
-					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
-					return false;
-				}
-				var toId = cj("#tag_name_id").val( );
-				if ( ! toId ) {
-					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
-					return false;
-				}
-				/* send synchronous request so that disabling any actions for slow servers*/
-				var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
-				var data    = 'fromId='+ tagInfo.tid + '&toId='+ toId + "&key={/literal}{crmKey name='civicrm/ajax/mergeTags'}{literal}";
-             			cj.ajax({ type     : "POST", 
-					url      : postUrl, 
-					data     : data, 
-					dataType : "json",
-					success  : function( values ) {
-						if ( values.status == true ) {
-							if(cj('.contactTagsList.help').length < 1)
-							{
-								cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
-							}
-							var toIdTag = cj('#tagLabel_' + toId).attr('description');
-							var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
-							cj('#tagLabel_' + tagInfo.tid).html(''); 
-							cj('#tagStatusBar').html(msg);
-						}
-						callTagAjax();
-                      			}
-                		});
-                		cj(this).dialog("close"); 
-				cj(this).dialog("destroy");
- 			},
 			"Cancel": function() { 
-
 				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
+				cj(this).dialog("destroy");
+			}
+		} 
+	});
+}
+/*this is the second portion of the Modal box, where it takes the click function and makes a 'move' button*/
+function modalSelectOnClick() {
+	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').unbind('click');
+	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').click(function(){
+		if(cj('.BBtree.modal').hasClass('move'))
+		{
+			var destinationId = cj(this).parent().parent('dt').attr('tid');
+			cj("#dialog").dialog( "option", "buttons", [
+				{
+					text: "Move",
+					click: function() {
+						tagMove = new Object();
+						tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+						tagMove.destinationId = destinationId;
+						cj.ajax({
+							url: '/civicrm/ajax/tag/update',
+							data: {
+								id: tagMove.currentId,
+								parent_id: tagMove.destinationId
+							},
+							dataType: 'json',
+							success: function(data, status, XMLHttpRequest) {
+								if(data.code != 1)
+								{
+									alert(data.message);
+								}
+								cj('#dialog').dialog('close');
+								cj('#dialog').dialog('destroy');
+								callTagAjax();
+							}
+						});
+
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() { 
+						cj(this).dialog("close"); 
+						cj(this).dialog("destroy"); 
+					}
+				}
+			]);
+		}
+		if(cj('.BBtree.modal').hasClass('merge'))
+		{
+			tagLabel = cj('.modalHeader span').attr('tid');
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.tid = cj('.BBtree.manage dt#' + tagLabel).attr('tid');
+			var destinationId = cj(this).parent().parent('dt').attr('tid');
+			cj("#dialog").dialog( "option", "buttons", [
+				{
+					text: "Merge ",
+					click: function() {
+						tagMerge = new Object();
+						tagMerge.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+						tagMerge.destinationId = destinationId;
+						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
+		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
+						cj.ajax({
+							type     : "POST",
+							url: postUrl,
+							data: data,
+							dataType: 'json',
+							success: function(data, status, XMLHttpRequest) {
+								if ( data.status == true ) {
+									if(cj('.contactTagsList.help').length < 1)
+									{
+										cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+									}
+									var toIdTag = cj('#tagLabel_' + tagMerge.destinationId).attr('description');
+									var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
+									cj('#tagLabel_' + tagInfo.tid).html(''); 
+									cj('#tagStatusBar').html(msg);
+								}
+								callTagAjax();
+								cj(this).dialog("close"); 
+								cj(this).dialog("destroy"); 
+							}	
+						});
+
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() { 
+						cj(this).dialog("close"); 
+						cj(this).dialog("destroy"); 
+					}
+				}
+			]);
+		}
+	});
+}
+function makeModalMerge(tagLabel){
+	cj("#dialog").show( );
+	cj("#dialog").dialog({
+		closeOnEscape: true,
+		draggable: false,
+		height: 500,
+		width: 400,
+		title: "Move Tag",
+		modal: true, 
+		bgiframe: true,
+		close:{ },
+		overlay: { 
+			opacity: 0.2, 
+			background: "black" 
+		},
+		open: function() {
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+			var treeDialogInfo;
+			if(tagInfo.reserved == true){
+			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be merged</div>';
+			cj('#dialog').html(treeDialogInfo);
+			} else {
+			treeDialogInfo = '<div class="modalHeader">Merge <span tID="'+tagInfo.id+'">' + tagInfo.name + ' into Tag...</span></div>';
+			treeDialogInfo += '<div class="BBtree modal merge"></div>';
+			cj('#dialog').html(treeDialogInfo);
+			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+			
+			callTagAjax('modal', modalTreeTop);
+			}
+		},
+		buttons: {
+			"Cancel": function() { 
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy");
 			}
 		} 
 	});
@@ -169,47 +279,52 @@ function addControlBox(tagLabel, IDChecked, treeTop) {
 	floatControlBox += '</span>';
 	if(tagMouse == 'dt#tagLabel_291')
 	{
-		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
+		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li class="printTag" style="height:16px; width:16px; margin:auto 1px; float:left;" onClick="printTags()"> </li><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
 	}else if(tagMouse == 'dt#tagLabel_296')
 	{
-		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
+		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li class="printTag" style="height:16px; width:16px; margin:auto 1px; float:left;" onClick="printTags()"> </li><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
 	} else { return(floatControlBox); }
 }
 /*Function for checking and unchecking tags and updating the server on it's request*/
 function checkRemoveAdd(tagLabel) {
-	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-	tagLabelID = tagLabel.replace('tagLabel_', '');
-	if(n == false)
+	var tagCheck = tagLabel.match(/Modal/);
+	if(tagCheck == -1)
 	{
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/create',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-				giveParentsIndicator(tagLabel,'add');
-			}
-		});
 		
-	} else {
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/delete',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				findIDLv(tagLabel);
-			}
-		});
+		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
+		tagLabelID = tagLabel.replace('tagLabel_', '');
+		if(n == false)
+		{
+			cj.ajax({
+				url: '/civicrm/ajax/entity_tag/create',
+				data: {
+					entity_type: 'civicrm_contact',
+					entity_id: cid,
+					tag_id: tagLabelID
+					},
+				dataType: 'json',
+				success: function(data, status, XMLHttpRequest) {
+					if(data.code != 1) {}
+					cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
+					giveParentsIndicator(tagLabel,'add');
+				}
+			});
+			
+		} else {
+			cj.ajax({
+				url: '/civicrm/ajax/entity_tag/delete',
+				data: {
+					entity_type: 'civicrm_contact',
+					entity_id: cid,
+					tag_id: tagLabelID
+					},
+				dataType: 'json',
+				success: function(data, status, XMLHttpRequest) {
+					if(data.code != 1) {}
+					findIDLv(tagLabel);
+				}
+			});
+		}
 	}
 }
 /*Checks each parent tag, and it's siblings to see if it can be unmarked as a hereditary choice*/
@@ -246,6 +361,29 @@ function findIDLv(tagLabel) {
 	}
 	cj('dt#'+tagLabel).removeClass('checked');
 }
+function printTags()
+{
+	var data = cj('.BBtree.edit.manage').html();
+	var mywindow = window.open('', 'Print Tags');
+	mywindow.document.write('<html><head><title>Print Tags</title>');
+    mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />');
+    mywindow.document.write('<style>');
+    mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}body.popup .bbtree dl.lv-2, .body.popup bbtree dl.lv-3, body.popup .bbtree dl.lv-4, body.popup .bbtree dl.lv-5, body.popup .bbtree dl.lv-6  {display:block !important;} body.popup .fCB{display:none;}');
+    mywindow.document.write('</style>');
+    mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
+    mywindow.document.write('</head><body class="popup" >');
+    mywindow.document.write('<div class="BBtree edit manage" style="height:auto;width:auto;overflow-y:hidden;">');
+    mywindow.document.write(data);
+    mywindow.document.write('</div>');
+    mywindow.document.write('</body></html>');
+    mywindow.print();
+    return true;
+}
+function createPrintTagPopup()
+{
+	
+
+}
 </script>
 {/literal}
 {capture assign=docLink}{docURL page="Tags Admin"}{/capture}
@@ -270,6 +408,7 @@ function findIDLv(tagLabel) {
     		<tr>
     			<td class="updateTag"><div></div>Update Tag</td>
     			<td class="moveTag"><div></div>Move Tag</td>
+    			<td class="printTag"><div></div>Print Tags under Issue Codes</td>
     		</tr>
     	</table>
     </div>
