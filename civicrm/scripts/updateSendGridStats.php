@@ -19,6 +19,10 @@ require_once 'CRM/Core/DAO.php';
 $config = CRM_Core_Config::singleton();
 $bbconfig = get_bluebird_instance_config();
 
+$bbconfig['servername'] = 'gallivan.crm.nysenate.gov';
+$bbconfig['install_class'] = 'prod';
+$bbconfig['shortname'] = 'gallivan';
+
 // Store the run parameters in a map for easy looping and clean DRY code.
 // Key is the table name of the event in the accumulator
 // Value is the function accepting ($events, $optList, $bbconfig) where

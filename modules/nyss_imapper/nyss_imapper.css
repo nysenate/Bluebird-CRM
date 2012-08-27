@@ -1,0 +1,169 @@
+.bodyContainer {width: 950px; background-color:#fff;  margin:0 auto; overflow:auto;}
+.header { font-size: 20px; font-weight: bold; padding: 5px 5px 15px;}
+.messages {background-color:#ded; min-height:260px; margin:0 15px;}
+.messagesList {background-color:#fff; height:200px; margin:0 15px; border: 1px solid #ccc; overflow-y:scroll; overflow-x: hidden;}
+.messagesList .emailWrapper {margin: 5px 15px; padding:5px; border-bottom:1px solid red; clear:both; overflow:auto; cursor:pointer;}
+.messagesList .imapper-message-toggle {cursor:pointer;}
+.loadingBox {font-size:18px; text-align:center; padding:5px;}
+.loadingBox span {font-size:24px;}
+.messagesList .emailWrapper.active {background-color: #fbb;}
+.messagesList .emailWrapper .addrBlock {float:left; font-size:11px; font-weight:bold; width:300px;}
+.messagesList .emailWrapper .addrBlock  span {font-weight:normal;}
+.messagesList .emailWrapper .addrBlock  span.email {padding-left:5px; color:#00F; text-decoration:underline;}
+.messagesList .emailWrapper .subject {float:left; width:400px; margin-left:15px; font-size:14px;}
+.messagesList .emailWrapper .date {float:right;}
+.controlsContainer {background-color:#fff; min-height:50px; margin:0 15px;}
+.messageContainer {background-color:#fff; height:425px; margin:0px 10px 15px 15px; float:left; width: 550px;}
+.contactsContainer {background-color:#fff; height:425px; margin:0px 15px 15px 10px; float:left; width: 350px;}
+.controlsContainer .filters {padding: 4px 10px;float:left;}
+.controlsContainer .filters form .formColumn div {float:left;}
+.controlsContainer .filters form .formColumn.button { }
+.controlsContainer .filters form .button div {margin-top: 13px; margin-left:10px;}
+.controlsContainer .filters form .imapper-input-container label {font-size:11px; padding-left:5px;}
+.messageContainer .messageBody { margin:10px; background-color:#fff; border: 1px solid #333; height:405px;}
+.contactsContainer .contactsBody { margin:10px; background-color:#fff; border: 1px solid #333; height:405px;}
+.linkContact {border-bottom:1px solid #333; height:40px; line-height:40px; display:none;}
+.linkContact span {margin-left:15px;}
+.linkContact .button {background: url('imapimgs/unlinked.png') no-repeat 0px 0;; height:25px; width:40px; float:right; margin-right:25px; margin-top:10px; cursor:default;}
+.linkContact .button.linked {background: url('imapimgs/linked.png') no-repeat 0px 0;}
+.linkContact input.linkContactButton {display:none; float:right; margin-right:15px; margin-top:10px; width:50px;}
+.linkContact input.linkContactButton.visible {display:inline;}
+.contactsBody .showContactNumResult {font-style:italic; text-align: center; border-bottom:1px solid #000; display:none;}
+.contactsBody .showContactNumResult span {font-style:normal; font-weight:bold;}
+.contactList {height:345px; overflow:auto;  display:none;}
+.contactList .loadingBox {border-bottom: 1px solid #000;}
+.contactList .contactItem {border-bottom: 1px solid #000; padding:5px 8px;font-size:11px;clear:both;overflow:auto;}
+.contactList .contactItem.active {background:#d99;}
+.contactList .contactItem.hover {background:#ff8;}
+.contactList .contactItem.active.hover {background:#f96;}
+.contactList .contactItem input {float:left;margin:5px;}
+.contactList .contactItem .left {float:left; cursor:pointer;}
+.contactList .contactItem .left div {font-size:10px;}
+.contactList .contactItem .right {float:right; margin-top:5px;}
+
+
+.find-match-popup, .delete-confirm{ display: none;}
+.contacts-list{height:245px; overflow:auto; }
+
+.imapperbox .full{  margin-bottom: 10px;}
+.imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
+.imapperbox .full h1 small{ color:#999; font-size: 20px;}
+
+
+.imapperbox .full .list_header{ font-weight: bold;}
+
+.imapperbox .full .checkboxieout{ left:17px;  }
+/*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
+
+.imapperbox .full .subject { width:330px;}
+.forwarder{max-width: 60px; overflow: hidden;}
+.date{max-width: 100px; overflow: hidden;}
+.checkbox_switch{ margin-left: 10px;}
+.imapperbox .full .Actions{ width:150px; text-align: right !important;}
+
+.delete a{color:red !important;}
+
+#autocomplete_tag,.autocomplete-tags-bank{ width: 464px; padding: 10px 4px; margin: 0 0 10px 0; float:left;}
+#autocomplete-tags-bank{ padding:0px; }
+ 
+a.tag-item { color: #666!important;}
+
+a.tag-item:hover{ color: #336699!important; background: #e1e1e1; }
+
+.tag-selected{ 	background: #336699; padding:  2px 5px; float:left; margin:0 4px 4px 0; }
+.tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
+a.tag-selected { color: #fff!important; }
+a.tag-selected:hover { color: #fff!important; background-color: red; }
+
+.dataTables_info {
+    float: none !important;
+    width: 90% !important;
+}
+.dataTables_paginate {
+    float: none !important;
+    width: 10% !important;
+    display: block;
+    padding-left: 90%;
+}
+
+.page_actions{
+	    padding-left: 70%;
+
+}
+/*.dataTables_filter {
+    display: inline;
+    float: left !important;
+    width: 80% !important;
+    clear: both;
+}
+.dataTables_length {
+    float: left !important;
+    width: 20% !important;
+    display: inline;
+	clear: both;
+}*/
+
+.ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
+
+#message_left {float:left; margin:10px 10px 0 10px ; }
+#message_left_header{ width:640px; height:90px; border-bottom: 1px solid #ccc;  }
+#message_left_email{ width:640px; height:360px; overflow:auto;  }
+
+#message_right{ width:275px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:455px;}
+
+#find-match-popup .ui-tabs-panel { padding:0;}
+#first_name,#last_name {width:46%;}
+.hidden{display:none;}
+
+#assign_container {
+	padding-left: 100px;
+}
+
+#imapper-messages {
+	scrollbar: always;
+	overflow: auto;
+	height: 600px;
+	float: left;
+}
+
+.imapper-message-box {
+	background-color: #eeeeee;
+	margin: 2px;
+}
+
+.imapper-message-box:hover {
+	cursor: pointer;
+}
+
+.imapper-message-box .imapper-select-button {
+	padding-top: 4px;
+}
+
+.imapper-contact-box {
+	background-color: #eeeeee;
+	height: 60px;
+	margin-bottom: 4px;
+}
+
+.imapper-contact-box:hover {
+	cursor: pointer;
+}
+
+.imapper-address-select-box {
+	height: 16px;
+	width: 20px;
+	float: left;
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+
+.imapper-address-box {
+	float: left;
+	width: 230px;
+	padding-left: 5px;
+}
+
+.clear {
+	clear: both;
+}
+

@@ -1,0 +1,4 @@
+<?php
+	$username = '';
+	$password = '';
+?>
