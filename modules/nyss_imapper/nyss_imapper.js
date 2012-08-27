@@ -118,12 +118,17 @@ cj(document).ready(function(){
 				contactId: contactIds
 			},
 			success: function(data, status) {
-				cj.each(messages, function (idx, val) {
-					if(val.uid == messageId && val.imap_id == imapId) {
-                		delete messages[idx];
-                		buildMessageList();
-                	}
-                });
+				console.log(data);
+				cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+				var old_total = parseInt(cj("#total_number").html(),10);
+				cj("#total_number").html(old_total-1);
+
+				// cj.each(messages, function (idx, val) {
+				// 	if(val.uid == messageId && val.imap_id == imapId) {
+    //             		delete messages[idx];
+    //             		buildMessageList();
+    //             	}
+    //             });
 
             cj("#find-match-popup").dialog('close');  
 			//	alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
@@ -163,9 +168,6 @@ cj(document).ready(function(){
 			success: function(data, status) {
 			//	console.log(data);
 				contactData = cj.parseJSON(data);
-
-
-
 				cj.ajax({
 					url: '/civicrm/imap/ajax/assignMessage',
 					data: {
@@ -174,13 +176,14 @@ cj(document).ready(function(){
 						contactId: contactData.contact
 					},
 					success: function(data, status) {
-						cj("#find-match-popup").dialog('close');  
-						cj.each(messages, function (idx, val) {
-							if(val.uid == messageId && val.imap_id == imapId) {
-		                		delete messages[idx];
-		                		buildMessageList();
-		                	}
-		               });
+						cj("#find-match-popup").dialog('close'); 
+						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+						// cj.each(messages, function (idx, val) {
+						// 	if(val.uid == messageId && val.imap_id == imapId) {
+		    //             		delete messages[idx];
+		    //             		buildMessageList();
+		    //             	}
+		    //            });
 				}
 			//	alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
 			});
@@ -228,6 +231,7 @@ cj(document).ready(function(){
 							data: {id: messageId},
 							success: function(data,status) {
 								//console.log(data);
+								cj("#"+messageId).remove();
 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
 								//destroyReSortable();
@@ -255,6 +259,72 @@ cj(document).ready(function(){
 		cj( "#delete-confirm" ).dialog('open');
 	});
 
+
+	// multi_delete confirm & processing 
+	cj(".multi_delete").live('click', function() {
+
+		cj("#loading-popup").dialog('open');
+
+		// delete_ids = message id / activity id 
+		// delete_secondary = imap id / contact id 
+		var delete_ids = new Array();
+		var delete_secondary = new Array();
+		var rows = new Array();
+
+		cj('#imapper-messages-list input:checked').each(function() {
+ 			delete_secondary.push(cj(this).attr('data-id'));
+			delete_ids.push(cj(this).attr('name'));
+			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
+		});
+		
+		cj( "#delete-confirm" ).dialog({
+			buttons: {
+				"Delete": function() {
+					cj( this ).dialog( "close" );
+					if(cj("#Activities").length){
+						cj.each(delete_ids, function(key, value) { 
+						// 	console.log(value);
+						// 	console.log(delete_secondary[key]);
+						// //	console.log(rows[key]);
+							cj.ajax({
+								url: '/civicrm/imap/ajax/deleteActivity',
+								data: {id: value},
+								success: function(data,status) {
+									cj('#'+rows[key]).remove();
+									var old_total = parseInt(cj("#total_number").html(),10);
+									cj("#total_number").html(old_total-1);
+								}
+							});
+						});		
+					}else{
+						cj.each(delete_ids, function(key, value) { 
+							// console.log(value);
+							// console.log(delete_secondary[key]);
+						 // 	console.log(rows[key]);
+							cj.ajax({
+								url: '/civicrm/imap/ajax/deleteMessage',
+										data: {id: value,
+									    imapId: delete_secondary[key] },
+								success: function(data,status) {
+									cj('#'+rows[key]).remove();
+									var old_total = parseInt(cj("#total_number").html(),10);
+									cj("#total_number").html(old_total-1);
+								}
+							});
+						});				
+					}
+
+				},
+				Cancel: function() {
+					cj( this ).dialog( "close" );
+				}
+			}
+		});
+
+		cj("#loading-popup").dialog('close');
+		cj( "#delete-confirm" ).dialog('open');
+	});
+	
 	// add a find match popup
 	cj( "#find-match-popup" ).dialog({
 		modal: true,
@@ -292,6 +362,7 @@ cj(document).ready(function(){
 	// function works for multi contact tagging and single
 	cj(".push_tag").live('click', function(){
 		var tags = new Array();
+
 		// add to activity, contact, or both ?
 		if((cj('.Activity-checkbox').attr('checked')) && (!cj('.Contact-checkbox').attr('checked'))){
 			var activityId = cj("#activityId").val();
@@ -310,11 +381,22 @@ cj(document).ready(function(){
 				data: {activityId: activityId, contactId: contactId, tags: tagId},
 				success: function(data,status) {
 				//	console.log(dialog);
-					cj(".tagging-popup").dialog('close');
+				// help_message('tag added!');
 				}
 		 	});
 		});
-
+		// TODO - remove activity 
+		var activityId = cj("#activityId").val();
+		cj.ajax({
+			url: '/civicrm/imap/ajax/unproccessedActivity',
+			data: {id: activityId},
+			success: function(data,status) { 
+				cj("#tagging-popup").dialog('close');
+				help_message('tag added!');
+				cj("#"+activityId).remove();
+	
+			}
+		});
 	});
 
 
@@ -357,7 +439,7 @@ cj(document).ready(function(){
 					cj('#tagging-popup-header').append("<strong>Address by: </strong>"+messages.fromAddress);
 				}
  			
-				cj("#tagging-popup").dialog({ title:  "Tagging: "+messages.subject });
+				cj("#tagging-popup").dialog({ title:  "Tagging: "+ short_subject(messages.subject,50) });
 				cj("#tagging-popup").dialog('open');
  				 
 			}
@@ -377,11 +459,6 @@ cj(document).ready(function(){
 			activityIds.push(cj(this).attr('name'));
 			contactIds.push(cj(this).attr('data-id'));
 		});
-		//cj("#contactId").val(selected);
-		
-		//console.log(contactIds.length);
-		//console.log(contactIds);
-		//console.log(activityIds);
 
  		cj("#loading-popup").dialog('close');
  		cj('#tagging-popup-header').html('');
@@ -391,26 +468,35 @@ cj(document).ready(function(){
 
 
 	});
+
+	/// remove activity from the activities screen, but don't delete it 
 	cj(".clear_activity").live('click', function() { 	
 		cj("#loading-popup").dialog('open');
 		var activityId = cj(this).parent().parent().attr('data-id');
-		var contactId = cj(this).parent().parent().attr('data-contact_id');
 
-		console.log(activityId);
-		console.log(contactId);
-		cj.ajax({
-			url: '/civicrm/imap/ajax/unproccessedActivity',
-			data: {id: activityId,
-				   contact: contactId },
-			success: function(data,status) { 
-
+		cj( "#delete-confirm" ).dialog({
+			buttons: {
+				"Delete": function() {
+					cj.ajax({
+						url: '/civicrm/imap/ajax/unproccessedActivity',
+						data: {id: activityId},
+						success: function(data,status) { 
+							
+						}
+					});
+					var old_total = parseInt(cj("#total_number").html(),10);
+					cj("#total_number").html(old_total-1);
+					cj("#"+activityId).remove();
+					cj( this ).dialog( "close" );
+				},
+				Cancel: function() {
+					cj( this ).dialog( "close" );
+				}
 			}
 		});
-
-		// cj('#imapper-messages-list input:checked').each(function() {
-		// 	selected.push(cj(this).attr('name'));
-		// });
-
+		cj("#delete-confirm").dialog({ title:  "Remove this Messages from this list?"});
+		cj("#loading-popup").dialog('close');
+		cj("#delete-confirm").dialog('open');
 	});
 	
 
@@ -480,7 +566,7 @@ cj(document).ready(function(){
 				cj('#first_name, #last_name, #phone, #street_address, #city, ').val('');
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
-				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
+				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
  				cj('#tabs-1 #email_address').val(messages.fromEmail);
@@ -513,7 +599,7 @@ cj(".pre_find_match").live('click', function() {
 				cj('#message_left_email').html(messages.details);
 		// 		cj('#email_id').val(messageId);
 		// 		cj('#imap_id').val(imapId);
-				cj("#find-match-popup").dialog({ title:  "Reading: "+messages.subject });
+				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100)  });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
  
@@ -588,14 +674,14 @@ function buildMessageList() {
 	var total_results =0;
 	cj.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" value="" /></td>';
+		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 		if( value.from_name != ''){
 			messagesHtml += '<td class="name">'+value.from_name +'</td>';
 		}else {
 			messagesHtml += '<td class="name"> N/A </td>';
 		}
 		messagesHtml += '<td class="email">'+value.from_email +'</td>';
- 		messagesHtml += '<td class="subject">'+value.subject +'</td>';
+ 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
 		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -612,14 +698,14 @@ function buildActivitiesList() {
 	var total_results =0;
 	cj.each(messages, function(key, value) {
 		total_results++;
- 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'" value="" /></td>';
+ 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
 		if( value.fromName != ''){
 			messagesHtml += '<td class="name">'+value.fromName +'</td>';
 		}else {
 			messagesHtml += '<td class="name"> N/A </td>';
 		}
 		messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
-		messagesHtml += '<td class="subject">'+value.subject +'</td>';
+		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
 		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Edit</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -646,8 +732,21 @@ function buildContactList() {
 	});
 	cj('#imapper-contacts-list').append(contactsHtml);
 }
-  
- 	
+
+function help_message(message){
+	//cj(".crm-content-bloc").prepend("<div id='help'><p>"+message+"</p></div>").delay(1800).("#help").remove();
+	cj(".crm-content-bloc").append("<div id='help'><p>"+message+"</p></div>");
+	console.log('help : '+ message)
+}
+ function short_subject(subject, length){
+ 	if (subject.length > length ){
+ 		var safe_subject = subject.substring(0,length)+"...";
+		return safe_subject;
+ 	}else{
+ 		return subject;
+ 	}
+ }
+
 function autocomplete_setup () {
 		//console.log('autocomplete setup');
 		var value = cj("#autocomplete_tag").val();

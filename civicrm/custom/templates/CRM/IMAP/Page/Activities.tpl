@@ -19,11 +19,11 @@
 				<tr><td>Loading Message data</td></tr>	
 			</tbody> 
 		</table> 
-		<hr/>
+		
 		<div class='page_actions'>
-			<input type="button" class="multi_tag" id="" value="Add Tag" name="add-contact"> | 
-			<input type="button" class="multi_clear" id="" value="Clear" name="add-contact"> | 
-			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
+			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
+			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
+			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 
 		</div>
 

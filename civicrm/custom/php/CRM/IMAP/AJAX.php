@@ -112,19 +112,17 @@ class CRM_IMAP_AJAX {
                     if ($count > 0) {
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
-                        $header->forwarder = $header->from;
+                        $header->forwarder = htmlentities($header->from);
                         $header->forwarder_time = date("Y-m-d H:i A", $header->udate); 
-
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
                         // the header and assume the person who sent it in
                         // is submitting the activity.
                         $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
-
                         $header->from_email = $matches[2];
                         $header->from_name = $matches[1];
-                        $header->forwarder = $header->from;
+                        $header->forwarder = htmlentities($header->from);
                     }
 
                     // We don't want the fwd: or re: on any messages, that's silly
@@ -378,7 +376,7 @@ EOQ;
 
         }
         // Move the message to the archive folder!
-        //$imap->movemsg_uid($messageUid, 'Archive');
+        $imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }
 
@@ -588,8 +586,21 @@ EOQ;
         require_once 'api/api.php';
         $id = self::get('id');
         $contact = self::get('contact');
-        
-        echo json_encode($contact);
+        $tagid = self::getInboxPollingTagId();
+
+  // deleteing a entity is hard via api without entity id, time to use sql 
+        $tagid = self::getInboxPollingTagId();
+        $query = <<<EOQ
+DELETE FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $id
+AND `tag_id` = $tagid
+EOQ;
+        $result = mysql_query($query, self::db());
+        $results = array();
+        while($row = mysql_fetch_assoc($result)) {
+            $results[] = $row;
+        }
+        echo json_encode($result);
         CRM_Utils_System::civiExit();
 
     }

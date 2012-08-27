@@ -56,10 +56,12 @@
 /*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
 
 .imapperbox .full .subject { width:330px;}
-.forwarder{max-width: 60px; overflow: hidden;}
+.forwarder{ height: 20px;
+     overflow: hidden;  display: block;
+    width: 60px;}
 .date{max-width: 100px; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}
-.imapperbox .full .Actions{ width:150px; text-align: right !important;}
+.imapperbox .full .Actions{ width:120px; text-align: right !important;}
 
 .delete a{color:red !important;}
 
@@ -75,33 +77,35 @@ a.tag-item:hover{ color: #336699!important; background: #e1e1e1; }
 a.tag-selected { color: #fff!important; }
 a.tag-selected:hover { color: #fff!important; background-color: red; }
 
-.dataTables_info {
-    float: none !important;
-    width: 90% !important;
-}
-.dataTables_paginate {
-    float: none !important;
-    width: 10% !important;
-    display: block;
-    padding-left: 90%;
+
+/* page actions */
+.page_actions{ 
+	text-align: right; 
+	height: 30px;
+	border-top: 1px solid #ccc;
+	padding:10px 0;
+	margin: 10px 0
 }
 
-.page_actions{
-	    padding-left: 70%;
+.multi_tag, .multi_clear, .multi_delete, .multi_delete{float:right; }
 
-}
-/*.dataTables_filter {
-    display: inline;
+/* data table */
+.dataTables_length{
+    width: 125px !important;
     float: left !important;
-    width: 80% !important;
-    clear: both;
 }
-.dataTables_length {
-    float: left !important;
-    width: 20% !important;
-    display: inline;
-	clear: both;
-}*/
+
+#sortable_results_info{
+	display: none !important;
+}
+
+
+
+/* hide dialogues on page load */
+#delete-confirm,#loading-popup{ display: none;}
+
+
+
 
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
 
