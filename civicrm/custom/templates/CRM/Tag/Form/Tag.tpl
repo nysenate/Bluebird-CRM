@@ -230,6 +230,3 @@ function findIDLv(tagLabel) {
     on_load_init_check(fname);
  </script>
 {/if}
-load_init_check(fname);
- </script>
-{/if}
