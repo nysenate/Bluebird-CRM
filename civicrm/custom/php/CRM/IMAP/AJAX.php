@@ -605,6 +605,48 @@ EOQ;
 
     }
 
+    // reAssignActivity 
+    public static function reassignActivity() {
+        require_once 'api/api.php';
+        $id = self::get('id');
+        $contact = self::get('contact');
+        $change = self::get('change');
+        $results = array();
+
+        // want to update the activity_target, time to use sql 
+        // get the the record id please 
+        $tagid = self::getInboxPollingTagId();
+        $query = <<<EOQ
+SELECT id
+FROM `civicrm_activity_target`
+WHERE `activity_id` = $id
+AND `target_contact_id` = $contact
+EOQ;
+
+        $activity_id = mysql_query($query, self::db());
+        while($row = mysql_fetch_assoc($activity_id)) {
+            //$results[] = $row;
+            print_r($row['id']);
+            $row_id = $row['id']; 
+
+
+            // cannot add or update a child row: a foreign key constraint fails FRAWR
+            $Update = <<<EOQ
+UPDATE `civicrm_activity_target`
+SET  `target_contact_id`= $change
+WHERE `id` =  $row_id
+EOQ;
+
+            // change the row           
+            $Updated_results = mysql_query($Update, self::db());
+                while($row = mysql_fetch_assoc($Updated_results)) {
+                     $results[] = $row; 
+                }
+        }
+
+        echo json_encode($results);
+        CRM_Utils_System::civiExit();
+    }
 
     public static function getTags() {
         require_once 'api/api.php';

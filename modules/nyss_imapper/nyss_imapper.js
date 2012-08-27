@@ -43,10 +43,6 @@ cj(document).ready(function(){
 		console.log('placeholder Support');
 	}
 
-
-
-
-
     cj('.checkbox_switch').toggle(function(){
         cj('#imapper-messages-list input:checkbox').attr('checked',true);
       	cj('.checkbox_switch').attr("checked", true);
@@ -56,8 +52,6 @@ cj(document).ready(function(){
     		cj('input.checkbox_switch').removeAttr('checked');
     	};
     }); 
-
-
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -97,8 +91,11 @@ cj(document).ready(function(){
 	// });
 
 	assign.click(function() {
+
+
 		var messageId = cj('#email_id').val();
 		var imapId = cj('#imap_id').val();
+		
 		var contactRadios = cj('input[name=contact_id]');
 		var contactIds = '';
 
@@ -109,6 +106,9 @@ cj(document).ready(function(){
 				contactIds = contactIds + cj(val).val();
 			}
 		});
+
+
+		//			url: '/civicrm/imap/ajax/reassignActivity',
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/assignMessage',
@@ -598,16 +598,17 @@ cj(document).ready(function(){
 			}
 		});
 	});
-	// if it was a already matches message 
-cj(".pre_find_match").live('click', function() {
-	cj("#loading-popup").dialog('open');
 
-	var activityId = cj(this).parent().parent().attr('data-id');
-	var contactId = cj(this).parent().parent().attr('data-contact_id');
-	cj('#imapper-contacts-list').html('');
+	// Activity Edit matches message 
+	cj(".pre_find_match").live('click', function() {
+		cj("#loading-popup").dialog('open');
+
+		var activityId = cj(this).parent().parent().attr('data-id');
+		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		cj('#imapper-contacts-list').html('');
 
 
-	cj.ajax({
+		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
@@ -619,8 +620,8 @@ cj(".pre_find_match").live('click', function() {
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
-		// 		cj('#email_id').val(messageId);
-		// 		cj('#imap_id').val(imapId);
+				cj('#email_id').val(activityId);
+				cj('#imap_id').val(contactId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100)  });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
@@ -672,10 +673,8 @@ function pullActivitiesHeaders() {
 }
 
 function destroyReSortable(){ 
-	 
 	var oTable = cj("#sortable_results").dataTable();
   	oTable.fnDestroy();
-
 	makeListSortable();
 }
 
@@ -760,7 +759,8 @@ function help_message(message){
 	cj(".crm-content-bloc").append("<div id='help'><p>"+message+"</p></div>");
 	console.log('help : '+ message)
 }
- function short_subject(subject, length){
+ 
+function short_subject(subject, length){
  	if (subject.length > length ){
  		var safe_subject = subject.substring(0,length)+"...";
 		return safe_subject;
@@ -773,25 +773,25 @@ function autocomplete_setup () {
 		//console.log('autocomplete setup');
 		var value = cj("#autocomplete_tag").val();
 		cj("#autocomplete_tag").autocomplete("/civicrm/imap/ajax/getTags",  {
-        width: 320,
-        data: {  name: value },
-        dataType: 'json',
-        scroll: true,
-        scrollHeight: 300,
-        parse: function(data) {
-       		messagesHtml = '';
+	        width: 320,
+	        data: {  name: value },
+	        dataType: 'json',
+	        scroll: true,
+	        scrollHeight: 300,
+	        parse: function(data) {
+	       		messagesHtml = '';
 
-			var array = new Array();
-			cj(".autocomplete-dropdown").html('');
+				var array = new Array();
+				cj(".autocomplete-dropdown").html('');
 
-			cj(data.items).each(function(i, item) {
-			//	console.log(item.label+" : "+item.value);
-				messagesHtml += '<a data-id="'+item.value+'" class="tag-item" href="#">'+item.label+'</a><br/>'
-				//cj("#autocomplete-dropdown").html('<a href="#tag'+item.value+'">'+item.label+'</><br/>');
-			});
-			cj(".autocomplete-dropdown").html(messagesHtml);
-			return array;
-        },
+				cj(data.items).each(function(i, item) {
+				//	console.log(item.label+" : "+item.value);
+					messagesHtml += '<a data-id="'+item.value+'" class="tag-item" href="#">'+item.label+'</a><br/>'
+					//cj("#autocomplete-dropdown").html('<a href="#tag'+item.value+'">'+item.label+'</><br/>');
+				});
+				cj(".autocomplete-dropdown").html(messagesHtml);
+				return array;
+        	},
 
         // formatItem: function(row) {                     
         //         var name = '';
@@ -804,9 +804,5 @@ function autocomplete_setup () {
 
         //         return row.username+' '+name;
         // }
-    });
-
-
-
-		 
- }
+    	});	 
+}

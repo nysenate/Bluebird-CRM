@@ -73,4 +73,9 @@
     <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/imap/ajax/reassignActivity</path>
+    <page_callback>CRM_IMAP_AJAX::reassignActivity</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
