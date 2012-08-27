@@ -86,7 +86,7 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
- 		<p> Loading message details. </p>
+ 		<p> <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/header-search-active.gif"/> Loading message details. </p>
 	</div>
 	<div id="tagging-popup" title="Tagging">
 		<div id="tagging-popup-header">
@@ -94,7 +94,7 @@
 
 		<hr/>
 		<input type='text' id='autocomplete_tag'/><br/>  <hr/>
-		<div class="autocomplete-tags-bank" style=""><strong>Adding: </strong> </div>
+		<div class="autocomplete-tags-bank" style=""></div>
 
 		<div class="autocomplete-dropdown" style=""></div>
 

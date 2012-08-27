@@ -587,15 +587,10 @@ EOQ;
     public static function unproccessedActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
+        $contact = self::get('contact');
         
-        // $params = array( 
-        //   'id' => $id,
-        //   'version' => 3,
-        // );
-        // $result = civicrm_api( 'activity','delete',$params );
-
-        // echo json_encode($result);
-        // CRM_Utils_System::civiExit();
+        echo json_encode($contact);
+        CRM_Utils_System::civiExit();
 
     }
 
@@ -605,7 +600,6 @@ EOQ;
         $name = self::get('s');
         $i = 0;
         $results = array();
-
 
         $query = <<<EOQ
 SELECT id, name
@@ -620,21 +614,7 @@ EOQ;
          //   print_r($row);
         }
         $final_results = array('items'=> $results);
-
-
         echo json_encode($final_results);
-//         echo ('{"items": [
-//         {
-//             "name": "type de lieux",
-//             "value":  "maison individuelle"
-             
-//         },
-//         {
-//             "name": "surface",
-//             "value": "maison individuelle"
-//         }
-//     ]
-// }');
         CRM_Utils_System::civiExit();
     }
 
