@@ -629,8 +629,7 @@ EOQ;
             print_r($row['id']);
             $row_id = $row['id']; 
 
-
-            // cannot add or update a child row: a foreign key constraint fails FRAWR
+            // UPDATE `senate_prod_c_skelos`.`civicrm_activity_target` SET `target_contact_id` = '285159' WHERE `civicrm_activity_target`.`id` =539082;
             $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change

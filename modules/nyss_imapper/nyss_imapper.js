@@ -729,7 +729,7 @@ function buildActivitiesList() {
 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
 		messagesHtml += '<td class="date">'+value.date +'</td>';
 		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
-		messagesHtml += '<td class="Actions"><span class="pre_find_match"><a href="#">Edit</a></span> | <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+		messagesHtml += '<td class="Actions"> <!-- <span class="pre_find_match"><a href="#">Edit</a></span> | --> <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
 	cj("#total_number").html(total_results);
