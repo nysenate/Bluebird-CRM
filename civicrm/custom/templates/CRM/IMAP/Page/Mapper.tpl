@@ -2,6 +2,7 @@
 	<div class='full'>
 	<h1>Unmatched Results <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
 	</div>
+	<div id='top'></div>
 	<div class='full'>
 		<table id="sortable_results" class=""> 
 			<thead> 

@@ -2,6 +2,7 @@
 	<div class='full'>
 	<h1>Matched Messages <small id='total_results'><span id="total_number">Loading</span> Activities</small></h1>
 	</div>
+	<div id='top'></div>
 	<div class='full'>
 		<table id="sortable_results" class=""> 
 			<thead> 

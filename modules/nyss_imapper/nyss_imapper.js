@@ -123,6 +123,7 @@ cj(document).ready(function(){
 				var old_total = parseInt(cj("#total_number").html(),10);
 				cj("#total_number").html(old_total-1);
            		cj("#find-match-popup").dialog('close');  
+           		help_message('Message assigned to contact');
 			}
 		});
 		return false;
@@ -169,6 +170,8 @@ cj(document).ready(function(){
 					success: function(data, status) {
 						cj("#find-match-popup").dialog('close'); 
 						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+						help_message('Contact created and message Assigned');
+
 						// cj.each(messages, function (idx, val) {
 						// 	if(val.uid == messageId && val.imap_id == imapId) {
 		    //             		delete messages[idx];
@@ -226,6 +229,8 @@ cj(document).ready(function(){
 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
 								//destroyReSortable();
+								help_message('Activity Deleted');
+
 							} 
 						});
 					}else{
@@ -238,6 +243,8 @@ cj(document).ready(function(){
  								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
 								//destroyReSortable();
+								help_message('Message Deleted');
+
 							} 
 						});
 					}
@@ -284,6 +291,8 @@ cj(document).ready(function(){
 									cj('#'+rows[key]).remove();
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
+									help_message('Activities Deleted');
+
 								}
 							});
 						});		
@@ -300,6 +309,8 @@ cj(document).ready(function(){
 									cj('#'+rows[key]).remove();
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
+									help_message('Messages Deleted');
+
 								}
 							});
 						});				
@@ -387,9 +398,7 @@ cj(document).ready(function(){
 					url: '/civicrm/imap/ajax/addTags',
 					data: {activityId: activityId, contactId: contactId, tags: tagId},
 					success: function(data,status) {
-					//	console.log(dialog);
-					// help_message('tag added!');
-					// TODO - remove activity 
+	 					help_message('Tag Added');
 						if(delete_ids.length > 0 ){
 							cj.each(delete_ids, function(key, value) { 
 								cj.ajax({
@@ -399,7 +408,8 @@ cj(document).ready(function(){
 										cj("#tagging-popup").dialog('close');
 										help_message('tag added!');
 										cj("#"+value).remove();
-							
+										
+
 									}
 								});
 							});
@@ -412,6 +422,7 @@ cj(document).ready(function(){
 									cj("#tagging-popup").dialog('close');
 									help_message('tag added!');
 									cj("#"+activityId).remove();
+									help_message('Tag Added');
 						
 								}
 							});
@@ -509,7 +520,7 @@ cj(document).ready(function(){
 						url: '/civicrm/imap/ajax/unproccessedActivity',
 						data: {id: activityId},
 						success: function(data,status) { 
-							
+							help_message('Activity Removed');
 						}
 					});
 					var old_total = parseInt(cj("#total_number").html(),10);
@@ -547,6 +558,8 @@ cj(document).ready(function(){
 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
 								cj("#delete-confirm").dialog( "close" );
+								help_message('Activity Removed');
+
 							}
 						});
 					});
@@ -754,12 +767,23 @@ function buildContactList() {
 	cj('#imapper-contacts-list').append(contactsHtml);
 }
 
+
+// displays a help window + current date time 
 function help_message(message){
-	//cj(".crm-content-bloc").prepend("<div id='help'><p>"+message+"</p></div>").delay(1800).("#help").remove();
-	cj(".crm-content-bloc").append("<div id='help'><p>"+message+"</p></div>");
-	console.log('help : '+ message)
+
+	var d = new Date();
+	var h = d.getHours();
+	var m = d.getMinutes();
+	var s = d.getSeconds();
+	var rm = h+"_"+m+"_"+s;
+	cj("#top").append("<div class='"+h+"_"+m+"_"+s+"' id='help' ><p>"+message+" <small>"+h+":"+m+":"+s+"<small></p></div>");
+
+	setTimeout(function(){
+	    cj("."+rm).fadeOut(1000);
+	}, 10000);
+
 }
- 
+
 function short_subject(subject, length){
  	if (subject.length > length ){
  		var safe_subject = subject.substring(0,length)+"...";
