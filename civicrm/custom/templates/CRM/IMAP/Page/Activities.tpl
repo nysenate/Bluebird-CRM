@@ -46,7 +46,7 @@
 					<li><a href="#tabs-2">Add Contact</a></li>
 				</ul>
 				<div id="tabs-1">
-					<form onsbumit="return false;">
+					 
 						<input type="hidden" class="hidden" id="email_id" name="email_id">
 						<input type="hidden" class="hidden" id="imap_id" name="imap_id">
 
@@ -59,13 +59,13 @@
 						<input type="text" placeholder="City" class="form-text" id="city" name="city">
 						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 
-				    </form>
+				    
 					<div id="imapper-contacts-list" class="contacts-list">
 					</div>
-					<input type="button" class="imapper-submit" id="assign" value="Assign" name="Assign">
+					<input type="button" class="imapper-submit" id="reassign" value="Assign" name="reassign">
 				</div>
 				<div id="tabs-2">
-					<form onsbumit="return false;">
+					 
 						<input type="hidden" class="hidden" id="email_id" name="email_id">
 						<input type="hidden" class="hidden" id="imap_id" name="imap_id">
 
@@ -77,7 +77,7 @@
 						<input type="text" placeholder="Street Address"  class="form-text" id="street_address" name="street_address">
 						<input type="text" placeholder="City" class="form-text" id="city" name="city">
 						<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
-				    </form>
+				    
 				</div>
 			</div>
 		</div>

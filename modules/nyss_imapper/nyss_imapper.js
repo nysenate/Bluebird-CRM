@@ -11,6 +11,7 @@ cj(document).ready(function(){
 	var reset = cj('#reset');
 	var filter = cj('#filter');
 	var assign = cj('#assign');
+	var reassign = cj('#reassign');
 	var email_address = cj('#email_address');
 	var create = cj('#add-contact');
 
@@ -108,8 +109,7 @@ cj(document).ready(function(){
 		});
 
 
-		//			url: '/civicrm/imap/ajax/reassignActivity',
-
+	 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/assignMessage',
 			data: {
@@ -129,6 +129,39 @@ cj(document).ready(function(){
 		return false;
 	});
 
+	// reassign activity to contact on the matched page
+	reassign.click(function() {
+		var activityId = cj('#email_id').val();
+		var contact = cj('#imapId').val();
+
+		var contactRadios = cj('input[name=contact_id]');
+		var contactIds = '';
+
+		cj.each(contactRadios, function(idx, val) {
+			if(cj(val).attr('checked')) {
+				if(contactIds != '')
+					contactIds = contactIds+',';
+				contactIds = contactIds + cj(val).val();
+			}
+		});
+		cj.ajax({
+			surl: '/civicrm/imap/ajax/reassignActivity',
+			data: {
+				id: activityId,
+				imapId: imapId,
+				contact: contactIds
+			},
+			success: function(data, status) {
+				console.log(data);
+				cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+				var old_total = parseInt(cj("#total_number").html(),10);
+				cj("#total_number").html(old_total-1);
+           		cj("#find-match-popup").dialog('close');  
+           		help_message('Message assigned to contact');
+			}
+		});
+		return false;
+	});
 
 	create.click(function() {
 		var messageId = cj('#email_id').val();
@@ -612,7 +645,7 @@ cj(document).ready(function(){
 		});
 	});
 
-	// Activity Edit matches message 
+	// Edit a match allready assigned to an Activity 
 	cj(".pre_find_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
 
