@@ -43,7 +43,7 @@
 			<div id="tabs">
 				<ul>
 					<li><a href="#tabs-1">Find Contact</a></li>
-					<li><a href="#tabs-2">Add Contact</a></li>
+					<!-- <li><a href="#tabs-2">Add Contact</a></li> -->
 				</ul>
 				<div id="tabs-1">
 					 
@@ -64,7 +64,7 @@
 					</div>
 					<input type="button" class="imapper-submit" id="reassign" value="Assign" name="reassign">
 				</div>
-				<div id="tabs-2">
+				<!-- <div id="tabs-2">
 					 
 						<input type="hidden" class="hidden" id="email_id" name="email_id">
 						<input type="hidden" class="hidden" id="imap_id" name="imap_id">
@@ -78,7 +78,7 @@
 						<input type="text" placeholder="City" class="form-text" id="city" name="city">
 						<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
 				    
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>
