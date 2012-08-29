@@ -73,7 +73,7 @@ front="
 UPDATE variable SET value = 0x693a313b
  WHERE name = 'front_page_enable';
 UPDATE variable SET value = 0x733a303a22223b
- WHERE name` = 'front_page_home_link_path';
+ WHERE name = 'front_page_home_link_path';
 UPDATE variable SET value = 0x733a32353a226369766963726d2f64617368626f6172643f72657365743d31223b
  WHERE name = 'site_frontpage';"
 $execSql -i $instance -c "$front" --drupal
