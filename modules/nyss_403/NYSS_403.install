@@ -1,7 +1,7 @@
 <?php
 // $Id$
 /**
- * @file NYSS_403.module
+ * @file nyss_403.module
  * Creates Custom 403 page, and then adds that as default 403 url
  */
 
@@ -11,7 +11,7 @@
 
 
 
-function NYSS_403_install() {
+function nyss_403_install() {
   $newnode = new stdClass();
   $newnode->title = 'Please Login';
   $newnode->body = '';
