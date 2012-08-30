@@ -294,20 +294,19 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
      * 
      * @param object  $tag    an object of a tag.
      *
-     * @return  array   $contactIds    array of contact ids
+     * @return  array   $entityIds    array of entityIds ids
      * @access public
      */
     function getEntitiesByTag($tag)
     {
-      //  error_log(print_r('called', TRUE), 0);
-        $contactIds = array();
+        // NYSS - getEntitiesByTag should return the entity, not the contact.
+        // If its meant to match on the contact_id, it should be named getContactsByTag
+        $entityIds = array();
         $entityTagDAO = new CRM_Core_DAO_EntityTag();
         $entityTagDAO->tag_id = $tag->id;
         $entityTagDAO->find();
         while($entityTagDAO->fetch()) {
             $entityIds[] = $entityTagDAO->entity_id;
-            // was previously $entityTag->contact_id, but getEntitiesByTag() should return the entity, not the contact. 
-            // If its meant to match on the contact_id, it should be named getEntitiesByConcatId
         }
         return $entityIds;
     }
