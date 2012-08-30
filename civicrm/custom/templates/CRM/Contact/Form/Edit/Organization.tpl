@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,21 +26,15 @@
 {* tpl for building Organization related fields *}
 <table class="form-layout-compressed">
 	<tr>
-		<td>
-       		{$form.organization_name.label}<br/>
-        	{if $action == 2}
-        	    {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='organization_name' id=$entityID}
-        	{/if}
+       <td>{$form.organization_name.label}<br/>
        		{$form.organization_name.html|crmReplace:class:big}
         </td>
-		<td>
-        	{$form.legal_name.label}<br/>
-       		{$form.legal_name.html|crmReplace:class:big}
-        </td>
-		<td>
-        	{$form.nick_name.label}<br/>
-       		{$form.nick_name.html|crmReplace:class:big}
-        </td>
+
+       <td>{$form.legal_name.label}<br/>
+       {$form.legal_name.html|crmReplace:class:big}</td>
+
+       <td>{$form.nick_name.label}<br/>
+       {$form.nick_name.html|crmReplace:class:big}</td>
         <td>
         	{assign var='custom_41' value=$groupTree.3.fields.41.element_name}
             {$form.$custom_41.label}<br/>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,12 +31,12 @@
 <div id = "addressBlockId" class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">{*NYSS default open*}
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
-	{$title}
+        <a href="#" class="whiteanchor">{$title}</a>
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="addressBlock">
 {/if}
 
- <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block" {/if}>
+ <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block crm-address_{$blockId}"{/if}>
   {if $blockId gt 1}<fieldset><legend>{ts}Additional Address{/ts}</legend>{/if}
 	{if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
         <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;" class="delete_block">
@@ -59,27 +59,6 @@
         </td>
 	 {*/if*}
      </tr>
-     <script type="text/javascript">
-     {literal}
-         function showHideSharedAddress( blockNo, showSelect ) {
-             // based on checkbox, show or hide
-             if ( cj( '#address\\[' + blockNo + '\\]\\[use_shared_address\\]' ).attr( 'checked') ) {
-                 if ( showSelect && cj( '#shared-address-display-' + blockNo ).length == 0 ) {
-                     cj( '#shared-address-' + blockNo ).show( );
-                 }
-                 
-                 cj( 'table#address_' + blockNo ).hide( );
-                 cj( '#shared-address-display-' + blockNo ).show( );
-                 cj( '#shared-address-display-cancel-' + blockNo ).hide( );
-             } else {
-                 cj( '#shared-address-' + blockNo ).hide( );
-                 cj( 'table#address_' + blockNo ).show( );
-                 cj( '#shared-address-display-' + blockNo ).hide( );
-                 cj( '#shared-address-display-cancel-' + blockNo ).hide( );
-             }
-         }
-     {/literal}
-     </script>
 
 {if $form.address.$blockId.location_type_id.value.0 neq 6} {*NYSS hide shared option if BOE type*}    
      <tr>
