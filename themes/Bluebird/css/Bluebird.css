@@ -1293,17 +1293,20 @@ ul.token-input-list-facebook { width:265px;}
 }
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed div a {
 	padding: 0 2px;
+  display: inline-block;
 }
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
 	background-color: #131A1C;
+  border-color: #000;
 	position: fixed;
 	margin-top: -40px !important;
 	margin-left: 18px !important;
 	-webkit-border-radius: 4px 4px 0 0;
 	-moz-border-radius: 4px 4px 0 0;
 	border-radius: 4px 4px 0px 0px;
-	/*padding: 2px 4px;*/
-	
+}
+.block-civicrm div#recently-viewed.right .crm-recentview-wrapper {
+  left: 0;
 }
 
 /*activity search*/

@@ -1,6 +1,6 @@
 {literal}
 <script type="text/javascript">
-  //cj('.crm-actions-delete').remove();
+  cj('.crm-actions-delete').remove();
 
   cj('#recently-viewed li.crm-recently-viewed').hover(
     function() {
