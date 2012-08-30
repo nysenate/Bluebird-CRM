@@ -112,7 +112,7 @@ sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE ci
 )
 
 echo "Run Civi clear cache via drush to cover our bases"
-$drush $instance civicrm-cache-clear
+$drush $instance cache-clear civicrm
 
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
