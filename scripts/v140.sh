@@ -34,6 +34,8 @@ webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
+civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
+cdb="$civi_db_prefix$db_basename"
 
 ###### Begin Upgrade Scripts ######
 
@@ -47,11 +49,11 @@ WHERE name IN
   ('civicrm', 'userprotect', 'civicrm_rules', 'rules', 'rules_admin', 'apachesolr', 'apachesolr_search', 'color',
   'comment', 'help', 'taxonomy', 'update', 'admin_menu', 'imce', 'nyss_403', 'nyss_backup', 'nyss_boe',
   'nyss_dashboards', 'nyss_dedupe', 'nyss_export', 'nyss_import', 'nyss_io', 'nyss_mail', 'nyss_massmerge',
-  'nyss_sage', 'nyss_tags', 'nyss_testing');"
+  'nyss_sage', 'nyss_tags', 'nyss_testing', 'nyss_civihooks');"
 $execSql -i $instance -c "$dismods" --drupal
 
 ## run drupal upgrade
-$drush $instance updb
+$drush $instance updb -y
 
 ## enable modules
 echo "enabling modules for: $instance"
@@ -60,12 +62,12 @@ $drush $instance en rules -y
 $drush $instance en rules_admin -y
 $drush $instance en apachesolr -y
 $drush $instance en apachesolr_search -y
-$drush $instance en apc -y
-$drush $instance en ldap -y
+$drush $instance en ldap_servers -y
+$drush $instance en ldap_authorization -y
 
 ## set theme
 echo "setting theme for: $instance"
-$drush $instance en Bluebird
+$drush $instance en Bluebird -y
 $drush $instance vset theme_default Bluebird
 
 ## update front page module settings
@@ -80,8 +82,42 @@ $execSql -i $instance -c "$front" --drupal
 
 ### CiviCRM ###
 
-## run civicrm upgrade
-php ../civicrm/scripts/disableLogging.php -S $instance
+## disable logging and run civicrm upgrade
+## php ../civicrm/scripts/disableLogging.php -S $instance
+echo "disabling logging manually..."
+
+triggersql="
+SELECT trigger_name
+FROM information_schema.triggers
+WHERE trigger_schema = '$cdb'
+AND trigger_name LIKE 'civicrm_%';"
+triggers=`$execSql -c "$triggersql"`
+echo "Triggers to be dropped: " $triggers
+
+for trigger in $triggers; do
+  $execSql -i $instance -c "DROP TRIGGER IF EXISTS $trigger"
+done
+
+logging="
+DROP TRIGGER IF EXISTS civicrm_domain_after_update;
+DROP TRIGGER IF EXISTS civicrm_preferences_after_update;
+DROP TRIGGER IF EXISTS civicrm_preferences_date_after_update;
+DROP TRIGGER IF EXISTS civicrm_option_value_after_update;
+DROP TRIGGER IF EXISTS civicrm_option_value_after_insert;
+DROP TRIGGER IF EXISTS civicrm_uf_match_after_update;
+DROP TRIGGER IF EXISTS civicrm_uf_match_after_insert;
+DROP TRIGGER IF EXISTS civicrm_group_after_update;
+DROP TRIGGER IF EXISTS civicrm_group_after_insert;
+DROP TRIGGER IF EXISTS civicrm_menu_after_update;
+DROP TRIGGER IF EXISTS civicrm_menu_after_insert;
+UPDATE civicrm_domain
+   SET config_backend = REPLACE(config_backend, '\"logging\";i:1;', '\"logging\";i:0;')
+   WHERE id = 1;
+"
+$execSql -i $instance -c "$logging"
+
+## upgrade civicrm db
+echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
 ## enable civicrm modules
@@ -114,7 +150,9 @@ UPDATE civicrm_navigation SET parent_id = @admin WHERE name = 'Personal Campaign
 "
 $execSql -i $instance -c "$navigation"
 
-## rebuild the manage menu
+## change settings for district info data set
+distinfo="UPDATE civicrm_custom_group SET collapse_display = 0 WHERE name = 'District_Information';"
+$execSql -i $instance -c "$distinfo"
 
 
 ### Cleanup ###
