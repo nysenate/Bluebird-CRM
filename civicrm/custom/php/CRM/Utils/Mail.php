@@ -98,7 +98,7 @@ class CRM_Utils_Mail
              ! CRM_Utils_Array::value( 'toEmail', $params ) ) {
             return false;
         }
-        
+
         $textMessage = CRM_Utils_Array::value( 'text'       , $params );
         $htmlMessage = CRM_Utils_Array::value( 'html'       , $params );
         $attachments = CRM_Utils_Array::value( 'attachments', $params );
