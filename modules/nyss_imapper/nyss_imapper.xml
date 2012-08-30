@@ -2,13 +2,13 @@
 <menu>
   <item>
      <path>civicrm/imap/mapper</path>
-     <title>IMAP Mapper</title>
+     <title>IMAP Unmatched Messages</title>
      <page_callback>CRM_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
     <item>
      <path>civicrm/imap/activities</path>
-     <title>Activities</title>
+     <title>IMAP Matched Messages</title>
      <page_callback>CRM_IMAP_Page_Activities</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
