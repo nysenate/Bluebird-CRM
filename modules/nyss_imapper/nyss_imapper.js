@@ -731,69 +731,89 @@ function makeListSortable(){
 }
 
 function buildMessageList() {
-	if(messages == '' || messages == null)
-		return;
-	var messagesHtml = '';
-	var total_results =0;
-	cj.each(messages, function(key, value) {
-		total_results++;
-		messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
-		if( value.from_name != ''){
-			messagesHtml += '<td class="name">'+value.from_name +'</td>';
-		}else {
-			messagesHtml += '<td class="name"> N/A </td>';
-		}
-		messagesHtml += '<td class="email">'+value.from_email +'</td>';
- 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
-		messagesHtml += '<td class="date">'+value.date +'</td>';
-		messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
-		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
-	});
-	cj('#imapper-messages-list').html(messagesHtml);
-	cj("#total_number").html(total_results);
-	makeListSortable();
+	if(messages == '' || messages == null){
+		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
+		cj("#total_number").html('0');
+	}else{
+		var messagesHtml = '';
+		var total_results =0;
+		cj.each(messages, function(key, value) {
+			total_results++;
+			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
+			if( value.from_name != ''){
+				messagesHtml += '<td class="name">'+value.from_name +'</td>';
+			}else {
+				messagesHtml += '<td class="name"> N/A </td>';
+			}
+			messagesHtml += '<td class="email">'+value.from_email +'</td>';
+	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
+			messagesHtml += '<td class="date">'+value.date +'</td>';
+			messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
+			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+		});
+		cj('#imapper-messages-list').html(messagesHtml);
+		cj("#total_number").html(total_results);
+		makeListSortable();
+	}
 }
 
 function buildActivitiesList() {
-	if(messages == '' || messages == null)
-		return;
-	var messagesHtml = '';
-	var total_results =0;
-	cj.each(messages, function(key, value) {
-		total_results++;
- 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
-		if( value.fromName != ''){
-			messagesHtml += '<td class="name">'+value.fromName +'</td>';
-		}else {
-			messagesHtml += '<td class="name"> N/A </td>';
-		}
-		messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
-		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
-		messagesHtml += '<td class="date">'+value.date +'</td>';
-		messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
-		messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
-	});
-	cj('#imapper-messages-list').html(messagesHtml);
-	cj("#total_number").html(total_results);
-	makeListSortable();
+	if(messages == '' || messages == null){
+		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
+		cj("#total_number").html('0');
+	}else{
+		var messagesHtml = '';
+		var total_results =0;
+		cj.each(messages, function(key, value) {
+			total_results++;
+	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
+			if( value.fromName != ''){
+				messagesHtml += '<td class="name">'+value.fromName +'</td>';
+			}else {
+				messagesHtml += '<td class="name"> N/A </td>';
+			}
+			messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
+			messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
+			messagesHtml += '<td class="date">'+value.date +'</td>';
+			messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
+			messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+		});
+		cj('#imapper-messages-list').html(messagesHtml);
+		cj("#total_number").html(total_results);
+		makeListSortable();
+	}
 }
 
 
 function buildContactList() {
 	var contactsHtml = '';
 	cj.each(contacts, function(key, value) {
-		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
+		var tall = 'nada';
+		// calculate the aprox age
+		if(value.birth_date){
+			tall = 'tallbox';
+			var date = new Date();
+			var year  = date.getFullYear();
+			var birth_year = value.birth_date.substring(0,4);
+			var age = year - birth_year;
+		}
+
+		contactsHtml += '<div class="imapper-contact-box '+ tall +'" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
 		contactsHtml += '</div>';
 		contactsHtml += '<div class="imapper-address-box">';
 		contactsHtml += value.display_name + '<br />';
+		if(value.birth_date){
+			contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br />';
+		}
 		contactsHtml += value.street_address + '<br />';
 		contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code;
 		contactsHtml += '</div></div>';
 		contactsHtml += '<div class="clear"></div>';
 	});
 	cj('#imapper-contacts-list').append(contactsHtml);
+
 }
 
 

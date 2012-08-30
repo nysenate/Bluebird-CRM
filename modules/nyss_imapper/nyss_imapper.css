@@ -145,9 +145,15 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 
 .imapper-contact-box {
 	background-color: #eeeeee;
-	height: 60px;
 	margin-bottom: 4px;
+	padding: 4px 0;
+	height: 60px;
+
 }
+.imapper-contact-box.tallbox{ 
+	height: 80px;
+}
+
 
 .imapper-contact-box:hover {
 	cursor: pointer;
@@ -157,10 +163,11 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 	height: 16px;
 	width: 20px;
 	float: left;
-	padding-top: 14px;
-	padding-bottom: 14px;
+	padding: 15px 0px;
 }
-
+.imapper-contact-box.tallbox .imapper-address-select-box { 
+	padding: 25px 0px;
+}
 .imapper-address-box {
 	float: left;
 	width: 230px;

@@ -281,6 +281,7 @@ class CRM_IMAP_AJAX {
      * Returns: None.
      * This function will grab the inputs from the GET variable and
      * do a search for contacts and return them as a JSON object.
+     * Only returns Records with Primary emails & addresse (so no dupes)
      */
     public static function getContacts() {
         $start = microtime(true);
@@ -301,11 +302,13 @@ FROM civicrm_contact AS contact
   JOIN civicrm_email as email ON email.contact_id=contact.id
 WHERE contact.is_deleted=0
   AND state.id='$state_id'
-  AND address.city LIKE '%$city%'
-  AND contact.first_name LIKE '%$first_name%'
-  AND contact.last_name LIKE '%$last_name%'
-  AND address.street_address LIKE '%$street_address%'
-  AND email.email LIKE '%$email_address%'
+  AND address.is_primary = '1'
+  AND email.is_primary = '1'
+  AND address.city LIKE '$city%'
+  AND contact.first_name LIKE '$first_name%'
+  AND contact.last_name LIKE '$last_name%'
+  AND address.street_address LIKE '$street_address%'
+  AND email.email LIKE '$email_address%'
   AND phone.phone LIKE '%$phone%'
 ORDER BY contact.sort_name
 EOQ;
@@ -577,8 +580,8 @@ EOQ;
             $results[] = $row;
         }
         echo json_encode($result);
+        mysql_close(self::$db);
         CRM_Utils_System::civiExit();
-
     }
 
     // remove the activity tag
@@ -601,6 +604,8 @@ EOQ;
             $results[] = $row;
         }
         echo json_encode($result);
+        mysql_close(self::$db);
+
         CRM_Utils_System::civiExit();
 
     }
@@ -644,6 +649,7 @@ EOQ;
         }
 
         echo json_encode($results);
+        mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
 
@@ -667,6 +673,7 @@ EOQ;
         }
         $final_results = array('items'=> $results);
         echo json_encode($final_results);
+        mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
 
