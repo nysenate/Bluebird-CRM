@@ -26,9 +26,37 @@
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
 <script src="/sites/default/themes/rayCivicrm/scripts/bbtree.js" type="text/javascript"></script>
-{/literal}
-{literal}
+<style>
+.crm-tagGroup-accordion #crm-tagListWrap {
+	display:none;
+}
+.crm-tagGroupsList div.label, .crm-tagList div.label {
+	cursor:pointer;
+}
+.crm-tagGroupsList div.label div.arrow, .crm-tagList div.label div.arrow {
+	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png') no-repeat -32px -15px;
+	height: 16px;
+	width: 15px;
+	float: left;
+	margin: 0px 5px 0 0px;
+}
+.crm-tagGroupsList div.label div.arrow.open, .crm-tagList div.label div.open {
+	background-position:-64px -15px;
+}
+.BBtree.edit.contact .fCB {
+	display:block;
+}
+</style>
 <script type="text/javascript">
+function rollDownGroup(tag){
+	if(cj(tag + ' div.label div.arrow').hasClass('open'))
+	{
+		cj(tag + ' div.label div.arrow').removeClass('open');
+	} else {
+		cj(tag + ' div.label div.arrow').addClass('open');
+	}
+	cj(tag + ' #crm-tagListWrap').toggle('fast');
+}
 var cidpre = /cid=\d*/.exec(document.location.search);
 var cidsplit = /\d.*/.exec(cidpre);
 if(cidsplit != null){
@@ -124,41 +152,53 @@ function findIDLv(tagLabel) {
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
+
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
-	<tr>
+	
 	    {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-		<td width={cycle name=tdWidth values="70%","30%"}><span class="label">{if $title}{$form.$key.label}{/if}</span>
-		    <div id="crm-tagListWrap">
-		    {if $key eq 'tag'}
-		    	<div class="BBtree edit">
-			
-			</div>
-		    {else}
-		    <table id="crm-tagGroupTable">
-			{foreach key=k item=it from=$form.$key}
-			    {if $k|is_numeric}
-				<tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
-				    <td>
-                   			<strong>{$it.html}</strong><br /> {*LCD retain for groups list*}
-					{if $item.$k.description}
-					    <div class="description">
-						{$item.$k.description}
-					    </div>
-					{/if}
-				    </td>
-				</tr>
-			    {/if}
-			{/foreach}   
-		    </table>
-		    </div>
-		    {/if}
-		</td>
+		
+			{if $key eq 'tag'}
+			<tr>
+				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
+				    <div id="crm-tagListWrap">
+					    <div class="BBtree edit contact">	
+						</div>
+						<div class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</div>
+					</div>
+					
+				</td>
+			</tr>
+			{/if}
+			{if $key eq 'group'}
+			<tr>
+				<td width="100%" class="crm-tagGroupsList"><div class="label" onClick="rollDownGroup('.crm-tagGroupsList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
+				    <div id="crm-tagListWrap">
+					    <table id="crm-tagGroupTable">
+						{foreach key=k item=it from=$form.$key}
+						    {if $k|is_numeric}
+							<tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
+							    <td>
+			                   			<strong>{$it.html}</strong><br /> {*LCD retain for groups list*}
+								{if $item.$k.description}
+								    <div class="description">
+									{$item.$k.description}
+								    </div>
+								{/if}
+							    </td>
+							</tr>
+						    {/if}
+						{/foreach}   
+					    </table>
+				    </div>
+				</td>
+			</tr>
+			<tr></tr>
+			{/if}
 		{/if}
 	    {/foreach}
-	</tr>
-	<tr><td colspan="2" class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</td></tr>
+	
     </table>   
 {if $title}
  </div><!-- /.crm-accordion-body -->

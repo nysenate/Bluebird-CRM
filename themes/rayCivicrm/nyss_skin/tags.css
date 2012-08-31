@@ -182,41 +182,60 @@ margin:0;
 .BBtree.manage dl.lv-0{
 	margin-left:-25px;
 }
-.BBtree.edit dt.lv-0{
-	width:295px !important;
-}
+
 .BBtree.edit.tab dl.lv-0{
+	width:295px !important;
 	margin-left:-25px;
 }
-.BBtree.edit dl.lv-1{
-	width:285px !important;
+.BBtree.contact.edit dt {
+	position:relative;
 }
-.BBtree.edit dt.lv-1{
-	width:285px !important;
+.BBtree.contact.edit dt .tag{
+	margin-left:35px !important;
 }
-.BBtree.edit dl.lv-2{
-	width:275px !important;
+.BBtree.contact.edit dt.lv-0 .tag{
+	margin-left:20px !important;
 }
-.BBtree.edit dt.lv-2{
-	width:275px !important;
+.BBtree.contact.edit dt .treeButton {
+	position:absolute;
 }
-.BBtree.edit dl.lv-3{
-	width:265px !important;
+.BBtree.contact.edit dt .fCB {
+	position:absolute;
+	left:15px;
+	top:0px;
 }
-.BBtree.edit dt.lv-3{
-	width:265px !important;
+.BBtree.contact.edit dt.lv-0{
+	width:524px !important;
 }
-.BBtree.edit dl.lv-4{
-	width:255px !important;
+.BBtree.contact.edit dl.lv-1{
+	width:515px !important;
 }
-.BBtree.edit dt.lv-4 {
-	width:255px !important;
+.BBtree.contact.edit dt.lv-1{
+	width:513px !important;
 }
-.BBtree.edit dl.lv-5{
-	width:245px !important;
+.BBtree.contact.edit dl.lv-2{
+	width:506px !important;
 }
-.BBtree.edit dt.lv-5{
-	width:245px !important;
+.BBtree.contact.edit dt.lv-2{
+	width:504px !important;
+}
+.BBtree.contact.edit dl.lv-3{
+	width:497px !important;
+}
+.BBtree.contact.edit dt.lv-3{
+	width:495px !important;
+}
+.BBtree.contact.edit dl.lv-4{
+	width:498px !important;
+}
+.BBtree.contact.edit dt.lv-4 {
+	width:496px !important;
+}
+.BBtree.contact.edit dl.lv-5{
+	width:489px !important;
+}
+.BBtree.contact.edit dt.lv-5{
+	width:497px !important;
 }
 .BBtree.tab dt.lv-0{
 	width:520px !important;
@@ -346,4 +365,7 @@ width: 558px;
 .BBtree.manage .tag span.entityCount {
 	margin-left:5px;
 	font-weight:bold;
+}
+.BBtree.edit .tag span.entityCount {
+	display:none;
 }
