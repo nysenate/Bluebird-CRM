@@ -370,8 +370,8 @@ COLS;
         $sqlStmt   .= "NEW.$column, ";
                 $deleteSQL .= "OLD.$column, ";
             }
-      $sqlStmt   .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}, @jobID');";
-      $deleteSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}, @jobID');";
+      $sqlStmt   .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);";
+      $deleteSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);";
 
       $sqlStmt   .= "END IF;";
       $deleteSQL .= "END IF;";
