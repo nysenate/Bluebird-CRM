@@ -130,7 +130,4 @@ sql="UPDATE civicrm_dashboard_contact SET content=null;"
   $execSql -i $instance -c "$sql"
 )
 
-echo "Fixing permissions"
-$script_dir/fixPermissions.sh
-
 exit 0
