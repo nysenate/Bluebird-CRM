@@ -17,7 +17,7 @@
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
 # Use Bluebird custom maintenance pages within our own custom theme.
-$conf['maintenance_theme'] = 'Garland';
+$conf['maintenance_theme'] = 'Bluebird';
 
 $bbconfig = get_bluebird_instance_config();
 //echo '<pre>';print_r($bbconfig);echo '</pre>';
@@ -97,21 +97,11 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
   $db_prefix = $_SERVER['HTTP_USER_AGENT'];
 }
 
-# Cacherouter: Try to use APC for all local caching
-$cache_engine = 'db';
-if (function_exists("apc_fetch")) {
-  $cache_engine = 'apc';
-}
-$conf['cache_inc'] = './sites/all/modules/cacherouter/cacherouter.inc';
-$conf['cacherouter'] = array(
-  'default' => array(
-    'engine' => $cache_engine,
-    'shared' => FALSE,
-    'prefix' => $bbconfig['servername'],
-    'static' => FALSE,
-    'fast_cache' => TRUE,
-  ),
-);
+# Try to use APC for all local caching
+$conf['cache_backends'] = array('sites/all/modules/apc/drupal_apc_cache.inc');
+$conf['cache_class_cache'] = 'DrupalAPCCache';
+$conf['cache_class_cache_bootstrap'] = 'DrupalAPCCache';
+//$conf['apc_show_debug'] = TRUE;  // Remove the slashes to use debug mode.
 
 # Varnish reverse proxy on localhost
 $conf['reverse_proxy'] = TRUE;           

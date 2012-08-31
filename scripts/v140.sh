@@ -104,6 +104,7 @@ $drush $instance en ldap_servers -y
 $drush $instance en ldap_authorization -y
 $drush $instance en ldap_authentication -y
 $drush $instance en ldap_authorization_drupal_role -y
+$drush $instance en apc -y
 
 ## enable civicrm modules
 echo "make sure civicrm and nyss modules are enabled..."
