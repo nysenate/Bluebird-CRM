@@ -137,3 +137,6 @@ switch ($memLimitUnit) {
 if ($memLimit >= 0 and $memLimit < 67108864) {
     ini_set('memory_limit', '1000M');
 }
+
+require_once 'CRM/Core/ClassLoader.php';
+CRM_Core_ClassLoader::singleton()->register();
