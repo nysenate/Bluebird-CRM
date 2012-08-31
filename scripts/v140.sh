@@ -68,7 +68,7 @@ SELECT trigger_name
 FROM information_schema.triggers
 WHERE trigger_schema = '$cdb'
 AND trigger_name LIKE 'civicrm_%';"
-triggers=`$execSql -c "$triggersql"`
+triggers=`$execSql -c "$triggersql"` -q
 
 echo "removing triggers..."
 for trigger in $triggers; do
@@ -91,6 +91,18 @@ $execSql -i $instance -c "$cmod" --drupal
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
+## enable modules
+echo "enabling other modules for: $instance"
+$drush $instance en userprotect -y
+$drush $instance en entity -y
+$drush $instance en entity_token -y
+$drush $instance en rules -y
+$drush $instance en rules_admin -y
+$drush $instance en apachesolr -y
+$drush $instance en apachesolr_search -y
+$drush $instance en ldap_servers -y
+$drush $instance en ldap_authorization -y
+
 ## enable civicrm modules
 echo "make sure civicrm and nyss modules are enabled..."
 $drush $instance dis civicrm -y
@@ -108,16 +120,11 @@ $drush $instance en nyss_mail -y
 $drush $instance en nyss_massmerge -y
 $drush $instance en nyss_sage -y
 $drush $instance en nyss_tags -y
+$drush $instance en nyss_civihooks -y
 
-## enable modules
-echo "enabling other modules for: $instance"
-$drush $instance en userprotect -y
-$drush $instance en rules -y
-$drush $instance en rules_admin -y
-$drush $instance en apachesolr -y
-$drush $instance en apachesolr_search -y
-$drush $instance en ldap_servers -y
-$drush $instance en ldap_authorization -y
+## reenable logging
+echo "re-enable civicrm logging..."
+php ../civicrm/scripts/enableLogging.php -S $instance
 
 ## set theme
 echo "setting theme for: $instance"
