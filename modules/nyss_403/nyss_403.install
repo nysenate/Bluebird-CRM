@@ -1,0 +1,32 @@
+<?php
+// $Id$
+/**
+ * @file nyss_403.module
+ * Creates Custom 403 page, and then adds that as default 403 url
+ */
+
+/**
+ * Implementation of hook_update().
+ */
+
+
+
+function nyss_403_install() {
+  $newnode = new stdClass();
+  $newnode->title = 'Please Login';
+  $newnode->body = '';
+
+  global $user;
+
+  $newnode->uid = $user->uid;
+  $newnode->name = $user->name;
+  $newnode->type = 'page';
+  $newNode->format = 2;     // 1 means filtered html, 2 means full html, 3 is php
+  $newnode->status = 1;     // 1 means published
+  $newnode->promote = 0;
+  $newnode = node_submit( $newnode );
+  node_save( $newnode ); 
+
+  variable_set('site_403', 'node/1');
+
+}
