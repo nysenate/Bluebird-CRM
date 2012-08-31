@@ -102,6 +102,8 @@ $drush $instance en apachesolr -y
 $drush $instance en apachesolr_search -y
 $drush $instance en ldap_servers -y
 $drush $instance en ldap_authorization -y
+$drush $instance en ldap_authentication -y
+$drush $instance en ldap_authorization_drupal_role -y
 
 ## enable civicrm modules
 echo "make sure civicrm and nyss modules are enabled..."
@@ -162,6 +164,24 @@ echo "change district info config settings"
 distinfo="UPDATE civicrm_custom_group SET collapse_display = 0 WHERE name = 'District_Information';"
 $execSql -i $instance -c "$distinfo" -q
 
+## transfer ldap settings to new module
+echo "transfer LDAP settings to new module..."
+ldapa="
+INSERT INTO ldap_authorization (numeric_consumer_conf_id, sid, consumer_type, consumer_module, `status`, only_ldap_authenticated, derive_from_dn, derive_from_dn_attr, derive_from_attr, derive_from_attr_attr, derive_from_attr_use_first_attr, derive_from_attr_nested, derive_from_entry, derive_from_entry_nested, derive_from_entry_entries, derive_from_entry_entries_attr, derive_from_entry_attr, derive_from_entry_search_all, derive_from_entry_use_first_attr, derive_from_entry_user_ldap_attr, mappings, use_filter, synch_to_ldap, synch_on_logon, revoke_ldap_provisioned, create_consumers, regrant_ldap_provisioned) VALUES
+(1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, '', 0, '', 0, 0, 1, 0, 'cn=CRMAnalytics\ncn=CRMAdministrator\ncn=CRMOfficeAdministrator\ncn=CRMOfficeDataEntry\ncn=CRMOfficeManager\ncn=CRMOfficeStaff\ncn=CRMOfficeVolunteer\ncn=CRMPrintProduction\ncn=CRMSOS\ncn=SenatorTest', 'cn', 'member', 0, 0, 'dn', 'cn=CRMAnalytics|Analytics User\ncn=CRMAdministrator|Administrator\ncn=CRMOfficeAdministrator|Office Administrator\ncn=CRMOfficeDataEntry|Data Entry\ncn=CRMOfficeManager|Office Manager\ncn=CRMOfficeStaff|Staff\ncn=CRMOfficeVolunteer|Volunteer\ncn=CRMPrintProduction|Print Production\ncn=CRMSOS|SOS\ncn=CRMDConferenceServices|Conference Services\ncn=CRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
+"
+$execSql -i $instance -c "$ldapa" --drupal -q
+
+ldaps="
+INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, port, tls, bind_method, binddn, bindpw, basedn, user_attr, account_name_attr, mail_attr, mail_template, allow_conflicting_drupal_accts, unique_persistent_attr, user_dn_expression, ldap_to_drupal_user, testing_drupal_username, group_object_category, search_pagination, search_page_size, weight) VALUES
+('nyss_ldap', 1, 'NY Senate LDAP Server', 1, 'default', 'webmail.nysenate.gov', 389, 0, 1, 'dn', 'dn', 'a:1:{i:0;s:8:"o=senate";}', 'cn', '', 'mail', '', 0, '', '', '', '', '', 0, 1000, 0);
+"
+$execSql -i $instance -c "$ldaps" --drupal -q
+
+$execSql -i $instance -c "DROP TABLE ldapauth;" --drupal -q
+
+ldapr="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
+$execSql -i $instance -c "$ldapr" --drupal -q
 
 ### Cleanup ###
 
