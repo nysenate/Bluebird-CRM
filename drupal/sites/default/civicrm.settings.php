@@ -23,6 +23,10 @@ if ($bbconfig == null) {
   die("Unable to properly bootstrap the CiviCRM module.\n");
 }
 
+if ( $bbconfig['install_class'] == 'dev' ) {
+  define('CIVICRM_DEBUG_LOG_QUERY', TRUE);
+}
+
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
