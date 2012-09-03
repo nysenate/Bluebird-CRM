@@ -98,9 +98,9 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
 }
 
 # Try to use APC for all local caching
-$conf['cache_backends'] = array('sites/all/modules/apc/drupal_apc_cache.inc');
-$conf['cache_class_cache'] = 'DrupalAPCCache';
-$conf['cache_class_cache_bootstrap'] = 'DrupalAPCCache';
+//$conf['cache_backends'] = array('sites/all/modules/apc/drupal_apc_cache.inc');
+//$conf['cache_class_cache'] = 'DrupalAPCCache';
+//$conf['cache_class_cache_bootstrap'] = 'DrupalAPCCache';
 //$conf['apc_show_debug'] = TRUE;  // Remove the slashes to use debug mode.
 
 # Varnish reverse proxy on localhost
