@@ -125,8 +125,6 @@ class CRM_Core_IDS {
     exceptions[]        = instructions
     exceptions[]        = suggested_message
     exceptions[]        = page_text
-    exceptions[]        = activity_include
-    exceptions[]        = activity_exclude
 ";
 	//NYSS - added details to exceptions
 	
