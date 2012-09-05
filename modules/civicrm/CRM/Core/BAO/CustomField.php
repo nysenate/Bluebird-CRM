@@ -1528,9 +1528,6 @@ class CRM_Core_BAO_CustomField extends CRM_Core_DAO_CustomField {
       !$customFields[$customFieldId]['is_multiple'] &&
       $entityId
     ) {
-      //get the entity table for the custom field
-      $entityTable = CRM_Core_BAO_CustomQuery::$extendsMap[$customFieldExtend];
-
       $query = "
 SELECT id
   FROM $tableName

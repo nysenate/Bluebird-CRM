@@ -1041,7 +1041,7 @@ class CRM_Utils_Date {
               $from['M'] = (3 * $quarter) - 2;
               $to['M']   = 3 * $quarter;
               $to['Y']   = $from['Y'] = $now['year'] - $subtractYear;
-              $to['d']   = date('t', mktime(0, 0, 0, $to['M'], 1, $to['Y'])); 
+              $to['d']   = date('t', mktime(0, 0, 0, $to['M'], 1, $to['Y']));
               break;
 
             case 'previous_before':
@@ -1056,7 +1056,7 @@ class CRM_Utils_Date {
                 $from['M'] = (3 * $quarter) - 2;
                 $to['M']   = 3 * $quarter;
                 $to['Y']   = $from['Y'] = $now['year'] - $subtractYear;
-                $to['d']   = date('t', mktime(0, 0, 0, $to['M'], 1, $to['Y'])); 
+                $to['d']   = date('t', mktime(0, 0, 0, $to['M'], 1, $to['Y']));
                 break;
 
               case 'previous_2':
@@ -1434,7 +1434,7 @@ class CRM_Utils_Date {
                                         $format = $values['date_format'];
                                       }
 
-                                      if ($values['time_format']) {
+                                      if (isset($values['time_format'])) {
                                         $timeFormat = $values['time_format'];
                                       }
                                     }
@@ -1444,8 +1444,8 @@ class CRM_Utils_Date {
                                     // note that for date display we dynamically create text field
                                     /*
         if ( !$format ) {
-           $format = $config->dateInputFormat; 
-        }     
+           $format = $config->dateInputFormat;
+        }
 
         // get actual format
         $actualPHPFormats = CRM_Core_SelectValues::datePluginToPHPFormats( );

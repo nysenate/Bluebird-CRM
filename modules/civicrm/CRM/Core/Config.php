@@ -633,10 +633,17 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
     // clear db caching
     $this->clearDBCache();
 
-    CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
-
     $session = CRM_Core_Session::singleton();
     $session->reset(2);
+  }
+
+  /**
+   * Flush information about loaded modules
+   */
+  function clearModuleList() {
+    CRM_Utils_Hook::singleton(TRUE);
+    CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
+    CRM_Core_Module::getAll(TRUE);
   }
 
   /**

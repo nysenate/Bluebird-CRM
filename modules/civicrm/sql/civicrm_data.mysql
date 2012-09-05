@@ -4621,7 +4621,7 @@ VALUES
    (@option_group_id_act, 'Canvass',                            29, 'Canvass', NULL,0, 0, 28, '', 0, 1, 1, @campaignCompId, NULL),
    (@option_group_id_act, 'PhoneBank',                          30, 'PhoneBank', NULL,0, 0, 29, '', 0, 1, 1, @campaignCompId, NULL),
    (@option_group_id_act, 'WalkList',                           31, 'WalkList', NULL,0, 0, 30, '', 0, 1, 1, @campaignCompId, NULL),
-   (@option_group_id_act, 'Petition',                           32, 'Petition', NULL,0, 0, 31, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Petition Signature',                 32, 'Petition', NULL,0, 0, 31, '', 0, 1, 1, @campaignCompId, NULL),
    (@option_group_id_act, 'BULK SMS',                           34, 'BULK SMS',         NULL, 1, NULL, 34, 'BULK SMS',                                                    0, 1, 1, NULL, NULL),
 
 -- Activity Types for CiviCampaign CiviCase
@@ -4856,12 +4856,9 @@ VALUES
   (@option_group_id_report, 'Survey Report (Detail)',    'survey/detail', 'CRM_Report_Form_Campaign_SurveyDetails',  NULL, 0, NULL, 43, 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 0, 0, 1, @campaignCompId, NULL),
   (@option_group_id_report, 'Personal Campaign Page Report', 'contribute/pcp', 'CRM_Report_Form_Contribute_PCP', NULL, 0, NULL, 44, 'Summarizes amount raised and number of contributors for each Personal Campaign Page.', 0, 0, 1, @contributeCompId, NULL),
   (@option_group_id_report , 'Pledge Summary Report', 'pledge/summary', 'CRM_Report_Form_Pledge_Summary', NULL, 0, NULL, 45, 'Summary of pledges including amount pledged, pledge status, next payment date, balance due, total amount paid etc.', 0, 0, 1, @pledgeCompId, NULL),
-  (@option_group_id_report , 'Contribution History By Relationship Report',                   'contribute/history',              'CRM_Report_Form_Contribute_History',              NULL, 0, NULL, 46,  'List contact\\\'s donation history, grouped by year, along with contributions attributed to any of the contact\\\'s related contacts.', 0, 0, 1, @contributeCompId, NULL),
+  (@option_group_id_report , 'Contribution History By Relationship Report',                   'contribute/history',              'CRM_Report_Form_Contribute_History',              NULL, 0, NULL, 46,  'List contact\'s donation history, grouped by year, along with contributions attributed to any of the contact\'s related contacts.', 0, 0, 1, @contributeCompId, NULL),
   (@option_group_id_report,  'Mail Detail Report',                                            'mailing/detail',     'CRM_Report_Form_Mailing_Detail',          NULL, 0, NULL, 47,  'Provides reporting on Intended and Successful Deliveries, Unsubscribes and Opt-outs, Replies and Forwards.',   0, 0, 1, @mailCompId, NULL),
   (@option_group_id_report, 'Contribution and Membership Details', 'member/contributionDetail', 'CRM_Report_Form_Member_ContributionDetail', NULL, 0, NULL, 48, 'Contribution details for any type of contribution, plus associated membership information for contributions which are in payment for memberships.', 0, 0, 1, @memberCompId, NULL),
-  (@option_group_id_report, 'Price Set Line Item report', 'price/lineitem', 'CRM_Report_Form_Price_Lineitem', NULL, 0, NULL, 49, 'Price Set Line Item report', 0, 0, 1, @contributeCompId, NULL),
-  (@option_group_id_report, 'Contribution Report with Price Set detail', 'price/contributionbased', 'CRM_Report_Form_Price_Contributionbased', NULL, 0, NULL, 50, 'Contribution Report with Price Set detail', 0, 0, 1, @contributeCompId, NULL),
-  (@option_group_id_report, 'Participant Report with Price Set detail', 'price/lineitemparticipant', 'CRM_Report_Form_Price_Lineitemparticipant', NULL, 0, NULL, 51, 'Participant Report with Price Set detail', 0, 0, 1, @eventCompId, NULL),
 
   (@option_group_id_acs, 'Scheduled',  1, 'Scheduled',  NULL, 0, 1,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Completed',  2, 'Completed',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
@@ -5758,11 +5755,11 @@ VALUES
 INSERT INTO civicrm_uf_field
        ( uf_group_id, field_name,              is_required, is_reserved, weight, visibility,                  in_selector, is_searchable, location_type_id, label,                                         		field_type,    help_post, phone_type_id ) VALUES
        (  1,           'first_name',            1,           0,           1,      'User and User Admin Only', 0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
-       (  1,           'last_name',             1,           0,           2,      'User and User Admin Only', 0,           0,             NULL,             'Last Name',             		'Individual',  'First and last name will be shared with other visitors to the site.',  NULL),
+       (  1,           'last_name',             1,           0,           2,      'User and User Admin Only', 0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
        (  1,           'street_address',        0,           0,           3,      'User and User Admin Only',  0,           0,             1,                'Street Address (Home)', 		'Contact',     NULL,  NULL),
        (  1,           'city',                  0,           0,           4,      'User and User Admin Only',  0,           0,             1,                'City (Home)',           		'Contact',     NULL,  NULL),
        (  1,           'postal_code',           0,           0,           5,      'User and User Admin Only',  0,           0,             1,                'Postal Code (Home)',    		'Contact',     NULL,  NULL),
-       (  1,           'country',               0,           0,           6,      'User and User Admin Only', 0,           0,             1,                'Country (Home)',        		'Contact',     'Your state/province and country of residence will be shared with others so folks can find others in their community.',  NULL),
+       (  1,           'country',               0,           0,           6,      'User and User Admin Only', 0,           0,             1,                'Country (Home)',        		'Contact',     NULL,  NULL),
        (  1,           'state_province',        0,           0,           7,      'User and User Admin Only', 0,           0,             1,                'State (Home)',          		'Contact',     NULL,  NULL),
        (  2,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
        (  2,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
@@ -18490,7 +18487,7 @@ INSERT INTO civicrm_setting
   ( domain_id, contact_id, is_domain, group_name, name, value )
 VALUES
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_view_options', 's:28:"123456789101113";' ),
-  ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_edit_options', 's:25:"1234567891011";' ),
+  ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_edit_options', 's:22:"12345678911";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'advanced_search_options', 's:46:"123456789101112131516171819";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'user_dashboard_options', 's:15:"1234578";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'address_options', 's:23:"123456891011";' ),
@@ -18538,7 +18535,8 @@ VALUES
   ( @domainID, NULL, 1, 'Directory Preferences', 'extensionsDir'      , NULL ),
   ( @domainID, NULL, 1, 'URL Preferences', 'userFrameworkResourceURL' , NULL ),
   ( @domainID, NULL, 1, 'URL Preferences', 'imageUploadURL'           , NULL ),
-  ( @domainID, NULL, 1, 'URL Preferences', 'customCSSURL'             , NULL );
+  ( @domainID, NULL, 1, 'URL Preferences', 'customCSSURL'             , NULL ),
+  ( @domainID, NULL, 1, 'URL Preferences', 'extensionsURL'            , NULL );
 
 -- mail settings 
 
@@ -19447,4 +19445,4 @@ INSERT INTO civicrm_navigation
 VALUES
     ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mailing Detail Report', 'Mailing Detail Report', 'administer CiviMail', 'OR', @reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
- UPDATE civicrm_domain SET version = '4.2.beta5';
+ UPDATE civicrm_domain SET version = '4.2.0';

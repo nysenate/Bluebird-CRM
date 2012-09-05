@@ -34,27 +34,34 @@
  *
  */
 class CRM_Utils_Hook_Drupal6 extends CRM_Utils_Hook {
+
+  /**
+   * @var bool
+   */
+  private $first = FALSE;
+
+  /**
+   * @var array(string)
+   */
+  private $allModules = array();
+
   function invoke($numParams,
     &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
     $fnSuffix
   ) {
-        static $first = false;
-        static $allModules = array( );
+    if (! $this->first || empty($this->allModules)) {
+      $this->first = true;
 
-        if ( ! $first ||
-             empty( $allModules ) ) {
-            $first = true;
+      // copied from user_module_invoke
+      if (function_exists('module_list')) {
+        $this->allModules =  module_list();
+      }
 
-            // copied from user_module_invoke
-            if (function_exists('module_list')) {
-              $allModules =  module_list();
-            }
+      $this->requireCiviModules($this->allModules);
+    }
 
-            $this->requireCiviModules( $allModules );
-          }
-
-        return $this->runHooks( $allModules, $fnSuffix,
-                                $numParams, $arg1, $arg2, $arg3, $arg4, $arg5 );
-        }
+    return $this->runHooks($this->allModules, $fnSuffix,
+                           $numParams, $arg1, $arg2, $arg3, $arg4, $arg5);
+  }
 }
 

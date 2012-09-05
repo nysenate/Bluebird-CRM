@@ -61,8 +61,7 @@ class CRM_Utils_Time {
    *
    * @return int, seconds since epoch
    */
-  static
-  function getTimeRaw() {
+  static function getTimeRaw() {
     return time() + self::$_delta;
   }
 
@@ -76,8 +75,7 @@ class CRM_Utils_Time {
    *
    * @static
    */
-  static
-  function setTime($newDateTime, $returnFormat = 'YmdHis') {
+  static function setTime($newDateTime, $returnFormat = 'YmdHis') {
     self::$_delta = strtotime($newDateTime) - time();
     return self::getTime($returnFormat);
   }
@@ -85,8 +83,7 @@ class CRM_Utils_Time {
   /**
    * Remove any time overrides
    */
-  static
-  function resetTime() {
+  static function resetTime() {
     self::$_delta = 0;
   }
 }

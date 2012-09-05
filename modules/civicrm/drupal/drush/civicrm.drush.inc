@@ -205,6 +205,9 @@ function civicrm_drush_command() {
   return $items;
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-install'
+ */
 function drush_civicrm_install_validate() {
   // TODO: Replace these with required options (Drush 5).
   // TODO: Consider reusing the db-url parsing in site-install.
@@ -230,6 +233,10 @@ function drush_civicrm_install_validate() {
   return TRUE;
 }
 
+
+/**
+ * Implementation of command 'civicrm-install'
+ */
 function drush_civicrm_install() {
   $dbuser = drush_get_option('dbuser', FALSE);
   $dbpass = drush_get_option('dbpass', FALSE);
@@ -454,6 +461,9 @@ function civicrm_drush_help($section) {
   }
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-upgrade-db'
+ */
 function drush_civicrm_upgrade_db_validate() {
   if (!defined('CIVICRM_UPGRADE_ACTIVE')) {
     define('CIVICRM_UPGRADE_ACTIVE', 1);
@@ -491,6 +501,9 @@ function drush_civicrm_upgrade_db_validate() {
   return TRUE;
 }
 
+/**
+ * Implementation of command 'civicrm-upgrade-db'
+ */
 function drush_civicrm_upgrade_db() {
   if (class_exists('CRM_Upgrade_Headless')) {
     // Note: CRM_Upgrade_Headless introduced in 4.2 -- at the same time as class auto-loading
@@ -522,10 +535,17 @@ function drush_civicrm_upgrade_db() {
   }
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-update-cfg'
+ */
 function drush_civicrm_update_cfg_validate() {
   return _civicrm_init();
 }
 
+
+/**
+ * Implementation of command 'civicrm-update-cfg'
+ */
 function drush_civicrm_update_cfg() {
   $defaultValues = array();
   $states = array('old', 'new');
@@ -584,6 +604,9 @@ function drush_civicrm_cacheclear() {
   $session->reset(1);
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-enable-debug'
+ */
 function drush_civicrm_enable_debug_validate() {
   return _civicrm_init();
 }
@@ -598,6 +621,9 @@ function drush_civicrm_enable_debug() {
   drush_log(dt('Debug setting enabled.'), 'ok');
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-upgrade'
+ */
 function drush_civicrm_upgrade_validate() {
   // TODO: use Drush to download tarfile.
   // TODO: if tarfile is not specified, see if the code already exists and use that instead.
@@ -613,6 +639,9 @@ function drush_civicrm_upgrade_validate() {
   return _civicrm_init();
 }
 
+/**
+ * Implementation of command 'civicrm-upgrade'
+ */
 function drush_civicrm_upgrade() {
   global $civicrm_root;
 
@@ -676,6 +705,9 @@ function drush_civicrm_upgrade() {
   drush_log(dt("\nProcess completed."), 'completed');
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-restore'
+ */
 function drush_civicrm_restore_validate() {
   _civicrm_dsn_init();
 
@@ -699,6 +731,9 @@ function drush_civicrm_restore_validate() {
   return TRUE;
 }
 
+/**
+ * Implementation of command 'civicrm-restore'
+ */
 function drush_civicrm_restore() {
   $restore_dir = drush_get_option('restore-dir', FALSE);
   $restore_dir = rtrim($restore_dir, '/');
@@ -791,10 +826,16 @@ function drush_civicrm_restore() {
   _civicrm_dsn_close();
 }
 
+/**
+ * ?? for command 'civicrm-civimail'
+ */
 function drush_civicrm_civimail_cron() {
   civicrm_api('Mailing', 'Process', array('version' => 3));
 }
 
+/**
+ * Implementation of command 'civicrm-member-records'
+ */
 function drush_civicrm_member_records() {
   _civicrm_init();
 
@@ -817,6 +858,9 @@ function drush_civicrm_member_records() {
   include "bin/UpdateMembershipRecord.php";
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-rest' ('cvr')
+ */
 function drush_civicrm_rest_validate() {
   $query = drush_get_option('query', FALSE);
   if (!$query) {
@@ -826,6 +870,9 @@ function drush_civicrm_rest_validate() {
   return _civicrm_init();
 }
 
+/**
+ * Implementation of command 'civicrm-rest' ('cvr')
+ */
 function drush_civicrm_rest() {
   $query     = drush_get_option('query', FALSE);
   $query     = explode('&', $query);
@@ -857,46 +904,77 @@ function drush_civicrm_rest() {
   echo $rest->run($config);
 }
 
+
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-dump'
+ */
 function drush_civicrm_sqldump_validate() {
   return _civicrm_dsn_init();
 }
 
+/**
+ * Implementation of command 'civicrm-sql-dump'
+ */
 function drush_civicrm_sqldump() {
   drush_sql_dump_execute();
   _civicrm_dsn_close();
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-conf'
+ */
 function drush_civicrm_sql_conf_validate() {
   return _civicrm_dsn_init();
 }
 
+/**
+ * Implementation of command 'civicrm-sql-conf'
+ */
 function drush_civicrm_sql_conf() {
   drush_sql_conf();
   _civicrm_dsn_close();
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-connect'
+ */
 function drush_civicrm_sqlconnect_validate() {
   return _civicrm_dsn_init();
 }
 
+/**
+ * Implementation of command 'civicrm-sql-connect'
+ */
 function drush_civicrm_sqlconnect() {
   drush_sql_connect();
   _civicrm_dsn_close();
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-query'
+ */
 function drush_civicrm_sqlquery_validate() {
   _civicrm_dsn_init();
 }
 
+/**
+ * Implementation of command 'civicrm-sql-query'
+ */
 function drush_civicrm_sqlquery($query) {
   drush_sql_query($query);
   _civicrm_dsn_close();
 }
 
+/**
+ * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-cli'
+ */
 function drush_civicrm_sqlcli_validate() {
   return _civicrm_dsn_init();
 }
 
+/**
+ * Implementation of command 'civicrm-sql-cli'
+ */
 function drush_civicrm_sqlcli() {
   drush_sql_cli();
   _civicrm_dsn_close();
@@ -1023,6 +1101,8 @@ function _civicrm_get_crmpath() {
 
 /**
  * (Drush callback)
+ *
+ * Implementation of command 'civicrm-api'
  */
 function drush_civicrm_api() {
   $DEFAULTS = array('version' => 3);

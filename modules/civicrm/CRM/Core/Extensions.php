@@ -175,6 +175,22 @@ class CRM_Core_Extensions {
   }
 
   /**
+   * Get a list of all installed modules, including enabled and disabled ones
+   *
+   * @return array CRM_Core_Module
+   */
+  public function getModules() {
+    $result = array();
+    $dao = new CRM_Core_DAO_Extension();
+    $dao->type = 'module';
+    $dao->find();
+    while ($dao->fetch()) {
+      $result[] = new CRM_Core_Module($dao->full_name, $dao->is_active);
+    }
+    return $result;
+  }
+
+  /**
    * Populates variables containing information about extension.
    * This method is not supposed to call on object initialisation.
    *

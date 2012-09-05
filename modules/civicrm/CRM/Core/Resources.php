@@ -39,7 +39,7 @@
  */
 class CRM_Core_Resources {
   const DEFAULT_WEIGHT = 0;
-  const DEFAULT_REGION = 'html-header';
+  const DEFAULT_REGION = 'page-footer';
 
   /**
    * We don't have a container or dependency-injection, so use singleton instead

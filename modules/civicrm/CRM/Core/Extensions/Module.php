@@ -42,6 +42,7 @@ class CRM_Core_Extensions_Module {
 
   public function install() {
     self::commonInstall('install');
+    self::commonInstall('enable');
   }
 
   private function callHook($moduleName, $modulePath, $hookName) {
@@ -53,8 +54,6 @@ class CRM_Core_Extensions_Module {
   }
 
   private function commonInstall($type = 'install') {
-    CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
-
     $this->callHook($this->ext->file,
       $this->ext->path,
       $type
@@ -67,8 +66,6 @@ class CRM_Core_Extensions_Module {
   }
 
   private function commonUNInstall($type = 'uninstall') {
-    CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
-
     $this->callHook($this->ext->file,
       $this->ext->path,
       $type

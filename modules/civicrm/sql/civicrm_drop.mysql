@@ -162,6 +162,7 @@ DROP TABLE IF EXISTS `civicrm_payment_processor`;
 DROP TABLE IF EXISTS `civicrm_option_group`;
 DROP TABLE IF EXISTS `civicrm_navigation`;
 DROP TABLE IF EXISTS `civicrm_mapping`;
+DROP TABLE IF EXISTS `civicrm_managed`;
 DROP TABLE IF EXISTS `civicrm_mail_settings`;
 DROP TABLE IF EXISTS `civicrm_location_type`;
 DROP TABLE IF EXISTS `civicrm_job_log`;

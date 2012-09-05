@@ -236,12 +236,6 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
         echo "Failure: Could not find contribution page for contribution record: $contributionID<p>";
         exit();
       }
-
-      // get the payment processor id from contribution page
-      $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage',
-        $contribution->contribution_page_id,
-        'payment_processor_id'
-      );
     }
     else {
 
@@ -262,18 +256,9 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
         echo "Failure: Could not find event: $eventID<p>";
         exit();
       }
-
-      // get the payment processor id from contribution page
-      $paymentProcessorID = $event->payment_processor_id;
     }
 
-    if (!$paymentProcessorID) {
-      CRM_Core_Error::debug_log_message("Could not find payment processor for contribution record: $contributionID");
-      echo "Failure: Could not find payment processor for contribution record: $contributionID<p>";
-      exit();
-    }
-
-    return array($isTest, $component, $paymentProcessorID, $duplicateTransaction);
+    return array($isTest, $component, $duplicateTransaction);
   }
 
   /**
@@ -330,7 +315,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
         $DPStxnRef         = _xmlElement($response, 'DpsTxnRef');
         $qfKey             = _xmlElement($response, "TxnData1");
         $privateData       = _xmlElement($response, "TxnData2");
-        $component         = _xmlElement($response, "TxnData3");
+        list($component,$paymentProcessorID,)  =explode(',', _xmlElement($response, "TxnData3"));
         $amount            = _xmlElement($response, "AmountSettlement");
         $merchantReference = _xmlElement($response, "MerchantReference");
       }
@@ -351,7 +336,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
 
       $qfKey             = $rsp->getTxnData1();
       $privateData       = $rsp->getTxnData2();
-      $component         = $rsp->getTxnData3();
+      list($component,$paymentProcessorID)  = explode(',',$rsp->getTxnData3());
       $success           = $rsp->getSuccess();
       $authCode          = $rsp->getAuthCode();
       $DPStxnRef         = $rsp->getDpsTxnRef();
@@ -383,7 +368,7 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
 
     $transactionReference = $authCode . "-" . $DPStxnRef;
 
-    list($mode, $component, $paymentProcessorID, $duplicateTransaction) = self::getContext($privateData, $transactionReference);
+    list($mode, $component, $duplicateTransaction) = self::getContext($privateData, $transactionReference);
     $mode = $mode ? 'test' : 'live';
 
 

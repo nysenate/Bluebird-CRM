@@ -121,7 +121,7 @@ function runQuery(query) {
     var vars = [], hash,smarty = '',php = " array (version => \'3\',",json = "{  ", link ="";
     window.location.hash = query;
     $('#result').html('<i>Loading...</i>');
-    $.get(query,function(data) {
+    $.post(query,function(data) {
       $('#result').text(data);
     },'text');
     link="<a href='"+query+"' title='open in a new tab' target='_blank'>ajax query</a>&nbsp;";

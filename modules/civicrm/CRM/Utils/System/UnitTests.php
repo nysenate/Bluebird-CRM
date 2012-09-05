@@ -155,5 +155,9 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Drupal {
   function getUFLocale() {
     return NULL;
   }
+
+  function getModules() {
+    return array();
+  }
 }
 

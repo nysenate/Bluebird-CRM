@@ -12,17 +12,13 @@
  * The resulting array of results (which may have a different number
  * of items than the original view result) are then passed back
  * to the style plugin so they can be displayed in a calendar.
- *
- * Row plugins are specific to entity types. To create a row plugin
- * for other types of entities, this class can be extended or copied,
- * adjusting the parts that are specific to nodes.
  */
 
 /**
  * Plugin which creates a view on the resulting object
  * and formats it as a Calendar node.
  */
-class calendar_plugin_row_civicrm extends calendar_plugin_row_node {
+class calendar_plugin_row_civicrm extends calendar_plugin_row {
   // Basic properties that let the row style follow relationships.
   var $base_table = '';
   var $base_field = 'id';
@@ -32,7 +28,6 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row_node {
     }
     $this->base_table = $this->definition['base'][0];
   }
-
   function option_definition() {
     $options = parent::option_definition();
     $options['date_fields'] = array('default' => array());
@@ -66,43 +61,16 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row_node {
       '#description' => t('Set a hex color value (like #ffffff) to use in the calendar legend for each content type. Items with empty values will have no stripe in the calendar and will not be added to the legend.'),
     );
     $form['colors']['legend'] = array(
-      '#title' => t('Stripes'),
-      '#description' => t('Add stripes to calendar items.'),
-      '#type' => 'select',
-      '#options' => array('' => t('None')),
-      '#default_value' => $this->options['colors']['legend'],
+      '#type' => 'value',
+      '#value' => '',
     );
-    $colors = $this->options['colors']['calendar_colors_type'];
-    $type_names = node_type_get_names();
-    foreach ($type_names as $key => $name) {
-      $form['colors']['calendar_colors_type'][$key] = array(
-        '#title' => $name,
-        '#type' => 'textfield',
-        '#default_value' => isset($colors[$key]) ? $colors[$key] : '#ffffff',
-        '#size' => 7,
-        '#maxlength' => 7,
-        '#element_validate' => array('calendar_validate_hex_color'),
-        '#dependency' => array('edit-row-options-colors-legend' => array('type')),
-        '#prefix' => '<div class="calendar-colorpicker-wrapper">',
-        '#suffix' => '<div class="calendar-colorpicker"></div></div>',
-        '#attributes' => array('class' => array('edit-calendar-colorpicker')),
-        '#attached' => array(
-          // Add Farbtastic color picker.
-          'library' => array(
-            array('system', 'farbtastic'),
-          ),
-          // Add javascript to trigger the colorpicker.
-          'js' => array(drupal_get_path('module', 'calendar') . '/js/calendar_colorpicker.js'),
-        ),
-      );
-    }
   }
 
   function pre_render($values) {
 
     $ids = array();
     foreach ($values as $row) {
-      // Use the $nid as the key so we don't create more than one value per node.
+      // Use the $id as the key so we don't create more than one value per object.
       $id = $row->{$this->field_alias};
       $ids[$id] = $id;
     }
@@ -118,7 +86,7 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row_node {
       $dao->fetch();
       // Make sure no NULL records get through
       if (!empty($dao->{$this->definition['title field']})) {
-        $this->nodes[$dao->id] = $dao;
+        $this->entities[$dao->id] = $dao;
       }
       $dao->release();
     }
@@ -156,17 +124,14 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row_node {
   function render($row) {
     global $base_url;
     $date_info = $this->date_argument->view->date_info;
+    $id = $row->{$this->field_alias};
 
-    $nid = $row->{$this->field_alias};
-    if (!is_numeric($nid)) {
-      return;
+    if (!is_numeric($id)) {
+      return $rows;
     }
 
-    // Load the specified node:
-    // We have to clone this or nodes on other views on this page,
-    // like an Upcoming block on the same page as a calendar view,
-    // will end up acquiring the values we set here.
-    $node = clone($this->nodes[$nid]);
+    // Load the specified object:
+    $node = (object) $this->entities[$id];
     if (empty($node)) {
       return;
     }

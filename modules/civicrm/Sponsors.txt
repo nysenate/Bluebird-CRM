@@ -13,6 +13,7 @@ Anthony Camilleri
 Ariel Gold
 Brian Shaughnessy
 Chris Ward
+Dave Moreton
 Eileen McNaughton
 Eliet Henderson
 Erik Hommel
@@ -35,6 +36,8 @@ Matt Neimayer
 Micah Lee
 Michael Daryabeygi
 Michael McAndrew
+Nicolas Ganivet
+Noah Miller
 Parvez Saleh
 Peter Gehres
 Peter McAndrew

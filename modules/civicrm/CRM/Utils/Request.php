@@ -51,7 +51,8 @@ class CRM_Utils_Request {
 
   /**
    * class constructor
-   */ function __construct() {}
+   */ 
+  function __construct() {}
 
   /**
    * get the variable information from the request (GET/POST/SESSION
@@ -68,8 +69,7 @@ class CRM_Utils_Request {
    * @static
    *
    */
-  static
-  function retrieve($name, $type, &$store = NULL, $abort = FALSE, $default = NULL, $method = 'GET') {
+  static function retrieve($name, $type, &$store = NULL, $abort = FALSE, $default = NULL, $method = 'GET') {
 
     // hack to detect stuff not yet converted to new style
     if (!is_string($type)) {

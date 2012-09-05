@@ -376,6 +376,7 @@ class CRM_Core_Invoke {
   static
   function rebuildMenuAndCaches($triggerRebuild = FALSE) {
     $config = CRM_Core_Config::singleton();
+    $config->clearModuleList();
 
     CRM_Core_Menu::store();
 
@@ -392,6 +393,8 @@ class CRM_Core_Invoke {
     ) {
       CRM_Core_DAO::triggerRebuild();
     }
+    
+    CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();
   }
 }
 

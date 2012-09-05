@@ -169,7 +169,7 @@ function _civicrm_api3_contact_create_spec(&$params) {
 function civicrm_api3_contact_get($params) {
   $options = array();
   _civicrm_api3_contact_get_supportanomalies($params, $options);
-  $contacts = _civicrm_api3_get_using_query_object($params,$options);
+  $contacts = _civicrm_api3_get_using_query_object('contact', $params, $options);
 
   // CRM-7929 Quick fix by colemanw
   // TODO: Figure out what function is responsible for prepending 'individual_' to these keys

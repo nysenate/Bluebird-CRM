@@ -200,13 +200,14 @@
                     <div class="contact_panel">
                         <div class="contactCardLeft">
                            <div class="crm-table2div-layout">
+                              {if $showEmail}
                               <div class="crm-clear crm-summary-email-block">
                                 <div class="crm-summary-block" id="email-block">
                                   {include file="CRM/Contact/Page/Inline/Email.tpl"}
                                 </div>
                               </div>
-
-                              {if $website}
+                              {/if}
+                              {if $website and $showWebsite}
                               <div class="crm-clear crm-summary-block">
                                 {foreach from=$website item=item}
                                     {if !empty($item.url)}
@@ -228,12 +229,14 @@
 
                         <div class="contactCardRight">
                             <div class="crm-table2div-layout">
+                              {if $showPhone}
                               <div class="crm-clear crm-summary-phone-block">
                                 <div class="crm-summary-block" id="phone-block">
                                   {include file="CRM/Contact/Page/Inline/Phone.tpl"}
                                 </div>
-                              </div>  
-                              {if $im}
+                              </div>
+                              {/if}
+                              {if $im and $showIM}
                                 <div class="crm-clear crm-summary-block" id="im-block">
                                 {foreach from=$im item=item}
                                     {if $item.name or $item.provider}
@@ -245,7 +248,7 @@
                                 {/foreach}
                                 </div>
                                 {/if}
-                                {if $openid}
+                                {if $openid and $showOpenID}
                                 <div class="crm-clear crm-summary-block" id="openid-block">
                                 {foreach from=$openid item=item}
                                     {if $item.openid}
@@ -261,7 +264,7 @@
 
                         <div class="clear"></div>
                     </div><!-- #contact_panel -->
-
+            {if $showAddress}
             <div class="contact_panel">
               {assign var='locationIndex' value=1}
               {if $address}
@@ -296,8 +299,9 @@
               {/if}
 
             </div> <!-- end of contact panel -->
-          
+            {/if}
           <div class="contact_panel">
+            {if $showCommunicationPreferences}
             <div class="contactCardLeft">
               <div class="crm-summary-comm-pref-block">
                 <div class="crm-summary-block" id="communication-pref-block" >
@@ -305,6 +309,7 @@
                 </div>
               </div>
             </div> <!-- contactCardLeft -->
+            {/if}
             {if $contact_type eq 'Individual' AND $showDemographics}
               <div class="contactCardRight">
                 <div class="crm-summary-demographic-block">
@@ -319,42 +324,46 @@
           </div> <!-- contact panel -->
      </div><!--contact_details-->
 
-                <div id="customFields">
-                    <div class="contact_panel">
-                        <div class="contactCardLeft">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'}
-                        </div><!--contactCardLeft-->
+     {if $showCustomData}         
+        <div id="customFields">
+            <div class="contact_panel">
+                <div class="contactCardLeft">
+                    {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'}
+                </div><!--contactCardLeft-->
 
-                        <div class="contactCardRight">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
-                        </div>
-
-                        <div class="clear"></div>
-                    </div>
+                <div class="contactCardRight">
+                    {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
                 </div>
-                {literal}
-                <script type="text/javascript">
-                    cj('.columnheader').click( function( ) {
-                        var aTagObj = cj(this).find('a');
-                        if ( aTagObj.hasClass( "expanded" ) ) {
-                            cj(this).parent().find('tr:not(".columnheader")').hide( );
-                        } else {
-                            cj(this).parent().find('tr:not(".columnheader")').show( );
-                        }
-                        aTagObj.toggleClass("expanded");
-                        return false;
-                    });
-                </script>
-                {/literal}
-                {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 1}
-                    {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
-                {/if}
-            {else}
-                {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
-            {/if}
+
+                <div class="clear"></div>
+            </div>
         </div>
-        <div class="clear"></div>
-    </div>
+
+        {literal}
+        <script type="text/javascript">
+            cj('.columnheader').click( function( ) {
+                var aTagObj = cj(this).find('a');
+                if ( aTagObj.hasClass( "expanded" ) ) {
+                    cj(this).parent().find('tr:not(".columnheader")').hide( );
+                } else {
+                    cj(this).parent().find('tr:not(".columnheader")').show( );
+                }
+                aTagObj.toggleClass("expanded");
+                return false;
+            });
+        </script>
+        {/literal}
+     {/if}         
+     
+     {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 1}
+        {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
+     {/if}
+   {else}
+        {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
+   {/if}
+   </div>
+   <div class="clear"></div>
+ </div>
  <script type="text/javascript">
  var selectedTab  = 'summary';
  var spinnerImage = '<img src="{$config->resourceBase}i/loading.gif" style="width:10px;height:10px"/>';

@@ -11,6 +11,7 @@ $dao['Job'] = 'CRM_Core_DAO_Job';
 $dao['JobLog'] = 'CRM_Core_DAO_JobLog';
 $dao['LocationType'] = 'CRM_Core_DAO_LocationType';
 $dao['MailSettings'] = 'CRM_Core_DAO_MailSettings';
+$dao['Managed'] = 'CRM_Core_DAO_Managed';
 $dao['Mapping'] = 'CRM_Core_DAO_Mapping';
 $dao['Navigation'] = 'CRM_Core_DAO_Navigation';
 $dao['OptionGroup'] = 'CRM_Core_DAO_OptionGroup';

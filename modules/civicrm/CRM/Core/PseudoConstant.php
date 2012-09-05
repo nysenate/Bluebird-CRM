@@ -73,6 +73,20 @@ class CRM_Core_PseudoConstant {
    * @static
    */
   private static $activityType = array();
+  
+  /**
+   * payment processor billing modes
+   * @var array
+   * @static
+   */
+  private static $billingMode;
+
+  /**
+   * component
+   * @var array
+   * @static
+   */
+  private static $component;
 
   /**
    * individual prefix
@@ -574,6 +588,42 @@ class CRM_Core_PseudoConstant {
     }
     return self::$activityType[$index];
   }
+
+  /**
+   * Get all payment-processor billing modes
+   *
+   * @access public
+   * @static
+   *
+   * @return array ($id => $name)
+   */
+  public static function billingMode() {
+    if (!self::$billingMode) {
+      self::$billingMode = array(
+        CRM_Core_Payment::BILLING_MODE_FORM => 'form',
+        CRM_Core_Payment::BILLING_MODE_BUTTON => 'button',
+        CRM_Core_Payment::BILLING_MODE_NOTIFY => 'notify',
+      );
+    }
+    return self::$billingMode;
+  }
+
+  /**
+   * Get all component names
+   *
+   * @access public
+   * @static
+   *
+   * @return array - array reference of all location display names.
+   *
+   */
+  public static function &component() {
+    if (!self::$component) {
+      self::populate(self::$component, 'CRM_Core_DAO_Component', TRUE, 'name');
+    }
+    return self::$component;
+  }
+
 
   /**
    * Get all Individual Prefix.

@@ -68,7 +68,7 @@ function civicrm_conf_init() {
              //if its wordpress
             $confdir = $currentDir . DIRECTORY_SEPARATOR . '..';
         } else {
-            $confdir = $currentDir . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'sites';
+            $confdir = $currentDir . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR;
         }
     }
 

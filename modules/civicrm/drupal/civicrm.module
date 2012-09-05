@@ -347,14 +347,17 @@ function civicrm_initialize() {
     // As this file may be shared between 3.4 & 4.1 releases use the BAO_Preferences::value legacy function if it exists
     // in future only CRM_Core_BAO_Setting::getItem will be required
     $args = explode('/', $_GET['q']);
-    if ((!isset($args[1]) OR $args[1] != 'upgrade') &&
-      ((method_exists('CRM_Core_BAO_Preferences', 'value') && CRM_Core_BAO_Preferences::value('editor_id') == 4)
-        || (method_exists('CRM_Core_BAO_Setting', 'getItem') && CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-            // drupal wysiwyg
-            'editor_id'
-          ) == 4)
-      )
-    ) {
+    if (
+	(!isset($args[1]) || $args[1] != 'upgrade') &&
+	((method_exists('CRM_Core_BAO_Preferences', 'value') &&
+	  CRM_Core_BAO_Preferences::value('editor_id') == 4)
+	 || (method_exists('CRM_Core_BAO_Setting', 'getItem') &&
+	     CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+					   // drupal wysiwyg
+					   'editor_id'
+					   ) == 4)
+	 )
+	) {
       //we have to ensure that wysiwyg is loaded since
       //pages load only with ajax callbacks
       $formats = filter_formats();
@@ -1058,13 +1061,6 @@ function civicrm_civicrm_merge($type, &$data, $mainId, $otherId, $tables) {
     $conflicts['move_custom_1'] = 'end_user';
     unset($conflicts['move_custom_8']);
   }
-  /*     CRM_Core_Error::debug_var('hook $type',$type); */
-
-  /*     CRM_Core_Error::debug_var('$data',$data); */
-
-  /*     CRM_Core_Error::debug_var('$mainId',$mainId); */
-
-  /*     CRM_Core_Error::debug_var('$otherId',$otherId); */
 }
 
 /**
@@ -1221,3 +1217,34 @@ function civicrm_reviews() {
   return array('civicrm_coder' => $review);
 }
 
+/**
+ * Implementation of hook_modules_installed
+ */
+function civicrm_modules_installed($modules) {
+  civicrm_initialize();
+  CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+}
+
+/**
+ * Implementation of hook_modules_enabled
+ */
+function civicrm_modules_enabled($modules) {
+  civicrm_initialize();
+  CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+}
+
+/**
+ * Implementation of hook_modules_disabled
+ */
+function civicrm_modules_disabled($modules) {
+  civicrm_initialize();
+  CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+}
+
+/**
+ * Implementation of hook_modules_uninstalled
+ */
+function civicrm_modules_uninstalled($modules) {
+  civicrm_initialize();
+  CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+}

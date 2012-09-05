@@ -210,16 +210,10 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $this->_editOptions = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
       'contact_edit_options'
     );
-    $configItems = array(
-      'CommBlock' => 'Communication Preferences',
-      'Demographics' => 'Demographics',
-      'TagsAndGroups' => 'Tags and Groups',
-      'Notes' => 'Notes',
-    );
 
-    foreach ($configItems as $c => $t) {
-      $varName = '_show' . $c;
-      $this->$varName = CRM_Utils_Array::value($c, $this->_editOptions);
+    foreach ($this->_editOptions as $blockName => $value) {
+      $varName = '_show' . $blockName;
+      $this->$varName = $value;
       $this->assign(substr($varName, 1), $this->$varName);
     }
 

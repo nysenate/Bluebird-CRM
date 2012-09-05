@@ -1194,6 +1194,27 @@ SELECT contact_id
     return $_dao->escape($string);
   }
 
+  /**
+   * Escape a list of strings for use with "WHERE X IN (...)" queries.
+   *
+   * @param $strings array
+   * @param $default string the value to use if $strings has no elements
+   * @return string eg "abc","def","ghi"
+   */
+  static function escapeStrings($strings, $default = NULL) {
+    static $_dao = NULL;
+    if (!$_dao) {
+      $_dao = new CRM_Core_DAO();
+    }
+
+    if (empty($strings)) {
+      return $default;
+    }
+    
+    $escapes = array_map(array($_dao, 'escape'), $strings);
+    return '"' . implode('","', $escapes) . '"';
+  }
+
   static function escapeWildCardString($string) {
     // CRM-9155
     // ensure we escape the single characters % and _ which are mysql wild

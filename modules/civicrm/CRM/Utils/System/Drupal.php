@@ -857,5 +857,18 @@ AND    u.status = 1
       }
     }
   }
-}
 
+  /**
+   * Get a list of all installed modules, including enabled and disabled ones
+   *
+   * @return array CRM_Core_Module
+   */
+  function getModules() {
+    $result = array();
+    $q = db_query('SELECT name, status FROM system WHERE type = \'module\' AND schema_version <> -1');
+    foreach ($q as $row) {
+      $result[] = new CRM_Core_Module('drupal.' . $row->name, ($row->status == 1) ? TRUE : FALSE);
+    }
+    return $result;
+  }
+}

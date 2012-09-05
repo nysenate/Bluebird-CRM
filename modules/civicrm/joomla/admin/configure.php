@@ -90,8 +90,8 @@ function civicrm_main() {
   // generate backend config file
   $string = "
 <?php
-define('CIVICRM_SETTINGS_PATH', $configFile);
-\$error = @include_once( $configFile );
+define('CIVICRM_SETTINGS_PATH', '$configFile');
+\$error = @include_once( '$configFile' );
 if ( \$error == false ) {
     echo \"Could not load the settings file at: {$configFile}\n\";
     exit( );
@@ -108,13 +108,16 @@ CRM_Core_ClassLoader::singleton()->register();
     'civicrm.config.php',
     $string
   );
+  
+  $liveSite = substr_replace(JURI::root(), '', -1, 1);
+  $siteKey = md5( uniqid( '', true ) . $liveSite );
 
   // generate backend settings file
-  $string = civicrm_config(FALSE);
+  $string = civicrm_config(FALSE, $siteKey);
   civicrm_write_file($configFile, $string);
 
   // generate frontend settings file
-  $string = civicrm_config(TRUE);
+  $string = civicrm_config(TRUE, $siteKey);
   civicrm_write_file(JPATH_SITE . DIRECTORY_SEPARATOR .
     'components' . DIRECTORY_SEPARATOR .
     'com_civicrm' . DIRECTORY_SEPARATOR .
@@ -189,7 +192,7 @@ function civicrm_source($fileName, $lineMode = FALSE) {
   }
 }
 
-function civicrm_config($frontend = FALSE) {
+function civicrm_config($frontend = FALSE, $siteKey) {
   global $adminPath, $compileDir;
 
   $jConfig = new JConfig();
@@ -208,7 +211,7 @@ function civicrm_config($frontend = FALSE) {
     'CMSdbPass' => $jConfig->password,
     'CMSdbHost' => $jConfig->host,
     'CMSdbName' => $jConfig->db,
-    'siteKey' => md5(uniqid('', TRUE) . $liveSite),
+    'siteKey' => $siteKey,
   );
 
   if ($frontend) {

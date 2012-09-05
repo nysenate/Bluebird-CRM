@@ -144,11 +144,12 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $priceField->orderBy('weight');
         $priceField->find();
         $contriPriceId = NULL;
+        $isQuickConfig = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', $this->_params['priceSetId'], 'is_quick_config');
         while ($priceField->fetch()) {
           if ($priceField->name == "contribution_amount") {
             $contriPriceId = $priceField->id;
           }
-          if (CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', $this->_params['priceSetId'], 'is_quick_config') && !empty($this->_params["price_{$priceField->id}"])) {
+          if ($isQuickConfig && !empty($this->_params["price_{$priceField->id}"])) {
             if ($this->_values['fee'][$priceField->id]['html_type'] != 'Text') {
               $this->_params['amount_level'] = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_FieldValue', $this->_params["price_{$priceField->id}"], 'label');
             }
@@ -310,7 +311,8 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     ) {
 
       $this->_params['is_recur'] = $this->_values['is_recur'] = 1;
-      if (CRM_Utils_Array::value('priceSetId', $this->_params)) {
+      // check if price set is not quick config
+      if (CRM_Utils_Array::value('priceSetId', $this->_params) && !$isQuickConfig) {
         list($this->_params['frequency_interval'], $this->_params['frequency_unit']) = CRM_Price_BAO_Set::getRecurDetails($this->_params['priceSetId']);
       }
       else {

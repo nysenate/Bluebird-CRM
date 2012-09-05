@@ -1,21 +1,8 @@
 <?php
 
 /**
- * @file
- * Contains the Calendar row style plugin.
- *
- * This plugin takes the view results, finds the date value for each,
- * then compares that date to the date range for the current view.
- * Items that started before or ended after the current date range
- * are shortened to the current range. Items that extend over more
- * than one day are cloned to create a calendar item for each day.
- * The resulting array of results (which may have a different number
- * of items than the original view result) are then passed back
- * to the style plugin so they can be displayed in a calendar.
- *
- * Row plugins are specific to entity types. To create a row plugin
- * for other types of entities, this class can be extended or copied,
- * adjusting the parts that are specific to nodes.
+ * @file: This file is no longer needed and does not work with the current version of calendar
+ * @todo: Remove in future version of CiviCRM
  */
 
 /**

@@ -108,6 +108,76 @@ class CRM_Core_BAO_PaymentProcessorType extends CRM_Core_DAO_PaymentProcessorTyp
   }
 
   /**
+   * Function to add the payment-processor type in the db
+   *
+   * @param array $params (reference ) an assoc array of name/value pairs
+   * @param array $ids    the array that holds all the db ids
+   *
+   * @return object CRM_Core_DAO_PaymentProcessorType
+   * @access public
+   * @static
+   *
+   */
+  static
+  function create(&$params) {
+    $paymentProcessorType = new CRM_Core_DAO_PaymentProcessorType();
+    $paymentProcessorType->copyValues($params);
+
+    /*
+    // adapted from CRM_Core_Extensions_Payment::install
+    foreach (array(
+      'class_name',
+      'title',
+      'name',
+      'description',
+      'user_name_label',
+      'password_label',
+      'signature_label',
+      'subject_label',
+      'url_site_default',
+      'url_api_default',
+      'url_recur_default',
+      'url_site_test_default',
+      'url_api_test_default',
+      'url_recur_test_default',
+      'url_button_default',
+      'url_button_test_default',
+      'billing_mode',
+      'is_recur',
+      'payment_type'
+    ) as $trimmable) {
+      if (isset($paymentProcessorType->{$trimmable})) {
+        $paymentProcessorType->{$trimmable} = trim($paymentProcessorType->{$trimmable});
+      }
+    }
+    */
+
+    if (isset($paymentProcessorType->billing_mode)) {
+      // ugh unidirectional manipulation
+      if (!is_numeric($paymentProcessorType->billing_mode)) {
+        $billingModes = array_flip(CRM_Core_PseudoConstant::billingMode());
+        if (array_key_exists($paymentProcessorType->billing_mode, $billingModes)) {
+          $paymentProcessorType->billing_mode = $billingModes[$paymentProcessorType->billing_mode];
+        }
+      }
+      if (!array_key_exists($paymentProcessorType->billing_mode, CRM_Core_PseudoConstant::billingMode())) {
+        throw new Exception("Unrecognized billing_mode");
+      }
+    }
+
+    // FIXME handle is_default
+
+    if (!empty($paymentProcessorType->id)) {
+      $ppByName = self::getAllPaymentProcessorTypes('name');
+      if (array_key_exists($paymentProcessorType->name, $ppByName)) {
+        CRM_Core_Error::fatal('This payment processor type already exists.');
+      }
+    }
+
+    return $paymentProcessorType->save();
+  }
+
+  /**
    * Function to delete payment processor
    *
    * @param  int  $paymentProcessorTypeId     ID of the processor to be deleted.
@@ -135,6 +205,16 @@ class CRM_Core_BAO_PaymentProcessorType extends CRM_Core_DAO_PaymentProcessorTyp
       CRM_Core_Session::setStatus(ts('Selected Payment Processor type has been deleted.<br>'));
       return TRUE;
     }
+  }
+
+  static private function getAllPaymentProcessorTypes($attr) {
+    $ppt = array();
+    $dao = new CRM_Core_DAO_PaymentProcessorType();
+    $dao->find();
+    while ($dao->fetch()) {
+      $ppt[$dao->$attr] = $dao->id;
+    }
+    return $ppt;
   }
 }
 

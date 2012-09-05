@@ -957,15 +957,6 @@ class Installer extends InstallRequirements {
 
   function install($config) {
     global $installDirPath;
-    echo '<link rel="stylesheet" type="text/css" href="template.css" />';
-    echo '<div style="padding: 1em;"><h1>Installing CiviCRM...</h1>
-              <p>I am now running through the installation steps (this should take a few minutes)<p/>
-              <p>If you receive a fatal error, refresh this page to continue the installation</p>';
-
-    flush();
-
-    echo '<br/>Building database schema and setup files...</div>';
-    flush();
 
     // create database if does not exists
     $this->createDatabaseIfNotExists($config['mysql']['server'],

@@ -185,18 +185,23 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
   static function getTags($usedFor = 'civicrm_contact',
     &$tags = array(),
     $parentId  = NULL,
-    $separator = '&nbsp;&nbsp;',
-    $flatlist  = TRUE
+    $separator = '&nbsp;&nbsp;'
   ) {
     // We need to build a list of tags ordered by hierarchy and sorted by
     // name. The heirarchy will be communicated by an accumulation of
-    // '&nbsp;&nbsp;' in front of the name to give it a visual offset.
+    // separators in front of the name to give it a visual offset.
     // Instead of recursively making mysql queries, we'll make one big
     // query and build the heirarchy with the algorithm below.
+    $args = array(1 => array('%' . $usedFor . '%', 'String'));
     $query = "SELECT id, name, parent_id, is_tagset
                   FROM civicrm_tag 
-                  WHERE used_for LIKE '%{$usedFor}%' ORDER BY name";
-    $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray, TRUE, NULL, FALSE, FALSE);
+              WHERE used_for LIKE %1";
+    if ($parentId) {
+      $query .= " AND parent_id = %2";
+      $args[2] = array($parentId, 'Integer');
+    }
+    $query .= " ORDER BY name";
+    $dao = CRM_Core_DAO::executeQuery($query, $args, TRUE, NULL, FALSE, FALSE);
 
     // Sort the tags into the correct storage by the parent_id/is_tagset
     // filter the filter was in place previously, we're just reusing it.
@@ -205,14 +210,14 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // are necessarily placed.
     $roots = $rows = array();
     while ($dao->fetch()) {
-      if (!$dao->parent_id && $dao->is_tagset == 0) {
+      if ($dao->parent_id == $parentId && $dao->is_tagset == 0) {
         $roots[] = array('id' => $dao->id, 'prefix' => '', 'name' => $dao->name);
       }
       else {
         $rows[] = array('id' => $dao->id, 'prefix' => '', 'name' => $dao->name, 'parent_id' => $dao->parent_id);
       }
     }
-
+    $dao->free();
     // While we have nodes left to build, shift the first (alphabetically)
     // node of the list, place it in our tags list and loop through the
     // list of unplaced nodes to find its children. We make a copy to
@@ -378,11 +383,13 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    */
   static function getTagSet($entityTable) {
     $tagSets = array();
-    $query   = "SELECT name FROM civicrm_tag WHERE is_tagset=1 AND parent_id IS NULL and used_for LIKE '%{$entityTable}%'";
-    $dao     = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray, TRUE, NULL, FALSE, FALSE);
+    $query = "SELECT name, id FROM civicrm_tag
+              WHERE is_tagset=1 AND parent_id IS NULL and used_for LIKE %1";
+    $dao = CRM_Core_DAO::executeQuery($query, array(1 => array('%' . $entityTable . '%', 'String')), TRUE, NULL, FALSE, FALSE);
     while ($dao->fetch()) {
-      $tagSets[] = $dao->name;
+      $tagSets[$dao->id] = $dao->name;
     }
+    $dao->free();
     return $tagSets;
   }
 

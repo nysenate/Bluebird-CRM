@@ -83,6 +83,13 @@ class CRM_Admin_Form_Setting_Url extends CRM_Admin_Form_Setting {
   }
 
   public function postProcess() {
+    // if extensions url is set, lets clear session status messages to avoid
+    // a potentially spurious message which might already have been set. This
+    // is a bit hackish
+    // CRM-10629
+    $session = CRM_Core_Session::singleton( );
+    $session->getStatus(TRUE);
+
     parent::postProcess();
 
     parent::rebuildMenu();

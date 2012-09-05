@@ -237,6 +237,9 @@ cj(function(){
         {/if}
         </table>
     {/strip}
+{/if}
+{* Include JS for auto renew membership if priceset is Quick Config*}
+{if $membershipBlock AND $quickConfig}
 {literal}
 <script type="text/javascript">
 cj(function(){

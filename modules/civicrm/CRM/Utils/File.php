@@ -138,7 +138,7 @@ class CRM_Utils_File {
    * @access public
    * @static
    */
-  public static function cleanDir($target, $rmdir = TRUE) {
+  public static function cleanDir($target, $rmdir = TRUE, $verbose = TRUE) {
     static $exceptions = array('.', '..');
     if ($target == '' || $target == '/') {
       throw new Exception("Overly broad deletion");
@@ -163,7 +163,9 @@ class CRM_Utils_File {
 
       if ($rmdir) {
         if (rmdir($target)) {
-          CRM_Core_Session::setStatus(ts('Removed directory %1', array(1 => $target)) . '<br/>');
+          if ($verbose) {
+            CRM_Core_Session::setStatus(ts('Removed directory %1', array(1 => $target)) . '<br/>');
+          }
           return TRUE;
         }
         else {

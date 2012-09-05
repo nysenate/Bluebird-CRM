@@ -207,6 +207,11 @@ function _civicrm_event_data(&$data, $enabled) {
     'sort' => array(
       'handler' => 'civicrm_handler_sort_date',
     ),
+    'argument' => array(
+      'handler' => 'date_views_argument_handler',
+      'empty field name' => t('Undated'),
+      'is date' => TRUE,
+    ),
   );
 
   civicrm_views_add_date_arguments($data['civicrm_event'], array(

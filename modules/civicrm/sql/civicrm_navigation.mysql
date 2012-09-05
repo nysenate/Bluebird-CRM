@@ -32,7 +32,7 @@ INSERT INTO civicrm_setting
   ( domain_id, contact_id, is_domain, group_name, name, value )
 VALUES
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_view_options', 's:28:"123456789101113";' ),
-  ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_edit_options', 's:25:"1234567891011";' ),
+  ( @domainID, NULL, 1, 'CiviCRM Preferences', 'contact_edit_options', 's:22:"12345678911";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'advanced_search_options', 's:46:"123456789101112131516171819";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'user_dashboard_options', 's:15:"1234578";' ),
   ( @domainID, NULL, 1, 'CiviCRM Preferences', 'address_options', 's:23:"123456891011";' ),
@@ -80,7 +80,8 @@ VALUES
   ( @domainID, NULL, 1, 'Directory Preferences', 'extensionsDir'      , NULL ),
   ( @domainID, NULL, 1, 'URL Preferences', 'userFrameworkResourceURL' , NULL ),
   ( @domainID, NULL, 1, 'URL Preferences', 'imageUploadURL'           , NULL ),
-  ( @domainID, NULL, 1, 'URL Preferences', 'customCSSURL'             , NULL );
+  ( @domainID, NULL, 1, 'URL Preferences', 'customCSSURL'             , NULL ),
+  ( @domainID, NULL, 1, 'URL Preferences', 'extensionsURL'            , NULL );
 
 -- mail settings 
 

@@ -76,17 +76,12 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
           url: settings.ajaxURL,
           dataType: 'json',
           data: params,
+          type:'POST',
           context:this,
           success: function(result) {
             settings.callBack.call(this,result,settings);
           }
         });
-        /*
-    	  $.getJSON.call(this,settings.ajaxURL,params,function(result){
-            console.log(this);
-            console.log("bbb");
-            return settings.callBack.call(self,result,settings);});
-            */
       };
 
     $.fn.crmAutocomplete = function (params,options) {
@@ -193,7 +188,7 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
       }
       var t= tplURL.replace("civicrm/example",p);
       if (typeof(params)=='string') {
-        if (t[0]="/")
+        if (t[0]=="/")
           t= t.substring(1);
         return t.replace("placeholder",params);
       } else

@@ -48,8 +48,7 @@ class CRM_Utils_JSON {
    * @return string $jsonObject JSON array
    * @static
    */
-  static
-  function encode($params, $identifier = 'id') {
+  static function encode($params, $identifier = 'id') {
     $buildObject = array();
     foreach ($params as $value) {
       $name = addslashes($value['name']);
@@ -70,8 +69,7 @@ class CRM_Utils_JSON {
    *
    * @return json encode string
    */
-  static
-  function encodeSelector(&$params, $page, $total, $selectorElements) {
+  static function encodeSelector(&$params, $page, $total, $selectorElements) {
     $json = "";
     $json .= "{\n";
     $json .= "page: $page,\n";
@@ -104,8 +102,7 @@ class CRM_Utils_JSON {
     return $json;
   }
 
-  static
-  function encodeDataTableSelector($params, $sEcho, $iTotal, $iFilteredTotal, $selectorElements) {
+  static function encodeDataTableSelector($params, $sEcho, $iTotal, $iFilteredTotal, $selectorElements) {
     $sOutput = '{';
     $sOutput .= '"sEcho": ' . intval($sEcho) . ', ';
     $sOutput .= '"iTotalRecords": ' . $iTotal . ', ';

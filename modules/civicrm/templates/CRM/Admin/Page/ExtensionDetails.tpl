@@ -1,9 +1,14 @@
 <table class="crm-info-panel">
+		{if $action EQ 1}
+	  <tr>
+	      <td class="label">{ts}Name (key){/ts}</td><td>{$extension.name} ({$extension.key})</td>
+	  </tr>
+		{/if}
     <tr>
         <td class="label">{ts}Description{/ts}</td><td>{$extension.description}</td>
     </tr>
     <tr>
-        <td class="label">{ts}Download Location{/ts}</td><td>{$extension.downloadUrl}</td>
+        <td class="label">{ts}Download location{/ts}</td><td>{$extension.downloadUrl}</td>
     </tr>
     <tr>
         <td class="label">{ts}Local path{/ts}</td><td>{$extension.path}</td>
@@ -15,7 +20,7 @@
         <td class="label">{ts}Author{/ts}</td><td>{$extension.maintainer.author} (<a href="mailto:{$extension.maintainer.email}">{$extension.maintainer.email}</a>)</td>
     </tr>
     <tr>
-        <td class="label">{ts}License{/ts}</td><td>{$extension.license}</td>
+        <td class="label">{ts}Version{/ts}</td><td>{$extension.version}</td>
     </tr>
     <tr>
         <td class="label">{ts}Released on{/ts}</td><td>{$extension.releaseDate}</td>

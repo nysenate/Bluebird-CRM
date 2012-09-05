@@ -55,11 +55,8 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $this->_excludeGroups = CRM_Utils_Array::value('excludeGroups', $this->_formValues, array());
     $this->_includeTags = CRM_Utils_Array::value('includeTags', $this->_formValues, array());
     $this->_excludeTags = CRM_Utils_Array::value('excludeTags', $this->_formValues, array());
-    $this->_activity_include = json_decode(CRM_Utils_Array::value('activity_include', $this->_formValues, ''));
-    $this->_activity_exclude = json_decode(CRM_Utils_Array::value('activity_exclude', $this->_formValues, ''));
 
     //define variables
-    //NEEDED?
     $this->_allSearch = FALSE;
     $this->_groups    = FALSE;
     $this->_tags      = FALSE;
@@ -69,7 +66,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     //make easy to check conditions for groups and tags are
     //selected or it is empty search
     if (empty($this->_includeGroups) && empty($this->_excludeGroups) &&
-      empty($this->_includeTags) && empty($this->_excludeTags) && empty($this->_activity_include) && empty($this->_activity_exclude)
+      empty($this->_includeTags) && empty($this->_excludeTags)
     ) {
       //empty search
       $this->_allSearch = TRUE;
@@ -78,8 +75,6 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $this->_groups = (!empty($this->_includeGroups) || !empty($this->_excludeGroups));
 
     $this->_tags = (!empty($this->_includeTags) || !empty($this->_excludeTags));
-
-    $this->_activities = (!empty($this->_activity_include) || !empty($this->_activity_exclude));
   }
 
   function __destruct() {
@@ -152,41 +147,11 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $int->setButtonAttributes('remove', array('value' => ts('<< Remove')));;
     $outt->setButtonAttributes('remove', array('value' => ts('<< Remove')));;
 
-    // Text box for Activity Subject
-    $form->add('text',
-      'activity_subject',
-      ts('Activity Subject')
-    );
-
-    // Select box for Activity Type
-    $activityType = array('' => ts('- select activity -')) + CRM_Core_PseudoConstant::activityType();
-
-    $form->add('select', 'activity_type_id', ts('Activity Type'),
-      $activityType,
-      FALSE
-    );
-
-    // textbox for Activity Status
-    $activityStatus = array('' => ts('- select status -')) + CRM_Core_PseudoConstant::activityStatus();
-
-    $form->add('select', 'activity_status_id', ts('Activity Status'),
-      $activityStatus,
-      FALSE
-    );
-
-    // Activity Date range
-    $form->addDate('start_date', ts('Activity date from'), FALSE, array('formatType' => 'custom'));
-    $form->addDate('end_date', ts('Activity date through'), FALSE, array('formatType' => 'custom'));
-    $form->add('button', 'include_activity_targets', ts('Include activity targets >>'), 'include_activity_targets');
-    $form->add('text', 'activity_include', ts('Include activities'), array('style' => 'display: none'));
-    $form->add('button', 'exclude_activity_targets', ts('Exclude activity targets >>'), 'exclude_activity_targets');
-    $form->add('text', 'activity_exclude', ts('Exclude activities'), array('style' => 'display: none'));
-
     /**
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags', 'activity_subject', 'activity_type_id', 'activity_status_id', 'start_date', 'end_date', 'include_activity_targets', 'exclude_activity_targets', 'activity_include', 'activity_exclude'));
+    $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags'));
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
@@ -478,151 +443,24 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       CRM_Core_DAO::executeQuery($includeTag);
     }
 
-    //block for Activities search
-    if ($this->_activity_include || $this->_activity_exclude) {
-
-
-      /*            if ( is_array( $this->_activity_exclude ) ) {
-                $xActs = $this->_activity_exclude;
-            } else {
-                $xActs = 0;
-            }
-            
-            if ( is_array( $this->_activity_include ) ) {
-                $iActs = $this->_activity_include;
-            } else {
-                $iActs = null;
-            } 
-print $xActs . ' / ' . $iActs . ' / '; */
-
-      //print 'activities '; print_r($this->_activity_include); print_r($this->_activity_exclude); die();
-
-      $sql = "CREATE TEMPORARY TABLE Xa_{$this->_tableName} ( contact_id int primary key) ENGINE=HEAP";
-      CRM_Core_DAO::executeQuery($sql);
-
-      //used only when exclude tag is selected
-      if ($this->_activity_exclude && is_array($this->_activity_exclude)) {
-        $xactwhere = array();
-        foreach ($this->_activity_exclude as $xactid => $xactitem) {
-          foreach ($xactitem as $crit) {
-            if (substr($crit, 0, 19) == 'activity_type_id = ') {
-              $xactwhere[$xactid][] = 'activity_type_id = ' . intval(substr($crit, 19));
-            }
-            elseif (substr($crit, 0, 21) == 'activity_status_id = ') {
-              $xactwhere[$xactid][] = 'status_id = ' . intval(substr($crit, 21));
-            }
-            elseif (in_array(substr($crit, 0, 22), array(
-              'activity_date_time >= ', 'activity_date_time <= '))) {
-              $xactwhere[$xactid][] = substr($crit, 0, 22) . strftime('%F', strtotime(substr($crit, 22)));
-            }
-            elseif (substr($crit, 0, 13) == 'subject like ') {
-              $xactwhere[$xactid][] = 'subject like "%' . mysql_real_escape_string(substr($crit, 13)) . '%"';
-            }
-          }
-
-          $xactwhere[$xactid] = implode(' AND ', $xactwhere[$xactid]);
-        }
-        $xactwhere = '(' . implode(') OR (', $xactwhere) . ')';
-        $excludeActivity = "INSERT INTO  Xa_{$this->_tableName} ( contact_id )
-                  SELECT  DISTINCT civicrm_activity_target.target_contact_id
-                  FROM civicrm_activity
-                  LEFT JOIN civicrm_activity_target
-                    ON civicrm_activity.id = civicrm_activity_target.activity_id                  
-                  WHERE 
-                     $xactwhere";
-        CRM_Core_DAO::executeQuery($excludeActivity);
-      }
-
-      $sql = "CREATE TEMPORARY TABLE Ia_{$this->_tableName} ( id int PRIMARY KEY AUTO_INCREMENT,
-                                                               contact_id varchar(64)) ENGINE=HEAP";
-
-      CRM_Core_DAO::executeQuery($sql);
-
-      if ($this->_activity_include) {
-        $includeAct = "INSERT INTO Ia_{$this->_tableName} (contact_id)
-                  SELECT  DISTINCT civicrm_activity_target.target_contact_id
-                  FROM civicrm_activity
-                  LEFT JOIN civicrm_activity_target
-                    ON civicrm_activity.id = civicrm_activity_target.activity_id";
-      }
-      else {
-        $includeAct = "INSERT INTO Ia_{$this->_tableName} (contact_id)
-                 SELECT              civicrm_contact.id as contact_id
-                 FROM                civicrm_contact";
-      }
-
-      //used only when exclude tag is selected
-      if ($this->_activity_exclude) {
-        $includeAct .= " LEFT JOIN        Xa_{$this->_tableName} ";
-        if ($this->_activity_include) {
-          $includeAct .= " ON       civicrm_activity_target.target_contact_id = Xa_{$this->_tableName}.contact_id";
-        }
-        else {
-          $includeAct .= " ON       civicrm_contact.id = Xa_{$this->_tableName}.contact_id";
-        }
-      }
-      $iactwhere = array();
-      if (is_array($this->_activity_include)) {
-        foreach ($this->_activity_include as $iactid => $iactitem) {
-          foreach ($iactitem as $crit) {
-            if (substr($crit, 0, 19) == 'activity_type_id = ') {
-              $iactwhere[$iactid][] = 'activity_type_id = ' . intval(substr($crit, 19));
-            }
-            elseif (substr($crit, 0, 21) == 'activity_status_id = ') {
-              $iactwhere[$iactid][] = 'status_id = ' . intval(substr($crit, 21));
-            }
-            elseif (in_array(substr($crit, 0, 22), array(
-              'activity_date_time >= ', 'activity_date_time <= '))) {
-              $iactwhere[$iactid][] = substr($crit, 0, 22) . '"' . strftime('%F', strtotime(substr($crit, 22))) . '"';
-            }
-            elseif (substr($crit, 0, 13) == 'subject like ') {
-              $iactwhere[$iactid][] = 'subject like "%' . mysql_real_escape_string(substr($crit, 13)) . '%"';
-            }
-          }
-
-          $iactwhere[$iactid] = implode(' AND ', $iactwhere[$iactid]);
-        }
-      }
-      if ($iactwhere) {
-        $iactwhere = '(' . implode(') OR (', $iactwhere) . ')';
-      }
-      if ($iactwhere) {
-        $includeAct .= " WHERE   $iactwhere";
-      }
-      else {
-        $includeAct .= " WHERE ( 1 ) ";
-      }
-
-      //used only when exclude tag is selected
-      if ($this->_activity_exclude) {
-        $includeAct .= " AND  Xa_{$this->_tableName}.contact_id IS null";
-      }
-
-      CRM_Core_DAO::executeQuery($includeAct);
-    }
-    //end activities
-
     $from = " FROM civicrm_contact contact_a";
 
     $this->buildACLClause('contact_a');
 
     /*
-         * check the situation and set booleans
-         */
+     * check the situation and set booleans
+     */
 
     $Ig = ($iGroups != 0);
 
     $It = ($iTags != 0);
 
-    $Ia = ($this->_activity_include);
-
     $Xg = ($xGroups != 0);
 
     $Xt = ($xTags != 0);
 
-    $Xa = ($this->_activity_exclude);
     //PICK UP FROM HERE
-    if (!$this->_groups && !$this->_tags || !$this->_groups && !$this->_activities || !$this->_tags && !$this->_activities) {
+    if (!$this->_groups && !$this->_tags) {
       $this->_andOr = 1;
     }
     /*
@@ -631,7 +469,7 @@ print $xActs . ' / ' . $iActs . ' / '; */
 
     $whereitems = array();
     foreach (array(
-      'Ig', 'It', 'Ia') as $inc) {
+      'Ig', 'It') as $inc) {
       if ($this->_andOr == 1) {
         if ($$inc) {
           $from .= " INNER JOIN {$inc}_{$this->_tableName} temptable$inc ON (contact_a.id = temptable$inc.contact_id)";
@@ -648,7 +486,7 @@ print $xActs . ' / ' . $iActs . ' / '; */
     }
     $this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
     foreach (array(
-      'Xg', 'Xt', 'Xa') as $exc) {
+      'Xg', 'Xt') as $exc) {
       if ($$exc) {
         $from .= " LEFT JOIN {$exc}_{$this->_tableName} temptable$exc ON (contact_a.id = temptable$exc.contact_id)";
         $this->_where .= " AND temptable$exc.contact_id IS NULL";
@@ -713,9 +551,9 @@ print $xActs . ' / ' . $iActs . ' / '; */
   }
 
   function templateFile() {
-    return 'CRM/Contact/Form/Search/Custom/Group.tpl';
+    return 'CRM/Contact/Form/Search/Custom.tpl';
   }
-
+  
   function setTitle($title) {
     if ($title) {
       CRM_Utils_System::setTitle($title);

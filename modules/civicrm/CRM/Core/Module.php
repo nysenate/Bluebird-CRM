@@ -26,79 +26,50 @@
 */
 
 /**
+ * A module is any software package that participates in the hook
+ * system, such as CiviCRM Module-Extension, a Drupal Module, or
+ * a Joomla Plugin.
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Report_Form_Price_Lineitem extends CRM_Report_Form_Extended {
-  protected $_addressField = FALSE;
+class CRM_Core_Module {
 
-  protected $_emailField = FALSE;
+  /**
+   * @var string
+   */
+  public $name;
 
-  protected $_summary = NULL;
+  /**
+   * @var bool, TRUE if fully enabled; FALSE if module exists but is disabled
+   */
+  public $is_active;
 
-  protected $_customGroupExtends = array(
-    'Contribution',
-  );
-
-  protected $_baseTable = 'civicrm_line_item';
-
-  protected $_aclTable = 'civicrm_contact'; 
-  
-  function __construct() {
-    $this->_columns = $this->getContactColumns() + 
-    + $this->getEventColumns() 
-    + $this->getParticipantColumns()
-    + $this->getContributionColumns()
-    + $this->getPriceFieldColumns() + 
-    + $this->getPriceFieldValueColumns()      
-    + $this->getLineItemColumns();
-    
-    parent::__construct();
+  public function __construct($name, $is_active) {
+    $this->name = $name;
+    $this->is_active = $is_active;
   }
 
-  function preProcess() {
-    parent::preProcess();
-  }
+  /**
+   * Get a list of all known modules
+   */
+  public static function getAll($fresh = FALSE) {
+    static $result;
+    if ($fresh || !is_array($result)) {
+      $result = array();
 
-  function select() {
-    parent::select();
-  }
-  /*
-    * select from clauses to use (from those advertised using
-    * $this->getAvailableJoins())
-    */
-  function fromClauses() {
-    return array(
-      'priceFieldValue_from_lineItem',
-      'priceField_from_lineItem',
-      'participant_from_lineItem',
-      'contribution_from_lineItem',
-      'contact_from_contribution',
-      'event_from_participant',
-    );
-  }
+      $ext = new CRM_Core_Extensions();
+      if ($ext->enabled) {
+        $result = array_merge($result, $ext->getModules());
+      }
 
-  function groupBy() {
-    parent::groupBy();
-  }
-
-  function orderBy() {
-    parent::orderBy();
-  }
-
-  function statistics(&$rows) {
-    return parent::statistics($rows);
-  }
-
-  function postProcess() {
-    parent::postProcess();
-  }
-
-  function alterDisplay(&$rows) {
-    parent::alterDisplay($rows);
+      $config = CRM_Core_Config::singleton();
+      if (is_callable(array($config->userSystem, 'getModules'))) {
+        $result = array_merge($result, $config->userSystem->getModules());
+      }
+    }
+    return $result;
   }
 }
-

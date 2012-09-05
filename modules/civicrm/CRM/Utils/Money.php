@@ -57,8 +57,7 @@ class CRM_Utils_Money {
    *
    * @static
    */
-  static
-  function format($amount, $currency = NULL, $format = NULL, $onlyNumber = FALSE) {
+  static function format($amount, $currency = NULL, $format = NULL, $onlyNumber = FALSE) {
 
     if (CRM_Utils_System::isNull($amount)) {
       return '';

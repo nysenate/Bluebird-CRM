@@ -408,6 +408,19 @@ class CRM_Utils_REST {
       return $result;
     }
 
+    if ($_SERVER['REQUEST_METHOD'] == 'GET' && strtolower (substr( $args[2],0,3)) != 'get' ) {
+    // get only valid for non destructive methods
+      require_once 'api/v3/utils.php';
+      return civicrm_api3_create_error("SECURITY: All requests that modify the database must be http POST, not GET.",
+        array(
+          'IP' => $_SERVER['REMOTE_ADDR'],
+          'level' => 'security',
+          'referer' => $_SERVER['HTTP_REFERER'],
+          'reason' => 'Destructive HTTP GET',
+        )
+      );
+    }
+
     // trap all fatal errors
     CRM_Core_Error::setCallback(array('CRM_Utils_REST', 'fatal'));
     $result = civicrm_api($args[1], $args[2], $params);

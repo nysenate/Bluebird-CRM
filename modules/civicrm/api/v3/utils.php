@@ -205,9 +205,12 @@ function civicrm_api3_create_success($values = 1, $params = array(
     elseif ($action != 'getfields') {
       $apiFields = civicrm_api($entity, 'getfields', array('version' => 3) + $params);
     }
+    else {
+      $apiFields = FALSE;
+    }
 
     $allFields = array();
-    if (is_array(CRM_Utils_Array::value('values', $apiFields))) {
+    if ($action != 'getfields' && is_array($apiFields) && is_array(CRM_Utils_Array::value('values', $apiFields))) {
       $allFields = array_keys($apiFields['values']);
     }
     $paramFields = array_keys($params);
@@ -350,9 +353,15 @@ function _civicrm_api3_store_values(&$fields, &$params, &$values) {
  * @param array $options array of options (so we can modify the filter)
  * @param bool $getCount are we just after the count
  */
-function _civicrm_api3_get_using_query_object($params, $additional_options = array(),$getCount = null){
+function _civicrm_api3_get_using_query_object($object_type, $params, $additional_options = array(), $getCount = null){
 
-  $options          = _civicrm_api3_get_options_from_params($params, TRUE);
+  // Convert id to e.g. contact_id
+  if (empty($params[$object_type . '_id']) && isset($params['id'])) {
+    $params[$object_type . '_id'] = $params['id'];
+  }
+  unset($params['id']);
+
+  $options = _civicrm_api3_get_options_from_params($params, TRUE);
 
   $inputParams = array_merge(
     CRM_Utils_Array::value('input_params', $options, array()),
@@ -872,7 +881,7 @@ function _civicrm_api3_basic_get($bao_name, &$params, $returnAsSuccess = TRUE, $
   $bao = new $bao_name();
   _civicrm_api3_dao_set_filter($bao, $params, TRUE,$entity);
   if ($returnAsSuccess) {
-    return civicrm_api3_create_success(_civicrm_api3_dao_to_array($bao, $params, FALSE, $entity), $params, $bao);
+    return civicrm_api3_create_success(_civicrm_api3_dao_to_array($bao, $params, FALSE, $entity), $params, $entity);
   }
   else {
     return _civicrm_api3_dao_to_array($bao, $params, FALSE, $entity);

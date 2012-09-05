@@ -386,6 +386,16 @@ SET    version = '$version'
                   array(1 => $latestVer)
                   );
     }
+
+    $phpVersion = phpversion();
+    $minPhpVersion = '5.3.0';
+    if (version_compare($phpVersion, $minPhpVersion) <= 0) {
+      $error = ts('CiviCRM %3 requires PHP version %1 (or newer), but the current system uses %2 ', array(
+        1 => $minPhpVersion,
+        2 => $phpVersion,
+        3 => $latestVer,
+      ));
+    }
     return $error;
   }
 
