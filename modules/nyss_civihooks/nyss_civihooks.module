@@ -19,15 +19,25 @@ function nyss_civihooks_menu_alter( &$items ) {
   $items['admin/user/user/create']['access arguments'] = array('create users');
 }//menu_alter
 
-function nyss_civihooks_perm() {
+function nyss_civihooks_permission() {
 
-    return array( 'export print production files',
-                  'delete contacts permanently',
-                  'administer district',
-                  'view mass email',
-                  'administer reserved groups',
-                  'import print production',
-                  );
+  return array(
+    'export print production files' => array(
+      'title' => t('Bluebird: Export Print Production Files'),
+    ),
+    'delete contacts permanently' => array(
+      'title' => t('Bluebird: Permanently Delete Contacts'),
+    ),
+    'administer district' => array(
+      'title' => t('Bluebird: Access District Admin Tasks'),
+    ),
+    'view mass email' => array(
+      'title' => t('Bluebird: View Mass Email'),
+    ),
+    'import print production' => array(
+      'title' => t('Bluebird: Access Print Production Import Tool'),
+    ),
+  );
 }
 
 function nyss_civihooks_getfile() {
