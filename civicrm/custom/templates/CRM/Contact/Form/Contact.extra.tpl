@@ -15,17 +15,18 @@ cj(function( ) {
     });*/
 });
 
-//move delete link
-
-
 //suppress address elements link for BOE
 cj('[id^=Address_Block_]').each(function(){
   var loctype  = cj(this).find('.location_type_id-address-element input').val();
   var dellink  = cj(this).find('.crm-edit-address-form tr:first a');
   if ( loctype == 6 ) {
     cj(this).find('[id^=streetAddress_] a').remove();
+    //remove delete for BOE
     dellink.remove();
+    //remove shared address row
+    cj(this).find('table.crm-edit-address-form tr:nth-child(2)').remove();
   } else {
+    //move delete link
     dellink.addClass('delete_block');
     cj('.crm-edit-address-form').before(dellink);
   }
@@ -34,6 +35,8 @@ cj('[id^=Address_Block_]').each(function(){
 //default open address panel
 cj('#addressBlockId').addClass('crm-accordion-open').removeClass('crm-accordion-closed');
 
+cj('.crm-edit-address-custom_data').parent().addClass('address-custom-cell').removeAttr('colspan');
+cj('.crm-edit-address-custom_data').parent().parent().addClass('address-content-block');
 
 </script>
 {/literal}
