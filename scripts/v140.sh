@@ -235,6 +235,11 @@ $execSql -i $instance -c "DROP TABLE IF EXISTS ldapauth;" --drupal -q
 ldapr="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
 $execSql -i $instance -c "$ldapr" --drupal -q
 
+## misc adjustments
+echo "take care of miscelleneous adjustments..."
+attach="UPDATE civicrm_custom_group SET title = 'File Attachments' WHERE name = 'Attachments';"
+$execSql -i $instance -c "$attach" -q
+
 
 ### Cleanup ###
 
