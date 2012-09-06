@@ -604,40 +604,57 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
 //CRM_Core_Error::debug($page);
 
-    $pagename = $page->getVar( '_name' );
+  $pagename = $page->getVar( '_name' );
 
-    //2960
-    if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
+  //2960
+  if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
 
-        CRM_Utils_System::setTitle( ts('Case Dashboard') );
+    CRM_Utils_System::setTitle( ts('Case Dashboard') );
+  }
+
+  //4567 make admin breadcrumb unclickable if lacking permission
+  if ( $pagename == 'CRM_Admin_Page_Tag' ||
+       $pagename == 'CRM_Admin_Page_Mapping' ||
+       $pagename == 'CRM_Report_Page_TemplateList' ) {
+
+    if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
+      return;
     }
 
-    //4567 make admin breadcrumb unclickable if lacking permission
-    if ( $pagename == 'CRM_Admin_Page_Tag' ||
-         $pagename == 'CRM_Admin_Page_Mapping' ||
-         $pagename == 'CRM_Report_Page_TemplateList' ) {
-
-        if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
-            return;
-        }
-
-        $breadCrumb = drupal_get_breadcrumb( );
-        foreach ( $breadCrumb as $key => $crumb ) {
-            if ( $crumb == '<a href="/civicrm/admin?reset=1">Administer Bluebird</a>' ) {
-                $breadCrumb[$key] = 'Administer Bluebird';
-            }
-        }
-        drupal_set_breadcrumb( $breadCrumb );
+    $breadCrumb = drupal_get_breadcrumb( );
+    foreach ( $breadCrumb as $key => $crumb ) {
+      if ( $crumb == '<a href="/civicrm/admin?reset=1">Administer Bluebird</a>' ) {
+        $breadCrumb[$key] = 'Administer Bluebird';
+      }
     }
+    drupal_set_breadcrumb( $breadCrumb );
+  }
 
-    //NYSS 5149
-    if ( $pagename == 'CRM_Dashlet_Page_Activity' ||
-         $pagename == 'CRM_Activity_Page_Tab' ) {
-        $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
-        $page->assign( 'activityStatusList', $activityStatusList);
-    }
+  //NYSS 5149
+  if ( $pagename == 'CRM_Dashlet_Page_Activity' ||
+       $pagename == 'CRM_Activity_Page_Tab' ) {
+    $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
+    $page->assign( 'activityStatusList', $activityStatusList);
+  }
 
-    _setDBVars();
+  //include inline edit page js
+  $inlinePages = array(
+    'CRM_Contact_Page_Inline_Email',
+    'CRM_Contact_Page_Inline_Phone',
+    'CRM_Contact_Page_Inline_Address',
+  );
+  /*if ( in_array($pagename, $inlinePages) ) {
+    $config = CRM_Core_Config::singleton();
+    $tplDir = $config->customTemplateDir;
+    $js = "
+    cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
+      cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+    });
+    ";
+    drupal_add_js($js, 'inline');
+  }*/
+
+  _setDBVars();
 }
 
 function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
