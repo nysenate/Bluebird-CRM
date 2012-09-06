@@ -240,6 +240,25 @@ echo "take care of miscelleneous adjustments..."
 attach="UPDATE civicrm_custom_group SET title = 'File Attachments' WHERE name = 'Attachments';"
 $execSql -i $instance -c "$attach" -q
 
+## reorder custom fields
+order="
+UPDATE civicrm_custom_field SET weight = 1 WHERE custom_group_id = 1 AND name = 'Active_Constituent_';
+UPDATE civicrm_custom_field SET weight = 2 WHERE custom_group_id = 1 AND name = 'Interest_in_Volunteering_';
+UPDATE civicrm_custom_field SET weight = 3 WHERE custom_group_id = 1 AND name = 'Friend_of_the_Senator_';
+UPDATE civicrm_custom_field SET weight = 4 WHERE custom_group_id = 1 AND name = 'Voter_Registration_Status';
+UPDATE civicrm_custom_field SET weight = 5 WHERE custom_group_id = 1 AND name = 'BOE_Date_of_Registration';
+UPDATE civicrm_custom_field SET weight = 6 WHERE custom_group_id = 1 AND name = 'Professional_Accreditations';
+UPDATE civicrm_custom_field SET weight = 7 WHERE custom_group_id = 1 AND name = 'Skills_Areas_of_Interest';
+UPDATE civicrm_custom_field SET weight = 8 WHERE custom_group_id = 1 AND name = 'Honors_and_Awards';
+UPDATE civicrm_custom_field SET weight = 9 WHERE custom_group_id = 1 AND name = 'Record_Type';
+UPDATE civicrm_custom_field SET weight = 10 WHERE custom_group_id = 1 AND name = 'Individual_Category';
+UPDATE civicrm_custom_field SET weight = 11 WHERE custom_group_id = 1 AND name = 'Contact_Source';
+UPDATE civicrm_custom_field SET weight = 12 WHERE custom_group_id = 1 AND name = 'Ethnicity';
+UPDATE civicrm_custom_field SET weight = 13 WHERE custom_group_id = 1 AND name = 'Other_Ethnicity';
+UPDATE civicrm_custom_field SET weight = 14 WHERE custom_group_id = 1 AND name = 'Religion';
+UPDATE civicrm_custom_field SET weight = 15 WHERE custom_group_id = 1 AND name = 'Other_Gender';
+"
+$execSql -i $instance -c "$order" -q
 
 ### Cleanup ###
 
