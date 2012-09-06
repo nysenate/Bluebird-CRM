@@ -24,7 +24,7 @@ if ($bbconfig == null) {
 }
 
 if ( $bbconfig['install_class'] == 'dev' ) {
-  define('CIVICRM_DEBUG_LOG_QUERY', TRUE);
+  //define('CIVICRM_DEBUG_LOG_QUERY', TRUE);
 }
 
 define('CIVICRM_UF', 'Drupal');
