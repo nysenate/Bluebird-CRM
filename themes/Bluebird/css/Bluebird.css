@@ -1521,22 +1521,21 @@ form#Contact .groupTagsKeywords .crm-section .label {
 	font-weight: bold;
 }
 
-/*4775*/
+/*NYSS 5253*/
+.user-admin .help {
+  display: none;
+}
+
+/*4775 - inline edit*/
 #crm-container div.contact_panel div.crm-summary-block {
-  border: 2px dashed white;
+  border: none;
+  margin-top: 1px;
 }
 #crm-container div.contact_panel div.crm-inline-edit-hover {
   border: 2px dashed lightgrey;
 }
-#crm-container .eighteen {width: 18em;}
-#crm-container div.crm-config-option {
-  float: right;
-  padding-right: 10px;
-  padding-top: 5px;
-}
-#crm-container a.crm-link-action {
-  cursor: pointer;
-  cursor: hand;
+#crm-container .eighteen {
+  width: 18em;
 }
 #crm-container div.crm-clear {
   clear:both;
@@ -1546,7 +1545,6 @@ form#Contact .groupTagsKeywords .crm-section .label {
   background-color: #FAFAFA;
   color: #7A7A60;
   text-align: left;
-  width: 98px;
   float:left;
   padding: 4px 0px 5px 4px;
   margin-right: 5px;
@@ -1554,7 +1552,7 @@ form#Contact .groupTagsKeywords .crm-section .label {
 #crm-container div.crm-content {
   background-color: #F4F4ED;
   padding: 4px 0px 5px 4px;
-  margin-bottom: 1px;
+  margin-bottom: 0;
 }
 #crm-container div.crm-table2div-layout {
   font-size: 11px;
@@ -1566,8 +1564,74 @@ form#Contact .groupTagsKeywords .crm-section .label {
   z-index: 10;
   position: relative;
 }
-
-/*NYSS 5253*/
-.user-admin .help {
-  display: none;
+#crm-container .crm-table2div-layout div.crm-clear {
+  display: table;
+  width: 100%;
 }
+#crm-container .bb-row-wrap {
+  display: table-row;
+  clear: both;
+}
+#crm-container .bb-row-wrap .crm-label,
+#crm-container .bb-row-wrap .crm-content {
+  display: table-cell;
+}
+#crm-container .bb-row-wrap .crm-content {
+  width: 100%;
+  vertical-align: top;
+}
+#crm-container .crm-table2div-layout div.crm-config-option {
+  display: block;
+  float: left;
+  padding-right: 10px;
+  padding-top: 5px;
+}
+#crm-container a.crm-link-action {
+  cursor: pointer;
+  cursor: hand;
+  white-space: nowrap;
+}
+#crm-container .crm-clear .crm-config-option a.crm-link-action {
+  position: absolute;
+}
+/*handle static add element links*/
+#crm-container .appendAddLink a.crm-link-action,
+#crm-container .crm-clear a.crm-link-action {
+  position: relative;
+}
+#crm-container div.contact_panel .appendAddLink div.crm-summary-block,
+#crm-container div.contact_panel .crm-clear div.crm-summary-block {
+  border: 2px dashed #eee;
+}
+#crm-container div.contact_panel .appendAddLink div.crm-summary-block.crm-inline-edit-hover,
+#crm-container div.contact_panel .crm-clear div.crm-summary-block.crm-inline-edit-hover{
+   border: 2px dashed lightgray;
+ }
+
+#crm-container div.crm-inline-edit-hover div.crm-config-option {
+  height: 20px;
+}
+#crm-container #customFields div.contact_panel td {
+  padding: 0;
+}
+#crm-container #customFields .contact_panel .customFieldGroup {
+  width: 99%;
+}
+
+/*District Info*/
+#crm-container #contact-summary .crm-accordion-header {
+  background-color: #F4F4ED;
+}
+#crm-container #contact-summary .crm-accordion-open > .crm-accordion-body {
+  border: 2px solid #F4F4ED;
+  padding: 2px;
+}
+
+/*Contact Summary stuff*/
+#crm-container .displayName {
+  font-weight: bold;
+  padding: 6px;
+  font-family: Helvetica;
+  font-size: 16px;
+}
+#crm-container div.contactCardRight
