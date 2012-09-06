@@ -33,9 +33,9 @@ CKEDITOR.editorConfig = function( config )
         ['Font','FontSize'],
         //['TextColor','BGColor'], //NYSS
         ['Link','Unlink'],
-        ['Image'] //NYSS ,'HorizontalRule','Smiley'],
-        ['NumberedList','BulletedList'] //NYSS ,'Outdent','Indent','Blockquote'],
-        ['PasteText','PasteFromWord'] //NYSS ,'SpellChecker'],
+        ['Image'], //NYSS ,'HorizontalRule','Smiley'],
+        ['NumberedList','BulletedList'], //NYSS ,'Outdent','Indent','Blockquote'],
+        ['PasteText','PasteFromWord'], //NYSS ,'SpellChecker'],
         ['RemoveFormat'],
         //['Undo','Redo'], //NYSS
         ['Source'] //NYSS ,'-','Preview','-','About'],
