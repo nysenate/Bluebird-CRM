@@ -244,7 +244,7 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
 }
 
 # Use Bluebird custom maintenance pages within our own custom theme.
-$conf['maintenance_theme'] = 'rayCivicrm';
+$conf['maintenance_theme'] = 'Bluebird';
 
 # Cacherouter: use APC for all local caching
 $conf['cache_inc'] = './sites/all/modules/cacherouter/cacherouter.inc';
