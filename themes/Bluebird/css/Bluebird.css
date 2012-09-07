@@ -77,7 +77,7 @@ caption {background:#eee;}
 
 /* forms.css */
 .form-item label {display:inline; font-weight: normal;}
-label {font-weight:normal;}
+label {font-weight:normal;display:inline;}
 fieldset {padding:1.4em;margin:0 0 1.5em 0;}
 legend {font-weight:bold;font-size:1.2em;}
 input[type=text], input[type=password], input.text, input.title, textarea, select {background-color:#fff;border:1px solid #bbb;}
@@ -490,7 +490,6 @@ ul.menu li ul {
 }
 
 .block ul, ul.menu, .item-list ul {
-  margin: 0pt 1.5em 1.5em;
   padding: 0;
 }
 
@@ -1041,6 +1040,10 @@ ul.token-input-list-facebook { width:265px;}
 	display: block; 
 	width: 86px; 
 	text-align: center;
+}
+#Advanced #District_Information td {
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 #crm-container #crm-tagRow291 {

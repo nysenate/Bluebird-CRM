@@ -75,8 +75,8 @@
 		<table class="inner-table">
 		   <tr>
 			<td>
-			     {$form.postal_code.label}<br />
-                             {$form.postal_code.html}
+			  {$form.postal_code.label}<br />
+        {$form.postal_code.html}
 			</td>
 			<td>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -147,3 +147,17 @@ cj(function( ) {
 </script>
 {/literal}
 {/if}
+
+{literal}
+<script type="text/javascript">
+  //NYSS
+  cj('#postal_code_low').css('width', '100px');
+  cj('#postal_code_high').css('width', '100px');
+  cj("[id^=location_type]").each(function(){
+    var idval = cj(this).attr('id');
+    if ( idval == 'location_type[7]' ) {
+      cj(this).before('<br />');
+    }
+  });
+</script>
+{/literal}

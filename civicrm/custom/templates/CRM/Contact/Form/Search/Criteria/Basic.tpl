@@ -197,9 +197,21 @@
                 {$form.job_title.label}<br />
                 {$form.job_title.html|crmReplace:class:medium}
             </td>
-            <td colspan="3">
-                {if $form.deleted_contacts}<br />{$form.deleted_contacts.html} {$form.deleted_contacts.label}{else}&nbsp;{/if}
+            <td>
+              Bluebird ID<br />
+              {$form.id.html|crmReplace:class:medium}
+            </td>
+            <td colspan="2">
+              {$form.external_identifier.label}<br />
+              {$form.external_identifier.html|crmReplace:class:medium}
             </td>
         </tr>
+        {if $form.deleted_contacts}
+        <tr>
+          <td colspan="5">
+            {$form.deleted_contacts.html} {$form.deleted_contacts.label|replace:'<br />':' '}
+          </td>
+        </tr>
+        {/if}
         
     </table>
