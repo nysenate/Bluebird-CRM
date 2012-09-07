@@ -39,6 +39,15 @@ cdb="$civi_db_prefix$db_basename"
 
 ###### Begin Upgrade Scripts ######
 
+## clear some db caches before we begin
+echo "clear some db caches before we begin..."
+ccc="TRUNCATE civicrm_cache; TRUNCATE civicrm_menu;"
+$execSql -i $instance -c "$ccc" -q
+
+ccd="TRUNCATE cache; TRUNCATE cache_page; TRUNCATE cache_form; TRUNCATE cache_update; TRUNCATE cache_menu;
+ TRUNCATE cache_block; TRUNCATE cache_filter; TRUNCATE sessions;"
+$execSql -i $instance -c "$ccd" --drupal -q
+
 ## manually disable various modules before running drupal upgrade
 echo "disable various modules before running upgrade scripts..."
 dismods="
@@ -122,6 +131,22 @@ ALTER TABLE civicrm_setting
 "
 $execSql -i $instance -c "$settingtbl" -q
 
+## temporarily create managed table
+echo "temporarily creating civicrm_managed table..."
+managedtbl="
+CREATE TABLE civicrm_managed (
+  id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Surrogate Key',
+  module varchar(127) NOT NULL   COMMENT 'Name of the module which declared this object',
+  name varchar(127)    COMMENT 'Symbolic name used by the module to identify the object',
+  entity_type varchar(64) NOT NULL   COMMENT 'API entity type',
+  entity_id int unsigned NOT NULL   COMMENT 'Foreign key to the referenced item.',
+  PRIMARY KEY ( id ),
+  INDEX UI_managed_module_name( module, name ),
+  INDEX UI_managed_entity( entity_type, entity_id )
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+"
+$execSql -i $instance -c "$managedtbl" -q
+
 ## run drupal upgrade
 echo "run drupal db upgrade"
 $drush $instance updb -y -q
@@ -130,6 +155,11 @@ $drush $instance updb -y -q
 echo "removing civicrm_setting table so civicrm upgrade can recreate..."
 settingrm="DROP TABLE IF EXISTS civicrm_setting;"
 $execSql -i $instance -c "$settingrm" -q
+
+## remove managed table
+echo "removing civicrm_managed table so civicrm upgrade can recreate..."
+managedrm="DROP TABLE IF EXISTS civicrm_managed;"
+$execSql -i $instance -c "$managedrm" -q
 
 ## manually re-enable civicrm so upgrade will run
 echo "ensure civicrm module is enabled..."

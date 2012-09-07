@@ -321,7 +321,8 @@ VALUES
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 -- CRM-9936
-ALTER TABLE civicrm_group ADD is_reserved TINYINT( 4 ) NULL DEFAULT '0' ;
+-- NYSS remove as already present
+-- ALTER TABLE civicrm_group ADD is_reserved TINYINT( 4 ) NULL DEFAULT '0' ;
 
 -- CRM-9501 price set report templates
 SELECT @option_group_id_report := MAX(id)     FROM civicrm_option_group WHERE name = 'report_template';
