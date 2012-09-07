@@ -24,8 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
-<script src="/sites/default/themes/rayCivicrm/scripts/bbtree.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <style>
 .crm-tagGroup-accordion #crm-tagListWrap {
 	display:none;
@@ -34,7 +34,7 @@
 	cursor:pointer;
 }
 .crm-tagGroupsList div.label div.arrow, .crm-tagList div.label div.arrow {
-	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png') no-repeat -32px -15px;
+	background: url('/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png') no-repeat -32px -15px;
 	height: 16px;
 	width: 15px;
 	float: left;

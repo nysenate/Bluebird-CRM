@@ -87,7 +87,8 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
- 		<p> <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/header-search-active.gif"/> Loading message details. </p>
+ 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
+     </p>
 	</div>
 	<div id="tagging-popup" title="Tagging">
 		<div id="tagging-popup-header">

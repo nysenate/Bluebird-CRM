@@ -24,16 +24,16 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
-<script src="/sites/default/themes/rayCivicrm/scripts/bbtree.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <style>
 .crm-tagTabHeader {height:15px; clear:both;}
-.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer;}
+.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer;}
 .crm-tagTabHeader li:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
 #crm-container #crm-tagListWrap {clear:both;}
 .BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
 .crm-tagLegend td div {
-	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png') transparent no-repeat;
+	background: url('/sites/default/themes/Bluebird/nyss_skin/images/fcb.png') transparent no-repeat;
 	height:16px;
 	width:16px;
 	float:left;
@@ -46,7 +46,7 @@
 .crm-tagLegend td.mergeTag div {background-position: -66px 0px;}
 .crm-tagLegend td.printTag div, #crm-container .BBtree dt.lv-0 .fCB ul li.printTag {
 
-	background-image: url('/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png'); 
+	background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png');
 	background-position: -160px -96px;
 }
 dt.lv-0 .fCB ul li.printTag {
@@ -366,7 +366,7 @@ function printTags()
 	var data = cj('.BBtree.edit.manage').html();
 	var mywindow = window.open('', 'Print Tags');
 	mywindow.document.write('<html><head><title>Print Tags</title>');
-    mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />');
+    mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />');
     mywindow.document.write('<style>');
     mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}body.popup .bbtree dl.lv-2, .body.popup bbtree dl.lv-3, body.popup .bbtree dl.lv-4, body.popup .bbtree dl.lv-5, body.popup .bbtree dl.lv-6  {display:block !important;} body.popup .fCB{display:none;}');
     mywindow.document.write('</style>');
