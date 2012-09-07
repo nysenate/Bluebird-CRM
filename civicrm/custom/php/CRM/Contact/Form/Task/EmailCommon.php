@@ -202,8 +202,12 @@ class CRM_Contact_Form_Task_EmailCommon {
                                        'is_primary'            => 1, //NYSS 5389
                                        );
         
-            //NYSS 5389
-            list( $form->_contactDetails ) = CRM_Mailing_BAO_Mailing::getDetails( $form->_contactIds, $returnProperties, true, true );
+      //NYSS 5389
+      list($form->_contactDetails) = CRM_Utils_Token::getTokenDetails($form->_contactIds,
+        $returnProperties,
+        TRUE,
+        TRUE
+      );
 
             // make a copy of all contact details
             $form->_allContactDetails = $form->_contactDetails;
