@@ -590,12 +590,13 @@ t_act.id as case_recent_activity_id,
 t_act.act_type_name as case_recent_activity_type_name,
 t_act.act_type AS case_recent_activity_type ";
     }
-    else if ( $type == 'all' ) { //NYSS 2173
+    //NYSS 2173
+    else if ( $type == 'all' ) {
       $query .=  " 
-civicrm_activity.activity_date_time as case_activity_date,
-civicrm_activity.id as case_activity_id,
-aov.name as case_activity_type_name,
-aov.label as case_activity_type ";
+t_act.desired_date as case_activity_date,
+t_act.id as case_activity_id,
+t_act.act_type_name as case_activity_type_name,
+t_act.act_type AS case_activity_type ";
     } 
         
     $query .= " FROM civicrm_case
@@ -642,12 +643,19 @@ LEFT JOIN civicrm_option_value aov ON (aov.option_group_id = aog.id AND aov.valu
   LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
   LEFT JOIN civicrm_option_value aov ON ( aov.option_group_id = aog.id AND aov.value = act.activity_type_id )
   ) AS t_act ";
-    } 
-    else if ( $type == 'all' ) { //NYSS 2173
-            $query .= " 
-LEFT JOIN civicrm_activity
-  ON ( civicrm_case_activity.activity_id = civicrm_activity.id
-  AND civicrm_activity.is_current_revision = 1 ) ";
+    }
+    //NYSS 2173
+    else if ( $type == 'all' ) {
+      $query .= " LEFT JOIN
+(
+  SELECT ca4.case_id, act4.id AS id, act4.activity_date_time AS desired_date, act4.activity_type_id, act4.status_id,
+  aov.name AS act_type_name, aov.label AS act_type
+  FROM civicrm_activity act4
+  LEFT JOIN civicrm_case_activity ca4
+    ON ( ca4.activity_id = act4.id AND act4.is_current_revision = 1 )
+  LEFT JOIN civicrm_option_group aog ON aog.name='activity_type'
+  LEFT JOIN civicrm_option_value aov ON ( aov.option_group_id = aog.id AND aov.value = act4.activity_type_id )
+) AS t_act";
     }
                
         $query .= "
@@ -680,31 +688,16 @@ LEFT JOIN civicrm_option_group cog_status
       // CRM-8749 backwards compatibility - callers of this function expect to start $condition with "AND"
       $query .= " WHERE (1) $condition ";
     }
-        
-    if ($type == 'upcoming') {
-      $query .= " ORDER BY case_scheduled_activity_date ASC ";
-    }
-    elseif ($type == 'recent') {
-      $query .= " ORDER BY case_recent_activity_date ASC ";
-    }
-    else if ( $type == 'all' ) { //NYSS 2173
-	  $query .= " )";
-	}
-
-	//NYSS 2173
-    if ( $type == 'all' ) {
-      $query .= " WHERE ca2.id";
-	} else {
-      $query .= " WHERE ca2.id IS NULL";
-    }
 
     if ( $type == 'upcoming' ) {
       $query .=" ORDER BY case_scheduled_activity_date ASC ";
     } else if ( $type == 'recent' ) {
       $query .= " ORDER BY case_recent_activity_date ASC ";
-    } else if ( $type == 'all' ) { //NYSS 2173
+    //NYSS 2173
+    } else if ( $type == 'all' ) {
       $query .= " ORDER BY case_activity_date ASC ";
     }
+    //CRM_Core_Error::debug_var('case all query',$query);
 
     return $query;
   }
@@ -749,8 +742,8 @@ LEFT JOIN civicrm_option_group cog_status
         if ( !$allCases ) {
       $condition .= " AND case_relationship.contact_id_b = {$userID} ";
         }
-
-        if ( $type == 'upcoming' || $type == 'all' ) { //NYSS 2173
+        //NYSS 2173
+        if ( $type == 'upcoming' || $type == 'all' ) {
             $closedId    = CRM_Core_OptionGroup::getValue( 'case_status', 'Closed', 'name' );
             $condition .= "
 AND civicrm_case.status_id != $closedId";
