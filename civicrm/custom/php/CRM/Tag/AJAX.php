@@ -46,7 +46,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function _build_node($source, $entity_tags, $entity_counts) {
         $node = array();
-        foreach(self::$TAG_FIELDS as $field)}{
+        foreach(self::$TAG_FIELDS as $field){
             // couldn't test locally but this totally should work :p
             // if we have the created id, search fo the contact and return the display name
             if ($field == 'created_id'){

@@ -56,14 +56,14 @@
 .BBtree dt:hover .fCB {display:inline;}
 .BBtree.ui-dialog-content dt:hover .fCB {display:none;}
 .BBtree dt .treeButton {
-	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
+	 background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
 	 height:16px; width:15px; float:left; margin:0px 5px 0 0px;
 }
 .BBtree.manage dt .treeButton {
 	margin:0px 5px 0 -5px;
 }
 .BBtree.loadingGif {
-	 background: url("/sites/default/themes/rayCivicrm/images/loading.gif") no-repeat scroll center white;
+	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
 }
 .BBtree dl.lv-0 {
 	float:left;
@@ -78,13 +78,13 @@
 	background-position:-64px -15px;
 }
 .BBtree.edit dt div.treeButton.stub {
-	background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:3px;
+	background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:3px;
 }
 .BBtree.manage dt div.treeButton.stub {
-	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:-2px; margin-right:-3px;
+	 background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:-2px; margin-right:-3px;
 }
 .BBtree.tab dt div.treeButton.stub, .BBtree.modal dt div.treeButton.stub  {
-	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:1px;
+	 background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:1px;
 }
 
 .BBtree dt div.tag {
@@ -157,7 +157,7 @@ margin:0;
 }
 .BBtree .fCB li, div.block-civicrm .BBtree .fCB li, #crm-container .BBtree .fCB li{
 	list-style-type:none;
-	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png') transparent no-repeat;
+	background: url('/sites/default/themes/Bluebird/nyss_skin/images/fcb.png') transparent no-repeat;
 }
 .BBtree.edit .fCB .checkbox{
 	top: .25em\9; margin-left:2px\9;
