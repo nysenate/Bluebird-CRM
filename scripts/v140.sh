@@ -290,6 +290,14 @@ UPDATE civicrm_custom_field SET weight = 15 WHERE custom_group_id = 1 AND name =
 "
 $execSql -i $instance -c "$order" -q
 
+## set blocks for bluebird theme
+blocks="
+UPDATE block SET status = 1, region = 'content' WHERE module = 'system' AND delta = 'main' AND theme = 'Bluebird';
+UPDATE block SET status = 1, region = 'content' WHERE module = 'system' AND delta = 'login' AND theme = 'Bluebird';
+UPDATE block SET status = 1, region = 'footer' WHERE module = 'civicrm' AND delta = '2' AND theme = 'Bluebird';
+"
+$execSql -i $instance -c "$blocks" --drupal -q
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
