@@ -61,7 +61,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php endif; ?>
   </div>
 
-  <?php if ($sidebar_first): ?>
+  <?php if (isset($sidebar_first) && $sidebar_first): ?>
     <div class="<?php print $left_classes; ?>"><?php print $sidebar_first; ?></div>
   <?php endif ?>
   <?php
@@ -171,7 +171,11 @@ $now = time() + (60 * 60 * $offset);
 	  });
     </script>
 
-  <?php print $closure; ?>
+  <?php
+    if ( isset($closure) ) {
+      print $closure;
+    }
+  ?>
 
 </div>
 
@@ -197,7 +201,7 @@ function setJobID( ) {
 
 <?php
 //store job id in db variable
-if ( $_SESSION['CiviCRM']['jobID'] ) {
+if ( isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID'] ) {
   $jobID = CRM_Core_DAO::singleValueQuery('SELECT @jobID');
   if ( !$jobID ) {
       $jobID = $_SESSION['CiviCRM']['jobID'];
