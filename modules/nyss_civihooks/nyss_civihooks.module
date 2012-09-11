@@ -638,22 +638,17 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
   }
 
   //include inline edit page js
-  $inlinePages = array(
-    'CRM_Contact_Page_Inline_Email',
-    'CRM_Contact_Page_Inline_Phone',
-    'CRM_Contact_Page_Inline_Address',
-  );
-  CRM_Core_Error::debug_var('pagename',$pagename);
-  if ( in_array($pagename, $inlinePages) ) {
-    CRM_Core_Error::debug_var('pagename2',$pagename);
-    $config = CRM_Core_Config::singleton();
-    $tplDir = $config->customTemplateDir;
+  if ( strpos($pagename, 'CRM_Contact_Page_Inline_') !== FALSE ) {
     $js = "
-    cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
-      cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
-    });
+    <script type='text/javascript'>
+      cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
+        cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+      });
+      cj('.crm-table2div-layout #crm-container-snippet').removeAttr('id');
+      cj('.crm-table2div-layout .crm-inline-edit-hover').removeClass('crm-inline-edit-hover');
+    </script>
     ";
-    drupal_add_js($js, 'inline');
+    echo $js;
   }
 
   _setDBVars();

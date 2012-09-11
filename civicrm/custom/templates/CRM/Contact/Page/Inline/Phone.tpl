@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,32 +27,31 @@
 <div class="crm-table2div-layout" id="crm-phone-content">
   <div class="crm-clear"> <!-- start of main -->
     {if $permission EQ 'edit'}
-    {if $phone}
-    <div class="crm-config-option">
-      <a id="edit-phone" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
-        <span class="batch-edit"></span>{ts}add/edit{/ts}
-      </a>
-    </div>
-    {else}
-      <div>
-        <a id="edit-phone" class="crm-link-action" title="{ts}click to add / edit{/ts}">
-          <span class="batch-edit"></span>{ts}add/edit phone{/ts}
+      {if $phone}
+       <div class="crm-config-option">
+        <a id="edit-phone" class="hiddenElement crm-link-action" title="{ts}click to add or edit phone numbers{/ts}">
+          <span class="batch-edit"></span>{ts}add or edit phone{/ts}
         </a>
       </div>
-    {/if}
+      {else}
+        <div>
+          <a id="edit-phone" class="crm-link-action empty-phone" title="{ts}click to add a phone number{/ts}">
+            <span class="batch-edit"></span>{ts}add phone{/ts}
+          </a>
+        </div>
+      {/if}
     {/if}
     {foreach from=$phone item=item}
       {if $item.phone || $item.phone_ext}
-        <div class="crm-label">{$item.location_type} {$item.phone_type}</div>
-        <div class="crm-content {if $item.is_primary eq 1}crm-content primary{/if}">
-          <span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>
+        <div class="crm-label">{$item.location_type}&nbsp;{$item.phone_type}</div>
+        <div class="crm-content crm-contact_phone {if $item.is_primary eq 1}primary{/if}">
+          <span {if $privacy.do_not_phone} class="do-not-phone" title="{ts}Privacy flag: Do Not Phone{/ts}"{/if}>
     {$item.phone}{if $item.phone_ext}&nbsp;&nbsp;{ts}ext.{/ts} {$item.phone_ext}{/if}
           </span>
         </div>
-        <div class="crm-clear"></div>
       {/if}
     {/foreach}
-   </div> <!-- end of main !-->
+   </div> <!-- end of main -->
 </div>
 
 {if $permission EQ 'edit'}
@@ -64,26 +63,26 @@ cj(function(){
       cj('#edit-phone').show();
     }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
-      {/literal}{if $phone}{literal}
-        if ( cj('#edit-phone').text().trim() == 'add/edit' ) {
-          cj('#edit-phone').hide();
-        }
-      {/literal}{/if}{literal}
+      if ( !cj('#edit-phone').hasClass('empty-phone') ) { 
+        cj('#edit-phone').hide();
+      }
     });
 
     cj('#edit-phone').click( function() {
         var dataUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1&cid='}{$contactId}"{literal}; 
-        var response = cj.ajax({
-                        type: "POST",
-                        data: { 'class_name':'CRM_Contact_Form_Inline_Phone' },
-                        url: dataUrl,
-                        async: false
-					}).responseText;
-
-	    cj( '#phone-block' ).html( response );
+        
+        addCiviOverlay('.crm-summary-phone-block');
+        cj.ajax({ 
+          data: { 'class_name':'CRM_Contact_Form_Inline_Phone' },
+          url: dataUrl,
+          async: false
+        }).done( function(response) {
+          cj('#phone-block').html( response );
+        });
+        
+        removeCiviOverlay('.crm-summary-phone-block');
     });
 });
-
 </script>
 {/literal}
 {/if}
