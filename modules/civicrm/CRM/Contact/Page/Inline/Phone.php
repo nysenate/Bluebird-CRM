@@ -34,10 +34,10 @@
  */
 
 /**
- * Dummy page for details of PHone
+ * Dummy page for details of Phone
  *
  */
-class CRM_Contact_Page_Inline_Phone {
+class CRM_Contact_Page_Inline_Phone extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -74,18 +74,15 @@ class CRM_Contact_Page_Inline_Phone {
       }
     }
 
-    $template = CRM_Core_Smarty::singleton();
-    $template->assign('contactId', $contactId);
-    $template->assign('phone', $phones);
-    $template->assign('privacy', $privacy);
+    $this->assign('contactId', $contactId);
+    $this->assign('phone', $phones);
+    $this->assign('privacy', $privacy);
 
     // check logged in user permission
-    $page = new CRM_Core_Page();
-    CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-    $template->append($page);
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
     
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/Phone.tpl');
-    CRM_Utils_System::civiExit();
+    // finally call parent 
+    parent::run();
   }
 }
 

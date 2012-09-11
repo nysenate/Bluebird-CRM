@@ -37,7 +37,7 @@
  * Dummy page for details of Email
  *
  */
-class CRM_Contact_Page_Inline_Email {
+class CRM_Contact_Page_Inline_Email extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -72,18 +72,15 @@ class CRM_Contact_Page_Inline_Email {
       }
     }
 
-    $template = CRM_Core_Smarty::singleton();
-    $template->assign('contactId', $contactId);
-    $template->assign('email', $emails);
-    $template->assign('privacy', $privacy);
-
+    $this->assign('contactId', $contactId);
+    $this->assign('email', $emails);
+    $this->assign('privacy', $privacy);
+    
     // check logged in user permission
-    $page = new CRM_Core_Page();
-    CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-    $template->append($page);
- 
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/Email.tpl');
-    CRM_Utils_System::civiExit();
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
+    
+    // finally call parent 
+    parent::run();
   }
 }
 

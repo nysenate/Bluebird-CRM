@@ -37,7 +37,7 @@
  * This page displays custom data during inline edit 
  *
  */
-class CRM_Contact_Page_Inline_CustomData {
+class CRM_Contact_Page_Inline_CustomData extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -51,26 +51,27 @@ class CRM_Contact_Page_Inline_CustomData {
   function run() {
     // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
-    $cgId = CRM_Utils_Request::retrieve('groupID', 'Positive', $this, TRUE, NULL, $_REQUEST);
+    $cgId = CRM_Utils_Request::retrieve('groupID', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
  
     //custom groups Inline
     $entityType    = CRM_Contact_BAO_Contact::getContactType($contactId);
     $entitySubType = CRM_Contact_BAO_Contact::getContactSubType($contactId);
-    $page = new CRM_Core_Page();
-    $groupTree     = &CRM_Core_BAO_CustomGroup::getTree($entityType, $page, $contactId,
+    $groupTree     = &CRM_Core_BAO_CustomGroup::getTree($entityType, $this, $contactId,
       $cgId, $entitySubType
       );
 
-    $details = CRM_Core_BAO_CustomGroup::buildCustomDataView($page, $groupTree);
+    $details = CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree);
     $fields = array_pop($details[$cgId]);
 
-    $template = CRM_Core_Smarty::singleton();
-    $template->assign('contactId', $contactId);
-    $template->assign('customGroupId', $cgId);
-    $template->assign_by_ref('cd_edit', $fields);
+    $this->assign('contactId', $contactId);
+    $this->assign('customGroupId', $cgId);
+    $this->assign_by_ref('cd_edit', $fields);
 
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/CustomData.tpl');
-    CRM_Utils_System::civiExit();
+    // check logged in user permission
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
+    
+    // finally call parent 
+    parent::run();
   }
 }
 

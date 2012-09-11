@@ -643,7 +643,9 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
     'CRM_Contact_Page_Inline_Phone',
     'CRM_Contact_Page_Inline_Address',
   );
-  /*if ( in_array($pagename, $inlinePages) ) {
+  CRM_Core_Error::debug_var('pagename',$pagename);
+  if ( in_array($pagename, $inlinePages) ) {
+    CRM_Core_Error::debug_var('pagename2',$pagename);
     $config = CRM_Core_Config::singleton();
     $tplDir = $config->customTemplateDir;
     $js = "
@@ -652,7 +654,7 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
     });
     ";
     drupal_add_js($js, 'inline');
-  }*/
+  }
 
   _setDBVars();
 }

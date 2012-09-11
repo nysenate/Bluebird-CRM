@@ -37,7 +37,7 @@
  * Dummy page for details of demographics 
  *
  */
-class CRM_Contact_Page_Inline_Demographics {
+class CRM_Contact_Page_Inline_Demographics extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -52,9 +52,7 @@ class CRM_Contact_Page_Inline_Demographics {
     // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
 
-    $params = array(
-      'id' => $contactId
-    );
+    $params = array('id' => $contactId);
 
     $defaults = array();
     CRM_Contact_BAO_Contact::getValues( $params, $defaults );
@@ -64,20 +62,17 @@ class CRM_Contact_Page_Inline_Demographics {
       $defaults['gender_display'] = $gender[CRM_Utils_Array::value('gender_id', $defaults)];
     }
 
-    $template = CRM_Core_Smarty::singleton();
-    $template->assign('contactId', $contactId);
-    $template->assign($defaults);
-    
-    // check logged in user permission
-    $page = new CRM_Core_Page();
-    CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-    $template->append($page);
+    $this->assign('contactId', $contactId);
+    $this->assign($defaults);
  
     //for birthdate format with respect to birth format set
-    $template->assign('birthDateViewFormat', CRM_Utils_Array::value('qfMapping', CRM_Utils_Date::checkBirthDateFormat()));
+    $this->assign('birthDateViewFormat', CRM_Utils_Array::value('qfMapping', CRM_Utils_Date::checkBirthDateFormat()));
 
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/Demographics.tpl');
-    CRM_Utils_System::civiExit();
+    // check logged in user permission
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
+    
+    // finally call parent 
+    parent::run();
   }
 }
 

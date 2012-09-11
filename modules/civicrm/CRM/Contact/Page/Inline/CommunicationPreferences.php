@@ -37,7 +37,7 @@
  * Dummy page for details of communication preferences 
  *
  */
-class CRM_Contact_Page_Inline_CommunicationPreferences {
+class CRM_Contact_Page_Inline_CommunicationPreferences extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -52,25 +52,20 @@ class CRM_Contact_Page_Inline_CommunicationPreferences {
     // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
 
-    $params = array(
-      'id' => $contactId
-    );
+    $params = array('id' => $contactId);
 
     $defaults = array();
     CRM_Contact_BAO_Contact::getValues( $params, $defaults );
     $defaults['privacy_values'] = CRM_Core_SelectValues::privacy();
 
-    $template = CRM_Core_Smarty::singleton();
-    $template->assign('contactId', $contactId);
-    $template->assign($defaults);
+    $this->assign('contactId', $contactId);
+    $this->assign($defaults);
     
     // check logged in user permission
-    $page = new CRM_Core_Page();
-    CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-    $template->append($page);
-
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/CommunicationPreferences.tpl');
-    CRM_Utils_System::civiExit();
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
+    
+    // finally call parent 
+    parent::run();
   }
 }
 

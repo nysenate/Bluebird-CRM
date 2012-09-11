@@ -60,8 +60,14 @@ class CRM_Core_Page_AJAX {
       $wrapper->run($className);
     }
     else {
-      $execute = ($type == 'method') ? "{$className}();" : "{$className}::run();";
-      eval($execute);
+      if ( $type == 'method' ) {
+        $execute = "{$className}();";
+        eval($execute);
+      }
+      else {
+        eval("\$page = new {$className}();");
+        $page->run();
+      }
     }
     CRM_Utils_System::civiExit();
   }

@@ -37,7 +37,7 @@
  * Dummy page for details of address 
  *
  */
-class CRM_Contact_Page_Inline_Address {
+class CRM_Contact_Page_Inline_Address extends CRM_Core_Page {
 
   /**
    * Run the page.
@@ -51,8 +51,8 @@ class CRM_Contact_Page_Inline_Address {
   function run() {
     // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
-    $locBlockNo = CRM_Utils_Request::retrieve('locno', 'Positive', $this, TRUE, NULL, $_REQUEST);
-    $addressId = CRM_Utils_Request::retrieve('aid', 'Positive', $thisi, FALSE, NULL, $_REQUEST);
+    $locBlockNo = CRM_Utils_Request::retrieve('locno', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
+    $addressId = CRM_Utils_Request::retrieve('aid', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
 
     $address = array();
     if ( $addressId > 0 ) {
@@ -70,7 +70,6 @@ class CRM_Contact_Page_Inline_Address {
     // we just need current address block
     $currentAddressBlock['address'][$locBlockNo] = array_pop( $address ); 
     
-    $template = CRM_Core_Smarty::singleton();
     if ( !empty( $currentAddressBlock['address'][$locBlockNo] ) ) {
       // get contact name of shared contact names
       $sharedAddresses = array();
@@ -87,22 +86,21 @@ class CRM_Contact_Page_Inline_Address {
       }
 
       // add custom data of type address
-      $page = new CRM_Core_Page();
       $groupTree = CRM_Core_BAO_CustomGroup::getTree( 'Address',
-        $page, $currentAddressBlock['address'][$locBlockNo]['id']
+        $this, $currentAddressBlock['address'][$locBlockNo]['id']
       );
 
       // we setting the prefix to dnc_ below so that we don't overwrite smarty's grouptree var.
-      $currentAddressBlock['address'][$locBlockNo]['custom'] = CRM_Core_BAO_CustomGroup::buildCustomDataView( $page, $groupTree, FALSE, NULL, "dnc_");
-      $page->assign("dnc_viewCustomData", NULL);
+      $currentAddressBlock['address'][$locBlockNo]['custom'] = CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $groupTree, FALSE, NULL, "dnc_");
+      $this->assign("dnc_viewCustomData", NULL);
     
-      $template->assign('add', $currentAddressBlock['address'][$locBlockNo]);
-      $template->assign('sharedAddresses', $sharedAddresses);
+      $this->assign('add', $currentAddressBlock['address'][$locBlockNo]);
+      $this->assign('sharedAddresses', $sharedAddresses);
     }
 
-    $template->assign('contactId', $contactId);
-    $template->assign('locationIndex', $locBlockNo);
-    $template->assign('addressId', $addressId);
+    $this->assign('contactId', $contactId);
+    $this->assign('locationIndex', $locBlockNo);
+    $this->assign('addressId', $addressId);
 
     $appendBlockIndex = CRM_Core_BAO_Address::getAddressCount($contactId);
 
@@ -115,15 +113,13 @@ class CRM_Contact_Page_Inline_Address {
     else {
       $appendBlockIndex = 0; 
     }
-    $template->assign('appendBlockIndex', $appendBlockIndex);
+    $this->assign('appendBlockIndex', $appendBlockIndex);
     
     // check logged in user permission
-    $page = new CRM_Core_Page();
-    CRM_Contact_Page_View::checkUserPermission($page, $contactId);
-    $template->append($page);
+    CRM_Contact_Page_View::checkUserPermission($this, $contactId);
 
-    echo $content = $template->fetch('CRM/Contact/Page/Inline/Address.tpl');
-    CRM_Utils_System::civiExit();
+    // finally call parent 
+    parent::run();
   }
 }
 
