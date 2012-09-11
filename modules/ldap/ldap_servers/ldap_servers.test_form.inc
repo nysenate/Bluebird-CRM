@@ -192,7 +192,7 @@ function ldap_servers_test_form_submit($form, &$form_state) {
       'LDAP Entry' => $ldap_user,
     );
   }
-  $message =  theme_item_list(array('items' => $results, 'title' => t('Result Messages'), 'type' => 'ul', 'attributes' => array()));
+  $message = ''; // theme_item_list(array('items' => $results, 'title' => t('Result Messages'), 'type' => 'ul', 'attributes' => array()));
 
   drupal_set_message(t($message), ($has_errors) ? 'error' : 'status');
 

@@ -27,7 +27,7 @@ function _ldap_authentication_login_form_alter(&$form, &$form_state, $form_id) {
   if (!$auth_conf = ldap_authentication_get_valid_conf()) {
     return;
   }
-  elseif (!$auth_conf->enabled_servers()) {
+  if (!$auth_conf->hasEnabledAuthenticationServers()) {
     return;
   }
 
@@ -173,7 +173,7 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
     }
   }
 
-  if (!count($auth_conf->servers)) {
+  if (!count($auth_conf->enabledAuthenticationServers)) {
     watchdog('ldap_authentication',  'No LDAP servers configured.', array(), WATCHDOG_ERROR);
     form_set_error('name', 'Server Error:  No LDAP servers configured.');
   }
@@ -217,7 +217,7 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
     }
   }
 
-  foreach ($auth_conf->servers as $sid => $ldap_server) {
+  foreach ($auth_conf->enabledAuthenticationServers as $sid => $ldap_server) {
     $watchdog_tokens['%sid'] = $sid;
     $watchdog_tokens['%bind_method'] = $ldap_server->bind_method;
     if ($detailed_watchdog_log) {
@@ -317,7 +317,7 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
     /**
     * #4 CHECK ALLOWED AND EXCLUDED LIST AND PHP FOR ALLOWED USERS
     */
-    $allow = $auth_conf->allowUser($authname, $ldap_user);
+    $allow = $auth_conf->allowUser($authname, $ldap_user, $account_exists);
     if (!$allow) {
       $authentication_result = LDAP_AUTHENTICATION_RESULT_FAIL_DISALLOWED;
       break;  // regardless of how many servers, disallowed user fails
@@ -359,7 +359,7 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
         $watchdog_tokens['%mail'] = $ldap_user['mail'];
       }
       if ($ldap_server->account_name_attr != '') {
-        $accountname = $ldap_user['attr'][$ldap_server->account_name_attr][0];
+        $accountname = $ldap_user['attr'][ldap_server_massage_text($ldap_server->account_name_attr, 'attr_name', LDAP_SERVER_MASSAGE_QUERY_ARRAY)][0];
       }
       else {
       	$accountname = $authname;
@@ -445,10 +445,15 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
      *       a little tweak to add user->data and mail etc as parameters would make it more useful
      *       for external authentication modules
      */
- 	ldap_server_module_load_include('inc', 'ldap_servers', 'ldap_servers.functions');
-
-
-    $account = ldap_create_drupal_account($authname, $accountname, $ldap_user['mail'], $ldap_user['dn'], $sid);
+    ldap_server_module_load_include('inc', 'ldap_servers', 'ldap_servers.functions');
+    
+    $status = 1; 
+    $user_register = variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
+    if ($auth_conf->acctCreation == LDAP_AUTHENTICATION_ACCT_CREATION_USER_SETTINGS_FOR_LDAP && $user_register == USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL) {
+      $status = 0; // if admin approval required, set status to 1.
+    }
+    $discard_edit = array();
+    $account = ldap_create_drupal_account($authname, $accountname, $ldap_user['mail'], $ldap_user['dn'], $sid, $status, $discard_edit);
     if ($account === FALSE) {
       // need to throw error that account was not created
     }
@@ -484,8 +489,8 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
         watchdog('ldap_authentication', 'User e-mail for %username update from %old to %new failed because of system problems.', $watchdog_tokens,  WATCHDOG_ERROR);
       }
       elseif ($auth_conf->emailUpdate == LDAP_AUTHENTICATION_EMAIL_UPDATE_ON_LDAP_CHANGE_ENABLE_NOTIFY ) {
-          $message_tokens = array('@mail' => $ldap_user['mail']);
-          drupal_set_message(t('Your e-mail has been updated to match your LDAP account (@mail).', $message_tokens), 'status');
+          $watchdog_tokens['@mail'] = $ldap_user['mail'];
+          drupal_set_message(t('Your e-mail has been updated to match your LDAP account (@mail).', $watchdog_tokens), 'status');
       }
     }
   }

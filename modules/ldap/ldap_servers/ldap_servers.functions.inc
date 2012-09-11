@@ -20,13 +20,15 @@ function ldap_server_module_load_include($type, $module, $name = NULL) {
  * as LDAP_CREATE_ACCOUNT_ALREADY_EXISTS, LDAP_CREATE_ERROR
  *
  */
-function ldap_create_drupal_account($authname, $accountname, $mail, $dn, $sid, $edit = array()) {
+//  $account = ldap_create_drupal_account($authname, $accountname, $ldap_user['mail'], $ldap_user['dn'], $sid, array(), $status);
+
+function ldap_create_drupal_account($authname, $accountname, $mail, $dn, $sid, $status, $edit) {
 
   $edit['name'] = $accountname;
   $edit['pass'] = user_password(20);
   $edit['mail'] = $mail;
   $edit['init'] = $mail;
-  $edit['status'] = 1;
+  $edit['status'] = $status;
   if (!isset($edit['signature'])) {
     $edit['signature'] = '';
   }
@@ -207,16 +209,10 @@ function ldap_server_tokenize_entry($ldap_entry, $token_keys = 'all', $pre = LDA
   foreach ($dn_parts as $pair) {
     list($attr_name, $attr_value) = explode('=', $pair);
     $attr_value = ldap_pear_unescape_dn_value($attr_value);
-    try {
-      $attr_value = check_plain($attr_value);
+    if (!($attr_value = ldap_server_check_plain($attr_value, $attr_name))) {
+      continue;
     }
-    catch (Exception $e) {
-      if ($detailed_watchdog_log) {
-        $watchdog_tokens = array('%attr_name' => $attr_name);
-        watchdog('ldap_servers', 'skipped tokenization of attribute %attr_name because the value would not pass check_plain function.', $watchdog_tokens, WATCHDOG_DEBUG);
-      }
-       continue; // don't tokenize data that can't pass check_plain
-    }
+
     if (!isset($parts_count[$attr_name])) {
       $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = $attr_value;
       $parts_count[$attr_name] = 0;
@@ -237,18 +233,26 @@ function ldap_server_tokenize_entry($ldap_entry, $token_keys = 'all', $pre = LDA
     foreach ($token_keys as $attr_name) {
       $attr_value = $ldap_entry[$attr_name];
       if (is_array($attr_value) && is_scalar($attr_value[0]) && $attr_value['count'] == 1) {
-        $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = check_plain($attr_value[0]);
-        $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . '0' . $post] = check_plain($attr_value[0]);
-        $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . 'last' . $post] = check_plain($attr_value[0]);
+        if ($value = ldap_server_check_plain($attr_value[0], $attr_name)) {
+          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = $value;
+          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . '0' . $post] = $value;
+          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . 'last' . $post] = $value;
+        }       
       }
       elseif (is_array($attr_value) && $attr_value['count'] > 1) {
-        $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . 'last' . $post] = check_plain($attr_value[$attr_value['count']-1]);
+        if ($value = ldap_server_check_plain($attr_value[$attr_value['count']-1], $attr_name)) {
+          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . 'last' . $post] = $value;
+        }
         for ($i=0; $i<$attr_value['count']; $i++) {
-          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . $i . $post] = check_plain($attr_value[$i]);
+          if ($value = ldap_server_check_plain($attr_value[$i], $attr_name)) {
+            $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . LDAP_SERVERS_TOKEN_DEL . $i . $post] = $value;
+          }
         }
       }
       elseif (is_scalar($attr_value)) {
-        $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = check_plain($attr_value);
+        if ($value = ldap_server_check_plain($attr_value, $attr_name)) {
+          $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = $value;
+        }
       }
     }
   }
@@ -272,16 +276,35 @@ function ldap_server_tokenize_entry($ldap_entry, $token_keys = 'all', $pre = LDA
       else {
         $value = $ldap_entry[$token_key][0];
       }
-      $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = check_plain($value);
+      $value = ldap_server_check_plain($value, $token_key);
+      if ($value === FALSE) {
+         continue; // don't tokenize data that can't pass check_plain
+      }
+      $tokens[$pre . ldap_server_massage_text($attr_name, 'attr_name', LDAP_SERVER_MASSAGE_TOKEN_REPLACE) . $post] = $value;
     }
   }
 
   // include the dn.  it will not be handled correctly by previous loops
-  $tokens[$pre . 'dn' . $post] = check_plain($ldap_entry['dn']);
+  $tokens[$pre . 'dn' . $post] = ldap_server_check_plain($ldap_entry['dn']);
 
   return $tokens;
 }
 
+
+function ldap_server_check_plain($text, $attr_name = 'attribute', $detailed_watchdog_log = FALSE) {
+  
+  try {
+    $text = @check_plain($text);
+  }
+  catch (Exception $e) {
+    if ($detailed_watchdog_log) {
+      $watchdog_tokens = array('%attr_name' => $attr_name);
+      watchdog('ldap_servers', 'skipped tokenization of attribute %attr_name because the value would not pass check_plain function.', $watchdog_tokens, WATCHDOG_DEBUG);
+    }
+    $text = FALSE;
+  }
+  return $text;
+}
 /**
  * @param string $template in form [cn]@myuniversity.edu
  * @return array of all tokens in the template such as array('cn')

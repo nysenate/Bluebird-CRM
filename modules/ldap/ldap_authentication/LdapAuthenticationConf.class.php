@@ -12,7 +12,7 @@ class LdapAuthenticationConf {
   // no need for LdapAuthenticationConf id as only one instance will exist per drupal install
 
   public $sids = array();  // server configuration ids being used for authentication
-  public $servers = array(); // ldap server object
+  public $enabledAuthenticationServers = array(); // ldap server object
   public $inDatabase = FALSE;
   public $authenticationMode = LDAP_AUTHENTICATION_MODE_DEFAULT;
   public $loginUIUsernameTxt;
@@ -68,9 +68,13 @@ class LdapAuthenticationConf {
   );
 
   /** are any ldap servers that are enabled associated with ldap authentication **/
-  public function enabled_servers() {
-    return !(count(array_filter(array_values($this->sids))) == 0);
+  public function hasEnabledAuthenticationServers() {
+    return !(count($this->enabledAuthenticationServers) == 0);
   }
+  public function enabled_servers() {
+    return $this->hasEnabledAuthenticationServers();
+  }
+  
   function __construct() {
     $this->load();
   }
@@ -85,12 +89,13 @@ class LdapAuthenticationConf {
           $this->{$property} = $saved[$property];
         }
       }
-      foreach ($this->sids as $sid => $is_enabled) {
-        if ($is_enabled) {
-          $this->servers[$sid] = ldap_servers_get_servers($sid, 'enabled', TRUE);
+      
+      $enabled_ldap_servers = ldap_servers_get_servers(NULL, 'enabled');
+      foreach ($this->sids as $sid => $enabled) {
+        if ($enabled && isset($enabled_ldap_servers[$sid])) {
+          $this->enabledAuthenticationServers[$sid] = $enabled_ldap_servers[$sid];
         }
       }
-
     }
     else {
       $this->inDatabase = FALSE;
@@ -131,12 +136,19 @@ class LdapAuthenticationConf {
    *
    * return boolean
    */
-  public function allowUser($name, $ldap_user_entry) {
+  public function allowUser($name, $ldap_user_entry, $account_exists = NULL) {
 
     /**
      * do one of the exclude attribute pairs match
      */
     $exclude = FALSE;
+    
+    // if user does not already exists and deferring to user settings AND user settings only allow 
+    $user_register = variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
+    if (!$account_exists && $this->acctCreation == LDAP_AUTHENTICATION_ACCT_CREATION_USER_SETTINGS_FOR_LDAP && $user_register == USER_REGISTER_ADMINISTRATORS_ONLY) {
+      return FALSE;
+    }
+    
     foreach ($this->excludeIfTextInDn as $test) {
       if (stripos($ldap_user_entry['dn'], $test) !== FALSE) {
         return FALSE;//  if a match, return FALSE;
