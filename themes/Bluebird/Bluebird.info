@@ -18,6 +18,7 @@ regions[left]    = Left sidebar
 regions[content] = Content
 regions[header]  = Header
 regions[footer]  = Footer
+regions[help]    = Help
 
 ; Let's enable some features
 ; Logo is not supported in Blueprint

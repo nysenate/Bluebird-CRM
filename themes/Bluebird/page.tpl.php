@@ -131,27 +131,20 @@ $now = time() + (60 * 60 * $offset);
 	foreach ( $user->roles as $user_role ) {
 		if ( in_array( $user_role, $job_roles ) ) { $jobuser = 1; }
 	}
-	if ( $jobuser ) { ?>
+	  if ( $jobuser ) { ?>
     	<div class="sos_job">
     	    [<?php if ( isset($_SESSION['CiviCRM']['jobID']) and $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
         	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job#</a>]
-        </div>
+      </div>
     <?php } ?>
 
   	<?php } ?>
 
     <?php
-
       if ($tabs != '') {
         print '<div class="tabs">'. render($tabs) .'</div>';
       }
-
       print render($page['help']); // Drupal already wraps this one in a class
-      ?>
-     <!-- <div class="crm-title">
-		 <h1 class="title"><?php print $title; ?></h1>
-      </div> -->
-    <?php
       print render($page['content']);
       print $feed_icons;
     ?>
