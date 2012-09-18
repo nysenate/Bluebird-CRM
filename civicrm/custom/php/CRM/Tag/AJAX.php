@@ -58,7 +58,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 );
                 $contact = civicrm_api('contact', 'get', $params );
                 $node['created_display_name'] = $contact['values'][$user_id]['display_names'];
-            }else{
+            }
+            else
+            {
                 $node[$field] = $source->$field;
             }
         }
