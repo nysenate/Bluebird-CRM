@@ -249,18 +249,21 @@ echo "transfer LDAP settings to new module..."
 ldapa="
 TRUNCATE ldap_authorization;
 INSERT INTO ldap_authorization (numeric_consumer_conf_id, sid, consumer_type, consumer_module, status, only_ldap_authenticated, derive_from_dn, derive_from_dn_attr, derive_from_attr, derive_from_attr_attr, derive_from_attr_use_first_attr, derive_from_attr_nested, derive_from_entry, derive_from_entry_nested, derive_from_entry_entries, derive_from_entry_entries_attr, derive_from_entry_attr, derive_from_entry_search_all, derive_from_entry_use_first_attr, derive_from_entry_user_ldap_attr, mappings, use_filter, synch_to_ldap, synch_on_logon, revoke_ldap_provisioned, create_consumers, regrant_ldap_provisioned) VALUES
-(1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, '', 0, '', 0, 0, 1, 0, 'cn=CRMAnalytics\ncn=CRMAdministrator\ncn=CRMOfficeAdministrator\ncn=CRMOfficeDataEntry\ncn=CRMOfficeManager\ncn=CRMOfficeStaff\ncn=CRMOfficeVolunteer\ncn=CRMPrintProduction\ncn=CRMSOS\ncn=SenatorTest', 'cn', 'member', 0, 0, 'dn', 'cn=CRMAnalytics|Analytics User\ncn=CRMAdministrator|Administrator\ncn=CRMOfficeAdministrator|Office Administrator\ncn=CRMOfficeDataEntry|Data Entry\ncn=CRMOfficeManager|Office Manager\ncn=CRMOfficeStaff|Staff\ncn=CRMOfficeVolunteer|Volunteer\ncn=CRMPrintProduction|Print Production\ncn=CRMSOS|SOS\ncn=CRMDConferenceServices|Conference Services\ncn=CRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
+(1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, NULL, 0, NULL, 0, 0, 1, 0, 'CRMAnalytics\nCRMAdministrator\nCRMOfficeAdministrator\nCRMOfficeDataEntry\nCRMOfficeManager\nCRMOfficeStaff\nCRMOfficeVolunteer\nCRMPrintProduction\nCRMSOS\nSenatorTest', 'cn', 'member=CN', 0, 0, 'cn', 'CRMAnalytics|Analytics User\nCRMAdministrator|Administrator\nCRMOfficeAdministrator|Office Administrator\nCRMOfficeDataEntry|Data Entry\nCRMOfficeManager|Office Manager\nCRMOfficeStaff|Staff\nCRMOfficeVolunteer|Volunteer\nCRMPrintProduction|Print Production\nCRMSOS|SOS\nCRMDConferenceServices|Conference Services\nCRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
 "
 $execSql -i $instance -c "$ldapa" --drupal -q
 
 ldaps="
 TRUNCATE ldap_servers;
 INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, port, tls, bind_method, binddn, bindpw, basedn, user_attr, account_name_attr, mail_attr, mail_template, allow_conflicting_drupal_accts, unique_persistent_attr, user_dn_expression, ldap_to_drupal_user, testing_drupal_username, group_object_category, search_pagination, search_page_size, weight) VALUES
-('nyss_ldap', 1, 'NY Senate LDAP Server', 1, 'default', 'webmail.nysenate.gov', 389, 0, 1, 'dn', 'dn', 'a:1:{i:0;s:8:"o=senate";}', 'cn', '', 'mail', '', 0, '', '', '', '', '', 0, 1000, 0);
+('nyss_ldap', 1, 'NY Senate LDAP Server', 1, 'openldap', 'webmail.nysenate.gov', 389, 0, 1, NULL, NULL, 'a:11:{i:0;s:8:"O=senate";i:1;s:15:"cn=CRMAnalytics";i:2;s:19:"cn=CRMAdministrator";i:3;s:25:"cn=CRMOfficeAdministrator";i:4;s:21:"cn=CRMOfficeDataEntry";i:5;s:19:"cn=CRMOfficeManager";i:6;s:17:"cn=CRMOfficeStaff";i:7;s:21:"cn=CRMOfficeVolunteer";i:8;s:21:"cn=CRMPrintProduction";i:9;s:9:"cn=CRMSOS";i:10;s:14:"cn=SenatorTest";}', 'cn', '', 'mail', '', 0, '', 'cn=%username,%basedn', '', 'CRMOfficeAdministratorUser', '', 0, 1000, 0);
 "
 $execSql -i $instance -c "$ldaps" --drupal -q
 
-$execSql -i $instance -c "DROP TABLE IF EXISTS ldapauth;" --drupal -q
+ldapclean="DROP TABLE IF EXISTS ldapauth;
+UPDATE users SET data = null;"
+"
+$execSql -i $instance -c "$ldapclean" --drupal -q
 
 ldapr="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
 $execSql -i $instance -c "$ldapr" --drupal -q
