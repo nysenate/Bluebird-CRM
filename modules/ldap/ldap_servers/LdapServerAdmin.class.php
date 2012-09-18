@@ -512,7 +512,7 @@ public function drupalFormSubmit($op, $values) {
       }
     }
     else {
-      $array = array();
+      $array = array('');//NYSS
     }
     return $array;
   }

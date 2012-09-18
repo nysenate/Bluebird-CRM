@@ -314,7 +314,8 @@ class LdapServer {
       * -- http://sgehrig.wordpress.com/2009/11/06/reading-paged-ldap-results-with-php-is-a-show-stopper/
       */
 
-    if ($base_dn == NULL) {
+    //NYSS allow empty base dn
+    if ($base_dn === NULL) {
       if (count($this->basedn) == 1) {
         $base_dn = $this->basedn[0];
       }
@@ -564,7 +565,7 @@ class LdapServer {
     }
 
     foreach ($this->basedn as $basedn) {
-      if (empty($basedn)) continue;
+      //if (empty($basedn)) continue; //NYSS
       $filter = '('. $this->user_attr . '=' . ldap_server_massage_text($ldap_username, 'attr_value', LDAP_SERVER_MASSAGE_QUERY_LDAP)   . ')';
       $result = $this->search($basedn, $filter);
       if (!$result || !isset($result['count']) || !$result['count']) continue;
