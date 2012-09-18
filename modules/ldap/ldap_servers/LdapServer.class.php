@@ -314,7 +314,8 @@ class LdapServer {
       * -- http://sgehrig.wordpress.com/2009/11/06/reading-paged-ldap-results-with-php-is-a-show-stopper/
       */
 
-    if ($base_dn == NULL) {
+    //NYSS allow empty base dn
+    if ($base_dn === NULL) {
       if (count($this->basedn) == 1) {
         $base_dn = $this->basedn[0];
       }
@@ -564,7 +565,7 @@ class LdapServer {
     }
 
     foreach ($this->basedn as $basedn) {
-      if (empty($basedn)) continue;
+      //if (empty($basedn)) continue; //NYSS
       $filter = '('. $this->user_attr . '=' . ldap_server_massage_text($ldap_username, 'attr_value', LDAP_SERVER_MASSAGE_QUERY_LDAP)   . ')';
       $result = $this->search($basedn, $filter);
       if (!$result || !isset($result['count']) || !$result['count']) continue;
@@ -728,7 +729,7 @@ class LdapServer {
     $matching_user_value = ($user_ldap_attr == 'dn') ? $user_ldap_entry['dn'] : $user_ldap_entry['attr'][$user_ldap_attr][0];
     $filter  = "(|\n    ($entries_attr=" . join(")\n    ($entries_attr=", ldap_server_massage_text($entries, 'attr_value', LDAP_SERVER_MASSAGE_QUERY_LDAP)) . ")\n)";
     if (!$nested) {
-      $filter =  "(&\n  $filter  \n  (" . $membership_attr . "=" .  ldap_server_massage_text($matching_user_value, 'attr_value', LDAP_SERVER_MASSAGE_QUERY_LDAP) . ",O=senate)  \n)";//NYSS
+      $filter =  "(&\n  $filter  \n  (" . $membership_attr . "=" .  ldap_server_massage_text($matching_user_value, 'attr_value', LDAP_SERVER_MASSAGE_QUERY_LDAP) . ",O=senate) \n)";//NYSS
     }
 
     $tested_groups = array(); // array of dns already tested to avoid excess queried
