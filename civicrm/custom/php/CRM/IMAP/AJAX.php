@@ -401,7 +401,7 @@ EOQ;
               'target_contact_id' => $contactId,
               'subject' => $subject,
               'status_id' => 2,
-              'activity_date_time' => $date,
+              // 'activity_date_time' => $date,
               'details' => $body,
               'version' => 3
           );
