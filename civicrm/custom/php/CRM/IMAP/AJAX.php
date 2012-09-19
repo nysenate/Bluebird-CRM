@@ -353,6 +353,30 @@ EOQ;
 
         $result = civicrm_api('contact', 'get', $params );
 
+        // HAVE MERCY. I copied and pasted this from the previous section,
+        // this should be separated into a function.
+        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
+        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  
+        // Read the from: sender in the format:
+        // From: "First Last" <email address>
+        // or
+        // From: First Last mailto:emailaddress
+        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
+
+        // Was this message forwarded or is this a raw message from the sender?
+        $forwarded = false;
+        // If you can find the From: text that means it was forwarded,
+        // so parse it out and use that.
+        if ($count > 0) {
+            $fromEmail = $matches[3];
+        } else {
+            // Otherwise, search for a name and  address from
+            // the header and assume the person who sent it in
+            // is submitting the activity.
+            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        }
+
         $forwarderId = 1;
         if($result)
             $forwarderId = $result['id'];
@@ -363,7 +387,7 @@ EOQ;
           // On match add email to user 
            $params = array( 
             'contact_id' => $contactId,
-            'email' => $originEmailAddress,
+            'email' => $fromEmail,
             'version' => 3,
           );
           $result = civicrm_api( 'email','create',$params );
