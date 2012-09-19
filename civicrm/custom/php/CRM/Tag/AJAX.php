@@ -29,6 +29,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             'is_tagset',
             'used_for',
             'created_id',
+            'created_display_name',
             'created_date'
         );
 
@@ -47,22 +48,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     static function _build_node($source, $entity_tags, $entity_counts) {
         $node = array();
         foreach(self::$TAG_FIELDS as $field){
-            // couldn't test locally but this totally should work :p
-            // if we have the created id, search fo the contact and return the display name
-            if ($field == 'created_id'){
-                $user_id = $source->$field;
-                $node[$field] = $user_id;
-                $params = array( 
-                    'id' => $user_id,
-                    'version' => 3,
-                );
-                $contact = civicrm_api('contact', 'get', $params );
-                $node['created_display_name'] = $contact['values'][$user_id]['display_names'];
-            }else{
-                $node[$field] = $source->$field;
-            }
+            $node[$field] = $source->$field;
         }
-            
 
         //A node is checked if there is a applicable entity tag for it.
         if($entity_tags !== null)
@@ -85,7 +72,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_tree() {
-
+        $start = microtime(TRUE);
         $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
 
         //If they request entity counts, build that into the tree as well.
@@ -143,10 +130,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //the DAO object because it doesn't support queries by LIKE. Atleast, I
         //don't know how you would do it, maybe it can be done.
         $tags = CRM_Core_DAO::executeQuery("
-                SELECT *
-                FROM civicrm_tag
+                SELECT tag.*, contact.display_name as created_display_name
+                FROM civicrm_tag as tag
+                LEFT JOIN civicrm_contact as contact ON contact.id=tag.created_id
                 WHERE used_for LIKE %1
-                ORDER BY name
+                ORDER BY tag.name
             ",array( 1 => array("%$entity_type%",'String')));
 
         // Sort all the tags into root and nodes buckets. This simpifies the process
@@ -165,7 +153,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             $tree[] = self::_build_tree($root,$nodes);
         }
 
-        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree));
+        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start)));
         CRM_Utils_System::civiExit();
     }
 
