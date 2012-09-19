@@ -260,8 +260,9 @@ INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, po
 "
 $execSql -i $instance -c "$ldaps" --drupal -q
 
-ldapclean="DROP TABLE IF EXISTS ldapauth;
-UPDATE users SET data = null;"
+ldapclean="
+DROP TABLE IF EXISTS ldapauth;
+UPDATE users SET data = null;
 "
 $execSql -i $instance -c "$ldapclean" --drupal -q
 
