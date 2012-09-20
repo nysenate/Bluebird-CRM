@@ -63,7 +63,7 @@
 	margin:0px 5px 0 -5px;
 }
 .BBtree.loadingGif {
-	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
+	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center transparent;
 }
 .BBtree dl.lv-0 {
 	float:left;
