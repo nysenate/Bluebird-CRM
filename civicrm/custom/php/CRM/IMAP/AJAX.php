@@ -337,7 +337,6 @@ EOQ;
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-        $originEmailAddress = $email->sender[1]->mailbox . '@' . $email->sender[1]->host;
 
         $date = $email->date;
         $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
@@ -350,7 +349,6 @@ EOQ;
             'email' => $senderEmailAddress,
             'version' => 3,
         );
-
         $result = civicrm_api('contact', 'get', $params );
 
         // HAVE MERCY. I copied and pasted this from the previous section,
@@ -378,8 +376,10 @@ EOQ;
         }
 
         $forwarderId = 1;
-        if($result)
-            $forwarderId = $result['id'];
+        if ( ($result['is_error']==1) && ($result['values'])){
+          $forwarderId = $result['id'];
+        }
+           
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
@@ -392,7 +392,6 @@ EOQ;
           );
           $result = civicrm_api( 'email','create',$params );
 
-
           // Submit the activity information and assign it to the right user
           $params = array(
               'activity_type_id' => 12,
@@ -404,7 +403,6 @@ EOQ;
               'details' => $body,
               'version' => 3
           );
-
           $activity = civicrm_api('activity', 'create', $params);
           
           self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
@@ -412,7 +410,7 @@ EOQ;
 
         }
         // Move the message to the archive folder!
-        $imap->movemsg_uid($messageUid, 'Archive');
+        // $imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }
 
