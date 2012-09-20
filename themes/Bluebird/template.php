@@ -295,11 +295,11 @@ function Bluebird_help() {
  * @return a string containing the breadcrumb output.
  */
 function Bluebird_breadcrumb($breadcrumb) {
-  if (count($breadcrumb) > 2) {
-    unset($breadcrumb[1]);
-    unset($breadcrumb[0]);
-    $breadcrumb[] = drupal_get_title();
-    return '<div class="breadcrumb">'. implode(' &rsaquo; ', $breadcrumb) .'</div>';
+  if (count($breadcrumb['breadcrumb']) > 2) {
+    unset($breadcrumb['breadcrumb'][0]);
+    unset($breadcrumb['breadcrumb'][1]);
+    $breadcrumb['breadcrumb'][] = drupal_get_title();
+    return '<div class="breadcrumb">'. implode(' &rsaquo; ', $breadcrumb['breadcrumb']) .'</div>';
   }
 }
 
