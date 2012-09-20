@@ -281,7 +281,7 @@ class CRM_Core_Block {
    * @return void
    * @access private
    */
-  private function setTemplateValues($id) {
+  private static function setTemplateValues($id) {
     switch ($id) {
       case self::CREATE_NEW:
         self::setTemplateShortcutValues();

@@ -899,8 +899,10 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
             }
 			
 			//NYSS 2423 find out if activity has any attachments
-			$attachments = array_shift(civicrm_files_by_entity_get( $activityID, 'civicrm_activity' ));
-			if ( $attachments['id'] ) $values[$activityID]['subject'] .= '<span class="icon attachment-icon"></span>';
+			//NYSS - array_shift recieves by reference, so need to use 2 steps
+			$attachments = civicrm_files_by_entity_get( $activityID, 'civicrm_activity' );
+			$attachment = array_shift($attachments);
+			if ( $attachment['id'] ) $values[$activityID]['subject'] .= '<span class="icon attachment-icon"></span>';
         }
 
         // add info on whether the related contacts are deleted (CRM-5673)

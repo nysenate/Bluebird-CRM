@@ -12,8 +12,9 @@ define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
 define('IMAP_CMD_DELETE', 3);
 
-define('INVALID_EMAIL_FROM', 'Bluebird');
-define('INVALID_EMAIL_SUBJECT', "You don't have permission to forward emails");
+define('INVALID_EMAIL_FROM', '"Bluebird Admin" <bluebird.admin@nysenate.gov>');
+define('INVALID_EMAIL_SUBJECT', 'Bluebird Inbox Polling Error: Not permitted to send e-mails to CRM');
+define('INVALID_EMAIL_TEXT', "You do not have permission to forward e-mails to this CRM instance.\n\nIn order to allow your e-mails to be accepted, you must request that your e-mail address be added to the Valid Senders list for this CRM.\n\nPlease contact Senate Technology Services for more information.\n\n");
 
 //email address of the contact to file unknown emails against.
 define('UNKNOWN_CONTACT_EMAIL', 'unknown.contact@nysenate.gov');
@@ -56,7 +57,7 @@ require_once 'CRM/Core/Error.php';
 */
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
-$imap_validsenders = $bbconfig['imap.validsenders'];
+$imap_validsenders = strtolower($bbconfig['imap.validsenders']);
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -123,12 +124,12 @@ if (empty($imap_accounts)) {
   exit(1);
 }
 
+$validSenders = explode(',', $imap_validsenders);
 
 // Iterate over all IMAP accounts associated with the current CRM instance.
 
-foreach (explode(",", $imap_accounts) as $imap_account) {
+foreach (explode(',', $imap_accounts) as $imap_account) {
   list($imapUser, $imapPass) = explode("|", $imap_account);
-  $tempValidsenders = explode('|', $imap_validsenders);
   $imap_params = array(
     'site' => $site,
     'server' => $imap_server,
@@ -139,17 +140,17 @@ foreach (explode(",", $imap_accounts) as $imap_account) {
     'archivebox' => $imap_archivebox,
     'unreadonly' => $imap_process_unread_only,
     'archivemail' => $imap_archive_mail,
-    'validsenders' => $tempValidsenders
+    'validsenders' => $validSenders
   );
 
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    echo "$prog: Failed to process IMAP account $imapUser@$imap_server\n";
+    echo "[ERROR] Failed to process IMAP account $imapUser@$imap_server\n";
     print_r(imap_errors());
   }
 }
 
-echo "Finished processing all mailboxes for CRM instance [$site]\n";
+echo "[INFO] Finished processing all mailboxes for CRM instance [$site]\n";
 exit(0);
 
 
@@ -157,11 +158,11 @@ exit(0);
 function processMailboxCommand($cmd, $params)
 {
   $serverspec = '{'.$params['server'].$params['opts'].'}'.$params['mailbox'];
-  echo "Opening IMAP connection to {$params['user']}@$serverspec\n";
+  echo "[INFO] Opening IMAP connection to {$params['user']}@$serverspec\n";
   $imap_conn = imap_open($serverspec, $params['user'], $params['pass']);
 
   if ($imap_conn === false) {
-    echo "Error: Unable to open IMAP connection to $serverspec\n";
+    echo "[ERROR] Unable to open IMAP connection to $serverspec\n";
     return false;
   }
 
@@ -175,7 +176,7 @@ function processMailboxCommand($cmd, $params)
     $rc = deleteArchiveBox($imap_conn, $params);
   }
   else {
-    echo "Error: Invalid command [$cmd], params=".print_r($params, true)."\n";
+    echo "[ERROR] Invalid command [$cmd], params=".print_r($params, true)."\n";
     $rc = false;
   }
 
@@ -191,7 +192,7 @@ function processMailboxCommand($cmd, $params)
 
 function checkImapAccount($conn, $params)
 {
-  echo "Polling CRM [".$params['site']."] using IMAP account ".
+  echo "[INFO] Polling CRM [".$params['site']."] using IMAP account ".
        $params['user'].'@'.$params['server'].$params['opts']."\n";
 
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
@@ -201,50 +202,50 @@ function checkImapAccount($conn, $params)
   if ($params['archivemail'] == true) {
     $rc = imap_createmailbox($conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
-      echo "Created new mailbox: $crm_archivebox\n";
+      echo "[DEBUG] Created new mailbox: $crm_archivebox\n";
     }
     else {
-      echo "Archive mailbox $crm_archivebox already exists.\n";
+      echo "[DEBUG] Archive mailbox $crm_archivebox already exists.\n";
     }
   }
 
   $msg_count = imap_num_msg($conn);
-  echo "Number of messages: $msg_count\n";
+  $invalid_senders = array();
+  echo "[INFO] Number of messages: $msg_count\n";
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
-    echo "Retrieving message $msg_num / $msg_count\n";
+    echo "[INFO] Retrieving message $msg_num / $msg_count\n";
     $email = retrieveMessage($conn, $msg_num);
+    $sender = strtolower($email->replyTo);
 
-    // check if it's a valid sender, continue if is not
-    if (!in_array($email->replyTo, $params['validsenders'])) {
-      require_once 'CRM/Utils/Mail.php';
-      $invalidEmailText = "You do not have permission to forward emails to this CRM instance.";
-      $mailParams = array(  'from'  =>  INVALID_EMAIL_FROM,
-                            'toEmail'    =>  $email->replyTo,
-                            'subject' =>  INVALID_EMAIL_SUBJECT,
-                            'text'  =>  $invalidEmailText,
-                          );
-      $return = CRM_Utils_Mail::send($mailParams);
-      if(!$return) {
-        error_log("COULD NOT SEND DENIAL EMAIL");
-      } else {
-        error_log("SENT DENIAL EMAIL TO: {$email->replyTo}");
+    // check whether or not the forwarder/sender is valid
+    if (in_array($sender, $params['validsenders'])) {
+      echo "[DEBUG] Sender $sender is allowed to send to this mailbox\n";
+      // retrieved msg, now store to Civi and if successful move to archive
+      if (civiProcessEmail($email, null) == true) {
+        //mark as read
+        imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
+        //move to folder if necessary
+        // if ($params['archivemail'] == true) {
+        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
+        // }
       }
-      continue;
     }
-
-    // retrieved msg, now store to Civi and if successful move to archive
-    if (civiProcessEmail($email, null) == true) {
-      //mark as read
-      imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
-      //move to folder if necessary
-      // if ($params['archivemail'] == true) {
-      //   imap_mail_move($conn, $msg_num, $params['archivebox']);
-      // }
+    else {
+      echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM\n";
+      $invalid_senders[$sender] = true;
     }
   }
 
-  echo "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
+  $invalid_sender_count = count($invalid_senders);
+  if ($invalid_sender_count > 0) {
+    echo "[INFO] Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
+    foreach ($invalid_senders as $invalid_sender => $dummy) {
+      sendDenialEmail($params['site'], $invalid_sender);
+    }
+  }
+
+  echo "[INFO] Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
   return true;
 } // checkImapAccount()
 
@@ -263,11 +264,11 @@ function retrieveMessage($conn, $idx)
   $email->date = $header->MailDate;
   $email->uid = imap_uid($conn, $idx);
 
-  echo "Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
+  echo "[INFO] Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
 
   // Skip message if we are processing unread only.
   if ($header->Unseen != "U" && $params['unreadonly']) {
-    echo "Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
+    echo "[INFO] Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
     return null;
   }
 
@@ -408,7 +409,7 @@ function civiProcessEmail($email, $customHandler)
   $email->body = '<pre>'.$email->body.'</pre>';
 
   // Find a contact that matches by e-mail address.
-  echo "Matching CiviCRM contact based on e-mail: {$email->replyTo}\n";
+  echo "[INFO] Matching CiviCRM contact based on e-mail: {$email->replyTo}\n";
   $c = new CRM_Contact_BAO_Contact();
   $cobj = $c->matchContactOnEmail($email->replyTo);
 
@@ -421,7 +422,7 @@ function civiProcessEmail($email, $customHandler)
     $bSuccess = true;
   }
   else { 
-    //echo "No match on {$email->replyTo}; assigning to anonymous contact.\n";
+    //echo "[DEBUG] No match on {$email->replyTo}; assigning to anonymous contact.\n";
     $bSuccess = false;
     error_log("{$email->replyTo} is not in this instance. Leaving for manual addition.");
     //$cobj = $c->matchContactOnEmail(UNKNOWN_CONTACT_EMAIL);
@@ -436,7 +437,7 @@ function civiProcessEmail($email, $customHandler)
   }
   //standard handling, add activity if we found a match
   elseif ($bSuccess) {
-    echo "Adding standard activity to contact $contactID\n";
+    echo "[INFO] Adding standard activity to contact $contactID\n";
 
     // Let's find the user ID of the person who forwarded the message
 
@@ -452,8 +453,6 @@ function civiProcessEmail($email, $customHandler)
     } else {
       $userId = 1;
     }
-    
-
 
     $apiParams = array(
                 "source_contact_id" => $userId,
@@ -474,7 +473,7 @@ function civiProcessEmail($email, $customHandler)
       error_log("COULD NOT SAVE ACTIVITY!\n".print_r($params, true));
       return false;
     } else {
-      echo "Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
+      echo "[INFO] Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
       /*
       $apiParams = array( 
@@ -532,11 +531,13 @@ function listMailboxes($conn, $params)
 function deleteArchiveBox($conn, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-  echo "Deleting archive mailbox: $crm_archivebox\n";
+  echo "[INFO] Deleting archive mailbox: $crm_archivebox\n";
   return imap_deletemailbox($conn, $crm_archivebox);
 } // deleteArchiveBox()
 
-function getInboxPollingTagId() {
+
+function getInboxPollingTagId()
+{
   require_once 'api/api.php';
 
   // Check if the tag exists
@@ -564,5 +565,28 @@ function getInboxPollingTagId() {
     return $result['id'];
   }
 }
+
+
+function sendDenialEmail($site, $email)
+{
+  require_once 'CRM/Utils/Mail.php';
+  $subj = INVALID_EMAIL_SUBJECT." [$site]";
+  $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
+  $mailParams = array('from'    => INVALID_EMAIL_FROM,
+                      'toEmail' => $email,
+                      'subject' => $subj,
+                      'html'    => str_replace("\n", '<br/>', $text),
+                      'text'    => $text
+                     );
+
+  $rc = CRM_Utils_Mail::send($mailParams);
+  if ($rc == true) {
+    echo "[INFO] Denial e-mail has been sent to $email\n";
+  }
+  else {
+    echo "[WARN] Unable to send a denial e-mail to $email\n";
+  }
+  return $rc;
+} // sendDenialEmail()
 
 ?>

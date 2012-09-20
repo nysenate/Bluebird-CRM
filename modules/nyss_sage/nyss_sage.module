@@ -50,11 +50,17 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
         $custom_47 = nyss_sage_custom_value($params, 47, $old_addr->id);
         $custom_48 = nyss_sage_custom_value($params, 48, $old_addr->id);
         $custom_49 = nyss_sage_custom_value($params, 49, $old_addr->id);
+        $custom_50 = nyss_sage_custom_value($params, 50, $old_addr->id);
+        $custom_52 = nyss_sage_custom_value($params, 52, $old_addr->id);
+        $custom_54 = nyss_sage_custom_value($params, 54, $old_addr->id);
 
         $district_info_missing = empty($custom_46)  ||
                                  empty($custom_47)  ||
                                  empty($custom_48)  ||
-                                 empty($custom_49);
+                                 empty($custom_49)  ||
+                                 empty($custom_50)  ||
+                                 empty($custom_52)  ||
+                                 empty($custom_54);
 
         //NYSS 5308 - Changed code to check for postal_code_suffix as well as
         //empty geo_code lat/lon. If empty, or suffix changed, then lookup

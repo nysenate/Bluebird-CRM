@@ -84,7 +84,8 @@ function Bluebird_preprocess_page(&$vars) {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->teaser) .'" />'."\n";
   }
   else if (isset($vars['node']->body) && $vars['node']->body != '') {
-    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body) .'" />'."\n";
+    // NYSS - New node format, see http://drupal.org/node/889058#comment-3355752
+    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body['und'][0]['value']) .'" />'."\n";
   }
   // SEO optimization, if the node has tags, use these as keywords for the page
   if (isset($vars['node']->taxonomy)) {
@@ -313,7 +314,9 @@ function Bluebird_form_element($variables) {
 /**
  * Set status messages to use Bluebird CSS classes.
  */
-function Bluebird_status_messages($display = NULL) {
+function Bluebird_status_messages($variables) {
+  // NYSS Changed in Drupal 7, see includes/theme.inc:1574
+  $display = $variables['display'];
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
     // Bluebird can either call this success or notice

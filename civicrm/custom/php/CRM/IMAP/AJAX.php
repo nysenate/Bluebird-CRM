@@ -209,11 +209,9 @@ class CRM_IMAP_AJAX {
             $forwardedName = $email->sender[0]->personal;
             $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
             $forwardedTime = $dateSent = date("Y-m-d H:i A", $email->time); 
-
-            // print_r($email);
             $forwarded = true;
         } else {
-            // Otherwise, search for a name and email address from
+            // Otherwise, search for a name and  address from
             // the header and assume the person who sent it in
             // is submitting the activity.
             $fromName = $email->sender[0]->personal;
@@ -339,6 +337,8 @@ EOQ;
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        $originEmailAddress = $email->sender[1]->mailbox . '@' . $email->sender[1]->host;
+
         $date = $email->date;
         $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
         $body = ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
@@ -353,29 +353,62 @@ EOQ;
 
         $result = civicrm_api('contact', 'get', $params );
 
+        // HAVE MERCY. I copied and pasted this from the previous section,
+        // this should be separated into a function.
+        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
+        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  
+        // Read the from: sender in the format:
+        // From: "First Last" <email address>
+        // or
+        // From: First Last mailto:emailaddress
+        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
+
+        // Was this message forwarded or is this a raw message from the sender?
+        $forwarded = false;
+        // If you can find the From: text that means it was forwarded,
+        // so parse it out and use that.
+        if ($count > 0) {
+            $fromEmail = $matches[3];
+        } else {
+            // Otherwise, search for a name and  address from
+            // the header and assume the person who sent it in
+            // is submitting the activity.
+            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        }
+
         $forwarderId = 1;
         if($result)
             $forwarderId = $result['id'];
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
-            // Submit the activity information and assign it to the right user
-            $params = array(
-                'activity_type_id' => 12,
-                'source_contact_id' => $forwarderId,
-                'assignee_contact_id' => $forwarderId,
-                'target_contact_id' => $contactId,
-                'subject' => $subject,
-                'status_id' => 2,
-                'activity_date_time' => $date,
-                'details' => $body,
-                'version' => 3
-            );
 
-            $activity = civicrm_api('activity', 'create', $params);
-            
-            self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
-            // Now we need to assign the tag to the activity.
+          // On match add email to user 
+           $params = array( 
+            'contact_id' => $contactId,
+            'email' => $fromEmail,
+            'version' => 3,
+          );
+          $result = civicrm_api( 'email','create',$params );
+
+
+          // Submit the activity information and assign it to the right user
+          $params = array(
+              'activity_type_id' => 12,
+              'source_contact_id' => $forwarderId,
+              'assignee_contact_id' => $forwarderId,
+              'target_contact_id' => $contactId,
+              'subject' => $subject,
+              'status_id' => 2,
+              'details' => $body,
+              'version' => 3
+          );
+
+          $activity = civicrm_api('activity', 'create', $params);
+          
+          self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
+          // Now we need to assign the tag to the activity.
 
         }
         // Move the message to the archive folder!
@@ -470,7 +503,6 @@ EOQ;
                             );
             $activity = civicrm_api('activity', 'get', $params);
             $activity_node = $activity['values'][$id];
-           // print_r($activity_node);
 
             // get the user the activity is attached to
             $user_id = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId($id);
@@ -591,7 +623,7 @@ EOQ;
         $contact = self::get('contact');
         $tagid = self::getInboxPollingTagId();
 
-  // deleteing a entity is hard via api without entity id, time to use sql 
+        // deleteing a entity is hard via api without entity id, time to use sql 
         $tagid = self::getInboxPollingTagId();
         $query = <<<EOQ
 DELETE FROM `civicrm_entity_tag`
@@ -630,8 +662,7 @@ EOQ;
 
         $activity_id = mysql_query($query, self::db());
         while($row = mysql_fetch_assoc($activity_id)) {
-            //$results[] = $row;
-            print_r($row['id']);
+            // print_r($row['id']);
             $row_id = $row['id']; 
 
             // UPDATE `senate_prod_c_skelos`.`civicrm_activity_target` SET `target_contact_id` = '285159' WHERE `civicrm_activity_target`.`id` =539082;
@@ -666,10 +697,8 @@ WHERE `parent_id` ='296' && `name` LIKE '%$name%'
 EOQ;
         $result = mysql_query($query, self::db());
         while($row = mysql_fetch_assoc($result)) {
-            //array_push( $results,   array("label"=>$row['name'], "value"=>$row['id'])) ;
             array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));
             $i++;
-         //   print_r($row);
         }
         $final_results = array('items'=> $results);
         echo json_encode($final_results);
@@ -685,9 +714,6 @@ EOQ;
         $tag_ids = self::get('tags');
         $activityId = self::get('activityId');
         $contactId = self::get('contactId');
-        //$tag_ids = urldecode($tag_ids);
-       // print_r($tag_ids);
-
         self::assignTag($activityId, $contactId, $tag_ids);
     }
 
@@ -750,7 +776,6 @@ EOQ;
         $contact = civicrm_api('contact','create', $params);
 
         //And then you attach the contact to the Address! which is at $contact['id']
-
         $address_params = array(
             'contact_id' => $contact['id'],
             'street_address' => $street_address,        
