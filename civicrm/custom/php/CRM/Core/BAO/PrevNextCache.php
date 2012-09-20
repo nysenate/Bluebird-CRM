@@ -421,5 +421,15 @@ WHERE cacheKey LIKE %1 AND is_selected=1 AND cacheKey NOT LIKE %2";
     $params['rowCount1'] = $rowCount;
     return $params;
   }
+
+  // NYSS - 4389
+  // Allow for clearing entries based on groupId for when
+  // contacts are added and removed group groups.
+  function clearGroup( $groupId ) {
+    CRM_Core_DAO::executeQuery(
+      "DELETE FROM civicrm_prevnext_cache WHERE cacheKey LIKE %1",
+      array(1=>array("%_$groupId", 'String'))
+    );
+  }
 }
 
