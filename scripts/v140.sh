@@ -249,7 +249,7 @@ echo "transfer LDAP settings to new module..."
 ldapa="
 TRUNCATE ldap_authorization;
 INSERT INTO ldap_authorization (numeric_consumer_conf_id, sid, consumer_type, consumer_module, status, only_ldap_authenticated, derive_from_dn, derive_from_dn_attr, derive_from_attr, derive_from_attr_attr, derive_from_attr_use_first_attr, derive_from_attr_nested, derive_from_entry, derive_from_entry_nested, derive_from_entry_entries, derive_from_entry_entries_attr, derive_from_entry_attr, derive_from_entry_search_all, derive_from_entry_use_first_attr, derive_from_entry_user_ldap_attr, mappings, use_filter, synch_to_ldap, synch_on_logon, revoke_ldap_provisioned, create_consumers, regrant_ldap_provisioned) VALUES
-(1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, '', 0, '', 0, 0, 1, 0, 'CRMAnalytics\r\nCRMAdministrator\r\nCRMOfficeAdministrator\r\nCRMOfficeDataEntry\r\nCRMOfficeManager\r\nCRMOfficeStaff\r\nCRMOfficeVolunteer\r\nCRMPrintProduction\r\nCRMSOS', 'cn', 'member=CN', 0, 0, 'cn', 'CRMAnalytics|Analytics User\nCRMAdministrator|Administrator\nCRMOfficeAdministrator|Office Administrator\nCRMOfficeDataEntry|Data Entry\nCRMOfficeManager|Office Manager\nCRMOfficeStaff|Staff\nCRMOfficeVolunteer|Volunteer\nCRMPrintProduction|Print Production\nCRMSOS|SOS\nCRMDConferenceServices|Conference Services\nCRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
+(1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, '', 0, '', 0, 0, 1, 0, 'CRMAnalytics\nCRMAdministrator\nCRMOfficeAdministrator\nCRMOfficeDataEntry\nCRMOfficeManager\nCRMOfficeStaff\nCRMOfficeVolunteer\nCRMPrintProduction\nCRMSOS', 'cn', 'member', 0, 0, 'dn', 'CRMAnalytics|Analytics User\nCRMAdministrator|Administrator\nCRMOfficeAdministrator|Office Administrator\nCRMOfficeDataEntry|Data Entry\nCRMOfficeManager|Office Manager\nCRMOfficeStaff|Staff\nCRMOfficeVolunteer|Volunteer\nCRMPrintProduction|Print Production\nCRMSOS|SOS\nCRMDConferenceServices|Conference Services\nCRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
 "
 $execSql -i $instance -c "$ldapa" --drupal -q
 
@@ -260,8 +260,9 @@ INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, po
 "
 $execSql -i $instance -c "$ldaps" --drupal -q
 
-ldapclean="DROP TABLE IF EXISTS ldapauth;
-UPDATE users SET data = null;"
+ldapclean="
+DROP TABLE IF EXISTS ldapauth;
+UPDATE users SET data = null;
 "
 $execSql -i $instance -c "$ldapclean" --drupal -q
 

@@ -23,7 +23,7 @@ function Bluebird_preprocess_page(&$vars) {
   if (!module_exists('page_title')) {
     // Fixup the $head_title and $title vars to display better.
     $title   = drupal_get_title();
-    $headers = implode(',', drupal_get_http_header()); //LCD
+    $headers = implode(',', drupal_get_http_header()); //NYSS
     
     // wrap taxonomy listing pages in quotes and prefix with topic
     if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
@@ -227,39 +227,39 @@ function Bluebird_preprocess_box(&$vars) {
  *
  * Format a username.
  *
- * @param $object
+ * @param $variable
  *   The user object to format, usually returned from user_load().
  * @return
  *   A string containing an HTML link to the user's page if the passed object
  *   suggests that this is a site user. Otherwise, only the username is returned.
  */
-function Bluebird_username($object) {
-  if ($object->uid && $object->name) {
+function Bluebird_username($variable) {
+  if ($variable['uid'] && $variable['name']) {
     // Shorten the name when it is too long or it will break many tables.
-    if (drupal_strlen($object->name) > 20) {
-      $name = drupal_substr($object->name, 0, 15) .'...';
+    if (drupal_strlen($variable['name']) > 20) {
+      $name = drupal_substr($variable['name'], 0, 15) .'...';
     }
     else {
-      $name = $object->name;
+      $name = $variable['name'];
     }
 
     if (user_access('access user profiles')) {
-      $output = l($name, 'user/'. $object->uid, array('attributes' => array('title' => t('View user profile.'))));
+      $output = l($name, 'user/'. $variable['uid'], array('attributes' => array('title' => t('View user profile.'))));
     }
     else {
       $output = check_plain($name);
     }
   }
-  else if ($object->name) {
+  else if ($variable['name']) {
     // Sometimes modules display content composed by people who are
     // not registered members of the site (e.g. mailing list or news
     // aggregator modules). This clause enables modules to display
     // the true author of the content.
-    if (!empty($object->homepage)) {
-      $output = l($object->name, $object->homepage, array('attributes' => array('rel' => 'nofollow')));
+    if (!empty($variable['homepage'])) {
+      $output = l($variable['name'], $variable['homepage'], array('attributes' => array('rel' => 'nofollow')));
     }
     else {
-      $output = check_plain($object->name);
+      $output = check_plain($variable['name']);
     }
   }
   else {
