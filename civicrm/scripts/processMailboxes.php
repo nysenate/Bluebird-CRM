@@ -440,8 +440,6 @@ function civiProcessEmail($email, $customHandler)
     echo "[INFO] Adding standard activity to contact $contactID\n";
 
     // Let's find the user ID of the person who forwarded the message
-    print_r($forwardedBy);
-
     $apiParams = array( 
       'email' => $email->forwardedBy,
       'version' => 3,
@@ -474,10 +472,7 @@ function civiProcessEmail($email, $customHandler)
     if ($result['is_error']) {
       // error_log("COULD NOT SAVE ACTIVITY!\n".print_r($apiParams, true));
       echo "[WARN] COULD NOT SAVE ACTIVITY!\n";
-      
- 
-
-      if($email->from==3'') echo "[WARN] THIS FORWARDING EMAIL ADDRESS IS NOT FOUND\n";
+      if($email->from=='') echo "[WARN] THIS FORWARDING EMAIL ADDRESS IS NOT FOUND\n";
       return false;
     } else {
       echo "[INFO] Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
