@@ -2641,7 +2641,7 @@ WHERE id IN ('. implode( ',', $copiedActivityIds ) . ')';
      * @return boolean $allow  true/false
      * @static
      */
-  function checkPermission($activityId, $operation, $actTypeId = NULL, $contactId = NULL, $checkComponent = TRUE) {
+  static function checkPermission($activityId, $operation, $actTypeId = NULL, $contactId = NULL, $checkComponent = TRUE) {
     $allow = FALSE;
         if ( !$actTypeId && $activityId ) {
             $actTypeId = CRM_Core_DAO::getFieldValue( 'CRM_Activity_DAO_Activity', $activityId, 'activity_type_id' );  
