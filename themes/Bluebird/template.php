@@ -77,7 +77,7 @@ function Bluebird_preprocess_page(&$vars) {
   $vars['meta'] = '';
   // SEO optimization, add in the node's teaser, or if on the homepage, the mission statement
   // as a description of the page that appears in search engines
-  if ($vars['is_front'] && $vars['mission'] != '') {
+  if ($vars['is_front'] && isset($vars['mission']) && $vars['mission'] != '') {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['mission']) .'" />'."\n";
   }
   else if (isset($vars['node']->teaser) && $vars['node']->teaser != '') {
