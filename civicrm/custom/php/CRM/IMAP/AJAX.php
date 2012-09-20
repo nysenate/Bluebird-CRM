@@ -410,7 +410,7 @@ EOQ;
 
         }
         // Move the message to the archive folder!
-        // $imap->movemsg_uid($messageUid, 'Archive');
+        $imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }
 
