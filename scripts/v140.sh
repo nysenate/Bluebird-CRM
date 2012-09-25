@@ -304,6 +304,10 @@ UPDATE block SET status = 1, region = 'footer' WHERE module = 'civicrm' AND delt
 "
 $execSql -i $instance -c "$blocks" --drupal -q
 
+## set timezone
+timezone="UPDATE users SET timezone = 'America/New_York';"
+$execSql -i $instance -c "$timezone" --drupal -q
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
