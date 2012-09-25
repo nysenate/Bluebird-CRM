@@ -21,3 +21,11 @@ echo "enable logging and rebuild triggers...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->enableLogging();
+
+//set logging value in domain
+echo "setting logging flag in domain record...\n";
+$sql = "
+  UPDATE civicrm_domain
+  SET config_backend = REPLACE( config_backend, 's:7:\"logging\";i:0', 's:7:\"logging\";i:1' )
+  WHERE id = 1;";
+CRM_Core_DAO::executeQuery($sql);
