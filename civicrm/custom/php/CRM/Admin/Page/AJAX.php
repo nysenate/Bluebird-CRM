@@ -37,7 +37,7 @@
  * This class contains all the function that are called using AJAX
  */
 class CRM_Admin_Page_AJAX {
-
+    const OPENLEG_BASE_URL = 'http://open.nysenate.gov/legislation';
     /**
      * Function to build menu tree     
      */    
