@@ -117,7 +117,7 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
                   'dao' => 'CRM_Mailing_Event_DAO_Bounce',
                   );
 
-    $this->_columns['civicrm_mailing_event_delivered'] = array(
+    $this->_columns['civicrm_mailing_event_sendgrid_delivered'] = array(//NYSS
                   'dao' => 'CRM_Mailing_Event_DAO_Delivered',
                   'fields' => 
                   array(
