@@ -308,6 +308,17 @@ $execSql -i $instance -c "$blocks" --drupal -q
 timezone="UPDATE users SET timezone = 'America/New_York';"
 $execSql -i $instance -c "$timezone" --drupal -q
 
+## disable contribution-type activities
+contract="
+SELECT @atgroup := id FROM civicrm_option_group WHERE name = 'activity_type';
+UPDATE civicrm_option_value
+SET is_active = 0
+WHERE option_group_id = @atgroup
+  AND name IN ('Update Recurring Contribution', 'Update Recurring Contribution Billing Details',
+    'Cancel Recurring Contribution', 'BULK SMS');
+"
+$execSql -i $instance -c "$contract" -q
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
