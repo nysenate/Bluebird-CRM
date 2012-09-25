@@ -176,7 +176,8 @@ class CRM_Utils_PDF_Utils {
     }
 
     //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
-    $snappy = new Knp_Snappy_Pdf($wkhtmltopdfPath);
+    // kz - Snappy is now using PHP namespaces
+    $snappy = new \Knp\Snappy\Pdf($wkhtmltopdfPath);
     $snappy->setOption( "page-width", $paper_size[2]."pt" );
     $snappy->setOption( "page-height", $paper_size[3]."pt" );
     $snappy->setOption( "orientation", $orientation );
