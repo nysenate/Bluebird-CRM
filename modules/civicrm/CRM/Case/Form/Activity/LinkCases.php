@@ -45,7 +45,7 @@ class CRM_Case_Form_Activity_LinkCases {
     }
 
     $form->assign('clientID', $form->_currentlyViewedContactId);
-    $form->assign('caseTypeLabel', CRM_Case_BAO_case::getCaseType($form->_caseId));
+    $form->assign('caseTypeLabel', CRM_Case_BAO_Case::getCaseType($form->_caseId));
 
     // get the related cases for given case.
     $relatedCases = $form->get('relatedCases');
