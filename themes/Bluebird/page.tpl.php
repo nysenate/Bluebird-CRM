@@ -149,19 +149,21 @@ $now = time() + (60 * 60 * $offset);
       print $feed_icons;
     ?>
     <script>
-    cj('.messages br').remove();
-    cj('.messages').each(function(index){
-      if(cj(this).html() == '') { cj(this).remove();}
-    });
-	  cj('.messages').appendTo('#status .messages-container');
-	  if(cj('#status .messages-container').children().length > 0) {
-	   	cj('#status').append('<div id="status-handle"><span class="ui-icon ui-icon-arrowthickstop-1-n"></span></div>');
-	  }
-	  cj('#status-handle').click(function(){
-	   	cj('.messages-container').slideToggle('fast');
-	   	cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
-	   	cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
-	  });
+    if(typeof cj == 'function') {
+      cj('.messages br').remove();
+      cj('.messages').each(function(index){
+        if(cj(this).html() == '') { cj(this).remove();}
+      });
+      cj('.messages').appendTo('#status .messages-container');
+      if(cj('#status .messages-container').children().length > 0) {
+        cj('#status').append('<div id="status-handle"><span class="ui-icon ui-icon-arrowthickstop-1-n"></span></div>');
+      }
+      cj('#status-handle').click(function(){
+        cj('.messages-container').slideToggle('fast');
+        cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
+        cj('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
+      });
+    }
     </script>
 
   <?php
