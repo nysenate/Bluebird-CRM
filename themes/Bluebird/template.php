@@ -77,14 +77,15 @@ function Bluebird_preprocess_page(&$vars) {
   $vars['meta'] = '';
   // SEO optimization, add in the node's teaser, or if on the homepage, the mission statement
   // as a description of the page that appears in search engines
-  if ($vars['is_front'] && $vars['mission'] != '') {
+  if ($vars['is_front'] && isset($vars['mission']) && $vars['mission'] != '') {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['mission']) .'" />'."\n";
   }
   else if (isset($vars['node']->teaser) && $vars['node']->teaser != '') {
     $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->teaser) .'" />'."\n";
   }
   else if (isset($vars['node']->body) && $vars['node']->body != '') {
-    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body) .'" />'."\n";
+    // NYSS - New node format, see http://drupal.org/node/889058#comment-3355752
+    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body['und'][0]['value']) .'" />'."\n";
   }
   // SEO optimization, if the node has tags, use these as keywords for the page
   if (isset($vars['node']->taxonomy)) {
@@ -294,11 +295,11 @@ function Bluebird_help() {
  * @return a string containing the breadcrumb output.
  */
 function Bluebird_breadcrumb($breadcrumb) {
-  if (count($breadcrumb) > 2) {
-    unset($breadcrumb[1]);
-    unset($breadcrumb[0]);
-    $breadcrumb[] = drupal_get_title();
-    return '<div class="breadcrumb">'. implode(' &rsaquo; ', $breadcrumb) .'</div>';
+  if (count($breadcrumb['breadcrumb']) > 2) {
+    unset($breadcrumb['breadcrumb'][0]);
+    unset($breadcrumb['breadcrumb'][1]);
+    $breadcrumb['breadcrumb'][] = drupal_get_title();
+    return '<div class="breadcrumb">'. implode(' &rsaquo; ', $breadcrumb['breadcrumb']) .'</div>';
   }
 }
 
@@ -313,7 +314,9 @@ function Bluebird_form_element($variables) {
 /**
  * Set status messages to use Bluebird CSS classes.
  */
-function Bluebird_status_messages($display = NULL) {
+function Bluebird_status_messages($variables) {
+  // NYSS Changed in Drupal 7, see includes/theme.inc:1574
+  $display = $variables['display'];
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
     // Bluebird can either call this success or notice

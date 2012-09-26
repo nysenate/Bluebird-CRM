@@ -1,6 +1,6 @@
 .bodyContainer {width: 950px; background-color:#fff;  margin:0 auto; overflow:auto;}
 .header { font-size: 20px; font-weight: bold; padding: 5px 5px 15px;}
-.messages {background-color:#ded; min-height:260px; margin:0 15px;}
+.messages {background-color:#ded; /*min-height:260px;*/ margin:0 15px;}
 .messagesList {background-color:#fff; height:200px; margin:0 15px; border: 1px solid #ccc; overflow-y:scroll; overflow-x: hidden;}
 .messagesList .emailWrapper {margin: 5px 15px; padding:5px; border-bottom:1px solid red; clear:both; overflow:auto; cursor:pointer;}
 .messagesList .imapper-message-toggle {cursor:pointer;}

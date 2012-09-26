@@ -1,5 +1,4 @@
-
-$(document).ready(function(){
+jQuery(document).ready(function(){
 	var base_url = "/backupData?function=";
 	var cur_action = null;
 
@@ -148,7 +147,7 @@ $(document).ready(function(){
 		'browser': new browser()
 	}
 	//set timeout to an hour
-	$.ajaxSetup({
+	jQuery.ajaxSetup({
 		timeout: 3600000
 	});
 })();

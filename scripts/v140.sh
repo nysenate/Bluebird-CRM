@@ -246,28 +246,30 @@ $execSql -i $instance -c "$distinfo" -q
 
 ## transfer ldap settings to new module
 echo "transfer LDAP settings to new module..."
-ldapa="
+
+sql="
+TRUNCATE ldap_servers;
+INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, port, tls, bind_method, binddn, bindpw, basedn, user_attr, account_name_attr, mail_attr, mail_template, allow_conflicting_drupal_accts, unique_persistent_attr, user_dn_expression, ldap_to_drupal_user, testing_drupal_username, group_object_category, search_pagination, search_page_size, weight) VALUES
+('nyss_ldap', 1, 'NY Senate LDAP Server', 1, 'openldap', 'webmail.nysenate.gov', 389, 0, 4, '', '', 'a:1:{i:0;s:0:"";}', 'uid', '', 'mail', '', 0, '', '', '', '', 'groupOfNames', 0, 1000, 0);
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
+# kz - the authentication module name has changed
+sql="update authmap set module='ldap_authentication' where module='ldapauth';"
+$execSql -i $instance -c "$sql" --drupal -q
+
+sql="
 TRUNCATE ldap_authorization;
 INSERT INTO ldap_authorization (numeric_consumer_conf_id, sid, consumer_type, consumer_module, status, only_ldap_authenticated, derive_from_dn, derive_from_dn_attr, derive_from_attr, derive_from_attr_attr, derive_from_attr_use_first_attr, derive_from_attr_nested, derive_from_entry, derive_from_entry_nested, derive_from_entry_entries, derive_from_entry_entries_attr, derive_from_entry_attr, derive_from_entry_search_all, derive_from_entry_use_first_attr, derive_from_entry_user_ldap_attr, mappings, use_filter, synch_to_ldap, synch_on_logon, revoke_ldap_provisioned, create_consumers, regrant_ldap_provisioned) VALUES
 (1, 'nyss_ldap', 'drupal_role', 'ldap_authorization_drupal_role', 1, 1, 0, '', 0, '', 0, 0, 1, 0, 'CRMAnalytics\nCRMAdministrator\nCRMOfficeAdministrator\nCRMOfficeDataEntry\nCRMOfficeManager\nCRMOfficeStaff\nCRMOfficeVolunteer\nCRMPrintProduction\nCRMSOS', 'cn', 'member', 0, 0, 'dn', 'CRMAnalytics|Analytics User\nCRMAdministrator|Administrator\nCRMOfficeAdministrator|Office Administrator\nCRMOfficeDataEntry|Data Entry\nCRMOfficeManager|Office Manager\nCRMOfficeStaff|Staff\nCRMOfficeVolunteer|Volunteer\nCRMPrintProduction|Print Production\nCRMSOS|SOS\nCRMDConferenceServices|Conference Services\nCRMRConferenceServices|Conference Services\n', 1, 0, 1, 1, 0, 1);
 "
-$execSql -i $instance -c "$ldapa" --drupal -q
+$execSql -i $instance -c "$sql" --drupal -q
 
-ldaps="
-TRUNCATE ldap_servers;
-INSERT INTO ldap_servers (sid, numeric_sid, name, status, ldap_type, address, port, tls, bind_method, binddn, bindpw, basedn, user_attr, account_name_attr, mail_attr, mail_template, allow_conflicting_drupal_accts, unique_persistent_attr, user_dn_expression, ldap_to_drupal_user, testing_drupal_username, group_object_category, search_pagination, search_page_size, weight) VALUES
-('nyss_ldap', 1, 'NY Senate LDAP Server', 1, 'openldap', 'webmail.nysenate.gov', 389, 0, 4, '', NULL, 'a:1:{i:0;s:0:"";}', 'uid', '', 'mail', '', 0, '', '', '', '', 'groupOfNames', 0, 1000, 0);
-"
-$execSql -i $instance -c "$ldaps" --drupal -q
+sql="DROP TABLE IF EXISTS ldapauth; UPDATE users SET data = null;"
+$execSql -i $instance -c "$sql" --drupal -q
 
-ldapclean="
-DROP TABLE IF EXISTS ldapauth;
-UPDATE users SET data = null;
-"
-$execSql -i $instance -c "$ldapclean" --drupal -q
-
-ldapr="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
-$execSql -i $instance -c "$ldapr" --drupal -q
+sql="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
+$execSql -i $instance -c "$sql" --drupal -q
 
 ## misc adjustments
 echo "take care of miscelleneous adjustments..."
@@ -297,10 +299,25 @@ $execSql -i $instance -c "$order" -q
 ## set blocks for bluebird theme
 blocks="
 UPDATE block SET status = 1, region = 'content' WHERE module = 'system' AND delta = 'main' AND theme = 'Bluebird';
-UPDATE block SET status = 1, region = 'content' WHERE module = 'system' AND delta = 'login' AND theme = 'Bluebird';
+UPDATE block SET status = 1, region = 'content' WHERE module = 'user' AND delta = 'login' AND theme = 'Bluebird';
 UPDATE block SET status = 1, region = 'footer' WHERE module = 'civicrm' AND delta = '2' AND theme = 'Bluebird';
 "
 $execSql -i $instance -c "$blocks" --drupal -q
+
+## set timezone
+timezone="UPDATE users SET timezone = 'America/New_York';"
+$execSql -i $instance -c "$timezone" --drupal -q
+
+## disable contribution-type activities
+contract="
+SELECT @atgroup := id FROM civicrm_option_group WHERE name = 'activity_type';
+UPDATE civicrm_option_value
+SET is_active = 0
+WHERE option_group_id = @atgroup
+  AND name IN ('Update Recurring Contribution', 'Update Recurring Contribution Billing Details',
+    'Cancel Recurring Contribution', 'BULK SMS');
+"
+$execSql -i $instance -c "$contract" -q
 
 ### Cleanup ###
 

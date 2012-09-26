@@ -93,25 +93,27 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
           'name' => 'name',           
           'title' => ts('Mailing Name'),//NYSS
           'default' => TRUE,
-                                                      ),
-                              'mailing_name_alias' => array(
-                                                            'name' => 'name',
+        ),
+        'mailing_name_alias' => array(
+          'name' => 'name',
           'required' => TRUE,
           'no_display' => TRUE,
-                              //NYSS 4935
-							  'mailing_subject' => array(
-                                                      'name' => 'subject',           
-                                                      'title' => ts('Mailing Subject'),
-                                                      'default' => true
-                                                      ),
-                              ),
-			'filters' => array(
+        ),
+        //NYSS 4935
+				'mailing_subject' => array(
+          'name' => 'subject',
+          'title' => ts('Mailing Subject'),
+          'default' => TRUE,
+        ),
+      ),
+			'filters' =>
+      array(
 				'mailing_id' => array(
-                    'name' => 'id',
+          'name' => 'id',
 					'title' => ts('Mailing Name'),//NYSS
 					'operatorType' => CRM_Report_Form::OP_MULTISELECT,
 					'type'=> CRM_Utils_Type::T_INT,
-                    'options' => CRM_Mailing_BAO_Mailing::getMailingsList(),
+          'options' => CRM_Mailing_BAO_Mailing::getMailingsList(),
 					'operator' => 'like',
 				),
 				//NYSS 4935
@@ -122,16 +124,21 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 					'operator' => 'like',
 				),
 			),
-            'order_bys'  =>
-            array( 'mailing_name' =>
-                   array( 'name' => 'name',
-                          'title' => ts( 'Mailing Name') ),
-				   'mailing_subject' =>
-                   array( 'name' => 'subject',
-                          'title' => ts( 'Mailing Subject') ),
-				   ),
-            'grouping'  => 'mailing-fields',
-		);
+      'order_bys'  =>
+      array(
+        'mailing_name' =>
+        array(
+          'name' => 'name',
+          'title' => ts( 'Mailing Name')
+        ),
+				'mailing_subject' =>
+        array(
+          'name' => 'subject',
+          'title' => ts( 'Mailing Subject')
+        ),
+			),
+      'grouping'  => 'mailing-fields',
+    );
 							  
 		$this->_columns['civicrm_email']  = array( 
 			'dao'=> 'CRM_Core_DAO_Email',

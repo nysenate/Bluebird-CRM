@@ -337,7 +337,6 @@ EOQ;
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-        $originEmailAddress = $email->sender[1]->mailbox . '@' . $email->sender[1]->host;
 
         $date = $email->date;
         $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
@@ -350,12 +349,37 @@ EOQ;
             'email' => $senderEmailAddress,
             'version' => 3,
         );
-
         $result = civicrm_api('contact', 'get', $params );
 
+        // HAVE MERCY. I copied and pasted this from the previous section,
+        // this should be separated into a function.
+        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
+        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+  
+        // Read the from: sender in the format:
+        // From: "First Last" <email address>
+        // or
+        // From: First Last mailto:emailaddress
+        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
+
+        // Was this message forwarded or is this a raw message from the sender?
+        $forwarded = false;
+        // If you can find the From: text that means it was forwarded,
+        // so parse it out and use that.
+        if ($count > 0) {
+            $fromEmail = $matches[3];
+        } else {
+            // Otherwise, search for a name and  address from
+            // the header and assume the person who sent it in
+            // is submitting the activity.
+            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        }
+
         $forwarderId = 1;
-        if($result)
-            $forwarderId = $result['id'];
+        if ( ($result['is_error']==1) && ($result['values'])){
+          $forwarderId = $result['id'];
+        }
+           
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
@@ -363,11 +387,10 @@ EOQ;
           // On match add email to user 
            $params = array( 
             'contact_id' => $contactId,
-            'email' => $originEmailAddress,
+            'email' => $fromEmail,
             'version' => 3,
           );
           $result = civicrm_api( 'email','create',$params );
-
 
           // Submit the activity information and assign it to the right user
           $params = array(
@@ -377,11 +400,9 @@ EOQ;
               'target_contact_id' => $contactId,
               'subject' => $subject,
               'status_id' => 2,
-              'activity_date_time' => $date,
               'details' => $body,
               'version' => 3
           );
-
           $activity = civicrm_api('activity', 'create', $params);
           
           self::assignTag($activity['id'], 0, self::getInboxPollingTagId());

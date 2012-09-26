@@ -5,7 +5,7 @@
   cj('li.crm-contact-permanently-delete span').html('<div class="icon delete-icon"></div>Delete Contact Permanently');
 
   //4715 remove delete/trash button; moved to action dropdown
-  cj('li.crm-delete-action').remove();
+  cj('a.delete.button').parent('li.crm-delete-action.crm-contact-delete').remove();
 
   //move privacy notes
   var privnote = cj('div#custom-set-content-8 div.crm-content').text();
@@ -52,8 +52,6 @@
   cj('#contactTopBar').html('{/literal}{$newTopBar|escape:"javascript"}{literal}');
 </script>
 {/literal}
-
-
 
 {*move/reconstruct comm pref*}
 <div id="commPrefWrap">

@@ -36,50 +36,51 @@
  */
 class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
   function __construct() {
-        $logging = new CRM_Logging_Schema;
-        $this->tables[] = 'civicrm_contact';
-        $this->tables   = array_merge($this->tables, array_keys($logging->customDataLogTables()));
-        $this->tables[] = 'civicrm_email';
-        $this->tables[] = 'civicrm_phone';
-        $this->tables[] = 'civicrm_im';
-        $this->tables[] = 'civicrm_openid';
-        $this->tables[] = 'civicrm_website';
-        $this->tables[] = 'civicrm_address';
+    $logging        = new CRM_Logging_Schema;
+    $this->tables[] = 'civicrm_contact';
+    $this->tables   = array_merge($this->tables, array_keys($logging->customDataLogTables()));
+    $this->tables[] = 'civicrm_email';
+    $this->tables[] = 'civicrm_phone';
+    $this->tables[] = 'civicrm_im';
+    $this->tables[] = 'civicrm_openid';
+    $this->tables[] = 'civicrm_website';
+    $this->tables[] = 'civicrm_address';
     $this->tables[] = 'civicrm_note';
     $this->tables[] = 'civicrm_relationship';
 
-        $this->detail  = 'logging/contact/detail';
-        $this->summary = 'logging/contact/summary';
+    $this->detail = 'logging/contact/detail';
+    $this->summary = 'logging/contact/summary';
 
-        parent::__construct();
-    }
+    parent::__construct();
+  }
 
   function buildQuickForm() {
-        parent::buildQuickForm();
+    parent::buildQuickForm();
 
-        if ($this->cid) {
-            // link back to contact summary
+    if ($this->cid) {
+      // link back to contact summary
       $this->assign('backURL', CRM_Utils_System::url('civicrm/contact/view', "reset=1&selectedChild=log&cid={$this->cid}", FALSE, NULL, FALSE));
-            $this->assign('revertURL', self::$_template->get_template_vars('revertURL') . "&cid={$this->cid}");
+      $this->assign('revertURL', self::$_template->get_template_vars('revertURL') . "&cid={$this->cid}");
     }
     else {
-            // link back to summary report
-            //NYSS preserve summary instance source
-            $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
-            if ( $instanceID ) {
-                $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
-            } else {
-                $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
-            }
-            $this->assign('backURL', $backURL);
-        }
+      // link back to summary report
+      //NYSS preserve summary instance source
+      $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
+      if ( $instanceID ) {
+        $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
+      }
+      else {
+        $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
+      }
+      $this->assign('backURL', $backURL);
     }
+  }
 
   protected function whoWhomWhenSql() {
-        //NYSS 5457
-        $cidSql = '';
-        if ( $cid ) $cidSql = "AND l.id = $cid";
-        return "
+    //NYSS 5457
+    $cidSql = '';
+    if ( $cid ) $cidSql = "AND l.id = $cid";
+    return "
             SELECT who.id who_id, who.display_name who_name, whom.id whom_id, whom.display_name whom_name, l.is_deleted
             FROM `{$this->db}`.log_civicrm_contact l
             JOIN civicrm_contact who ON (l.log_user_id = who.id)
@@ -87,6 +88,6 @@ class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail {
             WHERE log_action = 'Update' AND log_conn_id = %1 AND log_date = %2 $cidSql
             ORDER BY log_date DESC LIMIT 1
         ";
-    }
+  }
 }
 

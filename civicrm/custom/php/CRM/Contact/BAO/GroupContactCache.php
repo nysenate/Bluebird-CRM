@@ -214,8 +214,7 @@ WHERE  TIMESTAMPDIFF(MINUTE, cache_date, $now) >= $smartGroupCacheTimeout
 DELETE     g
 FROM       civicrm_group_contact_cache g
 WHERE      g.group_id IN ( %1 )
-ORDER BY   g.contact_id
-"; //NYSS 4777
+";
             $update = "
 UPDATE civicrm_group g
 SET    cache_date = null
@@ -306,7 +305,7 @@ WHERE  id = %1
         );
         $query->_useDistinct = FALSE;
         $query->_useGroupBy  = FALSE;
-        $query->_useOrderBy = false; //NYSS 4846
+        $query->_useOrderBy  = false; //NYSS 4846
         $searchSQL           = $query->searchQuery(0, 0, NULL,
                                FALSE, FALSE,
                                FALSE, TRUE,

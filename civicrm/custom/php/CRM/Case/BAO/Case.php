@@ -1245,8 +1245,10 @@ INNER JOIN  civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_conta
             $values[$dao->id]['subject'] = $subject;
 			
 			//NYSS find out if activity has any attachments
-			$attachments = array_shift(civicrm_files_by_entity_get( $dao->id, 'civicrm_activity' ));
-			if ( $attachments['id'] ) $values[$dao->id]['subject'] .= '<span class="icon attachment-icon"></span>';
+			//NYSS - array_shift recieves by reference, so need to use 2 steps
+			$attachments = civicrm_files_by_entity_get( $dao->id, 'civicrm_activity' );
+			$attachment = array_shift($attachments);
+			if ( $attachment['id'] ) $values[$dao->id]['subject'] .= '<span class="icon attachment-icon"></span>';
             
             // add activity assignee to activity selector. CRM-4485.
             if ( isset($dao->assignee) ) {
@@ -2641,7 +2643,7 @@ WHERE id IN ('. implode( ',', $copiedActivityIds ) . ')';
      * @return boolean $allow  true/false
      * @static
      */
-  function checkPermission($activityId, $operation, $actTypeId = NULL, $contactId = NULL, $checkComponent = TRUE) {
+  static function checkPermission($activityId, $operation, $actTypeId = NULL, $contactId = NULL, $checkComponent = TRUE) {
     $allow = FALSE;
         if ( !$actTypeId && $activityId ) {
             $actTypeId = CRM_Core_DAO::getFieldValue( 'CRM_Activity_DAO_Activity', $activityId, 'activity_type_id' );  

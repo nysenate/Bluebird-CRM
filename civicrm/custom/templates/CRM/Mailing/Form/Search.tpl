@@ -26,26 +26,25 @@
 <div class="crm-block crm-form-block crm-search-form-block">
 <table class="form-layout">
     <tr>
-        <td>{$form.mailing_name.label}<br />
-            {$form.mailing_name.html|crmReplace:class:big} {help id="id-mailing_name"}
+        <td>{$form.mailing_name.label} {help id="id-mailing_name"}<br />
+            {$form.mailing_name.html|crmReplace:class:big}
+        </td>
+        {*NYSS*}
+        <td>{$form.mailing_subject.label}<br />
+          {$form.mailing_subject.html|crmReplace:class:big}
         </td>
     </tr>
     <tr>
         <td>
 	    <label>{ts}Mailing Date{/ts}</label>
-        </td> 
+	</td>
     </tr>
     <tr>
 	{include file="CRM/Core/DateRange.tpl" fieldName="mailing" from='_from' to='_to'}
     </tr>
     <tr> 
-        <td colspan="1">{$form.mailing_subject.label}<br />
-            {$form.mailing_subject.html|crmReplace:class:big}
-        </td>
-    </tr>
-    <tr> 
-        <td colspan="1">{$form.sort_name.label}<br />
-            {$form.sort_name.html|crmReplace:class:big} {help id="id-create_sort_name"}
+        <td colspan="1">{$form.sort_name.label} {help id="id-create_sort_name"}<br />
+            {$form.sort_name.html|crmReplace:class:big}
         </td>
         <td width="100%"><label>{ts}Mailing Status{/ts}</label><br />
         <div class="listing-box" style="width: auto; height: 60px">
@@ -57,13 +56,16 @@
         </div><br />
         </td>
     </tr>
+{*NYSS*}
+{*
 <tr>
     <td>{$form.sms.label}<br/>{$form.sms.html}</td>
 </tr>
+*}
     {* campaign in mailing search *}
-    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+{*    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
     campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
-
+*}
     <tr>
         <td>{$form.buttons.html}</td><td colspan="2"></td>
     </tr>

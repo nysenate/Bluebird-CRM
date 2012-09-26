@@ -1,6 +1,6 @@
 <?php
 
-require_once 'CRM/Core/BAO/Preferences.php';
+require_once 'CRM/Core/BAO/Setting.php';
 require_once 'CRM/Core/Error.php';
 require_once 'HTTP/Request.php';
 require_once 'CRM/Core/BAO/Address.php';
@@ -341,6 +341,12 @@ class CRM_Utils_SAGE
             $values["custom_48_$id"] = (string)$xml->assembly->district;
         if($overwrite || !$values["custom_49_$id"])
             $values["custom_49_$id"] = (string)$xml->election->district;
+        if($overwrite || !$values["custom_50_$id"])
+            $values["custom_50_$id"] = (string)$xml->county->district;
+        if($overwrite || !$values["custom_52_$id"])
+            $values["custom_52_$id"] = (string)$xml->town->district;
+        if($overwrite || !$values["custom_54_$id"])
+            $values["custom_54_$id"] = (string)$xml->school->district;
     }
 
 
@@ -404,7 +410,7 @@ class CRM_Utils_SAGE
 
         // If enabled in the preferences, replace the input address parts with
         // new parts parsed from the USPS corrected street address from SAGE
-        $options = CRM_Core_BAO_Preferences::valueOptions( 'address_options' );
+        $options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,'address_options');
         if ( CRM_Utils_Array::value('street_address_parsing', $options) ) {
 
             //parseStreetAddress might be missing keys for some parts so wipe
