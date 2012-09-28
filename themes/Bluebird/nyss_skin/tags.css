@@ -7,16 +7,19 @@
   width: 310px;
 }*/
 #crm-container div.form-item .BBtree *, #crm-container .crm-form-block .BBtree * {
-	text-align:left; float:left; font-size: 1em; padding:0px;
+	font-size: 1em;
 }
 #crm-container div.form-item .BBtree * dl, #crm-container .crm-form-block .BBtree * dl {
 	padding-left:10px;
 }
-#crm-container div.form-item .BBtree* dt, #crm-container .crm-form-block .BBtree * dt {
+#crm-container div.form-item .BBtree * dt, #crm-container .crm-form-block .BBtree * dt {
 	width:auto;
 	min-width:0;
 	display:inline;
 	line-height:18px;
+	text-align:left;
+	float:left;
+	padding:0px;
 }
 .BBtree.ui-dialog-content{
 	font-size:95%;
@@ -127,13 +130,16 @@
 .BBtree dt:hover, .BBtree dt.subChecked:hover, .BBtree dt.checked:hover {
 	background-color:#DEDEDE;
 }
-.BBtree.tab dt, .BBtree.manage dt {
+.BBtree.edit dt, .BBtree.tab dt, .BBtree.manage dt {
 	position:relative;
 }
-.BBtree.tab.edit .fCB{
+.BBtree.edit .fCB{
 	position:absolute;
 	left:23px;
 	top:-1px;
+}
+.BBtree.edit.contact .fCB{
+	left:20px;
 }
 .BBtree.manage .fCB {
 	position:absolute;
@@ -182,77 +188,41 @@ margin:0;
 .BBtree.manage dl.lv-0{
 	margin-left:-25px;
 }
-.BBtree.edit dt.lv-0{
-	width:295px !important;
-}
-.BBtree.edit.tab dl.lv-0{
-	margin-left:-25px;
-}
-.BBtree.edit dl.lv-1{
-	width:285px !important;
-}
-.BBtree.edit dt.lv-1{
-	width:285px !important;
-}
-.BBtree.edit dl.lv-2{
-	width:275px !important;
-}
-.BBtree.edit dt.lv-2{
-	width:275px !important;
-}
-.BBtree.edit dl.lv-3{
-	width:265px !important;
-}
-.BBtree.edit dt.lv-3{
-	width:265px !important;
-}
-.BBtree.edit dl.lv-4{
-	width:255px !important;
-}
-.BBtree.edit dt.lv-4 {
-	width:255px !important;
-}
-.BBtree.edit dl.lv-5{
-	width:245px !important;
-}
-.BBtree.edit dt.lv-5{
-	width:245px !important;
-}
-.BBtree.tab dt.lv-0{
+.BBtree.edit dt.lv-0, .BBtree.tab dt.lv-0{
 	width:520px !important;
 }
-.BBtree.tab dl.lv-0{
+.BBtree.edit dl.lv-0, .BBtree.tab dl.lv-0{
 	width:520px !important;
 	margin-left:-35px;
 }
-.BBtree.tab dl.lv-1{
+.BBtree.edit dl.lv-1, .BBtree.tab dl.lv-1{
 	width:500px !important;
 }
-.BBtree.tab dt.lv-1{
+.BBtree.edit dt.lv-1, .BBtree.tab dt.lv-1{
 	width:495px !important;
 }
-.BBtree.tab dl.lv-2{
+.BBtree.edit dl.lv-2, .BBtree.tab dl.lv-2{
 	width:480px !important;
 }
-.BBtree.tab dt.lv-2{
+.BBtree.edit dt.lv-2, .BBtree.tab dt.lv-2{
 	width:475px !important;
 }
-.BBtree.tab dl.lv-3{
+.BBtree.edit dl.lv-3, .BBtree.tab dl.lv-3{
 	width:460px !important;
 }
-.BBtree.tab dt.lv-3{
+.BBtree.edit dt.lv-3, .BBtree.tab dt.lv-3{
 	width:465px !important;
 }
-.BBtree.tab dl.lv-4{
+.BBtree.edit dl.lv-4, .BBtree.tab dl.lv-4{
 	width:440px !important;
 }
-.BBtree.tab dt.lv-4 {
+.BBtree.edit dt.lv-4, .BBtree.tab dt.lv-4 {
 	width:435px !important;
 }
-.BBtree.tab dl.lv-5{
+.BBtree.edit dl.lv-5, .BBtree.tab dl.lv-5{
 	width:420px !important;
 }
-.BBtree.tab dt.lv-5{
+.BBtree.edit dt.lv-5, .BBtree.tab dt.lv-5{
 	width:415px !important;
 }
 .BBtree.manage dt.lv-0{
@@ -335,7 +305,7 @@ width: 558px;
 {
 	height:auto;
 }
-.BBtree dt.lv-0 div.tag{padding-left: 10px;}
+.BBtree.edit dt.lv-0 div.tag{padding-left: 10px !important;}
 
 #crm-container .crm-tagLegend table
 {
@@ -343,7 +313,7 @@ width: 558px;
 	float:right;
 	margin-bottom:-10px;
 }
-.BBtree.manage .tag span.entityCount {
+.BBtree .tag span.entityCount {
 	margin-left:5px;
 	font-weight:bold;
 }
