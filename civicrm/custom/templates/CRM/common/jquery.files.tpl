@@ -85,4 +85,4 @@ js/jquery/jquery.crmasmselect.js
 js/jquery/jquery.crmtooltip.js
 
 {*NYSS*}
-packages/jquery/plugins/jquery.cursorStart.js;
+packages/jquery/plugins/jquery.cursorStart.js

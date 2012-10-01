@@ -17,12 +17,10 @@
 // See http://kcfinder.sunhater.com/install for setting descriptions
 
 // Bootstrap Drupal in order to obtain paths and config.
-$current_cwd = getcwd();
 $drupal_dir = preg_replace('#/drupal/sites/.*#', '/drupal', $_SERVER['SCRIPT_FILENAME']);
-chdir($drupal_dir);
-require_once './includes/bootstrap.inc';
+define('DRUPAL_ROOT', $drupal_dir);
+require_once DRUPAL_ROOT.'/includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-chdir($current_cwd);
 
 $bbconfig = get_bluebird_instance_config();
 $pubpath = '/sites/'.$bbconfig['data_dirname'].'/pubfiles/';
