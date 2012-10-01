@@ -308,6 +308,10 @@ $execSql -i $instance -c "$blocks" --drupal -q
 timezone="UPDATE users SET timezone = 'America/New_York';"
 $execSql -i $instance -c "$timezone" --drupal -q
 
+$drush $instance vset date_default_timezone 'America/New_York' -y
+$drush $instance vset configurable_timezones 0 -y
+$drush $instance vset empty_timezone_message 0 -y
+
 ## disable contribution-type activities
 contract="
 SELECT @atgroup := id FROM civicrm_option_group WHERE name = 'activity_type';
