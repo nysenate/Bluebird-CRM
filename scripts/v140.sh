@@ -315,7 +315,7 @@ UPDATE civicrm_option_value
 SET is_active = 0
 WHERE option_group_id = @atgroup
   AND name IN ('Update Recurring Contribution', 'Update Recurring Contribution Billing Details',
-    'Cancel Recurring Contribution', 'BULK SMS');
+    'Cancel Recurring Contribution', 'BULK SMS', 'SMS');
 "
 $execSql -i $instance -c "$contract" -q
 
