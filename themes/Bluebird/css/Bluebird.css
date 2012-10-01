@@ -1004,32 +1004,21 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /* used for advanced search reset button; .button class was not available on popup */
-#Advanced a.resetbutton {
-	-moz-border-radius:3px 3px 3px 3px;
-	display:block;
-	float:right;
-	background:url("../nyss_skin/images/crm-button-bg.gif") repeat-x scroll left top #70716B;
-	border:1px solid #3E3E3E;
-	color:#FFFFFF;
-	cursor:pointer;
-	font-size:12px;
-	font-weight:normal;
-	margin:0.25em 0.5em 0.25em 0.5em;
-	padding:2px 6px;
-	text-decoration:none;
-	text-shadow:0 1px 0 black;
+#Advanced .advsearch_buttons_top div.reset-advanced-search {
+  clear: right;
+  margin-top: 0;
 }
 #Advanced .advsearch_buttons_top {
 	width: 180px;
 }
 #Advanced .advsearch_buttons_top div {
-	margin-top:1em; 
 	float:right;
 }
 #Advanced .advsearch_buttons_top div input,
 #Advanced .advsearch_bottom_buttons input {
 	display: block;
 	padding: 3px 6px;
+  width: 100%;
 }
 #Advanced .advsearch_buttons_top a.resetbutton {
 	float:right;
@@ -1044,6 +1033,35 @@ ul.token-input-list-facebook { width:265px;}
 #Advanced #District_Information td {
   padding-top: 2px;
   padding-bottom: 2px;
+}
+#Advanced .crm-accordion-open > .crm-accordion-body {
+  padding: 4px;
+}
+#Advanced .crm-form-block.crm-search-form-block {
+  padding: 0;
+}
+/*these only impact advanced search dropdown*/
+#advanced-search-form .advsearch_buttons_top .crm-submit-buttons {
+  width: 90px;
+}
+#advanced-search-form #Advanced .advsearch_buttons_top div.reset-advanced-search {
+  display: block;
+  background: url("../nyss_skin/images/crm-button-bg.gif") repeat-x scroll left top transparent;
+  border: 1px solid #3E3E3E;
+  border-radius: 4px 4px 4px 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: normal;
+  margin-top: 6px;
+  padding: 2px 6px;
+  text-decoration: none;
+  text-shadow: 0 1px 0 black;
+  width: 77px;
+}
+#advanced-search-form .advsearch_buttons_top .reset-advanced-search a {
+  color: white;
+  display: block;
 }
 
 #crm-container #crm-tagRow291 {
@@ -1150,11 +1168,7 @@ ul.token-input-list-facebook { width:265px;}
 	display: block;
 	margin-left: 5px;
 }
-#advanced-search-form div.accordion_wrapper {
-	border: none;
-	padding: 0;
-	
-}
+
 #crm-container .tag-292-section div.token-input-dropdown-facebook {
 	width: 300px;
 }
