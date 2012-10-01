@@ -145,14 +145,22 @@ function checkRemoveAdd(tagLabel) {
 				cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
 				giveParentsIndicator(tagLabel,'add');
 				var tabCounter = cj('li#tab_tag em').html();
-				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag').html();
+				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag .name').html();
 				var headList = cj('.contactTagsList.help span').html();
-				var headSplit = headList.split(" • ");
-				var appendAfter = headSplit.length;
-				headSplit[appendAfter] = tagLiteralName;
-				headSplit.sort();
-				headList = headSplit.join(" • ");
-				cj('.contactTagsList.help span').html(headList);
+				if(headList)
+				{
+					var headSplit = headList.split(" • ");
+					var appendAfter = headSplit.length;
+					headSplit[appendAfter] = tagLiteralName;
+					headSplit.sort();
+					headList = headSplit.join(" • ");
+					cj('.contactTagsList.help span').html(headList);
+				}
+				else
+				{
+					headList = tagLiteralName;
+					cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+				}
 				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 			}
 		});
@@ -170,7 +178,7 @@ function checkRemoveAdd(tagLabel) {
 				if(data.code != 1) {alert('fails');}
 				findIDLv(tagLabel);
 				var tabCounter = cj('li#tab_tag em').html();
-				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag').html();
+				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .name').html();
 				var headList = cj('.contactTagsList.help span').html();
 				var headSplit = headList.split(" • ");
 				var appendAfter = headSplit.length;

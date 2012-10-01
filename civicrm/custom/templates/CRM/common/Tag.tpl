@@ -38,7 +38,8 @@
                 //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                     var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
+                    var tagCount = cj(".BBtree.edit.tab input:checkbox:checked").length + existingTagsInTagset;  
+                    console.log(tagCount);
                     cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
                 }
             },
@@ -48,7 +49,8 @@
                 //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                     var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
+                    var tagCount = cj(".BBtree.edit.tab input:checkbox:checked").length + existingTagsInTagset;
+                    console.log(tagCount); 
                     cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
                 }
             } 
