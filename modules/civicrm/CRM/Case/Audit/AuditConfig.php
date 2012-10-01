@@ -1,5 +1,5 @@
 <?php
-class AuditConfig {
+class CRM_Case_Audit_AuditConfig {
   private $filename;
   private $completionLabel;
   private $completionValue;
