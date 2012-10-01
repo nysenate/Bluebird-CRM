@@ -654,28 +654,24 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
   _setDBVars();
 }
 
-function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
+function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
 
-    $errors = array( );
+  //4272 ensure that target/with contact is set when activity created from contact record
+  if ( $formName == 'CRM_Activity_Form_Activity' &&
+       $form->_context == 'activity' &&
+       $form->_action != 8 ) { //exclude delete
 
-    //4272 ensure that target/with contact is set when activity created from contact record
-    if ( $formName == 'CRM_Activity_Form_Activity' &&
-         $form->_context == 'activity' &&
-         $form->_action != 8 ) { //exclude delete
-
-        if ( empty($fields['target_contact_id']) ) {
-            $errors['target_contact_id'] = ts( 'Please add at least one target contact.' );
-        }
-        return empty( $errors ) ? true : $errors;
+    if ( empty($fields['target_contact_id']) ) {
+      $errors['target_contact_id'] = ts('Please add at least one target contact.');
     }
+  }
 
-    if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
-
-        $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
-        foreach ( $distFlds as $fld ) {
-            $form->setElementError("custom_$fld", NULL);
-        }
+  if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
+    $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
+    foreach ( $distFlds as $fld ) {
+      $errors["custom_$fld"] = NULL;
     }
+  }
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
