@@ -122,10 +122,10 @@
                         enableDisableContactSelection( );
                         createRelation( );
                         var relationshipType = cj('#relationship_type_id'); 
-                        relationshipType.change( function() { 
+                        relationshipType.change( function() {
                             enableDisableContactSelection( );
                             cj('#relationship-refresh-save').hide();
-			     cj('#saveButtons').hide();
+                            cj('#saveButtons').hide();
                             createRelation( );
                             changeCustomData( 'Relationship' );
                             setPermissionStatus( cj(this).val( ) ); 
@@ -177,7 +177,7 @@
                             relContact.unautocomplete( );
                             relContact.click( function() { alert( '{/literal}{ts}Please select a relationship type first.{/ts}{literal} ...' );});
                         }
-                    }       
+                    }
                     
                     function buildCreateNewSelect( selectID, relType ) {
                         var elementID = '#' + selectID;
@@ -185,7 +185,7 @@
                         var postUrl = "{/literal}{crmURL p='civicrm/ajax/relationshipContactTypeList' h=0}{literal}";
                         cj.post( postUrl, { relType: relType },
                             function ( response ) {
-                                cj( elementID ).get(0).add(new Option('{/literal}{ts}- create new contact -{/ts}{literal}', ''), document.all ? i : null);
+                                cj( elementID ).get(0).add(new Option('{/literal}{ts}- create new contact -{/ts}{literal}', ''));//NYSS
                                 response = eval( response );
                                 for (i = 0; i < response.length; i++) {
                                     cj( elementID ).get(0).add(new Option(response[i].name, response[i].value), document.all ? i : null);
@@ -197,7 +197,7 @@
 				  </script>
                 {/literal}
                </td>
-              </tr>
+             </tr>
               </table>
                 <div class="crm-submit-buttons">
                     <span id="relationship-refresh" class="crm-button crm-button-type-refresh crm-button_qf_Relationship_refresh">{$form._qf_Relationship_refresh.html}</span>
@@ -508,7 +508,7 @@ cj( function() {
   if ( cj.browser.msie ) {
        cj('#contact_1').keyup( function(e) {
          if( e.keyCode == 9 || e.keyCode == 13 ) {
-	     return false;
+            return false;
 	     }
          cj("input[name='contact_select_id[1]']").val('');
          cj('#relationship-refresh').show( );
@@ -517,8 +517,8 @@ cj( function() {
    } else {
          cj('#contact_1').focus( function() {
             cj("input[name='contact_select_id[1]']").val('');
-         cj('#relationship-refresh').show( );
-         cj('#relationship-refresh-save').hide( ); 
+            cj('#relationship-refresh').show( );
+            cj('#relationship-refresh-save').hide( ); 
          });
    }
 });

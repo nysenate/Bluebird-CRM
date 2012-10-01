@@ -129,31 +129,30 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 
 function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
-    //Limit case roles available to add new role dialog to only those that apply to cases
-    if ( $formName=='CRM_Case_Form_CaseView' ) {
+  //Limit case roles available to add new role dialog to only those that apply to cases
+  if ( $formName=='CRM_Case_Form_CaseView' ) {
+    $caserelationships = array(
+      '13' => 'Case Manager is',
+      '8'  => 'Case Coordinator is',
+      '15' => 'Support Staff is',
+      '14' => 'Non-District Staff is'
+    );
+    $form->add('select', 'role_type',  ts( 'Relationship Type' ), array( '' => ts( '- select type -' ) ) + $caserelationships );
+  }
 
-        $caserelationships = array( '13' => 'Case Manager is',
-                                    '8'  => 'Case Coordinator is',
-                                    '15' => 'Support Staff is',
-                                    '14' => 'Non-District Staff is'
-                                  );
-        $form->add('select', 'role_type',  ts( 'Relationship Type' ), array( '' => ts( '- select type -' ) ) + $caserelationships );
-    }
+  //Limit import file size to 1MB
+  if ( $formName =='CRM_Import_Form_DataSource' ) {
+    $uploadFileSize = 1048576;
+    $uploadSize = round(($uploadFileSize / (1024*1024)), 2);
+    $form->assign('uploadSize', $uploadSize);
+    $form->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=60', true);
 
-    //Limit import file size to 1MB
-    if ( $formName =='CRM_Import_Form_DataSource' ) {
-
-        $uploadFileSize = 1048576;
-        $uploadSize = round(($uploadFileSize / (1024*1024)), 2);
-        $form->assign('uploadSize', $uploadSize);
-        $form->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=60', true);
-        
-        $form->setMaxFileSize($uploadFileSize);
-        $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize);
-        $form->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
-        $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
-        $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
-    }
+    $form->setMaxFileSize($uploadFileSize);
+    $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize);
+    $form->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
+    $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
+    $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
+  }
 
     //Construct some arrays and values to be passed to the tag tab
     if ( $formName == 'CRM_Tag_Form_Tag' ) {
@@ -248,23 +247,23 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         }
     }
 
-    //advanced search
-    if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
+  //advanced search
+  if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
 
-        //4575 search by all emails
-        $form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
+    //4575 search by all emails
+    $form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
 
-        //don't set US as default country in advanced search or contacts with no address are excluded
-        $defaults['country'] = '';
+    //don't set US as default country in advanced search or contacts with no address are excluded
+    $defaults['country'] = '';
 
-        //3527 set deceased to no
-        $defaults['is_deceased'] = 0;
+    //3527 set deceased to no
+    $defaults['is_deceased'] = 0;
 
-        //4332 clear activity creator/assigned
-        $defaults['activity_role'] = 0;
+    //4332 clear activity creator/assigned
+    $defaults['activity_role'] = 0;
 
-        $form->setDefaults( $defaults );
-    }
+    $form->setDefaults( $defaults );
+  }
 
     //set NY as default for state field in proximity search
     if ( $formName == 'CRM_Contact_Form_Search_Custom' &&
@@ -291,53 +290,55 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $form->setDefaults( $defaults );
     }
 
-    //3674 add limit submit js to all submit buttons
-    if ( isset( $form->_elementIndex['buttons'] ) ) {
-        $buttons    =& $form->getElement( 'buttons' );
-        $formID     =  $form->_attributes['id'];
-        $formAction =  $form->_attributes['action'];
+  //3674 add limit submit js to all submit buttons
+  if ( isset( $form->_elementIndex['buttons'] ) ) {
+    $buttons    =& $form->getElement( 'buttons' );
+    $formID     =  $form->_attributes['id'];
+    $formAction =  $form->_attributes['action'];
 
-        //handle case add form differently as buttons element is constructed twice due to embedded form
-        if ( $formID == 'Case' &&
-             $formAction == '/civicrm/case/add' &&
-             $form->_context != 'standalone'
-        ) {
-            $form->removeElement( 'buttons' );
-            $buttons =& $form->getElement( 'buttons' );
-        }
-
-        //list of exclusions by name or value
-        $btnExcludeName  = array( '_qf_Select_next',
-                                  '_qf_Map_next',
-                                  '_qf_PDF_submit',
-                                  '_qf_PDF_cancel',
-                                  '_qf_Contact_upload_view', //handle separately
-                                  '_qf_Relationship_upload', //4414
-                                  '_qf_Search_refresh',
-                                  '_qf_ProofingReport_next'
-                                  );
-        $btnExcludeValue = array( 'PDF',
-                                  'Print Contact List',
-                                  'File on case'
-                                  );
-
-        foreach ( $buttons->_elements as $key=>$button ) {
-            $btnType = $buttons->_elements[$key]->_attributes['type'];
-            if ( $btnType == 'submit' ) {
-                $btnName  = $buttons->_elements[$key]->_attributes['name'];
-                $btnValue = $buttons->_elements[$key]->_attributes['value'];
-                if ( !in_array($btnName, $btnExcludeName) &&
-                     !in_array($btnValue, $btnExcludeValue) ) {
-                    $js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
-                    $buttons->_elements[$key]->_attributes['onclick'] = $js;
-                } elseif ( $btnName == '_qf_Contact_upload_view' ) {
-                    $js = 'if(this.value!="Processing..." && cj("#Contact").valid() ){this.value="Processing...";document.getElementById(this.id).click();return true;}else{return false;}';
-                    $buttons->_elements[$key]->_attributes['onclick'] = $js;
-                }
-            }
-        }
-        //CRM_Core_Error::debug($buttons);
+    //handle case add form differently as buttons element is constructed twice due to embedded form
+    if ( $formID == 'Case' &&
+         $formAction == '/civicrm/case/add' &&
+         $form->_context != 'standalone'
+    ) {
+      $form->removeElement( 'buttons' );
+      $buttons =& $form->getElement( 'buttons' );
     }
+
+    //list of exclusions by name or value
+    $btnExcludeName  = array(
+      '_qf_Select_next',
+      '_qf_Map_next',
+      '_qf_PDF_submit',
+      '_qf_PDF_cancel',
+      '_qf_Contact_upload_view', //handle separately
+      '_qf_Relationship_upload', //4414
+      '_qf_Search_refresh',
+      '_qf_ProofingReport_next'
+    );
+    $btnExcludeValue = array(
+      'PDF',
+      'Print Contact List',
+      'File on case'
+    );
+
+    foreach ( $buttons->_elements as $key=>$button ) {
+      $btnType = $buttons->_elements[$key]->_attributes['type'];
+      if ( $btnType == 'submit' ) {
+        $btnName  = $buttons->_elements[$key]->_attributes['name'];
+        $btnValue = $buttons->_elements[$key]->_attributes['value'];
+        if ( !in_array($btnName, $btnExcludeName) &&
+             !in_array($btnValue, $btnExcludeValue) ) {
+          $js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
+          $buttons->_elements[$key]->_attributes['onclick'] = $js;
+        } elseif ( $btnName == '_qf_Contact_upload_view' ) {
+          $js = 'if(this.value!="Processing..." && cj("#Contact").valid() ){this.value="Processing...";document.getElementById(this.id).click();return true;}else{return false;}';
+          $buttons->_elements[$key]->_attributes['onclick'] = $js;
+        }
+      }
+    }
+    //CRM_Core_Error::debug($buttons);
+  }
 
     //add js popup msg to report pdf button
     if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
@@ -437,125 +438,130 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
 function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
 
-    if ( $formName == 'CRM_Contact_Form_Contact' ) {
-        //CRM_Core_Error::debug_var('form',$form);
-        if ( $form->_contactType == 'Individual' ) {
+  if ( $formName == 'CRM_Contact_Form_Contact' ) {
+    //CRM_Core_Error::debug_var('form',$form);
+    if ( $form->_contactType == 'Individual' ) {
 
-            require_once 'api/api.php';
+      require_once 'api/api.php';
 
-            $values    = $form->_finalValues;
-            $contactID = $form->_contactId;
-            $msg       = '';
+      $values    = $form->_finalValues;
+      $contactID = $form->_contactId;
+      $msg       = '';
 
-            //CRM_Core_Error::debug_var('values',$values);
+      //CRM_Core_Error::debug_var('values',$values);
 
-            //determine if the contact has a household relationship
-            $params = array( 'version'      => 3,
-                             'contact_id_a' => $contactID,
-                             'is_active'    => 1,
-                             );
-            $rels = civicrm_api( 'relationship', 'get', $params );
+      //determine if the contact has a household relationship
+      $params = array(
+        'version'      => 3,
+        'contact_id_a' => $contactID,
+        'is_active'    => 1,
+      );
+      $rels = civicrm_api( 'relationship', 'get', $params );
 
-            //if there are no household relationships, we don't need to continue
+      //if there are no household relationships, we don't need to continue
+      if ( !$rels['count'] ) {
+        return;
+      }
+      //CRM_Core_Error::debug_var('rels',$rels);
+
+      //check if all indivs related to the household are marked either do not email or do not mail
+      //if so, mark the household with those values and return a message
+      if ( $values['privacy']['do_not_email'] ||
+           $values['privacy']['do_not_mail'] ) {
+
+        foreach ( $rels['values'] as $rel ) {
+          if ( ( $rel['relationship_type_id'] == 6 ||
+                 $rel['relationship_type_id'] == 7 ) &&
+               ( !isset($rel['start_date']) ||
+                 strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
+               ( !isset($rel['end_date']) ||
+                 strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+            //now determine if there are other contacts attached to this household
+            $houseID = $rel['contact_id_b'];
+
+            $params = array(
+              'version'      => 3,
+              'contact_id_b' => $houseID,
+              'is_active'    => 1,
+            );
+            $hRels = civicrm_api( 'relationship', 'get', $params );
+
             if ( !$rels['count'] ) {
-                return;
+              continue;
             }
-            //CRM_Core_Error::debug_var('rels',$rels);
 
-            //check if all indivs related to the household are marked either do not email or do not mail
-            //if so, mark the household with those values and return a message
-            if ( $values['privacy']['do_not_email'] ||
-                 $values['privacy']['do_not_mail'] ) {
+            $flagDNM = $flagDNE = true; //assume true and break when a contact is not flagged
+            foreach ( $hRels['values'] as $hRel ) {
+              //CRM_Core_Error::debug_var('hRel',$hRel);
+              if ( ( $hRel['relationship_type_id'] == 6 ||
+                     $hRel['relationship_type_id'] == 7 ) &&
+                   ( !isset($hRel['start_date']) ||
+                     strtotime($hRel['start_date']) < strtotime(date('Y-m-d')) ) &&
+                   ( !isset($hRel['end_date']) ||
+                     strtotime($hRel['end_date']) > strtotime(date('Y-m-d')) ) ) {
 
-                foreach ( $rels['values'] as $rel ) {
-                    if ( ( $rel['relationship_type_id'] == 6 ||
-                           $rel['relationship_type_id'] == 7 ) &&
-                         ( !isset($rel['start_date']) ||
-                           strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
-                         ( !isset($rel['end_date']) ||
-                           strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
-
-                        //now determine if there are other contacts attached to this household
-                        $houseID = $rel['contact_id_b'];
-
-                        $params = array( 'version'      => 3,
-                                         'contact_id_b' => $houseID,
-                                         'is_active'    => 1,
-                                         );
-                        $hRels = civicrm_api( 'relationship', 'get', $params );
-
-                        if ( !$rels['count'] ) {
-                            continue;
-                        }
-
-                        $flagDNM = $flagDNE = true; //assume true and break when a contact is not flagged
-                        foreach ( $hRels['values'] as $hRel ) {
-                            //CRM_Core_Error::debug_var('hRel',$hRel);
-                            if ( ( $hRel['relationship_type_id'] == 6 ||
-                                   $hRel['relationship_type_id'] == 7 ) &&
-                                 ( !isset($hRel['start_date']) ||
-                                   strtotime($hRel['start_date']) < strtotime(date('Y-m-d')) ) &&
-                                 ( !isset($hRel['end_date']) ||
-                                   strtotime($hRel['end_date']) > strtotime(date('Y-m-d')) ) ) {
-
-                                //check if related indiv has DNM or DNE
-                                $params = array( 'version' => 3,
-                                                 'id' => $hRel['contact_id_a'],
-                                                 );
-                                $iContact = civicrm_api( 'contact', 'getsingle', $params );
-                                //CRM_Core_Error::debug_var('iContact',$iContact);
-                                if ( !$iContact['do_not_mail'] ) {
-                                    $flagDNM = false;
-                                }
-                                if ( !$iContact['do_not_email'] ) {
-                                    $flagDNE = false;
-                                }
-                            }
-                        }
-
-                        //now process the household
-                        if ( $flagDNM ) {
-                            $params = array( 'version'     => 3,
-                                             'id'          => $houseID,
-                                             'do_not_mail' => 1,
-                                             );
-                            $dnm = civicrm_api( 'Contact', 'Update', $params );
-                            $msg .= '<li>This individual has a related household record which has been marked Do Not Postal Mail. </li>';
-                        }
-                        if ( $flagDNE ) {
-                            $params = array( 'version'      => 3,
-                                             'id'           => $houseID,
-                                             'do_not_email' => 1,
-                                             );
-                            $dne = civicrm_api( 'Contact', 'Update', $params );
-                            $msg .= '<li>This individual has a related household record which has been marked Do Not Email. </li>';
-                        }
-                    }
+                //check if related indiv has DNM or DNE
+                $params = array(
+                  'version' => 3,
+                  'id' => $hRel['contact_id_a'],
+                );
+                $iContact = civicrm_api( 'contact', 'getsingle', $params );
+                //CRM_Core_Error::debug_var('iContact',$iContact);
+                if ( !$iContact['do_not_mail'] ) {
+                  $flagDNM = false;
                 }
-            } //DNM/DNE
-
-            //4744 if marked deceased and a household relationship exists, return message
-            $isDeceased = civicrm_api( 'Contact', 'Getvalue', array('version' => 3, 'id' => $contactID, 'return' => 'is_deceased') );
-            if ( $isDeceased ) {
-                foreach ( $rels['values'] as $rel ) {
-                    if ( ( $rel['relationship_type_id'] == 6 ||
-                           $rel['relationship_type_id'] == 7 ) &&
-                         ( !isset($rel['start_date']) ||
-                           strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
-                         ( !isset($rel['end_date']) ||
-                           strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
-
-                        $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
-                    }
+                if ( !$iContact['do_not_email'] ) {
+                  $flagDNE = false;
                 }
-            } //is_deceased
-
-            //now register the status message. handle here so we can combine in a nice bullet list
-            if ( $msg ) {
-                CRM_Core_Session::setStatus( "<ul>$msg</ul>" );
+              }
             }
-        } //Individual
-    } //CRM_Contact_Form_Contact
+
+            //now process the household
+            if ( $flagDNM ) {
+              $params = array(
+                'version'     => 3,
+                'id'          => $houseID,
+                'do_not_mail' => 1,
+              );
+              $dnm = civicrm_api( 'Contact', 'Update', $params );
+              $msg .= '<li>This individual has a related household record which has been marked Do Not Postal Mail. </li>';
+            }
+            if ( $flagDNE ) {
+              $params = array(
+                'version'      => 3,
+                'id'           => $houseID,
+                'do_not_email' => 1,
+              );
+              $dne = civicrm_api( 'Contact', 'Update', $params );
+              $msg .= '<li>This individual has a related household record which has been marked Do Not Email. </li>';
+            }
+          }
+        }
+      } //DNM/DNE
+
+      //4744 if marked deceased and a household relationship exists, return message
+      $isDeceased = civicrm_api( 'Contact', 'Getvalue', array('version' => 3, 'id' => $contactID, 'return' => 'is_deceased') );
+      if ( $isDeceased ) {
+          foreach ( $rels['values'] as $rel ) {
+              if ( ( $rel['relationship_type_id'] == 6 ||
+                     $rel['relationship_type_id'] == 7 ) &&
+                   ( !isset($rel['start_date']) ||
+                     strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
+                   ( !isset($rel['end_date']) ||
+                     strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+                  $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
+              }
+          }
+      } //is_deceased
+
+      //now register the status message. handle here so we can combine in a nice bullet list
+      if ( $msg ) {
+          CRM_Core_Session::setStatus( "<ul>$msg</ul>" );
+      }
+    } //Individual
+  } //CRM_Contact_Form_Contact
 } //postProcess
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
@@ -654,28 +660,24 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
   _setDBVars();
 }
 
-function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
+function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
 
-    $errors = array( );
+  //4272 ensure that target/with contact is set when activity created from contact record
+  if ( $formName == 'CRM_Activity_Form_Activity' &&
+       $form->_context == 'activity' &&
+       $form->_action != 8 ) { //exclude delete
 
-    //4272 ensure that target/with contact is set when activity created from contact record
-    if ( $formName == 'CRM_Activity_Form_Activity' &&
-         $form->_context == 'activity' &&
-         $form->_action != 8 ) { //exclude delete
-
-        if ( empty($fields['target_contact_id']) ) {
-            $errors['target_contact_id'] = ts( 'Please add at least one target contact.' );
-        }
-        return empty( $errors ) ? true : $errors;
+    if ( empty($fields['target_contact_id']) ) {
+      $errors['target_contact_id'] = ts('Please add at least one target contact.');
     }
+  }
 
-    if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
-
-        $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
-        foreach ( $distFlds as $fld ) {
-            $form->setElementError("custom_$fld", NULL);
-        }
+  if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
+    $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
+    foreach ( $distFlds as $fld ) {
+      unset($errors["custom_$fld"]);
     }
+  }
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {

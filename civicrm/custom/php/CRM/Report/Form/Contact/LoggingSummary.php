@@ -233,7 +233,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
       unset($row['log_civicrm_entity_log_user_id']);
       unset($row['log_civicrm_entity_log_conn_id']);
-
     }
 
     krsort($newRows);
@@ -267,12 +266,11 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     $clause = CRM_Utils_Array::value('entity_table', $detail);
     $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
 
-    //NYSS LEFT JOIN on user_id since sometimes its NULL (temp fix)
     $this->_from = "
 FROM `{$this->loggingDB}`.$entity entity_log_civireport
 INNER JOIN civicrm_temp_civireport_logsummary temp 
         ON (entity_log_civireport.{$detail['fk']} = temp.contact_id)
-LEFT JOIN civicrm_contact modified_contact_civireport 
+INNER JOIN civicrm_contact modified_contact_civireport 
         ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})
 LEFT  JOIN civicrm_contact altered_by_contact_civireport 
         ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)";
@@ -288,120 +286,123 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     return $statistics;
   }
 
-    //NYSS 5184 alter pager url
-    function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
-        if ( $this->_limit && ($this->_limit != '') ) {
-            require_once 'CRM/Utils/Pager.php';
-            $sql    = "SELECT FOUND_ROWS();";
-            $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
-            $params = array( 'total'        => $this->_rowsFound,
-                             'rowCount'     => $rowCount,
-                             'status'       => ts( 'Records' ) . ' %%StatusMessage%%',
-                             'buttonBottom' => 'PagerBottomButton',
-                             'buttonTop'    => 'PagerTopButton',
-                             'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
+  //NYSS 5184 alter pager url
+  function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
+    if ( $this->_limit && ($this->_limit != '') ) {
+      $sql = "SELECT FOUND_ROWS();";
+      $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
+      $params = array(
+        'total'        => $this->_rowsFound,
+        'rowCount'     => $rowCount,
+        'status'       => ts( 'Records' ) . ' %%StatusMessage%%',
+        'buttonBottom' => 'PagerBottomButton',
+        'buttonTop'    => 'PagerTopButton',
+        'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID )
+      );
 
-            $pager = new CRM_Utils_Pager( $params );
+      $pager = new CRM_Utils_Pager( $params );
 
-            //NYSS
-            if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' ) {
-                $context = CRM_Utils_Request::retrieve('context', 'String');
-                $path = CRM_Utils_System::currentPath();
-                foreach ( $pager->_response as $k => $v) {
-                    $urlReplace = array( $path     => 'civicrm/contact/view',
-                                         'force=1' => 'selectedChild=log',
-                                         );
-                    $pager->_response[$k] = str_replace( array_keys($urlReplace), array_values($urlReplace), $v );
-                }
-                //CRM_Core_Error::debug('pager',$pager);
-            }
-
-            $this->assign_by_ref( 'pager', $pager );
+      //NYSS
+      if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' ) {
+        $context = CRM_Utils_Request::retrieve('context', 'String');
+        $path = CRM_Utils_System::currentPath();
+        foreach ( $pager->_response as $k => $v) {
+          $urlReplace = array(
+            $path     => 'civicrm/contact/view',
+            'force=1' => 'selectedChild=log',
+          );
+          $pager->_response[$k] = str_replace( array_keys($urlReplace), array_values($urlReplace), $v );
         }
+        //CRM_Core_Error::debug('pager',$pager);
+      }
+
+      $this->assign_by_ref( 'pager', $pager );
+    }
+  }
+
+  //NYSS change how pagination works in contact context
+  function buildForm( ) {
+
+    parent::buildForm( );
+
+    if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' &&
+         $cid = $this->cid ) {
+
+      $this->_attributes['action'] = "/civicrm/contact/view?reset=1&cid={$cid}&selectedChild=log";
+      $this->_attributes['method'] = "get";
+      $this->addElement( 'hidden', 'selectedChild', 'log' );
+      //CRM_Core_Error::debug_var('LoggingSummary buildForm $this->_attributes',$this->_attributes);
+      //CRM_Core_Error::debug_var('LoggingSummary buildForm this',$this);
+      //CRM_Core_Error::debug_var('cid',$cid);
+    }
+  }
+
+  function getContactDetails( $cid ) {
+
+    $left = $middle = $right = array();
+    $leftList = $middleList = $addressList = '';
+
+    $IMProvider = CRM_Core_PseudoConstant::IMProvider();
+
+    $params = array(
+      'version' => 3,
+      'id'      => $cid,
+    );
+    $contact = civicrm_api( 'contact', 'getsingle', $params );
+    //CRM_Core_Error::debug('contact',$contact);
+
+    $left['nick_name']  = "{$contact['nick_name']} (nickname)";
+    $left['gender']     = "{$contact['gender']} (gender)";
+    $left['job_title']  = "{$contact['job_title']} (job title)";
+    $left['birth_date'] = "{$contact['birth_date']} (birthday)";
+
+    $middle['phone']    = "{$contact['phone']} (phone)";
+    $middle['email']    = "{$contact['email']} (email)";
+    $middle['im']       = "{$contact['im']} ({$IMProvider[$contact['provider_id']]})";
+
+    $address['street1'] = $contact['street_address'];
+    $address['street2'] = $contact['supplemental_address_1'];
+    $address['street3'] = $contact['supplemental_address_2'];
+    $address['city']    = $contact['city'];
+    $address['state']   = $contact['state_province'];
+    $address['zip']     = $contact['postal_code'];
+
+    //check against contact and remove if empty
+    foreach ( $left as $f => $v ) {
+      if ( empty($contact[$f]) ) {
+        unset($left[$f]);
+      }
+    }
+    foreach ( $middle as $f => $v ) {
+      if ( empty($contact[$f]) ) {
+        unset($middle[$f]);
+      }
+    }
+    $address = array_filter($address);
+
+    if ( !empty($left) ) {
+      $leftList  = "<div class='logLeftList'><ul><li>";
+      $leftList .= implode("</li>\n<li>", $left);
+      $leftList .= '</li></ul></div>';
+    }
+    if ( !empty($middle) ) {
+      $middleList  = "<div class='logMiddleList'><ul><li>";
+      $middleList .= implode("</li>\n<li>", $middle);
+      $middleList .= '</li></ul></div>';
     }
 
-    //NYSS change how pagination works in contact context
-    function buildForm( ) {
-
-        parent::buildForm( );
-
-        if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' &&
-             $cid = $this->cid ) {
-
-            $this->_attributes['action'] = "/civicrm/contact/view?reset=1&cid={$cid}&selectedChild=log";
-            $this->_attributes['method'] = "get";
-            $this->addElement( 'hidden', 'selectedChild', 'log' );
-            //CRM_Core_Error::debug_var('LoggingSummary buildForm $this->_attributes',$this->_attributes);
-            //CRM_Core_Error::debug_var('LoggingSummary buildForm this',$this);
-            //CRM_Core_Error::debug_var('cid',$cid);
-        }
+    if ( !empty($address) ) {
+      $addressList  = "<div class='logRightList'><ul><li>";
+      $addressList .= ( $address['street3'] ) ? "{$address['street3']}<br />" : '';
+      $addressList .= ( $address['street1'] ) ? "{$address['street1']}<br />" : '';
+      $addressList .= ( $address['street2'] ) ? "{$address['street2']}<br />" : '';
+      $addressList .= "{$address['city']}, {$address['state']} {$address['zip']}";
+      $addressList .= '</li></ul></div>';
     }
 
-    function getContactDetails( $cid ) {
+    $html = $leftList.$middleList.$addressList;
+    //CRM_Core_Error::debug_var('html',$html);
 
-        $left = $middle = $right = array();
-        $leftList = $middleList = $addressList = '';
-
-        $IMProvider = CRM_Core_PseudoConstant::IMProvider();
-
-        $params = array( 'version' => 3,
-                         'id'      => $cid,
-                         );
-        $contact = civicrm_api( 'contact', 'getsingle', $params );
-        //CRM_Core_Error::debug('contact',$contact);
-
-        $left['nick_name']  = "{$contact['nick_name']} (nickname)";
-        $left['gender']     = "{$contact['gender']} (gender)";
-        $left['job_title']  = "{$contact['job_title']} (job title)";
-        $left['birth_date'] = "{$contact['birth_date']} (birthday)";
-
-        $middle['phone']    = "{$contact['phone']} (phone)";
-        $middle['email']    = "{$contact['email']} (email)";
-        $middle['im']       = "{$contact['im']} ({$IMProvider[$contact['provider_id']]})";
-
-        $address['street1'] = $contact['street_address'];
-        $address['street2'] = $contact['supplemental_address_1'];
-        $address['street3'] = $contact['supplemental_address_2'];
-        $address['city']    = $contact['city'];
-        $address['state']   = $contact['state_province'];
-        $address['zip']     = $contact['postal_code'];
-
-        //check against contact and remove if empty
-        foreach ( $left as $f => $v ) {
-            if ( empty($contact[$f]) ) {
-                unset($left[$f]);
-            }
-        }
-        foreach ( $middle as $f => $v ) {
-            if ( empty($contact[$f]) ) {
-                unset($middle[$f]);
-            }
-        }
-        $address = array_filter($address);
-
-        if ( !empty($left) ) {
-            $leftList  = "<div class='logLeftList'><ul><li>";
-            $leftList .= implode("</li>\n<li>", $left);
-            $leftList .= '</li></ul></div>';
-        }
-        if ( !empty($middle) ) {
-            $middleList  = "<div class='logMiddleList'><ul><li>";
-            $middleList .= implode("</li>\n<li>", $middle);
-            $middleList .= '</li></ul></div>';
-        }
-
-        if ( !empty($address) ) {
-            $addressList  = "<div class='logRightList'><ul><li>";
-            $addressList .= ( $address['street3'] ) ? "{$address['street3']}<br />" : '';
-            $addressList .= ( $address['street1'] ) ? "{$address['street1']}<br />" : '';
-            $addressList .= ( $address['street2'] ) ? "{$address['street2']}<br />" : '';
-            $addressList .= "{$address['city']}, {$address['state']} {$address['zip']}";
-            $addressList .= '</li></ul></div>';
-        }
-
-        $html = $leftList.$middleList.$addressList;
-        //CRM_Core_Error::debug_var('html',$html);
-
-        return $html;
-    }
+    return $html;
+  }
 }

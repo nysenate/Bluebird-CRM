@@ -308,6 +308,10 @@ $execSql -i $instance -c "$blocks" --drupal -q
 timezone="UPDATE users SET timezone = 'America/New_York';"
 $execSql -i $instance -c "$timezone" --drupal -q
 
+$drush $instance vset date_default_timezone 'America/New_York' -y
+$drush $instance vset configurable_timezones 0 -y
+$drush $instance vset empty_timezone_message 0 -y
+
 ## disable contribution-type activities
 contract="
 SELECT @atgroup := id FROM civicrm_option_group WHERE name = 'activity_type';
@@ -315,9 +319,19 @@ UPDATE civicrm_option_value
 SET is_active = 0
 WHERE option_group_id = @atgroup
   AND name IN ('Update Recurring Contribution', 'Update Recurring Contribution Billing Details',
-    'Cancel Recurring Contribution', 'BULK SMS');
+    'Cancel Recurring Contribution', 'BULK SMS', 'SMS');
 "
 $execSql -i $instance -c "$contract" -q
+
+## 5652 remove dupe reminder sent activity type
+rs="
+SELECT @act:= id FROM civicrm_option_group WHERE name = 'activity_type';
+SELECT @rs1:= value FROM civicrm_option_value WHERE option_group_id = @act AND name = 'Reminder Sent' AND is_reserved = 0;
+SELECT @rs2:= value FROM civicrm_option_value WHERE option_group_id = @act AND name = 'Reminder Sent' AND is_reserved = 1;
+UPDATE civicrm_activity SET activity_type_id = @rs2 WHERE activity_type_id = @rs1;
+UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @act AND value = @rs1;
+"
+$execSql -i $instance -c "$rs" -q
 
 ### Cleanup ###
 
