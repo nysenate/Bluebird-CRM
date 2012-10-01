@@ -54,7 +54,7 @@
 {/literal}
 
 {*move/reconstruct comm pref*}
-<div id="commPrefWrap">
+<div id="commPrefWrap" style="display:none;">
   <div class="customFieldGroup">
   <table id="communication-preferences">
     <tr class="columnheader">
