@@ -1227,4 +1227,15 @@ LIMIT {$offset}, {$rowCount}
     echo json_encode($addressVal);
     CRM_Utils_System::civiExit();  
   }
+
+  //NYSS pull changelog count via ajax
+  /**
+   * Function to get the count of the change log.
+   */
+  static function getChangeLogCount( ) {
+    if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
+      echo CRM_Contact_BAO_Contact::getCountComponent( 'log', $contactId  );
+    }
+    CRM_Utils_System::civiExit( );
+  }
 }
