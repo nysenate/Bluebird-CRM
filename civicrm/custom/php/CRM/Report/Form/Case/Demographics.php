@@ -39,101 +39,110 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
   protected $_summary = NULL;
 
   protected $_emailField = FALSE;
-    
-  protected $_phoneField = FALSE;
 
-  //NYSS 4936 - mods throughout
-
-  function __construct( ) {		        
+  protected $_phoneField = FALSE; function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
         'dao' => 'CRM_Contact_DAO_Contact',
-                          'fields'    =>
+        'fields' =>
         array(
           'sort_name' =>
-                                 array( 'title'     => ts( 'Contact Name' ),
+          array('title' => ts('Contact Name'),
             'required' => TRUE,
             'no_repeat' => TRUE,
           ),
-                                 'gender_id'         =>
-                                 array( 'title'   => ts( 'Gender' ),  
+          'gender_id' =>
+          array('title' => ts('Gender'),
             'default' => TRUE,
           ),
-                                 'birth_date'         =>
-                                 array( 'title'   => ts( 'Birthdate' ),  
+          'birth_date' =>
+          array('title' => ts('Birthdate'),
             'default' => FALSE,
           ),
-                                 'id'           => 
+          'id' =>
           array(
             'no_display' => TRUE,
             'required' => TRUE,
           ),
         ),
-                          'filters'   =>             
+        'filters' =>
         array(
           'sort_name' =>
-                                 array( 'title'      => ts( 'Contact Name' )  ),
-                                 'contact_type' => 
-                                 array( 'title'     => ts( 'Contact Type' ),
-                                        'operatorType' => CRM_Report_Form::OP_SELECT,
-                                        'options' => array( '' => ts('-select-'),
-                                                            'Individual' => ts('Individual'),
-                                                            'Organization' => ts('Organization'),
-                                                            'Household' => ts('Household'),
-                                                           ),
+          array('title' => ts('Contact Name')),
+          'contact_type' =>
+          array('title' => ts('Contact Type'),
+            'operatorType' => CRM_Report_Form::OP_SELECT,
+            'options' => array('' => ts('-select-'),
+              'Individual' => ts('Individual'),
+              'Organization' => ts('Organization'),
+              'Household' => ts('Household'),
+            ),
             'default' => 'Individual',
           ),
-                                 'id'           => 
-                                 array( 'title'      => ts( 'Contact ID' ),
+          'id' =>
+          array('title' => ts('Contact ID'),
             'no_display' => TRUE,
           ),
-                          //NYSS 4936
-						  'order_bys'  =>
-                          array( 'sort_name' =>
-                                 array( 'title' => ts( 'Contact Name'), ),
-							     'gender_id' =>
-                                 array( 'title' => ts( 'Gender'), ),
-							     'birth_date' =>
-                                 array( 'title' => ts( 'Birth Date'), ),
-                          ), 
-						  'grouping'  => 'contact-fields',
-                          ),
-                   'civicrm_email'   =>
+        ),
+        //NYSS 4936
+        'order_bys'  =>
+        array(
+          'sort_name' =>
+          array(
+            'title' => ts( 'Contact Name'),
+          ),
+          'gender_id' =>
+          array(
+            'title' => ts( 'Gender'),
+          ),
+          'birth_date' =>
+          array( 'title' => ts( 'Birth Date'),
+          ),
+        ),
+        'grouping' => 'contact-fields',
+      ),
+      'civicrm_email' =>
       array(
         'dao' => 'CRM_Core_DAO_Email',
-                          'fields'    =>
+        'fields' =>
         array(
           'email' =>
-                                 array( 'title'      => ts( 'Email' ),
+          array('title' => ts('Email'),
             'no_repeat' => TRUE,
-                                        ),
-                                 ),
-						  'order_bys'  =>
-                          array( 'email' =>
-                                array( 'title' => ts( 'Email'), ),
+          ),
+        ),
+        //NYSS
+        'order_bys'  =>
+        array( 
+          'email' =>
+          array( 
+            'title' => ts('Email'), 
+          ),
+        ),
+    'grouping'  => 'contact-fields', 
                           ),
-						  'grouping'  => 'contact-fields', 
-                          ),
-                   'civicrm_address' =>
+      'civicrm_address' =>
       array(
         'dao' => 'CRM_Core_DAO_Address',
-                          'grouping'  => 'contact-fields',
-                          'fields'    =>
+        'grouping' => 'contact-fields',
+        'fields' =>
         array(
           'street_address' =>
           array('default' => FALSE),
-                                 'city'              => 
+          'city' =>
           array('default' => TRUE),
           'postal_code' => NULL,
-                                 'state_province_id' => 
+          'state_province_id' =>
           array('title' => ts('State/Province'),
           ),
-                                 /*'country_id'        => 
-                                 array( 'title'   => ts( 'Country' ),  
-                                        'default' => false ),*/ 
-                                 ),
-/*
+          //NYSS
+          /*'country_id' => 
+          array('title' => ts('Country'),  
+            'default' => FALSE, 
+          ),*/ 
+        ),
+        /*
                           'filters'   =>             
                           array(
                              'country_id' => 
@@ -147,101 +156,119 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                         'options' => CRM_Core_PseudoConstant::stateProvince( ), ), 
                                  ), 
 */
-                          //NYSS 4936
-						  'order_bys'  =>
-                          array( 'street_address' =>
-                                 array( 'title' => ts( 'Street Address'), ),
-							     'city' =>
-                                 array( 'title' => ts( 'City'), ),
-							     'postal_code' =>
-                                 array( 'title' => ts( 'Postal Code'), ),
-							     'state_province_id' =>
-                                 array( 'title' => ts( 'State/Province'), ),
-								 ),
-						  'grouping'  => 'contact-fields',
-						  ),
-                   'civicrm_phone' => 
+        //NYSS 4936
+        'order_bys'  =>
+        array(
+          'street_address' =>
+          array(
+            'title' => ts( 'Street Address'),
+          ),
+          'city' =>
+          array(
+            'title' => ts( 'City'),
+          ),
+          'postal_code' =>
+          array(
+            'title' => ts( 'Postal Code'),
+          ),
+          'state_province_id' =>
+          array(
+            'title' => ts( 'State/Province'),
+          ),
+        ),
+        'grouping'  => 'contact-fields',
+      ),
+      'civicrm_phone' =>
       array(
         'dao' => 'CRM_Core_DAO_Phone',
-                          'fields'    =>
-                          array( 'phone'  => NULL ),
-						  'order_bys'  => //NYSS
-                          array( 'phone' =>
-                                array( 'title' => ts( 'Phone'), ),
-                          ),
-                          'grouping'  => 'contact-fields',
-                          ),
-                  'civicrm_activity' => 
+        'fields' =>
+        array('phone' => NULL),
+        'order_bys'  => //NYSS
+        array( 
+          'phone' =>
+          array( 
+            'title' => ts( 'Phone'),
+          ),
+        ),
+        'grouping' => 'contact-fields',
+      ),
+      'civicrm_activity' =>
       array(
         'dao' => 'CRM_Activity_DAO_Activity',
-                          'fields'    =>
-        array('id' => array(//'title' => ts('Activity ID'),//NYSS
+        'fields' =>
+        array(
+          'id' => array(
+            //'title' => ts('Activity ID'),//NYSS
             'no_display' => TRUE,
             'required' => TRUE,
-                                               ),
-                               ),
-                          ),
-                  'civicrm_case' => 
+          ),
+        ),
+      ),
+      'civicrm_case' =>
       array(
         'dao' => 'CRM_Case_DAO_Case',
-                          'fields'    =>
-                          array( 'id'  => array(//'title' => ts('Case ID'),
-                                                'required'   => TRUE,
-												'no_display' => TRUE, //NYSS
-                                               ),
-                                 'start_date'  => array('title' => ts('Case Start'),
+        'fields'    =>
+        //NYSS
+        array(
+          'id' => array(
+            //'title' => ts('Case ID'),
             'required' => TRUE,
-                                               ),
-                                 'end_date'  => array('title' => ts('Case End'),
+            'no_display' => TRUE, //NYSS
+          ),
+          'start_date' => array('title' => ts('Case Start'),
             'required' => TRUE,
-                                               ),
-                               ),
-                          'filters'   =>  
+          ),
+          'end_date' => array('title' => ts('Case End'),
+            'required' => TRUE,
+          ),
+        ),
+        'filters' =>
         array(
           'case_id_filter' => array('name' => 'id',
-                                                            'title' => ts( 'Cases?' ),
-                                                            'operatorType' => CRM_Report_Form::OP_SELECT,
-                                                            'options' => array(1 => ts('Exclude non-case'), 2 => ts('Exclude cases'), 3 => ts('Include Both')),
-                                                            'default' => 3,
-                                                          ),
-                                 'start_date' => array( 'title' => ts( 'Case Start' ),
-                                                        'operatorType' => CRM_Report_Form::OP_DATE,
-                                                      ),
-                                 'end_date' => array( 'title' => ts( 'Case End' ),
-                                                        'operatorType' => CRM_Report_Form::OP_DATE,
-                                                      ),
-                               ),
-                          //NYSS 4936
-						  'order_bys'  =>
-                          array( /*'id' =>
-                                 array( 'title' => ts( 'Case ID'), ),*/
-							     'start_date' =>
-                                 array( 'title' => ts( 'Case Start'), ),
-							     'end_date' =>
-                                 array( 'title' => ts( 'Case End'), ),
-                                 ),
-						  'grouping'  => 'contact-fields',
-						  ),
-                   'civicrm_group' => 
+            'title' => ts('Cases?'),
+            'operatorType' => CRM_Report_Form::OP_SELECT,
+            'options' => array(1 => ts('Exclude non-case'), 2 => ts('Exclude cases'), 3 => ts('Include Both')),
+            'default' => 3,
+          ),
+          'start_date' => array('title' => ts('Case Start'),
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'end_date' => array('title' => ts('Case End'),
+            'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+        ),
+        //NYSS 4936
+        'order_bys'  =>
+        array(
+          /*'id' =>
+          array( 'title' => ts( 'Case ID'), ),*/
+          'start_date' =>
+          array( 'title' => ts( 'Case Start'), ),
+          'end_date' =>
+          array( 'title' => ts( 'Case End'), ),
+        ),
+        'grouping'  => 'contact-fields',
+      ),
+      'civicrm_group' =>
       array(
         'dao' => 'CRM_Contact_DAO_Group',
-                          'alias'  => 'cgroup',
-                          'filters' =>             
+        'alias' => 'cgroup',
+        'filters' =>
         array(
           'gid' =>
           array(
             'name' => 'group_id',
-                                        'title'   => ts( 'Group' ),
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'title' => ts('Group'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'group' => TRUE,
             'options' => CRM_Core_PseudoConstant::group(),
                                         ), 
                                  ), 
                           ),
                    //NYSS need to manually add custom fields
-				   'civicrm_value_constituent_information_1' =>
-				   array( 'dao' => 'CRM_Contact_DAO_Contact', // dummy DAO
-				          'fields'    =>
+           'civicrm_value_constituent_information_1' =>
+           array( 'dao' => 'CRM_Contact_DAO_Contact', // dummy DAO
+                  'fields'    =>
                           array( 'voter_registration_status_23' => 
                                  array( 'title'   => ts( 'Voter Registration Status' ), ),
                                  'individual_category_42' =>
@@ -252,37 +279,37 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                  array( 'title'   => ts( 'Religion' ), ),
                                  'record_type_61' =>
                                  array( 'title'   => ts( 'Record Type' ), ),
-								 ),
+                 ),
                           'filters'   =>             
                           array( 
-								 ),
-				          'order_bys' =>
-				          array( 'voter_registration_status_23' =>
-						         array( 'title' => ts( 'Voter Registration Status' ) ),
-								 'individual_category_42' =>
-						         array( 'title' => ts( 'Individual Category' ) ),
-								 'contact_source_60' =>
-						         array( 'title' => ts( 'Contact Source' ) ),
-								 'religion_63' =>
-						         array( 'title' => ts( 'Religion' ) ),
-								 'record_type_61' =>
-						         array( 'title' => ts( 'Record Type' ) ),
-								 ),
-						  ),
-				   );
+                 ),
+                  'order_bys' =>
+                  array( 'voter_registration_status_23' =>
+                     array( 'title' => ts( 'Voter Registration Status' ) ),
+                 'individual_category_42' =>
+                     array( 'title' => ts( 'Individual Category' ) ),
+                 'contact_source_60' =>
+                     array( 'title' => ts( 'Contact Source' ) ),
+                 'religion_63' =>
+                     array( 'title' => ts( 'Religion' ) ),
+                 'record_type_61' =>
+                     array( 'title' => ts( 'Record Type' ) ),
+                 ),
+              ),
+           );
 
     $this->_tagFilter = TRUE;
-
+//NYSS
         /*$open_case_val = CRM_Core_OptionGroup::getValue('activity_type', 'Open Case', 'name' );
-		$crmDAO =& CRM_Core_DAO::executeQuery( "SELECT cg.table_name, cg.extends AS ext, cf.label, cf.column_name FROM civicrm_custom_group cg INNER JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
+    $crmDAO =& CRM_Core_DAO::executeQuery( "SELECT cg.table_name, cg.extends AS ext, cf.label, cf.column_name FROM civicrm_custom_group cg INNER JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_column_value='$open_case_val') AND cg.is_active=1 AND cf.is_active=1 ORDER BY cg.table_name");
         $curTable = '';
         $curExt = '';
         $curFields = array();
         while($crmDAO->fetch()) {
-        	if ($curTable == '') {
-        		$curTable = $crmDAO->table_name;
-        		$curExt = $crmDAO->ext;
+          if ($curTable == '') {
+            $curTable = $crmDAO->table_name;
+            $curExt = $crmDAO->ext;
       }
       elseif ($curTable != $crmDAO->table_name) {
         // dummy DAO
@@ -294,19 +321,19 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
                 $curTable = $crmDAO->table_name;
                 $curExt = $crmDAO->ext;
                 $curFields = array();
-        	}    	
-        	
-        	$curFields[$crmDAO->column_name] = array('title' => $crmDAO->label);
+          }      
+          
+          $curFields[$crmDAO->column_name] = array('title' => $crmDAO->label);
         }
-		if (! empty($curFields)) {
+    if (! empty($curFields)) {
       // dummy DAO
       $this->_columns[$curTable] = array(
         'dao' => 'CRM_Contact_DAO_Contact',
                                                'fields' => $curFields,
                                                'ext' => $curExt,                   
                                               );
-		}*/
-		
+    }*/
+    
         $this->_genders = CRM_Core_PseudoConstant::gender(); 
 
         parent::__construct( );
@@ -361,15 +388,15 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
             LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id 
             LEFT JOIN civicrm_value_constituent_information_1 value_constituent_information_1_civireport ON value_constituent_information_1_civireport.entity_id = {$this->_aliases['civicrm_contact']}.id 
-        ";
+        ";//NYSS add left join to custom table
             
-		/*foreach($this->_columns as $t => $c) {
-			if (substr($t, 0, 13) == 'civicrm_value' || substr($t, 0, 12) == 'custom_value') {
+    /*foreach($this->_columns as $t => $c) {
+      if (substr($t, 0, 13) == 'civicrm_value' || substr($t, 0, 12) == 'custom_value') {
                 $this->_from .= " LEFT JOIN $t {$this->_aliases[$t]} ON {$this->_aliases[$t]}.entity_id = ";
                 $this->_from .= ($c['ext'] == 'Activity') ? "{$this->_aliases['civicrm_activity']}.id" : "{$this->_aliases['civicrm_contact']}.id";
-			}
-		}*/
-        		
+      }
+    }*/
+            
         if ( $this->_emailField ) {
             $this->_from .= "
             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
@@ -402,15 +429,15 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
           else {
                         $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
                         if ( $op ) {
-                        	// handle special case
-                        	if ($fieldName == 'case_id_filter') {
-                        		$choice = CRM_Utils_Array::value( "{$fieldName}_value", $this->_params );
-                        		if ($choice == 1) {
-                        			$clause = "({$this->_aliases['civicrm_case']}.id Is Not Null)";
+                          // handle special case
+                          if ($fieldName == 'case_id_filter') {
+                            $choice = CRM_Utils_Array::value( "{$fieldName}_value", $this->_params );
+                            if ($choice == 1) {
+                              $clause = "({$this->_aliases['civicrm_case']}.id Is Not Null)";
                 }
                 elseif ($choice == 2) {
-                        			$clause = "({$this->_aliases['civicrm_case']}.id Is Null)";
-                        		}
+                              $clause = "({$this->_aliases['civicrm_case']}.id Is Null)";
+                            }
               }
               else {
                 $clause = $this->whereClause($field,
@@ -419,7 +446,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
                                                     CRM_Utils_Array::value( "{$fieldName}_min", $this->_params ),
                   CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
                 );
-                        	}
+                          }
                         }
                     }
 
@@ -433,7 +460,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         $clauses[] = "(({$this->_aliases['civicrm_case']}.is_deleted = 0) OR ({$this->_aliases['civicrm_case']}.is_deleted Is Null))";
         $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_deleted = 0) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
         $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_current_revision = 1) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
-	
+  
         $this->_where = "WHERE " . implode( ' AND ', $clauses );
     }
 
@@ -457,7 +484,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         
         $this->formatDisplay( $rows );
         $this->doTemplateAssignment( $rows );
-        $this->endPostProcess( $rows );	
+        $this->endPostProcess( $rows );  
     }
 
     function alterDisplay( &$rows ) {
@@ -501,16 +528,16 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             }
 
       // handle custom fields
-			foreach($row as $k => $r) {
-				if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
-					if ( $r || $r=='0' ) {
-						if ($newval = $this->getCustomFieldLabel( $k, $r )) {
-							$rows[$rowNum][$k] = $newval;
-						}
-					}
+      foreach($row as $k => $r) {
+        if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
+          if ( $r || $r=='0' ) {
+            if ($newval = $this->getCustomFieldLabel( $k, $r )) {
+              $rows[$rowNum][$k] = $newval;
+            }
+          }
           $entryFound = TRUE;
-				}
-			}
+        }
+      }
 
             // skip looking further in rows, if first row itself doesn't 
             // have the column we need
