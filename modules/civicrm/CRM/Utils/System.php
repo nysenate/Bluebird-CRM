@@ -160,6 +160,21 @@ class CRM_Utils_System {
     return $config->userSystem->theme($type, $content, $args, $print, $ret, $maintenance);
   }
 
+  //NYSS 3331
+  static function makeQueryString($query) {
+ 	  if (is_array($query)) {
+ 	 	  $buf = '';
+ 	 	  foreach ($query as $key => $value) {
+ 	 	    if ($buf != '') {
+ 	 	      $buf .= '&';
+ 	 	    }
+ 	 	    $buf .= urlencode($key) . '=' . urlencode($value);
+ 	 	  }
+ 	 	  $query = $buf;
+ 	 	}
+ 	 	return $query;
+ 	}
+
   /**
    * Generate an internal CiviCRM URL
    *
@@ -181,7 +196,8 @@ class CRM_Utils_System {
     $htmlize  = TRUE,
     $frontend = FALSE
   ) {
-        if (is_array($query)) {
+    //NYSS
+        /*if (is_array($query)) {
             $buf = '';
             foreach ($query as $key => $value) {
               if ($buf != '') {
@@ -190,7 +206,9 @@ class CRM_Utils_System {
               $buf .= urlencode($key) . '=' . urlencode($value);
             }
             $query = $buf;
-        }
+        }*/
+    $query = self::makeQueryString($query);
+
     // we have a valid query and it has not yet been transformed
     if ($htmlize && !empty($query) && strpos($query, '&amp;') === FALSE) {
       $query = htmlentities($query);

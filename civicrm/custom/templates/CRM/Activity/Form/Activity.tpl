@@ -265,7 +265,7 @@
                  </tr>
              {/if}
              
-             {if $action eq 4 AND $currentAttachmentURL}
+             {if $action eq 4 AND $currentAttachmentInfo}{*NYSS*}
                 {include file="CRM/Form/attachment.tpl"}{* For view action the include provides the row and cells. *}
              {else if $action eq 1 OR $action eq 2}
                  <tr class="crm-activity-form-block-attachment">

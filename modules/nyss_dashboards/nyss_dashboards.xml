@@ -174,8 +174,16 @@
     <access_arguments>export print production files</access_arguments>
   </item>
   <item>
-     <path>civicrm/ajax/changelog</path>
-     <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/changelog</path>
+    <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--3331-->
+  <item>
+    <path>civicrm/file/delete</path>
+    <title>Delete file</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
   </item>
 </menu>
