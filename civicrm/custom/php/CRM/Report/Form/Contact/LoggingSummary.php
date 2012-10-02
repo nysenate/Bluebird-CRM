@@ -279,11 +279,15 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     
   //4198 calculate distinct contacts
   function statistics( &$rows ) {
+    $distinctContacts = array();
+    foreach ( $rows as $row ) {
+      $distinctContacts[$row['log_civicrm_entity_altered_contact_id']] = 1;
+    }
     $statistics = parent::statistics( $rows );
-    $statistics['counts']['rowsFound'] = 
-    array( 
+    $statistics['counts']['rowsFound'] = array(
       'title' => ts('Contact(s) Changed'),
-      'value' => $this->_distinctCount );
+      'value' => count($distinctContacts),
+    );
     return $statistics;
   }
 
