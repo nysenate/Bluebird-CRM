@@ -113,6 +113,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
             'name' => 'display_name',
             'title' => ts('Altered Contact'),
             'type' => CRM_Utils_Type::T_STRING,
+            'alias' => 'modified_contact_civireport',//NYSS
           ),
           'altered_contact_id' => array(
             'name' => 'id',
