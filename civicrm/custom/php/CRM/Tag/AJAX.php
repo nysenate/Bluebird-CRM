@@ -76,7 +76,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
 
         //If they request entity counts, build that into the tree as well.
+        $ec_start = microtime(TRUE);
         if(CRM_Utils_Array::value('entity_counts', $_GET)) {
+
             // There is definitely nothing like this in the civicrm_api. Using
             // the DAO layer is way too slow when we get to hundreds of results.
             // Hand rolled SQL it is...
@@ -101,9 +103,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         } else {
             $entity_counts = null;
         }
+        $ec_time = microtime(TRUE)-$ec_start;
 
         // If they pass in an entity_id we can also get information on which tags apply
         // to the specified entity and include that along with the tree
+        $et_start = microtime(TRUE);
         if(array_key_exists('entity_id', $_GET)) {
             $entity_id = $_GET['entity_id'];
 
@@ -120,6 +124,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         } else {
             $entity_tags = null;
         }
+        $et_time = microtime(TRUE)-$et_start;
 
         // We need to build a list of tags ordered by hierarchy and sorted by
         // name. Instead of recursively making mysql queries, we'll make one
@@ -129,6 +134,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //the tags to be sorted in alphabetical order on each level. Can't use
         //the DAO object because it doesn't support queries by LIKE. Atleast, I
         //don't know how you would do it, maybe it can be done.
+        $bt_start = microtime(TRUE);
         $tags = CRM_Core_DAO::executeQuery("
                 SELECT tag.*, contact.display_name as created_display_name
                 FROM civicrm_tag as tag
@@ -152,8 +158,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach($roots as $root) {
             $tree[] = self::_build_tree($root,$nodes);
         }
+        $bt_time = microtime(TRUE)-$bt_start;
 
-        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start)));
+        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start),'ec_time'=>$ec_time,'et_time'=>$et_time,'bt_time'=>$bt_time));
         CRM_Utils_System::civiExit();
     }
 
