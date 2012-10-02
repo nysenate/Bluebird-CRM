@@ -34,6 +34,8 @@
  */
 class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCache {
 
+  static $_alreadyLoaded = array();
+
     /**
      * Check to see if we have cache entries for this group
      * if not, regenerate, else return
@@ -108,8 +110,9 @@ AND     ( g.cache_date IS NULL OR
     static function store( &$groupID, &$values ) {
     $processed = FALSE;
 
-        // NYSS 4769 - sort the values to avoid concurrent queries deadlocking with each other.
-        //sort($values); //NYSS 4777 - not a meaningful sort
+    // sort the values so we put group IDs in front and hence optimize
+    // mysql storage (or so we think) CRM-9493
+    sort($values);
 
         // to avoid long strings, lets do BULK_INSERT_COUNT values at a time
         while ( ! empty( $values ) ) {
@@ -170,6 +173,11 @@ WHERE  id IN ( $groupIDs )
         
     if ($groupID == NULL) {
       $invoked = TRUE;
+    } else if (is_array($groupID)) {
+      foreach ($groupID as $gid)
+        unset(self::$_alreadyLoaded[$gid]);
+    } else if ($groupID && array_key_exists($groupID, self::$_alreadyLoaded)) {
+      unset(self::$_alreadyLoaded[$groupID]);
         }
         
         //when there are difference in timezones for mysql and php.
@@ -249,11 +257,10 @@ WHERE  id = %1
   static function load(&$group, $fresh = FALSE) {
         $groupID       = $group->id;
         $savedSearchID = $group->saved_search_id;
-    static $alreadyLoaded = array();
-    if (in_array($groupID, $alreadyLoaded) && !$fresh) {
+    if (array_key_exists($groupID, self::$_alreadyLoaded) && !$fresh) {
       return;
     }
-    $alreadyLoaded[] = $groupID;
+    self::$_alreadyLoaded[$groupID] = 1;
     $sql         = NULL;
         $idName      = 'id';
     $customClass = NULL;
@@ -282,15 +289,13 @@ WHERE  id = %1
                 // we split it up and store custom class
                 // so temp tables are not destroyed if they are used
                 // hence customClass is defined above at top of function
-                $customClass = CRM_Contact_BAO_SearchCustom::customClass( $ssParams['customSearchID'],
-                       $savedSearchID
-        );
+        $customClass =
+          CRM_Contact_BAO_SearchCustom::customClass($ssParams['customSearchID'], $savedSearchID);
                 $searchSQL   = $customClass->contactIDs( );
                 $idName = 'contact_id';
       } 
       else {
         $formValues = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
-
 
         $query = new CRM_Contact_BAO_Query($ssParams, $returnProperties, NULL,
                  FALSE, FALSE, 1,
@@ -305,7 +310,7 @@ WHERE  id = %1
         );
         $query->_useDistinct = FALSE;
         $query->_useGroupBy  = FALSE;
-        $query->_useOrderBy  = false; //NYSS 4846
+        $query->_useOrderBy  = FALSE; //NYSS 4846
         $searchSQL           = $query->searchQuery(0, 0, NULL,
                                FALSE, FALSE,
                                FALSE, TRUE,
@@ -322,8 +327,7 @@ WHERE  id = %1
 		}
 
         if ( $sql ) {
-      // $sql .= " UNION ";
-      $sql = preg_replace("/^SELECT/", "SELECT $groupID as group_id, ", $sql);
+      $sql = preg_replace("/^\s*SELECT/", "SELECT $groupID as group_id, ", $sql);
         }
 
         // lets also store the records that are explicitly added to the group

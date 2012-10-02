@@ -182,8 +182,10 @@ class CRM_Report_Form_Instance {
         $instanceID = $form->getVar( '_id' );
         $navigationDefaults = array();
 
+    if (!CRM_Utils_Array::value('permission', $defaults)){
     $permissions = array_flip(CRM_Core_Permission::basicPermissions( ));
     $defaults['permission'] = $permissions['CiviReport: access CiviReport'];
+    }
 
         $config = CRM_Core_Config::singleton(); 
  //NYSS remove powered by image and title
@@ -226,7 +228,6 @@ class CRM_Report_Form_Instance {
                 }
                 $defaults['grouprole'] = $grouproles;
             }
-
     }
     else {
             $defaults['description'] = $form->_description;
@@ -285,7 +286,6 @@ class CRM_Report_Form_Instance {
             if ( $permission ) {
                 $dashletParams['permission'][] = $permission;
             }
-            unset( $params['addToDashboard'] );
         }
     $params['is_reserved'] = CRM_Utils_Array::value('is_reserved', $params, FALSE);
         

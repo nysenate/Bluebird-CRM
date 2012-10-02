@@ -893,12 +893,18 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             // allow components to add more actions
             CRM_Core_Component::searchAction( $row, $row['contact_id'] );
 
-      $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($row['contact_sub_type'] ?
-                                                         $row['contact_sub_type'] : $row['contact_type_orig'],
-        FALSE,
-        $row['contact_id']
-      );
-
+       $contactType = null;
+      if ( CRM_Utils_Array::value('contact_sub_type', $row) ) {
+        $contactType = $row['contact_sub_type'];
+      }
+      elseif ( CRM_Utils_Array::value('contact_type_orig', $row) ) {
+        $contactType = $row['contact_type_orig'];
+      }
+      
+      if ( $contactType ) { 
+        $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($contactType,
+          FALSE, $row['contact_id']);
+      }
       //NYSS 5055/4899 - this is used for temporary purposes and should now be removed
       unset($row['contact_type_orig']);
     }
