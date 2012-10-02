@@ -26,7 +26,7 @@
 {include file="CRM/common/pager.tpl" location="top"}
 
 {include file="CRM/common/pagerAToZ.tpl"}
-<a href="#" onclick=" return toggleContactSelection( 'resetSel', 'civicrm search {$qfKey}', 'reset' );">{ts}Reset all selections{/ts}<a>
+<a href="#" onclick=" return toggleContactSelection( 'resetSel', 'civicrm search {$qfKey}', 'reset' );">{ts}Reset all selections{/ts}</a>
 
 <table summary="{ts}Search results listings.{/ts}" class="selector row-highlight">
   <thead class="sticky">
@@ -67,7 +67,7 @@
               {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
             {foreach from=$row item=value key=key} 
                {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
                 <td>

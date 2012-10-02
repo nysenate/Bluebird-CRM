@@ -35,7 +35,7 @@
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/jquery.autocomplete.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jstree/jquery.jstree.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/jstree/themes/default/jstree.css");</style>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/jstree/themes/default/style.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.menu.pack.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/menu.css");</style>
