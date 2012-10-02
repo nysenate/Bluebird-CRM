@@ -89,6 +89,10 @@ class CRM_Utils_Mail {
     }
 
     $headers         = array();
+    // CRM-10699 support custom email headers
+    if (CRM_Utils_Array::value('headers', $params)) {
+      $headers = array_merge($headers, $params['headers']);
+    }
     $headers['From'] = $params['from'];
     $headers['To']   = self::formatRFC822Email(CRM_Utils_Array::value('toName', $params),
       CRM_Utils_Array::value('toEmail', $params),
@@ -172,6 +176,8 @@ class CRM_Utils_Mail {
         CRM_Core_Session::setStatus($message, TRUE);
         return FALSE;
       }
+      // CRM-10699
+      CRM_Utils_Hook::postEmailSend($params);
       return TRUE;
     }
     return FALSE;

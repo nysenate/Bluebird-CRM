@@ -128,8 +128,9 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
     'relationship' => array(
       'base' => 'civicrm_contribution',
-      'title' => 'Contribution records',
-      'field' => 'contact_id',
+      'title' => 'Contribution Records',
+      'left_field' => 'contact_id',
+      'field' => 'id',
       'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Contributions'),
     ),
@@ -1746,6 +1747,7 @@ function _civicrm_core_data(&$data, $enabled) {
     'help' => t('The contact who is assigned the activity.'),
     'relationship' => array(
       'base' => 'civicrm_contact',
+      'left_field' => 'id',
       'field' => 'assignee_contact_id',
       'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Assignee Contact ID'),
@@ -1770,6 +1772,7 @@ function _civicrm_core_data(&$data, $enabled) {
     'help' => t('The contact who is the activity\'s target.'),
     'relationship' => array(
       'base' => 'civicrm_contact',
+      'left_field' => 'id',
       'field' => 'target_contact_id',
       'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Target Contact ID'),

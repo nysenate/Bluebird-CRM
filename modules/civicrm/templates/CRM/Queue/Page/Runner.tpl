@@ -42,9 +42,9 @@ cj(function() {
       cj('#crm-queue-runner-title').text('Executed: ' + data.last_task_title);
     }
     
-    if (data.message) {
+    if (data.exception) {
       cj('#crm-queue-runner-message').html('');
-      cj('<pre></pre>').text(data.message).prependTo('#crm-queue-runner-message');
+      cj('<div></div>').html(data.exception).prependTo('#crm-queue-runner-message');
     }
     
   };
@@ -121,14 +121,22 @@ cj(function() {
   // Set up the UI
   
   cj("#crm-queue-runner-progress").progressbar({ value: 0 });
-  cj("#crm-queue-runner-retry").button({
-    text: false,
-    icons: {primary: 'ui-icon-refresh'}
-  }).click(retryNext);
-  cj("#crm-queue-runner-skip").button({
-    text: false,
-    icons: {primary: 'ui-icon-seek-next'}
-  }).click(skipNext);
+  if (queueRunnerData.buttons.retry == 1) {
+    cj("#crm-queue-runner-retry").button({
+      text: false,
+      icons: {primary: 'ui-icon-refresh'}
+    }).click(retryNext);
+  } else {
+    cj("#crm-queue-runner-retry").remove();
+  }
+  if (queueRunnerData.buttons.skip == 1) {
+    cj("#crm-queue-runner-skip").button({
+      text: false,
+      icons: {primary: 'ui-icon-seek-next'}
+    }).click(skipNext);
+  } else {
+    cj("#crm-queue-runner-skip").remove();
+  }
   cj("#crm-queue-runner-buttonset").buttonset();
   cj("#crm-queue-runner-buttonset").hide();
   window.setTimeout(runNext, 50);

@@ -23,7 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-
+{capture assign=wikiLink}{docURL page="Setting up a SMS Provider for CiviSMS" text="(How to add a SMS Provider)" resource="wiki"}{/capture}
+<div id="help">
+    {ts}You can configure one or more SMS Providers for your CiviCRM installation. To learn more about the procedure to add a SMS Provider, refer{/ts} {$wikiLink}
+</div>
 {if $action eq 1 or $action eq 2 or $action eq 8}
    {include file="CRM/SMS/Form/Provider.tpl"}
 {else}

@@ -64,6 +64,7 @@ class CRM_Queue_Page_Runner extends CRM_Core_Page {
         'onEndAjax' => CRM_Utils_System::url($runner->pathPrefix . '/ajax/onEnd', NULL, FALSE, NULL, FALSE ),
         'completed' => 0,
         'numberOfItems' => $runner->queue->numberOfItems(),
+        'buttons' => $runner->buttons,
       ));
 
     if ($runner->isMinimal) {

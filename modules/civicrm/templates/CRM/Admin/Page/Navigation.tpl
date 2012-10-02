@@ -63,13 +63,15 @@
 	        crrm  :  {
                 move: {
                         check_move: function(m) {
-		                    if ( cj( m.r[0] ).attr('id').replace("node_","") == {/literal}{$homeMenuId}{literal} || 
-                                cj( m.o[0] ).attr('id').replace("node_","") == {/literal}{$homeMenuId}{literal} ) { 
-                                    return false; 
-                            } else { 
-                                    return true; 
-                            } 
-		                } 
+		                    var homeMenuId = {/literal}"{$homeMenuId}"{literal};
+
+                        if ( cj( m.r[0] ).attr('id').replace("node_","") == homeMenuId || 
+                          cj( m.o[0] ).attr('id').replace("node_","") == homeMenuId ) { 
+                          return false; 
+                        } else { 
+                          return true; 
+                        } 
+                                    } 
                       }
             },
              contextmenu : { 
@@ -101,18 +103,27 @@
        
        }). bind("remove.jstree", function ( e,node ) {
             var menuName  = node.rslt.obj.find('a').first( ).text( );
+            var nodeID  = node.rslt.obj.attr('id').replace("node_","");
+            
+            // don't allow deleting of home
+            var homeMenuId = {/literal}"{$homeMenuId}"{literal};
+            if ( nodeID == homeMenuId ) {
+              var cannotDeleteMsg = {/literal}"{ts}You cannot delete this menu item:{/ts}" + " "{literal} + menuName;
+              alert( cannotDeleteMsg );
+              cj("#navigation-tree").jstree('refresh');
+              return false;
+            }
             var deleteMsg = {/literal}"{ts}Are you sure you want to delete this menu item:{/ts}" + " "{literal} + menuName + {/literal}" ? {ts}This action can not be undone.{/ts}"{literal};
-      var isDelete  = confirm( deleteMsg );
-          if ( isDelete ) {
-              var nodeID  = node.rslt.obj.attr('id').replace("node_","");
+            var isDelete  = confirm( deleteMsg );
+            if ( isDelete ) {
               var postURL = {/literal}"{crmURL p='civicrm/ajax/menutree' h=0 q='key='}{crmKey name='civicrm/ajax/menutree'}"{literal};
               cj.get( postURL + '&type=delete&id=' + nodeID,
                  function (data) {
                 		cj("#reset-menu").show( );
           	      } );
-               } else { 
- 	         cj("#navigation-tree").jstree('refresh');
-    	  }                 
+            } else { 
+              cj("#navigation-tree").jstree('refresh');
+            }                 
        
        }). bind("move_node.jstree", function ( e,node ) {
           node.rslt.o.each(function (i) {

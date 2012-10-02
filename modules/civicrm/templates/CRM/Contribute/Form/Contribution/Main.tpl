@@ -25,6 +25,32 @@
 *}
 {if $ppType}
   {include file="CRM/Core/BillingBlock.tpl"}
+ {if $is_monetary}
+  {* Put PayPal Express button after customPost block since it's the submit button in this case. *}
+  {if $paymentProcessor.payment_processor_type EQ 'PayPal_Express'}
+  <div id="paypalExpress">   
+     {assign var=expressButtonName value='_qf_Main_upload_express'}
+      <fieldset class="crm-group paypal_checkout-group">
+        <legend>{ts}Checkout with PayPal{/ts}</legend>
+        <div class="section">
+        <div class="crm-section paypalButtonInfo-section">
+          <div class="content">
+              <span class="description">{ts}Click the PayPal button to continue.{/ts}</span>
+          </div>
+          <div class="clear"></div>
+        </div>
+        <div class="crm-section {$expressButtonName}-section">
+            <div class="content">
+              {$form.$expressButtonName.html} <span class="description">Checkout securely. Pay without sharing your financial information. </span>
+            </div>
+            <div class="clear"></div>
+        </div>
+        </div>
+      </fieldset>
+   </div> 
+  {/if}
+ {/if}
+    
 {elseif $onbehalf}
    {include file=CRM/Contribute/Form/Contribution/OnBehalfOf.tpl}
 {else}
@@ -284,31 +310,6 @@ var priceset = {/literal}{if $priceset}'#{$priceset}'{else}0{/if}{literal}
     {if $isCaptcha}
   {include file='CRM/common/ReCAPTCHA.tpl'}
     {/if}
-    <div id="paypalExpress">
-    {if $is_monetary}
-  {* Put PayPal Express button after customPost block since it's the submit button in this case. *}
-  {if $paymentProcessor.payment_processor_type EQ 'PayPal_Express'}
-      {assign var=expressButtonName value='_qf_Main_upload_express'}
-      <fieldset class="crm-group paypal_checkout-group">
-        <legend>{ts}Checkout with PayPal{/ts}</legend>
-        <div class="section">
-        <div class="crm-section paypalButtonInfo-section">
-          <div class="content">
-              <span class="description">{ts}Click the PayPal button to continue.{/ts}</span>
-          </div>
-          <div class="clear"></div>
-        </div>
-        <div class="crm-section {$expressButtonName}-section">
-            <div class="content">
-              {$form.$expressButtonName.html} <span class="description">Checkout securely. Pay without sharing your financial information. </span>
-            </div>
-            <div class="clear"></div>
-        </div>
-        </div>
-      </fieldset>
-  {/if}
-    {/if}
-    </div>
     <div id="crm-submit-buttons" class="crm-submit-buttons">
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
@@ -441,8 +442,33 @@ function pcpAnonymous( ) {
 {/literal} {/if}
 
 {literal}
+
+function toggleConfirmButton() {
+  var payPalExpressId = {/literal}{$payPalExpressId}{literal};
+  var elementObj = cj('input[name="payment_processor"]');
+   if ( elementObj.attr('type') == 'hidden' ) {
+      var processorTypeId = elementObj.val( );
+   } else {
+      var processorTypeId = elementObj.filter(':checked').val();
+   }
+
+   if (payPalExpressId !=0 && payPalExpressId == processorTypeId) {
+      hide("crm-submit-buttons");
+   } else {	
+      show("crm-submit-buttons");
+   } 
+}
+
+cj('input[name="payment_processor"]').change( function() {
+  toggleConfirmButton();
+});
+
+cj(function() {
+  toggleConfirmButton();
+});
+
 function showHidePayPalExpressOption() {
-  if (document.getElementsByName("is_pay_later")[0].checked) {
+  if (cj('input[name="is_pay_later"]').is(':checked')) {
     show("crm-submit-buttons");
     hide("paypalExpress");
   }

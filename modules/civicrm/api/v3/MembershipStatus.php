@@ -57,7 +57,6 @@ require_once 'CRM/Member/BAO/MembershipStatus.php';
  */
 function civicrm_api3_membership_status_create($params) {
 
-
   civicrm_api3_verify_one_mandatory($params, 'CRM_Member_DAO_MembershipStatus', array('name', 'label'));
   //move before verifiy? DAO check requires?
   if (empty($params['name'])) {
@@ -186,12 +185,20 @@ SELECT start_date, end_date, join_date
   FROM civicrm_membership
  WHERE id = %1
 ";
+
   $params = array(1 => array($membershipID, 'Integer'));
   $dao = &CRM_Core_DAO::executeQuery($query, $params);
   if ($dao->fetch()) {
     require_once 'CRM/Member/BAO/MembershipStatus.php';
-    $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date);
 
+    // Take the is_admin column in MembershipStatus into consideration when requested
+    if (! CRM_Utils_Array::value('ignore_admin_only', $membershipParams) ) {
+      $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date, 'today', TRUE);
+    } 
+    else {
+      $result = &CRM_Member_BAO_MembershipStatus::getMembershipStatusByDate($dao->start_date, $dao->end_date, $dao->join_date);
+    }
+    
     //make is error zero only when valid status found.
     if (CRM_Utils_Array::value('id', $result)) {
       $result['is_error'] = 0;

@@ -101,7 +101,8 @@ cj( function() {
         width: 200,
         selectFirst: false,
         minChars:1,
-        matchContains: true 	 
+        matchContains: true,
+        delay: 400
     }).result(function(event, data, formatted) {
        document.location={/literal}"{crmURL p='civicrm/contact/view' h=0 q='reset=1&cid='}"{literal}+data[1];
        return false;

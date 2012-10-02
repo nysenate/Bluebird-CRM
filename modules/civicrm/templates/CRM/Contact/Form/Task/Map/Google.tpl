@@ -26,13 +26,13 @@
 {if $showDirectly}
   {assign var=height value="350px"}
   {assign var=width  value="425px"}
-{else}	
+{else}
   {assign var=height value="600px"}
   {assign var=width  value="100%"}
 {/if}
-{assign var=defaultZoom value=16}  
+{assign var=defaultZoom value=16}
 {literal}
-<script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+<script src="//maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
 <script type="text/javascript">
     function initMap() {
         var latlng = new google.maps.LatLng({/literal}{$center.lat},{$center.lng}{literal});
@@ -41,7 +41,7 @@
         map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
         setMapOptions(map);
     }
-    
+
     function setMapOptions(map) {
         bounds = new google.maps.LatLngBounds( );
 	{/literal}
@@ -80,15 +80,15 @@
 	    {/if}
 	{/foreach}
         map.setCenter(bounds.getCenter());
-        {if count($locations) gt 1}  
+        {if count($locations) gt 1}
             map.fitBounds(bounds);
             map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
         {elseif $location.marker_class eq 'Event' || $location.marker_class eq 'Individual'|| $location.marker_class eq 'Household' || $location.marker_class eq 'Organization' }
             map.setZoom({$defaultZoom});
-        {else} 
-            map.setZoom({$defaultZoom}); 
+        {else}
+            map.setZoom({$defaultZoom});
         {/if}
-	{literal}	
+	{literal}
     }
 
     function createMarker(map, point, data, image) {
@@ -104,7 +104,7 @@
 
     function gpopUp() {
 	var from   = document.getElementById('from').value;
-	var to     = document.getElementById('to').value;	
+	var to     = document.getElementById('to').value;
 	var URL    = "http://maps.google.com/maps?saddr=" + from + "&daddr=" + to;
 	day = new Date();
 	id  = day.getTime();

@@ -364,12 +364,15 @@ SELECT id
     }
 
     if (CRM_Utils_Array::value('is_recur_interval', $fields)) {
-      $paymentProcessorType = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_PaymentProcessor',
-        $fields['payment_processor'],
-        'payment_processor_type'
-      );
-      if ($paymentProcessorType == 'Google_Checkout') {
-        $errors['is_recur_interval'] = ts('Google Checkout does not support recurring intervals');
+      foreach(array_keys($fields['payment_processor']) as $paymentProcessorID) {
+        $paymentProcessorType = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_PaymentProcessor',
+                                                            $paymentProcessorID,
+                                                            'payment_processor_type'
+                                                            );
+        if ($paymentProcessorType == 'Google_Checkout') {
+          $errors['is_recur_interval'] = ts('Google Checkout does not support recurring intervals');
+          break;
+        }
       }
     }
 
@@ -516,7 +519,8 @@ SELECT id
                 $setParams['name'] = $pageTitle . '_' . $this->_id;
               }
               else {
-                $setParams['name'] = $pageTitle . '_' . rand(1, 99);
+                $timeSec = explode(".", microtime(true));
+                $setParams['name'] = $pageTitle . '_' . date('is', $timeSec[0]) . $timeSec[1];
               }
               $setParams['is_quick_config'] = 1;
               $setParams['extends'] = CRM_Core_Component::getComponentID('CiviContribute');

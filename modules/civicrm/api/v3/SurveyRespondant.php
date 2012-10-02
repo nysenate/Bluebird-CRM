@@ -28,10 +28,10 @@
  */
 
 /**
- * File for the CiviCRM APIv3 Petition Signatures functions
+ * File for the CiviCRM APIv3 Survey Respondant functions
  *
  * @package CiviCRM_APIv3
- * @subpackage API_Contribute
+ * @subpackage API_Survey
  */
 
 /**
@@ -53,19 +53,30 @@ require_once 'CRM/Campaign/BAO/Petition.php';
  */
 function &civicrm_api3_survey_respondant_get($params) {
 
-  civicrm_api3_verify_one_mandatory($params, 'CRM_Campaign_BAO_Petition', array('survey_id', 'id'));
+  civicrm_api3_verify_one_mandatory($params, NULL, array('survey_id', 'id'));
 
-  if (array_key_exists('status_id', $params)) {
-    $status_id = $params['status_id'];
+  if (array_key_exists('survey_id', $params)) {
+    $surveyID = $params['survey_id'];
   }
   else {
-    $status_id = NULL;
+    $surveyID = $params['id'];
   }
-  $surveyID   = empty($params['survey_id']) ? $params['id'] : $params['survey_id'];
-  $petition   = new CRM_Campaign_BAO_Petition();
-  $signatures = $petition->getPetitionSignature($surveyID, $status_id);
-  return (civicrm_api3_create_success($signatures, $params));
+
+  $interviewerID = NULL;
+  if (array_key_exists('interviewer_id', $params)) {
+    $interviewerID = $params['interviewer_id'];
+  }
+
+  $statusIds = array();
+  if (array_key_exists('status_id', $params)) {
+    $statusIds = explode(',', $params['status_id']);
+  }
+
+  $respondants = CRM_Campaign_BAO_Survey::getSurveyActivities($surveyID, $interviewerID, $statusIds);
+
+  return (civicrm_api3_create_success($respondants, $params));
 }
+
 /*
  * @deprecated - api currently not supported
  */

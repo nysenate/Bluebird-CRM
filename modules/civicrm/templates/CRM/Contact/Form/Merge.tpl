@@ -73,22 +73,21 @@
 		{literal}
 		<script type="text/javascript">
 		function mergeBlock(blockname, element, blockId) {
-   		    var allBlock = {/literal}{$mainLocBlock}{literal};
-   		    var block    = eval( "allBlock." + 'main_'+ blockname + element.value);
-		    if(blockname == 'email' || blockname == 'phone'){
-   		          var label = '(overwrite)'+<span id="main_blockname_blockId_overwrite">{/literal}{$form.location.$blockName.$blockId.operation.html}{literal}<br /></span>;
-		    }
-		    else
-		    {
-		        label = '(overwrite)<br />';
-		    }
+      var allBlock = {/literal}{$mainLocBlock}{literal};
+      var block    = eval( "allBlock." + 'main_'+ blockname + element.value);
+      if(blockname == 'email' || blockname == 'phone'){
+        var label = '(overwrite)'+<span id="main_blockname_blockId_overwrite">{/literal}{$form.location.$blockName.$blockId.operation.html}{literal}<br /></span>;
+      }
+      else {
+        label = '(overwrite)<br />';
+      }
  	
-		    if ( !block ) { 
-     		       	block = '';
-     			label   = '(add)';
-   		    }
-   			cj( "#main_"+ blockname +"_" + blockId ).html( block );	
-   			cj( "#main_"+ blockname +"_" + blockId +"_overwrite" ).html( label );
+      if ( !block ) { 
+        block = '';
+        label   = '(add)';
+      }
+      cj( "#main_"+ blockname +"_" + blockId ).html( block );	
+      cj( "#main_"+ blockname +"_" + blockId +"_overwrite" ).html( label );
 		}
 		</script>
 		{/literal}
@@ -105,7 +104,7 @@
   {foreach from=$rel_tables item=params key=paramName}
     {if $paramName eq 'move_rel_table_users'}
       <tr class="{cycle values="even-row,odd-row"}">
-      <th>{ts}Move related...{/ts}</th><td>{if $otherUfId}<a target="_blank" href="{$params.other_url}">{$params.other_title}</a></td><td style='white-space: nowrap'>=={$form.$paramName.html}==&gt;{else}<td style='white-space: nowrap'></td>{/if}</td><td>{if $mainUfId}<a target="_blank" href="{$params.main_url}">{$params.main_title}</a>{/if}</td>
+      <th>{ts}Move related...{/ts}</th><td>{if $otherUfId}<a target="_blank" href="{$params.other_url}">{$otherUfName}</a></td><td style='white-space: nowrap'>=={$form.$paramName.html}==&gt;{else}<td style='white-space: nowrap'></td>{/if}</td><td>{if $mainUfId}<a target="_blank" href="{$params.main_url}">{$mainUfName}</a>{/if}</td>
     </tr>
     {else}
     <tr class="{cycle values="even-row,odd-row"}">

@@ -77,7 +77,7 @@ class CRM_Report_Utils_Report {
 
     if (!array_key_exists($optionVal, $valId)) {
       $sql = "
-SELECT MAX(id) FROM civicrm_report_instance
+SELECT MIN(id) FROM civicrm_report_instance
 WHERE  report_id = %1";
 
       $params = array(1 => array($optionVal, 'String'));
@@ -95,7 +95,7 @@ WHERE  report_id = %1";
 
     if ($path && !array_key_exists($path, $valId)) {
       $sql = "
-SELECT MAX(id) FROM civicrm_report_instance
+SELECT MIN(id) FROM civicrm_report_instance
 WHERE  TRIM(BOTH '/' FROM CONCAT(report_id, '/', name)) = %1";
 
       $params = array(1 => array($path, 'String'));

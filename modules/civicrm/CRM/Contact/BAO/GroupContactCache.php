@@ -34,6 +34,8 @@
  */
 class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCache {
 
+  static $_alreadyLoaded = array();
+
   /**
    * Check to see if we have cache entries for this group
    * if not, regenerate, else return
@@ -171,6 +173,11 @@ WHERE  id IN ( $groupIDs )
 
     if ($groupID == NULL) {
       $invoked = TRUE;
+    } else if (is_array($groupID)) {
+      foreach ($groupID as $gid)
+        unset(self::$_alreadyLoaded[$gid]);
+    } else if ($groupID && array_key_exists($groupID, self::$_alreadyLoaded)) {
+      unset(self::$_alreadyLoaded[$groupID]);
     }
 
     //when there are difference in timezones for mysql and php.
@@ -250,11 +257,10 @@ WHERE  id = %1
   static function load(&$group, $fresh = FALSE) {
     $groupID = $group->id;
     $savedSearchID = $group->saved_search_id;
-    static $alreadyLoaded = array();
-    if (in_array($groupID, $alreadyLoaded) && !$fresh) {
+    if (array_key_exists($groupID, self::$_alreadyLoaded) && !$fresh) {
       return;
     }
-    $alreadyLoaded[] = $groupID;
+    self::$_alreadyLoaded[$groupID] = 1;
     $sql         = NULL;
     $idName      = 'id';
     $customClass = NULL;
@@ -283,15 +289,13 @@ WHERE  id = %1
         // we split it up and store custom class
         // so temp tables are not destroyed if they are used
         // hence customClass is defined above at top of function
-        $customClass = CRM_Contact_BAO_SearchCustom::customClass($ssParams['customSearchID'],
-                       $savedSearchID
-        );
+        $customClass =
+          CRM_Contact_BAO_SearchCustom::customClass($ssParams['customSearchID'], $savedSearchID);
         $searchSQL = $customClass->contactIDs();
         $idName = 'contact_id';
       }
       else {
         $formValues = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
-
 
         $query = new CRM_Contact_BAO_Query($ssParams, $returnProperties, NULL,
                  FALSE, FALSE, 1,
@@ -322,8 +326,7 @@ WHERE  id = %1
     }
 
     if ($sql) {
-      // $sql .= " UNION ";
-      $sql = preg_replace("/^SELECT/", "SELECT $groupID as group_id, ", $sql);
+      $sql = preg_replace("/^\s*SELECT/", "SELECT $groupID as group_id, ", $sql);
     }
 
     // lets also store the records that are explicitly added to the group

@@ -74,8 +74,6 @@ cj( function() {
                 var actualUrl = actionUrl[0] + '&' + actionUrl[1];
             {/literal}{/if}{literal}
 
-            cj(this).parents("form").attr("action", actualUrl );
-
             if ( !global_formNavigate ) {
               var message = '{/literal}{ts escape="js"}Are you sure you want to navigate away from this tab?{/ts}' + '\n\n' + '{ts escape="js"}You have unsaved changes.{/ts}' + '\n\n' + '{ts escape="js"}Press OK to continue, or Cancel to stay on the current tab.{/ts}{literal}';
               if ( !confirm( message ) ) {
@@ -84,6 +82,8 @@ cj( function() {
                 global_formNavigate = true;
               }
             }
+            cj(this).parents("form").attr("action", actualUrl );
+
             return true;
         },
         load: function(event, ui) {

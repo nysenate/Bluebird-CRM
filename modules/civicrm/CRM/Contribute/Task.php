@@ -103,7 +103,7 @@ class CRM_Contribute_Task {
           'class' => 'CRM_Contribute_Form_Task_PDF',
           'result' => FALSE,
         ),
-        8 => array('title' => ts('Send PDF Letter for Contributions'),
+        8 => array('title' => ts('Thank-you Letters for Contributions'),
           'class' => 'CRM_Contribute_Form_Task_PDFLetter',
           'result' => FALSE,
         ),

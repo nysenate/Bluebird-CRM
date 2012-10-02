@@ -243,5 +243,52 @@ WHERE     %2.id = %1";
     $dao = CRM_Core_DAO::executeQuery($query);
     return $result;
   }
+      
+  public static function syncLineItems($entityId, $entityTable = 'civicrm_contribution', $amount, $otherParams = NULL) {
+    if (!$entityId || CRM_Utils_System::isNull($amount))
+      return;
+    
+    $from = " civicrm_line_item li
+LEFT JOIN   civicrm_price_field pf ON pf.id = li.price_field_id
+LEFT JOIN   civicrm_price_set ps ON ps.id = pf.price_set_id ";
+
+    $set = " li.unit_price = %3, 
+             li.line_total = %3 ";
+
+    $where = " li.entity_id = %1 AND 
+               li.entity_table = %2 ";
+    
+    $params = array(
+      1 => array($entityId, 'Integer'),
+      2 => array($entityTable, 'String'),
+      3 => array($amount, 'Float'),
+    );
+    
+    if ($entityTable == 'civicrm_contribution') {
+      $entityName = 'default_contribution_amount';
+      $where .= " AND ps.name = %4 ";
+      $params[4] = array($entityName, 'String'); 
+    } elseif ($entityTable == 'civicrm_participant') {
+      $from .= "
+LEFT JOIN civicrm_price_set_entity cpse ON cpse.price_set_id = ps.id
+LEFT JOIN civicrm_price_field_value cpfv ON cpfv.price_field_id = pf.id and cpfv.label = %4 ";
+      $set .= " ,li.label = %4,
+                li.price_field_value_id = cpfv.id ";
+      $where .= " AND cpse.entity_table = 'civicrm_event' AND cpse.entity_id = %5 ";
+      $amount = empty($amount) ? 0: $amount;
+      $params += array(
+        4 => array($otherParams['fee_label'], 'String'),
+        5 => array($otherParams['event_id'], 'String'),
+      );
+    }
+      
+    $query = "                                          
+UPDATE $from
+SET    $set
+WHERE  $where    
+";
+
+    CRM_Core_DAO::executeQuery($query, $params);
+  }
 }
 

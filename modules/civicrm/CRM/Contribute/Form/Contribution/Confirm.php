@@ -85,9 +85,12 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
         // set a few other parameters for PayPal
         $this->_params['token'] = $this->get('token');
-
+        
         $this->_params['amount'] = $this->get('amount');
-
+        
+        if (!empty($this->_membershipBlock)){
+          $this->_params['selectMembership'] = $this->get('selectMembership');
+        }
         // we use this here to incorporate any changes made by folks in hooks
         $this->_params['currencyID'] = $config->defaultCurrency;
 

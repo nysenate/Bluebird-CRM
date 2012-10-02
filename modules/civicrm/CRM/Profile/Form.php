@@ -859,6 +859,8 @@ class CRM_Profile_Form extends CRM_Core_Form {
       'email_greeting' => 'email_greeting_id',
       'postal_greeting' => 'postal_greeting_id',
     );
+
+    $details = array();
     if ($this->_id) {
       $contactDetails = CRM_Contact_BAO_Contact::getHierContactDetails($this->_id,
         $greetingTypes

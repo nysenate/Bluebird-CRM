@@ -37,7 +37,7 @@ class Com_CiviCRMInstallerScript {
     require_once 'CRM/Utils/System.php';
     require_once 'CRM/Utils/Array.php';
     if ($civicrmUpgrade) {
-      $docLink = CRM_Utils_System::docURL2('Installation and Upgrades', TRUE, 'Upgrade Guide');
+      $docLink = CRM_Utils_System::docURL2('Installation and Upgrades', TRUE, 'Upgrade Guide',NULL,NULL,"wiki");
       // UPGRADE successful status and links
       $content = '
   <center>
@@ -53,10 +53,10 @@ class Com_CiviCRMInstallerScript {
   </center>';
     }
     else {
-      $docLink  = CRM_Utils_System::docURL2('Installation and Upgrades', FALSE, 'Installation Guide');
-      $frontEnd = CRM_Utils_System::docURL2('Configuring Front-end Profile Listings and Forms in Joomla! Sites', FALSE, 'Create front-end forms and searchable directories using Profiles');
-      $contri   = CRM_Utils_System::docURL2('Displaying Online Contribution Pages in Joomla! Frontend Sites', FALSE, 'Create online contribution pages');
-      $event    = CRM_Utils_System::docURL2('Configuring Front-end Event Info and Registration in Joomla! Sites', FALSE, 'Create events with online event registration');
+      $docLink  = CRM_Utils_System::docURL2('Installation and Upgrades', FALSE, 'Installation Guide',NULL,NULL,"wiki");
+      $frontEnd = CRM_Utils_System::docURL2('Configuring Front-end Profile Listings and Forms in Joomla! Sites', FALSE, 'Create front-end forms and searchable directories using Profiles',NULL,NULL,"wiki");
+      $contri   = CRM_Utils_System::docURL2('Displaying Online Contribution Pages in Joomla! Frontend Sites', FALSE, 'Create online contribution pages',NULL,NULL,"wiki");
+      $event    = CRM_Utils_System::docURL2('Configuring Front-end Event Info and Registration in Joomla! Sites', FALSE, 'Create events with online event registration',NULL,NULL,"wiki");
 
       // INSTALL successful status and links
       $content = '

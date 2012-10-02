@@ -114,8 +114,8 @@ class CRM_Event_Form_Registration_ParticipantConfirm extends CRM_Event_Form_Regi
 
       //need to confirm that though participant confirming
       //registration - but is there enough space to confirm.
-      $emptySeats   = CRM_Event_BAO_participant::pendingToConfirmSpaces($this->_eventId);
-      $additonalIds = CRM_Event_BAO_participant::getAdditionalParticipantIds($this->_participantId);
+      $emptySeats   = CRM_Event_BAO_Participant::pendingToConfirmSpaces($this->_eventId);
+      $additonalIds = CRM_Event_BAO_Participant::getAdditionalParticipantIds($this->_participantId);
       $requireSpace = 1 + count($additonalIds);
       if ($emptySeats !== NULL && ($requireSpace > $emptySeats)) {
         $statusMsg = ts("Oops, it looks like there are currently no available spaces for the %1 event.", array(1 => $values['title']));

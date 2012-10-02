@@ -11,7 +11,7 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: AuthorizeNet.php 41419 2012-07-06 16:31:23Z lobo $
+ * $Id: AuthorizeNet.php 42195 2012-08-31 11:51:58Z deepak $
  */
 
 /* NOTE:
@@ -114,7 +114,10 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     if (CRM_Utils_Array::value('is_recur', $params) &&
       $params['contributionRecurID']
     ) {
-      $this->doRecurPayment();
+      $result = $this->doRecurPayment();
+      if (is_a($result, 'CRM_Core_Error')) {
+        return $result;
+      }
       return $params;
     }
 
@@ -270,17 +273,18 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     $exp_month = str_pad($this->_getParam('month'), 2, '0', STR_PAD_LEFT);
     $exp_year = $this->_getParam('year');
     $template->assign('expirationDate', $exp_year . '-' . $exp_month);
+
     // name rather than description is used in the tpl - see http://www.authorize.net/support/ARB_guide.pdf
-    $template->assign('name', $this->_getParam('description'));
+    $template->assign('name', $this->_getParam('description', TRUE));
 
     $template->assign('email', $this->_getParam('email'));
     $template->assign('contactID', $this->_getParam('contactID'));
     $template->assign('billingFirstName', $this->_getParam('billing_first_name'));
     $template->assign('billingLastName', $this->_getParam('billing_last_name'));
-    $template->assign('billingAddress', $this->_getParam('street_address'));
-    $template->assign('billingCity', $this->_getParam('city'));
+    $template->assign('billingAddress', $this->_getParam('street_address', TRUE));
+    $template->assign('billingCity', $this->_getParam('city', TRUE));
     $template->assign('billingState', $this->_getParam('state_province'));
-    $template->assign('billingZip', $this->_getParam('postal_code'));
+    $template->assign('billingZip', $this->_getParam('postal_code', TRUE));
     $template->assign('billingCountry', $this->_getParam('country'));
 
     $arbXML = $template->fetch('CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl');
@@ -537,8 +541,11 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    * @return mixed value of the field, or empty string if the field is
    * not set
    */
-  function _getParam($field) {
-    return CRM_Utils_Array::value($field, $this->_params, '');
+  function _getParam($field, $xmlSafe = FALSE) {
+    $value = CRM_Utils_Array::value($field, $this->_params, '');
+    if ($xmlSafe)
+      $value = str_replace(array( '&', '"', "'", '<', '>' ), '', $value);
+    return $value;
   }
 
   function &error($errorCode = NULL, $errorMessage = NULL) {

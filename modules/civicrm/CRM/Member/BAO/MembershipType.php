@@ -109,7 +109,15 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
     $membershipType->id = CRM_Utils_Array::value('membershipType', $ids);
     $membershipType->member_of_contact_id = CRM_Utils_Array::value('memberOfContact', $ids);
 
+    // $previousID is the old organization id for memberhip type i.e 'member_of_contact_id'. This is used when an oganization is changed.
+    $previousID = NULL;
+    if ($membershipType->id) {
+      $previousID = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $membershipType->id, 'member_of_contact_id');
+    }
+
     $membershipType->save();
+    
+    self::createMembershipPriceField($params, $ids, $previousID, $membershipType->id);
 
     return $membershipType;
   }
@@ -668,6 +676,74 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType {
     }
     return self::$_membershipTypeInfo;
   }
+  
 
+  function createMembershipPriceField($params, $ids, $previousID, $membershipTypeId) {
+    
+    $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', 'default_membership_type_amount', 'id', 'name');
+    
+    if (CRM_Utils_Array::value('memberOfContact', $ids)) {
+      $fieldName = $ids['memberOfContact'];
+    }
+    else {
+      $fieldName = $previousID;
+    }
+    $fieldLabel  = 'Membership Amount';
+    $optionsIds  = NULL;
+    $fieldParams = array(
+      'price_set_id ' => $priceSetId,
+      'name' => $fieldName,
+    );
+    $results = array();
+    CRM_Price_BAO_Field::retrieve($fieldParams, $results);
+    if (empty($results)) {
+      $fieldParams = array();
+      $fieldParams['label'] = $fieldLabel;
+      $fieldParams['name'] = $fieldName;
+      $fieldParams['price_set_id'] = $priceSetId;
+      $fieldParams['html_type'] = 'Radio';
+      $fieldParams['is_display_amounts'] = $fieldParams['is_required'] = 0;
+      $fieldParams['weight'] = $fieldParams['option_weight'][1] = 1;
+      $fieldParams['option_label'][1] = $params['name'];
+      $fieldParams['membership_type_id'][1] = $membershipTypeId;
+      $fieldParams['option_amount'][1] = empty($params['minimum_fee']) ? 0 : $params['minimum_fee'];
+      
+      if ($previousID) {
+        CRM_Member_Form_MembershipType::checkPreviousPriceField($previousID, $priceSetId, $membershipTypeId, $optionsIds);
+        $fieldParams['option_id'] = CRM_Utils_Array::value('option_id', $optionsIds);
+      }
+      $priceField = CRM_Price_BAO_Field::create($fieldParams);
+    } else {
+      $fieldID = $results['id'];
+      $fieldValueParams = array(
+        'price_field_id' => $fieldID,
+        'membership_type_id' => $membershipTypeId,
+      );
+      $results = array();
+      CRM_Price_BAO_FieldValue::retrieve($fieldValueParams, $results);
+      if (!empty($results)) {
+        $results['label']  = $results['name'] = $params['name'];
+        $results['amount'] = empty($params['minimum_fee']) ? 0 : $params['minimum_fee'];
+        $optionsIds['id']  = $results['id'];
+      } else {
+        $results = array(
+          'price_field_id' => $fieldID,
+          'name' => $params['name'],
+          'label' => $params['name'],
+          'amount' => empty($params['minimum_fee']) ? 0 : $params['minimum_fee'],
+          'membership_type_id' => $membershipTypeId,
+          'is_active' => 1,
+        );
+      }
+      
+      if ($previousID) {
+        CRM_Member_Form_MembershipType::checkPreviousPriceField($previousID, $priceSetId, $membershipTypeId, $optionsIds);
+        if (CRM_Utils_Array::value('option_id', $optionsIds)) {
+          $optionsIds['id'] = current(CRM_Utils_Array::value('option_id', $optionsIds));
+        }
+      }
+      CRM_Price_BAO_FieldValue::add($results, $optionsIds);
+    } 
+  }
 }
 

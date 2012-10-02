@@ -29,7 +29,7 @@ class CRM_Queue_Page_AJAX {
   /**
    * Run the next task and return status information
    *
-   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, message => string)
+   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, exception => htmlString)
    */
   static function runNext() {
     $errorPolicy = new CRM_Queue_ErrorPolicy();
@@ -40,13 +40,9 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution.');
-      }
+        }
         $result = $activeQueueRunner->runNext(TRUE);
-        if ($result['is_error']) {
-          CRM_Core_Error::debug_var('CRM_Queue_Page_AJAX_runNext_result', $result);
-      }
-        echo json_encode($result);
-        CRM_Utils_System::civiExit();
+        CRM_Queue_Page_AJAX::_return('runNext', $result);
     }
     );
   }
@@ -54,7 +50,7 @@ class CRM_Queue_Page_AJAX {
   /**
    * Run the next task and return status information
    *
-   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, message => string)
+   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, exception => htmlString)
    */
   static function skipNext() {
     $errorPolicy = new CRM_Queue_ErrorPolicy();
@@ -65,13 +61,9 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution.');
-      }
+        }
         $result = $activeQueueRunner->skipNext(TRUE);
-        if ($result['is_error']) {
-          CRM_Core_Error::debug_var('CRM_Queue_Page_AJAX_skipNext_result', $result);
-      }
-        echo json_encode($result);
-        CRM_Utils_System::civiExit();
+        CRM_Queue_Page_AJAX::_return('skipNext', $result);
     }
     );
   }
@@ -79,7 +71,7 @@ class CRM_Queue_Page_AJAX {
   /**
    * Run the next task and return status information
    *
-   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, message => string)
+   * @return array(is_error => bool, is_continue => bool, numberOfItems => int, exception => htmlString)
    */
   static function onEnd() {
     $errorPolicy = new CRM_Queue_ErrorPolicy();
@@ -90,15 +82,34 @@ class CRM_Queue_Page_AJAX {
         $activeQueueRunner = CRM_Queue_Runner::instance($qrid);
         if (!is_object($activeQueueRunner)) {
           throw new Exception('Queue runner must be configured before execution. - onEnd');
-      }
+        }
         $result = $activeQueueRunner->handleEnd(FALSE);
-        if ($result['is_error']) {
-          CRM_Core_Error::debug_var('CRM_Queue_Page_AJAX_runNext_result', $result);
-      }
-        echo json_encode($result);
-        CRM_Utils_System::civiExit();
+        CRM_Queue_Page_AJAX::_return('onEnd', $result);
     }
     );
+  }
+
+  /**
+   * Performing any view-layer filtering on result and send to client.
+   */
+  static function _return($op, $result) {
+    if ($result['is_error']) {
+      if (is_object($result['exception'])) {
+        CRM_Core_Error::debug_var("CRM_Queue_Page_AJAX_{$op}_error", CRM_Core_Error::formatTextException($result['exception']));
+
+        $config = CRM_Core_Config::singleton();
+        if ($config->backtrace || CRM_Core_Config::isUpgradeMode()) {
+          $result['exception'] = CRM_Core_Error::formatHtmlException($result['exception']);
+        }
+        else {
+          $result['exception'] = $result['exception']->getMessage();
+        }
+      } else {
+        CRM_Core_Error::debug_var("CRM_Queue_Page_AJAX_{$op}_error", $result);
+      }
+    }
+    echo json_encode($result);
+    CRM_Utils_System::civiExit();
   }
 }
 

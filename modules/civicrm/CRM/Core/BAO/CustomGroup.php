@@ -406,9 +406,12 @@ ORDER BY civicrm_custom_group.weight,
 
     // lets see if we can retrieve the groupTree from cache
     $cacheString = $queryString;
-    if (!empty($params)) {
-      $cacheString .= array_keys($params) . array_values($params);
+    if ( $groupID > 0 ) {
+      $cacheString .= "_{$groupID}";
+    } else {
+      $cacheString .= "_Inline";
     }
+
     $cacheKey = "CRM_Core_DAO_CustomGroup_Query " . md5($cacheString);
 
     $cache = CRM_Utils_Cache::singleton();

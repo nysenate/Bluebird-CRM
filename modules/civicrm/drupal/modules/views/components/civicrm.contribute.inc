@@ -51,6 +51,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
     'title' => t('CiviCRM Recurring Contribution profile'),
     'help' => t("Recurring Contribution Profiles in CiviCRM."),
   );
+
   //this join makes Contribution data available in view based on recurring . A separate relationship is defined elsewhere to make recurring data available to view based on contributi
   $data['civicrm_contribution']['table']['join']['civicrm_contribution_recur'] = array(
     'left_field' => 'id',
@@ -63,6 +64,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
     'left_field' => 'contribution_id',
     'field' => 'id',
   );
+
   $data['civicrm_contribution']['table']['join']['civicrm_pledge'] = array(
     'left_table' => 'civicrm_pledge_payment',
     'left_field' => 'contribution_id',
@@ -96,7 +98,8 @@ function _civicrm_contribute_data(&$data, $enabled) {
     'help' => 'Bring Contact Record the complete contact record to the party',
     'relationship' => array(
       'base' => 'civicrm_contact',
-      'field' => 'id',
+      'left_field' => 'id',
+      'field' => 'contact_id',
       'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Contact, with custom fields'),
     ),

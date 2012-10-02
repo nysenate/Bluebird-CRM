@@ -253,22 +253,6 @@
      <weight>110</weight>
   </item>
   <item>
-     <path>civicrm/admin/extensions</path>
-     <title>Manage Extensions</title>
-     <page_callback>CRM_Admin_Page_Extensions</page_callback>
-     <desc></desc>
-     <access_arguments>administer CiviCRM</access_arguments>
-     <adminGroup>Customize Data and Screens</adminGroup>
-     <icon>admin/small/price_sets.png</icon>
-     <weight>120</weight>
-  </item>  
-  <item>
-     <path>civicrm/admin/extensions/upgrade</path>
-     <title>Database Upgrades</title>
-     <page_callback>CRM_Admin_Page_ExtensionsUpgrade</page_callback>
-     <access_arguments>administer CiviCRM</access_arguments>
-  </item>  
-  <item>
      <path>civicrm/admin/domain</path>
      <title>Organization Address and Contact Info</title>
      <desc>Configure primary contact name, email, return-path and address information. This information is used by CiviMail to identify the sending organization.</desc>
@@ -447,6 +431,22 @@
      <icon>admin/small/36.png</icon>
      <weight>10</weight>
   </item>
+  <item>
+     <path>civicrm/admin/extensions</path>
+     <title>Manage Extensions</title>
+     <page_callback>CRM_Admin_Page_Extensions</page_callback>
+     <desc></desc>
+     <access_arguments>administer CiviCRM</access_arguments>
+     <adminGroup>System Settings</adminGroup>
+     <icon>admin/small/price_sets.png</icon>
+     <weight>120</weight>
+  </item>  
+  <item>
+     <path>civicrm/admin/extensions/upgrade</path>
+     <title>Database Upgrades</title>
+     <page_callback>CRM_Admin_Page_ExtensionsUpgrade</page_callback>
+     <access_arguments>administer CiviCRM</access_arguments>
+  </item>  
   <item>
      <path>civicrm/admin/setting/smtp</path>
      <title>Outbound Email Settings</title>

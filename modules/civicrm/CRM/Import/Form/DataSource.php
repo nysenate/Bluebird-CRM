@@ -309,7 +309,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
       }
 
       require_once $this->_dataSourceClassFile;
-      eval("$this->_dataSource::postProcess( \$this->_params, \$db );");
+      eval("$this->_dataSource::postProcess( \$this->_params, \$db, \$this );");
 
       // We should have the data in the DB now, parse it
       $importTableName = $this->get('importTableName');

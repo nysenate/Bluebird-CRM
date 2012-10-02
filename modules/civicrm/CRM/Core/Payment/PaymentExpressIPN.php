@@ -282,19 +282,19 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
     }
 
     if ($dps_method == "pxpay") {
-      $processResponse = _valueXml(array(
+      $processResponse = CRM_Core_Payment_PaymentExpressUtils::_valueXml(array(
           'PxPayUserId' => $dps_user,
           'PxPayKey' => $dps_key,
           'Response' => $_GET['result'],
         ));
-      $processResponse = _valueXml('ProcessResponse', $processResponse);
+      $processResponse = CRM_Core_Payment_PaymentExpressUtils::_valueXml('ProcessResponse', $processResponse);
 
       fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"),
           $processResponse
         ));
 
       // Send the XML-formatted validation request to DPS so that we can receive a decrypted XML response which contains the transaction results
-      $curl = _initCURL($processResponse, $dps_url);
+      $curl = CRM_Core_Payment_PaymentExpressUtils::_initCURL($processResponse, $dps_url);
 
       fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"),
           $curl
@@ -307,17 +307,17 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
         curl_close($curl);
 
         // Assign the returned XML values to variables
-        $valid             = _xmlAttribute($response, 'valid');
-        $success           = _xmlElement($response, 'Success');
-        $txnId             = _xmlElement($response, 'TxnId');
-        $responseText      = _xmlElement($response, 'ResponseText');
-        $authCode          = _xmlElement($response, 'AuthCode');
-        $DPStxnRef         = _xmlElement($response, 'DpsTxnRef');
-        $qfKey             = _xmlElement($response, "TxnData1");
-        $privateData       = _xmlElement($response, "TxnData2");
-        list($component,$paymentProcessorID,)  =explode(',', _xmlElement($response, "TxnData3"));
-        $amount            = _xmlElement($response, "AmountSettlement");
-        $merchantReference = _xmlElement($response, "MerchantReference");
+        $valid             = CRM_Core_Payment_PaymentExpressUtils::_xmlAttribute($response, 'valid');
+        $success           = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'Success');
+        $txnId             = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'TxnId');
+        $responseText      = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'ResponseText');
+        $authCode          = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'AuthCode');
+        $DPStxnRef         = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'DpsTxnRef');
+        $qfKey             = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, "TxnData1");
+        $privateData       = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, "TxnData2");
+        list($component,$paymentProcessorID,)  =explode(',', CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, "TxnData3"));
+        $amount            = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, "AmountSettlement");
+        $merchantReference = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, "MerchantReference");
       }
       else {
         // calling DPS failed

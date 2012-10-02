@@ -308,8 +308,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       if ($this->_resultSelectOption == 'ts_sel') {
         // create a static grp if only a subset of result set was selected:
 
-        $qfsID    = $session->get('qfSessionID');
-        $grpTitle = "Hidden Group {$qfsID}";
+        $randID   = md5(time());
+        $grpTitle = "Hidden Group {$randID}";
         $grpID    = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $grpTitle, 'id', 'title');
 
         if (!$grpID) {
@@ -324,6 +324,14 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
           $grpID = $group->id;
 
           CRM_Contact_BAO_GroupContact::addContactsToGroup($this->_contactIds, $group->id);
+
+          $newGroupTitle = "Hidden Group {$grpID}";
+          $groupParams = array(
+            'id'    => $grpID,
+            'name'  => CRM_Utils_String::titleToVar($newGroupTitle),
+            'title' => $newGroupTitle,
+          );
+          $group = CRM_Contact_BAO_Group::create($groupParams);
         }
 
         // note at this point its a static group

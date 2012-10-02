@@ -73,9 +73,48 @@ function civicrm_api3_participant_create($params) {
   require_once 'CRM/Event/BAO/Participant.php';
 
   $participantBAO = CRM_Event_BAO_Participant::create($params);
+ 
+  if(empty($params['price_set_id']) && empty($params['id']) && CRM_Utils_Array::value('fee_level', $params)){
+    _civicrm_api3_participant_createlineitem($params, $participantBAO);
+  }
   _civicrm_api3_object_to_array($participantBAO, $participant[$participantBAO->id]);
-  return civicrm_api3_create_success($participant, $params, 'participant', 'create', $participantBAO);
+ 
+ return civicrm_api3_create_success($participant, $params, 'participant', 'create', $participantBAO);
 }
+
+/*
+ * Create a default participant line item
+ */
+function _civicrm_api3_participant_createlineitem(&$params, $participant){
+  $sql = "
+SELECT      ps.id AS setID, pf.id AS priceFieldID, pfv.id AS priceFieldValueID
+FROM  civicrm_price_set_entity cpse
+LEFT JOIN civicrm_price_set ps ON cpse.price_set_id = ps.id AND cpse.entity_id = {$params['event_id']} AND cpse.entity_table = 'civicrm_event'
+LEFT JOIN   civicrm_price_field pf ON pf.`price_set_id` = ps.id
+LEFT JOIN   civicrm_price_field_value pfv ON pfv.price_field_id = pf.id and pfv.label = '{$params['fee_level']}'
+where ps.id is not null
+";
+ 
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  if ($dao->fetch()) {
+    $amount = CRM_Utils_Array::value('fee_amount', $params, 0);
+    $lineItemparams = array(
+      'price_field_id' => $dao->priceFieldID,
+      'price_field_value_id' => $dao->priceFieldValueID,
+      'entity_table' => 'civicrm_participant',
+      'entity_id' => $participant->id,
+      'label' => $params['fee_level'],
+      'qty' => 1,
+      'participant_count' => 0,
+      'unit_price' => $amount,
+      'line_total' => $amount,
+      'version' => 3,
+    ); 
+    civicrm_api('line_item', 'create', $lineItemparams);
+  }
+}
+ 
+
 /*
  * Adjust Metadata for Create action
  * 

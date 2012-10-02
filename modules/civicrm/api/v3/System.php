@@ -43,6 +43,7 @@
  *
  * @param  array   	  $params input parameters
  *                          - triggers: bool, whether to drop/create SQL triggers; default: FALSE
+ *                          - session:  bool, whether to reset the CiviCRM session data; defaul: FALSE
  *
  * @return boolean        true if success, else false
  * @static void
@@ -52,7 +53,8 @@
  */
 function civicrm_api3_system_flush($params) {
   CRM_Core_Invoke::rebuildMenuAndCaches(
-    CRM_Utils_Array::value('triggers', $params, FALSE)
+    CRM_Utils_Array::value('triggers', $params, FALSE),
+    CRM_Utils_Array::value('session', $params, FALSE)
   );
   return civicrm_api3_create_success();
 }

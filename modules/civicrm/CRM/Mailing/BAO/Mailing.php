@@ -1241,6 +1241,10 @@ AND civicrm_contact.is_opt_out =0";
 
     CRM_Utils_Hook::alterMailParams($mailParams, 'civimail');
 
+    // CRM-10699 support custom email headers
+    if (CRM_Utils_Array::value('headers', $mailParams)) {
+      $headers = array_merge($headers, $mailParams['headers']);
+    }
     //cycle through mailParams and set headers array
     foreach ($mailParams as $paramKey => $paramValue) {
       //exclude values not intended for the header

@@ -155,7 +155,7 @@ function runQuery(query) {
     json = json.slice (0,-2) + '}';
     php = php.slice (0,-2) + ')';
     $('#php').html('$results=civicrm_api("'+entity+'","'+action+"\",\n  "+php+');');
-    $('#jQuery').html ("$().crmAPI ('"+entity+"','"+action+"',"+json+"}<br>&nbsp;&nbsp;,{ success:function (data){&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$.each(data, function(key, value) {// do something  });<br> &nbsp;&nbsp;&nbsp;&nbsp;}<br> });");
+    $('#jQuery').html ("cj().crmAPI ('"+entity+"','"+action+"',"+json+"<br>&nbsp;&nbsp;,{ success:function (data){&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cj.each(data, function(key, value) {// do something  });<br> &nbsp;&nbsp;&nbsp;&nbsp;}<br> });");
 
     if (action == "get") {//using smarty only make sense for get action
       $('#smarty').html('{crmAPI var="'+entity+'S" entity="'+entity+'" action="'+action+'" '+smarty+'}<br>{foreach from=$'+entity+'S.values item='+entity+'}<br/>  &lt;li&gt;{$'+entity+'.example}&lt;/li&gt;<br>{/foreach}');

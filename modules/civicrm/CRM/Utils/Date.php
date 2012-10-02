@@ -49,8 +49,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function format($date, $separator = '', $invalidDate = 0) {
+  static function format($date, $separator = '', $invalidDate = 0) {
     if (is_numeric($date) &&
       ((strlen($date) == 8) || (strlen($date) == 14))
     ) {
@@ -171,8 +170,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function &getAbbrWeekdayNames() {
+  static function &getAbbrWeekdayNames() {
     static $abbrWeekdayNames;
     if (!isset($abbrWeekdayNames)) {
 
@@ -193,8 +191,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function &getFullWeekdayNames() {
+  static function &getFullWeekdayNames() {
     static $fullWeekdayNames;
     if (!isset($fullWeekdayNames)) {
 
@@ -215,8 +212,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function &getAbbrMonthNames($month = FALSE) {
+  static function &getAbbrMonthNames($month = FALSE) {
     static $abbrMonthNames;
     if (!isset($abbrMonthNames)) {
 
@@ -239,8 +235,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function &getFullMonthNames() {
+  static function &getFullMonthNames() {
     static $fullMonthNames;
     if (!isset($fullMonthNames)) {
 
@@ -253,8 +248,7 @@ class CRM_Utils_Date {
     return $fullMonthNames;
   }
 
-  static
-  function unixTime($string) {
+  static function unixTime($string) {
     if (empty($string)) {
       return 0;
     }
@@ -295,8 +289,7 @@ class CRM_Utils_Date {
    *
    * @static
    */
-  static
-  function customFormat($dateString, $format = NULL, $dateParts = NULL) {
+  static function customFormat($dateString, $format = NULL, $dateParts = NULL) {
     // 1-based (January) month names arrays
     $abbrMonths = self::getAbbrMonthNames();
     $fullMonths = self::getFullMonthNames();
@@ -305,16 +298,13 @@ class CRM_Utils_Date {
       $config = CRM_Core_Config::singleton();
 
       if ($dateParts) {
-        if (array_intersect(array(
-          'h', 'H'), $dateParts)) {
+        if (array_intersect(array('h', 'H'), $dateParts)) {
           $format = $config->dateformatDatetime;
         }
-        elseif (array_intersect(array(
-          'd', 'j'), $dateParts)) {
+        elseif (array_intersect(array('d', 'j'), $dateParts)) {
           $format = $config->dateformatFull;
         }
-        elseif (array_intersect(array(
-          'm', 'M'), $dateParts)) {
+        elseif (array_intersect(array('m', 'M'), $dateParts)) {
           $format = $config->dateformatPartial;
         }
         else {
@@ -365,26 +355,34 @@ class CRM_Utils_Date {
       }
 
       if ($day % 10 == 1 and $day != 11) {
-
         $suffix = 'st';
-
       }
-      elseif ($day % 10 == 2 and $day != 12) {  $suffix = 'nd';}
-      elseif ($day % 10 == 3 and $day != 13) {  $suffix = 'rd';}
-      else $suffix = 'th';
+      elseif ($day % 10 == 2 and $day != 12) {
+        $suffix = 'nd';
+      }
+      elseif ($day % 10 == 3 and $day != 13) {
+        $suffix = 'rd';
+      }
+      else {
+        $suffix = 'th';
+      }
 
       if ($hour24 < 12) {
         if ($hour24 == 00) {
           $hour12 = 12;
         }
-        else $hour12 = $hour24;
+        else {
+          $hour12 = $hour24;
+        }
         $type = 'AM';
       }
       else {
         if ($hour24 == 12) {
           $hour12 = 12;
         }
-        else $hour12 = $hour24 - 12;
+        else {
+          $hour12 = $hour24 - 12;
+        }
         $type = 'PM';
       }
 
@@ -424,8 +422,7 @@ class CRM_Utils_Date {
    * @return string        date/datetime in ISO format
    * @static
    */
-  static
-  function mysqlToIso($mysql) {
+  static function mysqlToIso($mysql) {
     $year   = substr($mysql, 0, 4);
     $month  = substr($mysql, 4, 2);
     $day    = substr($mysql, 6, 2);
@@ -464,8 +461,7 @@ class CRM_Utils_Date {
    * @return string      date/datetime in MySQL format
    * @static
    */
-  static
-  function isoToMysql($iso) {
+  static function isoToMysql($iso) {
     $dropArray = array('-' => '', ':' => '', ' ' => '');
     return strtr($iso, $dropArray);
   }
@@ -655,21 +651,18 @@ class CRM_Utils_Date {
     return FALSE;
   }
 
-  static
-  function isDate(&$date) {
+  static function isDate(&$date) {
     if (CRM_Utils_System::isNull($date)) {
       return FALSE;
     }
     return TRUE;
   }
 
-  static
-  function currentDBDate($timeStamp = NULL) {
+  static function currentDBDate($timeStamp = NULL) {
     return $timeStamp ? date('YmdHis', $timeStamp) : date('YmdHis');
   }
 
-  static
-  function overdue($date, $now = NULL) {
+  static function overdue($date, $now = NULL) {
     $mysqlDate = self::isoToMysql($date);
     if (!$now) {
       $now = self::currentDBDate();
@@ -699,8 +692,7 @@ class CRM_Utils_Date {
    * @return string  Return the customized todays date (Y-m-d)
    * @static
    */
-  static
-  function getToday($dayParams = NULL, $format = "Y-m-d") {
+  static function getToday($dayParams = NULL, $format = "Y-m-d") {
     if (is_null($dayParams) || empty($dayParams)) {
       $today = date($format);
     }
@@ -725,8 +717,7 @@ class CRM_Utils_Date {
    * @return true              todays date is in the given date range
    * @static
    */
-  static
-  function getRange($startDate, $endDate) {
+  static function getRange($startDate, $endDate) {
     $today          = date("Y-m-d");
     $mysqlStartDate = self::isoToMysql($startDate);
     $mysqlEndDate   = self::isoToMysql($endDate);
@@ -753,8 +744,7 @@ class CRM_Utils_Date {
    * @return array start date, end date
    * @static
    */
-  static
-  function getFromTo($relative, $from, $to) {
+  static function getFromTo($relative, $from, $to) {
     if ($relative) {
       list($term, $unit) = explode('.', $relative);
       $dateRange = self::relativeToAbsolute($term, $unit);
@@ -894,8 +884,7 @@ class CRM_Utils_Date {
    * @param $format given format ( eg 'M Y', 'Y M' )
    * return array of qfMapping and date parts for date format.
    */
-  static
-  function &checkBirthDateFormat($format = NULL) {
+  static function &checkBirthDateFormat($format = NULL) {
     $birthDateFormat = NULL;
     if (!$format) {
       $birthDateFormat = self::getDateFormat('birth');

@@ -674,7 +674,7 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
     if ($this->_context != 'standalone') {
       //CRM-10223 - allow contribution to be recorded against different contact
       // causes a conflict in standalone mode so skip in standalone for now
-      $this->addElement('checkbox', 'contribution_contact', ts('Record Payment from a Different Contact?'));
+      $this->addElement('checkbox', 'is_different_contribution_contact', ts('Record Payment from a Different Contact?'));
       $this->add( 'select', 'honor_type_id', ts('Membership payment is : '),
                         array( '' => ts( '-') ) + CRM_Core_PseudoConstant::honor() );
       CRM_Contact_Form_NewContact::buildQuickForm($this,1, null, false,'contribution_');
@@ -1702,7 +1702,8 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
     }
 
     $form->assign('customValues', $customValues);
-    if(empty($form->_contributorDisplayName) || empty($form->_contributorEmail)){
+    $isBatchProcess = is_a($form, 'CRM_Batch_Form_Entry');
+    if((empty($form->_contributorDisplayName) || empty($form->_contributorEmail)) || $isBatchProcess){
       // in this case the form is being called statically from the batch editing screen
       // having one class in the form layer call another statically is not greate
       // & we should aim to move this function to the BAO layer in future.
@@ -1714,7 +1715,7 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
       ) = CRM_Contact_BAO_Contact_Location::getEmailDetails(
             $formValues['contact_id']
           );
-       if(empty($form->_receiptContactId)){
+       if(empty($form->_receiptContactId) || $isBatchProcess){
          $form->_receiptContactId = $formValues['contact_id'];
        }
     }

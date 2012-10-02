@@ -497,5 +497,22 @@ HTACCESS;
     $fileName = tempnam(sys_get_temp_dir(), $prefix);
     return $fileName;
   }
+
+  /**
+   * Create a path to a temporary directory which can endure for multiple requests
+   *
+   * TODO: Automatic file cleanup using, eg, TTL policy
+   *
+   * @param $prefix string
+   *
+   * @return string, path to an openable/writable directory; ends with '/'
+   * @see tempnam
+   */
+  static function tempdir($prefix = 'tmp-') {
+    $fileName = self::tempnam($prefix);
+    unlink($fileName);
+    mkdir($fileName, 0700);
+    return $fileName . '/';
+  }
 }
 

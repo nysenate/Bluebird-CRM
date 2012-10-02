@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{crmRegion name="billing-block"}
 {if $form.credit_card_number or $form.bank_account_number}
     <div id="payment_information">
         <fieldset class="billing_mode-group {if $paymentProcessor.payment_type & 2}direct_debit_info-group{else}credit_card_info-group{/if}">
@@ -233,3 +234,4 @@ function sameAddress( setValue ) {
 </script>
 {/if}
 {/if}
+{/crmRegion}

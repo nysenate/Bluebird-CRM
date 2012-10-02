@@ -623,7 +623,8 @@ class CRM_Event_Form_ManageEvent_Fee extends CRM_Event_Form_ManageEvent {
                   $setParams['name'] = $setParams['title'] = $eventTitle . '_' . $this->_id;
                 }
                 else {
-                  $setParams['name'] = $setParams['title'] = $eventTitle . '_' . rand(1, 99);
+                  $timeSec = explode(".", microtime(true));
+                  $setParams['name'] = $setParams['title'] = $eventTitle . '_' . date('is', $timeSec[0]) . $timeSec[1];
                 }
                 $setParams['is_quick_config'] = 1;
                 $setParams['extends'] = CRM_Core_Component::getComponentID('CiviEvent');
@@ -695,7 +696,8 @@ class CRM_Event_Form_ManageEvent_Fee extends CRM_Event_Form_ManageEvent {
                     $setParams['name'] = $eventTitle . '_' . $params['discount_name'][$j] . '_' . $this->_id;
                   }
                   else {
-                    $setParams['name'] = $eventTitle . '_' . $params['discount_name'][$j] . '_' . rand(1, 99);
+                    $timeSec = explode(".", microtime(true));
+                    $setParams['name'] = $eventTitle . '_' . $params['discount_name'][$j] . '_' . date('is', $timeSec[0]) . $timeSec[1];
                   }
                   $setParams['is_quick_config'] = 1;
                   $setParams['extends'] = CRM_Core_Component::getComponentID('CiviEvent');

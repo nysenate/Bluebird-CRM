@@ -39,7 +39,7 @@
 class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
 
   /*
-   * Create phone address - note that the create function calls 'add' but
+   * Create phone object - note that the create function calls 'add' but
    * has more business logic & calls the hooks
    *
    * @param array $params input parameters
@@ -47,7 +47,7 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
 
   static
   function create($params) {
-    if (!empty($params['contact_id'])) {
+    if (!empty($params['id'])) {
       CRM_Utils_Hook::pre('edit', 'Phone', $params['id'], $params);
     }
     else {
@@ -62,11 +62,11 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
     }
     $phone = self::add($params);
 
-    if (CRM_Utils_Array::value('id', $params)) {
+    if (!empty($params['id'])) {
       CRM_Utils_Hook::post('edit', 'Phone', $phone->id, $phone);
     }
     else {
-      CRM_Utils_Hook::post('create', 'phone', $phone->id, $phone);
+      CRM_Utils_Hook::post('create', 'Phone', $phone->id, $phone);
     }
     return $phone;
   }

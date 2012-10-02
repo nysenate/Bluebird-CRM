@@ -1382,6 +1382,10 @@ class CRM_Contact_BAO_Query {
         $this->locationType($values);
         return;
 
+      case 'county':
+        $this->county($values);
+        return;
+
       case 'state_province':
         $this->stateProvince($values);
         return;
@@ -3121,6 +3125,57 @@ WHERE  id IN ( $groupIDs )
       else {
         return array(NULL, NULL);
       }
+    }
+  }
+
+  /**
+   * where / qill clause for county (if present)
+   *
+   * @return void
+   * @access public
+   */
+  function county(&$values, $status = null) {
+    list($name, $op, $value, $grouping, $wildcard) = $values;
+
+    if (! is_array($value)) {
+      // force the county to be an array
+      $value = array($value);
+    }
+
+    // check if the values are ids OR names of the counties
+    $inputFormat = 'id';
+    foreach ($value as $v) {
+      if (!is_numeric($v)) {
+        $inputFormat = 'name';
+        break;
+      }
+    }
+    $names = array();
+    if ($inputFormat == 'id') {
+      $clause = 'civicrm_county.id IN (' . implode(',', $value) . ')';
+
+      $county = CRM_Core_PseudoConstant::county();
+      foreach ($value as $id) {
+        $names[] = CRM_Utils_Array::value($id, $county);
+      }
+    }
+    else {
+      $inputClause = array();
+      foreach ($value as $name) {
+        $name = trim($name);
+        $inputClause[] = "'$name'";
+      }
+      $clause = 'civicrm_county.name IN (' . implode(',', $inputClause) . ')';
+      $names = $value;
+    }
+    $this->_tables['civicrm_county'] = 1;
+    $this->_whereTables['civicrm_county'] = 1;
+
+    $this->_where[$grouping][] = $clause;
+    if (! $status) {
+      $this->_qill[$grouping][] = ts('County') . ' - ' . implode(' ' . ts('or') . ' ', $names);
+    } else {
+      return implode(' ' . ts('or') . ' ', $names);
     }
   }
 

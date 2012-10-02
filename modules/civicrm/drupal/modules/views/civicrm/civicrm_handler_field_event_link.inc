@@ -88,6 +88,7 @@ class civicrm_handler_field_event_link extends views_handler_field {
 
     $link_choice = $this->options['link_to_civicrm_event'];
 
+    $custom_link = NULL;
     if ($link_choice == 'custom') {
       $custom_link = $this->options['custom_link'];
     }

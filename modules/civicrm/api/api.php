@@ -23,7 +23,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
     require_once ('api/v3/utils.php');
     require_once 'api/Exception.php';
     if (!is_array($params)) {
-      throw new api_Exception('Input variable `params` is not an array',2000);
+      throw new API_Exception('Input variable `params` is not an array', 2000);
     }
     _civicrm_api3_initialize(TRUE);
     require_once 'CRM/Utils/String.php';
@@ -114,7 +114,7 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
     }
     return $err;
   }
-  catch (api_Exception $e){
+  catch (API_Exception $e){
     if(!isset($apiRequest)){
       $apiRequest = array();
     }

@@ -385,6 +385,13 @@ class CRM_Event_Import_Parser_Participant extends CRM_Event_Import_Parser {
             return CRM_Event_Import_Parser::ERROR;
           }
           $newParticipant = CRM_Event_BAO_Participant::create($formatted, $ids);
+          if( CRM_Utils_Array::value('fee_level', $formatted)) {
+            $otherParams = array(
+              'fee_label' => $formatted['fee_level'], 
+              'event_id' => $newParticipant->event_id
+            );
+            CRM_Price_BAO_LineItem::syncLineItems($newParticipant->id, 'civicrm_participant', $newParticipant->fee_amount, $otherParams);
+          }
 
           $this->_newParticipant[] = $newParticipant->id;
           return CRM_Event_Import_Parser::VALID;

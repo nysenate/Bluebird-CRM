@@ -616,5 +616,20 @@ class CRM_Utils_String {
     return $_filter->purify($string);
   }
 
+  /**
+   * Truncate $string; if $string exceeds $maxLen, place "..." at the end
+   *
+   * @param string $string
+   * @param int $maxLen
+   */
+  static function ellipsify($string, $maxLen) {
+    $len = strlen($string);
+    if ($len <= $maxLen) {
+      return $string;
+    } else {
+      return substr($string, 0, $maxLen-3) . '...';
+    }
+  }
+
 }
 

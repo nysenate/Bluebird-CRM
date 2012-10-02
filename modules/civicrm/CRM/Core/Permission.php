@@ -354,9 +354,7 @@ class CRM_Core_Permission {
     ) {
       $config = CRM_Core_Config::singleton();
       if (is_array($config->enableComponentIDs) &&
-        in_array($item['component_id'],
-          $config->enableComponentIDs
-        )
+        in_array($item['component_id'], $config->enableComponentIDs)
       ) {
         // continue with process
       }

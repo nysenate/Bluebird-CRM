@@ -46,12 +46,13 @@ class CRM_Core_ManagedEntities {
     $dao->module = $moduleName;
     $dao->name = $name;
     if ($dao->find(TRUE)) {
-      $result = civicrm_api($dao->entity_type, 'getsingle', array(
+      $params = array(
         'version' => 3,
         'id' => $dao->entity_id,
-      ));
+      );
+      $result = civicrm_api($dao->entity_type, 'getsingle', $params);
       if ($result['is_error']) {
-        throw new Exception('API error: ' . $result['error_message']);
+        $this->onApiError($params, $result);
       } else {
         return $result;
       }
@@ -104,18 +105,19 @@ class CRM_Core_ManagedEntities {
         $params = array_merge($defaults, $todos[$dao->name]['params']);
         $result = civicrm_api($dao->entity_type, 'create', $params);
         if ($result['is_error']) {
-          throw new Exception($result['error_message']);
+          $this->onApiError($params, $result);
         }
 
         unset($todos[$dao->name]);
       } else {
         // remove stale entity; not in $todos
-        $result = civicrm_api($dao->entity_type, 'create', array(
+        $params = array(
           'version' => 3,
           'id' => $dao->entity_id,
-        ));
+        );
+        $result = civicrm_api($dao->entity_type, 'delete', $params);
         if ($result['is_error']) {
-          throw new Exception('API error: ' . $result['error_message']);
+          $this->onApiError($params, $result);
         }
 
         CRM_Core_DAO::executeQuery('DELETE FROM civicrm_managed WHERE id = %1', array(
@@ -128,7 +130,7 @@ class CRM_Core_ManagedEntities {
     foreach ($todos as $name => $todo) {
       $result = civicrm_api($todo['entity'], 'create', $todo['params']);
       if ($result['is_error']) {
-        throw new Exception('API error: ' . $result['error_message']);
+        $this->onApiError($todo['params'], $result);
       }
 
       $dao = new CRM_Core_DAO_Managed();
@@ -153,13 +155,14 @@ class CRM_Core_ManagedEntities {
       // FIXME: if ($dao->entity_type supports is_active) {
       if (TRUE) {
         // FIXME cascading for payproc types?
-        $result = civicrm_api($dao->entity_type, 'create', array(
+        $params = array(
           'version' => 3,
           'id' => $dao->entity_id,
           'is_active' => 0,
-        ));
+        );
+        $result = civicrm_api($dao->entity_type, 'create', $params);
         if ($result['is_error']) {
-          throw new Exception('API error: ' . $result['error_message']);
+          $this->onApiError($params, $result);
         }
       }
     }
@@ -182,12 +185,13 @@ class CRM_Core_ManagedEntities {
     }
     $dao->find();
     while ($dao->fetch()) {
-      $result = civicrm_api($dao->entity_type, 'delete', array(
+      $params = array(
         'version' => 3,
         'id' => $dao->entity_id,
-      ));
+      );
+      $result = civicrm_api($dao->entity_type, 'delete', $params);
       if ($result['is_error']) {
-        throw new Exception('API error: ' . $result['error_message']);
+        $this->onApiError($params, $result);
       }
 
       CRM_Core_DAO::executeQuery('DELETE FROM civicrm_managed WHERE id = %1', array(
@@ -233,6 +237,7 @@ class CRM_Core_ManagedEntities {
     }
     return FALSE;
   }
+
   protected static function cleanDeclarations($declarations) {
     foreach ($declarations as $name => &$declare) {
       if (!array_key_exists('name', $declare)) {
@@ -241,5 +246,13 @@ class CRM_Core_ManagedEntities {
     }
     return $declarations;
   }
+
+  protected function onApiError($params, $result) {
+    CRM_Core_Error::debug_var('ManagedEntities_failed', array(
+      'params' => $params,
+      'result' => $result,
+    ));
+    throw new Exception('API error: ' . $result['error_message']);
+  }  
 }
 

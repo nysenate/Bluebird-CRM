@@ -35,47 +35,47 @@
 class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $cid;
 
-  protected $_logTables = 
-    array( 
-          'log_civicrm_contact' => 
+  protected $_logTables =
+    array(
+          'log_civicrm_contact' =>
           array( 'fk'  => 'id',
                  ),
-          'log_civicrm_email' => 
+          'log_civicrm_email' =>
           array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact', 
+                 'log_type' => 'Contact',
                  ),
-          'log_civicrm_phone' => 
+          'log_civicrm_phone' =>
           array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact', 
+                 'log_type' => 'Contact',
                  ),
-          'log_civicrm_address' => 
+          'log_civicrm_address' =>
           array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact', 
+                 'log_type' => 'Contact',
                  ),
-          'log_civicrm_note' => 
+          'log_civicrm_note' =>
           array( 'fk'  => 'entity_id',
-                 'entity_table' => true, 
+                 'entity_table' => true,
                  'dao' => 'CRM_Core_DAO_Note',
                  'dao_column'  => 'subject',
                  ),
-          'log_civicrm_group_contact' => 
+          'log_civicrm_group_contact' =>
           array( 'fk'  => 'contact_id',
                  'dao' => 'CRM_Contact_DAO_Group',
                  'dao_column'    => 'title',
                  'entity_column' => 'group_id',
-                 'action_column' => 'status', 
-                 'log_type'      => 'Group', 
+                 'action_column' => 'status',
+                 'log_type'      => 'Group',
                  ),
-          'log_civicrm_entity_tag' => 
+          'log_civicrm_entity_tag' =>
           array( 'fk'  => 'entity_id',
                  'dao' => 'CRM_Core_DAO_Tag',
                  'dao_column'    => 'name',
-                 'entity_column' => 'tag_id', 
-                 'entity_table'  => true 
+                 'entity_column' => 'tag_id',
+                 'entity_table'  => true
                  ),
-          'log_civicrm_relationship' => 
+          'log_civicrm_relationship' =>
           array( 'fk'  => 'contact_id_a',
-                 'entity_column' => 'relationship_type_id', 
+                 'entity_column' => 'relationship_type_id',
                  'dao' => 'CRM_Contact_DAO_RelationshipType',
                  'dao_column' => 'label_a_b',
                  ),
@@ -132,20 +132,20 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
   function postProcess() {
     $this->beginPostProcess();
-
+    $rows = array();
     // temp table to hold all altered contact-ids
     $sql = "
-CREATE TEMPORARY TABLE 
-       civicrm_temp_civireport_logsummary ( id int PRIMARY KEY AUTO_INCREMENT, 
+CREATE TEMPORARY TABLE
+       civicrm_temp_civireport_logsummary ( id int PRIMARY KEY AUTO_INCREMENT,
                                             contact_id int, UNIQUE UI_id (contact_id) ) ENGINE=HEAP";
     CRM_Core_DAO::executeQuery($sql);
 
-    $logDateClause = $this->dateClause('log_date', 
-                                       CRM_Utils_Array::value("log_date_relative",  $this->_params), 
-                                       CRM_Utils_Array::value("log_date_from",      $this->_params), 
-                                       CRM_Utils_Array::value("log_date_to",        $this->_params), 
-                                       CRM_Utils_Type::T_DATE, 
-                                       CRM_Utils_Array::value("log_date_from_time", $this->_params), 
+    $logDateClause = $this->dateClause('log_date',
+                                       CRM_Utils_Array::value("log_date_relative",  $this->_params),
+                                       CRM_Utils_Array::value("log_date_from",      $this->_params),
+                                       CRM_Utils_Array::value("log_date_to",        $this->_params),
+                                       CRM_Utils_Type::T_DATE,
+                                       CRM_Utils_Array::value("log_date_from_time", $this->_params),
                                        CRM_Utils_Array::value("log_date_to_time",   $this->_params));
     $logDateClause = $logDateClause ? "AND {$logDateClause}" : null;
 
@@ -156,9 +156,9 @@ CREATE TEMPORARY TABLE
       $clause = CRM_Utils_Array::value('entity_table', $detail);
       $clause = $clause ? "entity_table = 'civicrm_contact' AND" : null;
       $sql    = "
-INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id ) 
-SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$entity}
-WHERE {$clause} log_action != 'Initialization' {$logDateClause} LIMIT {$rowCount}";
+INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
+  SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$entity}
+  WHERE {$clause} log_action != 'Initialization' {$logDateClause} LIMIT {$rowCount}";
       CRM_Core_DAO::executeQuery($sql);
     }
 
@@ -172,9 +172,9 @@ WHERE {$clause} log_action != 'Initialization' {$logDateClause} LIMIT {$rowCount
     }
 
     foreach ( $this->_logTables as $entity => $detail ) {
-      if ((in_array($this->getLogType($entity), $logTypes) && 
+      if ((in_array($this->getLogType($entity), $logTypes) &&
            CRM_Utils_Array::value('log_type_op', $this->_params) == 'in') ||
-          (!in_array($this->getLogType($entity), $logTypes) && 
+          (!in_array($this->getLogType($entity), $logTypes) &&
            CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')) {
         $this->from( $entity );
         $sql = $this->buildQuery(false);
@@ -185,10 +185,10 @@ WHERE {$clause} log_action != 'Initialization' {$logDateClause} LIMIT {$rowCount
 
     // format result set.
     $this->formatDisplay($rows);
-    
+
     // assign variables to templates
     $this->doTemplateAssignment($rows);
-    
+
     // do print / pdf / instance stuff if needed
     $this->endPostProcess($rows);
   }

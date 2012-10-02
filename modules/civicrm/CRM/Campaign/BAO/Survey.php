@@ -32,7 +32,7 @@
  * $Id$
  *
  */
-Class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
+class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
 
   /**
    * Takes a bunch of params that are needed to match certain criteria and
@@ -50,9 +50,7 @@ Class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
    *
    * @var array
    */
-
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     $dao = new CRM_Campaign_DAO_Survey();
 
     $dao->copyValues($params);
@@ -75,10 +73,9 @@ Class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
    * @access public
    * @static
    */
-  static
-  function create(&$params) {
+  static function create(&$params) {
     if (empty($params)) {
-      return;
+      return false;
     }
 
     if ($params['is_default']) {
@@ -114,8 +111,7 @@ Class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
    *
    * @static
    */
-  static
-  function getSurveySummary($params = array(
+  static function getSurveySummary($params = array(
     ), $onlyCount = FALSE) {
     //build the limit and order clause.
     $limitClause = $orderByClause = $lookupTableJoins = NULL;
@@ -131,7 +127,6 @@ Class CRM_Campaign_BAO_Survey extends CRM_Campaign_DAO_Survey {
           $sortParams[$name] = $params[$name];
         }
       }
-
 
       //need to lookup tables.
       $orderOnSurveyTable = TRUE;
@@ -233,8 +228,7 @@ SELECT  survey.id                         as id,
    *
    * @static
    */
-  static
-  function getSurveyCount() {
+  static function getSurveyCount() {
     return (int)CRM_Core_DAO::singleValueQuery('SELECT COUNT(*) FROM civicrm_survey');
   }
 
@@ -247,8 +241,7 @@ SELECT  survey.id                         as id,
    *
    * @static
    */
-  static
-  function getSurveys($onlyActive = TRUE,
+  static function getSurveys($onlyActive = TRUE,
     $onlyDefault = FALSE,
     $forceAll = FALSE
   ) {
@@ -303,8 +296,7 @@ SELECT  survey.id    as id,
    *
    * @static
    */
-  static
-  function getSurveyActivityType($returnColumn = 'label',
+  static function getSurveyActivityType($returnColumn = 'label',
     $includePetitionActivityType = FALSE
   ) {
     static $activityTypes;
@@ -332,12 +324,11 @@ SELECT  survey.id    as id,
   /**
    * Function to get Surveys custom groups
    *
-   * @param  $surveyTypes an array of survey type id.
+   * @param $surveyTypes array an array of survey type id.
    *
    * @static
    */
-  static
-  function getSurveyCustomGroups($surveyTypes = array(
+  static function getSurveyCustomGroups($surveyTypes = array(
     )) {
     $customGroups = array();
     if (!is_array($surveyTypes)) {
@@ -379,8 +370,7 @@ SELECT  survey.id    as id,
    * @return Object             DAO object on sucess, null otherwise
    * @static
    */
-  static
-  function setIsActive($id, $is_active) {
+  static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Campaign_DAO_Survey', $id, 'is_active', $is_active);
   }
 
@@ -393,8 +383,7 @@ SELECT  survey.id    as id,
    * @static
    *
    */
-  static
-  function del($id) {
+  static function del($id) {
     if (!$id) {
       return NULL;
     }
@@ -413,8 +402,7 @@ SELECT  survey.id    as id,
    * @return $voterDetails array of contact info.
    * @static
    */
-  static
-  function voterDetails($voterIds, $returnProperties = array(
+  static function voterDetails($voterIds, $returnProperties = array(
     )) {
     $voterDetails = array();
     if (!is_array($voterIds) || empty($voterIds)) {
@@ -505,9 +493,8 @@ Group By  contact.id";
    * @return $activityDetails array of survey activity.
    * @static
    */
-  static
-  function voterActivityDetails($surveyId, $voterIds, $interviewerId = NULL, $statusIds = array(
-    )) {
+  static function voterActivityDetails($surveyId, $voterIds, $interviewerId = NULL,
+                                       $statusIds = array()) {
     $activityDetails = array();
     if (!$surveyId ||
       !is_array($voterIds) || empty($voterIds)
@@ -563,8 +550,7 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
    * @return $activities an array of survey activity.
    * @static
    */
-  static
-  function getSurveyActivities($surveyId,
+  static function getSurveyActivities($surveyId,
     $interviewerId = NULL,
     $statusIds     = NULL,
     $voterIds      = NULL,
@@ -608,7 +594,8 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
             activityTarget.target_contact_id as voter_id,
             activityAssignment.assignee_contact_id as interviewer_id,
             activity.result as result,
-            activity.activity_date_time as activity_date_time";
+            activity.activity_date_time as activity_date_time,
+            contact_a.display_name as voter_name";
     }
 
     $query = "
@@ -616,6 +603,7 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
       FROM  civicrm_activity activity
 INNER JOIN  civicrm_activity_target activityTarget ON ( activityTarget.activity_id = activity.id )
 INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignment.activity_id = activity.id )
+INNER JOIN  civicrm_contact contact_a ON ( activityTarget.target_contact_id = contact_a.id )
      WHERE  activity.source_record_id = %1
        AND  activity.activity_type_id = %2
        AND  ( activity.is_deleted IS NULL OR activity.is_deleted = 0 )
@@ -636,10 +624,11 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
       $activities[$activity->id] = array(
         'id' => $activity->id,
         'voter_id' => $activity->voter_id,
+        'voter_name' => $activity->voter_name,
         'status_id' => $activity->status_id,
         'interviewer_id' => $activity->interviewer_id,
         'result' => $activity->result,
-        'activity_date_time' => $activity->activity_date_time,
+        'activity_date_time' => $activity->activity_date_time
       );
     }
 
@@ -653,12 +642,10 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
    * @param int    $interviewerId  interviewer id.
    * @param array  $statusIds      survey status ids.
    *
-   * @return survey related contact ids.
+   * @return array $$contactIds survey related contact ids.
    * @static
    */
-  static
-  function getSurveyVoterInfo($surveyId, $interviewerId = NULL, $statusIds = array(
-    )) {
+  static function getSurveyVoterInfo($surveyId, $interviewerId = NULL, $statusIds = array( )) {
     $voterIds = array();
     if (!$surveyId) {
       return $voterIds;
@@ -684,15 +671,13 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
     return $contactIds[$cacheKey];
   }
 
-  /*
-     * This function retrieve all option groups which are created as a result set 
-     *
-     * @return $resultSets an array of option groups.
-     * @static
-     */
-
-  static
-  function getResultSets() {
+  /**
+   * This function retrieve all option groups which are created as a result set
+   *
+   * @return $resultSets an array of option groups.
+   * @static
+   */
+  static function getResultSets() {
     $resultSets = array();
     $query      = "SELECT id, title FROM civicrm_option_group WHERE name LIKE 'civicrm_survey_%' AND is_active=1";
     $dao        = CRM_Core_DAO::executeQuery($query);
@@ -703,17 +688,15 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
     return $resultSets;
   }
 
-  /*
-     * This function is to check survey activity.  
-     *
-     * @param int $activityId activity id.
-     * @param int $activityTypeId activity type id.
-     * @return true/false boolean.
-     * @static
-     */
-
-  static
-  function isSurveyActivity($activityId) {
+  /**
+   * This function is to check survey activity.
+   *
+   * @param int $activityId activity id.
+   * @param int $activityTypeId activity type id.
+   * @return boolean $isSurveyActivity true/false boolean.
+   * @static
+   */
+  static function isSurveyActivity($activityId) {
     $isSurveyActivity = FALSE;
     if (!$activityId) {
       return $isSurveyActivity;
@@ -734,16 +717,14 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
     return $isSurveyActivity;
   }
 
-  /*
-     * This function retrive all response options of survey
-     *
-     * @param int $surveyId survey id.
-     * @return $responseOptions an array of option values
-     * @static
-     */
-
-  static
-  function getResponsesOptions($surveyId) {
+  /**
+   * This function retrive all response options of survey
+   *
+   * @param int $surveyId survey id.
+   * @return $responseOptions an array of option values
+   * @static
+   */
+  static function getResponsesOptions($surveyId) {
     $responseOptions = array();
     if (!$surveyId) {
       return $responseOptions;
@@ -757,15 +738,13 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
     return $responseOptions;
   }
 
-  /*
-     * This function return all voter links with respecting permissions
-     *
-     * @return $url array of permissioned links
-     * @static
-     */
-
-  static
-  function buildPermissionLinks($surveyId, $enclosedInUL = FALSE, $extraULName = 'more') {
+  /**
+   * This function return all voter links with respecting permissions
+   *
+   * @return $url array of permissioned links
+   * @static
+   */
+  static function buildPermissionLinks($surveyId, $enclosedInUL = FALSE, $extraULName = 'more') {
     $menuLinks = array();
     if (!$surveyId) {
       return $menuLinks;
@@ -835,8 +814,8 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
   /**
    * Function to retrieve survey associated profile id.
    *
-   **/
-  public Static function getSurveyProfileId($surveyId) {
+   */
+  public static function getSurveyProfileId($surveyId) {
     if (!$surveyId) {
       return NULL;
     }
@@ -858,8 +837,8 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
   /**
    * Function to decides the contact type for given survey.
    *
-   **/
-  public Static function getSurveyContactType($surveyId) {
+   */
+  public static function getSurveyContactType($surveyId) {
     $contactType = NULL;
 
     //apply filter of profile type on search.
@@ -877,8 +856,8 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
   /**
    * Function to get survey supportable profile types
    *
-   **/
-  public Static function surveyProfileTypes() {
+   */
+  public static function surveyProfileTypes() {
     static $profileTypes;
 
     if (!isset($profileTypes)) {
@@ -888,16 +867,16 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
     return $profileTypes;
   }
 
-  /* Get the valid survey response fields those 
-     * are configured with profile and custom fields.
-     *
-     * @param int $surveyId     survey id.
-     * @param int $surveyTypeId survey activity type id.
-     *
-     * @return an array of valid survey response fields. 
-     */
-
-  public Static function getSurveyResponseFields($surveyId, $surveyTypeId = NULL) {
+  /**
+   * Get the valid survey response fields those
+   * are configured with profile and custom fields.
+   *
+   * @param int $surveyId     survey id.
+   * @param int $surveyTypeId survey activity type id.
+   *
+   * @return array an array of valid survey response fields.
+   */
+  public static function getSurveyResponseFields($surveyId, $surveyTypeId = NULL) {
     if (empty($surveyId)) {
       return array();
     }
@@ -970,9 +949,9 @@ INNER JOIN  civicrm_activity_assignment activityAssignment ON ( activityAssignme
   /**
    * Get all interviewers of surveys.
    *
-   * @return an array of valid survey response fields.
+   * @return array an array of valid survey response fields.
    */
-  public Static function getInterviewers() {
+  public static function getInterviewers() {
     static $interviewers;
 
     if (isset($interviewers)) {
@@ -1007,7 +986,7 @@ INNER JOIN  civicrm_survey survey ON ( activity.source_record_id = survey.id )
   /**
    * Check and update the survey respondents.
    *
-   * @return void
+   * @return array success message
    */
   public function releaseRespondent($params) {
     $activityStatus = CRM_Core_PseudoConstant::activityStatus('name');

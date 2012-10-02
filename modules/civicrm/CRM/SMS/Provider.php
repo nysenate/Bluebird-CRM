@@ -56,7 +56,9 @@ abstract class CRM_SMS_Provider {
     ), $force = FALSE) {
     $mailingID    = CRM_Utils_Array::value('mailing_id', $providerParams);
     $providerID   = CRM_Utils_Array::value('provider_id', $providerParams);
-    $providerName = CRM_Utils_Array::value('provider', $providerParams);
+    
+    // make clickatell default provider for now
+    $providerName = CRM_Utils_Array::value('provider', $providerParams, 'clickatell');
 
     if (!$providerID && $mailingID) {
       $providerID = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Mailing', $mailingID, 'sms_provider_id', 'id');

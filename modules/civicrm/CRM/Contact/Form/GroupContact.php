@@ -106,9 +106,9 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
     else {
       $groupList = $allGroups;
     }
-
-    $groupList[''] = ts('- select group -');
-    asort($groupList);
+    //sort groups then prepend 'select'
+    asort($groupList, SORT_NATURAL | SORT_FLAG_CASE);
+    $groupList = array( '' => ts('- select group -')) + $groupList;
 
     if (count($groupList) > 1) {
       $session = CRM_Core_Session::singleton();

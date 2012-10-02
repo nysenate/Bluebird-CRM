@@ -222,7 +222,7 @@ class CRM_Core_BAO_Domain extends CRM_Core_DAO_Domain {
         CRM_Core_Config::domainID(), 'name'
       );
       $groupID = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group',
-        $title, 'id', 'title'
+        $title, 'id', 'title', true
       );
       if (empty($groupID) && !empty($title)) {
         $groupParams = array(

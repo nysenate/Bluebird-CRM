@@ -108,6 +108,7 @@ function authenticate_drupal($config) {
 function authenticate_wordpress($config) {
   // make sure user has access to civicrm 
   CRM_Utils_System::loadBootStrap();
+  require_once "CRM/Core/Permission.php";
   if (CRM_Core_Permission::check('access CiviCRM')) {
     return true;
   }

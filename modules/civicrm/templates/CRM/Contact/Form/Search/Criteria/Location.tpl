@@ -94,7 +94,7 @@
 		    </tr>
 		    <tr>
 			<td colspan="2">{$form.county.label}<br />
-				{$form.county.html|crmReplace:class:big}&nbsp;
+				{$form.county.html|crmReplace:class:bigSelect}&nbsp;
 			</td>        
 			<td>{$form.country.label}<br />
 				{$form.country.html|crmReplace:class:big}&nbsp;

@@ -74,8 +74,8 @@ class CRM_Upgrade_Form extends CRM_Core_Form {
     7 => 'Seven',
     8 => 'Eight',
     9 => 'Nine',
-  ); 
-  
+  );
+
   function __construct($state = NULL,
     $action = CRM_Core_Action::NONE,
     $method = 'post',
@@ -383,8 +383,8 @@ SET    version = '$version'
     $config = CRM_Core_Config::singleton();
     if ($config->logging == TRUE) {
       $error = ts('Upgrade to CiviCRM %1 with the logging feature enabled is currently not supported. You will need to disable logging (Administer > System Settings > Undelete, Logging and ReCAPTCHA), run the upgrade, and then re-enable logging. This should not affect existing log entries, but you should always test the upgrade on a COPY of your production database to verify.',
-                  array(1 => $latestVer)
-                  );
+               array(1 => $latestVer)
+      );
     }
 
     $phpVersion = phpversion();
@@ -469,7 +469,7 @@ SET    version = '$version'
           "Upgrade DB to $rev"
         );
         $queue->createItem($task);
-        
+
         $task = new CRM_Queue_Task(
           // callback
           array('CRM_Upgrade_Form', 'doIncrementalUpgradeFinish'),
@@ -498,7 +498,7 @@ SET    version = '$version'
     // as soon as we start doing anything we append ".upgrade" to version.
     // this also helps detect any partial upgrade issues
     $upgrade->setVersion($rev . '.upgrade');
-    
+
     return TRUE;
   }
 
@@ -557,7 +557,7 @@ SET    version = '$version'
       else {
         $upgrade->processSQL($rev);
       }
-      
+
       // set post-upgrade-message if any
       if (is_callable(array(
         $versionObject, 'setPostUpgradeMessage'))) {
@@ -573,7 +573,7 @@ SET    version = '$version'
 
     return TRUE;
   }
-  
+
   /**
    * Perform an incremental version update
    *

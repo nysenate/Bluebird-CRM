@@ -73,6 +73,6 @@ abstract class CRM_Import_DataSource {
    *
    * @access public
    */
-  abstract public function postProcess(&$params, &$db);
+  abstract public function postProcess(&$params, &$db, &$form);
 }
 

@@ -59,7 +59,7 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource {
     $form->addElement('checkbox', 'skipColumnHeader', ts('First row contains column headers'));
   }
 
-  function postProcess(&$params, &$db) {
+  function postProcess(&$params, &$db, &$form) {
     $file = $params['uploadFile']['name'];
 
     $result = self::_CsvToTable($db,
@@ -69,11 +69,11 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource {
       CRM_Utils_Array::value('fieldSeparator', $params, ',')
     );
 
-    $this->set('originalColHeader', CRM_Utils_Array::value('original_col_header', $result));
+    $form->set('originalColHeader', CRM_Utils_Array::value('original_col_header', $result));
 
     $table = $result['import_table_name'];
     $importJob = new CRM_Import_ImportJob($table);
-    $this->set('importTableName', $importJob->getTableName());
+    $form->set('importTableName', $importJob->getTableName());
   }
 
   /**
