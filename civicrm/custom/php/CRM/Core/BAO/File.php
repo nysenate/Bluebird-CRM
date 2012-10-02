@@ -311,6 +311,27 @@ AND       CEF.entity_id    = %2";
     // set default max file size as 2MB
     $maxFileSize = $config->maxFileSize ? $config->maxFileSize : 2;
 
+    //NYSS
+    $currentAttachmentInfo = self::getEntityFile($entityTable, $entityID, TRUE);
+    $totalAttachments = 0;
+    if ($currentAttachmentInfo) {
+      $totalAttachments = count($currentAttachmentInfo);
+      $form->add('checkbox', 'is_delete_attachment', ts('Delete All Attachment(s)'));
+      $form->assign('currentAttachmentInfo', $currentAttachmentInfo);
+    }
+    else {
+      $form->assign('currentAttachmentInfo', NULL);
+    }
+
+    if ( $totalAttachments ) {
+      if ($totalAttachments >= $numAttachments) {
+        $numAttachments = 0;
+      }
+      else {
+        $numAttachments -= $totalAttachments;
+      }
+    }
+
     $form->assign('numAttachments', $numAttachments);
     // add attachments
     for ($i = 1; $i <= $numAttachments; $i++) {
@@ -324,31 +345,19 @@ AND       CEF.entity_id    = %2";
         $maxFileSize * 1024 * 1024
       );
     }
-
-    //NYSS
-    $currentAttachmentInfo = self::getEntityFile($entityTable, $entityID, TRUE);
- 	 	$totalAttachments = 0;
- 	 	if ($currentAttachmentInfo) {
- 	 	  $totalAttachments = count($currentAttachmentInfo);
-      $form->add('checkbox', 'is_delete_attachment', ts('Delete All Attachment(s)'));
-      $form->assign('currentAttachmentInfo', $currentAttachmentInfo);
-	  }
- 	  else {
-      $form->assign('currentAttachmentInfo', NULL);
-    }
-
-    $attachmentInfo = self::attachmentInfo($entityTable, $entityID);
-    if ($attachmentInfo) {
-      $form->add('checkbox', 'is_delete_attachment', ts('Delete Current Attachment(s)'));
-      $form->assign('currentAttachmentURL',
-        $attachmentInfo
-      );
-    }
-    else {
-      $form->assign('currentAttachmentURL', NULL);
-    }
   }
 
+  /**
+   * Function to return a clean url string and the number of attachment for a
+   * given entityTable, entityID
+   *
+   * @param $entityTable string The entityTable to which the file is attached
+   * @param $entityID    int    The id of the object in the above entityTable
+   * @param $separator   string The string separator where to implode the urls
+   *
+   * @return array              An array with 2 elements. The string and the number of attachments
+   * @static
+   */
   static
   function attachmentInfo($entityTable, $entityID, $separator = '<br />') {
     if (!$entityID) {
