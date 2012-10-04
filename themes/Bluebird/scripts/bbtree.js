@@ -93,7 +93,7 @@ function callTagListMain(treeLoc, treeData) {
 	displayObj.tLvl = 0;
 	/*have to note when you step in and out of levels*/
 	displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'" style="display:none">';
-	displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+tID.description+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
+	displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+escapePositions(tID.description, tID.id)+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
 
 	var tIDLabel = 'tagLabel_'+tID.id;
 	displayObj.output += addControlBox(tIDLabel)+'</dt>';
@@ -103,7 +103,7 @@ function callTagListMain(treeLoc, treeData) {
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
 		cj.each(tID.children, function(i, cID){
 			var cIDChecked = isItemChecked(cID.is_checked,cID.id);
-			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+cID.name+'</span><span class="entityCount">('+cID.entity_count+')</span></div>';
+			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+escapePositions(cID.description, tID.id)+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+cID.name+'</span><span class="entityCount">('+cID.entity_count+')</span></div>';
 			var cIDLabel = 'tagLabel_'+cID.id;
 			displayObj.output += addControlBox(cIDLabel, cIDChecked, tID.id)+'</dt>';
 			if(cID.children.length > 0){
@@ -111,7 +111,7 @@ function callTagListMain(treeLoc, treeData) {
 				displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
 				cj.each(cID.children, function(i, iID){
 					var iIDChecked = isItemChecked(iID.is_checked,iID.id);
-					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+iID.name+'</span><span class="entityCount">('+iID.entity_count+')</span></div>';
+					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+escapePositions(iID.description, tID.id)+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+iID.name+'</span><span class="entityCount">('+iID.entity_count+')</span></div>';
 					var iIDLabel = 'tagLabel_'+iID.id;
 					displayObj.output += addControlBox(iIDLabel, iIDChecked, tID.id)+'</dt>';
 					if(iID.children.length > 0){
@@ -119,7 +119,7 @@ function callTagListMain(treeLoc, treeData) {
 						displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
 						cj.each(iID.children, function(i, jID){
 							var jIDChecked = isItemChecked(jID.is_checked,jID.id);
-							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+jID.name+'</span><span class="entityCount">('+jID.entity_count+')</span></div>';
+							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+escapePositions(jID.description, tID.id)+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+jID.name+'</span><span class="entityCount">('+jID.entity_count+')</span></div>';
 							var jIDLabel = 'tagLabel_'+jID.id;
 							displayObj.output += addControlBox(jIDLabel, jIDChecked, tID.id)+'</dt>';
 							if(jID.children.length > 0){
@@ -127,7 +127,7 @@ function callTagListMain(treeLoc, treeData) {
 								displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
 								cj.each(jID.children, function(i, kID){
 									var kIDChecked = isItemChecked(kID.is_checked,kID.id);
-									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+kID.name+'</span><span class="entityCount">('+kID.entity_count+')</span></div>';
+									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+escapePositions(kID.description, tID.id)+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag"><span class="name">'+kID.name+'</span><span class="entityCount">('+kID.entity_count+')</span></div>';
 									var kIDLabel = 'tagLabel_'+kID.id;
 									displayObj.output += addControlBox(kIDLabel, kIDChecked, tID.id)+'</dt>';
 								});
@@ -198,6 +198,17 @@ function callTagListModal(treeLoc, tID, modalTreeTop) {
 		}
 		displayObj.output += '</dl>';
 		writeDisplayObject(displayObj, treeLoc);
+	}
+}
+function escapePositions(position, tidNum)
+{
+	if(tidNum = 292)
+	{
+		return '';
+	}
+	else
+	{
+		return(position);
 	}
 }
 /*Tab Swapping functionality between Issue Codes and Keywords*/
