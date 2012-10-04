@@ -87,7 +87,6 @@
     }
     </script>
     {/literal}
-{/if} {* NO print section ends *}
 
 {*NYSS 5210/5214*}
 <div id="pdfProcessing" style="display: none;">
@@ -123,3 +122,5 @@ cj(".crm-tasks input[value='Export to CSV'], .crm-tasks input[value='Create CSV'
 });
 </script>
 {/literal}
+
+{/if} {* NO print section ends *}
