@@ -2074,6 +2074,10 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                 $this->_formValues['report_footer'] ;
 
             if ( $this->_sendmail ) {
+                //NYSS suprress email if no content
+                if (empty($rows)) {
+                  CRM_Utils_System::civiExit();
+                }
                 require_once 'CRM/Report/Utils/Report.php';
                 $attachments = array();
                 if ( $this->_outputMode == 'csv' ) {
