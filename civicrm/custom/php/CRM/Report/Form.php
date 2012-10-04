@@ -2303,6 +2303,10 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
       $content = $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
 
             if ( $this->_sendmail ) {
+              //NYSS suppress email if no content
+              if ( empty($rows) ) {
+                CRM_Utils_System::civiExit( );
+              }
         $config = CRM_Core_Config::singleton();
                 $attachments = array();
 
