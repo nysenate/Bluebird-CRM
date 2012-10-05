@@ -37,7 +37,6 @@
  * @version $Id: Address.php 2011-02-16 ErikHommel $
  */
 
-
 require_once 'CRM/Core/BAO/Address.php';
 
 /**
@@ -51,13 +50,10 @@ require_once 'CRM/Core/BAO/Address.php';
  * @access public
  */
 function civicrm_api3_address_create(&$params) {
-
-  /*
-	 * if street_parsing, street_address has to be parsed into
-	 * separate parts
-	 */
-
-
+  /**
+   * if street_parsing, street_address has to be parsed into
+   * separate parts
+   */
   if (array_key_exists('street_parsing', $params)) {
     if ($params['street_parsing'] == 1) {
       if (array_key_exists('street_address', $params)) {
@@ -81,13 +77,11 @@ function civicrm_api3_address_create(&$params) {
       }
     }
   }
-  /*
-	  * create array for BAO (expects address params in as an
-	  * element in array 'address'
-	  */
 
-
-
+  /**
+   * create array for BAO (expects address params in as an
+   * element in array 'address'
+   */
   $addressBAO = CRM_Core_BAO_Address::add($params, TRUE);
   if (empty($addressBAO)) {
     return civicrm_api3_create_error("Address is not created or updated ");
@@ -98,6 +92,7 @@ function civicrm_api3_address_create(&$params) {
     return civicrm_api3_create_success($values, $params, 'address', $addressBAO);
   }
 }
+
 /*
  * Adjust Metadata for Create action
  *

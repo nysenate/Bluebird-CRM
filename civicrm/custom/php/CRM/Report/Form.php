@@ -1716,7 +1716,7 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                         continue;
                     }
 
-                    if ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys'] ) ) {
+          if (is_array($this->_params['group_bys']) && CRM_Utils_Array::value($fieldName, $this->_params['group_bys'])) {
                         switch ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys_freq'] ) ) {
                         case 'YEARWEEK' :
                             $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
@@ -2303,6 +2303,10 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
       $content = $this->_formValues['report_header'] . CRM_Core_Form::$_template->fetch($templateFile) . $this->_formValues['report_footer'];
 
             if ( $this->_sendmail ) {
+              //NYSS suppress email if no content
+              if ( empty($rows) ) {
+                CRM_Utils_System::civiExit( );
+              }
         $config = CRM_Core_Config::singleton();
                 $attachments = array();
 
@@ -2888,7 +2892,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
      * @param bool $orderBy Add GroupBy? Not appropriate for detail report
      * @return array address fields for construct clause
      */
-    function addAddressFields($groupBy = true, $orderBy = false, $filters = true, $defaults = array( ) ) {//NYSS remove country
+    function addAddressFields($groupBy = TRUE, $orderBy = FALSE, $filters = TRUE, $defaults = array( ) ) {//NYSS remove country
     $addressFields = array(
       'civicrm_address' =>
       array(
@@ -2943,14 +2947,14 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                                             //NYSS 4289
 											/*'county_id'  =>
                                             array( 'title'      => ts( 'County' ),  
-                                                   'default'    => CRM_Utils_Array::value('county_id', $defaults, false) ),*/
+                                                   'default'    => CRM_Utils_Array::value('county_id', $defaults, FALSE) ),*/
                                             'state_province_id' => 
                                             array( 'title'      => ts( 'State/Province' ),
             'default' => CRM_Utils_Array::value('state_province_id', $defaults, FALSE),
           ),
                                             /*'country_id'        => //NYSS 4939
                                             array( 'title'      => ts( 'Country' ),  
-                                                   'default'    => CRM_Utils_Array::value('country_id', $defaults, false) ),*/ 
+                                                   'default'    => CRM_Utils_Array::value('country_id', $defaults, FALSE) ),*/ 
                                             
                                             ),
                                      'grouping'  => 'location-fields',

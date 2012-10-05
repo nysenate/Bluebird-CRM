@@ -158,7 +158,7 @@ function civicrm_api3_relationship_get($params) {
     );
   }
   foreach ($relationships as $relationshipId => $values) {
-    _civicrm_api3_custom_data_get($relationships[$relationshipId], 'Relationship', $relationshipId);
+    _civicrm_api3_custom_data_get($relationships[$relationshipId], 'Relationship', $relationshipId, NULL, CRM_Utils_Array::value('relationship_type_id',$values));
   }
 
 

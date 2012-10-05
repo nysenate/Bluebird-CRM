@@ -105,13 +105,28 @@ class CRM_Contribute_Form_Task_PDFLetter extends CRM_Contribute_Form_Task {
     CRM_Contact_Form_Task_PDFLetterCommon::buildQuickForm($this);
 
     // specific need for contributions
-    $this->add('static', 'more_options_header', NULL, ts('More options'));
-    $this->add('checkbox', 'receipt_update', ts('Update receipt date for those contributions'), FALSE);
-    $this->add('checkbox', 'thankyou_update', ts('Update thank you date for those contributions'), FALSE);
+    $this->add('static', 'more_options_header', NULL, ts('Record Update Options'));
+    $this->add('checkbox', 'receipt_update', ts('Update receipt dates for these contributions'), FALSE);
+    $this->add('checkbox', 'thankyou_update', ts('Update thank-you dates for these contributions'), FALSE);
     //$this->add( 'checkbox', 'group_recurring_contribution', ts('Group recurring contribution (1 letter by recurring contribution for the choosen period)'), false );
 
+    // Group options for tokens are not yet implemented. dgg
     $options = array(ts('Contact'), ts('Recurring'));
     $this->addRadio('is_group_by', ts('Grouping contributions in one letter based on'), $options, array(), "<br/>", FALSE);
+    
+    $this->addButtons(array(
+        array(
+          'type' => 'submit',
+          'name' => ts('Make Thank-you Letters'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Done'),
+        ),
+      )
+    );
+
   }
 
   /**

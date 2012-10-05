@@ -93,12 +93,12 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */ 
+  function preProcess() {
     self::preProcessCommon($this);
   }
 
-  static
-  function preProcessCommon(&$form, $useTable = FALSE) {
+  static function preProcessCommon(&$form, $useTable = FALSE) {
 
     $form->_contactIds = array();
     $form->_contactTypes = array();
@@ -154,7 +154,13 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
     ) {
       $sortByCharacter = $form->get('sortByCharacter');
       $cacheKey        = ($sortByCharacter && $sortByCharacter != 'all') ? "{$cacheKey}_alphabet" : $cacheKey;
-      $allCids         = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey, "getall");
+ 
+      if ($form->_action == CRM_Core_Action::COPY) {
+        $allCids[$cacheKey] = $form->getContactIds( );
+      }
+      else {
+       $allCids = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey, "getall");
+      }
 
       $form->_contactIds = array();
       if ($useTable) {
@@ -192,17 +198,36 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
       // selected contacts only
       // need to perform action on only selected contacts
       $insertString = array();
-      // fetching selected contact ids of passed cache key
-      $selectedCids = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey);
 
-      foreach ($selectedCids[$cacheKey] as $selectedCid => $ignore) {
-        if ($useTable) {
-          $insertString[] = " ( {$selectedCid} ) ";
-        }
-        else {
-          $form->_contactIds[] = $selectedCid;
+      // refire sql in case of custom seach
+      if ($form->_action == CRM_Core_Action::COPY) {
+        // selected contacts only
+        // need to perform action on only selected contacts
+        foreach (self::$_searchFormValues as $name => $value) {
+          if (substr($name, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX) {
+            $contactID = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
+            if ($useTable) {
+              $insertString[] = " ( {$contactID} ) ";
+            }
+            else {
+              $form->_contactIds[] = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
+            }
+          }
         }
       }
+      else {
+        // fetching selected contact ids of passed cache key
+        $selectedCids = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey);
+        foreach ($selectedCids[$cacheKey] as $selectedCid => $ignore) {
+          if ($useTable) {
+            $insertString[] = " ( {$selectedCid} ) ";
+          }
+          else {
+            $form->_contactIds[] = $selectedCid;
+          }
+        }
+      }
+      
       if (!empty($insertString)) {
         $string = implode(',', $insertString);
         $sql = "REPLACE INTO {$form->_componentTable} ( contact_id ) VALUES $string";
@@ -228,7 +253,8 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
     }
 
    
-    if(CRM_Utils_Array::value('radio_ts', self::$_searchFormValues) == 'ts_sel'){
+    if (CRM_Utils_Array::value('radio_ts', self::$_searchFormValues) == 'ts_sel'
+    && ($form->_action != CRM_Core_Action::COPY) ) {
       $params = array();
       $sel = CRM_Utils_Array::value('radio_ts', self::$_searchFormValues);
       $form->assign('searchtype',$sel);
@@ -244,6 +270,61 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
       $form->_componentIds = $form->_contactIds;
     }
   }
+
+  /**
+   * Function to get the contact id for custom search
+   * we are not using prev/next table incase of custom search
+   */
+  public function getContactIds() {
+    // need to perform action on all contacts
+    // fire the query again and get the contact id's + display name
+    $sortID = NULL;
+    if ($this->get(CRM_Utils_Sort::SORT_ID)) {
+      $sortID = CRM_Utils_Sort::sortIDValue($this->get(CRM_Utils_Sort::SORT_ID),
+        $this->get(CRM_Utils_Sort::SORT_DIRECTION)
+      );
+    }
+
+    $selectorName = $this->controller->selectorName();
+    require_once (str_replace('_', DIRECTORY_SEPARATOR, $selectorName) . '.php');
+
+    $fv = $this->get('formValues');
+    $customClass = $this->get('customSearchClass');
+    require_once 'CRM/Core/BAO/Mapping.php';
+    $returnProperties = CRM_Core_BAO_Mapping::returnProperties(self::$_searchFormValues);
+
+    eval('$selector   = new ' .
+      $selectorName .
+      '( $customClass, $fv, null, $returnProperties ); '
+    );
+
+    $params = $this->get('queryParams');
+
+    // fix for CRM-5165
+    $sortByCharacter = $this->get('sortByCharacter');
+    if ($sortByCharacter &&
+      $sortByCharacter != 1
+    ) {
+      $params[] = array('sortByCharacter', '=', $sortByCharacter, 0, 0);
+    }
+    $queryOperator = $this->get('queryOperator');
+    if (!$queryOperator) {
+      $queryOperator = 'AND';
+    }
+    $dao = &$selector->contactIDQuery($params, $this->_action, $sortID,
+      CRM_Utils_Array::value('display_relationship_type', $fv ),
+      $queryOperator
+    );
+
+    $contactIds = array();
+    while( $dao->fetch()) {
+      $contactIds[$dao->contact_id] = $dao->contact_id;
+    }
+
+    return $contactIds;
+  }
+
+
   /**
    * This function sets the default values for the form. Relationship that in edit/view action
    * the default values are retrieved from the database

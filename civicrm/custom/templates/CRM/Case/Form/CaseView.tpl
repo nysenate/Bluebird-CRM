@@ -1022,8 +1022,8 @@ function printCaseReport( ){
     var asn = 'standard_timeline';
     var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print' q='all=1&redact=0' h='0'}"{literal};
     dataUrl     = dataUrl + '&cid={/literal}{$contactID}{literal}' 
-                  + '&caseID={/literal}{$caseID}{literal}'
-                  + '&asn={/literal}' + asn + '{literal}';
+                  + '&caseID={/literal}{$caseID}{literal}';
+                  //+ '&asn={/literal}' + asn + '{literal}';//NYSS 5708
     //NYSS 5153
     window.open(dataUrl, '_blank');
 }

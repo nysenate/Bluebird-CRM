@@ -182,8 +182,10 @@ class CRM_Report_Form_Instance {
     $instanceID = $form->getVar('_id');
     $navigationDefaults = array();
 
-    $permissions = array_flip(CRM_Core_Permission::basicPermissions( ));
-    $defaults['permission'] = $permissions['CiviReport: access CiviReport'];
+    if (!CRM_Utils_Array::value('permission', $defaults)){
+      $permissions = array_flip(CRM_Core_Permission::basicPermissions( ));
+      $defaults['permission'] = $permissions['CiviReport: access CiviReport'];
+    }
 
     $config = CRM_Core_Config::singleton();
     $defaults['report_header'] = $report_header = "<html>
@@ -285,7 +287,6 @@ class CRM_Report_Form_Instance {
       if ($permission) {
         $dashletParams['permission'][] = $permission;
       }
-      unset($params['addToDashboard']);
     }
     $params['is_reserved'] = CRM_Utils_Array::value('is_reserved', $params, FALSE);
 

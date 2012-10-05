@@ -90,7 +90,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
             }
             
             $addressExists = self::dataExists( $value );
-            
+      if ( !CRM_Utils_Array::value('id', $value) ) {
             if ( $updateBlankLocInfo ) {
                 if ( ( !empty( $addresses ) || !$addressExists ) && array_key_exists( $key, $addresses ) ) {
                     $value['id'] = $addresses[ $key ];
@@ -101,6 +101,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
             $value['id'] = $addresses[CRM_Utils_Array::value('location_type_id', $value)];
                 }
             }
+      }
 
             // Note there could be cases when address info already exist ($value[id] is set) for a contact/entity 
             // BUT info is not present at this time, and therefore we should be really careful when deleting the block. 
@@ -135,7 +136,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
     }
 
     /**
-     * takes an associative array and adds phone 
+   * takes an associative array and adds address
      *
      * @param array  $params         (reference ) an assoc array of name/value pairs
      * @param boolean  $fixAddress   true if you need to fix (format) address values

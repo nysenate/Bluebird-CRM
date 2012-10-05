@@ -286,6 +286,18 @@ function _civicrm_api3_get_DAO($name) {
   if (strtolower($name) == 'individual' || strtolower($name) == 'household' || strtolower($name) == 'organization') {
     $name = 'Contact';
   }
+
+  //hack to deal with incorrectly named BAO/DAO - see CRM-10859 - remove after rename
+  if($name == 'price_set'){
+    return 'CRM_Price_DAO_Set';
+  }
+  if($name == 'price_field'){
+    return 'CRM_Price_DAO_Field';
+  }
+  if($name == 'price_field_value'){
+    return 'CRM_Price_DAO_FieldValue';
+  }
+
   return CRM_Utils_Array::value(_civicrm_api_get_camel_name($name, 3), $dao);
 }
 
@@ -410,6 +422,7 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
   $entity = substr($dao->__table, 8);
 
   $allfields = _civicrm_api3_build_fields_array($dao, $unique);
+  
   $fields = array_intersect(array_keys($allfields), array_keys($params));
   if (isset($params[$entity . "_id"])) {
     //if entity_id is set then treat it as ID (will be overridden by id if set)
@@ -440,8 +453,11 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
   if (!$fields) {
     return;
   }
+  
   foreach ($fields as $field) {
     if (is_array($params[$field])) {
+      //get the actual fieldname from db
+      $fieldName = $allfields[$field]['name'];
       //array is the syntax for SQL clause
       foreach ($params[$field] as $operator => $criteria) {
         if (in_array($operator, $acceptedSQLOperators)) {
@@ -450,7 +466,7 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
 
             case 'IS NULL':
             case 'IS NOT NULL':
-              $dao->whereAdd(sprintf('%s %s', $field, $operator));
+              $dao->whereAdd(sprintf('%s %s', $fieldName, $operator));
               break;
 
             // ternary operators
@@ -460,7 +476,7 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
               if (empty($criteria[0]) || empty($criteria[1])) {
                 throw new exception("invalid criteria for $operator");
               }
-              $dao->whereAdd(sprintf('%s ' . $operator . ' "%s" AND "%s"', $field, CRM_Core_DAO::escapeString($criteria[0]), CRM_Core_DAO::escapeString($criteria[1])));
+              $dao->whereAdd(sprintf('%s ' . $operator . ' "%s" AND "%s"', $fieldName, CRM_Core_DAO::escapeString($criteria[0]), CRM_Core_DAO::escapeString($criteria[1])));
               break;
 
             // n-ary operators
@@ -471,14 +487,14 @@ function _civicrm_api3_dao_set_filter(&$dao, $params, $unique = TRUE, $entity) {
                 throw new exception("invalid criteria for $operator");
               }
               $escapedCriteria = array_map(array('CRM_Core_DAO', 'escapeString'), $criteria);
-              $dao->whereAdd(sprintf('%s %s ("%s")', $field, $operator, implode('", "', $escapedCriteria)));
+              $dao->whereAdd(sprintf('%s %s ("%s")', $fieldName, $operator, implode('", "', $escapedCriteria)));
               break;
 
             // binary operators
 
             default:
 
-              $dao->whereAdd(sprintf('%s %s "%s"', $field, $operator, CRM_Core_DAO::escapeString($criteria)));
+              $dao->whereAdd(sprintf('%s %s "%s"', $fieldName, $operator, CRM_Core_DAO::escapeString($criteria)));
           }
         }
       }
@@ -1378,7 +1394,7 @@ function _civicrm_api3_validate_integer(&$params, &$fieldname, &$fieldInfo) {
     if (CRM_Utils_Array::value('pseudoconstant', $fieldInfo) && !CRM_Utils_Array::value('FKClassName',$fieldInfo)) {
       $constant = $fieldInfo['options'];
       if (is_numeric($params[$fieldname]) && !array_key_exists($params[$fieldname], $fieldInfo['options'])) {
-        throw new api_Exception("$fieldname is not valid", 2001, array('error_field' => $fieldname));
+        throw new API_Exception("$fieldname is not valid", 2001, array('error_field' => $fieldname));
       }
       elseif (!is_numeric($params[$fieldname])) {
         $numericvalue = array_search($params[$fieldname], $fieldInfo['options']);
@@ -1395,7 +1411,7 @@ function _civicrm_api3_validate_integer(&$params, &$fieldname, &$fieldInfo) {
       CRM_Utils_Array::value('maxlength',$fieldInfo)
       && strlen($params[$fieldname]) > $fieldInfo['maxlength']
       ){
-      throw new api_Exception( $params[$fieldname] . " is " . strlen($params[$fieldname]) . " characters  - longer than $fieldname length" . $fieldInfo['maxlength'] . ' characters',
+      throw new API_Exception( $params[$fieldname] . " is " . strlen($params[$fieldname]) . " characters  - longer than $fieldname length" . $fieldInfo['maxlength'] . ' characters',
         2100, array('field' => $fieldname)
       );
     }
@@ -1408,42 +1424,35 @@ function _civicrm_api3_validate_integer(&$params, &$fieldname, &$fieldInfo) {
  * @param array $fieldinfo array of fields from getfields function
  */
 function _civicrm_api3_validate_string(&$params, &$fieldname, &$fieldInfo) {
-  //if fieldname exists in params
-  if (CRM_Utils_Array::value($fieldname, $params)) {
+  // If fieldname exists in params
+  if ($value = CRM_Utils_Array::value($fieldname, $params)) {
     if ($fieldname == 'currency') {
-      if (!CRM_Utils_Rule::currencyCode($params[$fieldname])) {
-        throw new Exception("currency not a valid code: " . $params[$fieldname]);
+      if (!CRM_Utils_Rule::currencyCode($value)) {
+        throw new Exception("Currency not a valid code: $value");
       }
     }
-    if (CRM_Utils_Array::value('pseudoconstant', $fieldInfo) && !CRM_Utils_Array::value('FKClassName',$fieldInfo)) {
-    // validate / swap out any pseudoconstants
+    if (CRM_Utils_Array::value('pseudoconstant', $fieldInfo) && !CRM_Utils_Array::value('FKClassName', $fieldInfo)) {
+      // Validate & swap out any pseudoconstants
       $constant = $fieldInfo['options'];
-      $enum = CRM_Utils_Array::value('enumValues', $fieldInfo);
-      if (empty($constant) && !empty($enum)) {
+      if (!$constant && ($enum = CRM_Utils_Array::value('enumValues', $fieldInfo))) {
         $constant = explode(',', $enum);
       }
-      if (is_numeric($params[$fieldname]) && !array_key_exists($params[$fieldname], $fieldInfo['options'])) {
-        throw new Exception("$fieldname is not valid");
-      }
-      elseif (!is_numeric($params[$fieldname])) {
-        $numericvalue = array_search($params[$fieldname], $fieldInfo['options']);
-        if (empty($numericvalue)) {
-          throw new Exception("$fieldname `" . $params[$fieldname] . "` is not valid.");
+      // If value passed is not a key, it may be a label
+      // Try to lookup key from label - if it can't be found throw error
+      if (!isset($constant[$value])) {
+        if (!($key = array_search($value, $constant))) {
+          throw new Exception("$fieldname `$value` is not valid.");
         }
         else {
-          $params[$fieldname] = $numericvalue;
+          $value = $key;
         }
       }
     }
-    // once we have done any swaps check our field length
-    if(is_string($params[$fieldname]) &&
-      CRM_Utils_Array::value('maxlength',$fieldInfo)
-      && strlen($params[$fieldname]) > $fieldInfo['maxlength']
-      ){
-      throw new api_Exception( $params[$fieldname] . " is " . strlen($params[$fieldname]) . " characters  - longer than $fieldname length" . $fieldInfo['maxlength'] . ' characters',
+    // Check our field length
+    elseif (is_string($value) && !empty($fieldInfo['maxlength']) && strlen($value) > $fieldInfo['maxlength']) {
+      throw new API_Exception("Value for $fieldname is " . strlen($value) . " characters  - This field has a maxlength of {$fieldInfo['maxlength']} characters.",
         2100, array('field' => $fieldname)
       );
     }
   }
 }
-

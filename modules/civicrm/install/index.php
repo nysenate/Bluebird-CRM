@@ -76,7 +76,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $crmPath);
 require_once $crmPath . '/CRM/Core/ClassLoader.php';
 CRM_Core_ClassLoader::singleton()->register();
 
-$docLink = CRM_Utils_System::docURL2('Installation and Upgrades', FALSE, 'Installation Guide');
+$docLink = CRM_Utils_System::docURL2('Installation and Upgrades', FALSE, 'Installation Guide',NULL,NULL,"wiki");
 
 if ($installType == 'drupal') {
   //lets check only /modules/.
@@ -991,7 +991,7 @@ class Installer extends InstallRequirements {
         $output .= '<body>';
         $output .= '<div style="padding: 1em;"><p class="good">CiviCRM has been successfully installed</p>';
         $output .= '<ul>';
-        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here');
+        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here',NULL,NULL,"wiki");
         if (!function_exists('ts')) {
           $docLinkConfig = "<a href=\"{$docLinkConfig}\">here</a>";
         }
@@ -1062,7 +1062,7 @@ class Installer extends InstallRequirements {
         $output .= '<body>';
         $output .= '<div style="padding: 1em;"><p class="good">CiviCRM has been successfully installed</p>';
         $output .= '<ul>';
-        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here');
+        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here',NULL,NULL,"wiki");
         if (!function_exists('ts')) {
           $docLinkConfig = "<a href=\"{$docLinkConfig}\">here</a>";
         }
@@ -1107,7 +1107,7 @@ class Installer extends InstallRequirements {
         echo '<h1>CiviCRM Installed</h1>';
         echo '<div style="padding: 1em;"><p style="background-color: #0C0; border: 1px #070 solid; color: white;">CiviCRM has been successfully installed</p>';
         echo '<ul>';
-        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here');
+        $docLinkConfig = CRM_Utils_System::docURL2('Configuring a New Site', FALSE, 'here',NULL,NULL,"wiki");
         if (!function_exists('ts')) {
           $docLinkConfig = "<a href=\"{$docLinkConfig}\">here</a>";
         }

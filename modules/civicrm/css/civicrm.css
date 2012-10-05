@@ -3264,6 +3264,10 @@ div#crm-toolTip
     background-color:#DDFFDD !important;
 }
 
+.extension-missing {
+    color:#E43D2B !important;
+}
+
 /* table row highlightng */
 #crm-container table.row-highlight tr:hover {
     background-color: #FFFFCC !important;

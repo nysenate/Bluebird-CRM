@@ -2,7 +2,7 @@
 /**
  * Define a custom exception class
  */
-class api_Exception extends Exception
+class API_Exception extends Exception
 {
   private $extraParams = array();
   public function __construct($message, $code = 0, $extraParams = array(),Exception $previous = null) {

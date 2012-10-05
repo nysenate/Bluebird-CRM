@@ -51,7 +51,9 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
   // see HTML_QuickForm_advcheckbox::setValues() - but patching that doesn't
   // help, as QF doesn't put the 0-value elements in exportValues() anyway...
   // to side-step this, we use the below UUID as a (re)placeholder
-  var $_qfZeroBug = 'e8cddb72-a257-11dc-b9cc-0016d3330ee9'; function preProcess() {
+  var $_qfZeroBug = 'e8cddb72-a257-11dc-b9cc-0016d3330ee9'; 
+  
+  function preProcess() {
     if (!CRM_Core_Permission::check('merge duplicate contacts')) {
       CRM_Core_Error::fatal(ts('You do not have access to this page'));
     }
@@ -168,7 +170,6 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
     }
 
     // ensure that oid is not the current user, if so refuse to do the merge
-
     if ($session->get('userID') == $oid) {
       $display_name = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $oid, 'display_name');
       $message = ts('The contact record which is linked to the currently logged in user account - \'%1\' - cannot be deleted.',
@@ -218,7 +219,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
 
     $this->_locBlockIds = array(
       'main' => $rowsElementsAndInfo['main_details']['loc_block_ids'],
-      'other' => $rowsElementsAndInfo['other_details']['loc_block_ids'],
+      'other' => $rowsElementsAndInfo['other_details']['loc_block_ids']
     );
 
     // add elements
@@ -237,7 +238,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form {
       $element = $this->addElement($relTableElement[0], $relTableElement[1]);
       $element->setChecked(TRUE);
     }
-
+    
     $this->assign('rel_tables', $rowsElementsAndInfo['rel_tables']);
     $this->assign('userContextURL', $session->readUserContext());
   }

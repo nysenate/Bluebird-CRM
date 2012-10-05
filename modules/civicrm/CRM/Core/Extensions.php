@@ -325,7 +325,12 @@ class CRM_Core_Extensions {
     // now check for upgrades - rolling over installed, since
     // those that we care to upgrade
     if (is_array($remote)) {
+      
       foreach ($installed as $dc => $i) {
+        if ($i->status == 'missing') {
+          // don't check for upgrades if expected installed file(s) are missing
+          continue;
+        }
         $key = $i->key;
         foreach ($remote as $dc => $r) {
           if ($key == $r->key) {
@@ -362,7 +367,14 @@ class CRM_Core_Extensions {
       $ext->setInstalled();
       $ext->setId((integer)$dao->id);
       if ($fullInfo) {
-        $ext->readXMLInfo();
+        if ($ext->hasXMLInfo()) {
+          $ext->readXMLInfo();
+        } else {
+          $ext->setMissing();
+          CRM_Core_Session::setStatus(ts('The extension %1 (%2) is listed as installed, but expected files(s) including info.xml are missing. Has this site been moved to a different server location?', array(
+            1 => $dao->label, 2 => $dao->full_name,
+          )). '<br/>');
+        }
       }
       $result[(integer)$dao->id] = $ext;
     }
@@ -603,7 +615,7 @@ class CRM_Core_Extensions {
    *
    * @access public
    *
-   * @param int $id id of the extension record
+   * @param int $id id of the extension record; deprecated
    * @param string $key extension key
    *
    * @return void
@@ -793,6 +805,13 @@ class CRM_Core_Extensions {
 
       return $contents;
     }
+  }
+
+  /**
+   * Determine whether the extensions subsystem is properly configured
+   */
+  public function isEnabled() {
+      return $this->enabled;
   }
 }
 

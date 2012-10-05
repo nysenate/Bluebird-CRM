@@ -62,10 +62,11 @@ class CRM_PCP_Form_Event extends CRM_Event_Form_ManageEvent {
   public function setDefaultValues() {
     $defaults = array();
 
-    $title = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_id, 'title');
-    CRM_Utils_System::setTitle(ts('Personal Campaign Page Settings (%1)', array(1 => $title)));
     $defaults = array();
     if (isset($this->_id)) {
+      $title = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_id, 'title');
+      CRM_Utils_System::setTitle(ts('Personal Campaign Page Settings (%1)', array(1 => $title)));
+
       $params = array('entity_id' => $this->_id, 'entity_table' => 'civicrm_event');
       CRM_Core_DAO::commonRetrieve('CRM_PCP_DAO_PCPBlock', $params, $defaults);
       $defaults['pcp_active'] = CRM_Utils_Array::value('is_active', $defaults);
@@ -80,7 +81,8 @@ class CRM_PCP_Form_Event extends CRM_Event_Form_ManageEvent {
       $defaults['tellfriend_limit'] = 5;
       $defaults['link_text'] = ts('Promote this event with a personal campaign page');
 
-      if ($ccReceipt = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $this->_id, 'cc_receipt')) {
+      if ($this->_id && 
+          $ccReceipt = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $this->_id, 'cc_receipt')) {
         $defaults['notify_email'] = $ccReceipt;
       }
     }

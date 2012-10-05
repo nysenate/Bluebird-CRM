@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* Adds social networking buttons (Facebook like, Twitter tweet, and Google +1) to public pages (online contributions, event info) *}
+{* Adds social networking buttons (Facebook like, Twitter tweet, Google +1, LinkedIn) to public pages (online contributions, event info) *}
 <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
 <div class="crm-section crm-socialnetwork help">
     <h3 class="nobackground">{ts}Help spread the word{/ts}</h3>
@@ -52,9 +52,13 @@
             <div class="label">
                 <g:plusone href={$url}></g:plusone>
             </div>
-            <div class="label">
+            <div class="label" style="width:300px;">
                 <iframe src="//www.facebook.com/plugins/like.php?app_id=240719639306341&amp;href={$url|escape:'url'}&amp;send=false&amp;layout=standard&amp;show_faces=false&amp;action=like&amp;colorscheme=light" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:300px; height:30px;" allowTransparency="true"> 
                 </iframe>
+            </div>
+            <div class="label">
+              <script src="//platform.linkedin.com/in.js" type="text/javascript"></script>
+              <script type="IN/Share" data-url={$url} data-counter="right"></script>
             </div>
         {/if}
     </div>

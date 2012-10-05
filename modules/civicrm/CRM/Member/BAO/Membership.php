@@ -287,7 +287,7 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership {
         }
         // Return the error message to the api
         $error = array();
-        $error['is_error'] = ts('The membership cannot be saved. No valid membership status for given dates');
+        $error['is_error'] = ts('The membership cannot be saved. No valid membership status for given dates. Please provide at least start_date. Optionally end_date and join_date.');
         return $error;
       }
       $params['status_id'] = $calcStatus['id'];
@@ -368,7 +368,7 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership {
 
       if (empty($membership->contact_id) && (!empty($membership->owner_membership_id))) {
         $membership->contact_id = $realMembershipContactId;
-      } 
+      }
 
       if (CRM_Utils_Array::value('membership', $ids) && $activityType != 'Membership Signup') {
         CRM_Activity_BAO_Activity::addActivity($membership, $activityType, $targetContactID);
@@ -742,13 +742,19 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
           }
           elseif ($memType['is_active']) {
             $javascriptMethod = NULL;
-            $allowAutoRenewOpt = CRM_Utils_Array::value($value, CRM_Utils_Array::value('auto_renew', $form->_membershipBlock));
-            if (is_array($paymentProcessor) &&
-              !CRM_Utils_Array::value(CRM_Utils_Array::value('payment_processor', $form->_values),$paymentProcessor)) {
-              $allowAutoRenewOpt = 0;
+            $allowAutoRenewOpt = 1;
+            if (is_array($form->_paymentProcessors)){
+              foreach ($form->_paymentProcessors as $id => $val) {
+                if (!$val['is_recur']) {
+                  $allowAutoRenewOpt = 0;
+                  continue;
+                }
+              }
             }
+
             $javascriptMethod = array('onclick' => "return showHideAutoRenew( this.value );");
-            $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$value}"] = (int)$allowAutoRenewOpt;
+            $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$value}"] = (int)$allowAutoRenewOpt * CRM_Utils_Array::value($value, $form->_membershipBlock['auto_renew']);;
+
             if ($allowAutoRenewOpt) {
               $allowAutoRenewMembership = TRUE;
             }
@@ -822,12 +828,10 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
           $form->assign('autoRenewOption', $autoRenewOption);
         }
 
-        if (is_array($paymentProcessor) &&
-          CRM_Utils_Array::value(CRM_Utils_Array::value('payment_processor', $form->_values), $paymentProcessor) &&
-          ($allowAutoRenewMembership || $autoRenewOption)
-        ) {
+        if (!$form->_values['is_pay_later'] && is_array($form->_paymentProcessors) && ($allowAutoRenewMembership || $autoRenewOption)) {
           $form->addElement('checkbox', 'auto_renew', ts('Please renew my membership automatically.'));
         }
+
       }
 
       $form->assign('membershipBlock', $membershipBlock);
@@ -1902,8 +1906,7 @@ SELECT c.contribution_page_id as pageID
    * @static
    * @access public
    */
-  static
-  function getMembershipFields($mode = NULL) {
+  static function getMembershipFields($mode = NULL) {
     $fields = CRM_Member_DAO_Membership::export();
 
     //campaign fields.
@@ -2165,9 +2168,9 @@ FROM   civicrm_membership_type
     // CRM-6627, all status below 3 (active, pending, grace) are considered active
     if ($activeOnly) {
       $select .= " INNER JOIN civicrm_membership_status ON civicrm_membership.status_id = civicrm_membership_status.id ";
-      $where  .= " and civicrm_membership_status.is_active = 1";
+      $where  .= " and civicrm_membership_status.is_current_member = 1";
     }
- 
+
     $query = $select . $where;
     return CRM_Core_DAO::singleValueQuery($query);
   }
@@ -2490,7 +2493,7 @@ WHERE      civicrm_membership.is_test = 0";
         //get the membership status as per id.
         $newStatus = civicrm_api('membership_status', 'calc',
           array(
-            'membership_id' => $dao->membership_id, 'version' => 3), TRUE
+            'membership_id' => $dao->membership_id, 'version' => 3, 'ignore_admin_only'=> FALSE), TRUE
         );
         $statusId = CRM_Utils_Array::value('id', $newStatus);
 

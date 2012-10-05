@@ -162,6 +162,13 @@ class CRM_Admin_Form_Job extends CRM_Admin_Form {
 
     CRM_Core_DAO::storeValues($dao, $defaults);
 
+    // CRM-10708
+    // job entity thats shipped with core is all lower case. 
+    // this makes sure camel casing is followed for proper working of default population. 
+    if (CRM_Utils_Array::value('api_entity', $defaults)) {
+      $defaults['api_entity'] = ucfirst($defaults['api_entity']);
+    }
+
     return $defaults;
   }
 

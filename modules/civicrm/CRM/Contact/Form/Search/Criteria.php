@@ -234,8 +234,16 @@ class CRM_Contact_Form_Search_Criteria {
     $form->add('select', 'preferred_language', ts('Preferred Language'), array('' => ts('- select language -')) + $langPreff);
   }
 
-  static
-  function location(&$form) {
+
+  static function location(&$form) {
+    // Build location criteria based on _submitValues if
+    // available; otherwise, use $form->_formValues.
+    $formValues = $form->_submitValues;
+    
+    if (empty($formValues) && !empty($form->_formValues)) {
+      $formValues = $form->_formValues;
+    }
+
     $form->addElement('hidden', 'hidden_location', 1);
 
     $addressOptions = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
@@ -248,7 +256,7 @@ class CRM_Contact_Form_Search_Criteria {
       'street_address' => array(ts('Street Address'), $attributes['street_address'], NULL, NULL),
       'city' => array(ts('City'), $attributes['city'], NULL, NULL),
       'postal_code' => array(ts('Zip / Postal Code'), $attributes['postal_code'], NULL, NULL),
-      'county' => array(ts('County'), $attributes['county_id'], 'county', FALSE),
+      'county' => array(ts('County'), $attributes['county_id'], 'county', TRUE),
       'state_province' => array(ts('State / Province'), $attributes['state_province_id'], 'stateProvince', TRUE),
       'country' => array(ts('Country'), $attributes['country_id'], 'country', FALSE),
       'address_name' => array(ts('Address Name'), $attributes['address_name'], NULL, NULL),
@@ -286,11 +294,11 @@ class CRM_Contact_Form_Search_Criteria {
           'county' => 'county',
         );
         if ($select == 'stateProvince') {
-          if ($countryDefault && !isset($form->_submitValues['country'])) {
+          if ($countryDefault && !isset($formValues['country'])) {
             $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($countryDefault);
           }
-          elseif ($form->_submitValues['country']) {
-            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($form->_submitValues['country']);
+          elseif ($formValues['country']) {
+            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($formValues['country']);
           }
           else {
             //if not setdefault any country
@@ -309,8 +317,8 @@ class CRM_Contact_Form_Search_Criteria {
           $element = $form->addElement('select', $name, $title, $selectElements);
         }
         elseif ($select == 'county') {
-          if (!CRM_Utils_System::isNull($form->_submitValues['state_province'])) {
-            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::countyForState($form->_submitValues['state_province']);
+          if ( array_key_exists('state_province', $formValues) && !CRM_Utils_System::isNull($formValues['state_province'])) {
+            $selectElements = array('' => ts('- select -')) + CRM_Core_PseudoConstant::countyForState($formValues['state_province']);
           }
           else {
             $selectElements = array('' => ts('- select a state -'));

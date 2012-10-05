@@ -23,6 +23,7 @@ class calendar_plugin_row_civicrm extends calendar_plugin_row {
   var $base_table = '';
   var $base_field = 'id';
   function construct() {
+    parent::construct();
     if (!civicrm_initialize()) {
       return;
     }

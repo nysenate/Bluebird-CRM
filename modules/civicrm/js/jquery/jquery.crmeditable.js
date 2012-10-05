@@ -130,7 +130,7 @@
           $().crmNotification (false);
           $i.removeClass ('crm-editable-saving').removeClass ('crm-editable-error');
           $i.html(value);
-        },
+        }
       }
 
       var editableSettings = $.extend({}, defaults, options);

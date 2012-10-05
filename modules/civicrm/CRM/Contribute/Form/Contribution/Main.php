@@ -73,6 +73,18 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $this->assign('ppType', TRUE);
       return CRM_Core_Payment_ProcessorForm::preProcess($this);
     }
+    
+    //get payPal express id and make it available to template
+    $paymentProcessors = $this->get('paymentProcessors');
+    if (!empty($paymentProcessors)) {
+      foreach ($paymentProcessors as $ppId => $values) {
+        $payPalExpressId = ($values['payment_processor_type'] == 'PayPal_Express') ? $values['id'] : 0;
+        $this->assign('payPalExpressId', $payPalExpressId);
+        if ($payPalExpressId) {
+          break;
+        }
+      }
+    }
 
     // Make the contributionPageID avilable to the template
     $this->assign('contributionPageID', $this->_id);
@@ -558,14 +570,28 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $elements[]  = &$this->createElement('radio', NULL, '', ts('List my contribution anonymously'), 1, $extraOption);
       $this->addGroup($elements, 'pcp_is_anonymous', NULL, '&nbsp;&nbsp;&nbsp;');
       $this->_defaults['pcp_is_anonymous'] = 0;
-
+      
       $this->add('text', 'pcp_roll_nickname', ts('Name'), array('maxlength' => 30));
       $this->add('textarea', 'pcp_personal_note', ts('Personal Note'), array('style' => 'height: 3em; width: 40em;'));
     }
-
-    if (!($this->_paymentProcessor['billing_mode'] == CRM_Core_Payment::BILLING_MODE_BUTTON
-        && !$this->_values['is_pay_later']
-      )) {
+    
+    //we have to load confirm contribution button in template
+    //when multiple payment processor as the user 
+    //can toggle with payment processor selection
+    $billingModePaymentProcessors = 0;
+    foreach ($this->_paymentProcessors as $key => $values) {
+      if ($values['billing_mode'] == CRM_Core_Payment::BILLING_MODE_BUTTON) {
+        $billingModePaymentProcessors++;
+      }
+    }
+    
+    if ($billingModePaymentProcessors && count($this->_paymentProcessors) == $billingModePaymentProcessors) {
+      $allAreBillingModeProcessors = TRUE;
+    } else {
+      $allAreBillingModeProcessors = FALSE;
+    }
+    
+    if (!($allAreBillingModeProcessors && !$this->_values['is_pay_later'])) {
       $this->addButtons(array(
           array(
             'type' => 'upload',
@@ -1201,6 +1227,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
           if ($priceField->name == "membership_amount") {
             if ($priceFiledID = CRM_Utils_Array::value("price_{$priceField->id}", $params)) {
               $this->_params['selectMembership'] = $params['selectMembership'] = CRM_Utils_Array::value('membership_type_id', $values[$priceFiledID]);
+              $this->set('selectMembership',CRM_Utils_Array::value('selectMembership', $params));
               if (CRM_Utils_Array::value('is_separate_payment', $this->_membershipBlock) == 0) {
                 $this->_values['amount'] = CRM_Utils_Array::value('amount', $values[$priceFiledID]);
               }
@@ -1351,7 +1378,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         if (in_array($buttonName,
             array($this->_expressButtonName, $this->_expressButtonName . '_x', $this->_expressButtonName . '_y')
           ) &&
-          !isset($params['is_pay_later'])
+            !CRM_Utils_Array::value('is_pay_later', $params)
         ) {
           $this->set('contributeMode', 'express');
 

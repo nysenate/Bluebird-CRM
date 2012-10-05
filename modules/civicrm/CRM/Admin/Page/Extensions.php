@@ -172,7 +172,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
       $extensionRows[$id] = (array) $obj;
 
       // assign actions
-      if ($obj->status == CRM_Core_Extensions_Extension::STATUS_INSTALLED) {
+      if ($obj->status == CRM_Core_Extensions_Extension::STATUS_INSTALLED || $obj->status == CRM_Core_Extensions_Extension::STATUS_MISSING) {
         if ($obj->is_active) {
           $action = CRM_Core_Action::DISABLE;
           if ($obj->upgradable) {
@@ -185,6 +185,10 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
           $action -= CRM_Core_Action::ADD;
           if (!$obj->upgradable) {
             $action -= CRM_Core_Action::UPDATE;
+          }
+          if ($obj->status == CRM_Core_Extensions_Extension::STATUS_MISSING) {
+            // do not allow Enable for a MISSING status extension
+            $action -= CRM_Core_Action::ENABLE;
           }
         }
         $extensionRows[$id]['action'] = CRM_Core_Action::formLink(self::links(),

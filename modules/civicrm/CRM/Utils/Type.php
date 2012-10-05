@@ -222,8 +222,8 @@ class CRM_Utils_Type {
         break;
     }
 
-
     if ($abort) {
+      $data = htmlentities($data);
       CRM_Core_Error::fatal("$data is not of the type $type");
     }
     return NULL;

@@ -413,13 +413,14 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
       CRM_Core_Config_Defaults::setValues($variables);
 
       // retrieve directory and url preferences also
-      CRM_Core_BAO_Setting::retrieveDirectoryAndURLPreferences($defaults);
+      CRM_Core_BAO_Setting::retrieveDirectoryAndURLPreferences($variables);
 
       // add component specific settings
       $this->componentRegistry->addConfig($this);
 
       // serialise settings
-      CRM_Core_BAO_ConfigSetting::add($variables);
+      $settings = $variables;
+      CRM_Core_BAO_ConfigSetting::add($settings);
     }
 
     $urlArray = array('userFrameworkResourceURL', 'imageUploadURL');
@@ -430,8 +431,9 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
         $value = CRM_Utils_File::addTrailingSlash($value, '/');
       }
       elseif (in_array($key, $dirArray)) {
-        $value = CRM_Utils_File::addTrailingSlash($value);
-        if (CRM_Utils_File::createDir($value, FALSE) === FALSE) {
+        if ($value)
+          $value = CRM_Utils_File::addTrailingSlash($value);
+        if (empty($value) || (CRM_Utils_File::createDir($value, FALSE) === FALSE)) {
           // seems like we could not create the directories
           // settings might have changed, lets suppress a message for now
           // so we can make some more progress and let the user fix their settings
@@ -626,15 +628,17 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
    * do general cleanup of caches, temp directories and temp tables
    * CRM-8739
    */
-  function cleanupCaches() {
+  function cleanupCaches($sessionReset = TRUE) {
     // cleanup templates_c directory
     $this->cleanup(1, FALSE);
 
     // clear db caching
     $this->clearDBCache();
 
-    $session = CRM_Core_Session::singleton();
-    $session->reset(2);
+    if ($sessionReset) {
+      $session = CRM_Core_Session::singleton();
+      $session->reset(2);
+    }
   }
 
   /**

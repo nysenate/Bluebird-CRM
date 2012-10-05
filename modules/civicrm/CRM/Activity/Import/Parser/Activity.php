@@ -290,7 +290,7 @@ class CRM_Activity_Import_Parser_Activity extends CRM_Activity_Import_Parser {
       //since we are support only individual's activity import.
       $params['contact_type'] = 'Individual';
       $params['version'] = 3;
-      $error = civicrm_api('CheckContact', 'Dedupe', $params);
+      $error = _civicrm_api3_deprecated_duplicate_formatted_contact($params);
 
       if (CRM_Core_Error::isAPIError($error, CRM_Core_ERROR::DUPLICATE_CONTACT)) {
         $matchedIDs = explode(',', $error['error_message']['params'][0]);

@@ -129,20 +129,24 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
       $this->addElement('checkbox', 'is_separate_payment', ts('Separate Membership Payment'));
 
       $paymentProcessor = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE, 'is_recur = 1');
-
-      $paymentProcessorId = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage',
+      $paymentProcessorIds = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage',
         $this->_id, 'payment_processor'
       );
-      $isRecur           = FALSE;
-      $membership        = array();
-      $membershipDefault = array();
+      $paymentProcessorId = explode(CRM_Core_DAO::VALUE_SEPARATOR, $paymentProcessorIds);
+
+      $isRecur = TRUE;
+      foreach ($paymentProcessorId as $dontCare => $id) {
+          if (!array_key_exists($id, $paymentProcessor)){
+              $isRecur = FALSE;
+              continue;
+          }
+      }
+
+      $membership = $membershipDefault = array();
       foreach ($membershipTypes as $k => $v) {
         $membership[] = $this->createElement('advcheckbox', $k, NULL, $v);
         $membershipDefault[] = $this->createElement('radio', NULL, NULL, NULL, $k);
-        if (is_array($paymentProcessor) &&
-          CRM_Utils_Array::value($paymentProcessorId, $paymentProcessor)
-        ) {
-          $isRecur          = TRUE;
+        if ($isRecur) {
           $autoRenew        = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $k, 'auto_renew');
           $autoRenewOptions = array();
           if ($autoRenew) {
@@ -150,9 +154,6 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             $this->addElement('select', "auto_renew_$k", ts('Auto-renew'), $autoRenewOptions);
             $this->_renewOption[$k] = $autoRenew;
           }
-        }
-        else {
-          $isRecur = FALSE;
         }
       }
 
@@ -308,7 +309,8 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             $setParams['name'] = $pageTitle . '_' . $this->_id;
           }
           else {
-            $setParams['name'] = $pageTitle . '_' . rand(1, 99);
+            $timeSec = explode(".", microtime(true));
+            $setParams['name'] = $pageTitle . '_' . date('is', $timeSec[0]) . $timeSec[1];
           }
           $setParams['is_quick_config'] = 1;
           $setParams['extends'] = CRM_Core_Component::getComponentID('CiviMember');
@@ -379,7 +381,7 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
 
         $priceField = CRM_Price_BAO_Field::create($fieldParams);
       }
-      else {
+      elseif (!$priceSetID){
         $deletePriceSet = 1;
       }
 

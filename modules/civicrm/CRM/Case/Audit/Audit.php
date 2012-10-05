@@ -1,12 +1,11 @@
 <?php
-require_once ('AuditConfig.php');
-class Audit {
+class CRM_Case_Audit_Audit {
   private $auditConfig;
   private $xmlString;
 
   public function __construct($xmlString, $confFilename) {
     $this->xmlString = $xmlString;
-    $this->auditConfig = new AuditConfig($confFilename);
+    $this->auditConfig = new CRM_Case_Audit_AuditConfig($confFilename);
   }
 
   public function getActivities($printReport = FALSE) {
@@ -199,7 +198,7 @@ fwrite($fh, $xmlString);
 fclose($fh);
 */
 
-    $audit = new Audit($xmlString,
+    $audit = new CRM_Case_Audit_Audit($xmlString,
       'audit.conf.xml'
     );
     $activities = $audit->getActivities($printReport);

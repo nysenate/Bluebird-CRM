@@ -453,11 +453,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       }
     }
 
-    /*
-         * add the go button for the action form, note it is of type 'next' rather than of type 'submit'
-         *
-         */
-
+    // add the go button for the action form, note it is of type 'next' rather than of type 'submit'
     if ($this->_context === 'amtg') {
       // Set dynamic page title for 'Add Members Group'
       CRM_Utils_System::setTitle(ts('Add to Group: %1', array(1 => $this->_group[$this->_amtgID])));
@@ -503,9 +499,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
     $this->assign('ts_all_id', $allRowsRadio->_attributes['id']);
 
     /*
-         * add form checkboxes for each row. This is needed out here to conform to QF protocol
-         * of all elements being declared in builQuickForm
-         */
+     * add form checkboxes for each row. This is needed out here to conform to QF protocol
+     * of all elements being declared in builQuickForm
+     */
 
     $rows = $this->get('rows');
 
@@ -554,10 +550,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
    * @access public
    */
   function preProcess() {
-
-    /**
-     * set the varios class variables
-     */
+    // set the varios class variables
 
     $this->_group = CRM_Core_PseudoConstant::group();
 
@@ -566,9 +559,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
     $this->_done = FALSE;
 
     /*
-         * we allow the controller to set force/reset externally, useful when we are being
-         * driven by the wizard framework
-         */
+     * we allow the controller to set force/reset externally, useful when we are being
+     * driven by the wizard framework
+     */
 
     $this->_reset = CRM_Utils_Request::retrieve('reset', 'Boolean',
       CRM_Core_DAO::$_nullObject
@@ -628,10 +621,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       $this->_ufGroupID = $config->defaultSearchProfileID;
     }
 
-    /*
-         * assign context to drive the template display, make sure context is valid
-         */
-
+    // assign context to drive the template display, make sure context is valid
     $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'search');
     if (!CRM_Utils_Array::value($this->_context, self::validContext())) {
       $this->_context = 'search';
@@ -840,9 +830,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
    */
   function postProcess() {
     /*
-         * sometime we do a postProcess early on, so we dont need to repeat it
-         * this will most likely introduce some more bugs :(
-         */
+     * sometime we do a postProcess early on, so we dont need to repeat it
+     * this will most likely introduce some more bugs :(
+     */
 
     if ($this->_done) {
       return;
@@ -891,7 +881,6 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
 
     if ($buttonName == $this->_actionButtonName || $buttonName == $this->_printButtonName) {
       // check actionName and if next, then do not repeat a search, since we are going to the next page
-
       // hack, make sure we reset the task values
       $stateMachine = &$this->controller->getStateMachine();
       $formName = $stateMachine->getTaskFormName();
@@ -899,7 +888,6 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       return;
     }
     else {
-
       $output = CRM_Core_Selector_Controller::SESSION;
 
       // create the selector, controller and run - store results in session

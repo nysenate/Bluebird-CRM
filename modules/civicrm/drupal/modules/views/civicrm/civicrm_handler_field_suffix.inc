@@ -32,6 +32,7 @@
 class civicrm_handler_field_suffix extends views_handler_field {
   static $_individualSuffix;
   function construct() {
+    parent::construct();
     if (!self::$_individualSuffix) {
       if (!civicrm_initialize()) {
         return;

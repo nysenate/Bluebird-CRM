@@ -503,7 +503,8 @@ class CRM_Member_Import_Parser_Membership extends CRM_Member_Import_Parser {
           'level' => 'Strict',
         );
         $fieldsArray = CRM_Dedupe_BAO_Rule::dedupeRuleFields($ruleParams);
-
+        $disp = '';
+        
         foreach ($fieldsArray as $value) {
           if (array_key_exists(trim($value), $params)) {
             $paramValue = $params[trim($value)];

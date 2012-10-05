@@ -144,7 +144,10 @@ class CRM_Dedupe_Finder {
    */
   static function dupesInGroup($rgid, $gid) {
     $cids = array_keys(CRM_Contact_BAO_Group::getMember($gid));
-    return self::dupes($rgid, $cids);
+    if ( !empty($cids) ) {
+      return self::dupes($rgid, $cids);
+    } 
+    return array();
   }
 
   /**

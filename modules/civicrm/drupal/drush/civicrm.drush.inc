@@ -157,6 +157,8 @@ function civicrm_drush_command() {
     'aliases' => array('cvr'),
   );
   $items['civicrm-sql-conf'] = array(
+    // explicit callback declaration and non-standard name to avoid collision with "sql-conf"
+    'callback' => 'drush_civicrm_sqlconf',
     'description' => 'Print CiviCRM database connection details.',
   );
   $items['civicrm-sql-connect'] = array(
@@ -165,6 +167,8 @@ function civicrm_drush_command() {
     'description' => 'A string for connecting to the CiviCRM DB.',
   );
   $items['civicrm-sql-dump'] = array(
+    // explicit callback declaration and non-standard name to avoid collision with "sql-dump"
+    'callback' => 'drush_civicrm_sqldump',
     'description' => 'Exports the CiviCRM DB as SQL using mysqldump.',
     'examples' => array(
       'drush civicrm-sql-dump --result-file=../CiviCRM.sql' => 'Save SQL dump to the directory above Drupal root.',
@@ -174,7 +178,7 @@ function civicrm_drush_command() {
     ),
   );
   $items['civicrm-sql-query'] = array(
-    // explicit callback declaration and non-standard name to avoid collision with "sql-dump"
+    // explicit callback declaration and non-standard name to avoid collision with "sql-query"
     'callback' => 'drush_civicrm_sqlquery',
     'description' => 'Execute a query against the CiviCRM database.',
     'examples' => array(
@@ -923,14 +927,14 @@ function drush_civicrm_sqldump() {
 /**
  * Implementation of drush_hook_COMMAND_validate for command 'civicrm-sql-conf'
  */
-function drush_civicrm_sql_conf_validate() {
+function drush_civicrm_sqlconf_validate() {
   return _civicrm_dsn_init();
 }
 
 /**
  * Implementation of command 'civicrm-sql-conf'
  */
-function drush_civicrm_sql_conf() {
+function drush_civicrm_sqlconf() {
   drush_sql_conf();
   _civicrm_dsn_close();
 }

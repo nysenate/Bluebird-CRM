@@ -489,24 +489,132 @@ class CRM_Core_Error extends PEAR_ErrorStack {
   static
   function backtrace($msg = 'backTrace', $log = FALSE) {
     $backTrace = debug_backtrace();
-
-    $msgs = array();
-    foreach ($backTrace as $trace) {
-      $msgs[] = implode(', ',
-        array(CRM_Utils_Array::value('file', $trace),
-          CRM_Utils_Array::value('function', $trace),
-          CRM_Utils_Array::value('line', $trace),
-        )
-      );
-    }
-
-    $message = implode("\n", $msgs);
+    $message = self::formatBacktrace($backTrace);
     if (!$log) {
       CRM_Core_Error::debug($msg, $message);
     }
     else {
       CRM_Core_Error::debug_var($msg, $message);
     }
+  }
+
+  /**
+   * Render a backtrace array as a string
+   *
+   * @param array $backTrace array of stack frames
+   * @param boolean $showArgs TRUE if we should try to display content of function arguments (which could be sensitive); FALSE to display only the type of each function argument
+   * @param int $maxArgLen maximum number of characters to show from each argument string
+   * @return string printable plain-text
+   * @see debug_backtrace
+   * @see Exception::getTrace()
+   */
+  static
+  function formatBacktrace($backTrace, $showArgs = TRUE, $maxArgLen = 80) {
+    $message = '';
+    foreach ($backTrace as $idx => $trace) {
+      $args = array();
+      foreach ($trace['args'] as $arg) {
+        if (! $showArgs) {
+          $args[] = '(' . gettype($arg) . ')';
+          continue;
+        }
+        switch ($type = gettype($arg)) {
+          case 'boolean':
+            $args[] = $arg ? 'TRUE' : 'FALSE';
+            break;
+          case 'integer':
+          case 'double':
+            $args[] = $arg;
+            break;
+          case 'string':
+            $args[] = '"' . CRM_Utils_String::ellipsify(addcslashes((string) $arg, "\r\n\t\""), $maxArgLen). '"';
+            break;
+          case 'array':
+            $args[] = '(Array:'.count($arg).')';
+            break;
+          case 'object':
+            $args[] = 'Object(' . get_class($arg) . ')';
+            break;
+          case 'resource':
+            $args[] = 'Resource';
+            break;
+          case 'NULL':
+            $args[] = 'NULL';
+            break;
+          default:
+            $args[] = "($type)";
+            break;
+        }
+      }
+
+      $message .= sprintf("#%s %s(%s): %s%s(%s)\n",
+        $idx,
+        CRM_Utils_Array::value('file', $trace, '[internal function]'),
+        CRM_Utils_Array::value('line', $trace, ''),
+        array_key_exists('class', $trace) ? ($trace['class'] . $trace['type']) : '',
+        CRM_Utils_Array::value('function', $trace),
+        implode(", ", $args)
+      );
+    }
+    $message .= sprintf("#%s {main}\n", 1+$idx);
+    return $message;
+  }
+
+  /**
+   * Render an exception as HTML string
+   *
+   * @param Exception $e
+   * @return string printable HTML text
+   */
+  static
+  function formatHtmlException(Exception $e) {
+    $msg = '';
+
+    // Exception metadata
+
+    // Exception backtrace
+    if ($e instanceof PEAR_Exception) {
+      $ei = $e;
+      while (is_callable(array($ei, 'getCause'))) {
+        if ($ei->getCause() instanceof PEAR_Error) {
+          $msg .= '<table class="crm-db-error">';
+          $msg .= sprintf('<thead><tr><th>%s</th><th>%s</th></tr></thead>', ts('Error Field'), ts('Error Value'));
+          $msg .= '<tbody>';
+          foreach (array('Type', 'Code', 'Message', 'Mode', 'UserInfo', 'DebugInfo') as $f) {
+            $msg .= sprintf('<tr><td>%s</td><td>%s</td></tr>', $f, call_user_func(array($ei->getCause(), "get$f")));
+          }
+          $msg .= '</tbody></table>';
+        }
+        $ei = $ei->getCause();
+      }
+      $msg .= $e->toHtml();
+    } else {
+      $msg .= '<p><b>' . get_class($e) . ': "' . htmlentities($e->getMessage()) . '"</b></p>';
+      $msg .= '<pre>' . htmlentities(self::formatBacktrace($e->getTrace())) . '</pre>';
+    }
+    return $msg;
+  }
+
+  /**
+   * Write details of an exception to the log
+   *
+   * @param Exception $e
+   * @return string printable plain text
+   */
+  static function formatTextException(Exception $e) {
+    $msg = get_class($e) . ": \"" . $e->getMessage() . "\"\n";
+
+    $ei = $e;
+    while (is_callable(array($ei, 'getCause'))) {
+      if ($ei->getCause() instanceof PEAR_Error) {
+        foreach (array('Type', 'Code', 'Message', 'Mode', 'UserInfo', 'DebugInfo') as $f) {
+          $msg .= sprintf(" * ERROR %s: %s\n", strtoupper($f), call_user_func(array($ei->getCause(), "get$f")));
+        }
+      }
+      $ei = $ei->getCause();
+    }
+    $msg .= self::formatBacktrace($e->getTrace());
+    return $msg;
   }
 
   static

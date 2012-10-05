@@ -795,7 +795,7 @@ SELECT name, mail
    */
   function getModules() {
     $result = array();
-    $q = db_query('SELECT name, status FROM system WHERE type = \'module\' AND schema_version <> -1');
+    $q = db_query('SELECT name, status FROM {system} WHERE type = \'module\' AND schema_version <> -1');
     while ($row = db_fetch_object($q)) {
       $result[] = new CRM_Core_Module('drupal.' . $row->name, ($row->status == 1) ? TRUE : FALSE);
     }

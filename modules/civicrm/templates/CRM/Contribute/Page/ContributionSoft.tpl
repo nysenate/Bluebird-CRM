@@ -39,7 +39,7 @@
         <th scope="col">{ts}Contributor{/ts}</th> 
         <th scope="col">{ts}Amount{/ts}</th>
         <th scope="col">{ts}Type{/ts}</th>
-        <th scope="col">{ts}Received{/ts}</th>
+        <th scope="col" class="sorting_desc">{ts}Received{/ts}</th>
         <th scope="col">{ts}Status{/ts}</th>
         <th scope="col">{ts}Personal Campaign Page?{/ts}</th>
         <th></th>

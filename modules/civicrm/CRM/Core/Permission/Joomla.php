@@ -87,8 +87,7 @@ class CRM_Core_Permission_Joomla {
    * @static
    * @access public
    */
-  static
-  function check($str) {
+  static function check($str) {
     $config = CRM_Core_Config::singleton();
 
     // ensure that we are running in a joomla context
@@ -96,9 +95,7 @@ class CRM_Core_Permission_Joomla {
     // not execute hooks if joomla is not loaded
     if (defined('_JEXEC')) {
       $permissionStr = 'civicrm.' . CRM_Utils_String::munge(strtolower($str));
-      $permission = JFactory::getUser()->authorise($permissionStr,
-        'com_civicrm'
-      );
+      $permission = JFactory::getUser()->authorise($permissionStr, 'com_civicrm');
       return $permission;
     }
     else {
@@ -115,8 +112,7 @@ class CRM_Core_Permission_Joomla {
    * @static
    * @access public
    */
-  static
-  function checkGroupRole($array) {
+  static function checkGroupRole($array) {
     return FALSE;
   }
 

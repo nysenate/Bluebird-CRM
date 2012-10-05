@@ -340,100 +340,106 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     //CRM_Core_Error::debug($buttons);
   }
 
-    //add js popup msg to report pdf button
-    if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
+  //add js popup msg to report pdf button
+  if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
 
-        //if the user has selected more than 6 fields for display, warn and proceed
-        $form->removeElement($pdfVar);
-        $pdfButton =& $form->getElement($pdfVar);
+    //if the user has selected more than 6 fields for display, warn and proceed
+    $form->removeElement($pdfVar);
+    $pdfButton =& $form->getElement($pdfVar);
 
-        $jsold = $pdfButton->_attributes['onclick'];
-        $jsnew = "var flag = false; $('form').submit(function(e){
-            count = $(':input:checkbox:checked[name*=fields]', this);
-            if (count.length > 6 && flag == false) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields.'); flag = true;}
-        });";
-        $pdfButton->setAttribute("onclick", $jsnew.$jsold);
+    $jsold = $pdfButton->_attributes['onclick'];
+    $jsnew = "var flag = false; $('form').submit(function(e){
+      count = $(':input:checkbox:checked[name*=fields]', this);
+      if (count.length > 6 && flag == false) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields.'); flag = true;}
+    });";
+    $pdfButton->setAttribute("onclick", $jsnew.$jsold);
 
-        //3901 if use selects bar or pie chart, hide pdf and print buttons
-        $submitVals = $form->_submitValues;
-        $paramsVals = $form->getVar('_params');
-        $printVar   = $form->getVar('_printButtonName');
-        if ( ( isset($submitVals['charts']) &&
-               ($submitVals['charts'] == 'pieChart' || $submitVals['charts'] == 'barChart') ) ||
-             ( isset($paramsVals['charts']) &&
-               ($paramsVals['charts'] == 'pieChart' || $paramsVals['charts'] == 'barChart') )
-           ) {
-            $form->removeElement($pdfVar);
-            $form->removeElement($printVar);
-            $form->removeElement($printVar); //intentionally duplicated
-        }
+    //3901 if use selects bar or pie chart, hide pdf and print buttons
+    $submitVals = $form->_submitValues;
+    $paramsVals = $form->getVar('_params');
+    $printVar   = $form->getVar('_printButtonName');
+    if ( ( isset($submitVals['charts']) &&
+           ($submitVals['charts'] == 'pieChart' || $submitVals['charts'] == 'barChart') ) ||
+         ( isset($paramsVals['charts']) &&
+           ($paramsVals['charts'] == 'pieChart' || $paramsVals['charts'] == 'barChart') )
+       ) {
+      $form->removeElement($pdfVar);
+      $form->removeElement($printVar);
+      $form->removeElement($printVar); //intentionally duplicated
+    }
+  }
+
+  //2539 require content in activity email
+  if ( $formName == 'CRM_Contact_Form_Task_Email' ) {
+
+    if ( empty($form->_submitValues['html_message']) && empty($form->_submitValues['text_message']) ) {
+      $form->addRule('html_message', ts('Please enter content in either the html or text message fields.'), 'required');
+    }
+  }
+
+  //4203 disallow setting report nav to root and home parent navigation items
+  if ( $form->getVar('_instanceForm') && $form->elementExists('parent_id') ) {
+
+    $removeList = array(
+      '-- select --',
+      'Home',
+      'Administer',
+    );
+    $navParent =& $form->getElement('parent_id');
+    foreach ( $navParent->_options as $key=>$option ) {
+      if ( in_array($option['text'], $removeList) ) {
+        unset( $navParent->_options[$key] );
+      }
     }
 
-    //2539 require content in activity email
-    if ( $formName == 'CRM_Contact_Form_Task_Email' ) {
+    //3439 lock permission field
+    $permission =& $form->getElement('permission');
+    $permission->_values = array(0 => 'access CiviReport');
+    $permission->freeze();
+  }
 
-        if ( empty($form->_submitValues['html_message']) && empty($form->_submitValues['text_message']) ) {
-            $form->addRule('html_message', ts('Please enter content in either the html or text message fields.'), 'required');
-        }
+  //4339
+  if ( $formName == 'CRM_Export_Form_Select' && !$form->getVar('_title') ) {
+    CRM_Utils_System::setTitle( ts('Export All or Selected Fields') );
+  }
+
+  //4808 remove various CiviCRM references in page title, etc.
+  if ( drupal_get_title() == 'CiviCRM' ) {
+    CRM_Utils_System::setTitle( ts('Bluebird') );
+  }
+
+  //4921
+  if ( $formName == 'CRM_Activity_Form_Activity' ) {
+    //resort activity type
+    if ( !$form->elementExists('activity_type_id') ) {
+      return;
     }
+    $ele    =& $form->getElement('activity_type_id');
+    $fele   =& $form->getElement('followup_activity_type_id');
+    $aTypes = $eleOptions = $feleOptions = array();
 
-    //4203 disallow setting report nav to root and home parent navigation items
-    if ( $form->getVar('_instanceForm') && $form->elementExists('parent_id') ) {
-
-        $removeList = array( '-- select --',
-                             'Home',
-                             'Administer' );
-        $navParent =& $form->getElement('parent_id');
-        foreach ( $navParent->_options as $key=>$option ) {
-            if ( in_array($option['text'], $removeList) ) {
-                unset( $navParent->_options[$key] );
-            }
-        }
-
-        //3439 lock permission field
-        $permission =& $form->getElement('permission');
-        $permission->_values = array(0 => 'access CiviReport');
-        $permission->freeze();
+    foreach ( $ele->_options as $k => $aT ) {
+      $aTypes[$k] = $aT['text'];
     }
-
-    //4339
-    if ( $formName == 'CRM_Export_Form_Select' && !$form->getVar('_title') ) {
-        CRM_Utils_System::setTitle( ts('Export All or Selected Fields') );
+    asort($aTypes);
+    foreach( $aTypes as $k => $aT ) {
+      $eleOptions[$k]  = array(
+        'text' => $ele->_options[$k]['text'],
+        'attr' => $ele->_options[$k]['attr'],
+      );
+      $feleOptions[$k] = array(
+        'text' => $fele->_options[$k]['text'],
+        'attr' => $fele->_options[$k]['attr'],
+      );
     }
+    $ele->_options  = $eleOptions;
+    $fele->_options = $feleOptions;
+  }
 
-    //4808 remove various CiviCRM references in page title, etc.
-    if ( drupal_get_title() == 'CiviCRM' ) {
-        CRM_Utils_System::setTitle( ts('Bluebird') );
-    }
+  _setDBVars();
 
-    //4921
-    if ( $formName == 'CRM_Activity_Form_Activity' ) {
-        //resort activity type
-        if ( !$form->elementExists('activity_type_id') ) {
-            return;
-        }
-        $ele    =& $form->getElement('activity_type_id');
-        $fele   =& $form->getElement('followup_activity_type_id');
-        $aTypes = $eleOptions = $feleOptions = array();
-
-        foreach ( $ele->_options as $k => $aT ) {
-            $aTypes[$k] = $aT['text'];
-        }
-        asort($aTypes);
-        foreach( $aTypes as $k => $aT ) {
-            $eleOptions[$k]  = array( 'text' => $ele->_options[$k]['text'],
-                                      'attr' => $ele->_options[$k]['attr'] );
-            $feleOptions[$k] = array( 'text' => $fele->_options[$k]['text'],
-                                      'attr' => $fele->_options[$k]['attr'] );
-        }
-        $ele->_options  = $eleOptions;
-        $fele->_options = $feleOptions;
-    }
-
-    _setDBVars();
-
-    //CRM_Core_Error::debug($formName);
-    //CRM_Core_Error::debug($form);
+  //CRM_Core_Error::debug($formName);
+  //CRM_Core_Error::debug($form);
 } //close buildForm
 
 function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {

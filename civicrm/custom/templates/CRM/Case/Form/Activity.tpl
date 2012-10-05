@@ -200,12 +200,17 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
              {/if}
            </tr>
            {*NYSS shuffle order of fields*}
-           <tr class="crm-case-form-block-status_id">
+           {* Suppress activity status and priority for changes to status, case type and start date. PostProc will force status to completed. *}
+    {if $activityTypeFile NEQ 'ChangeCaseStatus'
+        && $activityTypeFile NEQ 'ChangeCaseType'
+        && $activityTypeFile NEQ 'ChangeCaseStartDate'}
+           <tr class="crm-case-activity-form-block-status_id">
               <td class="label">{$form.status_id.label}</td><td class="view-value">{$form.status_id.html}</td>
            </tr>
-	       <tr class="crm-case-form-block-priority_id">
+         <tr class="crm-case-activity-form-block-priority_id">
               <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
            </tr>
+    {/if}
            <tr class="crm-case-activity-form-block-details">
               <td class="label">{$form.details.label}</td>
               <td class="view-value">

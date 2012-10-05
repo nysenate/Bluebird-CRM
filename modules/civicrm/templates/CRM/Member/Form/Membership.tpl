@@ -154,8 +154,8 @@
         </tr>
        {if $context neq 'standalone'}
          <tr class="crm-membership-form-block-contribution-contact">
-           <td class="label">{$form.contribution_contact.label}</td>
-           <td>{$form.contribution_contact.html}&nbsp;&nbsp;{help id="id-contribution_contact"}</td>
+           <td class="label">{$form.is_different_contribution_contact.label}</td>
+           <td>{$form.is_different_contribution_contact.html}&nbsp;&nbsp;{help id="id-contribution_contact"}</td>
          </tr>
          <tr id="record-different-contact">
            <td>&nbsp;</td>
@@ -186,8 +186,8 @@
           <fieldset id="recordContribution"><legend>{ts}Membership Payment and Receipt{/ts}</legend>
               <table>{if $context neq 'standalone'}
                  <tr class="crm-membership-form-block-contribution-contact">
-                   <td class="label">{$form.contribution_contact.label}</td>
-                   <td>{$form.contribution_contact.html}&nbsp;&nbsp;{help id="id-contribution_contact"}</td>
+                   <td class="label">{$form.is_different_contribution_contact.label}</td>
+                   <td>{$form.is_different_contribution_contact.html}&nbsp;&nbsp;{help id="id-contribution_contact"}</td>
                  </tr>
                  <tr id="record-different-contact">
                   <td>&nbsp;</td>
@@ -332,13 +332,13 @@ cj( function( ) {
 
     // show/hide different contact section
     setDifferentContactBlock();
-    cj('#contribution_contact').change( function() {
+    cj('#is_different_contribution_contact').change( function() {
       setDifferentContactBlock();
     });
 
     function setDifferentContactBlock( ) {
       //get the
-      if ( cj('#contribution_contact').attr('checked') ) {
+      if ( cj('#is_different_contribution_contact').attr('checked') ) {
         cj('#record-different-contact').show();
       } else {
         cj('#record-different-contact').hide();

@@ -191,6 +191,13 @@ define( 'CIVICRM_MAIL_SMARTY', 0 );
 define( 'CIVICRM_DOMAIN_ID'      , 1 );
 
 /**
+ * For Wordpress users if your public pages are using a different template than the home page
+ * you should set the name of the template with the below constant
+ * This will be moved to a DB setting in 4.3, check CRM-10682
+ */
+// define( 'CIVICRM_UF_WP_BASEPAGE', 'YOUR TEMPLATE NAME HERE');
+
+/**
  * Settings to enable external caching using a Memcache server.  This is an
  * advanced feature, and you should read and understand the documentation
  * before you turn it on. We cannot store these settings in the DB since the
@@ -241,6 +248,17 @@ define( 'CIVICRM_MEMCACHE_TIMEOUT', 3600 );
  */
 define( 'CIVICRM_MEMCACHE_PREFIX', '' );
 
+/**
+ * If you have multilingual site and you are using the "inherit CMS language"
+ * configuration option, but wish to, for example, use fr_CA instead of the
+ * default fr_FR (for French), set one or more of the constants below to an
+ * appropriate regional value.
+ */
+// define('CIVICRM_LANGUAGE_MAPPING_FR', 'fr_CA');
+// define('CIVICRM_LANGUAGE_MAPPING_EN', 'en_CA');
+// define('CIVICRM_LANGUAGE_MAPPING_ES', 'es_MX');
+// define('CIVICRM_LANGUAGE_MAPPING_PT', 'pt_BR');
+// define('CIVICRM_LANGUAGE_MAPPING_ZH', 'zh_TW');
 
 /**
  *

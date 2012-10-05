@@ -25,6 +25,18 @@
 *}
 {if $ppType}
   {include file="CRM/Core/BillingBlock.tpl"}
+
+<div id="paypalExpress">
+{* Put PayPal Express button after customPost block since it's the submit button in this case. *}
+{if $paymentProcessor.payment_processor_type EQ 'PayPal_Express'}
+    {assign var=expressButtonName value='_qf_Register_upload_express'}
+    <fieldset class="crm-group payPalExpress-group"><legend>{ts}Checkout with PayPal{/ts}</legend>
+    <div class="description">{ts}Click the PayPal button to continue.{/ts}</div>
+	<div>{$form.$expressButtonName.html} <span style="font-size:11px; font-family: Arial, Verdana;">Checkout securely.  Pay without sharing your financial information. </span>
+    </div>
+    </fieldset>
+{/if}
+</div>
 {else}
 {if $action & 1024}
     {include file="CRM/Event/Form/Registration/PreviewHeader.tpl"}
@@ -144,18 +156,6 @@
     {include file='CRM/common/ReCAPTCHA.tpl'}
 {/if}
 
-<div id="paypalExpress">
-{* Put PayPal Express button after customPost block since it's the submit button in this case. *}
-{if $paymentProcessor.payment_processor_type EQ 'PayPal_Express' and $buildExpressPayBlock}
-    {assign var=expressButtonName value='_qf_Register_upload_express'}
-    <fieldset class="crm-group payPalExpress-group"><legend>{ts}Checkout with PayPal{/ts}</legend>
-    <div class="description">{ts}Click the PayPal button to continue.{/ts}</div>
-	<div>{$form.$expressButtonName.html} <span style="font-size:11px; font-family: Arial, Verdana;">Checkout securely.  Pay without sharing your financial information. </span>
-    </div>
-    </fieldset>
-{/if}
-</div>
-
 <div id="crm-submit-buttons" class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>
@@ -166,6 +166,34 @@
     </div>
 {/if}
 </div>
+ 
+<script type="text/javascript">
+{literal}
+function toggleConfirmButton() {
+  var payPalExpressId = {/literal}{$payPalExpressId}{literal};
+  var elementObj = cj('input[name="payment_processor"]');
+   if ( elementObj.attr('type') == 'hidden' ) {
+      var processorTypeId = elementObj.val( );
+   } else {
+      var processorTypeId = elementObj.filter(':checked').val();
+   }
+
+   if (payPalExpressId !=0 && payPalExpressId == processorTypeId) {
+      hide("crm-submit-buttons");
+   } else {	
+      show("crm-submit-buttons");
+   } 
+}
+
+cj('input[name="payment_processor"]').change( function() {
+ toggleConfirmButton();
+});
+
+cj(function() {
+  toggleConfirmButton();
+});
+{/literal} 
+</script>
 {/if}
 {literal} 
 <script type="text/javascript">

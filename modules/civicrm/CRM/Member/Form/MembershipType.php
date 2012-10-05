@@ -496,79 +496,8 @@ class CRM_Member_Form_MembershipType extends CRM_Member_Form {
         $ids['membershipType'] = $this->_id;
       }
 
-      // $previousID is the old organization id for memberhip type i.e 'member_of_contact_id'. This is used when an oganization is changed.
-      $previousID = NULL;
-      if ($this->_id) {
-        $previousID = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $this->_id, 'member_of_contact_id');
-      }
 
       $membershipType = CRM_Member_BAO_MembershipType::add($params, $ids);
-      $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', 'default_membership_type_amount', 'id', 'name');
-
-      if (CRM_Utils_Array::value('contact_check', $submitted)) {
-        $fieldName = $submitted['contact_check'];
-      }
-      else {
-        $fieldName = $previousID;
-      }
-      $fieldLabel  = 'Membership Amount';
-      $optionsIds  = NULL;
-      $fieldParams = array(
-        'price_set_id ' => $priceSetId,
-        'name' => $fieldName,
-      );
-      $results = array();
-      CRM_Price_BAO_Field::retrieve(&$fieldParams, &$results);
-      if (empty($results)) {
-        $fieldParams = array();
-        $fieldParams['label'] = $fieldLabel;
-        $fieldParams['name'] = $fieldName;
-        $fieldParams['price_set_id'] = $priceSetId;
-        $fieldParams['html_type'] = 'Radio';
-        $fieldParams['is_display_amounts'] = $fieldParams['is_required'] = 0;
-        $fieldParams['weight'] = $fieldParams['option_weight'][1] = 1;
-        $fieldParams['option_label'][1] = $submitted['name'];
-        $fieldParams['membership_type_id'][1] = $membershipType->id;
-        $fieldParams['option_amount'][1] = empty($submitted['minimum_fee']) ? 0 : $submitted['minimum_fee'];
-
-        if ($previousID) {
-          $this->checkPreviousPriceField($previousID, $priceSetId, $membershipType->id, $optionsIds);
-          $fieldParams['option_id'] = CRM_Utils_Array::value('option_id', $optionsIds);
-        }
-        $priceField = CRM_Price_BAO_Field::create($fieldParams);
-      }
-      else {
-        $fieldID = $results['id'];
-        $fieldValueParams = array(
-          'price_field_id' => $fieldID,
-          'membership_type_id' => $membershipType->id,
-        );
-        $results = array();
-        CRM_Price_BAO_FieldValue::retrieve(&$fieldValueParams, &$results);
-        if (!empty($results)) {
-          $results['label']  = $results['name'] = $submitted['name'];
-          $results['amount'] = empty($submitted['minimum_fee']) ? 0 : $submitted['minimum_fee'];
-          $optionsIds['id']  = $results['id'];
-        }
-        else {
-          $results = array(
-            'price_field_id' => $fieldID,
-            'name' => $submitted['name'],
-            'label' => $submitted['name'],
-            'amount' => empty($submitted['minimum_fee']) ? 0 : $submitted['minimum_fee'],
-            'membership_type_id' => $membershipType->id,
-            'is_active' => 1,
-          );
-        }
-
-        if ($previousID) {
-          $this->checkPreviousPriceField($previousID, $priceSetId, $membershipType->id, $optionsIds);
-          if (CRM_Utils_Array::value('option_id', $optionsIds)) {
-            $optionsIds['id'] = current(CRM_Utils_Array::value('option_id', $optionsIds));
-          }
-        }
-        CRM_Price_BAO_FieldValue::add($results, $optionsIds);
-      }
 
       CRM_Core_Session::setStatus(ts('The membership type \'%1\' has been saved.',
           array(1 => $membershipType->name)
@@ -590,14 +519,14 @@ class CRM_Member_Form_MembershipType extends CRM_Member_Form {
         'name' => $previousID,
       );
       $editedResults = array();
-      CRM_Price_BAO_Field::retrieve(&$editedFieldParams, &$editedResults);
+      CRM_Price_BAO_Field::retrieve($editedFieldParams, $editedResults);
       if (!empty($editedResults)) {
         $editedFieldParams = array(
           'price_field_id' => $editedResults['id'],
           'membership_type_id' => $membershipTypeId,
         );
         $editedResults = array();
-        CRM_Price_BAO_FieldValue::retrieve(&$editedFieldParams, &$editedResults);
+        CRM_Price_BAO_FieldValue::retrieve($editedFieldParams, $editedResults);
         $optionsIds['option_id'][1] = CRM_Utils_Array::value('id', $editedResults);
       }
     }

@@ -201,19 +201,19 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
       $dpsParams['PxPayUserId'] = $this->_paymentProcessor['user_name'];
       $dpsParams['PxPayKey'] = $this->_paymentProcessor['password'];
       // Build a valid XML string to pass to DPS
-      $generateRequest = _valueXml($dpsParams);
+      $generateRequest = CRM_Core_Payment_PaymentExpressUtils::_valueXml($dpsParams);
 
-      $generateRequest = _valueXml('GenerateRequest', $generateRequest);
+      $generateRequest = CRM_Core_Payment_PaymentExpressUtils::_valueXml('GenerateRequest', $generateRequest);
       // Get the special validated URL back from DPS by sending them the XML we've generated
-      $curl = _initCURL($generateRequest, $this->_paymentProcessor['url_site']);
+      $curl = CRM_Core_Payment_PaymentExpressUtils::_initCURL($generateRequest, $this->_paymentProcessor['url_site']);
       $success = FALSE;
 
       if ($response = curl_exec($curl)) {
         curl_close($curl);
-        $valid = _xmlAttribute($response, 'valid');
+        $valid = CRM_Core_Payment_PaymentExpressUtils::_xmlAttribute($response, 'valid');
         if (1 == $valid) {
           // the request was validated, so we'll get the URL and redirect to it
-          $uri = _xmlElement($response, 'URI');
+          $uri = CRM_Core_Payment_PaymentExpressUtils::_xmlElement($response, 'URI');
           CRM_Utils_System::redirect($uri);
         }
         else {

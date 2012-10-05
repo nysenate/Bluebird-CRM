@@ -64,6 +64,11 @@ class CRM_Contact_Form_Inline_Address extends CRM_Core_Form {
   public $_action;
 
   /**
+   * address id
+   */
+  public $_addressId;
+
+  /**
    * Since we are using same class / code to generate multiple instances 
    * of address block, we need to generate unique form name for each, 
    * hence calling parent contructor
@@ -89,21 +94,21 @@ class CRM_Contact_Form_Inline_Address extends CRM_Core_Form {
     $this->assign('addressSequence', $addressSequence);
 
     $this->_values = array();    
-    $addressId = CRM_Utils_Request::retrieve('aid', 'Positive', $this, FALSE, NULL, $_REQUEST);
-
+    $this->_addressId = CRM_Utils_Request::retrieve('aid', 'Positive', $this, FALSE, NULL, $_REQUEST);
+    
     $this->_action = CRM_Core_Action::ADD;
-    if ( $addressId ) {
-      $params = array( 'id' => $addressId );
+    if ( $this->_addressId ) {
+      $params = array( 'id' => $this->_addressId );
       $address = CRM_Core_BAO_Address::getValues( $params, FALSE, 'id' );
       $this->_values['address'][$this->_locBlockNo] = array_pop($address);
       $this->_action = CRM_Core_Action::UPDATE;
     }
     else {
-      $addressId = 0;
+      $this->_addressId = 0;
     }
 
     $this->assign('action', $this->_action);
-    $this->assign('addressId', $addressId);
+    $this->assign('addressId', $this->_addressId);
     
     // parse street address, CRM-5450
     $this->_parseStreetAddress = $this->get('parseStreetAddress');
@@ -217,6 +222,10 @@ class CRM_Contact_Form_Inline_Address extends CRM_Core_Form {
       CRM_Contact_Form_Contact::parseAddress($params);
     }
 
+    if ( $this->_addressId > 0 ) {
+      $params['address'][$this->_locBlockNo]['id'] = $this->_addressId;
+    }
+    
     // save address changes
     $address = CRM_Core_BAO_Address::create( $params, TRUE );
 

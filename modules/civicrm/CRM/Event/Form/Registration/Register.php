@@ -75,7 +75,8 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */ 
+  function preProcess() {
     parent::preProcess();
 
     $this->_ppType = CRM_Utils_Array::value('type', $_GET);
@@ -84,7 +85,19 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       $this->assign('ppType', TRUE);
       return CRM_Core_Payment_ProcessorForm::preProcess($this);
     }
-
+    
+    //get payPal express id and make it available to template
+    $paymentProcessors = $this->get('paymentProcessors');
+    if (!empty($paymentProcessors)) {
+      foreach ($paymentProcessors as $ppId => $values) {
+        $payPalExpressId = ($values['payment_processor_type'] == 'PayPal_Express') ? $values['id'] : 0;
+        $this->assign('payPalExpressId', $payPalExpressId);
+        if ($payPalExpressId) {
+          break;
+        }
+      }
+    }
+        
     //CRM-4320.
     //here we can't use parent $this->_allowWaitlist as user might
     //walk back and we maight set this value in this postProcess.
@@ -306,7 +319,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    * @return None
    * @access public
    */
-
   public function buildQuickForm() {
     if ($this->_ppType) {
       return CRM_Core_Payment_ProcessorForm::buildQuickForm($this);
@@ -383,7 +395,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
     $this->buildCustom($this->_values['custom_post_id'], 'customPost');
 
     //lets get js on two different qf elements.
-    $buildExpressPayBlock = FALSE;
     $showHidePayfieldName = NULL;
     $showHidePaymentInformation = FALSE;
     if ($this->_values['event']['is_monetary']) {
@@ -455,7 +466,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       $this->addElement('hidden', 'bypass_payment', NULL, array('id' => 'bypass_payment'));
     }
     $this->assign('bypassPayment', $bypassPayment);
-    $this->assign('buildExpressPayBlock', $buildExpressPayBlock);
     $this->assign('showHidePaymentInformation', $showHidePaymentInformation);
 
     $userID = parent::getContactID();
@@ -491,15 +501,31 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       }
     }
 
-    if ($this->_paymentProcessor['billing_mode'] != CRM_Core_Payment::BILLING_MODE_BUTTON ||
-      CRM_Utils_Array::value('is_pay_later', $this->_values['event']) ||
-      $bypassPayment ||
-      !$buildExpressPayBlock
+    //we have to load confirm contribution button in template
+    //when multiple payment processor as the user 
+    //can toggle with payment processor selection
+    $billingModePaymentProcessors = 0;
+    if (!CRM_Utils_System::isNull($this->_paymentProcessors)) {
+      foreach ($this->_paymentProcessors as $key => $values) {
+        if ($values['billing_mode'] == CRM_Core_Payment::BILLING_MODE_BUTTON) {
+          $billingModePaymentProcessors++;
+        }
+      }
+    }
+    
+    if ($billingModePaymentProcessors && count($this->_paymentProcessors) == $billingModePaymentProcessors) {
+      $allAreBillingModeProcessors = TRUE;
+    } else {
+      $allAreBillingModeProcessors = FALSE;
+    }
+
+    if (!$allAreBillingModeProcessors ||
+      CRM_Utils_Array::value('is_pay_later', $this->_values['event']) || $bypassPayment 
     ) {
 
       //freeze button to avoid multiple calls.
       $js = NULL;
-
+      
       if (!CRM_Utils_Array::value('is_monetary', $this->_values['event'])) {
         $js = array('onclick' => "return submitOnce(this,'" . $this->_name . "','" . ts('Processing') . "');");
       }
@@ -514,6 +540,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
         )
       );
     }
+
     $this->addFormRule(array('CRM_Event_Form_Registration_Register', 'formRule'),
       $this
     );
@@ -758,8 +785,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     //check that either an email or firstname+lastname is included in the form(CRM-9587)
     self::checkProfileComplete($fields, $errors, $self->_eventId);
@@ -883,16 +909,16 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       ) {
         return empty($errors) ? TRUE : $errors;
       }
-
-      foreach ($self->_paymentFields as $name => $fld) {
-        if ($fld['is_required'] &&
-          CRM_Utils_System::isNull(CRM_Utils_Array::value($name, $fields))
-        ) {
-          $errors[$name] = ts('%1 is a required field.', array(1 => $fld['title']));
+      if (property_exists($self, '_paymentFields')) {
+        foreach ($self->_paymentFields as $name => $fld) {
+          if ($fld['is_required'] &&
+            CRM_Utils_System::isNull(CRM_Utils_Array::value($name, $fields))
+          ) {
+            $errors[$name] = ts('%1 is a required field.', array(1 => $fld['title']));
+          }
         }
       }
     }
-
     // make sure that credit card number and cvv are valid
     if (CRM_Utils_Array::value('credit_card_type', $fields)) {
       if (CRM_Utils_Array::value('credit_card_number', $fields) &&
@@ -925,15 +951,13 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
    * Check if profiles are complete when event registration occurs(CRM-9587)
    *
    */
-  static
-  function checkProfileComplete($fields, &$errors, $eventId) {
+  static function checkProfileComplete($fields, &$errors, $eventId) {
     $email = '';
     foreach ($fields as $fieldname => $fieldvalue) {
       if (substr($fieldname, 0, 6) == 'email-' && $fieldvalue) {
         $email = $fieldvalue;
       }
     }
-
 
     if (!$email && !(CRM_Utils_Array::value('first_name', $fields) &&
         CRM_Utils_Array::value('last_name', $fields)
@@ -1108,7 +1132,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
               $this->_expressButtonName . '_y',
             )
           ) &&
-          !isset($params['is_pay_later']) &&
+            !CRM_Utils_Array::value('is_pay_later', $params) &&
           !$this->_allowWaitlist &&
           !$this->_requireApproval
         ) {
@@ -1176,16 +1200,15 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
   //end of function
 
   /*
-     *Function to process Registration of free event
-     *
-     *@param  array $param Form valuess
-     *@param  int contactID
-     *
-     *@return None
-     *access public
-     *
-     */
-
+   *Function to process Registration of free event
+   *
+   *@param  array $param Form valuess
+   *@param  int contactID
+   *
+   *@return None
+   *access public
+   *
+   */
   public function processRegistration($params, $contactID = NULL) {
     $session = CRM_Core_Session::singleton();
     $this->_participantInfo = array();

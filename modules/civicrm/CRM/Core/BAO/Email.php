@@ -45,7 +45,7 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
    */
 
   static function create($params) {
-    if (!empty($params['d'])) {
+    if (!empty($params['id'])) {
       CRM_Utils_Hook::pre('edit', 'Email', $params['id'], $params);
     }
     else {
@@ -60,7 +60,7 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
     }
     $email = CRM_Core_BAO_Email::add($params);
 
-    if (CRM_Utils_Array::value('id', $params)) {
+    if (!empty($params['id'])) {
       CRM_Utils_Hook::post('edit', 'Email', $email->id, $email);
     }
     else {

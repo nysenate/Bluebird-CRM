@@ -167,3 +167,15 @@ function civicrm_engage_load_configuration() {
   $import->run($xml_file);
 }
 
+/**
+ * Fix the Participant Role field in the Update Event Invite Responses 
+ **/
+function civicrm_engage_update_7001() {
+  civicrm_initialize();
+  $sql = "UPDATE civicrm_uf_field SET field_name = 'participant_role' WHERE ".
+    "field_name = 'participant_role_id' AND uf_group_id IN (SELECT id FROM ".
+    "civicrm_uf_group WHERE name = 'update_event_invite_responses') ";
+
+  CRM_Core_DAO::executeQuery($sql);
+
+}

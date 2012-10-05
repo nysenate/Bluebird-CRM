@@ -55,7 +55,7 @@ class CRM_Case_XMLProcessor_Report extends CRM_Case_XMLProcessor {
       $this
     );
 
-    return Audit::run($contents, $clientID, $caseID);
+    return CRM_Case_Audit_Audit::run($contents, $clientID, $caseID);
 
     /******
      CRM_Utils_System::download( "{$case['clientName']} {$case['caseType']}",
@@ -910,8 +910,7 @@ LIMIT  1
       $report
     );
     //NYSS 5676 fix 500 error
-    require_once 'CRM/Case/Audit/Audit.php';
-    $printReport = Audit::run($contents, $clientID, $caseID, TRUE);
+    $printReport = CRM_Case_Audit_Audit::run($contents, $clientID, $caseID, TRUE);
     echo $printReport;
     CRM_Utils_System::civiExit();
   }

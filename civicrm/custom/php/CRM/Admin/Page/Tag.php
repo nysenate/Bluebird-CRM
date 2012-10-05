@@ -38,173 +38,175 @@
  */
 class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic {
 
-    /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
   static $_links = NULL;
 
-    /**
-     * Get BAO
-     *
-     * @return string Classname of BAO.
-     */
+  /**
+   * Get BAO
+   *
+   * @return string Classname of BAO.
+   */
   function getBAOName() {
-        return 'CRM_Core_BAO_Tag';
-    }
+    return 'CRM_Core_BAO_Tag';
+  }
 
-    /**
-     * Get action Links
-     *
-     * @return array (reference) of action links
-     */
+  /**
+   * Get action Links
+   *
+   * @return array (reference) of action links
+   */
   function &links() {
-        if (!(self::$_links)) {
-            self::$_links = array(
-                                  CRM_Core_Action::UPDATE  => array(
-                                                                    'name'  => ts('Edit'),
-                                                                    'url'   => 'civicrm/admin/tag',
-                                                                    'qs'    => 'action=update&id=%%id%%&reset=1',
+    if (!(self::$_links)) {
+      self::$_links = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/admin/tag',
+          'qs' => 'action=update&id=%%id%%&reset=1',
           'title' => ts('Edit Tag'),
-                                                                   ),
-                                  CRM_Core_Action::DELETE  => array(
-                                                                    'name'  => ts('Delete'),
-                                                                    'url'   => 'civicrm/admin/tag',
-                                                                    'qs'    => 'action=delete&id=%%id%%',
-                                                                    'title' => ts('Delete Tag'), 
-                                                                    ),
-                                  CRM_Core_Action::FOLLOWUP => array(
-                                                                    'name'  => ts('Merge'),
-                                                                    'class' => 'merge_tag',
-                                                                    'url'   => 'javascript:',
+        ),
+        CRM_Core_Action::DELETE => array(
+          'name' => ts('Delete'),
+          'url' => 'civicrm/admin/tag',
+          'qs' => 'action=delete&id=%%id%%',
+          'title' => ts('Delete Tag'),
+        ),
+        CRM_Core_Action::FOLLOWUP => array(
+          'name' => ts('Merge'),
+          'class' => 'merge_tag',
+          'url' => 'javascript:',
           'title' => ts('Merge Tag'),
-                                                                    ),
-                                  );
-        }
-        return self::$_links;
+        ),
+      );
     }
+    return self::$_links;
+  }
 
-    /**
-     * Get name of edit form
-     *
-     * @return string Classname of edit form.
-     */
+  /**
+   * Get name of edit form
+   *
+   * @return string Classname of edit form.
+   */
   function editForm() {
-        return 'CRM_Admin_Form_Tag';
-    }
+    return 'CRM_Admin_Form_Tag';
+  }
 
-    /**
-     * Get form name for edit form
-     *
-     * @return string name of this page.
-     */
+  /**
+   * Get form name for edit form
+   *
+   * @return string name of this page.
+   */
   function editName() {
-        return 'Tag';
-    }
+    return 'Tag';
+  }
 
-    /**
-     * Get form name for delete form
-     *
-     * @return string name of this page.
-     */
+  /**
+   * Get form name for delete form
+   *
+   * @return string name of this page.
+   */
   function deleteName() {
-        return 'Tag';
-    }
+    return 'Tag';
+  }
 
-    /**
-     * Get user context.
-     *
-     * @return string user context.
-     */
+  /**
+   * Get user context.
+   *
+   * @return string user context.
+   */
   function userContext($mode = NULL) {
-        return 'civicrm/admin/tag';
-    }
+    return 'civicrm/admin/tag';
+  }
 
-    /**
-     * Get name of delete form
-     *
-     * @return string Classname of delete form.
-     */
+  /**
+   * Get name of delete form
+   *
+   * @return string Classname of delete form.
+   */
   function deleteForm() {
-        return 'CRM_Admin_Form_Tag';
-   }
+    return 'CRM_Admin_Form_Tag';
+  }
 
-   /**
-    * override function browse()
-    */
+  /**
+   * override function browse()
+   */
   function browse($action = NULL, $sort) {
     $adminTagSet = FALSE;
-       if ( CRM_Core_Permission::check('administer Tagsets') ) {
+    if (CRM_Core_Permission::check('administer Tagsets')) {
       $adminTagSet = TRUE;
-       }
-       $this->assign( 'adminTagSet', $adminTagSet );
-       
-       $reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
-       $query = "SELECT t1.name, t1.id
+    }
+    $this->assign('adminTagSet', $adminTagSet);
+
+    $reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
+    $query = "SELECT t1.name, t1.id
 FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id
 WHERE t2.id IS NULL {$reservedClause}";
-       $tag = CRM_Core_DAO::executeQuery( $query );
+    $tag = CRM_Core_DAO::executeQuery($query);
 
-       $mergeableTags  = array();
-       while( $tag->fetch( ) ) {           
-           $mergeableTags[$tag->id] = 1;
-       }
+    $mergeableTags = array();
+    while ($tag->fetch()) {
+      $mergeableTags[$tag->id] = 1;
+    }
 
-       $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
-       
-       //NYSS - LCD exclude positions from tag management screen
-       $query = "SELECT t1.name, t1.id, t2.name as parent, t1.description, t1.used_for, t1.is_tagset,
-                        t1.is_reserved, t1.parent_id, t1.used_for
-                 FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
-				 WHERE t1.parent_id <> 292
-                 GROUP BY t1.parent_id, t1.id"; 
+    $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
+
+    //NYSS - LCD exclude positions from tag management screen
+    $query = "
+      SELECT t1.name, t1.id, t2.name as parent, t1.description, t1.used_for, t1.is_tagset,
+             t1.is_reserved, t1.parent_id, t1.used_for
+      FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
+			WHERE t1.parent_id <> 292
+      GROUP BY t1.parent_id, t1.id
+    ";
                  
-       $tag = CRM_Core_DAO::executeQuery( $query );
-       $values = array( );
-       
-       $action     = CRM_Core_Action::UPDATE + CRM_Core_Action::DELETE;
-       $permission = CRM_Core_Permission::EDIT;
+    $tag = CRM_Core_DAO::executeQuery($query);
+    $values = array();
 
-       while( $tag->fetch( ) ) {           
-           $values[$tag->id] = (array) $tag;
-           
-           $used = array( );
-           if ( $values[$tag->id]['used_for'] ) {
-               $usedArray = explode( ",", $values[$tag->id]['used_for'] );
-               foreach( $usedArray as $key => $value ) {
-                   $used[$key] =  $usedFor[$value];
-               }
-           }
-           
-           if ( !empty( $used ) ) {
-               $values[$tag->id]['used_for'] = implode( ", ", $used );      
-           }
-           
-           $newAction = $action;
-           if ( $values[$tag->id]['is_reserved'] ) {
-               $newAction = CRM_Core_Action::UPDATE;
-           }
-           
-           if ( $values[$tag->id]['is_tagset'] && !CRM_Core_Permission::check('administer Tagsets') ) {
-               $newAction = 0;
-           }
+    $action = CRM_Core_Action::UPDATE + CRM_Core_Action::DELETE;
+    $permission = CRM_Core_Permission::EDIT;
 
-           if ( array_key_exists($tag->id, $mergeableTags) ) {
-               $newAction += CRM_Core_Action::FOLLOWUP;
-           }
+    while ($tag->fetch()) {
+      $values[$tag->id] = (array) $tag;
 
-           // populate action links
-           if ( $newAction ) {           
+      $used = array();
+      if ($values[$tag->id]['used_for']) {
+        $usedArray = explode(",", $values[$tag->id]['used_for']);
+        foreach ($usedArray as $key => $value) {
+          $used[$key] = $usedFor[$value];
+        }
+      }
+
+      if (!empty($used)) {
+        $values[$tag->id]['used_for'] = implode(", ", $used);
+      }
+
+      $newAction = $action;
+      if ($values[$tag->id]['is_reserved']) {
+        $newAction = CRM_Core_Action::UPDATE;
+      }
+
+      if ($values[$tag->id]['is_tagset'] && !CRM_Core_Permission::check('administer Tagsets')) {
+        $newAction = 0;
+      }
+
+      if (array_key_exists($tag->id, $mergeableTags)) {
+        $newAction += CRM_Core_Action::FOLLOWUP;
+      }
+
+      // populate action links
+      if ($newAction) {
         $this->action($tag, $newAction, $values[$tag->id], self::links(), $permission, TRUE);
       }
       else {
-               $values[$tag->id]['action'] = '';
-           }   
-       }
-              
-       $this->assign( 'rows', $values );
-   }
+        $values[$tag->id]['action'] = '';
+      }
+    }
+
+    $this->assign('rows', $values);
+  }
 }
 

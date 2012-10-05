@@ -354,7 +354,7 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
   foreach ($tree as $groupkey => $currentgroup) {
     if ($groupkey == 'info') {
       return $data;
-    // dodges an invalid argument call after all the groups go through // have a look at what $tree outputs to to see why.
+      // dodges an invalid argument call after all the groups go through // have a look at what $tree outputs to to see why.
     }
     $data[$currentgroup['table_name']]['table']['group'] = t('CiviCRM Custom: ') . $currentgroup['title'];
 
@@ -395,21 +395,21 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
 
 
       if (in_array($currentfield['html_type'],
-                           $customHTMLTypes ) ) {
-                $handler = array('handler' => 'civicrm_handler_field_custom',
-                                 'click sortable' => TRUE,);
-            } else if ( $currentfield['html_type'] == 'File' ) {
-                $handler = array('handler' => 'views_handler_field',
-                                 'click sortable' => TRUE,);
-             } else {
+          $customHTMLTypes ) ) {
+        $handler = array('handler' => 'civicrm_handler_field_custom',
+                   'click sortable' => TRUE,);
+      } else if ( $currentfield['html_type'] == 'File' ) {
+        $handler = array('handler' => 'views_handler_field',
+                   'click sortable' => TRUE,);
+      } else {
         $handler = civicrm_get_field_handler($currentfield['data_type']);
       }
 
-  $data['civicrm_group']['table']['base'] = array(
-    'field' => 'id',
-    'title' => t('CiviCRM Groups'),
-    'help' => t("View displays CiviCRM Groups."),
-  );
+      $data['civicrm_group']['table']['base'] = array(
+        'field' => 'id',
+        'title' => t('CiviCRM Groups'),
+        'help' => t("View displays CiviCRM Groups."),
+      );
 
       if ($currentfield['html_type'] == 'Multi-Select Country') {
         $filter_handler = array('handler' => 'civicrm_handler_filter_country_multi');

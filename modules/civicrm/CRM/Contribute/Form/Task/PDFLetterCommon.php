@@ -22,6 +22,9 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
     $receipt_update  = isset($formValues['receipt_update']) ? $formValues['receipt_update'] : FALSE;
     $thankyou_update = isset($formValues['thankyou_update']) ? $formValues['thankyou_update'] : FALSE;
     $nowDate         = date('YmdHis');
+    $receipts        = 0;
+    $thanks          = 0;
+    $updateStatus    = '';
 
     // skip some contacts ?
     $skipOnHold = isset($form->skipOnHold) ? $form->skipOnHold : FALSE;
@@ -76,10 +79,18 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
 
       // update dates (do it for each contribution including grouped recurring contribution)
       if ($receipt_update) {
-        $results = civicrm_api("Contribution", "update", array('version' => '3', 'id' => $contributionId, 'receipt_date' => $nowDate));
+        $results = civicrm_api("Contribution", "create", array('version' => '3', 'id' => $contributionId, 'receipt_date' => $nowDate));
+        // We can't use CRM_Core_Error::fatal here because the api error elevates the exception level. FIXME. dgg
+        if (! $results['is_error']) {
+          $receipts++;
+        }
       }
       if ($thankyou_update) {
-        $results = civicrm_api("Contribution", "update", array('version' => '3', 'id' => $contributionId, 'thankyou_date' => $nowDate));
+        $results = civicrm_api("Contribution", "create", array('version' => '3', 'id' => $contributionId, 'thankyou_date' => $nowDate));
+        // We can't use CRM_Core_Error::fatal here because the api error elevates the exception level. FIXME. dgg
+        if (! $results['is_error']) {
+          $thanks++;
+        }
       }
     }
 
@@ -89,6 +100,17 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
 
     $form->postProcessHook();
 
+    if ($receipts) {
+      $updateStatus = ts('Receipt date has been updated for %1 contributions.', array(1 => $receipts));
+    }
+    if ($thanks) {
+      $updateStatus .= ' ' . ts('Thank-you date has been updated for %1 contributions.', array(1 => $thanks));
+    }
+
+    if ($updateStatus) {
+      CRM_Core_Session::setStatus($updateStatus);
+    }
+    
     CRM_Utils_System::civiExit(1);
   }
   //end of function

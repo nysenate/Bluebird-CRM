@@ -269,8 +269,8 @@
               {assign var='locationIndex' value=1}
               {if $address}
                 {foreach from=$address item=add key=locationIndex}
-                <div class="{cycle name=location values="contactCardLeft,contactCardRight"} crm-address_{$locationIndex} crm-address-block crm-address_type_{$add.location_type}">
-                  <div class="crm-summary-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
+                <div class="{cycle name=location values="contactCardLeft,contactCardRight"} crm-address_{$locationIndex} crm-address_type_{$add.location_type}">
+                  <div class="crm-summary-block crm-address-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
                     {include file="CRM/Contact/Page/Inline/Address.tpl"}
                   </div>
                 </div>
@@ -286,7 +286,7 @@
                   <div class="contactCardRight crm-address_{$locationIndex} crm-address-block appendAddLink">
                 {/if}
 
-                    <div class="crm-summary-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
+                    <div class="crm-summary-block crm-address-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
                       <div class="crm-table2div-layout">
                         <div class="crm-clear">
                           <a id="edit-address-block-{$locationIndex}" class="crm-link-action empty-address-block-{$locationIndex}" title="{ts}click to add address{/ts}" locno="{$locationIndex}" aid=0>
@@ -424,15 +424,17 @@ cj(function(){
   /* end of js for inline custom data */
 
   /* start of js for inline address */
-  var addressBlock = cj('div[id^="address-block-"]');
-  addressBlock.mouseenter( function() {
+  var addressBlock = cj('.contact_panel');
+  addressBlock.on( 'mouseenter', 'div[id^="address-block-"]', function() {
     var locno   = cj(this).attr('locno');
     cj(this).addClass('crm-inline-edit-hover');
     cj('a[id^="edit-address-block-' + locno +'"]').show();
-  }).mouseleave( function() {
+  });
+
+  addressBlock.on( 'mouseleave', 'div[id^="address-block-"]', function() {
     var locno   = cj(this).attr('locno');
     cj(this).removeClass('crm-inline-edit-hover');
-    if ( !cj('a[id^="edit-address-block-' + locno +'"]').hasClass('empty-address-block-' + locno ) ) { 
+    if ( !cj('a[id^="edit-address-block-' + locno +'"]').hasClass('empty-address-block-' + locno) ) { 
       cj('a[id^="edit-address-block-'+ locno +'"]').hide();
     }
   });

@@ -90,15 +90,16 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
       }
 
       $addressExists = self::dataExists($value);
-
-      if ($updateBlankLocInfo) {
-        if ((!empty($addresses) || !$addressExists) && array_key_exists($key, $addresses)) {
-          $value['id'] = $addresses[$key];
+      if ( !CRM_Utils_Array::value('id', $value) ) {
+        if ($updateBlankLocInfo) {
+          if ((!empty($addresses) || !$addressExists) && array_key_exists($key, $addresses)) {
+            $value['id'] = $addresses[$key];
+          }
         }
-      }
-      else {
+        else {
           if (!empty($addresses) && array_key_exists(CRM_Utils_Array::value('location_type_id', $value), $addresses)) {
             $value['id'] = $addresses[CRM_Utils_Array::value('location_type_id', $value)];
+          }
         }
       }
 
@@ -135,7 +136,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
   }
 
   /**
-   * takes an associative array and adds phone
+   * takes an associative array and adds address
    *
    * @param array  $params         (reference ) an assoc array of name/value pairs
    * @param boolean  $fixAddress   true if you need to fix (format) address values

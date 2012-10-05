@@ -495,7 +495,7 @@ class CRM_Report_Form_Event_ParticipantListCount extends CRM_Report_Form {
       ) {
         if ($value = $row['civicrm_participant_participant_id']) {
           $url = CRM_Utils_System::url("civicrm/contact/view/participant",
-            'reset=1&id=' . $row['civicrm_participant_participant_id'] . '&cid=' . $row['civicrm_contact_id'] . '&action=view',
+            'reset=1&id=' . $row['civicrm_participant_participant_id'] . '&cid=' . $row['civicrm_contact_id'] . '&action=view&context=participant',
             $this->_absoluteUrl
           );
           $rows[$rowNum]['civicrm_participant_participant_id_link'] = $url;

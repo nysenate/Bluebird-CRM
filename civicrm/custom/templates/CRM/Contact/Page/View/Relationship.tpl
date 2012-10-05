@@ -53,7 +53,7 @@
             <th>{ts}Start{/ts}</th>
             <th>{ts}End{/ts}</th>
             <th>{ts}City{/ts}</th>
-            <th>{ts}State/Prov{/ts}</th>
+            {*<th>{ts}State/Prov{/ts}</th>*}{*NYSS*}
             <th>{ts}Email{/ts}</th>
             <th>{ts}Phone{/ts}</th>
             <th></th>
@@ -90,7 +90,7 @@
                 <td>{$rel.start_date|crmDate}</td>
                 <td>{$rel.end_date|crmDate}</td>
                 <td>{$rel.city}</td>
-                <td>{$rel.state}</td>
+                {*<td>{$rel.state}</td>*}{*NYSS*}
                 <td>{$rel.email}</td>
                 <td>{$rel.phone}</td> 
                 <td>{$rel.action|replace:'xx':$rel.id}</td>{*NYSS*}

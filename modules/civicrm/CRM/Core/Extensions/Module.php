@@ -46,7 +46,11 @@ class CRM_Core_Extensions_Module {
   }
 
   private function callHook($moduleName, $modulePath, $hookName) {
-    include_once ($modulePath . DIRECTORY_SEPARATOR . $moduleName . '.php');
+    $file = $modulePath . DIRECTORY_SEPARATOR . $moduleName . '.php';
+    if (!file_exists($file)) {
+      return;
+    }
+    include_once $file;
     $fnName = "{$moduleName}_civicrm_{$hookName}";
     if (function_exists($fnName)) {
       $fnName();

@@ -108,9 +108,23 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
   /**
    * Drop triggers for all logged tables.
    */
-  private function dropTriggers() {
+  function dropTriggers($tableName = NULL) {
     $dao = new CRM_Core_DAO;
-    foreach ($this->tables as $table) {
+
+    if ($tableName) {
+      $tableNames = array($tableName);
+    }
+    else {
+      $tableNames = $this->tables;
+    }
+
+    foreach ($tableNames as $table) {
+      // before triggers
+      $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_before_insert");
+      $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_before_update");
+      $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_before_delete");
+
+     // after triggers
       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_insert");
       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_update");
       $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_delete");

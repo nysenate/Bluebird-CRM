@@ -435,17 +435,12 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_Base {
 
     $config = CRM_Core_Config::singleton();
 
-
-
     $dbDrupal = DB::connect($config->userFrameworkDSN);
     if (DB::isError($dbDrupal)) {
       CRM_Core_Error::fatal("Cannot connect to drupal db via $config->userFrameworkDSN, " . $dbDrupal->getMessage());
     }
 
     $account = $userUid = $userMail = NULL;
-
-
-
     if ($loadCMSBootstrap) {
       $bootStrapParams = array();
       if ($name && $password) {
@@ -466,7 +461,7 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_Base {
       // CRM-8638
       // SOAP cannot load drupal bootstrap and hence we do it the old way
       // Contact CiviSMTP folks if we run into issues with this :)
-      $cmsPath = $this->cmsRootPath($realPath);
+      $cmsPath = $config->userSystem->cmsRootPath($realPath);
 
       require_once ("$cmsPath/includes/bootstrap.inc");
       require_once ("$cmsPath/includes/password.inc");
@@ -865,7 +860,7 @@ AND    u.status = 1
    */
   function getModules() {
     $result = array();
-    $q = db_query('SELECT name, status FROM system WHERE type = \'module\' AND schema_version <> -1');
+    $q = db_query('SELECT name, status FROM {system} WHERE type = \'module\' AND schema_version <> -1');
     foreach ($q as $row) {
       $result[] = new CRM_Core_Module('drupal.' . $row->name, ($row->status == 1) ? TRUE : FALSE);
     }

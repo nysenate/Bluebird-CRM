@@ -35,6 +35,8 @@
  *
  */
 class CRM_Report_Form_Contribute_Repeat extends CRM_Report_Form {
+  protected $_amountClauseWithAND = NULL;
+
   function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
@@ -404,6 +406,20 @@ LEFT JOIN civicrm_temp_civireport_repeat2 {$this->_aliases['civicrm_contribution
         $clauses[$fieldName] = $clause;
       }
     }
+
+    if (!$this->_amountClauseWithAND) {
+      $amountClauseWithAND = array();
+      if ($clauses['total_amount1']) {
+        $amountClauseWithAND[] = str_replace("{$this->_aliases['civicrm_contribution']}.total_amount", 
+                                             "{$this->_aliases['civicrm_contribution']}1.total_amount_sum", $clauses['total_amount1']);
+      }
+      if ($clauses['total_amount2']) {
+        $amountClauseWithAND[] = str_replace("{$this->_aliases['civicrm_contribution']}.total_amount", 
+                                             "{$this->_aliases['civicrm_contribution']}2.total_amount_sum", $clauses['total_amount2']);
+      }
+      $this->_amountClauseWithAND = !empty($amountClauseWithAND) ? implode(' AND ', $amountClauseWithAND) : NULL;
+    }
+
     if ($replaceAliasWith == 'contribution1') {
       unset($clauses['receive_date2'], $clauses['total_amount2']);
     }
@@ -420,7 +436,11 @@ LEFT JOIN civicrm_temp_civireport_repeat2 {$this->_aliases['civicrm_contribution
   }
 
   function where() {
-    $clauses = array("atleast_one_amount" => "!({$this->_aliases['civicrm_contribution']}1.total_amount_count IS NULL AND {$this->_aliases['civicrm_contribution']}2.total_amount_count IS NULL)");
+    if (!$this->_amountClauseWithAND) {
+      $this->_amountClauseWithAND = 
+        "!({$this->_aliases['civicrm_contribution']}1.total_amount_count IS NULL AND {$this->_aliases['civicrm_contribution']}2.total_amount_count IS NULL)";
+    }
+    $clauses = array("atleast_one_amount" => $this->_amountClauseWithAND);
 
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('filters', $table) && $tableName != 'civicrm_contribution') {

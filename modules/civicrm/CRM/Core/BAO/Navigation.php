@@ -96,7 +96,7 @@ class CRM_Core_BAO_Navigation extends CRM_Core_DAO_Navigation {
     $params['has_separator'] = CRM_Utils_Array::value('has_separator', $params, FALSE);
 
     if (!isset($params['id']) ||
-      ($params['parent_id'] != CRM_Utils_Array::value('current_parent_id', $params))
+      (CRM_Utils_Array::value( 'parent_id', $params ) != CRM_Utils_Array::value('current_parent_id', $params))
     ) {
       /* re/calculate the weight, if the Parent ID changed OR create new menu */
 
