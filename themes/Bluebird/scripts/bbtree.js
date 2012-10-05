@@ -680,3 +680,9 @@ function modalSelectOnClick() {
 		]);
 	});
 }
+function returnTime()
+{
+	var time = new Date();
+	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
+	return rTime;
+}

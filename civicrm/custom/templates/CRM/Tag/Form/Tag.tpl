@@ -127,7 +127,7 @@ function addControlBox(tagLabel, IDChecked) {
 function checkRemoveAdd(tagLabel) {
 	//for some reason there's still an onclick on issue codes.
 	if(tagLabel != 'tagLabel_291'){
-		console.log('top of cRA: ' + returnTime());
+		//console.log('top of cRA: ' + returnTime());
 		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
 		tagLabelID = tagLabel.replace('tagLabel_', '');
 		if(n == false)
@@ -141,7 +141,7 @@ function checkRemoveAdd(tagLabel) {
 					},
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
-					console.log('success of cRA ajax: ' + returnTime());
+					//console.log('success of cRA ajax: ' + returnTime());
 					if(data.code != 1) {alert('fails');}
 					cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
 					var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
