@@ -141,10 +141,11 @@
 .BBtree.edit.contact .fCB{
 	left:20px;
 }
-.BBtree.manage .fCB {
+.BBtree.manage.edit .fCB {
 	position:absolute;
 	right:0px;
 	top:0px;
+	left:auto;
 }
 .BBtree .fCB {
 	margin-top:0px;

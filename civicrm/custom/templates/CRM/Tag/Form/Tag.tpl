@@ -125,74 +125,80 @@ function addControlBox(tagLabel, IDChecked) {
 	} else { return ''; }
 }
 function checkRemoveAdd(tagLabel) {
-	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-	tagLabelID = tagLabel.replace('tagLabel_', '');
-	if(n == false)
-	{
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/create',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-				var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
-				temp += '; display:inline';
-				cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
-				giveParentsIndicator(tagLabel,'add');
-				var tabCounter = cj('li#tab_tag em').html();
-				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag .name').html();
-				var headList = cj('.contactTagsList.help span').html();
-				if(headList)
-				{
+	//for some reason there's still an onclick on issue codes.
+	if(tagLabel != 'tagLabel_291'){
+		//console.log('top of cRA: ' + returnTime());
+		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
+		tagLabelID = tagLabel.replace('tagLabel_', '');
+		if(n == false)
+		{	
+			cj.ajax({
+				url: '/civicrm/ajax/entity_tag/create',
+				data: {
+					entity_type: 'civicrm_contact',
+					entity_id: cid,
+					tag_id: tagLabelID
+					},
+				dataType: 'json',
+				success: function(data, status, XMLHttpRequest) {
+					//console.log('success of cRA ajax: ' + returnTime());
+					if(data.code != 1) {alert('fails');}
+					cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
+					var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
+					temp += '; display:inline';
+					cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);
+					giveParentsIndicator(tagLabel,'add');
+					var tabCounter = cj('li#tab_tag em').html();
+					var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .tag .name').html();
+					var headList = cj('.contactTagsList.help span').html();
+					if(headList)
+					{
+						var headSplit = headList.split(" • ");
+						var appendAfter = headSplit.length;
+						headSplit[appendAfter] = tagLiteralName;
+						headSplit.sort();
+						headList = headSplit.join(" • ");
+						cj('.contactTagsList.help span').html(headList);
+					}
+					else
+					{
+						headList = tagLiteralName;
+						cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+					}
+					cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
+				}
+			});
+			
+		} else {
+			cj.ajax({
+				url: '/civicrm/ajax/entity_tag/delete',
+				data: {
+					entity_type: 'civicrm_contact',
+					entity_id: cid,
+					tag_id: tagLabelID
+					},
+				dataType: 'json',
+				success: function(data, status, XMLHttpRequest) {
+					if(data.code != 1) {alert('fails');}
+					findIDLv(tagLabel);
+					var tabCounter = cj('li#tab_tag em').html();
+					var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .name').html();
+					var headList = cj('.contactTagsList.help span').html();
 					var headSplit = headList.split(" • ");
 					var appendAfter = headSplit.length;
-					headSplit[appendAfter] = tagLiteralName;
-					headSplit.sort();
+					for(var i=0; i<headSplit.length;i++ )
+					{ 
+					if(headSplit[i]==tagLiteralName)
+						headSplit.splice(i,1); 
+					} 
 					headList = headSplit.join(" • ");
 					cj('.contactTagsList.help span').html(headList);
+					cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
 				}
-				else
-				{
-					headList = tagLiteralName;
-					cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
-				}
-				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
-			}
-		});
-		
-	} else {
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/delete',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				findIDLv(tagLabel);
-				var tabCounter = cj('li#tab_tag em').html();
-				var tagLiteralName = cj('.BBtree.edit dt#'+ tagLabel + ' .name').html();
-				var headList = cj('.contactTagsList.help span').html();
-				var headSplit = headList.split(" • ");
-				var appendAfter = headSplit.length;
-				for(var i=0; i<headSplit.length;i++ )
-				{ 
-				if(headSplit[i]==tagLiteralName)
-					headSplit.splice(i,1); 
-				} 
-				headList = headSplit.join(" • ");
-				cj('.contactTagsList.help span').html(headList);
-				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
-			}
-		});
+			});
+		}
 	}
+	
 }
 function findIDLv(tagLabel) {
 	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');
