@@ -267,7 +267,7 @@ function addControlBox(tagLabel, IDChecked, treeTop) {
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; widt	h:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	}
 	if(treeTop == '296')
@@ -286,47 +286,48 @@ function addControlBox(tagLabel, IDChecked, treeTop) {
 	} else { return(floatControlBox); }
 }
 /*Function for checking and unchecking tags and updating the server on it's request*/
-function checkRemoveAdd(tagLabel) {
-	var tagCheck = tagLabel.match(/Modal/);
-	if(tagCheck == -1)
-	{
+// function checkRemoveAdd(tagLabel) {
+// 	console.log('implement hover slider end: ' + returnTime());
+// 	var tagCheck = tagLabel.match(/Modal/);
+// 	if(tagCheck == -1)
+// 	{
 		
-		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-		tagLabelID = tagLabel.replace('tagLabel_', '');
-		if(n == false)
-		{
-			cj.ajax({
-				url: '/civicrm/ajax/entity_tag/create',
-				data: {
-					entity_type: 'civicrm_contact',
-					entity_id: cid,
-					tag_id: tagLabelID
-					},
-				dataType: 'json',
-				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {}
-					cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-					giveParentsIndicator(tagLabel,'add');
-				}
-			});
+// 		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
+// 		tagLabelID = tagLabel.replace('tagLabel_', '');
+// 		if(n == false)
+// 		{
+// 			cj.ajax({
+// 				url: '/civicrm/ajax/entity_tag/create',
+// 				data: {
+// 					entity_type: 'civicrm_contact',
+// 					entity_id: cid,
+// 					tag_id: tagLabelID
+// 					},
+// 				dataType: 'json',
+// 				success: function(data, status, XMLHttpRequest) {
+// 					if(data.code != 1) {}
+// 					cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
+// 					giveParentsIndicator(tagLabel,'add');
+// 				}
+// 			});
 			
-		} else {
-			cj.ajax({
-				url: '/civicrm/ajax/entity_tag/delete',
-				data: {
-					entity_type: 'civicrm_contact',
-					entity_id: cid,
-					tag_id: tagLabelID
-					},
-				dataType: 'json',
-				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {}
-					findIDLv(tagLabel);
-				}
-			});
-		}
-	}
-}
+// 		} else {
+// 			cj.ajax({
+// 				url: '/civicrm/ajax/entity_tag/delete',
+// 				data: {
+// 					entity_type: 'civicrm_contact',
+// 					entity_id: cid,
+// 					tag_id: tagLabelID
+// 					},
+// 				dataType: 'json',
+// 				success: function(data, status, XMLHttpRequest) {
+// 					if(data.code != 1) {}
+// 					findIDLv(tagLabel);
+// 				}
+// 			});
+// 		}
+// 	}
+// }
 /*Checks each parent tag, and it's siblings to see if it can be unmarked as a hereditary choice*/
 function findIDLv(tagLabel) {
 	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');

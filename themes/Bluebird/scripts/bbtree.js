@@ -4,6 +4,7 @@ function checkForTagTypes (treeData) {
 }
 /*Acquires Ajax Block*/
 function callTagAjax (local, modalTreeTop) {
+	console.log('start of Tree Rebuild: ' + returnTime());
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
@@ -13,6 +14,7 @@ function callTagAjax (local, modalTreeTop) {
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
+			console.log('data returned for Tree Rebuild: ' + returnTime());
 			/*set variables
 			var displayObj = [];
 			displayObj.tLvl = 0;
@@ -44,6 +46,7 @@ function callTagAjax (local, modalTreeTop) {
 	var d = new Date(); 
 }
 function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
+	console.log('beginning of tree rebuild (resetBBTree: ' + returnTime());
 	var treeLoc;
 	switch(inpLoc)
 	{
@@ -75,7 +78,7 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 						cj(treeLoc).children().show(); },2000);
 					}
 				},1000);
-				
+				console.log('end of tree rebuild: ' + returnTime());
 			}
 			if(inpLoc == 'modal') { 
 				modalSelectOnClick();
@@ -83,10 +86,12 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 			setCompleteLoop++;
 		}
 		cj(treeLoc).unbind('ajaxComplete');
+
 	});
 }
 /*Writes out the on page (not modal) Tree to an object*/
 function callTagListMain(treeLoc, treeData) {
+	console.log('begin of render for Tree Rebuild: ' + returnTime());
 	callTagAjaxInitLoader(treeLoc);	
 	var tID = treeData;
 	var displayObj = new Object();
@@ -148,6 +153,7 @@ function callTagListMain(treeLoc, treeData) {
 	}
 	displayObj.output += '</dl>';
 	writeDisplayObject(displayObj, treeLoc);
+	console.log('end of render for Tree Rebuild: ' + returnTime());
 }
 /*Writes out the modal tree to an object*/
 function callTagListModal(treeLoc, tID, modalTreeTop) {
@@ -238,6 +244,7 @@ tag and binds/unbindes their click functionality to slide up/down... and stops t
 individual boxes inside the functionality or radio buttons. Last portion is for the Admin console that tells
 number of tags named*/
 function hoverTreeSlider(treeLoc){
+	console.log('implement hover slider begin: ' + returnTime());
 	cj(treeLoc + ' dt .treeButton').unbind('click');
 	cj(treeLoc + ' dt .treeButton').click(function() {
 		if(cj(this).parent().hasClass('lv-0'))
@@ -273,6 +280,7 @@ function hoverTreeSlider(treeLoc){
 			}
 		}
 	});
+
 	if(cj(treeLoc).hasClass('manage'))
 	{
 
@@ -321,6 +329,7 @@ function hoverTreeSlider(treeLoc){
 		cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
 		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
 	});
+	console.log('implement hover slider end: ' + returnTime());
 }
 /*This poorly named function determines which tags are stubs, and which need arrows*/
 function postJSON(treeLoc){
@@ -390,6 +399,7 @@ function giveParentsIndicator(tagLabel,toggleParent){
 /*This is the add functionality that hooks into the tag ajax to add new tags, makes a dialog with jQUI
 and then creates a request on done.*/
 function makeModalAdd(tagLabel){
+	console.log('called modalAddMake: ' + returnTime());
 	cj("#dialog").show();
 	cj("#dialog").dialog({
 		draggable: false,
@@ -425,6 +435,7 @@ function makeModalAdd(tagLabel){
 				tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
 				tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
 				tagCreate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
+				console.log('call modal add ajax ' + returnTime());
 				cj.ajax({
 					url: '/civicrm/ajax/tag/create',
 					data: {
@@ -435,6 +446,7 @@ function makeModalAdd(tagLabel){
 					},
 					dataType: 'json',
 					success: function(data, status, XMLHttpRequest) {
+						console.log('success modal add ajax: ' + returnTime());
 						if(data.code != 1)
 						{
 							alert(data.message);
