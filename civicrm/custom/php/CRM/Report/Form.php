@@ -3121,7 +3121,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     
   function add2group($groupID) {
     if (is_numeric($groupID) && isset($this->_aliases['civicrm_contact'])) {
-      //NYSS 5611
+      //NYSS 5611/5722
       $groupBy = $this->_groupBy;
       if ($this->_aliases['civicrm_activity'] == "activity_civireport") {
         $select = "SELECT DISTINCT civicrm_contact_target.id AS addtogroup_contact_id ";
@@ -3132,18 +3132,26 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', $select, $this->_select);
       }
 
-      //NYSS 5611
+      //NYSS 5611/5722
       $sql = "{$select} {$this->_from} {$this->_where} {$groupBy} {$this->_having} {$this->_orderBy}";
       $dao = CRM_Core_DAO::executeQuery($sql);
 
       $contact_ids = array();
       // Add resulting contacts to group
       while ($dao->fetch()) {
-        $contact_ids[$dao->addtogroup_contact_id] = $dao->addtogroup_contact_id;
+        if ( $dao->addtogroup_contact_id ) {
+          $contact_ids[$dao->addtogroup_contact_id] = $dao->addtogroup_contact_id;
+        }
       }
 
-      CRM_Contact_BAO_GroupContact::addContactsToGroup($contact_ids, $groupID);
-      CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."));
+      //NYSS 5722
+      if ( !empty($contact_ids) ) {
+        CRM_Contact_BAO_GroupContact::addContactsToGroup($contact_ids, $groupID);
+        CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."));
+      }
+      else {
+        CRM_Core_Session::setStatus(ts("The listed records(s) cannot be added to the group."));
+      }
 }
   }
 }
