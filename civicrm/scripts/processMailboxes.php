@@ -456,15 +456,15 @@ function civiProcessEmail($email, $customHandler)
     // Let's find the user ID of the person who forwarded the message
     $apiParams = array( 
       'email' => $email->forwardedBy,
-      'version' => 3,
+      'version' => 3
     );
 
     $result = civicrm_api('contact', 'get', $apiParams);
-  
-
-    if($result) {
+ 
+    if ($result) {
       $userId = $result['values'][ $result['id'] ]['contact_id'];  
-    } else {
+    }
+    else {
       $userId = 1;
     }
 
@@ -479,50 +479,39 @@ function civiProcessEmail($email, $customHandler)
                 "duration" => 1,
               //  "target_contact_id" => array($contactID),
                 "target_contact_id" => $contactID,
-                "version" => 3,
+                "version" => 3
     );
 
-    $result = civicrm_api('activity' , 'create', $apiParams);
+    $result = civicrm_api('activity', 'create', $apiParams);
     if ($result['is_error']) {
-      // error_log("COULD NOT SAVE ACTIVITY!\n".print_r($apiParams, true));
-      echo "[WARN] COULD NOT SAVE ACTIVITY!\n";
-      if($email->from=='') echo "[WARN] THIS FORWARDING EMAIL ADDRESS IS NOT FOUND\n";
+      echo "[WARN] Could not save Activity\n";
+      if ($email->from == '') {
+        echo "[WARN] Forwarding e-mail address not found\n";
+      }
       return false;
-    } else {
+    }
+    else {
       echo "[INFO] Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
-      /*
-      $apiParams = array( 
-        'entity_table'  =>  'civicrm_activity',
-        'entity_id'     =>  $result['id'],
-        'tag_id'        =>  $inboxPollingTagId,
-        'version'       =>  3,
-        );
-      $result = civicrm_api('entity_tag', 'create', $apiParams);
-      var_dump($apiParams);
-      if($result['is_error']) {
-        error_log("COULD NOT TAG ACTIVITY!\n".print_r($apiarams, true));
-        return false;
-      }
-      */
       require_once 'CRM/Core/DAO.php';
       $nyss_conn = new CRM_Core_DAO();
       $nyss_conn = $nyss_conn->getDatabaseConnection();
       $conn = $nyss_conn->connection;
       $query = "SELECT * FROM civicrm_entity_tag
                 WHERE entity_table='civicrm_activity'
-                      AND entity_id={$activityId}
-                      AND tag_id={$inboxPollingTagId};";
+                  AND entity_id=$activityId
+                  AND tag_id=$inboxPollingTagId;";
       $result = mysql_query($query, $conn);
 
-      if(mysql_num_rows($result) == 0) {
-        $query = "INSERT INTO civicrm_entity_tag(entity_table,entity_id,tag_id)
-                  VALUES('civicrm_activity',{$activityId},{$inboxPollingTagId});";
+      if (mysql_num_rows($result) == 0) {
+        $query = "INSERT INTO civicrm_entity_tag (entity_table,entity_id,tag_id)
+                  VALUES ('civicrm_activity',$activityId,$inboxPollingTagId);";
         $result = mysql_query($query, $conn);
-        if($result) {
-          echo "ADDED TAG TO ACTIVITY!\n";
-        } else {
-          error_log("COULD NOT ADD TAG TO ACTIVITY!\n");
+        if ($result) {
+          echo "[DEBUG] Added Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+        }
+        else {
+          echo "[ERROR] Could Not add Tag id=$inboxPollingTagId to Activity id=$activityId\n");
         }
       }
     }
@@ -563,22 +552,25 @@ function getInboxPollingTagId()
   );
   $result = civicrm_api('tag', 'get', $apiParams);
 
-  if($result && isset($result['id'])) {
+  if ($result && isset($result['id'])) {
     return $result['id'];
   }
 
   // If there's no tag, create it.
   $apiParams = array( 
-  'name' => 'Inbox Polling Unprocessed',
-  'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
-  'parent_id' => 296,
-  'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-  'created_id' => 1,
-  'version' => 3,
+    'name' => 'Inbox Polling Unprocessed',
+    'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
+    'parent_id' => 296,
+    'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
+    'created_id' => 1,
+    'version' => 3
   );
   $result = civicrm_api('tag', 'create', $apiParams);
-  if($result && isset($result['id'])) {
+  if ($result && isset($result['id'])) {
     return $result['id'];
+  }
+  else {
+    return null;
   }
 }
 
