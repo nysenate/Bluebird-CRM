@@ -349,6 +349,8 @@ $execSql -i $instance -c "$ch" -q
 ## 4275 update dedupe rules
 rules="
 UPDATE civicrm_dedupe_rule_group
+SET name = REPLACE(name, CONCAT('-', id), '');
+UPDATE civicrm_dedupe_rule_group
 SET title = name, is_reserved = 1
 WHERE title IS NULL;
 DELETE FROM civicrm_dedupe_rule
