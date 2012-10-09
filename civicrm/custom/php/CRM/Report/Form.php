@@ -3122,15 +3122,18 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
   function add2group($groupID) {
     if (is_numeric($groupID) && isset($this->_aliases['civicrm_contact'])) {
       //NYSS 5611
+      $groupBy = $this->_groupBy;
       if ($this->_aliases['civicrm_activity'] == "activity_civireport") {
-        $select = "SELECT DISTINCT civicrm_contact_target.id AS addtogroup_contact_id, ";
+        $select = "SELECT DISTINCT civicrm_contact_target.id AS addtogroup_contact_id ";
+        $groupBy = '';
       }
       else {
         $select = "SELECT DISTINCT {$this->_aliases['civicrm_contact']}.id AS addtogroup_contact_id, ";
+        $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', $select, $this->_select);
       }
-      $select = str_ireplace('SELECT SQL_CALC_FOUND_ROWS ', $select, $this->_select);
 
-      $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
+      //NYSS 5611
+      $sql = "{$select} {$this->_from} {$this->_where} {$groupBy} {$this->_having} {$this->_orderBy}";
       $dao = CRM_Core_DAO::executeQuery($sql);
 
       $contact_ids = array();
