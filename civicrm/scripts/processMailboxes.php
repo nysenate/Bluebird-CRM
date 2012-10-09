@@ -1,4 +1,12 @@
 <?php
+// processMailboxes.php
+//
+// Project: BluebirdCRM
+// Author: Ken Zalewski
+// Organization: New York State Senate
+// Date: 2011-03-22
+// Revised: 2012-10-09
+// 
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
@@ -226,14 +234,20 @@ function checkImapAccount($conn, $params)
         //mark as read
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         //move to folder if necessary
-        // if ($params['archivemail'] == true) {
-        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
-        // }
+        if ($params['archivemail'] == true) {
+          imap_mail_move($conn, $msg_num, $params['archivebox']);
+        }
       }
     }
     else {
-      echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM\n";
+      echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
+      if (imap_delete($conn, $msg_num) === true) {
+        echo "[DEBUG] Message $msg_num has been deleted\n";
+      }
+      else {
+        echo "[WARN] Unable to delete message $msg_num from mailbox\n";
+      }
     }
   }
 
