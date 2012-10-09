@@ -44,15 +44,8 @@ cj(document).ready(function(){
 		console.log('placeholder Support');
 	}
 
-    // cj('.checkbox_switch').toggle(function(){
-    //     cj('#imapper-messages-list input:checkbox').attr('checked',true);
-    //   	cj('.checkbox_switch').attr("checked", true);
-    //  },function(){
-    //     cj('#imapper-messages-list input:checkbox').removeAttr('checked');
-    // 	if(cj('input.checkbox_switch').is(':checked')){
-    // 		cj('input.checkbox_switch').removeAttr('checked');
-    // 	};
-    // }); 
+
+
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -727,7 +720,27 @@ function makeListSortable(){
 		"iDisplayLength": 50,
 	//	"bStateSave": true,
 		'aTargets': [ 1 ] 
-	}); 
+	});
+	// unbind the sort on the
+	cj("th.checkbox").unbind('click');
+	checks();
+
+}
+
+// a complicated checkbox method,
+function checks(){
+	cj('.checkbox_switch').click(function() {
+		cj('th.checkbox').click();
+	});
+	cj('th.checkbox').click(function() {
+		if(cj('.checkbox_switch').is(':checked')){
+			cj('input.checkbox_switch').removeAttr('checked');
+			cj('#imapper-messages-list input:checkbox').removeAttr('checked');
+		}else{
+   			cj('#imapper-messages-list input:checkbox').attr('checked', true);
+			cj('.checkbox_switch').attr("checked", true);
+		}
+	});
 }
 
 function buildMessageList() {
