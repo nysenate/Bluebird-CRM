@@ -346,6 +346,20 @@ $execSql -i $instance -c "$mail" -q
 ch="UPDATE civicrm_custom_group SET help_pre = null, help_post = null;"
 $execSql -i $instance -c "$ch" -q
 
+## 4275 update dedupe rules
+rules="
+UPDATE civicrm_dedupe_rule_group
+SET title = name, is_reserved = 1
+WHERE title IS NULL;
+DELETE FROM civicrm_dedupe_rule
+WHERE dedupe_rule_group_id IN (
+SELECT id
+FROM civicrm_dedupe_rule_group
+WHERE name IN ('IndividualFuzzy', 'IndividualStrict', 'IndividualComplete') );
+DELETE FROM civicrm_dedupe_rule_group
+WHERE name IN ('IndividualFuzzy', 'IndividualStrict', 'IndividualComplete');
+"
+$execSql -i $instance -c "$rules" -q
 
 ### Cleanup ###
 
