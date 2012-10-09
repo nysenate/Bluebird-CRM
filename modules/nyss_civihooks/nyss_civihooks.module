@@ -96,9 +96,13 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
        $groupID ) {
     //echo $query;
     $query = "
-      SELECT sort_name name, cc.id
+      SELECT CONCAT_WS( ' :: ', sort_name, city ) as name, cc.id
       FROM civicrm_contact cc
-      INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id
+      INNER JOIN civicrm_group_contact cgc
+        ON cgc.contact_id = cc.id
+      LEFT JOIN civicrm_address a
+        ON cc.id = a.contact_id
+        AND a.is_primary = 1
       WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0
         AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
   }
@@ -106,7 +110,7 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
     $query = "
       SELECT id, data
       FROM (
-        SELECT cc.id as id, CONCAT_WS( ' :: ', sort_name, email ) as data, sort_name
+        SELECT cc.id as id, CONCAT_WS( ' :: ', sort_name, city, email ) as data, sort_name
         FROM civicrm_contact cc
         LEFT JOIN civicrm_email eml
           ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
