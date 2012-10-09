@@ -333,6 +333,16 @@ UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @act AND v
 "
 $execSql -i $instance -c "$rs" -q
 
+## 5686 update civimail component settings
+mail="
+UPDATE civicrm_setting
+SET value = 'i:1;'
+WHERE group_name = 'Mailing Preferences'
+  AND name IN ('civimail_workflow', 'civimail_multiple_bulk_emails');
+"
+$execSql -i $instance -c "$mail" -q
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
