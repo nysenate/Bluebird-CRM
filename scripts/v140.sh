@@ -342,6 +342,10 @@ WHERE group_name = 'Mailing Preferences'
 "
 $execSql -i $instance -c "$mail" -q
 
+## 5638 remove custom group help text
+ch="UPDATE civicrm_custom_group SET help_pre = null, help_post = null;"
+$execSql -i $instance -c "$ch" -q
+
 
 ### Cleanup ###
 
