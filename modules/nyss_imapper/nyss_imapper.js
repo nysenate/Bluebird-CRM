@@ -75,18 +75,7 @@ cj(document).ready(function(){
 		return false;
 	});
 
-	// // add a assign worked popup
-	// cj( "#assign-confirm").dialog({
-	// 	modal: true,
-	// 	width: 350,
-	// 	autoOpen: false,
-	// 	resizable: false,
-	// 	draggable: false	
-	// });
-
 	assign.click(function() {
-
-
 		var messageId = cj('#email_id').val();
 		var imapId = cj('#imap_id').val();
 		
@@ -101,8 +90,6 @@ cj(document).ready(function(){
 			}
 		});
 
-
-	 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/assignMessage',
 			data: {
@@ -127,7 +114,6 @@ cj(document).ready(function(){
 		var contact = cj('#imap_id').val();
 		// only grabs the 1st one
 		var contactRadios = cj('input[name=contact_id]').val();
-		// var contactIds = '';
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/reassignActivity',
@@ -156,7 +142,6 @@ cj(document).ready(function(){
 		var zip = cj("#zip").val();
 		var city = cj("#city").val();
 		
- 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/createNewContact',
 			data: {
@@ -192,24 +177,18 @@ cj(document).ready(function(){
 		    //             	}
 		    //            });
 				}
-			//	alert("Assigned email (UID: " + messageId + ") to contact (ID: " + contactIds + ").");
 			});
 			}			
 		});
 		return false;
 	});
 
-
-	// 
-	
 	if(cj("#Activities").length){
 		pullActivitiesHeaders();
  		autocomplete_setup();
  	}else if(cj("#Unmatched").length){
 		pullMessageHeaders();
 	}
-
-	
 
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
@@ -240,9 +219,7 @@ cj(document).ready(function(){
 								cj("#"+messageId).remove();
 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
-								//destroyReSortable();
 								help_message('Activity Deleted');
-
 							} 
 						});
 					}else{
@@ -254,9 +231,7 @@ cj(document).ready(function(){
 								cj("#"+messageId+'_'+imapId).remove();
  								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
-								//destroyReSortable();
 								help_message('Message Deleted');
-
 							} 
 						});
 					}
@@ -301,7 +276,6 @@ cj(document).ready(function(){
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
 									help_message('Activities Deleted');
-
 								}
 							});
 						});		
@@ -316,7 +290,6 @@ cj(document).ready(function(){
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
 									help_message('Messages Deleted');
-
 								}
 							});
 						});				
@@ -414,8 +387,6 @@ cj(document).ready(function(){
 										cj("#tagging-popup").dialog('close');
 										help_message('tag added!');
 										cj("#"+value).remove();
-										
-
 									}
 								});
 							});
@@ -429,7 +400,6 @@ cj(document).ready(function(){
 									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
-						
 								}
 							});
 						}
@@ -508,7 +478,6 @@ cj(document).ready(function(){
  		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
  		cj("#tagging-popup").dialog('open');
 
-
 	});
 
 	/// remove activity from the activities screen, but don't delete it 
@@ -562,7 +531,6 @@ cj(document).ready(function(){
 								cj("#total_number").html(old_total-1);
 								cj("#delete-confirm").dialog( "close" );
 								help_message('Activity Removed');
-
 							}
 						});
 					});
@@ -623,7 +591,6 @@ cj(document).ready(function(){
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		cj('#imapper-contacts-list').html('');
 
-
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
@@ -642,7 +609,6 @@ cj(document).ready(function(){
  				cj("#tabs").tabs();
  
   				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> "+messages.fromAddress);
-  
 			}
 		 });
 	});
@@ -861,17 +827,5 @@ function autocomplete_setup () {
 				cj(".autocomplete-dropdown").html(messagesHtml);
 				return array;
         	},
-
-        // formatItem: function(row) {                     
-        //         var name = '';
-        //         if (row.first_name && row.last_name)
-        //                 name = '('+row.first_name+', '+row.last_name+')';
-        //         else if (row.first_name)
-        //                 name = '('+row.first_name+')';
-        //         else if (row.last_name)
-        //                 name = '('+row.last_name+')';
-
-        //         return row.username+' '+name;
-        // }
     	});	 
 }
