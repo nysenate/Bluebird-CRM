@@ -511,7 +511,7 @@ function civiProcessEmail($email, $customHandler)
           echo "[DEBUG] Added Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
         else {
-          echo "[ERROR] Could Not add Tag id=$inboxPollingTagId to Activity id=$activityId\n");
+          echo "[ERROR] Could Not add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
       }
     }
