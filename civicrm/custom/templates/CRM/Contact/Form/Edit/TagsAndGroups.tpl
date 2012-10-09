@@ -92,17 +92,19 @@ function addControlBox(tagLabel, IDChecked, tagID) {
 	} else { return ''; }
 }
 function checkRemoveAdd(tagLabel) {
-	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-	tagLabelID = tagLabel.replace('tagLabel_', '');
-	if(n == false)
-	{
-		cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-		var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
-		temp += '; display:inline';
-		cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);			
-		giveParentsIndicator(tagLabel,'add');
-	} else {
-		findIDLv(tagLabel);
+	if(tagLabel != 'tagLabel_291'){
+		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
+		tagLabelID = tagLabel.replace('tagLabel_', '');
+		if(n == false)
+		{
+			cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
+			var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
+			temp += '; display:inline';
+			cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);			
+			giveParentsIndicator(tagLabel,'add');
+		} else {
+			findIDLv(tagLabel);
+		}
 	}
 }
 function findIDLv(tagLabel) {
