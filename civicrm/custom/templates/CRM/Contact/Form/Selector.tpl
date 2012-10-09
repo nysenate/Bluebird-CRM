@@ -161,10 +161,12 @@ var url         = "{/literal}{crmURL p='civicrm/contact/view/changeaction' q='re
 var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q="action=browse&selectedChild=activity&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
 var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q="atype=3&action=add&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
 var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q="reset=1&cid=changeid&key=`$qfKey`&context=`$context`" h=0}{literal}";
+//NYSS 5213
+var tagUrl  = "{/literal}{crmURL p='civicrm/contact/view' q="selectedChild=tag&reset=1&cid=changeid&key=`$qfKey`" h=0}{literal}";
 // Show menu when contact row is right clicked
 cj(".selector tr").contextMenu({
       menu: 'contactMenu'
-    }, function( action, el ) { 
+    }, function( action, el ) {
         var contactId = el.attr('id').substr(5);
         switch (action) {
           case 'activity':
@@ -177,6 +179,10 @@ cj(".selector tr").contextMenu({
             contactId += '&action=update';
           case 'view':
             locationUrl = contactUrl.replace( /changeaction/g, action );
+            break;
+          //NYSS 5213
+          case 'tag':
+            locationUrl = tagUrl;
             break;
           default:
             locationUrl = url.replace( /changeaction/g, action );
