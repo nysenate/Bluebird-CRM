@@ -30,7 +30,7 @@
        {assign var="x" value=$smarty.section.blocks.index}
        <div class="crm-search-block">
     <h3>{if $x eq 1}{ts}Include contacts where{/ts}{else}{ts}Also include contacts where (OR){/ts}{/if}</h3>
-	<table>
+	    <table>
         {section name=cols loop=$columnCount[$x]}
             {assign var="i" value=$smarty.section.cols.index}
             <tr>
@@ -38,7 +38,7 @@
                     {$form.mapper[$x][$i].html}
                     {$form.operator[$x][$i].html}
                     &nbsp;&nbsp;{$form.value[$x][$i].html}
-                    &nbsp;&nbsp;&nbsp;<a href="javascript:resetBuilderValues({$x},{$i});"><img title="reset the values for this row" src="{$config->resourceBase}i/close.png" class="action-icon" alt="{ts}reset this row{/ts}" /></a>
+                    &nbsp;&nbsp;<a href="javascript:resetBuilderValues({$x},{$i});"><img title="reset the values for this row" src="{$config->resourceBase}i/close.png" class="action-icon" alt="{ts}reset this row{/ts}" /></a>
                     &nbsp;<strong>(AND)</strong>
                 </td>
             </tr>
