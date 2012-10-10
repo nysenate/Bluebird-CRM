@@ -97,18 +97,20 @@ function makeModalTree(tagLabel){
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.number = cj('.BBtree.edit.manage dt#' + tagLabel).attr('tID');
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
 			var treeDialogInfo;
 			if(tagInfo.reserved == true){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
+			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.number+'">' + tagInfo.name + ' under Tag...</span></div>';
 			treeDialogInfo += '<div class="BBtree modal move"></div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			
 			callTagAjax('modal', modalTreeTop);
+
 			}
 		},
 		buttons: {
@@ -221,7 +223,7 @@ function makeModalMerge(tagLabel){
 		draggable: false,
 		height: 500,
 		width: 400,
-		title: "Move Tag",
+		title: "Merge Tag",
 		modal: true, 
 		bgiframe: true,
 		close:{ },
@@ -239,7 +241,7 @@ function makeModalMerge(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be merged</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Merge <span tID="'+tagInfo.id+'">' + tagInfo.name + ' into Tag...</span></div>';
+			treeDialogInfo = '<div class="modalHeader">Merge <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into Selected Tag...</div>';
 			treeDialogInfo += '<div class="BBtree modal merge"></div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
@@ -267,7 +269,7 @@ function addControlBox(tagLabel, IDChecked, treeTop) {
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; widt	h:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	}
 	if(treeTop == '296')
