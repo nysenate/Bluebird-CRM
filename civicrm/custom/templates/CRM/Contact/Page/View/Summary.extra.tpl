@@ -90,11 +90,7 @@
 {literal}
 <script type="text/javascript">
   cj('#contact-summary .contact_details').html('{/literal}{$newCC|escape:"javascript"}{literal}');
-</script>
-{/literal}
 
-{literal}
-<script type="text/javascript">
   //default close district info
   cj('div.crm-address-block .crm-accordion-wrapper').removeClass('crm-accordion-open').addClass
   ('crm-accordion-closed');
@@ -125,6 +121,13 @@
       cj('#demographic-block .crm-clear').append(cj(this));
     }
   });
+
+  //5638 custom data
+  var custLink1 = cj('#custom-set-block-1 .crm-config-option a').html().replace('add or edit custom set', 'add or edit constituent information');
+  cj('#custom-set-block-1 .crm-config-option a').html(custLink1);
+
+  var custLink2 = cj('#custom-set-block-5 .crm-config-option a').html().replace('add or edit custom set', 'add or edit attachments');
+  cj('#custom-set-block-5 .crm-config-option a').html(custLink2);
 
 </script>
 {/literal}

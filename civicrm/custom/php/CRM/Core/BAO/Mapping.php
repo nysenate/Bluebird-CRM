@@ -538,7 +538,8 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
     foreach ($sel1 as $key => $sel) {
       if ($key) {
-        $sel2[$key] = $mapperFields[$key];
+        //NYSS 2547
+        $sel2[$key] = array('' => ts('- select field -')) + $mapperFields[$key];
       }
     }
 
