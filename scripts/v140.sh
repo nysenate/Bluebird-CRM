@@ -333,6 +333,49 @@ UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @act AND v
 "
 $execSql -i $instance -c "$rs" -q
 
+## 5686 update civimail component settings
+mail="
+UPDATE civicrm_setting
+SET value = 'i:1;'
+WHERE group_name = 'Mailing Preferences'
+  AND name IN ('civimail_workflow', 'civimail_multiple_bulk_emails');
+"
+$execSql -i $instance -c "$mail" -q
+
+## 5638 remove custom group help text
+ch="UPDATE civicrm_custom_group SET help_pre = null, help_post = null;"
+$execSql -i $instance -c "$ch" -q
+
+## 4275 update dedupe rules
+rules="
+UPDATE civicrm_dedupe_rule_group
+SET name = REPLACE(name, CONCAT('-', id), '');
+UPDATE civicrm_dedupe_rule_group
+SET title = name, is_reserved = 1
+WHERE title IS NULL;
+DELETE FROM civicrm_dedupe_rule
+WHERE dedupe_rule_group_id IN (
+SELECT id
+FROM civicrm_dedupe_rule_group
+WHERE name IN ('IndividualFuzzy', 'IndividualStrict', 'IndividualComplete') );
+DELETE FROM civicrm_dedupe_rule_group
+WHERE name IN ('IndividualFuzzy', 'IndividualStrict', 'IndividualComplete');
+"
+$execSql -i $instance -c "$rules" -q
+
+## 5335 add bmp to safe file extensions
+safe="
+SELECT @safe:= id FROM civicrm_option_group WHERE name = 'safe_file_extension';
+SELECT @maxval:= MAX(CAST(value AS UNSIGNED)) FROM civicrm_option_value WHERE option_group_id = @safe;
+INSERT INTO civicrm_option_value (
+  option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved,
+  is_active, component_id, domain_id, visibility_id )
+VALUES (
+  @safe, 'bmp', @maxval+1, NULL , NULL , '0', '0', @maxval+1, NULL , '0', '0', '1', NULL , NULL , NULL
+);"
+$execSql -i $instance -c "$safe" -q
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance

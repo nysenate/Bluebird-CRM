@@ -50,17 +50,17 @@
         </tr>
 
 	{if $form.group_type}
-	    <tr class="crm-group-form-block-group_type">
-		<td class="label">{$form.group_type.label}</td>
-		<td>{$form.group_type.html} {help id="id-group-type" file="CRM/Group/Page/Group.hlp"}</td>
-	    </tr>
+    <tr class="crm-group-form-block-group_type">
+			<td class="label">{$form.group_type.label}</td>
+			<td>{$form.group_type.html} {help id="id-group-type" file="CRM/Group/Page/Group.hlp"}</td>
+    </tr>
 	{/if}
     
-        <tr class="crm-group-form-block-visibility">
-	    <td class="label">{$form.visibility.label}</td>
-	    <td>{$form.visibility.html|crmReplace:class:huge} {help id="id-group-visibility" file="CRM/Group/Page/Group.hlp"}</td>
+	<tr class="crm-group-form-block-visibility">
+		<td class="label">{$form.visibility.label}</td>
+	  <td>{$form.visibility.html|crmReplace:class:huge} {help id="id-group-visibility" file="CRM/Group/Page/Group.hlp"}</td>
 	</tr>
-	
+
   <tr class="crm-group-form-block-isReserved">
     <td class="report-label">{$form.is_reserved.label}</td>
     <td>{$form.is_reserved.html}
@@ -118,7 +118,7 @@
 		{if $group.mapping_id}
 		    <a href="{crmURL p="civicrm/contact/search/builder" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
 		{elseif $group.search_custom_id}
-            <a href="{crmURL p="civicrm/contact/search/custom" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
+        <a href="{crmURL p="civicrm/contact/search/custom" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
         {else} 
 		    <a href="{crmURL p="civicrm/contact/search/advanced" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
 		{/if}
@@ -163,6 +163,13 @@ cj('#organization').autocomplete( dataUrl, {
                                                        htmlDiv = data[0].replace( /::/gi, ' ');
                                                        cj('div#organization_address').html(htmlDiv);
 						      });
+//NYSS 5359 UI mods
+cj('input[type=checkbox][name="group_type[1]"]').remove();
+cj('label[for="group_type[1]"]').remove();
+var acg = cj('tr.crm-group-form-block-group_type td[class!="label"]').html().replace(/&nbsp;/g,'');
+cj('tr.crm-group-form-block-group_type td[class!="label"]').html(acg);
+cj('tr.crm-group-form-block-visibility').hide();
+cj('tr.crm-group-form-block-description span.description').hide();
 </script>
 {/literal}
 </div>

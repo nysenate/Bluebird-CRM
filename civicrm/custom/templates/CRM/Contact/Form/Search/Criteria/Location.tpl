@@ -153,11 +153,6 @@ cj(function( ) {
   //NYSS
   cj('#postal_code_low').css('width', '100px');
   cj('#postal_code_high').css('width', '100px');
-  cj("[id^=location_type]").each(function(){
-    var idval = cj(this).attr('id');
-    if ( idval == 'location_type[7]' ) {
-      cj(this).before('<br />');
-    }
-  });
+  cj('#location_type_7').before('<br />');
 </script>
 {/literal}

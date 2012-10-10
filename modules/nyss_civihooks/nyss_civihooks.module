@@ -42,89 +42,91 @@ function nyss_civihooks_permission() {
 
 function nyss_civihooks_getfile() {
 
-    civicrm_initialize( );
-    require_once 'CRM/Core/Config.php';
-    $config =& CRM_Core_Config::singleton();
+  civicrm_initialize( );
+  require_once 'CRM/Core/Config.php';
+  $config =& CRM_Core_Config::singleton();
 
-    $file     = $_REQUEST['file'];
-    $fullpath = $config->uploadDir.'printProduction/'.$file;
-    //echo "fullpath: $fullpath file: $file";
-//exit;
-    if ( !file_exists($fullpath) || !$file ) {
-        echo "No file provided. Make sure you have entered the full URL.<br />";
-        exit();
-    }
+  $file = $_REQUEST['file'];
+  $fullpath = $config->uploadDir.'printProduction/'.$file;
 
-    $headers = array ("Pragma: public",
-                      "Expires: 0",
-                      "Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0",
-                      "Cache-Control: public",
-                      "Content-Description: File Transfer",
-                      "Content-Type: application/csv",
-                      "Content-Disposition: attachment; filename=".basename($fullpath),
-                      "Expires: Mon, 26 Jul 1997 05:00:00 GMT",
-                      'Content-Length: '.filesize($fullpath)
-                     );
+  if ( !file_exists($fullpath) || !$file ) {
+    echo "No file provided. Make sure you have entered the full URL.<br />";
+    exit();
+  }
 
-    //don't use this, seems to cause problems...
-    //file_transfer( $fullpath, $headers );
+  $headers = array(
+    "Pragma: public",
+    "Expires: 0",
+    "Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0",
+    "Cache-Control: public",
+    "Content-Description: File Transfer",
+    "Content-Type: application/csv",
+    "Content-Disposition: attachment; filename=".basename($fullpath),
+    "Expires: Mon, 26 Jul 1997 05:00:00 GMT",
+    'Content-Length: '.filesize($fullpath)
+  );
 
-    //spit out the header
-    foreach ($headers as $header) header($header);
+  //don't use this, seems to cause problems...
+  //file_transfer( $fullpath, $headers );
 
-        $fh = fopen($fullpath, "r");
+  //spit out the header
+  foreach ($headers as $header) header($header);
 
-        if (!$fh) {
+  $fh = fopen($fullpath, "r");
 
-                echo "no file provided. file requested is: $fullpath";
-                exit;
-        }
+  if (!$fh) {
+    echo "no file provided. file requested is: $fullpath";
+    exit;
+  }
 
-        while (!feof($fh)) {
-              echo fread($fh, 1024);
-              ob_flush();
-        }
-        fclose($fh);
+  while (!feof($fh)) {
+    echo fread($fh, 1024);
+    ob_flush();
+  }
+  fclose($fh);
 }
 
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 
-//echo $query;
+  //office staff group ID to use for activity assignees and case roles
+  $groupID = '3';
 
-    //office staff group ID to use for activity assignees and case roles
-    $groupID = '3';
-
-    //limit activity assignees to office staff group
-    if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) && 
-         $groupID ) {
-
-        //echo $query;
-        $query = "
-            SELECT sort_name name, cc.id
-            FROM civicrm_contact cc
-                INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id
-            WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0
-                AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
-
-    } elseif ( $context == 'caseview' && $groupID ) { //case roles
-        $query = "SELECT id, data
-                  FROM (
-                    SELECT cc.id as id, CONCAT_WS( ' :: ', sort_name, email ) as data, sort_name
-                    FROM civicrm_contact cc
-                      LEFT JOIN civicrm_email eml ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
-                      LEFT JOIN civicrm_address sts ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
-                      INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id
-                    WHERE sort_name LIKE '%$name%'
-                      AND cc.is_deleted = 0
-                      AND cgc.group_id IN ($groupID)
-                      AND cgc.status = 'Added'
-                    LIMIT 0, 10
-                   ) t
-                  ORDER BY sort_name";
-    }
-
-    return $query;
-
+  //limit activity assignees to office staff group
+  if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) &&
+       $groupID ) {
+    //echo $query;
+    $query = "
+      SELECT CONCAT_WS( ' :: ', sort_name, city ) as name, cc.id
+      FROM civicrm_contact cc
+      INNER JOIN civicrm_group_contact cgc
+        ON cgc.contact_id = cc.id
+      LEFT JOIN civicrm_address a
+        ON cc.id = a.contact_id
+        AND a.is_primary = 1
+      WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0
+        AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
+  }
+  elseif ( $context == 'caseview' && $groupID ) { //case roles
+    $query = "
+      SELECT id, data
+      FROM (
+        SELECT cc.id as id, CONCAT_WS( ' :: ', sort_name, city, email ) as data, sort_name
+        FROM civicrm_contact cc
+        LEFT JOIN civicrm_email eml
+          ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
+        LEFT JOIN civicrm_address sts
+          ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
+        INNER JOIN civicrm_group_contact cgc
+          ON cgc.contact_id = cc.id
+        WHERE sort_name LIKE '%$name%'
+          AND cc.is_deleted = 0
+          AND cgc.group_id IN ($groupID)
+          AND cgc.status = 'Added'
+        LIMIT 0, 10
+        ) t
+      ORDER BY sort_name";
+  }
+  return $query;
 }
 
 function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
@@ -157,94 +159,94 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     //Construct some arrays and values to be passed to the tag tab
     if ( $formName == 'CRM_Tag_Form_Tag' ) {
 
-        $contactId = $form->getVar( '_entityID' );
+      $contactId = $form->getVar( '_entityID' );
 
-        //Construct list of tags, comma-separated
-        $contactTagsList = array();
-        $contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
+      //Construct list of tags, comma-separated
+      $contactTagsList = array();
+      $contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
 
-        if ( !empty( $contactTags ) ) {
-            $contactTagsList = stripslashes( implode( ', ', $contactTags ) );
+      if ( !empty( $contactTags ) ) {
+        $contactTagsList = stripslashes( implode( ', ', $contactTags ) );
+      }
+      $form->assign( 'contactTagsList', $contactTagsList );
+
+      //Construct list of issue codes, comma-separated
+      //Need to work with the full list and subtract tagsets
+      $contactTags = array();
+      $contactIssueCode_item = array();
+      $contactTags = CRM_Core_BAO_EntityTag::getTag( $contactId );
+      $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
+      foreach ( $tagsNotTagset as $key => $issueCode ) {
+        if ( in_array( $key, $contactTags ) ) {
+          $contactIssueCode_item[] = $issueCode;
         }
-        $form->assign( 'contactTagsList', $contactTagsList );
+      }
+      sort($contactIssueCode_item);
+      $contactIssueCode_list = stripslashes( implode( ' &#8226; ', $contactIssueCode_item ) );
+      $form->assign( 'contactIssueCode_list', $contactIssueCode_list );
 
-        //Construct list of issue codes, comma-separated
-        //Need to work with the full list and subtract tagsets
-        $contactTags = array();
-        $contactIssueCode_item = array();
-        $contactTags = CRM_Core_BAO_EntityTag::getTag( $contactId );
-        $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
-        foreach ( $tagsNotTagset as $key => $issueCode ) {
-            if ( in_array( $key, $contactTags ) ) {
-                $contactIssueCode_item[] = $issueCode;
-            }
+      //Construct list of Legislative Positions
+      $legpos_list = array();
+      $legpos_description = array();
+      $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails( 292, $contactId );
+
+      foreach ( $legpositions as $legposition ) {
+        if ( $legposition['description'] && $legposition['description'] != "No description available." ) {
+          $legpos_description[] = $legposition['description'];
         }
-        sort($contactIssueCode_item);
-        $contactIssueCode_list = stripslashes( implode( ' &#8226; ', $contactIssueCode_item ) );
-        $form->assign( 'contactIssueCode_list', $contactIssueCode_list );
-
-        //Construct list of Legislative Positions
-        $legpos_list = array();
-        $legpos_description = array();
-        $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails( 292, $contactId );
-
-        foreach ( $legpositions as $legposition ) {
-            if ( $legposition['description'] && $legposition['description'] != "No description available." ) {
-                $legpos_description[] = $legposition['description'];
-            }
-        }
-        $legpos_list = implode( ', ', $legpos_description );
-        $form->assign( 'legpositions', $legpositions );
-        $form->assign( 'legpos_description', $legpos_description );
-        $form->assign( 'legpos_list', $legpos_list );
+      }
+      $legpos_list = implode( ', ', $legpos_description );
+      $form->assign( 'legpositions', $legpositions );
+      $form->assign( 'legpos_description', $legpos_description );
+      $form->assign( 'legpos_list', $legpos_list );
     }
 
     //contact form edits
     if ( $formName == 'CRM_Contact_Form_Contact' ) {
 
-        //set New York as default state
-        //we could potentially have as many as 6 addresses, so let's set US and NY default for all
-        $i = 1;
-        while ( $i <= 6 ) {
-            if ( empty( $form->_defaultValues['address'][$i]['country_id'] ) )
-                $defaults['address'][$i]['country_id'] = 1228;
-            if ( empty( $form->_defaultValues['address'][$i]['state_province_id'] ) )
-                $defaults['address'][$i]['state_province_id'] = 1031;
-            $i++;
-        }
-        $form->setDefaults( $defaults );
+      //set New York as default state
+      //we could potentially have as many as 6 addresses, so let's set US and NY default for all
+      $i = 1;
+      while ( $i <= 6 ) {
+        if ( empty( $form->_defaultValues['address'][$i]['country_id'] ) )
+          $defaults['address'][$i]['country_id'] = 1228;
+        if ( empty( $form->_defaultValues['address'][$i]['state_province_id'] ) )
+          $defaults['address'][$i]['state_province_id'] = 1031;
+        $i++;
+      }
+      $form->setDefaults( $defaults );
 
-        //3527 add js action to deceased field
-        if ( isset( $form->_elementIndex['is_deceased'] ) ) {
-            $deceased =& $form->getElement( 'is_deceased' );
-            $js = "showDeceasedDate();processDeceased();";
-            $deceased->_attributes['onclick'] = $js;
-        } //end deceased
+      //3527 add js action to deceased field
+      if ( isset( $form->_elementIndex['is_deceased'] ) ) {
+        $deceased =& $form->getElement( 'is_deceased' );
+        $js = "showDeceasedDate();processDeceased();";
+        $deceased->_attributes['onclick'] = $js;
+      } //end deceased
 
-        //3530 tweak js to place cursor at end of http in website field (IE8)
-        if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
-            $website =& $form->getElement( 'website[1][url]' );
-            $js = "if(!this.value) {
-                     this.value='http://';
-                     if (this.createTextRange) {
-                       var FieldRange = this.createTextRange();
-                       FieldRange.moveStart('character', this.value.length);
-                       FieldRange.collapse();
-                       FieldRange.select();
-                     }
-                   } else { return false; }";
-            $website->_attributes['onfocus'] = $js;
-        }
+      //3530 tweak js to place cursor at end of http in website field (IE8)
+      if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
+        $website =& $form->getElement( 'website[1][url]' );
+        $js = "if(!this.value) {
+                 this.value='http://';
+                 if (this.createTextRange) {
+                   var FieldRange = this.createTextRange();
+                   FieldRange.moveStart('character', this.value.length);
+                   FieldRange.collapse();
+                   FieldRange.select();
+                 }
+               } else { return false; }";
+        $website->_attributes['onfocus'] = $js;
+      }
 
-        //NYSS 4407 remove bulk email from privacy list as it is a separate element
-        if ( isset( $form->_elementIndex['privacy'] ) ) {
-            $privacy =& $form->getElement( 'privacy' );
-            foreach ( $privacy->_elements as $key=>$option ) {
-                if ( $option->_attributes['name'] == 'is_opt_out' ) {
-                    unset($privacy->_elements[$key]);
-                }
-            }
+      //NYSS 4407 remove bulk email from privacy list as it is a separate element
+      if ( isset( $form->_elementIndex['privacy'] ) ) {
+        $privacy =& $form->getElement( 'privacy' );
+        foreach ( $privacy->_elements as $key=>$option ) {
+          if ( $option->_attributes['name'] == 'is_opt_out' ) {
+            unset($privacy->_elements[$key]);
+          }
         }
+      }
     }
 
   //advanced search
@@ -269,25 +271,25 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     if ( $formName == 'CRM_Contact_Form_Search_Custom' &&
          $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity' ) {
 
-        $defaults['state_province_id'] = 1031;
-        $form->setDefaults( $defaults );
+      $defaults['state_province_id'] = 1031;
+      $form->setDefaults( $defaults );
     }
 
     //5154
     if ( $formName == 'CRM_Contact_Form_Search_Custom' ) {
-        $bC = drupal_get_breadcrumb( );
-        foreach (  $bC as $k => $v ) {
-            if ( strpos($v, 'Custom Searches') !== false ) {
-                unset($bC[$k]);
-            }
+      $bC = drupal_get_breadcrumb( );
+      foreach (  $bC as $k => $v ) {
+        if ( strpos($v, 'Custom Searches') !== false ) {
+          unset($bC[$k]);
         }
-        drupal_set_breadcrumb( $bC );
+      }
+      drupal_set_breadcrumb( $bC );
     }
 
     //set bounce reason default on, bounce report
     if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
-        $defaults['fields[bounce_reason]'] = 1;
-        $form->setDefaults( $defaults );
+      $defaults['fields[bounce_reason]'] = 1;
+      $form->setDefaults( $defaults );
     }
 
   //3674 add limit submit js to all submit buttons
@@ -436,6 +438,11 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     $fele->_options = $feleOptions;
   }
 
+  //5399
+  if ( $formName == 'CRM_Note_Form_Note' ) {
+    $form->addRule('subject', ts('Please include subject text.'), 'required');
+  }
+
   _setDBVars();
 
   //CRM_Core_Error::debug($formName);
@@ -549,37 +556,39 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
       //4744 if marked deceased and a household relationship exists, return message
       $isDeceased = civicrm_api( 'Contact', 'Getvalue', array('version' => 3, 'id' => $contactID, 'return' => 'is_deceased') );
       if ( $isDeceased ) {
-          foreach ( $rels['values'] as $rel ) {
-              if ( ( $rel['relationship_type_id'] == 6 ||
-                     $rel['relationship_type_id'] == 7 ) &&
-                   ( !isset($rel['start_date']) ||
-                     strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
-                   ( !isset($rel['end_date']) ||
-                     strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+        foreach ( $rels['values'] as $rel ) {
+          if ( ( $rel['relationship_type_id'] == 6 ||
+                 $rel['relationship_type_id'] == 7 ) &&
+               ( !isset($rel['start_date']) ||
+                 strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
+               ( !isset($rel['end_date']) ||
+                 strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
 
-                  $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
-              }
+            $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
           }
+        }
       } //is_deceased
 
       //now register the status message. handle here so we can combine in a nice bullet list
       if ( $msg ) {
-          CRM_Core_Session::setStatus( "<ul>$msg</ul>" );
+        CRM_Core_Session::setStatus( "<ul>$msg</ul>" );
       }
     } //Individual
   } //CRM_Contact_Form_Contact
 } //postProcess
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
-
   unset($tasks[19]); //remove pdf letter creation task, #2284
   unset($tasks[20]); //remove mass email task, #5498
+  unset($tasks[7]); //remove send SMS task, #5665
 
   //5370
-  if ( $objectType == 'contact' && CRM_Core_Permission::check('administer CiviCRM') ) {
-    $tasks[30] = array('title' => ts('Alter Communication Preferences'),
-                       'class' => 'CRM_Contact_Form_Task_AlterDoNot',
-                       );
+  if ( $objectType == 'contact' &&
+       ( CRM_Core_Permission::check('administer CiviCRM') || CRM_Core_Permission::check('administer district') ) ) {
+    $tasks[30] = array(
+      'title' => ts('Alter Communication Preferences'),
+      'class' => 'CRM_Contact_Form_Task_AlterDoNot',
+    );
   }
 }
 
@@ -587,30 +596,27 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 //CRM_Core_Error::debug_var('objectId',$objectId);
 //CRM_Core_Error::debug_var('objectRef',$objectRef);
 
-
-    //NYSS #2729 strip line break
-    if ( ( $op == 'edit' || $op == 'create' ) && 
-         ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
-
-        if ( $objectRef['email'] ) {
-            foreach ( $objectRef['email'] as $key => $block ) {
-                if ( $block['signature_html'] == '<br />' ) {
-                    $objectRef['email'][$key]['signature_html'] = NULL;
-                }
-            }
+  //NYSS #2729 strip line break
+  if ( ( $op == 'edit' || $op == 'create' ) &&
+       ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
+    if ( $objectRef['email'] ) {
+      foreach ( $objectRef['email'] as $key => $block ) {
+        if ( $block['signature_html'] == '<br />' ) {
+          $objectRef['email'][$key]['signature_html'] = NULL;
         }
+      }
     }
+  }
 
-    //4627 allow blank email overrides
-    if ( $op                       == 'edit' &&
-         $objectName               == 'Profile' &&
-         $objectRef['uf_group_id'] == 8 ) {
+  //4627 allow blank email overrides
+  if ( $op                       == 'edit' &&
+       $objectName               == 'Profile' &&
+       $objectRef['uf_group_id'] == 8 ) {
+    $objectRef['updateBlankLocInfo'] = true;
+    return;
+  }
 
-        $objectRef['updateBlankLocInfo'] = true;
-        return;
-    }
-
-    _setDBVars();
+  _setDBVars();
 }//pre
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
@@ -620,7 +626,6 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 
   //2960
   if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
-
     CRM_Utils_System::setTitle( ts('Case Dashboard') );
   }
 
@@ -684,6 +689,13 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
       unset($errors["custom_$fld"]);
     }
   }
+
+  if ( $formName == 'CRM_Note_Form_Note' ) {
+    $noteVal = trim($fields['note']);
+    if ( empty($noteVal) ) {
+      $errors['note'] = ts('Please enter text in the note field.');
+    }
+  }
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
@@ -709,31 +721,33 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
 
   //5260 add changelog proofing report
   $params[$reportNavID]['child'][$maxKey+1] = array (
-    'attributes' => array ( 'label'      => 'Changelog Proofing Report',
-                            'name'       => 'Changelog Proofing Report',
-                            'url'        => 'civicrm/logging/proofingreport?reset=1',
-                            'permission' => 'access CiviReport',
-                            'operator'   => 'AND',
-                            'separator'  => 0,
-                            'parentID'   => $reportNavID,
-                            'navID'      => $maxKey+1,
-                            'active'     => 1
-                            ),
+    'attributes' => array (
+      'label'      => 'Changelog Proofing Report',
+      'name'       => 'Changelog Proofing Report',
+      'url'        => 'civicrm/logging/proofingreport?reset=1',
+      'permission' => 'access CiviReport',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $reportNavID,
+      'navID'      => $maxKey+1,
+      'active'     => 1
+    ),
     'child' => array(),
     );
 
   //5230 add duplicate address removal tool
   $params[$manageNavID]['child'][$maxKey+2] = array (
-    'attributes' => array ( 'label'      => 'Duplicate Address Removal',
-                            'name'       => 'Duplicate Address Removal',
-                            'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
-                            'permission' => 'export print production files',
-                            'operator'   => 'AND',
-                            'separator'  => 0,
-                            'parentID'   => $manageNavID,
-                            'navID'      => $maxKey+2,
-                            'active'     => 1
-                            ),
+    'attributes' => array (
+      'label'      => 'Duplicate Address Removal',
+      'name'       => 'Duplicate Address Removal',
+      'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
+      'permission' => 'export print production files',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $manageNavID,
+      'navID'      => $maxKey+2,
+      'active'     => 1
+    ),
     'child' => array(),
     );
 
@@ -750,21 +764,21 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
  */
 function _setDBVars() {
 
-    //returning immediately as we've moved this to Core_DAO; retaining code for now;
-    return;
+  //returning immediately as we've moved this to Core_Config.php; retaining code for now;
+  return;
 
-    $session = CRM_Core_Session::singleton();
+  $session = CRM_Core_Session::singleton();
 
-    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
-        if ($session->get('userID')) {
-            CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1', array(1 => array($session->get('userID'), 'Integer')));
-            CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
-        }
+  if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+    if ($session->get('userID')) {
+      CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1', array(1 => array($session->get('userID'), 'Integer')));
+      CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
     }
-    if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
-        if ($session->get('jobID')) {
-            CRM_Core_DAO::executeQuery('SET @jobID := %1', array(1 => array($session->get('jobID'), 'String')));
-            //CRM_Core_Error::debug_log_message("job ID database variable reset to: {$session->get('jobID')}");
-        }
+  }
+  if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
+    if ($session->get('jobID')) {
+      CRM_Core_DAO::executeQuery('SET @jobID := %1', array(1 => array($session->get('jobID'), 'String')));
+      CRM_Core_Error::debug_log_message("jobID database variable reset to: {$session->get('jobID')}");
     }
+  }
 }

@@ -1661,3 +1661,10 @@ form#Contact .groupTagsKeywords .crm-section .label {
   width: 100%;
 }
 
+#crm-container .crm-contact-custom-search-form-row-includeGroups select,
+#crm-container .crm-contact-custom-search-form-row-excludeGroups select,
+#crm-container .crm-contact-custom-search-form-row-includeTags select,
+#crm-container .crm-contact-custom-search-form-row-excludeTags select {
+  height: 200px;
+  font-size: 11px;
+}
