@@ -84,13 +84,9 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 			if(inpLoc == 'modal') { 
 				modalSelectOnClick();
 				setTimeout(function(){
-				var modalTIDhide = cj('#modalNameTid').attr('tid');
-				var tagTIDtoHide = cj('#' + modalTIDhide).attr('tid');
-				console.log('tid = '+  modalTIDhide);
-				console.log('tid' + cj('#'modalTIDhide).attr('tid'));
-				console.log('tag' + cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide));
-				console.log('hiding modal tag' + returnTime());
-				cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide).html('');
+					var modalTIDhide = cj('#modalNameTid').attr('tid');
+					var tagTIDtoHide = cj('#' + modalTIDhide).attr('tid');
+					cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide).html('');
 				},5000);
 			}
 			setCompleteLoop++;
