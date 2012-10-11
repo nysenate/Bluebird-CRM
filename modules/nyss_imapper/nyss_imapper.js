@@ -19,7 +19,7 @@ cj(document).ready(function(){
 	placeholderSupport = ("placeholder" in document.createElement("input"));
 
 	if(!placeholderSupport ){
-		console.log('no placeholder Support');
+		// console.log('no placeholder Support');
 		cj('[placeholder]').focus(function() {
 			var input = cj(this);
 			if (input.val() == input.attr('placeholder')) {
@@ -41,7 +41,7 @@ cj(document).ready(function(){
 			})
 		});
 	}else{
-		console.log('placeholder Support');
+		// console.log('placeholder Support');
 	}
 
 
@@ -822,7 +822,6 @@ function autocomplete_setup () {
 
 				cj(data.items).each(function(i, item) {
 					messagesHtml += '<a data-id="'+item.value+'" class="tag-item" href="#">'+item.label+'</a><br/>'
-					//cj("#autocomplete-dropdown").html('<a href="#tag'+item.value+'">'+item.label+'</><br/>');
 				});
 				cj(".autocomplete-dropdown").html(messagesHtml);
 				return array;
