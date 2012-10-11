@@ -83,18 +83,20 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 			}
 			if(inpLoc == 'modal') { 
 				modalSelectOnClick();
-				
+				setTimeout(function(){
+				var modalTIDhide = cj('#modalNameTid').attr('tid');
+				var tagTIDtoHide = cj('#' + modalTIDhide).attr('tid');
+				console.log('tid = '+  modalTIDhide);
+				console.log('tid' + cj('#'modalTIDhide).attr('tid'));
+				console.log('tag' + cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide));
+				console.log('hiding modal tag' + returnTime());
+				cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide).html('');
+				},5000);
 			}
 			setCompleteLoop++;
 		}
 		cj(treeLoc).unbind('ajaxComplete');
-		setTimeout(function(){
-					var modalTIDhide = cj('#modalNameTid').attr('tid');
-					console.log('tid' + cj('#modalNameTid').attr('tid'));
-					console.log('tag' + cj('.BBtree.modal #tagModalLabel_'+ modalTIDhide));
-					console.log('hiding modal tag' + returnTime());
-					cj('.BBtree.modal #tagModalLabel_'+ modalTIDhide).html('');
-		},5000);
+
 	});
 }
 /*Writes out the on page (not modal) Tree to an object*/
