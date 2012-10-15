@@ -152,6 +152,10 @@ class CRM_IMAP_AJAX {
                         // It's not forwarded, pull from header
                         $header->date = date("Y-m-d H:i A", strtotime($header->date));
                     }
+                       // gracefully fail to get the date
+                    if ($header->date == "1969-12-31 16:00 PM"){
+                      $header->date = '0000-00-00 00:00:00';
+                    };
 
                     // Assign the header variable into the $messages array.
                     // The reason we stored our variables in $header is
@@ -224,7 +228,7 @@ class CRM_IMAP_AJAX {
         // Search for the format "Date: blah blah blah"
         // This is most formats from Lotus Notes and iNotes
         if($forwarded) {
-            $count = preg_match("/Date:\s+(.*)/", $details, $matches);
+            $count = preg_match("/Date:\s*(.*)/", $details, $matches);
             if($count == 0) {
                 // Uhoh, that one didn't work, let's try this format that gmail uses:
                 // "On Month Day, Year, at Hour:Min AMPM, "
@@ -233,13 +237,18 @@ class CRM_IMAP_AJAX {
                     $dateSent = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
                 }
             } else if(isset($matches[1])) {
-                $dateSent = date("Y-m-d H:i A", strtotime($matches[1]));
-            }
+                 $dateSent = date("Y-m-d H:i A", strtotime($matches[1]));
+            } 
         }
         else {
             // It's not forwarded, pull from header
-            $dateSent = date("Y-m-d H:i A", strtotime($email->date));
+            $dateSent = date("Y-m-d H:i A", strtotime($header->date));
         }
+        // gracefully fail to get the date
+        if ($dateSent == "1969-12-31 16:00 PM"){
+          $dateSent = '0000-00-00 00:00:00';
+        };
+
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
@@ -337,6 +346,7 @@ EOQ;
         $email = $imap->getmsg_uid($messageUid);
         $senderName = $email->sender[0]->personal;
         $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
+        $originEmailAddress = $email->sender[1]->mailbox . '@' . $email->sender[1]->host;
 
         $date = $email->date;
         $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
@@ -349,6 +359,7 @@ EOQ;
             'email' => $senderEmailAddress,
             'version' => 3,
         );
+
         $result = civicrm_api('contact', 'get', $params );
 
         // HAVE MERCY. I copied and pasted this from the previous section,
@@ -376,10 +387,8 @@ EOQ;
         }
 
         $forwarderId = 1;
-        if ( ($result['is_error']==1) && ($result['values'])){
-          $forwarderId = $result['id'];
-        }
-           
+        if($result)
+            $forwarderId = $result['id'];
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
@@ -392,6 +401,7 @@ EOQ;
           );
           $result = civicrm_api( 'email','create',$params );
 
+
           // Submit the activity information and assign it to the right user
           $params = array(
               'activity_type_id' => 12,
@@ -403,6 +413,7 @@ EOQ;
               'details' => $body,
               'version' => 3
           );
+
           $activity = civicrm_api('activity', 'create', $params);
           
           self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
