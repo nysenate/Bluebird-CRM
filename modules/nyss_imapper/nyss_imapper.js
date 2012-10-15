@@ -19,8 +19,7 @@ cj(document).ready(function(){
 	placeholderSupport = ("placeholder" in document.createElement("input"));
 
 	if(!placeholderSupport ){
-		// console.log('no placeholder Support');
-		cj('[placeholder]').focus(function() {
+ 		cj('[placeholder]').focus(function() {
 			var input = cj(this);
 			if (input.val() == input.attr('placeholder')) {
 				input.val('');
@@ -310,7 +309,7 @@ cj(document).ready(function(){
 	cj( "#find-match-popup" ).dialog({
 		modal: true,
 		height: 500,
-		width: 950,
+		width: 960, // in ie the popup was overflowing
 		autoOpen: false,
 		resizable: false,
 		title: 'Loading Data',
