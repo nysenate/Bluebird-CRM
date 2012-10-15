@@ -88,23 +88,25 @@ cj(document).ready(function(){
 				contactIds = contactIds + cj(val).val();
 			}
 		});
-
-		cj.ajax({
-			url: '/civicrm/imap/ajax/assignMessage',
-			data: {
-				messageId: messageId,
-				imapId: imapId,
-				contactId: contactIds
-			},
-			success: function(data, status) {
-				cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-				var old_total = parseInt(cj("#total_number").html(),10);
-				cj("#total_number").html(old_total-1);
-           		cj("#find-match-popup").dialog('close');  
-           		help_message('Message assigned to contact');
-			}
-		});
-		return false;
+		if(contactIds !='' ){
+			cj.ajax({
+				url: '/civicrm/imap/ajax/assignMessage',
+				data: {
+					messageId: messageId,
+					imapId: imapId,
+					contactId: contactIds
+				},
+				success: function(data, status) {
+					cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+					var old_total = parseInt(cj("#total_number").html(),10);
+					cj("#total_number").html(old_total-1);
+	           		cj("#find-match-popup").dialog('close');  
+	           		help_message('Message assigned to contact');
+				}
+			});
+			return false;
+		};
+	
 	});
 
 	// reassign activity to contact on the matched page
