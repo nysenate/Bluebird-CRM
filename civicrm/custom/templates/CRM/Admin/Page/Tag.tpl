@@ -132,6 +132,9 @@ function modalSelectOnClick() {
 				{
 					text: "Move",
 					click: function() {
+						cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+						cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+						modalSetLoadingGif();
 						tagMove = new Object();
 						tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
 						tagMove.destinationId = destinationId;
@@ -146,6 +149,9 @@ function modalSelectOnClick() {
 								if(data.code != 1)
 								{
 									alert(data.message);
+									cj('.ui-dialog-buttonpane .loadingGif').hide();
+									cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+									modalRemoveLoadingGif();
 								}
 								cj('#dialog').dialog('close');
 								cj('#dialog').dialog('destroy');
@@ -177,6 +183,9 @@ function modalSelectOnClick() {
 					text: "Merge ",
 					click: function() {
 						tagMerge = new Object();
+						cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+						cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+						modalSetLoadingGif();
 						tagMerge.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
 						tagMerge.destinationId = destinationId;
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
@@ -188,18 +197,25 @@ function modalSelectOnClick() {
 							dataType: 'json',
 							success: function(data, status, XMLHttpRequest) {
 								if ( data.status == true ) {
+									cj("#dialog").dialog("close"); 
+									cj("#dialog").dialog("destroy"); 
+									callTagAjax();
 									if(cj('.contactTagsList.help').length < 1)
 									{
 										cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
 									}
-									var toIdTag = cj('#tagLabel_' + tagMerge.destinationId).attr('description');
+									var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
 									var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
 									cj('#tagLabel_' + tagInfo.tid).html(''); 
 									cj('#tagStatusBar').html(msg);
 								}
-								callTagAjax();
-								cj(this).dialog("close"); 
-								cj(this).dialog("destroy"); 
+								else
+								{
+									cj('.ui-dialog-buttonpane .loadingGif').hide();
+									cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+									modalRemoveLoadingGif();
+								}
+								
 							}	
 						});
 
