@@ -152,9 +152,10 @@ class CRM_IMAP_AJAX {
                         // It's not forwarded, pull from header
                         $header->date = date("Y-m-d H:i A", strtotime($header->date));
                     }
-                       // gracefully fail to get the date
-                    if ($header->date == "1969-12-31 16:00 PM"){
-                      $header->date = '0000-00-00 00:00:00';
+
+                    // gracefully fail to get the date
+                    if ( substr($header->date, 0, 4) == "1969"){
+                      $header->date  = '0000-00-00 00:00:00';
                     };
 
                     // Assign the header variable into the $messages array.
@@ -245,7 +246,7 @@ class CRM_IMAP_AJAX {
             $dateSent = date("Y-m-d H:i A", strtotime($header->date));
         }
         // gracefully fail to get the date
-        if ($dateSent == "1969-12-31 16:00 PM"){
+        if ( substr($dateSent,0, 4) == "1969"){
           $dateSent = '0000-00-00 00:00:00';
         };
 
