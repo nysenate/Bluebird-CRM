@@ -217,8 +217,8 @@ cj(document).ready(function(){
 							success: function(data,status) {
 								cj("#"+messageId).remove();
 								var old_total = parseInt(cj("#total_number").html(),10);
-								cj("#total_number").html(old_total-1);
 								help_message('Activity Deleted');
+								cj("#total_number").html(old_total-1);
 							} 
 						});
 					}else{
@@ -229,8 +229,9 @@ cj(document).ready(function(){
 							success: function(data,status) {
 								cj("#"+messageId+'_'+imapId).remove();
  								var old_total = parseInt(cj("#total_number").html(),10);
+ 								help_message('Message Deleted');
+
 								cj("#total_number").html(old_total-1);
-								help_message('Message Deleted');
 							} 
 						});
 					}
@@ -376,7 +377,6 @@ cj(document).ready(function(){
 					url: '/civicrm/imap/ajax/addTags',
 					data: {activityId: activityId, contactId: contactId, tags: tagId},
 					success: function(data,status) {
-	 					help_message('Tag Added');
 						if(delete_ids.length > 0 ){
 							cj.each(delete_ids, function(key, value) { 
 								cj.ajax({
