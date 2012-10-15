@@ -156,6 +156,7 @@ function callTagListMain(treeLoc, treeData) {
 }
 /*Writes out the modal tree to an object*/
 function callTagListModal(treeLoc, tID, modalTreeTop) {
+	//console.log('callingModal');
 	callTagAjaxInitLoader(treeLoc);
 	var displayObj = new Object();
 	displayObj.tLvl = 0;
@@ -203,6 +204,7 @@ function callTagListModal(treeLoc, tID, modalTreeTop) {
 		}
 		displayObj.output += '</dl>';
 		writeDisplayObject(displayObj, treeLoc);
+
 	}
 }
 function escapePositions(position, tidNum)
@@ -232,6 +234,12 @@ function swapTrees(tab){
 /*Clears out the location to be written, and then jquery appends it to the space*/
 function writeDisplayObject(displayObj, treeLoc) {
 	cj(treeLoc).append(displayObj.output);
+	//console.log(treeLoc);
+	if(treeLoc == '.ui-dialog-content .BBtree.modal')
+	{
+		cj(treeLoc).removeClass('loadingGif');
+		cj(treeLoc).children().show();
+	}
 }
 /*Loading Gif*/
 function callTagAjaxInitLoader(treeLoc) {

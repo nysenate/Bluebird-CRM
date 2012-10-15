@@ -105,8 +105,12 @@
 	padding-left:20px;
 }
 .BBtree.modal dt div.tag {
-	width:210px;
+	width:380px;
 	padding-left:20px;
+	margin-left:18px;
+}
+.BBtree.modal dt.lv-0 div.tag {
+	margin-left:0px;
 }
 .BBtree.manage dt div.tag {
 	width:250px;
@@ -179,7 +183,7 @@ margin:0;
 	top: .5em\9;
 }
 .BBtree.modal input[type=radio]{
-	float:right; margin-top:-15px; margin-top:-18px\9;
+	float:left; margin-left:20px; margin-top:-15px; margin-top:-18px\9;
 }
 /*adjust the following to choose the default open portion for the drop-down*/
 .BBtree dl.lv-2, .BBtree dl.lv-3, .BBtree dl.lv-4, .BBtree dl.lv-5, .BBtree dl.lv-6 {
@@ -189,9 +193,7 @@ margin:0;
 .BBtree dl.lv-0{
 	width:525px !important;
 }
-.BBtree.modal dl.lv-0{
-	width:345px !important;
-}
+
 .BBtree.manage dl.lv-0{
 	margin-left:-25px;
 }
@@ -265,28 +267,31 @@ margin:0;
 .BBtree.manage dt.lv-5{
 	width:295px !important;
 }
-.BBtree. dl.lv-0{
-	width:300px;
+.BBtree.modal dl.lv-0{
+	width:520px !important;
 }
-.BBtree dl.lv-1{
-	width:275px;
+.BBtree dl.lv-0{
+	width:520px;
 }
-.BBtree dl.lv-2{
-	width:250px;
+.BBtree.modal dl.lv-1{
+	width:495px;
 }
-.BBtree dl.lv-3{
-	width:225px;
+.BBtree.modal dl.lv-2{
+	width:470px;
 }
-.BBtree dl.lv-4{
-	width:200px;
+.BBtree.modal dl.lv-3{
+	width:455px;
 }
-.BBtree dt.lv-4 div.tag {
+.BBtree.modal dl.lv-4{
+	width:440px;
+}
+.BBtree.modal dt.lv-4 div.tag {
 	width:145px;
 }
-.BBtree dl.lv-5{
-	width:175px;
+.BBtree.modal dl.lv-5{
+	width:425px;
 }
-.BBtree dt.lv-5 div.tag {
+.BBtree.modal dt.lv-5 div.tag {
 	width:120px;
 }	
 .crm-tagListInfo {

@@ -222,7 +222,7 @@ function makeModalMerge(tagLabel){
 		closeOnEscape: true,
 		draggable: false,
 		height: 500,
-		width: 400,
+		width: 600,
 		title: "Merge Tag",
 		modal: true, 
 		bgiframe: true,
@@ -242,10 +242,9 @@ function makeModalMerge(tagLabel){
 			cj('#dialog').html(treeDialogInfo);
 			} else {
 			treeDialogInfo = '<div class="modalHeader">Merge <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into Selected Tag...</div>';
-			treeDialogInfo += '<div class="BBtree modal merge"></div>';
+			treeDialogInfo += '<div class="BBtree modal merge loadingGif"></div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
-			
 			callTagAjax('modal', modalTreeTop);
 			}
 		},
