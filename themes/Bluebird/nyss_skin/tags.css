@@ -68,6 +68,12 @@
 .BBtree.loadingGif {
 	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center transparent;
 }
+.ui-dialog-buttonpane .loadingGif {
+	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center transparent;
+	 width: 30px;
+	 height: 30px;
+	 margin: 0 auto;
+}
 .BBtree dl.lv-0 {
 	float:left;
 }
