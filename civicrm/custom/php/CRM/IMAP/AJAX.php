@@ -243,7 +243,7 @@ class CRM_IMAP_AJAX {
         }
         else {
             // It's not forwarded, pull from header
-            $dateSent = date("Y-m-d H:i A", strtotime($header->date));
+            $dateSent = date("Y-m-d H:i A", strtotime($email->date));
         }
         // gracefully fail to get the date
         if ( substr($dateSent,0, 4) == "1969"){
@@ -387,9 +387,9 @@ EOQ;
             $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
         }
 
-        $forwarderId = 1;
-        if($result)
-            $forwarderId = $result['id'];
+        if (($result['is_error']==1) && ($result['values'])){
+          $forwarderId = $result['id'];
+        }
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
