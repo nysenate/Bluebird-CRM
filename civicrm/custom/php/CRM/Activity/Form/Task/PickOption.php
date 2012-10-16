@@ -149,6 +149,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
   public function postProcess() {
     $params = $this->exportValues();
     $this->_contacts = array();
+
     //get assignee contacts
     if ($params['assigned_to']) {
       foreach ($this->_activityHolderIds as $key => $id) {
