@@ -152,7 +152,7 @@ $now = time() + (60 * 60 * $offset);
     if(typeof cj == 'function') {
       cj('.messages br').remove();
       cj('.messages').each(function(index){
-        if(cj(this).html() == '') { cj(this).remove();}
+        if(cj(this).html() == '') { cj(this).remove(); }
       });
       cj('.messages').appendTo('#status .messages-container');
       if(cj('#status .messages-container').children().length > 0) {

@@ -48,6 +48,14 @@
 			{/if}
 		</script>
 	</div>
+  {if $cd_edit.name eq 'Attachments'}
+    {literal}
+    <script type="text/javascript">
+      //5396 hackish solution to prevent msg from appearing in top panel
+      cj('#customData5 .messages.help').removeClass('messages').addClass('messages-block');
+    </script>
+    {/literal}
+  {/if}
 {/if}{*NYSS*}
 {/foreach}
 

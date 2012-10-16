@@ -346,6 +346,13 @@ $execSql -i $instance -c "$mail" -q
 ch="UPDATE civicrm_custom_group SET help_pre = null, help_post = null;"
 $execSql -i $instance -c "$ch" -q
 
+## 5396 add help text to file attachments
+fa="
+UPDATE civicrm_custom_group
+SET help_pre = 'Browse to the file you want to upload. Each file must be less than 2MB in size.'
+WHERE name = 'Attachments';"
+$execSql -i $instance -c "$fa" -q
+
 ## 4275 update dedupe rules
 rules="
 UPDATE civicrm_dedupe_rule_group
