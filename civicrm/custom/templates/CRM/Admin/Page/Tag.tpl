@@ -232,6 +232,74 @@ function modalSelectOnClick() {
 		}
 	});
 }
+function makeModalConvert(tagLabel){
+	cj("#dialog").show( );
+	cj("#dialog").dialog({
+		closeOnEscape: true,
+		draggable: false,
+		height: 300,
+		width: 300,
+		title: "Convert Keyword to Tag",
+		modal: true, 
+		bgiframe: true,
+		close:{ },
+		overlay: { 
+			opacity: 0.2, 
+			background: "black" 
+		},
+		open: function() {
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+			var treeDialogInfo;
+			if(tagInfo.reserved == true){
+			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be converted</div>';
+			cj('#dialog').html(treeDialogInfo);
+			} else {
+			treeDialogInfo = '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into an Issue Code.</div>';
+			cj('#dialog').html(treeDialogInfo);
+			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+			}
+		},
+		buttons: {
+			"Convert": function() {
+				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+				modalSetLoadingGif();
+				tagMove = new Object();
+				tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+				cj.ajax({
+					url: '/civicrm/ajax/tag/update',
+					data: {
+						id: tagMove.currentId,
+						parent_id: 291
+					},
+					dataType: 'json',
+					success: function(data, status, XMLHttpRequest) {
+						if(data.code != 1)
+						{
+							alert(data.message);
+							cj('.ui-dialog-buttonpane .loadingGif').hide();
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
+							modalRemoveLoadingGif();
+						}
+						else
+						{
+							cj('#dialog').dialog('close');
+							cj('#dialog').dialog('destroy');
+							callTagAjax();
+						}
+					}
+				});
+			},
+			"Cancel": function() { 
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy");
+			}
+		} 
+	});
+}
 function makeModalMerge(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
@@ -291,7 +359,7 @@ function addControlBox(tagLabel, IDChecked, treeTop) {
 	{
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Convert Tag" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
 	}
 	floatControlBox += '</span>';
 	if(tagMouse == 'dt#tagLabel_291')
