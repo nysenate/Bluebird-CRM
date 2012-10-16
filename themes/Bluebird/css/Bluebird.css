@@ -1668,3 +1668,10 @@ form#Contact .groupTagsKeywords .crm-section .label {
   height: 200px;
   font-size: 11px;
 }
+
+#crm-container .tagset-view-only {
+  margin-top: 20px;
+  font-style: italic;
+  border: 1px solid #999;
+  padding: 4px;
+}

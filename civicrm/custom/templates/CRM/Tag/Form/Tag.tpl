@@ -234,6 +234,11 @@ function findIDLv(tagLabel) {
 	cj('dt#'+tagLabel).removeClass('checked');
 	cj('dt#'+tagLabel+' .fCB').attr('style', 'padding:1px 0;float:right;'); 
 }
+
+//5517
+if ( !cj('.tag-section').hasClass('crm-processed-input') ) {
+  cj('.tag-section .content').addClass('tagset-view-only');
+}
 </script>
 {/literal}
 
@@ -247,4 +252,3 @@ function findIDLv(tagLabel) {
 <script type="text/javascript">
   //load_init_check(fname);
 </script>
-
