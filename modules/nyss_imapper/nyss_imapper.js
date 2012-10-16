@@ -799,12 +799,17 @@ function help_message(message){
 }
 
 function short_subject(subject, length){
- 	if (subject.length > length ){
+	if(subject){
+	 	if (subject.length > length ){
  		var safe_subject = subject.substring(0,length)+"...";
 		return safe_subject;
- 	}else{
- 		return subject;
- 	}
+ 		}else{
+ 			return subject;
+ 		}	
+	}else{
+		return "no subject";
+ 	}	
+
  }
 
 function autocomplete_setup () {
