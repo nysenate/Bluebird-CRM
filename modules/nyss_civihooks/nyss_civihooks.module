@@ -695,6 +695,11 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
     if ( empty($noteVal) ) {
       $errors['note'] = ts('Please enter text in the note field.');
     }
+
+    $subjVal = trim($fields['subject']);
+    if ( empty($subjVal) ) {
+      $errors['subject'] = ts('Please enter text in the subject field.');
+    }
   }
 }
 
