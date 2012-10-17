@@ -316,7 +316,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Contact_upload_view', //handle separately
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
-      '_qf_ProofingReport_next'
+      '_qf_ProofingReport_next',
+      '_qf_Label_next'
     );
     $btnExcludeValue = array(
       'PDF',
