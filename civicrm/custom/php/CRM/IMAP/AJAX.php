@@ -113,7 +113,7 @@ class CRM_IMAP_AJAX {
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
                         $header->forwarder = htmlentities($header->from);
-                        $header->forwarder_time = date("Y-m-d H:i A", $header->udate); 
+                        $header->forwarder_time = date("Y-m-d h:i A", $header->udate); 
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
@@ -136,27 +136,12 @@ class CRM_IMAP_AJAX {
                     // Search for the format "Date: blah blah blah"
                     // This is most formats from Lotus Notes and iNotes
                     if($forwarded) {
-                        $count = preg_match("/Date:\s*(.*)/", $details, $matches);
-                        if($count == 0) {
-                            // Uhoh, that one didn't work, let's try this format that gmail uses:
-                            // "On Month Day, Year, at Hour:Min AMPM, "
-                            $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
-                            if($countOnAt > 0) {
-                                $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
-                            }
-                        } else if(isset($matches[1])) {
-                            $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
-                        } 
-                    }
-                    else {
+                      // getting a clean date is hard these days
+                      $header->date = self::cleanDate($details); 
+                    } else {
                         // It's not forwarded, pull from header
-                        $header->date = date("Y-m-d H:i A", strtotime($header->date));
+                        $header->date = date("m-d-y h:i A", strtotime($header->date));
                     }
-
-                    // gracefully fail to get the date
-                    if ( substr($header->date, 0, 4) == "1969"){
-                      $header->date  = '0000-00-00 00:00:00';
-                    };
 
                     // Assign the header variable into the $messages array.
                     // The reason we stored our variables in $header is
@@ -193,7 +178,8 @@ class CRM_IMAP_AJAX {
         // this should be separated into a function.
         $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-  
+        $tempDetails = preg_replace("/>>/i", "", $details);
+
         // Read the from: sender in the format:
         // From: "First Last" <email address>
         // or
@@ -213,7 +199,7 @@ class CRM_IMAP_AJAX {
             $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
             $forwardedName = $email->sender[0]->personal;
             $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-            $forwardedTime = $dateSent = date("Y-m-d H:i A", $email->time); 
+            $forwardedTime = $dateSent = date("m-d-y h:i A", $email->time); 
             $forwarded = true;
         } else {
             // Otherwise, search for a name and  address from
@@ -228,27 +214,17 @@ class CRM_IMAP_AJAX {
 
         // Search for the format "Date: blah blah blah"
         // This is most formats from Lotus Notes and iNotes
+
         if($forwarded) {
-            $count = preg_match("/Date:\s*(.*)/", $details, $matches);
-            if($count == 0) {
-                // Uhoh, that one didn't work, let's try this format that gmail uses:
-                // "On Month Day, Year, at Hour:Min AMPM, "
-                $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
-                if($countOnAt > 0) {
-                    $dateSent = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
-                }
-            } else if(isset($matches[1])) {
-                 $dateSent = date("Y-m-d H:i A", strtotime($matches[1]));
-            } 
-        }
-        else {
-            // It's not forwarded, pull from header
-            $dateSent = date("Y-m-d H:i A", strtotime($email->date));
-        }
-        // gracefully fail to get the date
-        if ( substr($dateSent,0, 4) == "1969"){
-          $dateSent = '0000-00-00 00:00:00';
+          // getting a clean date is hard these days
+          $dateSent = self::cleanDate($details);
+        }else{
+          $dateSent = date("m-d-y h:i A", strtotime($email->date));
+
         };
+       
+        // echo $dateSent."<br/>";
+
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
@@ -264,12 +240,44 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+
+    /* cleanDate
+     * Parameters: $date_string: The date string from the from the forwarded message
+     * Returns: The 'm-d-y h:i A' formatted date date .
+     * This function will format many types of incoming dates
+     */
+    public static function cleanDate($date_string){
+        $date_string = preg_replace("/(<br>)/i", " ", $date_string);
+        $date_string = preg_replace("/(>)|(  )|(<)/i", "", $date_string);
+        $pos = strpos( $date_string, "Subject:");
+
+        if ($pos !== false) {
+          $date_string = substr($date_string, 0, $pos);
+          $pos2 = strpos( $date_string, "Date:");
+          if ($pos2 !== false) {
+            $date_string_short = substr($date_string, ($pos2+5));
+          }else{
+            $date_string_short = "00-00-00 00:00 XX";
+          }
+        }
+
+        // here we have the clean date from the forwarded header
+        // echo $date_string."<br/>";
+        // sometimes email clients think its fun to add stuff to the date, remove it here.
+        $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
+        // reformat the date to something standard here.
+        $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
+        return $date_string_short;
+    }
+
     /* deleteMessage()
      * Parameters: None.
      * Returns: None.
      * This function connects to the IMAP server with the specified user name
      * and password, then deletes the message based on the UID
      */
+
+
     public static function deleteMessage() {
         // Set up IMAP variables
         self::setupImap();
