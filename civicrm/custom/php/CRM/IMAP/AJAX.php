@@ -315,7 +315,7 @@ class CRM_IMAP_AJAX {
           $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
           $where.="  AND email.email LIKE '$email_address%'\n";
           $order.=", email.is_primary DESC";
-        }    
+        }
         $state_id = self::get('state');
         $street_address = self::get('street_address');
         $city = self::get('city');
@@ -773,15 +773,17 @@ EOQ;
       }
     }
     public static function createNewContact() {
+        require_once 'api/api.php';
+        // testing url 
         //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes
-        $first_name = $_GET["first_name"];
-        $last_name = $_GET["last_name"];
-        $email = $_GET["email_address"];
-        $phone = $_GET["phone"];
-        $street_address = $_GET["street_address"];
-        $street_address_2 = $_GET["street_address_2"];
-        $postal_code = $_GET["postal_code"];
-        $city = $_GET["city"];
+        $first_name = self::get("first_name");
+        $last_name = self::get("last_name");
+        $email = self::get("email_address");
+        $phone = self::get("phone");
+        $street_address = self::get("street_address");
+        $street_address_2 = self::get("street_address_2");
+        $postal_code = self::get("postal_code");
+        $city = self::get("city");
  
         if(!($first_name) && !($last_name) && !($email))
         {
@@ -806,27 +808,37 @@ EOQ;
 
         $contact = civicrm_api('contact','create', $params);
 
-        //And then you attach the contact to the Address! which is at $contact['id']
-        $address_params = array(
-            'contact_id' => $contact['id'],
-            'street_address' => $street_address,        
-            'supplemental_address_1' => $street_address_2,
-            'city' => $city,
-            'postal_code' => $postal_code,
-            'is_primary' => 1,
-            'country_id' => 1228,
-            'location_type_id' => 1,
-            'version' => 3
-            
-        );
 
-        $address = civicrm_api('address', 'create', $address_params);
-        if(($contact['is_error'] == 1) || ($address['is_error'] == 1)){
+        if($street_address && $contact['id']){
+          //And then you attach the contact to the Address! which is at $contact['id']
+          $address_params = array(
+              'contact_id' => $contact['id'],
+              'street_address' => $street_address,        
+              'supplemental_address_1' => $street_address_2,
+              'city' => $city,
+              'postal_code' => $postal_code,
+              'is_primary' => 1,
+              'state_province_id' => 1031,
+              'country_id' => 1228,
+              'location_type_id' => 1,
+              'version' => 3,
+              'debug' => 1
+          );
+          $address = civicrm_api('address', 'create', $address_params);
+        }
+        
+
+
+        if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
           $returnCode = array('code'      =>  'ERROR',
                                 'status'    =>  '1',
-                                'message'   =>  'Error adding Contact or Address Details'.print_r($contact).print_r($address)
+                                'message'   =>  'Error adding Contact or Address Details'
                                 );
-          echo json_encode($returnCode);
+          // echo "contact\n";
+          // var_dump($contact);
+          // echo "address\n";
+          // var_dump($address);
+          // echo json_encode($returnCode);
           CRM_Utils_System::civiExit();
         } else {
           $returnCode = array('code'      =>  'SUCCESS',

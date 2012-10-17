@@ -136,54 +136,58 @@ cj(document).ready(function(){
 	create.click(function() {
 		var messageId = cj('#email_id').val();
 		var imap_id = cj('#imap_id').val();
-		var first_name = cj("#first_name").val();
-		var last_name = cj("#last_name").val();
-		var email_address = cj("#email_address").val();
-		var phone = cj("#phone").val();
-		var street_address = cj("#street_address").val();
-		var street_address_2 = cj("#street_address_2").val();
-		var zip = cj("#zip").val();
-		var city = cj("#city").val();
-		
-		cj.ajax({
-			url: '/civicrm/imap/ajax/createNewContact',
-			data: {
-				messageId: messageId,
-				imap_id: imap_id,
-				first_name: first_name,
-				last_name: last_name, 
-				email_address: email_address, 
-				phone: phone, 
-				street_address: street_address, 
-				street_address_2: street_address_2,
-				postal_code: zip,
-				city: city
-			},
-			success: function(data, status) {
-				contactData = cj.parseJSON(data);
-				cj.ajax({
-					url: '/civicrm/imap/ajax/assignMessage',
-					data: {
-						messageId: messageId,
-						imapId: imap_id,
-						contactId: contactData.contact
-					},
-					success: function(data, status) {
-						cj("#find-match-popup").dialog('close'); 
-						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-						help_message('Contact created and message Assigned');
+		var first_name = cj("#tabs-2 #first_name").val();
+		var last_name = cj("#tabs-2 #last_name").val();
+		var email_address = cj("#tabs-2 #email_address").val();
+		var phone = cj("#tabs-2 #phone").val();
+		var street_address = cj("#tabs-2 #street_address").val();
+		var street_address_2 = cj("#tabs-2 #street_address_2").val();
+		var zip = cj("#tabs-2 #zip").val();
+		var city = cj("#tabs-2 #city").val();
 
-						// cj.each(messages, function (idx, val) {
-						// 	if(val.uid == messageId && val.imap_id == imapId) {
-		    //             		delete messages[idx];
-		    //             		buildMessageList();
-		    //             	}
-		    //            });
-				}
+		if((!!first_name) && (!!last_name)){
+			cj.ajax({
+				url: '/civicrm/imap/ajax/createNewContact',
+				data: {
+					messageId: messageId,
+					imap_id: imap_id,
+					first_name: first_name,
+					last_name: last_name, 
+					email_address: email_address, 
+					phone: phone, 
+					street_address: street_address, 
+					street_address_2: street_address_2,
+					postal_code: zip,
+					city: city
+				},
+				success: function(data, status) {
+					contactData = cj.parseJSON(data);
+					cj.ajax({
+						url: '/civicrm/imap/ajax/assignMessage',
+						data: {
+							messageId: messageId,
+							imapId: imap_id,
+							contactId: contactData.contact
+						},
+						success: function(data, status) {
+							cj("#find-match-popup").dialog('close'); 
+							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+							help_message('Contact created and message Assigned');
+
+							// cj.each(messages, function (idx, val) {
+							// 	if(val.uid == messageId && val.imap_id == imapId) {
+			    //             		delete messages[idx];
+			    //             		buildMessageList();
+			    //             	}
+			    //            });
+					}
+				});
+				}			
 			});
-			}			
-		});
-		return false;
+			return false;
+		}else{
+			alert("Please Enter a first & last name");
+		};
 	});
 
 	if(cj("#Activities").length){
@@ -572,13 +576,13 @@ cj(document).ready(function(){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
-				cj('#first_name, #last_name, #phone, #street_address, #city, ').val('');
+				cj('#first_name, #last_name, #phone, #street_address, #city, #email_address').val('');
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email_address').val(messages.fromEmail);
+ 				cj('#tabs-1 #email_address, #tabs-2 #email_address').val(messages.fromEmail);
 
  				cj('#filter').click();
 				switchName(messages.fromName);
