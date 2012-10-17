@@ -105,6 +105,8 @@ cj(document).ready(function(){
 				}
 			});
 			return false;
+		}else{
+			alert("Please Choose a contact");
 		};
 	
 	});
@@ -719,6 +721,9 @@ function buildMessageList() {
 		cj('#imapper-messages-list').html(messagesHtml);
 		cj("#total_number").html(total_results);
 		makeListSortable();
+		cj('.checkbox').removeClass('sorting');
+		cj('.Actions').removeClass('sorting');
+
 	}
 }
 
