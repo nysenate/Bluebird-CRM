@@ -105,6 +105,8 @@ cj(document).ready(function(){
 				}
 			});
 			return false;
+		}else{
+			alert("Please Choose a contact");
 		};
 	
 	});
@@ -719,6 +721,9 @@ function buildMessageList() {
 		cj('#imapper-messages-list').html(messagesHtml);
 		cj("#total_number").html(total_results);
 		makeListSortable();
+		cj('.checkbox').removeClass('sorting');
+		cj('.Actions').removeClass('sorting');
+
 	}
 }
 
@@ -799,12 +804,17 @@ function help_message(message){
 }
 
 function short_subject(subject, length){
- 	if (subject.length > length ){
+	if(subject){
+	 	if (subject.length > length ){
  		var safe_subject = subject.substring(0,length)+"...";
 		return safe_subject;
- 	}else{
- 		return subject;
- 	}
+ 		}else{
+ 			return subject;
+ 		}	
+	}else{
+		return "no subject";
+ 	}	
+
  }
 
 function autocomplete_setup () {
