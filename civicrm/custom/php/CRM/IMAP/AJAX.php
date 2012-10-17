@@ -302,32 +302,45 @@ class CRM_IMAP_AJAX {
     public static function getContacts() {
         $start = microtime(true);
         $s = self::get('s');
+
+        $from = "FROM civicrm_contact as contact\n";
+        $where = "WHERE contact.is_deleted=0\n";
+        $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
+        if($first_name) $where .="  AND contact.first_name LIKE '$first_name%'\n";
         $last_name = self::get('last_name');
+        if($last_name) $where .="  AND contact.last_name LIKE '$last_name'\n";
         $email_address = self::get('email_address');
+        if($email_address) {
+          $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
+          $where.="  AND email.email LIKE '$email_address%'\n";
+          $order.=", email.is_primary DESC";
+        }    
+        $state_id = self::get('state');
         $street_address = self::get('street_address');
         $city = self::get('city');
-        $state_id = self::get('state');
+        if($street_address || $city || $state_id) {
+          $from.="  JOIN civicrm_address as address ON address.contact_id=contact.id\n";
+          $order.=", address.is_primary DESC";
+          if($street_address) {
+            $where.="  AND address.street_address LIKE '$street_address%'\n";
+          }
+          if ($city) {
+            $where.="  AND address.city LIKE '$city%'\n";
+          }
+          if ($state_id) {
+            $from.="  JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
+            $where.="  AND state.id='$state_id'\n";
+          }
+        }
         $phone = self::get('phone');
-        $query = <<<EOQ
-SELECT DISTINCT *
-FROM civicrm_contact AS contact
-  JOIN civicrm_address AS address ON contact.id=address.contact_id
-  JOIN civicrm_state_province AS state ON address.state_province_id=state.id
-  JOIN civicrm_phone as phone ON phone.contact_id=contact.id
-  JOIN civicrm_email as email ON email.contact_id=contact.id
-WHERE contact.is_deleted=0
-  AND state.id='$state_id'
-  AND address.is_primary = '1'
-  AND email.is_primary = '1'
-  AND address.city LIKE '$city%'
-  AND contact.first_name LIKE '$first_name%'
-  AND contact.last_name LIKE '$last_name%'
-  AND address.street_address LIKE '$street_address%'
-  AND email.email LIKE '$email_address%'
-  AND phone.phone LIKE '%$phone%'
-ORDER BY contact.sort_name
-EOQ;
+        if ($phone) {
+          $from.="  JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
+          $where.="  AND phone.phone LIKE '%$phone%'";
+        }
+        $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";
+        // var_dump($query); exit();
+
         $result = mysql_query($query, self::db());
         $results = array();
         while($row = mysql_fetch_assoc($result)) {
@@ -469,7 +482,7 @@ EOQ;
                                 );
 
                 $result = civicrm_api('entity_tag', 'create', $params );
-                if($result['is_error']) {
+                if($result['is_error']==1) {
                     $returnCode = array('code'      =>  'ERROR',
                                         'message'   =>  "Problem with Contact ID: {$contactId}");
                     echo json_encode($returnCode);
@@ -803,25 +816,25 @@ EOQ;
             'is_primary' => 1,
             'country_id' => 1228,
             'location_type_id' => 1,
-            'version' => 3,
+            'version' => 3
+            
         );
 
         $address = civicrm_api('address', 'create', $address_params);
-        if(($contact['is_error'] == 0) && ($address['is_error'] == 0))
-        {
-            $returnCode = array('code'      =>  'SUCCESS',
+        if(($contact['is_error'] == 1) || ($address['is_error'] == 1)){
+          $returnCode = array('code'      =>  'ERROR',
+                                'status'    =>  '1',
+                                'message'   =>  'Error adding Contact or Address Details'.print_r($contact).print_r($address)
+                                );
+          echo json_encode($returnCode);
+          CRM_Utils_System::civiExit();
+        } else {
+          $returnCode = array('code'      =>  'SUCCESS',
                                 'status'    =>  '0',
                                 'contact' => $contact['id']
                                 );
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-        } else {
-            $returnCode = array('code'      =>  'ERROR',
-                                'status'    =>  '1',
-                                'message'   =>  'Error adding Contact or Address Details'
-                                );
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
+          echo json_encode($returnCode);
+          CRM_Utils_System::civiExit();
         }
     }
 
