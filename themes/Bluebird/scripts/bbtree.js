@@ -215,13 +215,15 @@ function callTagListModal(treeLoc, tID, modalTreeTop) {
 }
 function escapePositions(position, tidNum)
 {
-	if(tidNum = 292)
+	console.log(tidNum);
+	if(tidNum == 292)
 	{
 		return '';
 	}
 	else
 	{
-		return(position);
+		console.log(position);
+		return position;
 	}
 }
 /*Tab Swapping functionality between Issue Codes and Keywords*/
@@ -445,6 +447,7 @@ function makeModalAdd(tagLabel){
 		buttons: {
 			"Done": function () {
 				tagCreate = new Object();
+				tagCreate.tagDescription = '';
 				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
 				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
 				modalSetLoadingGif();
