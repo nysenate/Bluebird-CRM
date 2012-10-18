@@ -21,9 +21,12 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
-			cj('.crm-tagTabHeader ul').html('');
-			cj('.BBtree.edit').remove();
-			cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
+			if(local != 'modal')
+			{
+				cj('.crm-tagTabHeader ul').html('');
+				cj('.BBtree.edit').remove();
+				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
+			}
 			cj.each(data.message, function(i,tID){
 				if(tID.children.length > 0){
 					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
