@@ -316,7 +316,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Contact_upload_view', //handle separately
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
-      '_qf_ProofingReport_next'
+      '_qf_ProofingReport_next',
+      '_qf_Label_next'
     );
     $btnExcludeValue = array(
       'PDF',
@@ -699,6 +700,19 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
     $subjVal = trim($fields['subject']);
     if ( empty($subjVal) ) {
       $errors['subject'] = ts('Please enter text in the subject field.');
+    }
+  }
+
+  if ( $formName == 'CRM_Contact_Form_GroupContact' ) {
+    if ( empty($fields['group_id']) ) {
+      //5426 temp fix
+      $cid = $form->getVar('_contactId');
+      $urlString = 'civicrm/contact/view';
+      $urlParams = "action=browse&reset=1&cid={$cid}&selectedChild=group";
+      $urlBounce = CRM_Utils_System::url($urlString,$urlParams);
+
+      $errors['group_id'] = 'You must select a group.';
+      CRM_Core_Error::statusBounce('You must select a group.', $urlBounce);
     }
   }
 }

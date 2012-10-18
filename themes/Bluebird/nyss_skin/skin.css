@@ -276,9 +276,10 @@ color:#FFF;
 #crm-container .crm-content-block a.button span,
 #crm-container .crm-content-block .crm-button input,
 #crm-container .crm-content-block .crm-button input.form-submit{
-    padding:4px 6px 4px 0;
-    text-shadow: none;
-    }
+  padding:4px 4px 4px 0;
+  text-shadow: none;
+  white-space: nowrap;
+}
 
 
 #crm-contact-actions-link,
