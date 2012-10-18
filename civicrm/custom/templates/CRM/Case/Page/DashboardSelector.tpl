@@ -113,7 +113,7 @@
    <tr id="{$list}{$row.case_id}_hide" class="crm-case_{$row.case_id}">
      <td>
      </td>
-     <td colspan="7" width="99%" class="enclosingNested crm-case_{$row.case_id}">
+     <td colspan="8" width="99%" class="enclosingNested crm-case_{$row.case_id}">{*NYSS 4394*}
         <div id="{$context}-{$list}-casedetails-{$row.case_id}"></div>
      </td>
    </tr>
