@@ -113,7 +113,7 @@ class CRM_IMAP_AJAX {
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
                         $header->forwarder = htmlentities($header->from);
-                        $header->forwarder_time = date("Y-m-d H:i A", $header->udate); 
+                        $header->forwarder_time = date("Y-m-d h:i A", $header->udate); 
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
@@ -136,27 +136,12 @@ class CRM_IMAP_AJAX {
                     // Search for the format "Date: blah blah blah"
                     // This is most formats from Lotus Notes and iNotes
                     if($forwarded) {
-                        $count = preg_match("/Date:\s*(.*)/", $details, $matches);
-                        if($count == 0) {
-                            // Uhoh, that one didn't work, let's try this format that gmail uses:
-                            // "On Month Day, Year, at Hour:Min AMPM, "
-                            $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
-                            if($countOnAt > 0) {
-                                $header->date = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
-                            }
-                        } else if(isset($matches[1])) {
-                            $header->date = date("Y-m-d H:i A", strtotime($matches[1]));
-                        } 
-                    }
-                    else {
+                      // getting a clean date is hard these days
+                      $header->date = self::cleanDate($details); 
+                    } else {
                         // It's not forwarded, pull from header
-                        $header->date = date("Y-m-d H:i A", strtotime($header->date));
+                        $header->date = date("m-d-y h:i A", strtotime($header->date));
                     }
-
-                    // gracefully fail to get the date
-                    if ( substr($header->date, 0, 4) == "1969"){
-                      $header->date  = '0000-00-00 00:00:00';
-                    };
 
                     // Assign the header variable into the $messages array.
                     // The reason we stored our variables in $header is
@@ -193,7 +178,8 @@ class CRM_IMAP_AJAX {
         // this should be separated into a function.
         $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-  
+        $tempDetails = preg_replace("/>>/i", "", $details);
+
         // Read the from: sender in the format:
         // From: "First Last" <email address>
         // or
@@ -213,7 +199,7 @@ class CRM_IMAP_AJAX {
             $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
             $forwardedName = $email->sender[0]->personal;
             $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-            $forwardedTime = $dateSent = date("Y-m-d H:i A", $email->time); 
+            $forwardedTime = $dateSent = date("m-d-y h:i A", $email->time); 
             $forwarded = true;
         } else {
             // Otherwise, search for a name and  address from
@@ -228,27 +214,17 @@ class CRM_IMAP_AJAX {
 
         // Search for the format "Date: blah blah blah"
         // This is most formats from Lotus Notes and iNotes
+
         if($forwarded) {
-            $count = preg_match("/Date:\s*(.*)/", $details, $matches);
-            if($count == 0) {
-                // Uhoh, that one didn't work, let's try this format that gmail uses:
-                // "On Month Day, Year, at Hour:Min AMPM, "
-                $countOnAt = preg_match("/On\s+(.*), at (.*), (.*)/i", $details, $matches);
-                if($countOnAt > 0) {
-                    $dateSent = date("Y-m-d H:i A", strtotime($matches[1].' '.$matches[2]));
-                }
-            } else if(isset($matches[1])) {
-                 $dateSent = date("Y-m-d H:i A", strtotime($matches[1]));
-            } 
-        }
-        else {
-            // It's not forwarded, pull from header
-            $dateSent = date("Y-m-d H:i A", strtotime($email->date));
-        }
-        // gracefully fail to get the date
-        if ( substr($dateSent,0, 4) == "1969"){
-          $dateSent = '0000-00-00 00:00:00';
+          // getting a clean date is hard these days
+          $dateSent = self::cleanDate($details);
+        }else{
+          $dateSent = date("m-d-y h:i A", strtotime($email->date));
+
         };
+       
+        // echo $dateSent."<br/>";
+
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
@@ -264,12 +240,44 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+
+    /* cleanDate
+     * Parameters: $date_string: The date string from the from the forwarded message
+     * Returns: The 'm-d-y h:i A' formatted date date .
+     * This function will format many types of incoming dates
+     */
+    public static function cleanDate($date_string){
+        $date_string = preg_replace("/(<br>)/i", " ", $date_string);
+        $date_string = preg_replace("/(>)|(  )|(<)/i", "", $date_string);
+        $pos = strpos( $date_string, "Subject:");
+
+        if ($pos !== false) {
+          $date_string = substr($date_string, 0, $pos);
+          $pos2 = strpos( $date_string, "Date:");
+          if ($pos2 !== false) {
+            $date_string_short = substr($date_string, ($pos2+5));
+          }else{
+            $date_string_short = "00-00-00 00:00 XX";
+          }
+        }
+
+        // here we have the clean date from the forwarded header
+        // echo $date_string."<br/>";
+        // sometimes email clients think its fun to add stuff to the date, remove it here.
+        $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
+        // reformat the date to something standard here.
+        $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
+        return $date_string_short;
+    }
+
     /* deleteMessage()
      * Parameters: None.
      * Returns: None.
      * This function connects to the IMAP server with the specified user name
      * and password, then deletes the message based on the UID
      */
+
+
     public static function deleteMessage() {
         // Set up IMAP variables
         self::setupImap();
@@ -294,32 +302,45 @@ class CRM_IMAP_AJAX {
     public static function getContacts() {
         $start = microtime(true);
         $s = self::get('s');
+
+        $from = "FROM civicrm_contact as contact\n";
+        $where = "WHERE contact.is_deleted=0\n";
+        $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
+        if($first_name) $where .="  AND contact.first_name LIKE '$first_name%'\n";
         $last_name = self::get('last_name');
+        if($last_name) $where .="  AND contact.last_name LIKE '$last_name'\n";
         $email_address = self::get('email_address');
+        if($email_address) {
+          $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
+          $where.="  AND email.email LIKE '$email_address%'\n";
+          $order.=", email.is_primary DESC";
+        }
+        $state_id = self::get('state');
         $street_address = self::get('street_address');
         $city = self::get('city');
-        $state_id = self::get('state');
+        if($street_address || $city || $state_id) {
+          $from.="  JOIN civicrm_address as address ON address.contact_id=contact.id\n";
+          $order.=", address.is_primary DESC";
+          if($street_address) {
+            $where.="  AND address.street_address LIKE '$street_address%'\n";
+          }
+          if ($city) {
+            $where.="  AND address.city LIKE '$city%'\n";
+          }
+          if ($state_id) {
+            $from.="  JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
+            $where.="  AND state.id='$state_id'\n";
+          }
+        }
         $phone = self::get('phone');
-        $query = <<<EOQ
-SELECT DISTINCT *
-FROM civicrm_contact AS contact
-  JOIN civicrm_address AS address ON contact.id=address.contact_id
-  JOIN civicrm_state_province AS state ON address.state_province_id=state.id
-  JOIN civicrm_phone as phone ON phone.contact_id=contact.id
-  JOIN civicrm_email as email ON email.contact_id=contact.id
-WHERE contact.is_deleted=0
-  AND state.id='$state_id'
-  AND address.is_primary = '1'
-  AND email.is_primary = '1'
-  AND address.city LIKE '$city%'
-  AND contact.first_name LIKE '$first_name%'
-  AND contact.last_name LIKE '$last_name%'
-  AND address.street_address LIKE '$street_address%'
-  AND email.email LIKE '$email_address%'
-  AND phone.phone LIKE '%$phone%'
-ORDER BY contact.sort_name
-EOQ;
+        if ($phone) {
+          $from.="  JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
+          $where.="  AND phone.phone LIKE '%$phone%'";
+        }
+        $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";
+        // var_dump($query); exit();
+
         $result = mysql_query($query, self::db());
         $results = array();
         while($row = mysql_fetch_assoc($result)) {
@@ -461,7 +482,7 @@ EOQ;
                                 );
 
                 $result = civicrm_api('entity_tag', 'create', $params );
-                if($result['is_error']) {
+                if($result['is_error']==1) {
                     $returnCode = array('code'      =>  'ERROR',
                                         'message'   =>  "Problem with Contact ID: {$contactId}");
                     echo json_encode($returnCode);
@@ -752,15 +773,17 @@ EOQ;
       }
     }
     public static function createNewContact() {
+        require_once 'api/api.php';
+        // testing url 
         //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes
-        $first_name = $_GET["first_name"];
-        $last_name = $_GET["last_name"];
-        $email = $_GET["email_address"];
-        $phone = $_GET["phone"];
-        $street_address = $_GET["street_address"];
-        $street_address_2 = $_GET["street_address_2"];
-        $postal_code = $_GET["postal_code"];
-        $city = $_GET["city"];
+        $first_name = self::get("first_name");
+        $last_name = self::get("last_name");
+        $email = self::get("email_address");
+        $phone = self::get("phone");
+        $street_address = self::get("street_address");
+        $street_address_2 = self::get("street_address_2");
+        $postal_code = self::get("postal_code");
+        $city = self::get("city");
  
         if(!($first_name) && !($last_name) && !($email))
         {
@@ -785,35 +808,45 @@ EOQ;
 
         $contact = civicrm_api('contact','create', $params);
 
-        //And then you attach the contact to the Address! which is at $contact['id']
-        $address_params = array(
-            'contact_id' => $contact['id'],
-            'street_address' => $street_address,        
-            'supplemental_address_1' => $street_address_2,
-            'city' => $city,
-            'postal_code' => $postal_code,
-            'is_primary' => 1,
-            'country_id' => 1228,
-            'location_type_id' => 1,
-            'version' => 3,
-        );
 
-        $address = civicrm_api('address', 'create', $address_params);
-        if(($contact['is_error'] == 0) && ($address['is_error'] == 0))
-        {
-            $returnCode = array('code'      =>  'SUCCESS',
-                                'status'    =>  '0',
-                                'contact' => $contact['id']
-                                );
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-        } else {
-            $returnCode = array('code'      =>  'ERROR',
+        if($street_address && $contact['id']){
+          //And then you attach the contact to the Address! which is at $contact['id']
+          $address_params = array(
+              'contact_id' => $contact['id'],
+              'street_address' => $street_address,        
+              'supplemental_address_1' => $street_address_2,
+              'city' => $city,
+              'postal_code' => $postal_code,
+              'is_primary' => 1,
+              'state_province_id' => 1031,
+              'country_id' => 1228,
+              'location_type_id' => 1,
+              'version' => 3,
+              'debug' => 1
+          );
+          $address = civicrm_api('address', 'create', $address_params);
+        }
+        
+
+
+        if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
+          $returnCode = array('code'      =>  'ERROR',
                                 'status'    =>  '1',
                                 'message'   =>  'Error adding Contact or Address Details'
                                 );
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
+          // echo "contact\n";
+          // var_dump($contact);
+          // echo "address\n";
+          // var_dump($address);
+          // echo json_encode($returnCode);
+          CRM_Utils_System::civiExit();
+        } else {
+          $returnCode = array('code'      =>  'SUCCESS',
+                                'status'    =>  '0',
+                                'contact' => $contact['id']
+                                );
+          echo json_encode($returnCode);
+          CRM_Utils_System::civiExit();
         }
     }
 

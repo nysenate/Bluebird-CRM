@@ -3,7 +3,7 @@ function checkForTagTypes (treeData) {
 	resetBBTree('main', 'init', treeData);
 }
 /*Acquires Ajax Block*/
-function callTagAjax (local, modalTreeTop) {
+function callTagAjax (local, modalTreeTop, pointToTab) {
 
 	//console.log('start of Tree Rebuild: ' + returnTime());
 	cj.ajax({
@@ -22,6 +22,8 @@ function callTagAjax (local, modalTreeTop) {
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
 			cj('.crm-tagTabHeader ul').html('');
+			cj('.BBtree.edit').remove();
+			cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
 			cj.each(data.message, function(i,tID){
 				if(tID.children.length > 0){
 					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
@@ -34,10 +36,14 @@ function callTagAjax (local, modalTreeTop) {
 						}
 					}
 					else {
-						switch(tID.id)
+						if(pointToTab = '291')
 						{
-							case '291': resetBBTree('main', 'init', tID);
-							default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+							switch(tID.id)
+							{
+								
+								case '291': resetBBTree('main', 'init', tID);
+								default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+							}
 						}
 					}
 				}
@@ -209,13 +215,13 @@ function callTagListModal(treeLoc, tID, modalTreeTop) {
 }
 function escapePositions(position, tidNum)
 {
-	if(tidNum = 292)
+	if(tidNum == 292)
 	{
 		return '';
 	}
 	else
 	{
-		return(position);
+		return position;
 	}
 }
 /*Tab Swapping functionality between Issue Codes and Keywords*/
@@ -439,6 +445,7 @@ function makeModalAdd(tagLabel){
 		buttons: {
 			"Done": function () {
 				tagCreate = new Object();
+				tagCreate.tagDescription = '';
 				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
 				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
 				modalSetLoadingGif();

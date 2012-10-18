@@ -309,6 +309,8 @@ margin:0;
 width: 560px;
 margin: 20px auto;
 float:none;
+width:430px;
+height:390px;
 }
 #mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
 width: 558px;
