@@ -22,8 +22,11 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
 			cj('.crm-tagTabHeader ul').html('');
-			cj('.BBtree.edit').remove();
-			cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
+			if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
+			{
+				cj('.BBtree.edit.manage').remove();
+				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
+			}
 			cj.each(data.message, function(i,tID){
 				if(tID.children.length > 0){
 					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
@@ -241,6 +244,11 @@ function swapTrees(tab){
 function writeDisplayObject(displayObj, treeLoc) {
 	cj(treeLoc).append(displayObj.output);
 	//console.log(treeLoc);
+	if(treeLoc == '#crm-tagListWrap .BBtree.edit')
+	{
+		cj(treeLoc).removeClass('loadingGif');
+		cj(treeLoc).children().show();
+	}
 	if(treeLoc == '.ui-dialog-content .BBtree.modal')
 	{
 		cj(treeLoc).removeClass('loadingGif');
@@ -416,7 +424,7 @@ function makeModalAdd(tagLabel){
 	//console.log('called modalAddMake: ' + returnTime());
 	cj("#dialog").show();
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Add New Tag",
@@ -436,7 +444,7 @@ function makeModalAdd(tagLabel){
 			addDialogInfo += '<div class="modalInputs">';
 			addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
 			addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
-			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'">Insert Under ' + tagInfo.name +'</span></div>';
+			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
 			addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
 			addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
 			cj('#dialog').html(addDialogInfo);
@@ -494,7 +502,7 @@ there are a copious amount of errors in the future to worry about other than Chi
 function makeModalRemove(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Remove Tag...",
@@ -575,7 +583,7 @@ function makeModalRemove(tagLabel){
 function makeModalUpdate(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Update Tag",
@@ -656,7 +664,7 @@ function makeModalTree(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
-		draggable: false,
+		draggable: true,
 		height: 500,
 		width: 400,
 		title: "Move Tag",

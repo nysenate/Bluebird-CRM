@@ -82,9 +82,9 @@ function makeModalTree(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
-		draggable: false,
+		draggable: true,
 		height: 500,
-		width: 400,
+		width: 600,
 		title: "Move Tag",
 		modal: true, 
 		bgiframe: true,
@@ -236,7 +236,7 @@ function makeModalConvert(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Convert Keyword to Tag",
@@ -304,7 +304,7 @@ function makeModalMerge(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
-		draggable: false,
+		draggable: true,
 		height: 500,
 		width: 600,
 		title: "Merge Tag",

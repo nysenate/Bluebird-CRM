@@ -1,11 +1,6 @@
 #mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
   width: 310px;
 }
-/*#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
-  float: right;
-  margin-right: 50px;
-  width: 310px;
-}*/
 #crm-container div.form-item .BBtree *, #crm-container .crm-form-block .BBtree * {
 	font-size: 1em;
 }
@@ -309,9 +304,14 @@ margin:0;
 width: 560px;
 margin: 20px auto;
 float:none;
-width:430px;
-height:390px;
+/*width:430px;
+height:390px;*/
 }
+/*#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
+  float: right;
+  margin-right: 50px;
+  width: 310px;
+}*/
 #mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
 width: 558px;
 }
