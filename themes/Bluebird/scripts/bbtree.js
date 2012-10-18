@@ -21,9 +21,9 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
+			cj('.crm-tagTabHeader ul').html('');
 			if(local != 'modal')
 			{
-				cj('.crm-tagTabHeader ul').html('');
 				cj('.BBtree.edit').remove();
 				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
 			}
@@ -419,7 +419,7 @@ function makeModalAdd(tagLabel){
 	//console.log('called modalAddMake: ' + returnTime());
 	cj("#dialog").show();
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Add New Tag",
@@ -497,7 +497,7 @@ there are a copious amount of errors in the future to worry about other than Chi
 function makeModalRemove(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Remove Tag...",
@@ -578,7 +578,7 @@ function makeModalRemove(tagLabel){
 function makeModalUpdate(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
-		draggable: false,
+		draggable: true,
 		height: 300,
 		width: 300,
 		title: "Update Tag",
@@ -659,7 +659,7 @@ function makeModalTree(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
-		draggable: false,
+		draggable: true,
 		height: 500,
 		width: 400,
 		title: "Move Tag",

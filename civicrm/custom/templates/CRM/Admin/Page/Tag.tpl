@@ -84,7 +84,7 @@ function makeModalTree(tagLabel){
 		closeOnEscape: true,
 		draggable: false,
 		height: 500,
-		width: 400,
+		width: 600,
 		title: "Move Tag",
 		modal: true, 
 		bgiframe: true,
