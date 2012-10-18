@@ -22,9 +22,9 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
 			cj('.crm-tagTabHeader ul').html('');
-			if(local != 'modal')
+			if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
 			{
-				cj('.BBtree.edit').remove();
+				cj('.BBtree.edit.manage').remove();
 				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
 			}
 			cj.each(data.message, function(i,tID){
@@ -244,6 +244,11 @@ function swapTrees(tab){
 function writeDisplayObject(displayObj, treeLoc) {
 	cj(treeLoc).append(displayObj.output);
 	//console.log(treeLoc);
+	if(treeLoc == '#crm-tagListWrap .BBtree.edit')
+	{
+		cj(treeLoc).removeClass('loadingGif');
+		cj(treeLoc).children().show();
+	}
 	if(treeLoc == '.ui-dialog-content .BBtree.modal')
 	{
 		cj(treeLoc).removeClass('loadingGif');
