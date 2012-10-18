@@ -829,10 +829,22 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
         if ($mappingType == 'Search Builder') {
           //CRM -2292, restricted array set
+          //NYSS 4802
           $operatorArray = array(
-            '' => ts('-operator-'), '=' => '=', '!=' => '!=', '>' => '>', '<' => '<',
-            '>=' => '>=', '<=' => '<=', 'IN' => 'IN',
-            'LIKE' => 'LIKE', 'IS NULL' => 'IS NULL', 'IS NOT NULL' => 'IS NOT NULL',
+            ''             => ts('-operator-'),
+            '='            => '=',
+ 	 	        '!='           => '!=',
+ 	 	        '>'            => '>',
+            '<'            => '<',
+            '>='           => '>=',
+            '<='           => '<=',
+            'IN'           => 'IN',
+            'LIKE'         => 'LIKE',
+            'RLIKE'        => 'RLIKE',
+            'IS EMPTY'     => 'IS EMPTY',
+            'IS NOT EMPTY' => 'IS NOT EMPTY',
+            'IS NULL'      => 'IS NULL',
+            'IS NOT NULL'  => 'IS NOT NULL',
           );
           //NYSS 5663 limit RLIKE to admins
           if ( CRM_Core_Permission::check('administer CiviCRM') ) {
