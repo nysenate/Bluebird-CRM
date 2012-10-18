@@ -215,14 +215,12 @@ function callTagListModal(treeLoc, tID, modalTreeTop) {
 }
 function escapePositions(position, tidNum)
 {
-	console.log(tidNum);
 	if(tidNum == 292)
 	{
 		return '';
 	}
 	else
 	{
-		console.log(position);
 		return position;
 	}
 }
