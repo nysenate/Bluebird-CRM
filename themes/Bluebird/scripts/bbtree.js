@@ -436,7 +436,7 @@ function makeModalAdd(tagLabel){
 			addDialogInfo += '<div class="modalInputs">';
 			addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
 			addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
-			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'">Insert Under ' + tagInfo.name +'</span></div>';
+			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
 			addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
 			addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
 			cj('#dialog').html(addDialogInfo);
