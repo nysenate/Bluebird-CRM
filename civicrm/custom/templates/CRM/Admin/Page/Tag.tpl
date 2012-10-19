@@ -104,7 +104,7 @@ function makeModalTree(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.number+'">' + tagInfo.name + ' under Tag...</span></div>';
+			treeDialogInfo = '<div class="modalHeader">Move <span id="modalNameTid" tID="'+tagInfo.number+'">' + tagInfo.name + ' under Tag...</span></div>';
 			treeDialogInfo += '<div class="BBtree modal move"></div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
@@ -464,11 +464,6 @@ function printTags()
     mywindow.document.write('</body></html>');
     mywindow.print();
     return true;
-}
-function createPrintTagPopup()
-{
-	
-
 }
 </script>
 {/literal}
