@@ -1,0 +1,27 @@
+<?php
+function nyss_contact_civicrm_buildForm( $formName, &$form ) {
+  if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
+    //CRM_Core_Error::debug('form',$form);
+  }
+}//buildForm
+
+function nyss_contact_civicrm_pageRun( &$page ) {
+  $pagename = $page->getVar( '_name' );
+
+  if ( $pagename == 'CRM_Contact_Page_Inline_Demographics' ) {
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
+
+    //get/set employer/job title/religion
+    $params = array(
+      'version' => 3,
+      'id' => $contactId,
+      'return.current_employer' => 1,
+      'return.current_employer_id' => 1,
+      'return.job_title' => 1,
+      'return.custom_63' => 1,
+    );
+    $inDemo = civicrm_api('contact', 'getsingle', $params);
+    $page->assign('inDemo', $inDemo);
+    //CRM_Core_Error::debug('inContact',$inContact);
+  }
+}//pageRun

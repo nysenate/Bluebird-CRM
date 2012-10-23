@@ -1,0 +1,6 @@
+name = NYSS Contact module
+description = Handle various modifications to the contact form/page.
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2

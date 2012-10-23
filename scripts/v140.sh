@@ -203,6 +203,7 @@ $drush $instance en nyss_massmerge -y -q
 $drush $instance en nyss_sage -y -q
 $drush $instance en nyss_tags -y -q
 $drush $instance en nyss_civihooks -y -q
+$drush $instance en nyss_contact -y -q
 
 ## reenable logging
 echo "re-enable civicrm logging..."
