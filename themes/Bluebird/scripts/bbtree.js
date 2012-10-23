@@ -28,25 +28,28 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
 			}
 			cj.each(data.message, function(i,tID){
-				if(tID.children.length > 0){
-					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
-					if(local == 'modal')
-					{
-						if(modalTreeTop == tID.id)
+				if(tID.id != '292') //if not positions
+				{
+					if(tID.children.length > 0){
+						cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+						if(local == 'modal')
 						{
-							//console.log('gettingtomodal');
-							resetBBTree('modal', 'init', tID, modalTreeTop);
-						}
-					}
-					else {
-						if(pointToTab = '291')
-						{
-							switch(tID.id)
+							if(modalTreeTop == tID.id)
 							{
-								
-								case '291': resetBBTree('main', 'init', tID);
-								default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+								//console.log('gettingtomodal');
+								resetBBTree('modal', 'init', tID, modalTreeTop);
 							}
+						}
+						else {
+							//if(pointToTab = '291')
+							//{
+								switch(tID.id)
+								{
+									
+									case '291': resetBBTree('main', 'init', tID);
+									default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+								}
+							//}
 						}
 					}
 				}
@@ -706,6 +709,7 @@ function makeModalTree(tagLabel){
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+
 			var treeDialogInfo;
 			if(tagInfo.reserved == true){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
