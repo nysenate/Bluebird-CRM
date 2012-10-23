@@ -131,12 +131,16 @@ function modalSelectOnClick() {
 	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').click(function(){
 		var tagLabel = cj('.ui-dialog-content .modalHeader span').attr('tID');
 		//search the string for all mentions of tid="number"
+		var listOfChildTids = '';
 		var tagChildren = cj('.BBtree.edit.manage dl#tagLabel_'+ tagLabel).html();
-		var listOfChildTids = tagChildren.match(/tid=\"[0-9]*\"/g);
-		for(i = 0;i<listOfChildTids.length;i++)
+		if(tagChildren != null)
 		{
-			listOfChildTids[i] = listOfChildTids[i].replace("tid=\"",'');
-			listOfChildTids[i] = listOfChildTids[i].replace("\"",'');
+			listOfChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
+			for(i = 0;i<listOfChildTids.length;i++)
+			{
+				listOfChildTids[i] = listOfChildTids[i].replace("tid=\"",'');
+				listOfChildTids[i] = listOfChildTids[i].replace("\"",'');
+			}
 		}
 		if(cj('.BBtree.modal').hasClass('move'))
 		{
@@ -152,11 +156,14 @@ function modalSelectOnClick() {
 						tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
 						tagMove.destinationId = destinationId;
 						var tidMatch = false;
-						for(i = 0;i<listOfChildTids.length;i++)
+						if(tagChildren != null)
 						{
-							if((listOfChildTids[i] == tagMove.destinationId) || (tagMove.currentId == tagMove.destinationId))
+							for(i = 0;i<listOfChildTids.length;i++)
 							{
-								tidMatch = true;
+								if((listOfChildTids[i] == tagMove.destinationId) || (tagMove.currentId == tagMove.destinationId))
+								{
+									tidMatch = true;
+								}
 							}
 						}
 						if(tidMatch == false)
@@ -221,10 +228,13 @@ function modalSelectOnClick() {
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
 		 				var tidMatch = false;
-		 				if(listOfChildTids.length > 0)
-		 				{
-		 					tidMatch = true;
-		 				}
+		 				if(tagChildren != null)
+						{
+			 				if(listOfChildTids.length > 0)
+			 				{
+			 					tidMatch = true;
+			 				}
+			 			}
 						if(tidMatch == false)
 						{	
 							cj.ajax({
