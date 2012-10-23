@@ -185,7 +185,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
         $query = "SELECT *
                   FROM (
-                    SELECT logTbl.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') as tagList
+                    SELECT logTbl.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(CONCAT(t.name, ' (', logTbl.log_action, ')') ORDER BY t.name SEPARATOR ', ') as tagList
                     FROM {$logDB}.log_civicrm_entity_tag logTbl
                     JOIN {$civiDB}.civicrm_tag t
                       ON logTbl.tag_id = t.id
@@ -244,13 +244,17 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
             }
             $gdpHTML = implode('<br />', $gdp);
 
+            //cleanup tag list
+            $tagList = str_replace(' (Insert)', '', $dao->tagList);
+            $tagList = str_replace(' (Delete)', ' (removed)', $tagList);
+
             $html .= "<tr>
                         <td>{$dao->logDate}</td>
-                        <td>{$cDetails['display_name']}</td>
-                        <td>{$addressHTML}</td>
-                        <td>{$gdpHTML}</td>
+                        <td>{$cDetails['display_name']}&nbsp;</td>
+                        <td>{$addressHTML}&nbsp;</td>
+                        <td>{$gdpHTML}&nbsp;</td>
                         <td>{$cDetails['email']}&nbsp;</td>
-                        <td>{$dao->tagList}&nbsp;</td>
+                        <td>{$tagList}&nbsp;</td>
                       </tr>";
         }
 
