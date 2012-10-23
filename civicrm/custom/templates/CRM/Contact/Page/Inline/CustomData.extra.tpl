@@ -16,5 +16,15 @@
 
   //5637 reduce block width after returning from inline form
   cj('#custom-set-block-1 #crm-container-snippet').css('width','auto');
+
+  //5779 truncate file name
+  cj('.crm-fileURL a').each(function(){
+    var title = cj(this).text();
+    if ( title.length > 30 ) {
+      var short = cj.trim(title).substring(0, 30).slice(0, -1) + "...";
+      cj(this).text(short);
+    }
+  });
+
 </script>
 {/literal}

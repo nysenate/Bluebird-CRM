@@ -297,12 +297,12 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     function alterDisplay( &$rows ) {
         
 		//NYSS 3653 remove pdf button
-		$elements =& $this->_elements;
+		/*$elements =& $this->_elements;
 		foreach ( $elements as $key=>$element ) {
 			if ( $element->_attributes['name'] == '_qf_Log_submit_pdf' ) {
 				unset($elements[$key]);
 			}
-		}
+		}*/
 		
 		// custom code to alter rows
         $entryFound = false;

@@ -56,15 +56,13 @@ $databases = array (
 
 $drupal_hash_salt = 'Pq2DVthfEKZp4OMhWgx4tMEs6OfPxQo4Zts1ypJ_rgM';
 
-$update_free_access = TRUE;//LCD
-
 ini_set('arg_separator.output',     '&amp;');
 ini_set('magic_quotes_runtime',     0);
 ini_set('magic_quotes_sybase',      0);
 ini_set('session.cache_expire',     200000);
 ini_set('session.cache_limiter',    'none');
-ini_set('session.cookie_lifetime',  0); //when browser closes
-ini_set('session.gc_maxlifetime',   14400); //4hrs
+ini_set('session.cookie_lifetime',  14400); //4hrs
+ini_set('session.gc_maxlifetime',   360000); //10hrs
 ini_set('session.gc_probability',   1);
 ini_set('session.gc_divisor',       100);
 ini_set('session.save_handler',     'user');
