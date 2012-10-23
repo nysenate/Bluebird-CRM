@@ -28,25 +28,28 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
 			}
 			cj.each(data.message, function(i,tID){
-				if(tID.children.length > 0){
-					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
-					if(local == 'modal')
-					{
-						if(modalTreeTop == tID.id)
+				if(tID.id != '292') //if not positions
+				{
+					if(tID.children.length > 0){
+						cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+						if(local == 'modal')
 						{
-							//console.log('gettingtomodal');
-							resetBBTree('modal', 'init', tID, modalTreeTop);
-						}
-					}
-					else {
-						if(pointToTab = '291')
-						{
-							switch(tID.id)
+							if(modalTreeTop == tID.id)
 							{
-								
-								case '291': resetBBTree('main', 'init', tID);
-								default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+								//console.log('gettingtomodal');
+								resetBBTree('modal', 'init', tID, modalTreeTop);
 							}
+						}
+						else {
+							//if(pointToTab = '291')
+							//{
+								switch(tID.id)
+								{
+									
+									case '291': resetBBTree('main', 'init', tID);
+									default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+								}
+							//}
 						}
 					}
 				}
@@ -357,6 +360,10 @@ function isItemChildless(childLength)
 	{
 		return('treeButton');
 	}
+	else
+	{
+		return '';
+	}
 }
 /*This poorly named function determines which tags are stubs, and which need arrows*/
 function postJSON(treeLoc){
@@ -439,61 +446,83 @@ function makeModalAdd(tagLabel){
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('dt#' + tagLabel + ' .tag .name').html();
-			
-			var addDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
-			addDialogInfo += '<div class="modalInputs">';
-			addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
-			addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
-			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
-			addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
-			addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
-			cj('#dialog').html(addDialogInfo);
-			cj('#dialog input:[name=tagName]').focus();
-		},
-		buttons: {
-			"Done": function () {
-				tagCreate = new Object();
-				tagCreate.tagDescription = '';
-				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
-				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-				modalSetLoadingGif();
-				tagCreate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
-				tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
-				tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
-				tagCreate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
-				//console.log('call modal add ajax ' + returnTime());
-				cj.ajax({
-					url: '/civicrm/ajax/tag/create',
-					data: {
-						name: tagCreate.tagName,
-						description: tagCreate.tagDescription,
-						parent_id: tagCreate.parentId,
-						is_reserved: tagCreate.isReserved	
-					},
-					dataType: 'json',
-					success: function(data, status, XMLHttpRequest) {
-						//console.log('success modal add ajax: ' + returnTime());
-						if(data.code != 1)
-						{
-							alert(data.message);
-							cj('.ui-dialog-buttonpane .loadingGif').hide();
-							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-							modalRemoveLoadingGif();
+			tagInfo.depth = cj('dt#' + tagLabel).hasClass('lv-4');
+			if(tagInfo.depth == false) {
+				var addDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
+				addDialogInfo += '<div class="modalInputs">';
+				addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
+				addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
+				addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
+				addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
+				addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
+				cj('#dialog').html(addDialogInfo);
+				cj('#dialog input:[name=tagName]').focus();
+				cj("#dialog").dialog( "option", "buttons", 
+				[
+					{
+						text: "Done",
+						click: function() {
+							tagCreate = new Object();
+							tagCreate.tagDescription = '';
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+							cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+							modalSetLoadingGif();
+							tagCreate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
+							tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
+							tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
+							tagCreate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
+							//console.log('call modal add ajax ' + returnTime());
+							cj.ajax({
+								url: '/civicrm/ajax/tag/create',
+								data: {
+									name: tagCreate.tagName,
+									description: tagCreate.tagDescription,
+									parent_id: tagCreate.parentId,
+									is_reserved: tagCreate.isReserved	
+								},
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									//console.log('success modal add ajax: ' + returnTime());
+									if(data.code != 1)
+									{
+										alert(data.message);
+										cj('.ui-dialog-buttonpane .loadingGif').hide();
+										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+										modalRemoveLoadingGif();
+									}
+									else
+									{
+										cj('#dialog').dialog('close');
+										cj('#dialog').dialog('destroy');
+										callTagAjax();
+									}
+								}
+							});
 						}
-						else
-						{
-							cj('#dialog').dialog('close');
-							cj('#dialog').dialog('destroy');
-							callTagAjax();
+					},
+					{
+						text: "Cancel",
+						click: function() { 
+							cj(this).dialog("close"); 
+							cj(this).dialog("destroy"); 
 						}
 					}
-				});
-			},
-			"Cancel": function() { 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
+				]);
+			} else {
+				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">' + tagInfo.name + ' cannot add more children.</span></div>';
+				cj("#dialog").html(addDialogInfo);
+				cj("#dialog").dialog( "option", "buttons", 
+				[
+					{
+						text: "Cancel",
+						click: function() { 
+							cj(this).dialog("close"); 
+							cj(this).dialog("destroy"); 
+						}
+					}
+				]);
 			}
-		} 
+		}
 	});
 }
 /*This is the Remove functionality that hooks into the tag ajax to add new tags, only difference is is that
@@ -660,97 +689,99 @@ function makeModalUpdate(tagLabel){
 
 /*makes a modal tree, this is the more involved one than the rest because it's calling a tree structure and
 having to replicate much of the same combinations, it moves to modalSelectOnclick to open a dialog box*/
-function makeModalTree(tagLabel){
-	cj("#dialog").show( );
-	cj("#dialog").dialog({
-		closeOnEscape: true,
-		draggable: true,
-		height: 500,
-		width: 400,
-		title: "Move Tag",
-		modal: true, 
-		bgiframe: true,
-		close:{ },
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
-		open: function() {
-			tagInfo = new Object();
-			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
-			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
-			var treeDialogInfo;
-			if(tagInfo.reserved == true){
-			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
-			cj('#dialog').html(treeDialogInfo);
-			} else {
-			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
-			treeDialogInfo += '<div class="BBtree modal"></div>';
-			cj('#dialog').html(treeDialogInfo);
-			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+// function makeModalTree(tagLabel){
+// 	cj("#dialog").show( );
+// 	cj("#dialog").dialog({
+// 		closeOnEscape: true,
+// 		draggable: true,
+// 		height: 500,
+// 		width: 400,
+// 		title: "Move Tag",
+// 		modal: true, 
+// 		bgiframe: true,
+// 		close:{ },
+// 		overlay: { 
+// 			opacity: 0.2, 
+// 			background: "black" 
+// 		},
+// 		open: function() {
+// 			tagInfo = new Object();
+// 			tagInfo.id = tagLabel;
+// 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+// 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+// 			tagInfo.children = cj('.BBtree.edit.manage dl#'+tagLabel).children('dt');
+// 			console.log(tagInfo.children);
+// 			var treeDialogInfo;
+// 			if(tagInfo.reserved == true){
+// 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
+// 			cj('#dialog').html(treeDialogInfo);
+// 			} else {
+// 			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
+// 			treeDialogInfo += '<div class="BBtree modal"></div>';
+// 			cj('#dialog').html(treeDialogInfo);
+// 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			
-			callTagAjax('modal', modalTreeTop);
-			}
-		},
-		buttons: {
-			"Cancel": function() { 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy");
-			}
-		} 
-	});
-}
-/*this is the second portion of the Modal box, where it takes the click function and makes a 'move' button*/
-function modalSelectOnClick() {
-	cj('.BBtree input.selectRadio').click(function(){
-		var destinationId = cj(this).parent().parent('dt').attr('tid');
-		cj("#dialog").dialog( "option", "buttons", [
-			{
-				text: "Move",
-				click: function() {
-					cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
-					cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-					modalSetLoadingGif();
-					tagMove = new Object();
-					tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
-					tagMove.destinationId = destinationId;
-					cj.ajax({
-						url: '/civicrm/ajax/tag/update',
-						data: {
-							id: tagMove.currentId,
-							parent_id: tagMove.destinationId
-						},
-						dataType: 'json',
-						success: function(data, status, XMLHttpRequest) {
-							if(data.code != 1)
-							{
-								alert(data.message);
-								cj('.ui-dialog-buttonpane .loadingGif').hide();
-								cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
-								modalRemoveLoadingGif();
-							}
-							else
-							{
-								cj('#dialog').dialog('close');
-								cj('#dialog').dialog('destroy');
-								callTagAjax();
-							}
-						}
-					});
+// 			callTagAjax('modal', modalTreeTop);
+// 			}
+// 		},
+// 		buttons: {
+// 			"Cancel": function() { 
+// 				cj(this).dialog("close"); 
+// 				cj(this).dialog("destroy");
+// 			}
+// 		} 
+// 	});
+// }
+// this is the second portion of the Modal box, where it takes the click function and makes a 'move' button
+// function modalSelectOnClick() {
+// 	cj('.BBtree input.selectRadio').click(function(){
+// 		var destinationId = cj(this).parent().parent('dt').attr('tid');
+// 		cj("#dialog").dialog( "option", "buttons", [
+// 			{
+// 				text: "Move",
+// 				click: function() {
+// 					cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+// 					cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+// 					modalSetLoadingGif();
+// 					tagMove = new Object();
+// 					tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+// 					tagMove.destinationId = destinationId;
+// 					cj.ajax({
+// 						url: '/civicrm/ajax/tag/update',
+// 						data: {
+// 							id: tagMove.currentId,
+// 							parent_id: tagMove.destinationId
+// 						},
+// 						dataType: 'json',
+// 						success: function(data, status, XMLHttpRequest) {
+// 							if(data.code != 1)
+// 							{
+// 								alert(data.message);
+// 								cj('.ui-dialog-buttonpane .loadingGif').hide();
+// 								cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
+// 								modalRemoveLoadingGif();
+// 							}
+// 							else
+// 							{
+// 								cj('#dialog').dialog('close');
+// 								cj('#dialog').dialog('destroy');
+// 								callTagAjax();
+// 							}
+// 						}
+// 					});
 
-				}
-			},
-			{
-				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
-				}
-			}
-		]);
-	});
-}
+// 				}
+// 			},
+// 			{
+// 				text: "Cancel",
+// 				click: function() { 
+// 					cj(this).dialog("close"); 
+// 					cj(this).dialog("destroy"); 
+// 				}
+// 			}
+// 		]);
+// 	});
+// }
 function modalSetLoadingGif()
 {
 	cj('.BBtree.manage').children().hide(); 

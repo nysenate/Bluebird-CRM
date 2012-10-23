@@ -331,3 +331,12 @@ width: 558px;
 	margin-left:5px;
 	font-weight:bold;
 }
+
+#crm-tagListWrap .crm-section.tag-section.crm-processed-input {
+	width: 720px;
+	margin: 10px auto;
+}
+
+#crm-tagListWrap .groupTagsKeywords ul.token-input-list-facebook {
+	width: 560px !important;
+}
