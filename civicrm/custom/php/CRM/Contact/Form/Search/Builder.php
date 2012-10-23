@@ -112,7 +112,8 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
    * @return void
    */
   function addRules() {
-    $this->addFormRule(array('CRM_Contact_Form_Search_Builder', 'formRule'));
+    //NYSS 5518
+    $this->addFormRule(array('CRM_Contact_Form_Search_Builder', 'formRule'), $this);
   }
 
   /**
@@ -125,7 +126,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
    * @access public
    */
   static
-  function formRule($values) {
+  function formRule($values, $files, $self) { //NYSS 5518
     if (CRM_Utils_Array::value('addMore', $values) || CRM_Utils_Array::value('addBlock', $values)) {
       return TRUE;
     }
@@ -158,17 +159,17 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
           !empty($v[2])) {
           $grpId = array_keys($v[2]);
           if (!key($v[2])) {
-            $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
+            $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
           }
 
           if (count($grpId) > 1) {
             if ($v[1] != 'IN' && $v[1] != 'NOT IN') {
-              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the valid value.");
+              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a valid value.");
             }
             foreach ($grpId as $val) {
               $error = CRM_Utils_Type::validate($val, 'Integer', FALSE);
               if ($error != $val) {
-                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter valid value.");
+                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a valid value.");
                 break;
               }
             }
@@ -184,24 +185,25 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
           if (isset($v[2])) {
             $v2 = array($v[2]);
             if (!isset($v[2])) {
-              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
+              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
             }
 
             $error = CRM_Utils_Type::validate($v2[0], 'Integer', FALSE);
             if ($error != $v2[0]) {
-              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter valid value.");
+              $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a valid value.");
             }
           }
           else {
-            $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
+            $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
           }
         }
-        elseif (($v[0] === 'sort_name' || $v[0] === 'display_name')) {
+        //NYSS 5518
+        /*elseif (($v[0] === 'sort_name' || $v[0] === 'display_name')) {
           $v2 = trim($v[2]);
           if (empty($v2)) {
             $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
           }
-        }
+        }*/
         else {
           if (substr($v[0], 0, 7) == 'custom_') {
             $type = $fields[$v[0]]['data_type'];
@@ -228,10 +230,10 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
             if (!in_array($v[1],
                 array('IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY'))) {
               if ((($type == 'Int' || $type == 'Boolean') && !trim($v[2])) && $v[2] != '0') {
-                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
+                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
               }
               elseif ($type == 'Date' && !trim($v[2])) {
-                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter the value.");
+                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
               }
             }
           }
@@ -264,7 +266,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
                   if (empty($errorMsg)) {
                     $error = CRM_Utils_Type::validate($val, $type, FALSE);
                     if ($error != $val) {
-                      $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter valid value.");
+                      $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a valid value.");
                     }
                   }
                 }
@@ -274,7 +276,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
               //else check value for rest of the Operators
               $error = CRM_Utils_Type::validate($v[2], $type, FALSE);
               if ($error != $v[2]) {
-                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter valid value.");
+                $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a valid value.");
               }
             }
           }
@@ -283,6 +285,9 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
     }
 
     if (!empty($errorMsg)) {
+      //NYSS 5518
+      $self->set('showSearchForm', TRUE);
+ 	 	 	$self->assign('rows', NULL);
       return $errorMsg;
     }
 

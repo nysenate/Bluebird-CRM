@@ -1640,7 +1640,8 @@ class CRM_Contact_BAO_Query {
         $where = $field['where'];
       }
 
-      $wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+      //$wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+      $wc = self::caseImportant($op) ? "LOWER($where)" : $where; //NYSS 5518
 
       if (is_numeric($value)) {
         $where = str_replace('.name', '.id', $where);
@@ -1649,7 +1650,8 @@ class CRM_Contact_BAO_Query {
         $value = $states[(int ) $value];
       }
       else {
-        $wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        //$wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        $wc = self::caseImportant($op) ? "LOWER($where)" : $where; //NYSS 5518
         $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       }
       if (!$lType) {
@@ -1682,7 +1684,8 @@ class CRM_Contact_BAO_Query {
         $value = $countries[(int ) $value];
       }
       else {
-        $wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        //$wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        $wc = self::caseImportant($op) ? "LOWER($where)" : $where; //NYSS 5518
         $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       }
       if (!$lType) {
@@ -1714,7 +1717,8 @@ class CRM_Contact_BAO_Query {
         $value = $counties[(int ) $value];
       }
       else {
-        $wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        //$wc = ($op != 'LIKE') ? "LOWER($where)" : $where;
+        $wc = self::caseImportant($op) ? "LOWER($where)" : $where; //NYSS 5518
         $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       }
 
@@ -1730,7 +1734,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $worldRegions[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('World Region') . " $op '$value'";
     }
@@ -1739,7 +1744,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $individualPrefixs[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Individual Prefix') . " $op '$value'";
     }
@@ -1748,7 +1754,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $individualSuffixs[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Individual Suffix') . " $op '$value'";
     }
@@ -1757,7 +1764,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $genders[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Gender') . " $op '$value'";
       self::$_openedPanes['Demographics'] = TRUE;
@@ -1804,7 +1812,8 @@ class CRM_Contact_BAO_Query {
         $value = "%$value%";
         $op = 'LIKE';
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, "'$value'");
       $this->_qill[$grouping][] = "$field[title] $op \"$value\"";
     }
@@ -1814,7 +1823,8 @@ class CRM_Contact_BAO_Query {
         $value = "%$value%";
         $op = 'LIKE';
       }
-      $wc = ($op != 'LIKE') ? "LOWER(contact_a.organization_name)" : "contact_a.organization_name";
+      //$wc = ($op != 'LIKE') ? "LOWER(contact_a.organization_name)" : "contact_a.organization_name";
+      $wc = self::caseImportant($op) ? "LOWER(contact_a.organization_name)" : "contact_a.organization_name"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op,
         "'$value' AND contact_a.contact_type ='Individual'"
       );
@@ -1826,7 +1836,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $emailGreetings[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Email Greeting') . " $op '$value'";
     }
@@ -1836,7 +1847,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $postalGreetings[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Postal Greeting') . " $op '$value'";
     }
@@ -1846,7 +1858,8 @@ class CRM_Contact_BAO_Query {
       if (is_numeric($value)) {
         $value = $addressee[(int ) $value];
       }
-      $wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      //$wc = ($op != 'LIKE') ? "LOWER({$field['where']})" : "{$field['where']}";
+      $wc = self::caseImportant($op) ? "LOWER({$field['where']})" : "{$field['where']}"; //NYSS 5518
       $this->_where[$grouping][] = self::buildClause($wc, $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Addressee') . " $op '$value'";
     }
@@ -1929,7 +1942,8 @@ class CRM_Contact_BAO_Query {
       }
     }
 
-    if ($setTables) {
+    //if ($setTables) {
+    if ($setTables && isset($field['where'])) { //NYSS 5518
       list($tableName, $fieldName) = explode('.', $field['where'], 2);
       if (isset($tableName)) {
         $this->_tables[$tableName] = 1;
@@ -1951,7 +1965,8 @@ class CRM_Contact_BAO_Query {
         $locType[0] == 'phone' ||
         $locType[0] == 'openid'
       ) {
-        if ($locType[2]) {
+        //if ($locType[2]) {
+        if (isset($locType[2]) && $locType[2]) { //NYSS 5518
           $tName = "{$locationType[$locType[1]]}-{$locType[0]}-{$locType[2]}";
         }
         else {
@@ -2715,6 +2730,30 @@ WHERE  id IN ( $groupIDs )
     $this->_qill[$grouping][] = ts('Note') . " $op - '$n'";
   }
 
+  //NYSS 5518
+  function nameNullOrEmptyOp($name, $op, $grouping) {
+    switch ( $op ) {
+     case 'IS NULL':
+      case 'IS NOT NULL':
+        $this->_where[$grouping][] = "contact_a.$name $op";
+        $this->_qill[$grouping][]  = ts('Name') . ' ' . $op;
+        return true;
+
+      case 'IS EMPTY':
+        $this->_where[$grouping][] = "(contact_a.$name IS NULL OR contact_a.$name = '')";
+        $this->_qill[$grouping][]  = ts('Name') . ' ' . $op;
+        return true;
+
+      case 'IS NOT EMPTY':
+        $this->_where[$grouping][] = "(contact_a.$name IS NOT NULL AND contact_a.$name <> '')";
+        $this->_qill[$grouping][]  = ts('Name') . ' ' . $op;
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
   /**
    * where / qill clause for sort_name
    *
@@ -2723,6 +2762,13 @@ WHERE  id IN ( $groupIDs )
    */
   function sortName(&$values) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
+
+    //NYSS 5518
+    // handle IS NULL / IS NOT NULL / IS EMPTY / IS NOT EMPTY
+    if ( $this->nameNullOrEmptyOp( $name, $op, $grouping ) ) {
+      return;
+    }
+
     $newName = $name;
     $name = trim($value);
 
@@ -2767,14 +2813,17 @@ WHERE  id IN ( $groupIDs )
         $value = "'$value'";
       }
       if ($newName == 'sort_name') {
-        $wc = ($op != 'LIKE') ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name";
+        //$wc = ($op != 'LIKE') ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name";
+        $wc = self::caseImportant($op) ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name"; //NYSS 5518
       }
       else {
-        $wc = ($op != 'LIKE') ? "LOWER(contact_a.display_name)" : "contact_a.display_name";
+        //$wc = ($op != 'LIKE') ? "LOWER(contact_a.display_name)" : "contact_a.display_name";
+        $wc = self::caseImportant($op) ? "LOWER(contact_a.display_name)" : "contact_a.display_name"; //NYSS 5518
       }
       $sub[] = " ( $wc $op $value )";
       if ($config->includeNickNameInName) {
-        $wc = ($op != 'LIKE') ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name";
+        //$wc = ($op != 'LIKE') ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name";
+        $wc = self::caseImportant($op) ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name"; //NYSS 5518
         $sub[] = " ( $wc $op $value )";
       }
       if ($config->includeEmailInName) {
@@ -2831,14 +2880,17 @@ WHERE  id IN ( $groupIDs )
             $value = "'$value'";
           }
           if ($newName == 'sort_name') {
-            $wc = ($op != 'LIKE') ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name";
+            //$wc = ($op != 'LIKE') ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name";
+            $wc = self::caseImportant($op) ? "LOWER(contact_a.sort_name)" : "contact_a.sort_name"; //NYSS 5518
           }
           else {
-            $wc = ($op != 'LIKE') ? "LOWER(contact_a.display_name)" : "contact_a.display_name";
+            //$wc = ($op != 'LIKE') ? "LOWER(contact_a.display_name)" : "contact_a.display_name";
+            $wc = self::caseImportant($op) ? "LOWER(contact_a.display_name)" : "contact_a.display_name"; //NYSS 5518
           }
           $fieldsub[] = " ( $wc $op $value )";
           if ($config->includeNickNameInName) {
-            $wc = ($op != 'LIKE') ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name";
+            //$wc = ($op != 'LIKE') ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name";
+            $wc = self::caseImportant($op) ? "LOWER(contact_a.nick_name)" : "contact_a.nick_name"; //NYSS 5518
             $fieldsub[] = " ( $wc $op $value )";
           }
           if ($config->includeEmailInName) {
@@ -4320,8 +4372,9 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
     }
 
     if ($name == $fieldName) {
-      $op = '=';
-      $phrase = '=';
+      //$op = '=';
+      //$phrase = '=';
+      $phrase = $op; //NYSS 5518
 
       $date = CRM_Utils_Date::processDate($value);
 
@@ -4479,9 +4532,15 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
         return "$clause $value";
 
       default:
-        if (isset($dataType)) {
-          $value = CRM_Utils_Type::escape($value, $dataType);
+        //NYSS 5518
+        //if (isset($dataType)) {
+          //$value = CRM_Utils_Type::escape($value, $dataType);
+        if (empty($dataType)) {
+          $dataType = 'String';
         }
+        $value = CRM_Utils_Type::escape($value, $dataType);
+
+        // if we dont have a dataType we should assume
         if ($dataType == 'String') {
           $value = "'" . strtolower($value) . "'";
         }
@@ -4604,6 +4663,21 @@ AND   displayRelType.is_active = 1
     }
 
     $having = NULL;
+  }
+
+  //NYSS 5518
+  static function caseImportant( $op ) {
+    return
+      in_array($op, array('LIKE', 'IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY')) ? FALSE : TRUE;
+  }
+
+  static function componentPresent( &$returnProperties, $prefix ) {
+    foreach ($returnProperties as $name => $dontCare ) {
+      if (substr($name, 0, strlen($prefix)) == $prefix) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 }
 
