@@ -136,5 +136,14 @@
   var custLink2 = cj('#custom-set-block-5 .crm-config-option a').html().replace('add or edit custom set', 'add or edit attachments');
   cj('#custom-set-block-5 .crm-config-option a').html(custLink2);
 
+  //5779 truncate file name
+  cj('.crm-fileURL a').each(function(){
+    var title = cj(this).text();
+    if ( title.length > 30 ) {
+      var short = cj.trim(title).substring(0, 30).slice(0, -1) + "...";
+      cj(this).text(short);
+    }
+  });
+
 </script>
 {/literal}
