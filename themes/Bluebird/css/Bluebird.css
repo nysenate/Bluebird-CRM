@@ -1675,3 +1675,7 @@ form#Contact .groupTagsKeywords .crm-section .label {
   border: 1px solid #999;
   padding: 4px;
 }
+
+#crm-container .widget-wrapper {
+  min-height: 0%;
+}
