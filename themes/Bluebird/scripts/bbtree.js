@@ -357,6 +357,10 @@ function isItemChildless(childLength)
 	{
 		return('treeButton');
 	}
+	else
+	{
+		return '';
+	}
 }
 /*This poorly named function determines which tags are stubs, and which need arrows*/
 function postJSON(treeLoc){
@@ -439,61 +443,83 @@ function makeModalAdd(tagLabel){
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('dt#' + tagLabel + ' .tag .name').html();
-			
-			var addDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
-			addDialogInfo += '<div class="modalInputs">';
-			addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
-			addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
-			addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
-			addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
-			addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
-			cj('#dialog').html(addDialogInfo);
-			cj('#dialog input:[name=tagName]').focus();
-		},
-		buttons: {
-			"Done": function () {
-				tagCreate = new Object();
-				tagCreate.tagDescription = '';
-				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
-				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-				modalSetLoadingGif();
-				tagCreate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
-				tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
-				tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
-				tagCreate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
-				//console.log('call modal add ajax ' + returnTime());
-				cj.ajax({
-					url: '/civicrm/ajax/tag/create',
-					data: {
-						name: tagCreate.tagName,
-						description: tagCreate.tagDescription,
-						parent_id: tagCreate.parentId,
-						is_reserved: tagCreate.isReserved	
-					},
-					dataType: 'json',
-					success: function(data, status, XMLHttpRequest) {
-						//console.log('success modal add ajax: ' + returnTime());
-						if(data.code != 1)
-						{
-							alert(data.message);
-							cj('.ui-dialog-buttonpane .loadingGif').hide();
-							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-							modalRemoveLoadingGif();
+			tagInfo.depth = cj('dt#' + tagLabel).hasClass('lv-4');
+			if(tagInfo.depth == false) {
+				var addDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
+				addDialogInfo += '<div class="modalInputs">';
+				addDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
+				addDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
+				addDialogInfo += '<div><span class="parentName" id="'+tagLabel+'"></span></div>';
+				addDialogInfo += '<div><span style="display:none">Or Choose A New Location</span><div></div></div>';
+				addDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
+				cj('#dialog').html(addDialogInfo);
+				cj('#dialog input:[name=tagName]').focus();
+				cj("#dialog").dialog( "option", "buttons", 
+				[
+					{
+						text: "Done",
+						click: function() {
+							tagCreate = new Object();
+							tagCreate.tagDescription = '';
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+							cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+							modalSetLoadingGif();
+							tagCreate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
+							tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
+							tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
+							tagCreate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
+							//console.log('call modal add ajax ' + returnTime());
+							cj.ajax({
+								url: '/civicrm/ajax/tag/create',
+								data: {
+									name: tagCreate.tagName,
+									description: tagCreate.tagDescription,
+									parent_id: tagCreate.parentId,
+									is_reserved: tagCreate.isReserved	
+								},
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									//console.log('success modal add ajax: ' + returnTime());
+									if(data.code != 1)
+									{
+										alert(data.message);
+										cj('.ui-dialog-buttonpane .loadingGif').hide();
+										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+										modalRemoveLoadingGif();
+									}
+									else
+									{
+										cj('#dialog').dialog('close');
+										cj('#dialog').dialog('destroy');
+										callTagAjax();
+									}
+								}
+							});
 						}
-						else
-						{
-							cj('#dialog').dialog('close');
-							cj('#dialog').dialog('destroy');
-							callTagAjax();
+					},
+					{
+						text: "Cancel",
+						click: function() { 
+							cj(this).dialog("close"); 
+							cj(this).dialog("destroy"); 
 						}
 					}
-				});
-			},
-			"Cancel": function() { 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
+				]);
+			} else {
+				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">' + tagInfo.name + ' cannot add more children.</span></div>';
+				cj("#dialog").html(addDialogInfo);
+				cj("#dialog").dialog( "option", "buttons", 
+				[
+					{
+						text: "Cancel",
+						click: function() { 
+							cj(this).dialog("close"); 
+							cj(this).dialog("destroy"); 
+						}
+					}
+				]);
 			}
-		} 
+		}
 	});
 }
 /*This is the Remove functionality that hooks into the tag ajax to add new tags, only difference is is that
