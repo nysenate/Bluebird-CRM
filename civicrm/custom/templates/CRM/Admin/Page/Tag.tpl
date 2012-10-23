@@ -221,13 +221,10 @@ function modalSelectOnClick() {
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
 		 				var tidMatch = false;
-						for(i = 0;i<listOfChildTids.length;i++)
-						{
-							if((listOfChildTids[i] == tagMove.destinationId) || (tagMove.currentId == tagMove.destinationId))
-							{
-								tidMatch = true;
-							}
-						}
+		 				if(listOfChildTids.length > 0)
+		 				{
+		 					tidMatch = true;
+		 				}
 						if(tidMatch == false)
 						{	
 							cj.ajax({
@@ -260,7 +257,7 @@ function modalSelectOnClick() {
 							});
 						}
 						else {
-							alert("Cannot merge a parent into itself or under a child.");
+							alert("Cannot merge a parent tag into another tag. Try moving sub-tags into the parent you want to merge into and then merge the tag into the destination");
 							cj('.ui-dialog-buttonpane .loadingGif').hide();
 							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
 							modalRemoveLoadingGif();
