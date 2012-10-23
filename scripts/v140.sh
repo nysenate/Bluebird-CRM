@@ -152,9 +152,9 @@ echo "run drupal db upgrade"
 $drush $instance updb -y -q
 
 ## remove setting table
-echo "removing civicrm_setting table so civicrm upgrade can recreate..."
-settingrm="DROP TABLE IF EXISTS civicrm_setting;"
-$execSql -i $instance -c "$settingrm" -q
+#echo "removing civicrm_setting table so civicrm upgrade can recreate..."
+#settingrm="DROP TABLE IF EXISTS civicrm_setting;"
+#$execSql -i $instance -c "$settingrm" -q
 
 ## remove managed table
 echo "removing civicrm_managed table so civicrm upgrade can recreate..."

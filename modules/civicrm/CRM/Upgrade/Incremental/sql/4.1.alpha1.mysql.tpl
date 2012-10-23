@@ -30,28 +30,28 @@ VALUES
 -- CRM-8780
 
 -- add the settings table
- CREATE TABLE `civicrm_setting` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `group_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for setting element, useful in caching setting elements',
-  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique name for setting',
-  `value` text COLLATE utf8_unicode_ci COMMENT 'data associated with this group / name combo',
-  `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
-  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID if the setting is localized to a contact',
-  `is_domain` tinyint(4) DEFAULT NULL COMMENT 'Is this setting a contact specific or site wide setting?',
-  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
-  `created_date` datetime DEFAULT NULL COMMENT 'When was the setting created',
-  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this setting',
-  PRIMARY KEY (`id`),
-  KEY `index_group_name` (`group_name`,`name`),
-  KEY `FK_civicrm_setting_domain_id` (`domain_id`),
-  KEY `FK_civicrm_setting_contact_id` (`contact_id`),
-  KEY `FK_civicrm_setting_component_id` (`component_id`),
-  KEY `FK_civicrm_setting_created_id` (`created_id`),
-  CONSTRAINT `FK_civicrm_setting_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_civicrm_setting_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_civicrm_setting_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`),
-  CONSTRAINT `FK_civicrm_setting_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+-- CREATE TABLE `civicrm_setting` (
+--  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+--  `group_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for setting element, useful in caching setting elements',
+--  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique name for setting',
+--  `value` text COLLATE utf8_unicode_ci COMMENT 'data associated with this group / name combo',
+--  `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
+--  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID if the setting is localized to a contact',
+--  `is_domain` tinyint(4) DEFAULT NULL COMMENT 'Is this setting a contact specific or site wide setting?',
+--  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
+--  `created_date` datetime DEFAULT NULL COMMENT 'When was the setting created',
+--  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this setting',
+--  PRIMARY KEY (`id`),
+--  KEY `index_group_name` (`group_name`,`name`),
+--  KEY `FK_civicrm_setting_domain_id` (`domain_id`),
+--  KEY `FK_civicrm_setting_contact_id` (`contact_id`),
+--  KEY `FK_civicrm_setting_component_id` (`component_id`),
+--  KEY `FK_civicrm_setting_created_id` (`created_id`),
+--  CONSTRAINT `FK_civicrm_setting_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE,
+--  CONSTRAINT `FK_civicrm_setting_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
+--  CONSTRAINT `FK_civicrm_setting_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`),
+--  CONSTRAINT `FK_civicrm_setting_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
+--) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 
 -- CRM-8508
     SELECT @caseCompId := id FROM `civicrm_component` where `name` like 'CiviCase';
@@ -253,7 +253,7 @@ VALUES
     ( @domainID, 'civicrm/admin/options/event_badge&group=event_badge&reset=1', '{ts escape="sql" skip="true"}Event Badge Formats{/ts}', 'Event Badge Formats', 'access CiviEvent,administer CiviCRM', 'AND', @eventAdminID, '1', NULL, 11 );
 
 -- CRM-9113
-ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
+--ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
 
 -- CRM-8762 Fix option_group table
 ALTER TABLE civicrm_option_group CHANGE `is_reserved` `is_reserved` TINYINT DEFAULT 1;
