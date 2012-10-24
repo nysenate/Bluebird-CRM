@@ -360,7 +360,11 @@ class CRM_IMAP_AJAX {
      * the selected contact ID.
      */ 
     public static function assignMessage() {
+        // testing url 
+        // http://skelos/civicrm/imap/ajax/assignMessage?messageId=123&contactId=123&imapId=1
+        
         self::setupImap();
+
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
         $imapId = self::get('imapId');
@@ -376,13 +380,28 @@ class CRM_IMAP_AJAX {
         
         require_once 'api/api.php';
 
-        // Get the user information for the person who forwarded the email.
+        // if this email has been moved / assigned already 
+        if( $email->sender[0] == null){
+          $returnCode = array('code'      =>  'ERROR',
+              'message'   => 'This email no longer exists');
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        }
+
+        // Get the user information for the person who forwarded the email, or bluebird admin
+
         $params = array( 
             'email' => $senderEmailAddress,
             'version' => 3,
         );
-
         $result = civicrm_api('contact', 'get', $params );
+
+        // error checking for forwarderId
+        if (($result['is_error']==1) || ($result['values']==null )){
+          $forwarderId = 1; // bluebird admin
+        } else{
+          $forwarderId = $result['id'];
+        };
 
         // HAVE MERCY. I copied and pasted this from the previous section,
         // this should be separated into a function.
@@ -408,9 +427,7 @@ class CRM_IMAP_AJAX {
             $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
         }
 
-        if (($result['is_error']==1) && ($result['values'])){
-          $forwarderId = $result['id'];
-        }
+
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
@@ -435,15 +452,25 @@ class CRM_IMAP_AJAX {
               'details' => $body,
               'version' => 3
           );
-
           $activity = civicrm_api('activity', 'create', $params);
+          var_dump($params);
           
-          self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
-          // Now we need to assign the tag to the activity.
+          // if its an error or doesnt return we need errors 
+          if (($activity['is_error']==1)){
+            $returnCode = array('code'      =>  'ERROR',
+              'message'   =>  $activity['error_message']);
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+          } else{
+            // Now we need to assign the tag to the activity.
+            self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
+            $imap->movemsg_uid($messageUid, 'Archive');
+
+
+          };
 
         }
         // Move the message to the archive folder!
-        $imap->movemsg_uid($messageUid, 'Archive');
         CRM_Utils_System::civiExit();
     }
 
