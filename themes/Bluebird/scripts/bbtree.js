@@ -331,7 +331,7 @@ function hoverTreeSlider(treeLoc){
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
 	function(){
-		var tagCount = cj('span.entityCount', this).html();
+		var tagCount = cj('span.entityCount', this).html().match(/[0-9]+/);
 		var tagName = cj('span.name', this).html();
 		var tagId = cj(this).attr('tid');
 		var isReserved = 'False';
