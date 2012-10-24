@@ -331,7 +331,7 @@ function hoverTreeSlider(treeLoc){
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
 	function(){
-		var tagCount = cj('span.entityCount', this).html();
+		var tagCount = cj('span.entityCount', this).html().match(/[0-9]+/);
 		var tagName = cj('span.name', this).html();
 		var tagId = cj(this).attr('tid');
 		var isReserved = 'False';
@@ -689,98 +689,99 @@ function makeModalUpdate(tagLabel){
 
 /*makes a modal tree, this is the more involved one than the rest because it's calling a tree structure and
 having to replicate much of the same combinations, it moves to modalSelectOnclick to open a dialog box*/
-function makeModalTree(tagLabel){
-	cj("#dialog").show( );
-	cj("#dialog").dialog({
-		closeOnEscape: true,
-		draggable: true,
-		height: 500,
-		width: 400,
-		title: "Move Tag",
-		modal: true, 
-		bgiframe: true,
-		close:{ },
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
-		open: function() {
-			tagInfo = new Object();
-			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
-			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
-
-			var treeDialogInfo;
-			if(tagInfo.reserved == true){
-			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
-			cj('#dialog').html(treeDialogInfo);
-			} else {
-			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
-			treeDialogInfo += '<div class="BBtree modal"></div>';
-			cj('#dialog').html(treeDialogInfo);
-			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+// function makeModalTree(tagLabel){
+// 	cj("#dialog").show( );
+// 	cj("#dialog").dialog({
+// 		closeOnEscape: true,
+// 		draggable: true,
+// 		height: 500,
+// 		width: 400,
+// 		title: "Move Tag",
+// 		modal: true, 
+// 		bgiframe: true,
+// 		close:{ },
+// 		overlay: { 
+// 			opacity: 0.2, 
+// 			background: "black" 
+// 		},
+// 		open: function() {
+// 			tagInfo = new Object();
+// 			tagInfo.id = tagLabel;
+// 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+// 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+// 			tagInfo.children = cj('.BBtree.edit.manage dl#'+tagLabel).children('dt');
+// 			console.log(tagInfo.children);
+// 			var treeDialogInfo;
+// 			if(tagInfo.reserved == true){
+// 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
+// 			cj('#dialog').html(treeDialogInfo);
+// 			} else {
+// 			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
+// 			treeDialogInfo += '<div class="BBtree modal"></div>';
+// 			cj('#dialog').html(treeDialogInfo);
+// 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			
-			callTagAjax('modal', modalTreeTop);
-			}
-		},
-		buttons: {
-			"Cancel": function() { 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy");
-			}
-		} 
-	});
-}
-/*this is the second portion of the Modal box, where it takes the click function and makes a 'move' button*/
-function modalSelectOnClick() {
-	cj('.BBtree input.selectRadio').click(function(){
-		var destinationId = cj(this).parent().parent('dt').attr('tid');
-		cj("#dialog").dialog( "option", "buttons", [
-			{
-				text: "Move",
-				click: function() {
-					cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
-					cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-					modalSetLoadingGif();
-					tagMove = new Object();
-					tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
-					tagMove.destinationId = destinationId;
-					cj.ajax({
-						url: '/civicrm/ajax/tag/update',
-						data: {
-							id: tagMove.currentId,
-							parent_id: tagMove.destinationId
-						},
-						dataType: 'json',
-						success: function(data, status, XMLHttpRequest) {
-							if(data.code != 1)
-							{
-								alert(data.message);
-								cj('.ui-dialog-buttonpane .loadingGif').hide();
-								cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
-								modalRemoveLoadingGif();
-							}
-							else
-							{
-								cj('#dialog').dialog('close');
-								cj('#dialog').dialog('destroy');
-								callTagAjax();
-							}
-						}
-					});
+// 			callTagAjax('modal', modalTreeTop);
+// 			}
+// 		},
+// 		buttons: {
+// 			"Cancel": function() { 
+// 				cj(this).dialog("close"); 
+// 				cj(this).dialog("destroy");
+// 			}
+// 		} 
+// 	});
+// }
+// this is the second portion of the Modal box, where it takes the click function and makes a 'move' button
+// function modalSelectOnClick() {
+// 	cj('.BBtree input.selectRadio').click(function(){
+// 		var destinationId = cj(this).parent().parent('dt').attr('tid');
+// 		cj("#dialog").dialog( "option", "buttons", [
+// 			{
+// 				text: "Move",
+// 				click: function() {
+// 					cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+// 					cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+// 					modalSetLoadingGif();
+// 					tagMove = new Object();
+// 					tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+// 					tagMove.destinationId = destinationId;
+// 					cj.ajax({
+// 						url: '/civicrm/ajax/tag/update',
+// 						data: {
+// 							id: tagMove.currentId,
+// 							parent_id: tagMove.destinationId
+// 						},
+// 						dataType: 'json',
+// 						success: function(data, status, XMLHttpRequest) {
+// 							if(data.code != 1)
+// 							{
+// 								alert(data.message);
+// 								cj('.ui-dialog-buttonpane .loadingGif').hide();
+// 								cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
+// 								modalRemoveLoadingGif();
+// 							}
+// 							else
+// 							{
+// 								cj('#dialog').dialog('close');
+// 								cj('#dialog').dialog('destroy');
+// 								callTagAjax();
+// 							}
+// 						}
+// 					});
 
-				}
-			},
-			{
-				text: "Cancel",
-				click: function() { 
-					cj(this).dialog("close"); 
-					cj(this).dialog("destroy"); 
-				}
-			}
-		]);
-	});
-}
+// 				}
+// 			},
+// 			{
+// 				text: "Cancel",
+// 				click: function() { 
+// 					cj(this).dialog("close"); 
+// 					cj(this).dialog("destroy"); 
+// 				}
+// 			}
+// 		]);
+// 	});
+// }
 function modalSetLoadingGif()
 {
 	cj('.BBtree.manage').children().hide(); 

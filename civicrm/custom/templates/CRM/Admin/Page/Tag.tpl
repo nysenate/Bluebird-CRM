@@ -99,11 +99,15 @@ function makeModalTree(tagLabel){
 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.number = cj('.BBtree.edit.manage dt#' + tagLabel).attr('tID');
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+			
+
+			
 			var treeDialogInfo;
-			if(tagInfo.reserved == true){
+			if(tagInfo.reserved == true){ //if reserved
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
 			cj('#dialog').html(treeDialogInfo);
-			} else {
+			} 
+			else {
 			treeDialogInfo = '<div class="modalHeader">Move <span id="modalNameTid" tID="'+tagInfo.number+'">' + tagInfo.name + ' under Tag...</span></div>';
 			treeDialogInfo += '<div class="BBtree modal move"></div>';
 			cj('#dialog').html(treeDialogInfo);
@@ -125,6 +129,19 @@ function makeModalTree(tagLabel){
 function modalSelectOnClick() {
 	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').unbind('click');
 	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').click(function(){
+		var tagLabel = cj('.ui-dialog-content .modalHeader span').attr('tID');
+		//search the string for all mentions of tid="number"
+		var listOfChildTids = '';
+		var tagChildren = cj('.BBtree.edit.manage dl#tagLabel_'+ tagLabel).html();
+		if(tagChildren != null)
+		{
+			listOfChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
+			for(i = 0;i<listOfChildTids.length;i++)
+			{
+				listOfChildTids[i] = listOfChildTids[i].replace("tid=\"",'');
+				listOfChildTids[i] = listOfChildTids[i].replace("\"",'');
+			}
+		}
 		if(cj('.BBtree.modal').hasClass('move'))
 		{
 			var destinationId = cj(this).parent().parent('dt').attr('tid');
@@ -138,26 +155,46 @@ function modalSelectOnClick() {
 						tagMove = new Object();
 						tagMove.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
 						tagMove.destinationId = destinationId;
-						cj.ajax({
-							url: '/civicrm/ajax/tag/update',
-							data: {
-								id: tagMove.currentId,
-								parent_id: tagMove.destinationId
-							},
-							dataType: 'json',
-							success: function(data, status, XMLHttpRequest) {
-								if(data.code != 1)
+						var tidMatch = false;
+						if(tagChildren != null)
+						{
+							for(i = 0;i<listOfChildTids.length;i++)
+							{
+								if((listOfChildTids[i] == tagMove.destinationId) || (tagMove.currentId == tagMove.destinationId))
 								{
-									alert(data.message);
-									cj('.ui-dialog-buttonpane .loadingGif').hide();
-									cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-									modalRemoveLoadingGif();
+									tidMatch = true;
 								}
-								cj('#dialog').dialog('close');
-								cj('#dialog').dialog('destroy');
-								callTagAjax();
 							}
-						});
+						}
+						if(tidMatch == false)
+						{	
+							cj.ajax({
+								url: '/civicrm/ajax/tag/update',
+								data: {
+									id: tagMove.currentId,
+									parent_id: tagMove.destinationId
+								},
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									if(data.code != 1)
+									{
+										alert(data.message);
+										cj('.ui-dialog-buttonpane .loadingGif').hide();
+										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+										modalRemoveLoadingGif();
+									}
+									cj('#dialog').dialog('close');
+									cj('#dialog').dialog('destroy');
+									callTagAjax();
+								}
+							});
+						}
+						else{
+							alert("Cannot move a parent under a child.");
+							cj('.ui-dialog-buttonpane .loadingGif').hide();
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+							modalRemoveLoadingGif();
+						}
 
 					}
 				},
@@ -190,34 +227,51 @@ function modalSelectOnClick() {
 						tagMerge.destinationId = destinationId;
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
-						cj.ajax({
-							type     : "POST",
-							url: postUrl,
-							data: data,
-							dataType: 'json',
-							success: function(data, status, XMLHttpRequest) {
-								if ( data.status == true ) {
-									cj("#dialog").dialog("close"); 
-									cj("#dialog").dialog("destroy"); 
-									callTagAjax();
-									if(cj('.contactTagsList.help').length < 1)
-									{
-										cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+		 				var tidMatch = false;
+		 				if(tagChildren != null)
+						{
+			 				if(listOfChildTids.length > 0)
+			 				{
+			 					tidMatch = true;
+			 				}
+			 			}
+						if(tidMatch == false)
+						{	
+							cj.ajax({
+								type     : "POST",
+								url: postUrl,
+								data: data,
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									if ( data.status == true ) {
+										cj("#dialog").dialog("close"); 
+										cj("#dialog").dialog("destroy"); 
+										callTagAjax();
+										if(cj('.contactTagsList.help').length < 1)
+										{
+											cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+										}
+										var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
+										var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
+										cj('#tagLabel_' + tagInfo.tid).html(''); 
+										cj('#tagStatusBar').html(msg);
 									}
-									var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
-									var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
-									cj('#tagLabel_' + tagInfo.tid).html(''); 
-									cj('#tagStatusBar').html(msg);
-								}
-								else
-								{
-									cj('.ui-dialog-buttonpane .loadingGif').hide();
-									cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-									modalRemoveLoadingGif();
-								}
-								
-							}	
-						});
+									else
+									{
+										cj('.ui-dialog-buttonpane .loadingGif').hide();
+										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+										modalRemoveLoadingGif();
+									}
+									
+								}	
+							});
+						}
+						else {
+							alert("Cannot merge a parent tag into another tag. Try moving sub-tags into the parent you want to merge into and then merge the tag into the destination");
+							cj('.ui-dialog-buttonpane .loadingGif').hide();
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+							modalRemoveLoadingGif();
+						}
 
 					}
 				},
