@@ -18,7 +18,7 @@ class CRM_Utils_SAGE
         if ($config->debug) {
             $session->setStatus(ts("SAGE Warning: $message<br/>"));
         } else {
-            $session->setStatus(ts("SAGE Warning: Address warning failed.<br/>"));
+            $session->setStatus(ts("SAGE Warning: Address lookup failed.<br/>"));
         }
 
     }
