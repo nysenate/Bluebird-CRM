@@ -15,18 +15,22 @@ class CRM_Utils_SAGE
     private static function warn( $message ) {
         $session = CRM_Core_Session::singleton();
         $config = CRM_Core_Config::singleton();
-        if ($config->debug) {
-            $session->setStatus(ts("SAGE Warning: $message<br/>"));
-        } else {
-            $session->setStatus(ts("SAGE Warning: Address lookup failed.<br/>"));
-        }
 
+        //for bulk actions, the status message is concatenated and could get quite long
+        //so we will limit the length
+        if (strlen($session->getStatus()) < MAX_STATUS_LEN) {
+
+            // NYSS 5798 - Only show details in debug mode
+            if ($config->debug) {
+                $session->setStatus(ts("SAGE Warning: $message<br/>"));
+            } else {
+                $session->setStatus(ts("SAGE Warning: Address lookup failed.<br/>"));
+            }
+        }
     }
 
     public static function checkAddress( &$values )
     {
-        $session = CRM_Core_Session::singleton();
-
         // I'm 95% sure this isn't actually necessary, although catching
         // an absence of SAGE required fields would be good (add that below)
         // QQQ: Do we need to do all these checks isset() checks?
@@ -77,8 +81,6 @@ class CRM_Utils_SAGE
 
     public static function format( &$values, $stateName=false )
     {
-        $session = CRM_Core_Session::singleton();
-
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
@@ -114,8 +116,6 @@ class CRM_Utils_SAGE
 
 
     public static function distassign( &$values, $overwrite_districts=true ) {
-        $session = CRM_Core_Session::singleton();
-
         //The address could be stored in a couple different places
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
@@ -176,8 +176,6 @@ class CRM_Utils_SAGE
      }
 
     public static function lookup( &$values, $overwrite_districts=true, $overwrite_point=true) {
-        $session = CRM_Core_Session::singleton();
-
         //The address could be stored in a couple different places
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
@@ -215,11 +213,7 @@ class CRM_Utils_SAGE
         //sending us a "simple" address from the geocoding source instead
         //of the "extended" USPS address
         if($xml->address->simple) {
-            //for bulk actions, the status message is concatenated and could get quite long
-            //so we will limit the length
-            if ( strlen($session->getStatus()) < MAX_STATUS_LEN ) {
-                self::warn("USPS could not validate address: [$addr]");
-            }
+            self::warn("USPS could not validate address: [$addr]");
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
