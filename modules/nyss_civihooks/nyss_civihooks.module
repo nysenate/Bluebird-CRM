@@ -773,7 +773,36 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     ),
     'child' => array(),
     );
-
+ 
+  //5813 Inbox polling Menu Items 
+  $params[$manageNavID]['child'][$maxKey+3] = array (
+    'attributes' => array (
+      'label'      => 'Imapper Unmatched Messages',
+      'name'       => 'Imapper Unmatched Messages',
+      'url'        => 'civicrm/imap/mapper',
+      'permission' => 'administer district',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $manageNavID,
+      'navID'      => $maxKey+3,
+      'active'     => 1
+    ),
+    'child' => array(),
+    );
+  $params[$manageNavID]['child'][$maxKey+4] = array (
+    'attributes' => array (
+      'label'      => 'Imapper Matched Messages',
+      'name'       => 'Imapper Matched Messages',
+      'url'        => 'civicrm/imap/activities',
+      'permission' => 'administer district',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $manageNavID,
+      'navID'      => $maxKey+4,
+      'active'     => 1
+    ),
+    'child' => array(),
+    );
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
