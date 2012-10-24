@@ -389,6 +389,13 @@ VALUES (
 );"
 $execSql -i $instance -c "$safe" -q
 
+## add inbox polling perm to admin/officeadmin/officemgr roles
+sql="
+INSERT INTO role_permission (rid, permission)
+VALUES (4 ,'administer inbox polling'), (9 ,'administer inbox polling'), (10 ,'administer inbox polling'), (3 ,'administer inbox polling');
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
 
 ### Cleanup ###
 

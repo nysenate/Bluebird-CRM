@@ -12,6 +12,17 @@ define( 'MAX_STATUS_LEN', 200 ); //threshold length for status message
 class CRM_Utils_SAGE
 {
 
+    private static function warn( $message ) {
+        $session = CRM_Core_Session::singleton();
+        $config = CRM_Core_Config::singleton();
+        if ($config->debug) {
+            $session->setStatus(ts("SAGE Warning: $message<br/>"));
+        } else {
+            $session->setStatus(ts("SAGE Warning: Address warning failed.<br/>"));
+        }
+
+    }
+
     public static function checkAddress( &$values )
     {
         $session = CRM_Core_Session::singleton();
@@ -37,7 +48,7 @@ class CRM_Utils_SAGE
         //SAGE throws back a cryptic warning if there is no address.
         //Check first and use our own more descriptive warning.
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn('Not enough address info.');
             return false;
         }
 
@@ -56,8 +67,7 @@ class CRM_Utils_SAGE
         $xml = simplexml_load_string($request->getResponseBody());
 
         if (self::validateResponse($xml) === false) {
-            $msg = "SAGE Warning: Postal lookup for [$addr] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Postal lookup for [$addr] has failed.\n");
             return false;
         }
 
@@ -93,8 +103,7 @@ class CRM_Utils_SAGE
         if(!self::validateResponse($xml)) {
             //QQQ: Why do we set these values to 'null' instead of ''?
             $values['geo_code_1'] = $values['geo_code_2'] = 'null';
-            $msg = "SAGE Warning: Geocoding for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Geocoding for [$params] has failed.");
             return false;
         }
 
@@ -111,7 +120,7 @@ class CRM_Utils_SAGE
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn("Not enough address info.");
             return false;
         }
 
@@ -131,8 +140,7 @@ class CRM_Utils_SAGE
 
         #Check the response for validity
         if(!self::validateResponse($xml)) {
-            $msg = "SAGE Warning: Distassign for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Distassign for [$params] has failed.");
             return false;
         }
 
@@ -159,8 +167,7 @@ class CRM_Utils_SAGE
 		$xml = simplexml_load_string($request->getResponseBody());
 
 		if(!self::validateResponse($xml)) {
-			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
-			$session->setStatus(ts($msg));
+            self::warn("Lookup for [$params] has failed.");
 			return false;
 		}
 
@@ -181,7 +188,7 @@ class CRM_Utils_SAGE
             $values['state_province'] = CRM_Core_PseudoConstant::stateProvinceAbbreviation($values['state_province_id']);
         }
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn("Not enough address info.");
             return false;
         }
 
@@ -200,8 +207,7 @@ class CRM_Utils_SAGE
         $xml = simplexml_load_string($request->getResponseBody());
 
         if(!self::validateResponse($xml)) {
-            $msg = "SAGE Warning: Lookup for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Lookup for [$params] has failed.");
             return false;
         }
 
@@ -212,8 +218,7 @@ class CRM_Utils_SAGE
             //for bulk actions, the status message is concatenated and could get quite long
             //so we will limit the length
             if ( strlen($session->getStatus()) < MAX_STATUS_LEN ) {
-                $msg = "SAGE Warning: USPS could not validate address: [$addr] </ br>";
-                $session->setStatus(ts($msg));
+                self::warn("USPS could not validate address: [$addr]");
             }
         } else {
             //Don't change imported addresses, assume they are correct as given
