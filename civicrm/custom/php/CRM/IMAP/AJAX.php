@@ -307,9 +307,9 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
-        if($first_name) $where .="  AND contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name' \n";
+        if($first_name) $where .="  AND contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name'   \n";
         $last_name = self::get('last_name');
-        if($last_name) $where .="  AND contact.last_name LIKE '$last_name'\n";
+        if($last_name) $where .="  AND contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%'\n";
         $email_address = self::get('email_address');
         if($email_address) {
           $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
