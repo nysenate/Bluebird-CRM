@@ -307,13 +307,13 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
-        if($first_name) $where .="  AND contact.first_name LIKE '$first_name%'\n";
+        if($first_name) $where .="  AND contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name' \n";
         $last_name = self::get('last_name');
         if($last_name) $where .="  AND contact.last_name LIKE '$last_name'\n";
         $email_address = self::get('email_address');
         if($email_address) {
           $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
-          $where.="  AND email.email LIKE '$email_address%'\n";
+          $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
         $state_id = self::get('state');
@@ -323,10 +323,10 @@ class CRM_IMAP_AJAX {
           $from.="  JOIN civicrm_address as address ON address.contact_id=contact.id\n";
           $order.=", address.is_primary DESC";
           if($street_address) {
-            $where.="  AND address.street_address LIKE '$street_address%'\n";
+            $where.="  AND address.street_address LIKE '$street_address'\n";
           }
           if ($city) {
-            $where.="  AND address.city LIKE '$city%'\n";
+            $where.="  AND address.city LIKE '$city'\n";
           }
           if ($state_id) {
             $from.="  JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
@@ -454,7 +454,7 @@ class CRM_IMAP_AJAX {
           );
           $activity = civicrm_api('activity', 'create', $params);
           var_dump($params);
-          
+
           // if its an error or doesnt return we need errors 
           if (($activity['is_error']==1)){
             $returnCode = array('code'      =>  'ERROR',
