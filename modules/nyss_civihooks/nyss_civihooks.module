@@ -769,7 +769,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
       'permission' => 'export print production files',
       'operator'   => 'AND',
-      'separator'  => 0,
+      'separator'  => 1,
       'parentID'   => $manageNavID,
       'navID'      => $maxKey+2,
       'active'     => 1
