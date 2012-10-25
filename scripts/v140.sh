@@ -204,6 +204,7 @@ $drush $instance en nyss_sage -y -q
 $drush $instance en nyss_tags -y -q
 $drush $instance en nyss_civihooks -y -q
 $drush $instance en nyss_contact -y -q
+$drush $instance en nyss_imapper -y -q
 
 ## reenable logging
 echo "re-enable civicrm logging..."
