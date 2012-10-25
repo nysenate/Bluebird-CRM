@@ -91,7 +91,7 @@ class CRM_Utils_SAGE
         //open source "geocoder" project.
         $url = 'xml/geocode/extended?';
         $params = http_build_query(array(
-                'service' => CRM_Utils_Array::value('service', $values, "geocoder"),
+                'service' => CRM_Utils_Array::value('service', $values, "rubygeocoder"),
                 'addr2' => str_replace(',', '', $addr),
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
@@ -212,17 +212,21 @@ class CRM_Utils_SAGE
         //SAGE will let us know if USPS address validation has failed by
         //sending us a "simple" address from the geocoding source instead
         //of the "extended" USPS address
-        if($xml->address->simple) {
+        if($xml->validated != "true") {
             self::warn("USPS could not validate address: [$addr]");
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
             if (count($url_components) > 1 && $url_components[1] != 'import' )
-                self::storeAddress($values, $xml->address->extended, $addr_field);
+                self::storeAddress($values, $xml, $addr_field);
         }
 
-        self::storeGeocodes($values, $xml, $overwrite_point);
-        self::storeDistricts($values, $xml, $overwrite_districts);
+        if ($xml->geocoded == "true") {
+            self::storeGeocodes($values, $xml, $overwrite_point);
+        }
+        if ($xml->distassigned == "true") {
+            self::storeDistricts($values, $xml, $overwrite_districts);
+        }
         return true;
     }
 
