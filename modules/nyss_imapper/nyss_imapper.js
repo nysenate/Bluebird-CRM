@@ -173,14 +173,11 @@ cj(document).ready(function(){
 							cj("#find-match-popup").dialog('close'); 
 							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 							help_message('Contact created and message Assigned');
+						},
+						error: function(){
+    						alert('failure');
+  						}
 
-							// cj.each(messages, function (idx, val) {
-							// 	if(val.uid == messageId && val.imap_id == imapId) {
-			    //             		delete messages[idx];
-			    //             		buildMessageList();
-			    //             	}
-			    //            });
-					}
 				});
 				}			
 			});
@@ -227,7 +224,10 @@ cj(document).ready(function(){
 								var old_total = parseInt(cj("#total_number").html(),10);
 								help_message('Activity Deleted');
 								cj("#total_number").html(old_total-1);
-							} 
+							},
+							error: function(){
+    							alert('unable to delete activity');
+  							}
 						});
 					}else{
 						cj.ajax({
@@ -240,7 +240,10 @@ cj(document).ready(function(){
  								help_message('Message Deleted');
 
 								cj("#total_number").html(old_total-1);
-							} 
+							},
+							error: function(){
+    							alert('unable to delete Message');
+  							}
 						});
 					}
 				},
@@ -284,7 +287,10 @@ cj(document).ready(function(){
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
 									help_message('Activities Deleted');
-								}
+								},
+								error: function(){
+    								alert('unable to delete Activitie');
+  								}
 							});
 						});		
 					}else{
@@ -298,7 +304,10 @@ cj(document).ready(function(){
 									var old_total = parseInt(cj("#total_number").html(),10);
 									cj("#total_number").html(old_total-1);
 									help_message('Messages Deleted');
-								}
+								},
+								error: function(){
+    								alert('unable to delete Message');
+  								}
 							});
 						});				
 					}
@@ -394,7 +403,10 @@ cj(document).ready(function(){
 										cj("#tagging-popup").dialog('close');
 										help_message('tag added!');
 										cj("#"+value).remove();
-									}
+									},
+									error: function(){
+	    								alert('unable to add tag');
+	  								}
 								});
 							});
 						}else{
@@ -407,7 +419,10 @@ cj(document).ready(function(){
 									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
-								}
+								},
+								error: function(){
+    								alert('unable to add tag');
+  								}
 							});
 						}
 						
@@ -462,6 +477,9 @@ cj(document).ready(function(){
 				cj("#tagging-popup").dialog({ title:  "Tagging: "+ short_subject(messages.subject,50) });
 				cj("#tagging-popup").dialog('open');
  				 
+			},
+			error: function(){
+				alert('unable to find activity');
 			}
 		 });
 	});
@@ -500,6 +518,9 @@ cj(document).ready(function(){
 						data: {id: activityId},
 						success: function(data,status) { 
 							help_message('Activity Removed');
+						},
+						error: function(){
+							alert('unable to delete Activity');
 						}
 					});
 					var old_total = parseInt(cj("#total_number").html(),10);
@@ -538,6 +559,9 @@ cj(document).ready(function(){
 								cj("#total_number").html(old_total-1);
 								cj("#delete-confirm").dialog( "close" );
 								help_message('Activity Removed');
+							},
+							error: function(){
+								alert('unable to delete Activity');
 							}
 						});
 					});
@@ -586,6 +610,9 @@ cj(document).ready(function(){
 
  				cj('#filter').click();
 				switchName(messages.fromName);
+			},
+			error: function(){
+				alert('unable to load message');
 			}
 		});
 	});
@@ -616,6 +643,9 @@ cj(document).ready(function(){
  				cj("#tabs").tabs();
  
   				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> "+messages.fromAddress);
+			},
+			error: function(){
+				alert('unable to Load Message');
 			}
 		 });
 	});
@@ -651,6 +681,9 @@ function pullMessageHeaders() {
 		success: function(data,status) {
 			messages = cj.parseJSON(data);
 			buildMessageList();
+		},
+		error: function(){
+			alert('unable to Load Messages');
 		}
 	});
 }
@@ -661,6 +694,9 @@ function pullActivitiesHeaders() {
 		success: function(data,status) {
 			messages = cj.parseJSON(data);
 			buildActivitiesList();
+		},
+		error: function(){
+			alert('unable to Load Messages');
 		}
 	});
 }
@@ -799,7 +835,7 @@ function help_message(message){
 	var m = d.getMinutes();
 	var s = d.getSeconds();
 	var rm = h+"_"+m+"_"+s;
-	cj("#top").append("<div class='"+h+"_"+m+"_"+s+"' id='help' ><p>"+message+" <small>"+h+":"+m+":"+s+"<small></p></div>");
+	cj("#top").append("<div class='"+h+"_"+m+"_"+s+"' id='help' ><p>"+message+" <small>"+h+":"+m+":"+s+"</small></p></div>");
 
 	setTimeout(function(){
 	    cj("."+rm).fadeOut(1000);
