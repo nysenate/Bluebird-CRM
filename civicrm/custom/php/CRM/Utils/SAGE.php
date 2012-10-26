@@ -12,10 +12,25 @@ define( 'MAX_STATUS_LEN', 200 ); //threshold length for status message
 class CRM_Utils_SAGE
 {
 
+    private static function warn( $message ) {
+        $session = CRM_Core_Session::singleton();
+        $config = CRM_Core_Config::singleton();
+
+        //for bulk actions, the status message is concatenated and could get quite long
+        //so we will limit the length
+        if (strlen($session->getStatus()) < MAX_STATUS_LEN) {
+
+            // NYSS 5798 - Only show details in debug mode
+            if ($config->debug) {
+                $session->setStatus(ts("SAGE Warning: $message<br/>"));
+            } else {
+                $session->setStatus(ts("SAGE Warning: Address lookup failed.<br/>"));
+            }
+        }
+    }
+
     public static function checkAddress( &$values )
     {
-        $session = CRM_Core_Session::singleton();
-
         // I'm 95% sure this isn't actually necessary, although catching
         // an absence of SAGE required fields would be good (add that below)
         // QQQ: Do we need to do all these checks isset() checks?
@@ -37,7 +52,7 @@ class CRM_Utils_SAGE
         //SAGE throws back a cryptic warning if there is no address.
         //Check first and use our own more descriptive warning.
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn('Not enough address info.');
             return false;
         }
 
@@ -56,8 +71,7 @@ class CRM_Utils_SAGE
         $xml = simplexml_load_string($request->getResponseBody());
 
         if (self::validateResponse($xml) === false) {
-            $msg = "SAGE Warning: Postal lookup for [$addr] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Postal lookup for [$addr] has failed.\n");
             return false;
         }
 
@@ -67,8 +81,6 @@ class CRM_Utils_SAGE
 
     public static function format( &$values, $stateName=false )
     {
-        $session = CRM_Core_Session::singleton();
-
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
@@ -79,7 +91,7 @@ class CRM_Utils_SAGE
         //open source "geocoder" project.
         $url = 'xml/geocode/extended?';
         $params = http_build_query(array(
-                'service' => CRM_Utils_Array::value('service', $values, "geocoder"),
+                'service' => CRM_Utils_Array::value('service', $values, "rubygeocoder"),
                 'addr2' => str_replace(',', '', $addr),
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
@@ -93,8 +105,7 @@ class CRM_Utils_SAGE
         if(!self::validateResponse($xml)) {
             //QQQ: Why do we set these values to 'null' instead of ''?
             $values['geo_code_1'] = $values['geo_code_2'] = 'null';
-            $msg = "SAGE Warning: Geocoding for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Geocoding for [$params] has failed.");
             return false;
         }
 
@@ -105,13 +116,11 @@ class CRM_Utils_SAGE
 
 
     public static function distassign( &$values, $overwrite_districts=true ) {
-        $session = CRM_Core_Session::singleton();
-
         //The address could be stored in a couple different places
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn("Not enough address info.");
             return false;
         }
 
@@ -131,8 +140,7 @@ class CRM_Utils_SAGE
 
         #Check the response for validity
         if(!self::validateResponse($xml)) {
-            $msg = "SAGE Warning: Distassign for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Distassign for [$params] has failed.");
             return false;
         }
 
@@ -159,8 +167,7 @@ class CRM_Utils_SAGE
 		$xml = simplexml_load_string($request->getResponseBody());
 
 		if(!self::validateResponse($xml)) {
-			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
-			$session->setStatus(ts($msg));
+            self::warn("Lookup for [$params] has failed.");
 			return false;
 		}
 
@@ -169,8 +176,6 @@ class CRM_Utils_SAGE
      }
 
     public static function lookup( &$values, $overwrite_districts=true, $overwrite_point=true) {
-        $session = CRM_Core_Session::singleton();
-
         //The address could be stored in a couple different places
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
@@ -181,7 +186,7 @@ class CRM_Utils_SAGE
             $values['state_province'] = CRM_Core_PseudoConstant::stateProvinceAbbreviation($values['state_province_id']);
         }
         if (!$addr) {
-            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            self::warn("Not enough address info.");
             return false;
         }
 
@@ -200,30 +205,28 @@ class CRM_Utils_SAGE
         $xml = simplexml_load_string($request->getResponseBody());
 
         if(!self::validateResponse($xml)) {
-            $msg = "SAGE Warning: Lookup for [$params] has failed.\n";
-            $session->setStatus(ts($msg));
+            self::warn("Lookup for [$params] has failed.");
             return false;
         }
 
         //SAGE will let us know if USPS address validation has failed by
         //sending us a "simple" address from the geocoding source instead
         //of the "extended" USPS address
-        if($xml->address->simple) {
-            //for bulk actions, the status message is concatenated and could get quite long
-            //so we will limit the length
-            if ( strlen($session->getStatus()) < MAX_STATUS_LEN ) {
-                $msg = "SAGE Warning: USPS could not validate address: [$addr] </ br>";
-                $session->setStatus(ts($msg));
-            }
+        if($xml->validated != "true") {
+            self::warn("USPS could not validate address: [$addr]");
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
             if (count($url_components) > 1 && $url_components[1] != 'import' )
-                self::storeAddress($values, $xml->address->extended, $addr_field);
+                self::storeAddress($values, $xml, $addr_field);
         }
 
-        self::storeGeocodes($values, $xml, $overwrite_point);
-        self::storeDistricts($values, $xml, $overwrite_districts);
+        if ($xml->geocoded == "true") {
+            self::storeGeocodes($values, $xml, $overwrite_point);
+        }
+        if ($xml->distassigned == "true") {
+            self::storeDistricts($values, $xml, $overwrite_districts);
+        }
         return true;
     }
 

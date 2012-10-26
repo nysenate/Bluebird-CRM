@@ -37,6 +37,9 @@ function nyss_civihooks_permission() {
     'import print production' => array(
       'title' => t('Bluebird: Access Print Production Import Tool'),
     ),
+    'administer inbox polling' => array(
+      'title' => t('Bluebird: Access Inbox Polling'),
+    ),
   );
 }
 
@@ -766,14 +769,43 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
       'permission' => 'export print production files',
       'operator'   => 'AND',
-      'separator'  => 0,
+      'separator'  => 1,
       'parentID'   => $manageNavID,
       'navID'      => $maxKey+2,
       'active'     => 1
     ),
     'child' => array(),
     );
-
+ 
+  //5813 Inbox polling Menu Items 
+  $params[$manageNavID]['child'][$maxKey+3] = array (
+    'attributes' => array (
+      'label'      => 'Unmatched Inbox Messages',
+      'name'       => 'Unmatched Inbox Messages',
+      'url'        => 'civicrm/imap/mapper',
+      'permission' => 'administer inbox polling',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $manageNavID,
+      'navID'      => $maxKey+3,
+      'active'     => 1
+    ),
+    'child' => array(),
+    );
+  $params[$manageNavID]['child'][$maxKey+4] = array (
+    'attributes' => array (
+      'label'      => 'Matched Inbox Messages',
+      'name'       => 'Matched Inbox Messages',
+      'url'        => 'civicrm/imap/activities',
+      'permission' => 'administer inbox polling',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $manageNavID,
+      'navID'      => $maxKey+4,
+      'active'     => 1
+    ),
+    'child' => array(),
+    );
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 

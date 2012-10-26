@@ -204,6 +204,7 @@ $drush $instance en nyss_sage -y -q
 $drush $instance en nyss_tags -y -q
 $drush $instance en nyss_civihooks -y -q
 $drush $instance en nyss_contact -y -q
+$drush $instance en nyss_imapper -y -q
 
 ## reenable logging
 echo "re-enable civicrm logging..."
@@ -388,6 +389,13 @@ VALUES (
   @safe, 'bmp', @maxval+1, NULL , NULL , '0', '0', @maxval+1, NULL , '0', '0', '1', NULL , NULL , NULL
 );"
 $execSql -i $instance -c "$safe" -q
+
+## add inbox polling perm to admin/officeadmin/officemgr roles
+sql="
+INSERT INTO role_permission (rid, permission)
+VALUES (4 ,'administer inbox polling'), (9 ,'administer inbox polling'), (10 ,'administer inbox polling'), (3 ,'administer inbox polling');
+"
+$execSql -i $instance -c "$sql" --drupal -q
 
 
 ### Cleanup ###
