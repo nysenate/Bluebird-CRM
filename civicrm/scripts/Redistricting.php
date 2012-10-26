@@ -72,7 +72,7 @@ function echo_CLI_log($message_level, $message){
 		$color_start= "\33[33m";
 	}elseif($message_level == "warn"){
 		$log_num = 2;
-		$color_start= "\33[1;35m";
+		$color_start= "\33[1;33m";
 	}elseif($message_level == "error"){
 		$log_num = 1;
 		$color_start= "\33[31m";
@@ -141,109 +141,109 @@ do {
 			// $info = curl_getinfo($ch);
 			// curl_close($ch);
 
-			$output = '[
-			  {
-			    "status": "MATCH", 
-			    "matches": [
-			      {
-			        "town": "Brooklyn", 
-			        "fire_code": "FF", 
-			        "ward_code": "", 
-			        "assembly_code": 2, 
-			        "congressional_code": 3, 
-			        "election_code": 4, 
-			        "senate_code": 1, 
-			        "state": "NY", 
-			        "street": "Avenue D", 
-			        "vill_code": "", 
-			        "town_code": "BROOK", 
-			        "county_code": 60, 
-			        "cleg_code": "", 
-			        "school_code": "RDK", 
-			        "bldg_num": 1001, 
-			        "zip5": 11203, 
-			        "apt_num": 4516
-			      }
-			    ], 
-			    "address_id": 1001, 
-			    "message": ""
-			  }, 
-			  {
-			    "status": "INVALID", 
-			    "matches": [], 
-			    "address_id": 1002, 
-			    "message": "Street address required"
-			  }, 
-			  {
-			    "status": "NOMATCH", 
-			    "matches": [], 
-			    "address_id": 1003, 
-			    "message": ""
-			  }, 
-			  {
-			    "status": "MULTIMATCH", 
-			    "matches": [{
-			        "town": "Brooklyn", 
-			        "fire_code": "FF", 
-			        "ward_code": "", 
-			        "assembly_code": 2, 
-			        "congressional_code": 3, 
-			        "election_code": 4, 
-			        "senate_code": 1, 
-			        "state": "NY", 
-			        "street": "East New York Avenue ", 
-			        "vill_code": "", 
-			        "town_code": "BROOK", 
-			        "county_code": 60, 
-			        "cleg_code": "", 
-			        "school_code": "RDK", 
-			        "bldg_num": 1004, 
-			        "zip5": 11203, 
-			        "apt_num": 720
-			      }, 
-			      {
-			        "town": "Brooklyn", 
-			        "fire_code": "FF", 
-			        "ward_code": "", 
-			        "assembly_code": 2, 
-			        "congressional_code": 3, 
-			        "election_code": 4, 
-			        "senate_code": 1, 
-			        "state": "NY", 
-			        "street": "East New York Avenue ", 
-			        "vill_code": "", 
-			        "town_code": "BROOK", 
-			        "county_code": 60, 
-			        "cleg_code": "", 
-			        "school_code": "RDK", 
-			        "bldg_num": 1004, 
-			        "zip5": 11203, 
-			        "apt_num": 720
-			      }, 
-			      {
-			        "town": "Brooklyn", 
-			        "fire_code": "FF", 
-			        "ward_code": "", 
-			        "assembly_code": 2, 
-			        "congressional_code": 3, 
-			        "election_code": 4, 
-			        "senate_code": 1, 
-			        "state": "NY", 
-			        "street": "Avenue D", 
-			        "vill_code": "", 
-			        "town_code": "BROOK", 
-			        "county_code": 60, 
-			        "cleg_code": "", 
-			        "school_code": "RDK", 
-			        "bldg_num": 1004, 
-			        "zip5": 11203, 
-			        "apt_num": 720
-			      }
-			    ], 
-			    "address_id": 1004, 
-			    "message": ""
-			  }
-			]';
+			// $output = '[
+			//   {
+			//     "status": "MATCH", 
+			//     "matches": [
+			//       {
+			//         "town": "Brooklyn", 
+			//         "fire_code": "FF", 
+			//         "ward_code": "", 
+			//         "assembly_code": 2, 
+			//         "congressional_code": 3, 
+			//         "election_code": 4, 
+			//         "senate_code": 1, 
+			//         "state": "NY", 
+			//         "street": "Avenue D", 
+			//         "vill_code": "", 
+			//         "town_code": "BROOK", 
+			//         "county_code": 60, 
+			//         "cleg_code": "", 
+			//         "school_code": "RDK", 
+			//         "bldg_num": 1001, 
+			//         "zip5": 11203, 
+			//         "apt_num": 4516
+			//       }
+			//     ], 
+			//     "address_id": 1001, 
+			//     "message": ""
+			//   }, 
+			//   {
+			//     "status": "INVALID", 
+			//     "matches": [], 
+			//     "address_id": 1002, 
+			//     "message": "Street address required"
+			//   }, 
+			//   {
+			//     "status": "NOMATCH", 
+			//     "matches": [], 
+			//     "address_id": 1003, 
+			//     "message": ""
+			//   }, 
+			//   {
+			//     "status": "MULTIMATCH", 
+			//     "matches": [{
+			//         "town": "Brooklyn", 
+			//         "fire_code": "FF", 
+			//         "ward_code": "", 
+			//         "assembly_code": 2, 
+			//         "congressional_code": 3, 
+			//         "election_code": 4, 
+			//         "senate_code": 1, 
+			//         "state": "NY", 
+			//         "street": "East New York Avenue ", 
+			//         "vill_code": "", 
+			//         "town_code": "BROOK", 
+			//         "county_code": 60, 
+			//         "cleg_code": "", 
+			//         "school_code": "RDK", 
+			//         "bldg_num": 1004, 
+			//         "zip5": 11203, 
+			//         "apt_num": 720
+			//       }, 
+			//       {
+			//         "town": "Brooklyn", 
+			//         "fire_code": "FF", 
+			//         "ward_code": "", 
+			//         "assembly_code": 2, 
+			//         "congressional_code": 3, 
+			//         "election_code": 4, 
+			//         "senate_code": 1, 
+			//         "state": "NY", 
+			//         "street": "East New York Avenue ", 
+			//         "vill_code": "", 
+			//         "town_code": "BROOK", 
+			//         "county_code": 60, 
+			//         "cleg_code": "", 
+			//         "school_code": "RDK", 
+			//         "bldg_num": 1004, 
+			//         "zip5": 11203, 
+			//         "apt_num": 720
+			//       }, 
+			//       {
+			//         "town": "Brooklyn", 
+			//         "fire_code": "FF", 
+			//         "ward_code": "", 
+			//         "assembly_code": 2, 
+			//         "congressional_code": 3, 
+			//         "election_code": 4, 
+			//         "senate_code": 1, 
+			//         "state": "NY", 
+			//         "street": "Avenue D", 
+			//         "vill_code": "", 
+			//         "town_code": "BROOK", 
+			//         "county_code": 60, 
+			//         "cleg_code": "", 
+			//         "school_code": "RDK", 
+			//         "bldg_num": 1004, 
+			//         "zip5": 11203, 
+			//         "apt_num": 720
+			//       }
+			//     ], 
+			//     "address_id": 1004, 
+			//     "message": ""
+			//   }
+			// ]';
  
 			$response = @json_decode($output, true);
  
