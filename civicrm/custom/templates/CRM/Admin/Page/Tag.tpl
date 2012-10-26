@@ -564,10 +564,9 @@ function printTags()
 			<div class="tagCount">Records with this Tag: <span></span></div>
 		</div>
             </div>
-            <div class="BBtree edit manage">
+            <div class="BBtree edit manage" id="tagLabel_291">
 	    
 	    </div>
-            <div class="crm-tagListSwapArea" tid="0" style="display:none;"></div>
         </div>
         
 </div>

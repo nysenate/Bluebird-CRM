@@ -15,23 +15,23 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
-			//console.log('data returned for Tree Rebuild: ' + returnTime());
+			console.log('data returned for Tree Rebuild: ' + returnTime());
 			/*set variables
 			var displayObj = [];
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
 			cj('.crm-tagTabHeader ul').html('');
-			if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
+			/*if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
 			{
 				cj('.BBtree.edit.manage').remove();
 				cj('#crm-tagListWrap .crm-tagListInfo').after('<div class="BBtree edit manage loadingGif"></div>');
-			}
+			}*/
 			cj.each(data.message, function(i,tID){
 				if(tID.id != '292') //if not positions
 				{
 					if(tID.children.length > 0){
-						cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this)">'+tID.name+'</li>');
 						if(local == 'modal')
 						{
 							if(modalTreeTop == tID.id)
@@ -46,8 +46,8 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 								switch(tID.id)
 								{
 									
-									case '291': resetBBTree('main', 'init', tID);
-									default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+									case '291': resetBBTree('main', 'init', tID); break;
+									case '296': cj('<div class="BBtree edit hidden tabbed" id="tagLabel_'+tID.id+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
 								}
 							//}
 						}
@@ -60,12 +60,12 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 	var d = new Date(); 
 }
 function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
-	//console.log('beginning of tree rebuild (resetBBTree: ' + returnTime());
+	//console.log('beginning of tree rebuild - resetBBTree: ' + returnTime());
 	var treeLoc;
 	switch(inpLoc)
 	{
 		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit';callTagListMain(treeLoc, treeData); break;
-		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.hidden.tabbed'; treeLoc += order;callTagListMain(treeLoc, treeData); break;
+		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.hidden.tabbed'; callTagListMain(treeLoc, treeData); break;
 		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
 		default: alert('No Tree Found'); break;
 	}
@@ -102,11 +102,13 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 }
 /*Writes out the on page (not modal) Tree to an object*/
 function callTagListMain(treeLoc, treeData) {
-	//console.log('begin of render for Tree Rebuild: ' + returnTime());
+	console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
 	callTagAjaxInitLoader(treeLoc);	
 	var tID = treeData;
+	delete displayObj;
 	var displayObj = new Object();
 	displayObj.tLvl = 0;
+	//console.log('begin of render for Tree Rebuild 1: ' + returnTime());
 	/*have to note when you step in and out of levels*/
 	displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'" style="display:none">';
 	displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+escapePositions(tID.description, tID.id)+'" tID="'+tID.id+'"><div class="'+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>';
@@ -164,7 +166,7 @@ function callTagListMain(treeLoc, treeData) {
 	}
 	displayObj.output += '</dl>';
 	writeDisplayObject(displayObj, treeLoc);
-	//console.log('end of render for Tree Rebuild: ' + returnTime());
+	console.log('end of render for Tree Rebuild: ' + returnTime());
 }
 /*Writes out the modal tree to an object*/
 function callTagListModal(treeLoc, tID, modalTreeTop) {
@@ -232,21 +234,29 @@ function escapePositions(position, tidNum)
 }
 /*Tab Swapping functionality between Issue Codes and Keywords*/
 function swapTrees(tab){
-	var tabID = cj(tab).attr('tabID');
-	var swapID = cj('.crm-tagListSwapArea').attr('tID');
-	if(swapID != tabID)
-	{
-		var toCopy = cj('.BBtree.tabbed'+tabID+'.hidden dl').html();
-		cj('.crm-tagListSwapArea').attr('tID', tabID);
-		cj('.BBtree.edit.manage').html('');
-		cj('.BBtree.edit.manage').append(toCopy);
-		setTimeout(function(){hoverTreeSlider('.BBtree.edit')},1000);
+	var currentTree = cj('.BBtree.edit.manage').attr('id');
+	var getTab = cj(tab).attr('id');
+	if(currentTree != getTab){
+		cj('.BBtree.edit#' + currentTree).removeClass('manage');
+		cj('.BBtree.edit#' + currentTree).addClass('hidden loadingGif');
+		cj('.BBtree.edit#' + currentTree).children().hide();
+		cj('.BBtree.edit#' + getTab).addClass('manage')
+		cj('.BBtree.edit#' + getTab).removeClass('hidden loadingGif');
+		cj('.BBtree.edit#' + getTab).children().show();
 	}
+	// if(swapID != tabID)
+	// {
+	// 	var toCopy = cj('.BBtree.tabbed'+tabID+'.hidden dl').html();
+	// 	cj('.crm-tagListSwapArea').attr('tID', tabID);
+	// 	cj('.BBtree.edit.manage').html('');
+	// 	cj('.BBtree.edit.manage').append(toCopy);
+	// 	hoverTreeSlider('.BBtree.edit');
+	// }
 }
 /*Clears out the location to be written, and then jquery appends it to the space*/
 function writeDisplayObject(displayObj, treeLoc) {
 	cj(treeLoc).append(displayObj.output);
-	//console.log(treeLoc);
+	//console.log(treeLoc + ' ' +  returnTime());
 	if(treeLoc == '#crm-tagListWrap .BBtree.edit')
 	{
 		cj(treeLoc).removeClass('loadingGif');
@@ -304,7 +314,7 @@ function hoverTreeSlider(treeLoc){
 			}
 		}
 	});
-
+	//console.log('implement hover slider begin 1: ' + returnTime());
 	if(cj(treeLoc).hasClass('manage') || cj(treeLoc).hasClass('modal'))
 	{
 
@@ -322,16 +332,22 @@ function hoverTreeSlider(treeLoc){
 			}
 		});
 	}
+	console.log('implement hover slider begin 2: ' + returnTime());
 	cj(treeLoc + ' dt .fCB li').click(function(e) {
 		e.stopPropagation();
 	});
 	cj(treeLoc + ' dt .selectRadio').click(function(e) {
-			e.stopPropagation();
+		e.stopPropagation();
 	});
+	console.log('implement hover slider begin 3: ' + returnTime());
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
 	function(){
-		var tagCount = cj('span.entityCount', this).html().match(/[0-9]+/);
+		if(cj(this).attr('id') != 'tagLabel_291' && cj(this).attr('id') != 'tagLabel_296' )
+		{ 
+			var tagCount = ' ';
+			tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
+		}
 		var tagName = cj('span.name', this).html();
 		var tagId = cj(this).attr('tid');
 		var isReserved = 'False';
