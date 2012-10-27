@@ -112,12 +112,13 @@
   //remove custom fields used in top bar
   cj('#custom-set-block-1 .bb-row-wrap').each(function(){
     var labelText1  = cj(this).children('.crm-label').text();
+    var content1 = cj(this).children('.crm-content').text();
     var removeList1 = ['Contact Source', 'Individual Category', 'Ethnicity', 'Other Ethnicity', 'Other Gender'];
     if ( cj.inArray(labelText1,removeList1) != -1 ) {
       cj(this).remove();
     }
     //move religion
-    if ( labelText1 == 'Religion' ) {
+    if ( labelText1 == 'Religion' && content1 ) {
       cj('#demographic-block .crm-clear').append(cj(this));
     }
   });
