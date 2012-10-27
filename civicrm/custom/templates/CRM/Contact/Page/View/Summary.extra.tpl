@@ -118,8 +118,13 @@
       cj(this).remove();
     }
     //move religion
-    if ( labelText1 == 'Religion' && content1 ) {
-      cj('#demographic-block .crm-clear').append(cj(this));
+    if ( labelText1 == 'Religion' ) {
+      if ( content1 ) {
+        cj('#demographic-block .crm-clear').append(cj(this));
+      }
+      else {
+        cj(this).remove();
+      }
     }
   });
 
