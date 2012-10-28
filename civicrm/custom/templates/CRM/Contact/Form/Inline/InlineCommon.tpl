@@ -92,7 +92,7 @@ function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
 	          url: postUrl,
 	          async: false,
 	          data: queryString,
-	          dataType: "json",
+	          dataType: "json"
 	          }).responseText;
 
 	    var blockSelector = cj('#' + blockName);
