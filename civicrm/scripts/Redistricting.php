@@ -23,12 +23,6 @@ $Update_Payload = array();
 $Count_total = 0;
 $Count_round = 0;
 
-// Query size for generating JSON chunks
-$Chunk_size =  1000;
-
-/// log level for debug
-$log_level =  "trace";
-
 $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
@@ -42,20 +36,12 @@ if ($optlist === null) {
   exit(1);
 }
 
-// we should be able to pass the chunk into the script for debug purposes
-// print_r($optlist);
-if (!empty($optlist['chunk'])) {
-  $Chunk_size = $optlist['chunk'];
-}
-
-// level of CLI logging 
-if (!empty($optlist['log'])) {
-  $log_level = $optlist['log'];
-}
+$CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
+$LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "trace";
 
 // quicker CLI Logs
 function echo_CLI_log($message_level, $message){
-	global $log_level; 
+	global $LOG_LEVEL;
 
 	$timestamp = date('G:i:s');
 	$message_level = strtolower($message_level);
@@ -81,13 +67,13 @@ function echo_CLI_log($message_level, $message){
 		$color_start= "\33[1;31m";
 	}
 	$message_level = strtoupper($message_level);
-	if($log_level >= $log_num){
+	if($LOG_LEVEL >= $log_num){
  		echo "[$timestamp] [$color_start$message_level$color_end]	".$message.$color_end."\n";
 	}
 }
 
-echo_CLI_log("debug", "Starting with $prog with Chunk size of $Chunk_size ");
- 
+echo_CLI_log("debug", "Starting with $prog with Chunk size of $CHUNK_SIZE");
+
 // exit();
 require_once 'CRM/Core/Config.php';
 $config =& CRM_Core_Config::singleton();
@@ -122,9 +108,9 @@ do {
 		$Count_round++;
 		$Count_total++;
 
-		// if round has reached max size, curl it 
-		if ($Count_round >= $Chunk_size){
-			
+		// if round has reached max size, curl it
+		if ($Count_round >= $CHUNK_SIZE){
+
 			$JSON_Payload_encoded = json_encode($JSON_Payload);
 
 			// echo "[INFO] Starting Curl\n";
