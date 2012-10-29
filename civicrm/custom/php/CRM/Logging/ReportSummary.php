@@ -104,7 +104,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
   function groupBy() {
     //NYSS 5751
-    $this->_groupBy = 'GROUP BY entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date)';
+    $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date)';
   }
 
   function orderBy() {
@@ -162,15 +162,23 @@ CREATE TEMPORARY TABLE
     list($offset, $rowCount) = $this->limit();
     $this->_limit = NULL;
 
+    //NYSS restrict by contact ID if present
+    $cid = $this->getVar('cid');
+    $cidClause = '';
+
     foreach ( $this->_logTables as $entity => $detail ) {
       $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);//NYSS 5751
       $clause = CRM_Utils_Array::value('entity_table', $detail);
       $clause = $clause ? "entity_table = 'civicrm_contact' AND" : null;
-      //NYSS 5751
+      //NYSS 5751 removed LIMIT clause (Jira 11180) and added contact_id clause
+      if ( $cid ) {
+        $cidClause = " AND {$detail['fk']} = $cid ";
+      }
       $sql    = "
 INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
   SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
-  WHERE {$clause} log_action != 'Initialization' {$logDateClause} LIMIT {$rowCount}";
+  WHERE {$clause} log_action != 'Initialization' {$logDateClause} {$cidClause} ";
+      //CRM_Core_Error::debug_var('sql insert',$sql);
       CRM_Core_DAO::executeQuery($sql);
     }
 
