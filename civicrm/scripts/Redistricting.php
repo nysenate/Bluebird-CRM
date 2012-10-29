@@ -138,7 +138,6 @@ do {
         // echo "[INFO] Starting Curl\n";
         $curl_time_start = microtime(true);
 
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -151,7 +150,8 @@ do {
         curl_close($ch);
 
         $response = @json_decode($output, true);
-
+        // print_r($response );
+        // exit();
         // check for malformed response
         if(( $output === null )){
             echo_CLI_log("fatal", "CURL Failed to recieve a Response");
@@ -184,21 +184,21 @@ do {
                         // 'ward_code'=>$value['matches'][0]['ward_code']
                     );
 
-                }elseif ($value['status'] == "MULTIMATCH" ) {
+                }elseif ($value['status_code'] == "MULTIMATCH" ) {
                  	$Count_multimatch++;
                  	echo_CLI_log("trace","[MULTIMATCH] record #".$value['address_id']." with message " .$value['message'] );
 
-                 }elseif ($value['status'] == "NOMATCH" ) {
+                 }elseif ($value['status_code'] == "NOMATCH" ) {
                     $Count_nomatch++;
                     echo_CLI_log("trace","[NOMATCH] record #".$value['address_id']." with message " .$value['message'] );
 
-                }elseif ($value['status'] == "INVALID"){
+                }elseif ($value['status_code'] == "INVALID"){
                      $Count_invalid++;
                      echo_CLI_log("warn","[INVALID] record #".$value['address_id']." with message " .$value['message'] );
 
                 }else{ // no status we know how to deal with
                     $Count_error++;
-                    // echo_CLI_log("ERROR","on record ".$value['address_id']." with message " .$value['message'] );
+                    echo_CLI_log("ERROR","on record ".$value['address_id']." with message " .$value['message'] );
 
                 }
             }
@@ -260,10 +260,19 @@ do {
         echo_CLI_log("debug", "[SPEED]	$Records_per_sec per second");
         echo_CLI_log("debug", "[CURL]	$Curl_records per second (".$Count_total." in ".round($time,1).")");
 
+		if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
 		if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
+		if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
+		if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
 		if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
-		echo_CLI_log("debug","[HIT]	$Count_match Matches ($Match_percent %) / $Count_error Error ($Error_percent %) ");
 
+		echo_CLI_log("debug","[MATCH]	$Count_match ($Match_percent %)");
+		echo_CLI_log("debug","[MULTI]	$Count_multimatch ($Multimatch_percent %)");
+		echo_CLI_log("debug","[NOMATCH]	$Count_nomatch ($Nomatch_percent %)");
+		echo_CLI_log("debug","[INVALID]	$Count_invalid ($Invalid_percent %)");
+		echo_CLI_log("debug","[ERROR]	$Count_error ($Error_percent %)");
+
+ 
       // reset the arrays
         $JSON_Payload = array();
         $Update_Payload = array();
@@ -291,10 +300,14 @@ echo_CLI_log("debug","[TIME]	".round($time, 4));
 echo_CLI_log("debug","[TOTAL] 	$Records_per_sec / second ($Count_total in ".round($time,1).")");
 echo_CLI_log("debug","[CURL]	$Curl_records / second ($Count_total in ".round($curl_time_total,1).")");
 
-// if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
+if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
 if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
-// if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
-// if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
+if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
+if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
 if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
 
-echo_CLI_log("debug","[HIT]	$Count_match Matches ($Match_percent %)/ $Count_error Error ($Error_percent %) ");
+echo_CLI_log("debug","[MATCH]	$Count_match ($Match_percent %)");
+echo_CLI_log("debug","[MULTI]	$Count_multimatch ($Multimatch_percent %)");
+echo_CLI_log("debug","[NOMATCH]	$Count_nomatch ($Nomatch_percent %)");
+echo_CLI_log("debug","[INVALID]	$Count_invalid ($Invalid_percent %)");
+echo_CLI_log("debug","[ERROR]	$Count_error ($Error_percent %)");
