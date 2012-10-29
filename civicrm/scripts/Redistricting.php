@@ -36,6 +36,8 @@ if ($optlist === null) {
   exit(1);
 }
 
+$BB_CONFIG = get_bluebird_instance_config($optList['site']);
+$BULK_DISTASSIGN_URL = $BB_CONFIG['sage.api.base'].'/json/bulkdistrict/body';
 $CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "trace";
 
@@ -117,15 +119,16 @@ do {
 			$curl_time_start = microtime(true);
 			sleep(1);
 
-			// $ch = curl_init();
-			// curl_setopt($ch, CURLOPT_URL, "http://open-beta.nysenate.gov:8080/GeoApi/api/json/bulkDistrict/body");
-			// curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			// curl_setopt($ch,CURLOPT_HTTPHEADER,Array("Content-Type: application/xml"));
-			// curl_setopt($ch, CURLOPT_POST, true);
-			// curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload);
-			// $output = curl_exec($ch);
-			// $info = curl_getinfo($ch);
-			// curl_close($ch);
+			$ch = curl_init();
+			var_dump($BULK_DISTASSIGN_URL);
+			curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload_encoded);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($JSON_Payload_encoded)));
+			$output = curl_exec($ch);
+			$info = curl_getinfo($ch);
+			curl_close($ch);
 
 			// $output = '[
 			//   {
