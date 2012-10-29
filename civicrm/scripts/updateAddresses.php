@@ -62,8 +62,8 @@ function run()
 
 	// do check for parse street address.
 	require_once 'CRM/Core/BAO/Preferences.php';
-	$parseAddress = CRM_Utils_Array::value('street_address_parsing',
-	CRM_Core_BAO_Preferences::valueOptions('address_options'), false);
+	$address_options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_options');
+	$parseAddress = CRM_Utils_Array::value('street_address_parsing',$address_options, false);
 	$parseStreetAddress = false;
 	if (!$parseAddress) {
 		if ($optlist['parse'] == true) {
@@ -123,6 +123,7 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 
 	echo "Iterating over addresses...\n";
 
+	$totalAddressParsed = 0;
 	$unparseableContactAddress = array( );
 	while ($dao->fetch()) {
 		$totalAddresses++;
@@ -135,26 +136,27 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 			'state_province'    => $dao->state,
 			'country'           => $dao->country
 		);
-			
-		$address['geo_code_1']	= $dao->lat;
-		$address['geo_code_2']	= $dao->lon;
-			
-		if($optlist['distassign']) {
-			$address['custom_46_'.$dao->d_id] =
-			empty($dao->cd) ? null : $dao->cd;
-			$address['custom_47_'.$dao->d_id] =
-			empty($dao->sd) ? null : $dao->sd;
-			$address['custom_48_'.$dao->d_id] =
-			empty($dao->ad) ? null : $dao->ad;
-			$address['custom_49_'.$dao->d_id] =
-			empty($dao->ed) ? null : $dao->ed;
+
+		if ($optlist['geocode']) {
+			$address['geo_code_1']	= $dao->lat;
+			$address['geo_code_2']	= $dao->lon;
+			$missing_geo = $address['geo_code_1'] && $address['geocode_2'];
+		} else {
+			$missing_geo = false;
 		}
 
-		$missing_districts = $address['custom_46_'.$dao->d_id]
-		&& $address['custom_47_'.$dao->d_id]
-		&& $address['custom_48_'.$dao->d_id]
-		&& $address['custom_49_'.$dao->d_id];
-		$missing_geo = $address['geo_code_1'] && $address['geocode_2'];
+		if($optlist['distassign']) {
+			$address['custom_46_'.$dao->d_id] =empty($dao->cd) ? null : $dao->cd;
+			$address['custom_47_'.$dao->d_id] = empty($dao->sd) ? null : $dao->sd;
+			$address['custom_48_'.$dao->d_id] = empty($dao->ad) ? null : $dao->ad;
+			$address['custom_49_'.$dao->d_id] = empty($dao->ed) ? null : $dao->ed;
+			$missing_districts = $address['custom_46_'.$dao->d_id]
+							&& $address['custom_47_'.$dao->d_id]
+							&& $address['custom_48_'.$dao->d_id]
+							&& $address['custom_49_'.$dao->d_id];
+		} else {
+			$missing_dstricts = false;
+		}
 
 		$success = false;
 
@@ -317,7 +319,7 @@ function getQuery($optlist) {
 
 	$whereClause = '( c.id = a.contact_id )';
 
-	$start = $optlist[$start];
+	$start = $optlist['start'];
 	if ($start && is_numeric($start)) {
 		$whereClause = " AND ( c.id >= $start )";
 	}
