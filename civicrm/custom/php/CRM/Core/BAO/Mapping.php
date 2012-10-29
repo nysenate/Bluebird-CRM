@@ -829,7 +829,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
 
         if ($mappingType == 'Search Builder') {
           //CRM -2292, restricted array set
-          //NYSS 4802
+          //NYSS 4802, 2541
           $operatorArray = array(
             ''             => ts('-operator-'),
             '='            => '=',
@@ -840,15 +840,14 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
             '<='           => '<=',
             'IN'           => 'IN',
             'LIKE'         => 'LIKE',
-            'RLIKE'        => 'RLIKE',
             'IS EMPTY'     => 'IS EMPTY',
             'IS NOT EMPTY' => 'IS NOT EMPTY',
-            'IS NULL'      => 'IS NULL',
-            'IS NOT NULL'  => 'IS NOT NULL',
           );
-          //NYSS 5663 limit RLIKE to admins
+          //NYSS 5663 limit RLIKE, NULL to admins
           if ( CRM_Core_Permission::check('administer CiviCRM') ) {
             $operatorArray['RLIKE'] = 'RLIKE';
+            $operatorArray['IS NULL'] = 'IS NULL';
+            $operatorArray['IS NOT NULL'] = 'IS NOT NULL';
           }
 
           $form->add('select', "operator[$x][$i]", '', $operatorArray);
