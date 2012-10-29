@@ -253,27 +253,28 @@ do {
             echo_CLI_log("fatal", "Malformed JSON");
         }else{
             foreach ($response as $id => $value) {
-                if($value['status'] == "MATCH"){
+                if($value['status_code'] == "MATCH"){
                     echo_CLI_log("trace","[MATCH] on record #".$value['address_id']." with message " .$value['message'] );
                     $Update_Payload[$value['address_id']] = array(
                         'town'=>$value['matches'][0]['town'],
-                        'fire_code'=>$value['matches'][0]['fire_code'],
-                        'ward_code'=>$value['matches'][0]['ward_code'],
-                        'assembly_code'=>$value['matches'][0]['assembly_code'],
-                        'congressional_code'=>$value['matches'][0]['congressional_code'],
-                        'election_code'=>$value['matches'][0]['election_code'],
-                        'senate_code'=>$value['matches'][0]['senate_code'],
+                        // 'fire_code'=>$value['matches'][0]['fire_code'],
+                        // 'ward_code'=>$value['matches'][0]['ward_code'],
+                        'assembly_code'=>$value['matches'][0]['assemblyCode'],
+                        'congressional_code'=>$value['matches'][0]['congressionalCode'],
+                        'election_code'=>$value['matches'][0]['electionCode'],
+                        'senate_code'=>$value['matches'][0]['senateCode'],
                         'state'=>$value['matches'][0]['state'],
                         'street'=>$value['matches'][0]['street'],
-                        'vill_code'=>$value['matches'][0]['vill_code'],
-                        'town_code'=>$value['matches'][0]['town_code'],
-                        'county_code'=>$value['matches'][0]['county_code'],
-                        'cleg_code'=>$value['matches'][0]['cleg_code'],
-                        'school_code'=>$value['matches'][0]['school_code'],
-                        'bldg_num'=>$value['matches'][0]['bldg_num'],
+                        // 'vill_code'=>$value['matches'][0]['vill_code'],
+                        // 'town_code'=>$value['matches'][0]['town_code'],
+                        'county_code'=>$value['matches'][0]['countyCode'],
+                        // 'cleg_code'=>$value['matches'][0]['cleg_code'],
+                        // 'school_code'=>$value['matches'][0]['school_code'],
+                        // 'bldg_num'=>$value['matches'][0]['bldg_num'],
                         'zip5'=>$value['matches'][0]['zip5'],
-                        'apt_num'=>$value['matches'][0]['apt_num'],
-                        'ward_code'=>$value['matches'][0]['ward_code']);
+                        // 'apt_num'=>$value['matches'][0]['apt_num'],
+                        // 'ward_code'=>$value['matches'][0]['ward_code']
+                    );
 
                 }elseif ($value['status'] == "MULTIMATCH" ) {
                     echo_CLI_log("trace","[MULTIMATCH] record #".$value['address_id']." with message " .$value['message'] );
@@ -315,12 +316,13 @@ do {
                     ny_senate_district_47  = ".$value['senate_code'].",
                     ny_assembly_district_48  = ".$value['assembly_code'].",
                     election_district_49   = ".$value['election_code'].",
-                    county_50   = ".$value['county_code'].",
-                    county_legislative_district_51   = ".$value['cleg_code'].",
-                    town_52   = ".$value['town_code'].",
-                    ward_53   = ".$value['ward_code'].",
-                    school_district_54   = ".$value['school_code'].",
+                    county_50   = ".$value['county_code']."
                     WHERE civicrm_value_district_information_7.id = $id");
+                    // ",
+                    // county_legislative_district_51   = ".$value['cleg_code'].",
+                    // town_52   = ".$value['town_code'].",
+                    // ward_53   = ".$value['ward_code'].",
+                    // school_district_54   = ".$value['school_code'].",
                 }
 
             mysql_query("COMMIT");
