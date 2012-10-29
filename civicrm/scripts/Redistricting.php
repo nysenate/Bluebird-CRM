@@ -137,7 +137,7 @@ do {
 
         // echo "[INFO] Starting Curl\n";
         $curl_time_start = microtime(true);
-        sleep(1);
+
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
