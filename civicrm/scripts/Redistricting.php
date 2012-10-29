@@ -309,7 +309,7 @@ do {
 
             echo_CLI_log("debug", count($Update_Payload)." records to update ");
             foreach ($Update_Payload as $id => $value) {
-                echo_CLI_log("debug", "$id - ".$value['congressional_code']);
+                echo_CLI_log("debug", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
 
                 mysql_query("UPDATE civicrm_value_district_information_7
                     SET  congressional_district_46 = ".$value['congressional_code'].",
