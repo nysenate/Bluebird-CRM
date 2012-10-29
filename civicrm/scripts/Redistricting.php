@@ -86,17 +86,28 @@ $nyss_conn = new CRM_Core_DAO();
 $nyss_conn = $nyss_conn->getDatabaseConnection();
 $db = $nyss_conn->connection;
 
-// contact info retreival 
-$query = "SELECT civicrm_address.id,   civicrm_address.street_name AS street1, civicrm_address.street_type AS street2,  civicrm_address.city AS town, civicrm_state_province.abbreviation AS state, civicrm_address.postal_code AS zip, civicrm_address.street_number_suffix AS apt,  civicrm_address.street_number AS building 
-FROM `civicrm_address` 
-JOIN `civicrm_state_province` ON civicrm_address.state_province_id=civicrm_state_province.id 
-ORDER BY `civicrm_address`.`id` ASC";
+// Collect NY state addresses with a street_address; any
+// address not matching this criteria will fail lookup.
+$query = "SELECT address.id,
+				 address.street_name AS street1,
+				 address.street_type AS street2,
+				 address.city AS town,
+				 'NY' AS state,
+				 address.postal_code AS zip,
+				 address.street_number_suffix AS apt,
+				 address.street_number AS building
+		FROM civicrm_address as address
+		JOIN civicrm_state_province as state_province
+		WHERE address.state_province_id=state_province.id
+		  AND state_province.abbreviation='NY'
+		  AND IFNULL(address.street_address,'') != ''
+		ORDER BY address.id ASC";
+
 $result = mysql_query($query, $db);
 
 do {
 	$raw = mysql_fetch_assoc($result);
 
-	if(($raw['id'] !== NULL ) || ($raw['street_address'] !== null )){
 		$JSON_Payload[$raw['id']]= array(
 			'street' => $raw['street1'].' '.$raw['street2'],
 			'town' => $raw['town'],
@@ -339,7 +350,6 @@ do {
 			// echo "[INFO] Added user ".$raw['id']." - ".$raw['street_address']."\n";
 
 		}
-	}
 
 } while ($raw != NULL);
 
