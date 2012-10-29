@@ -106,7 +106,6 @@ $query = "SELECT address.id,
         WHERE address.state_province_id=state_province.id
           AND state_province.abbreviation='NY'
           AND IFNULL(address.street_address,'') != ''
-          AND address.id < 74000 AND address.id  > 60101
         ORDER BY address.id ASC";
 
 $result = mysql_query($query, $db);
