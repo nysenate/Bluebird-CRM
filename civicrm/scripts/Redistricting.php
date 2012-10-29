@@ -22,72 +22,69 @@ $Update_Payload = array();
 // Counts for looping
 $Count_total = 0;
 $Count_round = 0;
-
-// Query size for generating JSON chunks
-$Chunk_size =  1000;
-
-/// log level for debug
-$log_level =  "trace";
+$Count_multimatch = 0;
+$Count_match = 0;
+$Count_nomatch = 0;
+$Count_invalid = 0;
+$Count_error = 0;
 
 $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"]";
-$shortopts = "c:l";
-$longopts = array("chunk=","log=");
+$usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--query \"number\"]";
+$shortopts = "c:l:q";
+$longopts = array("chunk=","log=","query=");
 $optlist = civicrm_script_init($shortopts, $longopts);
 if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
   exit(1);
 }
 
-// we should be able to pass the chunk into the script for debug purposes
-// print_r($optlist);
-if (!empty($optlist['chunk'])) {
-  $Chunk_size = $optlist['chunk'];
-}
-
-// level of CLI logging 
-if (!empty($optlist['log'])) {
-  $log_level = $optlist['log'];
+$BB_CONFIG = get_bluebird_instance_config($optList['site']);
+$BULK_DISTASSIGN_URL = $BB_CONFIG['sage.api.base'].'/json/bulkdistrict/body?key='.$BB_CONFIG['sage.api.key'];
+$CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
+$LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "trace";
+$LIMIT = array_key_exists('query', $optlist) ? $optlist['query'] :"";
+if($LIMIT > 0 ){
+	$LIMIT = " AND address.id < ".$LIMIT;
 }
 
 // quicker CLI Logs
 function echo_CLI_log($message_level, $message){
-	global $log_level; 
+    global $LOG_LEVEL;
 
-	$timestamp = date('G:i:s');
-	$message_level = strtolower($message_level);
-	$color_end= "\033[0m";
+    $timestamp = date('G:i:s');
+    $message_level = strtolower($message_level);
+    $color_end= "\033[0m";
 
-	if($message_level == "trace"){
-		$log_num = 5 ;
-		$color_start= "\033[35m";
-	}elseif($message_level == "debug"){
-		$log_num = 4;
-		$color_start= "\33[1;35m";
-	}elseif($message_level == "info"){
-		$log_num = 3;
-		$color_start= "\33[33m";
-	}elseif($message_level == "warn"){
-		$log_num = 2;
-		$color_start= "\33[1;33m";
-	}elseif($message_level == "error"){
-		$log_num = 1;
-		$color_start= "\33[31m";
-	}elseif($message_level == "fatal"){
-		$log_num = 0;
-		$color_start= "\33[1;31m";
-	}
-	$message_level = strtoupper($message_level);
-	if($log_level >= $log_num){
- 		echo "[$timestamp] [$color_start$message_level$color_end]	".$message.$color_end."\n";
-	}
+    if($message_level == "trace"){
+        $log_num = 5 ;
+        $color_start= "\033[35m";
+    }elseif($message_level == "debug"){
+        $log_num = 4;
+        $color_start= "\33[1;35m";
+    }elseif($message_level == "info"){
+        $log_num = 3;
+        $color_start= "\33[33m";
+    }elseif($message_level == "warn"){
+        $log_num = 2;
+        $color_start= "\33[1;33m";
+    }elseif($message_level == "error"){
+        $log_num = 1;
+        $color_start= "\33[31m";
+    }elseif($message_level == "fatal"){
+        $log_num = 0;
+        $color_start= "\33[1;31m";
+    }
+    $message_level = strtoupper($message_level);
+    if($LOG_LEVEL >= $log_num){
+         echo "[$timestamp] [$color_start$message_level$color_end]    ".$message.$color_end."\n";
+    }
 }
 
-echo_CLI_log("debug", "Starting with $prog with Chunk size of $Chunk_size ");
- 
+echo_CLI_log("debug", "Starting with $prog with Chunk size of $CHUNK_SIZE");
+
 // exit();
 require_once 'CRM/Core/Config.php';
 $config =& CRM_Core_Config::singleton();
@@ -98,266 +95,206 @@ $nyss_conn = new CRM_Core_DAO();
 $nyss_conn = $nyss_conn->getDatabaseConnection();
 $db = $nyss_conn->connection;
 
-// contact info retreival 
-$query = "SELECT civicrm_address.id,   civicrm_address.street_name AS street1, civicrm_address.street_type AS street2,  civicrm_address.city AS town, civicrm_state_province.abbreviation AS state, civicrm_address.postal_code AS zip, civicrm_address.street_number_suffix AS apt,  civicrm_address.street_number AS building 
-FROM `civicrm_address` 
-JOIN `civicrm_state_province` ON civicrm_address.state_province_id=civicrm_state_province.id 
-ORDER BY `civicrm_address`.`id` ASC";
+// Collect NY state addresses with a street_address; any
+// address not matching this criteria will fail lookup.
+$query = "SELECT address.id,
+                 address.street_name AS street1,
+                 address.street_type AS street2,
+                 address.city AS town,
+                 'NY' AS state,
+                 address.postal_code AS zip,
+                 address.street_number_suffix AS apt,
+                 address.street_number AS building
+        FROM civicrm_address as address
+        JOIN civicrm_state_province as state_province
+        WHERE address.state_province_id=state_province.id
+          AND state_province.abbreviation='NY'
+          AND IFNULL(address.street_address,'') != ''
+          $LIMIT
+        ORDER BY address.id ASC";
+
 $result = mysql_query($query, $db);
 
 do {
-	$raw = mysql_fetch_assoc($result);
+    $raw = mysql_fetch_assoc($result);
 
-	if(($raw['id'] !== NULL ) || ($raw['street_address'] !== null )){
-		$JSON_Payload[$raw['id']]= array(
-			'street' => $raw['street1'].' '.$raw['street2'],
-			'town' => $raw['town'],
-			'state' => $raw['state'],
-			'zip5' => $raw['zip'], 
-			'apt' => $raw['apt'],  
-			'building' => $raw['building'] , 
-			);
+    $JSON_Payload[$raw['id']]= array(
+        'street' => $raw['street1'].' '.$raw['street2'],
+        'town' => $raw['town'],
+        'state' => $raw['state'],
+        'zip5' => $raw['zip'],
+        'apt' => $raw['apt'],
+        'building' => $raw['building'] ,
+    );
 
-		// A counter for this round, and total
-		$Count_round++;
-		$Count_total++;
+    // A counter for this round
+    $Count_round++;
 
-		// if round has reached max size, curl it 
-		if ($Count_round >= $Chunk_size){
-			
-			$JSON_Payload_encoded = json_encode($JSON_Payload);
+    // if round has reached max size, curl it
+    if ($Count_round >= $CHUNK_SIZE){
 
-			// echo "[INFO] Starting Curl\n";
-			$curl_time_start = microtime(true);
-			sleep(1);
+        $JSON_Payload_encoded = json_encode($JSON_Payload);
 
-			// $ch = curl_init();
-			// curl_setopt($ch, CURLOPT_URL, "http://open-beta.nysenate.gov:8080/GeoApi/api/json/bulkDistrict/body");
-			// curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			// curl_setopt($ch,CURLOPT_HTTPHEADER,Array("Content-Type: application/xml"));
-			// curl_setopt($ch, CURLOPT_POST, true);
-			// curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload);
-			// $output = curl_exec($ch);
-			// $info = curl_getinfo($ch);
-			// curl_close($ch);
+        // echo "[INFO] Starting Curl\n";
+        $curl_time_start = microtime(true);
 
-			// $output = '[
-			//   {
-			//     "status": "MATCH", 
-			//     "matches": [
-			//       {
-			//         "town": "Brooklyn", 
-			//         "fire_code": "FF", 
-			//         "ward_code": "", 
-			//         "assembly_code": 2, 
-			//         "congressional_code": 3, 
-			//         "election_code": 4, 
-			//         "senate_code": 1, 
-			//         "state": "NY", 
-			//         "street": "Avenue D", 
-			//         "vill_code": "", 
-			//         "town_code": "BROOK", 
-			//         "county_code": 60, 
-			//         "cleg_code": "", 
-			//         "school_code": "RDK", 
-			//         "bldg_num": 1001, 
-			//         "zip5": 11203, 
-			//         "apt_num": 4516
-			//       }
-			//     ], 
-			//     "address_id": 1001, 
-			//     "message": ""
-			//   }, 
-			//   {
-			//     "status": "INVALID", 
-			//     "matches": [], 
-			//     "address_id": 1002, 
-			//     "message": "Street address required"
-			//   }, 
-			//   {
-			//     "status": "NOMATCH", 
-			//     "matches": [], 
-			//     "address_id": 1003, 
-			//     "message": ""
-			//   }, 
-			//   {
-			//     "status": "MULTIMATCH", 
-			//     "matches": [{
-			//         "town": "Brooklyn", 
-			//         "fire_code": "FF", 
-			//         "ward_code": "", 
-			//         "assembly_code": 2, 
-			//         "congressional_code": 3, 
-			//         "election_code": 4, 
-			//         "senate_code": 1, 
-			//         "state": "NY", 
-			//         "street": "East New York Avenue ", 
-			//         "vill_code": "", 
-			//         "town_code": "BROOK", 
-			//         "county_code": 60, 
-			//         "cleg_code": "", 
-			//         "school_code": "RDK", 
-			//         "bldg_num": 1004, 
-			//         "zip5": 11203, 
-			//         "apt_num": 720
-			//       }, 
-			//       {
-			//         "town": "Brooklyn", 
-			//         "fire_code": "FF", 
-			//         "ward_code": "", 
-			//         "assembly_code": 2, 
-			//         "congressional_code": 3, 
-			//         "election_code": 4, 
-			//         "senate_code": 1, 
-			//         "state": "NY", 
-			//         "street": "East New York Avenue ", 
-			//         "vill_code": "", 
-			//         "town_code": "BROOK", 
-			//         "county_code": 60, 
-			//         "cleg_code": "", 
-			//         "school_code": "RDK", 
-			//         "bldg_num": 1004, 
-			//         "zip5": 11203, 
-			//         "apt_num": 720
-			//       }, 
-			//       {
-			//         "town": "Brooklyn", 
-			//         "fire_code": "FF", 
-			//         "ward_code": "", 
-			//         "assembly_code": 2, 
-			//         "congressional_code": 3, 
-			//         "election_code": 4, 
-			//         "senate_code": 1, 
-			//         "state": "NY", 
-			//         "street": "Avenue D", 
-			//         "vill_code": "", 
-			//         "town_code": "BROOK", 
-			//         "county_code": 60, 
-			//         "cleg_code": "", 
-			//         "school_code": "RDK", 
-			//         "bldg_num": 1004, 
-			//         "zip5": 11203, 
-			//         "apt_num": 720
-			//       }
-			//     ], 
-			//     "address_id": 1004, 
-			//     "message": ""
-			//   }
-			// ]';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload_encoded);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($JSON_Payload_encoded)));
+
+        $output = curl_exec($ch);
+        $info = curl_getinfo($ch);
+        curl_close($ch);
+
+        $response = @json_decode($output, true);
+
+        // check for malformed response
+        if(( $output === null )){
+            echo_CLI_log("fatal", "CURL Failed to recieve a Response");
+        }elseif (($response === null && json_last_error() !== JSON_ERROR_NONE )) {
+            echo_CLI_log("fatal", "Malformed JSON");
+        }else{
+            foreach ($response as $id => $value) {
+                $Count_total++;
+                if($value['status_code'] == "MATCH"){
+                	$Count_match++;
+                    echo_CLI_log("trace","[MATCH] on record #".$value['address_id']." with message " .$value['message'] );
+                    $Update_Payload[$value['address_id']] = array(
+                        'town'=>$value['matches'][0]['town'],
+                        // 'fire_code'=>$value['matches'][0]['fire_code'],
+                        // 'ward_code'=>$value['matches'][0]['ward_code'],
+                        'assembly_code'=>$value['matches'][0]['assemblyCode'],
+                        'congressional_code'=>$value['matches'][0]['congressionalCode'],
+                        'election_code'=>$value['matches'][0]['electionCode'],
+                        'senate_code'=>$value['matches'][0]['senateCode'],
+                        'state'=>$value['matches'][0]['state'],
+                        'street'=>$value['matches'][0]['street'],
+                        // 'vill_code'=>$value['matches'][0]['vill_code'],
+                        // 'town_code'=>$value['matches'][0]['town_code'],
+                        'county_code'=>$value['matches'][0]['countyCode'],
+                        // 'cleg_code'=>$value['matches'][0]['cleg_code'],
+                        // 'school_code'=>$value['matches'][0]['school_code'],
+                        // 'bldg_num'=>$value['matches'][0]['bldg_num'],
+                        'zip5'=>$value['matches'][0]['zip5'],
+                        // 'apt_num'=>$value['matches'][0]['apt_num'],
+                        // 'ward_code'=>$value['matches'][0]['ward_code']
+                    );
+
+                }elseif ($value['status'] == "MULTIMATCH" ) {
+                 	$Count_multimatch++;
+                 	echo_CLI_log("trace","[MULTIMATCH] record #".$value['address_id']." with message " .$value['message'] );
+
+                 }elseif ($value['status'] == "NOMATCH" ) {
+                    $Count_nomatch++;
+                    echo_CLI_log("trace","[NOMATCH] record #".$value['address_id']." with message " .$value['message'] );
+
+                }elseif ($value['status'] == "INVALID"){
+                     $Count_invalid++;
+                     echo_CLI_log("warn","[INVALID] record #".$value['address_id']." with message " .$value['message'] );
+
+                }else{ // no status we know how to deal with
+                    $Count_error++;
+                    // echo_CLI_log("ERROR","on record ".$value['address_id']." with message " .$value['message'] );
+
+                }
+            }
+
+        }
+
+        $curl_time_end = microtime(true);
+        $curl_time = $curl_time_end - $curl_time_start;
+        echo_CLI_log("trace", "Recieved Curl in     ".round($curl_time, 3));
+        $curl_time_total += $curl_time;
+
+        // update database
+        echo_CLI_log("trace", "Starting To update Database");
+        // $Update_Payload ;
+        $update_time_start = microtime(true);
  
-			$response = @json_decode($output, true);
- 
-			// check for malformed response 
-			if(( $output === null )){
-    			echo_CLI_log("fatal", "CURL Failed to recieve a Response");
-			}elseif (($response === null && json_last_error() !== JSON_ERROR_NONE )) {
-    			echo_CLI_log("fatal", "Malformed JSON");
-			}else{
-				foreach ($response as $id => $value) {
-					if($value['status'] == "MATCH"){
-						echo_CLI_log("trace","[MATCH] on record #".$value['address_id']." with message " .$value['message'] );
-						$Update_Payload[$value['address_id']] = array( 
-							'town'=>$value['matches'][0]['town'],
-							'fire_code'=>$value['matches'][0]['fire_code'],
-							'ward_code'=>$value['matches'][0]['ward_code'],
-							'assembly_code'=>$value['matches'][0]['assembly_code'],
-							'congressional_code'=>$value['matches'][0]['congressional_code'],
-							'election_code'=>$value['matches'][0]['election_code'],
-							'senate_code'=>$value['matches'][0]['senate_code'],
-							'state'=>$value['matches'][0]['state'],
-							'street'=>$value['matches'][0]['street'],
-							'vill_code'=>$value['matches'][0]['vill_code'],
-							'town_code'=>$value['matches'][0]['town_code'],
-							'county_code'=>$value['matches'][0]['county_code'],
-							'cleg_code'=>$value['matches'][0]['cleg_code'],
-							'school_code'=>$value['matches'][0]['school_code'],
-							'bldg_num'=>$value['matches'][0]['bldg_num'],
-							'zip5'=>$value['matches'][0]['zip5'],
-							'apt_num'=>$value['matches'][0]['apt_num'],
-							'ward_code'=>$value['matches'][0]['ward_code']);
+        if(count($Update_Payload) > 0){
+            $Query ="";
+            mysql_query("BEGIN");
 
-					}elseif ($value['status'] == "MULTIMATCH" ) {
-	 					echo_CLI_log("trace","[MULTIMATCH] record #".$value['address_id']." with message " .$value['message'] );
+            echo_CLI_log("trace", count($Update_Payload)." records to update ");
+            foreach ($Update_Payload as $id => $value) {
+                // echo_CLI_log("debug", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
 
-	 				}elseif ($value['status'] == "NOMATCH" ) {
-						echo_CLI_log("trace","[NOMATCH] record #".$value['address_id']." with message " .$value['message'] );
+                mysql_query("UPDATE civicrm_value_district_information_7
+                    SET  congressional_district_46 = ".$value['congressional_code'].",
+                    ny_senate_district_47  = ".$value['senate_code'].",
+                    ny_assembly_district_48  = ".$value['assembly_code'].",
+                    election_district_49   = ".$value['election_code'].",
+                    county_50   = ".$value['county_code']."
+                    WHERE civicrm_value_district_information_7.id = $id");
+                    // ",
+                    // county_legislative_district_51   = ".$value['cleg_code'].",
+                    // town_52   = ".$value['town_code'].",
+                    // ward_53   = ".$value['ward_code'].",
+                    // school_district_54   = ".$value['school_code'].",
+                }
 
-					}elseif ($value['status'] == "INVALID"){
-						echo_CLI_log("warn","[INVALID] record #".$value['address_id']." with message " .$value['message'] );
+            mysql_query("COMMIT");
 
-					}else{ // no status we know how to deal with 
-						echo_CLI_log("ERROR","on record ".$value['address_id']." with message " .$value['message'] );
+        }else{
+            echo_CLI_log("fatal", "No Records to update");
+        }
 
-					}
- 				}
+        $update_time_end = microtime(true);
+        $update_time = $update_time_end - $update_time_start;
+        echo_CLI_log("trace", "Updated database in     ".round($update_time, 3));
 
-			}
- 
- 			$curl_time_end = microtime(true);
-			$curl_time = $curl_time_end - $curl_time_start;
-			echo_CLI_log("debug", "Recieved Curl in 	".round($curl_time, 3)); 
+  
+        // timer for debug
+        $time_end = microtime(true);
+        $time = $time_end - $time_start;
+        $Records_per_sec = round(($Count_total / round($time,1)),1);
+		$Curl_records = round(( $Count_total / $curl_time_total),1);
 
-			// update database
-			echo_CLI_log("trace", "Starting To update Database");
- 			// $Update_Payload ;
-			$update_time_start = microtime(true);
-			sleep(1);
-			
-			if(count($Update_Payload) > 0){
-				$Query ="";
-				mysql_query("BEGIN");
+		echo_CLI_log("debug","---- 	----");
+        echo_CLI_log("debug", "[COUNT]	$Count_total");
+		echo_CLI_log("debug", "[TIME]	".round($time, 4));
+        echo_CLI_log("debug", "[SPEED]	$Records_per_sec per second");
+        echo_CLI_log("debug", "[CURL]	$Curl_records per second (".$Count_total." in ".round($time,1).")");
 
-				echo_CLI_log("debug", count($Update_Payload)." records to update ");
-				foreach ($Update_Payload as $id => $value) {
-					echo_CLI_log("debug", "$id - ".$value['congressional_code']);
- 
-					mysql_query("UPDATE civicrm_value_district_information_7 
-						SET  congressional_district_46 = ".$value['congressional_code'].",
-						ny_senate_district_47  = ".$value['senate_code'].",
-						ny_assembly_district_48  = ".$value['assembly_code'].",
-						election_district_49   = ".$value['election_code'].",
-						county_50   = ".$value['county_code'].",
-						county_legislative_district_51   = ".$value['cleg_code'].",
-						town_52   = ".$value['town_code'].",
-						ward_53   = ".$value['ward_code'].",
-						school_district_54   = ".$value['school_code'].",
-						WHERE civicrm_value_district_information_7.id = $id");
- 				}
+		if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
+		if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
+		echo_CLI_log("debug","[HIT]	$Count_match Matches ($Match_percent %) / $Count_error Error ($Error_percent %) ");
 
-				mysql_query("COMMIT");
+      // reset the arrays
+        $JSON_Payload = array();
+        $Update_Payload = array();
 
-			}else{
- 				echo_CLI_log("fatal", "No Records to update");
+        // reset counter
+        $Count_round=0;
+    }else{
+        // echo "[INFO] Added user ".$raw['id']." - ".$raw['street_address']."\n";
 
-			}
- 			$update_time_end = microtime(true);
-			$update_time = $update_time_end - $update_time_start;
-			echo_CLI_log("debug", "Updated database in 	".round($update_time, 3));  
-
-			// reset the arrays
-			$JSON_Payload = array();
-			$Update_Payload = array();
-
-			// reset counter 
-			$Count_round=0;
-			// timer for debug 
-			$time_end = microtime(true);
-			$time = $time_end - $time_start;
-			echo_CLI_log("debug", "Current Count: $Count_total 	@ ".round($time, 4)." 	CURL in ".round($curl_time, 4));
- 			// exit();
-
-		}else{
-			// echo "[INFO] Added user ".$raw['id']." - ".$raw['street_address']."\n";
-
-		}
-	}
+    }
 
 } while ($raw != NULL);
 
-// print_r($JSON_Payload);
+ 
+echo_CLI_log("debug","---- ---- ---- ---- ---- ---- ");
 
-// end timer 
+// end timer
 $time_end = microtime(true);
 $time = $time_end - $time_start;
 
-echo_CLI_log("debug","Generated $Count_total records in $time");
+$Records_per_sec = round(($Count_total / round($time,1)),1);
+$Curl_records = round(( $Count_total / $curl_time_total),1);
+echo_CLI_log("debug","[COUNT]	$Count_total");
+echo_CLI_log("debug","[TIME]	".round($time, 4));
+echo_CLI_log("debug","[TOTAL] 	$Records_per_sec / second ($Count_total in ".round($time,1).")");
+echo_CLI_log("debug","[CURL]	$Curl_records / second ($Count_total in ".round($curl_time_total,1).")");
+
+// if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
+if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
+// if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
+// if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
+if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
+
+echo_CLI_log("debug","[HIT]	$Count_match Matches ($Match_percent %)/ $Count_error Error ($Error_percent %) ");
