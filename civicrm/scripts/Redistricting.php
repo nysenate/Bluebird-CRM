@@ -131,7 +131,6 @@ do {
         sleep(1);
 
         $ch = curl_init();
-        var_dump($BULK_DISTASSIGN_URL);
         curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, true);
