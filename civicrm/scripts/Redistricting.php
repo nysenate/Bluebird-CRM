@@ -32,9 +32,9 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"]";
-$shortopts = "c:l";
-$longopts = array("chunk=","log=");
+$usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--query \"number\"]";
+$shortopts = "c:l:q";
+$longopts = array("chunk=","log=","query=");
 $optlist = civicrm_script_init($shortopts, $longopts);
 if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
@@ -45,6 +45,10 @@ $BB_CONFIG = get_bluebird_instance_config($optList['site']);
 $BULK_DISTASSIGN_URL = $BB_CONFIG['sage.api.base'].'/json/bulkdistrict/body?key='.$BB_CONFIG['sage.api.key'];
 $CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "trace";
+$LIMIT = array_key_exists('query', $optlist) ? $optlist['query'] :"";
+if($LIMIT > 0 ){
+	$LIMIT = " AND address.id < ".$LIMIT;
+}
 
 // quicker CLI Logs
 function echo_CLI_log($message_level, $message){
@@ -106,6 +110,7 @@ $query = "SELECT address.id,
         WHERE address.state_province_id=state_province.id
           AND state_province.abbreviation='NY'
           AND IFNULL(address.street_address,'') != ''
+          $LIMIT
         ORDER BY address.id ASC";
 
 $result = mysql_query($query, $db);
@@ -250,9 +255,10 @@ do {
 		$Curl_records = round(( $Count_total / $curl_time_total),1);
 
 		echo_CLI_log("debug","---- 	----");
-        echo_CLI_log("debug", "[STATUS]	".round($time, 4)." 	Current Count: $Count_total     @ ");
+        echo_CLI_log("debug", "[COUNT]	$Count_total");
+		echo_CLI_log("debug", "[TIME]	".round($time, 4));
         echo_CLI_log("debug", "[SPEED]	$Records_per_sec per second");
-        echo_CLI_log("debug", "[CURL]	$Curl_records per second (".count($Update_Payload)." in ".round($time,1).")");
+        echo_CLI_log("debug", "[CURL]	$Curl_records per second (".$Count_total." in ".round($time,1).")");
 
 		if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
 		if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
@@ -280,14 +286,15 @@ $time = $time_end - $time_start;
 
 $Records_per_sec = round(($Count_total / round($time,1)),1);
 $Curl_records = round(( $Count_total / $curl_time_total),1);
- 
+echo_CLI_log("debug","[COUNT]	$Count_total");
+echo_CLI_log("debug","[TIME]	".round($time, 4));
 echo_CLI_log("debug","[TOTAL] 	$Records_per_sec / second ($Count_total in ".round($time,1).")");
 echo_CLI_log("debug","[CURL]	$Curl_records / second ($Count_total in ".round($curl_time_total,1).")");
 
-if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
+// if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
 if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
-if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
-if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
+// if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
+// if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
 if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
 
-echo_CLI_log("debug","$Count_match Matches ($Match_percent %) / $Count_multimatch Multimatch ($Multimatch_percent %) / $Count_nomatch No Match ($Nomatch_percent %)  / $Count_invalid invalid ($Invalid_percent %) / $Count_error Error ($Error_percent %) ");
+echo_CLI_log("debug","[HIT]	$Count_match Matches ($Match_percent %)/ $Count_error Error ($Error_percent %) ");
