@@ -28,8 +28,9 @@
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <style>
 .crm-tagTabHeader {height:15px; clear:both;}
-.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer;}
-.crm-tagTabHeader li:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer; font-size:12px;}
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {border-top:#457AA4 3px solid; margin-top:-3px; font-size: 14px;}
 #crm-container #crm-tagListWrap {clear:both;}
 .BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
 .crm-tagLegend td div {
@@ -38,6 +39,9 @@
 	width:16px;
 	float:left;
 	margin:0 10px 0 0;
+}
+.lv-0#tagLabel_291, .lv-0#tagLabel_296{
+	font-size: 14px;
 }
 .crm-tagLegend td.addTag div {}
 .crm-tagLegend td.removeTag div {background-position: -17px 0px;}
@@ -75,7 +79,7 @@ dt.lv-0 .fCB ul li.printTag {
 cid = 0;
 cj(document).ready(function() {	
 
-	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
+	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit', 'init');
 	callTagAjax();
 });
 function makeModalTree(tagLabel){
@@ -228,13 +232,26 @@ function modalSelectOnClick() {
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
 		 				var tidMatch = false;
+		 				
+		 				var listOfToChildTids = '';
+						var toTagList = cj('.BBtree.edit.manage dl#tagLabel_'+ tagMerge.destinationId).html();
+						if(toTagList != null)
+						{
+							listOfToChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
+							for(i = 0;i<listOfToChildTids.length;i++)
+							{
+								listOfToChildTids[i] = listOfToChildTids[i].replace("tid=\"",'');
+								listOfToChildTids[i] = listOfToChildTids[i].replace("\"",'');
+							}
+						}
 		 				if(tagChildren != null)
 						{
-			 				if(listOfChildTids.length > 0)
+			 				if(listOfChildTids.length > 0  && listOfToChildTids.length > 0)
 			 				{
 			 					tidMatch = true;
 			 				}
 			 			}
+
 						if(tidMatch == false)
 						{	
 							cj.ajax({
@@ -504,7 +521,7 @@ function findIDLv(tagLabel) {
 function printTags()
 {
 	var data = cj('.BBtree.edit.manage').html();
-	var mywindow = window.open('', 'Print Tags');
+	var mywindow = window.open('', 'PrintTags');
 	mywindow.document.write('<html><head><title>Print Tags</title>');
     mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />');
     mywindow.document.write('<style>');
@@ -512,7 +529,7 @@ function printTags()
     mywindow.document.write('</style>');
     mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
     mywindow.document.write('</head><body class="popup" >');
-    mywindow.document.write('<div class="BBtree edit manage" style="height:auto;width:auto;overflow-y:hidden;">');
+    mywindow.document.write('<div class="BBtree edit manage" style="height:2400px;width:auto;overflow-y:hidden;">');
     mywindow.document.write(data);
     mywindow.document.write('</div>');
     mywindow.document.write('</body></html>');

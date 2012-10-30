@@ -21,6 +21,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
+			console.log(cj('.crm-tagTabHeader li.tab').attr('id'));
 			cj('.crm-tagTabHeader ul').html('');
 			/*if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
 			{
@@ -31,7 +32,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 				if(tID.id != '292') //if not positions
 				{
 					if(tID.children.length > 0){
-						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this);return false;">'+tID.name+'</li>');
 						if(local == 'modal')
 						{
 							if(modalTreeTop == tID.id)
@@ -64,8 +65,8 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 	var treeLoc;
 	switch(inpLoc)
 	{
-		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit';callTagListMain(treeLoc, treeData); break;
-		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.hidden.tabbed'; callTagListMain(treeLoc, treeData); break;
+		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.edit.hidden.tabbed'; callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData);  break;
 		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
 		default: alert('No Tree Found'); break;
 	}
@@ -103,7 +104,6 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 /*Writes out the on page (not modal) Tree to an object*/
 function callTagListMain(treeLoc, treeData) {
 	console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
-	callTagAjaxInitLoader(treeLoc);	
 	var tID = treeData;
 	delete displayObj;
 	var displayObj = new Object();
@@ -237,12 +237,14 @@ function swapTrees(tab){
 	var currentTree = cj('.BBtree.edit.manage').attr('id');
 	var getTab = cj(tab).attr('id');
 	if(currentTree != getTab){
-		cj('.BBtree.edit#' + currentTree).removeClass('manage');
 		cj('.BBtree.edit#' + currentTree).addClass('hidden loadingGif');
-		cj('.BBtree.edit#' + currentTree).children().hide();
-		cj('.BBtree.edit#' + getTab).addClass('manage')
-		cj('.BBtree.edit#' + getTab).removeClass('hidden loadingGif');
+		cj('.BBtree.edit#' + currentTree).removeClass('manage');
+		//cj('.BBtree.edit#' + currentTree).children().hide();
+		cj('.crm-tagTabHeader li.tab#' + getTab).addClass('active');
+		cj('.crm-tagTabHeader li.tab#' + currentTree).removeClass('active');
+		cj('.BBtree.edit#' + getTab).addClass('manage');
 		cj('.BBtree.edit#' + getTab).children().show();
+		cj('.BBtree.edit#' + getTab).removeClass('hidden loadingGif');
 	}
 	// if(swapID != tabID)
 	// {
@@ -269,8 +271,15 @@ function writeDisplayObject(displayObj, treeLoc) {
 	}
 }
 /*Loading Gif*/
-function callTagAjaxInitLoader(treeLoc) {
-	cj(treeLoc).html('');
+function callTagAjaxInitLoader(treeLoc, inpLoc) {
+	console.log(treeLoc);
+	switch(inpLoc)
+	{
+		case 'init': break;
+		case 'main': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
+		case 'backup': cj('.BBtree.edit.hidden').detach();cj('<div class="BBtree edit hidden tabbed" id="tagLabel_296"></div>').appendTo('#crm-tagListWrap');  break;
+		default: alert('No Tree Found'); break;
+	}
 	cj(treeLoc).addClass('loadingGif');
 }
 /*Slider & Interface functionality portion of things, when a tree initializes, as it loads, it runs through each
