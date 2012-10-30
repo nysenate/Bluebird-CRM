@@ -215,6 +215,22 @@ UPDATE civicrm_log
            array(
              'id' => 'contact_id',
            ),
+           'civicrm_email' =>
+           array(
+             'id' => 'contact_id',
+           ),
+           'civicrm_im' =>
+           array(
+             'id' => 'contact_id',
+           ),
+           'civicrm_website' =>
+           array(
+             'id' => 'contact_id',
+           ),
+           'civicrm_address' =>
+           array(
+             'id' => 'contact_id',
+           ),
            'civicrm_entity_tag' =>
            array(
              'id'     => 'entity_id',
