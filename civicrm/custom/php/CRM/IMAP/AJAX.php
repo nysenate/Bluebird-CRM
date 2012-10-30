@@ -281,7 +281,7 @@ class CRM_IMAP_AJAX {
              }
              // var_dump($attachments[$i]);
              // exit();
-             
+
              if($attachments[$i]['filename']) $attachmentfilename = $attachments[$i]['filename'] ;
              if($attachments[$i]['name']) $attachmentname = $attachments[$i]['name'] ;
              if($attachments[$i]['attachment']) $attachment = $attachments[$i]['attachment'] ;
@@ -566,7 +566,7 @@ class CRM_IMAP_AJAX {
               'version' => 3
           );
           $activity = civicrm_api('activity', 'create', $params);
-          var_dump($params);
+          // var_dump($params);
 
           // if its an error or doesnt return we need errors 
           if (($activity['is_error']==1)){
@@ -578,7 +578,7 @@ class CRM_IMAP_AJAX {
             // Now we need to assign the tag to the activity.
             self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
             $imap->movemsg_uid($messageUid, 'Archive');
-
+            // add attachment to activity
 
           };
 
