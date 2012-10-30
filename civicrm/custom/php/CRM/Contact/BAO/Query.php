@@ -2643,9 +2643,9 @@ WHERE  id IN ( $groupIDs )
     {$etTable}.entity_table = 'civicrm_contact' )
               LEFT JOIN civicrm_tag {$tTable} ON ( {$etTable}.tag_id = {$tTable}.id  ) ";
 
-    $this->_where[$grouping][] = "{$tTable}.name {$op} '" . $value . "'";
-    $this->_qill[$grouping][] = ts('Tagged %1', array(
-      1 => $op)) . ' ' . $value;
+    //NYSS
+    $this->_where[$grouping][] = self::buildClause("{$tTable}.name", $op, $value, 'String');
+    $this->_qill[$grouping][] = ts('Tagged %1', array(1 => $op)) . ' ' . $value;
   }
 
   /**
@@ -2710,12 +2710,9 @@ WHERE  id IN ( $groupIDs )
     $n          = trim($value);
     $value      = $strtolower(CRM_Core_DAO::escapeString($n));
     if ($wildcard || $op == 'LIKE') {
-      if (strpos($value, '%') !== FALSE) {
-        // only add wild card if not there
-        $value = "'$value'";
-      }
-      else {
-        $value = "'%$value%'";
+      //NYSS
+      if (strpos($value, '%') === FALSE) {
+        $value = "%$value%";
       }
       $op = 'LIKE';
     }
@@ -2725,8 +2722,7 @@ WHERE  id IN ( $groupIDs )
     else {
       $value = "'$value'";
     }
-    //$sub = " ( civicrm_email.email $op $value )";//NYSS 4802
-    $this->_where[$grouping][] = " ( civicrm_note.note $op $value ) ";
+    $this->_where[$grouping][] = self::buildClause('civicrm_note.note', $op, $value, 'String');//NYSS 4802
     $this->_qill[$grouping][] = ts('Note') . " $op - '$n'";
   }
 
@@ -2937,14 +2933,11 @@ WHERE  id IN ( $groupIDs )
         $op    = '=';
       }
       else {
-        $value = strtolower(CRM_Core_DAO::escapeString($n));
+        //NYSS 4802
+        $value = strtolower($n);
         if ($wildcard) {
-          if (strpos($value, '%') !== FALSE) {
-            $value = "'$value'";
-            // only add wild card if not there
-          }
-          else {
-            $value = "'%$value%'";//NYSS 5063 - add wildcard on left
+          if (strpos($value, '%') === FALSE) {
+            $value = "%{$value}%";
           }
           $op = 'LIKE';
         }
@@ -2953,11 +2946,11 @@ WHERE  id IN ( $groupIDs )
         }
       }
       $this->_qill[$grouping][] = ts('Email') . " $op '$n'";
-      $this->_where[$grouping][] = " ( civicrm_email.email $op $value )";
+      $this->_where[$grouping][] = self::buildClause('civicrm_email.email', $op, $value, 'String');
     }
     else {
       $this->_qill[$grouping][] = ts('Email') . " $op ";
-      $this->_where[$grouping][] = " ( civicrm_email.email $op )";
+      $this->_where[$grouping][] = self::buildClause('civicrm_email.email', $op, NULL, 'String');
     }
 
     $this->_tables['civicrm_email'] = $this->_whereTables['civicrm_email'] = 1;
@@ -2979,21 +2972,18 @@ WHERE  id IN ( $groupIDs )
     $n = trim($value);
 
     if ($n) {
-      $value = strtolower(CRM_Core_DAO::escapeString($n));
-      if (strpos($value, '%') !== FALSE) {
-        $value = "'$value'";
+      //NYSS 4802
+      $value = strtolower($n);
+      if (strpos($value, '%') === FALSE) {
         // only add wild card if not there
-      }
-      else {
-        $value = "'%$value%'"; //NYSS 3058 implied wildcard should be on both sides
+        $value = "%{$value}%";
       }
       $op = 'LIKE';
-      $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_address) $op $value )";
+      $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_address)', $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Street') . " $op '$n'";
     }
     else {
-      //$this->_where[$grouping][] = " (civicrm_address.street_address $op $value )";
-      $this->_where[$grouping][] = self::buildClause($name, $op, $val, 'String');//NYSS
+      $this->_where[$grouping][] = self::buildClause('civicrm_address.street_address', $op, NULL, 'String');
       $this->_qill[$grouping][] = ts('Street') . " $op ";
     }
 
@@ -3024,10 +3014,10 @@ WHERE  id IN ( $groupIDs )
       $this->_qill[$grouping][] = ts('Street Number is even');
     }
     else {
-      $value = strtolower(CRM_Core_DAO::escapeString($n));
-      $value = "'$value'";
+      //NYSS 4802
+      $value = strtolower($n);
 
-      $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_number) $op $value )";
+      $this->_where[$grouping][] = self::buildClause('LOWER(civicrm_address.street_number)', $op, $value, 'String');
       $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
     }
 

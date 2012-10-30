@@ -16,6 +16,8 @@
 
   //5637 reduce block width after returning from inline form
   cj('#custom-set-block-1 #crm-container-snippet').css('width','auto');
+  cj('#custom-set-block-3 #crm-container-snippet').css('width','auto');
+  cj('#custom-set-block-5 #crm-container-snippet').css('width','auto');
 
   //5779 truncate file name
   cj('.crm-fileURL a').each(function(){

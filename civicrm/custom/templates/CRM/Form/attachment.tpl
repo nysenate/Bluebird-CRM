@@ -33,9 +33,6 @@
           <div id="attachStatusMesg" class="status hiddenElement"></div>
           <div id="attachFileRecord_{$attVal.fileID}">
             <strong><a href="{$attVal.url}">{$attVal.cleanName}</a></strong>
-            {*if $attVal.deleteURLArgs}
-              &nbsp;&nbsp;<a href="javascript:showDelete('{$attVal.cleanName}', '{$attVal.deleteURLArgs}', {$attVal.fileID})"><img src="{$config->resourceBase}/i/delete.png" title="{ts}Delete this attachment{/ts}"></a>
-            {/if*}
             <br/>
           </div>
         {/foreach}
@@ -87,7 +84,7 @@
               <div id="attachFileRecord_{$attVal.fileID}">
                 <strong><a href="{$attVal.url}">{$attVal.cleanName}</a></strong>
                 {if $attVal.deleteURLArgs}
-                  &nbsp;&nbsp;<a href="javascript:showDelete('{$attVal.cleanName}', '{$attVal.deleteURLArgs}', {$attVal.fileID})"><span class="icon red-icon delete-icon"></span></a>
+                  &nbsp;&nbsp;<a href="javascript:showDelete('{$attVal.cleanName}', '{$attVal.deleteURLArgs}', {$attVal.fileID})" title="{ts}Delete this attachment{/ts}"><span class="icon red-icon delete-icon" style="margin:0px 0px -5px 20px" title="{ts}Delete this attachment{/ts}"></span></a>
                 {/if}
                 <br/>
               </div>

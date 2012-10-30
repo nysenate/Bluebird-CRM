@@ -847,7 +847,6 @@ $.fn.formToArray = function(semantic, elements) {
             }
         }
         else if (feature.fileapi && el.type == 'file' && !el.disabled) {
-          console.log( 'inside file field');
             if (elements) 
                 elements.push(el);
             var files = el.files;

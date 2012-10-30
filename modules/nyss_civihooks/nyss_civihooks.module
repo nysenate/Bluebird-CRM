@@ -759,7 +759,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'active'     => 1
     ),
     'child' => array(),
-    );
+  );
 
   //5230 add duplicate address removal tool
   $params[$manageNavID]['child'][$maxKey+2] = array (
@@ -769,13 +769,13 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
       'permission' => 'export print production files',
       'operator'   => 'AND',
-      'separator'  => 1,
+      'separator'  => 0,
       'parentID'   => $manageNavID,
       'navID'      => $maxKey+2,
       'active'     => 1
     ),
     'child' => array(),
-    );
+  );
  
   //5813 Inbox polling Menu Items 
   $params[$manageNavID]['child'][$maxKey+3] = array (
@@ -785,13 +785,13 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'url'        => 'civicrm/imap/mapper',
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
-      'separator'  => 0,
+      'separator'  => 2,
       'parentID'   => $manageNavID,
       'navID'      => $maxKey+3,
       'active'     => 1
     ),
     'child' => array(),
-    );
+  );
   $params[$manageNavID]['child'][$maxKey+4] = array (
     'attributes' => array (
       'label'      => 'Matched Inbox Messages',
@@ -805,7 +805,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
       'active'     => 1
     ),
     'child' => array(),
-    );
+  );
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 

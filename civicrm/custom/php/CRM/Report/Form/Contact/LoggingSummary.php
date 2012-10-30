@@ -264,15 +264,28 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     }
 
     $detail = $this->_logTables[$entity];
+    $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);//NYSS 5751
     $clause = CRM_Utils_Array::value('entity_table', $detail);
     $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
 
-    $this->_from = "
-FROM `{$this->loggingDB}`.$entity entity_log_civireport
+    //NYSS 5751
+    $joinClause = "
 INNER JOIN civicrm_temp_civireport_logsummary temp 
         ON (entity_log_civireport.{$detail['fk']} = temp.contact_id)
 INNER JOIN civicrm_contact modified_contact_civireport 
-        ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})
+        ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})";
+    if ($entity == 'log_civicrm_note_comment') {
+      $joinClause = "
+INNER JOIN `{$this->loggingDB}`.log_civicrm_note note ON entity_log_civireport.entity_id = note.id AND entity_log_civireport.entity_table = 'civicrm_note'
+INNER JOIN civicrm_temp_civireport_logsummary temp
+        ON (note.{$detail['fk']} = temp.contact_id)
+INNER JOIN civicrm_contact modified_contact_civireport
+        ON (note.{$detail['fk']} = modified_contact_civireport.id AND note.entity_table = 'civicrm_contact')";
+    }
+
+    $this->_from = "
+FROM `{$this->loggingDB}`.$tableName entity_log_civireport
+{$joinClause}
 LEFT  JOIN civicrm_contact altered_by_contact_civireport 
         ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)";
   }
