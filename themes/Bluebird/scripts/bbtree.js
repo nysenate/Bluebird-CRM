@@ -342,12 +342,12 @@ function hoverTreeSlider(treeLoc){
 		});
 	}
 	console.log('implement hover slider begin 2: ' + returnTime());
-	cj(treeLoc + ' dt .fCB li').click(function(e) {
-		e.stopPropagation();
-	});
-	cj(treeLoc + ' dt .selectRadio').click(function(e) {
-		e.stopPropagation();
-	});
+	// cj(treeLoc + ' dt .fCB li').click(function(e) {
+	// 	e.stopPropagation();
+	// });
+	// cj(treeLoc + ' dt .selectRadio').click(function(e) {
+	// 	e.stopPropagation();
+	// });
 	console.log('implement hover slider begin 3: ' + returnTime());
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
