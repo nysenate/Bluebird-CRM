@@ -279,3 +279,24 @@
 {/foreach}
 {/if}
 
+{literal}
+<script type="text/javascript">
+  //NYSS 3550
+  cj('input#token-input-contact_taglist_296').keydown(function(e){
+    //if it's too long and the key pressed isn't backspace or delete
+    if(cj(this).val().length > 63 && e.which !== 8 && e.which !== 46){
+      alert("Keywords may have a maximum length of 64 characters. \nPlease reduce the size of your tag before selecting and saving it.");
+      return false;
+    }
+  }).bind('paste', function(e){
+    var el = cj(this);
+    setTimeout(function() {
+      var txtLen = cj(el).val().length;
+      if(cj(el).val().length == 64 && e.which !== 8 && e.which !== 46){
+        alert("Keywords may have a maximum length of 64 characters. \nIf you have pasted tag text exceeding that size it has been truncated. \nPlease review the value and consider reducing the length.");
+        return false;
+      }
+    }, 100);
+  });
+</script>
+{/literal}
