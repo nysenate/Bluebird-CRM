@@ -79,10 +79,13 @@ input.form-submit {
 	}	
 
 #crm-container .crm-content-block { 
-    padding:4px;
-    position: relative;
-    background-color: #FFF;
-    }
+  padding:4px;
+  position: relative;
+  background-color: #FFF;
+}
+#crm-container .crm-tooltip .crm-content-block {
+  background-color: #2F2F2E;
+}
 #crm-container .crm-title { height:20px; }
 
 

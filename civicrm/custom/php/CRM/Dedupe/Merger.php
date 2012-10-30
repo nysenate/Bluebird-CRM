@@ -831,7 +831,9 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       );
 
       // api 3 returns pref_comm_method as an array, which breaks the lookup; so we reconstruct
-      $prefCommList = implode(CRM_Core_DAO::VALUE_SEPARATOR, $specialValues[$moniker]['preferred_communication_method']);
+      $prefCommList = is_array($specialValues[$moniker]['preferred_communication_method']) ?
+        implode(CRM_Core_DAO::VALUE_SEPARATOR, $specialValues[$moniker]['preferred_communication_method']) :
+        $specialValues[$moniker]['preferred_communication_method'];
       $specialValues[$moniker]['preferred_communication_method'] = CRM_Core_DAO::VALUE_SEPARATOR . $prefCommList . CRM_Core_DAO::VALUE_SEPARATOR;
 
       $names = array(
@@ -865,7 +867,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $value   = CRM_Utils_Array::value($field, $contact);
         //NYSS 5547
         if ( isset($specialValues[$moniker][$field]) ) {
-          $value = CRM_Core_DAO::VALUE_SEPARATOR . $specialValues[$moniker]["{$field}"] . CRM_Core_DAO::VALUE_SEPARATOR;
+          $value = CRM_Core_DAO::VALUE_SEPARATOR . trim($specialValues[$moniker][$field], CRM_Core_DAO::VALUE_SEPARATOR) . CRM_Core_DAO::VALUE_SEPARATOR;
         }
         $label   = isset($specialValues[$moniker][$field]) ? $specialValues[$moniker]["{$field}_display"] : $value;
         if (CRM_Utils_Array::value('type', $fields[$field]) && $fields[$field]['type'] == CRM_Utils_Type::T_DATE) {
