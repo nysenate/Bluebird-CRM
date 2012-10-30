@@ -14,7 +14,7 @@
   cj('div.crm-custom-set-block-8').remove();
 
   //insert display name
-  var displayNameBlock = "<div class='displayName'>{/literal}{$display_name}{literal}</div>";
+  var displayNameBlock = "<div class='displayName'>{/literal}{$display_name|escape}{literal}</div>";
   cj('div#contactTopBar').before(displayNameBlock);
 
 </script>
