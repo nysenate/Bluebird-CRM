@@ -71,6 +71,9 @@ class CRM_Logging_Differ {
         $contactIdClause = "AND id = {$contactID}";
               break;
       case 'civicrm_note':
+        //NYSS 5751
+        $contactIdClause = "AND ( entity_id = {$contactID} AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM {$this->db}.log_civicrm_note note WHERE note.entity_id = {$contactID} AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
+        break;
             case 'civicrm_entity_tag':
         $contactIdClause = "AND entity_id = {$contactID} AND entity_table = 'civicrm_contact'";
         break;
