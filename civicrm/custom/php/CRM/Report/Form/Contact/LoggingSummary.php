@@ -204,21 +204,21 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
       if ($row['log_civicrm_entity_log_action'] == 'Update') {
         $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date={$row['log_civicrm_entity_log_date']}";
-      //NYSS
-      if ( $this->cid ) {
-        $q .= '&cid='.$this->cid;
-      } 
-      else {
-        $q .= '&cid='.$row['log_civicrm_contact_id'];
-      }
+        //NYSS
+        if ( $this->cid ) {
+          $q .= '&cid='.$this->cid;
+        }
+        else {
+          $q .= '&cid='.$row['log_civicrm_contact_id'];
+        }
 
-      //NYSS append instance id so we return properly
-      $q .= '&instanceID='.$this->_id;
+        //NYSS append instance id so we return properly
+        $q .= '&instanceID='.$this->_id;
 
-        $url = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', $q, FALSE, TRUE);
-        $row['log_civicrm_entity_log_action_link'] = $url;
-        $row['log_civicrm_entity_log_action_hover'] = ts("View details for this update");
-        $row['log_civicrm_entity_log_action'] = '<div class="icon details-icon"></div> ' . ts('Update');
+        //NYSS 5267
+        $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&layout=overlay", FALSE, TRUE);
+        $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}", FALSE, TRUE);
+        $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
       }
 
       //CRM_Core_Error::debug_var('row',$row);
