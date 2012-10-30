@@ -397,6 +397,14 @@ VALUES (4 ,'administer inbox polling'), (9 ,'administer inbox polling'), (10 ,'a
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
+## 5832 remove changelog from advanced search
+sql="
+UPDATE civicrm_setting
+SET value = 's:29:"12345101316171819";'
+WHERE name = 'advanced_search_options';
+"
+$execSql -i $instance -c "$sql" -q
+
 
 ### Cleanup ###
 
