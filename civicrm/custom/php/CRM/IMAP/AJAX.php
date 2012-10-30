@@ -579,7 +579,18 @@ class CRM_IMAP_AJAX {
             self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
             $imap->movemsg_uid($messageUid, 'Archive');
             // add attachment to activity
-
+            // $activity['id']
+            // $params = array(
+            //   'activity_type_id' => 12,
+            //   'source_contact_id' => $forwarderId,
+            //   'assignee_contact_id' => $forwarderId,
+            //   'target_contact_id' => $contactId,
+            //   'subject' => $subject,
+            //   'status_id' => 2,
+            //   'details' => $body,
+            //   'version' => 3
+            // );
+            // $activity = civicrm_api('activity', 'create', $params);
           };
 
         }
