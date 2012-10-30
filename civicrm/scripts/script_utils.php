@@ -196,3 +196,28 @@ function get_elapsed_time($start_time = 0)
 {
   return microtime(true) - $start_time;
 } // get_elapsed_time()
+
+
+
+$LOG_LEVELS = array(
+    "TRACE" => array(0,"\33[0;35m"),
+    "DEBUG" => array(1,"\33[1;35m"),
+    "INFO"  => array(2,"\33[0;33m"),
+    "WARN"  => array(3,"\33[1;33m"),
+    "ERROR" => array(4,"\33[0;31m"),
+    "FATAL" => array(5,"\33[1;31m"),
+);
+
+
+
+function bbscript_log($message_level, $message){
+    global $BB_LOG_LEVEL, $LOG_LEVELS;
+    $log_level = strtoupper($message_level);
+    list($log_num, $color) = $LOG_LEVELS[$log_level];
+    if($log_num >= $BB_LOG_LEVEL) {
+        $timestamp = date('G:i:s');
+        $log_level = $color.$log_level."\33[0m";
+        // Extra large padding to account for color strings!
+        echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
+    }
+} // echo_CLI_log()

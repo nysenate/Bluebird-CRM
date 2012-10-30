@@ -595,7 +595,12 @@ cj(document).ready(function(){
 			success: function(data,status) {
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
-				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				var icon ='';
+		 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
+					if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
+					icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+				}
+				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
@@ -746,14 +751,19 @@ function buildMessageList() {
 		var total_results =0;
 		cj.each(messages, function(key, value) {
 			total_results++;
+			var icon ='';
 			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 			if( value.from_name != ''){
 				messagesHtml += '<td class="name">'+value.from_name +'</td>';
 			}else {
 				messagesHtml += '<td class="name"> N/A </td>';
 			}
+			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
+				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
+				icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+			}
 			messagesHtml += '<td class="email">'+value.from_email +'</td>';
-	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
+	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
 			messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';

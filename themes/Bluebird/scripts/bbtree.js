@@ -21,6 +21,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
+			console.log(cj('.crm-tagTabHeader li.tab').attr('id'));
 			cj('.crm-tagTabHeader ul').html('');
 			/*if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
 			{
@@ -31,7 +32,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 				if(tID.id != '292') //if not positions
 				{
 					if(tID.children.length > 0){
-						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this);return false;">'+tID.name+'</li>');
 						if(local == 'modal')
 						{
 							if(modalTreeTop == tID.id)
@@ -64,8 +65,8 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 	var treeLoc;
 	switch(inpLoc)
 	{
-		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit';callTagListMain(treeLoc, treeData); break;
-		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.hidden.tabbed'; callTagListMain(treeLoc, treeData); break;
+		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.edit.hidden.tabbed'; callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData);  break;
 		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
 		default: alert('No Tree Found'); break;
 	}
@@ -103,7 +104,6 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 /*Writes out the on page (not modal) Tree to an object*/
 function callTagListMain(treeLoc, treeData) {
 	console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
-	callTagAjaxInitLoader(treeLoc);	
 	var tID = treeData;
 	delete displayObj;
 	var displayObj = new Object();
@@ -237,12 +237,14 @@ function swapTrees(tab){
 	var currentTree = cj('.BBtree.edit.manage').attr('id');
 	var getTab = cj(tab).attr('id');
 	if(currentTree != getTab){
-		cj('.BBtree.edit#' + currentTree).removeClass('manage');
 		cj('.BBtree.edit#' + currentTree).addClass('hidden loadingGif');
-		cj('.BBtree.edit#' + currentTree).children().hide();
-		cj('.BBtree.edit#' + getTab).addClass('manage')
-		cj('.BBtree.edit#' + getTab).removeClass('hidden loadingGif');
+		cj('.BBtree.edit#' + currentTree).removeClass('manage');
+		//cj('.BBtree.edit#' + currentTree).children().hide();
+		cj('.crm-tagTabHeader li.tab#' + getTab).addClass('active');
+		cj('.crm-tagTabHeader li.tab#' + currentTree).removeClass('active');
+		cj('.BBtree.edit#' + getTab).addClass('manage');
 		cj('.BBtree.edit#' + getTab).children().show();
+		cj('.BBtree.edit#' + getTab).removeClass('hidden loadingGif');
 	}
 	// if(swapID != tabID)
 	// {
@@ -269,8 +271,15 @@ function writeDisplayObject(displayObj, treeLoc) {
 	}
 }
 /*Loading Gif*/
-function callTagAjaxInitLoader(treeLoc) {
-	cj(treeLoc).html('');
+function callTagAjaxInitLoader(treeLoc, inpLoc) {
+	console.log(treeLoc);
+	switch(inpLoc)
+	{
+		case 'init': break;
+		case 'main': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
+		case 'backup': cj('.BBtree.edit.hidden').detach();cj('<div class="BBtree edit hidden tabbed" id="tagLabel_296"></div>').appendTo('#crm-tagListWrap');  break;
+		default: break;
+	}
 	cj(treeLoc).addClass('loadingGif');
 }
 /*Slider & Interface functionality portion of things, when a tree initializes, as it loads, it runs through each
@@ -333,12 +342,12 @@ function hoverTreeSlider(treeLoc){
 		});
 	}
 	console.log('implement hover slider begin 2: ' + returnTime());
-	cj(treeLoc + ' dt .fCB li').click(function(e) {
-		e.stopPropagation();
-	});
-	cj(treeLoc + ' dt .selectRadio').click(function(e) {
-		e.stopPropagation();
-	});
+	// cj(treeLoc + ' dt .fCB li').click(function(e) {
+	// 	e.stopPropagation();
+	// });
+	// cj(treeLoc + ' dt .selectRadio').click(function(e) {
+	// 	e.stopPropagation();
+	// });
 	console.log('implement hover slider begin 3: ' + returnTime());
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
@@ -545,7 +554,7 @@ function makeModalAdd(tagLabel){
 it breaks out an error message to something more user friendly. it can be broken out into it's own function if
 there are a copious amount of errors in the future to worry about other than Child Tag issues*/
 function makeModalRemove(tagLabel){
-	cj("#dialog").show( );
+	cj("#dialog").show();
 	cj("#dialog").dialog({
 		draggable: true,
 		height: 300,
@@ -559,12 +568,16 @@ function makeModalRemove(tagLabel){
 			background: "black" 
 		},
 		open: function() {
+			console.log(tagLabel);
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.isReserved = cj('.BBtree.edit dt#' + tagLabel).hasClass('isReserved');
 			if(tagInfo.isReserved == false) {
 				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">Remove Tag: ' + tagInfo.name + '</span></div>';
+				//search the string for all mentions of tid="number"
+				var tagChildren = cj('.BBtree.edit.manage dl#'+ tagLabel).html();
+				console.log(tagChildren);
 				cj("#dialog").dialog( "option", "buttons", [
 					{
 						text: "Done",
@@ -574,32 +587,40 @@ function makeModalRemove(tagLabel){
 							modalSetLoadingGif();
 							tagRemove = new Object();
 							tagRemove.parentId = cj('#dialog .modalHeader .parentName').attr('id').replace('tagLabel_', '');
-							cj.ajax({
-								url: '/civicrm/ajax/tag/delete',
-								data: {
-									id: tagRemove.parentId
-								},
-								dataType: 'json',
-								success: function(data, status, XMLHttpRequest) {
-									if(data.code != 1)
-									{
-										if(data.message == 'DB Error: constraint violation')
+							if(tagChildren == null)
+							{
+									cj.ajax({
+									url: '/civicrm/ajax/tag/delete',
+									data: {
+										id: tagRemove.parentId
+									},
+									dataType: 'json',
+									success: function(data, status, XMLHttpRequest) {
+										if(data.code != 1)
 										{
-											alert('Error: Child Tag Exists');
+											if(data.message == 'DB Error: constraint violation')
+											{
+												alert('Error: Child Tag Exists');
+											}
+											else { alert(data.message); }
+											cj('.ui-dialog-buttonpane .loadingGif').hide();
+											cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
+											modalRemoveLoadingGif();
 										}
-										else { alert(data.message); }
-										cj('.ui-dialog-buttonpane .loadingGif').hide();
-										cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
-										modalRemoveLoadingGif();
+										else
+										{	
+											cj('#dialog').dialog('close');
+											cj('#dialog').dialog('destroy');
+											callTagAjax();
+										}
 									}
-									else
-									{	
-										cj('#dialog').dialog('close');
-										cj('#dialog').dialog('destroy');
-										callTagAjax();
-									}
-								}
-							});
+								});
+							} else {
+								alert("Cannot remove a parent tag. Try deleting subtags before deleting parent tag.");
+								cj('.ui-dialog-buttonpane .loadingGif').hide();
+								cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+								modalRemoveLoadingGif();
+							}
 
 						}
 					},
