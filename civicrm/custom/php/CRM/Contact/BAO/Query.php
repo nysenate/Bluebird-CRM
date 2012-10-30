@@ -2681,6 +2681,11 @@ WHERE  id IN ( $groupIDs )
     if ( in_array( $op, array( 'IS NULL', 'IS NOT NULL' ) ) ) {
       $this->_where[$grouping][] = "{$etTable}.tag_id $op";
     }
+    //NYSS 4802/5471
+    elseif ( in_array( $op, array( 'IS EMPTY', 'IS NOT EMPTY' ) ) ) {
+      $op = str_replace( 'EMPTY', 'NULL', $op );
+      $this->_where[$grouping][] = "{$etTable}.tag_id $op";
+    }
     else {
       $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
     }
