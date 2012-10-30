@@ -597,7 +597,8 @@ cj(document).ready(function(){
 				messages = cj.parseJSON(data);
 				var icon ='';
 		 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
-					icon = '<div class="ui-icon ui-icon-link attachment"></div>'
+					if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
+					icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 				}
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
@@ -758,7 +759,8 @@ function buildMessageList() {
 				messagesHtml += '<td class="name"> N/A </td>';
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
-				icon = '<div class="ui-icon ui-icon-link attachment"></div>'
+				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
+				icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 			}
 			messagesHtml += '<td class="email">'+value.from_email +'</td>';
 	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +' '+icon+'</td>';
