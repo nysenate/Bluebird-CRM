@@ -240,7 +240,7 @@ do {
             mysql_query("COMMIT");
 
         }else{
-            echo_CLI_log("fatal", "No Records to update");
+            echo_CLI_log("warn", "No Records to update");
         }
 
         $update_time_end = microtime(true);
@@ -262,8 +262,8 @@ do {
 
 		if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
 		if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
-		if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
-		if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
+		if ($Count_nomatch) $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
+        if ($Count_invalid) $Invalid_percent = round((($Count_invalid / $Count_total) * 100),2);
 		if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
 
 		echo_CLI_log("debug","[MATCH]	$Count_match ($Match_percent %)");
@@ -287,7 +287,7 @@ do {
 } while ($raw != NULL);
 
  
-echo_CLI_log("debug","---- ---- ---- ---- ---- ---- ");
+echo_CLI_log("debug","----      ---- ---- ---- ---- ---- ");
 
 // end timer
 $time_end = microtime(true);
@@ -302,8 +302,8 @@ echo_CLI_log("debug","[CURL]	$Curl_records / second ($Count_total in ".round($cu
 
 if ($Count_multimatch) $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
 if ($Count_match) $Match_percent = round((($Count_match / $Count_total) * 100),2);
-if ($Count_nomatch) $Nomatch_percent = round((($Count_total / $Count_nomatch) * 100),2);
-if ($Count_invalid) $Invalid_percent = round((($Count_total / $Count_invalid) * 100),2);
+if ($Count_nomatch) $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
+if ($Count_invalid) $Invalid_percent = round((($Count_invalid / $Count_total) * 100),2);
 if ($Count_error) $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
 
 echo_CLI_log("debug","[MATCH]	$Count_match ($Match_percent %)");
