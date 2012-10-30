@@ -229,7 +229,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       }
 
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
-      $key  = $date . '_' . $row['log_civicrm_entity_log_type'] . '_' . $row['log_civicrm_entity_log_conn_id'] . '_' . $row['log_civicrm_entity_log_user_id'];
+      //NYSS add entity_id to key to ensure distinct
+      $key  = $date . '_' .
+        $row['log_civicrm_entity_log_type'] . '_' .
+        $row['log_civicrm_entity_log_conn_id'] . '_' .
+        $row['log_civicrm_entity_log_user_id'] . '_' .
+        $row['log_civicrm_entity_id'];
       $newRows[$key] = $row;
 
       unset($row['log_civicrm_entity_log_user_id']);
