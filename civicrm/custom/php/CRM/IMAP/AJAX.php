@@ -83,6 +83,7 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
             // Search for all UIDs that meet the criteria of ""
             // Then get the headers for some basic information.
+            // then grab the structure for attachments
             $ids = imap_search($imap->conn(),"",SE_UID);
             $headers = imap_fetch_overview($imap->conn(),implode(',',$ids),FT_UID);
 
@@ -93,6 +94,56 @@ class CRM_IMAP_AJAX {
                     $message = $imap->getmsg_uid($header->uid);
 
                     $matches = array();
+                    // var_dump($header->uid);
+                    $structure = imap_fetchstructure($imap->conn(),$header->uid,SE_UID);
+
+                    // grab the attachments
+                    $attachments = array();
+                    if(isset($structure->parts) && count($structure->parts)) {
+                     for($i = 0; $i < count($structure->parts); $i++) {
+                       $attachments[$i] = array(
+                          'is_attachment' => false,
+                          'filename' => '',
+                          'name' => '',
+                          'attachment' => '');
+
+                       if($structure->parts[$i]->ifdparameters) {
+                         foreach($structure->parts[$i]->dparameters as $object) {
+                           if(strtolower($object->attribute) == 'filename') {
+                             $attachments[$i]['is_attachment'] = true;
+                             $attachments[$i]['filename'] = $object->value;
+                           }
+                         }
+                       }
+
+                       if($structure->parts[$i]->ifparameters) {
+                         foreach($structure->parts[$i]->parameters as $object) {
+                           if(strtolower($object->attribute) == 'name') {
+                             $attachments[$i]['is_attachment'] = true;
+                             $attachments[$i]['name'] = $object->value;
+                           }
+                         }
+                       }
+
+                       if($attachments[$i]['is_attachment']) {
+                         $attachments[$i]['attachment'] = imap_fetchbody($imap->conn(),$header->uid,$i+1,SE_UID);
+
+                         if($structure->parts[$i]->encoding == 3) { // 3 = BASE64
+                           $attachments[$i]['attachment'] = base64_decode($attachments[$i]['attachment']);
+                         }
+                         elseif($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
+                           $attachments[$i]['attachment'] = quoted_printable_decode($attachments[$i]['attachment']);
+                         }else{
+                            $attachments[$i]['attachment'] = $attachments[$i]['attachment'];
+                         }
+                         if($attachments[$i]['filename']) $header->attachmentfilename = $attachments[$i]['filename'] ;
+                         if($attachments[$i]['name']) $header->attachmentname = $attachments[$i]['name'] ;
+                         if($attachments[$i]['attachment']) $header->attachment = $attachments[$i]['attachment'] ;
+                       }
+                     } // for($i = 0; $i < count($structure->parts); $i++)
+                    } // if(isset($structure->parts) && count($structure->parts))
+
+                    // exit();
 
                     // Read the from: sender in the format:
                     // From: "First Last" <email address>
@@ -101,7 +152,9 @@ class CRM_IMAP_AJAX {
 
                     $details = ($message->plainmsg) ? $message->plainmsg : strip_tags($message->htmlmsg);
                     $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-  
+
+        
+
 
                     $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
                     // Was this message forwarded or is this a raw message from the sender?
@@ -147,9 +200,11 @@ class CRM_IMAP_AJAX {
                     // The reason we stored our variables in $header is
                     // because there's already existing information we want in there.
                     $messages[$header->uid] = $header;
+
                 }
             }
-        }
+        }       
+
         
         // Encode the messages variable and return it to the AJAX call
         echo json_encode($messages);
@@ -172,6 +227,11 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
         // Pull the message via the UID and output it as plain text if possible
         $email = $imap->getmsg_uid($id);
+
+        $structure = imap_fetchstructure($imap->conn(),$id,SE_UID);
+        // var_dump($structure);
+        // exit();
+
         $matches = array();
 
         // HAVE MERCY. I copied and pasted this from the previous section,
@@ -179,6 +239,56 @@ class CRM_IMAP_AJAX {
         $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
         $tempDetails = preg_replace("/>>/i", "", $details);
+
+        // grab the attachments
+        $attachments = array();
+        if(isset($structure->parts) && count($structure->parts)) {
+         for($i = 0; $i < count($structure->parts); $i++) {
+           $attachments[$i] = array(
+              'is_attachment' => false,
+              'filename' => '',
+              'name' => '',
+              'attachment' => '');
+
+           if($structure->parts[$i]->ifdparameters) {
+             foreach($structure->parts[$i]->dparameters as $object) {
+               if(strtolower($object->attribute) == 'filename') {
+                 $attachments[$i]['is_attachment'] = true;
+                 $attachments[$i]['filename'] = $object->value;
+               }
+             }
+           }
+
+           if($structure->parts[$i]->ifparameters) {
+             foreach($structure->parts[$i]->parameters as $object) {
+               if(strtolower($object->attribute) == 'name') {
+                 $attachments[$i]['is_attachment'] = true;
+                 $attachments[$i]['name'] = $object->value;
+               }
+             }
+           }
+
+           if($attachments[$i]['is_attachment']) {
+             $attachments[$i]['attachment'] = imap_fetchbody($imap->conn(),$header->uid,$i+1,SE_UID);
+
+             if($structure->parts[$i]->encoding == 3) { // 3 = BASE64
+               $attachments[$i]['attachment'] = base64_decode($attachments[$i]['attachment']);
+             }
+             elseif($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
+               $attachments[$i]['attachment'] = quoted_printable_decode($attachments[$i]['attachment']);
+             }else{
+                $attachments[$i]['attachment'] = $attachments[$i]['attachment'];
+             }
+             // var_dump($attachments[$i]);
+             // exit();
+             
+             if($attachments[$i]['filename']) $attachmentfilename = $attachments[$i]['filename'] ;
+             if($attachments[$i]['name']) $attachmentname = $attachments[$i]['name'] ;
+             if($attachments[$i]['attachment']) $attachment = $attachments[$i]['attachment'] ;
+           }
+         } // for($i = 0; $i < count($structure->parts); $i++)
+        } // if(isset($structure->parts) && count($structure->parts))
+
 
         // Read the from: sender in the format:
         // From: "First Last" <email address>
@@ -235,6 +345,9 @@ class CRM_IMAP_AJAX {
                                'forwardedDate' =>  $forwardedTime,
                                'subject'    =>  mb_convert_encoding($subject, 'UTF-8'),
                                'details'  =>  mb_convert_encoding($details, 'UTF-8'),
+                               'attachmentfilename'  => $attachmentfilename,
+                               'attachmentname'  =>  $attachmentname,
+                               'attachment'  => $attachment,
                                'date'   =>  $dateSent);
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
