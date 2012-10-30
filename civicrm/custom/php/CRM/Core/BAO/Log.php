@@ -205,36 +205,58 @@ UPDATE civicrm_log
          $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
 
          $counts = array();
-         $tblKey = array( 'civicrm_contact'        => array( 'id'     => 'id',
-                                                             'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
-                                                             ),
-                          'civicrm_entity_tag'     => array( 'id'     => 'entity_id',
-                                                             'where'  => 'entity_table = "civicrm_contact"'
-                                                             ),
-                          'civicrm_note'           => array( 'id'     => 'entity_id',
-                                                             'where'  => 'entity_table = "civicrm_contact"'
-                                                             ),
-                          'civicrm_comments'       => array( 'table'  => 'civicrm_note',
-                                                             'id'     => 'n.entity_id',
-                                                             'join'   => "JOIN $loggingDB.log_civicrm_note n 
-                                                                            ON civicrm_comments.entity_id = n.id
-                                                                            AND n.log_action = 'Insert'",
-                                                             'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
-                                                             ),
-                          'civicrm_group_contact'  => array( 'id'     => 'contact_id',
-                                                             'noinit' => true,
-                                                             'join'   => "JOIN $civiDB.civicrm_group cg
-                                                                            ON civicrm_group_contact.group_id = cg.id",
-                                                             'where'  => "cg.is_hidden != 1
-                                                                            AND log_action != 'Initialization'",
-                                                             ),
-                          'civicrm_relationship_a' => array( 'id'     => 'contact_id_a',
-                                                             'table'  => 'civicrm_relationship',
-                                                             ),
-                          'civicrm_relationship_b' => array( 'id'     => 'contact_id_b',
-                                                             'table'  => 'civicrm_relationship',
-                                                             ),
-                          );
+         $tblKey = array(
+           'civicrm_contact' =>
+           array(
+             'id'     => 'id',
+             'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MICROSECOND FROM log_date)'
+           ),
+           'civicrm_phone' =>
+           array(
+             'id' => 'contact_id',
+           ),
+           'civicrm_entity_tag' =>
+           array(
+             'id'     => 'entity_id',
+             'where'  => 'entity_table = "civicrm_contact"'
+           ),
+           'civicrm_note' =>
+           array(
+             'id'     => 'entity_id',
+             'where'  => 'entity_table = "civicrm_contact"'
+           ),
+           'civicrm_comments' =>
+           array(
+             'table'  => 'civicrm_note',
+             'id'     => 'n.entity_id',
+             'join'   => "JOIN $loggingDB.log_civicrm_note n
+                          ON civicrm_comments.entity_id = n.id
+                          AND n.log_action = 'Insert'",
+             'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
+           ),
+           'civicrm_group_contact' =>
+           array(
+             'id'     => 'contact_id',
+             'noinit' => true,
+             'join'   => "JOIN (
+                            SELECT id, name, title, is_hidden
+                            FROM $loggingDB.log_civicrm_group
+                            GROUP BY id ) cg
+                          ON civicrm_group_contact.group_id = cg.id",
+             'where'  => "cg.is_hidden != 1
+                          AND log_action != 'Initialization'",
+           ),
+           'civicrm_relationship_a' =>
+           array(
+             'id'     => 'contact_id_a',
+             'table'  => 'civicrm_relationship',
+           ),
+           'civicrm_relationship_b' =>
+           array(
+             'id'     => 'contact_id_b',
+             'table'  => 'civicrm_relationship',
+           ),
+         );
 
          foreach ( $tblKey as $tbl => $details ) {
              
@@ -309,4 +331,3 @@ UPDATE civicrm_log
     return FALSE;
          }
      }  
-     
