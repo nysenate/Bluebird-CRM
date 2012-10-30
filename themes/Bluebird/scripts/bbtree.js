@@ -4,7 +4,9 @@ function checkForTagTypes (treeData) {
 }
 /*Acquires Ajax Block*/
 function callTagAjax (local, modalTreeTop, pointToTab) {
-
+	var getPage = cj('.BBtree.edit').attr('class');
+	var pageClasses = getPage.split(' ')
+	console.log(pageClasses[2]);
 	//console.log('start of Tree Rebuild: ' + returnTime());
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
@@ -15,13 +17,13 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
-			console.log('data returned for Tree Rebuild: ' + returnTime());
+			//console.log('data returned for Tree Rebuild: ' + returnTime());
 			/*set variables
 			var displayObj = [];
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
-			console.log(cj('.crm-tagTabHeader li.tab').attr('id'));
+			//console.log(cj('.crm-tagTabHeader li.tab').attr('id'));
 			cj('.crm-tagTabHeader ul').html('');
 			/*if(local != 'modal' && cj('.BBtree.edit.manage').length > 0)
 			{
@@ -47,8 +49,8 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 								switch(tID.id)
 								{
 									
-									case '291': resetBBTree('main', 'init', tID); break;
-									case '296': cj('<div class="BBtree edit hidden tabbed" id="tagLabel_'+tID.id+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+									case '291': resetBBTree(pageClasses[2], 'init', tID); break;
+									case '296': if(pageClasses[2] == 'manage'){cj('<div class="BBtree edit hidden tabbed" id="tagLabel_'+tID.id+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);}break;
 								}
 							//}
 						}
@@ -65,7 +67,9 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 	var treeLoc;
 	switch(inpLoc)
 	{
-		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'manage': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'tab': treeLoc = '#crm-tagListWrap .BBtree.edit.tab';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'contact': treeLoc = '#crm-tagListWrap .BBtree.edit.contact';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
 		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.edit.hidden.tabbed'; callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData);  break;
 		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
 		default: alert('No Tree Found'); break;
@@ -84,7 +88,8 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 				//console.log('postJSON: ' + returnTime());
 				postJSON(treeLoc);
 				//console.log('post-postJSON: ' + returnTime());
-				modalRemoveLoadingGif();
+				var treeLocationToRemoveGif = '.'+inpLoc;
+				modalRemoveLoadingGif(treeLocationToRemoveGif);
 				//console.log('end of tree rebuild: ' + returnTime());
 			}
 			if(inpLoc == 'modal') { 
@@ -103,7 +108,7 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 }
 /*Writes out the on page (not modal) Tree to an object*/
 function callTagListMain(treeLoc, treeData) {
-	console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
+	//console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
 	var tID = treeData;
 	delete displayObj;
 	var displayObj = new Object();
@@ -166,7 +171,7 @@ function callTagListMain(treeLoc, treeData) {
 	}
 	displayObj.output += '</dl>';
 	writeDisplayObject(displayObj, treeLoc);
-	console.log('end of render for Tree Rebuild: ' + returnTime());
+	//console.log('end of render for Tree Rebuild: ' + returnTime());
 }
 /*Writes out the modal tree to an object*/
 function callTagListModal(treeLoc, tID, modalTreeTop) {
@@ -272,11 +277,13 @@ function writeDisplayObject(displayObj, treeLoc) {
 }
 /*Loading Gif*/
 function callTagAjaxInitLoader(treeLoc, inpLoc) {
-	console.log(treeLoc);
+	//console.log(treeLoc);
 	switch(inpLoc)
 	{
 		case 'init': break;
-		case 'main': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
+		case 'manage': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
+		case 'tab': break;
+		case 'contact': break;
 		case 'backup': cj('.BBtree.edit.hidden').detach();cj('<div class="BBtree edit hidden tabbed" id="tagLabel_296"></div>').appendTo('#crm-tagListWrap');  break;
 		default: break;
 	}
@@ -341,14 +348,14 @@ function hoverTreeSlider(treeLoc){
 			}
 		});
 	}
-	console.log('implement hover slider begin 2: ' + returnTime());
+	//console.log('implement hover slider begin 2: ' + returnTime());
 	// cj(treeLoc + ' dt .fCB li').click(function(e) {
 	// 	e.stopPropagation();
 	// });
 	// cj(treeLoc + ' dt .selectRadio').click(function(e) {
 	// 	e.stopPropagation();
 	// });
-	console.log('implement hover slider begin 3: ' + returnTime());
+	//console.log('implement hover slider begin 3: ' + returnTime());
 	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
 	cj('.BBtree.edit dt').hover(
 	function(){
@@ -491,7 +498,7 @@ function makeModalAdd(tagLabel){
 							tagCreate.tagDescription = '';
 							cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
 							cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-							modalSetLoadingGif();
+							modalSetLoadingGif('.manage');
 							tagCreate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
 							tagCreate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
 							tagCreate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
@@ -513,7 +520,7 @@ function makeModalAdd(tagLabel){
 										alert(data.message);
 										cj('.ui-dialog-buttonpane .loadingGif').hide();
 										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-										modalRemoveLoadingGif();
+										modalRemoveLoadingGif('.manage');
 									}
 									else
 									{
@@ -568,7 +575,7 @@ function makeModalRemove(tagLabel){
 			background: "black" 
 		},
 		open: function() {
-			console.log(tagLabel);
+			//console.log(tagLabel);
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag .name').html();
@@ -577,14 +584,14 @@ function makeModalRemove(tagLabel){
 				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">Remove Tag: ' + tagInfo.name + '</span></div>';
 				//search the string for all mentions of tid="number"
 				var tagChildren = cj('.BBtree.edit.manage dl#'+ tagLabel).html();
-				console.log(tagChildren);
+				//console.log(tagChildren);
 				cj("#dialog").dialog( "option", "buttons", [
 					{
 						text: "Done",
 						click: function() {
 							cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
 							cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-							modalSetLoadingGif();
+							modalSetLoadingGif('.manage');
 							tagRemove = new Object();
 							tagRemove.parentId = cj('#dialog .modalHeader .parentName').attr('id').replace('tagLabel_', '');
 							if(tagChildren == null)
@@ -682,7 +689,7 @@ function makeModalUpdate(tagLabel){
 			"Done": function () {
 				cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
 				cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
-				modalSetLoadingGif();
+				modalSetLoadingGif('.manage');
 				tagUpdate = new Object();
 				tagUpdate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
 				tagUpdate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
@@ -819,15 +826,15 @@ having to replicate much of the same combinations, it moves to modalSelectOnclic
 // 		]);
 // 	});
 // }
-function modalSetLoadingGif()
+function modalSetLoadingGif(zone)
 {
-	cj('.BBtree.manage').children().hide(); 
-	cj('.BBtree.manage').addClass('loadingGif');
+	cj('.BBtree' + zone).children().hide(); 
+	cj('.BBtree' + zone).addClass('loadingGif');
 }
-function modalRemoveLoadingGif()
+function modalRemoveLoadingGif(zone)
 {
-	cj('.BBtree.manage').removeClass('loadingGif');
-	cj('.BBtree.manage').children().show(); 
+	cj('.BBtree' + zone).removeClass('loadingGif');
+	cj('.BBtree' + zone).children().show(); 
 }
 function returnTime()
 {
