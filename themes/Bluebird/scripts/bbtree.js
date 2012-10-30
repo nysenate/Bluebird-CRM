@@ -278,7 +278,7 @@ function callTagAjaxInitLoader(treeLoc, inpLoc) {
 		case 'init': break;
 		case 'main': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
 		case 'backup': cj('.BBtree.edit.hidden').detach();cj('<div class="BBtree edit hidden tabbed" id="tagLabel_296"></div>').appendTo('#crm-tagListWrap');  break;
-		default: alert('No Tree Found'); break;
+		default: break;
 	}
 	cj(treeLoc).addClass('loadingGif');
 }
@@ -554,7 +554,7 @@ function makeModalAdd(tagLabel){
 it breaks out an error message to something more user friendly. it can be broken out into it's own function if
 there are a copious amount of errors in the future to worry about other than Child Tag issues*/
 function makeModalRemove(tagLabel){
-	cj("#dialog").show( );
+	cj("#dialog").show();
 	cj("#dialog").dialog({
 		draggable: true,
 		height: 300,
@@ -568,12 +568,16 @@ function makeModalRemove(tagLabel){
 			background: "black" 
 		},
 		open: function() {
+			console.log(tagLabel);
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
 			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.isReserved = cj('.BBtree.edit dt#' + tagLabel).hasClass('isReserved');
 			if(tagInfo.isReserved == false) {
 				var addDialogInfo = '<div class="modalHeader"><span class="parentName" id="'+tagLabel+'">Remove Tag: ' + tagInfo.name + '</span></div>';
+				//search the string for all mentions of tid="number"
+				var tagChildren = cj('.BBtree.edit.manage dl#'+ tagLabel).html();
+				console.log(tagChildren);
 				cj("#dialog").dialog( "option", "buttons", [
 					{
 						text: "Done",
@@ -583,32 +587,40 @@ function makeModalRemove(tagLabel){
 							modalSetLoadingGif();
 							tagRemove = new Object();
 							tagRemove.parentId = cj('#dialog .modalHeader .parentName').attr('id').replace('tagLabel_', '');
-							cj.ajax({
-								url: '/civicrm/ajax/tag/delete',
-								data: {
-									id: tagRemove.parentId
-								},
-								dataType: 'json',
-								success: function(data, status, XMLHttpRequest) {
-									if(data.code != 1)
-									{
-										if(data.message == 'DB Error: constraint violation')
+							if(tagChildren == null)
+							{
+									cj.ajax({
+									url: '/civicrm/ajax/tag/delete',
+									data: {
+										id: tagRemove.parentId
+									},
+									dataType: 'json',
+									success: function(data, status, XMLHttpRequest) {
+										if(data.code != 1)
 										{
-											alert('Error: Child Tag Exists');
+											if(data.message == 'DB Error: constraint violation')
+											{
+												alert('Error: Child Tag Exists');
+											}
+											else { alert(data.message); }
+											cj('.ui-dialog-buttonpane .loadingGif').hide();
+											cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
+											modalRemoveLoadingGif();
 										}
-										else { alert(data.message); }
-										cj('.ui-dialog-buttonpane .loadingGif').hide();
-										cj('.ui-dialog-buttonset .ui-button').css("visibility", "block");
-										modalRemoveLoadingGif();
+										else
+										{	
+											cj('#dialog').dialog('close');
+											cj('#dialog').dialog('destroy');
+											callTagAjax();
+										}
 									}
-									else
-									{	
-										cj('#dialog').dialog('close');
-										cj('#dialog').dialog('destroy');
-										callTagAjax();
-									}
-								}
-							});
+								});
+							} else {
+								alert("Cannot remove a parent tag. Try deleting subtags before deleting parent tag.");
+								cj('.ui-dialog-buttonpane .loadingGif').hide();
+								cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+								modalRemoveLoadingGif();
+							}
 
 						}
 					},

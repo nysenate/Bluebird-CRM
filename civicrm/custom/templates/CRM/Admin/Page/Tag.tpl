@@ -83,6 +83,7 @@ cj(document).ready(function() {
 	callTagAjax();
 });
 function makeModalTree(tagLabel){
+	//big warning: you can move tags deeper than you can see them, upgrade the depth asap.
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		closeOnEscape: true,
@@ -112,7 +113,7 @@ function makeModalTree(tagLabel){
 			cj('#dialog').html(treeDialogInfo);
 			} 
 			else {
-			treeDialogInfo = '<div class="modalHeader">Move <span id="modalNameTid" tID="'+tagInfo.number+'">' + tagInfo.name + ' under Tag...</span></div>';
+			treeDialogInfo = '<div class="modalHeader">Move <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
 			treeDialogInfo += '<div class="BBtree modal move"></div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
@@ -136,7 +137,7 @@ function modalSelectOnClick() {
 		var tagLabel = cj('.ui-dialog-content .modalHeader span').attr('tID');
 		//search the string for all mentions of tid="number"
 		var listOfChildTids = '';
-		var tagChildren = cj('.BBtree.edit.manage dl#tagLabel_'+ tagLabel).html();
+		var tagChildren = cj('.BBtree.edit.manage dl#'+ tagLabel).html();
 		if(tagChildren != null)
 		{
 			listOfChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
@@ -233,25 +234,30 @@ function modalSelectOnClick() {
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
 		 				var tidMatch = false;
 		 				
-		 				var listOfToChildTids = '';
-						var toTagList = cj('.BBtree.edit.manage dl#tagLabel_'+ tagMerge.destinationId).html();
-						if(toTagList != null)
+		 				// var listOfToChildTids = '';
+						// var toTagList = cj('.BBtree.edit.manage dl#tagLabel_'+ tagMerge.destinationId).html();
+						// if(toTagList != null)
+						// {
+							
+						// 	listOfToChildTids += toTagList.match(/tid=\"[0-9]*\"/g);
+						// 	console.log(listOfToChildTids);
+						// 	for(i = 0;i<listOfToChildTids.length;i++)
+						// 	{
+						// 		listOfToChildTids[i] = listOfToChildTids[i].replace("tid=\"",'');
+						// 		listOfToChildTids[i] = listOfToChildTids[i].replace("\"",'');
+						// 	}
+						// 	var isListArray = cj.isArray(listOfToChildTids);
+						// 	if((listOfChildTids.length > 0  && listOfToChildTids.length > 0) || !(isListArray))
+				 		// 	{
+				 		// 		tidMatch = true;
+				 		// 	}
+						// }
+						//console.log(tagChildren);
+						if(tagChildren != null)
 						{
-							listOfToChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
-							for(i = 0;i<listOfToChildTids.length;i++)
-							{
-								listOfToChildTids[i] = listOfToChildTids[i].replace("tid=\"",'');
-								listOfToChildTids[i] = listOfToChildTids[i].replace("\"",'');
-							}
+							tidMatch = true;
 						}
-		 				if(tagChildren != null)
-						{
-			 				if(listOfChildTids.length > 0  && listOfToChildTids.length > 0)
-			 				{
-			 					tidMatch = true;
-			 				}
-			 			}
-
+			 			//console.log(tidMatch);
 						if(tidMatch == false)
 						{	
 							cj.ajax({
@@ -328,7 +334,7 @@ function makeModalConvert(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be converted</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into an Issue Code.</div>';
+			treeDialogInfo = '<div class="modalHeader">Convert <span id="modalNameTid" tID="tagLabel_'+tagInfo.id+'">' + tagInfo.name + '</span> into an Issue Code.</div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			}
@@ -525,11 +531,11 @@ function printTags()
 	mywindow.document.write('<html><head><title>Print Tags</title>');
     mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />');
     mywindow.document.write('<style>');
-    mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}body.popup .bbtree dl.lv-2, .body.popup bbtree dl.lv-3, body.popup .bbtree dl.lv-4, body.popup .bbtree dl.lv-5, body.popup .bbtree dl.lv-6  {display:block !important;} body.popup .fCB{display:none;}');
+    mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}body.popup .bbtree dl.lv-2, .body.popup bbtree dl.lv-3, body.popup .bbtree dl.lv-4, body.popup .bbtree dl.lv-5, body.popup .bbtree dl.lv-6  {difplay:block !important;} body.popup .fCB{display:none;}');
     mywindow.document.write('</style>');
     mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
     mywindow.document.write('</head><body class="popup" >');
-    mywindow.document.write('<div class="BBtree edit manage" style="height:2400px;width:auto;overflow-y:hidden;">');
+    mywindow.document.write('<div class="BBtree edit manage" style="height:auto;width:auto;overflow-y:hidden;">');
     mywindow.document.write(data);
     mywindow.document.write('</div>');
     mywindow.document.write('</body></html>');
