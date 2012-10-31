@@ -60,16 +60,31 @@ $db = $dao->getDatabaseConnection()->connection;
 // address not matching this criteria will fail lookup.
 $query = "
     SELECT address.id,
+           address.contact_id,
            address.street_name AS street1,
            address.street_type AS street2,
            address.city AS town,
            'NY' AS state,
            address.postal_code AS zip,
            address.street_number_suffix AS building_chr,
-           address.street_number AS building
+           address.street_number AS building,
+           district.county_50,
+           district.county_legislative_district_51,
+           district.congressional_district_46,
+           district.ny_senate_district_47,
+           district.ny_assembly_district_48,
+           district.election_district_49,
+           district.town_52,
+           district.ward_53,
+           district.school_district_54,
+           district.new_york_city_council_55,
+           district.neighborhood_56,
+           district.last_import_57
     FROM civicrm_address as address
     JOIN civicrm_state_province as state_province
+    JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
+      AND district.entity_id = address.id
       AND state_province.abbreviation='NY'
       AND IFNULL(address.street_address,'') != ''
       $MAX_ID_CONDITION
@@ -96,15 +111,14 @@ $town_map = array(
     //'SARATOGA SPRINGS' => 'SARATOGA SPGS',
 );
 
-function clean($string) {
-    return preg_replace("/[.,']/","",strtoupper(trim($string)));
-}
+$raw_data = array();
 $JSON_Payload = array();
 $address_count = mysql_num_rows($result);
 for ($row = 1; $row <= $address_count; $row++) {
     // Fetch the new row, no null check needed since we have the count
     // If we do pull back a NULL something bad happened and dying is okay
     $raw = mysql_fetch_assoc($result);
+    $raw_data[$raw['address_id']] = $raw;
 
     // Clean the data manually till we can do mass validation.
     $town = clean($raw['town']);
@@ -245,6 +259,7 @@ for ($row = 1; $row <= $address_count; $row++) {
     } else {
         bbscript_log("warn", "No Records to update");
     }
+    $raw_data = array();
 
     // timer for debug
     $time = get_elapsed_time($time_start);
@@ -266,4 +281,8 @@ for ($row = 1; $row <= $address_count; $row++) {
 	bbscript_log("info","[NOMATCH]	$Count_nomatch ($Nomatch_percent %)");
 	bbscript_log("info","[INVALID]	$Count_invalid ($Invalid_percent %)");
 	bbscript_log("info","[ERROR]	$Count_error ($Error_percent %)");
+}
+
+function clean($string) {
+    return preg_replace("/[.,']/","",strtoupper(trim($string)));
 }
