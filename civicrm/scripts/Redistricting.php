@@ -242,18 +242,22 @@ for ($row = 1; $row <= $address_count; $row++) {
      
             $note = "ADDRESS ID:$id \n ADDRESS:".$raw['street1']." ".$raw['street2'].", ".$raw['town']." ". $raw['state'].", ".$raw['zip']." ".$row['building']." ".$raw['building_chr']." \n UPDATES: SEN:".getValue($raw['senate_code'])."=>{$value['senate_code']}, CO:".getValue($raw['county_code'])."=>{$value['county_code']}, CONG:".getValue($raw['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($raw['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($raw['election_code'])."=>{$value['election_code']}";
 
-            $params = array( 
-                'entity_table' => 'civicrm_contact',
-                'entity_id' => $raw['contact_id'],
-                'note' => $note,
-                'contact_id' => 1,
-                'modified_date' => date("Y-m-d"),
-                'subject' => 'Redistricting update '.date("m-d-Y"),
-                'version' => 3,
+            // $params = array( 
+            //     'entity_table' => 'civicrm_contact',
+            //     'entity_id' => $raw['contact_id'],
+            //     'note' => $note,
+            //     'contact_id' => 1,
+            //     'modified_date' => date("Y-m-d"),
+            //     'subject' => 'Redistricting update'.date("m-d-Y"),
+            //     'version' => 3,
+            // );
+            // require_once 'api/api.php';
+            // $civi_result = civicrm_api('note','create',$params ); 
+
+            mysql_query("
+                INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+                VALUES ('civicrm_contact',{$raw['contact_id']},'$note', 1, '".date("Y-m-d")."', 'Redistricting update 3 ".date("m-d-Y")."',0)",$db
             );
-            
-            require_once 'api/api.php';
-            $civi_result = civicrm_api('note','create',$params ); 
 
             mysql_query("
                 UPDATE civicrm_value_district_information_7
