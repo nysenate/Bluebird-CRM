@@ -96,7 +96,7 @@ function hideStatus( ) {
     cj( '#restmsg' ).hide( );
 }
 cj(document).ready(function() {	
-	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
+	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit.tab');
 	callTagAjax();
 });
 function addControlBox(tagLabel, IDChecked) {

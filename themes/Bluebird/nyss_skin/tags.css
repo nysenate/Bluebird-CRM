@@ -61,10 +61,10 @@
 	margin:0px 5px 0 -5px;
 }
 .BBtree.loadingGif {
-	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center transparent;
+	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
 }
 .ui-dialog-buttonpane .loadingGif {
-	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center transparent;
+	 background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
 	 width: 30px;
 	 height: 30px;
 	 margin: 0 auto;
@@ -333,10 +333,13 @@ width: 558px;
 }
 
 #crm-tagListWrap .crm-section.tag-section.crm-processed-input {
+	width: 560px;
+	margin: 20px auto;
+}
+#crm-tagListWrap .groupTagsKeywords .crm-section.tag-section.crm-processed-input {
 	width: 720px;
 	margin: 10px auto;
 }
-
 #crm-tagListWrap .groupTagsKeywords ul.token-input-list-facebook {
 	width: 560px !important;
 }
