@@ -58,6 +58,7 @@ $db = $dao->getDatabaseConnection()->connection;
 
 // Collect NY state addresses with a street_address; any
 // address not matching this criteria will fail lookup.
+ 
 $query = "
     SELECT address.id,
            address.contact_id,
@@ -68,12 +69,12 @@ $query = "
            address.postal_code AS zip,
            address.street_number_suffix AS building_chr,
            address.street_number AS building,
-           district.county_50,
+           district.county_50 AS county_code,
            district.county_legislative_district_51,
-           district.congressional_district_46,
-           district.ny_senate_district_47,
-           district.ny_assembly_district_48,
-           district.election_district_49,
+           district.congressional_district_46 AS congressional_code,
+           district.ny_senate_district_47 AS senate_code,
+           district.ny_assembly_district_48 AS assembly_code,
+           district.election_district_49 AS election_code,
            district.town_52,
            district.ward_53,
            district.school_district_54,
@@ -118,7 +119,7 @@ for ($row = 1; $row <= $address_count; $row++) {
     // Fetch the new row, no null check needed since we have the count
     // If we do pull back a NULL something bad happened and dying is okay
     $raw = mysql_fetch_assoc($result);
-    $raw_data[$raw['address_id']] = $raw;
+    $raw_data[$raw['id']] = $raw;
 
     // Clean the data manually till we can do mass validation.
     $town = clean($raw['town']);
@@ -236,6 +237,24 @@ for ($row = 1; $row <= $address_count; $row++) {
         mysql_query("BEGIN", $db);
         foreach ($Update_Payload as $id => $value) {
             bbscript_log("trace", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
+
+            $raw = $raw_data[$id];
+     
+            $note = "ID:$id \n ADDRESS:".$raw['street1']." ".$raw['street2'].", ".$raw['town']." ". $raw['state'].", ".$raw['zip']." ".$row['building']." ".$raw['building_chr']." \n UPDATES: SEN:".getValue($raw['senate_code'])."=>{$value['senate_code']}, CO:".getValue($raw['county_code'])."=>{$value['county_code']}, CONG:".getValue($raw['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($raw['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($raw['election_code'])."=>{$value['election_code']}";
+
+            $params = array( 
+                'entity_table' => 'civicrm_contact',
+                'entity_id' => $raw['contact_id'],
+                'note' => $note,
+                'contact_id' => 1,
+                'modified_date' => date("Y-m-d"),
+                'subject' => 'Redistricting update '.date("m-d-Y"),
+                'version' => 3,
+            );
+            
+            require_once 'api/api.php';
+            $civi_result = civicrm_api('note','create',$params ); 
+            
             mysql_query("
                 UPDATE civicrm_value_district_information_7
                 SET congressional_district_46 = {$value['congressional_code']},
@@ -243,7 +262,7 @@ for ($row = 1; $row <= $address_count; $row++) {
                     ny_assembly_district_48 = {$value['assembly_code']},
                     election_district_49 = {$value['election_code']},
                     county_50 = {$value['county_code']}
-                WHERE civicrm_value_district_information_7.id = $id",$db
+                WHERE civicrm_value_district_information_7.entity_id = $id",$db
             );
             // ",
             // county_legislative_district_51   = {$value['cleg_code']},
@@ -286,3 +305,10 @@ for ($row = 1; $row <= $address_count; $row++) {
 function clean($string) {
     return preg_replace("/[.,']/","",strtoupper(trim($string)));
 }
+function getValue($string) {
+    if($string == FAlSE){
+         return "null";
+    }else{
+        return $string;
+    }
+ }
