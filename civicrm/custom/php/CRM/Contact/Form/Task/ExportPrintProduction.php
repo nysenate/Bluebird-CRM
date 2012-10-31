@@ -125,7 +125,32 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //5150
     $this->addElement('checkbox', 'excludeSeeds', ts('Exclude Seeds Group'), null );
 
+    //5495
+    $this->addElement('text', 'restrict_district', ts('Restrict by District #') );
+    $this->addRule( 'restrict_district',
+      ts('Please enter the district restriction as a number (integer only).'),
+      'positiveInteger'
+    );
+
+    $states = CRM_Core_PseudoConstant::stateProvinceForCountry( 1228 );
+    $this->add( 'select',
+      'restrict_state',
+      ts( 'Restrict by State' ),
+      array( 0 => '- select -' ) + $states,
+      false,
+      array(
+        'id'       => 'restrict_state',
+      )
+    );
+
     $this->addDefaultButtons( 'Export Print Production' );
+  }
+
+  function setDefaultValues() {
+    $defaults = array();
+    $defaults['restrict_state'] = 1031; //NY
+
+    return $defaults;
   }
 
   /**
@@ -149,6 +174,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $excludeGroups    = $params['excludeGroups'];
     $districtExclude  = $params['district_excludes'];
     $excludeSeeds     = $params['excludeSeeds'];
+    $restrictDistrict = $params['restrict_district'];
+    $restrictState    = $params['restrict_state'];
 
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -285,6 +312,22 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         AND ( cvci.record_type_61 IS NULL OR
               cvci.record_type_61 NOT IN ($exclude_rt) OR
               ( cvci.record_type_61 IN ($exclude_rt) AND t.id IN ($localSeedsList) )
+             )";
+    }
+
+    //restrict by district ID
+    if ( $restrictDistrict != null ) {
+      $sql .= "
+        AND ( di.ny_senate_district_47 = $restrictDistrict OR
+              ( di.ny_senate_district_47 != $restrictDistrict AND t.id IN ($localSeedsList) )
+             )";
+    }
+
+    //restrict by state
+    if ( !empty($restrictState) ) {
+      $sql .= "
+        AND ( a.state_province_id = $restrictState OR
+              ( a.state_province_id != $restrictState AND t.id IN ($localSeedsList) )
              )";
     }
 

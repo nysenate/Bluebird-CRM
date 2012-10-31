@@ -85,7 +85,13 @@
 <dt>{$form.excludeSeeds.label}</dt>
   <dd>{$form.excludeSeeds.html}</dd>
 
-</dt>
+<dt>{$form.restrict_district.label}</dt>
+  <dd>{$form.restrict_district.html}</dd>
+
+<dt>{$form.restrict_state.label}</dt>
+  <dd>{$form.restrict_state.html}</dd>
+
+<dt></dt>
   <dd>{$form.buttons.html}</dd>
 </dl>
 </fieldset>
