@@ -1306,7 +1306,7 @@ ul.token-input-list-facebook { width:265px;}
  	-webkit-border-radius: 0px 4px 4px 4px;   
  	-khtml-border-radius: 0px 4px 4px 4px; 
  	border-radius:0px 4px 4px 4px;
- 	padding: 2px 4px;
+ 	padding: 2px 8px;
 }
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed div a {
 	padding: 0 2px;
@@ -1315,15 +1315,23 @@ ul.token-input-list-facebook { width:265px;}
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed div {
 	background-color: #131A1C;
   border-color: #000;
-	position: fixed;
-	margin-top: -40px !important;
-	margin-left: 18px !important;
+	margin-top: -16px !important;
+	margin-left: 20px !important;
 	-webkit-border-radius: 4px 4px 0 0;
 	-moz-border-radius: 4px 4px 0 0;
 	border-radius: 4px 4px 0px 0px;
 }
 .block-civicrm div#recently-viewed.right .crm-recentview-wrapper {
-  left: 0;
+  left: auto;
+  border-right: 1px;
+  border-bottom: none;
+  width: auto;
+}
+.block-civicrm div#recently-viewed li.crm-recently-viewed {
+  position: inherit;
+}
+#footer #block-civicrm-2 div#recently-viewed ul li.crm-recently-viewed div a {
+  padding-top: 2px;
 }
 
 /*activity search*/
