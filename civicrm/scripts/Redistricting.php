@@ -240,7 +240,7 @@ for ($row = 1; $row <= $address_count; $row++) {
 
             $raw = $raw_data[$id];
      
-            $note = "ID:$id \n ADDRESS:".$raw['street1']." ".$raw['street2'].", ".$raw['town']." ". $raw['state'].", ".$raw['zip']." ".$row['building']." ".$raw['building_chr']." \n UPDATES: SEN:".getValue($raw['senate_code'])."=>{$value['senate_code']}, CO:".getValue($raw['county_code'])."=>{$value['county_code']}, CONG:".getValue($raw['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($raw['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($raw['election_code'])."=>{$value['election_code']}";
+            $note = "ADDRESS ID:$id \n ADDRESS:".$raw['street1']." ".$raw['street2'].", ".$raw['town']." ". $raw['state'].", ".$raw['zip']." ".$row['building']." ".$raw['building_chr']." \n UPDATES: SEN:".getValue($raw['senate_code'])."=>{$value['senate_code']}, CO:".getValue($raw['county_code'])."=>{$value['county_code']}, CONG:".getValue($raw['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($raw['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($raw['election_code'])."=>{$value['election_code']}";
 
             $params = array( 
                 'entity_table' => 'civicrm_contact',
@@ -254,7 +254,7 @@ for ($row = 1; $row <= $address_count; $row++) {
             
             require_once 'api/api.php';
             $civi_result = civicrm_api('note','create',$params ); 
-            
+
             mysql_query("
                 UPDATE civicrm_value_district_information_7
                 SET congressional_district_46 = {$value['congressional_code']},
