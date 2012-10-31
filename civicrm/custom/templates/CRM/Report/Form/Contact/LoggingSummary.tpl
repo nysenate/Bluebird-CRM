@@ -29,9 +29,12 @@
   {include file="CRM/common/jquery.tpl"}
 {/if}
 {*NYSS*}
-<div class="help">
-This report displays a log of database changes from April 14, 2012 forward, when the enhanced logging capabilities were enabled. Older log records may still be accessed using the "Database Log (Archived)" report, which may be accessed from Reports > Create Reports from Templates.
-</div>
+{if !$printOnly}
+  <div class="help">
+  This report displays a log of database changes from April 14, 2012 forward, when the enhanced logging capabilities were enabled. Older log records may still be accessed using the "Database Log (Archived)" report, which may be accessed from Reports > Create Reports from Templates.
+  </div>
+{/if}
+
     {if $section eq 1}
     <div class="crm-block crm-content-block crm-report-layoutGraph-form-block">
         {*include the graph*}
