@@ -55,36 +55,42 @@
 
   {counter start=0 skip=1 print=false}
 
-  { if $id }
-      {foreach from=$rows item=row}
-        <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}">
-            {assign var=cbName value=$row.checkbox}
-            <td>{$form.$cbName.html}</td>
-            {if $context eq 'smog'}
-              {if $row.status eq 'Pending'}<td class="status-pending"}>
-              {elseif $row.status eq 'Removed'}<td class="status-removed">
-              {else}<td>{/if}
-              {$row.status}</td>
+  {if $id}
+    {foreach from=$rows item=row}
+      <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}">
+        {assign var=cbName value=$row.checkbox}
+        <td>{$form.$cbName.html}</td>
+        {if $context eq 'smog'}
+          {if $row.status eq 'Pending'}<td class="status-pending"}>
+          {elseif $row.status eq 'Removed'}<td class="status-removed">
+          {else}<td>{/if}
+          {$row.status}</td>
+        {/if}
+        <td>{$row.contact_type}</td>
+        <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
+        {foreach from=$row item=value key=key}
+          {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
+            <td>
+            {if $key EQ "household_income_total" }
+              {$value|crmMoney}
+            {elseif strpos( $key, '_date' ) !== false }
+              {$value|crmDate}
+            {else}
+              {*NYSS 5518 - make exception for values that are links*}
+              {if strpos( $value, '<a href' ) !== false}
+                {$value}
+              {else}
+                {*NYSS 4019*}
+                {$value|truncate:26:"...":true}
+              {/if}
             {/if}
-            <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
-            {foreach from=$row item=value key=key} 
-               {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
-                <td>
-                {if $key EQ "household_income_total" }
-                    {$value|crmMoney}
-		        {elseif strpos( $key, '_date' ) !== false }
-                    {$value|crmDate}
-                {else}
-                    {$value|truncate:26:"...":true}{*NYSS 4019*}
-                {/if}
-                     &nbsp;
-                 </td>
-               {/if}
-            {/foreach}
-            <td>{$row.action|replace:'xx':$row.contact_id}</td>
-        </tr>
-     {/foreach}
+            &nbsp;
+            </td>
+          {/if}
+        {/foreach}
+        <td>{$row.action|replace:'xx':$row.contact_id}</td>
+      </tr>
+   {/foreach}
   {else}
       {foreach from=$rows item=row}
          <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}" title="{ts}Click contact name to view a summary. Right-click anywhere in the row for an actions menu.{/ts}">
