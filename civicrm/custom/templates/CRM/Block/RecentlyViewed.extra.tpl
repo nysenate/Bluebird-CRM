@@ -1,15 +1,6 @@
 {literal}
 <script type="text/javascript">
   cj('.crm-actions-delete').remove();
-
-  cj('#recently-viewed li.crm-recently-viewed').hover(
-    function() {
-      cj('div.crm-recentview-wrapper').show();
-    },
-    function() {
-      cj('div.crm-recentview-wrapper').hide();
-    }
-  );
  
   function getChangeLogCount( ) {
     var postUrl = {/literal}"{crmURL p='civicrm/ajax/changelog' h=0 }"{literal};
