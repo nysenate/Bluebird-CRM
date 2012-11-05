@@ -139,7 +139,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
       array( 0 => '- select -' ) + $states,
       false,
       array(
-        'id'       => 'restrict_state',
+        'id' => 'restrict_state',
       )
     );
 
@@ -148,7 +148,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
   function setDefaultValues() {
     $defaults = array();
-    $defaults['restrict_state'] = 1031; //NY
+    //$defaults['restrict_state'] = 1031; //NY
 
     return $defaults;
   }
