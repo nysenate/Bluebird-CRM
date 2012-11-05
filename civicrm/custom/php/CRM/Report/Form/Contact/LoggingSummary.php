@@ -202,8 +202,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
       $row['log_civicrm_entity_log_type'] = $this->getLogType($row['log_civicrm_entity_log_type']);
 
+      $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
+
       if ($row['log_civicrm_entity_log_action'] == 'Update') {
-        $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date={$row['log_civicrm_entity_log_date']}";
+        $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date=". $date;
         //NYSS
         if ( $this->cid ) {
           $q .= '&cid='.$this->cid;
@@ -228,7 +230,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['show_details'] = self::getContactDetails($cid);
       }
 
-      $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
       //NYSS add entity_id to key to ensure distinct
       $key  = $date . '_' .
         $row['log_civicrm_entity_log_type'] . '_' .

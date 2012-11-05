@@ -207,7 +207,7 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
       $this->assign('who_name', $dao->who_name);
       $this->assign('whom_name', $dao->whom_name);
     }
-    $this->assign('log_date', $this->log_date);
+    $this->assign('log_date', CRM_Utils_Date::mysqlToIso($this->log_date));
 
     $q = "reset=1&log_conn_id={$this->log_conn_id}&log_date={$this->log_date}";
     $this->assign('revertURL', CRM_Report_Utils_Report::getNextUrl($this->detail, "$q&revert=1", FALSE, TRUE));
