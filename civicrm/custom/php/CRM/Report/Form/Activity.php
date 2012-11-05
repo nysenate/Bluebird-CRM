@@ -759,5 +759,23 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       }
     }
   }
+
+  /* //NYSS 5740
+   * Add Target Contact Address into From Table if required
+   */
+  function addAddressFromClause() {
+    // include address field if address column is to be included
+    if ((isset($this->_addressField) &&
+      $this->_addressField
+    ) ||
+      $this->isTableSelected('civicrm_address')
+    ) {
+      $this->_from .= "
+ 	                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+ 	                           ON ({$this->_aliases['civicrm_activity_target']}.target_contact_id =
+ 	                               {$this->_aliases['civicrm_address']}.contact_id) AND
+ 	                               {$this->_aliases['civicrm_address']}.is_primary = 1\n";
+    }
+  }
 }
 
