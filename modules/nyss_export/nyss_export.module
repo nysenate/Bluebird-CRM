@@ -225,6 +225,10 @@ FROM $exportTempTable
       'activity_campaign_id',
       'activity_campaign',
       'activity_engagement_level',
+      'Test',
+      'Campaign ID',
+      'Campaign Title',
+      'Engagement Index',
     );
     foreach ( $headerRows as $key => $headerRow ) {
       if ( in_array( $headerRow, $rm ) ) {
