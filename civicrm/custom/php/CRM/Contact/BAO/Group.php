@@ -283,7 +283,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
      * @static
      */
   static
-  function checkPermission($id, $title) {
+  function checkPermission($id) {//NYSS 4448
 
     $allGroups = CRM_Core_PseudoConstant::allGroup( );
 

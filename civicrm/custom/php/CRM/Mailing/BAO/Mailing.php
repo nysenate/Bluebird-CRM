@@ -2084,7 +2084,7 @@ AND civicrm_contact.is_opt_out =0";
 
     // get all the groups that this user can access
     // if they dont have universal access
-    $groups = CRM_Core_PseudoConstant::group( null, false ); //NYSS 4250 include hidden groups
+    $groups = CRM_Core_PseudoConstant::group( null, false ); //NYSS 4250/4448 include hidden groups
     if (!empty($groups)) {
       $groupIDs = implode(',',
         array_keys($groups)
@@ -2763,6 +2763,21 @@ ORDER BY civicrm_mailing.name";
     }
 
     return $list;
+  }
+
+  //NYSS 4448
+  static function hiddenMailingGroup($mid) {
+    $sql = "
+SELECT     g.id
+FROM       civicrm_mailing m
+INNER JOIN civicrm_mailing_group mg ON mg.mailing_id = m.id
+INNER JOIN civicrm_group g ON mg.entity_id = g.id AND mg.entity_table = 'civicrm_group'
+WHERE      g.is_hidden = 1
+AND        mg.group_type = 'Include'
+AND        m.id = %1
+";
+    $params = array( 1 => array( $mid, 'Integer' ) );
+    return CRM_Core_DAO::singleValueQuery($sql, $params);
   }
 }
 

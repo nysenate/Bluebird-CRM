@@ -39,6 +39,13 @@
  */
 class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
 
+  /** //NYSS 4448
+   * the mailing ID of the mailing if we are resuming a mailing
+   *
+   * @var integer
+   */
+  protected $_mailingID;
+
   /**
    * Function to set variables up before form is built
    *
@@ -50,6 +57,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
     /*if (CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
       CRM_Core_Error::fatal( ts( 'The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in our book</a>', array( 1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2=> "http://en.flossmanuals.net/civicrm/ch042_system-configuration/")));
     }*/
+
+    //NYSS 4448
+    $this->_mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);
+
     //when user come from search context.
     $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext($this->get('context'));
     if ($this->_searchBasedMailing) {
@@ -61,9 +72,21 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       }
     }
 
-    // use previous context unless mailing is not schedule, CRM-4290
+    //NYSS 4448
     $session = CRM_Core_Session::singleton();
-    if (strpos($session->readUserContext(), 'civicrm/mailing') === FALSE) {
+    if ($this->_searchBasedMailing) {
+      $config = CRM_Core_Config::singleton();
+      $path = CRM_Utils_Array::value($config->userFrameworkURLVar, $_GET);
+      $qfKey = CRM_Utils_Array::value('qfKey', $_GET);
+      if ($qfKey) {
+        $session->pushUserContext(CRM_Utils_System::url($path, "qfKey=$qfKey"));
+      }
+      else {
+        $session->pushUserContext(CRM_Utils_System::url('civicrm/mailing', 'reset=1'));
+      }
+    }
+    elseif (strpos($session->readUserContext(), 'civicrm/mailing') === FALSE) {
+      // use previous context unless mailing is not schedule, CRM-4290
       $session->pushUserContext(CRM_Utils_System::url('civicrm/mailing', 'reset=1'));
     }
   }
@@ -77,17 +100,21 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
    * @return None
    */
   function setDefaultValues() {
-    $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);
+    //$mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);//NYSS 4448
     $continue = CRM_Utils_Request::retrieve('continue', 'String', $this, FALSE, NULL);
 
     // check that the user has permission to access mailing id
-    CRM_Mailing_BAO_Mailing::checkPermission($mailingID);
+    //CRM_Mailing_BAO_Mailing::checkPermission($mailingID);//NYSS 4448
 
     $defaults = array();
+    //NYSS 4448
+    if ($this->_mailingID) {
+      // check that the user has permission to access mailing id
+      CRM_Mailing_BAO_Mailing::checkPermission($this->_mailingID);
 
-    if ($mailingID) {
+    //if ($mailingID) {
       $mailing = new CRM_Mailing_DAO_Mailing();
-      $mailing->id = $mailingID;
+      $mailing->id = $this->_mailingID;
       $mailing->addSelect('name', 'campaign_id');
       $mailing->find(TRUE);
 
@@ -97,7 +124,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       }
       else {
         // CRM-7590, reuse same mailing ID if we are continuing
-        $this->set('mailing_id', $mailingID);
+        $this->set('mailing_id', $this->_mailingID);//NYSS 4448
       }
 
       $defaults['campaign_id'] = $mailing->campaign_id;
@@ -105,7 +132,9 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
 
       $dao = new CRM_Mailing_DAO_Group();
 
-      $mailingGroups = array();
+      //NYSS 4448
+      $mailingGroups = array( 'civicrm_group' => array( ), 'civicrm_mailing' => array( ));
+      $dao->mailing_id = $this->_mailingID;
       $dao->mailing_id = $mailingID;
       $dao->find();
       while ($dao->fetch()) {
@@ -115,8 +144,11 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       $defaults['includeGroups'] = $mailingGroups['civicrm_group']['Include'];
       $defaults['excludeGroups'] = CRM_Utils_Array::value('Exclude', $mailingGroups['civicrm_group']);
 
-      $defaults['includeMailings'] = CRM_Utils_Array::value('Include', $mailingGroups['civicrm_mailing']);
-      $defaults['excludeMailings'] = $mailingGroups['civicrm_mailing']['Exclude'];
+      //NYSS 4448
+      if (!empty($mailingGroups['civicrm_mailing'])) {
+        $defaults['includeMailings'] = CRM_Utils_Array::value('Include', $mailingGroups['civicrm_mailing']);
+        $defaults['excludeMailings'] = $mailingGroups['civicrm_mailing']['Exclude'];
+      }
     }
 
     //when the context is search hide the mailing recipients.
@@ -167,11 +199,14 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       TRUE
     );
 
-    //CRM-7362 --add campaigns.
-    $mailingId = CRM_Utils_Request::retrieve('mid', 'Integer', $this, FALSE, NULL);
+    //NYSS 4448
+    $hiddenMailingGroup = NULL;
     $campaignId = NULL;
-    if ($mailingId) {
-      $campaignId = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Mailing', $mailingId, 'campaign_id');
+
+    //CRM-7362 --add campaigns. //NYSS 4448
+    if ($this->_mailingID) {
+      $campaignId = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Mailing', $this->_mailingID, 'campaign_id');
+      $hiddenMailingGroup = CRM_Mailing_BAO_Mailing::hiddenMailingGroup($this->_mailingID);
     }
     CRM_Campaign_BAO_Campaign::addCampaign($this, $campaignId);
 
@@ -179,7 +214,11 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
     $this->addElement('checkbox', 'dedupe_email', ts('Remove duplicate emails?'));
 
     //get the mailing groups.
-    $groups = CRM_Core_PseudoConstant::group('Mailing');
+    $groups = CRM_Core_PseudoConstant::group('Mailing');//NYSS 4448
+    if ($hiddenMailingGroup) {
+      $groups[$hiddenMailingGroup] =
+        CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $hiddenMailingGroup, 'title');
+    }
 
     $mailings = CRM_Mailing_PseudoConstant::completed();
     if (!$mailings) {
@@ -278,7 +317,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       ),
     );
 
-    if ($this->_searchBasedMailing) {
+    //NYSS 4448
+    /*if ($this->_searchBasedMailing) {
       $buttons = array(
         array('type' => 'next',
           'name' => ts('Next >>'),
@@ -290,7 +330,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
           'name' => ts('Cancel'),
         ),
       );
-    }
+    }*/
     $this->addButtons($buttons);
 
     $this->assign('groupCount', count($groups));
@@ -331,6 +371,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
             'id'    => $grpID,
             'name'  => CRM_Utils_String::titleToVar($newGroupTitle),
             'title' => $newGroupTitle,
+            'group_type' => array('2' => 1),//NYSS 4448
           );
           $group = CRM_Contact_BAO_Group::create($groupParams);
         }

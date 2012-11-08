@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="messages status float-right">{*NYSS*}
+<div class="messages status float-right no-popup">{*NYSS 4448*}
     {ts}Total Recipients:{/ts} <strong>{$count|crmNumberFormat}</strong><br />
    {if $action eq 256 & $ssid eq null}
    <div id="popupContainer">

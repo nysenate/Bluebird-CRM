@@ -201,7 +201,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
-        $mailingID    = $form->_mailingID;
+        $mailingID    = $form->getVar('_mailingID');
         $submitValues = $form->_submitValues;
         $dedupeEmails = $submitValues['dedupe_email'];
 
