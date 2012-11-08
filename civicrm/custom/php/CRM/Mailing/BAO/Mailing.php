@@ -1589,13 +1589,11 @@ AND civicrm_contact.is_opt_out =0";
       'delivered' => 'civicrm_mailing_event_sendgrid_delivered', //NYSS 4765
       'opened' => CRM_Mailing_Event_BAO_Opened::getTableName(),
       'reply' => CRM_Mailing_Event_BAO_Reply::getTableName(),
-      'unsubscribe' =>
-      CRM_Mailing_Event_BAO_Unsubscribe::getTableName(),
+      'unsubscribe' => CRM_Mailing_Event_BAO_Unsubscribe::getTableName(),
       'bounce' => CRM_Mailing_Event_BAO_Bounce::getTableName(),
       'forward' => CRM_Mailing_Event_BAO_Forward::getTableName(),
       'url' => CRM_Mailing_BAO_TrackableURL::getTableName(),
-      'urlopen' =>
-      CRM_Mailing_Event_BAO_TrackableURLOpen::getTableName(),
+      'urlopen' => CRM_Mailing_Event_BAO_TrackableURLOpen::getTableName(),
       'component' => CRM_Mailing_BAO_Component::getTableName(),
       'spool' => CRM_Mailing_BAO_Spool::getTableName(),
     );

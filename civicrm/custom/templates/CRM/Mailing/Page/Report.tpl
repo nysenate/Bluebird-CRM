@@ -57,10 +57,11 @@
   <tr><td class="label"><a href="{$report.event_totals.links.bounce}">{ts}Bounces{/ts}</a></td>
       <td>{$report.event_totals.bounce} ({$report.event_totals.bounce_rate|string_format:"%0.2f"}%)</td>
       <td>{$report.event_totals.actionlinks.bounce}</td></tr>
-  <tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Unsubscribe Requests{/ts}</a></td>
+  {*NYSS 5567*}
+  {*<tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Unsubscribe Requests{/ts}</a></td>
       <td>{$report.event_totals.unsubscribe} ({$report.event_totals.unsubscribe_rate|string_format:"%0.2f"}%)</td>
-      <td>{$report.event_totals.actionlinks.unsubscribe}</td></tr>
-  <tr><td class="label">{ts}Opt-out Requests{/ts}</td>{*NYSS remove link*}
+      <td>{$report.event_totals.actionlinks.unsubscribe}</td></tr>*}
+  <tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Opt-out Requests{/ts}</a></td>
       <td>{$report.event_totals.optout} ({$report.event_totals.optout_rate|string_format:"%0.2f"}%)</td>
       <td>{$report.event_totals.actionlinks.optout}</td></tr>
   <tr><td class="label">{ts}Scheduled Date{/ts}</td>
