@@ -87,7 +87,7 @@ $query = "
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
       AND state_province.abbreviation='NY'
-      AND IFNULL(address.street_address,'') != ''
+      AND IFNULL(address.street_name,'') != ''
       $MAX_ID_CONDITION
     ORDER BY address.id ASC
 ";
@@ -125,7 +125,7 @@ for ($row = 1; $row <= $address_count; $row++) {
     $town = clean($raw['town']);
     $raw['town'] = preg_replace(array('/^EAST /','/^WEST /','/^SOUTH /','/^NORTH /', '/ SPRINGS$/','/PETERSBURG$/'),array('E ','W ','S ','N ',' SPGS','PETERSBURGH'),$town);
 
-    $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD)/','/^WEST (?!ST|AVE|RD)/','/^SOUTH (?!ST|AVE|RD)/','/^NORTH (?!ST|AVE|RD)/');
+    $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
 
     $street = clean($raw['street2']);
