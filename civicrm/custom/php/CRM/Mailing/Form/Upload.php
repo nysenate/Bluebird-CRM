@@ -293,8 +293,6 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
 
     $this->addFormRule(array('CRM_Mailing_Form_Upload', 'formRule'), $this);
 
-    //FIXME : currently we are hiding save an continue later when
-    //search base mailing, we should handle it when we fix CRM-3876
     $buttons = array(
       array('type' => 'back',
         'name' => ts('<< Previous'),
@@ -315,7 +313,7 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
         'name' => ts('Cancel'),
       ),
     );
-    if ( $this->_searchBasedMailing /*&& $ssID*/ ) { //NYSS 4448
+    /*if ( $this->_searchBasedMailing && $ssID ) { //NYSS 4448
       $buttons = array(
         array('type' => 'back',
           'name' => ts('<< Previous'),
@@ -331,7 +329,7 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
           'name' => ts('Cancel'),
         ),
       );
-    }
+    }*/
     $this->addButtons($buttons);
   }
 

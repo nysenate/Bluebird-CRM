@@ -585,11 +585,14 @@ $.fn.ajaxSubmit = function(options) {
                         // account for browsers injecting pre around json response
                         var pre = doc.getElementsByTagName('pre')[0];
                         var b = doc.getElementsByTagName('body')[0];
+                        //NYSS 5816
                         if (pre) {
-                            xhr.responseText = pre.textContent ? pre.textContent : pre.innerText;
+                          //xhr.responseText = pre.textContent ? pre.textContent : pre.innerText;
+                          xhr.responseText = pre.innerHTML;
                         }
                         else if (b) {
-                            xhr.responseText = b.textContent ? b.textContent : b.innerText;
+                          //xhr.responseText = b.textContent ? b.textContent : b.innerText;
+                          xhr.responseText = b.innerHTML;
                         }
                     }
                 }

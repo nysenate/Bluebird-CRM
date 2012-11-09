@@ -201,7 +201,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
-        $mailingID    = $form->_mailingID;
+        $mailingID    = $form->getVar('_mailingID');
         $submitValues = $form->_submitValues;
         $dedupeEmails = $submitValues['dedupe_email'];
 
@@ -258,22 +258,28 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 } //postProcess
 
 function nyss_mail_civicrm_pageRun( &$page ) {
+  //CRM_Core_Error::debug('page', $page);
 
-    //CRM_Core_Error::debug('page', $page);
+  //expose url/open tracking to mailing report
+  //need to do manually since we are not using native tracking tools
+  if ( $page->getVar('_name') == 'CRM_Mailing_Page_Report' ) {
+    $smarty =& CRM_Core_Smarty::singleton( );
+    $rpt    =& $smarty->get_template_vars( 'report' );
+    //CRM_Core_Error::debug('rpt', $rpt);
 
-    //expose url/open tracking to mailing report
-    //need to do manually since we are not using native tracking tools
-    if ( $page->getVar('_name') == 'CRM_Mailing_Page_Report' ) {
+    $rpt['mailing']['url_tracking']  = 1;
+    $rpt['mailing']['open_tracking'] = 1;
 
-        $smarty =& CRM_Core_Smarty::singleton( );
-        $rpt    =& $smarty->get_template_vars( 'report' );
-        //CRM_Core_Error::debug('rpt', $rpt);
+    $smarty->assign_by_ref( 'report', $rpt );
+  }
 
-        $rpt['mailing']['url_tracking']  = 1;
-        $rpt['mailing']['open_tracking'] = 1;
-
-        $smarty->assign_by_ref( 'report', $rpt );
+  //5567 fix title
+  if ( $page->getVar('_name') == 'CRM_Mailing_Page_Event' ) {
+    $event = CRM_Utils_Array::value('event', $_GET);
+    if ( $event == 'unsubscribe' ) {
+      CRM_Utils_System::setTitle( ts('Opt-out Requests') );
     }
+  }
 
 } //end pageRun
 
