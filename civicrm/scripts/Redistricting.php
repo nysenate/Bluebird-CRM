@@ -160,7 +160,6 @@ for ($row = 1; $row <= $address_count; $row++) {
     $JSON_Payload = array();
 
     // Send the cURL request
-    $curl_time_start = microtime(true);
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -168,8 +167,8 @@ for ($row = 1; $row <= $address_count; $row++) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload_encoded);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($JSON_Payload_encoded)));
     $output = curl_exec($ch);
+    $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
     curl_close($ch);
-    $curl_time = get_elapsed_time($curl_time_start);
     bbscript_log("trace", "Recieved Curl in     ".round($curl_time, 3));
     $curl_time_total += $curl_time;
 
@@ -327,7 +326,7 @@ for ($row = 1; $row <= $address_count; $row++) {
     bbscript_log("info","[COUNT]            $Count_total");
 	bbscript_log("info","[TIME]             ".round($time, 4));
     bbscript_log("info","[SPEED]            $Records_per_sec per second");
-    bbscript_log("info","[CURL]             $Curl_records per second (".$Count_total." in ".round($time,1).")");
+    bbscript_log("info","[CURL]             $Curl_records per second (".$Count_total." in ".round($curl_time_total,1).")");
     bbscript_log("info","[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
 	bbscript_log("info","[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
     bbscript_log("info","[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
