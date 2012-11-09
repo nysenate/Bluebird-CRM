@@ -109,9 +109,9 @@ $Count_nomatch = 0;
 $Count_invalid = 0;
 $Count_error = 0;
 $Count_ExactMatch = 0;
-$MatchConsolidatedRangefill = 0;
-$MatchConsolidatedMultimatch = 0;
-$NomatchRangefillFailure = 0;
+$Count_ConsolidatedRangefill = 0;
+$Count_ConsolidatedMultimatch = 0;
+$Count_RangefillFailure = 0;
 $Count_NotFound = 0;
 
 $town_map = array(
@@ -202,9 +202,9 @@ for ($row = 1; $row <= $address_count; $row++) {
             if($message == "EXACT MATCH"){
                 $Count_ExactMatch++;
             }elseif($message == "CONSOLIDATED RANGEFILL"){
-                $MatchConsolidatedRangefill++;
+                $Count_ConsolidatedRangefill++;
             }elseif($message == "CONSOLIDATED MULTIMATCH"){
-                $MatchConsolidatedMultimatch++;
+                $Count_ConsolidatedMultimatch++;
             }
 
             $Update_Payload[$value['address_id']] = array(
@@ -234,7 +234,7 @@ for ($row = 1; $row <= $address_count; $row++) {
 
         } elseif ($status_code == "NOMATCH" ) {
             if($message == "RANGEFILL"){
-                $NomatchRangefillFailure++;
+                $Count_RangefillFailure++;
             }else{
                 $Count_NotFound++;
             }
@@ -317,11 +317,11 @@ for ($row = 1; $row <= $address_count; $row++) {
     $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
     $Invalid_percent = round((($Count_invalid / $Count_total) * 100),2);
     $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
-    $Count_ExactMatch_percent = round((($Count_ExactMatch / $Count_total ) * 100),2);;
-    $MatchConsolidatedRangefill_percent = round((($MatchConsolidatedRangefill / $Count_total ) * 100),2);;
-    $MatchConsolidatedMultimatch_percent = round((($MatchConsolidatedMultimatch / $Count_total ) * 100),2);;
-    $NomatchRangefillFailure_percent = round((($NomatchRangefillFailure / $Count_total ) * 100),2);;
-    $Count_NotFound_percent = round((($Count_NotFound / $Count_total ) * 100),2);;
+    $ExactMatch_percent = round((($Count_ExactMatch / $Count_total ) * 100),2);;
+    $ConsolidatedRangefill_percent = round((($Count_ConsolidatedRangefill / $Count_total ) * 100),2);;
+    $ConsolidatedMultimatch_percent = round((($Count_ConsolidatedMultimatch / $Count_total ) * 100),2);;
+    $RangefillFailure_percent = round((($Count_RangefillFailure / $Count_total ) * 100),2);;
+    $NotFound_percent = round((($Count_NotFound / $Count_total ) * 100),2);;
 
 	bbscript_log("info","-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info","[COUNT]            $Count_total");
@@ -329,12 +329,12 @@ for ($row = 1; $row <= $address_count; $row++) {
     bbscript_log("info","[SPEED]            $Records_per_sec per second");
     bbscript_log("info","[CURL]             $Curl_records per second (".$Count_total." in ".round($time,1).")");
     bbscript_log("info","[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
-	bbscript_log("info","[MATCH]    [EXACT] $Count_ExactMatch ($Count_ExactMatch_percent %)");
-    bbscript_log("info","[MATCH]    [RANGE] $MatchConsolidatedRangefill ($MatchConsolidatedRangefill_percent %)");
-    bbscript_log("info","[MATCH]    [MULTI] $MatchConsolidatedMultimatch ($MatchConsolidatedMultimatch_percent %)");
+	bbscript_log("info","[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
+    bbscript_log("info","[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
+    bbscript_log("info","[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
     bbscript_log("info","[NOMATCH]  [TOTAL] $Count_nomatch ($Nomatch_percent %)");
-    bbscript_log("info","[NOMATCH]  [RANGE] $NomatchRangefillFailure ($NomatchRangefillFailure_percent %)");
- // bbscript_log("info","[NOMATCH]  [NO]    $Count_NotFound ($Count_NotFound_percent %)"); // not nessisary, only 2 options
+    bbscript_log("info","[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
+ // bbscript_log("info","[NOMATCH]  [NO]    $Count_NotFound ($NotFound_percent %)"); // not nessisary, only 2 options
 	bbscript_log("info","[MULTI]    [TOTAL] $Count_multimatch ($Multimatch_percent %)");
 	bbscript_log("info","[INVALID]  [TOTAL] $Count_invalid ($Invalid_percent %)");
 	bbscript_log("info","[ERROR]    [TOTAL] $Count_error ($Error_percent %)");
