@@ -325,7 +325,7 @@ for ($row = 1; $row <= $address_count; $row++) {
     $NotFound_percent = round((($Count_NotFound / $Count_total ) * 100),2);;
 
     $seconds_left = round((($total_found -$Count_total ) / $Records_per_sec ), 0);
-    $finish_at = date('Y-m-d H:m:i', (time() + $seconds_left));
+    $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
 	bbscript_log("info","-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info","[DONE @]           $finish_at (in ".$seconds_left." seconds)");
