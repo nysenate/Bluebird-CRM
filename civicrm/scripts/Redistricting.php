@@ -310,7 +310,8 @@ for ($row = 1; $row <= $address_count; $row++) {
     // timer for debug
     $time = get_elapsed_time($time_start);
     $Records_per_sec = round(($Count_total / round($time,1)),1);
-	$Curl_records = round(( $Count_total / $curl_time_total),1);
+	$Mysql_per_sec = round(($Count_total / round(($time -$curl_time_total),1)),1);
+    $Curl_per_sec = round(($Count_total / round($curl_time_total,1)),1);
     $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
     $Match_percent = round((($Count_match / $Count_total) * 100),2);
     $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
@@ -325,14 +326,15 @@ for ($row = 1; $row <= $address_count; $row++) {
 	bbscript_log("info","-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info","[COUNT]            $Count_total");
 	bbscript_log("info","[TIME]             ".round($time, 4));
-    bbscript_log("info","[SPEED]            $Records_per_sec per second");
-    bbscript_log("info","[CURL]             $Curl_records per second (".$Count_total." in ".round($curl_time_total,1).")");
+    bbscript_log("info","[SPEED]    [TOTAL] $Records_per_sec per second(".$Count_total." in ".round($time,1).")");
+    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$Count_total." in ".round(($time -$curl_time_total),1).")");
+    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$Count_total." in ".round($curl_time_total,1).")");
     bbscript_log("info","[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
-	bbscript_log("info","[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
-    bbscript_log("info","[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
-    bbscript_log("info","[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
+	bbscript_log("trace","[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
+    bbscript_log("trace","[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
+    bbscript_log("trace","[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
     bbscript_log("info","[NOMATCH]  [TOTAL] $Count_nomatch ($Nomatch_percent %)");
-    bbscript_log("info","[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
+    bbscript_log("trace","[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
  // bbscript_log("info","[NOMATCH]  [NO]    $Count_NotFound ($NotFound_percent %)"); // not nessisary, only 2 options
 	bbscript_log("info","[MULTI]    [TOTAL] $Count_multimatch ($Multimatch_percent %)");
 	bbscript_log("info","[INVALID]  [TOTAL] $Count_invalid ($Invalid_percent %)");
