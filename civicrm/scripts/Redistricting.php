@@ -95,8 +95,9 @@ $query = "
 
 bbscript_log("debug","Querying the database for addresses using\n$query");
 $result = mysql_query($query, $db);
-bbscript_log("debug",mysql_num_rows($result)." addresses found.");
+$total_found = mysql_num_rows($result);
 
+bbscript_log("debug",$total_found." addresses found.");
 // start timer
 $time_start = microtime(true);
 
@@ -323,10 +324,15 @@ for ($row = 1; $row <= $address_count; $row++) {
     $RangefillFailure_percent = round((($Count_RangefillFailure / $Count_total ) * 100),2);;
     $NotFound_percent = round((($Count_NotFound / $Count_total ) * 100),2);;
 
+    $seconds_left = round((($total_found -$Count_total ) / $Records_per_sec ), 0);
+    $finish_at = date('Y-m-d H:m:i', (time() + $seconds_left));
+
 	bbscript_log("info","-------    ------- ---- ---- ---- ---- ");
+    bbscript_log("info","[DONE @]           $finish_at (in ".$seconds_left." seconds)");
     bbscript_log("info","[COUNT]            $Count_total");
 	bbscript_log("info","[TIME]             ".round($time, 4));
-    bbscript_log("info","[SPEED]    [TOTAL] $Records_per_sec per second(".$Count_total." in ".round($time,1).")");
+
+    bbscript_log("info","[SPEED]    [TOTAL] $Records_per_sec per second (".$Count_total." in ".round($time,1).")");
     bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$Count_total." in ".round(($time -$curl_time_total),1).")");
     bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$Count_total." in ".round($curl_time_total,1).")");
     bbscript_log("info","[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
