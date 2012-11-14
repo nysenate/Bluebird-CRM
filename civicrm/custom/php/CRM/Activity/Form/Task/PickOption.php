@@ -148,7 +148,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
 
   public function postProcess() {
     $params = $this->exportValues();
-    $this->_contacts = array();
+    $this->_contacts = $this->_pickOptionVal = array(); //NYSS 5831
 
     //get assignee contacts
     if ($params['assigned_to']) {
@@ -156,6 +156,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
         $ids = array_keys(CRM_Activity_BAO_ActivityAssignment::getAssigneeNames($id));
         $this->_contacts = array_merge($this->_contacts, $ids);
       }
+      $this->_pickOptionVal[] = 'assigned_to'; //NYSS 5831
     }
     //get target contacts
     if ($params['with_contact']) {
@@ -163,6 +164,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
         $ids = array_keys(CRM_Activity_BAO_ActivityTarget::getTargetNames($id));
         $this->_contacts = array_merge($this->_contacts, $ids);
       }
+      $this->_pickOptionVal[] = 'with_contact'; //NYSS 5831
     }
     //get 'Added by' contacts
     if ($params['created_by']) {
@@ -170,6 +172,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
       if (!empty($this->_contactIds)) {
         $this->_contacts = array_merge($this->_contacts, $this->_contactIds);
       }
+      $this->_pickOptionVal[] = 'created_by'; //NYSS 5831
     }
     $this->_contacts = array_unique($this->_contacts);
 
@@ -184,6 +187,7 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
     }
 
     $this->set('contacts', $this->_contacts);
+    $this->set('pickOptionVal', $this->_pickOptionVal); //NYSS 5831
   }
 }
 

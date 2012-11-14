@@ -168,10 +168,17 @@ class CRM_Contact_Form_Task_EmailCommon {
       $toSetDefault = FALSE;
     }
 
+    //YSS 5831 get the pick option selection(s) in case of Find Activities
+    $form->_pickOptionVal = array();
+    if (!empty($form->_activityHolderIds)) {
+      $pickOptionVal = $form->get('pickOptionVal');
+      $form->_pickOptionVal = $pickOptionVal;
+    }
+
     // when form is submitted recompute contactIds
     //NYSS 5621 this breaks things when we have selected source contact
-    /*$allToEmails = array();
-    if ($to->getValue()) {
+    $allToEmails = array();
+    if ($to->getValue() && !in_array('created_by', $form->_pickOptionVal)) {
       $allToEmails = explode(',', $to->getValue());
       CRM_Core_Error::debug_var('allToEmails',$allToEmails);
       $form->_contactIds = $form->_toContactEmails = array();
@@ -183,7 +190,7 @@ class CRM_Contact_Form_Task_EmailCommon {
         }
       }
       $toSetDefault = TRUE;
-    }*/
+    }
 
     //get the group of contacts as per selected by user in case of Find Activities
     if (!empty($form->_activityHolderIds)) {
