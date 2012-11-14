@@ -2673,23 +2673,71 @@ WHERE  id IN ( $groupIDs )
     }
 
     $etTable = "`civicrm_entity_tag-" . $value . "`";
-    $this->_tables[$etTable] =
-      $this->_whereTables[$etTable] =
-      " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND {$etTable}.entity_table = 'civicrm_contact' ) ";
 
-    // CRM-10338
-    if ( in_array( $op, array( 'IS NULL', 'IS NOT NULL' ) ) ) {
-      $this->_where[$grouping][] = "{$etTable}.tag_id $op";
-    }
-    //NYSS 4802/5471
-    elseif ( in_array( $op, array( 'IS EMPTY', 'IS NOT EMPTY' ) ) ) {
+    //NYSS 5556
+    $useAllTagTypes = $this->getWhereValues('all_tag_types', $grouping);
+
+    //NYSS 5556
+    if ($useAllTagTypes[2]) {
+      $this->_tables[$etTable] =
+      $this->_whereTables[$etTable] =
+        " LEFT JOIN civicrm_entity_tag {$etTable}
+            ON ( {$etTable}.entity_id = contact_a.id
+            AND {$etTable}.entity_table = 'civicrm_contact') ";
+
+      // search tag in cases
+      $etCaseTable = "`civicrm_entity_case_tag-" . $value . "`";
+      $this->_tables[$etCaseTable] =
+      $this->_whereTables[$etCaseTable] =
+        " LEFT JOIN civicrm_case_contact ON civicrm_case_contact.contact_id = contact_a.id
+          LEFT JOIN civicrm_case ON civicrm_case_contact.case_id = civicrm_case.id
+          LEFT JOIN civicrm_entity_tag {$etCaseTable}
+            ON ( {$etCaseTable}.entity_table = 'civicrm_case'
+            AND {$etCaseTable}.entity_id = civicrm_case.id ) ";
+      // search tag in activities
+      $etActTable = "`civicrm_entity_act_tag-" . $value . "`";
+      $this->_tables[$etActTable] =
+      $this->_whereTables[$etActTable] =
+        " LEFT JOIN civicrm_activity_target
+            ON ( civicrm_activity_target.target_contact_id = contact_a.id )
+          LEFT JOIN civicrm_activity
+            ON ( civicrm_activity.id = civicrm_activity_target.activity_id
+            AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )
+          LEFT JOIN civicrm_entity_tag as {$etActTable}
+            ON ( {$etActTable}.entity_table = 'civicrm_activity'
+            AND {$etActTable}.entity_id = civicrm_activity.id ) ";
+
+      //convert EMPTY
       $op = str_replace( 'EMPTY', 'NULL', $op );
-      $this->_where[$grouping][] = "{$etTable}.tag_id $op";
+      if ( in_array( $op, array( 'IS NULL', 'IS NOT NULL' ) ) ) {
+        $this->_where[$grouping][] = "({$etTable}.tag_id $op
+          OR {$etCaseTable}.tag_id $op
+          OR {$etActTable}.tag_id $op) ";
+      }
+      else {
+        $this->_where[$grouping][] = "({$etTable}.tag_id $op (". $value . ")
+          OR {$etCaseTable}.tag_id $op (". $value . ")
+          OR {$etActTable}.tag_id $op (". $value . ")) ";
+      }
+      $this->_qill[$grouping][] = ts('Tag %1 (contact/activity/case)', array( 1 => $op)) . ' ' . $names;
     }
     else {
-      $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
+      $this->_tables[$etTable] =
+      $this->_whereTables[$etTable] =
+        " LEFT JOIN civicrm_entity_tag {$etTable}
+            ON ( {$etTable}.entity_id = contact_a.id
+            AND {$etTable}.entity_table = 'civicrm_contact') ";
+
+      // CRM-10338
+      $op = str_replace( 'EMPTY', 'NULL', $op );
+      if ( in_array( $op, array( 'IS NULL', 'IS NOT NULL' ) ) ) {
+        $this->_where[$grouping][] = "{$etTable}.tag_id $op";
+      }
+      else {
+        $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
+      }
+      $this->_qill[$grouping][] = ts('Tagged %1', array( 1 => $op)) . ' ' . $names;
     }
-    $this->_qill[$grouping][] = ts('Tagged %1', array( 1 => $op)) . ' ' . $names;
   }
 
   /**
