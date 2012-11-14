@@ -108,7 +108,7 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 	require_once 'CRM/Utils/SAGE.php';
 
 	//set defaults for recording metrics
-	$totalAddresses = $totalDistAssigned = 0;
+	$totalGeocoded = $totalAddresses = $totalDistAssigned = 0;
 
 	$query = getQuery($optlist);
 
@@ -169,6 +169,9 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 				//3. when we're not using coordinates and districts are missing
 					
 				$success = CRM_Utils_SAGE::lookup($address, $overwrite, $overwrite);
+                if($success) {
+                    $totalGeocoded++;
+                }
 			}
 			else if (!$missing_geo && $missing_districts) {
 				//record not missing lat+lon but districts are missing
@@ -179,6 +182,9 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 				//record missing geo but not districts
 
 				$success = CRM_Utils_SAGE::format($address, true);
+                if($success) {
+                    $totalGeocoded++;
+                }
 			}
 		}
 		else if($optlist['geocode']) {
@@ -187,6 +193,9 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 			//appearing here must be processed
 
 			$success = CRM_Utils_SAGE::format($address, true);
+            if($success) {
+                $totalGeocoded++;
+            }
 		}
 		else if($optlist['distassign']) {
 			//again data is represenative of query
@@ -195,6 +204,9 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 			}
 			else {
 				$success = CRM_Utils_SAGE::lookup($address, $overwrite, $overwrite);
+                if($success) {
+                    $totalGeocoded++;
+                }
 			}
 		}
 		
@@ -279,7 +291,7 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 	}
 
 	echo ts("Total addresses evaluated: $totalAddresses\n");
-	if ($geoMethod) {
+	if ($optlist['geocode'] || $optlist['distassign']) {
 		echo ts("Addresses geocoded: $totalGeocoded\n");
 	}
 	if ($parseStreetAddress) {
