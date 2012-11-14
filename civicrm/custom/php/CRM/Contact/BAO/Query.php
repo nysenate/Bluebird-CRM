@@ -2689,8 +2689,11 @@ WHERE  id IN ( $groupIDs )
       $etCaseTable = "`civicrm_entity_case_tag-" . $value . "`";
       $this->_tables[$etCaseTable] =
       $this->_whereTables[$etCaseTable] =
-        " LEFT JOIN civicrm_case_contact ON civicrm_case_contact.contact_id = contact_a.id
-          LEFT JOIN civicrm_case ON civicrm_case_contact.case_id = civicrm_case.id
+        " LEFT JOIN civicrm_case_contact
+            ON civicrm_case_contact.contact_id = contact_a.id
+          LEFT JOIN civicrm_case
+            ON civicrm_case_contact.case_id = civicrm_case.id
+            AND civicrm_case.is_deleted = 0
           LEFT JOIN civicrm_entity_tag {$etCaseTable}
             ON ( {$etCaseTable}.entity_table = 'civicrm_case'
             AND {$etCaseTable}.entity_id = civicrm_case.id ) ";
