@@ -2,17 +2,18 @@ var messages = [];
 var contacts = [];
 
 cj(document).ready(function(){
-	var first_name = cj('#first_name');
-	var last_name = cj('#last_name');
-	var city = cj('#city');
-	var phone = cj('#phone');
-	var state = cj('#state');
-	var street_address = cj('#street_address');
+
+	var first_name = cj('#tab1 .first_name').val();
+	var last_name = cj('#tab1 .last_name').val();
+	var city = cj('#tab1 .city').val();
+	var phone = cj('#tab1 .phone').val();
+	var street_address = cj('#tab1 .street_address').val();
+	var email_address = cj('#tab1 .email_address').val();
+
 	var reset = cj('#reset');
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	var reassign = cj('#reassign');
-	var email_address = cj('#email_address');
 	var create = cj('#add-contact');
 
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
@@ -48,16 +49,25 @@ cj(document).ready(function(){
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
+
+		// checks for deault data
+		if(cj('#tab1 .first_name').val() != "First Name"){ var first_name = cj('#tab1 .first_name').val();}
+		if(cj('#tab1 .last_name').val() != "Last Name"){ var last_name = cj('#tab1 .last_name').val();}
+		if(cj('#tab1 .city').val() != "City"){var city = cj('#tab1 .city').val();}
+		if(cj('#tab1 .phone').val() != "Phone Number"){var phone = cj('#tab1 .phone').val();}
+		if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
+		if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
+
 		cj.ajax({
 			url: '/civicrm/imap/ajax/contacts',
 			data: {
-				state: '1031', //always use nystate for now
-				city: city.val(),
-				phone: phone.val(),
-				email_address: email_address.val(),
-				street_address: street_address.val(),
-				first_name: first_name.val(),
-				last_name: last_name.val()
+				state: '1031',  
+				city: city,
+				phone: phone,
+				email_address: email_address,
+				street_address: street_address,
+				first_name: first_name,
+				last_name: last_name
 			},
 			success: function(data,status) {
 				if(data != null || data != ''){
@@ -77,7 +87,6 @@ cj(document).ready(function(){
 	assign.click(function() {
 		var messageId = cj('#email_id').val();
 		var imapId = cj('#imap_id').val();
-		
 		var contactRadios = cj('input[name=contact_id]');
 		var contactIds = '';
 
@@ -136,30 +145,30 @@ cj(document).ready(function(){
 
 	create.click(function() {
 		var messageId = cj('#email_id').val();
-		var imap_id = cj('#imap_id').val();
-		var first_name = cj("#tabs-2 #first_name").val();
-		var last_name = cj("#tabs-2 #last_name").val();
-		var email_address = cj("#tabs-2 #email_address").val();
-		var phone = cj("#tabs-2 #phone").val();
-		var street_address = cj("#tabs-2 #street_address").val();
-		var street_address_2 = cj("#tabs-2 #street_address_2").val();
-		var zip = cj("#tabs-2 #zip").val();
-		var city = cj("#tabs-2 #city").val();
+		var create_imap_id = cj('#imap_id').val();
+		var create_first_name = cj("#tab2 .first_name").val();
+		var create_last_name = cj("#tab2 .last_name").val();
+		var create_email_address = cj("#tab2 .email_address").val();
+		var create_phone = cj("#tab2 #phone").val();
+		var create_street_address = cj("#tab2 .street_address").val();
+		var create_street_address_2 = cj("#tab2 .street_address_2").val();
+		var create_zip = cj("#tab2 .zip").val();
+		var create_city = cj("#tab2 .city").val();
 
 		if((!!first_name) && (!!last_name)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
-					messageId: messageId,
-					imap_id: imap_id,
-					first_name: first_name,
-					last_name: last_name, 
-					email_address: email_address, 
-					phone: phone, 
-					street_address: street_address, 
-					street_address_2: street_address_2,
-					postal_code: zip,
-					city: city
+					messageId: create_messageId,
+					imap_id: create_imap_id,
+					first_name: create_first_name,
+					last_name: create_last_name, 
+					email_address: create_email_address, 
+					phone: create_phone, 
+					street_address: create_street_address, 
+					street_address_2: create_street_address_2,
+					postal_code: create_zip,
+					city: create_city
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
@@ -174,6 +183,9 @@ cj(document).ready(function(){
 							cj("#find-match-popup").dialog('close'); 
 							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 							help_message('Contact created and message Assigned');
+							var old_total = parseInt(cj("#total_number").html(),10);
+							help_message('Activity Deleted');
+							cj("#total_number").html(old_total-1);
 						},
 						error: function(){
     						alert('failure');
@@ -225,6 +237,7 @@ cj(document).ready(function(){
 								var old_total = parseInt(cj("#total_number").html(),10);
 								help_message('Activity Deleted');
 								cj("#total_number").html(old_total-1);
+								// console.log(old_total-1);
 							},
 							error: function(){
     							alert('unable to delete activity');
@@ -321,7 +334,7 @@ cj(document).ready(function(){
 		});	
 		cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
-		cj( "#delete-confirm" ).dialog('open');
+		cj("#delete-confirm").dialog('open');
 	});
 	
 	// add a find match popup
@@ -612,13 +625,13 @@ cj(document).ready(function(){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
-				cj('#first_name, #last_name, #phone, #street_address, #city, #email_address').val('');
+				cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email_address, #tabs-2 #email_address').val(messages.fromEmail);
+ 				cj('.email_address').val(messages.fromEmail);
 
  				cj('#filter').click();
 				switchName(messages.fromName);
@@ -681,8 +694,8 @@ function switchName(nameVal){
     var lastLength = nameLength - nameSplit[0].length;
     var lastNameLength = nameSplit[0].length + 1;
     var lastName = nameVal.slice(lastNameLength);
-    cj('#tabs-1 #first_name,#tabs-2 #first_name').val(nameSplit[0]);
-    cj('#tabs-1 #last_name, #tabs-2 #last_name').val(lastName);
+    cj('.first_name').val(nameSplit[0]);
+    cj('.last_name').val(lastName);
 }
 
 
@@ -796,7 +809,7 @@ function buildActivitiesList() {
 			total_results++;
 	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
 			if( value.fromName != ''){
-				messagesHtml += '<td class="name"><a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" target="blank">'+value.fromName +'<a/></td>';
+				messagesHtml += '<td class="name"><a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'">'+value.fromName +'<a/></td>';
 			}else {
 				messagesHtml += '<td class="name"> N/A </td>';
 			}
@@ -816,28 +829,24 @@ function buildActivitiesList() {
 function buildContactList() {
 	var contactsHtml = '';
 	cj.each(contacts, function(key, value) {
-		var tall = 'nada';
 		// calculate the aprox age
 		if(value.birth_date){
-			tall = 'tallbox';
 			var date = new Date();
 			var year  = date.getFullYear();
 			var birth_year = value.birth_date.substring(0,4);
 			var age = year - birth_year;
 		}
-
-		contactsHtml += '<div class="imapper-contact-box '+ tall +'" data-id="'+value.contact_id+'">';
+		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
 		contactsHtml += '</div>';
 		contactsHtml += '<div class="imapper-address-box">';
-		contactsHtml += value.display_name + '<br />';
-		if(value.birth_date){
-			contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br />';
-		}
-		contactsHtml += value.street_address + '<br />';
-		contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code;
-		contactsHtml += '</div></div>';
+		if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
+		if(value.birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br/>';}
+		if(value.email){ contactsHtml += value.email + '<br/>'; }
+		if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
+		if(value.city){ contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code + '<br/>'; }
+ 		contactsHtml += '</div></div>';
 		contactsHtml += '<div class="clear"></div>';
 	});
 	cj('#imapper-contacts-list').append(contactsHtml);

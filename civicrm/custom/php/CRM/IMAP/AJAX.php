@@ -586,6 +586,29 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+
+    // Get Raw data for verbose error logging
+    public static function contactRaw($id){
+        require_once 'api/api.php';
+        $params = array('version'   =>  3, 'activity'  =>  'get', 'id' => $id, );
+        $activity = civicrm_api('contact', 'get', $params);
+        return $activity;
+    }
+    public static function activityRaw($id){
+        require_once 'api/api.php';
+        $params = array('version'   =>  3, 'activity'  =>  'get', 'id' => $id, );
+        $activity = civicrm_api('activity', 'get', $params);
+        return $activity;
+    }
+    public static function tagRaw($id){
+        require_once 'api/api.php';
+        $params = array('version'   =>  3, 'activity'  =>  'get', 'id' => $id, );
+        $activity = civicrm_api('tag', 'get', $params);
+        return $activity;
+    }
+
+
+
     public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
@@ -608,10 +631,15 @@ class CRM_IMAP_AJAX {
         $nyss_conn = new CRM_Core_DAO();
         $nyss_conn = $nyss_conn->getDatabaseConnection();
         $conn = $nyss_conn->connection;
+        
+        $returnCode = array();
 
         foreach($tagIds as $tagId) {
+            //get data about tag
+            $data = self::tagRaw($tagId);
+            $tagName = $data['values'][$tagId]['name'];
             foreach($contactIds as $contactId) {
-                if($contactId == 0)
+                 if($contactId == 0)
                     break;
                 $params = array( 
                                 'entity_table'  =>  'civicrm_contact',
@@ -621,16 +649,28 @@ class CRM_IMAP_AJAX {
                                 );
 
                 $result = civicrm_api('entity_tag', 'create', $params );
-                if($result['is_error']==1) {
-                    $returnCode = array('code'      =>  'ERROR',
-                                        'message'   =>  "Problem with Contact ID: {$contactId}");
-                    echo json_encode($returnCode);
-                    CRM_Utils_System::civiExit();
+                //get data about contact
+                $data = self::contactRaw($contactId);
+                $name = $data['values'][$contactId]['display_name'];
+                // exit();
+                if($result['is_error']==1){
+                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
+                }elseif ($result['not_added']==1 ) {
+                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
+                }else{
+                    $returnCode[$tagId.":".$contactId] = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
                 }
+
             }
             foreach($activityIds as $activityId) {
-                if($activityId == 0)
+
+                  if($activityId == 0)
                     break;
+                //get data about tag
+                $data = self::activityRaw($activityId);
+                $subject = $data['values'][$activityId]['subject'];
+                // exit();
+
                 $query = "SELECT * FROM civicrm_entity_tag
                             WHERE entity_table='civicrm_activity'
                             AND entity_id={$activityId}
@@ -641,20 +681,23 @@ class CRM_IMAP_AJAX {
                     $query = "INSERT INTO civicrm_entity_tag(entity_table,entity_id,tag_id)
                               VALUES('civicrm_activity',{$activityId},{$tagId});";
                     $result = mysql_query($query, $conn);
-                    if($result) {
-                     // echo "ADDED TAG TO ACTIVITY!\n";
-                    } else {
-                      error_log("COULD NOT ADD TAG TO ACTIVITY!\n");
+
+ 
+                    if($result == null) {
+                        $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
+                    }else{
+                        $returnCode[$tagId.":".$activityId] = array('code'=>'SUCCESS','message'=>"Tag '{$tagName}' Added to {$subject}");
                     }
+                }else{
+                    $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
                 }
-            }
+             }
         }
-        $returnCode = array('code'    =>  'SUCCESS');
         echo json_encode($returnCode);
-        CRM_Utils_System::civiExit();
 
         //the following causes exit before the loop in assignMessage can complete. commenting it allows multi-match
-        //CRM_Utils_System::civiExit();
+        //but without it the script returns a full page, a new addition in 1.4
+        CRM_Utils_System::civiExit();
     }
 
     public static function getMatchedMessages() {
