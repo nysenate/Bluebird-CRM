@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_Demographics extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;//NYSS
 
   /**
    * call preprocess
