@@ -168,7 +168,7 @@ class CRM_Contact_Form_Task_EmailCommon {
       $toSetDefault = FALSE;
     }
 
-    //YSS 5831 get the pick option selection(s) in case of Find Activities
+    //NYSS 5831 get the pick option selection(s) in case of Find Activities
     $form->_pickOptionVal = array();
     if (!empty($form->_activityHolderIds)) {
       $pickOptionVal = $form->get('pickOptionVal');
@@ -210,11 +210,15 @@ class CRM_Contact_Form_Task_EmailCommon {
         'is_primary' => 1, //NYSS 5389
       );
 
-      //NYSS 5389
+      //NYSS 5389/5873 attempt to retrieve primary email
       list($form->_contactDetails) = CRM_Utils_Token::getTokenDetails($form->_contactIds,
         $returnProperties,
         TRUE,
-        TRUE
+        TRUE,
+        NULL,
+        array(),
+        NULL,
+        'is_primary DESC'
       );
 
       // make a copy of all contact details
