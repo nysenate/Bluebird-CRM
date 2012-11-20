@@ -4,7 +4,7 @@ function nyss_contact_civicrm_buildForm( $formName, &$form ) {
     //CRM_Core_Error::debug_var('form',$form);
 
     $defaults = array();
-    $contactID = $form->_defaultValues['id'];
+    $contactID = $form->_contactId;
     $form->assign('cid', $contactID);
 
     //employer

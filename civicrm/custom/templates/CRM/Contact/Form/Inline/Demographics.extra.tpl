@@ -50,8 +50,8 @@
   });*/
 
   //hide gender
-  cj('input#civicrm_gender_Female_1').closest('crm-content').hide();
-  cj('input#civicrm_gender_Female_1').closest('crm-content').previous('crm-label').hide();
+  cj('input#civicrm_gender_Female_1').parent('.crm-content').prev('.crm-label').hide();
+  cj('input#civicrm_gender_Female_1').parent('.crm-content').hide();
 
   //current employer handling in this context
   var dataUrl        = "{/literal}{$employerDataURL}{literal}";
