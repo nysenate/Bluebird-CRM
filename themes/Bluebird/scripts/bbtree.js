@@ -6,7 +6,7 @@ function checkForTagTypes (treeData) {
 function callTagAjax (local, modalTreeTop, pointToTab) {
 	var getPage = cj('.BBtree.edit').attr('class');
 	var pageClasses = getPage.split(' ')
-	console.log(pageClasses[2]);
+	//console.log(pageClasses[2]);
 	//console.log('start of Tree Rebuild: ' + returnTime());
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
