@@ -87,7 +87,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
                  'dao' => 'CRM_Contact_DAO_RelationshipType',
                  'dao_column' => 'label_a_b',
                  ),
-      //NYSS
+      //NYSS 5525
       'log_civicrm_value_constituent_information_1' =>
       array( 'fk' => 'entity_id',
         'log_type' => 'Contact',
