@@ -9,8 +9,11 @@
 
   //move privacy notes
   var privnote = cj('div#custom-set-content-8 div.crm-content').text();
-  cj('.crm-contact-privacy_values').removeClass('font-red upper').wrapInner('<span class="font-red" />').append
-    ('<span id="privacyNote">' + privnote + '</span>');
+  var privnotehtml = '<div class="crm-label">Privacy Note</div><div class="crm-content">' + privnote + '</div>';
+  cj('.crm-contact-privacy_values').removeClass('upper');
+  if ( privnote.length ) {
+    cj('.crm-contact-privacy_values').after(privnotehtml);
+  }
   cj('div.crm-custom-set-block-8').remove();
 
   //insert display name
