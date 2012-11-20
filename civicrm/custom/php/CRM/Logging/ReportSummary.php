@@ -87,6 +87,11 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
                  'dao' => 'CRM_Contact_DAO_RelationshipType',
                  'dao_column' => 'label_a_b',
                  ),
+      //NYSS
+      'log_civicrm_value_constituent_information_1' =>
+      array( 'fk' => 'entity_id',
+        'log_type' => 'Contact',
+      ),
            );
 
   protected $loggingDB; function __construct() {
@@ -202,6 +207,7 @@ INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
         $this->buildRows($sql, $rows);
       }
     }
+    //CRM_Core_Error::debug_var('$rows',$rows);
 
     // format result set.
     $this->formatDisplay($rows);
