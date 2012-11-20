@@ -404,6 +404,9 @@ cj(document).ready(function(){
 										cj("#tagging-popup").dialog('close');
 										help_message('tag added!');
 										cj("#"+value).remove();
+										var old_total = parseInt(cj("#total_number").html(),10);
+										help_message('Activity Deleted');
+										cj("#total_number").html(old_total-1);
 									},
 									error: function(){
 	    								alert('unable to add tag');
@@ -420,6 +423,9 @@ cj(document).ready(function(){
 									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
+									var old_total = parseInt(cj("#total_number").html(),10);
+									help_message('Activity Deleted');
+									cj("#total_number").html(old_total-1);
 								},
 								error: function(){
     								alert('unable to add tag');
