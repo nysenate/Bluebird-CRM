@@ -28,7 +28,7 @@ cj('[id^=Address_Block_]').each(function(){
   } else {
     //move delete link
     dellink.addClass('delete_block');
-    cj('.crm-edit-address-form').before(dellink);
+    cj(this).find('table.crm-edit-address-form').before(dellink);
   }
 });
 

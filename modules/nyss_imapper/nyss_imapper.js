@@ -102,6 +102,7 @@ cj(document).ready(function(){
 					cj("#total_number").html(old_total-1);
 	           		cj("#find-match-popup").dialog('close');  
 	           		help_message('Message assigned to contact');
+	           		
 				}
 			});
 			return false;
@@ -403,6 +404,9 @@ cj(document).ready(function(){
 										cj("#tagging-popup").dialog('close');
 										help_message('tag added!');
 										cj("#"+value).remove();
+										var old_total = parseInt(cj("#total_number").html(),10);
+										help_message('Activity Deleted');
+										cj("#total_number").html(old_total-1);
 									},
 									error: function(){
 	    								alert('unable to add tag');
@@ -419,6 +423,9 @@ cj(document).ready(function(){
 									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
+									var old_total = parseInt(cj("#total_number").html(),10);
+									help_message('Activity Deleted');
+									cj("#total_number").html(old_total-1);
 								},
 								error: function(){
     								alert('unable to add tag');
@@ -777,6 +784,7 @@ function buildMessageList() {
 	}
 }
 
+// matched messages screen 
 function buildActivitiesList() {
 	if(messages == '' || messages == null){
 		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
@@ -788,7 +796,7 @@ function buildActivitiesList() {
 			total_results++;
 	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
 			if( value.fromName != ''){
-				messagesHtml += '<td class="name">'+value.fromName +'</td>';
+				messagesHtml += '<td class="name"><a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" target="blank">'+value.fromName +'<a/></td>';
 			}else {
 				messagesHtml += '<td class="name"> N/A </td>';
 			}

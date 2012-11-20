@@ -5,9 +5,8 @@
 {assign var='locationIndex' value=1}
 {if $address}
   {foreach from=$address item=add key=locationIndex}
-  <div class="{cycle name=loc values="contactCardLeft,contactCardRight"} crm-address_{$locationIndex} crm-address-block
-   crm-address_type_{$add.location_type}">
-    <div class="crm-summary-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
+  <div class="{cycle name=loc values="contactCardLeft,contactCardRight"} crm-address_{$locationIndex} crm-address_type_{$add.location_type}">
+    <div class="crm-summary-block crm-address-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">
     {include file="CRM/Contact/Page/Inline/Address.tpl"}
     </div>
   </div>
@@ -18,9 +17,9 @@
 
 {if $permission EQ 'edit'}
   {if $locationIndex eq 1 or $locationIndex is odd}
-  <div class="contactCardLeft crm-address_{$locationIndex} crm-address-block appendAddLink">
-    {else}
-  <div class="contactCardRight crm-address_{$locationIndex} crm-address-block appendAddLink">
+    <div class="contactCardLeft crm-address_{$locationIndex} crm-address-block appendAddLink">
+  {else}
+    <div class="contactCardRight crm-address_{$locationIndex} crm-address-block appendAddLink">
   {/if}
 
   <div class="crm-summary-block" id="address-block-{$locationIndex}" locno="{$locationIndex}">

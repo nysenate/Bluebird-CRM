@@ -43,7 +43,8 @@
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-closed">
+{*NYSS 5885 default open*}
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
     <div class="crm-accordion-header">
         <div class="icon crm-accordion-pointer"></div> 
         {ts}Preview Mailing{/ts}

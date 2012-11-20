@@ -187,7 +187,8 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
       'grouping' => 'mailing-fields',
     );
 
-    $this->_columns['civicrm_mailing_event_reply'] = array(
+    //NYSS 5617 suppress fields
+    /*$this->_columns['civicrm_mailing_event_reply'] = array(
       'dao' => 'CRM_Mailing_Event_DAO_Reply',
       'fields' =>
       array(
@@ -210,9 +211,9 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
         ),
       ),
       'grouping' => 'mailing-fields',
-    );
+    );*/
 
-    $this->_columns['civicrm_mailing_event_forward'] = array(
+    /*$this->_columns['civicrm_mailing_event_forward'] = array(
       'dao' => 'CRM_Mailing_Event_DAO_Forward',
       'fields' =>
       array(
@@ -235,7 +236,7 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
         ),
       ),
       'grouping' => 'mailing-fields',
-    );
+    );*/
 
     $this->_columns['civicrm_email'] = array(
       'dao' => 'CRM_Core_DAO_Email',
