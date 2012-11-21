@@ -68,11 +68,13 @@
                     <th></th>
                 </tr>
                 </thead>
-                {foreach from=$summary.Contact item=row}
+                {foreach from=$summary.Contact key=k item=row}
+                  {if $table || (!$table && $k < $limit)}
                     <tr class="{cycle values="odd-row,even-row"}">
                         <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
                         <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a></td>
                     </tr>
+                  {/if}
                 {/foreach}
             </table>
             {/strip}

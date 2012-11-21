@@ -37,7 +37,7 @@ if (!($SAGE_BASE && $SAGE_KEY)) {
 $BULK_DISTASSIGN_URL = $SAGE_BASE.'/json/bulkdistrict/body?key='.$SAGE_KEY;
 
 // Initialize script parameters from options and defaults
-$CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
+$CHUNK_SIZE = ($optList['chunk']!='') ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "TRACE";
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($LOG_LEVEL)][0];
 $DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : false;
@@ -63,7 +63,7 @@ $db = $dao->getDatabaseConnection()->connection;
 
 // Collect NY state addresses with a street_address; any
 // address not matching this criteria will fail lookup.
- 
+
 $query = "
     SELECT address.id,
            address.contact_id,
@@ -93,7 +93,6 @@ $query = "
       AND district.entity_id = address.id
       AND state_province.abbreviation='NY'
       AND IFNULL(address.street_name,'') != ''
-      AND postal_code IN ( '12189', '12202', '12110', '12210', '12045', '12047', '12206', '12209', '12009', '12203', '12208', '12054', '12303', '12211', '12084', '12205', '12059', '12186', '12304', '12183', '12193', '12147', '12204', '12143', '12087', '12007', '12046', '12159', '12309', '12077', '12158', '12055', '12469', '12053', '12128', '12161', '12120', '12083', '12122', '12023', '12207', '12067', '12306', '12107', '12041', '12085', '12460', '12157', '12135', '12222', '12534', '12523', '12125', '12037', '12062', '12529', '12516', '12106', '12184', '12136', '12115', '12571', '12502', '12173', '12503', '12546', '12017', '12526', '12513', '12075', '12565', '12024', '12172', '12123', '12517', '12060', '12567', '12521', '12130', '12029', '12165', '12174', '12583', '12541', '12530', '12156', '12132', '12168', '12195', '12544', '12134', '12050', '12180', '12182', '12144', '12018', '12154', '12090', '12033', '12140', '12028', '12198', '12022', '12138', '12052', '12061', '12094', '12196', '12121', '12153', '12185', '12057', '12063', '12118', '12866', '12065', '12831', '12835', '12833', '12074', '12020', '12027', '12019', '12803', '12148', '12859', '12871', '12151', '12188', '12828', '12822', '12863', '12850', '12170', '12025', '12846', '12884', '12302', '12010', '12086', '12804', '12801', '12325', '12048', '12861', '12809', '12887', '12834', '12816', '12865', '12838', '12873', '12849', '12854', '12841', '12832', '12839', '12844', '12827', '12848', '12837', '12819', '12823', '12883', '12821', '05743')
       $MAX_ID_CONDITION
     ORDER BY address.id ASC
 ";
@@ -121,11 +120,7 @@ $Count_RangefillFailure = 0;
 $Count_NotFound = 0;
 $curl_time_total = 0;
 
-$town_map = array(
-    //'SARATOGA SPRINGS' => 'SARATOGA SPGS',
-);
-
-$row_data = array();
+$raw_data = array();
 $JSON_Payload = array();
 $address_count = mysql_num_rows($result);
 
@@ -134,10 +129,6 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     // If we do pull back a NULL something bad happened and dying is okay
     $row = mysql_fetch_assoc($result);
     $row_data[$row['id']] = $row;
-
-    // Clean the data manually till we can do mass validation.
-    $town = clean($row['town']);
-    $row['town'] = preg_replace(array('/^EAST /','/^WEST /','/^SOUTH /','/^NORTH /', '/ SPRINGS$/','/PETERSBURG$/'),array('E ','W ','S ','N ',' SPGS','PETERSBURGH'),$town);
 
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
@@ -275,11 +266,11 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             // bbscript_log("trace", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
 
             $row = $row_data[$id];
-     
+
             $note = "ADDRESS ID:$id \n ADDRESS:".$row['street1']." ".$row['street2'].", ".$row['town']." ". $row['state'].", ".$row['zip']." ".$row['building']." ".$row['building_chr']." \n UPDATES: SEN:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CONG:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($row['election_code'])."=>{$value['election_code']}";
 
             // here's the civi way to add a note, but slow as hell
-            // $params = array( 
+            // $params = array(
             //     'entity_table' => 'civicrm_contact',
             //     'entity_id' => $row['contact_id'],
             //     'note' => $note,
@@ -289,7 +280,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             //     'version' => 3,
             // );
             // require_once 'api/api.php';
-            // $civi_result = civicrm_api('note','create',$params ); 
+            // $civi_result = civicrm_api('note','create',$params );
 
             mysql_query("
                 INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
