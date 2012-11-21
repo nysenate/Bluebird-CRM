@@ -418,7 +418,7 @@ function makeModalMerge(tagLabel){
 	});
 }
 /*adds the control box to admin/page to +/-/->/i/? based on a set of conditions*/
-function addControlBox(tagLabel, IDChecked, treeTop) {
+function addControlBox(tagLabel, IDChecked, currentID, treeTop) {
 	var floatControlBox = '';
 	var tagMouse = 'dt#'+tagLabel;
 	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
@@ -528,16 +528,20 @@ function printTags()
 {
 	var data = cj('.BBtree.edit.manage').html();
 	var mywindow = window.open('', 'PrintTags');
-	mywindow.document.write('<html><head><title>Print Tags</title>');
+	mywindow.document.body.innerHTML="";
+	mywindow.document.write('<!DOCTYPE html><html><head><title>Print Tags</title>');
     mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />');
     mywindow.document.write('<style>');
-    mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}body.popup .bbtree dl.lv-2, .body.popup bbtree dl.lv-3, body.popup .bbtree dl.lv-4, body.popup .bbtree dl.lv-5, body.popup .bbtree dl.lv-6  {display:block !important;} body.popup .fCB{display:none;}');
+    mywindow.document.write('body.popup .BBtree dt div.treeButton {background-position: -64px -15px;}');
+    mywindow.document.write('body.popup .BBtree dl.lv-2, body.popup .BBtree dl.lv-3, body.popup .BBtree dl.lv-4, body.popup .BBtree dl.lv-5, body.popup .BBtree dl.lv-6  {display:block !important;}');
+    mywindow.document.write('.BBtree dt:hover .fCB{display:none;}');
+    mywindow.document.write('.BBtree dt:hover {background-color:transparent;');
     mywindow.document.write('</style>');
-    mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
+   //mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
     mywindow.document.write('</head><body class="popup">');
-    mywindow.document.write('<div class="BBtree edit manage" style="height:auto;width:auto;overflow-y:hidden;"><pre>');
+    mywindow.document.write('<div class="BBtree edit manage" style="height:auto;width:auto;overflow-y:hidden;">');
     mywindow.document.write(data);
-    mywindow.document.write('</pre></div>');
+    mywindow.document.write('</div>');
     mywindow.document.write('</body></html>');
     mywindow.print();
     return true;
