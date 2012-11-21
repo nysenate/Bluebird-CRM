@@ -4560,11 +4560,11 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
         if (isset($dataType)) {
           $value = CRM_Utils_Type::escape($value, "String");
           $values = explode(',', CRM_Utils_Array::value(0, explode(')', CRM_Utils_Array::value(1, explode('(', $value)))));
-          //NYSS
-          if ( $dataType == 'Districts' ) {
+          //NYSS - type is passed as nyss_String or nyss_Integer
+          if ( strpos($dataType, 'nyss_') !== FALSE  ) {
             $value  = str_replace( array('(',')'), '', $value); //4969 make sure no parens were added (search bldr)
             $values = array_map('trim', explode( ',', $value ) );
-            $dataType = 'Integer'; //return to expected format
+            $dataType = str_replace('nyss_', '', $dataType); //return to expected format
           }
 
           // supporting multiple values in IN clause

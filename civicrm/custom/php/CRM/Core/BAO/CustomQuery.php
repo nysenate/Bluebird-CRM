@@ -425,9 +425,10 @@ SELECT label, value
                 }
                             
                 //NYSS build district id fields using IN to allow multiple values
-                if (($id >= 46 && $id <= 51) || ($id >= 53 && $id <= 55)) {
+                $distinfo = array(52, 56);
+                if (in_array($id, $distinfo)) {
                   $op  = 'IN';
-                  $field['data_type'] = 'Districts'; //flag for processing
+                  $field['data_type'] = 'nyss_String'; //flag for processing
                 }
                 if ($wildcard) {
                   $val = $strtolower(CRM_Core_DAO::escapeString($val));
@@ -437,10 +438,12 @@ SELECT label, value
 
                 //FIX for custom data query fired against no value(NULL/NOT NULL)
                 $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($sql, $op, $val, $field['data_type']);
+
                 //NYSS reset data type
-                if (($id >= 46 && $id <= 51) || ($id >= 53 && $id <= 55)) {
+                if (in_array($id, $distinfo)) {
                   $field['data_type'] = 'String';
                 }
+
                 $this->_qill[$grouping][] = "$field[label] $op $qillValue";
               }
             }
@@ -455,9 +458,10 @@ SELECT label, value
           case 'Int':
             //NYSS build district id fields using IN to allow multiple values
             $field['data_type'] = 'Integer';
-            if ( $id >= 46 && $id <= 51 ) {
+            $distinfo = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
+            if (in_array($id, $distinfo)) {
               $op  = 'IN';
-              $field['data_type'] = 'Districts'; //flag for processing
+              $field['data_type'] = 'nyss_Integer'; //flag for processing
             }
 
             if ( $field['is_search_range'] && is_array( $value ) ) {
@@ -467,10 +471,12 @@ SELECT label, value
               $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $fieldName, $op, $value, $field['data_type'] ); //NYSS
               $this->_qill[$grouping][]  = $field['label'] . " $op $value";
             }
+
             //NYSS reset data type
-            if ( $id >= 46 && $id <= 51 ) {
+            if (in_array($id, $distinfo)) {
               $field['data_type'] = 'Integer';
             }
+
             continue;
 
           case 'Boolean':
