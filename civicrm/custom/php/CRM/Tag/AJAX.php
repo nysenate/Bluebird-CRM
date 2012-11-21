@@ -338,14 +338,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     // Avaiable thought api call, or locally
     // args = return true / false toggles return / echo 
     static function check_user_level($return) {
-        // var_dump($return);
-        // exit();
-
         // RULES: if a volunteer, no access. DEAL WITH IT
         $start = microtime(TRUE);
         global $user;
         $userid = $user->uid;
-
         // check for the ability to edit the contact (volunteer role)
         $role = CRM_Core_Permission::check('edit all contacts');
         $bt_time = microtime(TRUE)-$start;
@@ -357,7 +353,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             'build_time'=>(microtime(TRUE)-$start),
             'bt_time'=>$bt_time
             );
-
         if($return == 'true'){
             return $output;
         }else{
