@@ -1,7 +1,7 @@
 <?php
 
 // Project: BluebirdCRM
-// Authors: Stefan Crain & Graylin Kim
+// Authors: Stefan Crain, Graylin Kim, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2012-10-26
 // Revised: 2012-11-21
@@ -10,10 +10,13 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
+define('DEFAULT_CHUNK_SIZE', 1000);
+define('DEFAULT_LOG_LEVEL', 'TRACE');
+
 // Parse the options
 require_once 'script_utils.php';
 $prog = basename(__FILE__);
-$shortopts = "c:l:m:d";
+$shortopts = "c:l:m:n";
 $longopts = array("chunk=", "log=", "max=", "dryrun");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -25,32 +28,32 @@ if ($optlist === null) {
 }
 
 // Use instance settings to configure for SAGE
-$BB_CONFIG = get_bluebird_instance_config($optList['site']);
-$SAGE_BASE = array_key_exists('sage.api.base', $BB_CONFIG) ? $BB_CONFIG['sage.api.base'] : false;
-$SAGE_KEY = array_key_exists('sage.api.key', $BB_CONFIG) ? $BB_CONFIG['sage.api.key'] : false;
+$bbcfg = get_bluebird_instance_config($optlist['site']);
+$sage_base = array_key_exists('sage.api.base', $bbcfg) ? $bbcfg['sage.api.base'] : false;
+$sage_key = array_key_exists('sage.api.key', $bbcfg) ? $bbcfg['sage.api.key'] : false;
 
-if (!($SAGE_BASE && $SAGE_KEY)) {
+if (!($sage_base && $sage_key)) {
     error_log(bbscript_log("fatal", "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
     exit(1);
 }
 
-$BULK_DISTASSIGN_URL = $SAGE_BASE.'/json/bulkdistrict/body?key='.$SAGE_KEY;
+$bulk_distassign_url = $sage_base.'/json/bulkdistrict/body?key='.$sage_key;
 
 // Initialize script parameters from options and defaults
-$CHUNK_SIZE = ($optList['chunk'] != '') ? $optlist['chunk'] : 1000;
-$LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "TRACE";
-$BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($LOG_LEVEL)][0];
-$DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : false;
-$MAX_ID = array_key_exists('max', $optlist) ? $optlist['max'] : false;
+$chunk_size = $optlist['chunk'] ? $optlist['chunk'] : DEFAULT_CHUNK_SIZE;
+$log_level = $optlist['log'] ? $optlist['log'] : DEFAULT_LOG_LEVEL;
+$BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($log_level)][0];
+$dry_run = $optlist['dryrun'];
+$max_id = $optlist['max'];
 
-if ($MAX_ID && is_numeric($MAX_ID)) {
-    $MAX_ID_CONDITION = " AND address.id < ".$MAX_ID;
+if ($max_id && is_numeric($max_id)) {
+    $max_id_condition = ' AND address.id < '.$max_id;
 }
 else {
-    $MAX_ID_CONDITION = "";
+    $max_id_condition = '';
 }
 
-bbscript_log("debug", "Starting with $prog with Chunk size of $CHUNK_SIZE");
+bbscript_log("debug", "Starting with $prog with chunk size of $chunk_size");
 
 // Initialize CiviCRM
 require_once 'CRM/Core/Config.php';
@@ -93,7 +96,7 @@ $query = "
       AND district.entity_id = address.id
       AND state_province.abbreviation='NY'
       AND IFNULL(address.street_name,'') != ''
-      $MAX_ID_CONDITION
+      $max_id_condition
     ORDER BY address.id ASC
 ";
 
@@ -106,19 +109,19 @@ bbscript_log("debug", $total_found." addresses found.");
 $time_start = microtime(true);
 
 // Counts for looping
-$Count_total = 0;
-$Count_round = 0;
-$Count_multimatch = 0;
-$Count_match = 0;
-$Count_nomatch = 0;
-$Count_invalid = 0;
-$Count_error = 0;
-$Count_ExactMatch = 0;
-$Count_ConsolidatedRangefill = 0;
-$Count_ConsolidatedMultimatch = 0;
-$Count_RangefillFailure = 0;
-$Count_NotFound = 0;
-$curl_time_total = 0;
+$count_Total = 0;
+$count_Multimatch = 0;
+$count_Match = 0;
+$count_Nomatch = 0;
+$count_Invalid = 0;
+$count_Error = 0;
+$count_ExactMatch = 0;
+$count_ConsolidatedRangefill = 0;
+$count_ConsolidatedMultimatch = 0;
+$count_RangefillFailure = 0;
+$count_NotFound = 0;
+$total_curl_time = 0;
+$total_mysql_time = 0;
 
 $row_data = array();
 $JSON_Payload = array();
@@ -150,8 +153,8 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         'building' => $row['building'] ,
     );
 
-    // keep accumulating until we reach CHUNK_SIZE or the end of our addresses.
-    if (count($JSON_Payload) < $CHUNK_SIZE && $rownum != $address_count) {
+    // keep accumulating until we reach chunk size or the end of our addresses.
+    if (count($JSON_Payload) < $chunk_size && $rownum != $address_count) {
         continue;
     }
 
@@ -161,7 +164,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // Send the cURL request
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $BULK_DISTASSIGN_URL);
+    curl_setopt($ch, CURLOPT_URL, $bulk_distassign_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload_encoded);
@@ -170,7 +173,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
     curl_close($ch);
     bbscript_log("trace", "Received Curl in     ".round($curl_time, 3));
-    $curl_time_total += $curl_time;
+    $total_curl_time += $curl_time;
 
     // check for malformed response
     if (( $output === null )) {
@@ -187,7 +190,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Process the results
-    $Count_total += count($response);
+    $count_Total += count($response);
     $Update_Payload = array();
 
     foreach ($response as $id => $value) {
@@ -195,16 +198,16 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         $message = $value['message'];
 
         if ($status_code == "MATCH") {
-            $Count_match++;
+            $count_Match++;
             bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
             if ($message == "EXACT MATCH") {
-                $Count_ExactMatch++;
+                $count_ExactMatch++;
             }
             elseif ($message == "CONSOLIDATED RANGEFILL") {
-                $Count_ConsolidatedRangefill++;
+                $count_ConsolidatedRangefill++;
             }
             elseif ($message == "CONSOLIDATED MULTIMATCH") {
-                $Count_ConsolidatedMultimatch++;
+                $count_ConsolidatedMultimatch++;
             }
 
             $Update_Payload[$value['address_id']] = array(
@@ -230,34 +233,34 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         }
         elseif ($status_code == "MULTIMATCH") { // shouldn't exist anymore
-            $Count_multimatch++;
+            $count_Multimatch++;
             bbscript_log("warn", "[MULTIMATCH][".$value['message']."] on record #".$value['address_id']);
 
         }
         elseif ($status_code == "NOMATCH") {
             if ($message == "RANGEFILL") {
-                $Count_RangefillFailure++;
+                $count_RangefillFailure++;
             }
             else {
-                $Count_NotFound++;
+                $count_NotFound++;
             }
 
-            $Count_nomatch++;
+            $count_Nomatch++;
             bbscript_log("warn", "[NOMATCH][".$value['message']."] on record #".$value['address_id']);
 
         }
         elseif ($status_code == "INVALID") {
-             $Count_invalid++;
+             $count_Invalid++;
              bbscript_log("warn", "[INVALID][".$value['message']."] on record #".$value['address_id']);
         }
-        else { // Uknown status_code, what?!?
-            $Count_error++;
+        else { // Unknown status_code, what?!?
+            $count_Error++;
             bbscript_log("ERROR", "on record ".$value['address_id']." with message " .$value['message'] );
         }
     }
 
     // Store them into the database
-    if (count($Update_Payload) > 0 && !$DRY_RUN) {
+    if (count($Update_Payload) > 0 && !$dry_run) {
         $update_time_start = microtime(true);
         bbscript_log("trace", "Updating ".count($Update_Payload)." records.");
 
@@ -311,7 +314,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         $update_time = get_elapsed_time($update_time_start);
         bbscript_log("trace", "Updated database in ".round($update_time, 3));
-
+        $total_mysql_time += $update_time;
     }
     else {
         bbscript_log("warn", "No Records to update");
@@ -321,42 +324,41 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // timer for debug
     $time = get_elapsed_time($time_start);
-    $Records_per_sec = round(($Count_total / $time),1);
-    $Mysql_per_sec = round(($Count_total / ($time - $curl_time_total)),1);
-    $Curl_per_sec = round(($Count_total / $curl_time_total),1);
-    $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
-    $Match_percent = round((($Count_match / $Count_total) * 100),2);
-    $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
-    $Invalid_percent = round((($Count_invalid / $Count_total) * 100),2);
-    $Error_percent = round((($Count_error / $Count_total ) * 100),2);;
-    $ExactMatch_percent = round((($Count_ExactMatch / $Count_total ) * 100),2);;
-    $ConsolidatedRangefill_percent = round((($Count_ConsolidatedRangefill / $Count_total ) * 100),2);;
-    $ConsolidatedMultimatch_percent = round((($Count_ConsolidatedMultimatch / $Count_total ) * 100),2);;
-    $RangefillFailure_percent = round((($Count_RangefillFailure / $Count_total ) * 100),2);;
-    $NotFound_percent = round((($Count_NotFound / $Count_total ) * 100),2);;
+    $Records_per_sec = round($count_Total / $time, 1);
+    $Mysql_per_sec = round($count_Total / $total_mysql_time, 1);
+    $Curl_per_sec = round($count_Total / $total_curl_time, 1);
+    $Multimatch_percent = round($count_Multimatch / $count_Total * 100, 2);
+    $Match_percent = round((($count_Match / $count_Total) * 100), 2);
+    $Nomatch_percent = round($count_Nomatch / $count_Total * 100, 2);
+    $Invalid_percent = round($count_Invalid / $count_Total * 100, 2);
+    $Error_percent = round($count_Error / $count_Total * 100,  2);
+    $ExactMatch_percent = round($count_ExactMatch / $count_Total * 100, 2);
+    $ConsolidatedRangefill_percent = round($count_ConsolidatedRangefill / $count_Total * 100, 2);
+    $ConsolidatedMultimatch_percent = round($count_ConsolidatedMultimatch / $count_Total * 100, 2);
+    $RangefillFailure_percent = round($count_RangefillFailure / $count_Total * 100, 2);
+    $NotFound_percent = round($count_NotFound / $count_Total * 100, 2);
 
-    $seconds_left = round((($total_found -$Count_total ) / $Records_per_sec ), 0);
+    $seconds_left = round(($total_found - $count_Total) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
     bbscript_log("info", "-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info", "[DONE @]           $finish_at (in ".$seconds_left." seconds)");
-    bbscript_log("info", "[COUNT]            $Count_total");
+    bbscript_log("info", "[COUNT]            $count_Total");
     bbscript_log("info", "[TIME]             ".round($time, 4));
 
-    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$Count_total." in ".round($time,3).")");
-    bbscript_log("trace", "[SPEED]    [MYSQL] $Mysql_per_sec per second (".$Count_total." in ".round(($time - $curl_time_total),3).")");
-    bbscript_log("trace", "[SPEED]    [CURL]  $Curl_per_sec per second (".$Count_total." in ".round($curl_time_total,3).")");
-    bbscript_log("info", "[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
-    bbscript_log("trace", "[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
-    bbscript_log("trace", "[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
-    bbscript_log("trace", "[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
-    bbscript_log("info", "[NOMATCH]  [TOTAL] $Count_nomatch ($Nomatch_percent %)");
-    bbscript_log("trace", "[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
- // bbscript_log("info", "[NOMATCH]  [NO]    $Count_NotFound ($NotFound_percent %)"); // not nessisary, only 2 options
-    bbscript_log("info", "[MULTI]    [TOTAL] $Count_multimatch ($Multimatch_percent %)");
-    bbscript_log("info", "[INVALID]  [TOTAL] $Count_invalid ($Invalid_percent %)");
-    bbscript_log("info", "[ERROR]    [TOTAL] $Count_error ($Error_percent %)");
-
+    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count_Total." in ".round($time, 3).")");
+    bbscript_log("trace", "[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count_Total." in ".round($total_mysql_time, 3).")");
+    bbscript_log("trace", "[SPEED]    [CURL]  $Curl_per_sec per second (".$count_Total." in ".round($total_curl_time, 3).")");
+    bbscript_log("info", "[MATCH]    [TOTAL] $count_Match ($Match_percent %)");
+    bbscript_log("trace", "[MATCH]    [EXACT] $count_ExactMatch ($ExactMatch_percent %)");
+    bbscript_log("trace", "[MATCH]    [RANGE] $count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
+    bbscript_log("trace", "[MATCH]    [MULTI] $count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] $count_Nomatch ($Nomatch_percent %)");
+    bbscript_log("trace", "[NOMATCH]  [RANGE] $count_RangefillFailure ($RangefillFailure_percent %)");
+ // bbscript_log("info", "[NOMATCH]  [NO]    $count_NotFound ($NotFound_percent %)"); // not necessary, only 2 options
+    bbscript_log("info", "[MULTI]    [TOTAL] $count_Multimatch ($Multimatch_percent %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] $count_Invalid ($Invalid_percent %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] $count_Error ($Error_percent %)");
 }
 
 
