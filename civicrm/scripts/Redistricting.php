@@ -300,7 +300,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     // timer for debug
     $time = get_elapsed_time($time_start);
     $Records_per_sec = round($count_Total / $time, 1);
-    $Mysql_per_sec = round($count_Total / $total_mysql_time, 1);
+    $Mysql_per_sec = ($total_mysql_time == 0 ) ? 0 : round($count_Total / $total_mysql_time, 1);
     $Curl_per_sec = round($count_Total / $total_curl_time, 1);
     $Multimatch_percent = round($count_Multimatch / $count_Total * 100, 2);
     $Match_percent = round((($count_Match / $count_Total) * 100), 2);
