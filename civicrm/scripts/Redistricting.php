@@ -34,7 +34,7 @@ if (!($SAGE_BASE && $SAGE_KEY)) {
 $BULK_DISTASSIGN_URL = $SAGE_BASE.'/json/bulkdistrict/body?key='.$SAGE_KEY;
 
 // Initialize script parameters from options and defaults
-$CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
+$CHUNK_SIZE = ($optList['chunk']!='') ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "TRACE";
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($LOG_LEVEL)][0];
 $DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : FAlSE;
