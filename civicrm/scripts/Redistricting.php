@@ -4,7 +4,7 @@
 // Authors: Stefan Crain & Graylin Kim
 // Organization: New York State Senate
 // Date: 2012-10-26
-// Revised: 2012-10-30
+// Revised: 2012-11-21
 
 // ./Redistricting.php -S skelos --chunk 2000 --log 5 --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
@@ -14,8 +14,9 @@ set_time_limit(0);
 require_once 'script_utils.php';
 $prog = basename(__FILE__);
 $shortopts = "c:l:m:d";
-$longopts = array("chunk=","log=","max=","dryrun");
+$longopts = array("chunk=", "log=", "max=", "dryrun");
 $optlist = civicrm_script_init($shortopts, $longopts);
+
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
     $usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--max \"number\"] [--dryrun]";
@@ -25,23 +26,27 @@ if ($optlist === null) {
 
 // Use instance settings to configure for SAGE
 $BB_CONFIG = get_bluebird_instance_config($optList['site']);
-$SAGE_BASE = array_key_exists('sage.api.base',$BB_CONFIG) ? $BB_CONFIG['sage.api.base'] : FALSE;
-$SAGE_KEY = array_key_exists('sage.api.key',$BB_CONFIG) ? $BB_CONFIG['sage.api.key'] : FALSE;
+$SAGE_BASE = array_key_exists('sage.api.base', $BB_CONFIG) ? $BB_CONFIG['sage.api.base'] : false;
+$SAGE_KEY = array_key_exists('sage.api.key', $BB_CONFIG) ? $BB_CONFIG['sage.api.key'] : false;
+
 if (!($SAGE_BASE && $SAGE_KEY)) {
-    error_log(bbscript_log("fatal","sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
+    error_log(bbscript_log("fatal", "sage.api.base and sage.api.key must be set in your bluebird.cfg file."));
     exit(1);
 }
+
 $BULK_DISTASSIGN_URL = $SAGE_BASE.'/json/bulkdistrict/body?key='.$SAGE_KEY;
 
 // Initialize script parameters from options and defaults
 $CHUNK_SIZE = array_key_exists('chunk', $optlist) ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "TRACE";
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($LOG_LEVEL)][0];
-$DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : FAlSE;
-$MAX_ID = array_key_exists('max', $optlist) ? $optlist['max'] : FALSE;
-if($MAX_ID && is_numeric($MAX_ID)){
+$DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : false;
+$MAX_ID = array_key_exists('max', $optlist) ? $optlist['max'] : false;
+
+if ($MAX_ID && is_numeric($MAX_ID)) {
     $MAX_ID_CONDITION = " AND address.id < ".$MAX_ID;
-} else {
+}
+else {
     $MAX_ID_CONDITION = "";
 }
 
@@ -93,11 +98,11 @@ $query = "
     ORDER BY address.id ASC
 ";
 
-bbscript_log("debug","Querying the database for addresses using\n$query");
+bbscript_log("debug", "Querying the database for addresses using\n$query");
 $result = mysql_query($query, $db);
 $total_found = mysql_num_rows($result);
 
-bbscript_log("debug",$total_found." addresses found.");
+bbscript_log("debug", $total_found." addresses found.");
 // start timer
 $time_start = microtime(true);
 
@@ -114,47 +119,50 @@ $Count_ConsolidatedRangefill = 0;
 $Count_ConsolidatedMultimatch = 0;
 $Count_RangefillFailure = 0;
 $Count_NotFound = 0;
+$curl_time_total = 0;
 
 $town_map = array(
     //'SARATOGA SPRINGS' => 'SARATOGA SPGS',
 );
 
-$raw_data = array();
+$row_data = array();
 $JSON_Payload = array();
 $address_count = mysql_num_rows($result);
-for ($row = 1; $row <= $address_count; $row++) {
+
+for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     // Fetch the new row, no null check needed since we have the count
     // If we do pull back a NULL something bad happened and dying is okay
-    $raw = mysql_fetch_assoc($result);
-    $raw_data[$raw['id']] = $raw;
+    $row = mysql_fetch_assoc($result);
+    $row_data[$row['id']] = $row;
 
     // Clean the data manually till we can do mass validation.
-    $town = clean($raw['town']);
-    $raw['town'] = preg_replace(array('/^EAST /','/^WEST /','/^SOUTH /','/^NORTH /', '/ SPRINGS$/','/PETERSBURG$/'),array('E ','W ','S ','N ',' SPGS','PETERSBURGH'),$town);
+    $town = clean($row['town']);
+    $row['town'] = preg_replace(array('/^EAST /','/^WEST /','/^SOUTH /','/^NORTH /', '/ SPRINGS$/','/PETERSBURG$/'),array('E ','W ','S ','N ',' SPGS','PETERSBURGH'),$town);
 
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
 
-    $street = clean($raw['street2']);
-    $raw['street2'] = preg_replace($match,$replace,$street);
+    $street = clean($row['street2']);
+    $row['street2'] = preg_replace($match, $replace, $street);
 
-    $street = clean($raw['street1']);
-    $raw['street1'] = preg_replace($match,$replace,$street);
+    $street = clean($row['street1']);
+    $row['street1'] = preg_replace($match, $replace, $street);
 
     // Format for the bulkdistrict tool
-    $JSON_Payload[$raw['id']]= array(
-        'street' => $raw['street1'].' '.$raw['street2'],
-        'town' => $raw['town'],
-        'state' => $raw['state'],
-        'zip5' => $raw['zip'],
+    $JSON_Payload[$row['id']]= array(
+        'street' => $row['street1'].' '.$row['street2'],
+        'town' => $row['town'],
+        'state' => $row['state'],
+        'zip5' => $row['zip'],
         'apt' => NULL,
         'building_chr' => $row['building_chr'],
-        'building' => $raw['building'] ,
+        'building' => $row['building'] ,
     );
 
     // keep accumulating until we reach CHUNK_SIZE or the end of our addresses.
-    if (count($JSON_Payload) < $CHUNK_SIZE && $row != $address_count)
+    if (count($JSON_Payload) < $CHUNK_SIZE && $rownum != $address_count) {
         continue;
+    }
 
     // Encode our payload and reset for the next batch
     $JSON_Payload_encoded = json_encode($JSON_Payload);
@@ -170,12 +178,12 @@ for ($row = 1; $row <= $address_count; $row++) {
     $output = curl_exec($ch);
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
     curl_close($ch);
-    bbscript_log("trace", "Recieved Curl in     ".round($curl_time, 3));
+    bbscript_log("trace", "Received Curl in     ".round($curl_time, 3));
     $curl_time_total += $curl_time;
 
     // check for malformed response
     if (( $output === null )) {
-        bbscript_log("fatal", "CURL Failed to recieve a Response");
+        bbscript_log("fatal", "CURL Failed to receive a Response");
         continue;
     }
 
@@ -187,7 +195,6 @@ for ($row = 1; $row <= $address_count; $row++) {
         continue;
     }
 
-
     // Process the results
     $Count_total += count($response);
     $Update_Payload = array();
@@ -196,14 +203,16 @@ for ($row = 1; $row <= $address_count; $row++) {
         $status_code = $value['status_code'];
         $message = $value['message'];
 
-        if($status_code == "MATCH"){
-        	$Count_match++;
-            bbscript_log("trace","[MATCH][".$value['message']."] on record #".$value['address_id']);
-            if($message == "EXACT MATCH"){
+        if ($status_code == "MATCH") {
+            $Count_match++;
+            bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
+            if ($message == "EXACT MATCH") {
                 $Count_ExactMatch++;
-            }elseif($message == "CONSOLIDATED RANGEFILL"){
+            }
+            elseif ($message == "CONSOLIDATED RANGEFILL") {
                 $Count_ConsolidatedRangefill++;
-            }elseif($message == "CONSOLIDATED MULTIMATCH"){
+            }
+            elseif ($message == "CONSOLIDATED MULTIMATCH") {
                 $Count_ConsolidatedMultimatch++;
             }
 
@@ -228,27 +237,31 @@ for ($row = 1; $row <= $address_count; $row++) {
                 // 'ward_code'=>$value['matches'][0]['ward_code']
             );
 
-        } elseif ($status_code == "MULTIMATCH" ) { // shouldn't exist anymore
-         	$Count_multimatch++;
-         	bbscript_log("warn","[MULTIMATCH][".$value['message']."] on record #".$value['address_id']);
+        }
+        elseif ($status_code == "MULTIMATCH") { // shouldn't exist anymore
+            $Count_multimatch++;
+            bbscript_log("warn", "[MULTIMATCH][".$value['message']."] on record #".$value['address_id']);
 
-        } elseif ($status_code == "NOMATCH" ) {
-            if($message == "RANGEFILL"){
+        }
+        elseif ($status_code == "NOMATCH") {
+            if ($message == "RANGEFILL") {
                 $Count_RangefillFailure++;
-            }else{
+            }
+            else {
                 $Count_NotFound++;
             }
 
             $Count_nomatch++;
-            bbscript_log("warn","[NOMATCH][".$value['message']."] on record #".$value['address_id']);
+            bbscript_log("warn", "[NOMATCH][".$value['message']."] on record #".$value['address_id']);
 
-        }elseif ($status_code == "INVALID"){
+        }
+        elseif ($status_code == "INVALID") {
              $Count_invalid++;
-             bbscript_log("warn","[INVALID][".$value['message']."] on record #".$value['address_id']);
-
-        } else { // Uknown status_code, what?!?
+             bbscript_log("warn", "[INVALID][".$value['message']."] on record #".$value['address_id']);
+        }
+        else { // Uknown status_code, what?!?
             $Count_error++;
-            bbscript_log("ERROR","on record ".$value['address_id']." with message " .$value['message'] );
+            bbscript_log("ERROR", "on record ".$value['address_id']." with message " .$value['message'] );
         }
     }
 
@@ -261,14 +274,14 @@ for ($row = 1; $row <= $address_count; $row++) {
         foreach ($Update_Payload as $id => $value) {
             // bbscript_log("trace", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
 
-            $raw = $raw_data[$id];
+            $row = $row_data[$id];
      
-            $note = "ADDRESS ID:$id \n ADDRESS:".$raw['street1']." ".$raw['street2'].", ".$raw['town']." ". $raw['state'].", ".$raw['zip']." ".$row['building']." ".$raw['building_chr']." \n UPDATES: SEN:".getValue($raw['senate_code'])."=>{$value['senate_code']}, CO:".getValue($raw['county_code'])."=>{$value['county_code']}, CONG:".getValue($raw['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($raw['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($raw['election_code'])."=>{$value['election_code']}";
+            $note = "ADDRESS ID:$id \n ADDRESS:".$row['street1']." ".$row['street2'].", ".$row['town']." ". $row['state'].", ".$row['zip']." ".$row['building']." ".$row['building_chr']." \n UPDATES: SEN:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CONG:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($row['election_code'])."=>{$value['election_code']}";
 
             // here's the civi way to add a note, but slow as hell
             // $params = array( 
             //     'entity_table' => 'civicrm_contact',
-            //     'entity_id' => $raw['contact_id'],
+            //     'entity_id' => $row['contact_id'],
             //     'note' => $note,
             //     'contact_id' => 1,
             //     'modified_date' => date("Y-m-d"),
@@ -280,7 +293,7 @@ for ($row = 1; $row <= $address_count; $row++) {
 
             mysql_query("
                 INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-                VALUES ('civicrm_contact',{$raw['contact_id']},'$note', 1, '".date("Y-m-d")."', 'Redistricting update 3 ".date("m-d-Y")."',0)",$db
+                VALUES ('civicrm_contact',{$row['contact_id']},'$note', 1, '".date("Y-m-d")."', 'Redistricting update 3 ".date("m-d-Y")."',0)", $db
             );
 
             mysql_query("
@@ -290,7 +303,7 @@ for ($row = 1; $row <= $address_count; $row++) {
                     ny_assembly_district_48 = {$value['assembly_code']},
                     election_district_49 = {$value['election_code']},
                     county_50 = {$value['county_code']}
-                WHERE civicrm_value_district_information_7.entity_id = $id",$db
+                WHERE civicrm_value_district_information_7.entity_id = $id", $db
             );
             // ",
             // county_legislative_district_51   = {$value['cleg_code']},
@@ -298,21 +311,23 @@ for ($row = 1; $row <= $address_count; $row++) {
             // ward_53   = {$value['ward_code']},
             // school_district_54   = {$value['school_code']},
         }
-        mysql_query("COMMIT",$db);
+        mysql_query("COMMIT", $db);
 
         $update_time = get_elapsed_time($update_time_start);
         bbscript_log("trace", "Updated database in ".round($update_time, 3));
 
-    } else {
+    }
+    else {
         bbscript_log("warn", "No Records to update");
     }
-    $raw_data = array();
+
+    $row_data = array();
 
     // timer for debug
     $time = get_elapsed_time($time_start);
-    $Records_per_sec = round(($Count_total / round($time,1)),1);
-	$Mysql_per_sec = round(($Count_total / round(($time -$curl_time_total),1)),1);
-    $Curl_per_sec = round(($Count_total / round($curl_time_total,1)),1);
+    $Records_per_sec = round(($Count_total / $time),1);
+    $Mysql_per_sec = round(($Count_total / ($time - $curl_time_total)),1);
+    $Curl_per_sec = round(($Count_total / $curl_time_total),1);
     $Multimatch_percent = round((($Count_multimatch / $Count_total) * 100),2);
     $Match_percent = round((($Count_match / $Count_total) * 100),2);
     $Nomatch_percent = round((($Count_nomatch / $Count_total) * 100),2);
@@ -327,34 +342,40 @@ for ($row = 1; $row <= $address_count; $row++) {
     $seconds_left = round((($total_found -$Count_total ) / $Records_per_sec ), 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
-	bbscript_log("info","-------    ------- ---- ---- ---- ---- ");
-    bbscript_log("info","[DONE @]           $finish_at (in ".$seconds_left." seconds)");
-    bbscript_log("info","[COUNT]            $Count_total");
-	bbscript_log("info","[TIME]             ".round($time, 4));
+    bbscript_log("info", "-------    ------- ---- ---- ---- ---- ");
+    bbscript_log("info", "[DONE @]           $finish_at (in ".$seconds_left." seconds)");
+    bbscript_log("info", "[COUNT]            $Count_total");
+    bbscript_log("info", "[TIME]             ".round($time, 4));
 
-    bbscript_log("info","[SPEED]    [TOTAL] $Records_per_sec per second (".$Count_total." in ".round($time,1).")");
-    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$Count_total." in ".round(($time -$curl_time_total),1).")");
-    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$Count_total." in ".round($curl_time_total,1).")");
-    bbscript_log("info","[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
-	bbscript_log("trace","[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
-    bbscript_log("trace","[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
-    bbscript_log("trace","[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
-    bbscript_log("info","[NOMATCH]  [TOTAL] $Count_nomatch ($Nomatch_percent %)");
-    bbscript_log("trace","[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
- // bbscript_log("info","[NOMATCH]  [NO]    $Count_NotFound ($NotFound_percent %)"); // not nessisary, only 2 options
-	bbscript_log("info","[MULTI]    [TOTAL] $Count_multimatch ($Multimatch_percent %)");
-	bbscript_log("info","[INVALID]  [TOTAL] $Count_invalid ($Invalid_percent %)");
-	bbscript_log("info","[ERROR]    [TOTAL] $Count_error ($Error_percent %)");
+    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$Count_total." in ".round($time,3).")");
+    bbscript_log("trace", "[SPEED]    [MYSQL] $Mysql_per_sec per second (".$Count_total." in ".round(($time - $curl_time_total),3).")");
+    bbscript_log("trace", "[SPEED]    [CURL]  $Curl_per_sec per second (".$Count_total." in ".round($curl_time_total,3).")");
+    bbscript_log("info", "[MATCH]    [TOTAL] $Count_match ($Match_percent %)");
+    bbscript_log("trace", "[MATCH]    [EXACT] $Count_ExactMatch ($ExactMatch_percent %)");
+    bbscript_log("trace", "[MATCH]    [RANGE] $Count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
+    bbscript_log("trace", "[MATCH]    [MULTI] $Count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] $Count_nomatch ($Nomatch_percent %)");
+    bbscript_log("trace", "[NOMATCH]  [RANGE] $Count_RangefillFailure ($RangefillFailure_percent %)");
+ // bbscript_log("info", "[NOMATCH]  [NO]    $Count_NotFound ($NotFound_percent %)"); // not nessisary, only 2 options
+    bbscript_log("info", "[MULTI]    [TOTAL] $Count_multimatch ($Multimatch_percent %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] $Count_invalid ($Invalid_percent %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] $Count_error ($Error_percent %)");
 
 }
 
-function clean($string) {
+
+function clean($string)
+{
     return preg_replace("/[.,']/","",strtoupper(trim($string)));
 }
-function getValue($string) {
-    if($string == FAlSE){
+
+
+function getValue($string)
+{
+    if ($string == FAlSE) {
          return "null";
-    }else{
+    }
+    else {
         return $string;
     }
- }
+}
