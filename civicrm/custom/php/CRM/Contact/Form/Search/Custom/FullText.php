@@ -123,7 +123,8 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
     }
   }
 
-  function __destruct() {}
+  function __destruct() {
+  }
 
   function initialize() {
     static $initialized = FALSE;
@@ -160,7 +161,7 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
       'subject' => 'varchar(255)',
       'details' => 'varchar(255)',
       'contribution_id' => 'int unsigned',
-      'contribution_type' => 'varchar(255)',
+      'financial_type'         => 'varchar(255)',
       'contribution_page' => 'varchar(255)',
       'contribution_receive_date' => 'datetime',
       'contribution_total_amount' => 'decimal(20,2)',
@@ -186,8 +187,8 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
     );
 
     $sql = "
-CREATE  TABLE {$this->_tableName} (
-";//NYSS FLAG
+CREATE TEMPORARY TABLE {$this->_tableName} (
+";
 
     foreach ($this->_tableFields as $name => $desc) {
       $sql .= "$name $desc,\n";
@@ -201,14 +202,14 @@ CREATE  TABLE {$this->_tableName} (
 
     $this->_entityIDTableName = "civicrm_temp_custom_entityID_{$randomNum}";
     $sql = "
-CREATE  TABLE {$this->_entityIDTableName} (
+CREATE TEMPORARY TABLE {$this->_entityIDTableName} (
   id int unsigned NOT NULL AUTO_INCREMENT,
   entity_id int unsigned NOT NULL,
-  
+
   UNIQUE INDEX unique_entity_id ( entity_id ),
   PRIMARY KEY ( id )
 ) ENGINE=HEAP DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci
-";//NYSS FLAG
+";
     CRM_Core_DAO::executeQuery($sql);
   }
 
@@ -275,7 +276,7 @@ CREATE  TABLE {$this->_entityIDTableName} (
     $sql = "
 DELETE     t.*
 FROM       {$this->_tableName} t
-WHERE      NOT EXISTS ( SELECT c.id 
+WHERE      NOT EXISTS ( SELECT c.id
                         FROM civicrm_acl_contact_cache c
                         WHERE c.user_id = %1 AND t.contact_id = c.contact_id )
 ";
@@ -285,7 +286,7 @@ WHERE      NOT EXISTS ( SELECT c.id
 DELETE     t.*
 FROM       {$this->_tableName} t
 WHERE      t.table_name = 'Activity' AND
-           NOT EXISTS ( SELECT c.id 
+           NOT EXISTS ( SELECT c.id
                         FROM civicrm_acl_contact_cache c
                         WHERE c.user_id = %1 AND ( t.target_contact_id = c.contact_id OR t.target_contact_id IS NULL ) )
 ";
@@ -295,7 +296,7 @@ WHERE      t.table_name = 'Activity' AND
 DELETE     t.*
 FROM       {$this->_tableName} t
 WHERE      t.table_name = 'Activity' AND
-           NOT EXISTS ( SELECT c.id 
+           NOT EXISTS ( SELECT c.id
                         FROM civicrm_acl_contact_cache c
                         WHERE c.user_id = %1 AND ( t.assignee_contact_id = c.contact_id OR t.assignee_contact_id IS NULL ) )
 ";
@@ -319,9 +320,7 @@ AND        cf.html_type IN ( 'Text', 'TextArea', 'RichTextEditor' )
 
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      if (!array_key_exists($dao->table_name,
-          $tables
-        )) {
+      if (!array_key_exists($dao->table_name, $tables)) {
         $tables[$dao->table_name] = array(
           'id' => 'entity_id',
           'fields' => array(),
@@ -334,10 +333,13 @@ AND        cf.html_type IN ( 'Text', 'TextArea', 'RichTextEditor' )
   function runQueries(&$tables) {
     $sql = "TRUNCATE {$this->_entityIDTableName}";
     CRM_Core_DAO::executeQuery($sql);
-CRM_Core_Error::debug_var('tableName',$this->_entityIDTableName);
+
     $maxRowCount = 0;
     foreach ($tables as $tableName => $tableValues) {
-      if ($tableName == 'sql') {
+      if ($tableName == 'final') {
+        continue;
+      }
+      else if ($tableName == 'sql') {
         foreach ($tableValues as $sqlStatement) {
           $sql = "
 REPLACE INTO {$this->_entityIDTableName} ( entity_id )
@@ -346,7 +348,6 @@ $sqlStatement
 ";
           CRM_Core_DAO::executeQuery($sql);
         }
-        CRM_Core_Error::debug_var('sql',$sql);
       }
       else {
         $clauses = array();
@@ -376,14 +377,21 @@ $sqlStatement
         }
 
         $sql = "
-REPLACE INTO {$this->_entityIDTableName} ( entity_id )
-SELECT  distinct {$tableValues['id']}
-FROM    $tableName
-WHERE   ( $whereClause )
-AND     {$tableValues['id']} IS NOT NULL
+REPLACE  INTO {$this->_entityIDTableName} ( entity_id )
+SELECT   {$tableValues['id']}
+FROM     $tableName
+WHERE    ( $whereClause )
+AND      {$tableValues['id']} IS NOT NULL
+GROUP BY {$tableValues['id']}
 {$this->_limitClause}
 ";
         CRM_Core_DAO::executeQuery($sql);
+      }
+    }
+
+    if (isset($tables['final'])) {
+      foreach ($tables['final'] as $sqlStatement) {
+        CRM_Core_DAO::executeQuery($sqlStatement);
       }
     }
 
@@ -405,8 +413,15 @@ AND        t.name LIKE {$this->_text}
 GROUP BY   et.entity_id
 ";
 
+    // lets delete all the deceased contacts from the entityID box
+    // this allows us to keep numbers in sync
+    // when we have acl contacts, the situation gets even more murky
+    $final = array();
+    $final[] = "DELETE FROM {$this->_entityIDTableName} WHERE entity_id IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)";
+
     $tables = array(
-      'civicrm_contact' => array('id' => 'id',
+      'civicrm_contact' => array(
+        'id' => 'id',
         'fields' => array(
           'sort_name' => NULL,
           'nick_name' => NULL,
@@ -437,7 +452,8 @@ GROUP BY   et.entity_id
           'note' => NULL,
         ),
       ),
-      'sql' => $contactSQL,
+      'sql'   => $contactSQL,
+      'final' => $final,
     );
 
     // get the custom data info
@@ -460,38 +476,38 @@ GROUP BY   et.entity_id
     $contactSQL = array();
 
     $contactSQL[] = "
-SELECT     distinct ca.id 
+SELECT     distinct ca.id
 FROM       civicrm_activity ca
 INNER JOIN civicrm_contact c ON ca.source_contact_id = c.id
 LEFT JOIN  civicrm_email e ON e.contact_id = c.id
 LEFT JOIN  civicrm_option_group og ON og.name = 'activity_type'
-LEFT JOIN  civicrm_option_value ov ON ( ov.option_group_id = og.id ) 
-WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
-           ( e.email LIKE {$this->_text}    AND 
-             ca.activity_type_id = ov.value AND
-             ov.name IN ('Inbound Email', 'Email') )
-AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
-     c.is_deleted = 0 OR c.is_deleted IS NULL)
+LEFT JOIN  civicrm_option_value ov ON ( ov.option_group_id = og.id )
+WHERE      ( (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
+             (e.email LIKE {$this->_text}    AND
+              ca.activity_type_id = ov.value AND
+              ov.name IN ('Inbound Email', 'Email') ) )
+AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
+AND        (c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
     $contactSQL[] = "
-SELECT     distinct ca.id 
+SELECT     distinct ca.id
 FROM       civicrm_activity ca
 INNER JOIN civicrm_activity_target cat ON cat.activity_id = ca.id
 INNER JOIN civicrm_contact c ON cat.target_contact_id = c.id
 LEFT  JOIN civicrm_email e ON cat.target_contact_id = e.contact_id
 LEFT  JOIN civicrm_option_group og ON og.name = 'activity_type'
-LEFT  JOIN civicrm_option_value ov ON ( ov.option_group_id = og.id ) 
-WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
-           ( e.email LIKE {$this->_text}    AND 
-             ca.activity_type_id = ov.value AND
-             ov.name IN ('Inbound Email', 'Email') )
-AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
-     c.is_deleted = 0 OR c.is_deleted IS NULL)
+LEFT  JOIN civicrm_option_value ov ON ( ov.option_group_id = og.id )
+WHERE      ( (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
+             ( e.email LIKE {$this->_text}    AND
+               ca.activity_type_id = ov.value AND
+               ov.name IN ('Inbound Email', 'Email') ) )
+AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
+AND        (c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
     $contactSQL[] = "
-SELECT     distinct ca.id 
+SELECT     distinct ca.id
 FROM       civicrm_activity ca
 INNER JOIN civicrm_activity_assignment caa ON caa.activity_id = ca.id
 INNER JOIN civicrm_contact c ON caa.assignee_contact_id = c.id
@@ -500,31 +516,35 @@ LEFT  JOIN civicrm_option_group og ON og.name = 'activity_type'
 LEFT  JOIN civicrm_option_value ov ON ( ov.option_group_id = og.id )
 WHERE      caa.activity_id = ca.id
 AND        caa.assignee_contact_id = c.id
-AND        (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})  OR
-           ( e.email LIKE {$this->_text} AND
-             ca.activity_type_id = ov.value AND
-             ov.name IN ('Inbound Email', 'Email') )
-AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
-     c.is_deleted = 0 OR c.is_deleted IS NULL)
+AND        ( (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})  OR
+             (e.email LIKE {$this->_text} AND
+              ca.activity_type_id = ov.value AND
+              ov.name IN ('Inbound Email', 'Email')) )
+AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
+AND        (c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
     $contactSQL[] = "
 SELECT     et.entity_id
 FROM       civicrm_entity_tag et
 INNER JOIN civicrm_tag t ON et.tag_id = t.id
+INNER JOIN civicrm_activity ca ON et.entity_id = ca.id
 WHERE      et.entity_table = 'civicrm_activity'
 AND        et.tag_id       = t.id
 AND        t.name LIKE {$this->_text}
+AND        (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 GROUP BY   et.entity_id
 ";
 
+    $contactSQL[] = "
+SELECT distinct ca.id
+FROM   civicrm_activity ca
+WHERE  (ca.subject LIKE  {$this->_text} OR ca.details LIKE  {$this->_text})
+AND    (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
+";
+
     $tables = array(
-      'civicrm_activity' => array('id' => 'id',
-        'fields' => array(
-          'subject' => NULL,
-          'details' => NULL,
-        ),
-      ),
+      'civicrm_activity' => array( 'fields' => array() ),
       'sql' => $contactSQL,
     );
 
@@ -552,7 +572,7 @@ GROUP BY   et.entity_id
 
     $contactSQL[] = "
 SELECT    distinct cc.id
-FROM      civicrm_case cc 
+FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
 WHERE     (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
@@ -562,12 +582,12 @@ WHERE     (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}
     if ($this->_textID) {
       $contactSQL[] = "
 SELECT    distinct cc.id
-FROM      civicrm_case cc 
+FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
 WHERE     cc.id = {$this->_textID}
           AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
-    ";
+";
     }
 
     $contactSQL[] = "
@@ -602,7 +622,7 @@ GROUP BY   et.entity_id
   function fillContributionIDs() {
     $contactSQL = array();
     $contactSQL[] = "
-SELECT     distinct cc.id 
+SELECT     distinct cc.id
 FROM       civicrm_contribution cc
 INNER JOIN civicrm_contact c ON cc.contact_id = c.id
 WHERE      (c.sort_name LIKE {$this->_text} OR
@@ -649,7 +669,7 @@ WHERE      (c.sort_name LIKE {$this->_text} OR
   function fillParticipantIDs() {
     $contactSQL = array();
     $contactSQL[] = "
-SELECT     distinct cp.id 
+SELECT     distinct cp.id
 FROM       civicrm_participant cp
 INNER JOIN civicrm_contact c ON cp.contact_id = c.id
 WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
@@ -693,7 +713,7 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
   function fillMembershipIDs() {
     $contactSQL = array();
     $contactSQL[] = "
-SELECT     distinct cm.id 
+SELECT     distinct cm.id
 FROM       civicrm_membership cm
 INNER JOIN civicrm_contact c ON cm.contact_id = c.id
 WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
@@ -819,7 +839,6 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
         $summary['addShowAllLink'][$table] = FALSE;
       }
     }
-
     return $summary;
   }
 
@@ -846,7 +865,7 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
     $this->initialize();
 
     $sql = "
-SELECT 
+SELECT
   contact_a.contact_id   as contact_id  ,
   contact_a.sort_name as sort_name
 FROM
@@ -901,7 +920,7 @@ INNER JOIN civicrm_contact c ON ct.entity_id = c.id
       case 'Activity':
         $sql = "
 INSERT INTO {$this->_tableName}
-( table_name, activity_id, subject, details, contact_id, sort_name, assignee_contact_id, assignee_sort_name, target_contact_id, 
+( table_name, activity_id, subject, details, contact_id, sort_name, assignee_contact_id, assignee_sort_name, target_contact_id,
   target_sort_name, activity_type_id, case_id, client_id )
 SELECT    'Activity', ca.id, substr(ca.subject, 1, 50), substr(ca.details, 1, 250),
            c1.id, c1.sort_name,
@@ -920,6 +939,7 @@ LEFT JOIN  civicrm_contact c3 ON cat.target_contact_id = c3.id
 LEFT JOIN  civicrm_case_activity cca ON cca.activity_id = ca.id
 LEFT JOIN  civicrm_case_contact ccc ON ccc.case_id = cca.case_id
 WHERE (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
+GROUP BY ca.id
 {$this->_limitDetailClause}
 ";
         break;
@@ -927,17 +947,17 @@ WHERE (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
       case 'Contribution':
         $sql = "
 INSERT INTO {$this->_tableName}
-( table_name, contact_id, sort_name, contribution_id, contribution_type, contribution_page, contribution_receive_date, 
+( table_name, contact_id, sort_name, contribution_id, financial_type, contribution_page, contribution_receive_date,
   contribution_total_amount, contribution_trxn_Id, contribution_source, contribution_status, contribution_check_number )
-   SELECT  'Contribution', c.id, c.sort_name, cc.id, cct.name, ccp.title, cc.receive_date, 
-           cc.total_amount, cc.trxn_id, cc.source, contribution_status.label, cc.check_number 
+   SELECT  'Contribution', c.id, c.sort_name, cc.id, cct.name, ccp.title, cc.receive_date,
+           cc.total_amount, cc.trxn_id, cc.source, contribution_status.label, cc.check_number
      FROM  {$this->_entityIDTableName} ct
 INNER JOIN civicrm_contribution cc ON cc.id = ct.entity_id
 LEFT JOIN  civicrm_contact c ON cc.contact_id = c.id
-LEFT JOIN  civicrm_contribution_type cct ON cct.id = cc.contribution_type_id
-LEFT JOIN  civicrm_contribution_page ccp ON ccp.id = cc.contribution_page_id 
+LEFT JOIN  civicrm_financial_type cct ON cct.id = cc.financial_type_id
+LEFT JOIN  civicrm_contribution_page ccp ON ccp.id = cc.contribution_page_id
 LEFT JOIN  civicrm_option_group option_group_contributionStatus ON option_group_contributionStatus.name = 'contribution_status'
-LEFT JOIN  civicrm_option_value contribution_status ON 
+LEFT JOIN  civicrm_option_value contribution_status ON
 ( contribution_status.option_group_id = option_group_contributionStatus.id AND contribution_status.value = cc.contribution_status_id )
 {$this->_limitDetailClause}
 ";
@@ -946,9 +966,9 @@ LEFT JOIN  civicrm_option_value contribution_status ON
       case 'Participant':
         $sql = "
 INSERT INTO {$this->_tableName}
-( table_name, contact_id, sort_name, participant_id, event_title, participant_fee_level, participant_fee_amount, 
+( table_name, contact_id, sort_name, participant_id, event_title, participant_fee_level, participant_fee_amount,
 participant_register_date, participant_source, participant_status, participant_role )
-   SELECT  'Participant', c.id, c.sort_name, cp.id, ce.title, cp.fee_level, cp.fee_amount, cp.register_date, cp.source, 
+   SELECT  'Participant', c.id, c.sort_name, cp.id, ce.title, cp.fee_level, cp.fee_amount, cp.register_date, cp.source,
            participantStatus.label, cp.role_id
      FROM  {$this->_entityIDTableName} ct
 INNER JOIN civicrm_participant cp ON cp.id = ct.entity_id
@@ -960,11 +980,11 @@ LEFT JOIN  civicrm_participant_status_type participantStatus ON participantStatu
         break;
 
       case 'Membership':
-        $sql = " 
+        $sql = "
 INSERT INTO {$this->_tableName}
-( table_name, contact_id, sort_name, membership_id, membership_type, membership_fee, membership_start_date, 
+( table_name, contact_id, sort_name, membership_id, membership_type, membership_fee, membership_start_date,
 membership_end_date, membership_source, membership_status )
-   SELECT  'Membership', c.id, c.sort_name, cm.id, cmt.name, cc.total_amount, cm.start_date, cm.end_date, cm.source, cms.name 
+   SELECT  'Membership', c.id, c.sort_name, cm.id, cmt.name, cc.total_amount, cm.start_date, cm.end_date, cm.source, cms.name
      FROM  {$this->_entityIDTableName} ct
 INNER JOIN civicrm_membership cm ON cm.id = ct.entity_id
 LEFT JOIN  civicrm_contact c ON cm.contact_id = c.id
@@ -985,7 +1005,7 @@ FROM       {$this->_entityIDTableName} ct
 INNER JOIN civicrm_case cc ON cc.id = ct.entity_id
 LEFT JOIN  civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN  civicrm_contact c ON ccc.contact_id = c.id
-{$this->_limitClause}
+{$this->_limitDetailClause}
 ";
         break;
     }
