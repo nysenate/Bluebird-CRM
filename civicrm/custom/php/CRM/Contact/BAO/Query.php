@@ -3131,6 +3131,13 @@ WHERE  id IN ( $groupIDs )
 
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
+    //NYSS 5494 support multiple values
+    if ( strpos($value, ',') !== FALSE && $name == 'postal_code' ) {
+      $op = 'IN';
+      $value = str_replace(array('(',')'), '', $value);
+      $value = '('.trim($value).')';
+    }
+
     // Handle numeric postal code range searches properly by casting the column as numeric
     if (is_numeric($value)) {
       $field = 'ROUND(civicrm_address.postal_code)';
