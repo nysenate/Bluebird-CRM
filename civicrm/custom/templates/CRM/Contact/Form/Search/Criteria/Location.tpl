@@ -76,7 +76,7 @@
 		   <tr>
 			<td>
 			  {$form.postal_code.label}<br />
-        {$form.postal_code.html}
+        {$form.postal_code.html|crmReplace:size:72|crmReplace:maxlength:72|crmReplace:class:big}{*NYSS 5494*}
 			</td>
 			<td>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

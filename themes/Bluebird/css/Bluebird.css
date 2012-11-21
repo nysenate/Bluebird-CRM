@@ -1688,3 +1688,7 @@ form#Contact .groupTagsKeywords .crm-section .label {
 #crm-container .widget-wrapper {
   min-height: 0%;
 }
+
+#crm-container #CommunicationPreferences #preferred_language {
+  width: 225px;
+}

@@ -253,19 +253,38 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
         $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
 
-        $params = array('version'=>3,
-                        'tag_id'=>CRM_Core_DAO::escapeString($tag_id),
-                        'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                        'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
-        $result = civicrm_api('entity_tag', 'create', $params);
+        // Allow use of tag_id[]=1&tag_id[]=2 for creating multiple tags at once.
+        if (is_array($tag_id)) {
+            $tag_ids = $tag_id;
+        } else {
+            $tag_ids = array($tag_id);
+        }
 
-        // Error handling for entity tags is somewhat less informative...
-        if($result['is_error'])
-            echo json_encode(array("code"=>self::ERROR, 'message'=>$result['error_message']));
-        else if($result['added'])
-            echo json_encode(array("code" => self::SUCCESS, "message"=>"SUCCESS"));
-        else
-            echo json_encode(array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag already exists."));
+        // Create all the tags and collect the results of each operations
+        $results = array();
+        foreach($tag_ids as $new_tag_id) {
+            $params = array('version'=>3,
+                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
+                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
+                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+            $result = civicrm_api('entity_tag', 'create', $params);
+
+            // Error handling for entity tags is somewhat less informative...
+            if($result['is_error'])
+                $results[] = array("code"=>self::ERROR, 'message'=>$result['error_message']);
+            else if($result['added'])
+                $results[] = array("code" => self::SUCCESS, "message"=>"SUCCESS");
+            else
+                $results[] = array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag [$new_tag_id] already exists.");
+        }
+
+        // Response is a json array of results if an array of ids was passed in.
+        if (is_array($tag_id)) {
+            echo json_encode($results);
+        } else {
+            echo json_encode($results[0]);
+        }
+
         CRM_Utils_System::civiExit();
     }
 
@@ -280,20 +299,38 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
         $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
 
-        // The API doesn't let you identify entity_tags by entity tag id
-        $params = array('version'=>3,
-                        'tag_id'=>CRM_Core_DAO::escapeString($tag_id),
-                        'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                        'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
-        $result = civicrm_api('entity_tag', 'delete', $params);
+        // Allow use of tag_id[]=1&tag_id[]=2 for creating multiple tags at once.
+        if (is_array($tag_id)) {
+            $tag_ids = $tag_id;
+        } else {
+            $tag_ids = array($tag_id);
+        }
 
-        // Error handling for entity tags is somewhat less informative...
-        if($result['is_error'])
-            echo json_encode(array("code"=>self::ERROR, 'message'=>$result['error_message']));
-        else if($result['removed'])
-            echo json_encode(array("code" => self::SUCCESS, "message"=>"SUCCESS"));
-        else
-            echo json_encode(array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag not found."));
+        // Create all the tags and collect the results of each operations
+        $results = array();
+        foreach($tag_ids as $new_tag_id) {
+            // The API doesn't let you identify entity_tags by entity tag id
+            $params = array('version'=>3,
+                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
+                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
+                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+            $result = civicrm_api('entity_tag', 'delete', $params);
+
+            // Error handling for entity tags is somewhat less informative...
+            if($result['is_error'])
+                echo json_encode(array("code"=>self::ERROR, 'message'=>$result['error_message']));
+            else if($result['removed'])
+                echo json_encode(array("code" => self::SUCCESS, "message"=>"SUCCESS"));
+            else
+                echo json_encode(array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag [$new_tag_id] not found."));
+        }
+
+        // Response is a json array of results if an array of ids was passed in.
+        if (is_array($tag_id)) {
+            echo json_encode($results);
+        } else {
+            echo json_encode($results[0]);
+        }
         CRM_Utils_System::civiExit();
     }
     

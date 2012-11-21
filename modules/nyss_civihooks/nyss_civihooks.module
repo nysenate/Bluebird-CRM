@@ -646,7 +646,7 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
   if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
     $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
     foreach ( $distFlds as $fld ) {
-      unset($errors["custom_$fld"]);
+      $form->setElementError("custom_$fld", NULL);
     }
   }
 

@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;//NYSS 5784
 
   /**
    * contact type of the contact that is been viewed
@@ -147,6 +147,9 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Core_Form {
     $params['contact_type'] = $this->_contactType;
     $params['contact_id']   = $this->_contactId;
     CRM_Contact_BAO_Contact::create( $params );
+
+    //NYSS 5784 trigger postProcess hook when in inline edit
+    $this->postProcessHook();
 
     $response = array('status' => 'save');
     echo json_encode($response);
