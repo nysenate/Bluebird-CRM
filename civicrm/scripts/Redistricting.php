@@ -263,15 +263,15 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         mysql_query("BEGIN", $db);
         foreach ($Update_Payload as $id => $value) {
-            // bbscript_log("trace", "ID:$id - SEN:{$value['senate_code']}, CO:{$value['county_code']}, CONG:{$value['congressional_code']}, ASSM:{$value['assembly_code']}, ELCT:{$value['election_code']}");
+            // bbscript_log("trace", "ID:$id - SD:{$value['senate_code']}, CO:{$value['county_code']}, CD:{$value['congressional_code']}, AD:{$value['assembly_code']}, ED:{$value['election_code']}");
 
             $row = $row_data[$id];
-     
-            $note = "ADDRESS ID:$id \n ADDRESS:".$row['street1']." ".$row['street2'].", ".$row['town']." ". $row['state'].", ".$row['zip']." ".$row['building']." ".$row['building_chr']." \n UPDATES: SEN:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CONG:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($row['election_code'])."=>{$value['election_code']}";
+
+            $note = "ADDRESS ID: $id\nADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
 
             mysql_query("
                 INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-                VALUES ('civicrm_contact',{$row['contact_id']},'$note', 1, '".date("Y-m-d")."', 'Redistricting update 3 ".date("m-d-Y")."',0)", $db
+                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', 'SAVED DISTRICT INFO', 0)", $db
             );
 
             mysql_query("
