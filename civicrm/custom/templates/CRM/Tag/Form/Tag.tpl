@@ -96,8 +96,18 @@ function hideStatus( ) {
     cj( '#restmsg' ).hide( );
 }
 cj(document).ready(function() {	
-	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit.tab');
-	callTagAjax();
+	cj.ajax({
+		url: '/civicrm/ajax/entity_tag/checkUserLevel/',
+		dataType: 'json',
+		success: function(data, status, XMLHttpRequest) {
+			if(data.code == true) {
+				callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit.tab');
+				callTagAjax();
+			}else{
+				// display blocked message if need be
+			}
+		}
+	});
 });
 function addControlBox(tagLabel, IDChecked) {
 	var floatControlBox;
