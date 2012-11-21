@@ -37,7 +37,7 @@ if (!($SAGE_BASE && $SAGE_KEY)) {
 $BULK_DISTASSIGN_URL = $SAGE_BASE.'/json/bulkdistrict/body?key='.$SAGE_KEY;
 
 // Initialize script parameters from options and defaults
-$CHUNK_SIZE = ($optList['chunk']!='') ? $optlist['chunk'] : 1000;
+$CHUNK_SIZE = ($optList['chunk'] != '') ? $optlist['chunk'] : 1000;
 $LOG_LEVEL = array_key_exists('log', $optlist) ? $optlist['log'] : "TRACE";
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($LOG_LEVEL)][0];
 $DRYRUN = array_key_exists('dryrun',$optlist) ? $optlist['dryrun'] : false;
@@ -120,7 +120,7 @@ $Count_RangefillFailure = 0;
 $Count_NotFound = 0;
 $curl_time_total = 0;
 
-$raw_data = array();
+$row_data = array();
 $JSON_Payload = array();
 $address_count = mysql_num_rows($result);
 
@@ -269,18 +269,23 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
             $note = "ADDRESS ID:$id \n ADDRESS:".$row['street1']." ".$row['street2'].", ".$row['town']." ". $row['state'].", ".$row['zip']." ".$row['building']." ".$row['building_chr']." \n UPDATES: SEN:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CONG:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($row['election_code'])."=>{$value['election_code']}";
 
-            // here's the civi way to add a note, but slow as hell
-            // $params = array(
-            //     'entity_table' => 'civicrm_contact',
-            //     'entity_id' => $row['contact_id'],
-            //     'note' => $note,
-            //     'contact_id' => 1,
-            //     'modified_date' => date("Y-m-d"),
-            //     'subject' => 'Redistricting update'.date("m-d-Y"),
-            //     'version' => 3,
-            // );
-            // require_once 'api/api.php';
-            // $civi_result = civicrm_api('note','create',$params );
+            /*********************************************************
+            ** Commenting out this block of code.
+            ** This is the CiviCRM API method for adding a note.
+            ** It is too slow for our purposes.
+            $params = array(
+                'entity_table' => 'civicrm_contact',
+                'entity_id' => $row['contact_id'],
+                'note' => $note,
+                'contact_id' => 1,
+                'modified_date' => date("Y-m-d"),
+                'subject' => 'Redistricting update'.date("m-d-Y"),
+                'version' => 3,
+            );
+            require_once 'api/api.php';
+            $civi_result = civicrm_api('note', 'create', $params);
+            ** END OF COMMENTED OUT CODE
+            **********************************************************/
 
             mysql_query("
                 INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
