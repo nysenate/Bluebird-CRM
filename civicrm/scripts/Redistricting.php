@@ -216,19 +216,12 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 'election_code'=>$value['electionCode'],
                 'senate_code'=>$value['senateCode'],
                 'county_code'=>$value['countyCode'],
-                // 'town'=>$value['matches'][0]['town'],
-                // 'state'=>$value['matches'][0]['state'],
-                // 'street'=>$value['matches'][0]['street'],
-                // 'zip5'=>$value['matches'][0]['zip5'],
                 // 'fire_code'=>$value['matches'][0]['fire_code'],
                 // 'ward_code'=>$value['matches'][0]['ward_code'],
                 // 'vill_code'=>$value['matches'][0]['vill_code'],
                 // 'town_code'=>$value['matches'][0]['town_code'],
                 // 'cleg_code'=>$value['matches'][0]['cleg_code'],
                 // 'school_code'=>$value['matches'][0]['school_code'],
-                // 'bldg_num'=>$value['matches'][0]['bldg_num'],
-                // 'apt_num'=>$value['matches'][0]['apt_num'],
-                // 'ward_code'=>$value['matches'][0]['ward_code']
             );
 
         }
@@ -271,24 +264,6 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             $row = $row_data[$id];
 
             $note = "ADDRESS ID:$id \n ADDRESS:".$row['street1']." ".$row['street2'].", ".$row['town']." ". $row['state'].", ".$row['zip']." ".$row['building']." ".$row['building_chr']." \n UPDATES: SEN:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CONG:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, ASSM:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ELCT:".getValue($row['election_code'])."=>{$value['election_code']}";
-
-            /*********************************************************
-            ** Commenting out this block of code.
-            ** This is the CiviCRM API method for adding a note.
-            ** It is too slow for our purposes.
-            $params = array(
-                'entity_table' => 'civicrm_contact',
-                'entity_id' => $row['contact_id'],
-                'note' => $note,
-                'contact_id' => 1,
-                'modified_date' => date("Y-m-d"),
-                'subject' => 'Redistricting update'.date("m-d-Y"),
-                'version' => 3,
-            );
-            require_once 'api/api.php';
-            $civi_result = civicrm_api('note', 'create', $params);
-            ** END OF COMMENTED OUT CODE
-            **********************************************************/
 
             mysql_query("
                 INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
