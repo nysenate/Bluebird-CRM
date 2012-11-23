@@ -72,6 +72,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_tree() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $start = microtime(TRUE);
         $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
 
@@ -165,6 +170,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_create() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         // Extract the new tag parameters
         $tag = array('version'=>3);
         foreach(self::$TAG_FIELDS as $field) {
@@ -182,6 +192,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_update() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         // Get the existing tag for manipulation
         $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
         $params = array('version'=>3, 'id'=>CRM_Core_DAO::escapeString($tag_id));
@@ -209,6 +224,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_delete() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $id = self::_require('id', $_GET, '`id` of the tag to be deleted is required.');
         $params = array('version'=>3, 'tag_id'=>CRM_Core_DAO::escapeString($id));
         $result = civicrm_api('tag', 'delete', $params);
@@ -224,6 +244,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function entity_tag_create() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
         $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
@@ -264,6 +289,12 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function entity_tag_delete() {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
+
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
         $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
@@ -300,6 +331,33 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         } else {
             echo json_encode($results[0]);
         }
+        CRM_Utils_System::civiExit();
+    }
+    
+    // Checking User levels,
+    // Avaiable thought api call, or locally
+    // args = return true / false toggles return / echo 
+    static function check_user_level($return) {
+        // RULES: if a volunteer, no access. DEAL WITH IT
+        $start = microtime(TRUE);
+        global $user;
+        $userid = $user->uid;
+        // check for the ability to edit the contact (volunteer role)
+        $role = CRM_Core_Permission::check('edit all contacts');
+        $bt_time = microtime(TRUE)-$start;
+        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level."; 
+        $output = array(
+            "code"=>$role,
+            "userId"=>$userid,
+            "message"=> $message, 
+            'build_time'=>(microtime(TRUE)-$start),
+            'bt_time'=>$bt_time
+            );
+        if($return == 'true'){
+            return $output;
+        }else{
+            echo json_encode($output);
+        } 
         CRM_Utils_System::civiExit();
     }
 }
