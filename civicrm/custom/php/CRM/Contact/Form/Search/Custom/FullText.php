@@ -32,7 +32,6 @@
  * $Id$
  *
  */
-//NYSS edits throughout ported from trunk
 class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search_Interface {
 
   const LIMIT = 10;
@@ -59,7 +58,8 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
 
   protected $_limitDetailClause = NULL;
 
-  protected $_limitNumber = 11; // this should be one more than self::LIMIT
+  protected $_limitNumber      = 10;
+  protected $_limitNumberPlus1 = 11; // this should be one more than self::LIMIT
 
   protected $_foundRows = array();
 
@@ -84,7 +84,6 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
       }
     }
 
-
     // fix text to include wild card characters at begining and end
     if ($this->_text) {
       if (is_numeric($this->_text)) {
@@ -105,8 +104,8 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
     }
 
     if (!$this->_table) {
-      $this->_limitClause = " LIMIT {$this->_limitNumber}";
-      $this->_limitRowClause = $this->_limitDetailClause = $this->_limitClause;
+      $this->_limitClause = " LIMIT {$this->_limitNumberPlus1}";
+      $this->_limitRowClause = $this->_limitDetailClause = "  LIMIT {$this->_limitNumber}";
     }
     else {
       // when there is table specified, we would like to use the pager. But since
@@ -543,9 +542,18 @@ WHERE  (ca.subject LIKE  {$this->_text} OR ca.details LIKE  {$this->_text})
 AND    (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 ";
 
+    $final = array();
+    $final[] = "
+DELETE e.* FROM {$this->_entityIDTableName} e
+INNER JOIN  civicrm_activity a ON e.entity_id = a.id
+INNER JOIN  civicrm_contact  c ON a.source_contact_id = c.id
+WHERE       c.id IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)
+";
+
     $tables = array(
       'civicrm_activity' => array( 'fields' => array() ),
       'sql' => $contactSQL,
+      'final' => $final,
     );
 
     $this->fillCustomInfo($tables, "( 'Activity' )");
@@ -839,6 +847,7 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
         $summary['addShowAllLink'][$table] = FALSE;
       }
     }
+
     return $summary;
   }
 
@@ -1008,6 +1017,7 @@ LEFT JOIN  civicrm_contact c ON ccc.contact_id = c.id
 {$this->_limitDetailClause}
 ";
         break;
+
     }
 
     if ($sql) {
