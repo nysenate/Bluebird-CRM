@@ -64,9 +64,8 @@ $session =& CRM_Core_Session::singleton();
 $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
-// Collect NY state addresses with a street_address; any
-// address not matching this criteria will fail lookup.
-
+// Collect NY state addresses with a street address; any
+// address not matching this criteria will not be included.
 $query = "
     SELECT address.id,
            address.contact_id,
@@ -108,20 +107,22 @@ bbscript_log("debug", $total_found." addresses found.");
 // start timer
 $time_start = microtime(true);
 
-// Counts for looping
-$count_Total = 0;
-$count_Multimatch = 0;
-$count_Match = 0;
-$count_Nomatch = 0;
-$count_Invalid = 0;
-$count_Error = 0;
-$count_ExactMatch = 0;
-$count_ConsolidatedRangefill = 0;
-$count_ConsolidatedMultimatch = 0;
-$count_RangefillFailure = 0;
-$count_NotFound = 0;
-$total_curl_time = 0;
-$total_mysql_time = 0;
+// Store count statistics
+$count = array(
+    "total" => 0,
+    "multimatch" => 0,
+    "match" => 0,
+    "nomatch" => 0,
+    "invalid" => 0,
+    "error" => 0,
+    "exactmatch" => 0,
+    "consolidatedRangeFill" => 0,
+    "consolidatedMultimatch" => 0,
+    "rangeFillFailure" => 0,
+    "notfound" => 0,
+    "totalCurlTime" => 0,
+    "totalMysqlTime" => 0
+);
 
 $row_data = array();
 $JSON_Payload = array();
@@ -177,7 +178,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
     curl_close($ch);
     bbscript_log("trace", "Received Curl in     ".round($curl_time, 3));
-    $total_curl_time += $curl_time;
+    $count['totalCurlTime'] += $curl_time;
 
     // check for malformed response
     if (( $output === null )) {
@@ -194,7 +195,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Process the results
-    $count_Total += count($response);
+    $count['total'] += count($response);
     $Update_Payload = array();
 
     foreach ($response as $id => $value) {
@@ -202,16 +203,16 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         $message = $value['message'];
 
         if ($status_code == "MATCH") {
-            $count_Match++;
+            $count['match']++;
             bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
             if ($message == "EXACT MATCH") {
-                $count_ExactMatch++;
+                $count['exactmatch']++;
             }
             elseif ($message == "CONSOLIDATED RANGEFILL") {
-                $count_ConsolidatedRangefill++;
+                $count['consolidatedRangeFill']++;
             }
             elseif ($message == "CONSOLIDATED MULTIMATCH") {
-                $count_ConsolidatedMultimatch++;
+                $count['consolidatedMultimatch']++;
             }
 
             $Update_Payload[$value['address_id']] = array(
@@ -230,28 +231,28 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         }
         elseif ($status_code == "MULTIMATCH") { // shouldn't exist anymore
-            $count_Multimatch++;
+            $count['multimatch']++;
             bbscript_log("warn", "[MULTIMATCH][".$value['message']."] on record #".$value['address_id']);
 
         }
         elseif ($status_code == "NOMATCH") {
             if ($message == "RANGEFILL") {
-                $count_RangefillFailure++;
+                $count['rangeFillFailure']++;
             }
             else {
-                $count_NotFound++;
+                $count['notfound']++;
             }
 
-            $count_Nomatch++;
+            $count['nomatch']++;
             bbscript_log("warn", "[NOMATCH][".$value['message']."] on record #".$value['address_id']);
 
         }
         elseif ($status_code == "INVALID") {
-             $count_Invalid++;
+             $count['invalid']++;
              bbscript_log("warn", "[INVALID][".$value['message']."] on record #".$value['address_id']);
         }
         else { // Unknown status_code, what?!?
-            $count_Error++;
+            $count['error']++;
             bbscript_log("ERROR", "on record ".$value['address_id']." with message " .$value['message'] );
         }
     }
@@ -293,7 +294,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         $update_time = get_elapsed_time($update_time_start);
         bbscript_log("trace", "Updated database in ".round($update_time, 3));
-        $total_mysql_time += $update_time;
+        $count['totalMysqlTime'] += $update_time;
     }
     else {
         bbscript_log("warn", "No Records to update");
@@ -303,49 +304,48 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // timer for debug
     $time = get_elapsed_time($time_start);
-    $Records_per_sec = round($count_Total / $time, 1);
-    $Mysql_per_sec = ($total_mysql_time == 0 ) ? 0 : round($count_Total / $total_mysql_time, 1);
-    $Curl_per_sec = round($count_Total / $total_curl_time, 1);
-    $Multimatch_percent = round($count_Multimatch / $count_Total * 100, 2);
-    $Match_percent = round((($count_Match / $count_Total) * 100), 2);
-    $Nomatch_percent = round($count_Nomatch / $count_Total * 100, 2);
-    $Invalid_percent = round($count_Invalid / $count_Total * 100, 2);
-    $Error_percent = round($count_Error / $count_Total * 100,  2);
-    $ExactMatch_percent = round($count_ExactMatch / $count_Total * 100, 2);
-    $ConsolidatedRangefill_percent = round($count_ConsolidatedRangefill / $count_Total * 100, 2);
-    $ConsolidatedMultimatch_percent = round($count_ConsolidatedMultimatch / $count_Total * 100, 2);
-    $RangefillFailure_percent = round($count_RangefillFailure / $count_Total * 100, 2);
-    $NotFound_percent = round($count_NotFound / $count_Total * 100, 2);
+    $Records_per_sec = round($count['total'] / $time, 1);
+    $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
+    $Curl_per_sec = round($count['total'] / $count['totalCurlTime'], 1);
+    $Multimatch_percent = round($count['multimatch'] / $count['total'] * 100, 2);
+    $Match_percent = round((($count['match'] / $count['total']) * 100), 2);
+    $Nomatch_percent = round($count['nomatch'] / $count['total'] * 100, 2);
+    $Invalid_percent = round($count['invalid'] / $count['total'] * 100, 2);
+    $Error_percent = round($count['error'] / $count['total'] * 100,  2);
+    $ExactMatch_percent = round($count['exactmatch'] / $count['total'] * 100, 2);
+    $ConsolidatedRangefill_percent = round($count['consolidatedRangeFill'] / $count['total'] * 100, 2);
+    $ConsolidatedMultimatch_percent = round($count['consolidatedMultimatch'] / $count['total'] * 100, 2);
+    $RangefillFailure_percent = round($count['rangeFillFailure'] / $count['total'] * 100, 2);
+    $NotFound_percent = round($count['notfound'] / $count['total'] * 100, 2);
 
-    $seconds_left = round(($total_found - $count_Total) / $Records_per_sec, 0);
+    $seconds_left = round(($total_found - $count['total']) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
     bbscript_log("info", "-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info", "[DONE @]           $finish_at (in ".$seconds_left." seconds)");
-    bbscript_log("info", "[COUNT]            $count_Total");
+    bbscript_log("info", "[COUNT]            {$count['total']}");
     bbscript_log("info", "[TIME]             ".round($time, 4));
 
-    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count_Total." in ".round($time, 3).")");
-    bbscript_log("trace", "[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count_Total." in ".round($total_mysql_time, 3).")");
-    bbscript_log("trace", "[SPEED]    [CURL]  $Curl_per_sec per second (".$count_Total." in ".round($total_curl_time, 3).")");
-    bbscript_log("info", "[MATCH]    [TOTAL] $count_Match ($Match_percent %)");
-    bbscript_log("trace", "[MATCH]    [EXACT] $count_ExactMatch ($ExactMatch_percent %)");
-    bbscript_log("trace", "[MATCH]    [RANGE] $count_ConsolidatedRangefill ($ConsolidatedRangefill_percent %)");
-    bbscript_log("trace", "[MATCH]    [MULTI] $count_ConsolidatedMultimatch ($ConsolidatedMultimatch_percent %)");
-    bbscript_log("info", "[NOMATCH]  [TOTAL] $count_Nomatch ($Nomatch_percent %)");
-    bbscript_log("trace", "[NOMATCH]  [RANGE] $count_RangefillFailure ($RangefillFailure_percent %)");
- // bbscript_log("info", "[NOMATCH]  [NO]    $count_NotFound ($NotFound_percent %)"); // not necessary, only 2 options
-    bbscript_log("info", "[MULTI]    [TOTAL] $count_Multimatch ($Multimatch_percent %)");
-    bbscript_log("info", "[INVALID]  [TOTAL] $count_Invalid ($Invalid_percent %)");
-    bbscript_log("info", "[ERROR]    [TOTAL] $count_Error ($Error_percent %)");
+    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count['total']." in ".round($time, 3).")");
+    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['total']." in ".round($count['totalMysqlTime'], 3).")");
+    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['total']." in ".round($count['totalCurlTime'], 3).")");
+    bbscript_log("info", "[MATCH]    [TOTAL] {$count['match']} ($Match_percent %)");
+    bbscript_log("trace","[MATCH]    [EXACT] {$count['exactmatch']} ($ExactMatch_percent %)");
+    bbscript_log("trace","[MATCH]    [RANGE] {$count['consolidatedRangeFill']} ($ConsolidatedRangefill_percent %)");
+    bbscript_log("trace","[MATCH]    [MULTI] {$count['consolidatedMultimatch']} ($ConsolidatedMultimatch_percent %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['nomatch']} ($Nomatch_percent %)");
+    bbscript_log("trace","[NOMATCH]  [RANGE] {$count['rangeFillFailure']} ($RangefillFailure_percent %)");
+    bbscript_log("info", "[MULTI]    [TOTAL] {$count['multimatch']} ($Multimatch_percent %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] {$count['invalid']} ($Invalid_percent %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] {$count['error']} ($Error_percent %)");
 }
 
+bbscript_log("info", "Completed redistricting addresses");
 
 function clean($string)
 {
     return preg_replace("/[.,']/","",strtoupper(trim($string)));
 }
-
 
 function getValue($string)
 {
