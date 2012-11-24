@@ -130,6 +130,25 @@ $count = array(
     "totalMysqlTime" => 0
 );
 
+// Subject prefixes will indicate whether district information 
+// has been updated, kept the same, or removed. RD12 stands for
+// Redistricting 2012 and prefixing it is a way to filter through 
+// relevant notes pertaining to redistricting.
+$subject_prefixes = array(
+    "unchanged" => "RD12 VERIFIED DISTRICTS",
+    "changed" => "RD12 UPDATED DISTRICTS",
+    "removed" => "RD12 REMOVED DISTRICTS"
+);
+
+// Abbreviations for district codes used in the body of the notes.
+$district_codes = array(
+    "senate_code" => "SD",
+    "assembly_code" => "AD",
+    "congressional_code" => "CD",
+    "election_code" => "ED",
+    "county_code" => "CO"
+);
+
 $ny_address_data = array();
 $non_ny_address_data = array();
 $JSON_payload = array();
@@ -287,14 +306,42 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
             $row = $ny_address_data[$id];
 
-            $note = "ADDRESS ID: $id\nADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
+            $note = "A_ID: $id \nADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
+            $subject = "";
 
+            // Determine if any of the districts changed and take note of it.
+            foreach ( $district_codes as $code => $abbrv ) {
+                if ( isset($value[$code]) && getValue($row[$code]) != $value[$code] )
+                {
+                    $subject .= $abbrv . ' ';
+                }                
+            }
+
+            // Set the appropriate subject prefix depending on whether districts changed or not.
+            if ( $subject != '' ) {
+                $subject = $subject_prefixes['changed'] . ' ' . $subject;
+            }
+            else {
+                $subject = $subject_prefixes['unchanged'];
+            }
+
+            // Remove any redistricting notes that already exist for this address. 
             mysql_query("
-                INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', 'SAVED DISTRICT INFO', 0)", $db
+                DELETE FROM `civicrm_note` 
+                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact' 
+                AND `subject` LIKE 'RD12%' AND note LIKE 'A_ID: {$id}%'"
             );
 
+            // Insert a new note describing the redistricting changes.
             mysql_query("
+                INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
+            );
+
+            // Only need to run an update query if the districts have changed.
+            if ( $subject != $subject_prefixes['unchanged'] )
+            {
+                mysql_query("
                 UPDATE civicrm_value_district_information_7
                 SET congressional_district_46 = {$value['congressional_code']},
                     ny_senate_district_47 = {$value['senate_code']},
@@ -302,21 +349,33 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                     election_district_49 = {$value['election_code']},
                     county_50 = {$value['county_code']}
                 WHERE civicrm_value_district_information_7.entity_id = $id", $db
-            );
-            // ",
+                );    
+            }
+            
+            // Currently Unused ----------------------------------------
             // county_legislative_district_51   = {$value['cleg_code']},
             // town_52   = {$value['town_code']},
             // ward_53   = {$value['ward_code']},
             // school_district_54   = {$value['school_code']},
+            // ---------------------------------------------------------
         }
         
+        // Remove the district info for any non-NY state address that have been picked up so far.
         foreach( $non_ny_address_data as $id => $value )
         {
             $row = $value;
-            $note = "ADDRESS ID: $id\nUPDATES: SD:". getValue($row['senate_code']) ."=> 0, CO:".getValue($row['county_code'])."=> 0, CD:".getValue($row['congressional_code'])."=> 0, AD:".getValue($row['assembly_code'])."=> 0, ED:".getValue($row['election_code'])."=> 0";
-            
+            $note = "A_ID: $id\nUPDATES: SD:". getValue($row['senate_code']) ."=> 0, CO:".getValue($row['county_code'])."=> 0, CD:".getValue($row['congressional_code'])."=> 0, AD:".getValue($row['assembly_code'])."=> 0, ED:".getValue($row['election_code'])."=> 0";
+            $subject = $subject_prefixes['removed'];
+
+            // Remove any redistricting notes that already exist for this address. 
+            mysql_query("
+                DELETE FROM `civicrm_note` 
+                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact' 
+                AND `subject` LIKE 'RD12%' AND note LIKE 'A_ID: {$id}%'"
+            );
+
             mysql_query("INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', 'REMOVED DISTRICT INFO', 0)", $db
+                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
             );
 
             // Set district information to zero.
@@ -327,7 +386,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                     ny_assembly_district_48 = 0,
                     election_district_49 = 0,
                     county_50 = 0
-                WHERE civicrm_value_district_information_7.entity_id = $id", $db
+                WHERE civicrm_value_district_information_7.entity_id = {$id}", $db
             );
         }
 
