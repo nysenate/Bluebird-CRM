@@ -72,7 +72,7 @@ $query = "
            address.street_name AS street1,
            address.street_type AS street2,
            address.city AS town,
-           'NY' AS state,
+           state_province.abbreviation AS state,
            address.postal_code AS zip,
            address.street_number_suffix AS building_chr,
            address.street_number AS building,
@@ -93,18 +93,23 @@ $query = "
     JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
-      AND state_province.abbreviation='NY'
       AND IFNULL(address.street_name,'') != ''
       $max_id_condition
     ORDER BY address.id ASC
 ";
 
+// Run query to obtain all addresses
 bbscript_log("debug", "Querying the database for addresses using\n$query");
 $result = mysql_query($query, $db);
+if ( $result == null )
+{
+    bbscript_log("error", "The database query failed with the following error: " .  mysql_error());
+    die();
+}
 $total_found = mysql_num_rows($result);
-
 bbscript_log("debug", $total_found." addresses found.");
-// start timer
+
+// Start timer
 $time_start = microtime(true);
 
 // Store count statistics
@@ -120,19 +125,32 @@ $count = array(
     "consolidatedMultimatch" => 0,
     "rangeFillFailure" => 0,
     "notfound" => 0,
+    "outofstate" => 0,
     "totalCurlTime" => 0,
     "totalMysqlTime" => 0
 );
 
-$row_data = array();
-$JSON_Payload = array();
+$ny_address_data = array();
+$non_ny_address_data = array();
+$JSON_payload = array();
 $address_count = mysql_num_rows($result);
 
 for ($rownum = 1; $rownum <= $address_count; $rownum++) {
+    
     // Fetch the new row, no null check needed since we have the count
     // If we do pull back a NULL something bad happened and dying is okay
     $row = mysql_fetch_assoc($result);
-    $row_data[$row['id']] = $row;
+    
+    $ny_address_data[$row['id']] = $row;
+
+    // Since we're only concerned with NY state addresses for the lookup process
+    // the out of state addresses will have their district information set to 0.
+    if ( $row['state'] != 'NY') {
+        $non_ny_address_data[$row['id']] = $row;
+        $count['outofstate']++;
+        bbscript_log("trace", "Found out of state address with id: {$row['id']}");
+        continue;
+    }
 
     // Clean the data manually till we can do mass validation.
     $town = clean($row['town']);
@@ -148,7 +166,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $row['street1'] = preg_replace($match, $replace, $street);
 
     // Format for the bulkdistrict tool
-    $JSON_Payload[$row['id']]= array(
+    $JSON_payload[$row['id']]= array(
         'street' => $row['street1'].' '.$row['street2'],
         'town' => $row['town'],
         'state' => $row['state'],
@@ -158,29 +176,29 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         'building' => $row['building'] ,
     );
 
-    // keep accumulating until we reach chunk size or the end of our addresses.
-    if (count($JSON_Payload) < $chunk_size && $rownum != $address_count) {
+    // Keep accumulating until we reach chunk size or the end of our addresses.
+    if (count($JSON_payload) < $chunk_size && $rownum != $address_count) {
         continue;
     }
 
     // Encode our payload and reset for the next batch
-    $JSON_Payload_encoded = json_encode($JSON_Payload);
-    $JSON_Payload = array();
+    $JSON_payload_encoded = json_encode($JSON_payload);
+    $JSON_payload = array();
 
     // Send the cURL request
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $bulk_distassign_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_Payload_encoded);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($JSON_Payload_encoded)));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $JSON_payload_encoded);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($JSON_payload_encoded)));
     $output = curl_exec($ch);
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
     curl_close($ch);
     bbscript_log("trace", "Received Curl in     ".round($curl_time, 3));
     $count['totalCurlTime'] += $curl_time;
 
-    // check for malformed response
+    // Check for malformed response
     if (( $output === null )) {
         bbscript_log("fatal", "CURL Failed to receive a Response");
         continue;
@@ -196,26 +214,30 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // Process the results
     $count['total'] += count($response);
-    $Update_Payload = array();
+    $update_payload = array();
 
     foreach ($response as $id => $value) {
         $status_code = $value['status_code'];
         $message = $value['message'];
 
         if ($status_code == "MATCH") {
+            
             $count['match']++;
             bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
+            
             if ($message == "EXACT MATCH") {
                 $count['exactmatch']++;
             }
+
             elseif ($message == "CONSOLIDATED RANGEFILL") {
                 $count['consolidatedRangeFill']++;
             }
+
             elseif ($message == "CONSOLIDATED MULTIMATCH") {
                 $count['consolidatedMultimatch']++;
             }
 
-            $Update_Payload[$value['address_id']] = array(
+            $update_payload[$value['address_id']] = array(
                 'assembly_code'=>$value['assemblyCode'],
                 'congressional_code'=>$value['congressionalCode'],
                 'election_code'=>$value['electionCode'],
@@ -257,16 +279,17 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         }
     }
 
-    // Store them into the database
-    if (count($Update_Payload) > 0 && !$dry_run) {
+    // Update districts in the database if --dryrun flag was not set
+    // and insert a note describing the update. 
+    if (count($update_payload) > 0 && !$dry_run) {
         $update_time_start = microtime(true);
-        bbscript_log("trace", "Updating ".count($Update_Payload)." records.");
+        bbscript_log("trace", "Updating ".count($update_payload)." records.");
 
         mysql_query("BEGIN", $db);
-        foreach ($Update_Payload as $id => $value) {
+        foreach ($update_payload as $id => $value) {
             // bbscript_log("trace", "ID:$id - SD:{$value['senate_code']}, CO:{$value['county_code']}, CD:{$value['congressional_code']}, AD:{$value['assembly_code']}, ED:{$value['election_code']}");
 
-            $row = $row_data[$id];
+            $row = $ny_address_data[$id];
 
             $note = "ADDRESS ID: $id\nADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
 
@@ -290,8 +313,29 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             // ward_53   = {$value['ward_code']},
             // school_district_54   = {$value['school_code']},
         }
-        mysql_query("COMMIT", $db);
+        
+        foreach( $non_ny_address_data as $id => $value )
+        {
+            $row = $value;
+            $note = "ADDRESS ID: $id\nUPDATES: SD:". getValue($row['senate_code']) ."=> 0, CO:".getValue($row['county_code'])."=> 0, CD:".getValue($row['congressional_code'])."=> 0, AD:".getValue($row['assembly_code'])."=> 0, ED:".getValue($row['election_code'])."=> 0";
+            
+            mysql_query("INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+                VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', 'REMOVED DISTRICT INFO', 0)", $db
+            );
 
+            // Set district information to zero.
+            mysql_query("
+                UPDATE civicrm_value_district_information_7
+                SET congressional_district_46 = 0,
+                    ny_senate_district_47 = 0,
+                    ny_assembly_district_48 = 0,
+                    election_district_49 = 0,
+                    county_50 = 0
+                WHERE civicrm_value_district_information_7.entity_id = $id", $db
+            );
+        }
+
+        mysql_query("COMMIT", $db);
         $update_time = get_elapsed_time($update_time_start);
         bbscript_log("trace", "Updated database in ".round($update_time, 3));
         $count['totalMysqlTime'] += $update_time;
@@ -300,9 +344,11 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         bbscript_log("warn", "No Records to update");
     }
 
-    $row_data = array();
+    // Reset the arrays to repeat the batch lookup process for the next chunk
+    $ny_address_data = array();
+    $non_ny_address_data = array();
 
-    // timer for debug
+    // Timer for debug
     $time = get_elapsed_time($time_start);
     $Records_per_sec = round($count['total'] / $time, 1);
     $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
@@ -317,6 +363,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $ConsolidatedMultimatch_percent = round($count['consolidatedMultimatch'] / $count['total'] * 100, 2);
     $RangefillFailure_percent = round($count['rangeFillFailure'] / $count['total'] * 100, 2);
     $NotFound_percent = round($count['notfound'] / $count['total'] * 100, 2);
+    $OutOfState_percent = round($count['outofstate'] / $count['total'] * 100, 2);
 
     $seconds_left = round(($total_found - $count['total']) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
@@ -338,6 +385,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     bbscript_log("info", "[MULTI]    [TOTAL] {$count['multimatch']} ($Multimatch_percent %)");
     bbscript_log("info", "[INVALID]  [TOTAL] {$count['invalid']} ($Invalid_percent %)");
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['error']} ($Error_percent %)");
+    bbscript_log("info", "[NON_NY]   [TOTAL] {$count['outofstate']} ($OutOfState_percent %)");
 }
 
 bbscript_log("info", "Completed redistricting addresses");
@@ -349,7 +397,7 @@ function clean($string)
 
 function getValue($string)
 {
-    if ($string == FAlSE) {
+    if ($string == FALSE) {
          return "null";
     }
     else {
