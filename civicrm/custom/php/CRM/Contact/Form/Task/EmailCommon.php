@@ -180,7 +180,7 @@ class CRM_Contact_Form_Task_EmailCommon {
     $allToEmails = array();
     if ($to->getValue() && !in_array('created_by', $form->_pickOptionVal)) {
       $allToEmails = explode(',', $to->getValue());
-      CRM_Core_Error::debug_var('allToEmails',$allToEmails);
+      //CRM_Core_Error::debug_var('allToEmails',$allToEmails);
       $form->_contactIds = $form->_toContactEmails = array();
       foreach ($allToEmails as $value) {
         list($contactId, $email) = explode('::', $value);
@@ -356,6 +356,24 @@ class CRM_Contact_Form_Task_EmailCommon {
    */
   static
   function postProcess(&$form) {
+
+    //NYSS 5618
+    $formValues = $form->controller->exportValues($form->getName());
+
+    // when form is submitted recompute contactIds
+    $to = CRM_Utils_Array::value('to', $formValues);
+    $allToEmails = explode(',', $to);
+    if (count($allToEmails)) {
+      $form->_contactIds = array();
+      foreach ($allToEmails as $value) {
+        list($contactId, $email) = explode('::', $value);
+        if ($contactId) {
+          $form->_contactIds[] = $contactId;
+          $form->_toContactEmails[] = $email;
+        }
+      }
+    }
+
     if (count($form->_contactIds) > self::MAX_EMAILS_KILL_SWITCH) {
       CRM_Core_Error::fatal(ts('Please do not use this task to send a lot of emails (greater than %1). We recommend using CiviMail instead.',
           array(1 => self::MAX_EMAILS_KILL_SWITCH)
@@ -363,7 +381,7 @@ class CRM_Contact_Form_Task_EmailCommon {
     }
 
     // check and ensure that
-    $formValues = $form->controller->exportValues($form->getName());
+    //$formValues = $form->controller->exportValues($form->getName());
 
     $fromEmail = $formValues['fromEmailAddress'];
     $from      = CRM_Utils_Array::value($fromEmail, $form->_emails);
