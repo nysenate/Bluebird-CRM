@@ -30,7 +30,7 @@
 .linkContact input.linkContactButton.visible {display:inline;}
 .contactsBody .showContactNumResult {font-style:italic; text-align: center; border-bottom:1px solid #000; display:none;}
 .contactsBody .showContactNumResult span {font-style:normal; font-weight:bold;}
-.contactList {height:345px; overflow:auto;  display:none;}
+.contactList {height:220px; overflow:auto;  display:none;}
 .contactList .loadingBox {border-bottom: 1px solid #000;}
 .contactList .contactItem {border-bottom: 1px solid #000; padding:5px 8px;font-size:11px;clear:both;overflow:auto;}
 .contactList .contactItem.active {background:#d99;}
@@ -54,7 +54,7 @@
 .date{width: 110px !important; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}
 #Activities .Actions{ width:125px !important;}
-#Unmatched .Actions{ width:95px !important;}
+#Unmatched .Actions{ width:105px !important;}
 .delete a{color:red !important;}
 #autocomplete_tag,.autocomplete-tags-bank{ width: 464px; padding: 10px 4px; margin: 0 0 10px 0; float:left;}
 #autocomplete-tags-bank{ padding:0px; }

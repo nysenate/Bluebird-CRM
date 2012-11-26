@@ -447,8 +447,8 @@ class CRM_IMAP_AJAX {
           }
         }
         $phone = self::get('phone');
+        $from.="  LEFT JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
         if ($phone) {
-          $from.="  JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
         $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";

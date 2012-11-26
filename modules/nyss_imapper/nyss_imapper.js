@@ -870,6 +870,7 @@ function buildContactList() {
 		if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
 		if(value.birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br/>';}
 		if(value.email){ contactsHtml += value.email + '<br/>'; }
+		if(value.phone){ contactsHtml += value.phone + '<br/>'; }
 		if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
 		if(value.city){ contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code + '<br/>'; }
  		contactsHtml += '</div></div>';
