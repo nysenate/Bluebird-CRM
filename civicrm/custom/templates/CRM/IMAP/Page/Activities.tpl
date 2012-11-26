@@ -49,8 +49,7 @@
 						<input type="text" placeholder="Street Address"  class="form-text street_address" name="street_address">
 						<input type="text" placeholder="City" class="form-text city" name="city">
 						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
-					<div id="imapper-contacts-list" class="contacts-list">
-					</div>
+					<div id="imapper-contacts-list" class="contacts-list"></div>
 					<input type="button" class="imapper-submit" id="reassign" value="Assign" name="reassign">
 				</div>
 			</div>
