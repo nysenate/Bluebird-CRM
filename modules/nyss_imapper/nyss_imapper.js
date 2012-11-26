@@ -58,31 +58,34 @@ cj(document).ready(function(){
 		if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
 		if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
 		if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
-
-		cj.ajax({
-			url: '/civicrm/imap/ajax/contacts',
-			data: {
-				state: '1031',  
-				city: city,
-				phone: phone,
-				email_address: email_address,
-				dob: dob,
-				street_address: street_address,
-				first_name: first_name,
-				last_name: last_name
-			},
-			success: function(data,status) {
-				if(data != null || data != ''){
-					contacts = cj.parseJSON(data);
-					if(contacts.length < 1){
-						cj('#imapper-contacts-list').html('No Results Found');
-					}else{
-						cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
-						buildContactList();
+		if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
+			cj.ajax({
+				url: '/civicrm/imap/ajax/contacts',
+				data: {
+					state: '1031',  
+					city: city,
+					phone: phone,
+					email_address: email_address,
+					dob: dob,
+					street_address: street_address,
+					first_name: first_name,
+					last_name: last_name
+				},
+				success: function(data,status) {
+					if(data != null || data != ''){
+						contacts = cj.parseJSON(data);
+						if(contacts.length < 1){
+							cj('#imapper-contacts-list').html('No Results Found');
+						}else{
+							cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
+							buildContactList();
+						}
 					}
 				}
-			}
-		});
+			});
+		}else{
+			alert('enter a search query');
+		}
 		return false;
 	});
 
