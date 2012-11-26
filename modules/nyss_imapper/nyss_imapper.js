@@ -722,18 +722,28 @@ cj(document).ready(function(){
 });
 
 function firstName(nameVal){
-    var nameLength = nameVal.length;
-    var nameSplit = nameVal.split(" ");
- 	return nameSplit[0];
+  	if(nameVal){
+	  	var nameLength = nameVal.length;
+	    var nameSplit = nameVal.split(" ");
+	 	return nameSplit[0];
+	 }else{
+	 	return 'N/A';
+	 }
+
 }
 
 function lastName(nameVal){
-    var nameLength = nameVal.length;
-    var nameSplit = nameVal.split(" ");
-    var lastLength = nameLength - nameSplit[0].length;
-    var lastNameLength = nameSplit[0].length + 1;
-    var lastName = nameVal.slice(lastNameLength);
- 	return lastName;
+	if(nameVal){
+	    var nameLength = nameVal.length;
+	    var nameSplit = nameVal.split(" ");
+	    var lastLength = nameLength - nameSplit[0].length;
+	    var lastNameLength = nameSplit[0].length + 1;
+	    var lastName = nameVal.slice(lastNameLength);
+	 	return lastName;	
+	 }else{
+	 	return 'N/A';
+	 }
+
 }
 
 
