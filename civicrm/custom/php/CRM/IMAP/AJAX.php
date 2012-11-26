@@ -206,8 +206,7 @@ class CRM_IMAP_AJAX {
                     // The reason we stored our variables in $header is
                     // because there's already existing information we want in there.
                     $messages[$header->uid] = $header;
-
-                }
+                 }
             }
         }       
 
@@ -254,6 +253,7 @@ class CRM_IMAP_AJAX {
         $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
         $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
         $tempDetails = preg_replace("/>>/i", "", $details);
+        $format = ($message->plainmsg) ? "plain" : "html";
 
         // grab the attachments
         $attachments = array();
@@ -309,6 +309,8 @@ class CRM_IMAP_AJAX {
         // From: "First Last" <email address>
         // or
         // From: First Last mailto:emailaddress
+        // or 
+        // From: First Last &lt;emailaddress&gt;
         $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
 
         // Was this message forwarded or is this a raw message from the sender?
@@ -320,12 +322,21 @@ class CRM_IMAP_AJAX {
         // If you can find the From: text that means it was forwarded,
         // so parse it out and use that.
         if ($count > 0) {
-            $fromEmail = $matches[3];
             $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
             $forwardedName = $email->sender[0]->personal;
             $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
             $forwardedTime = $dateSent = date("m-d-y h:i A", $email->time); 
             $forwarded = true;
+            // check to make sure the match is actually an email address, if not try again
+            $check = self::extract_email_address($matches[3]);
+            if(($format == 'html')&&(!$check)){
+                $tempDetails = preg_replace("/&lt;/i", " ", $tempDetails);
+                $tempDetails = preg_replace("/&gt;/i", " ", $tempDetails);
+                $fromEmail_pull = self::extract_email_address($tempDetails);
+                $fromEmail = $fromEmail_pull[0];
+            }else{
+                $fromEmail = $matches[3];
+            }
         } else {
             // Otherwise, search for a name and  address from
             // the header and assume the person who sent it in
@@ -334,6 +345,7 @@ class CRM_IMAP_AJAX {
             $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
             $forwardedName = $forwardedEmail = '';
         }
+
 
         $subject = preg_replace("/(fwd:|fw:|re:) /i", "", $email->subject);
 
@@ -347,12 +359,10 @@ class CRM_IMAP_AJAX {
           $dateSent = date("m-d-y h:i A", strtotime($email->date));
 
         };
-       
-        // echo $dateSent."<br/>";
-
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
+                               'format' => $format,
                                'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
                                'fromEmail'  =>  $fromEmail,
                                'forwardedName'  =>  mb_convert_encoding($forwardedName, 'UTF-8'),
