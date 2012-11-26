@@ -767,38 +767,37 @@ class CRM_IMAP_AJAX {
         require_once 'CRM/Core/BAO/EntityTag.php';
         require_once 'CRM/Activity/BAO/ActivityTarget.php';
 
-            $params = array('version'   =>  3,
-                            'activity'  =>  'get',
-                           'id' => $activitId,
-            );
-            $activity = civicrm_api('activity', 'get', $params);
-            $activity_node = $activity['values'][$activitId];
+        $params = array('version'   =>  3,
+                        'activity'  =>  'get',
+                       'id' => $activitId,
+        );
+        $activity = civicrm_api('activity', 'get', $params);
+        $activity_node = $activity['values'][$activitId];
 
-            $params = array('version'   =>  3,
-                        'activity' => 'get',
-                        'id' => $userId,
-                    );
-            $contact = civicrm_api('contact', 'get', $params);
-            $contact_node = $contact['values'][$userId];
- 
+        $params = array('version'   =>  3,
+                    'activity' => 'get',
+                    'id' => $userId,
+                );
+        $contact = civicrm_api('contact', 'get', $params);
+        $contact_node = $contact['values'][$userId];
 
-            $params = array('version'   =>  3,
-                            'id' => $activity_node['source_contact_id'],
-            );
-            $forwarder = civicrm_api('contact', 'get', $params );
-            $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-            $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
+        $params = array('version'   =>  3,
+                        'id' => $activity_node['source_contact_id'],
+        );
+        $forwarder = civicrm_api('contact', 'get', $params );
+        $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
+
+        $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
 
         $returnMessage = array('uid'    =>  $activitId,
-                                'fromName'   =>  $contact_node['display_name'],
-                                'fromEmail'  =>  $contact_node['email'],
-                                'forwardedName' => $forwarder_node['display_name'],
-                                'forwardedEmail' => $forwarder_node['email'],
-                                'subject'    =>  $activity_node['subject'],
-                                'details'  =>  $activity_node['details'],
-                                'date'   =>  $date);
-
+                            'fromName'   =>  $contact_node['display_name'],
+                            'fromEmail'  =>  $contact_node['email'],
+                            'forwardedName' => $forwarder_node['display_name'],
+                            'forwardedEmail' => $forwarder_node['email'],
+                            'subject'    =>  $activity_node['subject'],
+                            'details'  =>  $activity_node['details'],
+                            'date'   =>  $date);
 
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
@@ -892,9 +891,9 @@ EOQ;
 
             // change the row           
             $Updated_results = mysql_query($Update, self::db());
-                while($row = mysql_fetch_assoc($Updated_results)) {
-                     $results[] = $row; 
-                }
+            while($row = mysql_fetch_assoc($Updated_results)) {
+                 $results[] = $row; 
+            }
         }
 
         echo json_encode($results);
@@ -950,12 +949,12 @@ EOQ;
 
       // If there's no tag, create it.
       $params = array( 
-      'name' => 'Inbox Polling Unprocessed',
-      'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
-      'version' => 3,
+          'name' => 'Inbox Polling Unprocessed',
+          'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
+          'version' => 3,
       );
       $result = civicrm_api('tag', 'create', $params);
-      if($result && isset($result['id'])) {
+        if($result && isset($result['id'])) {
         return $result['id'];
       }
     }

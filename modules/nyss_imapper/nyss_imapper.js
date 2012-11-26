@@ -827,11 +827,13 @@ function buildActivitiesList() {
 			
 			if( value.fromName != ''){
 				messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+				messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
 				if( value.contactType == 'Individual'){
 					messagesHtml += '<div title="Individual" class="icon crm-icon Individual-icon"></div>';
 				}else{
 					messagesHtml += '<div title="Organization" class="icon crm-icon Organization-icon"></div>';
 				}
+				messagesHtml += '</a>';
 				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'">'+value.fromName +'<a/>';
 				messagesHtml += '</td>';
 			}else {
