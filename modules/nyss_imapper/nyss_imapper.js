@@ -759,8 +759,10 @@ function makeListSortable(){
 	//	"bStateSave": true,
 		'aTargets': [ 1 ] 
 	});
-	// unbind the sort on the
-	cj("th.checkbox").unbind('click');
+	// unbind the sort on the checkbox and actions
+	cj("th.checkbox").removeClass('sorting').unbind('click');
+	cj("th.Actions").removeClass('sorting').unbind('click');
+
 	checks();
 
 }
@@ -794,7 +796,7 @@ function buildMessageList() {
 			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 			if( value.from_name != ''){
 				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">';
-				messagesHtml += value.from_name;
+				messagesHtml += '<span title="'+value.from_name+'">'+short_subject(value.from_name,20)+'</span>';
 				messagesHtml += '</td>';
 			}else {
 				messagesHtml += '<td class="name">N/A</td>';
@@ -806,7 +808,7 @@ function buildMessageList() {
 			messagesHtml += '<td class="email">'+value.from_email +'</td>';
 	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
+			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -839,15 +841,15 @@ function buildActivitiesList() {
 					messagesHtml += '<div title="Organization" class="icon crm-icon Organization-icon"></div>';
 				}
 				messagesHtml += '</a>';
-				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'">'+value.fromName +'<a/>';
+				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
 				messagesHtml += '</td>';
 			}else {
 				messagesHtml += '<td class="name">N/A</td>';
 			}
-			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,20)+'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
 			messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
+			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 			messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);

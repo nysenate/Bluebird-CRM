@@ -46,15 +46,15 @@
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
 .imapperbox .full .list_header{ font-weight: bold;}
-.imapperbox .full .checkboxieout{ left:17px;  }
+.imapperbox .full .checkboxieout{ left:5px;  }
 /*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
 .imapperbox .full .subject { width:330px;}
-.name{min-width: 120px !important;}
-.forwarder{ height: 20px;overflow: hidden;  display: block;width: 60px;}
+.name{min-width: 145px !important;}
+.forwarder,.Forwarder{ height: 20px;overflow: hidden;  display: block;width: 100px;}
 .date{width: 110px !important; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}
-#Activities .Actions{ width:125px !important;}
-#Unmatched .Actions{ width:105px !important;}
+#Activities .Actions{ width:155px !important;}
+#Unmatched .Actions{ width:110px !important;}
 .delete a{color:red !important;}
 #autocomplete_tag,.autocomplete-tags-bank{ width: 464px; padding: 10px 4px; margin: 0 0 10px 0; float:left;}
 #autocomplete-tags-bank{ padding:0px; }
