@@ -238,6 +238,7 @@ cj(document).ready(function(){
 	
 	// delete confirm & processing 
 	cj(".delete").live('click', function() {
+
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
@@ -287,6 +288,7 @@ cj(document).ready(function(){
 			}
 		});
 		cj( "#delete-confirm" ).dialog('open');
+		return false;
 	});
 
 
@@ -355,6 +357,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj("#delete-confirm").dialog('open');
+		return false;
 	});
 	
 	// add a find match popup
@@ -473,6 +476,7 @@ cj(document).ready(function(){
 			alert("please select a tag");
 			return;
 		}
+		return false;
 	});
 
 
@@ -482,12 +486,14 @@ cj(document).ready(function(){
 		var tag_text = cj(this).html();
  		if( cj(".autocomplete-tags-bank ."+tag_id).length < 1 )  {
 			cj(".autocomplete-tags-bank").append('<a data-id="'+tag_id+'" class="tag-selected '+tag_id+'" href="#">'+tag_text+'<span class="tag-delete-icon">&nbsp;</span></a>');
-		}		
+		}
+		return false;		
 	});
 
 	// remove from list of tags
 	cj(".tag-selected").live('click', function() { 
-		cj(this).remove();		
+		cj(this).remove();
+	    return false;		
 	});
 
 
@@ -522,6 +528,7 @@ cj(document).ready(function(){
 				alert('unable to find activity');
 			}
 		 });
+	    return false;
 	});
 
 	// dropdown functions on the matched Messages page
@@ -542,7 +549,7 @@ cj(document).ready(function(){
  		cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
  		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
  		cj("#tagging-popup").dialog('open');
-
+    	return false;
 	});
 
 	/// remove activity from the activities screen, but don't delete it 
@@ -576,6 +583,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog({ title:  "Remove this Messages from this list?"});
 		cj("#loading-popup").dialog('close');
 		cj("#delete-confirm").dialog('open');
+	    return false;
 	});
 	
 
@@ -614,7 +622,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj( "#delete-confirm" ).dialog('open');
-
+    	return false;
 	});
 
 
@@ -664,6 +672,7 @@ cj(document).ready(function(){
 				alert('unable to load message');
 			}
 		});
+  		return false;
 	});
 
 	// Edit a match allready assigned to an Activity 
@@ -703,6 +712,7 @@ cj(document).ready(function(){
 				alert('unable to Load Message');
 			}
 		 });
+		return false;
 	});
 
 
