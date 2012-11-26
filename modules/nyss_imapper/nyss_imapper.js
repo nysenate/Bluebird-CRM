@@ -360,7 +360,7 @@ cj(document).ready(function(){
 	// add a find match popup
 	cj( "#find-match-popup" ).dialog({
 		modal: true,
-		height: 500,
+		height: 510,
 		width: 960, // in ie the popup was overflowing
 		autoOpen: false,
 		resizable: false,
