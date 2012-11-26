@@ -51,7 +51,7 @@
 .imapperbox .full .subject { width:330px;}
 .name{min-width: 120px !important;}
 .forwarder{ height: 20px;overflow: hidden;  display: block;width: 60px;}
-.date{width: 100px !important; overflow: hidden;}
+.date{width: 110px !important; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}
 #Activities .Actions{ width:125px !important;}
 #Unmatched .Actions{ width:95px !important;}
