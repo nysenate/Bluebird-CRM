@@ -146,7 +146,7 @@ cj(document).ready(function(){
     				alert('failure');
 				}else{
 					cj("#find-match-popup").dialog('close'); 
-					console.log(data);
+					// console.log(data);
 
 					// reset activity to new data 
 					cj('#'+activityId).attr("id",data.id);	// activity_id
@@ -897,6 +897,7 @@ function buildContactList() {
 			var birth_year = value.birth_date.substring(0,4);
 			var age = year - birth_year;
 		}
+		// console.log(value);
 		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
