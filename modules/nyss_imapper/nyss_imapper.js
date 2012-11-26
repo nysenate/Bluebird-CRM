@@ -698,16 +698,6 @@ cj(document).ready(function(){
 
 });
 
-// function switchName(nameVal){
-//     var nameLength = nameVal.length;
-//     var nameSplit = nameVal.split(" ");
-//     var lastLength = nameLength - nameSplit[0].length;
-//     var lastNameLength = nameSplit[0].length + 1;
-//     var lastName = nameVal.slice(lastNameLength);
-//     cj('.first_name').val(nameSplit[0]);
-//     cj('.last_name').val(lastName);
-// }
-
 function firstName(nameVal){
     var nameLength = nameVal.length;
     var nameSplit = nameVal.split(" ");
