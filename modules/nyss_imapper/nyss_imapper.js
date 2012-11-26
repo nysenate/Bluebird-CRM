@@ -941,7 +941,7 @@ function short_subject(subject, length){
  			return subject;
  		}	
 	}else{
-		return "no subject";
+		return "N/A";
  	}	
 
  }
