@@ -152,8 +152,7 @@ class CRM_IMAP_AJAX {
 
                     $details = ($message->plainmsg) ? $message->plainmsg : strip_tags($message->htmlmsg);
                     $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-
-        
+                    $header->format = ($message->plainmsg) ? "plain" : "html";
 
 
                     $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
@@ -162,21 +161,28 @@ class CRM_IMAP_AJAX {
 
                     // If you can find the From: text that means it was forwarded,
                     // so parse it out and use that.
+
+
                     if ($count > 0) {
+                        $header->status = 'forwarded';
                         $header->from_email = $matches[3];
                         $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
-                        $header->forwarder = htmlentities($header->from);
-                        $header->forwarder_time = date("Y-m-d h:i A", $header->udate); 
                         $forwarded = true;
                     } else {
                         // Otherwise, search for a name and email address from
                         // the header and assume the person who sent it in
                         // is submitting the activity.
+                        $header->status = 'direct';
                         $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
                         $header->from_email = $matches[2];
                         $header->from_name = $matches[1];
-                        $header->forwarder = htmlentities($header->from);
                     }
+
+                    $forwarder_email = self::extract_email_address($header->from);
+                    $header->forwarder_email = $forwarder_email[0];
+                    $header->forwarder_name = preg_replace('/ <.*>/i', '', $header->from);
+                    $header->forwarder_time = date("Y-m-d h:i A", $header->udate); 
+
 
                     // We don't want the fwd: or re: on any messages, that's silly
                     $header->subject = preg_replace("/(fwd:|fw:|re:) /i", "", $header->subject);
@@ -209,6 +215,15 @@ class CRM_IMAP_AJAX {
         // Encode the messages variable and return it to the AJAX call
         echo json_encode($messages);
         CRM_Utils_System::civiExit();
+    }
+    public function extract_email_address ($string) {
+        foreach(preg_split('/ /', $string) as $token) {
+            $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+            if ($email !== false) {
+                $emails[] = $email;
+            }
+        }
+        return $emails;
     }
 
     /* getMessageDetails()

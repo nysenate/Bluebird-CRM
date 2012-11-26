@@ -820,9 +820,7 @@ function buildMessageList() {
 			var icon ='';
 			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 			if( value.from_name != ''){
-				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">';
-				messagesHtml += '<span title="'+value.from_name+'">'+short_subject(value.from_name,20)+'</span>';
-				messagesHtml += '</td>';
+				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20)+'</td>';
 			}else {
 				messagesHtml += '<td class="name">N/A</td>';
 			}
@@ -830,10 +828,25 @@ function buildMessageList() {
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
 				icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 			}
-			messagesHtml += '<td class="email">'+value.from_email +'</td>';
-	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +' '+icon+'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.from_email,24) +'</td>';
+	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
+			// messy, but verbose
+			if(value.status == 'direct'){
+				if( value.from_email != ''){
+					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_name,10)+'</td>';
+				}else{
+					messagesHtml += '<td class="forwarder"> N/A </td>';
+				}
+			}else{
+				if( value.forwarder_name != ''){
+					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_name,14)+'</td>';
+				}else if(value.forwarder_email != ''){
+					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
+				}else{
+					messagesHtml += '<td class="forwarder"> N/A </td>';
+				}
+			}
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -860,19 +873,15 @@ function buildActivitiesList() {
 			if( value.fromName != ''){
 				messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
 				messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
-				if( value.contactType == 'Individual'){
-					messagesHtml += '<div title="Individual" class="icon crm-icon Individual-icon"></div>';
-				}else{
-					messagesHtml += '<div title="Organization" class="icon crm-icon Organization-icon"></div>';
-				}
-				messagesHtml += '</a>';
+ 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+ 				messagesHtml += '</a>';
 				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
 				messagesHtml += '</td>';
 			}else {
 				messagesHtml += '<td class="name">N/A</td>';
 			}
 			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
-			messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
+			messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
 			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 			messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
@@ -933,7 +942,7 @@ function help_message(message){
 function short_subject(subject, length){
 	if(subject){
 	 	if (subject.length > length ){
- 		var safe_subject = subject.substring(0,length)+"...";
+ 		var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
 		return safe_subject;
  		}else{
  			return subject;
