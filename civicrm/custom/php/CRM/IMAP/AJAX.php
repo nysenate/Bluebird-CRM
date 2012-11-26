@@ -429,6 +429,10 @@ class CRM_IMAP_AJAX {
           $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
+        $dob = self::get('dob');
+        if($dob) {
+          $where.="  AND contact.birth_date = '$dob'\n";
+        }
         $state_id = self::get('state');
         $street_address = self::get('street_address');
         $city = self::get('city');
