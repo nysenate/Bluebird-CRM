@@ -836,9 +836,9 @@ function buildMessageList() {
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-				icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 			}
-			messagesHtml += '<td class="email">'+short_subject(value.from_email,24) +'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
 	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
 			// messy, but verbose
