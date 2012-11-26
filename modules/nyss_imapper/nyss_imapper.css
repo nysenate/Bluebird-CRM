@@ -49,6 +49,7 @@
 .imapperbox .full .checkboxieout{ left:17px;  }
 /*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
 .imapperbox .full .subject { width:330px;}
+.name{min-width: 120px !important;}
 .forwarder{ height: 20px;overflow: hidden;  display: block;width: 60px;}
 .date{width: 100px !important; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}

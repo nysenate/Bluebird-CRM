@@ -9,9 +9,9 @@
 				<tr class='list_header'> 
 				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th> 
 				    <th class='Name'>Sender’s Name</th> 
-				    <th class='Email'>Sender’s Email Address</th> 
+				    <th class='Email'>Sender’s Address</th> 
 				    <th class='Subject'>Subject</th> 
-				    <th class='Date'>Date Email Sent</th> 
+				    <th class='Date'>Date Sent</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr> 

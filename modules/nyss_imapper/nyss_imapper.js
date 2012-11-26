@@ -607,6 +607,9 @@ cj(document).ready(function(){
 
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
+		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+
 		cj('#imapper-contacts-list').html('');
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
@@ -634,7 +637,8 @@ cj(document).ready(function(){
  				cj('.email_address').val(messages.fromEmail);
 
  				cj('#filter').click();
-				switchName(messages.fromName);
+				cj('.first_name').val(firstName);
+				cj('.last_name').val(lastName);
 			},
 			error: function(){
 				alert('unable to load message');
@@ -648,6 +652,12 @@ cj(document).ready(function(){
 
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+
+		cj('.first_name').val(firstName);
+	    cj('.last_name').val(lastName);
+
 		cj('#imapper-contacts-list').html('');
 
 		cj.ajax({
@@ -688,16 +698,30 @@ cj(document).ready(function(){
 
 });
 
-function switchName(nameVal){
+// function switchName(nameVal){
+//     var nameLength = nameVal.length;
+//     var nameSplit = nameVal.split(" ");
+//     var lastLength = nameLength - nameSplit[0].length;
+//     var lastNameLength = nameSplit[0].length + 1;
+//     var lastName = nameVal.slice(lastNameLength);
+//     cj('.first_name').val(nameSplit[0]);
+//     cj('.last_name').val(lastName);
+// }
+
+function firstName(nameVal){
+    var nameLength = nameVal.length;
+    var nameSplit = nameVal.split(" ");
+ 	return nameSplit[0];
+}
+
+function lastName(nameVal){
     var nameLength = nameVal.length;
     var nameSplit = nameVal.split(" ");
     var lastLength = nameLength - nameSplit[0].length;
     var lastNameLength = nameSplit[0].length + 1;
     var lastName = nameVal.slice(lastNameLength);
-    cj('.first_name').val(nameSplit[0]);
-    cj('.last_name').val(lastName);
+ 	return lastName;
 }
-
 
 
 function pullMessageHeaders() {
@@ -774,9 +798,11 @@ function buildMessageList() {
 			var icon ='';
 			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 			if( value.from_name != ''){
-				messagesHtml += '<td class="name">'+value.from_name +'</td>';
+				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">';
+				messagesHtml += value.from_name;
+				messagesHtml += '</td>';
 			}else {
-				messagesHtml += '<td class="name"> N/A </td>';
+				messagesHtml += '<td class="name">N/A</td>';
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
@@ -808,12 +834,20 @@ function buildActivitiesList() {
 		cj.each(messages, function(key, value) {
 			total_results++;
 	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
+			
 			if( value.fromName != ''){
-				messagesHtml += '<td class="name"><a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'">'+value.fromName +'<a/></td>';
+				messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+				if( value.contactType == 'Individual'){
+					messagesHtml += '<div title="Individual" class="icon crm-icon Individual-icon"></div>';
+				}else{
+					messagesHtml += '<div title="Organization" class="icon crm-icon Organization-icon"></div>';
+				}
+				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'">'+value.fromName +'<a/>';
+				messagesHtml += '</td>';
 			}else {
-				messagesHtml += '<td class="name"> N/A </td>';
+				messagesHtml += '<td class="name">N/A</td>';
 			}
-			messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,20)+'</td>';
 			messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
 			messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
