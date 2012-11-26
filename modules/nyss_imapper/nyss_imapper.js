@@ -141,9 +141,27 @@ cj(document).ready(function(){
 				change: contactRadios
 			},
 			success: function(data, status) {
-    			window.setTimeout('location.reload()', 10);
-           		help_message('Message assigned to contact');
-			}
+				var data = cj.parseJSON(data);
+				if (data.code =='ERROR'){
+    				alert('failure');
+				}else{
+					cj("#find-match-popup").dialog('close'); 
+					console.log(data);
+
+					// reset activity to new data 
+					cj('#'+activityId).attr("id",data.id);	// activity_id
+					cj('#'+activityId).attr("data-id",data.id); 	// activity_id
+					cj('#'+activityId).attr("data-contact_id",data.contact_id);	// contact_id
+					cj('#'+activityId+" .name").attr("data-firstname",data.first_name);	// first_name
+					cj('#'+activityId+" .name").attr("data-last_name",data.last_name);	// last_name
+
+ 					cj('#'+activityId+' .name').html('<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a>');
+		       		help_message(data.message);
+				}
+			},
+			error: function(){
+    			alert('failure');
+  			}
 		});
 		return false;
 	});

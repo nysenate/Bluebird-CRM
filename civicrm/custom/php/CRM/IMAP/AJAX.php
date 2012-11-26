@@ -592,8 +592,8 @@ class CRM_IMAP_AJAX {
     public static function contactRaw($id){
         require_once 'api/api.php';
         $params = array('version'   =>  3, 'activity'  =>  'get', 'id' => $id, );
-        $activity = civicrm_api('contact', 'get', $params);
-        return $activity;
+        $contact = civicrm_api('contact', 'get', $params);
+        return $contact;
     }
     public static function activityRaw($id){
         require_once 'api/api.php';
@@ -604,8 +604,8 @@ class CRM_IMAP_AJAX {
     public static function tagRaw($id){
         require_once 'api/api.php';
         $params = array('version'   =>  3, 'activity'  =>  'get', 'id' => $id, );
-        $activity = civicrm_api('tag', 'get', $params);
-        return $activity;
+        $tag = civicrm_api('tag', 'get', $params);
+        return $tag;
     }
 
 
@@ -867,6 +867,11 @@ EOQ;
         $contact = self::get('contact');
         $change = self::get('change');
         $results = array();
+        $changeData = self::contactRaw($change);
+        $changeName = $changeData['values'][$change]['display_name'];
+        $firstName = $changeData['values'][$change]['first_name'];
+        $LastName = $changeData['values'][$change]['last_name'];
+        $contactType = $changeData['values'][$change]['contact_type'];
 
         // want to update the activity_target, time to use sql 
         // get the the record id please 
@@ -879,11 +884,10 @@ AND `target_contact_id` = $contact
 EOQ;
 
         $activity_id = mysql_query($query, self::db());
-        while($row = mysql_fetch_assoc($activity_id)) {
-            // print_r($row['id']);
+        if($row = mysql_fetch_assoc($activity_id)) {
+            // the activity id
             $row_id = $row['id']; 
-
-            // UPDATE `senate_prod_c_skelos`.`civicrm_activity_target` SET `target_contact_id` = '285159' WHERE `civicrm_activity_target`.`id` =539082;
+            // change the contact
             $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change
@@ -895,9 +899,13 @@ EOQ;
             while($row = mysql_fetch_assoc($Updated_results)) {
                  $results[] = $row; 
             }
+            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
+        }else{
+            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+
         }
 
-        echo json_encode($results);
+        echo json_encode($returnCode);
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
