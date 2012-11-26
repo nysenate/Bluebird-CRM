@@ -160,7 +160,7 @@ cj(document).ready(function(){
 		var create_zip = cj("#tab2 .zip").val();
 		var create_city = cj("#tab2 .city").val();
 
-		if((!!first_name) && (!!last_name)){
+		if((!!create_first_name) && (!!create_last_name)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
