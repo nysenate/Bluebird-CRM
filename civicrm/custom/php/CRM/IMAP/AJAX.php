@@ -415,7 +415,6 @@ class CRM_IMAP_AJAX {
     public static function getContacts() {
         $start = microtime(true);
         $s = self::get('s');
-
         $from = "FROM civicrm_contact as contact\n";
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
@@ -451,13 +450,11 @@ class CRM_IMAP_AJAX {
           }
         }
         $phone = self::get('phone');
-        $from.="  LEFT JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
         if ($phone) {
+          $from.=" JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
         $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";
-        // var_dump($query); exit();
-
         $result = mysql_query($query, self::db());
         $results = array();
         while($row = mysql_fetch_assoc($result)) {

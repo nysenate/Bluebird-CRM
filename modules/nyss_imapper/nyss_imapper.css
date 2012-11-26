@@ -89,5 +89,5 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-contact-box {background-color: #f8f8f8;margin-bottom: 4px;padding: 4px 0;float:left;}
 .imapper-contact-box:hover {cursor: pointer; background-color: #eeeeee}
 .imapper-address-select-box {height: 16px;width: 20px;float: left;padding: 15px 0px;}
-.imapper-address-box {float: left;width: 225px;padding-left: 5px;}
+.imapper-address-box {float: left;width: 215px;padding-left: 5px;}
 .clear {clear: both;}
