@@ -57,6 +57,7 @@ cj(document).ready(function(){
 		if(cj('#tab1 .phone').val() != "Phone Number"){var phone = cj('#tab1 .phone').val();}
 		if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
 		if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
+		if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/contacts',
@@ -65,6 +66,7 @@ cj(document).ready(function(){
 				city: city,
 				phone: phone,
 				email_address: email_address,
+				dob: dob,
 				street_address: street_address,
 				first_name: first_name,
 				last_name: last_name
