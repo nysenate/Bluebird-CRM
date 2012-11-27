@@ -346,3 +346,7 @@ width: 558px;
 #tagLabel_296 .lv-1 div.tag {
 	width: 300px;
 }
+.BBtree.modal.merge #tagLabel_296 input[type="radio"] {
+	margin-left:-20px;
+	margin-top:3px;
+}	

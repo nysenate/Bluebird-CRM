@@ -4,8 +4,12 @@ function checkForTagTypes (treeData) {
 }
 /*Acquires Ajax Block*/
 function callTagAjax (local, modalTreeTop, pointToTab) {
+	var pointToTab = cj('.crm-tagTabHeader .tab.active').attr('id');
+	if(typeof pointToTab === 'undefined'){
+		pointToTab = 'tagLabel_291';
+	}
 	var getPage = cj('.BBtree.edit').attr('class');
-	var pageClasses = getPage.split(' ')
+	var pageClasses = getPage.split(' ');
 	//console.log(pageClasses[2]);
 	//console.log('start of Tree Rebuild: ' + returnTime());
 	cj.ajax({
@@ -13,7 +17,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 		data: {
 			entity_type: 'civicrm_contact',
 			entity_id: cid,
-			entity_counts: 1
+			entity_counts: 0
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -34,7 +38,15 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 				if(tID.id != '292') //if not positions
 				{
 					if(tID.children.length > 0){
-						cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this);return false;">'+tID.name+'</li>');
+						var checkTIDforPoint = 'tagLabel_' + tID.id;
+						if(checkTIDforPoint == pointToTab)
+						{
+							cj('.crm-tagTabHeader ul').append('<li class="tab active" id="tagLabel_'+tID.id+'" onclick="swapTrees(this);return false;">'+tID.name+'</li>');
+						}
+						else
+						{
+							cj('.crm-tagTabHeader ul').append('<li class="tab" id="tagLabel_'+tID.id+'" onclick="swapTrees(this);return false;">'+tID.name+'</li>');
+						}
 						if(local == 'modal')
 						{
 							if(modalTreeTop == tID.id)
@@ -49,32 +61,32 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 								switch(tID.id)
 								{
 									
-									case '291': resetBBTree(pageClasses[2], 'init', tID); break;
-									case '296': if(pageClasses[2] == 'manage'){cj('<div class="BBtree edit hidden tabbed" id="tagLabel_'+tID.id+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);}break;
+									case '291': resetBBTree(pageClasses[2], 'init', tID, 0, pointToTab); break;
+									case '296': if(pageClasses[2] == 'manage'){cj('<div class="BBtree edit hidden tabbed" id="tagLabel_'+tID.id+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID, 0, pointToTab);}break;
 								}
 							//}
 						}
 					}
 				}
 			});
+
 		}
 			
 	});
-	var d = new Date(); 
 }
-function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
+function resetBBTree(inpLoc, order, treeData, modalTreeTop, pointToTab) {
 	//console.log('beginning of tree rebuild - resetBBTree: ' + returnTime());
 	var treeLoc;
 	switch(inpLoc)
 	{
-		case 'manage': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
+		case 'manage': treeLoc = '#crm-tagListWrap .BBtree.edit.manage';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData, pointToTab); setOpenTab(pointToTab); break;
 		case 'tab': treeLoc = '#crm-tagListWrap .BBtree.edit.tab';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
 		case 'contact': treeLoc = '#crm-tagListWrap .BBtree.edit.contact';  callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData); break;
-		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.edit.hidden.tabbed'; callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData);  break;
+		case 'hidden': case 'backup': treeLoc = '#crm-tagListWrap .BBtree.edit.hidden.tabbed'; callTagAjaxInitLoader(treeLoc, inpLoc); callTagListMain(treeLoc, treeData, pointToTab);setOpenTab(pointToTab); break;
 		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
 		default: alert('No Tree Found'); break;
 	}
-	/*here's where the issues lie in multiple slider, ajaxComplete wants to run a multitude of times depending
+	/*here's where the issues lie in multiple slider, ajaxComplete wants to run a multitude of times depending 
 	on how many times you perform functions on the page, I tossed a do while in there in hopes that i'd do the*/
 	var setCompleteLoop = 1;
 	cj(treeLoc).ajaxComplete(function(e, xhr, settings) {
@@ -101,13 +113,15 @@ function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
 				},500);
 			}
 			setCompleteLoop++;
+			//swapTrees(pointToTab);
+
 		}
 		cj(treeLoc).unbind('ajaxComplete');
 
 	});
 }
 /*Writes out the on page (not modal) Tree to an object*/
-function callTagListMain(treeLoc, treeData) {
+function callTagListMain(treeLoc, treeData, pointToTab) {
 	//console.log('begin of render for Tree Rebuild: ' + treeLoc + ' '+ returnTime());
 	var tID = treeData;
 	delete displayObj;
@@ -170,7 +184,7 @@ function callTagListMain(treeLoc, treeData) {
 		displayObj.tLvl = displayObj.tLvl-1;
 	}
 	displayObj.output += '</dl>';
-	writeDisplayObject(displayObj, treeLoc);
+	writeDisplayObject(displayObj, treeLoc, pointToTab);
 	//console.log('end of render for Tree Rebuild: ' + returnTime());
 }
 /*Writes out the modal tree to an object*/
@@ -261,11 +275,13 @@ function swapTrees(tab){
 	// }
 }
 /*Clears out the location to be written, and then jquery appends it to the space*/
-function writeDisplayObject(displayObj, treeLoc) {
+function writeDisplayObject(displayObj, treeLoc, pointToTab) {
 	cj(treeLoc).append(displayObj.output);
 	//console.log(treeLoc + ' ' +  returnTime());
 	if(treeLoc == '#crm-tagListWrap .BBtree.edit')
 	{
+		//console.log(pointToTab);
+		cj('.crm-tagTabHeader li#'+pointToTab).addClass('active');
 		cj(treeLoc).removeClass('loadingGif');
 		cj(treeLoc).children().show();
 	}
@@ -281,7 +297,7 @@ function callTagAjaxInitLoader(treeLoc, inpLoc) {
 	switch(inpLoc)
 	{
 		case 'init': break;
-		case 'manage': cj('.BBtree.edit.manage').detach();cj('.crm-tagTabHeader li.tab#tagLabel_291').addClass('active');cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
+		case 'manage': cj('.BBtree.edit.manage').detach();cj('<div class="BBtree edit manage" id="tagLabel_291"></div>').appendTo('#crm-tagListWrap'); break;
 		case 'tab': break;
 		case 'contact': break;
 		case 'backup': cj('.BBtree.edit.hidden').detach();cj('<div class="BBtree edit hidden tabbed" id="tagLabel_296"></div>').appendTo('#crm-tagListWrap');  break;
@@ -841,4 +857,11 @@ function returnTime()
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
 	return rTime;
+}
+function setOpenTab(pointToTab)
+{
+
+	cj('dl#' + pointToTab).show(); 
+	cj('.BBtree.edit#' + pointToTab).removeClass('loadingGif');
+	cj('.crm-tagTabHeader li#'+pointToTab).addClass('active');
 }
