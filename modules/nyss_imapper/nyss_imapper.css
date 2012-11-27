@@ -30,7 +30,7 @@
 .linkContact input.linkContactButton.visible {display:inline;}
 .contactsBody .showContactNumResult {font-style:italic; text-align: center; border-bottom:1px solid #000; display:none;}
 .contactsBody .showContactNumResult span {font-style:normal; font-weight:bold;}
-.contactList {height:345px; overflow:auto;  display:none;}
+.contactList {height:220px; overflow:auto;  display:none;}
 .contactList .loadingBox {border-bottom: 1px solid #000;}
 .contactList .contactItem {border-bottom: 1px solid #000; padding:5px 8px;font-size:11px;clear:both;overflow:auto;}
 .contactList .contactItem.active {background:#d99;}
@@ -40,143 +40,54 @@
 .contactList .contactItem .left {float:left; cursor:pointer;}
 .contactList .contactItem .left div {font-size:10px;}
 .contactList .contactItem .right {float:right; margin-top:5px;}
-
-
 .find-match-popup, .delete-confirm{ display: none;}
-.contacts-list{height:245px; overflow:auto; }
-
+.contacts-list{height:220px; overflow:auto; }
 .imapperbox .full{  margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
-
-
 .imapperbox .full .list_header{ font-weight: bold;}
-
-.imapperbox .full .checkboxieout{ left:17px;  }
+.imapperbox .full .checkboxieout{ left:5px;  }
 /*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
-
 .imapperbox .full .subject { width:330px;}
-.forwarder{ height: 20px;
-     overflow: hidden;  display: block;
-    width: 60px;}
-.date{width: 100px !important; overflow: hidden;}
+.name{min-width: 145px !important;}
+.forwarder,.Forwarder{ height: 20px;overflow: hidden;  display: block;width: 100px;}
+.date{width: 110px !important; overflow: hidden;}
 .checkbox_switch{ margin-left: 10px;}
-.imapperbox .full .Actions{ width:120px; text-align: right !important;}
-
+#Activities .Actions{ width:155px !important;}
+#Unmatched .Actions{ width:110px !important;}
 .delete a{color:red !important;}
-
 #autocomplete_tag,.autocomplete-tags-bank{ width: 464px; padding: 10px 4px; margin: 0 0 10px 0; float:left;}
 #autocomplete-tags-bank{ padding:0px; }
- 
 a.tag-item { color: #666!important;}
-
 a.tag-item:hover{ color: #336699!important; background: #e1e1e1; }
-
 .tag-selected{ 	background: #336699; padding:  2px 5px; float:left; margin:0 4px 4px 0; }
 .tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
 a.tag-selected { color: #fff!important; }
 a.tag-selected:hover { color: #fff!important; background-color: red; }
-
-.attachment{
-	float:right;
-}
+.attachment{float:right;}
 /* page actions */
-.page_actions{ 
-	text-align: right; 
-	height: 30px;
-	border-top: 1px solid #ccc;
-	padding:10px 0;
-	margin: 10px 0
-}
-
+.page_actions{ text-align: right; height: 30px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
 .multi_tag, .multi_clear, .multi_delete, .multi_delete{float:right; }
-
 /* data table */
-.dataTables_length{
-    width: 125px !important;
-    float: left !important;
-}
-
-#sortable_results_info{
-	display: none !important;
-}
-
-
-
+.dataTables_length{width: 125px !important;float: left !important;}
+#sortable_results_info{display: none !important;}
 /* hide dialogues on page load */
 #delete-confirm,#loading-popup{ display: none;}
-
-
-
-
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
-
 #message_left {float:left; margin:10px 10px 0 10px ; }
 #message_left_header{ width:640px; height:90px; border-bottom: 1px solid #ccc;  }
 #message_left_email{ width:640px; height:360px; overflow:auto;  }
-
 #message_right{ width:270px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:455px;}
-
 #find-match-popup .ui-tabs-panel { padding:0;}
-#first_name,#last_name {width:46%;}
+.first_name,.last_name {width:46%;}
 .hidden{display:none;}
-
-#assign_container {
-	padding-left: 100px;
-}
-
-#imapper-messages {
-	scrollbar: always;
-	overflow: auto;
-	height: 600px;
-	float: left;
-}
-
-.imapper-message-box {
-	background-color: #eeeeee;
-	margin: 2px;
-}
-
-.imapper-message-box:hover {
-	cursor: pointer;
-}
-
-.imapper-message-box .imapper-select-button {
-	padding-top: 4px;
-}
-
-.imapper-contact-box {
-	background-color: #eeeeee;
-	margin-bottom: 4px;
-	padding: 4px 0;
-	height: 60px;
-
-}
-.imapper-contact-box.tallbox{ 
-	height: 80px;
-}
-
-
-.imapper-contact-box:hover {
-	cursor: pointer;
-}
-
-.imapper-address-select-box {
-	height: 16px;
-	width: 20px;
-	float: left;
-	padding: 15px 0px;
-}
-.imapper-contact-box.tallbox .imapper-address-select-box { 
-	padding: 25px 0px;
-}
-.imapper-address-box {
-	float: left;
-	width: 225px;
-	padding-left: 5px;
-}
-
-.clear {
-	clear: both;
-}
-
+#assign_container {padding-left: 100px;}
+#imapper-messages {scrollbar: always;overflow: auto;height: 600px;float: left;}
+.imapper-message-box {background-color: #eeeeee;margin: 2px;}
+.imapper-message-box:hover {cursor: pointer;}
+.imapper-message-box .imapper-select-button {padding-top: 0px;}
+.imapper-contact-box {background-color: #f8f8f8;margin-bottom: 4px;padding: 4px 0;float:left;}
+.imapper-contact-box:hover {cursor: pointer; background-color: #eeeeee}
+.imapper-address-select-box {height: 16px;width: 20px;float: left;padding: 15px 0px;}
+.imapper-address-box {float: left;width: 215px;padding-left: 5px;}
+.clear {clear: both;}

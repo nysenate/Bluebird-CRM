@@ -2,17 +2,18 @@ var messages = [];
 var contacts = [];
 
 cj(document).ready(function(){
-	var first_name = cj('#first_name');
-	var last_name = cj('#last_name');
-	var city = cj('#city');
-	var phone = cj('#phone');
-	var state = cj('#state');
-	var street_address = cj('#street_address');
+
+	var first_name = cj('#tab1 .first_name').val();
+	var last_name = cj('#tab1 .last_name').val();
+	var city = cj('#tab1 .city').val();
+	var phone = cj('#tab1 .phone').val();
+	var street_address = cj('#tab1 .street_address').val();
+	var email_address = cj('#tab1 .email_address').val();
+
 	var reset = cj('#reset');
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	var reassign = cj('#reassign');
-	var email_address = cj('#email_address');
 	var create = cj('#add-contact');
 
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
@@ -48,36 +49,49 @@ cj(document).ready(function(){
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
-		cj.ajax({
-			url: '/civicrm/imap/ajax/contacts',
-			data: {
-				state: '1031', //always use nystate for now
-				city: city.val(),
-				phone: phone.val(),
-				email_address: email_address.val(),
-				street_address: street_address.val(),
-				first_name: first_name.val(),
-				last_name: last_name.val()
-			},
-			success: function(data,status) {
-				if(data != null || data != ''){
-					contacts = cj.parseJSON(data);
-					if(contacts.length < 1){
-						cj('#imapper-contacts-list').html('No Results Found');
-					}else{
-						cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
-						buildContactList();
+
+		// checks for deault data
+		if(cj('#tab1 .first_name').val() != "First Name"){ var first_name = cj('#tab1 .first_name').val();}
+		if(cj('#tab1 .last_name').val() != "Last Name"){ var last_name = cj('#tab1 .last_name').val();}
+		if(cj('#tab1 .city').val() != "City"){var city = cj('#tab1 .city').val();}
+		if(cj('#tab1 .phone').val() != "Phone Number"){var phone = cj('#tab1 .phone').val();}
+		if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
+		if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
+		if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
+		if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
+			cj.ajax({
+				url: '/civicrm/imap/ajax/contacts',
+				data: {
+					state: '1031',  
+					city: city,
+					phone: phone,
+					email_address: email_address,
+					dob: dob,
+					street_address: street_address,
+					first_name: first_name,
+					last_name: last_name
+				},
+				success: function(data,status) {
+					if(data != null || data != ''){
+						contacts = cj.parseJSON(data);
+						if(contacts.length < 1){
+							cj('#imapper-contacts-list').html('No Results Found');
+						}else{
+							cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
+							buildContactList();
+						}
 					}
 				}
-			}
-		});
+			});
+		}else{
+			alert('enter a search query');
+		}
 		return false;
 	});
 
 	assign.click(function() {
 		var messageId = cj('#email_id').val();
 		var imapId = cj('#imap_id').val();
-		
 		var contactRadios = cj('input[name=contact_id]');
 		var contactIds = '';
 
@@ -127,39 +141,54 @@ cj(document).ready(function(){
 				change: contactRadios
 			},
 			success: function(data, status) {
-    			window.setTimeout('location.reload()', 10);
-           		help_message('Message assigned to contact');
-			}
+				var data = cj.parseJSON(data);
+				if (data.code =='ERROR'){
+    				alert('failure');
+				}else{
+					cj("#find-match-popup").dialog('close'); 
+
+					// reset activity to new data 
+					cj('#'+activityId).attr("data-contact_id",data.contact_id);	// contact_id
+					cj('#'+activityId+" .name").attr("data-firstname",data.first_name);	// first_name
+					cj('#'+activityId+" .name").attr("data-last_name",data.last_name);	// last_name
+ 					cj('#'+activityId+' .name').html('<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a>'); // data for name link
+
+		       		help_message(data.message);
+				}
+			},
+			error: function(){
+    			alert('failure');
+  			}
 		});
 		return false;
 	});
 
 	create.click(function() {
 		var messageId = cj('#email_id').val();
-		var imap_id = cj('#imap_id').val();
-		var first_name = cj("#tabs-2 #first_name").val();
-		var last_name = cj("#tabs-2 #last_name").val();
-		var email_address = cj("#tabs-2 #email_address").val();
-		var phone = cj("#tabs-2 #phone").val();
-		var street_address = cj("#tabs-2 #street_address").val();
-		var street_address_2 = cj("#tabs-2 #street_address_2").val();
-		var zip = cj("#tabs-2 #zip").val();
-		var city = cj("#tabs-2 #city").val();
+		var create_imap_id = cj('#imap_id').val();
+		var create_first_name = cj("#tab2 .first_name").val();
+		var create_last_name = cj("#tab2 .last_name").val();
+		var create_email_address = cj("#tab2 .email_address").val();
+		var create_phone = cj("#tab2 #phone").val();
+		var create_street_address = cj("#tab2 .street_address").val();
+		var create_street_address_2 = cj("#tab2 .street_address_2").val();
+		var create_zip = cj("#tab2 .zip").val();
+		var create_city = cj("#tab2 .city").val();
 
-		if((!!first_name) && (!!last_name)){
+		if((!!create_first_name) && (!!create_last_name)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
-					messageId: messageId,
-					imap_id: imap_id,
-					first_name: first_name,
-					last_name: last_name, 
-					email_address: email_address, 
-					phone: phone, 
-					street_address: street_address, 
-					street_address_2: street_address_2,
-					postal_code: zip,
-					city: city
+					messageId: create_messageId,
+					imap_id: create_imap_id,
+					first_name: create_first_name,
+					last_name: create_last_name, 
+					email_address: create_email_address, 
+					phone: create_phone, 
+					street_address: create_street_address, 
+					street_address_2: create_street_address_2,
+					postal_code: create_zip,
+					city: create_city
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
@@ -174,6 +203,9 @@ cj(document).ready(function(){
 							cj("#find-match-popup").dialog('close'); 
 							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 							help_message('Contact created and message Assigned');
+							var old_total = parseInt(cj("#total_number").html(),10);
+							help_message('Activity Deleted');
+							cj("#total_number").html(old_total-1);
 						},
 						error: function(){
     						alert('failure');
@@ -206,6 +238,7 @@ cj(document).ready(function(){
 	
 	// delete confirm & processing 
 	cj(".delete").live('click', function() {
+
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
@@ -225,6 +258,7 @@ cj(document).ready(function(){
 								var old_total = parseInt(cj("#total_number").html(),10);
 								help_message('Activity Deleted');
 								cj("#total_number").html(old_total-1);
+								// console.log(old_total-1);
 							},
 							error: function(){
     							alert('unable to delete activity');
@@ -254,6 +288,7 @@ cj(document).ready(function(){
 			}
 		});
 		cj( "#delete-confirm" ).dialog('open');
+		return false;
 	});
 
 
@@ -321,13 +356,14 @@ cj(document).ready(function(){
 		});	
 		cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
-		cj( "#delete-confirm" ).dialog('open');
+		cj("#delete-confirm").dialog('open');
+		return false;
 	});
 	
 	// add a find match popup
 	cj( "#find-match-popup" ).dialog({
 		modal: true,
-		height: 500,
+		height: 510,
 		width: 960, // in ie the popup was overflowing
 		autoOpen: false,
 		resizable: false,
@@ -440,6 +476,7 @@ cj(document).ready(function(){
 			alert("please select a tag");
 			return;
 		}
+		return false;
 	});
 
 
@@ -449,12 +486,14 @@ cj(document).ready(function(){
 		var tag_text = cj(this).html();
  		if( cj(".autocomplete-tags-bank ."+tag_id).length < 1 )  {
 			cj(".autocomplete-tags-bank").append('<a data-id="'+tag_id+'" class="tag-selected '+tag_id+'" href="#">'+tag_text+'<span class="tag-delete-icon">&nbsp;</span></a>');
-		}		
+		}
+		return false;		
 	});
 
 	// remove from list of tags
 	cj(".tag-selected").live('click', function() { 
-		cj(this).remove();		
+		cj(this).remove();
+	    return false;		
 	});
 
 
@@ -489,6 +528,7 @@ cj(document).ready(function(){
 				alert('unable to find activity');
 			}
 		 });
+	    return false;
 	});
 
 	// dropdown functions on the matched Messages page
@@ -509,7 +549,7 @@ cj(document).ready(function(){
  		cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
  		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
  		cj("#tagging-popup").dialog('open');
-
+    	return false;
 	});
 
 	/// remove activity from the activities screen, but don't delete it 
@@ -543,6 +583,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog({ title:  "Remove this Messages from this list?"});
 		cj("#loading-popup").dialog('close');
 		cj("#delete-confirm").dialog('open');
+	    return false;
 	});
 	
 
@@ -581,7 +622,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj( "#delete-confirm" ).dialog('open');
-
+    	return false;
 	});
 
 
@@ -594,6 +635,9 @@ cj(document).ready(function(){
 
 		var messageId = cj(this).parent().parent().attr('data-id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
+		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+
 		cj('#imapper-contacts-list').html('');
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
@@ -612,21 +656,23 @@ cj(document).ready(function(){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
-				cj('#first_name, #last_name, #phone, #street_address, #city, #email_address').val('');
+				cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
 				cj('#email_id').val(messageId);
 				cj('#imap_id').val(imapId);
 				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
- 				cj('#tabs-1 #email_address, #tabs-2 #email_address').val(messages.fromEmail);
+ 				cj('.email_address').val(messages.fromEmail);
 
  				cj('#filter').click();
-				switchName(messages.fromName);
+				cj('.first_name').val(firstName);
+				cj('.last_name').val(lastName);
 			},
 			error: function(){
 				alert('unable to load message');
 			}
 		});
+  		return false;
 	});
 
 	// Edit a match allready assigned to an Activity 
@@ -635,6 +681,12 @@ cj(document).ready(function(){
 
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+
+		cj('.first_name').val(firstName);
+	    cj('.last_name').val(lastName);
+
 		cj('#imapper-contacts-list').html('');
 
 		cj.ajax({
@@ -660,6 +712,7 @@ cj(document).ready(function(){
 				alert('unable to Load Message');
 			}
 		 });
+		return false;
 	});
 
 
@@ -675,16 +728,30 @@ cj(document).ready(function(){
 
 });
 
-function switchName(nameVal){
-    var nameLength = nameVal.length;
-    var nameSplit = nameVal.split(" ");
-    var lastLength = nameLength - nameSplit[0].length;
-    var lastNameLength = nameSplit[0].length + 1;
-    var lastName = nameVal.slice(lastNameLength);
-    cj('#tabs-1 #first_name,#tabs-2 #first_name').val(nameSplit[0]);
-    cj('#tabs-1 #last_name, #tabs-2 #last_name').val(lastName);
+function firstName(nameVal){
+  	if(nameVal){
+	  	var nameLength = nameVal.length;
+	    var nameSplit = nameVal.split(" ");
+	 	return nameSplit[0];
+	 }else{
+	 	return 'N/A';
+	 }
+
 }
 
+function lastName(nameVal){
+	if(nameVal){
+	    var nameLength = nameVal.length;
+	    var nameSplit = nameVal.split(" ");
+	    var lastLength = nameLength - nameSplit[0].length;
+	    var lastNameLength = nameSplit[0].length + 1;
+	    var lastName = nameVal.slice(lastNameLength);
+	 	return lastName;	
+	 }else{
+	 	return 'N/A';
+	 }
+
+}
 
 
 function pullMessageHeaders() {
@@ -727,8 +794,10 @@ function makeListSortable(){
 	//	"bStateSave": true,
 		'aTargets': [ 1 ] 
 	});
-	// unbind the sort on the
-	cj("th.checkbox").unbind('click');
+	// unbind the sort on the checkbox and actions
+	cj("th.checkbox").removeClass('sorting').unbind('click');
+	cj("th.Actions").removeClass('sorting').unbind('click');
+
 	checks();
 
 }
@@ -761,18 +830,33 @@ function buildMessageList() {
 			var icon ='';
 			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 			if( value.from_name != ''){
-				messagesHtml += '<td class="name">'+value.from_name +'</td>';
+				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20)+'</td>';
 			}else {
-				messagesHtml += '<td class="name"> N/A </td>';
+				messagesHtml += '<td class="name">N/A</td>';
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-				icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 			}
-			messagesHtml += '<td class="email">'+value.from_email +'</td>';
-	 		messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +' '+icon+'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
+	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+value.forwarder + " "+ value.forwarder_time +'</td>';
+			// messy, but verbose
+			if(value.status == 'direct'){
+				if( value.from_email != ''){
+					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_name,10)+'</td>';
+				}else{
+					messagesHtml += '<td class="forwarder"> N/A </td>';
+				}
+			}else{
+				if( value.forwarder_name != ''){
+					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_name,14)+'</td>';
+				}else if(value.forwarder_email != ''){
+					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
+				}else{
+					messagesHtml += '<td class="forwarder"> N/A </td>';
+				}
+			}
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -795,15 +879,21 @@ function buildActivitiesList() {
 		cj.each(messages, function(key, value) {
 			total_results++;
 	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
+			
 			if( value.fromName != ''){
-				messagesHtml += '<td class="name"><a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" target="blank">'+value.fromName +'<a/></td>';
+				messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+				messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
+ 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+ 				messagesHtml += '</a>';
+				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
+				messagesHtml += '</td>';
 			}else {
-				messagesHtml += '<td class="name"> N/A </td>';
+				messagesHtml += '<td class="name">N/A</td>';
 			}
-			messagesHtml += '<td class="email">'+value.fromEmail +'</td>';
-			messagesHtml += '<td class="subject" title="'+value.subject +'">'+short_subject(value.subject,50) +'</td>';
+			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
+			messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+value.forwarder +'</td>';
+			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 			messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -816,28 +906,26 @@ function buildActivitiesList() {
 function buildContactList() {
 	var contactsHtml = '';
 	cj.each(contacts, function(key, value) {
-		var tall = 'nada';
 		// calculate the aprox age
 		if(value.birth_date){
-			tall = 'tallbox';
 			var date = new Date();
 			var year  = date.getFullYear();
 			var birth_year = value.birth_date.substring(0,4);
 			var age = year - birth_year;
 		}
-
-		contactsHtml += '<div class="imapper-contact-box '+ tall +'" data-id="'+value.contact_id+'">';
+		// console.log(value);
+		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
 		contactsHtml += '</div>';
 		contactsHtml += '<div class="imapper-address-box">';
-		contactsHtml += value.display_name + '<br />';
-		if(value.birth_date){
-			contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br />';
-		}
-		contactsHtml += value.street_address + '<br />';
-		contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code;
-		contactsHtml += '</div></div>';
+		if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
+		if(value.birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br/>';}
+		if(value.email){ contactsHtml += value.email + '<br/>'; }
+		if(value.phone){ contactsHtml += value.phone + '<br/>'; }
+		if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
+		if(value.city){ contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code + '<br/>'; }
+ 		contactsHtml += '</div></div>';
 		contactsHtml += '<div class="clear"></div>';
 	});
 	cj('#imapper-contacts-list').append(contactsHtml);
@@ -864,13 +952,13 @@ function help_message(message){
 function short_subject(subject, length){
 	if(subject){
 	 	if (subject.length > length ){
- 		var safe_subject = subject.substring(0,length)+"...";
+ 		var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
 		return safe_subject;
  		}else{
  			return subject;
  		}	
 	}else{
-		return "no subject";
+		return "N/A";
  	}	
 
  }
