@@ -467,6 +467,10 @@ class CRM_Core_BAO_Block {
     // if params is_primary then set all others to not be primary & exit out
     if (CRM_Utils_Array::value('is_primary', $params)) {
       $sql = "UPDATE $table SET is_primary = 0 WHERE contact_id = %1";
+      //NYSS if id is set, exclude that record so we don't double save log
+      if (!empty($params['id'])) {
+        $sql .= " AND id != {$params['id']} ";
+      }
       CRM_Core_DAO::executeQuery($sql, array(1 => array($contactId, 'Integer')));
       return;
     }
