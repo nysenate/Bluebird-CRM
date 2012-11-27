@@ -385,24 +385,15 @@ class CRM_IMAP_AJAX {
      * This function will format many types of incoming dates
      */
     public static function cleanDate($date_string){
-        $date_string = preg_replace("/(<br>)/i", " ", $date_string);
-        $date_string = preg_replace("/(>)|(  )|(<)/i", "", $date_string);
-        $pos = strpos( $date_string, "Subject:");
+        $matches = array();
+        
+        // search for the word date
+        $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
+        $date_string_short = $matches[2];
 
-        if ($pos !== false) {
-          $date_string = substr($date_string, 0, $pos);
-          $pos2 = strpos( $date_string, "Date:");
-          if ($pos2 !== false) {
-            $date_string_short = substr($date_string, ($pos2+5));
-          }else{
-            $date_string_short = "00-00-00 00:00 XX";
-          }
-        }
-
-        // here we have the clean date from the forwarded header
-        // echo $date_string."<br/>";
         // sometimes email clients think its fun to add stuff to the date, remove it here.
         $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
+
         // reformat the date to something standard here.
         $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
         return $date_string_short;
@@ -444,7 +435,7 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
-        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')   \n";
+        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
         $last_name = self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
         $email_address = self::get('email_address');
