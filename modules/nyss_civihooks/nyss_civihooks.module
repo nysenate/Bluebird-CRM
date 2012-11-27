@@ -553,8 +553,11 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
+//CRM_Core_Error::debug_var('op',$op);
+//CRM_Core_Error::debug_var('objectName',$objectName);
 //CRM_Core_Error::debug_var('objectId',$objectId);
 //CRM_Core_Error::debug_var('objectRef',$objectRef);
+//CRM_Core_Error::backtrace('backTrace', TRUE);
 
   //NYSS #2729 strip line break
   if ( ( $op == 'edit' || $op == 'create' ) &&
