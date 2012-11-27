@@ -48,6 +48,7 @@
 .crm-tagLegend td.moveTag div {background-position: -34px 0px; }
 .crm-tagLegend td.updateTag div {background-position: -50px 0px;}
 .crm-tagLegend td.mergeTag div {background-position: -66px 0px;}
+.crm-tagLegend td.convertTag div {background-position: -107px 0px;}
 .crm-tagLegend td.printTag div, #crm-container .BBtree dt.lv-0 .fCB ul li.printTag {
 
 	background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png');
@@ -417,6 +418,172 @@ function makeModalMerge(tagLabel){
 		} 
 	});
 }
+function makeModalKWMerge(tagLabel){
+	cj("#dialog").show( );
+	cj("#dialog").dialog({
+		closeOnEscape: true,
+		draggable: true,
+		height: 500,
+		width: 600,
+		title: "Merge Keyword into Tag",
+		modal: true, 
+		bgiframe: true,
+		close:{ },
+		overlay: { 
+			opacity: 0.2, 
+			background: "black" 
+		},
+		open: function() {
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
+			var treeDialogInfo;
+			if(tagInfo.reserved == true){
+			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be merged</div>';
+			cj('#dialog').html(treeDialogInfo);
+			} else {
+			treeDialogInfo = '<div class="modalHeader">Merge <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into Selected Tag...</div>';
+			treeDialogInfo += '<div class="BBtree modal merge loadingGif"></div>';
+			cj('#dialog').html(treeDialogInfo);
+			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+			var keywordTreePull = cj('dl#tagLabel_296').html();
+			cj('.BBtree.modal.merge.loadingGif').html(keywordTreePull);
+			cj('.BBtree.modal.merge span.fCB').html('');
+			cj('.BBtree.modal.merge .tag .name').before('<span><input type="radio" class="selectRadio" name="selectTag" /></span>');
+			cj('.BBtree.modal.merge #tagLabel_296 .tag input').html('');
+			modalKWSelectOnClick();
+				setTimeout(function(){
+					var modalTIDhide = cj('#modalNameTid').attr('tid');
+					var tagTIDtoHide = cj('#' + modalTIDhide).attr('tid');
+					cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide).html('');
+				},500);
+			cj('.BBtree.modal.merge.loadingGif').removeClass('loadingGif');
+
+			}
+		},
+		buttons: {
+			"Cancel": function() { 
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy");
+			}
+		} 
+	});
+}
+function modalKWSelectOnClick() {
+	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').unbind('click');
+	cj('.BBtree.modal input.selectRadio, .BBtree.modal div.tag').click(function(){
+		var tagLabel = cj('.ui-dialog-content .modalHeader span').attr('tID');
+		//search the string for all mentions of tid="number"
+		var listOfChildTids = '';
+		var tagChildren = cj('.BBtree.edit.manage dl#'+ tagLabel).html();
+		if(tagChildren != null)
+		{
+			listOfChildTids += tagChildren.match(/tid=\"[0-9]*\"/g);
+			for(i = 0;i<listOfChildTids.length;i++)
+			{
+				listOfChildTids[i] = listOfChildTids[i].replace("tid=\"",'');
+				listOfChildTids[i] = listOfChildTids[i].replace("\"",'');
+			}
+		}
+		if(cj('.BBtree.modal').hasClass('merge'))
+		{
+			tagLabel = cj('.modalHeader span').attr('tid');
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.manage dt#' + tagLabel + ' .tag .name').html();
+			tagInfo.tid = cj('.BBtree.manage dt#' + tagLabel).attr('tid');
+			var destinationId = cj(this).parents('dt').attr('tid');
+			cj("#dialog").dialog( "option", "buttons", [
+				{
+					text: "Merge ",
+					click: function() {
+						tagMerge = new Object();
+						cj('.ui-dialog-buttonset .ui-button').css("visibility", "hidden");
+						cj('.ui-dialog-buttonpane').append('<div class="loadingGif"></div>');
+						modalSetLoadingGif();
+						tagMerge.currentId = cj('.ui-dialog-content .modalHeader span').attr('tID').replace('tagLabel_','');
+						tagMerge.destinationId = destinationId;
+						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
+		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
+		 				console.log(data);
+		 				var tidMatch = false;
+		 				
+		 				// var listOfToChildTids = '';
+						// var toTagList = cj('.BBtree.edit.manage dl#tagLabel_'+ tagMerge.destinationId).html();
+						// if(toTagList != null)
+						// {
+							
+						// 	listOfToChildTids += toTagList.match(/tid=\"[0-9]*\"/g);
+						// 	console.log(listOfToChildTids);
+						// 	for(i = 0;i<listOfToChildTids.length;i++)
+						// 	{
+						// 		listOfToChildTids[i] = listOfToChildTids[i].replace("tid=\"",'');
+						// 		listOfToChildTids[i] = listOfToChildTids[i].replace("\"",'');
+						// 	}
+						// 	var isListArray = cj.isArray(listOfToChildTids);
+						// 	if((listOfChildTids.length > 0  && listOfToChildTids.length > 0) || !(isListArray))
+				 		// 	{
+				 		// 		tidMatch = true;
+				 		// 	}
+						// }
+						//console.log(tagChildren);
+						if(tagChildren != null)
+						{
+							tidMatch = true;
+						}
+			 			//console.log(tidMatch);
+						if(tidMatch == false)
+						{	
+							cj.ajax({
+								type     : "POST",
+								url: postUrl,
+								data: data,
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									if ( data.status == true ) {
+										cj("#dialog").dialog("close"); 
+										cj("#dialog").dialog("destroy"); 
+										callTagAjax();
+										if(cj('.contactTagsList.help').length < 1)
+										{
+											cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
+										}
+										var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
+										var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
+										cj('#tagLabel_' + tagInfo.tid).html(''); 
+										cj('#tagStatusBar').html(msg);
+									}
+									else
+									{
+										cj('.ui-dialog-buttonpane .loadingGif').hide();
+										cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+										modalRemoveLoadingGif();
+									}
+									
+								}	
+							});
+						}
+						else {
+							alert("Cannot merge a parent tag into another tag. Try moving sub-tags into the parent you want to merge into and then merge the tag into the destination");
+							cj('.ui-dialog-buttonpane .loadingGif').hide();
+							cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
+							modalRemoveLoadingGif();
+						}
+
+					}
+				},
+				{
+					text: "Cancel",
+					click: function() { 
+						cj(this).dialog("close"); 
+						cj(this).dialog("destroy"); 
+					}
+				}
+			]);
+		}
+	});
+}
 /*adds the control box to admin/page to +/-/->/i/? based on a set of conditions*/
 function addControlBox(tagLabel, IDChecked, currentID, treeTop) {
 	var floatControlBox = '';
@@ -434,9 +601,10 @@ function addControlBox(tagLabel, IDChecked, currentID, treeTop) {
 	}
 	if(treeTop == '296')
 	{
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Convert Tag" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Keyword" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Keyword" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Keyword" onclick="makeModalKWMerge(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -107px 0px; float:left;" title="Convert Keyword" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
 	}
 	floatControlBox += '</span>';
 	if(tagMouse == 'dt#tagLabel_291')
@@ -565,12 +733,13 @@ function printTags()
     		<tr>
     			<td class="addTag"><div></div>Add Tag</td>
     			<td class="removeTag"><div></div>Remove Tag</td>
-    			<td class="mergeTag"><div></div>Merge Tag & Convert Keywords</td>
+    			<td class="mergeTag"><div></div>Merge Tag</td>
+    			<td class="convertTag"><div></div>Convert Tag</td>
     		</tr>
     		<tr>
     			<td class="updateTag"><div></div>Update Tag</td>
     			<td class="moveTag"><div></div>Move Tag</td>
-    			<td class="printTag"><div></div>Print Tags under Issue Codes</td>
+    			<td class="printTag"><div></div>Print Tags</td>
     		</tr>
     	</table>
     </div>
