@@ -226,6 +226,10 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         bbscript_log("fatal", "Malformed JSON");
         continue;
     }
+    else if ( count($response) == 0 ){
+        bbscript_log("error", "No response from SAGE.");
+        continue;
+    }
 
     // Process the results
     $count['total'] += count($response);
@@ -258,6 +262,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 'election_code'=>$value['electionCode'],
                 'senate_code'=>$value['senateCode'],
                 'county_code'=>$value['countyCode'],
+                'match_mode' => $message
                 // 'fire_code'=>$value['matches'][0]['fire_code'],
                 // 'ward_code'=>$value['matches'][0]['ward_code'],
                 // 'vill_code'=>$value['matches'][0]['vill_code'],
@@ -306,7 +311,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
             $row = $ny_address_data[$id];
 
-            $note = "A_ID: $id \nADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
+            $note = "A_ID: $id \nMODE: {$value['match_mode']}\n ADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
             $subject = "";
 
             // Determine if any of the districts changed and take note of it.
