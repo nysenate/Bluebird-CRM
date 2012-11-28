@@ -66,7 +66,7 @@ $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
 // Map old district numbers to new district numbers if the addressMap option is set
-$district_cycle_stats = array();
+$address_map_changes = 0;
 if ( $address_map ) {
     bbscript_log("info", "Mapping old district numbers to new district numbers");
     $district_cycle = array(
@@ -75,21 +75,24 @@ if ( $address_map ) {
     );
 
     mysql_query("BEGIN", $db);
-    foreach( $district_cycle as $from => $to ) {
+    $result = mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
+    $num_rows = mysql_num_rows($result);
+    for( $i = 0; $i < $num_rows; $i++ ){
+        $row = mysql_fetch_assoc($result);
+        $district = $row['ny_senate_district_47'];
+        if ( isset( $district_cycle[$district]) ){
 
-        bbscript_log("debug", "Updating district {$from} to {$to}");
-        $query = "
-            UPDATE civicrm_value_district_information_7
-            SET ny_senate_district_47 = {$to}
-            WHERE ny_senate_district_47 = {$from};";
-        mysql_query($query, $db);
-        $records_updated = mysql_affected_rows();
-        bbscript_log("debug", "{$records_updated} records updated");
-        // Store the number of records updated
-        $district_cycle_stats[] = array( $from, $records_updated );
+            $new_district = $district_cycle[$district];
+            $query = "
+                UPDATE civicrm_value_district_information_7
+                SET ny_senate_district_47 = {$new_district}
+                WHERE id = {$row['id']};";
+            mysql_query($query);
+            $address_map_changes++;
+        }
     }
     mysql_query("COMMIT", $db);
-    bbscript_log("info", "Completed district mapping");
+    bbscript_log("info", "Completed district mapping with $address_map_changes changes");
 }
 
 // Collect NY state addresses with a street address; any
