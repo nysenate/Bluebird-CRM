@@ -40,7 +40,8 @@
 </table>
  {include file="CRM/common/pager.tpl" location="bottom" noForm=1}
 </div>
-   <a href="#" id="button"title="Contacts selected in the Find Contacts page"> {ts}View Selected Contacts{/ts}</a>
+   {*NYSS 5912 temporarily remove*}
+   {*<a href="#" id="button"title="Contacts selected in the Find Contacts page"> {ts}View Selected Contacts{/ts}</a>*}
    {/if}
 </div>
 {if $action eq 256 & $ssid eq null}

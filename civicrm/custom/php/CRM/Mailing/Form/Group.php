@@ -112,7 +112,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       // check that the user has permission to access mailing id
       CRM_Mailing_BAO_Mailing::checkPermission($this->_mailingID);
 
-    //if ($mailingID) {
+      //if ($mailingID) {
       $mailing = new CRM_Mailing_DAO_Mailing();
       $mailing->id = $this->_mailingID;
       $mailing->addSelect('name', 'campaign_id');
@@ -135,7 +135,6 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
       //NYSS 4448
       $mailingGroups = array( 'civicrm_group' => array( ), 'civicrm_mailing' => array( ));
       $dao->mailing_id = $this->_mailingID;
-      $dao->mailing_id = $mailingID;
       $dao->find();
       while ($dao->fetch()) {
         $mailingGroups[$dao->entity_table][$dao->group_type][] = $dao->entity_id;
