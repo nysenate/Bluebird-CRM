@@ -142,35 +142,31 @@ $time_start = microtime(true);
 
 // Store count statistics
 $count = array(
-    "total" => 0,
-    "multimatch" => 0,
-    "match" => 0,
-    "nomatch" => 0,
-    "invalid" => 0,
-    "error" => 0,
-    "exactmatch" => 0,
-    "consolidatedRangeFill" => 0,
-    "consolidatedMultimatch" => 0,
-    "rangeFillFailure" => 0,
-    "notfound" => 0,
-    "outofstate" => 0,
+    "TOTAL" => 0,
+    "MATCH" => 0,
+    "STREETNUM" => 0,
+    "STREETNAME" => 0,
+    "ZIPCODE" => 0,
+    "NOMATCH" => 0,
+    "INVALID" => 0,
+    "OUTOFSTATE" => 0,
+    "ERROR" => 0,
+
     "totalCurlTime" => 0,
     "totalMysqlTime" => 0
 );
 
 // Compute percentages for certain counts
 $percent = array(
-    "multimatch" => 0,
-    "match" => 0,
-    "nomatch" => 0,
-    "invalid" => 0,
-    "error" => 0,
-    "exactmatch" => 0,
-    "consolidatedRangeFill" => 0,
-    "consolidatedMultimatch" => 0,
-    "rangeFillFailure" => 0,
-    "notfound" => 0,
-    "outofstate" => 0
+    "MATCH" => 0,
+    "NOMATCH" => 0,
+    "INVALID" => 0,
+    "ERROR" => 0,
+    "STREETNUM" => 0,
+    "STREETNAME" => 0,
+    "ZIPCODE" => 0,
+    "OUTOFSTATE" => 0,
+    "ERROR" => 0
 );
 
 // Subject prefixes will indicate whether district information
@@ -209,7 +205,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     // the out of state addresses will have their district information set to 0.
     if ( $row['state'] != 'NY') {
         $non_ny_address_data[$row['id']] = $row;
-        $count['outofstate']++;
+        $count['OUTOFSTATE']++;
         bbscript_log("trace", "Found out of state address with id: {$row['id']}");
         continue;
     }
@@ -268,29 +264,17 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Process the results
-    $count['total'] += count($response);
+    $count['TOTAL'] += count($response);
     $update_payload = array();
 
     foreach ($response as $id => $value) {
         $status_code = $value['status_code'];
         $message = $value['message'];
 
-        if ($status_code == "MATCH") {
-
-            $count['match']++;
-            bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
-
-            if ($message == "EXACT MATCH") {
-                $count['exactmatch']++;
-            }
-
-            elseif ($message == "CONSOLIDATED RANGEFILL") {
-                $count['consolidatedRangeFill']++;
-            }
-
-            elseif ($message == "CONSOLIDATED MULTIMATCH") {
-                $count['consolidatedMultimatch']++;
-            }
+        if ($status_code == "STREETNUM" || $status_code == "STREETNAME" || $status_code == "ZIPCODE") {
+            $count['MATCH']++;
+            $count[$status_code]++;
+            bbscript_log("trace", "[MATCH - $status_code][$message] on record #".$value['address_id']);
 
             $update_payload[$value['address_id']] = array(
                 'assembly_code'=>$value['assemblyCode'],
@@ -298,7 +282,8 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 'election_code'=>$value['electionCode'],
                 'senate_code'=>$value['senateCode'],
                 'county_code'=>$value['countyCode'],
-                'match_mode' => $message
+                'result_code' => $status_code,
+                'result_message' => $message
                 // 'fire_code'=>$value['matches'][0]['fire_code'],
                 // 'ward_code'=>$value['matches'][0]['ward_code'],
                 // 'vill_code'=>$value['matches'][0]['vill_code'],
@@ -308,30 +293,18 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             );
 
         }
-        elseif ($status_code == "MULTIMATCH") { // shouldn't exist anymore
-            $count['multimatch']++;
-            bbscript_log("warn", "[MULTIMATCH][".$value['message']."] on record #".$value['address_id']);
-
-        }
         elseif ($status_code == "NOMATCH") {
-            if ($message == "RANGEFILL") {
-                $count['rangeFillFailure']++;
-            }
-            else {
-                $count['notfound']++;
-            }
-
-            $count['nomatch']++;
-            bbscript_log("warn", "[NOMATCH][".$value['message']."] on record #".$value['address_id']);
+            $count[$status_code]++;
+            bbscript_log("warn", "[NOMATCH][$message] on record #".$value['address_id']);
 
         }
         elseif ($status_code == "INVALID") {
-             $count['invalid']++;
-             bbscript_log("warn", "[INVALID][".$value['message']."] on record #".$value['address_id']);
+            $count[$status_code]++;
+            bbscript_log("warn", "[INVALID][$message] on record #".$value['address_id']);
         }
         else { // Unknown status_code, what?!?
-            $count['error']++;
-            bbscript_log("ERROR", "on record ".$value['address_id']." with message " .$value['message'] );
+            $count['ERROR']++;
+            bbscript_log("ERROR", "Unknown status [$status_code] on record ".$value['address_id']." with message [$message]");
         }
     }
 
@@ -347,7 +320,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
             $row = $ny_address_data[$id];
 
-            $note = "A_ID: $id \nMODE: {$value['match_mode']}\n ADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
+            $note = "A_ID: $id \nMODE: {$value['result_code']}\n ADDRESS: ".$row['building'].' '.$row['building_chr'].' '.$row['street1'].' '.$row['street2'].', '.$row['town'].', '.$row['state'].', '.$row['zip']."\nUPDATES: SD:".getValue($row['senate_code'])."=>{$value['senate_code']}, CO:".getValue($row['county_code'])."=>{$value['county_code']}, CD:".getValue($row['congressional_code'])."=>{$value['congressional_code']}, AD:".getValue($row['assembly_code'])."=>{$value['assembly_code']}, ED:".getValue($row['election_code'])."=>{$value['election_code']}";
             $subject = "";
 
             // Determine if any of the districts changed and take note of it.
@@ -446,36 +419,34 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // Timer for debug
     $time = get_elapsed_time($time_start);
-    $Records_per_sec = round($count['total'] / $time, 1);
+    $Records_per_sec = round($count['TOTAL'] / $time, 1);
     $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
-    $Curl_per_sec = round($count['total'] / $count['totalCurlTime'], 1);
+    $Curl_per_sec = round($count['TOTAL'] / $count['totalCurlTime'], 1);
 
     // Update the percentages using the counts
     foreach ( $percent as $key => $value ) {
         $percent[$key] = round( $count[$key] / $count['total'] * 100, 2 );
     }
 
-    $seconds_left = round(($total_found - $count['total']) / $Records_per_sec, 0);
+    $seconds_left = round(($total_found - $count['TOTAL']) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
     bbscript_log("info", "-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info", "[DONE @]           $finish_at (in ".$seconds_left." seconds)");
-    bbscript_log("info", "[COUNT]            {$count['total']}");
+    bbscript_log("info", "[COUNT]            {$count['TOTAL']}");
     bbscript_log("info", "[TIME]             ".round($time, 4));
 
-    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count['total']." in ".round($time, 3).")");
-    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['total']." in ".round($count['totalMysqlTime'], 3).")");
-    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['total']." in ".round($count['totalCurlTime'], 3).")");
-    bbscript_log("info", "[MATCH]    [TOTAL] {$count['match']} ({$percent['match']} %)");
-    bbscript_log("trace","[MATCH]    [EXACT] {$count['exactmatch']} ({$percent['exactmatch']} %)");
-    bbscript_log("trace","[MATCH]    [RANGE] {$count['consolidatedRangeFill']} ({$percent['consolidatedRangeFill']} %)");
-    bbscript_log("trace","[MATCH]    [MULTI] {$count['consolidatedMultimatch']} ({$percent['consolidatedMultimatch']} %)");
-    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['nomatch']} ({$percent['nomatch']} %)");
-    bbscript_log("trace","[NOMATCH]  [RANGE] {$count['rangeFillFailure']} ({$percent['rangeFillFailure']} %)");
-    bbscript_log("info", "[MULTI]    [TOTAL] {$count['multimatch']} ({$percent['multimatch']} %)");
-    bbscript_log("info", "[INVALID]  [TOTAL] {$count['invalid']} ({$percent['invalid']} %)");
-    bbscript_log("info", "[ERROR]    [TOTAL] {$count['error']} ({$percent['error']} %)");
-    bbscript_log("info", "[NON_NY]   [TOTAL] {$count['outofstate']} ({$percent['outofstate']} %)");
+    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count['TOTAL']." in ".round($time, 3).")");
+    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['TOTAL']." in ".round($count['totalMysqlTime'], 3).")");
+    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['TOTAL']." in ".round($count['totalCurlTime'], 3).")");
+    bbscript_log("info", "[MATCH]    [TOTAL] {$count['MATCH']} ({$percent['MATCH']} %)");
+    bbscript_log("trace","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
+    bbscript_log("trace","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
+    bbscript_log("trace","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['NOMATCH']} ({$percent['NOMATCH']} %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] {$count['INVALID']} ({$percent['INVALID']} %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
+    bbscript_log("info", "[NON_NY]   [TOTAL] {$count['OUTOFSTATE']} ({$percent['OUTOFSTATE']} %)");
 }
 
 bbscript_log("info", "Completed redistricting addresses");
