@@ -171,18 +171,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         continue;
     }
 
-    // Clean the data manually till we can do mass validation.
-    $town = clean($row['town']);
-    $row['town'] = preg_replace(array('/^EAST /','/^WEST /','/^SOUTH /','/^NORTH /', '/ SPRINGS$/','/PETERSBURG$/'),array('E ','W ','S ','N ',' SPGS','PETERSBURGH'),$town);
-
-    $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
-    $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
-
-    $street = clean($row['street2']);
-    $row['street2'] = preg_replace($match, $replace, $street);
-
-    $street = clean($row['street1']);
-    $row['street1'] = preg_replace($match, $replace, $street);
+    clean_row($row);
 
     // Format for the bulkdistrict tool
     $JSON_payload[$row['id']]= array(
@@ -457,6 +446,19 @@ bbscript_log("info", "Completed redistricting addresses");
 function clean($string)
 {
     return preg_replace("/[.,']/","",strtoupper(trim($string)));
+}
+
+function clean_row($row) {
+    $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
+    $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
+
+    $street = clean($row['street2']);
+    $row['street2'] = preg_replace($match, $replace, $street);
+
+    $street = clean($row['street1']);
+    $row['street1'] = preg_replace($match, $replace, $street);
+
+    return $row;
 }
 
 function getValue($string)
