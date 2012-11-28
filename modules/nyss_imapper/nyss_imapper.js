@@ -651,7 +651,7 @@ cj(document).ready(function(){
 					if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
 					icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 				}
-				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}

@@ -62,6 +62,51 @@ class CRM_IMAP_AJAX {
         return mysql_real_escape_string($_GET[$key], self::db());
     }
 
+    /* unifiedMessageInfo()
+     * Parameters: email.
+     * Returns: An Object message details to map to the output.
+     * This function grabs a single messages and cleans it for output.
+     */   
+    public static function unifiedMessageInfo($email) {
+
+        $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
+        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
+        $tempDetails = preg_replace("/>>/i", "", $details);
+        $format = ($email->plainmsg) ? "plain" : "html";
+        if($format =='plain'){ // convert plaintext to html for popup
+            $body = preg_replace("/(=|\r\n|\r|\n)/i", "<br>\n", $details);
+        }else{
+            $replace = array('/&lt;/i','/&gt;/i');
+            $body = preg_replace($replace, "", $details);
+            $tempDetails = strip_tags($body); // remove tags for body content parsing 
+        }
+
+        $header = array(
+            'format' => $format,
+            'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
+            'from_name' => $email->sender[0]->personal,                      
+            'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,                      
+            'subject' => $email->subject,
+            'body' => $body,                      
+            'date_clean' => self::cleanDate($email->date),                      
+        );
+
+        // better parsing of body text 
+        preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempDetails, $subjects);
+        preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempDetails, $froms);
+        $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
+
+        $forwarded = array(
+            'date_clean' => self::cleanDate($tempDetails), 
+            'subject' => preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']), 
+            'origin' => $froms['2'],
+            'origin_name' => preg_replace('/[^A-Za-z0-9\s\s+]/', '', (str_replace($fromEmail[0], '', $froms['2']))), 
+            'origin_email' => $fromEmail[0], 
+        );
+        $output = array('header'=>$header,'forwarded'=>$forwarded);
+        return $output;
+    }
+
     /* getUnmatchedMessages()
      * Parameters: None.
      * Returns: A JSON Object of messages in all IMAP inboxes.
@@ -91,130 +136,33 @@ class CRM_IMAP_AJAX {
             foreach($headers as $header) {
                 if( in_array($header->uid,$ids)) {
                     // Get the message based on the UID of the header.
-                    $message = $imap->getmsg_uid($header->uid);
+                    $email = $imap->getmsg_uid($header->uid);
+                    $output = self::unifiedMessageInfo($email);
 
-                    $matches = array();
-                    // var_dump($header->uid);
-                    $structure = imap_fetchstructure($imap->conn(),$header->uid,SE_UID);
-
-                    // grab the attachments
-                    $attachments = array();
-                    if(isset($structure->parts) && count($structure->parts)) {
-                     for($i = 0; $i < count($structure->parts); $i++) {
-                       $attachments[$i] = array(
-                          'is_attachment' => false,
-                          'filename' => '',
-                          'name' => '',
-                          'attachment' => '');
-
-                       if($structure->parts[$i]->ifdparameters) {
-                         foreach($structure->parts[$i]->dparameters as $object) {
-                           if(strtolower($object->attribute) == 'filename') {
-                             $attachments[$i]['is_attachment'] = true;
-                             $attachments[$i]['filename'] = $object->value;
-                           }
-                         }
-                       }
-
-                       if($structure->parts[$i]->ifparameters) {
-                         foreach($structure->parts[$i]->parameters as $object) {
-                           if(strtolower($object->attribute) == 'name') {
-                             $attachments[$i]['is_attachment'] = true;
-                             $attachments[$i]['name'] = $object->value;
-                           }
-                         }
-                       }
-
-                       if($attachments[$i]['is_attachment']) {
-                         $attachments[$i]['attachment'] = imap_fetchbody($imap->conn(),$header->uid,$i+1,SE_UID);
-
-                         if($structure->parts[$i]->encoding == 3) { // 3 = BASE64
-                           $attachments[$i]['attachment'] = base64_decode($attachments[$i]['attachment']);
-                         }
-                         elseif($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
-                           $attachments[$i]['attachment'] = quoted_printable_decode($attachments[$i]['attachment']);
-                         }else{
-                            $attachments[$i]['attachment'] = $attachments[$i]['attachment'];
-                         }
-                         if($attachments[$i]['filename']) $header->attachmentfilename = $attachments[$i]['filename'] ;
-                         if($attachments[$i]['name']) $header->attachmentname = $attachments[$i]['name'] ;
-                         if($attachments[$i]['attachment']) $header->attachment = $attachments[$i]['attachment'] ;
-                       }
-                     } // for($i = 0; $i < count($structure->parts); $i++)
-                    } // if(isset($structure->parts) && count($structure->parts))
-
-                    // exit();
-
-                    // Read the from: sender in the format:
-                    // From: "First Last" <email address>
-                    // or
-                    // From: First Last mailto:emailaddress
-
-                    $details = ($message->plainmsg) ? $message->plainmsg : strip_tags($message->htmlmsg);
-                    $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-                    $header->format = ($message->plainmsg) ? "plain" : "html";
-
-
-                    $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
-                    // Was this message forwarded or is this a raw message from the sender?
-                    $forwarded = false;
-
-                    // If you can find the From: text that means it was forwarded,
-                    // so parse it out and use that.
-
-
-                    if ($count > 0) {
-                        $header->status = 'forwarded';
-                        $header->from_email = $matches[3];
-                        $header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
-                        $forwarded = true;
-                    } else {
-                        // Otherwise, search for a name and email address from
-                        // the header and assume the person who sent it in
-                        // is submitting the activity.
-                        $header->status = 'direct';
-                        $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
-                        $header->from_email = $matches[2];
-                        $header->from_name = $matches[1];
-                    }
-
-                    $forwarder_email = self::extract_email_address($header->from);
-                    $header->forwarder_email = $forwarder_email[0];
-                    $header->forwarder_name = preg_replace('/ <.*>/i', '', $header->from);
-                    $header->forwarder_time = date("Y-m-d h:i A", $header->udate); 
-
-
-                    // We don't want the fwd: or re: on any messages, that's silly
-                    $header->subject = preg_replace("/(fwd:|fw:|re:) /i", "", $header->subject);
-
-                    // Set the imap_id of this message (the mailbox it came from)
-                    // And then set the date to be blank because we'll just pull
-                    // it from the forwarded message.
-                    $header->imap_id = $imap_id;
-
-                    // Search for the format "Date: blah blah blah"
-                    // This is most formats from Lotus Notes and iNotes
-                    if($forwarded) {
-                      // getting a clean date is hard these days
-                      $header->date = self::cleanDate($details); 
-                    } else {
-                        // It's not forwarded, pull from header
-                        $header->date = date("m-d-y h:i A", strtotime($header->date));
-                    }
-
-                    // Assign the header variable into the $messages array.
-                    // The reason we stored our variables in $header is
-                    // because there's already existing information we want in there.
-                    $messages[$header->uid] = $header;
+                    $returnMessage[$header->uid] =  array( 
+                        'subject' =>  $output['forwarded']['subject'],
+                        'from' =>  $output['forwarded']['origin_name'].' <'.$output['forwarded']['origin_email'].'>',
+                        'uid' =>  $header->uid,
+                        'date' =>  $output['header']['date_clean'],
+                        'format' =>  $output['header']['format'],
+                        'from_email' =>  $output['forwarded']['origin_email'],
+                        'from_name' =>  $output['forwarded']['origin_name'],
+                        'forwarder_email' =>  $output['header']['from_email'],
+                        'forwarder_name' =>  $output['header']['from_name'],
+                        'forwarder_time' =>  $output['forwarded']['date_clean'],
+                        'imap_id' =>  $imap_id
+                        );
+                    // var_dump($returnMessage);
                  }
             }
         }       
 
         
         // Encode the messages variable and return it to the AJAX call
-        echo json_encode($messages);
+        echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
     }
+
     public function extract_email_address ($string) {
         foreach(preg_split('/ /', $string) as $token) {
             $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
@@ -224,6 +172,8 @@ class CRM_IMAP_AJAX {
         }
         return $emails;
     }
+
+
 
     /* getMessageDetails()
      * Parameters: None.
@@ -243,137 +193,27 @@ class CRM_IMAP_AJAX {
         $email = $imap->getmsg_uid($id);
 
         $structure = imap_fetchstructure($imap->conn(),$id,SE_UID);
-        // var_dump($structure);
-        // exit();
 
         $matches = array();
 
-        // HAVE MERCY. I copied and pasted this from the previous section,
-        // this should be separated into a function.
-        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
-        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-        $tempDetails = preg_replace("/>>/i", "", $details);
-        $format = ($message->plainmsg) ? "plain" : "html";
-
-        // grab the attachments
-        $attachments = array();
-        if(isset($structure->parts) && count($structure->parts)) {
-         for($i = 0; $i < count($structure->parts); $i++) {
-           $attachments[$i] = array(
-              'is_attachment' => false,
-              'filename' => '',
-              'name' => '',
-              'attachment' => '');
-
-           if($structure->parts[$i]->ifdparameters) {
-             foreach($structure->parts[$i]->dparameters as $object) {
-               if(strtolower($object->attribute) == 'filename') {
-                 $attachments[$i]['is_attachment'] = true;
-                 $attachments[$i]['filename'] = $object->value;
-               }
-             }
-           }
-
-           if($structure->parts[$i]->ifparameters) {
-             foreach($structure->parts[$i]->parameters as $object) {
-               if(strtolower($object->attribute) == 'name') {
-                 $attachments[$i]['is_attachment'] = true;
-                 $attachments[$i]['name'] = $object->value;
-               }
-             }
-           }
-
-           if($attachments[$i]['is_attachment']) {
-             $attachments[$i]['attachment'] = imap_fetchbody($imap->conn(),$header->uid,$i+1,SE_UID);
-
-             if($structure->parts[$i]->encoding == 3) { // 3 = BASE64
-               $attachments[$i]['attachment'] = base64_decode($attachments[$i]['attachment']);
-             }
-             elseif($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
-               $attachments[$i]['attachment'] = quoted_printable_decode($attachments[$i]['attachment']);
-             }else{
-                $attachments[$i]['attachment'] = $attachments[$i]['attachment'];
-             }
-             // var_dump($attachments[$i]);
-             // exit();
-
-             if($attachments[$i]['filename']) $attachmentfilename = $attachments[$i]['filename'] ;
-             if($attachments[$i]['name']) $attachmentname = $attachments[$i]['name'] ;
-             if($attachments[$i]['attachment']) $attachment = $attachments[$i]['attachment'] ;
-           }
-         } // for($i = 0; $i < count($structure->parts); $i++)
-        } // if(isset($structure->parts) && count($structure->parts))
-
-
-        // Read the from: sender in the format:
-        // From: "First Last" <email address>
-        // or
-        // From: First Last mailto:emailaddress
-        // or 
-        // From: First Last &lt;emailaddress&gt;
-        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
-
-        // Was this message forwarded or is this a raw message from the sender?
-        $forwarded = false;
-
-        $forwardedName = '';
-        $forwardedEmail = '';
-
-        // If you can find the From: text that means it was forwarded,
-        // so parse it out and use that.
-        if ($count > 0) {
-            $fromName = !empty($matches[1]) ? $matches[1] : $matches[2];
-            $forwardedName = $email->sender[0]->personal;
-            $forwardedEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-            $forwardedTime = $dateSent = date("m-d-y h:i A", $email->time); 
-            $forwarded = true;
-            // check to make sure the match is actually an email address, if not try again
-            $check = self::extract_email_address($matches[3]);
-            if(($format == 'html')&&(!$check)){
-                $tempDetails = preg_replace("/&lt;/i", " ", $tempDetails);
-                $tempDetails = preg_replace("/&gt;/i", " ", $tempDetails);
-                $fromEmail_pull = self::extract_email_address($tempDetails);
-                $fromEmail = $fromEmail_pull[0];
-            }else{
-                $fromEmail = $matches[3];
-            }
-        } else {
-            // Otherwise, search for a name and  address from
-            // the header and assume the person who sent it in
-            // is submitting the activity.
-            $fromName = $email->sender[0]->personal;
-            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-            $forwardedName = $forwardedEmail = '';
-        }
-
-
-        $subject = preg_replace("/(fwd:|fw:|re:) /i", "", $email->subject);
-
-        // Search for the format "Date: blah blah blah"
-        // This is most formats from Lotus Notes and iNotes
-
-        if($forwarded) {
-          // getting a clean date is hard these days
-          $dateSent = self::cleanDate($details);
-        }else{
-          $dateSent = date("m-d-y h:i A", strtotime($email->date));
-
-        };
-
+        // emails use a standard formatter
+        $output = self::unifiedMessageInfo($email);
+    
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
-                               'format' => $format,
-                               'fromName'   =>  mb_convert_encoding($fromName, 'UTF-8'),
-                               'fromEmail'  =>  $fromEmail,
-                               'forwardedName'  =>  mb_convert_encoding($forwardedName, 'UTF-8'),
-                               'forwardedEmail' =>  $forwardedEmail,
-                               'forwardedDate' =>  $forwardedTime,
-                               'subject'    =>  mb_convert_encoding($subject, 'UTF-8'),
-                               'details'  =>  mb_convert_encoding($details, 'UTF-8'),
+                               'format' => $output['header']['format'],
+                               'forwardedName'   =>  mb_convert_encoding($output['header']['from_name'], 'UTF-8'),
+                               'forwardedEmail'  =>  $output['header']['from_email'],
+                               'fromName'  =>  mb_convert_encoding($output['forwarded']['origin_name'], 'UTF-8'),
+                               'fromEmail' =>  $output['forwarded']['origin_email'],
+                               'forwardedDate' =>  $output['forwarded']['date_clean'],
+                               'subject'    =>  mb_convert_encoding($output['forwarded']['subject'], 'UTF-8'),
+                               'details'  =>  mb_convert_encoding($output['header']['body'], 'UTF-8'),
                                'attachmentfilename'  => $attachmentfilename,
                                'attachmentname'  =>  $attachmentname,
                                'attachment'  => $attachment,
-                               'date'   =>  $dateSent);
+                               'date'   =>  $output['header']['date_clean']);
+        // var_dump($returnMessage);  exit();
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
     }
@@ -385,24 +225,15 @@ class CRM_IMAP_AJAX {
      * This function will format many types of incoming dates
      */
     public static function cleanDate($date_string){
-        $date_string = preg_replace("/(<br>)/i", " ", $date_string);
-        $date_string = preg_replace("/(>)|(  )|(<)/i", "", $date_string);
-        $pos = strpos( $date_string, "Subject:");
+        $matches = array();
 
-        if ($pos !== false) {
-          $date_string = substr($date_string, 0, $pos);
-          $pos2 = strpos( $date_string, "Date:");
-          if ($pos2 !== false) {
-            $date_string_short = substr($date_string, ($pos2+5));
-          }else{
-            $date_string_short = "00-00-00 00:00 XX";
-          }
-        }
+        // search for the word date
+        $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
+        $date_string_short = ($count == 1 ) ? $matches[2]  : $date_string;
 
-        // here we have the clean date from the forwarded header
-        // echo $date_string."<br/>";
         // sometimes email clients think its fun to add stuff to the date, remove it here.
         $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
+
         // reformat the date to something standard here.
         $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
         return $date_string_short;
@@ -444,7 +275,7 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
         $first_name = self::get('first_name');
-        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')   \n";
+        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
         $last_name = self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
         $email_address = self::get('email_address');
@@ -509,13 +340,16 @@ class CRM_IMAP_AJAX {
         $imapId = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[$imapId]['user'], self::$imap_accounts[$imapId]['pass']);
         $email = $imap->getmsg_uid($messageUid);
-        $senderName = $email->sender[0]->personal;
-        $senderEmailAddress = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-        $originEmailAddress = $email->sender[1]->mailbox . '@' . $email->sender[1]->host;
 
-        $date = $email->date;
-        $subject = preg_replace("/(fwd:|fw:|re:)\s?/", "", $email->subject);
-        $body = ($email->plainmsg) ? str_replace("\n",'<br>',$email->plainmsg) : $email->htmlmsg;
+        $output = self::unifiedMessageInfo($email);
+
+
+        // probably could user better names 
+        $senderName = $output['header']['from_name'];
+        $senderEmailAddress = $output['header']['from_email'];
+        $date = $output['header']['date_clean'];
+        $subject = $output['forwarded']['subject'];
+        $body = $output['header']['body'];
         
         require_once 'api/api.php';
 
@@ -528,7 +362,6 @@ class CRM_IMAP_AJAX {
         }
 
         // Get the user information for the person who forwarded the email, or bluebird admin
-
         $params = array( 
             'email' => $senderEmailAddress,
             'version' => 3,
@@ -542,31 +375,8 @@ class CRM_IMAP_AJAX {
           $forwarderId = $result['id'];
         };
 
-        // HAVE MERCY. I copied and pasted this from the previous section,
-        // this should be separated into a function.
-        $details = ($email->plainmsg) ? preg_replace("/(\r\n|\r|\n)/", "<br>", $email->plainmsg) : $email->htmlmsg;
-        $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-  
-        // Read the from: sender in the format:
-        // From: "First Last" <email address>
-        // or
-        // From: First Last mailto:emailaddress
-        $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
 
-        // Was this message forwarded or is this a raw message from the sender?
-        $forwarded = false;
-        // If you can find the From: text that means it was forwarded,
-        // so parse it out and use that.
-        if ($count > 0) {
-            $fromEmail = $matches[3];
-        } else {
-            // Otherwise, search for a name and  address from
-            // the header and assume the person who sent it in
-            // is submitting the activity.
-            $fromEmail = $email->sender[0]->mailbox . '@' . $email->sender[0]->host;
-        }
-
-
+        $fromEmail = $output['forwarded']['origin_email'];
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
