@@ -230,6 +230,10 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         bbscript_log("fatal", "Malformed JSON");
         continue;
     }
+    else if ( count($response) == 0 ){
+        bbscript_log("error", "No response from SAGE.");
+        continue;
+    }
 
     // Process the results
     $count['total'] += count($response);
