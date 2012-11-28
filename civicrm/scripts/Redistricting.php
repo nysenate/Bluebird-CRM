@@ -480,19 +480,14 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
 bbscript_log("info", "Completed redistricting addresses");
 
-function clean($string)
-{
-    return preg_replace("/[.,']/","",strtoupper(trim($string)));
-}
-
 function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
 
-    $street = clean($row['street2']);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street2'])));
     $row['street2'] = preg_replace($match, $replace, $street);
 
-    $street = clean($row['street1']);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street1'])));
     $row['street1'] = preg_replace($match, $replace, $street);
 
     return $row;
