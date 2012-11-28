@@ -16,13 +16,13 @@ define('DEFAULT_LOG_LEVEL', 'TRACE');
 // Parse the options
 require_once 'script_utils.php';
 $prog = basename(__FILE__);
-$shortopts = "c:l:m:n";
-$longopts = array("chunk=", "log=", "max=", "dryrun");
+$shortopts = "c:l:m:na";
+$longopts = array("chunk=", "log=", "max=", "dryrun", "addressMap");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--max \"number\"] [--dryrun]";
+    $usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--max \"number\"] [--dryrun] [--addressMap]";
     error_log("Usage: $prog  $stdusage  $usage\n");
     exit(1);
 }
@@ -45,6 +45,7 @@ $log_level = $optlist['log'] ? $optlist['log'] : DEFAULT_LOG_LEVEL;
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($log_level)][0];
 $dry_run = $optlist['dryrun'];
 $max_id = $optlist['max'];
+$address_map = $optlist['addressMap'];
 
 if ($max_id && is_numeric($max_id)) {
     $max_id_condition = ' AND address.id < '.$max_id;
@@ -63,6 +64,33 @@ $session =& CRM_Core_Session::singleton();
 // Establish a connection to the instance database
 $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
+
+// Map old district numbers to new district numbers if the addressMap option is set
+$district_cycle_stats = array();
+if ( $address_map ) {
+    bbscript_log("info", "Mapping old district numbers to new district numbers");
+    $district_cycle = array(
+        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
+        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
+    );
+
+    mysql_query("BEGIN", $db);
+    foreach( $district_cycle as $from => $to ) {
+
+        bbscript_log("debug", "Updating district {$from} to {$to}");
+        $query = "
+            UPDATE civicrm_value_district_information_7
+            SET ny_senate_district_47 = {$to}
+            WHERE ny_senate_district_47 = {$from};";
+        mysql_query($query, $db);
+        $records_updated = mysql_affected_rows();
+        bbscript_log("debug", "{$records_updated} records updated");
+        // Store the number of records updated
+        $district_cycle_stats[] = array( $from, $records_updated );
+    }
+    mysql_query("COMMIT", $db);
+    bbscript_log("info", "Completed district mapping");
+}
 
 // Collect NY state addresses with a street address; any
 // address not matching this criteria will not be included.
@@ -130,9 +158,24 @@ $count = array(
     "totalMysqlTime" => 0
 );
 
-// Subject prefixes will indicate whether district information 
+// Compute percentages for certain counts
+$percent = array(
+    "multimatch" => 0,
+    "match" => 0,
+    "nomatch" => 0,
+    "invalid" => 0,
+    "error" => 0,
+    "exactmatch" => 0,
+    "consolidatedRangeFill" => 0,
+    "consolidatedMultimatch" => 0,
+    "rangeFillFailure" => 0,
+    "notfound" => 0,
+    "outofstate" => 0
+);
+
+// Subject prefixes will indicate whether district information
 // has been updated, kept the same, or removed. RD12 stands for
-// Redistricting 2012 and prefixing it is a way to filter through 
+// Redistricting 2012 and prefixing it is a way to filter through
 // relevant notes pertaining to redistricting.
 $subject_prefixes = array(
     "unchanged" => "RD12 VERIFIED DISTRICTS",
@@ -155,11 +198,11 @@ $JSON_payload = array();
 $address_count = mysql_num_rows($result);
 
 for ($rownum = 1; $rownum <= $address_count; $rownum++) {
-    
+
     // Fetch the new row, no null check needed since we have the count
     // If we do pull back a NULL something bad happened and dying is okay
     $row = mysql_fetch_assoc($result);
-    
+
     $ny_address_data[$row['id']] = $row;
 
     // Since we're only concerned with NY state addresses for the lookup process
@@ -240,10 +283,10 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         $message = $value['message'];
 
         if ($status_code == "MATCH") {
-            
+
             $count['match']++;
             bbscript_log("trace", "[MATCH][".$value['message']."] on record #".$value['address_id']);
-            
+
             if ($message == "EXACT MATCH") {
                 $count['exactmatch']++;
             }
@@ -300,7 +343,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Update districts in the database if --dryrun flag was not set
-    // and insert a note describing the update. 
+    // and insert a note describing the update.
     if (count($update_payload) > 0 && !$dry_run) {
         $update_time_start = microtime(true);
         bbscript_log("trace", "Updating ".count($update_payload)." records.");
@@ -319,7 +362,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 if ( isset($value[$code]) && getValue($row[$code]) != $value[$code] )
                 {
                     $subject .= $abbrv . ' ';
-                }                
+                }
             }
 
             // Set the appropriate subject prefix depending on whether districts changed or not.
@@ -330,10 +373,10 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 $subject = $subject_prefixes['unchanged'];
             }
 
-            // Remove any redistricting notes that already exist for this address. 
+            // Remove any redistricting notes that already exist for this address.
             mysql_query("
-                DELETE FROM `civicrm_note` 
-                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact' 
+                DELETE FROM `civicrm_note`
+                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact'
                 AND `subject` LIKE 'RD12%' AND note LIKE 'A_ID: {$id}%'"
             );
 
@@ -354,9 +397,9 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                     election_district_49 = {$value['election_code']},
                     county_50 = {$value['county_code']}
                 WHERE civicrm_value_district_information_7.entity_id = $id", $db
-                );    
+                );
             }
-            
+
             // Currently Unused ----------------------------------------
             // county_legislative_district_51   = {$value['cleg_code']},
             // town_52   = {$value['town_code']},
@@ -364,7 +407,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             // school_district_54   = {$value['school_code']},
             // ---------------------------------------------------------
         }
-        
+
         // Remove the district info for any non-NY state address that have been picked up so far.
         foreach( $non_ny_address_data as $id => $value )
         {
@@ -372,10 +415,10 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
             $note = "A_ID: $id\nUPDATES: SD:". getValue($row['senate_code']) ."=> 0, CO:".getValue($row['county_code'])."=> 0, CD:".getValue($row['congressional_code'])."=> 0, AD:".getValue($row['assembly_code'])."=> 0, ED:".getValue($row['election_code'])."=> 0";
             $subject = $subject_prefixes['removed'];
 
-            // Remove any redistricting notes that already exist for this address. 
+            // Remove any redistricting notes that already exist for this address.
             mysql_query("
-                DELETE FROM `civicrm_note` 
-                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact' 
+                DELETE FROM `civicrm_note`
+                WHERE `entity_id` = {$row['contact_id']} AND `entity_table` = 'civicrm_contact'
                 AND `subject` LIKE 'RD12%' AND note LIKE 'A_ID: {$id}%'"
             );
 
@@ -413,17 +456,11 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $Records_per_sec = round($count['total'] / $time, 1);
     $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
     $Curl_per_sec = round($count['total'] / $count['totalCurlTime'], 1);
-    $Multimatch_percent = round($count['multimatch'] / $count['total'] * 100, 2);
-    $Match_percent = round((($count['match'] / $count['total']) * 100), 2);
-    $Nomatch_percent = round($count['nomatch'] / $count['total'] * 100, 2);
-    $Invalid_percent = round($count['invalid'] / $count['total'] * 100, 2);
-    $Error_percent = round($count['error'] / $count['total'] * 100,  2);
-    $ExactMatch_percent = round($count['exactmatch'] / $count['total'] * 100, 2);
-    $ConsolidatedRangefill_percent = round($count['consolidatedRangeFill'] / $count['total'] * 100, 2);
-    $ConsolidatedMultimatch_percent = round($count['consolidatedMultimatch'] / $count['total'] * 100, 2);
-    $RangefillFailure_percent = round($count['rangeFillFailure'] / $count['total'] * 100, 2);
-    $NotFound_percent = round($count['notfound'] / $count['total'] * 100, 2);
-    $OutOfState_percent = round($count['outofstate'] / $count['total'] * 100, 2);
+
+    // Update the percentages using the counts
+    foreach ( $percent as $key => $value ) {
+        $percent[$key] = round( $count[$key] / $count['total'] * 100, 2 );
+    }
 
     $seconds_left = round(($total_found - $count['total']) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
@@ -436,16 +473,16 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count['total']." in ".round($time, 3).")");
     bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['total']." in ".round($count['totalMysqlTime'], 3).")");
     bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['total']." in ".round($count['totalCurlTime'], 3).")");
-    bbscript_log("info", "[MATCH]    [TOTAL] {$count['match']} ($Match_percent %)");
-    bbscript_log("trace","[MATCH]    [EXACT] {$count['exactmatch']} ($ExactMatch_percent %)");
-    bbscript_log("trace","[MATCH]    [RANGE] {$count['consolidatedRangeFill']} ($ConsolidatedRangefill_percent %)");
-    bbscript_log("trace","[MATCH]    [MULTI] {$count['consolidatedMultimatch']} ($ConsolidatedMultimatch_percent %)");
-    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['nomatch']} ($Nomatch_percent %)");
-    bbscript_log("trace","[NOMATCH]  [RANGE] {$count['rangeFillFailure']} ($RangefillFailure_percent %)");
-    bbscript_log("info", "[MULTI]    [TOTAL] {$count['multimatch']} ($Multimatch_percent %)");
-    bbscript_log("info", "[INVALID]  [TOTAL] {$count['invalid']} ($Invalid_percent %)");
-    bbscript_log("info", "[ERROR]    [TOTAL] {$count['error']} ($Error_percent %)");
-    bbscript_log("info", "[NON_NY]   [TOTAL] {$count['outofstate']} ($OutOfState_percent %)");
+    bbscript_log("info", "[MATCH]    [TOTAL] {$count['match']} ({$percent['match']} %)");
+    bbscript_log("trace","[MATCH]    [EXACT] {$count['exactmatch']} ({$percent['exactmatch']} %)");
+    bbscript_log("trace","[MATCH]    [RANGE] {$count['consolidatedRangeFill']} ({$percent['consolidatedRangeFill']} %)");
+    bbscript_log("trace","[MATCH]    [MULTI] {$count['consolidatedMultimatch']} ({$percent['consolidatedMultimatch']} %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['nomatch']} ({$percent['nomatch']} %)");
+    bbscript_log("trace","[NOMATCH]  [RANGE] {$count['rangeFillFailure']} ({$percent['rangeFillFailure']} %)");
+    bbscript_log("info", "[MULTI]    [TOTAL] {$count['multimatch']} ({$percent['multimatch']} %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] {$count['invalid']} ({$percent['invalid']} %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] {$count['error']} ({$percent['error']} %)");
+    bbscript_log("info", "[NON_NY]   [TOTAL] {$count['outofstate']} ({$percent['outofstate']} %)");
 }
 
 bbscript_log("info", "Completed redistricting addresses");
