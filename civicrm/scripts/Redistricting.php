@@ -147,6 +147,7 @@ $count = array(
     "STREETNUM" => 0,
     "STREETNAME" => 0,
     "ZIPCODE" => 0,
+    "SHAPEFILE" => 0,
     "NOMATCH" => 0,
     "INVALID" => 0,
     "OUTOFSTATE" => 0,
@@ -165,6 +166,7 @@ $percent = array(
     "STREETNUM" => 0,
     "STREETNAME" => 0,
     "ZIPCODE" => 0,
+    "SHAPEFILE" => 0,
     "OUTOFSTATE" => 0,
     "ERROR" => 0
 );
@@ -271,7 +273,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         $status_code = $value['status_code'];
         $message = $value['message'];
 
-        if ($status_code == "STREETNUM" || $status_code == "STREETNAME" || $status_code == "ZIPCODE") {
+        if ($status_code == "STREETNUM" || $status_code == "STREETNAME" || $status_code == "ZIPCODE" || $status_code == "SHAPEFILE") {
             $count['MATCH']++;
             $count[$status_code]++;
             bbscript_log("trace", "[MATCH - $status_code][$message] on record #".$value['address_id']);
@@ -443,6 +445,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     bbscript_log("trace","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
     bbscript_log("trace","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
     bbscript_log("trace","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
+    bbscript_log("trace","[MATCH]    [SHAPE]  {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
     bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['NOMATCH']} ({$percent['NOMATCH']} %)");
     bbscript_log("info", "[INVALID]  [TOTAL] {$count['INVALID']} ({$percent['INVALID']} %)");
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
