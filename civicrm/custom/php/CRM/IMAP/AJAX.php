@@ -81,6 +81,19 @@ class CRM_IMAP_AJAX {
             $tempDetails = strip_tags($body); // remove tags for body content parsing 
         }
 
+        // grab attachments
+        $attachmentCount = 0;
+
+        $attachmentHeader = $email->attachments;
+        foreach ($attachmentHeader as $key => $value) {
+            $name = quoted_printable_decode($key);
+            $name = preg_replace("/(\?utf-8\?Q\?)/i", "", $name);
+            $name =  preg_replace('/[^A-Za-z0-9.\s\s+]/', ' ', $name);
+            $attachmentArray[$attachmentCount] = array('name' => $name,'content' => $value);
+            $attachmentCount++;
+        }
+        $attachmentArray['overview'] = array('total'=>$attachmentCount);
+
         $header = array(
             'format' => $format,
             'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
@@ -103,7 +116,8 @@ class CRM_IMAP_AJAX {
             'origin_name' => preg_replace('/[^A-Za-z0-9\s\s+]/', '', (str_replace($fromEmail[0], '', $froms['2']))), 
             'origin_email' => $fromEmail[0], 
         );
-        $output = array('header'=>$header,'forwarded'=>$forwarded);
+        $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+        // var_dump($output);
         return $output;
     }
 
@@ -150,6 +164,9 @@ class CRM_IMAP_AJAX {
                         'forwarder_email' =>  $output['header']['from_email'],
                         'forwarder_name' =>  $output['header']['from_name'],
                         'forwarder_time' =>  $output['forwarded']['date_clean'],
+                        'attachmentfilename'  => $output['attachments'][0]['name'],
+                        'attachmentname'  =>  $output['attachments'][0]['name'],
+                        'attachment'  => $output['attachments']['overview']['total'],
                         'imap_id' =>  $imap_id
                         );
                     // var_dump($returnMessage);
@@ -209,9 +226,9 @@ class CRM_IMAP_AJAX {
                                'forwardedDate' =>  $output['forwarded']['date_clean'],
                                'subject'    =>  mb_convert_encoding($output['forwarded']['subject'], 'UTF-8'),
                                'details'  =>  mb_convert_encoding($output['header']['body'], 'UTF-8'),
-                               'attachmentfilename'  => $attachmentfilename,
-                               'attachmentname'  =>  $attachmentname,
-                               'attachment'  => $attachment,
+                               'attachmentfilename'  => $output['attachments'][0]['name'],
+                               'attachmentname'  =>  $output['attachments'][0]['name'],
+                               'attachment'  => $output['attachments']['overview']['total'],
                                'date'   =>  $output['header']['date_clean']);
         // var_dump($returnMessage);  exit();
         echo json_encode($returnMessage);
@@ -343,7 +360,6 @@ class CRM_IMAP_AJAX {
 
         $output = self::unifiedMessageInfo($email);
 
-
         // probably could user better names 
         $senderName = $output['header']['from_name'];
         $senderEmailAddress = $output['header']['from_email'];
@@ -402,7 +418,6 @@ class CRM_IMAP_AJAX {
               'version' => 3
           );
           $activity = civicrm_api('activity', 'create', $params);
-          // var_dump($params);
 
           // if its an error or doesnt return we need errors 
           if (($activity['is_error']==1)){
