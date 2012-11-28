@@ -164,27 +164,37 @@ CREATE TEMPORARY TABLE
                                        CRM_Utils_Array::value("log_date_to_time",   $this->_params));
     $logDateClause = $logDateClause ? "AND {$logDateClause}" : null;
 
-    list($offset, $rowCount) = $this->limit();
     $this->_limit = NULL;
+    //NYSS
+    if (!CRM_Utils_Array::value('altered_contact_id_value', $this->_params)) { 
+      // do not apply limit when its running from change-log TAB
+      list($offset, $rowCount) = $this->limit();
+      $this->_limit = "LIMIT {$rowCount}";
+    }
 
-    //NYSS restrict by contact ID if present
-    $cid = $this->getVar('cid');
-    $cidClause = '';
-
+    //NYSS updates from trunk
+    $sqlParams = array();
     foreach ( $this->_logTables as $entity => $detail ) {
-      $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);//NYSS 5751
-      $clause = CRM_Utils_Array::value('entity_table', $detail);
-      $clause = $clause ? "entity_table = 'civicrm_contact' AND" : null;
-      //NYSS 5751 removed LIMIT clause (Jira 11180) and added contact_id clause
-      if ( $cid ) {
-        $cidClause = " AND {$detail['fk']} = $cid ";
+      $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
+      $clause = array("log_action != 'Initialization'");
+      if (CRM_Utils_Array::value('entity_table', $detail)) {
+        $clause[] = "entity_table = 'civicrm_contact'";
       }
+      if (CRM_Utils_Array::value('altered_contact_id_value', $this->_params)) { 
+        $clause[]  = "`{$this->loggingDB}`.{$tableName}.{$detail['fk']}= %1";
+        $sqlParams = array(1 => array($this->_params['altered_contact_id_value'], 'Integer'));
+      }
+      if ($logDateClause) {
+        $clause[]  = $logDateClause;
+      }
+      $clause = implode(' AND ', $clause);
+
       $sql    = "
-INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
-  SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
-  WHERE {$clause} log_action != 'Initialization' {$logDateClause} {$cidClause} ";
-      //CRM_Core_Error::debug_var('sql insert',$sql);
-      CRM_Core_DAO::executeQuery($sql);
+ INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
+ SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
+ WHERE {$clause} {$this->_limit}";
+      CRM_Core_Error::debug_var('sql insert',$sql);
+      CRM_Core_DAO::executeQuery($sql, $sqlParams);
     }
 
     $logTypes = CRM_Utils_Array::value('log_type_value', $this->_params);
@@ -198,16 +208,18 @@ INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
 
     foreach ( $this->_logTables as $entity => $detail ) {
       if ((in_array($this->getLogType($entity), $logTypes) &&
-           CRM_Utils_Array::value('log_type_op', $this->_params) == 'in') ||
-          (!in_array($this->getLogType($entity), $logTypes) &&
-           CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')) {
+        CRM_Utils_Array::value('log_type_op', $this->_params) == 'in') ||
+        (!in_array($this->getLogType($entity), $logTypes) &&
+          CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')) {
         $this->from( $entity );
         $sql = $this->buildQuery(false);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
         $this->buildRows($sql, $rows);
       }
     }
-    //CRM_Core_Error::debug_var('$rows',$rows);
+    CRM_Core_Error::debug_var('$rows',$rows);
+    //NYSS
+    //self::_combineContactRows($rows);
 
     // format result set.
     $this->formatDisplay($rows);
@@ -246,5 +258,28 @@ INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
       return CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer'), 2 => array($connId, 'Integer')));
     }
     return null;
+  }
+
+  //NYSS
+  function _combineContactRows(&$rows) {
+    //if log_type in contact set, and log_date same, and conn_id same, combine
+    $rowKeys = array();
+    $logTypes = array(
+      'log_civicrm_contact',
+      'log_civicrm_address',
+      'log_civicrm_value_constituent_information_1',
+    );
+    foreach ( $rows as $k => $row ) {
+      $key = "{$row['log_civicrm_entity_log_conn_id']}_{$row['log_civicrm_entity_log_date']}";
+      if ( in_array($row['log_civicrm_entity_log_type'], $logTypes) ) {
+        if ( in_array($key, $rowKeys) ) {
+          unset($rows[$k]);
+        }
+        else {
+          $rowKeys[] = $key;
+        }
+      }
+    }
+    CRM_Core_Error::debug_var('$rows after',$rows);
   }
 }

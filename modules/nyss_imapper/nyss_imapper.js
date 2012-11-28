@@ -843,7 +843,7 @@ function buildMessageList() {
 			messagesHtml += '<td class="date">'+value.date +'</td>';
 			// messy, but verbose
 			if(value.status == 'direct'){
-				if( value.from_email != ''){
+				if( value.from_email == value.forwarder_email){
 					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_name,10)+'</td>';
 				}else{
 					messagesHtml += '<td class="forwarder"> N/A </td>';
