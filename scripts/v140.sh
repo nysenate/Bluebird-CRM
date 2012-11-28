@@ -405,6 +405,13 @@ WHERE name = 'advanced_search_options';
 "
 $execSql -i $instance -c "$sql" -q
 
+## 5914 changelog report permission
+changeRpt="
+UPDATE civicrm_report_instance
+SET permission = 'access CiviCRM'
+WHERE report_id = 'logging/contact/detail' OR report_id = 'logging/contact/summary';
+"
+$execSql -i $instance -c "$changeRpt"
 
 ### Cleanup ###
 
