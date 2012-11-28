@@ -111,11 +111,15 @@ cj(document).ready(function(){
 					contactId: contactIds
 				},
 				success: function(data, status) {
+				if (data.code =='ERROR'){
+    				alert('failure'+data.message);
+				}else{
 					cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 					var old_total = parseInt(cj("#total_number").html(),10);
 					cj("#total_number").html(old_total-1);
 	           		cj("#find-match-popup").dialog('close');  
 	           		help_message('Message assigned to contact');
+	           	}
 	           		
 				}
 			});
@@ -653,7 +657,7 @@ cj(document).ready(function(){
 				}
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
-					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
 				cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
@@ -706,7 +710,7 @@ cj(document).ready(function(){
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
  
-  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> "+messages.fromAddress);
+  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> ");
 			},
 			error: function(){
 				alert('unable to Load Message');
@@ -836,27 +840,21 @@ function buildMessageList() {
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
 			}
 			messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
 	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			// messy, but verbose
-			if(value.status == 'direct'){
-				if( value.from_email == value.forwarder_email){
-					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_name,10)+'</td>';
-				}else{
-					messagesHtml += '<td class="forwarder"> N/A </td>';
-				}
+
+			// check for direct messages & not empty forwarded messages
+			if((value.status == 'direct' ) && (value.forwarder_email != '')){
+				messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_email,10)+'</td>';
+			}else if(value.forwarder_email != ''){
+				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
 			}else{
-				if( value.forwarder_name != ''){
-					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_name,14)+'</td>';
-				}else if(value.forwarder_email != ''){
-					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
-				}else{
-					messagesHtml += '<td class="forwarder"> N/A </td>';
-				}
+				messagesHtml += '<td class="forwarder"> N/A </td>';
 			}
+			
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
