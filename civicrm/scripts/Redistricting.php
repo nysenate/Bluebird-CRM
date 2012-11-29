@@ -159,20 +159,6 @@ $count = array(
     "totalMysqlTime" => 0
 );
 
-// Compute percentages for certain counts
-$percent = array(
-    "MATCH" => 0,
-    "NOMATCH" => 0,
-    "INVALID" => 0,
-    "ERROR" => 0,
-    "STREETNUM" => 0,
-    "STREETNAME" => 0,
-    "ZIPCODE" => 0,
-    "SHAPEFILE" => 0,
-    "OUTOFSTATE" => 0,
-    "ERROR" => 0
-);
-
 // Subject prefixes will indicate whether district information
 // has been updated, kept the same, or removed. RD12 stands for
 // Redistricting 2012 and prefixing it is a way to filter through
@@ -440,15 +426,36 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $ny_address_data = array();
     $non_ny_address_data = array();
 
+    report_stats($total_found, $count, $time_start);
+}
+
+bbscript_log("info", "Completed redistricting addresses");
+
+
+function report_stats($total_found, $count, $time_start) {
+    // Compute percentages for certain counts
+    $percent = array(
+        "MATCH" => 0,
+        "NOMATCH" => 0,
+        "INVALID" => 0,
+        "ERROR" => 0,
+        "STREETNUM" => 0,
+        "STREETNAME" => 0,
+        "ZIPCODE" => 0,
+        "SHAPEFILE" => 0,
+        "OUTOFSTATE" => 0,
+        "ERROR" => 0
+    );
+
     // Timer for debug
     $time = get_elapsed_time($time_start);
     $Records_per_sec = round($count['TOTAL'] / $time, 1);
-    $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
+    $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['TOTAL'] / $count['totalMysqlTime'], 1);
     $Curl_per_sec = round($count['TOTAL'] / $count['totalCurlTime'], 1);
 
     // Update the percentages using the counts
     foreach ( $percent as $key => $value ) {
-        $percent[$key] = round( $count[$key] / $count['total'] * 100, 2 );
+        $percent[$key] = round( $count[$key] / $count['TOTAL'] * 100, 2 );
     }
 
     $seconds_left = round(($total_found - $count['TOTAL']) / $Records_per_sec, 0);
@@ -472,8 +479,6 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
     bbscript_log("info", "[NON_NY]   [TOTAL] {$count['OUTOFSTATE']} ({$percent['OUTOFSTATE']} %)");
 }
-
-bbscript_log("info", "Completed redistricting addresses");
 
 function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
