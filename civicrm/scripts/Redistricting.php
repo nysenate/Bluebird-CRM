@@ -181,7 +181,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
         } else {
             // Might want to do something here in the future.
-            bbscript_log("warn", "Incomplete address");
+            bbscript_log("trace", "Incomplete address");
             $count['INVALID']++;
             $count['TOTAL']++;
         }
