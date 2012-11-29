@@ -100,8 +100,8 @@ if ( $address_map ) {
 $query = "
     SELECT address.id,
            address.contact_id,
-           address.street_name AS street1,
-           address.street_type AS street2,
+           address.street_name,
+           address.street_type,
            address.city AS town,
            state_province.abbreviation AS state,
            address.postal_code AS zip,
@@ -124,7 +124,6 @@ $query = "
     JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
-      AND IFNULL(address.street_name,'') != ''
       $max_id_condition
     ORDER BY address.id ASC
 ";
@@ -215,11 +214,17 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         continue;
     }
 
-    clean_row($row);
+    if ( $row['street_name'] == null || trim($row['street_name']) == '' ) {
+        // Might want to do something here in the future.
+        // bbscript_log("warn", "Incomplete add");
+        continue;
+    }
+
+    $row = clean_row($row);
 
     // Format for the bulkdistrict tool
     $JSON_payload[$row['id']]= array(
-        'street' => $row['street1'].' '.$row['street2'],
+        'street' => $row['street_name'].' '.$row['street_type'],
         'town' => $row['town'],
         'state' => $row['state'],
         'zip5' => $row['zip'],
@@ -474,11 +479,11 @@ function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
 
-    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street2'])));
-    $row['street2'] = preg_replace($match, $replace, $street);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street_name'])));
+    $row['street_name'] = preg_replace($match, $replace, $street);
 
-    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street1'])));
-    $row['street1'] = preg_replace($match, $replace, $street);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street_type'])));
+    $row['street_type'] = preg_replace($match, $replace, $street);
 
     return $row;
 }
