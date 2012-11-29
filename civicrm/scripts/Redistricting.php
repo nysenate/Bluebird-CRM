@@ -44,7 +44,6 @@ $log_level = $optlist['log'] ? $optlist['log'] : DEFAULT_LOG_LEVEL;
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($log_level)][0];
 $dry_run = $optlist['dryrun'];
 $max_id = $optlist['max'];
-$address_map = $optlist['addressMap'];
 
 $max_id_clause = is_numeric($max_id) ? "LIMIT $max_id" : "";
 
@@ -60,33 +59,9 @@ $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
 // Map old district numbers to new district numbers if the addressMap option is set
-$address_map_changes = 0;
-if ( $address_map ) {
-    bbscript_log("info", "Mapping old district numbers to new district numbers");
-    $district_cycle = array(
-        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
-        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
-    );
 
-    mysql_query("BEGIN", $db);
-    $result = mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
-    $num_rows = mysql_num_rows($result);
-    for( $i = 0; $i < $num_rows; $i++ ){
-        $row = mysql_fetch_assoc($result);
-        $district = $row['ny_senate_district_47'];
-        if ( isset( $district_cycle[$district]) ){
-
-            $new_district = $district_cycle[$district];
-            $query = "
-                UPDATE civicrm_value_district_information_7
-                SET ny_senate_district_47 = {$new_district}
-                WHERE id = {$row['id']};";
-            mysql_query($query);
-            $address_map_changes++;
-        }
-    }
-    mysql_query("COMMIT", $db);
-    bbscript_log("info", "Completed district mapping with $address_map_changes changes");
+if ( $optlist['addressMap'] ) {
+    address_map($db);
 }
 
 // Collect NY state addresses with a street address; any
@@ -473,6 +448,34 @@ function report_stats($total_found, $count, $time_start) {
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
     bbscript_log("info", "[NON_NY]   [TOTAL] {$count['OUTOFSTATE']} ({$percent['OUTOFSTATE']} %)");
 }
+
+
+function address_map($db) {
+    $address_map_changes = 0;
+    bbscript_log("info", "Mapping old district numbers to new district numbers");
+    $district_cycle = array(
+        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
+        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
+    );
+
+    mysql_query("BEGIN", $db);
+    $result = mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
+    $num_rows = mysql_num_rows($result);
+    while (($row = mysql_fetch_assoc($result)) != null) {
+        $district = $row['ny_senate_district_47'];
+        if ( isset( $district_cycle[$district]) ) {
+            mysql_query("
+                UPDATE civicrm_value_district_information_7
+                SET ny_senate_district_47 = {$district_cycle[$district]}
+                WHERE id = {$row['id']};", $db
+            );
+            $address_map_changes++;
+        }
+    }
+    mysql_query("COMMIT", $db);
+    bbscript_log("info", "Completed district mapping with $address_map_changes changes");
+}
+
 
 function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
