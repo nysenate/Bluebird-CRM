@@ -100,8 +100,8 @@ if ( $address_map ) {
 $query = "
     SELECT address.id,
            address.contact_id,
-           address.street_name AS street1,
-           address.street_type AS street2,
+           address.street_name,
+           address.street_type,
            address.city AS town,
            state_province.abbreviation AS state,
            address.postal_code AS zip,
@@ -124,7 +124,6 @@ $query = "
     JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
-      AND IFNULL(address.street_name,'') != ''
       $max_id_condition
     ORDER BY address.id ASC
 ";
@@ -158,20 +157,6 @@ $count = array(
 
     "totalCurlTime" => 0,
     "totalMysqlTime" => 0
-);
-
-// Compute percentages for certain counts
-$percent = array(
-    "MATCH" => 0,
-    "NOMATCH" => 0,
-    "INVALID" => 0,
-    "ERROR" => 0,
-    "STREETNUM" => 0,
-    "STREETNAME" => 0,
-    "ZIPCODE" => 0,
-    "SHAPEFILE" => 0,
-    "OUTOFSTATE" => 0,
-    "ERROR" => 0
 );
 
 // Subject prefixes will indicate whether district information
@@ -215,11 +200,17 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
         continue;
     }
 
-    clean_row($row);
+    if ( $row['street_name'] == null || trim($row['street_name']) == '' ) {
+        // Might want to do something here in the future.
+        // bbscript_log("warn", "Incomplete add");
+        continue;
+    }
+
+    $row = clean_row($row);
 
     // Format for the bulkdistrict tool
     $JSON_payload[$row['id']]= array(
-        'street' => $row['street1'].' '.$row['street2'],
+        'street' => $row['street_name'].' '.$row['street_type'],
         'town' => $row['town'],
         'state' => $row['state'],
         'zip5' => $row['zip'],
@@ -287,6 +278,9 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 'election_code'=>$value['electionCode'],
                 'senate_code'=>$value['senateCode'],
                 'county_code'=>$value['countyCode'],
+                'latitude'=>$value['latitude'],
+                'longitude'=>$value['longitude'],
+                'geo_accuracy'=>$value['geo_accuracy'],
                 'result_code' => $status_code,
                 'result_message' => $message
                 // 'fire_code'=>$value['matches'][0]['fire_code'],
@@ -371,6 +365,16 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 );
             }
 
+            if ( $value['result_code'] == 'SHAPEFILE' ) {
+                // Also save the new coordinate information
+                // bbscript_log("TRACE", "Saving new geocoordinates: ({$value['latitude']},{$value['longitude']})");
+                mysql_query("
+                    UPDATE civicrm_address
+                    SET geo_code_1={$value['latitude']}, geo_code_2={$value['longitude']}
+                    WHERE id=$id
+                ");
+            }
+
             // Currently Unused ----------------------------------------
             // county_legislative_district_51   = {$value['cleg_code']},
             // town_52   = {$value['town_code']},
@@ -422,15 +426,36 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     $ny_address_data = array();
     $non_ny_address_data = array();
 
+    report_stats($total_found, $count, $time_start);
+}
+
+bbscript_log("info", "Completed redistricting addresses");
+
+
+function report_stats($total_found, $count, $time_start) {
+    // Compute percentages for certain counts
+    $percent = array(
+        "MATCH" => 0,
+        "NOMATCH" => 0,
+        "INVALID" => 0,
+        "ERROR" => 0,
+        "STREETNUM" => 0,
+        "STREETNAME" => 0,
+        "ZIPCODE" => 0,
+        "SHAPEFILE" => 0,
+        "OUTOFSTATE" => 0,
+        "ERROR" => 0
+    );
+
     // Timer for debug
     $time = get_elapsed_time($time_start);
     $Records_per_sec = round($count['TOTAL'] / $time, 1);
-    $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['total'] / $count['totalMysqlTime'], 1);
+    $Mysql_per_sec = ($count['totalMysqlTime'] == 0 ) ? 0 : round($count['TOTAL'] / $count['totalMysqlTime'], 1);
     $Curl_per_sec = round($count['TOTAL'] / $count['totalCurlTime'], 1);
 
     // Update the percentages using the counts
     foreach ( $percent as $key => $value ) {
-        $percent[$key] = round( $count[$key] / $count['total'] * 100, 2 );
+        $percent[$key] = round( $count[$key] / $count['TOTAL'] * 100, 2 );
     }
 
     $seconds_left = round(($total_found - $count['TOTAL']) / $Records_per_sec, 0);
@@ -455,17 +480,15 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     bbscript_log("info", "[NON_NY]   [TOTAL] {$count['OUTOFSTATE']} ({$percent['OUTOFSTATE']} %)");
 }
 
-bbscript_log("info", "Completed redistricting addresses");
-
 function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
     $replace = array(' AVE$1',' ST$1',' PL',' E',' W',' S',' N','E ','W ','S ','N ');
 
-    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street2'])));
-    $row['street2'] = preg_replace($match, $replace, $street);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street_name'])));
+    $row['street_name'] = preg_replace($match, $replace, $street);
 
-    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street1'])));
-    $row['street1'] = preg_replace($match, $replace, $street);
+    $street = preg_replace("/[.,']/","",strtoupper(trim($row['street_type'])));
+    $row['street_type'] = preg_replace($match, $replace, $street);
 
     return $row;
 }
