@@ -168,7 +168,7 @@ cj(document).ready(function(){
 	});
 
 	create.click(function() {
-		var messageId = cj('#email_id').val();
+		var create_messageId = cj('#email_id').val();
 		var create_imap_id = cj('#imap_id').val();
 		var create_first_name = cj("#tab2 .first_name").val();
 		var create_last_name = cj("#tab2 .last_name").val();
@@ -199,13 +199,13 @@ cj(document).ready(function(){
 					cj.ajax({
 						url: '/civicrm/imap/ajax/assignMessage',
 						data: {
-							messageId: messageId,
-							imapId: imap_id,
+							messageId: create_messageId,
+							imapId: create_imap_id,
 							contactId: contactData.contact
 						},
 						success: function(data, status) {
 							cj("#find-match-popup").dialog('close'); 
-							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+							cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
 							help_message('Contact created and message Assigned');
 							var old_total = parseInt(cj("#total_number").html(),10);
 							help_message('Activity Deleted');
