@@ -15,15 +15,14 @@ define('DEFAULT_LOG_LEVEL', 'TRACE');
 
 // Parse the options
 require_once 'script_utils.php';
-$prog = basename(__FILE__);
 $shortopts = "c:l:m:na";
 $longopts = array("chunk=", "log=", "max=", "dryrun", "addressMap");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--max \"number\"] [--dryrun] [--addressMap]";
-    error_log("Usage: $prog  $stdusage  $usage\n");
+    $usage = '[--chunk SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--dryrun] [--addressMap]';
+    error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
     exit(1);
 }
 
@@ -45,14 +44,8 @@ $log_level = $optlist['log'] ? $optlist['log'] : DEFAULT_LOG_LEVEL;
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($log_level)][0];
 $dry_run = $optlist['dryrun'];
 $max_id = $optlist['max'];
-$address_map = $optlist['addressMap'];
 
-if ($max_id && is_numeric($max_id)) {
-    $max_id_condition = ' AND address.id < '.$max_id;
-}
-else {
-    $max_id_condition = '';
-}
+$max_id_clause = is_numeric($max_id) ? "LIMIT $max_id" : "";
 
 bbscript_log("debug", "Starting with $prog with chunk size of $chunk_size");
 
@@ -66,33 +59,9 @@ $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
 // Map old district numbers to new district numbers if the addressMap option is set
-$address_map_changes = 0;
-if ( $address_map ) {
-    bbscript_log("info", "Mapping old district numbers to new district numbers");
-    $district_cycle = array(
-        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
-        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
-    );
 
-    mysql_query("BEGIN", $db);
-    $result = mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
-    $num_rows = mysql_num_rows($result);
-    for( $i = 0; $i < $num_rows; $i++ ){
-        $row = mysql_fetch_assoc($result);
-        $district = $row['ny_senate_district_47'];
-        if ( isset( $district_cycle[$district]) ){
-
-            $new_district = $district_cycle[$district];
-            $query = "
-                UPDATE civicrm_value_district_information_7
-                SET ny_senate_district_47 = {$new_district}
-                WHERE id = {$row['id']};";
-            mysql_query($query);
-            $address_map_changes++;
-        }
-    }
-    mysql_query("COMMIT", $db);
-    bbscript_log("info", "Completed district mapping with $address_map_changes changes");
+if ( $optlist['addressMap'] ) {
+    address_map($db);
 }
 
 // Collect NY state addresses with a street address; any
@@ -124,8 +93,8 @@ $query = "
     JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
-      $max_id_condition
     ORDER BY address.id ASC
+    $max_id_clause
 ";
 
 // Run query to obtain all addresses
@@ -193,31 +162,35 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // Since we're only concerned with NY state addresses for the lookup process
     // the out of state addresses will have their district information set to 0.
-    if ( $row['state'] != 'NY') {
+    if ( $row['state'] == 'NY') {
+
+        if ( $row['street_name'] != null && trim($row['street_name']) != '' ) {
+
+            $row = clean_row($row);
+
+            // Format for the bulkdistrict tool
+            $JSON_payload[$row['id']]= array(
+                'street' => $row['street_name'].' '.$row['street_type'],
+                'town' => $row['town'],
+                'state' => $row['state'],
+                'zip5' => $row['zip'],
+                'apt' => NULL,
+                'building_chr' => $row['building_chr'],
+                'building' => $row['building'] ,
+            );
+
+        } else {
+            // Might want to do something here in the future.
+            bbscript_log("trace", "Incomplete address");
+            $count['INVALID']++;
+            $count['TOTAL']++;
+        }
+
+    } else {
         $non_ny_address_data[$row['id']] = $row;
         $count['OUTOFSTATE']++;
         bbscript_log("trace", "Found out of state address with id: {$row['id']}");
-        continue;
     }
-
-    if ( $row['street_name'] == null || trim($row['street_name']) == '' ) {
-        // Might want to do something here in the future.
-        // bbscript_log("warn", "Incomplete add");
-        continue;
-    }
-
-    $row = clean_row($row);
-
-    // Format for the bulkdistrict tool
-    $JSON_payload[$row['id']]= array(
-        'street' => $row['street_name'].' '.$row['street_type'],
-        'town' => $row['town'],
-        'state' => $row['state'],
-        'zip5' => $row['zip'],
-        'apt' => NULL,
-        'building_chr' => $row['building_chr'],
-        'building' => $row['building'] ,
-    );
 
     // Keep accumulating until we reach chunk size or the end of our addresses.
     if (count($JSON_payload) < $chunk_size && $rownum != $address_count) {
@@ -260,7 +233,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Process the results
-    $count['TOTAL'] += count($response);
+    $count['TOTAL'] += count($response)+count($non_ny_address_data);
     $update_payload = array();
 
     foreach ($response as $id => $value) {
@@ -470,15 +443,43 @@ function report_stats($total_found, $count, $time_start) {
     bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['TOTAL']." in ".round($count['totalMysqlTime'], 3).")");
     bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['TOTAL']." in ".round($count['totalCurlTime'], 3).")");
     bbscript_log("info", "[MATCH]    [TOTAL] {$count['MATCH']} ({$percent['MATCH']} %)");
-    bbscript_log("trace","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
-    bbscript_log("trace","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
-    bbscript_log("trace","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
-    bbscript_log("trace","[MATCH]    [SHAPE]  {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+    bbscript_log("info","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
+    bbscript_log("info","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
+    bbscript_log("info","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
+    bbscript_log("info","[MATCH]    [SHAPE] {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
     bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['NOMATCH']} ({$percent['NOMATCH']} %)");
     bbscript_log("info", "[INVALID]  [TOTAL] {$count['INVALID']} ({$percent['INVALID']} %)");
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
     bbscript_log("info", "[NON_NY]   [TOTAL] {$count['OUTOFSTATE']} ({$percent['OUTOFSTATE']} %)");
 }
+
+
+function address_map($db) {
+    $address_map_changes = 0;
+    bbscript_log("info", "Mapping old district numbers to new district numbers");
+    $district_cycle = array(
+        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
+        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
+    );
+
+    mysql_query("BEGIN", $db);
+    $result = mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
+    $num_rows = mysql_num_rows($result);
+    while (($row = mysql_fetch_assoc($result)) != null) {
+        $district = $row['ny_senate_district_47'];
+        if ( isset( $district_cycle[$district]) ) {
+            mysql_query("
+                UPDATE civicrm_value_district_information_7
+                SET ny_senate_district_47 = {$district_cycle[$district]}
+                WHERE id = {$row['id']};", $db
+            );
+            $address_map_changes++;
+        }
+    }
+    mysql_query("COMMIT", $db);
+    bbscript_log("info", "Completed district mapping with $address_map_changes changes");
+}
+
 
 function clean_row($row) {
     $match = array('/ AVENUE( EXT)?$/','/ STREET( EXT)?$/','/ PLACE/','/ EAST$/','/ WEST$/','/ SOUTH$/','/ NORTH$/','/^EAST (?!ST|AVE|RD|DR)/','/^WEST (?!ST|AVE|RD|DR)/','/^SOUTH (?!ST|AVE|RD|DR)/','/^NORTH (?!ST|AVE|RD|DR)/');
