@@ -162,31 +162,35 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
 
     // Since we're only concerned with NY state addresses for the lookup process
     // the out of state addresses will have their district information set to 0.
-    if ( $row['state'] != 'NY') {
+    if ( $row['state'] == 'NY') {
+
+        if ( $row['street_name'] != null && trim($row['street_name']) != '' ) {
+
+            $row = clean_row($row);
+
+            // Format for the bulkdistrict tool
+            $JSON_payload[$row['id']]= array(
+                'street' => $row['street_name'].' '.$row['street_type'],
+                'town' => $row['town'],
+                'state' => $row['state'],
+                'zip5' => $row['zip'],
+                'apt' => NULL,
+                'building_chr' => $row['building_chr'],
+                'building' => $row['building'] ,
+            );
+
+        } else {
+            // Might want to do something here in the future.
+            bbscript_log("warn", "Incomplete address");
+            $count['INVALID']++;
+            $count['TOTAL']++;
+        }
+
+    } else {
         $non_ny_address_data[$row['id']] = $row;
         $count['OUTOFSTATE']++;
         bbscript_log("trace", "Found out of state address with id: {$row['id']}");
-        continue;
     }
-
-    if ( $row['street_name'] == null || trim($row['street_name']) == '' ) {
-        // Might want to do something here in the future.
-        // bbscript_log("warn", "Incomplete add");
-        continue;
-    }
-
-    $row = clean_row($row);
-
-    // Format for the bulkdistrict tool
-    $JSON_payload[$row['id']]= array(
-        'street' => $row['street_name'].' '.$row['street_type'],
-        'town' => $row['town'],
-        'state' => $row['state'],
-        'zip5' => $row['zip'],
-        'apt' => NULL,
-        'building_chr' => $row['building_chr'],
-        'building' => $row['building'] ,
-    );
 
     // Keep accumulating until we reach chunk size or the end of our addresses.
     if (count($JSON_payload) < $chunk_size && $rownum != $address_count) {
@@ -229,7 +233,7 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
     }
 
     // Process the results
-    $count['TOTAL'] += count($response);
+    $count['TOTAL'] += count($response)+count($non_ny_address_data);
     $update_payload = array();
 
     foreach ($response as $id => $value) {
@@ -439,10 +443,10 @@ function report_stats($total_found, $count, $time_start) {
     bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['TOTAL']." in ".round($count['totalMysqlTime'], 3).")");
     bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['TOTAL']." in ".round($count['totalCurlTime'], 3).")");
     bbscript_log("info", "[MATCH]    [TOTAL] {$count['MATCH']} ({$percent['MATCH']} %)");
-    bbscript_log("trace","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
-    bbscript_log("trace","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
-    bbscript_log("trace","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
-    bbscript_log("trace","[MATCH]    [SHAPE]  {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+    bbscript_log("info","[MATCH]    [EXACT] {$count['STREETNUM']} ({$percent['STREETNUM']} %)");
+    bbscript_log("info","[MATCH]    [RANGE] {$count['STREETNAME']} ({$percent['STREETNAME']} %)");
+    bbscript_log("info","[MATCH]    [ZIP5]  {$count['ZIPCODE']} ({$percent['ZIPCODE']} %)");
+    bbscript_log("info","[MATCH]    [SHAPE] {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
     bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['NOMATCH']} ({$percent['NOMATCH']} %)");
     bbscript_log("info", "[INVALID]  [TOTAL] {$count['INVALID']} ({$percent['INVALID']} %)");
     bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
