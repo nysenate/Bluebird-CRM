@@ -15,15 +15,14 @@ define('DEFAULT_LOG_LEVEL', 'TRACE');
 
 // Parse the options
 require_once 'script_utils.php';
-$prog = basename(__FILE__);
 $shortopts = "c:l:m:na";
 $longopts = array("chunk=", "log=", "max=", "dryrun", "addressMap");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = "[--chunk \"number\"] [--log \"5|4|3|2|1\"] [--max \"number\"] [--dryrun] [--addressMap]";
-    error_log("Usage: $prog  $stdusage  $usage\n");
+    $usage = '[--chunk SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--dryrun] [--addressMap]';
+    error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
     exit(1);
 }
 
@@ -47,12 +46,7 @@ $dry_run = $optlist['dryrun'];
 $max_id = $optlist['max'];
 $address_map = $optlist['addressMap'];
 
-if ($max_id && is_numeric($max_id)) {
-    $max_id_condition = ' AND address.id < '.$max_id;
-}
-else {
-    $max_id_condition = '';
-}
+$max_id_clause = is_numeric($max_id) ? "LIMIT $max_id" : "";
 
 bbscript_log("debug", "Starting with $prog with chunk size of $chunk_size");
 
@@ -124,8 +118,8 @@ $query = "
     JOIN civicrm_value_district_information_7 as district
     WHERE address.state_province_id=state_province.id
       AND district.entity_id = address.id
-      $max_id_condition
     ORDER BY address.id ASC
+    $max_id_clause
 ";
 
 // Run query to obtain all addresses
