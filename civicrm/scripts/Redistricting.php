@@ -287,6 +287,9 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                 'election_code'=>$value['electionCode'],
                 'senate_code'=>$value['senateCode'],
                 'county_code'=>$value['countyCode'],
+                'latitude'=>$value['latitude'],
+                'longitude'=>$value['longitude'],
+                'geo_accuracy'=>$value['geo_accuracy'],
                 'result_code' => $status_code,
                 'result_message' => $message
                 // 'fire_code'=>$value['matches'][0]['fire_code'],
@@ -369,6 +372,16 @@ for ($rownum = 1; $rownum <= $address_count; $rownum++) {
                     county_50 = {$value['county_code']}
                 WHERE civicrm_value_district_information_7.entity_id = $id", $db
                 );
+            }
+
+            if ( $value['result_code'] == 'SHAPEFILE' ) {
+                // Also save the new coordinate information
+                // bbscript_log("TRACE", "Saving new geocoordinates: ({$value['latitude']},{$value['longitude']})");
+                mysql_query("
+                    UPDATE civicrm_address
+                    SET geo_code_1={$value['latitude']}, geo_code_2={$value['longitude']}
+                    WHERE id=$id
+                ");
             }
 
             // Currently Unused ----------------------------------------
