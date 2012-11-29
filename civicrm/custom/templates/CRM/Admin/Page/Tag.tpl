@@ -506,7 +506,7 @@ function modalKWSelectOnClick() {
 						tagMerge.destinationId = destinationId;
 						var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId + "&key={/literal}{crmKey 	name='civicrm/ajax/mergeTags'}{literal}";
-		 				console.log(data);
+		 				//console.log(data);
 		 				var tidMatch = false;
 		 				
 		 				// var listOfToChildTids = '';
