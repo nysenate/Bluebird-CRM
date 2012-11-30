@@ -150,12 +150,13 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
       'dao' => 'CRM_Mailing_Event_DAO_Unsubscribe',
       'fields' =>
       array(
-        'unsubscribe_id' =>
+        //NYSS 5567
+        /*'unsubscribe_id' =>
         array(
           'name' => 'id',
           'title' => ts('Unsubscribe'),
           'default' => TRUE,
-        ),
+        ),*/
         'optout_id' =>
         array(
           'name' => 'id',
@@ -166,7 +167,8 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
       ),
       'filters' =>
       array(
-        'is_unsubscribed' =>
+        //NYSS 5567
+        /*'is_unsubscribed' =>
         array(
           'name' => 'id',
           'title' => ts('Unsubscribed'),
@@ -174,7 +176,7 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
           'operatorType' => CRM_Report_Form::OP_SELECT,
           'options' => array('' => ts('Any'), '0' => ts('No'), '1' => ts('Yes')),
           'clause' => 'mailing_event_unsubscribe_civireport.id IS NULL',
-        ),
+        ),*/
         'is_optout' =>
         array(
           'title' => ts('Opted-out'),
@@ -451,7 +453,7 @@ class CRM_Report_Form_Mailing_Detail extends CRM_Report_Form {
 
     $data    = array();
     $mailing = new CRM_Mailing_BAO_Mailing();
-    $query   = "SELECT name FROM civicrm_mailing ";
+    $query   = "SELECT name FROM civicrm_mailing WHERE sms_provider_id IS NULL ORDER BY name ASC";//NYSS order
     $mailing->query($query);
 
     while ($mailing->fetch()) {
