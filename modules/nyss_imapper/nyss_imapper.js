@@ -922,7 +922,7 @@ function buildContactList() {
 		if(value.email){ contactsHtml += value.email + '<br/>'; }
 		if(value.phone){ contactsHtml += value.phone + '<br/>'; }
 		if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
-		if(value.city){ contactsHtml += value.city + ', ' + value.abbreviation + ' ' + value.postal_code + '<br/>'; }
+		if(value.city){ contactsHtml += value.city + ', NY ' + value.postal_code + '<br/>'; }
  		contactsHtml += '</div></div>';
 		contactsHtml += '<div class="clear"></div>';
 	});

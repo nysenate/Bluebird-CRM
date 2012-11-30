@@ -337,8 +337,9 @@ class CRM_IMAP_AJAX {
         $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
         $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
 
+        $from.="  LEFT JOIN civicrm_address as address ON address.contact_id=contact.id\n";
+
         if($street_address || $city){ // state id is hard coded
-          $from.="  JOIN civicrm_address as address ON address.contact_id=contact.id\n";
           $order.=", address.is_primary DESC";
           if($street_address) {
             $where.="  AND address.street_address LIKE '$street_address'\n";
@@ -351,9 +352,10 @@ class CRM_IMAP_AJAX {
             $where.="  AND state.id='$state_id'\n";
           }
         }
+        
+        $from.="LEFT JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
         $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
         if ($phone) {
-          $from.=" JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
         $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";
