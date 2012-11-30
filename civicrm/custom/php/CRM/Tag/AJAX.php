@@ -97,7 +97,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                          entity_tag.entity_table = '$entity_type')
                   LEFT JOIN $entity_type as entity ON (
                          entity.id = entity_tag.entity_id AND
-                         entity.is_deleted = 0)
+                         entity.is_deleted = 0 AND
+                         entity.is_deceased = 0)
                 WHERE tag.used_for LIKE '%$entity_type%'
                 GROUP BY tag.id", $conn);
 
