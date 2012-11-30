@@ -193,9 +193,9 @@ class CRM_IMAP_AJAX {
 
     public function extract_email_address ($string) {
         // some nysenate fixes
-        $string = preg_replace('/\/STS\/senate/i', '@nysenate.gov', $string);
-        $string = preg_replace('/\/CENTER\/senate/i', '@nysenate.gov', $string);
-        $string = preg_replace('/\/senate@senate/i', '@nysenate.gov', $string);
+        $string = preg_replace('/\/STS\/senate/i', ' internal@nysenate.gov', $string);
+        $string = preg_replace('/\/CENTER\/senate/i', ' internal@nysenate.gov', $string);
+        $string = preg_replace('/\/senate@senate/i', ' internal@nysenate.gov', $string);
         $string = preg_replace('/&lt;/i', '', $string);
         $string = preg_replace('/&gt;/i', '', $string);
         $string = preg_replace('/</i', '', $string);
