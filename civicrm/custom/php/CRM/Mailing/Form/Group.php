@@ -349,7 +349,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
         // create a static grp if only a subset of result set was selected:
 
         $randID   = md5(time());
-        $grpTitle = "Hidden Group {$randID}";
+        $grpTitle = "Mass Email Search Group ({$randID})";//NYSS 4448
         $grpID    = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $grpTitle, 'id', 'title');
 
         if (!$grpID) {
@@ -365,7 +365,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
 
           CRM_Contact_BAO_GroupContact::addContactsToGroup($this->_contactIds, $group->id);
 
-          $newGroupTitle = "Hidden Group {$grpID}";
+          $newGroupTitle = "Mass Email Search Group ({$grpID})";//NYSS 4448
           $groupParams = array(
             'id'    => $grpID,
             'name'  => CRM_Utils_String::titleToVar($newGroupTitle),
@@ -389,6 +389,15 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task {
         );
 
         list($smartGroupId, $savedSearchId) = CRM_Contact_BAO_Group::createHiddenSmartGroup($hiddenSmartParams);
+
+        //NYSS 4448
+        $smartGroupTitle = "Mass Email Search Group ({$smartGroupId})";
+        $groupParams = array(
+          'id'    => $smartGroupId,
+          'name'  => CRM_Utils_String::titleToVar($smartGroupTitle),
+          'title' => $smartGroupTitle,
+        );
+        CRM_Contact_BAO_Group::create($groupParams);
 
         //set the saved search id.
         if (!$ssId) {

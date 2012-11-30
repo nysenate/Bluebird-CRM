@@ -931,19 +931,32 @@ function buildContactList() {
 }
 
 
-// displays a help window + current date time 
+// displays a help window + current date time 	
+// if same message and hasn't disappared yet, update
 function help_message(message){
-
 	var d = new Date();
 	var h = d.getHours();
 	var m = d.getMinutes();
 	var s = d.getSeconds();
-	var rm = h+"_"+m+"_"+s;
-	cj("#top").append("<div class='"+h+"_"+m+"_"+s+"' id='help' ><p>"+message+" <small>"+h+":"+m+":"+s+"</small></p></div>");
+	var rm = h+"_"+m;
+	var messageclass = message.replace(/ /g,'');
+	var updateCheck = cj("#top").find("."+messageclass).html();
 
+	if(updateCheck){
+		var oldCount = cj("#top ."+messageclass).find(".count").html();
+		var oldMessage = cj("#top ."+messageclass).find(".message").html();
+		oldCount = parseInt(oldCount,10);
+		count = oldCount+1;
+		cj("#top ."+messageclass).html("<p><span class='count'>"+count+"</span> <span class='message'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p>");
+	}else{
+		cj("#top").append("<div class='"+rm+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
+	}
+	// fade out and remove
 	setTimeout(function(){
-	    cj("."+rm).fadeOut(1000);
-	}, 10000);
+	    cj("."+messageclass).fadeOut(1000, function(){
+   			$(this).remove();
+		});
+	}, 60000);
 
 }
 

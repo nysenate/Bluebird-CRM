@@ -449,15 +449,12 @@ function makeModalKWMerge(tagLabel){
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			var keywordTreePull = cj('dl#tagLabel_296').html();
 			cj('.BBtree.modal.merge.loadingGif').html(keywordTreePull);
+			cj('.BBtree.modal.merge dt#'+ tagLabel).html('');
 			cj('.BBtree.modal.merge span.fCB').html('');
 			cj('.BBtree.modal.merge .tag .name').before('<span><input type="radio" class="selectRadio" name="selectTag" /></span>');
 			cj('.BBtree.modal.merge #tagLabel_296 .tag input').html('');
 			modalKWSelectOnClick();
-				setTimeout(function(){
-					var modalTIDhide = cj('#modalNameTid').attr('tid');
-					var tagTIDtoHide = cj('#' + modalTIDhide).attr('tid');
-					cj('.BBtree.modal #tagModalLabel_'+ tagTIDtoHide).html('');
-				},500);
+
 			cj('.BBtree.modal.merge.loadingGif').removeClass('loadingGif');
 
 			}
