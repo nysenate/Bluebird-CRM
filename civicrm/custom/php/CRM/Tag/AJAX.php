@@ -119,8 +119,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
             //Get the tags for the specifed entity
             $params = array('version'=>3,
-                'entity_type'=>CRM_Core_DAO::escapeString($entity_type),
-                'entity_id'=>CRM_Core_DAO::escapeString($entity_id));
+                'entity_type'=>$entity_type,
+                'entity_id'=>$entity_id);
             $result = civicrm_api('entity_tag', 'get', $params);
 
             $entity_tags = array();
