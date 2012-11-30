@@ -316,24 +316,28 @@ class CRM_IMAP_AJAX {
         $from = "FROM civicrm_contact as contact\n";
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
-        $first_name = self::get('first_name');
+
+        $first_name = (strtolower(self::get('first_name')) == 'first name') ? '' : self::get('first_name');
         if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
-        $last_name = self::get('last_name');
+
+        $last_name = (strtolower(self::get('last_name')) == 'last name') ? '' : self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
-        $email_address = self::get('email_address');
+
+        $email_address  = (strtolower(self::get('email_address')) == 'email address') ? '' : self::get('email_address');
         if($email_address) {
           $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
           $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
-        $dob = self::get('dob');
-        if($dob) {
-          $where.="  AND contact.birth_date = '$dob'\n";
-        }
+
+        $dob  = (self::get('dob') == 'yyyy-mm-dd') ? '' : self::get('dob');
+        if($dob) $where.="  AND contact.birth_date = '$dob'\n";
+
         $state_id = self::get('state');
-        $street_address = self::get('street_address');
-        $city = self::get('city');
-        if($street_address || $city || $state_id) {
+        $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
+        $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
+
+        if($street_address || $city){ // state id is hard coded
           $from.="  JOIN civicrm_address as address ON address.contact_id=contact.id\n";
           $order.=", address.is_primary DESC";
           if($street_address) {
@@ -347,7 +351,7 @@ class CRM_IMAP_AJAX {
             $where.="  AND state.id='$state_id'\n";
           }
         }
-        $phone = self::get('phone');
+        $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
         if ($phone) {
           $from.=" JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
           $where.="  AND phone.phone LIKE '%$phone%'";

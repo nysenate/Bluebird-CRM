@@ -42,7 +42,7 @@
 				<div id="tab1">
 						<input type="hidden" class="hidden" id="email_id" name="email_id">
 						<input type="hidden" class="hidden" id="imap_id" name="imap_id">
-						<input type="text" placeholder="First name" class="form-text first_name" name="first_name">
+						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
 						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
 						<input type="text" placeholder="Email Address" class="email-address email-address" name="email_address">
 						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob" name="dob">
