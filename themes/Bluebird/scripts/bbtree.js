@@ -17,6 +17,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 		data: {
 			entity_type: 'civicrm_contact',
 			entity_id: cid,
+			call_uri: window.location.href,
 			entity_counts: 1
 			},
 		dataType: 'json',

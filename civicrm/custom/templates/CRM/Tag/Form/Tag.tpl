@@ -98,6 +98,9 @@ function hideStatus( ) {
 cj(document).ready(function() {	
 	cj.ajax({
 		url: '/civicrm/ajax/entity_tag/checkUserLevel/',
+		data: {
+			call_uri: window.location.href,
+		},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
 			if(data.code == true) {
