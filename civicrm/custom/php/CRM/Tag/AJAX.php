@@ -97,7 +97,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                          entity_tag.entity_table = '$entity_type')
                   LEFT JOIN $entity_type as entity ON (
                          entity.id = entity_tag.entity_id AND
-                         entity.is_deleted = 0)
+                         entity.is_deleted = 0 AND
+                         entity.is_deceased = 0)
                 WHERE tag.used_for LIKE '%$entity_type%'
                 GROUP BY tag.id", $conn);
 
@@ -118,8 +119,8 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
             //Get the tags for the specifed entity
             $params = array('version'=>3,
-                'entity_type'=>CRM_Core_DAO::escapeString($entity_type),
-                'entity_id'=>CRM_Core_DAO::escapeString($entity_id));
+                'entity_type'=>$entity_type,
+                'entity_id'=>$entity_id);
             $result = civicrm_api('entity_tag', 'get', $params);
 
             $entity_tags = array();
@@ -180,7 +181,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach(self::$TAG_FIELDS as $field) {
             $value = CRM_Utils_Array::value($field, $_GET);
             if($value) {
-                $tag[$field] = CRM_Core_DAO::escapeString($value);
+                $tag[$field] = $value;
             }
         }
         $result = civicrm_api('tag', 'create', $tag);
@@ -199,7 +200,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         // Get the existing tag for manipulation
         $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
-        $params = array('version'=>3, 'id'=>CRM_Core_DAO::escapeString($tag_id));
+        $params = array('version'=>3, 'id'=>$tag_id);
         $result = civicrm_api('tag', 'get', $params);
 
         // A bad id will cause an error
@@ -211,7 +212,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // Populate the parameters with the new values for update
         $tag = $result['values'][$result['id']];
         foreach(self::$TAG_FIELDS as $field) {
-            $params[$field] = CRM_Core_DAO::escapeString(CRM_Utils_Array::value($field, $_GET, $tag[$field]));
+            $params[$field] = CRM_Utils_Array::value($field, $_GET, $tag[$field]);
         }
 
         // create actually does an update if the id already exists...
@@ -230,7 +231,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             CRM_Utils_System::civiExit();
         }
         $id = self::_require('id', $_GET, '`id` of the tag to be deleted is required.');
-        $params = array('version'=>3, 'tag_id'=>CRM_Core_DAO::escapeString($id));
+        $params = array('version'=>3, 'tag_id'=>$id);
         $result = civicrm_api('tag', 'delete', $params);
 
         // Result information is hard to work with
@@ -264,9 +265,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $results = array();
         foreach($tag_ids as $new_tag_id) {
             $params = array('version'=>3,
-                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
-                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+                            'tag_id'=>$new_tag_id,
+                            'entity_id'=>$entity_id,
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'create', $params);
 
             // Error handling for entity tags is somewhat less informative...
@@ -294,10 +295,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
             CRM_Utils_System::civiExit();
         }
-
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
         $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
+
 
         // Allow use of tag_id[]=1&tag_id[]=2 for creating multiple tags at once.
         if (is_array($tag_id)) {
@@ -311,9 +312,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach($tag_ids as $new_tag_id) {
             // The API doesn't let you identify entity_tags by entity tag id
             $params = array('version'=>3,
-                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
-                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+                            'tag_id'=>$new_tag_id,
+                            'entity_id'=>$entity_id,
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'delete', $params);
 
             // Error handling for entity tags is somewhat less informative...
@@ -334,25 +335,50 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         CRM_Utils_System::civiExit();
     }
     
+
+
+
     // Checking User levels,
     // Avaiable thought api call, or locally
     // args = return true / false toggles return / echo 
     static function check_user_level($return) {
-        // RULES: if a volunteer, no access. DEAL WITH IT
         $start = microtime(TRUE);
-        global $user;
-        $userid = $user->uid;
-        // check for the ability to edit the contact (volunteer role)
-        $role = CRM_Core_Permission::check('edit all contacts');
-        $bt_time = microtime(TRUE)-$start;
-        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level."; 
+        $call = self::_require('call_uri', $_GET, '`call_uri` parameter is required to identify the tag to apply.');
+        $call_uri = parse_url($call);
+
+        parse_str($call_uri['query'],$cid);
+        $entityId = $cid['cid'];
+
+        $session = CRM_Core_Session::singleton();
+        $userid = $session->get('userID');
+
+        // different functionality for different areas of the UI. 
+        switch ($call_uri['path']) {
+            case '/civicrm/contact/add':
+                // if can add contact then user can add tag.
+                $role = CRM_Core_Permission::check('add contacts');
+                break;
+            case '/civicrm/contact/view':
+                if($userid == $entityId){ // if is viewing and is my contact record -> can edit
+                    $role = true;
+                }else{ // else -> check permissions to edit
+                    $role = CRM_Core_Permission::check('edit all contacts');
+                }
+                break;
+            default:
+                $role = CRM_Core_Permission::check('edit all contacts');
+                break;
+        }
+
+        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level"; 
         $output = array(
             "code"=>$role,
             "userId"=>$userid,
             "message"=> $message, 
             'build_time'=>(microtime(TRUE)-$start),
             'bt_time'=>$bt_time
-            );
+        );
+
         if($return == 'true'){
             return $output;
         }else{

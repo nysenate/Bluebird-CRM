@@ -111,11 +111,15 @@ cj(document).ready(function(){
 					contactId: contactIds
 				},
 				success: function(data, status) {
+				if (data.code =='ERROR'){
+    				alert('failure'+data.message);
+				}else{
 					cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 					var old_total = parseInt(cj("#total_number").html(),10);
 					cj("#total_number").html(old_total-1);
 	           		cj("#find-match-popup").dialog('close');  
 	           		help_message('Message assigned to contact');
+	           	}
 	           		
 				}
 			});
@@ -164,7 +168,7 @@ cj(document).ready(function(){
 	});
 
 	create.click(function() {
-		var messageId = cj('#email_id').val();
+		var create_messageId = cj('#email_id').val();
 		var create_imap_id = cj('#imap_id').val();
 		var create_first_name = cj("#tab2 .first_name").val();
 		var create_last_name = cj("#tab2 .last_name").val();
@@ -195,13 +199,13 @@ cj(document).ready(function(){
 					cj.ajax({
 						url: '/civicrm/imap/ajax/assignMessage',
 						data: {
-							messageId: messageId,
-							imapId: imap_id,
+							messageId: create_messageId,
+							imapId: create_imap_id,
 							contactId: contactData.contact
 						},
 						success: function(data, status) {
 							cj("#find-match-popup").dialog('close'); 
-							cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+							cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
 							help_message('Contact created and message Assigned');
 							var old_total = parseInt(cj("#total_number").html(),10);
 							help_message('Activity Deleted');
@@ -653,7 +657,7 @@ cj(document).ready(function(){
 				}
 				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 				if ((messages.forwardedEmail != '')){
-					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
 				cj('#message_left_email').html(messages.details);
 				cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
@@ -706,7 +710,7 @@ cj(document).ready(function(){
 				cj("#find-match-popup").dialog('open');
  				cj("#tabs").tabs();
  
-  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> "+messages.fromAddress);
+  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> ");
 			},
 			error: function(){
 				alert('unable to Load Message');
@@ -836,27 +840,21 @@ function buildMessageList() {
 			}
 			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
 			}
 			messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
 	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 			messagesHtml += '<td class="date">'+value.date +'</td>';
-			// messy, but verbose
-			if(value.status == 'direct'){
-				if( value.from_email != ''){
-					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_name,10)+'</td>';
-				}else{
-					messagesHtml += '<td class="forwarder"> N/A </td>';
-				}
+
+			// check for direct messages & not empty forwarded messages
+			if((value.status == 'direct' ) && (value.forwarder_email != '')){
+				messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_email,10)+'</td>';
+			}else if(value.forwarder_email != ''){
+				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
 			}else{
-				if( value.forwarder_name != ''){
-					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_name,14)+'</td>';
-				}else if(value.forwarder_email != ''){
-					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
-				}else{
-					messagesHtml += '<td class="forwarder"> N/A </td>';
-				}
+				messagesHtml += '<td class="forwarder"> N/A </td>';
 			}
+			
 			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -933,19 +931,32 @@ function buildContactList() {
 }
 
 
-// displays a help window + current date time 
+// displays a help window + current date time 	
+// if same message and hasn't disappared yet, update
 function help_message(message){
-
 	var d = new Date();
 	var h = d.getHours();
 	var m = d.getMinutes();
 	var s = d.getSeconds();
-	var rm = h+"_"+m+"_"+s;
-	cj("#top").append("<div class='"+h+"_"+m+"_"+s+"' id='help' ><p>"+message+" <small>"+h+":"+m+":"+s+"</small></p></div>");
+	var rm = h+"_"+m;
+	var messageclass = message.replace(/ /g,'');
+	var updateCheck = cj("#top").find("."+messageclass).html();
 
+	if(updateCheck){
+		var oldCount = cj("#top ."+messageclass).find(".count").html();
+		var oldMessage = cj("#top ."+messageclass).find(".message").html();
+		oldCount = parseInt(oldCount,10);
+		count = oldCount+1;
+		cj("#top ."+messageclass).html("<p><span class='count'>"+count+"</span> <span class='message'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p>");
+	}else{
+		cj("#top").append("<div class='"+rm+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
+	}
+	// fade out and remove
 	setTimeout(function(){
-	    cj("."+rm).fadeOut(1000);
-	}, 10000);
+	    cj("."+messageclass).fadeOut(1000, function(){
+   			$(this).remove();
+		});
+	}, 60000);
 
 }
 
