@@ -180,7 +180,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach(self::$TAG_FIELDS as $field) {
             $value = CRM_Utils_Array::value($field, $_GET);
             if($value) {
-                $tag[$field] = CRM_Core_DAO::escapeString($value);
+                $tag[$field] = $value;
             }
         }
         $result = civicrm_api('tag', 'create', $tag);
@@ -199,7 +199,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         // Get the existing tag for manipulation
         $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
-        $params = array('version'=>3, 'id'=>CRM_Core_DAO::escapeString($tag_id));
+        $params = array('version'=>3, 'id'=>$tag_id);
         $result = civicrm_api('tag', 'get', $params);
 
         // A bad id will cause an error
@@ -211,7 +211,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // Populate the parameters with the new values for update
         $tag = $result['values'][$result['id']];
         foreach(self::$TAG_FIELDS as $field) {
-            $params[$field] = CRM_Core_DAO::escapeString(CRM_Utils_Array::value($field, $_GET, $tag[$field]));
+            $params[$field] = CRM_Utils_Array::value($field, $_GET, $tag[$field]);
         }
 
         // create actually does an update if the id already exists...
@@ -230,7 +230,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             CRM_Utils_System::civiExit();
         }
         $id = self::_require('id', $_GET, '`id` of the tag to be deleted is required.');
-        $params = array('version'=>3, 'tag_id'=>CRM_Core_DAO::escapeString($id));
+        $params = array('version'=>3, 'tag_id'=>$id);
         $result = civicrm_api('tag', 'delete', $params);
 
         // Result information is hard to work with
@@ -264,9 +264,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $results = array();
         foreach($tag_ids as $new_tag_id) {
             $params = array('version'=>3,
-                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
-                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+                            'tag_id'=>$new_tag_id,
+                            'entity_id'=>$entity_id,
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'create', $params);
 
             // Error handling for entity tags is somewhat less informative...
@@ -311,9 +311,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach($tag_ids as $new_tag_id) {
             // The API doesn't let you identify entity_tags by entity tag id
             $params = array('version'=>3,
-                            'tag_id'=>CRM_Core_DAO::escapeString($new_tag_id),
-                            'entity_id'=>CRM_Core_DAO::escapeString($entity_id),
-                            'entity_type'=>CRM_Core_DAO::escapeString($entity_type));
+                            'tag_id'=>$new_tag_id,
+                            'entity_id'=>$entity_id,
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'delete', $params);
 
             // Error handling for entity tags is somewhat less informative...
