@@ -119,9 +119,10 @@ class CRM_IMAP_AJAX {
         $origin = (!$froms['2']) ?  $header['from'] : $froms['2'];
         $origin_name = (!$fromEmail['name']) ?  $header['from_name'] : $fromEmail['name'];
         $origin_email = (!$fromEmail['email']) ?  $header['from_email'] : $fromEmail['email'];
+        $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
 
         $forwarded = array(
-            'date_clean' => self::cleanDate($tempDetails), 
+            'date_clean' => $origin_date, 
             'subject' => preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']), 
             'origin' => $origin,
             'origin_name' => $origin_name, 
@@ -392,11 +393,11 @@ class CRM_IMAP_AJAX {
         $output = self::unifiedMessageInfo($email);
 
         // probably could user better names 
-        $senderName = $output['header']['from_name'];
-        $senderEmailAddress = $output['header']['from_email'];
-        $date = $output['header']['date_clean'];
-        $subject = $output['forwarded']['subject'];
-        $body = $output['header']['body'];
+        $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : 'could not find senders name' ;
+        $senderEmailAddress = ($output['header']['from_email']) ?  $output['header']['from_email'] : '' ;
+        $date = ($output['header']['date_clean']) ?  $output['header']['date_clean'] : 'could not find message date' ;
+        $subject = ($output['forwarded']['subject']) ?  $output['forwarded']['subject'] : 'could not find message subject' ;
+        $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
         require_once 'api/api.php';
 
