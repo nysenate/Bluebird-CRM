@@ -891,7 +891,7 @@ EOQ;
           var_dump($city);
         }
   
-        if(!($first_name) && !($last_name) && !($email))
+        if((!$first_name)|| (!$last_name) || (!$email))
         {
             $returnCode = array('code'      =>  'ERROR',
                                 'status'    =>  '1',
@@ -949,8 +949,8 @@ EOQ;
           echo "<h1>Add address to Contact</h1><br/>";
           echo "Sent Params<br/>";
           var_dump($address_params);
-          echo "Response <br/>";
-          var_dump($address);
+          echo "Response <br/><pre>";
+          print_r($address);
         }
 
         if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
