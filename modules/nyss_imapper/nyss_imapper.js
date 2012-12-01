@@ -111,16 +111,17 @@ cj(document).ready(function(){
 					contactId: contactIds
 				},
 				success: function(data, status) {
-				if (data.code =='ERROR'){
-    				alert('failure'+data.message);
-				}else{
-					cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-					var old_total = parseInt(cj("#total_number").html(),10);
-					cj("#total_number").html(old_total-1);
-	           		cj("#find-match-popup").dialog('close');  
-	           		help_message('Message assigned to contact');
-	           	}
-	           		
+					data = cj.parseJSON(data);
+					if (data.code == 'ERROR'){
+	    				alert('failure'+data.message);
+					}else{
+						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+						var old_total = parseInt(cj("#total_number").html(),10);
+						cj("#total_number").html(old_total-1);
+						cj("#find-match-popup").dialog('close');  
+						help_message('Message assigned to contact');
+					}
+	 	
 				}
 			});
 			return false;
@@ -173,7 +174,7 @@ cj(document).ready(function(){
 		var create_first_name = cj("#tab2 .first_name").val();
 		var create_last_name = cj("#tab2 .last_name").val();
 		var create_email_address = cj("#tab2 .email_address").val();
-		var create_phone = cj("#tab2 #phone").val();
+		var create_phone = cj("#tab2 .phone").val();
 		var create_street_address = cj("#tab2 .street_address").val();
 		var create_street_address_2 = cj("#tab2 .street_address_2").val();
 		var create_zip = cj("#tab2 .zip").val();

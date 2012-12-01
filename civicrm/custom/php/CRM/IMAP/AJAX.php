@@ -864,17 +864,33 @@ EOQ;
     }
     public static function createNewContact() {
         require_once 'api/api.php';
+
+        $debug = self::get('debug');
         // testing url 
-        //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes
-        $first_name = self::get("first_name");
-        $last_name = self::get("last_name");
-        $email = self::get("email_address");
-        $phone = self::get("phone");
-        $street_address = self::get("street_address");
-        $street_address_2 = self::get("street_address_2");
-        $postal_code = self::get("postal_code");
-        $city = self::get("city");
- 
+        //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes&debug=true
+        // http://skelos/civicrm/imap/ajax/createNewContact?messageId=52&imap_id=0&first_name=Fakie&last_name=McTesterson&email_address=Test%40aol.com&phone=5185185555&street_address=1241+fake+street&street_address_2=floor+2&postal_code=12202&city=albany&debug=true
+
+        $first_name = (strtolower(self::get('first_name')) == 'first name') ? '' : self::get('first_name');
+        $last_name = (strtolower(self::get('last_name')) == 'last name') ? '' : self::get('last_name');
+        $email  = (strtolower(self::get('email_address')) == 'email address') ? '' : self::get('email_address');
+        $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
+        $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
+        $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address') ? '' : self::get('street_address_2');
+        $postal_code = (strtolower(self::get('postal_code')) == 'zip code') ? '' : self::get('postal_code');
+        $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
+
+        if ($debug){
+          echo "<h1>inputs</h1><br/>";
+          var_dump($first_name);
+          var_dump($last_name);
+          var_dump($email);
+          var_dump($phone);
+          var_dump($street_address);
+          var_dump($street_address_2);
+          var_dump($postal_code);
+          var_dump($city);
+        }
+  
         if(!($first_name) && !($last_name) && !($email))
         {
             $returnCode = array('code'      =>  'ERROR',
@@ -884,8 +900,7 @@ EOQ;
             CRM_Utils_System::civiExit();
         }
 
-        require_once 'api/api.php';
-        require_once 'CRM/Core/BAO/Address.php';
+
 
         //First, you make the contact
         $params = array(
@@ -898,12 +913,22 @@ EOQ;
 
         $contact = civicrm_api('contact','create', $params);
 
+        if ($debug){
+          echo "<h1>Contact Creation</h1><br/>";
+          echo "Sent Params<br/>";
+          var_dump($params);
+          echo "Response <br/>";
+          if($contact['id']) echo "<a href='http://skelos/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
+
+          var_dump($contact);
+        }
+        
 
         if($street_address && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
           $address_params = array(
               'contact_id' => $contact['id'],
-              'street_address' => $street_address,        
+              'street_address' => $street_address,
               'supplemental_address_1' => $street_address_2,
               'city' => $city,
               'postal_code' => $postal_code,
@@ -914,10 +939,19 @@ EOQ;
               'version' => 3,
               'debug' => 1
           );
+
+
           $address = civicrm_api('address', 'create', $address_params);
         }
         
 
+        if ($debug){
+          echo "<h1>Add address to Contact</h1><br/>";
+          echo "Sent Params<br/>";
+          var_dump($address_params);
+          echo "Response <br/>";
+          var_dump($address);
+        }
 
         if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
           $returnCode = array('code'      =>  'ERROR',
