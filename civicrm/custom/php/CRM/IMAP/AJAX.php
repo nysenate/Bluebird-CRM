@@ -120,10 +120,11 @@ class CRM_IMAP_AJAX {
         $origin_name = (!$fromEmail['name']) ?  $header['from_name'] : $fromEmail['name'];
         $origin_email = (!$fromEmail['email']) ?  $header['from_email'] : $fromEmail['email'];
         $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
+        $origin_subject = (!$subjects['2']) ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
         $forwarded = array(
             'date_clean' => $origin_date, 
-            'subject' => preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']), 
+            'subject' => $origin_subject, 
             'origin' => $origin,
             'origin_name' => $origin_name, 
             'origin_email' => $origin_email, 
