@@ -71,9 +71,10 @@ class CRM_IMAP_AJAX {
         // add &debug=true to any call to get the raw message details back
         $debug = self::get('debug');
         if ($debug){
+          echo "<h1>Full Email RAW DATA</h1>";
           var_dump($email);
         }
-        
+
         if((count($email->time)!= 1)||(count($email->uid) != 1)){
           $returnCode = array('code'      =>  'ERROR',
               'message'   => 'This email no longer exists');
@@ -143,6 +144,10 @@ class CRM_IMAP_AJAX {
         );
 
         $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+        if ($debug){
+          echo "<h1>Full Email OUTPUT</h1>";
+          var_dump($output);
+        }
         return $output;
     }
 
@@ -253,7 +258,7 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
-    
+
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'format' => $output['header']['format'],
@@ -327,6 +332,8 @@ class CRM_IMAP_AJAX {
     public static function getContacts() {
         $start = microtime(true);
         $s = self::get('s');
+        $debug = self::get('debug');
+
         $from = "FROM civicrm_contact as contact\n";
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
@@ -396,6 +403,7 @@ class CRM_IMAP_AJAX {
         // http://skelos/civicrm/imap/ajax/assignMessage?messageId=123&contactId=123&imapId=1
         
         self::setupImap();
+        $debug = self::get('debug');
 
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
@@ -406,12 +414,21 @@ class CRM_IMAP_AJAX {
         $output = self::unifiedMessageInfo($email);
 
         // probably could user better names 
-        $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : 'could not find senders name' ;
+        $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : '' ;
         $senderEmailAddress = ($output['header']['from_email']) ?  $output['header']['from_email'] : '' ;
         $date = ($output['header']['date_clean']) ?  $output['header']['date_clean'] : 'could not find message date' ;
         $subject = ($output['forwarded']['subject']) ?  $output['forwarded']['subject'] : 'could not find message subject' ;
         $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
+        if ($debug){
+          echo "<h1>inputs</h1>";
+          var_dump($senderName);
+          var_dump($senderEmailAddress);
+          var_dump($date);
+          var_dump($subject);
+          var_dump($body);
+        }
+
         require_once 'api/api.php';
 
         // if this email has been moved / assigned already 
@@ -429,15 +446,30 @@ class CRM_IMAP_AJAX {
         );
         $result = civicrm_api('contact', 'get', $params );
 
+        if ($debug){
+          echo "<h1>Get forwarder Contact Record</h1>";
+          if (count($result['values']) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
+          var_dump($result);
+
+        }
+
         // error checking for forwarderId
-        if (($result['is_error']==1) || ($result['values']==null )){
+        if (($result['is_error']==1) || ($result['values']==null ) || (count($result['values']) !=  1 )){
           $forwarderId = 1; // bluebird admin
         } else{
           $forwarderId = $result['id'];
         };
 
-
+        if ($debug){
+          echo "<h1>forwarder ID</h1>";
+          var_dump($forwarderId);
+        }
         $fromEmail = $output['forwarded']['origin_email'];
+
+        if ($debug){
+          echo "<h1>from Email</h1>";
+          var_dump($fromEmail);
+        }
 
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
@@ -880,7 +912,7 @@ EOQ;
         $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
 
         if ($debug){
-          echo "<h1>inputs</h1><br/>";
+          echo "<h1>inputs</h1>";
           var_dump($first_name);
           var_dump($last_name);
           var_dump($email);
@@ -914,7 +946,7 @@ EOQ;
         $contact = civicrm_api('contact','create', $params);
 
         if ($debug){
-          echo "<h1>Contact Creation</h1><br/>";
+          echo "<h1>Contact Creation</h1>";
           echo "Sent Params<br/>";
           var_dump($params);
           echo "Response <br/>";
@@ -946,7 +978,7 @@ EOQ;
         
 
         if ($debug){
-          echo "<h1>Add address to Contact</h1><br/>";
+          echo "<h1>Add address to Contact</h1>";
           echo "Sent Params<br/>";
           var_dump($address_params);
           echo "Response <br/><pre>";
@@ -958,11 +990,7 @@ EOQ;
                                 'status'    =>  '1',
                                 'message'   =>  'Error adding Contact or Address Details'
                                 );
-          // echo "contact\n";
-          // var_dump($contact);
-          // echo "address\n";
-          // var_dump($address);
-          // echo json_encode($returnCode);
+
           CRM_Utils_System::civiExit();
         } else {
           $returnCode = array('code'      =>  'SUCCESS',
