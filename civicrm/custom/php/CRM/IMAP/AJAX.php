@@ -68,6 +68,18 @@ class CRM_IMAP_AJAX {
      * This function grabs a single messages and cleans it for output.
      */   
     public static function unifiedMessageInfo($email) {
+        // add &debug=true to any call to get the raw message details back
+        $debug = self::get('debug');
+        if ($debug){
+          var_dump($email);
+        }
+        
+        if((count($email->time)!= 1)||(count($email->uid) != 1)){
+          $returnCode = array('code'      =>  'ERROR',
+              'message'   => 'This email no longer exists');
+            echo json_encode($returnCode);
+            CRM_Utils_System::civiExit();
+        }
 
         $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
         $format = ($email->plainmsg) ? "plain" : "html";
