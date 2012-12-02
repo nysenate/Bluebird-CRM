@@ -74,7 +74,7 @@ cj(document).ready(function(){
 				success: function(data,status) {
 					if(data != null || data != ''){
 						contacts = cj.parseJSON(data);
-						if(contacts.length < 1){
+						if(contacts.code == 'ERROR'){
 							cj('#imapper-contacts-list').html('No Results Found');
 						}else{
 							cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
@@ -912,7 +912,6 @@ function buildContactList() {
 			var birth_year = value.birth_date.substring(0,4);
 			var age = year - birth_year;
 		}
-		// console.log(value);
 		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
 		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';

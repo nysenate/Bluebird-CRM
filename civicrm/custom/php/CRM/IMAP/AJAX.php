@@ -334,31 +334,36 @@ class CRM_IMAP_AJAX {
         $s = self::get('s');
         $debug = self::get('debug');
 
-        $from = "FROM civicrm_contact as contact\n";
+        $from = "FROM civicrm_contact contact\n";
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
 
-        $first_name = (strtolower(self::get('first_name')) == 'first name') ? '' : self::get('first_name');
+        $from.="  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id AND email.is_primary = 1)\n";
+        $from.="  LEFT JOIN civicrm_address address ON (contact.id = address.contact_id AND address.is_primary = 1)\n";
+        $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id AND phone.is_primary = 1)\n";
+
+
+        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name') ? NULL : self::get('first_name');
         if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
 
-        $last_name = (strtolower(self::get('last_name')) == 'last name') ? '' : self::get('last_name');
+        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name') ? NULL : self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
 
-        $email_address  = (strtolower(self::get('email_address')) == 'email address') ? '' : self::get('email_address');
+        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address') ? NULL : self::get('email_address');
         if($email_address) {
-          $from.="  JOIN civicrm_email as email ON email.contact_id=contact.id\n";
+          // $from.="  JOIN  civicrm_email email ON (email.email = '$email_address')\n";
           $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
 
-        $dob  = (self::get('dob') == 'yyyy-mm-dd') ? '' : self::get('dob');
+        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        // convert dob to standard format
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
         $state_id = self::get('state');
-        $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
-        $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
+        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address') ? NULL : self::get('street_address');
+        if(self::get('city')) $city = (strtolower(self::get('city')) == 'city') ? NULL : self::get('city');
 
-        $from.="  LEFT JOIN civicrm_address as address ON address.contact_id=contact.id\n";
 
         if($street_address || $city){ // state id is hard coded
           $order.=", address.is_primary DESC";
@@ -369,23 +374,45 @@ class CRM_IMAP_AJAX {
             $where.="  AND address.city LIKE '$city'\n";
           }
           if ($state_id) {
-            $from.="  JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
+            $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
             $where.="  AND state.id='$state_id'\n";
           }
         }
-        
-        $from.="LEFT JOIN civicrm_phone as phone ON phone.contact_id=contact.id\n";
-        $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
+
+        if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number') ? NULL : self::get('phone');
         if ($phone) {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
-        $query = "SELECT * $from\n$where\nGROUP BY contact.id\n$order";
+
+        $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+
         $result = mysql_query($query, self::db());
         $results = array();
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
         }
-        echo json_encode(array_values($results));
+        if ($debug){
+          echo "<h1>inputs</h1>";
+          var_dump($first_name);
+          var_dump($last_name);
+          var_dump($email_address);
+          var_dump($dob);
+          var_dump($phone);
+          var_dump($street_address);
+          var_dump($city);
+          echo "<h1>Query</h1><pre>";
+          print_r($query);
+          echo "</pre><h1>Results</h1><pre>";
+          print_r($results);
+          exit();
+        }
+        if(count($results) > 0){
+          $returnCode = $results;
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'No Records Found');
+        }
+
+        echo json_encode(array_values($returnCode));
         $end = microtime(true);
         if(self::get('debug')) echo $end-$start;
         mysql_close(self::$db);
@@ -467,7 +494,7 @@ class CRM_IMAP_AJAX {
         $fromEmail = $output['forwarded']['origin_email'];
 
         if ($debug){
-          echo "<h1>from Email</h1>";
+          echo "<h1>Attach activity to</h1>";
           var_dump($fromEmail);
         }
 
@@ -505,7 +532,11 @@ class CRM_IMAP_AJAX {
           } else{
             // Now we need to assign the tag to the activity.
             self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
-            $imap->movemsg_uid($messageUid, 'Archive');
+            if ($debug){
+              echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
+              $imap->movemsg_uid($messageUid, 'Archive');
+            }
+
             // add attachment to activity
           };
 
