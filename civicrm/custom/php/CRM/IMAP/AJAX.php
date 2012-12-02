@@ -338,9 +338,9 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
 
-        $from.="  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id AND email.is_primary = 1)\n";
-        $from.="  LEFT JOIN civicrm_address address ON (contact.id = address.contact_id AND address.is_primary = 1)\n";
-        $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id AND phone.is_primary = 1)\n";
+        $from.="  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)\n";
+        $from.="  LEFT JOIN civicrm_address address ON (contact.id = address.contact_id)\n";
+        $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
 
 
         if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name') ? NULL : self::get('first_name');
