@@ -50,11 +50,62 @@ $config =& CRM_Core_Config::singleton();
 $session =& CRM_Core_Session::singleton();
 
 require_once 'CRM/Contact/BAO/Contact.php';
+require_once 'CRM/Contact/BAO/GroupContact.php';
 require_once 'CRM/Activity/BAO/Activity.php';
 require_once 'CRM/Core/Transaction.php';
 require_once 'CRM/Core/BAO/CustomValueTable.php';
 require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
+
+
+// make connection to db
+function db() {
+    // Load the DAO Object and pull the connection
+    if ($db == null) {
+        $nyss_conn = new CRM_Core_DAO();
+        $nyss_conn = $nyss_conn->getDatabaseConnection();
+        $db = $nyss_conn->connection;
+    }
+    return $db;
+}
+
+
+/* getValidSenders()
+ * Parameters: None.
+ * Returns: CSV list of authorized emails
+ * Use a Bluebird Group to grab primary emails of users in Group "Authorized Forwarders"
+ * Grabs emails in hardcoded config
+ */
+function getValidSenders(){
+  require_once 'api/api.php';
+
+  // get Authorized Forwarders group id 
+  $params = array( 
+  'version' => 3,
+  'title' => 'Authorized Forwarders',
+  );
+  $result = civicrm_api( 'group','get',$params );
+  $groupID = $result['id'];
+  var_dump($groupID);
+
+  // sql to retreive group members
+  $from = "FROM civicrm_group_contact contact\n  LEFT JOIN civicrm_email email ON (contact.contact_id = email.contact_id AND email.is_primary = 1) \n";
+  $where = "WHERE contact.status='Added' AND contact.group_id = $groupID \n";
+  $order = "ORDER BY contact.id ASC";
+  $query = "SELECT email.email $from\n$where\nGROUP BY contact.id\n$order";
+
+  $result = mysql_query($query, db());
+
+  $output = '';
+  while($row = mysql_fetch_assoc($result)) {
+    $output .= $row['email'].',';
+  }
+
+  // load hard coded valid senders from config file.
+  $bbconfig = get_bluebird_instance_config();
+  $output .= strtolower($bbconfig['imap.validsenders']);
+  return $output;
+}
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
@@ -65,7 +116,7 @@ require_once 'CRM/Core/Error.php';
 */
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
-$imap_validsenders = strtolower($bbconfig['imap.validsenders']);
+$imap_validsenders = getValidSenders();
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
