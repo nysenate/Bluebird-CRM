@@ -376,7 +376,7 @@ class CRM_IMAP_AJAX {
         }
         // if address info, search in state
         if($street_address || $city) {
-          $where.="  AND (state.id='$state_id'\n";
+          $where.="  AND state.id='$state_id'\n";
         }else{
           $where.="  AND (state.id='$state_id' OR state.id IS NULL)\n";
         }
