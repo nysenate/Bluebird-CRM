@@ -390,7 +390,7 @@ cj(document).ready(function(){
 	cj( "#tagging-popup" ).dialog({
 		modal: true,
 		height: 500,
-		width: 500,
+		width: 540,
 		autoOpen: false,
 		resizable: false,
 		title: 'Loading Data',
@@ -443,10 +443,10 @@ cj(document).ready(function(){
 									data: {id: value},
 									success: function(data,status) { 
 										cj("#tagging-popup").dialog('close');
-										help_message('tag added!');
+										help_message('Tag Added');
 										cj("#"+value).remove();
 										var old_total = parseInt(cj("#total_number").html(),10);
-										help_message('Activity Deleted');
+										// help_message('Activity Deleted');
 										cj("#total_number").html(old_total-1);
 									},
 									error: function(){
@@ -461,11 +461,10 @@ cj(document).ready(function(){
 								data: {id: activityId},
 								success: function(data,status) { 
 									cj("#tagging-popup").dialog('close');
-									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
 									var old_total = parseInt(cj("#total_number").html(),10);
-									help_message('Activity Deleted');
+									// help_message('Activity Deleted');
 									cj("#total_number").html(old_total-1);
 								},
 								error: function(){
@@ -507,6 +506,10 @@ cj(document).ready(function(){
 		cj("#loading-popup").dialog('open');
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		cj("#autocomplete_tag").val();
+		cj(".autocomplete-tags-bank").html('');
+		cj('#tagging-popup-header').html('');
+
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
