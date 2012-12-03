@@ -26,7 +26,7 @@
 			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 		</div>
 	</div>
-	<div id="find-match-popup" title="Loading Data">
+	<div id="find-match-popup" title="Loading Data"  style="display:none;">
 		<div id="message_left">
 			<div id="message_left_header">
 			</div>

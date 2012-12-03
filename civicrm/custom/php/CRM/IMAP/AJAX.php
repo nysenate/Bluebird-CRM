@@ -357,6 +357,8 @@ class CRM_IMAP_AJAX {
         }
 
         if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        // block epoch date
+        if ($dob == '1969-12-31') $dob  = NULL ;
         // convert dob to standard format
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
@@ -404,7 +406,7 @@ class CRM_IMAP_AJAX {
           var_dump($city);
           echo "<h1>Query</h1><pre>";
           print_r($query);
-          echo "</pre><h1>Results</h1><pre>";
+          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
           print_r($results);
           exit();
         }
@@ -983,7 +985,7 @@ EOQ;
           echo "Sent Params<br/>";
           var_dump($params);
           echo "Response <br/>";
-          if($contact['id']) echo "<a href='http://skelos/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
+          if($contact['id']) echo "<a href='/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
 
           var_dump($contact);
         }
