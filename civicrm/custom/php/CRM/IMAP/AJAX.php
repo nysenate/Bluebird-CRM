@@ -357,6 +357,8 @@ class CRM_IMAP_AJAX {
         }
 
         if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        // block epoch date
+        if ($dob == '1969-12-31') $dob  = NULL ;
         // convert dob to standard format
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
