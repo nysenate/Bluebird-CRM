@@ -413,6 +413,13 @@ WHERE report_id = 'logging/contact/detail' OR report_id = 'logging/contact/summa
 "
 $execSql -i $instance -c "$changeRpt"
 
+## 5893
+authfwd="
+INSERT INTO civicrm_group (name, title, description, source, saved_search_id, is_active, visibility, group_type, cache_date, parents, children, is_hidden, is_reserved) VALUES
+('Authorized_Forwarders', 'Authorized Forwarders', NULL, NULL, NULL, 1, 'User and User Admin Only', NULL, NULL, NULL, NULL, 0, 1);
+"
+$execSql -i $instance -c "$authfwd"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance

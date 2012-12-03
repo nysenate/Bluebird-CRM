@@ -82,7 +82,7 @@ function getValidSenders(){
   // get Authorized Forwarders group id 
   $params = array( 
   'version' => 3,
-  'title' => 'Authorized Forwarders',
+  'name' => 'Authorized_Forwarders',
   );
   $result = civicrm_api( 'group','get',$params );
   $groupID = $result['id'];
