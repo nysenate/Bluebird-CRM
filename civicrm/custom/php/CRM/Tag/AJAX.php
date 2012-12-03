@@ -56,7 +56,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             $node['is_checked'] = in_array($source->id, $entity_tags);
 
         if($entity_counts !== null)
-            $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 1);
+            $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 0);
 
         $node['children'] = array();
         return $node;
