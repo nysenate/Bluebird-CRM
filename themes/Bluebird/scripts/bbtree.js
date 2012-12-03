@@ -18,7 +18,7 @@ function callTagAjax (local, modalTreeTop, pointToTab) {
 			entity_type: 'civicrm_contact',
 			entity_id: cid,
 			call_uri: window.location.href,
-			entity_counts: 1
+			entity_counts: 0
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -527,7 +527,8 @@ function makeModalAdd(tagLabel){
 									name: tagCreate.tagName,
 									description: tagCreate.tagDescription,
 									parent_id: tagCreate.parentId,
-									is_reserved: tagCreate.isReserved	
+									is_reserved: tagCreate.isReserved,
+									call_uri: window.location.href	
 								},
 								dataType: 'json',
 								success: function(data, status, XMLHttpRequest) {
@@ -616,7 +617,8 @@ function makeModalRemove(tagLabel){
 									cj.ajax({
 									url: '/civicrm/ajax/tag/delete',
 									data: {
-										id: tagRemove.parentId
+										id: tagRemove.parentId,
+										call_uri: window.location.href
 									},
 									dataType: 'json',
 									success: function(data, status, XMLHttpRequest) {
@@ -718,7 +720,8 @@ function makeModalUpdate(tagLabel){
 						name: tagUpdate.tagName,
 						description: tagUpdate.tagDescription,
 						id: tagUpdate.currentId,
-						is_reserved: tagUpdate.isReserved	
+						is_reserved: tagUpdate.isReserved,
+						call_uri: window.location.href	
 					},
 					dataType: 'json',
 					success: function(data, status, XMLHttpRequest) {

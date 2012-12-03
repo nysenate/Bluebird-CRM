@@ -99,7 +99,7 @@ cj(document).ready(function() {
 	cj.ajax({
 		url: '/civicrm/ajax/entity_tag/checkUserLevel/',
 		data: {
-			call_uri: window.location.href,
+			call_uri: window.location.href
 		},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -150,7 +150,8 @@ function checkRemoveAdd(tagLabel) {
 				data: {
 					entity_type: 'civicrm_contact',
 					entity_id: cid,
-					tag_id: tagLabelID
+					tag_id: tagLabelID,
+					call_uri: window.location.href
 					},
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
@@ -188,7 +189,8 @@ function checkRemoveAdd(tagLabel) {
 				data: {
 					entity_type: 'civicrm_contact',
 					entity_id: cid,
-					tag_id: tagLabelID
+					tag_id: tagLabelID,
+					call_uri: window.location.href
 					},
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
