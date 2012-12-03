@@ -70,6 +70,11 @@ class CRM_Contact_Form_Edit_TagsandGroups {
       $form->_tagGroup = array();
     }
 
+    //NYSS 5670
+    if ( empty($contactId) && !empty($form->_contactId) ) {
+      $contactId = $form->_contactId;
+    }
+
     $type = (int ) $type;
     if ($type & CRM_Contact_Form_Edit_TagsandGroups::GROUP) {
 
