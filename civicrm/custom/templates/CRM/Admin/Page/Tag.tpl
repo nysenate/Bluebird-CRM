@@ -178,7 +178,8 @@ function modalSelectOnClick() {
 								url: '/civicrm/ajax/tag/update',
 								data: {
 									id: tagMove.currentId,
-									parent_id: tagMove.destinationId
+									parent_id: tagMove.destinationId,
+									call_uri: window.location.href
 								},
 								dataType: 'json',
 								success: function(data, status, XMLHttpRequest) {
@@ -351,7 +352,8 @@ function makeModalConvert(tagLabel){
 					url: '/civicrm/ajax/tag/update',
 					data: {
 						id: tagMove.currentId,
-						parent_id: 291
+						parent_id: 291,
+						call_uri: window.location.href
 					},
 					dataType: 'json',
 					success: function(data, status, XMLHttpRequest) {
