@@ -416,7 +416,7 @@ class CRM_IMAP_AJAX {
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'No Records Found');
         }
 
-        echo json_encode(array_values($returnCode));
+        echo json_encode($returnCode);
         $end = microtime(true);
         if(self::get('debug')) echo $end-$start;
         mysql_close(self::$db);
