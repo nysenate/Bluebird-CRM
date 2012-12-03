@@ -985,7 +985,7 @@ EOQ;
           echo "Sent Params<br/>";
           var_dump($params);
           echo "Response <br/>";
-          if($contact['id']) echo "<a href='http://skelos/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
+          if($contact['id']) echo "<a href='/civicrm/contact/view?reset=1&cid=".$contact['id']."'>View Contact </a><br/>";
 
           var_dump($contact);
         }
