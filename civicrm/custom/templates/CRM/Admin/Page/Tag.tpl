@@ -329,7 +329,7 @@ function makeModalConvert(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			console.log(tagInfo.id);
+			//console.log(tagInfo.id);
 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
 			var treeDialogInfo;
