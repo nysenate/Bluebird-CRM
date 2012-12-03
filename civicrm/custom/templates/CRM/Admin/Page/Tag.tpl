@@ -329,6 +329,7 @@ function makeModalConvert(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
+			console.log(tagInfo.id);
 			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag .name').html();
 			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
 			var treeDialogInfo;
@@ -336,7 +337,7 @@ function makeModalConvert(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be converted</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Convert <span id="modalNameTid" tID="tagLabel_'+tagInfo.id+'">' + tagInfo.name + '</span> into an Issue Code.</div>';
+			treeDialogInfo = '<div class="modalHeader">Convert <span id="modalNameTid" tID="'+tagInfo.id+'">' + tagInfo.name + '</span> into an Issue Code.</div>';
 			cj('#dialog').html(treeDialogInfo);
 			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
 			}
