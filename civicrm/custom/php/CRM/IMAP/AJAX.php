@@ -406,7 +406,7 @@ class CRM_IMAP_AJAX {
           var_dump($city);
           echo "<h1>Query</h1><pre>";
           print_r($query);
-          echo "</pre><h1>Results</h1><pre>";
+          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
           print_r($results);
           exit();
         }
