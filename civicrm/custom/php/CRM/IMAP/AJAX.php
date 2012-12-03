@@ -881,7 +881,7 @@ EOQ;
         $query = <<<EOQ
 SELECT id, name
 FROM `civicrm_tag`
-WHERE `parent_id` ='296' && `name` LIKE '%$name%'
+WHERE `parent_id` ='296' && `name` LIKE '$name%'
 EOQ;
         $result = mysql_query($query, self::db());
         while($row = mysql_fetch_assoc($result)) {
