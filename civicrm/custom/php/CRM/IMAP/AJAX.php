@@ -341,7 +341,7 @@ class CRM_IMAP_AJAX {
         $from.="  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)\n";
         $from.="  LEFT JOIN civicrm_address address ON (contact.id = address.contact_id)\n";
         $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
-
+        $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
         if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name') ? NULL : self::get('first_name');
         if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
@@ -365,7 +365,7 @@ class CRM_IMAP_AJAX {
         if(self::get('city')) $city = (strtolower(self::get('city')) == 'city') ? NULL : self::get('city');
 
 
-        if($street_address || $city){ // state id is hard coded
+        if($street_address || $city){
           $order.=", address.is_primary DESC";
           if($street_address) {
             $where.="  AND address.street_address LIKE '$street_address'\n";
@@ -373,10 +373,12 @@ class CRM_IMAP_AJAX {
           if ($city) {
             $where.="  AND address.city LIKE '$city'\n";
           }
-          if ($state_id) {
-            $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
-            $where.="  AND state.id='$state_id'\n";
-          }
+        }
+        // if address info, search in state
+        if($street_address || $city) {
+          $where.="  AND (state.id='$state_id'\n";
+        }else{
+          $where.="  AND (state.id='$state_id' OR state.id IS NULL)\n";
         }
 
         if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number') ? NULL : self::get('phone');
