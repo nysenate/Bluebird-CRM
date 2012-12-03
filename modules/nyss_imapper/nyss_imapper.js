@@ -912,9 +912,9 @@ function buildContactList() {
 			var birth_year = value.birth_date.substring(0,4);
 			var age = year - birth_year;
 		}
-		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.contact_id+'">';
+		contactsHtml += '<div class="imapper-contact-box" data-id="'+value.id+'">';
 		contactsHtml += '<div class="imapper-address-select-box">';
-		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.contact_id+'" />';
+		contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.id+'" />';
 		contactsHtml += '</div>';
 		contactsHtml += '<div class="imapper-address-box">';
 		if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
