@@ -505,13 +505,45 @@ class CRM_IMAP_AJAX {
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
 
-          // On match add email to user 
-           $params = array( 
-            'contact_id' => $contactId,
-            'email' => $fromEmail,
-            'version' => 3,
-          );
-          $result = civicrm_api( 'email','create',$params );
+            // check to see if contact has the email being assigend to it,
+            // if doesn't have email, add it to contact
+            $query = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
+            $result = mysql_query($query, self::db());
+            $results = array();
+            while($row = mysql_fetch_assoc($result)) {
+                $results[] = $row;
+            }
+
+            // On match add email to user
+            $params = array(
+                'contact_id' => $contactId,
+                'email' => $fromEmail,
+                'version' => 3,
+            );
+
+            if ($debug){
+                echo "<h1>Contact ".$contactId." has the following emails </h1>";
+                var_dump($results);
+            }
+            $emailsCount = count($results);
+
+            $matches = 0;
+            echo "<h1>Contact Non matching results </h1>";
+            // if the records don't match, count it, an if the number is > 1 add the record
+            foreach($results as $email) {
+                if($email['email'] == $fromEmail){
+                    if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                }else{
+                    $matches++;
+                    if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                }
+            }
+
+            if(($emailsCount-$matches) == 0){
+                if ($debug) echo "<p> added ".$fromEmail."</p><hr/>";
+                $result = civicrm_api( 'email','create',$params );
+            }
+ 
 
 
           // Submit the activity information and assign it to the right user
@@ -538,7 +570,8 @@ class CRM_IMAP_AJAX {
             self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
             if ($debug){
               echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
-              $imap->movemsg_uid($messageUid, 'Archive');
+            }else{
+                $imap->movemsg_uid($messageUid, 'Archive');
             }
 
             // add attachment to activity
