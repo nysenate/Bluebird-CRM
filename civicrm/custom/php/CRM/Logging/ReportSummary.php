@@ -261,6 +261,7 @@ WHERE {$clause} {$this->_limit}";
   }
 
   //NYSS
+  static
   function _combineContactRows(&$rows) {
     //if log_type in contact set, and log_date same, and conn_id same, combine
     $rowKeys = array();
