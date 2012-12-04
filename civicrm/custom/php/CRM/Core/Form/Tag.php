@@ -57,7 +57,7 @@ class CRM_Core_Form_Tag {
   ) {
     $tagset = $form->_entityTagValues = array();
     $mode = NULL;
-CRM_Core_Error::debug('entityId',$entityId);
+
     foreach ($parentNames as & $parentNameItem) {
       // get the parent id for tag list input for keyword
       $parentId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Tag', $parentNameItem, 'id', 'name');
