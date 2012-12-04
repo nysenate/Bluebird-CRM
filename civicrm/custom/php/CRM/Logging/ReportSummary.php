@@ -190,9 +190,9 @@ CREATE TEMPORARY TABLE
       $clause = implode(' AND ', $clause);
 
       $sql    = "
- INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
- SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
- WHERE {$clause} {$this->_limit}";
+INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
+SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
+WHERE {$clause} {$this->_limit}";
       //CRM_Core_Error::debug_var('sql insert',$sql);
       CRM_Core_DAO::executeQuery($sql, $sqlParams);
     }
@@ -269,6 +269,10 @@ CREATE TEMPORARY TABLE
       'log_civicrm_address',
       'log_civicrm_value_constituent_information_1',
     );
+
+    //sort so that Insert is preserved when it exists
+    usort($rows, array('CRM_Utils_Sort', 'cmpName'));
+
     foreach ( $rows as $k => $row ) {
       $keyDate = substr($row['log_civicrm_entity_log_date'], 0, strlen($row['log_civicrm_entity_log_date']) - 3);
       $key = "{$row['log_civicrm_entity_log_conn_id']}_{$keyDate}";
@@ -281,6 +285,5 @@ CREATE TEMPORARY TABLE
         }
       }
     }
-    //CRM_Core_Error::debug_var('$rows after',$rows);
-  }
+  }//_combineContactRows
 }
