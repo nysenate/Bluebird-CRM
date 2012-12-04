@@ -515,6 +515,7 @@ class CRM_IMAP_AJAX {
             }
 
             // On match add email to user
+            // Important
             $params = array(
                 'contact_id' => $contactId,
                 'email' => $fromEmail,
