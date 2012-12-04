@@ -268,6 +268,8 @@ WHERE {$clause} {$this->_limit}";
       'log_civicrm_contact',
       'log_civicrm_address',
       'log_civicrm_value_constituent_information_1',
+      'log_civicrm_email',
+      'log_civicrm_phone',
     );
 
     //sort so that Insert is preserved when it exists
