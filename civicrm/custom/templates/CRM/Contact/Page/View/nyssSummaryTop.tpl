@@ -3,7 +3,7 @@
   {if $nick_name}
     <tr>
       <td class="label">Nickname</td>
-      <td class="content">{$nick_name}{do_not_email}</td>
+      <td class="content">{$nick_name}</td>
     </tr>
   {/if}
   {if $custom_60.field_value || $source}

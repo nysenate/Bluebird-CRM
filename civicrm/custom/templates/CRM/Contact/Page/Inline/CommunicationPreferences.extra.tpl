@@ -8,5 +8,6 @@
 {literal}
 <script type="text/javascript">
   cj('#crm-communication-pref-content .crm-config-option').next('.bb-row-wrap').after(cj('#wrap-privacynote'));
+  cj('#crm-communication-pref-content div').removeClass('upper');
 </script>
 {/literal}

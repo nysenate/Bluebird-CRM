@@ -135,6 +135,12 @@ function _ldap_authentication_user_login_authenticate_validate(&$form_state) {
   $authname = $form_state['values']['name']; // $name = $form_state['values']['name']; // patch 1599632
   $pass = $form_state['values']['pass'];
 
+  //NYSS 5936 if pass is empty, we should fail immediately
+  //http://drupal.org/node/1857606
+  if ( empty($pass) ) {
+    return FALSE;
+  }
+
   /*
    * If a fake form state was passed into this function from
    * _ldap_authentication_user_login_sso(), there will be a value outside of the
