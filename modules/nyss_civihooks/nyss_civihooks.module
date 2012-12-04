@@ -576,7 +576,22 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
        $objectName               == 'Profile' &&
        $objectRef['uf_group_id'] == 8 ) {
     $objectRef['updateBlankLocInfo'] = true;
-    return;
+  }
+
+  //only create a new address if we have key fields
+  if ( $op == 'create' && $objectName == 'Address' ) {
+    $skipFields = array('location_type_id', 'is_primary', 'state_province_id', 'country_id', 'contact_id');
+    $skipRecord = TRUE;
+    foreach( $objectRef as $f => $v ) {
+      if ( !in_array($f, $skipFields) && !empty($v) && $v != 'null' ) {
+        $skipRecord = FALSE;
+      }
+    }
+    if ( $skipRecord ) {
+      foreach( $objectRef as $f => $v ) {
+        $objectRef[$f] = '';
+      }
+    }
   }
 
   _setDBVars();
