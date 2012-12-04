@@ -341,6 +341,12 @@ class CRM_Utils_SAGE
             $values["custom_48_$id"] = (string)$xml->assembly->district;
         if($overwrite || !$values["custom_49_$id"])
             $values["custom_49_$id"] = (string)$xml->election->district;
+        if($overwrite || !$values["custom_50_$id"])
+            $values["custom_50_$id"] = (string)$xml->county->district;
+        if($overwrite || !$values["custom_52_$id"])
+            $values["custom_52_$id"] = (string)$xml->town->district;
+        if($overwrite || !$values["custom_54_$id"])
+            $values["custom_54_$id"] = (string)$xml->school->district;
     }
 
 
