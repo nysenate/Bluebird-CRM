@@ -315,7 +315,7 @@ class CRM_IMAP_AJAX {
         $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
 
         // reformat the date to something standard here.
-        $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
+        $date_string_short = date("m-d-y H:i", strtotime($date_string_short));
         return $date_string_short;
     }
 
