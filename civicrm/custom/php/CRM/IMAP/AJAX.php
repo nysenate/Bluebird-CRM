@@ -212,25 +212,39 @@ class CRM_IMAP_AJAX {
 
     public function extract_email_address ($string) {
         // some nysenate fixes
-        $string = preg_replace('/\/STS\/senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/\/CENTER\/senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/\/senate@senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/&lt;/i', '', $string);
-        $string = preg_replace('/&gt;/i', '', $string);
-        $string = preg_replace('/</i', '', $string);
-        $string = preg_replace('/>/i', '', $string);
-        $string = preg_replace('/"/i', '', $string);
+        
 
-        foreach(preg_split('/ /', $string) as $token) {
-            $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
-            if ($email !== false) {
-                $emails[] = $email;
-            }
+        // sometimes the o= is appended to the end of the email address
+        $string = preg_replace('/\/senate@senate/i', '\/senate', $string);
+
+        // if email has slash in it do ldap lookup
+        $internal = preg_match("/\//", $string, $matches);
+        if($internal == 1){
+          $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
+          $dn = "o=senate";
+          $filter="(displayname=$string)";
+          $justthese = array("sn", "givenname", "mail");
+          $sr=ldap_search($ldapcon, $dn, $filter, $justthese);
+          $info = ldap_get_entries($ldapcon, $sr);
+          $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
+          $return = array('name'=>$name,'email'=>$info[0]['mail'][0]);
+          return $return;
+        }else{
+          $string = preg_replace('/&lt;/i', '', $string);
+          $string = preg_replace('/&gt;/i', '', $string);
+          $string = preg_replace('/</i', '', $string);
+          $string = preg_replace('/>/i', '', $string);
+          $string = preg_replace('/"/i', '', $string);
+          foreach(preg_split('/ /', $string) as $token) {
+              $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+              if ($email !== false) {
+                  $emails[] = $email;
+              }
+          }
+          $name = str_replace($emails[0], '', $string);
+          $return = array('name'=>$name,'email'=>$emails[0]);
+          return $return;
         }
-
-        $name = str_replace($emails[0], '', $string);
-        $return = array('name'=>$name,'email'=>$emails[0]);
-        return $return;
     }
 
 
