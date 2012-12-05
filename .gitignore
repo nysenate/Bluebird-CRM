@@ -7,6 +7,10 @@ drupal/sites/*
 !drupal/sites/all
 !drupal/sites/default
 
+# sublime text files
+*.sublime-project
+*.sublime-workspace
+
 #eclipse project files
 .buildpath
 .project
