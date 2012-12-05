@@ -116,6 +116,7 @@ class CRM_IMAP_AJAX {
         // check ot see if forwarded 
         $status = (!$froms['2']) ? 'direct' : 'forwarded';
 
+        // contains info directly from the email header
         $header = array(
             'format' => $format,
             'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
@@ -127,20 +128,21 @@ class CRM_IMAP_AJAX {
             'status' => $status,
         );
 
-        // this gets a bit inelegant
-        // if the origin details are empty, we have a direct message and populate accordingly 
-        $origin = (!$froms['2']) ?  $header['from'] : $froms['2'];
-        $origin_name = (!$fromEmail['name']) ?  $header['from_name'] : $fromEmail['name'];
-        $origin_email = (!$fromEmail['email']) ?  $header['from_email'] : $fromEmail['email'];
+        // if we have a direct message populate accordingly 
+        $origin = ($status == 'direct') ?  $header['from'] : $froms['2'];        
+        $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
+        $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
         $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
-        $origin_subject = (!$subjects['2']) ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
+        $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
+        // contains info about the forwarded message in the email body
         $forwarded = array(
             'date_clean' => $origin_date, 
             'subject' => $origin_subject, 
             'origin' => $origin,
             'origin_name' => $origin_name, 
-            'origin_email' => $origin_email, 
+            'origin_email' => $origin_email,
+            'origin_lookup' => $fromEmail['type'], 
         );
 
         $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
@@ -185,7 +187,7 @@ class CRM_IMAP_AJAX {
 
                     $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
-                        'from' =>  $output['forwarded']['origin_name'].' <'.$output['forwarded']['origin_email'].'>',
+                        'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                         'uid' =>  $header->uid,
                         'date' =>  $output['header']['date_clean'],
                         'format' =>  $output['header']['format'],
@@ -210,31 +212,34 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
-    public function extract_email_address ($string) {
-        // some nysenate fixes
-        
+    public function extract_email_address ($string) {        
+        // we have to parse out ldap stuff because sometimes addresses are
+        // embedded and, see NYSS #5748 for more details 
 
-        // sometimes the o= is appended to the end of the email address
-        $string = preg_replace('/\/senate@senate/i', '\/senate', $string);
+        // if o= is appended to the end of the email address remove it 
+        $string = preg_replace('/\/senate@senate/i', '/senate', $string);
 
-        // if email has slash in it do ldap lookup
-        $internal = preg_match("/\//", $string, $matches);
+        // ldap addresses have slashes, so we do an internal lookup
+        $internal = preg_match("/\//i", $string, $matches);
+
         if($internal == 1){
           $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
-          $dn = "o=senate";
-          $filter="(displayname=$string)";
-          $justthese = array("sn", "givenname", "mail");
-          $sr=ldap_search($ldapcon, $dn, $filter, $justthese);
-          $info = ldap_get_entries($ldapcon, $sr);
-          $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
-          $return = array('name'=>$name,'email'=>$info[0]['mail'][0]);
-          return $return;
+            $retrieve = array("sn","givenname", "mail");
+            $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
+            $info = ldap_get_entries($ldapcon, $search);
+          if($info[0]){
+            $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
+            $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
+            return $return;
+          }else{
+            $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed');
+            return $return;
+          }
+          
         }else{
-          $string = preg_replace('/&lt;/i', '', $string);
-          $string = preg_replace('/&gt;/i', '', $string);
-          $string = preg_replace('/</i', '', $string);
-          $string = preg_replace('/>/i', '', $string);
-          $string = preg_replace('/"/i', '', $string);
+          // clean out any anything that wouldn't be a name or email, html or plain-text
+          $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
+          $string = preg_replace('/<|>|"|\'/i', '', $string);
           foreach(preg_split('/ /', $string) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
@@ -242,7 +247,7 @@ class CRM_IMAP_AJAX {
               }
           }
           $name = str_replace($emails[0], '', $string);
-          $return = array('name'=>$name,'email'=>$emails[0]);
+          $return = array('type'=>'standard','name'=>$name,'email'=>$emails[0]);
           return $return;
         }
     }
