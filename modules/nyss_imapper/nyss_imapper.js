@@ -673,7 +673,14 @@ cj(document).ready(function(){
 						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 					}
 					// add some debug info to the message body on toggle
-					cj('#message_left_header').append("<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><strong>Full forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Parsed Fristname: </strong>"+firstName+"<br/><strong>Parsed Lastname: </strong>"+lastName+"<br/><strong>Parsed Email: </strong>"+messages.fromEmail+"<br/><strong>Parse type: </strong>"+messages.origin_lookup+"<br/><strong>Message Id: </strong>"+messages.uid+"<br/><strong>Imap Id: </strong>"+messages.imapId+"<br/><strong>Email Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/><hr/></div></div>");
+					var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Details from message Header:</i><br/><strong>Forwarded or Direct?: </strong>"+messages.status+"<br/><strong>Full forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Date sent: </strong>"+messages.date+"<br/><strong>Message Id: </strong>"+messages.uid+"<br/><strong>Imap Id: </strong>"+messages.imapId+"<br/><strong>Email Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
+					if(messages.status !== 'direct'){
+						debugHTML +="<br/><i>Details from message body:</i><br/><strong>Parsed Fristname: </strong>"+firstName+"<br/><strong>Parsed Lastname: </strong>"+lastName+"<br/><strong>Parsed Email: </strong>"+messages.fromEmail+"<br/><strong>Email parse type: </strong>"+messages.origin_lookup+"<br/><strong>Parsed Date: </strong>"+messages.forwarder_time+"";
+					}
+
+					debugHTML +="<hr/></div></div>";
+
+					cj('#message_left_header').append(debugHTML);
 
 					cj('#message_left_email').html(messages.details);
 					cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
