@@ -108,6 +108,25 @@ function do_import($db, $filename, $BB_DRY_RUN) {
             }
         }
 
+        $result = mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id");
+        $old_address = mysql_fetch_assoc($result);
+        $new_address = array(
+                'street_address' => clean($street_address),
+                'street_number' => clean($street_number),
+                'street_number_suffix' => clean($street_number_suffix),
+                'street_name' => clean($street_name),
+                'street_unit' => clean($street_unit),
+                'postal_code' => clean($postal_code),
+            );
+        $diff = array_diff_assoc($old_address, $new_address);
+        if (count($diff) != 0) {
+            // if (array_key_exists('street_unit',$diff)) {
+            //     var_dump($old_address);
+            //     var_dump($new_address);
+            // }
+            $changed[$address_id] = $diff;
+        }
+
         // Make sure to escape all the values before they hit the db
         $query = "UPDATE civicrm_address
                   SET state_province_id=".clean($state_province_id).",
@@ -127,7 +146,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
 
         // Just to show progres while running
         if (++$count % 10000 == 0) {
-            bbscript_log("info","$count addresses imported.");
+            bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
         }
     }
     mysql_query("COMMIT", $db);
