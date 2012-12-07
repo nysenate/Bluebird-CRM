@@ -99,7 +99,7 @@ if ( $opt_instate ) {
     handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_startfrom);
 }
 
-bbscript_log("info", "Completed redistricting addresses");
+bbscript_log("info", "Completed all tasks");
 
 function address_map($db) {
     $address_map_changes = 0;
@@ -167,6 +167,7 @@ function handle_out_of_state($db) {
             WHERE civicrm_value_district_information_7.entity_id = {$row['id']}", $db
         );
     }
+    bbscript_log("INFO", "Completed removing districts from out of state addresses.");
 }
 
 function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_startfrom = FALSE ) {
@@ -428,8 +429,8 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
 
         // Reset the arrays to repeat the batch lookup process for the next batch
         $formatted_batch = array();
-
     }
+    bbscript_log("INFO", "Completed assigning districts to in state addresses.");
 }
 
 function distassign($formatted_batch, $endpoint, $count) {
