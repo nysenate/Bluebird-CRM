@@ -221,3 +221,14 @@ function bbscript_log($message_level, $message){
         echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
     }
 } // echo_CLI_log()
+
+
+function _mysql_query($query, $db) {
+    $result = mysql_query($query, $db);
+    if ($result === FALSE) {
+        bbscript_log("FATAL", "MySQL Error: ".mysql_error($db));
+        bbscript_log("FATAL", "Caused by:\n$query");
+        exit(1);
+    }
+    return $result;
+}
