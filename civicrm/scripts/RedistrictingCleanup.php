@@ -47,7 +47,7 @@ if ($optlist['import']) {
 
 
 function do_export($db) {
-    $result = mysql_query("
+    $result = _mysql_query("
         SELECT  address.id as ID,
                 IFNULL(street_address,'') as STREET_ADDRESS,
                 IFNULL(city,'') as CITY,
@@ -75,7 +75,8 @@ function do_import($db, $filename, $BB_DRY_RUN) {
     }
 
     $count = 0;
-    mysql_query("BEGIN", $db);
+    _mysql_query("BEGIN", $db);
+    $header = fgets($handle);
     while ( ($line = fgets($handle)) !== FALSE) {
         bbscript_log('trace', $line);
         $parts = explode("\t",$line);
@@ -89,7 +90,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         // Part the street address into its components
         $street_address = convertProperCase(trim($parts[1]));
         $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($parts[1]);
-        $street_number = trim($parsedFields['street_number']);
+        $street_number = trim(get($parsedFields,'street_number',0));
         $street_number_suffix = trim($parsedFields['street_number_suffix']);
         $street_name   = convertProperCase(trim($parsedFields['street_name']));
         $street_unit   = convertProperCase(trim($parsedFields['street_unit']));
@@ -108,7 +109,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
             }
         }
 
-        $result = mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id");
+        $result = _mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id",$db);
         $old_address = mysql_fetch_assoc($result);
         $new_address = array(
                 'street_address' => clean($street_address),
@@ -141,15 +142,17 @@ function do_import($db, $filename, $BB_DRY_RUN) {
 
         bbscript_log('TRACE', $query);
         if (!$BB_DRY_RUN) {
-           mysql_query($query, $db);
+           _mysql_query($query, $db);
         }
 
         // Just to show progres while running
         if (++$count % 10000 == 0) {
             bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
+            _mysql_query("COMMIT",$db);
+            _mysql_query("BEGIN", $db);
         }
     }
-    mysql_query("COMMIT", $db);
+    _mysql_query("COMMIT", $db);
 }
 
 
