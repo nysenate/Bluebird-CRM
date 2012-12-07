@@ -119,7 +119,7 @@ function address_map($db) {
     bbscript_log("info", "Completed district mapping with $address_map_changes changes");
 }
 
-function handle_out_of_state($db, $subject_prefixes) {
+function handle_out_of_state($db) {
     // Remove AD, SD, CD info for any non-NY state addresses
     $result = mysql_query("
         SELECT address.*, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
@@ -243,147 +243,159 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size) {
 
         // Process the results
         $formatted_results = array();
-        foreach ($batch_results as $batch_result) {
-            $address_id = $batch_result['address_id'];
-            $status_code = $batch_result['status_code'];
-            $message = $batch_result['message'];
+        if ( count($batch_results) ){
 
-            $MATCH_CODES = array("HOUSE","STREET","ZIP5","SHAPEFILE");
-            if (in_array($status_code,$MATCH_CODES)!==FALSE) {
-                $count['MATCH']++;
-                $count[$status_code]++;
-                bbscript_log("trace", "[MATCH - $status_code][$message] on record #$address_id");
-                $formatted_results[$address_id] = array(
-                    'ny_assembly_district_48'=>$batch_result['assembly_ode'],
-                    'congressional_district_46'=>$batch_result['congressional_code'],
-                    'election_district_49'=>$batch_result['election_code'],
-                    'ny_senate_district_47'=>$batch_result['senate_code'],
-                    'county_50'=>$batch_result['county_code'],
-                    'geo_code_1'=>$batch_result['latitude'],
-                    'geo_code_2'=>$batch_result['longitude'],
-                    'geo_accuracy'=>$batch_result['geo_accuracy'],
-                    'result_code' => $status_code,
-                    'result_message' => $message,
-                    'ward_53'=>$batch_result['ward_code'],
-                    'town_52'=>$batch_result['town_code'],
-                    'county_legislative_district_51'=>$batch_result['cleg_code'],
-                    'school_district_54'=>$batch_result['school_code'],
-                    // 'new_york_city_council_55'=>$batch_result['nycc_code'],
+            foreach ($batch_results as $batch_result) {
+                $address_id = $batch_result['address_id'];
+                $status_code = $batch_result['status_code'];
+                $message = $batch_result['message'];
+
+                $MATCH_CODES = array("HOUSE","STREET","ZIP5","SHAPEFILE");
+                if (in_array($status_code,$MATCH_CODES)!==FALSE) {
+                    $count['MATCH']++;
+                    $count[$status_code]++;
+                    bbscript_log("trace", "[MATCH - $status_code][$message] on record #$address_id");
+                    $formatted_results[$address_id] = array(
+                        'ny_assembly_district_48'=>$batch_result['assembly_ode'],
+                        'congressional_district_46'=>$batch_result['congressional_code'],
+                        'election_district_49'=>$batch_result['election_code'],
+                        'ny_senate_district_47'=>$batch_result['senate_code'],
+                        'county_50'=>$batch_result['county_code'],
+                        'geo_code_1'=>$batch_result['latitude'],
+                        'geo_code_2'=>$batch_result['longitude'],
+                        'geo_accuracy'=>$batch_result['geo_accuracy'],
+                        'result_code' => $status_code,
+                        'result_message' => $message,
+                        'ward_53'=>$batch_result['ward_code'],
+                        'town_52'=>$batch_result['town_code'],
+                        'county_legislative_district_51'=>$batch_result['cleg_code'],
+                        'school_district_54'=>$batch_result['school_code'],
+                        // 'new_york_city_council_55'=>$batch_result['nycc_code'],
+                    );
+
+                } elseif ($status_code == "NOMATCH") {
+                    $count['NOMATCH']++;
+                    bbscript_log("warn", "[NOMATCH][$message] on record #$address_id");
+
+                } elseif ($status_code == "INVALID") {
+                    $count['INVALID']++;
+                    bbscript_log("warn", "[INVALID][$message] on record #$address_id");
+
+                } else { // Unknown status_code, what?!?
+                    $count['ERROR']++;
+                    bbscript_log("ERROR", "Unknown status [$status_code] on record #$address_id with message [$message]");
+                }
+            }
+
+            // Update districts in the database if --dryrun flag was not set
+            // and insert a note describing the update.
+            if (!$BB_DRY_RUN ) {
+                $update_time_start = microtime(true);
+                bbscript_log("trace", "Updating ".count($formatted_results)." records.");
+
+                // Abbreviations for district codes used in the body of the notes.
+                $districts = array(
+                    "ny_senate_district_47" => "SD",
+                    "ny_assembly_district_48" => "AD",
+                    "congressional_district_46" => "CD",
+                    "election_district_49" => "ED",
+                    "county_50" => "CO",
+                    "county_legislative_district_51" => "CLEG",
+                    "town_52" => "TOWN",
+                    "ward_53" => "WARD",
+                    "school_district_54" => "SCHL",
+                    "new_york_city_council_55" => "NYCC",
                 );
 
-            } elseif ($status_code == "NOMATCH") {
-                $count['NOMATCH']++;
-                bbscript_log("warn", "[NOMATCH][$message] on record #$address_id");
+                mysql_query("BEGIN", $db);
+                foreach ($formatted_results as $address_id => $formatted_result) {
+                    $row = $originals_batch[$address_id];
+                    $contact_id = $row['contact_id'];
+                    $result_type = $formatted_result['result_code'];
 
-            } elseif ($status_code == "INVALID") {
-                $count['INVALID']++;
-                bbscript_log("warn", "[INVALID][$message] on record #$address_id");
-
-            } else { // Unknown status_code, what?!?
-                $count['ERROR']++;
-                bbscript_log("ERROR", "Unknown status [$status_code] on record #$address_id with message [$message]");
-            }
-        }
-
-        // Update districts in the database if --dryrun flag was not set
-        // and insert a note describing the update.
-        if (!$BB_DRY_RUN) {
-            $update_time_start = microtime(true);
-            bbscript_log("trace", "Updating ".count($formatted_results)." records.");
-
-            // Abbreviations for district codes used in the body of the notes.
-            $districts = array(
-                "ny_senate_district_47" => "SD",
-                "ny_assembly_district_48" => "AD",
-                "congressional_district_46" => "CD",
-                "election_district_49" => "ED",
-                "county_50" => "CO",
-                "county_legislative_district_51" => "CLEG",
-                "town_52" => "TOWN",
-                "ward_53" => "WARD",
-                "school_district_54" => "SCHL",
-                "new_york_city_council_55" => "NYCC",
-            );
-
-            mysql_query("BEGIN", $db);
-            foreach ($formatted_results as $address_id => $formatted_result) {
-                $row = $originals_batch[$address_id];
-                $contact_id = $row['contact_id'];
-                $result_type = $formatted_result['result_code'];
-
-                // Record all the district mappings and note changes in the subject line
-                $changes = array();
-                $note_updates = "";
-                $sql_updates = "";
-                foreach ($districts as $field => $abbrv ) {
-                    $old_value = get($row, $field, "NULL");
-                    $new_value = get($formatted_result, $field, $old_value);
-                    $note_updates[] = "$abbrv:$old_value=>$new_value";
-                    if ( $old_value != $new_value ) {
-                        $changes[]=$abbrv;
-                        $sql_updates[] = "$field = $new_value";
+                    // Record all the district mappings and note changes in the subject line
+                    $changes = array();
+                    $note_updates = "";
+                    $sql_updates = "";
+                    foreach ($districts as $field => $abbrv ) {
+                        $old_value = get($row, $field, "NULL");
+                        $new_value = get($formatted_result, $field, $old_value);
+                        $note_updates[] = "$abbrv:$old_value=>$new_value";
+                        if ( $old_value != $new_value ) {
+                            $changes[]=$abbrv;
+                            $sql_updates[] = "$field = $new_value";
+                        }
                     }
-                }
 
-                // If any of the districts changed, update the district table
-                if ( count($changes) != 0 ) {
+                    // If any of the districts changed, update the district table
+                    if ( count($changes) != 0 ) {
+                        mysql_query("
+                            UPDATE civicrm_value_district_information_7
+                            SET ".implode(",\n                      ",$sql_updates)."
+                            WHERE civicrm_value_district_information_7.entity_id = $address_id", $db
+                        );
+                    }
+
+                    // Shape file lookups can result in new/changed coordinates.
+                    if ( $result_type == 'SHAPEFILE' ) {
+                        $old_lat = get($row,'geo_code_1',"NULL");
+                        $old_lon = get($row,'geo_code_2',"NULL");
+                        $new_lat = get($formatted_result,'geo_code_1',"NULL");
+                        $new_lon = get($formatted_result,'geo_code_2',"NULL");
+                        $note_updates += array("lat:$old_lat=>$new_lat","lon:$old_lon=>$new_lon");
+                        if ($old_lat != $new_lat || $old_lon != $new_lon) {
+                            bbscript_log("TRACE", "Saving new geocoordinates: ($new_lat,$new_lon)");
+                            mysql_query("
+                                UPDATE civicrm_address
+                                SET geo_code_1=$new_lat, geo_code_2=$new_lon
+                                WHERE id=$address_id", $db
+                            );
+                        }
+                    }
+
+                    // Create a new contact note describing the state before and after redistricting.
+                    $note = "A_ID: $address_id\n".
+                            " MATCH_TYPE: $result_type\n".
+                            " ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].', '.$row['postal_code']."\n".
+                            "UPDATES:\n ".implode("\n ",$note_updates);
+
+                    if ( count($changes) != 0) {
+                        $subject = "RD12 UPDATED DISTRICTS: ".implode(', ',$changes);
+                    } else {
+                        $subject = "RD12 VERIFIED DISTRICTS";
+                    }
+
+                    $note = mysql_real_escape_string($note, $db);
+                    $subject = mysql_real_escape_string($subject, $db);
                     mysql_query("
-                        UPDATE civicrm_value_district_information_7
-                        SET ".implode(",\n                      ",$sql_updates)."
-                        WHERE civicrm_value_district_information_7.entity_id = $address_id", $db
+                        INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+                        VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
                     );
                 }
 
-                // Shape file lookups can result in new/changed coordinates.
-                if ( $result_type == 'SHAPEFILE' ) {
-                    $old_lat = get($row,'geo_code_1',"NULL");
-                    $old_lon = get($row,'geo_code_2',"NULL");
-                    $new_lat = get($formatted_result,'geo_code_1',"NULL");
-                    $new_lon = get($formatted_result,'geo_code_2',"NULL");
-                    $note_updates += array("lat:$old_lat=>$new_lat","lon:$old_lon=>$new_lon");
-                    if ($old_lat != $new_lat || $old_lon != $new_lon) {
-                        bbscript_log("TRACE", "Saving new geocoordinates: ($new_lat,$new_lon)");
-                        mysql_query("
-                            UPDATE civicrm_address
-                            SET geo_code_1=$new_lat, geo_code_2=$new_lon
-                            WHERE id=$address_id", $db
-                        );
-                    }
-                }
+                mysql_query("COMMIT", $db);
+                $update_time = get_elapsed_time($update_time_start);
+                bbscript_log("trace", "Updated database in ".round($update_time, 3));
+                $count['MYSQL'] += $update_time;
 
-                // Create a new contact note describing the state before and after redistricting.
-                $note = "A_ID: $address_id\n".
-                        " MATCH_TYPE: $result_type\n".
-                        " ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].', '.$row['postal_code']."\n".
-                        "UPDATES:\n ".implode("\n ",$note_updates);
-
-                if ( count($changes) != 0) {
-                    $subject = "RD12 UPDATED DISTRICTS: ".implode(', ',$changes);
-                } else {
-                    $subject = "RD12 VERIFIED DISTRICTS";
-                }
-
-                $note = mysql_real_escape_string($note, $db);
-                $subject = mysql_real_escape_string($subject, $db);
-                mysql_query("
-                    INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-                    VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
-                );
+            } else {
+                bbscript_log("info", "DRY_RUN - No Records to update");
             }
 
-            mysql_query("COMMIT", $db);
-            $update_time = get_elapsed_time($update_time_start);
-            bbscript_log("trace", "Updated database in ".round($update_time, 3));
-            $count['MYSQL'] += $update_time;
+            report_stats($total_addresses, $count, $time_start);
 
-        } else {
-            bbscript_log("info", "DRY_RUN - No Records to update");
+        }
+        else {
+
+            $err_range = array_keys( $formatted_batch );
+            $err_range_start = array_shift($err_range);
+            $err_range_end = array_pop($err_range);
+            bbscript_log("error", "ERROR! No Batch Results. Skipping processing for address IDs $err_range_start - $err_range_end.");
         }
 
         // Reset the arrays to repeat the batch lookup process for the next batch
         $formatted_batch = array();
 
-        report_stats($total_addresses, $count, $time_start);
     }
 }
 
@@ -420,7 +432,7 @@ function distassign($formatted_batch, $endpoint, $count) {
         return null;
 
     } else if ( count($results) == 0 ){
-        bbscript_log("error", "Empty response from SAGE.");
+        bbscript_log("error", "Empty response from SAGE. SAGE server is likely offline.");
         return null;
     }
 
