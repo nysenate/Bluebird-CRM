@@ -258,6 +258,10 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
         $batch_results = distassign($formatted_batch, $bulkdistrict_url, $count);
         $count['TOTAL'] += count($batch_results);
 
+        $address_range = array_keys( $formatted_batch );
+        $address_id_start = array_shift($address_range);
+        $address_id_end = array_pop($address_range);
+
         // Process the results
         $formatted_results = array();
         if ( count($batch_results) ){
@@ -309,6 +313,18 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
             if (!$BB_DRY_RUN ) {
                 $update_time_start = microtime(true);
                 bbscript_log("trace", "Updating ".count($formatted_results)." records.");
+
+                // Delete only notes in the current batch
+                mysql_query("
+                    DELETE `civicrm_note`
+                    FROM `civicrm_note`
+                    JOIN `civicrm_address` ON `civicrm_note`.entity_id = `civicrm_address`.contact_id
+                    WHERE `civicrm_address`.id BETWEEN {$address_id_start} AND {$address_id_end}
+                    AND (`civicrm_note`.subject LIKE 'RD12 VERIFIED DISTRICTS' OR
+                         `civicrm_note`.subject LIKE 'RD12 UPDATED DISTRICTS%')
+                ", $db);
+
+                bbscript_log("debug", "Removed " . mysql_affected_rows($db). " notes for addresses ids between $address_id_start - $address_id_end");
 
                 // Abbreviations for district codes used in the body of the notes.
                 $districts = array(
