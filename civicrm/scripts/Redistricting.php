@@ -28,6 +28,7 @@ $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper(get($optlist, 'log', 'trace'))][0];
 $opt_batch_size = get($optlist, 'batch', 1000);
 $BB_DRY_RUN = get($optlist, 'dryrun', FALSE);
 $opt_max = get($optlist, 'max', FALSE);
+$opt_startfrom = get($optlist, 'startfrom', FALSE);
 $opt_outofstate = get($optlist, 'outofstate', FALSE);
 $opt_addressmap = get($optlist, 'addressmap', FALSE);
 $opt_instate = get($optlist, 'instate', FALSE);
@@ -56,6 +57,7 @@ bbscript_log("debug", "Option: SAGE_KEY=$sage_key");
 bbscript_log("debug", "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
 bbscript_log("debug", "Option: OUTOFSTATE=".($opt_outofstate ? "TRUE" : "FALSE"));
 bbscript_log("debug", "Option: ADDRESSMAP=".($opt_addressmap ? "TRUE" : "FALSE"));
+bbscript_log("debug", "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
 bbscript_log("debug", "Option: MAX=".($opt_max ? $opt_max : "NONE"));
 bbscript_log("debug", "Option: USE_SHAPEFILES=".($opt_useshapefiles ? "TRUE" : "FALSE"));
 bbscript_log("debug", "Option: USE_COORDINATES=".($opt_usecoordinates ? "TRUE" : "FALSE"));
@@ -94,7 +96,7 @@ if ( $opt_outofstate ) {
 }
 
 if ( $opt_instate ) {
-    handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size);
+    handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_startfrom);
 }
 
 bbscript_log("info", "Completed redistricting addresses");
@@ -167,7 +169,7 @@ function handle_out_of_state($db) {
     }
 }
 
-function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size) {
+function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_startfrom = FALSE ) {
     // Start a timer and a counter for results
     $time_start = microtime(true);
     $count = array("TOTAL" => 0,"MATCH" => 0,"HOUSE" => 0,"STREET" => 0,"ZIP5" => 0,"SHAPEFILE" => 0,"NOMATCH" => 0,"INVALID" => 0,"ERROR" => 0,"CURL" => 0,"MYSQL" => 0);
@@ -199,7 +201,8 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size) {
       WHERE address.state_province_id=state.id
         AND district.entity_id = address.id
         AND state.abbreviation='NY'
-      ORDER BY address.id ASC
+        ".(($opt_startfrom != FALSE) ? "AND address.id >= $opt_startfrom \n" : "").
+      "ORDER BY address.id ASC
       ".(($opt_max != FALSE) ? "LIMIT $opt_max" : "");
 
     // Run query to obtain all addresses
