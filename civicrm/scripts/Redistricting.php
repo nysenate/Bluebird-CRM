@@ -363,8 +363,8 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size) {
                     $subject = "RD12 VERIFIED DISTRICTS";
                 }
 
-                $note = mysql_escape_string($note, $db);
-                $subject = mysql_escape_string($subject, $db);
+                $note = mysql_real_escape_string($note, $db);
+                $subject = mysql_real_escape_string($subject, $db);
                 mysql_query("
                     INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
                     VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
