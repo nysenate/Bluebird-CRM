@@ -398,12 +398,6 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
                         $subject = "RD12 VERIFIED DISTRICTS";
                     }
 
-                    // Remove exiting address notes
-                    mysql_query("DELETE FROM civicrm_note
-                                 WHERE entity_table='civicrm_contact'
-                                   AND entity_id=$contact_id
-                                   AND note LIKE '%A_ID: $address_id%'", $db );
-
                     $note = mysql_real_escape_string($note, $db);
                     $subject = mysql_real_escape_string($subject, $db);
                     mysql_query("
