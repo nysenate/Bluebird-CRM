@@ -12,13 +12,13 @@ set_time_limit(0);
 
 // Parse the following user options
 require_once 'script_utils.php';
-$shortopts = "b:l:m:naoig:sct:";
-$longopts = array("batch=", "log=", "max=", "dryrun", "addressmap","outofstate","instate","usegeocoder=","useshapefiles","usecoordinates","threads=");
+$shortopts = "b:l:m:f:naoig:sct:p";
+$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap","outofstate","instate","usegeocoder=","useshapefiles","usecoordinates","threads=", "purgenotes");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = '[--batch SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--dryrun] [--addressmap] [--outofstate] [--instate] [--threads COUNT] [--usegeocoder NAME] [--useshapefiles] [--usecoordinates]';
+    $usage = '[--batch SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--startfrom A_ID] [--dryrun] [--purgenotes] [--addressmap] [--outofstate] [--instate] [--threads COUNT] [--usegeocoder NAME] [--useshapefiles] [--usecoordinates]';
     error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
     exit(1);
 }
@@ -35,6 +35,7 @@ $opt_usegeocoder = get($optlist, 'usegeocoder', FALSE);
 $opt_useshapefiles = get($optlist, 'useshapefiles', FALSE);
 $opt_usecoordinates = get($optlist, 'usecoordinates', FALSE);
 $opt_threads = get($optlist, 'threads', 3);
+$opt_purgenotes = get($optlist, 'purgenotes', FALSE);
 
 // Use instance settings to configure for SAGE
 $bbcfg = get_bluebird_instance_config($optlist['site']);
@@ -71,12 +72,17 @@ $config =& CRM_Core_Config::singleton();
 $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
-// Remove any redistricting notes that already exist
-mysql_query("
-    DELETE FROM civicrm_note
-    WHERE entity_table='civicrm_contact'
-    AND subject LIKE 'RD12%'", $db
-);
+if ( $opt_purgenotes ) {
+
+    // Remove any redistricting notes that already exist
+    mysql_query("
+        DELETE FROM civicrm_note
+        WHERE entity_table='civicrm_contact'
+        AND subject LIKE 'RD12%'", $db
+    );
+
+    bbscript_log("info", "Removed all redistricting notes from the database.");
+}
 
 // Map old district numbers to new district numbers if the addressMap option is set
 if ( $opt_addressmap ) {
@@ -120,6 +126,14 @@ function address_map($db) {
 }
 
 function handle_out_of_state($db) {
+
+    // Delete any `Removed Districts` notes that already exist
+    mysql_query("
+        DELETE FROM civicrm_note
+        WHERE entity_table='civicrm_contact'
+        AND subject LIKE 'RD12 REMOVED DISTRICTS'", $db
+    );
+
     // Remove AD, SD, CD info for any non-NY state addresses
     $result = mysql_query("
         SELECT address.*, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
@@ -157,6 +171,12 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size) {
     // Start a timer and a counter for results
     $time_start = microtime(true);
     $count = array("TOTAL" => 0,"MATCH" => 0,"HOUSE" => 0,"STREET" => 0,"ZIP5" => 0,"SHAPEFILE" => 0,"NOMATCH" => 0,"INVALID" => 0,"ERROR" => 0,"CURL" => 0,"MYSQL" => 0);
+
+    // Remove all notes for in state addresses
+    mysql_query("
+        DELETE FROM civicrm_note
+        WHERE entity_table='civicrm_contact'
+        AND subject LIKE 'RD12 VERIFIED DISTRICTS' OR subject LIKE 'RD12 UPDATED DISTRICTS%'", $db );
 
     // Collect all NY state addresses from all contacts.
     $query = "SELECT address.*,
