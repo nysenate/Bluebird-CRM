@@ -174,12 +174,6 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
     $time_start = microtime(true);
     $count = array("TOTAL" => 0,"MATCH" => 0,"HOUSE" => 0,"STREET" => 0,"ZIP5" => 0,"SHAPEFILE" => 0,"NOMATCH" => 0,"INVALID" => 0,"ERROR" => 0,"CURL" => 0,"MYSQL" => 0);
 
-    // Remove all notes for in state addresses
-    mysql_query("
-        DELETE FROM civicrm_note
-        WHERE entity_table='civicrm_contact'
-        AND subject LIKE 'RD12 VERIFIED DISTRICTS' OR subject LIKE 'RD12 UPDATED DISTRICTS%'", $db );
-
     // Collect all NY state addresses from all contacts.
     $query = "SELECT address.*,
         state.abbreviation AS state,
@@ -387,6 +381,12 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
                     } else {
                         $subject = "RD12 VERIFIED DISTRICTS";
                     }
+
+                    // Remove exiting address notes
+                    mysql_query("DELETE FROM civicrm_note
+                                 WHERE entity_table='civicrm_contact'
+                                   AND entity_id=$contact_id
+                                   AND note LIKE '%A_ID: $address_id%'", $db );
 
                     $note = mysql_real_escape_string($note, $db);
                     $subject = mysql_real_escape_string($subject, $db);
