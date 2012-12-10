@@ -13,7 +13,7 @@ set_time_limit(0);
 // Parse the following user options
 require_once 'script_utils.php';
 $shortopts = "b:l:m:f:naoig:sct:p";
-$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap","outofstate","instate","usegeocoder=","useshapefiles","usecoordinates","threads=", "purgenotes");
+$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap", "outofstate", "instate", "usegeocoder=", "useshapefiles", "usecoordinates", "threads=", "purgenotes");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
@@ -88,7 +88,7 @@ if ($opt_outofstate) {
 }
 
 if ($opt_instate) {
-    handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_startfrom);
+    handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt_usecoordinates, $opt_startfrom);
 }
 
 bbscript_log("info", "Completed all tasks");
@@ -145,8 +145,8 @@ function address_map($db)
     }
     bb_mysql_query("COMMIT", $db, true);
     bbscript_log("info", "Completed district mapping with $address_map_changes changes");
-    foreach ($actions as $district => $count) {
-        bbscript_log("info", "  $district => {$district_cycle[$district]}: $count");
+    foreach ($actions as $district => $fix_count) {
+        bbscript_log("info", "  $district => {$district_cycle[$district]}: $fix_count");
     }
 } // address_map()
 
@@ -202,11 +202,22 @@ function handle_out_of_state($db)
 
 
 
-function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom = false)
+function handle_in_state($db, $max, $bulkdistrict_url, $batch_size,
+                         $use_coords, $startfrom = false)
 {
     // Start a timer and a counter for results
     $time_start = microtime(true);
-    $count = array("TOTAL" => 0,"MATCH" => 0,"HOUSE" => 0,"STREET" => 0,"ZIP5" => 0,"SHAPEFILE" => 0,"NOMATCH" => 0,"INVALID" => 0,"ERROR" => 0,"CURL" => 0,"MYSQL" => 0);
+    $counters = array("TOTAL" => 0,
+                      "MATCH" => 0,
+                      "HOUSE" => 0,
+                      "STREET" => 0,
+                      "ZIP5" => 0,
+                      "SHAPEFILE" => 0,
+                      "NOMATCH" => 0,
+                      "INVALID" => 0,
+                      "ERROR" => 0,
+                      "CURL" => 0,
+                      "MYSQL" => 0);
 
     // Collect all NY state addresses from all contacts.
     $q = "SELECT a.*,
@@ -234,27 +245,35 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
         ".(($max != false) ? "LIMIT $max" : "");
 
     // Run query to obtain all addresses
-    bbscript_log("debug", "Querying the database for addresses using\n$query");
+    bbscript_log("debug", "Querying the database for addresses using\n$q");
     $mysql_result = bb_mysql_query($q, $db);
 
     $originals_batch = array();
     $formatted_batch = array();
+    $batch_lo_id = 0;
+    $batch_hi_id = 0;
     $total_addresses = mysql_num_rows($mysql_result);
     bbscript_log("INFO", $total_addresses." addresses found.");
+
     for ($rownum = 1; $rownum <= $total_addresses; $rownum++) {
         // Fetch the new row, no null check needed since we have the count
         // If we do pull back a NULL something bad happened and dying is okay
         $row = mysql_fetch_assoc($mysql_result);
+        $addr_id = $row['id'];
+
+        if (count($formatted_batch) == 0) {
+            $batch_lo_id = $addr_id;
+        }
 
         // Save the original row for later, we'll need it when saving.
-        $originals_batch[$row['id']] = $row;
+        $originals_batch[$addr_id] = $row;
 
-        // Format for the bulkdistrict api
+        // Format for the bulkdistrict API
         $row = clean_row($row);
 
         // Attempt to fill in missing addresses with supplemental information
         $street = trim($row['street_name'].' '.$row['street_type']);
-        if ($street=='') {
+        if ($street == '') {
             if ($row['supplemental_address_1']) {
                 $street = $row['supplemental_address_1'];
             } else if ($row['supplemental_address_2']) {
@@ -263,48 +282,46 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
         }
 
         // Format the address for sage
-        $formatted_batch[$row['id']]= array(
+        $formatted_batch[$addr_id]= array(
             'street' => $street,
             'town' => $row['city'],
             'state' => $row['state'],
             'zip5' => $row['postal_code'],
-            'apt' => NULL,
+            'apt' => null,
             'building' => $row['street_number'],
             'building_chr' => $row['street_number_suffix'],
         );
 
         // If requested, use the coordinates already in the system
-        if ($opt_usecoordinates) {
-            $formatted_batch[$row['id']]['latitude'] = $row['geo_code_1'];
-            $formatted_batch[$row['id']]['latitude'] = $row['geo_code_2'];
+        if ($use_coords) {
+            $formatted_batch[$addr_id]['latitude'] = $row['geo_code_1'];
+            $formatted_batch[$addr_id]['longitude'] = $row['geo_code_2'];
         }
 
         // Keep accumulating until we reach batch size or the end of our addresses.
-        if (count($formatted_batch) < $opt_batch_size && $rownum != $total_addresses) {
+        if (count($formatted_batch) < $batch_size && $rownum < $total_addresses) {
             continue;
         }
 
         // Let SAGE do all the hard work
-        $batch_results = distassign($formatted_batch, $bulkdistrict_url, $count);
-        $count['TOTAL'] += count($batch_results);
-
-        $address_range = array_keys( $formatted_batch );
-        $address_id_start = array_shift($address_range);
-        $address_id_end = array_pop($address_range);
+        $batch_results = distassign($formatted_batch, $bulkdistrict_url, $counters);
 
         // Process the results
+        $batch_hi_id = $addr_id;
         $formatted_results = array();
-        if ( count($batch_results) ){
+
+        if ($batch_results && count($batch_results) > 0) {
+            $counters['TOTAL'] += count($batch_results);
 
             foreach ($batch_results as $batch_result) {
                 $address_id = $batch_result['address_id'];
                 $status_code = $batch_result['status_code'];
                 $message = $batch_result['message'];
 
-                $MATCH_CODES = array("HOUSE","STREET","ZIP5","SHAPEFILE");
-                if (in_array($status_code,$MATCH_CODES)!==FALSE) {
-                    $count['MATCH']++;
-                    $count[$status_code]++;
+                $MATCH_CODES = array("HOUSE", "STREET", "ZIP5", "SHAPEFILE");
+                if (in_array($status_code, $MATCH_CODES) !== false) {
+                    $counters['MATCH']++;
+                    $counters[$status_code]++;
                     bbscript_log("trace", "[MATCH - $status_code][$message] on record #$address_id");
                     $formatted_results[$address_id] = array(
                         'ny_assembly_district_48'=>$batch_result['assembly_ode'],
@@ -323,17 +340,14 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
                         'school_district_54'=>$batch_result['school_code'],
                         // 'new_york_city_council_55'=>$batch_result['nycc_code'],
                     );
-
                 } elseif ($status_code == "NOMATCH") {
-                    $count['NOMATCH']++;
+                    $counters['NOMATCH']++;
                     bbscript_log("warn", "[NOMATCH][$message] on record #$address_id");
-
                 } elseif ($status_code == "INVALID") {
-                    $count['INVALID']++;
+                    $counters['INVALID']++;
                     bbscript_log("warn", "[INVALID][$message] on record #$address_id");
-
                 } else { // Unknown status_code, what?!?
-                    $count['ERROR']++;
+                    $counters['ERROR']++;
                     bbscript_log("ERROR", "Unknown status [$status_code] on record #$address_id with message [$message]");
                 }
             }
@@ -347,11 +361,11 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
                 // Delete only notes in the current batch
                 $q = "DELETE FROM civicrm_note n
                       JOIN civicrm_address a ON n.entity_id = a.contact_id
-                      WHERE a.id BETWEEN {$address_id_start} AND {$address_id_end}
+                      WHERE a.id BETWEEN {$batch_lo_id} AND {$batch_hi_id}
                       AND (n.subject LIKE 'RD12 VERIFIED DISTRICTS' OR
                            n.subject LIKE 'RD12 UPDATED DISTRICTS%')";
                 bb_mysql_query($q, $db, true);
-                bbscript_log("debug", "Removed " . mysql_affected_rows($db). " notes for addresses ids between $address_id_start - $address_id_end");
+                bbscript_log("debug", "Removed " . mysql_affected_rows($db). " notes for addresses ids between $batch_lo_id - $batch_hi_id");
 
                 // Abbreviations for district codes used in the body of the notes.
                 $districts = array(
@@ -458,20 +472,17 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
                 bb_mysql_query("COMMIT", $db);
                 $update_time = get_elapsed_time($update_time_start);
                 bbscript_log("trace", "Updated database in ".round($update_time, 3));
-                $count['MYSQL'] += $update_time;
-
-            } else {
+                $counters['MYSQL'] += $update_time;
+            }
+            else {
                 bbscript_log("info", "DRY_RUN - No Records to update");
             }
 
-            report_stats($total_addresses, $count, $time_start);
+            report_stats($total_addresses, $counters, $time_start);
 
         }
         else {
-            $err_range = array_keys( $formatted_batch );
-            $err_range_start = array_shift($err_range);
-            $err_range_end = array_pop($err_range);
-            bbscript_log("error", "ERROR! No Batch Results. Skipping processing for address IDs $err_range_start - $err_range_end.");
+            bbscript_log("error", "ERROR! No Batch Results. Skipping processing for address IDs $batch_lo_id - $batch_hi_id.");
         }
 
         // Reset the arrays to repeat the batch lookup process for next batch
@@ -483,7 +494,7 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
 
 
 
-function distassign($formatted_batch, $endpoint, $count)
+function distassign($fmt_batch, $endpoint, &$cnts)
 {
     // Initialize the cURL request
     $ch = curl_init();
@@ -492,14 +503,14 @@ function distassign($formatted_batch, $endpoint, $count)
     curl_setopt($ch, CURLOPT_POST, true);
 
     // Attach the json data
-    $json_batch = json_encode($formatted_batch);
+    $json_batch = json_encode($fmt_batch);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
     $response = curl_exec($ch);
 
     // Record the timings for the request and close
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
-    $count['CURL'] += $curl_time;
+    $cnts['CURL'] += $curl_time;
     bbscript_log("trace", "CURL: fetched in     ".round($curl_time, 3));
     curl_close($ch);
 
@@ -515,9 +526,13 @@ function distassign($formatted_batch, $endpoint, $count)
         bbscript_log("fatal", "Malformed JSON Response");
         echo $output."\n";
         return null;
-
-    } else if (count($results) == 0) {
+    }
+    else if (count($results) == 0) {
         bbscript_log("error", "Empty response from SAGE. SAGE server is likely offline.");
+        return null;
+    }
+    else if (isset($results['message'])) {
+        bbscript_log("error", "SAGE server encountered a problem: ".$results['message']);
         return null;
     }
 
@@ -526,7 +541,7 @@ function distassign($formatted_batch, $endpoint, $count)
 
 
 
-function report_stats($total_found, $count, $time_start)
+function report_stats($total_found, $cnts, $time_start)
 {
     // Compute percentages for certain counts
     $percent = array(
@@ -542,33 +557,33 @@ function report_stats($total_found, $count, $time_start)
 
     // Timer for debug
     $time = get_elapsed_time($time_start);
-    $Records_per_sec = round($count['TOTAL'] / $time, 1);
-    $Mysql_per_sec = ($count['MYSQL'] == 0 ) ? 0 : round($count['TOTAL'] / $count['MYSQL'], 1);
-    $Curl_per_sec = ($count['CURL'] == 0 ) ? 0 : round($count['TOTAL'] / $count['CURL'], 1);
+    $Records_per_sec = round($cnts['TOTAL'] / $time, 1);
+    $Mysql_per_sec = ($cnts['MYSQL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['MYSQL'], 1);
+    $Curl_per_sec = ($cnts['CURL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['CURL'], 1);
 
     // Update the percentages using the counts
     foreach ($percent as $key => $value) {
-        $percent[$key] = round( $count[$key] / $count['TOTAL'] * 100, 2 );
+        $percent[$key] = round($cnts[$key] / $cnts['TOTAL'] * 100, 2);
     }
 
-    $seconds_left = round(($total_found - $count['TOTAL']) / $Records_per_sec, 0);
+    $seconds_left = round(($total_found - $cnts['TOTAL']) / $Records_per_sec, 0);
     $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
     bbscript_log("info", "-------    ------- ---- ---- ---- ---- ");
     bbscript_log("info", "[DONE @]           $finish_at (in ".intval($seconds_left/60).":".($seconds_left%60).")");
-    bbscript_log("info", "[COUNT]            {$count['TOTAL']}");
+    bbscript_log("info", "[COUNT]            {$cnts['TOTAL']}");
     bbscript_log("info", "[TIME]             ".round($time, 4));
-    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$count['TOTAL']." in ".round($time, 3).")");
-    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$count['TOTAL']." in ".round($count['MYSQL'], 3).")");
-    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$count['TOTAL']." in ".round($count['CURL'], 3).")");
-    bbscript_log("info", "[MATCH]    [TOTAL] {$count['MATCH']} ({$percent['MATCH']} %)");
-    bbscript_log("info","[MATCH]    [HOUSE]  {$count['HOUSE']} ({$percent['HOUSE']} %)");
-    bbscript_log("info","[MATCH]    [STREET] {$count['STREET']} ({$percent['STREET']} %)");
-    bbscript_log("info","[MATCH]    [ZIP5]   {$count['ZIP5']} ({$percent['ZIP5']} %)");
-    bbscript_log("info","[MATCH]    [SHAPE]  {$count['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
-    bbscript_log("info", "[NOMATCH]  [TOTAL] {$count['NOMATCH']} ({$percent['NOMATCH']} %)");
-    bbscript_log("info", "[INVALID]  [TOTAL] {$count['INVALID']} ({$percent['INVALID']} %)");
-    bbscript_log("info", "[ERROR]    [TOTAL] {$count['ERROR']} ({$percent['ERROR']} %)");
+    bbscript_log("info", "[SPEED]    [TOTAL] $Records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
+    bbscript_log("trace","[SPEED]    [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
+    bbscript_log("trace","[SPEED]    [CURL]  $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
+    bbscript_log("info", "[MATCH]    [TOTAL] {$cnts['MATCH']} ({$percent['MATCH']} %)");
+    bbscript_log("info","[MATCH]    [HOUSE]  {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
+    bbscript_log("info","[MATCH]    [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
+    bbscript_log("info","[MATCH]    [ZIP5]   {$cnts['ZIP5']} ({$percent['ZIP5']} %)");
+    bbscript_log("info","[MATCH]    [SHAPE]  {$cnts['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+    bbscript_log("info", "[NOMATCH]  [TOTAL] {$cnts['NOMATCH']} ({$percent['NOMATCH']} %)");
+    bbscript_log("info", "[INVALID]  [TOTAL] {$cnts['INVALID']} ({$percent['INVALID']} %)");
+    bbscript_log("info", "[ERROR]    [TOTAL] {$cnts['ERROR']} ({$percent['ERROR']} %)");
 } // report_stats()
 
 
