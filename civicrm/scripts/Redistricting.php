@@ -114,12 +114,14 @@ function address_map($db)
     $address_map_changes = 0;
     bbscript_log("info", "Mapping old district numbers to new district numbers");
     $district_cycle = array(
-        '27' => 17, '29' => 27, '28' => 29, '26' => 28, '25' => 26, '18' => 25, '17' => 18,
-        '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
+      '17'=>18, '18'=>25, '25'=>26, '26'=>28, '27'=>17, '28'=>29, '29'=>27,
+      '44'=>49, '46'=>44, '49'=>53, '53'=>58, '58'=>63
     );
 
     bb_mysql_query("BEGIN", $db, true);
-    $result = bb_mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7", $db);
+    $q = "SELECT id, ny_senate_district_47
+          FROM civicrm_value_district_information_7";
+    $result = bb_mysql_query($q, $db, true);
     $num_rows = mysql_num_rows($result);
     $actions = array();
     while (($row = mysql_fetch_assoc($result)) != null) {
@@ -130,6 +132,10 @@ function address_map($db)
                   WHERE id = {$row['id']};";
             bb_mysql_query($q, $db, true);
             $address_map_changes++;
+            if ($address_map_changes % 1000 == 0) {
+              bbscript_log("debug", "$address_map_changes mappings so far");
+            }
+
             if (isset($actions[$district])) {
                 $actions[$district]++;
             } else {
