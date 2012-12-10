@@ -210,7 +210,7 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
 
     // Collect all NY state addresses from all contacts.
     $q = "SELECT a.*,
-          state.abbreviation AS state,
+          sp.abbreviation AS state,
           di.id as district_id,
           di.county_50,
           di.county_legislative_district_51,
