@@ -464,6 +464,7 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
         }
 
         // Reset the arrays to repeat the batch lookup process for the next batch
+        $originals_batch = array();
         $formatted_batch = array();
     }
     bbscript_log("INFO", "Completed assigning districts to in state addresses.");
