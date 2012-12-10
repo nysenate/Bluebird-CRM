@@ -4,7 +4,7 @@
 // Authors: Stefan Crain, Graylin Kim, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2012-10-26
-// Revised: 2012-11-21
+// Revised: 2012-12-10
 
 // ./Redistricting.php -S skelos --batch 2000 --log 5 --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
@@ -100,6 +100,9 @@ if ( $opt_instate ) {
 }
 
 bbscript_log("info", "Completed all tasks");
+exit(0);
+
+
 
 function address_map($db) {
     $address_map_changes = 0;
@@ -110,7 +113,7 @@ function address_map($db) {
     );
 
     _mysql_query("BEGIN", $db);
-    $result = _mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7");
+    $result = _mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7", $db);
     $num_rows = mysql_num_rows($result);
     $actions = array();
     while (($row = mysql_fetch_assoc($result)) != null) {
