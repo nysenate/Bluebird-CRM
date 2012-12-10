@@ -77,7 +77,7 @@ $db = $dao->getDatabaseConnection()->connection;
 if ( $opt_purgenotes ) {
 
     // Remove any redistricting notes that already exist
-    _mysql_query("
+    bb_mysql_query("
         DELETE FROM civicrm_note
         WHERE entity_table='civicrm_contact'
         AND subject LIKE 'RD12%'", $db
@@ -112,14 +112,14 @@ function address_map($db) {
         '58' => 63, '53' => 58, '49' => 53, '44' => 49, '46' => 44
     );
 
-    _mysql_query("BEGIN", $db);
-    $result = _mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7", $db);
+    bb_mysql_query("BEGIN", $db);
+    $result = bb_mysql_query("SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7", $db);
     $num_rows = mysql_num_rows($result);
     $actions = array();
     while (($row = mysql_fetch_assoc($result)) != null) {
         $district = $row['ny_senate_district_47'];
         if ( isset( $district_cycle[$district]) ) {
-            _mysql_query("
+            bb_mysql_query("
                 UPDATE civicrm_value_district_information_7
                 SET ny_senate_district_47 = {$district_cycle[$district]}
                 WHERE id = {$row['id']};", $db
@@ -132,7 +132,7 @@ function address_map($db) {
             }
         }
     }
-    _mysql_query("COMMIT", $db);
+    bb_mysql_query("COMMIT", $db);
     bbscript_log("info", "Completed district mapping with $address_map_changes changes");
     foreach ($actions as $district => $count) {
         bbscript_log("info", "  $district => {$district_cycle[$district]}: $count");
@@ -142,14 +142,14 @@ function address_map($db) {
 function handle_out_of_state($db) {
 
     // Delete any `Removed Districts` notes that already exist
-    _mysql_query("
+    bb_mysql_query("
         DELETE FROM civicrm_note
         WHERE entity_table='civicrm_contact'
         AND subject LIKE 'RD12 REMOVED DISTRICTS'", $db
     );
 
     // Remove AD, SD, CD info for any non-NY state addresses
-    $result = _mysql_query("
+    $result = bb_mysql_query("
         SELECT address.*, district.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
         FROM civicrm_address  as address
           JOIN civicrm_state_province as state ON (address.state_province_id=state.id)
@@ -166,12 +166,12 @@ function handle_out_of_state($db) {
                 " AD:".(empty($row['ny_assembly_district_48']) ? "NULL" : $row['ny_assembly_district_48'])."=>0";
         $subject = "RD12 REMOVED DISTRICTS";
 
-        _mysql_query("INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+        bb_mysql_query("INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
             VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
         );
 
         if ($row['district_id'] == null) {
-            _mysql_query("INSERT INTO civicrm_value_district_information_7
+            bb_mysql_query("INSERT INTO civicrm_value_district_information_7
                         (entity_id, congressional_district_46, ny_senate_district_47, ny_assembly_district_48)
                     VALUES
                         ({$row['id']}, 0, 0, 0)
@@ -179,7 +179,7 @@ function handle_out_of_state($db) {
             );
         } else {
             // Set district information to zero.
-            _mysql_query("
+            bb_mysql_query("
                 UPDATE civicrm_value_district_information_7
                 SET congressional_district_46 = 0,
                     ny_senate_district_47 = 0,
@@ -223,7 +223,7 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
 
     // Run query to obtain all addresses
     bbscript_log("debug", "Querying the database for addresses using\n$query");
-    $mysql_result = _mysql_query($query, $db);
+    $mysql_result = bb_mysql_query($query, $db);
 
     $originals_batch = array();
     $formatted_batch = array();
@@ -358,7 +358,7 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
                     "new_york_city_council_55" => "NYCC",
                 );
 
-                _mysql_query("BEGIN", $db);
+                bb_mysql_query("BEGIN", $db);
                 foreach ($formatted_results as $address_id => $formatted_result) {
                     $row = $originals_batch[$address_id];
                     $contact_id = $row['contact_id'];
@@ -385,13 +385,13 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
                     // If any of the districts changed, update the district table
                     if ( count($changes) != 0 ) {
                         if ($row['district_id']) {
-                            _mysql_query("
+                            bb_mysql_query("
                                 UPDATE civicrm_value_district_information_7
                                 SET ".implode(",\n                      ",$sql_updates)."
                                 WHERE civicrm_value_district_information_7.entity_id = $address_id", $db
                             );
                         } else {
-                            _mysql_query("INSERT INTO civicrm_value_district_information_7
+                            bb_mysql_query("INSERT INTO civicrm_value_district_information_7
                                         (entity_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55)
                                     VALUES
                                         ($address_id,
@@ -418,7 +418,7 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
                         $note_updates += array("lat:$old_lat=>$new_lat","lon:$old_lon=>$new_lon");
                         if ($old_lat != $new_lat || $old_lon != $new_lon) {
                             bbscript_log("TRACE", "Saving new geocoordinates: ($new_lat,$new_lon)");
-                            _mysql_query("
+                            bb_mysql_query("
                                 UPDATE civicrm_address
                                 SET geo_code_1=$new_lat, geo_code_2=$new_lon
                                 WHERE id=$address_id", $db
@@ -440,13 +440,13 @@ function handle_in_state($db, $opt_max, $bulkdistrict_url, $opt_batch_size, $opt
 
                     $note = mysql_real_escape_string($note, $db);
                     $subject = mysql_real_escape_string($subject, $db);
-                    _mysql_query("
+                    bb_mysql_query("
                         INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
                         VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)", $db
                     );
                 }
 
-                _mysql_query("COMMIT", $db);
+                bb_mysql_query("COMMIT", $db);
                 $update_time = get_elapsed_time($update_time_start);
                 bbscript_log("trace", "Updated database in ".round($update_time, 3));
                 $count['MYSQL'] += $update_time;
