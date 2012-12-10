@@ -47,7 +47,7 @@ if ($optlist['import']) {
 
 
 function do_export($db) {
-    $result = _mysql_query("
+    $result = bb_mysql_query("
         SELECT  address.id as ID,
                 IFNULL(street_address,'') as STREET_ADDRESS,
                 IFNULL(city,'') as CITY,
@@ -75,7 +75,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
     }
 
     $count = 0;
-    _mysql_query("BEGIN", $db);
+    bb_mysql_query("BEGIN", $db);
     $header = fgets($handle);
     while ( ($line = fgets($handle)) !== FALSE) {
         bbscript_log('trace', $line);
@@ -109,7 +109,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
             }
         }
 
-        $result = _mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id",$db);
+        $result = bb_mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id",$db);
         $old_address = mysql_fetch_assoc($result);
         $new_address = array(
                 'street_address' => clean($street_address),
@@ -142,17 +142,17 @@ function do_import($db, $filename, $BB_DRY_RUN) {
 
         bbscript_log('TRACE', $query);
         if (!$BB_DRY_RUN) {
-           _mysql_query($query, $db);
+           bb_mysql_query($query, $db);
         }
 
         // Just to show progres while running
         if (++$count % 10000 == 0) {
             bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
-            _mysql_query("COMMIT",$db);
-            _mysql_query("BEGIN", $db);
+            bb_mysql_query("COMMIT",$db);
+            bb_mysql_query("BEGIN", $db);
         }
     }
-    _mysql_query("COMMIT", $db);
+    bb_mysql_query("COMMIT", $db);
 }
 
 
