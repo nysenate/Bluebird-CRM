@@ -210,14 +210,23 @@ $LOG_LEVELS = array(
 
 
 
-function bbscript_log($message_level, $message){
-    global $BB_LOG_LEVEL, $LOG_LEVELS;
-    $log_level = strtoupper($message_level);
-    list($log_num, $color) = $LOG_LEVELS[$log_level];
-    if($log_num >= $BB_LOG_LEVEL) {
-        $timestamp = date('G:i:s');
-        $log_level = $color.$log_level."\33[0m";
-        // Extra large padding to account for color strings!
-        echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
+function bbscript_log($message_level, $message, $var = null){
+  global $BB_LOG_LEVEL, $LOG_LEVELS;
+  $log_level = strtoupper($message_level);
+  list($log_num, $color) = $LOG_LEVELS[$log_level];
+  if($log_num >= $BB_LOG_LEVEL) {
+    $timestamp = date('G:i:s');
+    $log_level = $color.$log_level."\33[0m";
+    // Extra large padding to account for color strings!
+    echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
+
+    if ( !empty($var) ) {
+      if ( is_array($var) ) {
+        print_r($var);
+      }
+      else {
+        echo $var;
+      }
     }
+  }
 } // echo_CLI_log()
