@@ -155,7 +155,7 @@ function handle_out_of_state($db)
     bb_mysql_query($q, $db, true);
 
     // Remove AD, SD, CD info for any non-NY state addresses
-    $q = "SELECT a.*, district.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
+    $q = "SELECT a.*, di.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
           FROM civicrm_address a
           JOIN civicrm_state_province sp ON (a.state_province_id=sp.id)
           LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id=a.id)
