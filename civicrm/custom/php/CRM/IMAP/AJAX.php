@@ -72,8 +72,9 @@ class CRM_IMAP_AJAX {
         // add &debug=true to any call to get the raw message details back
         $debug = self::get('debug');
         if ($debug){
-          echo "<h1>Full Email RAW DATA</h1>";
-          var_dump($email);
+          echo "<h1>Full Email RAW DATA</h1><pre>";
+          print_r($email);
+          echo "</pre>";
         }
 
         if((count($email->time)!= 1)||(count($email->uid) != 1)){
@@ -94,16 +95,17 @@ class CRM_IMAP_AJAX {
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
+
           if($format =='plain'){
-              $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-              $tempDetails = preg_replace("/>>/i", "", $details);
-              $body = preg_replace("/(=|\r\n|\r|\n)/i", "<br>\n", $details);
+              $tempDetails = preg_replace("/>|</i", "", $details);
+              $body = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $tempDetails);
           }else{
               // currently strips content 
               $tempDetails = strip_tags($details,'<br>');
               $tempDetails = preg_replace("/<br>/i", "\r\n<br>\n", $tempDetails);
               $body = $details; // switch us back to the html version
           }
+
           // grab attachments
           $attachmentCount = 0;
           $attachmentHeader = $email->attachments;
@@ -316,6 +318,8 @@ class CRM_IMAP_AJAX {
                                'email_user' => self::$imap_accounts[$imap_id]['user'],
                                'status' =>$output['header']['status'],
                                'origin_lookup' => $output['forwarded']['origin_lookup'],
+                               'header_subject' => $output['header']['subject'],
+
                                'date'   =>  $output['header']['date_clean'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
         // var_dump($returnMessage);  exit();

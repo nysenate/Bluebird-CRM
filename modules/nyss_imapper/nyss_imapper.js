@@ -15,6 +15,8 @@ cj(document).ready(function(){
 	var assign = cj('#assign');
 	var reassign = cj('#reassign');
 	var create = cj('#add-contact');
+	
+	var debug = true;
 
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
@@ -634,16 +636,17 @@ cj(document).ready(function(){
 	});
 
 	// toggle Debug info for find match message popup
-	cj(".debug_on").live('click', function() { 
-		var debug_info = cj(".debug_info").html();
-		cj("#message_left_email").prepend(debug_info);
-		cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
-	});
-	cj(".debug_off").live('click', function() { 
-		cj("#message_left_email .debug_remove").remove();
-		cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
-	});
-
+	if(debug){
+		cj(".debug_on").live('click', function() { 
+			var debug_info = cj(".debug_info").html();
+			cj("#message_left_email").prepend(debug_info);
+			cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
+		});
+		cj(".debug_off").live('click', function() { 
+			cj("#message_left_email .debug_remove").remove();
+			cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
+		});
+	};
 
 	// opening find match window
 	cj(".find_match").live('click', function() {
@@ -673,14 +676,19 @@ cj(document).ready(function(){
 						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 					}
 					// add some debug info to the message body on toggle
-					var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Details from message Header:</i><br/><strong>Forwarded or Direct?: </strong>"+messages.status+"<br/><strong>Full forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Date sent: </strong>"+messages.date+"<br/><strong>Message Id: </strong>"+messages.uid+"<br/><strong>Imap Id: </strong>"+messages.imapId+"<br/><strong>Email Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
-					if(messages.status !== 'direct'){
-						debugHTML +="<br/><i>Details from message body:</i><br/><strong>Parsed Fristname: </strong>"+firstName+"<br/><strong>Parsed Lastname: </strong>"+lastName+"<br/><strong>Parsed Email: </strong>"+messages.fromEmail+"<br/><strong>Email parse type: </strong>"+messages.origin_lookup+"<br/><strong>Parsed Date: </strong>"+messages.forwarder_time+"";
+					if(debug){
+						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
+						if(messages.status !== 'direct'){
+							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Parse type: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
+						}
+						debugHTML +="<span class='search_info'></span></div></div>";
+						cj('#message_left_header').append(debugHTML);
+
+						// we can create redmine issues with message details and assign to stefan from a url ! 
+						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+						cj('.debug_remove').append(bugHTML);
 					}
-
-					debugHTML +="<hr/></div></div>";
-
-					cj('#message_left_header').append(debugHTML);
 
 					cj('#message_left_email').html(messages.details);
 					cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
@@ -932,6 +940,15 @@ function buildActivitiesList() {
 
 function buildContactList() {
 	var contactsHtml = '';
+		html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
+		if(contacts.length < 1){
+			html += "(No Matches)";	
+		}else if(contacts.length == 1){
+			html += "(Should have auto Matched)";	
+		}else if(contacts.length > 1){
+			html += "(MultiMatch)";	
+		}
+		cj('.search_info').html(html);
 	cj.each(contacts, function(key, value) {
 		// calculate the aprox age
 		if(value.birth_date){
