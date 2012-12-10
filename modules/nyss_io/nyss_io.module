@@ -199,7 +199,9 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
     }
   }
   else {
-    $file = file_save_upload('csv');
+    $validators = array('file_validate_extensions' => array('csv'));
+    $file = file_save_upload('csv', $validators);
+
     if (!$file) {
       form_set_error('csv', 'You must select a valid file to upload.');
     }
@@ -314,7 +316,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       mysql_query("START TRANSACTION", $nyss_conn);
     }
 
-    //nyss_out('debug', $l, TRUE); exit();
+    //nyss_out('debug', $l, TRUE); //exit();
 
     //seconds to process each row
     set_time_limit (30);
@@ -1293,7 +1295,7 @@ function ioGetLocType()
   return $options;
 } // ioGetLocType()
 
-function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) {
+function convertProperCase( $string, $skipMixed = FALSE, $skipSpecial = FALSE ) {
 
   require_once 'CRM/Utils/String.php';
 
@@ -1309,7 +1311,7 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
   $forceWords = array(
     'of', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
     'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
-    'into', 'with', 'II', 'IV', 'UK', 'VI', 'III', 'VII', 'PO', 'McDonald'
+    'into', 'with', 'II', 'IV', 'UK', 'VI', 'III', 'VII', 'PO', 'McDonald', 'McClelland', 'RR'
   );
 
   // punctuation used to determine that the following letter
@@ -1326,12 +1328,22 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
 
     //trim any non-word chars and replace with nothing for easier matching
     $cleanWord = preg_replace("/[^\w]/", '', $word);
+    //nyss_out('debug', "cleanWord: $cleanWord", TRUE);
     if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
+
     $replace = array_values($replace);
+    //nyss_out('debug', $replace, TRUE);
     if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
+
+    //if number followed by letter, uppercase
+    if ( preg_match("/^\d[a-z]/", $cleanWord) ) {
+      $word = strtoupper(($word));
+    }
+
     $fixedWords[] = $word;
   }
 
+  //nyss_out('debug', $fixedWords, TRUE);
   $string = implode(' ',$fixedWords);
 
   return $string;
