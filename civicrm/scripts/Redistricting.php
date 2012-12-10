@@ -155,10 +155,10 @@ function handle_out_of_state($db)
     bb_mysql_query($q, $db, true);
 
     // Remove AD, SD, CD info for any non-NY state addresses
-    $q = "SELECT address.*, district.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
-          FROM civicrm_address as a
-          JOIN civicrm_state_province as sp ON (a.state_province_id=sp.id)
-          LEFT JOIN civicrm_value_district_information_7 as di ON (di.entity_id=a.id)
+    $q = "SELECT a.*, district.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
+          FROM civicrm_address a
+          JOIN civicrm_state_province sp ON (a.state_province_id=sp.id)
+          LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id=a.id)
           WHERE sp.abbreviation!='NY'";
     $result = bb_mysql_query($q, $db, true);
 
@@ -183,7 +183,7 @@ function handle_out_of_state($db)
         }
         else {
             // Set district information to zero.
-            $q = "UPDATE civicrm_value_district_information_7 as di
+            $q = "UPDATE civicrm_value_district_information_7 di
                   SET congressional_district_46 = 0,
                       ny_senate_district_47 = 0,
                       ny_assembly_district_48 = 0
@@ -203,7 +203,7 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
     $count = array("TOTAL" => 0,"MATCH" => 0,"HOUSE" => 0,"STREET" => 0,"ZIP5" => 0,"SHAPEFILE" => 0,"NOMATCH" => 0,"INVALID" => 0,"ERROR" => 0,"CURL" => 0,"MYSQL" => 0);
 
     // Collect all NY state addresses from all contacts.
-    $q = "SELECT address.*,
+    $q = "SELECT a.*,
           state.abbreviation AS state,
           di.id as district_id,
           di.county_50,
@@ -218,9 +218,9 @@ function handle_in_state($db, $max, $bulkdistrict_url, $batch_size, $startfrom =
           di.new_york_city_council_55,
           di.neighborhood_56,
           di.last_import_57
-        FROM civicrm_address as a
-        JOIN civicrm_state_province as sp
-        LEFT JOIN civicrm_value_district_information_7 as di ON (di.entity_id = a.id)
+        FROM civicrm_address a
+        JOIN civicrm_state_province sp
+        LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id = a.id)
         WHERE a.state_province_id=sp.id
         AND sp.abbreviation='NY'
         ".(($startfrom != false) ? "AND a.id >= $startfrom \n" : "").
