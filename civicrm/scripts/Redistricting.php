@@ -221,13 +221,13 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
     $time_start = microtime(true);
     $counters = array("TOTAL" => 0,
                       "MATCH" => 0,
+                      "NOMATCH" => 0,
+                      "INVALID" => 0,
+                      "ERROR" => 0,
                       "HOUSE" => 0,
                       "STREET" => 0,
                       "ZIP5" => 0,
                       "SHAPEFILE" => 0,
-                      "NOMATCH" => 0,
-                      "INVALID" => 0,
-                      "ERROR" => 0,
                       "CURL" => 0,
                       "MYSQL" => 0);
 
@@ -353,7 +353,7 @@ function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
     bbscript_log("debug", "Retrieving addresses starting at id $start_id with limit $max_res");
     bbscript_log("trace", "SQL query:\n$q");
     $res = bb_mysql_query($q, $db, true);
-    bbscript_log("debug", "Finishing retrieving addresses");
+    bbscript_log("debug", "Finished retrieving addresses");
     bbscript_log("trace", "<== retrieve_addresses()");
     return $res;
 } // retrieve_addresses()
@@ -396,6 +396,7 @@ function distassign($fmt_batch, $url, &$cnts)
 
         if ($results === null && json_last_error() !== JSON_ERROR_NONE) {
             bbscript_log("error", "Malformed JSON Response");
+            bbscript_log("debug", "CURL DATA: $response");
             $results = null;
         }
         else if (count($results) == 0) {
