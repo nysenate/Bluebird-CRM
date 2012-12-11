@@ -234,7 +234,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
     $total_rec_cnt = 0;
     $batch_rec_cnt = $batch_size;   // to prime the while() loop
 
-    while ($batch_rec_cnt === $batch_size) {
+    while ($batch_rec_cnt == $batch_size) {
         // If max specified, then possibly constrain the batch size
         if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
             $batch_size = $max_addrs - $total_rec_cnt;
