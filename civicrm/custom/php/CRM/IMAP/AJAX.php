@@ -131,6 +131,7 @@ class CRM_IMAP_AJAX {
           // contains info directly from the email header
           $header = array(
               'format' => $format,
+              'uid' => $email->uid,
               'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
               'from_name' => $email->sender[0]->personal,                      
               'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,                      
@@ -319,7 +320,6 @@ class CRM_IMAP_AJAX {
                                'status' =>$output['header']['status'],
                                'origin_lookup' => $output['forwarded']['origin_lookup'],
                                'header_subject' => $output['header']['subject'],
-
                                'date'   =>  $output['header']['date_clean'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
         // var_dump($returnMessage);  exit();
@@ -506,6 +506,7 @@ class CRM_IMAP_AJAX {
           var_dump($date);
           var_dump($subject);
           var_dump($body);
+          var_dump($messageUid);
         }
 
         require_once 'api/api.php';
@@ -606,6 +607,7 @@ class CRM_IMAP_AJAX {
               'subject' => $subject,
               'is_auto' => true, // we manually add it, right ?
               'status_id' => 2,
+              'original_id' => $messageUid,
               'details' => $body,
               'version' => 3
           );
@@ -757,6 +759,7 @@ class CRM_IMAP_AJAX {
         $tag     = new CRM_Core_BAO_Tag();
         $tag->id = self::getInboxPollingTagId();
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
+        $debug = self::get('debug');
 
         foreach($result as $id) {
             // pull in full activity record 
@@ -788,6 +791,9 @@ class CRM_IMAP_AJAX {
 
             $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
             // message to return 
+            if ($debug){
+              var_dump($activity_node);
+            }
             $returnMessage[$id] = array('activitId'    =>  $id,
                             'contactId' =>  $contact_node['contact_id'],
                             'fromName'   =>  $contact_node['display_name'],
@@ -800,6 +806,8 @@ class CRM_IMAP_AJAX {
                             'activityId' => $activity_node['id'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
+                            'match_type'  =>  $activity_node['is_auto'],
+                            'original_id'  =>  $activity_node['original_id'],
                             'date'   =>  $date);
          }
          $returnMessage['count'] = count($returnMessage);
@@ -842,11 +850,14 @@ class CRM_IMAP_AJAX {
         $returnMessage = array('uid'    =>  $activitId,
                             'fromName'   =>  $contact_node['display_name'],
                             'fromEmail'  =>  $contact_node['email'],
+                            'fromId'  =>  $contact_node['id'],
                             'forwardedName' => $forwarder_node['display_name'],
                             'forwardedEmail' => $forwarder_node['email'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
+                            'original_id'  =>  $activity_node['original_id'],
+
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);
