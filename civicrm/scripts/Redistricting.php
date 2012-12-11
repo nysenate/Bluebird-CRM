@@ -359,18 +359,19 @@ function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
 function distassign($fmt_batch, $url, &$cnts)
 {
     bbscript_log("trace", "==> distassign()");
+
+    // Attach the json data
+    bbscript_log("trace", "About to encode address batch in JSON");
+    $json_batch = json_encode($fmt_batch);
+
     // Initialize the cURL request
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, true);
-
-    // Attach the json data
-    bbscript_log("trace", "About to encode address batch in JSON");
-    $json_batch = json_encode($fmt_batch);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
-    bbscript_log("trace", "About to send API request to SAGE using cURL");
+    bbscript_log("trace", "About to send API request to SAGE using cURL [url=$url]");
     $response = curl_exec($ch);
 
     // Record the timings for the request and close
