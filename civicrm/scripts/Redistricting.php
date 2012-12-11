@@ -108,8 +108,8 @@ function purge_notes($db)
           WHERE entity_table='civicrm_contact'
           AND subject LIKE 'RD12%'";
     bb_mysql_query($q, $db, true);
-
-    bbscript_log("info", "Removed all ".mysql_affected_rows($db)." redistricting notes from the database.");
+    $row_cnt = mysql_affected_rows($db);
+    bbscript_log("info", "Removed all $row_cnt redistricting notes from the database.");
     bbscript_log("trace", "<== purge_notes()");
 } // purge_notes()
 
@@ -176,8 +176,8 @@ function handle_out_of_state($db)
           LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id=a.id)
           WHERE sp.abbreviation!='NY'";
     $result = bb_mysql_query($q, $db, true);
-
     $total_outofstate = mysql_num_rows($result);
+
     while (($row = mysql_fetch_assoc($result)) != null) {
         $note = "A_ID: {$row['id']}\n".
                 "UPDATES:\n".
@@ -206,6 +206,7 @@ function handle_out_of_state($db)
             bb_mysql_query($q, $db, true);
         }
     }
+
     bbscript_log("INFO", "Completed removing districts from $total_outofstate out of state addresses.");
     bbscript_log("trace", "<== handle_out_of_state()");
 } // handle_out_of_state()
@@ -234,6 +235,8 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
     $total_rec_cnt = 0;
     $batch_rec_cnt = $batch_size;   // to prime the while() loop
 
+    bbscript_log("info", "Beginning batch processing of address records");
+
     while ($batch_rec_cnt == $batch_size) {
         // If max specified, then possibly constrain the batch size
         if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
@@ -250,7 +253,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
             break;
         }
 
-        bbscript_log("debug", "About to fetch a batch of $batch_rec_cnt records");
+        bbscript_log("debug", "About to fetch batch of $batch_rec_cnt records");
 
         while ($row = mysql_fetch_assoc($mysql_result)) {
             $addr_id = $row['id'];
@@ -302,13 +305,14 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
             report_stats($total_rec_cnt, $counters, $time_start);
         }
         else {
-            bbscript_log("error", "ERROR: No batch results. Skipping processing for address IDs starting at $start_id.");
+            bbscript_log("error", "No batch results; skipping processing for address IDs starting at $start_id.");
         }
 
         $start_id = $addr_id + 1;
+        bbscript_log("info", "$total_rec_cnt address records fetched so far");
     }
 
-    bbscript_log("INFO", "Completed assigning districts to in-state addresses.");
+    bbscript_log("info", "Completed assigning districts to in-state addresses.");
     bbscript_log("trace", "<== handle_in_state()");
 } // handle_in_state()
 
@@ -383,7 +387,7 @@ function distassign($fmt_batch, $url, &$cnts)
 
     // Return null on any kind of response error
     if ($response === null) {
-        bbscript_log("error", "ERROR: Failed to receive a CURL response");
+        bbscript_log("error", "Failed to receive a CURL response");
         $results = null;
     }
     else {
