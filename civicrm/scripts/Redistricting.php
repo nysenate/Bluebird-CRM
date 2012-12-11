@@ -241,6 +241,10 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
         // If max specified, then possibly constrain the batch size
         if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
             $batch_size = $max_addrs - $total_rec_cnt;
+            if ($batch_size == 0) {
+              bbscript_log("debug", "Max address count ($max_addrs) reached");
+              break;
+            }
         }
 
         $mysql_result = retrieve_addresses($db, $start_id, $batch_size);
