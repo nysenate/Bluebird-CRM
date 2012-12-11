@@ -738,8 +738,18 @@ cj(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
-				var match_type = (messages.match_type == 1) ? "Manually matched by user" : "Process Mailbox Script " ;
-				cj('#message_left_header').append("<strong>Match Type: </strong>"+match_type+"<br/>");
+				if(debug){
+						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
+						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
+						debugHTML +="<span class='search_info'></span></div></div>";
+						cj('#message_left_header').append(debugHTML);
+						// we can create redmine issues with message details and assign to stefan from a url ! 
+						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+						cj('.debug_remove').append(bugHTML);
+					}
+
+
 
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(activityId);

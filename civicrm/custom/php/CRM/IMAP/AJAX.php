@@ -605,7 +605,7 @@ class CRM_IMAP_AJAX {
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
               'subject' => $subject,
-              'is_auto' => true, // we manually add it, right ?
+              'is_auto' => false, // we manually add it, right ?
               'status_id' => 2,
               'original_id' => $messageUid,
               'details' => $body,

@@ -516,7 +516,7 @@ function civiProcessEmail($email, $customHandler)
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
                 "duration" => 1,
-              //  "target_contact_id" => array($contactID),
+                "is_auto" => 1, // we now know difference between match and processed
                 "target_contact_id" => $contactID,
                 "version" => 3
     );
