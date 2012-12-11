@@ -738,6 +738,9 @@ cj(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
+				var match_type = (messages.match_type == 1) ? "Manually matched by user" : "Process Mailbox Script " ;
+				cj('#message_left_header').append("<strong>Match Type: </strong>"+match_type+"<br/>");
+
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(activityId);
 				cj('#imap_id').val(contactId);

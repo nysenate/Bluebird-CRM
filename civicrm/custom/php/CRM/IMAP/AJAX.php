@@ -602,6 +602,7 @@ class CRM_IMAP_AJAX {
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
               'subject' => $subject,
+              'is_auto' => true, // we manually add it, right ?
               'status_id' => 2,
               'details' => $body,
               'version' => 3
@@ -843,6 +844,7 @@ class CRM_IMAP_AJAX {
                             'forwardedEmail' => $forwarder_node['email'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
+                            'match_type'  =>  $activity_node['is_auto'],
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);
