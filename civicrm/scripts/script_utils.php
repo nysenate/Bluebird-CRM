@@ -3,10 +3,20 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2011-02-17
-// Revised: 2011-04-19
+// Revised: 2012-12-10
 //
 
 define('SCRIPT_UTILS_CIVIROOT', realpath(dirname(__FILE__).'/../core'));
+
+
+$LOG_LEVELS = array(
+    "TRACE" => array(0, "\33[0;35m"),
+    "DEBUG" => array(1, "\33[1;35m"),
+    "INFO"  => array(2, "\33[0;33m"),
+    "WARN"  => array(3, "\33[1;33m"),
+    "ERROR" => array(4, "\33[0;31m"),
+    "FATAL" => array(5, "\33[1;31m"),
+);
 
 
 function is_cli_script()
@@ -14,7 +24,10 @@ function is_cli_script()
   return php_sapi_name() == "cli";
 } // is_cli_script()
 
-function drupal_script_init() {
+
+
+function drupal_script_init()
+{
   define('DRUPAL_ROOT', realpath(__DIR__.'/../../drupal'));
   $oldwd = getcwd();
   chdir(DRUPAL_ROOT);
@@ -24,7 +37,9 @@ function drupal_script_init() {
   require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
   drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
   chdir($oldwd);
-}
+} // drupal_script_init()
+
+
 
 function civicrm_script_init($shopts = "", $longopts = array(), $session=True)
 {
@@ -191,23 +206,10 @@ function civicrm_script_usage()
 } // civicrm_script_usage()
 
 
-
 function get_elapsed_time($start_time = 0)
 {
   return microtime(true) - $start_time;
 } // get_elapsed_time()
-
-
-
-$LOG_LEVELS = array(
-    "TRACE" => array(0,"\33[0;35m"),
-    "DEBUG" => array(1,"\33[1;35m"),
-    "INFO"  => array(2,"\33[0;33m"),
-    "WARN"  => array(3,"\33[1;33m"),
-    "ERROR" => array(4,"\33[0;31m"),
-    "FATAL" => array(5,"\33[1;31m"),
-);
-
 
 
 function bbscript_log($message_level, $message, $var = null){
@@ -229,4 +231,22 @@ function bbscript_log($message_level, $message, $var = null){
       }
     }
   }
-} // echo_CLI_log()
+} // bbscript_log()
+
+function bb_mysql_query($query, $db, $exit_on_fail = false)
+{
+  $result = mysql_query($query, $db);
+  if ($result === false) {
+    if ($exit_on_fail) {
+      bbscript_log("FATAL", "MySQL Fatal Error: ".mysql_error($db));
+      bbscript_log("FATAL", "Caused by:\n$query");
+      bbscript_log("FATAL", "Exiting the script immediately");
+      exit(1);
+    }
+    else {
+      bbscript_log("ERROR", "MySQL Error: ".mysql_error($db));
+      bbscript_log("ERROR", "Caused by:\n$query");
+    }
+  }
+  return $result;
+} // bb_mysql_query()
