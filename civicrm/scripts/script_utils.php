@@ -221,11 +221,11 @@ function bbscript_log($message_level, $message, $var = null){
     echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
 
     if ( !empty($var) ) {
-      if ( is_array($var) ) {
+      if ( is_array($var) || is_object($var) ) {
         print_r($var);
       }
       else {
-        echo $var;
+        echo "\n{$var}\n";
       }
     }
   }
