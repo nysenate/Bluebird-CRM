@@ -577,15 +577,17 @@ class CRM_IMAP_AJAX {
             $emailsCount = count($results);
 
             $matches = 0;
-            echo "<h1>Contact Non matching results </h1>";
-            // if the records don't match, count it, an if the number is > 1 add the record
-            foreach($results as $email) {
-                if($email['email'] == $fromEmail){
-                    if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
-                }else{
-                    $matches++;
-                    if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
-                }
+            if ($debug){
+              echo "<h1>Contact Non matching results </h1>";
+              // if the records don't match, count it, an if the number is > 1 add the record
+              foreach($results as $email) {
+                  if($email['email'] == $fromEmail){
+                      if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                  }else{
+                      $matches++;
+                      if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                  }
+              }
             }
 
             if(($emailsCount-$matches) == 0){
