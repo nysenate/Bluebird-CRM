@@ -14,6 +14,8 @@ define('DRY_COUNT', 25);
 define('DEFAULT_LOG_LEVEL', 'TRACE');
 define('LOC_TYPE_BOE', 6);
 
+global $daoFields;
+
 // Parse the options
 require_once 'script_utils.php';
 $shortopts = "d:fn";
@@ -103,31 +105,42 @@ $fileResource = fopen($filePath, 'w');
 //get contacts and write sql to file
 exportContacts($migrateTbl, $fileResource, $dest['db'], $optDry);
 
-//cycle through related records and construct sql
+//related records that we will be exporting with the contact
 $recordTypes = array(
   'email',
   'phone',
   'website',
+  'im',
+  'address',
+  'note',
+  'activity',
+  'case',
+  'relationship',
+  'custom',
 );
 
-exit();
+//cycle through contacts, get related records, and construct sql
+$mC = CRM_Core_DAO::executeQuery("SELECT * FROM {$migrateTbl};");
+//bbscript_log("trace", "mC", $mC);
 
-// Initialize script parameters from options and defaults
-$chunk_size = $optlist['chunk'] ? $optlist['chunk'] : DEFAULT_CHUNK_SIZE;
-$log_level = $optlist['log'] ? $optlist['log'] : DEFAULT_LOG_LEVEL;
-$BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($log_level)][0];
-$dry_run = $optlist['dryrun'];
-$max_id = $optlist['max'];
+while ( $mC->fetch() ) {
+  //use external id to get the new contact ID and set as mysql var
+  $setCID = "
+    -- get contact ID and set to variable
+    SELECT @cid:=id FROM {$dest['db']}.civicrm_contact WHERE external_identifier = '{$mC->external_id}';
+  ";
+  writeData($setCID, $fileResource, $optDry);
 
-$max_id_clause = is_numeric($max_id) ? "LIMIT $max_id" : "";
+  foreach ( $recordTypes as $rType ) {
+    processData($rType, $mC->contact_id, $migrateTbl, $fileResource, $dest['db'], $optDry);
+  }
+}
 
-bbscript_log("debug", "Starting with $prog with chunk size of $chunk_size");
+//TODO create group and add migrated contacts
 
+//TODO trash contacts in source db after migration IF full processing (i.e. --file=FALSE)
 
-
-
-
-bbscript_log("info", "Completed contact migration.");
+bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
 
 /*
  * given source and destination details, create a table and populate with contacts to be migrated
@@ -195,13 +208,14 @@ function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
 
   //start writing to file
   $selectInsert = str_replace('external_id ', '', $select);
-  fwrite($fileResource, "
+  $valSqlString = "
     -- contact insert
-
     INSERT INTO {$destDB}.civicrm_contact
     ( {$selectInsert} )
     VALUES
-  ");
+  ";
+  //write data to file or screen only
+  writeData($valSqlString, $fileResource, $optDry, "contact records to be migrated");
 
   $sql = "
     SELECT $select
@@ -232,13 +246,133 @@ function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
   //now gather insert statements and write to file
   $valSqlString = implode(",\n", $valSql).";\n";
 
-  if ( $optDry ) {
-    bbscript_log("info", 'contact insert sql', $valSqlString);
+  //write data to file or screen only
+  writeData($valSqlString, $fileResource, $optDry);
+}//exportContacts
+
+/*
+ * process related records for a contact
+ * this function handles the switch to determine if we use a common function or need to
+ * process the data in a special way
+ * it also triggers the data write to screen or file
+ */
+function processData($rType, $contactID, $migrateTbl, $fileResource, $destDB, $optDry) {
+  $valSqlString = '';
+
+  switch($rType) {
+    case 'email':
+    case 'phone':
+    case 'website':
+    case 'address':
+      $valSqlString = exportStandard($rType, $contactID, 'contact_id', null, $migrateTbl, $destDB);
+      break;
+    case 'im':
+      $valSqlString = exportStandard($rType, $contactID, 'contact_id', 'CRM_Core_DAO_IM', $migrateTbl, $destDB);
+      break;
+    case 'note':
+      $valSqlString = exportStandard($rType, $contactID, 'entity_id', null, $migrateTbl, $destDB);
+      break;
+    case 'activity':
+      break;
+    case 'case':
+      break;
+    case 'relationship':
+      break;
+    default:
   }
-  else {
-    fwrite($fileResource, $valSqlString);
+
+  //write data to file or screen only
+  writeData($valSqlString, $fileResource, $optDry, "{$rType} records to be migrated");
+}//processData
+
+/*
+ * standard related record export function
+ * we use the record type to retrieve the DAO and the foreign key to link to the contact record
+ */
+function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $migrateTbl, $destDB) {
+  global $daoFields;
+
+  //get field list from dao
+  if ( !$dao ) {
+    //assume dao is in the core path
+    $dao = 'CRM_Core_DAO_'.ucfirst($rType);
   }
-}
+  bbscript_log("trace", "exportStandard dao", $dao);
+
+  //if field list has not already been constructed, generate now
+  if ( !isset($daoFields[$dao]) ) {
+    //bbscript_log("trace", "exportStandard building field list for $dao");
+    $d = new $dao;
+    $fields = $d->fields();
+    //bbscript_log("trace", "exportStandard fields", $fields);
+
+    foreach ( $fields as $field ) {
+      $daoFields[$dao][] = $field['name'];
+    }
+
+    //unset these from select statement
+    unset($daoFields[$dao][array_search('id', $daoFields[$dao])]);
+    unset($daoFields[$dao][array_search($fk, $daoFields[$dao])]);
+  }
+  //bbscript_log("trace", "exportStandard $dao", $daoFields[$dao]);
+
+  $select = implode(', ',$daoFields[$dao]);
+  $selectInsert = "{$fk}, ".implode(', ',$daoFields[$dao]);
+  //bbscript_log("trace", "exportContacts select", $select);
+
+  //start writing to file
+  $valSqlString = "
+    -- {$rType} insert
+    INSERT INTO {$destDB}.civicrm_{$rType}
+    ( {$selectInsert} )
+    VALUES
+  ";
+
+  //get records for contact
+  $sql = "
+    SELECT $select
+    FROM civicrm_{$rType} rt
+    WHERE rt.{$fk} = {$contactID};
+  ";
+  //bbscript_log("trace", 'exportStandard sql', $sql);
+  $rt = CRM_Core_DAO::executeQuery($sql);
+
+  $rtAttr = get_object_vars($rt);
+  //bbscript_log("trace", 'exportStandard rtAttr', $rtAttr);
+
+  //cycle through contacts and write to file
+  //count records that exist to determine if we need to write
+  $valSql = array();
+  $recordCount = 0;
+  while ( $rt->fetch() ) {
+    //bbscript_log("trace", 'exportStandard rt', $rt);
+
+    //first check for record existence
+    if ( !checkExist($rType, $rt) ) {
+      continue;
+    }
+    //bbscript_log("trace", "exportStandard {$rType} record exists, proceed...");
+
+    $data = array();
+    foreach ( $rt as $f => $v ) {
+      if ( !array_key_exists($f, $rtAttr) ) {
+        $data[$f] = addslashes($v);
+      }
+    }
+    //set fk column to contact ID when we construct sql
+    $valSql[] = "(@cid, '".implode("', '", $data)."')";
+    $recordCount++;
+  }
+  //bbscript_log("trace", 'exportStandard valSql', $valSql);
+
+  //now gather insert statements and write to file
+  $valSqlString .= implode(",\n", $valSql).";\n";
+
+  //only return string to write if we actually have values
+  if ( $recordCount ) {
+    return $valSqlString;
+  }
+}//exportStandard
 
 function getValue($string) {
   if ($string == FALSE) {
@@ -247,4 +381,59 @@ function getValue($string) {
   else {
     return $string;
   }
+}
+
+/*
+ * write data to file, or if dryrun option is selected, write only to screen
+ */
+function writeData($valSqlString, $fileResource, $optDry = FALSE, $msg = '') {
+  if ( $optDry ) {
+    bbscript_log("info", $msg, $valSqlString);
+  }
+  else {
+    fwrite($fileResource, $valSqlString);
+  }
+}
+
+/*
+ * avoid writing empty records by first checking if a value exists
+ * this function defines required fields by type
+ * we pass an object, check against required fields, and return TRUE or FALSE
+ */
+function checkExist($rType, $obj) {
+  //if any of the fields listed have a value, we consider it existing
+  $req = array(
+    'phone' => array(
+      'phone',
+      'phone_ext',
+    ),
+    'email' => array(
+      'email',
+    ),
+    'website' => array(
+      'url',
+    ),
+    'address' => array(
+      'street_adddress',
+      'supplemental_address_1',
+      'supplemental_address_2',
+      'city',
+    ),
+  );
+
+  //only care about types that we are requiring values for
+  if ( array_key_exists($rType, $req) ) {
+    $exists = FALSE;
+    foreach ( $req[$rType] as $reqField ) {
+      if ( !empty($obj->$reqField) ) {
+        $exists = TRUE;
+        break;
+      }
+    }
+    return $exists;
+  }
+  else {
+    return TRUE;
+  }
+
 }
