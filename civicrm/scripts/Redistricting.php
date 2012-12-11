@@ -102,6 +102,7 @@ exit(0);
 
 function purge_notes($db)
 {
+    bbscript_log("trace", "==> purge_notes()");
     // Remove any redistricting notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
@@ -109,12 +110,14 @@ function purge_notes($db)
     bb_mysql_query($q, $db, true);
 
     bbscript_log("info", "Removed all ".mysql_affected_rows($db)." redistricting notes from the database.");
+    bbscript_log("trace", "<== purge_notes()");
 } // purge_notes()
 
 
 
 function address_map($db)
 {
+    bbscript_log("trace", "==> address_map()");
     $address_map_changes = 0;
     bbscript_log("info", "Mapping old district numbers to new district numbers");
     $district_cycle = array(
@@ -152,12 +155,14 @@ function address_map($db)
     foreach ($actions as $district => $fix_count) {
         bbscript_log("info", "  $district => {$district_cycle[$district]}: $fix_count");
     }
+    bbscript_log("trace", "<== address_map()");
 } // address_map()
 
 
 
 function handle_out_of_state($db)
 {
+    bbscript_log("trace", "==> handle_out_of_state()");
     // Delete any `Removed Districts` notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
@@ -202,6 +207,7 @@ function handle_out_of_state($db)
         }
     }
     bbscript_log("INFO", "Completed removing districts from $total_outofstate out of state addresses.");
+    bbscript_log("trace", "<== handle_out_of_state()");
 } // handle_out_of_state()
 
 
@@ -209,6 +215,7 @@ function handle_out_of_state($db)
 function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
                          $bulkdistrict_url, $use_coords)
 {
+    bbscript_log("trace", "==> handle_in_state()");
     // Start a timer and a counter for results
     $time_start = microtime(true);
     $counters = array("TOTAL" => 0,
@@ -225,24 +232,32 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
 
     $start_id = $startfrom;
     $total_rec_cnt = 0;
-    $cur_batch_size = $batch_size;
-    if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $cur_batch_size) {
-        $cur_batch_size = $max_addrs - $total_rec_cnt;
-    }
+    $batch_rec_cnt = $batch_size;   // to prime the while() loop
 
-    while (true) {
-        $mysql_result = retrieve_addresses($db, $start_id, $cur_batch_size);
+    while ($batch_rec_cnt === $batch_size) {
+        // If max specified, then possibly constrain the batch size
+        if ($max_addrs > 0 && $max_addrs - $total_rec_cnt < $batch_size) {
+            $batch_size = $max_addrs - $total_rec_cnt;
+        }
+
+        $mysql_result = retrieve_addresses($db, $start_id, $batch_size);
         $formatted_batch = array();
-        $originals_batch = array();
+        $orig_batch = array();
         $batch_rec_cnt = mysql_num_rows($mysql_result);
-        bbscript_log("trace", "Fetched a batch of $batch_rec_cnt records");
+
+        if ($batch_rec_cnt == 0) {
+            bbscript_log("trace", "No more rows to retrieve");
+            break;
+        }
+
+        bbscript_log("debug", "About to fetch a batch of $batch_rec_cnt records");
 
         while ($row = mysql_fetch_assoc($mysql_result)) {
             $addr_id = $row['id'];
             $total_rec_cnt++;
 
             // Save the original row for later; we'll need it when saving.
-            $originals_batch[$addr_id] = $row;
+            $orig_batch[$addr_id] = $row;
 
             // Format for the bulkdistrict API
             $row = clean_row($row);
@@ -275,26 +290,33 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
             }
         }
 
+        bbscript_log("debug", "Done fetching record batch; sending to SAGE");
+
         // Send formatted addresses to SAGE for geocoding & district assignment
         $batch_results = distassign($formatted_batch, $bulkdistrict_url, $counters);
 
+        bbscript_log("debug", "About to process batch results from SAGE");
+
         if ($batch_results && count($batch_results) > 0) {
-            process_batch_results($db, $batch_results, $counters);
+            process_batch_results($db, $orig_batch, $batch_results, $counters);
             report_stats($total_rec_cnt, $counters, $time_start);
         }
         else {
-            bbscript_log("error", "ERROR! No Batch Results. Skipping processing for address IDs starting at $start_id.");
+            bbscript_log("error", "ERROR: No batch results. Skipping processing for address IDs starting at $start_id.");
         }
 
         $start_id = $addr_id + 1;
     }
+
     bbscript_log("INFO", "Completed assigning districts to in-state addresses.");
+    bbscript_log("trace", "<== handle_in_state()");
 } // handle_in_state()
 
 
 
 function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
 {
+    bbscript_log("trace", "==> retrieve_addresses()");
     $q = "SELECT a.id,
                  a.street_address, a.street_number, a.street_number_suffix,
                  a.street_name, a.street_type, a.city, a.postal_code,
@@ -324,64 +346,74 @@ function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
           LIMIT $max_res";
 
     // Run query to obtain a batch of addresses
-    bbscript_log("debug", "Querying the database for addresses using:\n$q");
+    bbscript_log("debug", "Retrieving addresses starting at id $start_id with limit $max_res");
+    bbscript_log("trace", "SQL query:\n$q");
     $res = bb_mysql_query($q, $db, true);
+    bbscript_log("debug", "Finishing retrieving addresses");
+    bbscript_log("trace", "<== retrieve_addresses()");
     return $res;
 } // retrieve_addresses()
 
 
 
-function distassign($fmt_batch, $endpoint, &$cnts)
+function distassign($fmt_batch, $url, &$cnts)
 {
+    bbscript_log("trace", "==> distassign()");
     // Initialize the cURL request
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $endpoint);
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, true);
 
     // Attach the json data
+    bbscript_log("trace", "About to encode address batch in JSON");
     $json_batch = json_encode($fmt_batch);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
+    bbscript_log("trace", "About to send API request to SAGE using cURL");
     $response = curl_exec($ch);
 
     // Record the timings for the request and close
     $curl_time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
+
     $cnts['CURL'] += $curl_time;
-    bbscript_log("trace", "CURL: fetched in     ".round($curl_time, 3));
+    bbscript_log("trace", "CURL: fetched in ".round($curl_time, 3)." seconds");
     curl_close($ch);
 
     // Return null on any kind of response error
     if ($response === null) {
-        bbscript_log("fatal", "CURL: failed to receive a response");
-        return null;
+        bbscript_log("error", "ERROR: Failed to receive a CURL response");
+        $results = null;
+    }
+    else {
+        bbscript_log("trace", "About to decode JSON response");
+        $results = @json_decode($response, true);
+
+        if ($results === null && json_last_error() !== JSON_ERROR_NONE) {
+            bbscript_log("error", "Malformed JSON Response");
+            $results = null;
+        }
+        else if (count($results) == 0) {
+            bbscript_log("error", "Empty response from SAGE. SAGE server is likely offline.");
+            $results = null;
+        }
+        else if (isset($results['message'])) {
+            bbscript_log("error", "SAGE server encountered a problem: ".$results['message']);
+            $results = null;
+        }
     }
 
-    $results = @json_decode($response, true);
-
-    if (($results === null && json_last_error() !== JSON_ERROR_NONE)) {
-        bbscript_log("fatal", "Malformed JSON Response");
-        echo $output."\n";
-        return null;
-    }
-    else if (count($results) == 0) {
-        bbscript_log("error", "Empty response from SAGE. SAGE server is likely offline.");
-        return null;
-    }
-    else if (isset($results['message'])) {
-        bbscript_log("error", "SAGE server encountered a problem: ".$results['message']);
-        return null;
-    }
-
+    bbscript_log("trace", "<== distassign()");
     return $results;
 } // distassign()
 
 
 
-function process_batch_results($db, $batch_results, &$cnts)
+function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 {
     global $BB_DRY_RUN;
 
+    bbscript_log("trace", "==> process_batch_results()");
     $cnts['TOTAL'] += count($batch_results);
     $formatted_results = array();
     $MATCH_CODES = array("HOUSE", "STREET", "ZIP5", "SHAPEFILE");
@@ -457,7 +489,7 @@ function process_batch_results($db, $batch_results, &$cnts)
         bb_mysql_query('BEGIN', $db, true);
 
         foreach ($formatted_results as $address_id => $formatted_res) {
-            $row = $originals_batch[$address_id];
+            $row = $orig_batch[$address_id];
             $contact_id = $row['contact_id'];
             $result_type = $formatted_res['result_code'];
 
@@ -483,7 +515,7 @@ function process_batch_results($db, $batch_results, &$cnts)
             if (count($changes) != 0) {
                 if ($row['district_id']) {
                     $q = "UPDATE civicrm_value_district_information_7 di
-                          SET ".implode(",\n                      ", $sql_updates)."
+                          SET ".implode(", ", $sql_updates)."
                           WHERE di.entity_id = $address_id";
                     bb_mysql_query($q, $db, true);
                 }
@@ -550,12 +582,15 @@ function process_batch_results($db, $batch_results, &$cnts)
     else {
         bbscript_log("info", "DRY_RUN - No Records to update");
     }
+    bbscript_log("trace", "<== process_batch_results()");
 } // process_batch_results()
 
 
 
 function report_stats($total_found, $cnts, $time_start)
 {
+    bbscript_log("trace", "==> report_stats()");
+
     // Compute percentages for certain counts
     $percent = array(
         "MATCH" => 0,
@@ -597,6 +632,7 @@ function report_stats($total_found, $cnts, $time_start)
     bbscript_log("info", "[NOMATCH]  [TOTAL] {$cnts['NOMATCH']} ({$percent['NOMATCH']} %)");
     bbscript_log("info", "[INVALID]  [TOTAL] {$cnts['INVALID']} ({$percent['INVALID']} %)");
     bbscript_log("info", "[ERROR]    [TOTAL] {$cnts['ERROR']} ({$percent['ERROR']} %)");
+    bbscript_log("trace", "<== report_stats()");
 } // report_stats()
 
 
@@ -648,3 +684,4 @@ function get($array, $key, $default)
         return $default;
     }
 } // get()
+
