@@ -279,6 +279,11 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
                 }
             }
 
+            if (preg_match('/^p\.?o\.?\s+(box\s+)?[0-9]+$/i',$street)) {
+                $po_boxes_skipped++;
+                $street = '';
+            }
+
             // Format the address for sage
             $formatted_batch[$addr_id]= array(
                 'street' => $street,
