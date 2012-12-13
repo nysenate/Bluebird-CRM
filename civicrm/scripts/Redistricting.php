@@ -404,7 +404,7 @@ function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
 
 
 
-function distassign($fmt_batch, $url, &$cnts)
+function distassign(&$fmt_batch, $url, &$cnts)
 {
     bbscript_log("trace", "==> distassign()");
 
@@ -473,6 +473,12 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
         $address_id = $batch_res['address_id'];
         $status_code = $batch_res['status_code'];
         $message = $batch_res['message'];
+        if ($batch_lo_id == 0 || $address_id < $batch_lo_id) {
+            $batch_lo_id = $address_id;
+        }
+        if ($address_id > $batch_hi_id) {
+            $batch_hi_id = $address_id;
+        }
 
         if (in_array($status_code, $MATCH_CODES) !== false) {
             $cnts['MATCH']++;
@@ -511,12 +517,13 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     // and insert a note describing the update.
     if (!$BB_DRY_RUN ) {
         $update_time_start = microtime(true);
-        bbscript_log("trace", "Updating ".count($formatted_results)." records.");
+        bbscript_log("debug", "Updating ".count($formatted_results)." records");
 
         // Delete only notes in the current batch
-        $q = "DELETE FROM civicrm_note n
+        $q = "DELETE civicrm_note
+              FROM civicrm_note n
               JOIN civicrm_address a ON n.entity_id = a.contact_id
-              WHERE a.id BETWEEN {$batch_lo_id} AND {$batch_hi_id}
+              WHERE a.id BETWEEN $batch_lo_id AND $batch_hi_id
               AND (n.subject LIKE 'RD12 VERIFIED DISTRICTS' OR
                    n.subject LIKE 'RD12 UPDATED DISTRICTS%')";
         bb_mysql_query($q, $db, true);
