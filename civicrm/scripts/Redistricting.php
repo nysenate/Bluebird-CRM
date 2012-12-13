@@ -102,7 +102,11 @@ exit(0);
 
 function purge_notes($db)
 {
-    bbscript_log("trace", "==> purge_notes()");
+  global $BB_DRY_RUN;
+
+  bbscript_log("trace", "==> purge_notes()");
+
+  if (!$BB_DRY_RUN) {
     // Remove any redistricting notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
@@ -110,105 +114,136 @@ function purge_notes($db)
     bb_mysql_query($q, $db, true);
     $row_cnt = mysql_affected_rows($db);
     bbscript_log("info", "Removed all $row_cnt redistricting notes from the database.");
-    bbscript_log("trace", "<== purge_notes()");
+  }
+  else {
+    bbscript_log("info", "DRYRUN mode enabled - No notes were deleted");
+  }
+  bbscript_log("trace", "<== purge_notes()");
 } // purge_notes()
 
 
 
 function address_map($db)
 {
-    bbscript_log("trace", "==> address_map()");
-    $address_map_changes = 0;
-    bbscript_log("info", "Mapping old district numbers to new district numbers");
-    $district_cycle = array(
-      '17'=>18, '18'=>25, '25'=>26, '26'=>28, '27'=>17, '28'=>29, '29'=>27,
-      '44'=>49, '46'=>44, '49'=>53, '53'=>58, '58'=>63
-    );
+  global $BB_DRY_RUN;
 
+  bbscript_log("trace", "==> address_map()");
+
+  $address_map_changes = 0;
+  bbscript_log("info", "Mapping old district numbers to new district numbers");
+  $district_cycle = array(
+    '17'=>18, '18'=>25, '25'=>26, '26'=>28, '27'=>17, '28'=>29, '29'=>27,
+    '44'=>49, '46'=>44, '49'=>53, '53'=>58, '58'=>63
+  );
+
+  if (!$BB_DRY_RUN) {
     bb_mysql_query("BEGIN", $db, true);
-    $q = "SELECT id, ny_senate_district_47
-          FROM civicrm_value_district_information_7";
-    $result = bb_mysql_query($q, $db, true);
-    $num_rows = mysql_num_rows($result);
-    $actions = array();
-    while (($row = mysql_fetch_assoc($result)) != null) {
-        $district = $row['ny_senate_district_47'];
-        if (isset($district_cycle[$district])) {
-            $q = "UPDATE civicrm_value_district_information_7
-                  SET ny_senate_district_47 = {$district_cycle[$district]}
-                  WHERE id = {$row['id']};";
-            bb_mysql_query($q, $db, true);
-            $address_map_changes++;
-            if ($address_map_changes % 1000 == 0) {
-              bbscript_log("debug", "$address_map_changes mappings so far");
-            }
+  }
 
-            if (isset($actions[$district])) {
-                $actions[$district]++;
-            } else {
-                $actions[$district]=1;
-            }
+  $q = "SELECT id, ny_senate_district_47
+        FROM civicrm_value_district_information_7";
+  $result = bb_mysql_query($q, $db, true);
+  $num_rows = mysql_num_rows($result);
+  $actions = array();
+  while (($row = mysql_fetch_assoc($result)) != null) {
+    $district = $row['ny_senate_district_47'];
+    if (isset($district_cycle[$district])) {
+      if (!$BB_DRY_RUN) {
+        $q = "UPDATE civicrm_value_district_information_7
+              SET ny_senate_district_47 = {$district_cycle[$district]}
+              WHERE id = {$row['id']};";
+        bb_mysql_query($q, $db, true);
+        $address_map_changes++;
+        if ($address_map_changes % 1000 == 0) {
+          bbscript_log("debug", "$address_map_changes mappings so far");
         }
+      }
+
+      if (isset($actions[$district])) {
+        $actions[$district]++;
+      } else {
+        $actions[$district] = 1;
+      }
     }
+  }
+
+  if (!$BB_DRY_RUN) {
     bb_mysql_query("COMMIT", $db, true);
     bbscript_log("info", "Completed district mapping with $address_map_changes changes");
-    foreach ($actions as $district => $fix_count) {
-        bbscript_log("info", "  $district => {$district_cycle[$district]}: $fix_count");
-    }
-    bbscript_log("trace", "<== address_map()");
+  }
+  else {
+    bbscript_log("info", "DRYRUN mode enabled - No changes were made");
+  }
+
+  foreach ($actions as $district => $fix_count) {
+    bbscript_log("info", " $district => {$district_cycle[$district]}: $fix_count");
+  }
+  bbscript_log("trace", "<== address_map()");
 } // address_map()
 
 
 
 function handle_out_of_state($db)
 {
-    bbscript_log("trace", "==> handle_out_of_state()");
+  global $BB_DRY_RUN;
+
+  bbscript_log("trace", "==> handle_out_of_state()");
+
+  if (!$BB_DRY_RUN) {
     // Delete any `Removed Districts` notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
           AND subject LIKE 'RD12 REMOVED DISTRICTS'";
     bb_mysql_query($q, $db, true);
+  }
 
-    // Remove AD, SD, CD info for any non-NY state addresses
-    $q = "SELECT a.*, di.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
-          FROM civicrm_address a
-          JOIN civicrm_state_province sp ON (a.state_province_id=sp.id)
-          LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id=a.id)
-          WHERE sp.abbreviation!='NY'";
-    $result = bb_mysql_query($q, $db, true);
-    $total_outofstate = mysql_num_rows($result);
+  // Remove AD, SD, CD info for any non-NY state addresses
+  $q = "SELECT a.id, a.contact_id, di.id as district_id, ny_senate_district_47, ny_assembly_district_48, congressional_district_46
+        FROM civicrm_address a
+        JOIN civicrm_state_province sp ON (a.state_province_id=sp.id)
+        LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id=a.id)
+        WHERE sp.abbreviation!='NY'";
+  $result = bb_mysql_query($q, $db, true);
+  $total_outofstate = mysql_num_rows($result);
 
-    while (($row = mysql_fetch_assoc($result)) != null) {
-        $note = "A_ID: {$row['id']}\n".
-                "UPDATES:\n".
-                " SD:".get($row,'ny_senate_district_47', "NULL")."=>0\n".
-                " CD:".get($row,'congressional_dstrict_46', "NULL")."=>0\n".
-                " AD:".(empty($row['ny_assembly_district_48']) ? "NULL" : $row['ny_assembly_district_48'])."=>0";
-        $subject = "RD12 REMOVED DISTRICTS";
+  while (($row = mysql_fetch_assoc($result)) != null) {
+    $note = "A_ID: {$row['id']}\n".
+            "UPDATES:\n".
+            " SD:".get($row, 'ny_senate_district_47', "NULL")."=>0\n".
+            " CD:".get($row,'congressional_dstrict_46', "NULL")."=>0\n".
+            " AD:".(empty($row['ny_assembly_district_48']) ? "NULL" : $row['ny_assembly_district_48'])."=>0";
+    $subject = "RD12 REMOVED DISTRICTS";
 
-        $q = "INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
-              VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', '$subject', 0)";
+    if (!$BB_DRY_RUN) {
+      $q = "INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+            VALUES ('civicrm_contact', {$row['contact_id']}, '$note', 1, '".date("Y-m-d")."', '$subject', 0)";
+      bb_mysql_query($q, $db, true);
+
+      if ($row['district_id'] == null) {
+        $q = "INSERT INTO civicrm_value_district_information_7
+              (entity_id, congressional_district_46, ny_senate_district_47, ny_assembly_district_48)
+              VALUES ({$row['id']}, 0, 0, 0)";
         bb_mysql_query($q, $db, true);
-
-        if ($row['district_id'] == null) {
-            $q = "INSERT INTO civicrm_value_district_information_7
-                  (entity_id, congressional_district_46, ny_senate_district_47, ny_assembly_district_48)
-                  VALUES ({$row['id']}, 0, 0, 0)";
-            bb_mysql_query($q, $db, true);
-        }
-        else {
-            // Set district information to zero.
-            $q = "UPDATE civicrm_value_district_information_7 di
-                  SET congressional_district_46 = 0,
-                      ny_senate_district_47 = 0,
-                      ny_assembly_district_48 = 0
-                  WHERE di.entity_id = {$row['id']}";
-            bb_mysql_query($q, $db, true);
-        }
+      }
+      else {
+        // Set district information to zero.
+        $q = "UPDATE civicrm_value_district_information_7 di
+              SET congressional_district_46 = 0,
+                  ny_senate_district_47 = 0,
+                  ny_assembly_district_48 = 0
+              WHERE di.entity_id = {$row['id']}";
+        bb_mysql_query($q, $db, true);
+      }
     }
+  }
 
-    bbscript_log("INFO", "Completed removing districts from $total_outofstate out of state addresses.");
-    bbscript_log("trace", "<== handle_out_of_state()");
+  if (!$BB_DRY_RUN) {
+    bbscript_log("info", "Completed removing districts from $total_outofstate out-of-state addresses.");
+  }
+  else {
+    bbscript_log("info", "DRYRUN mode enabled - No updates were made to out-of-state addresses.");
+  }
+  bbscript_log("trace", "<== handle_out_of_state()");
 } // handle_out_of_state()
 
 
@@ -595,7 +630,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
         $cnts['MYSQL'] += $update_time;
     }
     else {
-        bbscript_log("info", "DRY_RUN - No Records to update");
+        bbscript_log("info", "DRYRUN mode enabled - No records to update");
     }
     bbscript_log("trace", "<== process_batch_results()");
 } // process_batch_results()
