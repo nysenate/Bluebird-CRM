@@ -365,7 +365,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
 function retrieve_addresses($db, $start_id = 0, $max_res = DEFAULT_BATCH_SIZE)
 {
     bbscript_log("trace", "==> retrieve_addresses()");
-    $q = "SELECT a.id,
+    $q = "SELECT a.id, a.contact_id,
                  a.street_address, a.street_number, a.street_number_suffix,
                  a.street_name, a.street_type, a.city, a.postal_code,
                  a.supplemental_address_1, a.supplemental_address_2,
@@ -610,8 +610,9 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
                 }
             }
 
-            // Create a new contact note describing the state before and after redistricting.
-            $note = "A_ID: $address_id\n".
+            // Create a new contact note describing the state before
+            // and after redistricting.
+            $note = "ADDRESS_ID: $address_id\n".
                     " MATCH_TYPE: $result_type\n".
                     " ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].', '.$row['postal_code']."\n".
                     "UPDATES:\n ".implode("\n ",$note_updates);
