@@ -520,8 +520,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
         bbscript_log("debug", "Updating ".count($formatted_results)." records");
 
         // Delete only notes in the current batch
-        $q = "DELETE civicrm_note
-              FROM civicrm_note n
+        $q = "DELETE FROM n USING civicrm_note n
               JOIN civicrm_address a ON n.entity_id = a.contact_id
               WHERE a.id BETWEEN $batch_lo_id AND $batch_hi_id
               AND (n.subject LIKE 'RD12 VERIFIED DISTRICTS' OR
