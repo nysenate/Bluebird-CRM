@@ -28,9 +28,9 @@ $formats = array( 'html', 'txt', 'csv', 'excel' );
 // Parse the options
 require_once 'script_utils.php';
 $shortopts = "l:fo:sdrn";
-$longopts = array("log=", "format=", "outfile=", "summary", "details", "references", "nofilter");
+$longopts = array("log=", "format=", "outfile=", "summary", "detail", "references", "nofilter");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --details, --references, --nofilter';
+$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --detail, --references, --nofilter';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
@@ -42,7 +42,7 @@ if ($optlist === null) {
 $opt = array();
 $opt['format'] = get($optlist, 'format', DEFAULT_FORMAT);
 $opt['summary'] = get($optlist, 'summary', FALSE);
-$opt['details'] = get($optlist, 'details', FALSE);
+$opt['detail'] = get($optlist, 'detail', FALSE);
 $opt['references'] = get($optlist, 'references', FALSE);
 $opt['nofilter'] = get($optlist, 'nofilter', FALSE);
 
@@ -86,14 +86,18 @@ $summary_data = array();
 $summary_cnts = array();
 
 // Store detailed contact information for each outside district
-$detailed_data = array();
+$detail_data = array();
 
 // Process out of district summary report
 if ( $opt['summary'] != FALSE ){
-
 	report_out_of_district_summary($senator_district, $db, &$summary_data, &$summary_cnts, !$opt['nofilter']);
 	generate_text_summary_report($senator_district, $senator_name, $summary_cnts);
+}
 
+// Process out of district detailed report
+if ( $opt['detail'] != FALSE ){
+	report_out_of_district_details($senator_district, $db, &$detail_data, $filter_contacts = true );
+	generate_text_detailed_report($senator_district, $senator_name, $detail_data);
 }
 
 //--------------------------------------------------------------------------------------
@@ -134,6 +138,32 @@ function report_out_of_district_summary($senator_district, $db, &$summary_data, 
 	mysql_free_result($res);
 	return $summary_cnts;
 }// report_out_of_district_summary
+
+
+function report_out_of_district_details($senator_district, $db, &$detail_data, $filter_contacts = true ){
+
+	$res = retrieve_contacts_from_outside_dist($senator_district, $db, $filter_contacts);
+	bbscript_log("debug", "Storing contacts into array indexed by district");
+	while (($row = mysql_fetch_assoc($res)) != null ) {
+
+		$district = $row['district'];
+		$contact_type = strtolower($row['contact_type']);
+		$contact = $row;
+
+		// Build the array so that contacts are grouped by contact type per district
+		if (!isset($detail_data[$district])){
+			$detail_data[$district] = array();
+		}
+		if (!isset($detail_data[$district][$contact_type])){
+			$detail_data[$district][$contact_type] = array();
+		}
+
+		$detail_data[$district][$contact_type][] = $contact;
+	}
+	bbscript_log("debug", "Stored contacts in " . count($detail_data). " districts.");
+
+	mysql_free_result($res);
+}
 
 function generate_text_summary_report($senator_district, $senator_name, &$summary_cnts){
 
@@ -197,15 +227,15 @@ function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_con
 
 	// Select out of district contacts
 	$q = "
-		SELECT DISTINCT contact.id AS contact_id, contact.display_name, contact.contact_type,
+		SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name, contact.display_name, contact.gender_id, contact.birth_date,
                         a.street_address, a.street_number, a.street_number_suffix, a.street_name, a.street_type, a.city, a.postal_code,
                         email.email, district.ny_senate_district_47 AS district, COUNT(activity_target.id ) AS activity_count, COUNT(case_contact.id ) AS case_count
 		FROM `civicrm_contact` AS contact
 		JOIN `civicrm_value_district_information_7` district ON contact.id = district.entity_id
-                LEFT JOIN `civicrm_address` a ON contact.id = a.contact_id
+        LEFT JOIN `civicrm_address` a ON contact.id = a.contact_id
 		LEFT JOIN `civicrm_email` email ON contact.id = email.id
 		LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
-                LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
+        LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
 		WHERE district.`ny_senate_district_47` != {$senator_district}
                 AND a.is_primary = 1
 		";
@@ -229,7 +259,35 @@ function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_con
 	return $res;
 }// retrieve_contacts_from_outside_dist
 
-function generate_text_detailed_report(){
+function generate_text_detailed_report($senator_district, $senator_name, &$detail_data){
+	bbscript_log("debug", "Generating detailed text report.");
+	$output = "";
+
+	foreach( $detail_data as $dist => $contact_types ){
+		$heading = <<<heading
+District $dist : Detailed Contact report
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Name                         | Sex | Age | Address                        | City        | State | Zip | Email              | Contact Source | Case Count| Activity Count | Bluebird Rec # |
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+heading;
+		$output .= $heading;
+		/*
+
+		*/
+		if (isset($contact_types['individual'])){
+			foreach( $contact_types['individual'] as $contact ){
+				$output .= fixed_width($contact['last_name'].", ".$contact['first_name'], 30)
+				         . fixed_width(get_gender($contact['gender_id']),6, true)
+				         . fixed_width(get_age($contact['birth_date']), 6)
+				         . fixed_width()
+
+				$output .= "\n";
+			}
+		}
+	}
+
+	print $output;
 
 }
 
@@ -238,7 +296,38 @@ function get($array, $key, $default) {
     return isset($array[$key]) && $array[$key]!=NULL && $array[$key]!=="" && $array[$key]!==0 && $array[$key]!=="000" ? $array[$key] : $default;
 }
 
+function fixed_width($string, $length, $center = false){
+	$pad_type = STR_PAD_RIGHT;
+	if ($center) {
+		$pad_type = STR_PAD_BOTH;
+	}
+	return substr(str_pad($string, $length, " ", $pad_type), 0, $length );
+}
 
+function get_gender($value, $unknown = "-"){
+	if ($value == 1){
+		return "F";
+	}
+	else if ($value == 2){
+		return "M";
+	}
+	else return $unknown;
+}
+
+function get_age($birth_date, $unknown = '-'){
+	if ( $birth_date != NULL && $birth_date != "" ){
+		try {
+			$b_date = new DateTime($birth_date);
+			$today = new DateTime();
+			$diff = $b_date->diff($today);
+			return $diff->format("%y");
+		}
+		catch(Exception $e){
+			bbscript_log("trace", "Failed to get age from date: $birth_date");
+		}
+	}
+	return $unknown;
+}
 
 
 
