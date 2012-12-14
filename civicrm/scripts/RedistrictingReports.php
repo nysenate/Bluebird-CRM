@@ -27,10 +27,10 @@ $formats = array( 'html', 'txt', 'csv', 'excel' );
 
 // Parse the options
 require_once 'script_utils.php';
-$shortopts = "fsdr";
-$longopts = array("format=", "summary", "details", "references");
+$shortopts = "fo:sdr";
+$longopts = array("format=", "outfile=", "summary", "details", "references");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald --format= [html|txt|csv], --summary, --details, --references';
+$usage = 'RedistrictingReports.php -S mcdonald --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --details, --references';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
@@ -56,13 +56,10 @@ $db = $dao->getDatabaseConnection()->connection;
 
 // Get the senate district for this instance
 $bb_cfg = get_bluebird_instance_config($optlist['site']);
-$inst_senate_district = $bb_cfg['district'];
 
-// Template for outputting text consistently.
-// ---------------------------------------------------------------------------------
-$tmpl = array(
+$senator_name = $bb_cfg['senator.name.formal'];
+$senator_district = $bb_cfg['district'];
 
-);
 // ---------------------------------------------------------------------------------
 
 // Outputs to store report text
@@ -72,114 +69,140 @@ $output = array(
 	'references' => ""
 );
 
-// `Note subject` prefixes used in Redistricting.php
+// Prefixes used in Redistricting.php
 $subjects = array(
     "unchanged" => "RD12 VERIFIED DISTRICTS",
     "changed" => "RD12 UPDATED DISTRICTS",
     "removed" => "RD12 REMOVED DISTRICTS"
 );
 
-// Summary level counts
-$summary_count = array(
-	'unchanged' => 0,
-	'changed' => 0,
-	'removed' => 0,
-	'districts' => array()
-);
+// Stores a list of contacts that are outside of the district.
+$summary_data = array();
 
-// The SQL queries used in this script are contained here:
-// -----------------------------------------------------------
-$query = array();
+// Stores the summary counts for each district
+$summary_cnts = array();
 
-// List of address counts per district
-$query['district_counts'] = "
-	SELECT `ny_senate_district_47` AS district, COUNT( * ) AS count
-	FROM `civicrm_value_district_information_7`
-	WHERE `ny_senate_district_47` IS NOT NULL
-	GROUP BY `ny_senate_district_47`
-";
+// Store detailed contact information for each outside district
+$detailed_data = array();
 
-// Number of addresses where no districts changed
-$query['same_districts'] = "
-	SELECT `entity_id`, `note`, `modified_date`, `subject`\n
-	FROM `civicrm_note`\n
-	WHERE `subject` LIKE '{$subjects['unchanged']}'
-";
-
-// Number of addresses where atleast one district changed
-$query['new_districts'] = "
-	SELECT `entity_id`, `note`, `modified_date`, `subject`\n
-	FROM `civicrm_note`\n
-	WHERE `subject` LIKE '{$subjects['changed']}%'
-";
-
-// Number of non-NY addresses whose district information was zeroed
-$query['removed_districts'] = "
-	SELECT `entity_id`, `note`, `modified_date`, `subject`\n
-	FROM `civicrm_note`\n
-	WHERE `subject` LIKE '{$subjects['removed']}'
-";
-// -----------------------------------------------------------
-
+// Process out of district summary report
 if ( $opt['summary'] != FALSE ){
 
-	$results = array();
+	report_out_of_district_summary($senator_district, $db, &$summary_data, &$summary_cnts);
+	generate_text_summary_report($senator_district, $senator_name, $summary_cnts);
 
-	$results['district_counts'] = mysql_query( $query['district_counts'], $db );
-	while ( ($row = mysql_fetch_assoc($results['district_counts'])) != null ){
-		$summary_count['districts'][$row['district']] = $row['count'];
-	}
+}
 
-	$results['same_districts'] = mysql_query( $query['same_districts'], $db );
-	$summary_count['unchanged'] = mysql_num_rows( $results['same_districts'] );
-	bbscript_log("info", "Found {$summary_count['unchanged']} contacts that remain in the same district");
+//--------------------------------------------------------------------------------------
+// Retrieves a list of contacts that are outside of the district specified             |
+// and have "value added" data associated with them. The contact ids per district      |
+// are stored in $summary_data and the counts per district are stored in $summary_cnts |
+// Returns: $summary_cnts
+function report_out_of_district_summary($senator_district, $db, &$summary_data, &$summary_cnts) {
 
-	$results['new_districts'] = mysql_query( $query['new_districts'], $db );
-	$summary_count['changed'] = mysql_num_rows( $results['new_districts'] );
-	bbscript_log("info", "Found {$summary_count['changed']} contacts that moved to other districts");
+	bbscript_log("info", "Retrieving contacts that are out of district and are relevant");
+	$q = "
+		SELECT DISTINCT contact.id AS contact_id, contact.contact_type, email.email, district.ny_senate_district_47 AS district
+		FROM `civicrm_contact` AS contact
+		JOIN `civicrm_value_district_information_7` district ON contact.id = district.entity_id
+		LEFT JOIN `civicrm_email` email ON contact.id = email.id
+		LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
+		WHERE district.`ny_senate_district_47` != {$senator_district}
+		AND
+		(
+		    # Filter out contacts without relevant data or those that don't want to be contacted
 
-	$results['removed_districts'] = mysql_query( $query['removed_districts'], $db );
-	$summary_count['removed'] = mysql_num_rows( $results['removed_districts'] );
-	bbscript_log("info", "Found {$summary_count['removed']} contacts that were out of state");
+		    ( contact.contact_type = 'Individual' AND NOT ( contact.source = 'BOE' AND contact.is_deceased = 0 )
+		        AND (
+			   		email.id IS NOT NULL OR
+			   		case_contact.id IS NOT NULL OR
+			   		contact.id IN (
+				       SELECT note.entity_id
+				       FROM `civicrm_note` AS note
+				       WHERE note.entity_table = 'civicrm_contact'
+				       AND note.subject NOT LIKE 'OMIS%'
+				       AND note.subject NOT LIKE 'RD12%'
+				    ) OR
+				    contact.id IN (
+				       SELECT target_contact_id
+				       FROM `civicrm_activity_target` activity_target
+				       JOIN `civicrm_activity` activity ON activity.id = activity_target.activity_id
+				    )
+		       )
+		       OR (
+		           contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 )
+		       )
+		    )
 
-	if ( $opt['format'] == 'txt' ) {
+		    # Filter out households and organizations that have no relationships
+			# [NOTE] I'm not sure if the simple relationship check is correct
+		    OR
+		    ( (contact.contact_type = 'Household' OR contact.contact_type = 'Organization')
+		      AND contact.id IN
+		          ( SELECT contact_id_b FROM `civicrm_relationship` WHERE is_active = 1 )
+		    )
+		)";
 
-		$str = "Summary of Senate Redistricting\n\n";
-		$str .= "SD\tOut of district records\n";
-		foreach( $summary_count['districts'] as $district => $count ){
-			if ( $district != $inst_senate_district ) {
-				$str .= "$district\t$count\n";
-			}
+	bbscript_log("trace", "SQL query:\n{$q}");
+
+	$res = bb_mysql_query($q, $db, true);
+	$num_rows = mysql_num_rows($res);
+
+	bbscript_log("debug", "Retrieved {$num_rows} contacts");
+
+	while (($row = mysql_fetch_assoc($res)) != null ) {
+
+		$district = $row['district'];
+		$contact_id = $row['contact_id'];
+		$contact_type = strtolower($row['contact_type']);
+
+		// Create an array to store contacts in each district
+		if (!isset($summary_data[$district])){
+			$summary_data[$district] = array();
 		}
 
-		$output['summary'] = $str;
+		// Create an array to store district counts
+		if (!isset($summary_cnts[$district])){
+			$summary_cnts[$district] = array();
+		}
+
+		// Set the counts for the contact type to 0
+		if (!isset($summary_cnts[$district][$contact_type])){
+			$summary_cnts[$district][$contact_type] = 0;
+		}
+
+		$summary_data[$district][$contact_type][] = $contact_id;
+		$summary_cnts[$district][$contact_type]++;
 	}
 
-	// [TODO] save to file...
-	print $output['summary'];
+	mysql_free_result($res);
+	return $summary_cnts;
+}// report_out_of_district_summary
+
+
+function generate_text_summary_report($senator_district, $senator_name, &$summary_cnts){
+
+	$heading = <<<heading
+${senator_name} District {$senator_district}
+Summary of contacts that are outside district {$senator_district}
+
+District    Individuals    Households    Organizations
+-------------------------------------------------------
+
+heading;
+
+	$output_row = "";
+	foreach( $summary_cnts as $dist => $dist_cnts ){
+		$output_row .= str_pad($dist, 12)
+		               .str_pad(get($dist_cnts, 'individual', 0), 15)
+					   .str_pad(get($dist_cnts, 'household', 0), 14)
+					   .str_pad(get($dist_cnts, 'organization', 0), 14)."\n";
+	}
+
+	print $heading . $output_row;
 }
 
-if ( $opt['details'] != FALSE ){
-
-	$a = "
-	SELECT `civicrm_contact`.last_name,
-		   `civicrm_contact`.first_name,
-		   `civicrm_contact`.gender_id,
-		   `civicrm_contact`.birth_date,
-		   `civicrm_address`.city,
-		   `civicrm_address`.state,
-		   `civicrm_address`.zip,
-		   `civicrm_contact`.email,
-
-	FROM `civicrm_contact`
-	JOIN `civicrm_address` ON `civicrm_contact`.id = `civicrm_address`.contact_id
-
-	";
-
-}
-
-if ( $opt['references'] != FALSE ){
-
+function generate_text_detailed_report(){
 
 }
 
@@ -187,7 +210,6 @@ function get($array, $key, $default) {
     // blank, null, and 0 values are bad.
     return isset($array[$key]) && $array[$key]!=NULL && $array[$key]!=="" && $array[$key]!==0 && $array[$key]!=="000" ? $array[$key] : $default;
 }
-
 
 
 
