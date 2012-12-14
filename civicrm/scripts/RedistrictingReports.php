@@ -91,7 +91,13 @@ $detail_data = array();
 // Process out of district summary report
 if ( $opt['summary'] != FALSE ){
 	report_out_of_district_summary($senator_district, $db, &$summary_data, &$summary_cnts, !$opt['nofilter']);
-	generate_text_summary_report($senator_district, $senator_name, $summary_cnts);
+
+	if ( $opt['format'] == 'txt'){
+		generate_text_summary_report($senator_district, $senator_name, $summary_cnts);
+	}
+	else if ( $opt['format'] == 'html'){
+		generate_html_summary_report($senator_district, $senator_name, $summary_cnts);
+	}
 }
 
 // Process out of district detailed report
@@ -179,14 +185,124 @@ heading;
 	$output_row = "";
 	ksort($summary_cnts);
 	foreach( $summary_cnts as $dist => $dist_cnts ){
-		$output_row .= str_pad($dist, 12)
-		               .str_pad(get($dist_cnts, 'individual', 0), 15)
-					   .str_pad(get($dist_cnts, 'household', 0), 14)
-					   .str_pad(get($dist_cnts, 'organization', 0), 14)."\n";
+		$output_row .=  fixed_width($dist, 12)
+		               .fixed_width(get($dist_cnts, 'individual', '0'), 15)
+					   .fixed_width(get($dist_cnts, 'household', '0'), 14, false)
+					   .fixed_width(get($dist_cnts, 'organization', '0'), 14)."\n";
 	}
 
 	print $heading . $output_row;
 }// generate_text_summary_report
+
+// List all contact information per outside district
+// Assumptions: State will just be 'NY' because we ignore out of state contacts.
+// Using heredocs to make formatting a little more consistent and visible.
+function generate_text_detailed_report($senator_district, $senator_name, &$detail_data){
+	bbscript_log("debug", "Generating detailed text report.");
+	$output = "";
+
+	ksort($detail_data);
+	foreach( $detail_data as $dist => $contact_types ){
+		foreach( $contact_types as $type => $contact_array ){
+			if ($type == "individual"){
+				$heading = <<<individual
+District $dist : Individuals that will be in this district
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Name                         | Sex | Age | Address                | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+individual;
+			}
+
+			else if ($type == "household") {
+				$heading = <<<household
+District $dist : Households that will be in this district
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Household Name               | Address                            | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+household;
+			}
+
+			else if ($type == "organization") {
+				$heading = <<<organization
+District $dist : Organizations that will be in this district
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Organization Name            | Address                            | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+organization;
+			}
+
+			$output .= $heading;
+
+			foreach($contact_array as $contact){
+				if ($type == "individual"){
+					$output .= fixed_width($contact['last_name'].", ".$contact['first_name'], 30)
+					         . fixed_width(get_gender($contact['gender_id']),6, true)
+					         . fixed_width(get_age($contact['birth_date']), 6, false)
+					         . fixed_width($contact['street_address'], 25, false, "---") . " ";
+				}
+				else if ($type == "household"){
+					$output .= fixed_width($contact['household_name'], 30)
+							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
+				}
+				else if ($type == "organization"){
+					$output .= fixed_width($contact['organization_name'], 30)
+							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
+				}
+
+				$output .=  fixed_width($contact['city'], 15) . " "
+					      . fixed_width($contact['postal_code'],6)
+					      . fixed_width($contact['email'], 21, false, "---")
+					      . fixed_width($contact['source'], 9, true )
+					      . fixed_width($contact['case_count'], 9)
+					      . fixed_width($contact['activity_count'], 9)
+					      . fixed_width($contact['contact_id']);
+				$output .= "\n";
+			}
+
+			$output .= <<<footer
+__________________________________________________________________________________________________________________________________________________
+
+
+
+footer;
+		}
+	}
+
+	print $output;
+} // generate_text_detailed_report
+
+function generate_html_summary_report($senator_district, $senator_name, &$summary_cnts){
+
+	$heading = <<<heading
+<h1>Redistricing Summary for Senate District $senator_district</h1>
+heading;
+
+	$info = <<<info
+<h3>$senator_name</h3>
+<hr/>
+<p>The following table indicates the number of individuals, households, and organizations that will
+   be moving from this district.
+</p>
+
+info;
+
+	$summary_table = "<table><tr><th>District</th><th>Individuals</th><th>Households</th><th>Organizations</th></tr>";
+
+	ksort($summary_cnts);
+	foreach( $summary_cnts as $dist => $dist_cnts ){
+		$summary_table .= "<tr><td>$dist</td>"
+		               .  "<td>" . get($dist_cnts, 'individual', '0') . "</td>"
+		               .  "<td>" . get($dist_cnts, 'household', '0') . "</td>"
+		               .  "<td>" . get($dist_cnts, 'organization', '0') . "</td></tr>";
+	}
+	$summary_table .= "</table>";
+
+	$output = $heading . $info . $summary_table;
+	print wrap_html("Redistricting Summary", $output);
+}
 
 function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_contacts = true ){
 	bbscript_log("debug", "Retrieving contacts that are out of district and are relevant");
@@ -261,85 +377,55 @@ function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_con
 }// retrieve_contacts_from_outside_dist
 
 
-// List all contact information per outside district
-// Assumptions: State will just be 'NY' because we ignore out of state contacts.
-// Using heredocs to make formatting a little more consistent and visible.
-function generate_text_detailed_report($senator_district, $senator_name, &$detail_data){
-	bbscript_log("debug", "Generating detailed text report.");
-	$output = "";
+// Wraps the body content into an HTML page with proper styling
+function wrap_html($title, $body_content){
+	$css = <<<css
+<style type="text/css">
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: outset;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;
+}
+table th {
+	border-width: 1px;
+	padding: 5px;
+	border-style: inset;
+	border-color: gray;
+	background-color: white;
+	-moz-border-radius: ;
+}
+table td {
+	border-width: 1px;
+	padding: 5px;
+	border-style: inset;
+	border-color: gray;
+	background-color: white;
+	-moz-border-radius: ;
+}
+hr {
+	border:1px solid #999;
+	border-style: solid none none none;
+}
+</style>
+css;
 
-	ksort($detail_data);
-	foreach( $detail_data as $dist => $contact_types ){
-		foreach( $contact_types as $type => $contact_array ){
-			if ($type == "individual"){
-				$heading = <<<individual
-District $dist : Individuals that will be in this district
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Name                         | Sex | Age | Address                | City           | State | Zip | Email                      | Source | Cases | Activities | BB Rec # |
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	$structure = <<<structure
+<html>
+<head>
+	<title>
+		%s
+	</title>
+	$css
+</head>
+<body>%s
+</body>
+</html>
+structure;
 
-individual;
-			}
-
-			else if ($type == "household") {
-				$heading = <<<household
-District $dist : Households that will be in this district
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Household Name               | Address                            | City           | State | Zip | Email                      | Source | Cases | Activities | BB Rec # |
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-household;
-			}
-
-			else if ($type == "organization") {
-				$heading = <<<organization
-District $dist : Organizations that will be in this district
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Organization Name            | Address                            | City           | State | Zip | Email                      | Source | Cases | Activities | BB Rec # |
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-organization;
-			}
-
-			$output .= $heading;
-
-			foreach($contact_array as $contact){
-				if ($type == "individual"){
-					$output .= fixed_width($contact['last_name'].", ".$contact['first_name'], 30)
-					         . fixed_width(get_gender($contact['gender_id']),6, true)
-					         . fixed_width(get_age($contact['birth_date']), 6, false)
-					         . fixed_width($contact['street_address'], 25, false, "---") . " ";
-				}
-				else if ($type == "household"){
-					$output .= fixed_width($contact['household_name'], 30)
-							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
-				}
-				else if ($type == "organization"){
-					$output .= fixed_width($contact['organization_name'], 30)
-							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
-				}
-
-				$output .=  fixed_width($contact['city'], 15)
-					      . fixed_width('NY', 9, true)
-					      . fixed_width($contact['postal_code'],6)
-					      . fixed_width($contact['email'], 29, false, "---")
-					      . fixed_width($contact['source'], 9, true )
-					      . fixed_width($contact['case_count'], 9)
-					      . fixed_width($contact['activity_count'], 13)
-					      . fixed_width($contact['contact_id']);
-				$output .= "\n";
-			}
-
-			$output .= <<<footer
-________________________________________________________________________________________________________________________________________________________________________
-
-
-
-footer;
-		}
-	}
-
-	print $output;
+	return sprintf($structure, $title, $body_content);
 }
 
 function get($array, $key, $default) {
