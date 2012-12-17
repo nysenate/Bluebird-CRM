@@ -366,6 +366,9 @@ function createLogTable( $rnd ) {
     //insert activities
     //skip source as that will only be staff
     //only concerned with target contact
+    //5838 skip bulk email activity
+    $activityTypes = civicrm_api('activity_type','get',array('version' => 3));
+    $actBulkEmail = array_search('Bulk Email', $activityTypes['values']);
     $sql = "INSERT INTO $tblLog (cid, mod_date)
             SELECT DISTINCT c.id as cid, cal.modified_date as mod_date
             FROM ( SELECT entity_id, MAX(modified_date) as modified_date
@@ -374,6 +377,9 @@ function createLogTable( $rnd ) {
                    GROUP BY entity_id ) as cal
             JOIN civicrm_activity_target cat
               ON cal.entity_id = cat.activity_id
+            JOIN civicrm_activity act
+              ON cal.entity_id = act.id
+              AND act.activity_type_id != {$actBulkEmail}
             JOIN $tblIDs c
               ON cat.target_contact_id = c.id;"; 
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
