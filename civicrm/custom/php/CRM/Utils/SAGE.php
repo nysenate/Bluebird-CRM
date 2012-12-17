@@ -57,7 +57,7 @@ class CRM_Utils_SAGE
         }
 
         #Construct and send the API Request
-        $url = 'xml/validate/extended?';
+        $url = '/xml/validate/extended?';
         $params = http_build_query( array(
             'addr2' => str_replace(',', '', $addr),
             'city' => CRM_Utils_Array::value('city', $values, ""),
@@ -89,7 +89,7 @@ class CRM_Utils_SAGE
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
         //open source "geocoder" project.
-        $url = 'xml/geocode/extended?';
+        $url = '/xml/geocode/extended?';
         $params = http_build_query(array(
                 'service' => CRM_Utils_Array::value('service', $values, "rubygeocoder"),
                 'addr2' => str_replace(',', '', $addr),
@@ -125,7 +125,7 @@ class CRM_Utils_SAGE
         }
 
         #Construct and send the API Request
-        $url = 'xml/districts/extended?nometa=1&';
+        $url = '/xml/districts/extended?nometa=1&';
         $params = http_build_query( array(
                 'addr2' => str_replace(',', '', $addr),
                 'city' => CRM_Utils_Array::value('city',$values,""),
@@ -149,7 +149,7 @@ class CRM_Utils_SAGE
     }
 
      public static function lookup_from_point( &$values, $overwrite_districts=true) {
-     	$url = 'xml/bluebirdDistricts/latlon/';
+        $url = '/xml/bluebirdDistricts/latlon/';
 
      	$url = $url.
      		CRM_Utils_Array::value('geo_code_1',$values,"").
@@ -191,7 +191,7 @@ class CRM_Utils_SAGE
         }
 
         #Construct and send the API Request
-        $url = 'xml/bluebirdDistricts/extended?';
+        $url = '/xml/bluebirdDistricts/extended?';
         $params = http_build_query( array(
                 'addr2' => str_replace(',', '', $addr),
                 'city' => CRM_Utils_Array::value('city',$values,""),
