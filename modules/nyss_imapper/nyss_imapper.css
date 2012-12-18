@@ -75,8 +75,11 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #delete-confirm,#loading-popup{ display: none;}
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
 #message_left {float:left; margin:10px 10px 0 10px ; }
-#message_left_header{ width:640px; height:90px; border-bottom: 1px solid #ccc;  }
-#message_left_email{ width:640px; height:360px; overflow:auto;  }
+#message_left .debug_info {display: none; }
+#message_left .debug_on,#message_left .debug_off {color: #336699!important; }
+.debug_sumit{ border:1px solid #ccc; background: #e1e1e1; padding: 4px; margin-bottom: 10px;}
+#message_left_header{ width:640px; height:100px; border-bottom: 1px solid #ccc;  }
+#message_left_email{ width:640px; height:350px; overflow:auto;  }
 #message_right{ width:270px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:455px;}
 #find-match-popup .ui-tabs-panel { padding:0;}
 .first_name,.last_name {width:46%;}

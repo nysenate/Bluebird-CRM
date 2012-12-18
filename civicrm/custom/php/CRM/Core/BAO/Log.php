@@ -195,131 +195,147 @@ UPDATE civicrm_log
          return $total_log_count;
      }
 
-     //NYSS 5173 calculate log records using enhanced logging
-     static function getEnhancedContactLogCount( $contactID ) {
+  //NYSS 5173 calculate log records using enhanced logging
+  static function getEnhancedContactLogCount( $contactID ) {
 
-         $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
-         $loggingDB = $dsn['database'];
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $loggingDB = $dsn['database'];
 
-         $bbconfig = get_bluebird_instance_config();
-         $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
+    $bbconfig = get_bluebird_instance_config();
+    $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
 
-         $counts = array();
-         $tblKey = array(
-           'civicrm_contact' =>
-           array(
-             'id'     => 'id',
-             'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MICROSECOND FROM log_date)'
-           ),
-           'civicrm_phone' =>
-           array(
-             'id' => 'contact_id',
-           ),
-           'civicrm_email' =>
-           array(
-             'id' => 'contact_id',
-           ),
-           'civicrm_im' =>
-           array(
-             'id' => 'contact_id',
-           ),
-           'civicrm_website' =>
-           array(
-             'id' => 'contact_id',
-           ),
-           'civicrm_address' =>
-           array(
-             'id' => 'contact_id',
-           ),
-           'civicrm_entity_tag' =>
-           array(
-             'id'     => 'entity_id',
-             'where'  => 'entity_table = "civicrm_contact"'
-           ),
-           'civicrm_note' =>
-           array(
-             'id'     => 'entity_id',
-             'where'  => 'entity_table = "civicrm_contact"'
-           ),
-           'civicrm_comments' =>
-           array(
-             'table'  => 'civicrm_note',
-             'id'     => 'n.entity_id',
-             'join'   => "JOIN $loggingDB.log_civicrm_note n
-                          ON civicrm_comments.entity_id = n.id
-                          AND n.log_action = 'Insert'",
-             'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
-           ),
-           'civicrm_group_contact' =>
-           array(
-             'id'     => 'contact_id',
-             'noinit' => true,
-             'join'   => "JOIN (
-                            SELECT id, name, title, is_hidden
-                            FROM $loggingDB.log_civicrm_group
-                            GROUP BY id ) cg
-                          ON civicrm_group_contact.group_id = cg.id",
-             'where'  => "cg.is_hidden != 1
-                          AND log_action != 'Initialization'",
-           ),
-           'civicrm_relationship_a' =>
-           array(
-             'id'     => 'contact_id_a',
-             'table'  => 'civicrm_relationship',
-           ),
-           'civicrm_relationship_b' =>
-           array(
-             'id'     => 'contact_id_b',
-             'table'  => 'civicrm_relationship',
-           ),
-         );
+    $counts = array();
+    $tblKey = array(
+      'civicrm_contact' =>
+      array(
+        'id'     => 'id',
+        'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
+      ),
+      'civicrm_phone' =>
+      array(
+        'id' => 'contact_id',
+      ),
+      'civicrm_email' =>
+      array(
+        'id' => 'contact_id',
+      ),
+      'civicrm_im' =>
+      array(
+        'id' => 'contact_id',
+      ),
+      /*'civicrm_website' =>
+      array(
+        'id' => 'contact_id',
+      ),*/
+      'civicrm_address' =>
+      array(
+        'id' => 'contact_id',
+      ),
+      'civicrm_entity_tag' =>
+      array(
+        'id'     => 'entity_id',
+        'where'  => 'entity_table = "civicrm_contact"'
+      ),
+      'civicrm_note' =>
+      array(
+        'id'     => 'entity_id',
+        'where'  => 'entity_table = "civicrm_contact"'
+      ),
+      'civicrm_comments' =>
+      array(
+        'table'  => 'civicrm_note',
+        'id'     => 'n.entity_id',
+        'join'   => "JOIN $loggingDB.log_civicrm_note n
+                     ON civicrm_comments.entity_id = n.id
+                     AND n.log_action = 'Insert'",
+        'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
+      ),
+      'civicrm_group_contact' =>
+      array(
+        'id'     => 'contact_id',
+        'noinit' => TRUE,
+        'join'   => "JOIN (
+                       SELECT id, name, title, is_hidden
+                       FROM $loggingDB.log_civicrm_group
+                       GROUP BY id ) cg
+                     ON civicrm_group_contact.group_id = cg.id",
+        'where'  => "cg.is_hidden != 1
+                     AND log_action != 'Initialization'",
+      ),
+      'civicrm_relationship_a' =>
+      array(
+        'id'     => 'contact_id_a',
+        'table'  => 'civicrm_relationship',
+      ),
+      'civicrm_relationship_b' =>
+      array(
+        'id'     => 'contact_id_b',
+        'table'  => 'civicrm_relationship',
+      ),
+    );
 
-         foreach ( $tblKey as $tbl => $details ) {
-             
-             $alias = $tbl;
-             if ( isset($details['table']) && $details['table'] ) {
-               $tbl = $details['table'];
-             }
+    $logRows = array();
+    foreach ( $tblKey as $tbl => $details ) {
+      $alias = $tbl;
+      if ( isset($details['table']) && $details['table'] ) {
+        $tbl = $details['table'];
+      }
 
-             $sql = "SELECT count(*)
-                     FROM $loggingDB.log_{$tbl} $alias
-                     {$details['join']}
-                     WHERE {$details['id']} = $contactID";
-             if ( !isset($details['noinit']) || !$details['noinit'] ) {
-                 $sql .= " AND ($alias.log_action != 'Initialization') ";
-             }
-             if ( isset($details['where']) && $details['where'] ) {
-                 $sql .= " AND {$details['where']} ";
-             }
-             if ( isset($details['group']) && $details['group'] ) {
-                 $sql .= " GROUP BY {$details['group']} ";
+      $sql = "SELECT {$alias}.id, 'log_{$tbl}' as log_type, {$alias}.log_conn_id, {$alias}.log_date
+              FROM $loggingDB.log_{$tbl} $alias
+              {$details['join']}
+              WHERE {$details['id']} = $contactID";
+      if ( !isset($details['noinit']) || !$details['noinit'] ) {
+        $sql .= " AND ($alias.log_action != 'Initialization') ";
+      }
+      if ( isset($details['where']) && $details['where'] ) {
+        $sql .= " AND {$details['where']} ";
+      }
+      if ( isset($details['group']) && $details['group'] ) {
+        $sql .= " GROUP BY {$details['group']} ";
 
-                 //now wrap in a subquery to get total count
-                 $sql = "SELECT count(*) FROM ( $sql ) tmp";
-             }
-             //CRM_Core_Error::debug_var('sql',$sql);
-             $counts[$alias] = CRM_Core_DAO::singleValueQuery($sql);
-         }
-         //CRM_Core_Error::debug_var('counts',$counts);
+        //now wrap in a subquery to get total count
+        //$sql = "SELECT count(*) FROM ( $sql ) tmp";
+      }
+      //CRM_Core_Error::debug_var('sql',$sql);
+      $logs = CRM_Core_DAO::executeQuery($sql);
 
-         $totalCount = 0;
-         foreach ( $counts as $count ) {
-             if ( $count ) {
-                 $totalCount += $count;
-             }
-         }
+      while ( $logs->fetch() ) {
+        $logRows[] = array(
+          'log_civicrm_entity_log_type' => $logs->log_type,
+          'log_civicrm_entity_log_date' => $logs->log_date,
+          'log_civicrm_entity_log_conn_id' => $logs->log_conn_id,
+        );
+      }
 
-         return $totalCount;
-     }
+      $sqlCount = "SELECT count(*) FROM ( $sql ) tmp";
+      $counts[$alias] = CRM_Core_DAO::singleValueQuery($sqlCount);
+    }
 
-     /**
-     * Function for find out whether to use logging schema entries for contact
-     * summary, instead of normal log entries.
-     *
-     * @return int report id of Contact Logging Report (Summary) / false
-     * @access public
-     * @static
-     */
+    CRM_Logging_ReportSummary::_combineContactRows($logRows);
+    //CRM_Core_Error::debug_var('$logRows',$logRows);
+    //CRM_Core_Error::debug_var('$counts',$counts);
+
+    /*$totalCount = 0;
+    foreach ( $counts as $count ) {
+      if ( $count ) {
+        $totalCount += $count;
+      }
+    }*/
+
+    $totalCount = count($logRows);
+
+    return $totalCount;
+  }
+
+  /**
+   * Function for find out whether to use logging schema entries for contact
+   * summary, instead of normal log entries.
+   *
+   * @return int report id of Contact Logging Report (Summary) / false
+   * @access public
+   * @static
+   */
   static
   function useLoggingReport() {
          // first check if logging is enabled

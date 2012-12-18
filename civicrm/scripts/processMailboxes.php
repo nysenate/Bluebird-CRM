@@ -5,7 +5,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2011-03-22
-// Revised: 2012-10-09
+// Revised: 2012-12-04
 // 
 
 // Mailbox settings common to all CRM instances
@@ -26,6 +26,10 @@ define('INVALID_EMAIL_TEXT', "You do not have permission to forward e-mails to t
 
 //email address of the contact to file unknown emails against.
 define('UNKNOWN_CONTACT_EMAIL', 'unknown.contact@nysenate.gov');
+
+// The Bluebird predefined group name for contacts who are authorized
+// to forward messages to the CRM inbox.
+define('AUTH_FORWARDERS_GROUP_NAME', 'Authorized_Forwarders');
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
@@ -57,55 +61,6 @@ require_once 'CRM/Core/BAO/CustomValueTable.php';
 require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
 
-
-// make connection to db
-function db() {
-    // Load the DAO Object and pull the connection
-    if ($db == null) {
-        $nyss_conn = new CRM_Core_DAO();
-        $nyss_conn = $nyss_conn->getDatabaseConnection();
-        $db = $nyss_conn->connection;
-    }
-    return $db;
-}
-
-
-/* getValidSenders()
- * Parameters: None.
- * Returns: CSV list of authorized emails
- * Use a Bluebird Group to grab primary emails of users in Group "Authorized Forwarders"
- * Grabs emails in hardcoded config
- */
-function getValidSenders(){
-  require_once 'api/api.php';
-
-  // get Authorized Forwarders group id 
-  $params = array( 
-  'version' => 3,
-  'name' => 'Authorized_Forwarders',
-  );
-  $result = civicrm_api( 'group','get',$params );
-  $groupID = $result['id'];
-
-  // sql to retreive group members
-  $from = "FROM civicrm_group_contact contact\n JOIN civicrm_email email ON (contact.contact_id = email.contact_id) \n";
-  $where = "WHERE contact.status='Added' AND contact.group_id = $groupID \n";
-  $order = "ORDER BY contact.contact_id ASC";
-  $query = "SELECT email.email $from\n$where\n$order";
-
-  $result = mysql_query($query, db());
-
-  $output = '';
-  while($row = mysql_fetch_assoc($result)) {
-    $output .= $row['email'].',';
-  }
-
-  // load hard coded valid senders from config file.
-  $bbconfig = get_bluebird_instance_config();
-  $output .= strtolower($bbconfig['imap.validsenders']);
-  return $output;
-}
-
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
 ** config file.
@@ -115,7 +70,7 @@ function getValidSenders(){
 */
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
-$imap_validsenders = getValidSenders();
+$imap_validsenders = strtolower($bbconfig['imap.validsenders']);
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -182,7 +137,13 @@ if (empty($imap_accounts)) {
   exit(1);
 }
 
-$validSenders = explode(',', $imap_validsenders);
+$authForwarders = getAuthorizedForwarders();
+if ($imap_validsenders) {
+  // If imap.validsenders was specified in the config file, then add those
+  // e-mail addresses to the list of authorized forwarders.
+  $validSenders = explode(',', $imap_validsenders);
+  $authForwarders = array_merge($authForwarders, $validSenders);
+}
 
 // Iterate over all IMAP accounts associated with the current CRM instance.
 
@@ -198,7 +159,7 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
     'archivebox' => $imap_archivebox,
     'unreadonly' => $imap_process_unread_only,
     'archivemail' => $imap_archive_mail,
-    'validsenders' => $validSenders
+    'validsenders' => $authForwarders
   );
 
   $rc = processMailboxCommand($cmd, $imap_params);
@@ -210,6 +171,34 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
 
 echo "[INFO] Finished processing all mailboxes for CRM instance [$site]\n";
 exit(0);
+
+
+
+/*
+ * getAuthorizedForwarders()
+ * Parameters: None.
+ * Returns: Array of e-mail addresses that can forward messages to the inbox.
+ */
+function getAuthorizedForwarders()
+{
+  $res = array();
+  $query = "
+SELECT e.email
+FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+WHERE g.name='".AUTH_FORWARDERS_GROUP_NAME."'
+  AND g.id=gc.group_id
+  AND gc.status='Added'
+  AND gc.contact_id=e.contact_id
+ORDER BY gc.contact_id ASC";
+
+  $dao = CRM_Core_DAO::executeQuery($query);
+
+  while ($dao->fetch()) {
+    $res[] = $dao->email;
+  }
+
+  return $res;
+} // getAuthorizedForwarders()
 
 
 
@@ -527,7 +516,7 @@ function civiProcessEmail($email, $customHandler)
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
                 "duration" => 1,
-              //  "target_contact_id" => array($contactID),
+                "is_auto" => 1, // we now know difference between match and processed
                 "target_contact_id" => $contactID,
                 "version" => 3
     );

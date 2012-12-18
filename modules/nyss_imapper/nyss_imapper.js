@@ -15,6 +15,8 @@ cj(document).ready(function(){
 	var assign = cj('#assign');
 	var reassign = cj('#reassign');
 	var create = cj('#add-contact');
+	
+	var debug = true;
 
 	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
 	placeholderSupport = ("placeholder" in document.createElement("input"));
@@ -390,7 +392,7 @@ cj(document).ready(function(){
 	cj( "#tagging-popup" ).dialog({
 		modal: true,
 		height: 500,
-		width: 500,
+		width: 540,
 		autoOpen: false,
 		resizable: false,
 		title: 'Loading Data',
@@ -443,10 +445,10 @@ cj(document).ready(function(){
 									data: {id: value},
 									success: function(data,status) { 
 										cj("#tagging-popup").dialog('close');
-										help_message('tag added!');
+										help_message('Tag Added');
 										cj("#"+value).remove();
 										var old_total = parseInt(cj("#total_number").html(),10);
-										help_message('Activity Deleted');
+										// help_message('Activity Deleted');
 										cj("#total_number").html(old_total-1);
 									},
 									error: function(){
@@ -461,11 +463,10 @@ cj(document).ready(function(){
 								data: {id: activityId},
 								success: function(data,status) { 
 									cj("#tagging-popup").dialog('close');
-									help_message('tag added!');
 									cj("#"+activityId).remove();
 									help_message('Tag Added');
 									var old_total = parseInt(cj("#total_number").html(),10);
-									help_message('Activity Deleted');
+									// help_message('Activity Deleted');
 									cj("#total_number").html(old_total-1);
 								},
 								error: function(){
@@ -507,6 +508,10 @@ cj(document).ready(function(){
 		cj("#loading-popup").dialog('open');
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
+		cj("#autocomplete_tag").val();
+		cj(".autocomplete-tags-bank").html('');
+		cj('#tagging-popup-header').html('');
+
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
@@ -630,9 +635,18 @@ cj(document).ready(function(){
     	return false;
 	});
 
-
-
-
+	// toggle Debug info for find match message popup
+	if(debug){
+		cj(".debug_on").live('click', function() { 
+			var debug_info = cj(".debug_info").html();
+			cj("#message_left_email").prepend(debug_info);
+			cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
+		});
+		cj(".debug_off").live('click', function() { 
+			cj("#message_left_email .debug_remove").remove();
+			cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
+		});
+	};
 
 	// opening find match window
 	cj(".find_match").live('click', function() {
@@ -652,26 +666,46 @@ cj(document).ready(function(){
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 				var icon ='';
-		 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
-					if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
-					icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
-				}
-				cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
-				if ((messages.forwardedEmail != '')){
-					cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
-				}
-				cj('#message_left_email').html(messages.details);
-				cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
-				cj('#email_id').val(messageId);
-				cj('#imap_id').val(imapId);
-				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
-				cj("#find-match-popup").dialog('open');
- 				cj("#tabs").tabs();
- 				cj('.email_address').val(messages.fromEmail);
+				if(messages.date != null){
+			 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
+						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
+						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
+					}
+					cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					if ((messages.forwardedEmail != '')){
+						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					}
+					// add some debug info to the message body on toggle
+					if(debug){
+						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
+						if(messages.status !== 'direct'){
+							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Parse type: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
+						}
+						debugHTML +="<span class='search_info'></span></div></div>";
+						cj('#message_left_header').append(debugHTML);
 
- 				cj('#filter').click();
-				cj('.first_name').val(firstName);
-				cj('.last_name').val(lastName);
+						// we can create redmine issues with message details and assign to stefan from a url ! 
+						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+						cj('.debug_remove').append(bugHTML);
+					}
+
+					cj('#message_left_email').html(messages.details);
+					cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
+					cj('#email_id').val(messageId);
+					cj('#imap_id').val(imapId);
+					cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100) });
+					cj("#find-match-popup").dialog('open');
+	 				cj("#tabs").tabs();
+	 				cj('.email_address').val(messages.fromEmail);
+
+	 				cj('#filter').click();
+					cj('.first_name').val(firstName);
+					cj('.last_name').val(lastName);
+				}else{
+					alert('unable to load message');
+
+				}
 			},
 			error: function(){
 				alert('unable to load message');
@@ -704,6 +738,19 @@ cj(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
+				if(debug){
+						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
+						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
+						debugHTML +="<span class='search_info'></span></div></div>";
+						cj('#message_left_header').append(debugHTML);
+						// we can create redmine issues with message details and assign to stefan from a url ! 
+						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+						cj('.debug_remove').append(bugHTML);
+					}
+
+
+
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(activityId);
 				cj('#imap_id').val(contactId);
@@ -829,34 +876,35 @@ function buildMessageList() {
 		cj("#total_number").html('0');
 	}else{
 		var messagesHtml = '';
-		var total_results =0;
+		var total_results = messages.count;
 		cj.each(messages, function(key, value) {
-			total_results++;
 			var icon ='';
-			messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
-			if( value.from_name != ''){
-				messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20)+'</td>';
-			}else {
-				messagesHtml += '<td class="name">N/A</td>';
-			}
-			if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
-				if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-				icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
-			}
-			messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
-	 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
-			messagesHtml += '<td class="date">'+value.date +'</td>';
+			if(value.date != null){
+				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
+				if( value.from_name != ''){
+					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20)+'</td>';
+				}else {
+					messagesHtml += '<td class="name">N/A</td>';
+				}
+				if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
+					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
+					icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
+				}
+				messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
+		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
+				messagesHtml += '<td class="date">'+value.date +'</td>';
 
-			// check for direct messages & not empty forwarded messages
-			if((value.status == 'direct' ) && (value.forwarder_email != '')){
-				messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_email,10)+'</td>';
-			}else if(value.forwarder_email != ''){
-				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
-			}else{
-				messagesHtml += '<td class="forwarder"> N/A </td>';
+				// check for direct messages & not empty forwarded messages
+				if((value.status == 'direct' ) && (value.forwarder_email != '')){
+					messagesHtml += '<td class="forwarder">Direct '+short_subject(value.from_email,10)+'</td>';
+				}else if(value.forwarder_email != ''){
+					messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder_email,14)+'</td>';
+				}else{
+					messagesHtml += '<td class="forwarder"> N/A </td>';
+				}
+				
+				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
-			
-			messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
 		cj("#total_number").html(total_results);
@@ -874,26 +922,27 @@ function buildActivitiesList() {
 		cj("#total_number").html('0');
 	}else{
 		var messagesHtml = '';
-		var total_results =0;
+		var total_results = messages.count;
 		cj.each(messages, function(key, value) {
-			total_results++;
-	 		messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
-			
-			if( value.fromName != ''){
-				messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
-				messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
- 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
- 				messagesHtml += '</a>';
-				messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
-				messagesHtml += '</td>';
-			}else {
-				messagesHtml += '<td class="name">N/A</td>';
+	 		if(value.date != null){
+				messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
+				
+				if( value.fromName != ''){
+					messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+					messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
+	 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+	 				messagesHtml += '</a>';
+					messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
+					messagesHtml += '</td>';
+				}else {
+					messagesHtml += '<td class="name">N/A</td>';
+				}
+				messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
+				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
+				messagesHtml += '<td class="date">'+value.date +'</td>';
+				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
+				messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
-			messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
-			messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
-			messagesHtml += '<td class="date">'+value.date +'</td>';
-			messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-			messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
 		cj("#total_number").html(total_results);
@@ -904,6 +953,15 @@ function buildActivitiesList() {
 
 function buildContactList() {
 	var contactsHtml = '';
+		html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
+		if(contacts.length < 1){
+			html += "(No Matches)";	
+		}else if(contacts.length == 1){
+			html += "(Should have auto Matched)";	
+		}else if(contacts.length > 1){
+			html += "(MultiMatch)";	
+		}
+		cj('.search_info').html(html);
 	cj.each(contacts, function(key, value) {
 		// calculate the aprox age
 		if(value.birth_date){

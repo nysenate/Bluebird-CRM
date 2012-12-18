@@ -9,6 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
+    private static $contTime = 6; // time between processMailboxes cron job in mins
 
     /* setupImap()
      * Parameters: None.
@@ -71,84 +72,99 @@ class CRM_IMAP_AJAX {
         // add &debug=true to any call to get the raw message details back
         $debug = self::get('debug');
         if ($debug){
-          echo "<h1>Full Email RAW DATA</h1>";
-          var_dump($email);
+          echo "<h1>Full Email RAW DATA</h1><pre>";
+          print_r($email);
+          echo "</pre>";
         }
 
         if((count($email->time)!= 1)||(count($email->uid) != 1)){
           $returnCode = array('code'      =>  'ERROR',
               'message'   => 'This email no longer exists');
             echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
+            // CRM_Utils_System::civiExit();
         }
 
-        $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
-        $format = ($email->plainmsg) ? "plain" : "html";
-        if($format =='plain'){
-            $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-            $tempDetails = preg_replace("/>>/i", "", $details);
-            $body = preg_replace("/(=|\r\n|\r|\n)/i", "<br>\n", $details);
+        // if message is less the x mins old, check it to see if it matches a contact,
+        // if it does directly match, don't allow it to show up in the unmatches screen
+        // we do this because the processing scritp hasn't had a chance to match it yet
+        $time = time()-(self::$contTime*60);;
+        if( $email->time > $time){
+          // email hasn't been processed yet
+
         }else{
-            // currently strips content 
-            $tempDetails = strip_tags($details,'<br>');
-            $tempDetails = preg_replace("/<br>/i", "\r\n<br>\n", $tempDetails);
-            $body = $details; // switch us back to the html version
+          // email has absolutely been processed by script so return it
+          $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
+          $format = ($email->plainmsg) ? "plain" : "html";
+
+          if($format =='plain'){
+              $tempDetails = preg_replace("/>|</i", "", $details);
+              $body = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $tempDetails);
+          }else{
+              // currently strips content 
+              $tempDetails = strip_tags($details,'<br>');
+              $tempDetails = preg_replace("/<br>/i", "\r\n<br>\n", $tempDetails);
+              $body = $details; // switch us back to the html version
+          }
+
+          // grab attachments
+          $attachmentCount = 0;
+          $attachmentHeader = $email->attachments;
+          foreach ($attachmentHeader as $key => $value) {
+              $name = quoted_printable_decode($key);
+              //mb_convert_encoding
+              $name = preg_replace("/(\?utf-8\?Q\?)/i", "", $name);
+              $name =  preg_replace('/[^A-Za-z0-9.\s\s+]/', ' ', $name);
+              $attachmentArray[$attachmentCount] = array('name' => $name,'content' => $value);
+              $attachmentCount++;
+          }
+          $attachmentArray['overview'] = array('total'=>$attachmentCount); 
+
+          // here we grab the details from the message;
+          preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempDetails, $subjects);
+          preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempDetails, $froms);
+
+          $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
+
+          // check ot see if forwarded 
+          $status = (!$froms['2']) ? 'direct' : 'forwarded';
+
+          // contains info directly from the email header
+          $header = array(
+              'format' => $format,
+              'uid' => $email->uid,
+              'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
+              'from_name' => $email->sender[0]->personal,                      
+              'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,                      
+              'subject' => $email->subject,
+              'body' => $body,                      
+              'date_clean' => self::cleanDate($email->date),
+              'status' => $status,
+          );
+
+          // if we have a direct message populate accordingly 
+          $origin = ($status == 'direct') ?  $header['from'] : $froms['2'];        
+          $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
+          $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
+          $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
+          $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
+
+          // contains info about the forwarded message in the email body
+          $forwarded = array(
+              'date_clean' => $origin_date, 
+              'subject' => $origin_subject, 
+              'origin' => $origin,
+              'origin_name' => $origin_name, 
+              'origin_email' => $origin_email,
+              'origin_lookup' => $fromEmail['type'], 
+          );
+
+          $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+          if ($debug){
+            echo "<h1>Full Email OUTPUT</h1>";
+            var_dump($output);
+          }
+          return $output;
         }
-        // grab attachments
-        $attachmentCount = 0;
-        $attachmentHeader = $email->attachments;
-        foreach ($attachmentHeader as $key => $value) {
-            $name = quoted_printable_decode($key);
-            //mb_convert_encoding
-            $name = preg_replace("/(\?utf-8\?Q\?)/i", "", $name);
-            $name =  preg_replace('/[^A-Za-z0-9.\s\s+]/', ' ', $name);
-            $attachmentArray[$attachmentCount] = array('name' => $name,'content' => $value);
-            $attachmentCount++;
-        }
-        $attachmentArray['overview'] = array('total'=>$attachmentCount); 
-
-        // here we grab the details from the message;
-        preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempDetails, $subjects);
-        preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempDetails, $froms);
-
-        $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
-
-        // check ot see if forwarded 
-        $status = (!$froms['2']) ? 'direct' : 'forwarded';
-
-        $header = array(
-            'format' => $format,
-            'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
-            'from_name' => $email->sender[0]->personal,                      
-            'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,                      
-            'subject' => $email->subject,
-            'body' => $body,                      
-            'date_clean' => self::cleanDate($email->date),
-            'status' => $status,
-        );
-
-        // this gets a bit inelegant
-        // if the origin details are empty, we have a direct message and populate accordingly 
-        $origin = (!$froms['2']) ?  $header['from'] : $froms['2'];
-        $origin_name = (!$fromEmail['name']) ?  $header['from_name'] : $fromEmail['name'];
-        $origin_email = (!$fromEmail['email']) ?  $header['from_email'] : $fromEmail['email'];
-        $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
-        $origin_subject = (!$subjects['2']) ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
-
-        $forwarded = array(
-            'date_clean' => $origin_date, 
-            'subject' => $origin_subject, 
-            'origin' => $origin,
-            'origin_name' => $origin_name, 
-            'origin_email' => $origin_email, 
-        );
-
-        $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
-        if ($debug){
-          echo "<h1>Full Email OUTPUT</h1>";
-          var_dump($output);
-        }
-        return $output;
     }
 
     /* getUnmatchedMessages()
@@ -160,6 +176,9 @@ class CRM_IMAP_AJAX {
      */
     public static function getUnmatchedMessages() {
         require_once 'CRM/Utils/IMAP.php';
+        $debug = self::get('debug');
+
+
         // Pull all of the IMAP usernames into the $imap_accounts variable
         self::setupImap();
         $messages = array();
@@ -185,7 +204,7 @@ class CRM_IMAP_AJAX {
 
                     $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
-                        'from' =>  $output['forwarded']['origin_name'].' <'.$output['forwarded']['origin_email'].'>',
+                        'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                         'uid' =>  $header->uid,
                         'date' =>  $output['header']['date_clean'],
                         'format' =>  $output['header']['format'],
@@ -198,39 +217,62 @@ class CRM_IMAP_AJAX {
                         'attachmentname'  =>  $output['attachments'][0]['name'],
                         'attachment'  => $output['attachments']['overview']['total'],
                         'status' =>$output['header']['status'],
-                        'imap_id' =>  $imap_id
+                        'imap_id' =>  $imap_id,
+                        'origin_lookup' => $output['forwarded']['origin_lookup']
+
                         );
                  }
             }
         }       
-
+        $returnMessage['count'] = count($returnMessage);
         
         // Encode the messages variable and return it to the AJAX call
-        echo json_encode($returnMessage);
+        if ($debug) echo "<pre>";
+        
+        echo (!$debug) ?  json_encode($returnMessage) : print_r($returnMessage);
+        if ($debug) echo "</pre>";
+
         CRM_Utils_System::civiExit();
     }
 
-    public function extract_email_address ($string) {
-        // some nysenate fixes
-        $string = preg_replace('/\/STS\/senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/\/CENTER\/senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/\/senate@senate/i', ' internal@nysenate.gov', $string);
-        $string = preg_replace('/&lt;/i', '', $string);
-        $string = preg_replace('/&gt;/i', '', $string);
-        $string = preg_replace('/</i', '', $string);
-        $string = preg_replace('/>/i', '', $string);
-        $string = preg_replace('/"/i', '', $string);
+    public function extract_email_address ($string) {        
+        // we have to parse out ldap stuff because sometimes addresses are
+        // embedded and, see NYSS #5748 for more details 
 
-        foreach(preg_split('/ /', $string) as $token) {
-            $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
-            if ($email !== false) {
-                $emails[] = $email;
-            }
+        // if o= is appended to the end of the email address remove it 
+        $string = preg_replace('/\/senate@senate/i', '/senate', $string);
+
+        // ldap addresses have slashes, so we do an internal lookup
+        $internal = preg_match("/\//i", $string, $matches);
+
+        if($internal == 1){
+          $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
+            $retrieve = array("sn","givenname", "mail");
+            $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
+            $info = ldap_get_entries($ldapcon, $search);
+          if($info[0]){
+            $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
+            $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
+            return $return;
+          }else{
+            $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed');
+            return $return;
+          }
+          
+        }else{
+          // clean out any anything that wouldn't be a name or email, html or plain-text
+          $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
+          $string = preg_replace('/<|>|"|\'/i', '', $string);
+          foreach(preg_split('/ /', $string) as $token) {
+              $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+              if ($email !== false) {
+                  $emails[] = $email;
+              }
+          }
+          $name = str_replace($emails[0], '', $string);
+          $return = array('type'=>'inline','name'=>$name,'email'=>$emails[0]);
+          return $return;
         }
-
-        $name = str_replace($emails[0], '', $string);
-        $return = array('name'=>$name,'email'=>$emails[0]);
-        return $return;
     }
 
 
@@ -262,6 +304,7 @@ class CRM_IMAP_AJAX {
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'format' => $output['header']['format'],
+                               'forwardedFull' => $output['header']['from'],
                                'forwardedName'   =>  mb_convert_encoding($output['header']['from_name'], 'UTF-8'),
                                'forwardedEmail'  =>  $output['header']['from_email'],
                                'fromName'  =>  mb_convert_encoding($output['forwarded']['origin_name'], 'UTF-8'),
@@ -273,7 +316,12 @@ class CRM_IMAP_AJAX {
                                'attachmentname'  =>  $output['attachments'][0]['name'],
                                'attachment'  => $output['attachments']['overview']['total'],
                                'status' =>$output['header']['status'],
-                               'date'   =>  $output['header']['date_clean']);
+                               'email_user' => self::$imap_accounts[$imap_id]['user'],
+                               'status' =>$output['header']['status'],
+                               'origin_lookup' => $output['forwarded']['origin_lookup'],
+                               'header_subject' => $output['header']['subject'],
+                               'date'   =>  $output['header']['date_clean'],
+                               'forwarder_time'   =>  $output['forwarded']['date_clean']);
         // var_dump($returnMessage);  exit();
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
@@ -296,7 +344,7 @@ class CRM_IMAP_AJAX {
         $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
 
         // reformat the date to something standard here.
-        $date_string_short = date("m-d-y h:i A", strtotime($date_string_short));
+        $date_string_short = date("m-d-y H:i", strtotime($date_string_short));
         return $date_string_short;
     }
 
@@ -458,6 +506,7 @@ class CRM_IMAP_AJAX {
           var_dump($date);
           var_dump($subject);
           var_dump($body);
+          var_dump($messageUid);
         }
 
         require_once 'api/api.php';
@@ -505,13 +554,48 @@ class CRM_IMAP_AJAX {
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
 
-          // On match add email to user 
-           $params = array( 
-            'contact_id' => $contactId,
-            'email' => $fromEmail,
-            'version' => 3,
-          );
-          $result = civicrm_api( 'email','create',$params );
+            // check to see if contact has the email being assigend to it,
+            // if doesn't have email, add it to contact
+            $query = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
+            $result = mysql_query($query, self::db());
+            $results = array();
+            while($row = mysql_fetch_assoc($result)) {
+                $results[] = $row;
+            }
+
+            // On match add email to user
+            // Important
+            $params = array(
+                'contact_id' => $contactId,
+                'email' => $fromEmail,
+                'version' => 3,
+            );
+
+            if ($debug){
+                echo "<h1>Contact ".$contactId." has the following emails </h1>";
+                var_dump($results);
+            }
+            $emailsCount = count($results);
+
+            $matches = 0;
+            if ($debug){
+              echo "<h1>Contact Non matching results </h1>";
+              // if the records don't match, count it, an if the number is > 1 add the record
+              foreach($results as $email) {
+                  if($email['email'] == $fromEmail){
+                      if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                  }else{
+                      $matches++;
+                      if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                  }
+              }
+            }
+
+            if(($emailsCount-$matches) == 0){
+                if ($debug) echo "<p> added ".$fromEmail."</p><hr/>";
+                $result = civicrm_api( 'email','create',$params );
+            }
+ 
 
 
           // Submit the activity information and assign it to the right user
@@ -521,7 +605,9 @@ class CRM_IMAP_AJAX {
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
               'subject' => $subject,
+              'is_auto' => false, // we manually add it, right ?
               'status_id' => 2,
+              'original_id' => $messageUid,
               'details' => $body,
               'version' => 3
           );
@@ -538,7 +624,8 @@ class CRM_IMAP_AJAX {
             self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
             if ($debug){
               echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
-              $imap->movemsg_uid($messageUid, 'Archive');
+            }else{
+                $imap->movemsg_uid($messageUid, 'Archive');
             }
 
             // add attachment to activity
@@ -672,6 +759,7 @@ class CRM_IMAP_AJAX {
         $tag     = new CRM_Core_BAO_Tag();
         $tag->id = self::getInboxPollingTagId();
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
+        $debug = self::get('debug');
 
         foreach($result as $id) {
             // pull in full activity record 
@@ -703,6 +791,9 @@ class CRM_IMAP_AJAX {
 
             $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
             // message to return 
+            if ($debug){
+              var_dump($activity_node);
+            }
             $returnMessage[$id] = array('activitId'    =>  $id,
                             'contactId' =>  $contact_node['contact_id'],
                             'fromName'   =>  $contact_node['display_name'],
@@ -715,8 +806,11 @@ class CRM_IMAP_AJAX {
                             'activityId' => $activity_node['id'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
+                            'match_type'  =>  $activity_node['is_auto'],
+                            'original_id'  =>  $activity_node['original_id'],
                             'date'   =>  $date);
          }
+         $returnMessage['count'] = count($returnMessage);
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
     }
@@ -756,10 +850,14 @@ class CRM_IMAP_AJAX {
         $returnMessage = array('uid'    =>  $activitId,
                             'fromName'   =>  $contact_node['display_name'],
                             'fromEmail'  =>  $contact_node['email'],
+                            'fromId'  =>  $contact_node['id'],
                             'forwardedName' => $forwarder_node['display_name'],
                             'forwardedEmail' => $forwarder_node['email'],
                             'subject'    =>  $activity_node['subject'],
                             'details'  =>  $activity_node['details'],
+                            'match_type'  =>  $activity_node['is_auto'],
+                            'original_id'  =>  $activity_node['original_id'],
+
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);

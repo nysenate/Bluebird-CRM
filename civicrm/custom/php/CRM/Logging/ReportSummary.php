@@ -190,10 +190,10 @@ CREATE TEMPORARY TABLE
       $clause = implode(' AND ', $clause);
 
       $sql    = "
- INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
- SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
- WHERE {$clause} {$this->_limit}";
-      CRM_Core_Error::debug_var('sql insert',$sql);
+INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
+SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
+WHERE {$clause} {$this->_limit}";
+      //CRM_Core_Error::debug_var('sql insert',$sql);
       CRM_Core_DAO::executeQuery($sql, $sqlParams);
     }
 
@@ -217,9 +217,9 @@ CREATE TEMPORARY TABLE
         $this->buildRows($sql, $rows);
       }
     }
-    CRM_Core_Error::debug_var('$rows',$rows);
+    //CRM_Core_Error::debug_var('$rows',$rows);
     //NYSS
-    //self::_combineContactRows($rows);
+    self::_combineContactRows($rows);
 
     // format result set.
     $this->formatDisplay($rows);
@@ -261,6 +261,7 @@ CREATE TEMPORARY TABLE
   }
 
   //NYSS
+  static
   function _combineContactRows(&$rows) {
     //if log_type in contact set, and log_date same, and conn_id same, combine
     $rowKeys = array();
@@ -268,9 +269,16 @@ CREATE TEMPORARY TABLE
       'log_civicrm_contact',
       'log_civicrm_address',
       'log_civicrm_value_constituent_information_1',
+      'log_civicrm_email',
+      'log_civicrm_phone',
     );
+
+    //sort so that Insert is preserved when it exists
+    usort($rows, array('CRM_Utils_Sort', 'cmpName'));
+
     foreach ( $rows as $k => $row ) {
-      $key = "{$row['log_civicrm_entity_log_conn_id']}_{$row['log_civicrm_entity_log_date']}";
+      $keyDate = substr($row['log_civicrm_entity_log_date'], 0, strlen($row['log_civicrm_entity_log_date']) - 3);
+      $key = "{$row['log_civicrm_entity_log_conn_id']}_{$keyDate}";
       if ( in_array($row['log_civicrm_entity_log_type'], $logTypes) ) {
         if ( in_array($key, $rowKeys) ) {
           unset($rows[$k]);
@@ -280,6 +288,5 @@ CREATE TEMPORARY TABLE
         }
       }
     }
-    CRM_Core_Error::debug_var('$rows after',$rows);
-  }
+  }//_combineContactRows
 }
