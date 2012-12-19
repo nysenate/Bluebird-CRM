@@ -551,9 +551,9 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       // Shape file lookups can result in new/changed coordinates.
       if ($status_code == 'SHAPEFILE') {
         $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
-        $note_updates += $changes['notes'];
-        $note_updates += array("GEO_ACCURACY: {$batch_res['geo_accuracy']}",
-                               "GEO_METHOD: {$batch_res['geo_method']}");
+        $geonote = array("GEO_ACCURACY: {$batch_res['geo_accuracy']}",
+                         "GEO_METHOD: {$batch_res['geo_method']}");
+        $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
         $sql_updates = $changes['sqldata'];
 
         if (count($sql_updates) > 0) {
@@ -762,7 +762,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
           "ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].' '.$row['postal_code']."\n";
 
   if ($update_notes && is_array($update_notes)) {
-    $note .= "UPDATES:\n ".implode("\n", $update_notes);
+    $note .= "UPDATES:\n".implode("\n", $update_notes);
   }
 
   $subj_ext = '';
