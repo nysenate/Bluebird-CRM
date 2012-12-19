@@ -186,7 +186,7 @@ heading;
 	ksort($summary_cnts);
 	foreach( $summary_cnts as $dist => $dist_cnts ){
 		$output_row .=  fixed_width($dist, 12)
-		               .fixed_width(get($dist_cnts, 'individual', '0'), 15)
+					   .fixed_width(get($dist_cnts, 'individual', '0'), 15)
 					   .fixed_width(get($dist_cnts, 'household', '0'), 14, false)
 					   .fixed_width(get($dist_cnts, 'organization', '0'), 14)."\n";
 	}
@@ -201,40 +201,27 @@ function generate_text_detailed_report($senator_district, $senator_name, &$detai
 	bbscript_log("debug", "Generating detailed text report.");
 	$output = "";
 
+	$columns = array(
+		"individual" => array(
+			"Name" => 30, "Sex" => 6, "Age" => 6, "Address" => 25, "City" => 17, "Zip" => 6,
+			"Email" => 20, "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9 ),
+
+		"organization" => array(
+			"Organization Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
+	        "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9 ),
+
+		"household" => array(
+			"Household Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
+	        "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9)
+	);
+
 	ksort($detail_data);
 	foreach( $detail_data as $dist => $contact_types ){
 		foreach( $contact_types as $type => $contact_array ){
-			if ($type == "individual"){
-				$heading = <<<individual
-District $dist : Individuals that will be in this district
---------------------------------------------------------------------------------------------------------------------------------------------------
-Name                         | Sex | Age | Address                | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
---------------------------------------------------------------------------------------------------------------------------------------------------
 
-individual;
-			}
-
-			else if ($type == "household") {
-				$heading = <<<household
-District $dist : Households that will be in this district
---------------------------------------------------------------------------------------------------------------------------------------------------
-Household Name               | Address                            | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-household;
-			}
-
-			else if ($type == "organization") {
-				$heading = <<<organization
-District $dist : Organizations that will be in this district
---------------------------------------------------------------------------------------------------------------------------------------------------
-Organization Name            | Address                            | City           | Zip | Email              | Source | Cases | Actvs | BB Rec# |
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-organization;
-			}
-
-			$output .= $heading;
+			$label = "\nDistrict $dist : " . ucfirst($type) . "s\n";
+			$heading = create_table_header($columns[$type]);
+			$output .= $label . $heading;
 
 			foreach($contact_array as $contact){
 				if ($type == "individual"){
@@ -261,18 +248,30 @@ organization;
 					      . fixed_width($contact['contact_id']);
 				$output .= "\n";
 			}
-
-			$output .= <<<footer
-__________________________________________________________________________________________________________________________________________________
-
-
-
-footer;
 		}
 	}
 
-	print $output;
+	print $output . "\n\n";
 } // generate_text_detailed_report
+
+function create_table_header($columns, $border = '-', $separator = "|"){
+
+	$header = "";
+	$total_width = 0;
+
+	foreach($columns as $name => $width){
+		$header .= fixed_width($name, $width - 1, true) . $separator;
+		$total_width += $width;
+	}
+
+	$border_row = "";
+	for($i = 0; $i < $total_width; $i++){
+		$border_row .= $border;
+	}
+
+	$header = $border_row . "\n" . $header . "\n" . $border_row . "\n";
+	return $header;
+}
 
 function generate_html_summary_report($senator_district, $senator_name, &$summary_cnts){
 
@@ -293,15 +292,21 @@ info;
 
 	ksort($summary_cnts);
 	foreach( $summary_cnts as $dist => $dist_cnts ){
-		$summary_table .= "<tr><td>$dist</td>"
-		               .  "<td>" . get($dist_cnts, 'individual', '0') . "</td>"
-		               .  "<td>" . get($dist_cnts, 'household', '0') . "</td>"
-		               .  "<td>" . get($dist_cnts, 'organization', '0') . "</td></tr>";
+		$summary_table .= "<tr>"
+		               .  wrap_tbl_col($dist)
+		               .  wrap_tbl_col(get($dist_cnts, 'individual', '0'))
+		               .  wrap_tbl_col(get($dist_cnts, 'household', '0'))
+		               .  wrap_tbl_col(get($dist_cnts, 'organization', '0'))
+		               .  "</tr>";
 	}
 	$summary_table .= "</table>";
 
 	$output = $heading . $info . $summary_table;
 	print wrap_html("Redistricting Summary", $output);
+}
+
+function generate_html_detail_report($senator_district, $senator_name, &$summary_cnts){
+	// [TODO]
 }
 
 function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_contacts = true ){
@@ -428,35 +433,39 @@ structure;
 	return sprintf($structure, $title, $body_content);
 }
 
+function wrap_tbl_col( $string, $class = "" ){
+	return "<td class='$class'>$string</td>";
+}
+
 function get($array, $key, $default) {
     // blank, null, and 0 values are bad.
     return isset($array[$key]) && $array[$key]!=NULL && $array[$key]!=="" && $array[$key]!==0 && $array[$key]!=="000" ? $array[$key] : $default;
 }
 
 // Pads the string to a certain length and chops off the rest on the right side
-// Also deals with NULL and empty strings.
-function fixed_width($string, $length = 10, $center = false, $unknown = ""){
+//
+function fixed_width($string, $length = 10, $center = false, $default = ""){
 	$pad_type = STR_PAD_RIGHT;
 	if ($center) {
 		$pad_type = STR_PAD_BOTH;
 	}
 	if ($string == NULL || $string == "" ){
-		$string = $unknown;
+		$string = $default;
 	}
 	return substr(str_pad($string, $length, " ", $pad_type), 0, $length );
 }
 
-function get_gender($value, $unknown = "-"){
+function get_gender($value, $default = "-"){
 	if ($value == 1){
 		return "F";
 	}
 	else if ($value == 2){
 		return "M";
 	}
-	else return $unknown;
+	else return $default;
 }
 
-function get_age($birth_date, $unknown = '-'){
+function get_age($birth_date, $default = '-'){
 	if ( $birth_date != NULL && $birth_date != "" ){
 		try {
 			$b_date = new DateTime($birth_date);
@@ -468,7 +477,7 @@ function get_age($birth_date, $unknown = '-'){
 			bbscript_log("trace", "Failed to get age from date: $birth_date");
 		}
 	}
-	return $unknown;
+	return $default;
 }
 
 
