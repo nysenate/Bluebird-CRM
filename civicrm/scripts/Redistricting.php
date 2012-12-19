@@ -755,7 +755,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
     return;
   }
 
-  $note = "== ".REDIST_NOTE." - Redistricting Information ==\n".
+  $note = "== ".REDIST_NOTE." ==\n".
           "ADDRESS_ID: $addr_id\n".
           "NOTE_TYPE: $note_type\n".
           "MATCH_TYPE: $match_type\n".
