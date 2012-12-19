@@ -173,14 +173,15 @@ function report_out_of_district_details($senator_district, $db, &$detail_data, $
 
 function generate_text_summary_report($senator_district, $senator_name, &$summary_cnts){
 
-	$heading = <<<heading
-${senator_name} District {$senator_district}
-Summary of contacts that are outside district {$senator_district}
+	$label = "${senator_name} District {$senator_district}\n\nSummary of contacts that are outside district {$senator_district}\n";
+	$columns = array(
+		"District" => 12,
+		"Individuals" => 15,
+		"Households" => 14,
+		"Organization" => 14
+	);
 
-District    Individuals    Households    Organizations
--------------------------------------------------------
-
-heading;
+	$heading = $label . create_table_header($columns);
 
 	$output_row = "";
 	ksort($summary_cnts);
