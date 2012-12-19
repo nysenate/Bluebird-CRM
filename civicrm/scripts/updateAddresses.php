@@ -211,7 +211,8 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 			$success = true;
 			// consider address is automatically parseable,
 			// when we should find street_number and street_name
-			if (!CRM_Utils_Array::value('street_name', $parsedFields) ||
+			//NYSS 5918 - consider parsed if *either* name or number parsed
+			if (!CRM_Utils_Array::value('street_name', $parsedFields) &&
 			!CRM_Utils_Array::value('street_number', $parsedFields)) {
 				$success = false;
 			}
@@ -317,14 +318,14 @@ function getQuery($optlist) {
 
 	$whereClause = '( c.id = a.contact_id )';
 
-	$start = $optlist[$start];
+	$start = $optlist['start'];
 	if ($start && is_numeric($start)) {
-		$whereClause = " AND ( c.id >= $start )";
+		$whereClause .= " AND ( c.id >= $start )";
 	}
 
 	$end = $optlist['end'];
 	if ($end && is_numeric($end)) {
-		$whereClause[] = " AND ( c.id <= $end )";
+		$whereClause .= " AND ( c.id <= $end )";
 	}
 
 	if($optlist['geocode']) {
@@ -332,7 +333,7 @@ function getQuery($optlist) {
 		$querySelect[] = "a.geo_code_2 as lon";
 
 		if(!$optlist['force']) {
-			$whereClause = $whereClause."
+			$whereClause .= "
  AND (( a.geo_code_1 is null OR a.geo_code_1 = 0 ) AND
 ( a.geo_code_2 is null OR a.geo_code_2 = 0 ) AND
 ( a.country_id is not null ))";
@@ -352,7 +353,7 @@ function getQuery($optlist) {
 		}
 
 		if(!$optlist['force']) {
-			$whereClause = $whereClause."
+			$whereClause .= "
  AND (( d.congressional_district_46 is null or d.congressional_district_46 = \"\" ) OR
 ( d.ny_senate_district_47 is null or d.ny_senate_district_47= \"\" ) OR
 ( d.ny_assembly_district_48 is null or d.ny_assembly_district_48 = \"\" ) OR
