@@ -102,6 +102,9 @@ $NULLIFY_DISTS = array('CD', 'SD', 'AD');
 // Construct the url with all our options...
 $bulkdistrict_url = "$sage_base/json/bulkdistrict/body?threadCount=$opt_threads&key=$sage_key&useGeocoder=".($opt_usegeocoder ? "1&geocoder=$opt_usegeocoder" : "0")."&useShapefiles=".($opt_useshapefiles ? 1 : 0);
 
+// Track the full time it takes to run the redistricting process.
+$script_start_time = microtime(true);
+
 // Get CiviCRM database connection
 require_once 'CRM/Core/Config.php';
 require_once 'CRM/Core/DAO.php';
@@ -134,7 +137,8 @@ if ($opt_instate) {
                     $bulkdistrict_url, $opt_usecoordinates);
 }
 
-bbscript_log("INFO", "Completed all tasks");
+$elapsed_time = round(get_elapsed_time($script_start_time), 3);
+bbscript_log("INFO", "Completed all tasks in $elapsed_time seconds.");
 exit(0);
 
 
