@@ -89,7 +89,7 @@ $FIELD_MAP = array(
     'TOWN' => array('db'=>'town_52', 'sage'=>'town_code'),
     'WARD' => array('db'=>'ward_53', 'sage'=>'ward_code'),
     'SCHL' => array('db'=>'school_district_54', 'sage'=>'school_code'),
-    'CC' => array('db'=>'new_york_city_council_55', 'sage'=>'nycc_code'),
+    'CC' => array('db'=>'new_york_city_council_55', 'sage'=>'council_code'),
     'LAT' => array('db'=>'geo_code_1', 'sage'=>'latitude'),
     'LON' => array('db'=>'geo_code_2', 'sage'=>'longitude'),
 );
