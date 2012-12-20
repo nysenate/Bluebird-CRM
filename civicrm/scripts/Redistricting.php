@@ -4,7 +4,7 @@
 // Authors: Stefan Crain, Graylin Kim, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2012-10-26
-// Revised: 2012-12-19
+// Revised: 2012-12-20
 
 // ./Redistricting.php -S skelos --batch 2000 --log 5 --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
@@ -97,10 +97,14 @@ $FIELD_MAP = array(
 $DIST_FIELDS = array('CD', 'SD', 'AD', 'ED', 'CO',
                      'CLEG', 'TOWN', 'WARD', 'SCHL', 'CC');
 $ADDR_FIELDS = array('LAT', 'LON');
-$NULLIFY_DISTS = array('CD', 'SD', 'AD');
+$NULLIFY_INSTATE = array('CD', 'SD', 'AD', 'ED');
+$NULLIFY_OUTOFSTATE = $DIST_FIELDS;
 
 // Construct the url with all our options...
 $bulkdistrict_url = "$sage_base/json/bulkdistrict/body?threadCount=$opt_threads&key=$sage_key&useGeocoder=".($opt_usegeocoder ? "1&geocoder=$opt_usegeocoder" : "0")."&useShapefiles=".($opt_useshapefiles ? 1 : 0);
+
+// Track the full time it takes to run the redistricting process.
+$script_start_time = microtime(true);
 
 // Get CiviCRM database connection
 require_once 'CRM/Core/Config.php';
@@ -134,7 +138,8 @@ if ($opt_instate) {
                     $bulkdistrict_url, $opt_usecoordinates);
 }
 
-bbscript_log("INFO", "Completed all tasks");
+$elapsed_time = round(get_elapsed_time($script_start_time), 3);
+bbscript_log("INFO", "Completed all tasks in $elapsed_time seconds.");
 exit(0);
 
 
@@ -248,7 +253,7 @@ function handle_out_of_state($db)
 
   while ($row = mysql_fetch_assoc($result)) {
     if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-      $note_updates = nullify_district_info($db, $row);
+      $note_updates = nullify_district_info($db, $row, false);
       if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
         insert_redist_note($db, OUTOFSTATE_NOTE, 'NOLOOKUP', $row,
                            null, $note_updates);
@@ -384,10 +389,17 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
 
 function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
 {
+  global $FIELD_MAP, $DIST_FIELDS;
+
   bbscript_log("TRACE", "==> retrieve_addresses()");
 
   $limit_clause = ($max_res > 0 ? "LIMIT $max_res" : "");
   $state_compare_op = $in_state ? '=' : '!=';
+  $dist_colnames = array();
+
+  foreach ($DIST_FIELDS as $abbrev) {
+    $dist_colnames[] = "di.".$FIELD_MAP[$abbrev]['db'];
+  }
 
   $q = "SELECT a.id, a.contact_id,
                a.street_address, a.street_number, a.street_number_suffix,
@@ -396,18 +408,7 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
                a.geo_code_1, a.geo_code_2,
                sp.abbreviation AS state,
                di.id as district_id,
-               di.county_50,
-               di.county_legislative_district_51,
-               di.congressional_district_46,
-               di.ny_senate_district_47,
-               di.ny_assembly_district_48,
-               di.election_district_49,
-               di.town_52,
-               di.ward_53,
-               di.school_district_54,
-               di.new_york_city_council_55,
-               di.neighborhood_56,
-               di.last_import_57
+              ".implode(",\n", $dist_colnames)."
      FROM civicrm_address a
      JOIN civicrm_state_province sp
      LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id = a.id)
@@ -551,9 +552,9 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       // Shape file lookups can result in new/changed coordinates.
       if ($status_code == 'SHAPEFILE') {
         $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
-        $note_updates += $changes['notes'];
-        $note_updates += array("GEO_ACCURACY: {$batch_res['geo_accuracy']}",
-                               "GEO_METHOD: {$batch_res['geo_method']}");
+        $geonote = array("GEO_ACCURACY: {$batch_res['geo_accuracy']}",
+                         "GEO_METHOD: {$batch_res['geo_method']}");
+        $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
         $sql_updates = $changes['sqldata'];
 
         if (count($sql_updates) > 0) {
@@ -580,7 +581,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       $batch_cntrs[$status_code]++;
       bbscript_log('WARN', "[NOMATCH][$message] on record #$address_id");
       if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-        $note_updates = nullify_district_info($db, $orig_rec);
+        $note_updates = nullify_district_info($db, $orig_rec, true);
         if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
           insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec,
                              null, $note_updates);
@@ -637,7 +638,7 @@ function delete_batch_notes($db, $lo_id, $hi_id)
 // response after distassigning and/or geocoding that record.
 function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 {
-  global $FIELD_MAP;
+  global $FIELD_MAP, $NULLIFY_INSTATE;
 
   $changes = array('notes'=>array(), 'abbrevs'=>array(), 'sqldata'=>array());
   $address_id = $sage_rec['address_id'];
@@ -646,12 +647,17 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
     $dbfld = $FIELD_MAP[$abbrev]['db'];
     $sagefld = $FIELD_MAP[$abbrev]['sage'];
     $old_val = get($db_rec, $dbfld, 'NULL');
-    $new_val = get($sage_rec, $sagefld, $old_val);
+    $new_val = get($sage_rec, $sagefld, 'NULL');
     $changes['notes'][] = "$abbrev:$old_val=>$new_val";
 
     if ($old_val != $new_val) {
-      $changes['abbrevs'][] = $abbrev;
-      $changes['sqldata'][$dbfld] = $new_val;
+      if ($new_val != 'NULL' || in_array($abbrev, $NULLIFY_INSTATE)) {
+        // If the SAGE value for the current field is "null" (and the original
+        // value was not null), then the field will be nullified only if it's
+        // one of the four primary district fields (CD, SD, AD, or ED).
+        $changes['abbrevs'][] = $abbrev;
+        $changes['sqldata'][$dbfld] = ($new_val == 'NULL' ? 0 : $new_val);
+      }
     }
   }
   return $changes;
@@ -701,14 +707,15 @@ function insert_district_info($db, $address_id, $sqldata)
 
 
 
-function nullify_district_info($db, $row)
+function nullify_district_info($db, $row, $instate = true)
 {
-  global $FIELD_MAP, $NULLIFY_DISTS;
+  global $FIELD_MAP, $NULLIFY_INSTATE, $NULLIFY_OUTOFSTATE;
 
   $sql_updates = array();
   $note_updates = array();
+  $dist_abbrevs = ($instate ? $NULLIFY_INSTATE : $NULLIFY_OUTOFSTATE);
 
-  foreach ($NULLIFY_DISTS as $abbrev) {
+  foreach ($dist_abbrevs as $abbrev) {
     $colname = $FIELD_MAP[$abbrev]['db'];
     $sql_updates[$colname] = 0;
     $note_updates[] = "$abbrev:".get($row, $colname, 'NULL')."=>0";
@@ -762,7 +769,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
           "ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].' '.$row['postal_code']."\n";
 
   if ($update_notes && is_array($update_notes)) {
-    $note .= "UPDATES:\n ".implode("\n", $update_notes);
+    $note .= "UPDATES:\n".implode("\n", $update_notes);
   }
 
   $subj_ext = '';
@@ -881,7 +888,8 @@ function get($array, $key, $default)
 {
   // blank, null, and 0 values are bad.
   if (isset($array[$key]) && $array[$key] != null && $array[$key] !== ''
-    && $array[$key] !== 0 && $array[$key] !== "000") {
+      && $array[$key] !== 0 && $array[$key] !== '0'
+      && $array[$key] !== '00' && $array[$key] !== '000') {
     return $array[$key];
   }
   else {
