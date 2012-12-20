@@ -4,7 +4,7 @@
 // Authors: Stefan Crain, Graylin Kim, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2012-10-26
-// Revised: 2012-12-19
+// Revised: 2012-12-20
 
 // ./Redistricting.php -S skelos --batch 2000 --log 5 --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
@@ -638,7 +638,7 @@ function delete_batch_notes($db, $lo_id, $hi_id)
 // response after distassigning and/or geocoding that record.
 function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 {
-  global $FIELD_MAP;
+  global $FIELD_MAP, $NULLIFY_INSTATE;
 
   $changes = array('notes'=>array(), 'abbrevs'=>array(), 'sqldata'=>array());
   $address_id = $sage_rec['address_id'];
@@ -651,8 +651,13 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
     $changes['notes'][] = "$abbrev:$old_val=>$new_val";
 
     if ($old_val != $new_val) {
-      $changes['abbrevs'][] = $abbrev;
-      $changes['sqldata'][$dbfld] = $new_val;
+      if ($new_val != 'NULL' || in_array($abbrev, $NULLIFY_INSTATE)) {
+        // If the SAGE value for the current field is "null" (and the original
+        // value was not null), then the field will be nullified only if it's
+        // one of the four primary district fields (CD, SD, AD, or ED).
+        $changes['abbrevs'][] = $abbrev;
+        $changes['sqldata'][$dbfld] = ($new_val == 'NULL' ? 0 : $new_val);
+      }
     }
   }
   return $changes;
