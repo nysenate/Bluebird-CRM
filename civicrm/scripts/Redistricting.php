@@ -643,23 +643,33 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
   $changes = array('notes'=>array(), 'abbrevs'=>array(), 'sqldata'=>array());
   $address_id = $sage_rec['address_id'];
 
-  foreach ($fields as $abbrev) {
-    $dbfld = $FIELD_MAP[$abbrev]['db'];
-    $sagefld = $FIELD_MAP[$abbrev]['sage'];
-    $old_val = get($db_rec, $dbfld, 'NULL');
-    $new_val = get($sage_rec, $sagefld, 'NULL');
-    $changes['notes'][] = "$abbrev:$old_val=>$new_val";
+  foreach ($fields as $abbr) {
+    $dbfld = $FIELD_MAP[$abbr]['db'];
+    $sagefld = $FIELD_MAP[$abbr]['sage'];
+    $db_val = get($db_rec, $dbfld, 'NULL');
+    $sage_val = get($sage_rec, $sagefld, 'NULL');
 
-    if ($old_val != $new_val) {
-      if ($new_val != 'NULL' || in_array($abbrev, $NULLIFY_INSTATE)) {
+    if ($db_val != $sage_val) {
+      if ($sage_val != 'NULL' || in_array($abbr, $NULLIFY_INSTATE)) {
         // If the SAGE value for the current field is "null" (and the original
         // value was not null), then the field will be nullified only if it's
         // one of the four primary district fields (CD, SD, AD, or ED).
-        $changes['abbrevs'][] = $abbrev;
-        $changes['sqldata'][$dbfld] = ($new_val == 'NULL' ? 0 : $new_val);
+        if ($sage_val == 'NULL') {
+          $sage_val = 0;
+        }
+        $changes['abbrevs'][] = $abbr;
+        $changes['sqldata'][$dbfld] = $sage_val;
+        $changes['notes'][] = "$abbr:$db_val=>$sage_val";
+      }
+      else {
+        $changes['notes'][] = "$abbr:$db_val~=$db_val";
       }
     }
+    else {
+      $changes['notes'][] = "$abbr:$db_val==$sage_val";
+    }
   }
+
   return $changes;
 } // calculate_changes()
 
