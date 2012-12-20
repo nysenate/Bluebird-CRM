@@ -27,10 +27,10 @@ $formats = array( 'html', 'text', 'csv', 'excel' );
 
 // Parse the options
 require_once 'script_utils.php';
-$shortopts = "l:fo:sdrn";
-$longopts = array("log=", "format=", "outfile=", "summary", "detail", "references", "nofilter");
+$shortopts = "l:f:o:sdtrn";
+$longopts = array("log=", "format=", "outfile=", "summary", "detail", "stats", "district=", "nofilter");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --detail, --references, --nofilter';
+$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --detail, --stats, --district= [DISTRICT NUM], --nofilter';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
@@ -43,7 +43,8 @@ $opt = array();
 $opt['format'] = get($optlist, 'format', DEFAULT_FORMAT);
 $opt['summary'] = get($optlist, 'summary', FALSE);
 $opt['detail'] = get($optlist, 'detail', FALSE);
-$opt['references'] = get($optlist, 'references', FALSE);
+$opt['stats'] = get($optlist, 'stats', FALSE);
+$opt['district'] = get($optlist, 'stats', FALSE);
 $opt['nofilter'] = get($optlist, 'nofilter', FALSE);
 
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper(get($optlist, 'log', 'trace'))][0];
@@ -62,13 +63,6 @@ $bb_cfg = get_bluebird_instance_config($optlist['site']);
 
 $senator_name = $bb_cfg['senator.name.formal'];
 $senator_district = $bb_cfg['district'];
-
-// Prefixes used in Redistricting.php
-$subjects = array(
-    "unchanged" => "RD12 VERIFIED DISTRICTS",
-    "changed" => "RD12 UPDATED DISTRICTS",
-    "removed" => "RD12 REMOVED DISTRICTS"
-);
 
 // Stores a list of contacts that are outside of the district.
 $summary_data = array();
@@ -101,6 +95,10 @@ if ( $opt['detail'] != FALSE ){
 	else if ( $opt['format'] == "html"){
 		generate_html_detail_report($senator_district, $senator_name, $detail_data);
 	}
+}
+
+// Process redistricting stats that can be helpful for analysis
+if ( $opt['stats'] != FALSE ){
 }
 
 // ----------------------------------------------------------------------
@@ -158,8 +156,9 @@ function generate_text_summary_report($senator_district, $senator_name, &$summar
 
 	$output_row = "";
 	ksort($summary_cnts);
+
 	foreach( $summary_cnts as $dist => $dist_cnts ){
-		$output_row .=  fixed_width($dist, 12)
+		$output_row .=  fixed_width($dist, 12, false, "Unknown")
 					   .fixed_width(get($dist_cnts, 'individual', '0'), 15)
 					   .fixed_width(get($dist_cnts, 'household', '0'), 14, false)
 					   .fixed_width(get($dist_cnts, 'organization', '0'), 14)."\n";
@@ -230,6 +229,11 @@ function generate_text_detailed_report($senator_district, $senator_name, &$detai
 	);
 
 	ksort($detail_data);
+
+	// Ignore contacts in District 0. They are either out of state or
+	// won't be assigned to another district regardless.
+	unset($detail_data["0"]);
+
 	foreach( $detail_data as $dist => $contact_types ){
 		foreach( $contact_types as $type => $contact_array ){
 
@@ -277,9 +281,11 @@ function generate_html_detail_report($senator_district, $senator_name, &$detail_
 	include "RedistrictingReportsTmpl.php";
 	$output = ob_get_clean();
 	print $output;
-
 }// generate_html_detail_report
 
+function generate_csv_detail_report($senator_district, $senator_name, &$detail_data){
+
+}
 // Retrieves a list of contacts that are outside of the district specified
 // and have "value added" data associated with them.
 // Returns the result set from the mysql query
@@ -288,51 +294,58 @@ function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_con
 
 	// Select out of district contacts
 	$q = "
-		SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name, contact.display_name, contact.gender_id, contact.birth_date, contact.source,
-                        contact.household_name, contact.organization_name,
-                        a.street_address, a.city, a.postal_code,
-                        email.email, district.ny_senate_district_47 AS district, COUNT(activity_target.id ) AS activity_count, COUNT(case_contact.id ) AS case_count
+		SELECT c.* FROM
+		(SELECT c.*, COUNT(NULLIF(group_contact.status, 'Removed')) AS group_count 	FROM
+		(SELECT c.*, COUNT(DISTINCT id) AS activity_count FROM
+		(SELECT c.*, COUNT(DISTINCT id) AS case_count FROM
+		(SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
+		                 contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
+		                 a.street_address, a.city, a.postal_code,
+		                 email.email, email.is_primary, district.ny_senate_district_47 AS district
 		FROM `civicrm_contact` AS contact
 		JOIN `civicrm_value_district_information_7` district ON contact.id = district.entity_id
-        LEFT JOIN `civicrm_address` a ON contact.id = a.contact_id
+		LEFT JOIN `civicrm_address` a ON contact.id = a.contact_id
 		LEFT JOIN `civicrm_email` email ON contact.id = email.id
-		LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
-        LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
+
 		WHERE district.`ny_senate_district_47` != {$senator_district}
-                AND a.is_primary = 1
+		AND district.`ny_senate_district_47` != 0
+		AND a.is_primary = 1
+		AND NOT (contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 ))
+		) AS c
+
+		LEFT JOIN `civicrm_case_contact` case_contact ON c.contact_id = case_contact.contact_id
+		GROUP BY c.contact_id ) AS c
+		LEFT JOIN `civicrm_activity_target` activity ON c.contact_id = activity.target_contact_id
+		GROUP BY c.contact_id ) AS c
+		LEFT JOIN `civicrm_group_contact` AS group_contact
+		ON c.contact_id = group_contact.contact_id
+
+		GROUP BY c.contact_id
+		) AS c
 	";
 
 	// Filter critera
 	$f = "
 		# Filter out contacts without relevant data or those that don't want to be contacted
-		AND
-		(
-		    ( contact.contact_type = 'Individual' AND NOT ( contact.source = 'BOE' AND contact.is_deceased = 0 )
-		        AND (
-	                email.id IS NOT NULL
-	                OR case_contact.id IS NOT NULL
-			   		OR contact.id IN (
-				       	SELECT note.entity_id
-				       	FROM `civicrm_note` AS note
-				       	WHERE note.entity_table = 'civicrm_contact'
-				       	AND note.subject NOT LIKE 'OMIS%'
-				       	AND note.subject NOT LIKE 'RD12%'
-				    	)
-					OR
-				    activity_target.id IS NOT NULL
-		       )
-		       OR (
-		           contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 )
-		       )
+		WHERE
+		( c.contact_type = 'Individual' AND NOT ( c.source = 'BOE' AND c.is_deceased = 0 )
+		AND (
+		       (c.email IS NOT NULL AND c.is_primary = 1 )
+		       OR case_count > 0
+		       OR activity_count > 0
+		       OR group_count > 0
+		       OR c.contact_id IN (
+		         	SELECT note.entity_id
+			       	FROM `civicrm_note` AS note
+			       	WHERE note.entity_table = 'civicrm_contact'
+			       	AND note.subject NOT LIKE 'OMIS%'
+			       	AND note.subject NOT LIKE 'REDIST2012%'
+		    	)
 		    )
-
-		    # Filter out households and organizations that have no relationships
-			# [NOTE] I'm not sure if this simple relationship check is correct
-		    OR
-		    ( (contact.contact_type = 'Household' OR contact.contact_type = 'Organization')
-		      AND contact.id IN
-		          ( SELECT contact_id_b FROM `civicrm_relationship` WHERE is_active = 1 )
-		    )
+		)
+		OR
+		( (c.contact_type = 'Household' OR c.contact_type = 'Organization')
+		  AND c.contact_id IN (SELECT contact_id_b FROM `civicrm_relationship` WHERE is_active = 1 )
 		)
 	";
 
@@ -340,11 +353,6 @@ function retrieve_contacts_from_outside_dist($senator_district, $db, $filter_con
 	if($filter_contacts){
 		$q .= $f;
 	}
-
-	// Group by contact in order to get the counts
-	$q .= "
-		GROUP BY contact.id
-	";
 
 	bbscript_log("trace", "SQL query:\n{$q}");
 
