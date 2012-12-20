@@ -27,6 +27,12 @@
 				border-collapse: collapse;
 				background-color: white;
 			}
+			table.summary {
+				width:500px;
+			}
+			table.detail {
+				width:1100px;
+			}
 			table th {
 				border-width: 1px;
 				padding: 5px;
@@ -39,9 +45,9 @@
 				border-width: 1px;
 				padding: 5px;
 				border-style: inset;
-				border-color: gray;
+				border-color: #DDD;
 				background-color: white;
-				-moz-border-radius: ;
+				font-size:14px;
 			}
 			hr {
 				border:1px solid #999;
@@ -59,7 +65,7 @@
 		   be in the districts shown in the left column.
 		</p>
 
-		<table>
+		<table class='summary'>
 			<tr>
 				<th>District</th>
 				<th>Individuals</th>
@@ -69,7 +75,9 @@
 
 			<?php
 
+			unset($summary_cnts["0"]);
 			ksort($summary_cnts);
+
 			foreach( $summary_cnts as $dist => $dist_cnts ): ?>
 				<tr>
 					<td><?= $dist ?></td>
@@ -92,28 +100,30 @@
 			$html_columns = array(
 				"individual" => array(
 					"Name" => 30, "Sex" => 6, "Age" => 6, "Address" => 25, "City" => 17, "Zip" => 6,
-					"Email" => 20, "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9 ),
+					"Email" => 20, "Source" => 9, "Cases" => 8, "Groups" => "", "Acts" => 10, "BB Rec#" => 9 ),
 
 				"organization" => array(
 					"Organization Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-			        "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9 ),
+			        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" => "", "BB Rec#" => 9 ),
 
 				"household" => array(
 					"Household Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-			        "Source" => 9, "Cases" => 8, "Actvities" => 10, "BB Rec#" => 9)
+			        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" => "", "BB Rec#" => 9)
 			);
 		?>
 
 		<?php
 
+		// Ignore district 0 for now
 		// Sort the detailed data by district number
+		unset($detail_data['0']);
 		ksort($detail_data);
 
 		foreach( $detail_data as $dist => $contact_types )
 			foreach( $contact_types as $type => $contact_array ): ?>
 
 				<h3>District <?= "$dist : " . ucfirst($type) . "s" ?></h3>
-				<table id="dist_<?= $dist . "_" . $type ?>">
+				<table id="dist_<?= $dist . "_" . $type ?>" class='detail'>
 					<tr>
 					<?php foreach($html_columns[$type] as $name => $width): ?>
 						<th><?= $name ?></th>
@@ -144,6 +154,7 @@
 					      	<td><?= $contact['source'] ?></td>
 					      	<td><?= $contact['case_count'] ?></td>
 					      	<td><?= $contact['activity_count'] ?></td>
+					      	<td><?= $contact['group_count'] ?></td>
 					      	<td><?= $contact['contact_id'] ?></td>
 					</tr>
 					<?php endforeach; ?>
