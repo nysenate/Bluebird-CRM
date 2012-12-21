@@ -17,7 +17,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
+  echo "Usage: $prog [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
