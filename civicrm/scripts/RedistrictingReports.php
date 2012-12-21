@@ -82,13 +82,12 @@ $contacts_per_dist = array();
 // Request Handler 														|
 // ----------------------------------------------------------------------
 
-get_redist_data($db, $senate_district);
-die();
+$district_contact_data = get_redist_data($db, true, $senate_district);
 
 // Process out of district summary report
 if ( $opt['summary'] != FALSE ){
 
-	$district_counts = process_summary_data($db, $senate_district, !$opt['nofilter']);
+	$district_counts = process_summary_data($district_contact_data, $senate_district);
 
 	if ( $opt['format'] == 'text'){
 		output_summary_text($senate_district, $senator_name, $district_counts);
@@ -112,11 +111,12 @@ if ( $opt['detail'] != FALSE ){
 	}
 }
 
-// Process redistricting stats that can be helpful for analysis
+// Process redistricting stats
 if ( $opt['stats'] != FALSE ){
+
 }
 
-function get_redist_data($db, $senate_district, $filter_contacts = true){
+function get_redist_data($db, $filter_contacts = true, $senate_district = -1){
 
 	$district_contact_data = array();
 
@@ -133,53 +133,63 @@ function get_redist_data($db, $senate_district, $filter_contacts = true){
 
 		$contact_id = $row['contact_id'];
 		if (isset($district_contact_data[$contact_id])){
-			$district_contact_data[$contact_id][] = $row;
-			var_dump($district_contact_data[$contact_id]);
-			sleep(10);
+			$district_contact_data[$contact_id]['note'] = $row['note'];
+			$district_contact_data[$contact_id]['subject'] = $row['subject'];
 		}
 	}
 	mysql_free_result($res);
 
-	bbscript_log("debug", "Stored " . count($district_contact_data) . " contacts");
+	bbscript_log("debug", "Stored " . count($district_contact_data) . " contacts in memory");
+	return $district_contact_data;
 }
 
 // ----------------------------------------------------------------------
 // Summary Reports - Provide basic counts for each district 			|
 // ----------------------------------------------------------------------
 
-function process_summary_data($db, $senate_district, $use_contact_filter = true) {
+function process_summary_data($district_contact_data, $senate_district) {
 
 	$district_counts = array();
-	$res = get_contacts($db, $use_contact_filter, $senate_district);
+	foreach( $district_contact_data as $contact ){
 
-	while (($row = mysql_fetch_assoc($res)) != null ) {
-
-		$district = $row['district'];
-		$contact_id = $row['contact_id'];
-		$contact_type = strtolower($row['contact_type']);
+		$district = $contact['district'];
+		$contact_id = $contact['contact_id'];
+		$contact_type = strtolower($contact['contact_type']);
+		$note = get($contact, 'note', '');
 
 		// Create an array to store district counts
 		if (!isset($district_counts[$district])){
-			$district_counts[$district] = array();
+			$district_counts[$district] = array(
+				'individual' => array("total"=>0,"changed"=>0),
+				'household' => array("total"=>0,"changed"=>0),
+				'organization' => array("total"=>0,"changed"=>0)
+			);
 		}
 
-		// Set the counts for the contact type to 0
-		if (!isset($district_counts[$district][$contact_type])){
-			$district_counts[$district][$contact_type] = 0;
+		$district_counts[$district][$contact_type]['total']++;
+		// Count the number of contacts that are moving from the instance district
+		if (is_former_district($note, $senate_district)){
+			$district_counts[$district][$contact_type]['changed']++;
 		}
 
-		$district_counts[$district][$contact_type]++;
 	}
 
-	mysql_free_result($res);
 	return $district_counts;
 }// get_summary_report_data
 
 function output_summary_text($senate_district, $senator_name, $district_counts){
 
-	$label = "${senator_name} District {$senate_district}\n\nSummary of contacts that are outside district {$senate_district}\n";
+	$label = <<<label
+${senator_name} District {$senate_district}\n
+Summary of contacts that are outside district {$senate_district}\n
+The number on the left is a count of the contacts that were in District {$senate_district}
+and are now in district specified. The number on the right is the total count
+of value added contacts that reside in that district which includes contacts
+that were already there before redistricting.\n
+label;
+
 	$columns = array(
-		"District" => 12,
+		"Senate District" => 12,
 		"Individuals" => 15,
 		"Households" => 14,
 		"Organization" => 14
@@ -192,9 +202,9 @@ function output_summary_text($senate_district, $senator_name, $district_counts){
 
 	foreach( $district_counts as $dist => $dist_cnts ){
 		$output_row .=  fixed_width($dist, 12, false, "Unknown")
-					   .fixed_width(get($dist_cnts, 'individual', '0'), 15)
-					   .fixed_width(get($dist_cnts, 'household', '0'), 14, false)
-					   .fixed_width(get($dist_cnts, 'organization', '0'), 14)."\n";
+					   .fixed_width(get($dist_cnts['individual'], 'changed', '0') . " / " .get($dist_cnts['individual'], 'total', '0'), 15)
+					   .fixed_width(get($dist_cnts['household'], 'changed', '0') . " / " . get($dist_cnts['household'], 'total', '0'), 14, false)
+					   .fixed_width(get($dist_cnts['organization'], 'changed', '0') . " / " .get($dist_cnts['organization'], 'total', '0'), 14)."\n";
 	}
 
 	print $heading . $output_row;
@@ -333,8 +343,12 @@ function output_detail_csv($senate_district, $senator_name, &$contacts_per_dist)
 
 // Returns the result set from the mysql query
 function get_contacts($db, $use_contact_filter = true, $filter_district = -1 ){
-	bbscript_log("debug", "Fetching contacts with district information...");
-
+    if ($use_contact_filter){
+    	bbscript_log("debug", "Fetching all 'value added' contacts that are not in District $filter_district...");
+    }
+    else {
+    	bbscript_log("debug", "Fetching all contacts not in District $filter_district...");
+    }
 	// contact info, address, email, district, and activity/case/group counts
 	$contact_query = "
 		SELECT c.* FROM
@@ -431,6 +445,12 @@ function get_redist_notes($db, $filter_district = -1){
 // ----------------------------------------------------------------------
 // Helper Functions 													|
 // ----------------------------------------------------------------------
+
+// Checks the redist note to see if the address formerly belonged in the
+// district specified by $district. $key refers to the type of district.
+function is_former_district($note_subject, $district = 0, $key = 'SD'){
+	return preg_match("/".$key.":".$district."=>(\d{0,2})/i", $note_subject);
+}
 
 // Create a table header given an array of column names as keys and widths as values
 function create_table_header($columns, $border = '-', $separator = "|"){
