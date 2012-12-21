@@ -78,6 +78,9 @@ $district_counts = array();
 // Store detailed contact information per district
 $contacts_per_dist = array();
 
+// Stats per district
+$stats_per_dist = array();
+
 // ----------------------------------------------------------------------
 // Request Handler 														|
 // ----------------------------------------------------------------------
@@ -88,32 +91,21 @@ $district_contact_data = get_redist_data($db, true, $senate_district);
 if ( $opt['summary'] != FALSE ){
 
 	$district_counts = process_summary_data($district_contact_data, $senate_district);
-
-	if ( $opt['format'] == 'text'){
-		output_summary_text($senate_district, $senator_name, $district_counts);
-	}
-
-	else if ( $opt['format'] == 'html'){
-		output_summary_html($senate_district, $senator_name, $district_counts);
-	}
+	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts);
+	print $summary_output;
 }
 
 // Process out of district detailed report
 if ( $opt['detail'] != FALSE ){
 
-	process_detail_data($senate_district, $db, $contacts_per_dist, $filter_contacts = true);
-
-	if ( $opt['format'] == 'text'){
-		output_detail_text($senate_district, $senator_name, $contacts_per_dist);
-	}
-	else if ( $opt['format'] == "html"){
-		output_detail_html($senate_district, $senator_name, $contacts_per_dist);
-	}
+	$contacts_per_dist = process_detail_data($district_contact_data, $senate_district);
+	$detail_output = get_detail_output($opt['format'], $senate_district, $senator_name, $contacts_per_dist);
+	print $detail_output;
 }
 
 // Process redistricting stats
 if ( $opt['stats'] != FALSE ){
-
+	//[TODO]
 }
 
 function get_redist_data($db, $filter_contacts = true, $senate_district = -1){
@@ -162,55 +154,24 @@ function process_summary_data($district_contact_data, $senate_district) {
 			$district_counts[$district] = array(
 				'individual' => array("total"=>0,"changed"=>0),
 				'household' => array("total"=>0,"changed"=>0),
-				'organization' => array("total"=>0,"changed"=>0)
+				'organization' => array("total"=>0,"changed"=>0),
+				'all' => array("total"=>0,"changed"=>0)
 			);
 		}
 
+		$district_counts[$district]['all']['total']++;
 		$district_counts[$district][$contact_type]['total']++;
 		// Count the number of contacts that are moving from the instance district
 		if (is_former_district($note, $senate_district)){
+			$district_counts[$district]['all']['changed']++;
 			$district_counts[$district][$contact_type]['changed']++;
 		}
-
 	}
 
 	return $district_counts;
 }// get_summary_report_data
 
-function output_summary_text($senate_district, $senator_name, $district_counts){
-
-	$label = <<<label
-${senator_name} District {$senate_district}\n
-Summary of contacts that are outside district {$senate_district}\n
-The number on the left is a count of the contacts that were in District {$senate_district}
-and are now in district specified. The number on the right is the total count
-of value added contacts that reside in that district which includes contacts
-that were already there before redistricting.\n
-label;
-
-	$columns = array(
-		"Senate District" => 12,
-		"Individuals" => 15,
-		"Households" => 14,
-		"Organization" => 14
-	);
-
-	$heading = $label . create_table_header($columns);
-
-	$output_row = "";
-	ksort($district_counts);
-
-	foreach( $district_counts as $dist => $dist_cnts ){
-		$output_row .=  fixed_width($dist, 12, false, "Unknown")
-					   .fixed_width(get($dist_cnts['individual'], 'changed', '0') . " / " .get($dist_cnts['individual'], 'total', '0'), 15)
-					   .fixed_width(get($dist_cnts['household'], 'changed', '0') . " / " . get($dist_cnts['household'], 'total', '0'), 14, false)
-					   .fixed_width(get($dist_cnts['organization'], 'changed', '0') . " / " .get($dist_cnts['organization'], 'total', '0'), 14)."\n";
-	}
-
-	print $heading . $output_row;
-}// output_summary_text
-
-function output_summary_html($senate_district, $senator_name, &$district_counts){
+function get_summary_output($format, $senate_district, $senator_name, $district_counts){
 
 	$title = "Redistricting 2012 Summary";
 	$mode = "summary";
@@ -219,8 +180,8 @@ function output_summary_html($senate_district, $senator_name, &$district_counts)
 	ob_start();
 	include "RedistrictingReportsTmpl.php";
 	$output = ob_get_clean();
-	print $output;
-}// output_summary_html
+	return $output;
+}
 
 // ----------------------------------------------------------------------
 // Detail Reports - List all contacts outside the instance district 	|
@@ -228,15 +189,13 @@ function output_summary_html($senate_district, $senator_name, &$district_counts)
 
 // List all contact information per outside district
 // Assumptions: State will just be 'NY' because we ignore out of state contacts.
-function process_detail_data($senate_district, $db, &$contacts_per_dist, $filter_contacts = true ){
+function process_detail_data($district_contact_data, $senate_district){
 
-	$res = get_contacts($senate_district, $db, $filter_contacts);
-	bbscript_log("debug", "Storing contacts into array indexed by district");
-	while (($row = mysql_fetch_assoc($res)) != null ) {
+	$contacts_per_dist = array();
+	foreach( $district_contact_data as $contact ){
 
-		$district = $row['district'];
-		$contact_type = strtolower($row['contact_type']);
-		$contact = $row;
+		$district = $contact['district'];
+		$contact_type = strtolower($contact['contact_type']);
 
 		// Build the array so that contacts are grouped by contact type per district
 		if (!isset($contacts_per_dist[$district])){
@@ -250,74 +209,11 @@ function process_detail_data($senate_district, $db, &$contacts_per_dist, $filter
 	}
 	bbscript_log("debug", "Stored contacts in " . count($contacts_per_dist). " districts.");
 
-	mysql_free_result($res);
+	return $contacts_per_dist;
 }
 
-function output_detail_text($senate_district, $senator_name, &$contacts_per_dist){
-	bbscript_log("debug", "Generating detailed text report.");
-	$output = "";
-
-	$columns = array(
-		"individual" => array(
-			"Name" => 30, "Sex" => 6, "Age" => 6, "Address" => 25, "City" => 17, "Zip" => 6,
-			"Email" => 20, "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" =>8, "BB Rec#" => 9 ),
-
-		"organization" => array(
-			"Organization Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-	        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" =>8, "BB Rec#" => 9 ),
-
-		"household" => array(
-			"Household Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-	        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" =>8, "BB Rec#" => 9)
-	);
-
-	ksort($contacts_per_dist);
-
-	// Ignore contacts in District 0. They are either out of state or
-	// won't be assigned to another district regardless.
-	unset($contacts_per_dist["0"]);
-
-	foreach( $contacts_per_dist as $dist => $contact_types ){
-		foreach( $contact_types as $type => $contact_array ){
-
-			$label = "\nDistrict $dist : " . ucfirst($type) . "s\n";
-			$heading = create_table_header($columns[$type]);
-			$output .= $label . $heading;
-
-			foreach($contact_array as $contact){
-				if ($type == "individual"){
-					$output .= fixed_width($contact['last_name'].", ".$contact['first_name'], 30)
-					         . fixed_width(get_gender($contact['gender_id']),6, true)
-					         . fixed_width(get_age($contact['birth_date']), 6, false)
-					         . fixed_width($contact['street_address'], 25, false, "---") . " ";
-				}
-				else if ($type == "household"){
-					$output .= fixed_width($contact['household_name'], 29) . " "
-							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
-				}
-				else if ($type == "organization"){
-					$output .= fixed_width($contact['organization_name'], 29) . " "
-							.  fixed_width($contact['street_address'], 37, false, "---") . " ";
-				}
-
-				$output .=  fixed_width($contact['city'], 15) . " "
-					      . fixed_width($contact['postal_code'],6)
-					      . fixed_width($contact['email'], 21, false, "---")
-					      . fixed_width($contact['source'], 9, true )
-					      . fixed_width($contact['case_count'], 9)
-					      . fixed_width($contact['activity_count'], 9)
-					      . fixed_width($contact['group_count'], 9)
-					      . fixed_width($contact['contact_id']);
-				$output .= "\n";
-			}
-		}
-	}
-
-	print $output . "\n\n";
-}// output_detail_text
-
 // Buffer output from RedistrictingReportsTmpl using mode = detail
-function output_detail_html($senate_district, $senator_name, &$contacts_per_dist){
+function get_detail_output($format, $senate_district, $senator_name, $contacts_per_dist){
 
 	$title = "Redistricting 2012 Contacts Reference";
 	$mode = "detail";
@@ -328,10 +224,6 @@ function output_detail_html($senate_district, $senator_name, &$contacts_per_dist
 
 	print $output;
 }// output_detail_html
-
-function output_detail_csv($senate_district, $senator_name, &$contacts_per_dist){
-
-}// output_detail_csv
 
 // ----------------------------------------------------------------------
 // SQL Functions 		     											|
@@ -356,6 +248,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1 ){
 		(SELECT c.*, COUNT(DISTINCT id) AS activity_count FROM
 		(SELECT c.*, COUNT(DISTINCT id) AS case_count FROM
 		(SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
+		                 contact.birth_date, contact.gender_id,
 		                 contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
 		                 a.street_address, a.city, a.postal_code,
 		                 email.email, email.is_primary, district.ny_senate_district_47 AS district
@@ -373,8 +266,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1 ){
 		GROUP BY c.contact_id ) AS c
 		LEFT JOIN `civicrm_activity_target` activity ON c.contact_id = activity.target_contact_id
 		GROUP BY c.contact_id ) AS c
-		LEFT JOIN `civicrm_group_contact` AS group_contact
-		ON c.contact_id = group_contact.contact_id
+		LEFT JOIN `civicrm_group_contact` group_contact ON c.contact_id = group_contact.contact_id
 
 		GROUP BY c.contact_id
 		) AS c
