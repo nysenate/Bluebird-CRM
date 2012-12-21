@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2012-04-26
+# Revised: 2012-12-21 (End of the World Day - Will Bluebird survive?)
 #
 
 prog=`basename $0`
@@ -28,7 +28,7 @@ fi
 sqlfile=
 sqlcmd=
 dump_db=0
-tabname=
+tabnames=
 instance=
 dbhost=
 dbuser=
@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
     -f|--sqlfile) shift; sqlfile="$1" ;;
     -c|--cmd) shift; sqlcmd="$1" ;;
     -d|--dump) dump_db=1 ;;
-    -t|--dump-table) shift; tabname="$1"; dump_db=1 ;;
+    -t|--dump-table) shift; tabnames="$tabnames $1"; dump_db=1 ;;
     -i|--instance) shift; instance="$1" ;;
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
@@ -93,7 +93,7 @@ mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg"
 
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
-  mysqldump -R $common_args $dbname $tabname
+  mysqldump -R $common_args $dbname $tabnames
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
