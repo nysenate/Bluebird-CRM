@@ -764,7 +764,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
 		//alter street number/suffix handling so that we accept -digit
         if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $streetAddress, $matches ) ) {
             // check that $matches[0] is numeric, else assume no street number
-            if ( preg_match( '/^(\d+)/', $matches[0] ) ) {
+            if ( preg_match( '/^(\d+)(?!ST|ND|RD|TH)/i', $matches[0] ) ) {
                 $streetNumAndSuffix = $matches[0];
 
                 // get street number.
@@ -774,7 +774,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                     $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
                     $parseFields['street_number_suffix'] = trim( $suffix );
                 }
-            
+
                 // unset from main street address.
                 $streetAddress = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', '', $streetAddress );
                 $streetAddress = trim( $streetAddress );
@@ -790,7 +790,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         $matches = array( );
         if ( preg_match( '/^\d\/\d/', $streetAddress, $matches ) ) {
             $parseFields['street_number_suffix'] .= $matches[0];
-            
+
             // unset from main street address.
             $streetAddress = preg_replace( '/^\d+\/\d+/', '', $streetAddress );
             $streetAddress = trim( $streetAddress );
@@ -811,8 +811,11 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
             $streetUnitFormats = array( 'APT', 'APP', 'SUITE', 'BUREAU', 'UNIT' );
         }
         
-        $streetUnitPreg = '/('. implode( '|\s', $streetUnitFormats ) . ')(.+)?/i';
+        // Include 12th Floor but not Route 30 Unit 10. Catch the earliest occurance, Apt 5 Fl 2
+        // Open issues: Building, Front, Key, Space, and Pier are sometimes part of the street name as well..
+        $streetUnitPreg = '/([0-9]+(ST|ND|RD|TH))?('. implode( '|\s', $streetUnitFormats ) . ')[. ]?.*$/i';
         $matches = array( );
+        $street_address = $street_address." "; // For easier matching
         if ( preg_match( $streetUnitPreg, $streetAddress, $matches ) ) {
             $parseFields['street_unit'] = trim($matches[0]);
             $streetAddress = str_replace( $matches[0], '', $streetAddress );
