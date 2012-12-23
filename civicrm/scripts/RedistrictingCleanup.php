@@ -75,8 +75,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
     }
 
     // TODO: CRM_Core_BAO_Address::parseStreetAddress has a fuller list of these
-    $units_full = array('unit', 'super', 'lot', 'fl', 'ste', 'rm', 'pvt', 'sup', 'supt', 'bsmt', '#');
-    $units_abbrev = array('apt', );
+    $units_full = array('unit', 'super', 'lot', 'fl', 'ste', 'rm', 'pvt', 'sup', 'supt', 'bsmt', '#', 'apt');
 
     $count = 0;
     bb_mysql_query("BEGIN", $db);
@@ -106,11 +105,8 @@ function do_import($db, $filename, $BB_DRY_RUN) {
             if (in_array($unit, $units_full)) {
                 // Need doesn't need a period
                 $street_unit = convertProperCase($unit." ".implode(' ',$unit_parts));
-            } else if (in_array($unit, $units_abbrev)) {
-                // Needle needs a period, convert proper case first
-                $street_unit = convertProperCase($unit.". ".implode(' ',$unit_parts));
             } else {
-                $street_unit = convertProperCase("Apt. $street_unit");
+                $street_unit = convertProperCase("Apt $street_unit");
             }
         }
 
