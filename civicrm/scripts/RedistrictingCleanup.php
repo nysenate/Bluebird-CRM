@@ -74,6 +74,10 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         exit(1);
     }
 
+    // TODO: CRM_Core_BAO_Address::parseStreetAddress has a fuller list of these
+    $units_full = array('unit', 'super', 'lot', 'fl', 'ste', 'rm', 'pvt', 'sup', 'supt', 'bsmt', '#');
+    $units_abbrev = array('apt', );
+
     $count = 0;
     bb_mysql_query("BEGIN", $db);
     $header = fgets($handle);
@@ -88,43 +92,57 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         $postal_code_suffix = count($parts) == 6 ? $parts[5] : "";
 
         // Part the street address into its components
-        $street_address = convertProperCase(trim($parts[1]));
-        $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($parts[1]);
+        $parsedFields = CRM_Core_BAO_Address::parseStreetAddress(strtoupper(trim($parts[1])));
         $street_number = trim(get($parsedFields,'street_number',0));
         $street_number_suffix = trim($parsedFields['street_number_suffix']);
         $street_name   = convertProperCase(trim($parsedFields['street_name']));
-        $street_unit   = convertProperCase(trim($parsedFields['street_unit']));
+        $street_unit   = trim($parsedFields['street_unit']);
 
-        //if street_unit value exists, and there is no "apt" text, prepend to value
+        // if street_unit value exists, and there is no "apt" text, prepend to value
+        // otherwise, fix its casing up and add punctuation as necessary
         if ( $street_unit ) {
-            $needle_found = 0;
-            $unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt', 'lot' );
-            foreach ( $unit_needles as $unit_needle ) {
-                $needle_search = stripos( $street_unit, $unit_needle );
-                if ( $needle_search !== false ) { $needle_found = 1; }
-            }
-            if ( !$needle_found ) {
-                $street_unit = 'Apt. '.$street_unit;
-                $street_address = "$street_number $street_number_suffix $street_name $street_unit";
+            $unit_parts = explode(' ',$street_unit);
+            $unit = strtolower(trim(array_shift($unit_parts),'.'));
+            if (in_array($unit, $units_full)) {
+                // Need doesn't need a period
+                $street_unit = convertProperCase($unit." ".implode(' ',$unit_parts));
+            } else if (in_array($unit, $units_abbrev)) {
+                // Needle needs a period, convert proper case first
+                $street_unit = convertProperCase($unit.". ".implode(' ',$unit_parts));
+            } else {
+                $street_unit = convertProperCase("Apt. $street_unit");
             }
         }
 
+        // Build the street address from the finalized, formatted components
+        if ($street_number_suffix == '1/2') {
+            $street_number_suffix = ' 1/2';
+        }
+        $street_address = ($street_number!=0 ? $street_number : '')."$street_number_suffix $street_name $street_unit";
+
+        // Format the old and new values for comparison
         $result = bb_mysql_query("SELECT street_address, street_number, street_number_suffix, street_name, street_unit, postal_code from civicrm_address WHERE id=$address_id",$db);
         $old_address = mysql_fetch_assoc($result);
+        $old_address['street_address'] = mysql_escape_string($old_address['street_address']);
+        $old_address['street_name'] = mysql_escape_string($old_address['street_name']);
         $new_address = array(
                 'street_address' => clean($street_address),
                 'street_number' => clean($street_number),
                 'street_number_suffix' => clean($street_number_suffix),
                 'street_name' => clean($street_name),
-                'street_unit' => clean($street_unit),
+                'street_unit' => ($street_unit ? substr(clean($street_unit),0,16) : ""), // varchar(16) in database
                 'postal_code' => clean($postal_code),
             );
         $diff = array_diff_assoc($old_address, $new_address);
         if (count($diff) != 0) {
-            // if (array_key_exists('street_unit',$diff)) {
-            //     var_dump($old_address);
-            //     var_dump($new_address);
-            // }
+            if ($GLOBALS['BB_LOG_LEVEL'] <= $GLOBALS['LOG_LEVELS']['DEBUG'][0]) {
+                echo "#{$parts[0]} - {$parts[1]}\n";
+                echo $parsedFields['street_number'].' | '.$parsedFields['street_number_suffix'].' | '.$parsedFields['street_name'].' | '.$parsedFields['street_unit']."\n";
+                print_r($old_address);
+                print_r($new_address);
+                echo "Differences: ".implode(', ',array_keys($diff));
+                echo "\n\n=====================================================================================\n";
+            }
             $changed[$address_id] = $diff;
         }
 
@@ -194,14 +212,15 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
     $words = explode(' ', $string);
 
     foreach ($words as $word) {
+        if (!preg_match('/^[0-9]/', $word)) {
+            $replace = array();
 
-        $replace = array();
-
-        //trim any non-word chars and replace with nothing for easier matching
-        $cleanWord = preg_replace("/[^\w]/", '', $word);
-        if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
-        $replace = array_values($replace);
-        if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
+            //trim any non-word chars and replace with nothing for easier matching
+            $cleanWord = preg_replace("/[^\w]/", '', $word);
+            if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
+            $replace = array_values($replace);
+            if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
+        }
         $fixedWords[] = $word;
     }
 
