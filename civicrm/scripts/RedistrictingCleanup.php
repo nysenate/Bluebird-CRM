@@ -167,7 +167,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         if (!$BB_DRY_RUN) {
            bb_mysql_query($query, $db);
         }
-        exit();
+
         // Just to show progres while running
         if (++$count % 10000 == 0) {
             bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
