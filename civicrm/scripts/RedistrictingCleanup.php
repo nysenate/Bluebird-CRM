@@ -97,17 +97,26 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         $street_name   = convertProperCase(trim($parsedFields['street_name']));
         $street_unit   = trim($parsedFields['street_unit']);
 
-        // if street_unit value exists, and there is no "apt" text, prepend to value
-        // otherwise, fix its casing up and add punctuation as necessary
         if ( $street_unit ) {
             $unit_parts = explode(' ',$street_unit);
-            $unit = strtolower(trim(array_shift($unit_parts),'.'));
-            if (in_array($unit, $units_full)) {
-                // Need doesn't need a period
-                $street_unit = convertProperCase($unit." ".implode(' ',$unit_parts));
-            } else {
-                $street_unit = convertProperCase("Apt $street_unit");
+            $unit = strtolower(trim($unit_parts[0],'.'));
+
+            // if there is no "apt" text, prepend to value
+            if (!in_array($unit, $units_full)) {
+                array_unshift($unit_parts, "APT");
             }
+
+            // fix casing up, be really careful about what casing is affected
+            $new_parts = array();
+            foreach ($unit_parts as $part) {
+                if (!preg_match('/^[0-9]+(?!ST|ND|RD|TH)/',$part)) {
+                    $part = ucwords(strtolower($part));
+                }
+                $new_parts[] = $part;
+                
+            }
+
+            $street_unit = implode(' ',$new_parts);
         }
 
         // Build the street address from the finalized, formatted components
@@ -158,7 +167,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
         if (!$BB_DRY_RUN) {
            bb_mysql_query($query, $db);
         }
-
+        exit();
         // Just to show progres while running
         if (++$count % 10000 == 0) {
             bbscript_log("info","$count addresses imported. ".count($changed)." changed.");
@@ -208,15 +217,14 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
     $words = explode(' ', $string);
 
     foreach ($words as $word) {
-        if (!preg_match('/^[0-9]/', $word)) {
-            $replace = array();
+        $replace = array();
 
-            //trim any non-word chars and replace with nothing for easier matching
-            $cleanWord = preg_replace("/[^\w]/", '', $word);
-            if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
-            $replace = array_values($replace);
-            if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
-        }
+        //trim any non-word chars and replace with nothing for easier matching
+        $cleanWord = preg_replace("/[^\w]/", '', $word);
+        if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
+        $replace = array_values($replace);
+        if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
+
         $fixedWords[] = $word;
     }
 
