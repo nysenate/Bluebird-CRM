@@ -191,25 +191,31 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
     //if mixed case, don't do anything
     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
 
+    $string = CRM_Utils_String::stripSpaces( ucwords(strtolower($string)) );
+
+    //if we skip special words processing, return now
+    if ($skipSpecial) return $string;
+
     // list of words we want to force
     $forceWords = array('of', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
                     'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
                     'into', 'with', 'II', 'IV', 'UK', 'VI', 'III', 'VII', 'PO', 'McDonald');
+
+    // punctuation used to determine that the following letter
+    // should be capitalised
+    $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
 
     $words = explode(' ', $string);
 
     foreach ($words as $word) {
         if (!preg_match('/^[0-9]/', $word)) {
             $replace = array();
-            $word = ucwords(strtolower($word));
 
-            if (!$skipSpecial) {
-                //trim any non-word chars and replace with nothing for easier matching
-                $cleanWord = preg_replace("/[^\w]/", '', $word);
-                if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
-                $replace = array_values($replace);
-                if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
-            }
+            //trim any non-word chars and replace with nothing for easier matching
+            $cleanWord = preg_replace("/[^\w]/", '', $word);
+            if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
+            $replace = array_values($replace);
+            if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
         }
         $fixedWords[] = $word;
     }
