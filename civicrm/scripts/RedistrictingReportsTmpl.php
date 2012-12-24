@@ -184,9 +184,12 @@ that were already there before redistricting.\n
 
 		<?php if ($mode == "summary"): ?>
 		<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
-		<h3><?= $senator_name ?></h3>
+		<h3>Summary Page | <?= $senator_name ?></h3>
 		<hr/>
-		<p>The district assignments for contacts stored in Bluebird have been updated. </p>
+		<p>As per the 2012 Redistricting effort, the district assignments for contacts stored in Bluebird have been updated to reflect the most recent district boundaries. </p>
+		<p>This document is intended to indicate which contacts are outside District <?= $senate_district ?> after the redistricting process completed.</p>
+
+		<div id="summary_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
 		<p>The following table indicates the number of individuals, households, and organizations that will
 		   be in the districts shown in the left column.
 		</p>
@@ -232,8 +235,6 @@ that were already there before redistricting.\n
 			<?php endforeach; ?>
 		</tbody>
 		</table>
-
-		<div id="summary_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
 
 	<?php elseif ($mode == "detail"): ?>
 		<h1>Redistricting Details for Senate District <?= $senate_district ?></h1>
@@ -323,8 +324,11 @@ that were already there before redistricting.\n
                 plotBorderWidth: null,
                 plotShadow: false
             },
+            credits : {
+   				enabled : false
+			},
             title: {
-                text: 'Distribution of out of district contacts'
+                text: 'Distribution of contacts among outside districts'
             },
             tooltip: {
         	    pointFormat: '{series.name}: <b>{point.percentage}%</b>',
@@ -339,27 +343,15 @@ that were already there before redistricting.\n
                         color: '#000000',
                         connectorColor: '#000000',
                         formatter: function() {
-                            return '<b>'+ this.point.name +'</b>: '+ this.percentage +' %';
+                            return '<b>'+ this.point.name +'</b>: '+ Math.round(this.percentage) +' %';
                         }
                     }
                 }
             },
             series: [{
                 type: 'pie',
-                name: 'Browser share',
-                data: [
-                    ['Firefox',   45.0],
-                    ['IE',       26.8],
-                    {
-                        name: 'Chrome',
-                        y: 12.8,
-                        sliced: true,
-                        selected: true
-                    },
-                    ['Safari',    8.5],
-                    ['Opera',     6.2],
-                    ['Others',   0.7]
-                ]
+                name: 'Out of District Share',
+                data: <?= redist_summary_pie_data($district_counts) ?>
             }]
         });
     });

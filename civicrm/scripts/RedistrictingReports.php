@@ -457,11 +457,21 @@ function redist_summary_pie_data($district_counts){
 		$total_contacts += get($dist_cnts['all'], 'total', 0);
 	}
 
-	$pie_data = array();
+	$percentage_data = array();
 	foreach($district_counts as $dist => $dist_cnts ){
-		$pie_data[$dist] = get($dist_cnts['all'], 'total', 0) / $total_contacts;
+		$percentage_data[$dist] = round((get($dist_cnts['all'], 'total', 0) / $total_contacts), 2);
 	}
 
-	//var_dump( $pie_data );
-	echo json_encode($pie_data);
+	arsort($percentage_data);
+	$percentage_data = array_slice($percentage_data, 0, 5, true);
+
+	$pie_data = array();
+	$percent_total = 0;
+	foreach($percentage_data as $dist => $percent){
+		$percent_total += $percent;
+		$pie_data[] = array("District $dist", $percent);
+	}
+	$pie_data[] = array("Other Districts", 1.0 - $percent_total );
+
+	return json_encode($pie_data);
 }
