@@ -10,7 +10,6 @@
 // in HTML format. This is not intended to be standalone and is called by
 // RedistrictingReports.php
 //-------------------------------------------------------------------------------------
-
 ?>
 
 <?php if ($format == 'text') {
@@ -19,10 +18,10 @@
 
 		$label = "
 ${senator_name} District {$senate_district}\n\n
-Summary of contacts that are outside district {$senate_district}\n\n
-The number on the left is a count of the contacts that were in District {$senate_district}\n
-and are now in district specified. The number on the right is the total count\n
-of value added contacts that reside in that district which includes contacts\n
+Summary of contacts that are outside district {$senate_district}\n
+The number on the left is a count of the contacts that were in District {$senate_district}
+and are now in district specified. The number on the right is the total count
+of value added contacts that reside in that district which includes contacts
 that were already there before redistricting.\n
 ";
 
@@ -127,6 +126,9 @@ that were already there before redistricting.\n
 			<?= $title ?>
 		</title>
 		<style type="text/css">
+			.border-right{
+				border-right:1px solid #777;
+			}
 			table {
 				border-width: 1px;
 				border-spacing: 2px;
@@ -136,7 +138,7 @@ that were already there before redistricting.\n
 				background-color: white;
 			}
 			table.summary {
-				width:500px;
+				width:1000px;
 			}
 			table.detail {
 				width:1100px;
@@ -157,41 +159,59 @@ that were already there before redistricting.\n
 				background-color: white;
 				font-size:14px;
 			}
+			table.summary td {
+				text-align:center;
+			}
 			hr {
 				border:1px solid #999;
 				border-style: solid none none none;
 			}
+			/* Datatable CSS */
+			table.datatable tr.odd td.sorting_1{
+				background-color:#EEE !important;
+			}
+			table.datatable tr.even td.sorting_1 {
+				background-color:#FFF !important;
+			}
 		</style>
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+		<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
+		<script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
 		<script src="http://code.highcharts.com/highcharts.js"></script>
+        <script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
 
 	</head>
 	<body>
 
 		<?php if ($mode == "summary"): ?>
-		<h1>Redistricting Summary for Senate District <?= $senate_district ?></h1>
+		<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
 		<h3><?= $senator_name ?></h3>
 		<hr/>
+		<p>The district assignments for contacts stored in Bluebird have been updated. </p>
 		<p>The following table indicates the number of individuals, households, and organizations that will
 		   be in the districts shown in the left column.
 		</p>
 
-		<p>
-			The number on the left is a count of the contacts that were in District <?= $senate_district ?>
-			and are now in district specified.<br/> The number on the right is the total count
-			of value added contacts that reside in that district which<br/> includes contacts
-			that were already there before redistricting.
-		</p>
-
 		<table class='summary'>
+			<thead>
 			<tr>
-				<th>District</th>
-				<th>Individuals</th>
-				<th>Households</th>
-				<th>Organizations</th>
-				<th>Totals</th>
+				<th rowspan="2">District</th>
+				<th colspan="2">Individuals</th>
+				<th colspan="2">Households</th>
+				<th colspan="2">Organizations</th>
+				<th colspan="2">Totals</th>
 			</tr>
-
+			<tr>
+				<th>Moved from Dist <?= $senate_district ?></th>
+				<th>Total Contacts</th>
+				<th>Moved from Dist <?= $senate_district ?></th>
+				<th>Total Contacts</th>
+				<th>Moved from Dist <?= $senate_district ?></th>
+				<th>Total Contacts</th>
+				<th>Moved from Dist <?= $senate_district ?></th>
+				<th>Total Contacts</th>
+			</tr>
+			</thead>
+			<tbody>
 			<?php
 
 			unset($district_counts["0"]);
@@ -199,14 +219,21 @@ that were already there before redistricting.\n
 
 			foreach( $district_counts as $dist => $dist_cnts ): ?>
 				<tr>
-					<td><?= $dist ?></td>
-					<td><?= get($dist_cnts['individual'], 'changed', '0') . " / " .get($dist_cnts['individual'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['household'], 'changed', '0') . " / " . get($dist_cnts['household'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['organization'], 'changed', '0') . " / " .get($dist_cnts['organization'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['all'], 'changed', '0') . " / " .get($dist_cnts['all'], 'total', '0') ?></td>
+					<td class='border-right'><?= $dist ?></td>
+					<td><?= get($dist_cnts['individual'], 'changed', '0') ?></td>
+					<td class='border-right'><?= get($dist_cnts['individual'], 'total', '0') ?></td>
+					<td><?= get($dist_cnts['household'], 'changed', '0') ?></td>
+					<td class='border-right'><?= get($dist_cnts['household'], 'total', '0') ?></td>
+					<td><?= get($dist_cnts['organization'], 'changed', '0') ?></td>
+					<td class='border-right'><?= get($dist_cnts['organization'], 'total', '0') ?></td>
+					<td><?= get($dist_cnts['all'], 'changed', '0') ?></td>
+					<td class='border-right'><?= get($dist_cnts['all'], 'total', '0') ?></td>
 				</tr>
 			<?php endforeach; ?>
+		</tbody>
 		</table>
+
+		<div id="summary_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
 
 	<?php elseif ($mode == "detail"): ?>
 		<h1>Redistricting Details for Senate District <?= $senate_district ?></h1>
@@ -220,16 +247,13 @@ that were already there before redistricting.\n
 		// Table columns for contact details
 		$html_columns = array(
 			"individual" => array(
-				"Name" => 30, "Sex" => 6, "Age" => 6, "Address" => 25, "City" => 17, "Zip" => 6,
-				"Email" => 20, "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" => "", "BB Rec#" => 9 ),
+				"Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#" ),
 
 			"organization" => array(
-				"Organization Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-		        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" => "", "BB Rec#" => 9 ),
+				"Organization Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#" ),
 
 			"household" => array(
-				"Household Name" => 30, "Address" => 37, "City" => 17, "Zip" => 6, "Email" => 20,
-		        "Source" => 9, "Cases" => 8, "Acts" => 10, "Groups" => "", "BB Rec#" => 9)
+				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#")
 		);
 
 		// Ignore district 0 for now
@@ -243,7 +267,7 @@ that were already there before redistricting.\n
 				<h3>District <?= "$dist : " . ucfirst($type) . "s (" . count($contact_array) . ")"  ?></h3>
 				<table id="dist_<?= $dist . "_" . $type ?>" class='detail'>
 					<tr>
-					<?php foreach($html_columns[$type] as $name => $width): ?>
+					<?php foreach($html_columns[$type] as $name): ?>
 						<th><?= $name ?></th>
 					<?php endforeach; ?>
 					</tr>
@@ -283,9 +307,68 @@ that were already there before redistricting.\n
 	<?php endif; ?>
 	</body>
 	<script>
-		$(document).ready(function(){
+	var chart;
+    $(document).ready(function() {
 
-		});
+    	$('table.summary').dataTable({
+    		"bPaginate": false,
+    		"bFilter": false,
+    		"bInfo": false
+    	});
+
+        chart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'summary_chart',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false
+            },
+            title: {
+                text: 'Distribution of out of district contacts'
+            },
+            tooltip: {
+        	    pointFormat: '{series.name}: <b>{point.percentage}%</b>',
+            	percentageDecimals: 1
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        color: '#000000',
+                        connectorColor: '#000000',
+                        formatter: function() {
+                            return '<b>'+ this.point.name +'</b>: '+ this.percentage +' %';
+                        }
+                    }
+                }
+            },
+            series: [{
+                type: 'pie',
+                name: 'Browser share',
+                data: [
+                    ['Firefox',   45.0],
+                    ['IE',       26.8],
+                    {
+                        name: 'Chrome',
+                        y: 12.8,
+                        sliced: true,
+                        selected: true
+                    },
+                    ['Safari',    8.5],
+                    ['Opera',     6.2],
+                    ['Others',   0.7]
+                ]
+            }]
+        });
+    });
 	</script>
 </html>
 <?php endif; ?>
+
+<?php
+
+
+
+?>
