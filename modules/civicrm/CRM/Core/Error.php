@@ -265,11 +265,6 @@ class CRM_Core_Error extends PEAR_ErrorStack {
       $message = ts('We experienced an unexpected error. Please post a detailed description and the backtrace on the CiviCRM forums: %1', array(1 => 'http://forum.civicrm.org/'));
     }
 
-    if (php_sapi_name() == "cli") {
-      print ("Sorry. A non-recoverable error has occurred.\n$message \n$code\n$email\n\n");
-      debug_print_backtrace();
-      die("\n");
-    }
     $vars = array(
       'message' => $message,
       'code' => $code,
@@ -287,6 +282,13 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         // so we just exit
         self::abend(CRM_Core_Error::FATAL_ERROR);
       }
+    }
+
+    //NYSS move block after fatalErrorHandler so we can customize as needed
+    if (php_sapi_name() == "cli") {
+      print ("Sorry. A non-recoverable error has occurred.\n$message \n$code\n$email\n\n");
+      debug_print_backtrace();
+      die("\n");
     }
 
     if ($config->backtrace) {
