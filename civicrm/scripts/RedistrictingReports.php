@@ -90,7 +90,6 @@ $stats_per_dist = array();
 
 if ($opt['clear_cache'] != FALSE ){
 	clear_reports_cache($db);
-	die();
 }
 
 $district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
@@ -99,7 +98,6 @@ $district_contact_data = get_redist_data($db, true, $senate_district, !$opt['dis
 if ( $opt['summary'] != FALSE ){
 
 	$district_counts = process_summary_data($district_contact_data, $senate_district);
-	redist_summary_pie_data($district_counts);
 	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts);
 	print $summary_output;
 }
@@ -259,9 +257,9 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			                 contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
 			                 a.street_address, a.city, a.postal_code,
 			                 email.email, email.is_primary, district.ny_senate_district_47 AS district,
-	                                 COUNT(DISTINCT case_contact.id) AS case_count,
-	                                 COUNT(DISTINCT activity.id) AS activity_count,
-	                                 COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
+	                         COUNT(DISTINCT case_contact.id) AS case_count,
+	                         COUNT(DISTINCT activity.id) AS activity_count,
+	                         COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
 			FROM `civicrm_contact` AS contact
 			JOIN `civicrm_address` a ON contact.id = a.contact_id
 			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id
@@ -449,29 +447,4 @@ function table_exists($db, $table_name){
 	$res = bb_mysql_query("SHOW TABLES LIKE '" . $table_name . "'", $db, true);
 	return (mysql_num_rows($res) > 0);
 
-}
-
-function redist_summary_pie_data($district_counts){
-	$total_contacts = 0;
-	foreach($district_counts as $dist => $dist_cnts ){
-		$total_contacts += get($dist_cnts['all'], 'total', 0);
-	}
-
-	$percentage_data = array();
-	foreach($district_counts as $dist => $dist_cnts ){
-		$percentage_data[$dist] = round((get($dist_cnts['all'], 'total', 0) / $total_contacts), 2);
-	}
-
-	arsort($percentage_data);
-	$percentage_data = array_slice($percentage_data, 0, 5, true);
-
-	$pie_data = array();
-	$percent_total = 0;
-	foreach($percentage_data as $dist => $percent){
-		$percent_total += $percent;
-		$pie_data[] = array("District $dist", $percent);
-	}
-	$pie_data[] = array("Other Districts", 1.0 - $percent_total );
-
-	return json_encode($pie_data);
 }

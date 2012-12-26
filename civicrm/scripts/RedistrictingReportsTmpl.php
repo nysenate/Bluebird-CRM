@@ -10,10 +10,14 @@
 // in HTML format. This is not intended to be standalone and is called by
 // RedistrictingReports.php
 //-------------------------------------------------------------------------------------
+
+define('RESOURCES_DIR', 'redistricting_report');
 ?>
 
 <?php if ($format == 'text') {
+// Text Mode ------------------------------------------------------------------------------
 
+	// Summary Mode
 	if ($mode == 'summary'){
 
 		$label = "
@@ -49,9 +53,7 @@ that were already there before redistricting.\n
 		print $heading . $output_row;
 	}
 
-	// ----------------------------------------------------------------------
-	// Detail Report                                                    	|
-	// ----------------------------------------------------------------------
+	// Detail Report
 
 	else if ($mode == 'detail'){
 		$output = "";
@@ -119,77 +121,47 @@ that were already there before redistricting.\n
 }
 ?>
 
-<?php if ($format == 'html'): ?>
+<?php if ($format == 'html'):
+// HTML Mode ------------------------------------------------------------------------------
+?>
 <html>
 	<head>
 		<title>
 			<?= $title ?>
 		</title>
-		<style type="text/css">
-			.border-right{
-				border-right:1px solid #777;
-			}
-			table {
-				border-width: 1px;
-				border-spacing: 2px;
-				border-style: outset;
-				border-color: gray;
-				border-collapse: collapse;
-				background-color: white;
-			}
-			table.summary {
-				width:1000px;
-			}
-			table.detail {
-				width:1100px;
-			}
-			table th {
-				border-width: 1px;
-				padding: 5px;
-				border-style: inset;
-				border-color: gray;
-				background-color: white;
-				-moz-border-radius: ;
-			}
-			table td {
-				border-width: 1px;
-				padding: 5px;
-				border-style: inset;
-				border-color: #DDD;
-				background-color: white;
-				font-size:14px;
-			}
-			table.summary td {
-				text-align:center;
-			}
-			hr {
-				border:1px solid #999;
-				border-style: solid none none none;
-			}
-			/* Datatable CSS */
-			table.datatable tr.odd td.sorting_1{
-				background-color:#EEE !important;
-			}
-			table.datatable tr.even td.sorting_1 {
-				background-color:#FFF !important;
-			}
-		</style>
+		<!-- Get datatables css from cdn so that images can be downloaded -->
 		<link rel="stylesheet" type="text/css" href="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
-		<script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"></script>
-		<script src="http://code.highcharts.com/highcharts.js"></script>
-        <script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
-
+		<script>
+			<?php include RESOURCES_DIR . '/resources.js'; ?>
+		</script>
 	</head>
 	<body>
+	<style>
+			<?php include RESOURCES_DIR . '/main.css' ?>
+	</style>
+	<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
 
-		<?php if ($mode == "summary"): ?>
-		<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
+	<?php if ($mode == "summary"): ?>
+
 		<h3>Summary Page | <?= $senator_name ?></h3>
 		<hr/>
 		<p>As per the 2012 Redistricting effort, the district assignments for contacts stored in Bluebird have been updated to reflect the most recent district boundaries. </p>
-		<p>This document is intended to indicate which contacts are outside District <?= $senate_district ?> after the redistricting process completed.</p>
+		<p>This document is intended to indicate which contacts are outside District <?= $senate_district ?> after the redistricting process.</p>
 
 		<div id="summary_chart" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+
+		<?php
+
+		unset($district_counts["0"]);
+		ksort($district_counts);
+
+		$total_contacts = 0;
+		foreach( $district_counts as $dist => $dist_cnts ){
+			$total_contacts += $dist_cnts['all']['total'];
+		}
+		?>
+
+		<p>Number of out of district contacts: <?= $total_contacts ?></p>
 		<p>The following table indicates the number of individuals, households, and organizations that will
 		   be in the districts shown in the left column.
 		</p>
@@ -217,9 +189,6 @@ that were already there before redistricting.\n
 			<tbody>
 			<?php
 
-			unset($district_counts["0"]);
-			ksort($district_counts);
-
 			foreach( $district_counts as $dist => $dist_cnts ): ?>
 				<tr>
 					<td class='border-right'><?= $dist ?></td>
@@ -237,12 +206,12 @@ that were already there before redistricting.\n
 		</table>
 
 	<?php elseif ($mode == "detail"): ?>
-		<h1>Redistricting Details for Senate District <?= $senate_district ?></h1>
-		<h3><?= $senator_name ?></h3>
+
+		<h3>Details Page | <?= $senator_name ?></h3>
 		<hr/>
 
-		<p>The tables below list the contacts that will be in the districts specified.
-		</p>
+		<p id='detail_info_text'>The tables below list the contacts that will be in the districts specified.</p>
+		<p id='detail_load_text'>Please wait while the district information loads...</p>
 		<?php
 
 		// Table columns for contact details
@@ -257,22 +226,25 @@ that were already there before redistricting.\n
 				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#")
 		);
 
-		// Ignore district 0 for now
+		// Ignore district 0
 		// Sort the detailed data by district number
 		unset($contacts_per_dist['0']);
 		ksort($contacts_per_dist);
 
-		foreach( $contacts_per_dist as $dist => $contact_types )
-			foreach( $contact_types as $type => $contact_array ): ?>
+		foreach( $contacts_per_dist as $dist => $contact_types ): ?>
+			<div id='dist_<?= $dist ?>' class='district-view' >
 
+	  <?php foreach( $contact_types as $type => $contact_array ): ?>
 				<h3>District <?= "$dist : " . ucfirst($type) . "s (" . count($contact_array) . ")"  ?></h3>
 				<table id="dist_<?= $dist . "_" . $type ?>" class='detail'>
-					<tr>
-					<?php foreach($html_columns[$type] as $name): ?>
-						<th><?= $name ?></th>
-					<?php endforeach; ?>
-					</tr>
-
+					<thead>
+						<tr>
+						<?php foreach($html_columns[$type] as $name): ?>
+							<th><?= $name ?></th>
+						<?php endforeach; ?>
+						</tr>
+					</thead>
+					<tbody>
 					<?php foreach($contact_array as $contact): ?>
 				 	<tr>
 				 		<?php if($type == "individual"): ?>
@@ -300,67 +272,55 @@ that were already there before redistricting.\n
 					      	<td><?= $contact['contact_id'] ?></td>
 					</tr>
 					<?php endforeach; ?>
+					</tbody>
 
 				</table>
 				<br/>
 				<br/>
 			<?php endforeach; ?>
+			<hr/>
+		<?php endforeach; ?>
 	<?php endif; ?>
 	</body>
+
 	<script>
-	var chart;
-    $(document).ready(function() {
-
-    	$('table.summary').dataTable({
-    		"bPaginate": false,
-    		"bFilter": false,
-    		"bInfo": false
-    	});
-
-        chart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'summary_chart',
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false
-            },
-            credits : {
-   				enabled : false
-			},
-            title: {
-                text: 'Distribution of contacts among outside districts'
-            },
-            tooltip: {
-        	    pointFormat: '{series.name}: <b>{point.percentage}%</b>',
-            	percentageDecimals: 1
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        color: '#000000',
-                        connectorColor: '#000000',
-                        formatter: function() {
-                            return '<b>'+ this.point.name +'</b>: '+ Math.round(this.percentage) +' %';
-                        }
-                    }
-                }
-            },
-            series: [{
-                type: 'pie',
-                name: 'Out of District Share',
-                data: <?= redist_summary_pie_data($district_counts) ?>
-            }]
-        });
-    });
+		<?php
+		// Include the js that initializes the charts and tables
+		include RESOURCES_DIR . '/app_js.php';
+		?>
 	</script>
+
 </html>
 <?php endif; ?>
 
 <?php
 
+function redist_summary_pie_data($district_counts, $top_n = 5){
 
+	// Format the summary data so that it can be displayed in a pie chart.
+	// $top_n specifies the number of districts to show sorted by percentage
 
+	$total_contacts = 0;
+	foreach($district_counts as $dist => $dist_cnts ){
+		$total_contacts += get($dist_cnts['all'], 'total', 0);
+	}
+
+	$percentage_data = array();
+	foreach($district_counts as $dist => $dist_cnts ){
+		$percentage_data[$dist] = get($dist_cnts['all'], 'total', 0) / $total_contacts;
+	}
+
+	arsort($percentage_data);
+	$percentage_data = array_slice($percentage_data, 0, $top_n, true);
+
+	$pie_data = array();
+	$percent_total = 0;
+	foreach($percentage_data as $dist => $percent){
+		$percent_total += $percent;
+		$pie_data[] = array("District $dist", $percent);
+	}
+	$pie_data[] = array("Other Districts", 1.0 - $percent_total );
+
+	return json_encode($pie_data);
+}
 ?>
