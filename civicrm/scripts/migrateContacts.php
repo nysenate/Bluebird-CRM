@@ -21,9 +21,11 @@ function run() {
   global $source;
   global $dest;
   global $addressDistInfo;
+  global $_SERVER;
+
+  require_once 'script_utils.php';
 
   // Parse the options
-  require_once 'script_utils.php';
   $shortopts = "d:fn";
   $longopts = array("dest=", "file", "dryrun");
   $optlist = civicrm_script_init($shortopts, $longopts);
@@ -38,6 +40,13 @@ function run() {
   //get instance settings for source and destination
   $bbcfg_source = get_bluebird_instance_config($optlist['site']);
   //bbscript_log("trace", "bbcfg_source", $bbcfg_source);
+
+  $civicrm_root = $bbcfg_source['drupal.rootdir'].'/sites/all/modules/civicrm';
+  $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+  if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
+    CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from migrateContacts.');
+    return FALSE;
+  }
 
   $source = array(
     'name' => $optlist['site'],

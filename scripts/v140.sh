@@ -205,6 +205,7 @@ $drush $instance en nyss_tags -y -q
 $drush $instance en nyss_civihooks -y -q
 $drush $instance en nyss_contact -y -q
 $drush $instance en nyss_imapper -y -q
+$drush $instance en civicrm_error -y -q
 
 ## reenable logging
 echo "re-enable civicrm logging..."
@@ -419,6 +420,9 @@ INSERT INTO civicrm_group (name, title, description, source, saved_search_id, is
 ('Authorized_Forwarders', 'Authorized Forwarders', NULL, NULL, NULL, 1, 'User and User Admin Only', NULL, NULL, NULL, NULL, 0, 1);
 "
 $execSql -i $instance -c "$authfwd"
+
+## 5993
+$drush $instance vset civicrm_error_to 'brian@lcdservices.biz,zalewski@nysenate.gov' -y
 
 ### Cleanup ###
 
