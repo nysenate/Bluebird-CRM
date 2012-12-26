@@ -231,7 +231,8 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
     $where = $this->where($includeContactIDs);
 
-    if (!$justIDs && !$this->_allSearch) {
+    //NYSS we should groupby here so we get distinct count
+    if (!$this->_allSearch) {
       $groupBy = " GROUP BY contact_a.id";
     }
     else {
@@ -263,14 +264,20 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     if ($offset >= 0 && $rowcount > 0) {
       $sql .= " LIMIT $offset, $rowcount ";
     }
+    //CRM_Core_Error::debug_var('final sql', $sql);
 
-    CRM_Core_Error::debug_var('final sql', $sql);
     return $sql;
   }
 
   function from() {
-    $tFromStart = microtime();
-    CRM_Core_Error::debug_var('start from time', $tFromStart);
+    //$tFromStart = microtime();
+    //CRM_Core_Error::debug_var('start from time', $tFromStart);
+
+    //NYSS check if we've already constructed the result table and use it if so
+    if ( !empty($this->_from) ) {
+      //CRM_Core_Error::debug_var('this->_from', $this->_from);
+      return $this->_from;
+    }
 
     $iGroups = $xGroups = $iTags = $xTags = 0;
 
@@ -323,7 +330,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
         //search for smart group contacts
         foreach ($this->_excludeGroups as $keys => $values) {
-          $tSgStart = microtime();
+          //$tSgStart = microtime();
           //CRM_Core_Error::debug_log_message("smart group {$values} start: {$tSgStart}");
 
           if (in_array($values, $smartGroup)) {
@@ -344,10 +351,10 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
             CRM_Core_DAO::executeQuery($smartGroupQuery);
           }
 
-          $tSgEnd = microtime();
+          //$tSgEnd = microtime();
           //CRM_Core_Error::debug_log_message("smart group {$values} end: {$tSgEnd}");
-          $tSgDiff = $tSgEnd - $tSgStart;
-          CRM_Core_Error::debug_log_message("smart group {$values} exclusion time: {$tSgDiff}");
+          //$tSgDiff = $tSgEnd - $tSgStart;
+          //CRM_Core_Error::debug_log_message("smart group {$values} exclusion time: {$tSgDiff}");
         }
       }
 
@@ -358,7 +365,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       ";
       CRM_Core_DAO::executeQuery($sql);
 
-      $tgiStaticStart = microtime();
+      //$tgiStaticStart = microtime();
       if ($iGroups) {
         $includeGroup = "
           INSERT INTO Ig_{$this->_tableName} (contact_id, group_names)
@@ -403,13 +410,13 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
       CRM_Core_DAO::executeQuery($includeGroup);
 
-      $tgiStaticEnd = microtime();
-      $tgiStaticDiff = $tgiStaticEnd - $tgiStaticStart;
-      CRM_Core_Error::debug_log_message("time to generate static group inclusion: {$tgiStaticDiff}");
+      //$tgiStaticEnd = microtime();
+      //$tgiStaticDiff = $tgiStaticEnd - $tgiStaticStart;
+      //CRM_Core_Error::debug_log_message("time to generate static group inclusion: {$tgiStaticDiff}");
 
       //search for smart group contacts
       foreach ($this->_includeGroups as $keys => $values) {
-        $tgiSmartStart = microtime();
+        //$tgiSmartStart = microtime();
         if (in_array($values, $smartGroup)) {
           $ssId = CRM_Utils_Array::key($values, $smartGroup);
           $smartSql = CRM_Contact_BAO_SavedSearch::contactIDsSQL($ssId);
@@ -441,9 +448,9 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
                                          AND Ig_{$this->_tableName}.group_names IS NULL";
           CRM_Core_DAO::executeQuery($insertGroupNameQuery);
         }
-        $tgiSmartEnd = microtime();
-        $tgiSmartDiff = $tgiSmartEnd - $tgiSmartStart;
-        CRM_Core_Error::debug_log_message("smart group {$values} inclusion time: {$tgiSmartDiff}");
+        //$tgiSmartEnd = microtime();
+        //$tgiSmartDiff = $tgiSmartEnd - $tgiSmartStart;
+        //CRM_Core_Error::debug_log_message("smart group {$values} inclusion time: {$tgiSmartDiff}");
       }
     }
     //group contact search end here;
@@ -473,7 +480,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         $xTags = 0;
       }
 
-      $ttxStart = microtime();
+      //$ttxStart = microtime();
       $sql = "
         CREATE TEMPORARY TABLE Xt_{$this->_tableName}
         ( contact_id int primary key )
@@ -493,11 +500,11 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         ";
         CRM_Core_DAO::executeQuery($excludeTag);
       }
-      $ttxEnd = microtime();
-      $ttxDiff = $ttxEnd - $ttxStart;
-      CRM_Core_Error::debug_log_message("time to generate tag exclusions: {$ttxDiff}");
+      //$ttxEnd = microtime();
+      //$ttxDiff = $ttxEnd - $ttxStart;
+      //CRM_Core_Error::debug_log_message("time to generate tag exclusions: {$ttxDiff}");
 
-      $ttiStart = microtime();
+      //$ttiStart = microtime();
       $sql = "
         CREATE TEMPORARY TABLE It_{$this->_tableName}
         (id int PRIMARY KEY AUTO_INCREMENT, contact_id int, tag_names varchar(64))
@@ -547,12 +554,14 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
       CRM_Core_DAO::executeQuery($includeTag);
 
-      $ttiEnd = microtime();
-      $ttiDiff = $ttiEnd - $ttiStart;
-      CRM_Core_Error::debug_log_message("time to generate tag inclusions: {$ttiDiff}");
+      //$ttiEnd = microtime();
+      //$ttiDiff = $ttiEnd - $ttiStart;
+      //CRM_Core_Error::debug_log_message("time to generate tag inclusions: {$ttiDiff}");
     }
 
-    $from = " FROM civicrm_contact contact_a";
+    $from = "
+      FROM civicrm_contact contact_a
+    ";
 
     /*
      * CRM-10850 / CRM-10848
@@ -580,10 +589,18 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
     $whereitems = array();
 
+    //NYSS try creating/modifying single temp table rather than having large joins
+    $sql = "
+      CREATE TEMPORARY TABLE result_{$this->_tableName}
+      (id int PRIMARY KEY AUTO_INCREMENT, contact_id int, group_names varchar(64), tag_names varchar(64))
+      ENGINE=HEAP
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+
     //inclusions
     foreach (array('Ig', 'It') as $inc) {
       if ($$inc) {
-        if ($this->_andOr == 1) {
+        /*if ($this->_andOr == 1) {
           $from .= "
             INNER JOIN {$inc}_{$this->_tableName} temptable$inc
               ON (contact_a.id = temptable$inc.contact_id)
@@ -595,23 +612,67 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
               ON (contact_a.id = temptable$inc.contact_id)
           ";
         }
-        $whereitems[] = "temptable$inc.contact_id IS NOT NULL";
+        $whereitems[] = "temptable$inc.contact_id IS NOT NULL";*/
+
+        $gtName = ( $inc == 'Ig' ) ? 'group_names' : 'tag_names';
+        $sql = "
+          INSERT INTO result_{$this->_tableName}
+          (contact_id, {$gtName})
+          SELECT contact_id, {$gtName}
+          FROM {$inc}_{$this->_tableName}
+        ";
+        CRM_Core_DAO::executeQuery($sql);
       }
     }
-    $this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
+    //$this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
+
+    //remove if andOr == 1
+    if ( $this->_andOr == 1 && $this->_groups && $this->_tags ) {
+      //$remStart = microtime();
+      $sql = "
+        DELETE FROM result_{$this->_tableName}
+        WHERE contact_id NOT IN
+        ( SELECT iG.contact_id
+          FROM Ig_{$this->_tableName} iG
+          JOIN It_{$this->_tableName} iT
+            ON iG.contact_id = iT.contact_id )
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+      //$remEnd = microtime();
+      //$remDiff = $remEnd - $remStart;
+      //CRM_Core_Error::debug_log_message("time to remove AND inclusions: {$remDiff}");
+    }
 
     //exclusions
+    //$exclStart = microtime();
     foreach (array('Xg', 'Xt') as $exc) {
       if ($$exc) {
-        $from .= "
+        /*$from .= "
           LEFT JOIN {$exc}_{$this->_tableName} temptable$exc
             ON (contact_a.id = temptable$exc.contact_id)
         ";
         $this->_where .= "
           AND temptable$exc.contact_id IS NULL
+        ";*/
+
+        $sql = "
+          DELETE FROM result_{$this->_tableName}
+          WHERE contact_id IN
+          ( SELECT contact_id
+            FROM {$exc}_{$this->_tableName} )
         ";
+        CRM_Core_DAO::executeQuery($sql);
       }
     }
+    //$exclEnd = microtime();
+    //$exclDiff = $exclEnd - $exclStart;
+    //CRM_Core_Error::debug_log_message("time to remove exclusions: {$exclDiff}");
+
+    //now construct from
+    $from .= "
+      JOIN result_{$this->_tableName} temptableResult
+        ON contact_a.id = temptableResult.contact_id
+    ";
 
     //append email/address joins
     $from .= "
@@ -633,7 +694,10 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       $this->_where .= " AND {$this->_aclWhere} ";
     }
 
-    CRM_Core_Error::debug_var('from built:', $from);
+    //NYSS cache this so we can skip reconstruction
+    $this->_from = $from;
+
+    //CRM_Core_Error::debug_var('from built:', $from);
     return $from;
   }
 
@@ -670,10 +734,15 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
      * Functions below generally don't need to be modified
      */
   function count() {
-    //let's only retrieve ids for the purpose of the count
-    $sql = $this->all(0, 0, NULL, FALSE, TRUE);
+    //$countStart = microtime();
 
+    $sql = $this->all();
     $dao = CRM_Core_DAO::executeQuery($sql);
+
+    //$countEnd = microtime();
+    //$countDiff = $countEnd - $countStart;
+    //CRM_Core_Error::debug_log_message("time to process count: {$countDiff}");
+
     return $dao->N;
   }
 
