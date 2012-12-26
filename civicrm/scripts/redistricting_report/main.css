@@ -1,0 +1,47 @@
+/* Main CSS for Report Template */
+
+.border-right{
+	border-right:1px solid #777;
+}
+table {
+	border-width: 1px;
+	border-spacing: 2px;
+	border-style: outset;
+	border-color: gray;
+	border-collapse: collapse;
+	background-color: white;
+}
+table th {
+	border-width: 1px;
+	padding: 5px;
+	border-style: inset;
+	border-color: gray;
+	background-color: white;
+}
+table td {
+	border-width: 1px;
+	padding: 5px;
+	border-style: inset;
+	border-color: #DDD;
+	background-color: white;
+	font-size:14px;
+}
+table.summary td {
+	text-align:center;
+}
+hr {
+	border:1px solid #999;
+	border-style: solid none none none;
+}
+
+.district-view {
+	display:none;
+}
+
+/* Datatable CSS */
+table.datatable tr.odd td.sorting_1{
+	background-color:#EEE !important;
+}
+table.datatable tr.even td.sorting_1 {
+	background-color:#FFF !important;
+}
