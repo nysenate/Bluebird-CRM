@@ -645,7 +645,7 @@ function makeModalRemove(tagLabel){
 								alert("Cannot remove a parent tag. Try deleting subtags before deleting parent tag.");
 								cj('.ui-dialog-buttonpane .loadingGif').hide();
 								cj('.ui-dialog-buttonset .ui-button').css("visibility", "visible");
-								modalRemoveLoadingGif();
+								modalRemoveLoadingGif('.manage');
 							}
 
 						}
