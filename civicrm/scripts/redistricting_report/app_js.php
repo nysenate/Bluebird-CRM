@@ -1,12 +1,20 @@
 // DataTables
 var summary_oTable;
 var detail_oTable;
+var detail_paginate;
 
 $(document).ready(function() {
 	<?php if ($mode == 'summary'): ?>
 		init_summary_page();
 	<?php elseif ($mode == 'detail'): ?>
 		init_detail_page();
+
+        $("#toggle_pagination").click(function(e){
+            e.preventDefault();
+            toggle_pagination();
+
+        });
+
 	<?php endif; ?>
 });
 
@@ -62,18 +70,40 @@ function init_summary_page(){
 <?php elseif($mode == 'detail'): ?>
 function init_detail_page(){
 
-    detail_oTable = load_detail_datatable();
-
+    detail_oTable = enable_pagination();
     $('.district-view').show();
     $('#detail_load_text').fadeOut();
 }
 
-function load_detail_datatable(){
+function enable_pagination(){
 
+    detail_paginate = true;
     return $('table').dataTable({
           "bPaginate": true,
           "bFilter": true,
-          "bInfo": true
-    });
+          "bInfo": true,
+          "bDestroy": true,
+          "bProcessing": true
+    }).css('width', '100%');
 }
+
+function disable_pagination(){
+
+    detail_paginate = false;
+    return $('table').dataTable({
+          "bPaginate": false,
+          "bInfo": true,
+          "bDestroy": true
+    }).css('width', '100%');
+}
+
+function toggle_pagination(){
+    if (detail_paginate){
+        disable_pagination();
+    }
+    else{
+        enable_pagination();
+    }
+}
+
 <?php endif; ?>

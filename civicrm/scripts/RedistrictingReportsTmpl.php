@@ -213,6 +213,7 @@ that were already there before redistricting.\n
 		<hr/>
 
 		<p id='detail_info_text'>The tables below list the contacts that will be in the districts specified.</p>
+		<p id='pagination_toggle'><a href='#' id='toggle_pagination'>Toggle table pagination</a> - Note: may take a moment to complete.</p>
 		<p id='detail_load_text'>Please wait while the district information loads...</p>
 		<?php
 
