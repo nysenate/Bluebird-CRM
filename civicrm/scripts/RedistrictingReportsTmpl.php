@@ -163,7 +163,8 @@ that were already there before redistricting.\n
 
 		<p>Number of out of district contacts: <?= $total_contacts ?></p>
 		<p>The following table indicates the number of individuals, households, and organizations that will
-		   be in the districts shown in the left column.
+		   be in the districts shown in the left column.<br/>
+		   The 'Moved from Dist <?= $senate_district ?>' column shows the number of contacts that were
 		</p>
 
 		<table class='summary'>
@@ -173,7 +174,7 @@ that were already there before redistricting.\n
 				<th colspan="2">Individuals</th>
 				<th colspan="2">Households</th>
 				<th colspan="2">Organizations</th>
-				<th colspan="2">Totals</th>
+				<th colspan="2">All</th>
 			</tr>
 			<tr>
 				<th>Moved from Dist <?= $senate_district ?></th>
@@ -254,11 +255,11 @@ that were already there before redistricting.\n
 				 			<td><?= $contact['street_address'] ?></td>
 
 				 	    <?php elseif($type == "household"): ?>
-				 			<td><?= $contact['household_name'] ?></td>
+				 			<td><?= get($contact,'household_name','Unknown') ?></td>
 				 			<td><?= $contact['street_address'] ?></td>
 
 				 		<?php elseif($type == "organization"): ?>
-				 			<td><?= $contact['organization_name'] ?></td>
+				 			<td><?= get($contact,'organization_name','Unknown') ?></td>
 				 			<td><?= $contact['street_address'] ?></td>
 
 						<?php endif; ?>
