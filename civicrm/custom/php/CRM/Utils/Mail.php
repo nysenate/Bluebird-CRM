@@ -102,7 +102,8 @@ class CRM_Utils_Mail {
     $headers['Cc'] = CRM_Utils_Array::value('cc', $params);
     $headers['Bcc'] = CRM_Utils_Array::value('bcc', $params);
     $headers['Subject'] = CRM_Utils_Array::value('subject', $params);
-    $headers['Content-Type'] = $htmlMessage ? 'multipart/mixed; charset=utf-8' : 'text/plain; charset=utf-8';
+    //NYSS this will be set by Mail_mime
+    //$headers['Content-Type'] = $htmlMessage ? 'multipart/mixed; charset=utf-8' : 'text/plain; charset=utf-8';
     $headers['Content-Disposition'] = 'inline';
     //NYSS
     $headers['Content-Transfer-Encoding'] = CRM_Utils_Array::value('Content-Transfer-Encoding', $params, '8bit');
