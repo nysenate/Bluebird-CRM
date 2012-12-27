@@ -30,7 +30,7 @@ require_once 'script_utils.php';
 $shortopts = "l:f:m:tdc";
 $longopts = array("log=", "format=", "mode=", "threshold=", "disableCache", "clearCache");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --mode=[summary|detail|stats], --threshold=[THRESH], --disableCache, --clearCache';
+$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --mode=[summary|detail], --threshold=[THRESH], --disableCache, --clearCache';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
@@ -39,7 +39,7 @@ if ($optlist === null) {
 }
 
 // Available formats
-$formats = array( 'html', 'text', 'csv', 'excel' );
+$formats = array('html', 'text', 'csv');
 
 // Set the options
 $opt = array();
@@ -79,9 +79,6 @@ $district_counts = array();
 // Store detailed contact information per district
 $contacts_per_dist = array();
 
-// Stats per district
-$stats_per_dist = array();
-
 // ----------------------------------------------------------------------
 // Request Handler 														|
 // ----------------------------------------------------------------------
@@ -106,11 +103,6 @@ if ( $opt['mode'] == 'detail' ){
 	$contacts_per_dist = process_detail_data($district_contact_data, $senate_district, $opt['threshold']);
 	$detail_output = get_detail_output($opt['format'], $senate_district, $senator_name, $contacts_per_dist);
 	print $detail_output;
-}
-
-// Process redistricting stats
-if ( $opt['stats'] == 'stats' ){
-	//[TODO]
 }
 
 function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $use_cache = true ){
@@ -286,8 +278,8 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 
 			WHERE district.`ny_senate_district_47` != {$filter_district}
 			AND a.is_primary = 1
+			AND contact.is_deleted = 0
 			AND NOT (contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 ))
-
 			GROUP BY contact_id
 		) AS c
 	";
