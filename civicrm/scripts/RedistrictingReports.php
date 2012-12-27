@@ -85,6 +85,7 @@ $contacts_per_dist = array();
 
 if ($opt['clear_cache'] != FALSE ){
 	clear_reports_cache($db);
+	die();
 }
 
 $district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
