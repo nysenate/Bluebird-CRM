@@ -40,7 +40,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
   //set character encoding
-  //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
+  $params['Content-Transfer-Encoding'] = 'Quoted-Printable';
 
   //set some values based on context
   if ( $context == 'civimail' ) {
