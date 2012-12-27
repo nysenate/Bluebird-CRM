@@ -3,7 +3,7 @@
 // Project: BluebirdCRM Redistricting
 // Authors: Ash Islam
 // Organization: New York State Senate
-// Date: 2012-12-20
+// Date: 2012-12-26
 
 //-------------------------------------------------------------------------------------
 // This script will generate reports pertaining to redistricting changes.
@@ -21,16 +21,16 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('DEFAULT_FORMAT', 'text');
-define('DEFAULT_INFO_LEVEL', 'summary');
+define('DEFAULT_MODE', 'summary');
 define('RD_CONTACT_CACHE_TABLE', 'civicrm_redist_contact_cache');
 define('RD_NOTE_CACHE_TABLE', 'civicrm_redist_note_cache');
 
 // Parse the options
 require_once 'script_utils.php';
-$shortopts = "l:f:o:sdtrcd";
-$longopts = array("log=", "format=", "outfile=", "summary", "detail", "stats", "district=", "disableCache", "clearCache");
+$shortopts = "l:f:m:tdc";
+$longopts = array("log=", "format=", "mode=", "threshold=", "disableCache", "clearCache");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --outfile= [ FILENAME ], --summary, --detail, --stats, --district= [DISTRICT NUM], --cache, --clearCache';
+$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --mode=[summary|detail|stats], --threshold=[THRESH], --disableCache, --clearCache';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
@@ -44,12 +44,10 @@ $formats = array( 'html', 'text', 'csv', 'excel' );
 // Set the options
 $opt = array();
 $opt['format'] = get($optlist, 'format', DEFAULT_FORMAT);
-$opt['summary'] = get($optlist, 'summary', FALSE);
-$opt['detail'] = get($optlist, 'detail', FALSE);
-$opt['stats'] = get($optlist, 'stats', FALSE);
-$opt['district'] = get($optlist, 'district', FALSE);
+$opt['mode'] = get($optlist, 'mode', DEFAULT_MODE);
 $opt['disable_cache'] = get($optlist, 'disableCache', FALSE);
 $opt['clear_cache'] = get($optlist, 'clearCache', FALSE);
+$opt['threshold'] = get($optlist, 'threshold', 0);
 
 $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper(get($optlist, 'log', 'fatal'))][0];
 
@@ -95,27 +93,27 @@ if ($opt['clear_cache'] != FALSE ){
 $district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
 
 // Process out of district summary report
-if ( $opt['summary'] != FALSE ){
+if ( $opt['mode'] == 'summary' ){
 
-	$district_counts = process_summary_data($district_contact_data, $senate_district);
+	$district_counts = process_summary_data($district_contact_data, $senate_district, $opt['threshold']);
 	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts);
 	print $summary_output;
 }
 
 // Process out of district detailed report
-if ( $opt['detail'] != FALSE ){
+if ( $opt['mode'] == 'detail' ){
 
-	$contacts_per_dist = process_detail_data($district_contact_data, $senate_district);
+	$contacts_per_dist = process_detail_data($district_contact_data, $senate_district, $opt['threshold']);
 	$detail_output = get_detail_output($opt['format'], $senate_district, $senator_name, $contacts_per_dist);
 	print $detail_output;
 }
 
 // Process redistricting stats
-if ( $opt['stats'] != FALSE ){
+if ( $opt['stats'] == 'stats' ){
 	//[TODO]
 }
 
-function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $use_cache = true){
+function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $use_cache = true ){
 
 	$district_contact_data = array();
 
@@ -146,7 +144,7 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 // Summary Reports - Provide basic counts for each district 			|
 // ----------------------------------------------------------------------
 
-function process_summary_data($district_contact_data, $senate_district) {
+function process_summary_data($district_contact_data, $senate_district, $threshold = 0) {
 
 	$district_counts = array();
 	foreach( $district_contact_data as $contact ){
@@ -168,10 +166,18 @@ function process_summary_data($district_contact_data, $senate_district) {
 
 		$district_counts[$district]['all']['total']++;
 		$district_counts[$district][$contact_type]['total']++;
+
 		// Count the number of contacts that are moving from the instance district
 		if (is_former_district($note, $senate_district)){
 			$district_counts[$district]['all']['changed']++;
 			$district_counts[$district][$contact_type]['changed']++;
+		}
+	}
+
+	// Apply the threshold
+	foreach($district_counts as $dist => $cnts){
+		if ($cnts['all']['total'] < $threshold){
+			unset($district_counts[$dist]);
 		}
 	}
 
@@ -196,7 +202,7 @@ function get_summary_output($format, $senate_district, $senator_name, $district_
 
 // List all contact information per outside district
 // Assumptions: State will just be 'NY' because we ignore out of state contacts.
-function process_detail_data($district_contact_data, $senate_district){
+function process_detail_data($district_contact_data, $senate_district, $threshold = 0){
 
 	$contacts_per_dist = array();
 	foreach( $district_contact_data as $contact ){
@@ -214,7 +220,17 @@ function process_detail_data($district_contact_data, $senate_district){
 
 		$contacts_per_dist[$district][$contact_type][] = $contact;
 	}
-	bbscript_log("debug", "Stored contacts in " . count($contacts_per_dist). " districts.");
+
+	// Apply the threshold
+	foreach($contacts_per_dist as $dist => $contact_types){
+		$contact_cnt = 0;
+		foreach($contact_types as $type => $contact_array ){
+			$contact_cnt += count($contact_array);
+		}
+		if ($contact_cnt < $threshold ){
+			unset($contacts_per_dist[$dist]);
+		}
+	}
 
 	return $contacts_per_dist;
 }

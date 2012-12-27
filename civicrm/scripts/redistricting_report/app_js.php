@@ -1,14 +1,14 @@
-var chart;
 $(document).ready(function() {
 	<?php if ($mode == 'summary'): ?>
-		loadSummaryViz();
+		load_summary_view();
 	<?php elseif ($mode == 'detail'): ?>
-		loadDetailViz();
+		load_detail_view();
 	<?php endif; ?>
 });
 
 <?php if ($mode == 'summary'): ?>
-function loadSummaryViz(){
+
+function load_summary_view(){
 
     $('table.summary').dataTable({
 		"bPaginate": false,
@@ -16,7 +16,7 @@ function loadSummaryViz(){
 		"bInfo": false
 	});
 
-    chart = new Highcharts.Chart({
+    var chart = new Highcharts.Chart({
         chart: {
             renderTo: 'summary_chart',
             plotBackgroundColor: null,
@@ -56,7 +56,8 @@ function loadSummaryViz(){
 }
 
 <?php elseif ($mode == 'detail'): ?>
-function loadDetailViz(){
+
+function load_detail_view(){
 
     var all_tables =
         $('table').dataTable({
