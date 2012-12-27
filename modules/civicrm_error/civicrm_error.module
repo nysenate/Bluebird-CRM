@@ -131,7 +131,7 @@ function _send_mail_civicrm($message, $output){
   $message['toEmail'] = $message['to'];
   $message['text'] = $output;
   $message['html'] = '<pre>'.$output.'</pre>';
-  //$message['content-transfer-encoding'] = 'Quoted-Printable';
+  $message['Content-Transfer-Encoding'] = 'Quoted-Printable';
   //CRM_Core_Error::debug_var('message body',$message['body']);
 
   CRM_Utils_Mail::send($message);

@@ -71,6 +71,7 @@ class CRM_Utils_Mail {
 
     // first call the mail alter hook
     CRM_Utils_Hook::alterMailParams($params);
+    //CRM_Core_Error::debug_var('params',$params);
 
     // check if any module has aborted mail sending
     if (CRM_Utils_Array::value('abortMailSend', $params) ||
@@ -103,7 +104,8 @@ class CRM_Utils_Mail {
     $headers['Subject'] = CRM_Utils_Array::value('subject', $params);
     $headers['Content-Type'] = $htmlMessage ? 'multipart/mixed; charset=utf-8' : 'text/plain; charset=utf-8';
     $headers['Content-Disposition'] = 'inline';
-    $headers['Content-Transfer-Encoding'] = '8bit';
+    //NYSS
+    $headers['Content-Transfer-Encoding'] = CRM_Utils_Array::value('Content-Transfer-Encoding', $params, '8bit');
     $headers['Return-Path'] = CRM_Utils_Array::value('returnPath', $params);
     $headers['Reply-To'] = CRM_Utils_Array::value('replyTo', $params, $from);
     $headers['Date'] = date('r');
@@ -148,7 +150,8 @@ class CRM_Utils_Mail {
       }
     }
     $message = self::setMimeParams($msg);
-    $headers = &$msg->headers($headers);
+    //NYSS allow content-transfer-encoding to be overwritten
+    $headers = &$msg->headers($headers, TRUE);
 
     //NYSS
     //$to = array( $params['toEmail'] );
@@ -169,6 +172,9 @@ class CRM_Utils_Mail {
     $mailer = CRM_Core_Config::getMailer();
     CRM_Core_Error::ignoreException();
     if (is_object($mailer)) {
+      //NYSS debug
+      //CRM_Core_Error::debug_var('headers',$headers);
+      //CRM_Core_Error::debug_var('message',$message);
       $result = $mailer->send($to, $headers, $message);
       CRM_Core_Error::setCallback();
       if (is_a($result, 'PEAR_Error')) {

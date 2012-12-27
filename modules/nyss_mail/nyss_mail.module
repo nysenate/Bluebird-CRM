@@ -39,6 +39,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   // Prevent Sendgrid from dropping any of our messages.
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
+  //set character encoding
+  //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
+
   //set some values based on context
   if ( $context == 'civimail' ) {
     if (!isset($params['event_queue_id']) || empty($params['event_queue_id'])) {
