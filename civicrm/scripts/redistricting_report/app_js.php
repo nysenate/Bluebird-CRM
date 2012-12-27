@@ -1,15 +1,19 @@
+// DataTables
+var summary_oTable;
+var detail_oTable;
+
 $(document).ready(function() {
 	<?php if ($mode == 'summary'): ?>
-		load_summary_view();
+		init_summary_page();
 	<?php elseif ($mode == 'detail'): ?>
-		load_detail_view();
+		init_detail_page();
 	<?php endif; ?>
 });
 
 <?php if ($mode == 'summary'): ?>
+function init_summary_page(){
 
-function load_summary_view(){
-
+    summary_oTable =
     $('table.summary').dataTable({
 		"bPaginate": false,
 		"bFilter": false,
@@ -55,19 +59,21 @@ function load_summary_view(){
     });
 }
 
-<?php elseif ($mode == 'detail'): ?>
+<?php elseif($mode == 'detail'): ?>
+function init_detail_page(){
 
-function load_detail_view(){
-
-    var all_tables =
-        $('table').dataTable({
-		  "bPaginate": true,
-		  "bFilter": true,
-		  "bInfo": true
-	    });
+    detail_oTable = load_detail_datatable();
 
     $('.district-view').show();
     $('#detail_load_text').fadeOut();
 }
 
+function load_detail_datatable(){
+
+    return $('table').dataTable({
+          "bPaginate": true,
+          "bFilter": true,
+          "bInfo": true
+    });
+}
 <?php endif; ?>
