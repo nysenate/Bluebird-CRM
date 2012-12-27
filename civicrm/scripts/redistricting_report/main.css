@@ -1,37 +1,21 @@
 /* Main CSS for Report Template */
 
+h1{
+	color:#036;
+}
+
 .border-right{
 	border-right:1px solid #777;
 }
-table {
-	border-width: 1px;
-	border-spacing: 2px;
-	border-style: outset;
-	border-color: gray;
-	border-collapse: collapse;
-	background-color: white;
-}
-table th {
-	border-width: 1px;
-	padding: 5px;
-	border-style: inset;
-	border-color: gray;
-	background-color: white;
-}
-table td {
-	border-width: 1px;
-	padding: 5px;
-	border-style: inset;
-	border-color: #DDD;
-	background-color: white;
-	font-size:14px;
-}
-table.summary td {
-	text-align:center;
-}
+
 hr {
 	border:1px solid #999;
 	border-style: solid none none none;
+}
+
+table {
+	border-spacing:0px;
+	box-shadow:0px 0px 3px #888;
 }
 
 .district-view {
@@ -39,9 +23,21 @@ hr {
 }
 
 /* Datatable CSS */
+table.datatable tr.odd{
+	background-color:#EEE !important;
+}
+table.datatable tr.even {
+	background-color:#FFF !important;
+}
+
 table.datatable tr.odd td.sorting_1{
 	background-color:#EEE !important;
 }
 table.datatable tr.even td.sorting_1 {
 	background-color:#FFF !important;
+}
+
+.datatables_filter, .dataTables_paginate, .dataTables_info {
+	margin-bottom:5px;
+	margin-top:5px;
 }

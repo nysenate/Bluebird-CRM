@@ -164,7 +164,8 @@ that were already there before redistricting.\n
 		<p>Number of out of district contacts: <?= $total_contacts ?></p>
 		<p>The following table indicates the number of individuals, households, and organizations that will
 		   be in the districts shown in the left column.<br/>
-		   The 'Moved from Dist <?= $senate_district ?>' column shows the number of contacts that were
+		   The 'Moved from Dist <?= $senate_district ?>' column shows the number of contacts that were assigned to District <?= $senate_district ?> prior to redistricting
+		   and have been assigned to the new district.
 		</p>
 
 		<table class='summary'>
