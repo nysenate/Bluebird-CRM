@@ -436,7 +436,7 @@ function get_gender($value, $default = "-"){
 	else if ($value == 2){
 		return "M";
 	}
-	else return $default;
+	return $default;
 }
 
 function get_age($birth_date, $default = '-'){
