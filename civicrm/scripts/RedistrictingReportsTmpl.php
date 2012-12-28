@@ -213,7 +213,7 @@ that were already there before redistricting.\n
 		<hr/>
 
 		<p id='detail_info_text'>The tables below list the contacts that will be in the districts specified.</p>
-		<p id='pagination_toggle'><a href='#' id='toggle_pagination'>Toggle table pagination</a> - Note: may take a moment to complete.</p>
+		<p id='pagination_toggle'><a href='#' id='toggle_pagination'>Expand / Collapse All</a> - Note: may take a moment to complete.</p>
 		<p id='detail_load_text'>Please wait while the district information loads...</p>
 		<?php
 
@@ -272,7 +272,8 @@ that were already there before redistricting.\n
 					      	<td><?= $contact['case_count'] ?></td>
 					      	<td><?= $contact['activity_count'] ?></td>
 					      	<td><?= $contact['group_count'] ?></td>
-					      	<td><?= $contact['contact_id'] ?></td>
+					      	<td><a target='_blank' href='<?= "http://" . $site . ".crm.nysenate.gov/civicrm/contact/view?cid=" . $contact['contact_id'] ?>'>
+					      	    <?= $contact['contact_id'] ?></a></td>
 					</tr>
 					<?php endforeach; ?>
 					</tbody>

@@ -62,7 +62,7 @@ $db = $dao->getDatabaseConnection()->connection;
 
 // Get the senate district for this instance
 $bb_cfg = get_bluebird_instance_config($optlist['site']);
-
+$site = $bb_cfg['db.basename'];
 $senator_name = $bb_cfg['senator.name.formal'];
 $senate_district = $bb_cfg['district'];
 
@@ -179,6 +179,7 @@ function process_summary_data($district_contact_data, $senate_district, $thresho
 
 function get_summary_output($format, $senate_district, $senator_name, $district_counts){
 
+	global $site;
 	$title = "Redistricting 2012 Summary";
 	$mode = "summary";
 
@@ -231,6 +232,7 @@ function process_detail_data($district_contact_data, $senate_district, $threshol
 // Buffer output from RedistrictingReportsTmpl using mode = detail
 function get_detail_output($format, $senate_district, $senator_name, $contacts_per_dist){
 
+	global $site;
 	$title = "Redistricting 2012 Contacts Reference";
 	$mode = "detail";
 
