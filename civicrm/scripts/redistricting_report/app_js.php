@@ -102,7 +102,8 @@ function toggle_pagination(){
         disable_pagination();
     }
     else{
-        enable_pagination();
+        // Just reload the page, it's faster
+        location.reload();
     }
 }
 
