@@ -13,7 +13,6 @@
 
 define('RESOURCES_DIR', 'redistricting_report');
 ?>
-
 <?php if ($format == 'text') {
 // Text Mode ------------------------------------------------------------------------------
 
@@ -120,7 +119,6 @@ that were already there before redistricting.\n
 	}
 }
 ?>
-
 <?php if ($format == 'html'):
 // HTML Mode ------------------------------------------------------------------------------
 ?>
@@ -296,9 +294,65 @@ that were already there before redistricting.\n
 
 </html>
 <?php endif; ?>
+<?php if ($format == 'csv') {
 
+	$output_row = "";
+	if ($mode == "summary") {
+
+		$heading = "District, Individuals from $senate_district, Individuals total, Households from $senate_district, Households total, Organizations from $senate_district, Organizations total, Total from $senate_district, Total\n";
+		foreach( $district_counts as $dist => $dist_cnts ){
+			$row = array(
+				$dist, get($dist_cnts['individual'], 'changed', '0'), get($dist_cnts['individual'], 'total', '0'),
+				get($dist_cnts['household'], 'changed', '0') , get($dist_cnts['household'], 'total', '0'),
+				get($dist_cnts['organization'], 'changed', '0') , get($dist_cnts['organization'], 'total', '0'),
+			    get($dist_cnts['all'], 'changed', '0') , get($dist_cnts['all'], 'total', '0')
+			);
+			$output_row .=  implode(',', $row) . "\n";
+		}
+		print $heading . $output_row;
+	}
+	else if ($mode == "detail") {
+
+		$heading = array(
+			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#"
+		);
+
+		$output_row = "";
+		foreach( $contacts_per_dist as $dist => $contact_types ){
+			foreach( $contact_types as $type => $contact_array ){
+				foreach( $contact_array as $contact){
+
+					$name = "";
+					if ($type == 'individual')
+						$name = $contact['last_name'].". ".$contact['first_name'];
+					else if ($type == "household")
+						$name = get($contact,'household_name','Unknown');
+					else if ($type == "organization")
+						$name = get($contact,'organization_name','Unknown');
+
+				 	$row = array(
+				 		$dist, $type, $name, get_gender($contact['gender_id']), get_age($contact['birth_date']),
+				 		$contact['street_address'], $contact['city'], $contact['postal_code'], $contact['email'],
+				 		$contact['source'], $contact['case_count'], $contact['activity_count'], $contact['group_count'],
+				 		$contact['contact_id']
+				 	);
+
+				 	// Replace commas with spaces
+				 	foreach($row as $idx => $field){
+				 		$row[$idx] = str_replace(",", "", $field);
+				 	}
+
+				 	$output_row .= implode(",", $row) . "\n";
+
+				}
+			}
+		}
+
+		print implode(",", $heading) . "\n" . $output_row;
+	}
+}
+?>
 <?php
-
 function redist_summary_pie_data($district_counts, $top_n = 5){
 
 	// Format the summary data so that it can be displayed in a pie chart.
