@@ -44,6 +44,19 @@
 <dt>{$form.includeLog.label}</dt>
   <dd>{$form.includeLog.html}</dd>
 
+<dt>{$form.checkTouched.label}</dt>
+  <dd>{$form.checkTouched.html}
+    <span class="description"><br />Include two columns (untouched and privacy) to provide more details about contact history.
+    <br />
+    IF ( Contact Source = BOE AND Is Deceased = 0 AND Trashed = 0 )
+      <ul>
+        <li>IF there are no email, note, activity (non bulk email) or cases, untouched value = 1</li>
+        <li>IF Do Not Phone = true AND Do not Postal Mail = true AND ( Do Not Email = true OR No Bulk Emails = true OR On Hold Bounce = true OR On Hold Opt Out = true ), privacy value = 1</li>
+      </ul>
+    In both cases, we return 1 in the column if the "untouched" condition is met.
+    </span>
+  </dd>
+
 <dt>{$form.excludeGroups.label}</dt>
   <dd>{$form.excludeGroups.html}
       {literal}
