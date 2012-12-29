@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -82,6 +82,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
     $this->addElement('checkbox', 'includeLog', ts('Include most recent log date'));
 
+    $this->addElement('checkbox', 'checkTouched', ts('Include additional touched status values'));
+
     $groups = CRM_Core_PseudoConstant::group( );
     $this->add( 'select',
       'excludeGroups',
@@ -114,6 +116,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
     $loc_type      = $params['locType'];
     $include_log   = $params['includeLog'];
+    $checkTouched  = $params['checkTouched'];
     $excludeGroups = $params['excludeGroups'];
 
     //get instance name (strip first element from url)
@@ -138,6 +141,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     //generate random number for export and tables
     $rnd = mt_rand(1,9999999999999999);
 
+    //CRM_Core_Error::debug('this',$this);
+    //CRM_Core_Error::debug('this->_contactIds',$this->_contactIds);exit();
     $this->_contactIds = array_unique($this->_contactIds);
 
     $ids = implode("),(",$this->_contactIds);
@@ -158,15 +163,25 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
       $logTable = createLogTable( $rnd );
     }
 
+    //6032
+    if ( $checkTouched ) {
+      $touchedTbl = buildTouched( $rnd );
+    }
+
     $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
     $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
     $sql .= "c.birth_date, c.gender_id, phone, ";
     $sql .= "town_52, LPAD(ward_53,2,'0') as ward_53, LPAD(election_district_49,3,'0') as election_district_49, LPAD(congressional_district_46,2,'0') as congressional_district_46, LPAD(ny_senate_district_47,2,'0') as ny_senate_district_47, LPAD(ny_assembly_district_48,3,'0') as ny_assembly_district_48, LPAD(school_district_54,3,'0') as school_district_54, LPAD(county_50,2,'0') as county_50, ";
     $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
 
-    //4874
+    //4874 select
     if ( $include_log ) {
       $sql .= ", lt.mod_date AS last_modified_date ";
+    }
+
+    //6032 select
+    if ( $checkTouched ) {
+      $sql .= ", untouched, privacy";
     }
 
     $sql .= " FROM civicrm_contact c ";
@@ -176,9 +191,14 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     $sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
     $sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
 
-    //4874 - include last log record timestamp
+    //4874 - include last log record timestamp table
     if ( $include_log ) {
       $sql .= " LEFT JOIN $logTable lt ON c.id = lt.cid ";
+    }
+
+    //6032 from
+    if ( $checkTouched ) {
+      $sql .= " LEFT JOIN $touchedTbl tt ON c.id = tt.cid ";
     }
 
     $sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
@@ -421,6 +441,71 @@ function createLogTable( $rnd ) {
   return $tblLogDedupe;
 } //createLogTable
 
+function buildTouched( $rnd ) {
+  $tblIDs = "tmpExport$rnd";
+  $tblTouched = "tmpTouched$rnd";
+
+  $sql = "CREATE TABLE $tblTouched ( cid int not null, untouched int, privacy int, INDEX (cid) ) ENGINE=myisam;";
+  CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+  //reduce how many records we are working with
+  $sql = "
+    SELECT i.id
+    FROM $tblIDs i
+    JOIN civicrm_value_constituent_information_1 ci
+      ON i.id = ci.entity_id
+      AND ci.contact_source_60 = 'boe'
+    JOIN civicrm_contact c
+      ON i.id = c.id
+    WHERE c.is_deleted = 0
+      AND c.is_deceased = 0
+  ";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  //CRM_Core_Error::debug('sql',$sql);
+  //CRM_Core_Error::debug('dao',$dao);exit();
+
+  //if no records to work with, return now
+  if ( !$dao->N ) {
+    return $tblTouched;
+  }
+
+  $insertVals = array();
+
+  //cycle through ids and check for values
+  //for both fields, we return 1 if the condition is met
+  while ( $dao->fetch() ) {
+    $records = array('Email', 'Notes', 'Activities', 'Cases');
+    $untouched = 1;
+    $privacy = 0;
+
+    //check each record type; if a record is found, return 0 to indicate condition is not met
+    foreach ( $records as $type ) {
+      $fnc = "_check{$type}";
+      $untouched = $fnc($dao->id);
+      if ( $untouched != 1 ) {
+        break;
+      }
+    }
+
+    //check privacy; assume condition not met and return 1 if otherwise
+    $privacy = _checkPrivacy($dao->id);
+
+    $insertVals[] = "({$dao->id}, {$untouched}, {$privacy})";
+  }
+  //CRM_Core_Error::debug('insertVals', $insertVals);exit();
+
+  //insert into touched table
+  $insertValsSql = implode(', ', $insertVals);
+  $sql = "
+    INSERT INTO $tblTouched (cid, untouched, privacy)
+    VALUES
+    {$insertValsSql}
+  ";
+  CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+  return $tblTouched;
+} //buildTouched
+
 /*
  * given one or more groups passed from the form,
  * remove contacts who are in those groups from the export table
@@ -445,3 +530,76 @@ function excludeGroupContacts( $tbl, $groups ) {
 
   return;
 }
+
+function _checkEmail($cid) {
+  $sql = "
+    SELECT CASE WHEN count(id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_email
+    WHERE contact_id = $cid
+      AND email IS NOT NULL
+      AND email != ''
+  ";
+  $exists = CRM_Core_DAO::singleValueQuery($sql);
+  return $exists;
+}//_checkEmail
+
+function _checkNotes($cid) {
+  $sql = "
+    SELECT CASE WHEN count(id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_note
+    WHERE entity_id = $cid
+      AND entity_table = 'civicrm_contact'
+      AND note IS NOT NULL
+      AND note != ''
+  ";
+  $exists = CRM_Core_DAO::singleValueQuery($sql);
+  return $exists;
+}//_checkNotes
+
+function _checkActivities($cid) {
+  //exclude bulk email activities
+  $sql = "
+    SELECT CASE WHEN count(at.id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_activity_target at
+    JOIN civicrm_activity a
+      ON at.activity_id = a.id
+    WHERE at.target_contact_id = $cid
+      AND a.activity_type_id != 19
+      AND a.is_deleted = 0
+  ";
+  $exists = CRM_Core_DAO::singleValueQuery($sql);
+  return $exists;
+}//_checkActivities
+
+function _checkCases($cid) {
+  $sql = "
+    SELECT CASE WHEN count(cc.id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_case_contact cc
+    JOIN civicrm_case c
+      ON cc.case_id = c.id
+    WHERE cc.contact_id = $cid
+      AND c.is_deleted = 0
+  ";
+  $exists = CRM_Core_DAO::singleValueQuery($sql);
+  return $exists;
+}//_checkCases
+
+function _checkPrivacy($cid) {
+  $sql = "
+    SELECT do_not_phone, do_not_mail, do_not_email, is_opt_out, on_hold
+    FROM civicrm_contact c
+    JOIN civicrm_email e
+      ON c.id = e.contact_id
+    WHERE c.id = {$cid}
+  ";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while ( $dao->fetch() ) {
+    if ( $dao->do_not_phone &&
+      $dao->do_not_mail &&
+      ($dao->do_not_email || $dao->is_opt_out || $dao->on_hold)
+    ) {
+      return 1;
+    }
+  }
+  return 0;
+}//_checkPrivacy
