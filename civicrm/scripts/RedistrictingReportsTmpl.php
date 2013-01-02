@@ -137,8 +137,10 @@ that were already there before redistricting.\n
 	<style>
 			<?php include RESOURCES_DIR . '/main.css' ?>
 	</style>
-	<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
-
+	<div class='header'>
+		<h1>Bluebird CRM - Redistricting Report for District <?= $senate_district ?></h1>
+	</div>
+	<div class='content'>
 	<?php if ($mode == "summary"): ?>
 
 		<h3>Summary Page | <?= $senator_name ?></h3>
@@ -285,6 +287,7 @@ that were already there before redistricting.\n
 			<hr/>
 		<?php endforeach; ?>
 	<?php endif; ?>
+	</div>
 	</body>
 
 	<script>
