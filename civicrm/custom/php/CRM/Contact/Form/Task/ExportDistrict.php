@@ -596,7 +596,7 @@ function _checkPrivacy($cid) {
   while ( $dao->fetch() ) {
     if ( $dao->do_not_phone &&
       $dao->do_not_mail &&
-      ($dao->do_not_email || $dao->is_opt_out || $dao->on_hold)
+      ($dao->do_not_email || $dao->is_opt_out || $dao->on_hold == 2)
     ) {
       return 1;
     }
