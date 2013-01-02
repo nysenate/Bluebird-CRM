@@ -21,18 +21,19 @@ function run() {
   global $source;
   global $dest;
   global $addressDistInfo;
+  global $exportData;
   global $_SERVER;
 
   require_once 'script_utils.php';
 
   // Parse the options
-  $shortopts = "d:fn";
-  $longopts = array("dest=", "file", "dryrun");
+  $shortopts = "d:fn:i:k:t";
+  $longopts = array("dest=", "file", "dryrun", "import=", "notrash");
   $optlist = civicrm_script_init($shortopts, $longopts);
 
   if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dest ID|DISTNAME] [--file] [--dryrun]';
+      $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--notrash] [--trashonly]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
   }
@@ -89,14 +90,37 @@ function run() {
     exit();
   }
 
-  //retrieve/set other options
-  $optFile = $optlist['file'];
-  $optDry = $optlist['dryrun'];
-
   // Initialize CiviCRM
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
   $session = CRM_Core_Session::singleton();
+
+  //retrieve/set other options
+  $optFile = $optlist['file'];
+  $optDry = $optlist['dryrun'];
+
+  //set import folder based on environment
+  $fileDir = '/data/importData/migrate_'.$bbcfg_source['install_class'];
+  if ( !file_exists($fileDir) ) {
+    mkdir( $fileDir, 0775, TRUE );
+  }
+
+  //if importing from file, check for required values
+  if ( !empty($optlist['import']) ) {
+    //check for existence of file to import
+    $importFile = $fileDir.'/'.$optlist['import'];
+    if ( !file_exists($importFile) ) {
+      bbscript_log("fatal", "The import file you have specified does not exist. It must reside in {$fileDir}.");
+      exit();
+    }
+
+    //call import function and end script
+    importData($source, $dest, $importFile, $optDry);
+    exit();
+  }
+
+  //initialize global export array
+  $exportData = array();
 
   //get contacts to migrate and construct in migration table
   $migrateTbl = buildContactTable($source, $dest);
@@ -107,20 +131,32 @@ function run() {
     exit();
   }
 
-  //set filename and create file
-  $fileDir = '/data/importData/migrate_'.$bbcfg_source['install_class'];
-  if ( !file_exists($fileDir) ) {
-    mkdir( $fileDir, 0775, TRUE );
+  //if trashonly, use constructed migration table to trash and then end script
+  if ( $optlist['trashonly'] ) {
+    //basic option logic check
+    if ( $optlist['notrash'] ) {
+      bbscript_log("fatal", "You have selected the trashonly AND notrash options -- which makes no sense at all. Exiting the script so you can decide what you want to do or read a book on simple logic.");
+      exit();
+    }
+
+    //call trash function and end script
+    trashContacts($migrateTbl);
+    exit();
   }
+
+  //set filename and create file
   $today = date('Ymd_Hi');
   $fileName = $migrateTbl.'_'.$today.'.log';
   $filePath = $fileDir.'/'.$fileName;
   $fileResource = '';
+  prepareData(array('filename' => $filePath), $optDry, 'full filepath/filename');
   if ( !$optDry ) {
     $fileResource = fopen($filePath, 'w');
   }
 
-  //get contacts and write sql to file
+  prepareData(array('source' => $source, 'dest' => $dest), $optDry, 'source and destination details');
+
+  //get contacts and write data
   exportContacts($migrateTbl, $fileResource, $dest['db'], $optDry);
 
   //related records that we will be exporting with the contact
@@ -135,7 +171,7 @@ function run() {
     'case',
     //'relationship',
     //'group',
-    'Additional_Constituent_Information',
+    //'Additional_Constituent_Information',
     'Organization_Constituent_Information',
     'Attachments',
     'Contact_Details',
@@ -143,7 +179,7 @@ function run() {
 
   //customGroups that we may work with;
   $customGroups = array(
-    'Additional_Constituent_Information',
+    //'Additional_Constituent_Information',
     'Organization_Constituent_Information',
     'Attachments',
     'Activity_Details',
@@ -151,42 +187,56 @@ function run() {
     'Contact_Details',
   );
 
-  //cycle through contacts, get related records, and construct sql
+  //cycle through contacts, get related records, and construct data
   $mC = CRM_Core_DAO::executeQuery("SELECT * FROM {$migrateTbl};");
   //bbscript_log("trace", "mC", $mC);
 
   while ( $mC->fetch() ) {
-    //use external id to get the new contact ID and set as mysql var
-    $setCID = "
-      -- get contact ID and set to variable
-      SELECT @cid:=id FROM {$dest['db']}.civicrm_contact WHERE external_identifier = '{$mC->external_id}';
-    ";
-    writeData($setCID, $fileResource, $optDry);
-
+    $IDs = array(
+      'contact_id' => $mC->contact_id,
+      'external_id' => $mC->external_id,
+    );
     foreach ( $recordTypes as $rType ) {
-      processData($rType, $mC->contact_id, $migrateTbl, $fileResource, $dest['db'], $optDry);
+      processData($rType, $IDs, $optDry);
     }
 
     //TODO process activities
-    exportActivities($mC->contact_id, $migrateTbl, $fileResource, $dest['db'], $optDry);
+    exportActivities($IDs, $optDry);
 
     //TODO process cases
-    exportCases($mC->contact_id, $migrateTbl, $fileResource, $dest['db'], $optDry);
+    exportCases($IDs, $optDry);
 
     //TODO process tags
+    exportTags($IDs, $optDry);
+
   }
 
-  //TODO process current employers
-  exportCurrentEmployers($migrateTbl, $fileResource, $dest['db'], $optDry);
+  //process current employers
+  exportCurrentEmployers($migrateTbl, $optDry);
 
   //process district information (address custom fields)
-  exportDistrictInfo($fileResource, $dest['db'], $addressDistInfo, $optDry);
+  exportDistrictInfo($addressDistInfo, $optDry);
 
-  //create group and add migrated contacts
-  addToGroup($migrateTbl, $fileResource, $optDry);
+  //construct group related values so we can store to our master array
+  $group = array(
+    'group' => array(
+      'name' => "Migration_{$source['num']}_{$dest['num']}",
+      'title' => "Migrated Contacts (SD{$source['num']} to SD{$dest['num']})",
+      'description' => "Contacts migrated from SD{$source['num']} ({$source['name']}) to SD{$dest['num']} ({$dest['name']})",
+    ),
+  );
+  prepareData($group, $optDry, 'group values to store migrated contacts');
+
+  //write completed exportData to file
+  writeData(array(), $fileResource, $optDry);
+
+  //import data if not --file
+  if ( !$optFile ) {
+    importData($source, $dest, $importFile, $optDry);
+  }
 
   //trash contacts in source db after migration IF full processing (i.e. --file=FALSE and --dryrun=FALSE)
-  if ( !$optFile && !$optDry) {
+  if ( !$optFile && !$optDry && !$optlist['notrash']) {
     trashContacts($migrateTbl);
   }
 
@@ -228,6 +278,27 @@ function buildContactTable($source, $dest) {
   //bbscript_log("trace", "buildContactTable sql insertion", $sql);
   CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
+  //also retrieve current employer contacts and insert in the table
+  $sql = "
+    INSERT INTO $tbl
+    SELECT c.employer_id, CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT', cce.external_identifier) external_id
+    FROM civicrm_address a
+    JOIN civicrm_value_district_information_7 di
+      ON a.id = di.entity_id
+      AND di.ny_senate_district_47 = {$dest['num']}
+    JOIN civicrm_contact c
+      ON a.contact_id = c.id
+      AND c.is_deleted = 0
+      AND c.employer_id IS NOT NULL
+    JOIN civicrm_contact cce
+      ON c.employer_id = cce.id
+      AND cce.is_deleted = 0
+    WHERE a.location_type_id = ".LOC_TYPE_BOE."
+    GROUP BY a.contact_id
+  ";
+  //bbscript_log("trace", "buildContactTable sql insertion", $sql);
+  CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
   $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM $tbl");
   //bbscript_log("trace", "buildContactTable $count", $count);
 
@@ -259,17 +330,6 @@ function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
   $select = 'external_id external_identifier, '.implode(', ',$fieldNames);
   //bbscript_log("trace", "exportContacts select", $select);
 
-  //start writing to file
-  $selectInsert = str_replace('external_id ', '', $select).', source';
-  $valSqlString = "
-    -- contact insert
-    INSERT INTO {$destDB}.civicrm_contact
-    ( {$selectInsert} )
-    VALUES
-  ";
-  //write data to file or screen only
-  writeData($valSqlString, $fileResource, $optDry, "contact records to be migrated");
-
   $sql = "
     SELECT $select
     FROM $migrateTbl mt
@@ -282,25 +342,21 @@ function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
   $contactsAttr = get_object_vars($contacts);
   //bbscript_log("trace", 'exportContacts contactsAttr', $contactsAttr);
 
-  //cycle through contacts and write to file
-  $valSql = array();
+  $data = array();
+
+  //cycle through contacts and write to array
   while ( $contacts->fetch() ) {
     //bbscript_log("trace", 'exportContacts contacts', $contacts);
-    $cData = array();
     foreach ( $contacts as $f => $v ) {
       if ( !array_key_exists($f, $contactsAttr) ) {
-        $cData[$f] = addslashes($v);
+        $data['import'][$contacts->external_identifier]['contact'][$f] = addslashes($v);
       }
     }
-    $valSql[] = "('".implode("', '", $cData)."', 'Redist2012')";
+    $data['import'][$contacts->external_identifier]['contact']['source'] = 'Redist2012';
   }
-  //bbscript_log("trace", 'exportContacts valSql', $valSql);
 
-  //now gather insert statements and write to file
-  $valSqlString = implode(",\n", $valSql).";\n";
-
-  //write data to file or screen only
-  writeData($valSqlString, $fileResource, $optDry);
+  //add to master global export
+  prepareData($data, $optDry, 'exportContacts data');
 }//exportContacts
 
 /*
@@ -309,22 +365,22 @@ function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
  * process the data in a special way
  * it also triggers the data write to screen or file
  */
-function processData($rType, $contactID, $migrateTbl, $fileResource, $destDB, $optDry) {
+function processData($rType, $IDs, $optDry) {
   global $customGroups;
-  $valSqlString = '';
+  $data = $contactData = array();
 
   switch($rType) {
     case 'email':
     case 'phone':
     case 'website':
     case 'address':
-      $valSqlString = exportStandard($rType, $contactID, 'contact_id', null, $migrateTbl, $destDB);
+      $data = exportStandard($rType, $IDs, 'contact_id', null);
       break;
     case 'im':
-      $valSqlString = exportStandard($rType, $contactID, 'contact_id', 'CRM_Core_DAO_IM', $migrateTbl, $destDB);
+      $data = exportStandard($rType, $IDs, 'contact_id', 'CRM_Core_DAO_IM');
       break;
     case 'note':
-      $valSqlString = exportStandard($rType, $contactID, 'entity_id', null, $migrateTbl, $destDB);
+      $data = exportStandard($rType, $IDs, 'entity_id', null);
       break;
     case 'activity':
       break;
@@ -335,19 +391,23 @@ function processData($rType, $contactID, $migrateTbl, $fileResource, $destDB, $o
     default:
       //if a custom set, use exportStandard but pass set name as DAO
       if ( in_array($rType, $customGroups) ) {
-        $valSqlString = exportStandard($rType, $contactID, 'entity_id', $rType, $migrateTbl, $destDB);
+        $data = exportStandard($rType, $IDs, 'entity_id', $rType);
       }
   }
 
-  //write data to file or screen only
-  writeData($valSqlString, $fileResource, $optDry, "{$rType} records to be migrated");
+  if ( !empty($data) ) {
+    $contactData['import'][$IDs['external_id']] = $data;
+
+    //send to prepare data
+    prepareData($contactData, $optDry, "{$rType} records to be migrated");
+  }
 }//processData
 
 /*
  * standard related record export function
  * we use the record type to retrieve the DAO and the foreign key to link to the contact record
  */
-function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $migrateTbl, $destDB) {
+function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
   global $daoFields;
   global $customGroups;
   global $source;
@@ -395,16 +455,7 @@ function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $mi
   //bbscript_log("trace", "exportStandard $dao fields", $daoFields[$dao]);
 
   $select = "id, ".implode(', ',$daoFields[$dao]);
-  $selectInsert = "{$fk}, ".implode(', ',$daoFields[$dao]);
   //bbscript_log("trace", "exportContacts select", $select);
-
-  //start writing to file
-  $valSqlString = "
-    -- {$rType} insert
-    INSERT INTO {$destDB}.civicrm_{$rType}
-    ( {$selectInsert} )
-    VALUES
-  ";
 
   //set table name
   $tableName = "civicrm_{$rType}";
@@ -416,7 +467,7 @@ function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $mi
   $sql = "
     SELECT $select
     FROM $tableName rt
-    WHERE rt.{$fk} = {$contactID}
+    WHERE rt.{$fk} = {$IDs['contact_id']}
   ";
   $sql .= additionalWhere($rType);
   //bbscript_log("trace", 'exportStandard sql', $sql);
@@ -427,7 +478,7 @@ function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $mi
 
   //cycle through records and write to file
   //count records that exist to determine if we need to write
-  $valSql = array();
+  $recordData = array();
   $recordCount = 0;
   while ( $rt->fetch() ) {
     //bbscript_log("trace", 'exportStandard rt', $rt);
@@ -454,23 +505,42 @@ function exportStandard($rType, $contactID, $fk = 'contact_id', $dao = null, $mi
         }
       }
     }
-    //set fk column to contact ID when we construct sql
-    $valSql[] = "(@cid, '".implode("', '", $data)."')";
+    $recordData[$rType][] = $data;
     $recordCount++;
   }
-  //bbscript_log("trace", 'exportStandard valSql', $valSql);
+  //bbscript_log("trace", 'exportStandard $recordData', $recordData);
   //bbscript_log("trace", 'exportStandard $addressDistInfo', $addressDistInfo);
-
-  //now gather insert statements and write to file
-  $valSqlString .= implode(",\n", $valSql).";\n";
 
   //only return string to write if we actually have values
   if ( $recordCount ) {
-    return $valSqlString;
+    return $recordData;
   }
 }//exportStandard
 
-function exportCurrentEmployers() {
+/*
+ * collect array of extKeys that must be reconstructed as employee/employer relationships
+ * array( employeeKey => employerKey )
+ */
+function exportCurrentEmployers($migrateTable, $optDry) {
+  $data = array();
+  $sql = "
+    SELECT mtI.external_id employeeKey, mtO.external_id employerKey
+    FROM {$migrateTable} mtI
+    JOIN civicrm_contact c
+      ON mtI.contact_id = c.id
+    JOIN {$migrateTable} mtO
+      ON c.employer_id = mtO.contact_id
+    WHERE c.employer_id IS NOT NULL
+  ";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+
+  while ( $dao->fetch() ) {
+    $data['employment'][$dao->employeeKey] = $dao->employerKey;
+  }
+
+  if ( !empty($data) ) {
+    prepareData($data, $optDry, 'employee/employer array');
+  }
 
 }//exportCurrentEmployers
 
@@ -480,11 +550,11 @@ function exportCurrentEmployers() {
  * address export. the address ID and key ID was stored in $addressDistInfo
  * which we can now use to retrieve the records and construct the SQL
  */
-function exportDistrictInfo($fileResource, $destDB, $addressDistInfo, $optDry) {
+function exportDistrictInfo($addressDistInfo, $optDry) {
   $tbl = getCustomFields('District_Information', FALSE);
   $flds = getCustomFields('District_Information', TRUE);
   $addressIDs = implode(', ', array_keys($addressDistInfo));
-  $valSql = array();
+
   //bbscript_log("trace", 'exportDistrictInfo $flds', $flds);
   bbscript_log("trace", 'exportDistrictInfo $addressDistInfo', $addressDistInfo);
 
@@ -502,14 +572,6 @@ function exportDistrictInfo($fileResource, $destDB, $addressDistInfo, $optDry) {
     WHERE entity_id IN ({$addressIDs});
   ";
   //bbscript_log("trace", 'exportDistrictInfo $sql', $sql);
-
-  //start writing to file
-  $valSqlString = "
-    -- District_Information insert
-    INSERT INTO {$destDB}.{$tbl}
-    ( entity_id, {$select} )
-    VALUES
-  ";
 
   $di = CRM_Core_DAO::executeQuery($sql);
   while ( $di->fetch() ) {
@@ -536,62 +598,33 @@ function exportDistrictInfo($fileResource, $destDB, $addressDistInfo, $optDry) {
 
   //only write if we actually have values
   if ( $recordCount ) {
-    writeData($valSqlString, $fileResource, $optDry);
+    //writeData($valSqlString, $fileResource, $optDry);
   }
 }//exportDistrictInfo
 
 /*
  * process activities for the contact
  */
-function exportActivities($contactID, $migrateTbl, $fileResource, $destDB, $optDry) {
+function exportActivities($IDs, $optDry) {
 
 }//exportActivities
 
 /*
  * process cases for the contact
  */
-function exportCases($contactID, $migrateTbl, $fileResource, $destDB, $optDry) {
+function exportCases($IDs, $optDry) {
 
 }//exportCases
 
 /*
- * create group in destination database and add all contacts
+ * process tags for the contact
  */
-function addToGroup($migrateTbl, $fileResource, $optDry) {
-  global $source;
-  global $dest;
+function exportTags($IDs, $optDry) {
 
-  //create group
-  $sqlGroup = "
-    INSERT INTO {$dest['db']}.civicrm_group
-    ( name, title, description, is_active, visibility, is_hidden, is_reserved )
-    VALUES
-    ( 'Migration_{$source['num']}_{$dest['num']}', 'Migrated Contacts ({$source['num']} to {$dest['num']})', 'Contacts migrated from {$source['num']} ({$source['name']}) to {$dest['num']} ({$dest['name']})', 1, 'User and User Admin Only', 0, 0 );
-    SELECT @groupID:=id FROM civicrm_group WHERE name = 'Migration_{$source['num']}_{$dest['num']}';
-  ";
-  writeData($sqlGroup, $fileResource, $optDry);
-
-  //contacts
-  $sqlContacts = "
-    SELECT GROUP_CONCAT(external_id SEPARATOR '\', \'')
-    FROM $migrateTbl;
-  ";
-  $contactsList = CRM_Core_DAO::singleValueQuery($sqlContacts);
-
-  //add contacts to group
-  $sqlInsert = "
-    INSERT INTO {$dest['db']}.civicrm_group_contact
-    ( group_id, contact_id, status )
-    VALUES
-    SELECT @groupID group_id, id contact_id, 'Added' status
-    FROM civicrm_contact
-    WHERE external_identifier IN ('{$contactsList}');
-  ";
-  writeData($sqlInsert, $fileResource, $optDry);
-}//addToGroup
+}//exportTags
 
 /*
- * trash contacts in source database if not FILE and note DRYRUN
+ * trash contacts in source database if not FILE, DRYRUN, or NOTRASH
  * we use the api to ensure all associated records are dealt with correctly
  */
 function trashContacts($migrateTbl) {
@@ -651,14 +684,36 @@ function getValue($string) {
 }
 
 /*
- * write data to file, or if dryrun option is selected, write only to screen
+ * this function is an intermediate step to the writeData function, and is called by each export prep step
+ * if this is a dry run, we simply print to screen
+ * otherwise we add the array element to the master export global variable which will later be
+ * encoded and saved to a file
  */
-function writeData($valSqlString, $fileResource, $optDry = FALSE, $msg = '') {
+function prepareData($valArray, $optDry = FALSE, $msg = '') {
+  global $exportData;
+
   if ( $optDry ) {
-    bbscript_log("info", $msg, $valSqlString);
+    bbscript_log("info", $msg, $valArray);
   }
   else {
-    fwrite($fileResource, $valSqlString);
+    array_merge($exportData, $valArray);
+  }
+}//prepareData
+
+/*
+ * write data to file in json encoded format
+ * if dryrun option is selected, do nothing but return a message to the user
+ */
+function writeData($valArray, $fileResource, $optDry = FALSE, $msg = '') {
+  global $exportData;
+
+  $exportDataJSON = json_encode($exportData);
+
+  if ( $optDry ) {
+    bbscript_log("info", 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
+  }
+  else {
+    fwrite($fileResource, $exportDataJSON);
   }
 }
 
@@ -716,7 +771,71 @@ function checkExist($rType, $obj) {
   else {
     return TRUE;
   }
-}
+}//checkExists
+
+function importData($source, $dest, $importFile, $optDry) {
+  global $exportData;
+
+  //get data; if the import was internal, we can just use our global exportData array, else retrieve from file
+  if ( empty($exportData) ) {
+    //TODO retrieve from file
+
+    //TODO parse the import file source/dest, compare with params and return a warning message if values do not match
+
+  }
+
+  //create group and add migrated contacts
+  addToGroup($exportData, $optDry);
+
+  bbscript_log("info", "Successfully imported from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
+
+}//importData
+
+/*
+ * create group in destination database and add all contacts
+ */
+function addToGroup($exportData, $optDry) {
+  global $source;
+  global $dest;
+
+  $g = $exportData['group'];
+
+  //create group in destination database
+  $sql = "
+    INSERT IGNORE INTO {$dest['db']}.civicrm_group
+    ( name, title, description, is_active, visibility, is_hidden, is_reserved )
+    VALUES
+    ( '{$g['name']}', '{$g['title']}', '{$g['description']}', 1, 'User and User Admin Only', 0, 0 );
+  ";
+  CRM_Core_DAO::executeQuery($sql);
+
+  //get newly created group
+  $sql = "
+    SELECT id FROM civicrm_group WHERE name = '{$g['name']}';
+  ";
+  $groupID = CRM_Core_DAO::singleValueQuery($sql);
+
+  //error handling
+  if ( !$groupID ) {
+    bbscript_log("fatal", "Unable to retrieve migration group ({$g['title']}) and add contacts to group.");
+    return;
+  }
+
+  //contacts
+  $contactsList = implode(',', array_keys($exportData['import']));
+
+  //add contacts to group
+  $sqlInsert = "
+    INSERT INTO {$dest['db']}.civicrm_group_contact
+    ( group_id, contact_id, status )
+    VALUES
+    SELECT {$groupID} group_id, id contact_id, 'Added' status
+    FROM civicrm_contact
+    WHERE external_identifier IN ('{$contactsList}');
+  ";
+
+  bbscript_log("info", "Imported contacts added to group: {$g['title']}");
+}//addToGroup
 
 //run the script
 run();
