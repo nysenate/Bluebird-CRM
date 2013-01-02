@@ -218,13 +218,13 @@ that were already there before redistricting.\n
 		// Table columns for contact details
 		$html_columns = array(
 			"individual" => array(
-				"Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#" ),
+				"Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID" ),
 
 			"organization" => array(
-				"Organization Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#" ),
+				"Organization Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID" ),
 
 			"household" => array(
-				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#")
+				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID")
 		);
 
 		// Ignore district 0
@@ -249,17 +249,20 @@ that were already there before redistricting.\n
 					<?php foreach($contact_array as $contact): ?>
 				 	<tr>
 				 		<?php if($type == "individual"): ?>
-				 			<td><?= $contact['last_name'].", ".$contact['first_name']?></td>
+				 			<td><a target='_blank' href='<?= "http://" . $site . ".crm.nysenate.gov/civicrm/contact/view?cid=" . $contact['contact_id'] ?>'>
+				 				<?= $contact['last_name'].", ".$contact['first_name']?></a></td>
 				 			<td><?= get_gender($contact['gender_id']) ?></td>
 				 			<td><?= get_age($contact['birth_date']) ?></td>
 				 			<td><?= $contact['street_address'] ?></td>
 
 				 	    <?php elseif($type == "household"): ?>
-				 			<td><?= get($contact,'household_name','Unknown') ?></td>
+				 			<td><a target='_blank' href='<?= "http://" . $site . ".crm.nysenate.gov/civicrm/contact/view?cid=" . $contact['contact_id'] ?>'>
+				 				<?= get($contact,'household_name','Unknown') ?></a></td>
 				 			<td><?= $contact['street_address'] ?></td>
 
 				 		<?php elseif($type == "organization"): ?>
-				 			<td><?= get($contact,'organization_name','Unknown') ?></td>
+				 			<td><a target='_blank' href='<?= "http://" . $site . ".crm.nysenate.gov/civicrm/contact/view?cid=" . $contact['contact_id'] ?>'>
+				 				<?= get($contact,'organization_name','Unknown') ?></a></td>
 				 			<td><?= $contact['street_address'] ?></td>
 
 						<?php endif; ?>
@@ -270,8 +273,7 @@ that were already there before redistricting.\n
 					      	<td><?= $contact['case_count'] ?></td>
 					      	<td><?= $contact['activity_count'] ?></td>
 					      	<td><?= $contact['group_count'] ?></td>
-					      	<td><a target='_blank' href='<?= "http://" . $site . ".crm.nysenate.gov/civicrm/contact/view?cid=" . $contact['contact_id'] ?>'>
-					      	    <?= $contact['contact_id'] ?></a></td>
+					      	<td><?= $contact['contact_id'] ?></td>
 					</tr>
 					<?php endforeach; ?>
 					</tbody>
