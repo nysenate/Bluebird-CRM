@@ -199,7 +199,7 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
     }
   }
   else {
-    $validators = array('file_validate_extensions' => array('csv', 'tab', 'txt'));
+    $validators = array('file_validate_extensions' => array('csv tab txt'));
     $file = file_save_upload('csv', $validators);
 
     if (!$file) {
