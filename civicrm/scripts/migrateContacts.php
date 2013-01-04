@@ -14,6 +14,15 @@ define('DRY_COUNT', 25);
 define('DEFAULT_LOG_LEVEL', 'TRACE');
 define('LOC_TYPE_BOE', 6);
 
+//create global variables
+$daoFields =
+  $customGroups =
+  $source =
+  $dest =
+  $addressDistInfo =
+  $exportData =
+  array();
+
 function run() {
 
   global $daoFields;
@@ -28,7 +37,7 @@ function run() {
 
   // Parse the options
   $shortopts = "d:fn:i:k:t";
-  $longopts = array("dest=", "file", "dryrun", "import=", "notrash");
+  $longopts = array("dest=", "file", "dryrun", "import=", "notrash", "trashonly");
   $optlist = civicrm_script_init($shortopts, $longopts);
 
   if ($optlist === null) {
@@ -157,7 +166,7 @@ function run() {
   prepareData(array('source' => $source, 'dest' => $dest), $optDry, 'source and destination details');
 
   //get contacts and write data
-  exportContacts($migrateTbl, $fileResource, $dest['db'], $optDry);
+  exportContacts($migrateTbl, $optDry);
 
   //related records that we will be exporting with the contact
   $recordTypes = array(
@@ -167,11 +176,11 @@ function run() {
     'im',
     'address',
     'note',
-    'activity',
-    'case',
+    //'activity',
+    //'case',
     //'relationship',
     //'group',
-    //'Additional_Constituent_Information',
+    'Additional_Constituent_Information',
     'Organization_Constituent_Information',
     'Attachments',
     'Contact_Details',
@@ -179,7 +188,7 @@ function run() {
 
   //customGroups that we may work with;
   $customGroups = array(
-    //'Additional_Constituent_Information',
+    'Additional_Constituent_Information',
     'Organization_Constituent_Information',
     'Attachments',
     'Activity_Details',
@@ -199,17 +208,16 @@ function run() {
     foreach ( $recordTypes as $rType ) {
       processData($rType, $IDs, $optDry);
     }
-
-    //TODO process activities
-    exportActivities($IDs, $optDry);
-
-    //TODO process cases
-    exportCases($IDs, $optDry);
-
-    //TODO process tags
-    exportTags($IDs, $optDry);
-
   }
+
+  //TODO process activities
+  exportActivities($migrateTbl, $optDry);
+
+  //TODO process cases
+  exportCases($migrateTbl, $optDry);
+
+  //TODO process tags
+  exportTags($migrateTbl, $optDry);
 
   //process current employers
   exportCurrentEmployers($migrateTbl, $optDry);
@@ -228,10 +236,10 @@ function run() {
   prepareData($group, $optDry, 'group values to store migrated contacts');
 
   //write completed exportData to file
-  writeData(array(), $fileResource, $optDry);
+  writeData($exportData, $fileResource, $optDry);
 
   //import data if not --file
-  if ( !$optFile ) {
+  if ( !$optFile && !$optDry ) {
     importData($source, $dest, $importFile, $optDry);
   }
 
@@ -310,7 +318,7 @@ function buildContactTable($source, $dest) {
   }
 }//buildContactTable
 
-function exportContacts($migrateTbl, $fileResource, $destDB, $optDry = FALSE) {
+function exportContacts($migrateTbl, $optDry = FALSE) {
   //get field list
   $c = new CRM_Contact_DAO_Contact();
   $fields = $c->fields();
@@ -498,7 +506,7 @@ function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
         //account for address custom fields
         if ( $rType == 'address' && $f == 'name' ) {
           //construct key and temporarily store in address.name
-          $data[$f] = "SD{$source['num']}_BB{$contactID}_ADD{$rt->id}";
+          $data[$f] = "SD{$source['num']}_BB{$IDs['contact_id']}_ADD{$rt->id}";
 
           //store source address id and address key to build district info select
           $addressDistInfo[$rt->id] = $data[$f];
@@ -554,9 +562,10 @@ function exportDistrictInfo($addressDistInfo, $optDry) {
   $tbl = getCustomFields('District_Information', FALSE);
   $flds = getCustomFields('District_Information', TRUE);
   $addressIDs = implode(', ', array_keys($addressDistInfo));
+  $addressData = array();
 
   //bbscript_log("trace", 'exportDistrictInfo $flds', $flds);
-  bbscript_log("trace", 'exportDistrictInfo $addressDistInfo', $addressDistInfo);
+  //bbscript_log("trace", 'exportDistrictInfo $addressDistInfo', $addressDistInfo);
 
   //get fields
   $fldCol = array();
@@ -575,7 +584,7 @@ function exportDistrictInfo($addressDistInfo, $optDry) {
 
   $di = CRM_Core_DAO::executeQuery($sql);
   while ( $di->fetch() ) {
-    bbscript_log("trace", 'exportDistrictInfo di', $di);
+    //bbscript_log("trace", 'exportDistrictInfo di', $di);
 
     //first check for record existence
     if ( !checkExist('District_Information', $di) ) {
@@ -587,39 +596,152 @@ function exportDistrictInfo($addressDistInfo, $optDry) {
     foreach ( $flds as $fid => $f ) {
       $data[$f['column_name']] = addslashes($di->$f['column_name']);
     }
-    $valSql[] = "((SELECT id FROM civicrm_address WHERE name = '{$addressDistInfo[$di->entity_id]}') entity_id, '"
-      .implode("', '", $data)."')";
+    $addressData['districtinfo'][$addressDistInfo[$di->entity_id]] = $data;
     $recordCount++;
   }
 
-  //now gather insert statements and prep for write to file
-  $valSqlString .= implode(",\n", $valSql).";\n";
-  //bbscript_log("trace", 'exportDistrictInfo $valSqlString', $valSqlString);
-
-  //only write if we actually have values
+  //send to prep function if records exist
   if ( $recordCount ) {
-    //writeData($valSqlString, $fileResource, $optDry);
+    prepareData($addressData, $optDry, 'custom address data');
   }
 }//exportDistrictInfo
 
 /*
  * process activities for the contact
  */
-function exportActivities($IDs, $optDry) {
+function exportActivities($migrateTbl, $optDry) {
+  $data = $actCustFields = array();
+  $actCustTbl = getCustomFields('Activity_Details', FALSE);
+  $actCustFld = getCustomFields('Activity_Details', TRUE);
+  //bbscript_log("trace", 'exportActivities $actCustFld', $actCustFld);
 
+  foreach ( $actCustFld as $field ) {
+    $actCustFields[$field['name']] = $field['column_name'];
+  }
+
+  //get all activities (non bulk email) for contacts
+  $sql = "
+    SELECT at.activity_id, a.*, ad.*, GROUP_CONCAT(mt.external_id SEPARATOR '|') targetIDs
+    FROM civicrm_activity_target at
+    JOIN {$migrateTbl} mt
+      ON at.target_contact_id = mt.contact_id
+    JOIN civicrm_activity a
+      ON at.activity_id = a.id
+    LEFT JOIN {$actCustTbl} ad
+      ON a.id = ad.entity_id
+    WHERE a.is_deleted = 0
+      AND a.is_current_revision = 1
+    GROUP BY at.activity_id
+  ";
+  //bbscript_log("trace", 'exportActivities $sql', $sql);
+  $activities = CRM_Core_DAO::executeQuery($sql);
+
+  //get dao attributes
+  $activityAttr = get_object_vars($activities);
+
+  while ( $activities->fetch() ) {
+    //bbscript_log("trace", 'exportActivities $activities', $activities);
+
+    foreach ($activities as $f => $v) {
+      if ( !array_key_exists($f, $activityAttr) ) {
+        if ( in_array($f, $actCustFields) ) {
+          $data['activities'][$activities->activity_id]['custom'][$f] = addslashes($v);
+        }
+        elseif ($f == 'targetIDs') {
+          $data['activities'][$activities->activity_id]['targets'] = explode('|', $v);
+        }
+        else {
+          $data['activities'][$activities->activity_id]['activity'][$f] = addslashes($v);
+        }
+      }
+    }
+    //remove id field
+    unset($data['activities'][$activities->activity_id]['activity']['id']);
+  }
+
+  //bbscript_log("trace", 'exportActivities $data', $data);
+  prepareData($data, $optDry, 'exportActivities');
 }//exportActivities
 
 /*
  * process cases for the contact
+ * because cases are complex, let's retrieve via api rather than sql
+ * NOTE: we are not transferring case tags or case activity tags
  */
-function exportCases($IDs, $optDry) {
+function exportCases($migrateTbl, $optDry) {
+  $data = array();
+  $actCustTbl = getCustomFields('Activity_Details', FALSE);
+  $actCustFld = getCustomFields('Activity_Details', TRUE);
+  //bbscript_log("trace", 'exportCases $actCustFld', $actCustFld);
+
+  $sql = "
+    SELECT mt.*, cc.case_id
+    FROM {$migrateTbl} mt
+    JOIN civicrm_case_contact cc
+      ON mt.contact_id = cc.contact_id
+  ";
+  $contactCases = CRM_Core_DAO::executeQuery($sql);
+
+  while ( $contactCases->fetch() ) {
+    //cases for contact
+    $params = array(
+      'version' => 3,
+      'case_id' => $contactCases->case_id,
+    );
+    $case = civicrm_api('case', 'get', $params);
+    //bbscript_log("trace", 'exportCases $case', $case);
+
+    //unset some values to make it easier to later import
+    unset($case['values'][$contactCases->case_id]['id']);
+    unset($case['values'][$contactCases->case_id]['client_id']);
+    unset($case['values'][$contactCases->case_id]['contacts']);
+
+    $caseActivityIDs = $case['values'][$contactCases->case_id]['activities'];
+    unset($case['values'][$contactCases->case_id]['activities']);
+
+    //cycle through and retrieve case activity data
+    $caseActivities = array();
+    foreach ( $caseActivityIDs as $actID ) {
+      $params = array(
+        'version' => 3,
+        'id' => $actID,
+      );
+      $activity = civicrm_api('activity', 'getsingle', $params);
+      //bbscript_log("trace", 'exportCases $activity', $activity);
+      unset($activity['id']);
+      unset($activity['source_contact_id']);
+
+      //retrieve custom data fields for activities manually
+      $sql = "
+        SELECT *
+        FROM $actCustTbl
+        WHERE entity_id = $actID
+      ";
+      $actCustom = CRM_Core_DAO::executeQuery($sql);
+      while ( $actCustom->fetch() ) {
+        foreach ( $actCustFld as $fldID => $fld ) {
+          $activity["custom_{$fldID}"] = $actCustom->$fld['column_name'];
+        }
+      }
+      $caseActivities[] = $activity;
+    }
+
+    //assign activities
+    $case['values'][$contactCases->case_id]['activities'] = $caseActivities;
+
+    //assign to data array
+    $data[$contactCases->external_id][] = $case['values'][$contactCases->case_id];
+  }
+
+  $casesData = array('cases' => $data);
+  //bbscript_log("trace", 'exportCases $casesData', $casesData);
 
 }//exportCases
 
 /*
  * process tags for the contact
  */
-function exportTags($IDs, $optDry) {
+function exportTags($migrateTbl, $optDry) {
 
 }//exportTags
 
@@ -685,31 +807,34 @@ function getValue($string) {
 
 /*
  * this function is an intermediate step to the writeData function, and is called by each export prep step
- * if this is a dry run, we simply print to screen
- * otherwise we add the array element to the master export global variable which will later be
+ * if this is a dry run, we print to screen (with DEBUG level or lower)
+ * in this step, we add the array element to the master export global variable which will later be
  * encoded and saved to a file
  */
 function prepareData($valArray, $optDry = FALSE, $msg = '') {
   global $exportData;
+  //bbscript_log("debug", 'global exportData when prepareData is called', $exportData);
 
   if ( $optDry ) {
-    bbscript_log("info", $msg, $valArray);
+    //if dryrun, print passed array when DEBUG level set
+    bbscript_log("debug", $msg, $valArray);
   }
-  else {
-    array_merge($exportData, $valArray);
-  }
+
+  //combine existing exportData array with array passed to function
+  //typecast passed variable to make sure it's an array
+  //$exportData = $exportData + (array)$valArray;
+  $exportData = array_merge_recursive($exportData, (array)$valArray);
 }//prepareData
 
 /*
  * write data to file in json encoded format
  * if dryrun option is selected, do nothing but return a message to the user
  */
-function writeData($valArray, $fileResource, $optDry = FALSE, $msg = '') {
-  global $exportData;
-
-  $exportDataJSON = json_encode($exportData);
+function writeData($data, $fileResource, $optDry = FALSE) {
+  $exportDataJSON = json_encode($data);
 
   if ( $optDry ) {
+    bbscript_log("info", 'Exported array:', $data);
     bbscript_log("info", 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
   }
   else {
@@ -755,6 +880,31 @@ function checkExist($rType, $obj) {
       'neighborhood_56',
       'last_import_57',
     ),
+    'Additional_Constituent_Information' => array(
+      'professional_accreditations_16',
+      'interest_in_volunteering__17',
+      'active_constituent__18',
+      'friend_of_the_senator__19',
+      'skills_areas_of_interest_20',
+      'honors_and_awards_21',
+      'voter_registration_status_23',
+      'boe_date_of_registration_24',
+      'individual_category_42',
+      'other_gender_45',
+      'ethnicity1_58',
+      'contact_source_60',
+      'record_type_61',
+      'other_ethnicity_62',
+      'religion_63',
+    ),
+    'Contact_Details' => array(
+      'privacy_options_note_64',
+    ),
+    'Organization_Constituent_Information' => array(
+      'charity_registration__dos__25',
+      'employer_identification_number___26',
+      'organization_category_41',
+    ),
   );
 
   //only care about types that we are requiring values for
@@ -778,11 +928,17 @@ function importData($source, $dest, $importFile, $optDry) {
 
   //get data; if the import was internal, we can just use our global exportData array, else retrieve from file
   if ( empty($exportData) ) {
-    //TODO retrieve from file
+    //retrieve from file
+    $exportData = json_decode(file_get_contents($importFile));
 
-    //TODO parse the import file source/dest, compare with params and return a warning message if values do not match
-
+    //parse the import file source/dest, compare with params and return a warning message if values do not match
+    if ( $exportData['source']['name'] != $source['name'] ||
+      $exportData['dest']['name'] != $dest['name'] ) {
+      bbscript_log('fatal', 'The source/destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched source/destination could create significant data problems. Please investigate and then rerun the script.');
+    }
   }
+
+  //TODO process the import
 
   //create group and add migrated contacts
   addToGroup($exportData, $optDry);
