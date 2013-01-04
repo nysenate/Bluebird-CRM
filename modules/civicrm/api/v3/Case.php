@@ -195,7 +195,7 @@ function civicrm_api3_case_get($params) {
     foreach ((array) $client as $cid) {
       if (is_numeric($cid)) {
         $ids = array_merge($ids, CRM_Case_BAO_Case::retrieveCaseIdsByContactId($cid, TRUE));
-    }
+      }
     }
 
     if (empty($ids)) {
@@ -206,6 +206,22 @@ function civicrm_api3_case_get($params) {
 
     foreach ($ids as $id) {
       $cases[$id] = _civicrm_api3_case_read($id);
+
+      if ($cases[$id]) {
+        //get case contacts
+        $contacts         = CRM_Case_BAO_Case::getcontactNames($id);
+        $relations        = CRM_Case_BAO_Case::getRelatedContacts($id);
+        $cases[$id]['contacts'] = array_merge($contacts, $relations);
+
+        //get case activities
+        $query = "SELECT activity_id FROM civicrm_case_activity WHERE case_id = $id";
+        $dao = CRM_Core_DAO::executeQuery($query);
+
+        $cases[$id]['activities'] = array();
+        while ($dao->fetch()) {
+          $cases[$id]['activities'][] = $dao->activity_id;
+        }
+      }
     }
     return civicrm_api3_create_success($cases);
   }
