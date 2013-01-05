@@ -233,7 +233,7 @@ function run() {
   exportDistrictInfo($addressDistInfo, $optDry);
 
   //get attachment details
-  _getAttachments();
+  _getAttachments($optDry);
 
   //construct group related values so we can store to our master array
   $group = array(
@@ -637,6 +637,8 @@ function exportDistrictInfo($addressDistInfo, $optDry) {
  * process activities for the contact
  */
 function exportActivities($migrateTbl, $optDry) {
+  global $attachmentIDs;
+
   $data = $actCustFields = array();
   $actCustTbl = getCustomFields('Activity_Details', FALSE);
   $actCustFld = getCustomFields('Activity_Details', TRUE);
@@ -667,7 +669,7 @@ function exportActivities($migrateTbl, $optDry) {
   $activityAttr = get_object_vars($activities);
 
   while ( $activities->fetch() ) {
-    //bbscript_log("trace", 'exportActivities $activities', $activities);
+    bbscript_log("trace", 'exportActivities $activities', $activities);
 
     foreach ($activities as $f => $v) {
       if ( !array_key_exists($f, $activityAttr) ) {
@@ -684,6 +686,19 @@ function exportActivities($migrateTbl, $optDry) {
     }
     //remove id field
     unset($data['activities'][$activities->activity_id]['activity']['id']);
+
+    //get attachments
+    $sql = "
+      SELECT *
+      FROM civicrm_entity_file
+      WHERE entity_table = 'civicrm_activity'
+        AND entity_id = {$activities->activity_id}
+    ";
+    $actAttach = CRM_Core_DAO::executeQuery($sql);
+    while ( $actAttach->fetch() ) {
+      $attachmentIDs[] = $actAttach->file_id;
+      $data['activities'][$activities->activity_id]['attachments'][] = $actAttach->file_id;
+    }
   }
 
   //bbscript_log("trace", 'exportActivities $data', $data);
@@ -696,6 +711,8 @@ function exportActivities($migrateTbl, $optDry) {
  * NOTE: we are not transferring case tags or case activity tags
  */
 function exportCases($migrateTbl, $optDry) {
+  global $attachmentIDs;
+
   $data = array();
   $actCustTbl = getCustomFields('Activity_Details', FALSE);
   $actCustFld = getCustomFields('Activity_Details', TRUE);
@@ -750,6 +767,20 @@ function exportCases($migrateTbl, $optDry) {
           $activity["custom_{$fldID}"] = $actCustom->$fld['column_name'];
         }
       }
+
+      //retrieve attachments
+      $sql = "
+        SELECT *
+        FROM civicrm_entity_file
+        WHERE entity_table = 'civicrm_activity'
+          AND entity_id = {$actID}
+      ";
+      $actAttach = CRM_Core_DAO::executeQuery($sql);
+      while ( $actAttach->fetch() ) {
+        $attachmentIDs[] = $actAttach->file_id;
+        $activity['attachments'][] = $actAttach->file_id;
+      }
+
       $caseActivities[] = $activity;
     }
 
@@ -962,10 +993,9 @@ function _getIssueCodeTree(&$issuecodes, $tempother) {
  * although we collected the attachments data earlier, we still have to retrieve the filename
  * in order to copy the file to the new instance
  */
-function _getAttachments() {
+function _getAttachments($optDry) {
   global $attachmentIDs;
   global $source;
-  global $exportData;
 
   $attachmentDetails = array();
 
@@ -992,7 +1022,7 @@ function _getAttachments() {
   }
   //bbscript_log("trace", '_getAttachments $attachmentDetails', $attachmentDetails);
 
-  $exportData['attachments'] = $attachmentDetails;
+  prepareData( array('attachments' => $attachmentDetails), $optDry, '_getAttachments' );
 }//_getAttachments
 
 /*
