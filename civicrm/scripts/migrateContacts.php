@@ -453,7 +453,17 @@ function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
     }
 
     //unset various fields from select statement
-    foreach (array('id', $fk, 'signature_text', 'signature_html', 'master_id') as $fld) {
+    $skipFields = array(
+      'id',
+      $fk,
+      'signature_text',
+      'signature_html',
+      'master_id',
+      'interest_in_volunteering__17',
+      'active_constituent__18',
+      'friend_of_the_senator__19',
+    );
+    foreach ($skipFields as $fld) {
       $fldKey = array_search($fld, $daoFields[$dao]);
       if ( $fldKey !== FALSE ) {
         unset($daoFields[$dao][$fldKey]);
@@ -736,14 +746,200 @@ function exportCases($migrateTbl, $optDry) {
   $casesData = array('cases' => $data);
   //bbscript_log("trace", 'exportCases $casesData', $casesData);
 
+  prepareData($casesData, $optDry, 'case records');
 }//exportCases
 
 /*
  * process tags for the contact
  */
 function exportTags($migrateTbl, $optDry) {
+  global $source;
+  $keywords = $issuecodes = $positions = $tempother = array();
 
+  $kParent = 296;
+  $iParent = 291;
+  $pParent = 292;
+
+  $kPrefix = 'RD '.substr($source['name'], 0, 5).': ';
+
+  //first get all tags associated with contacts
+  $sql = "
+    SELECT t.*
+    FROM civicrm_entity_tag et
+    JOIN {$migrateTbl} mt
+      ON et.entity_id = mt.contact_id
+      AND et.entity_table = 'civicrm_contact'
+    JOIN civicrm_tag t
+      ON et.tag_id = t.id
+    GROUP BY t.id
+  ";
+  $allTags = CRM_Core_DAO::executeQuery($sql);
+
+  while ( $allTags->fetch() ) {
+    switch ( $allTags->parent_id ) {
+      case $kParent:
+        $keywords[$allTags->id] = array(
+          'name' => $kPrefix.$allTags->name,
+          'desc' => $allTags->description,
+        );
+        break;
+      case $pParent:
+        $positions[$allTags->id] = array(
+          'name' => $allTags->name,
+          'desc' => $allTags->description,
+        );
+        break;
+      case $iParent:
+        $issuecodes[$allTags->id] = array(
+          'name' => $allTags->name,
+          'desc' => $allTags->description,
+        );
+        break;
+      default:
+        $tempother[$allTags->id] = array(
+          'parent_id' => $allTags->parent_id,
+          'name' => $allTags->name,
+          'desc' => $allTags->description,
+        );
+    }
+  }
+
+  //get issue code tree
+  _getIssueCodeTree($issuecodes, $tempother);
+
+  $tags = array(
+    'keywords' => $keywords,
+    'issuecodes' => $issuecodes,
+    'positions' => $positions,
+  );
+
+  //now retrieve contacts/tag mapping
+  $entityTags = array();
+  $sql = "
+    SELECT et.tag_id, mt.external_id
+    FROM civicrm_entity_tag et
+    JOIN {$migrateTbl} mt
+      ON et.entity_id = mt.contact_id
+      AND et.entity_table = 'civicrm_contact'
+  ";
+  $eT = CRM_Core_DAO::executeQuery($sql);
+  while ( $eT->fetch() ) {
+    $entityTags[$eT->external_id][] = $eT->tag_id;
+  }
+  //bbscript_log("trace", 'exportTags $entityTags', $entityTags);
+
+  $tags['entities'] = $entityTags;
+
+  //send tags to prep
+  prepareData($tags, $optDry, 'tags');
 }//exportTags
+
+/*
+ * build issue code tree
+ * tree depth is fixed to 5
+ * level 1 is the main parent Issue Codes
+ * level 2 is constructed earlier and passed to this function
+ *   ...except when the function is called recursively, in which case we need to account for it
+ * level 3-5 must be built
+ */
+function _getIssueCodeTree(&$issuecodes, $tempother) {
+  if ( empty($tempother) ) {
+    return;
+  }
+
+  $level3 = $level4 = array();
+
+  //keep track of all issue codes as we go
+  $allIssueCodes = array_keys($issuecodes);
+
+  //level 2: when called recursively, we have to account for parent being the main issue code root
+  foreach ( $tempother as $tID => $tag ) {
+    if ( $tag['parent_id'] == 291 ) {
+      $issuecodes[$tID]['name'] = $tag['name'];
+      $issuecodes[$tID]['desc'] = $tag['desc'];
+      unset($tempother[$tID]);
+
+      $allIssueCodes[] = $tID;
+    }
+  }
+
+  //level 3
+  foreach ( $tempother as $tID => $tag ) {
+    if ( array_key_exists($tag['parent_id'], $issuecodes) ) {
+      $issuecodes[$tag['parent_id']]['children'][$tID]['name'] = $tag['name'];
+      $issuecodes[$tag['parent_id']]['children'][$tID]['desc'] = $tag['desc'];
+      unset($tempother[$tID]);
+
+      //tag => parent
+      $level3[$tID] = $tag['parent_id'];
+      $allIssueCodes[] = $tID;
+    }
+  }
+
+  //level 4
+  foreach ( $tempother as $tID => $tag ) {
+    if ( array_key_exists($tag['parent_id'], $level3) ) {
+      //parent exists in level 3
+      $level3id = $tag['parent_id'];
+      $level2id = $level3[$level3id];
+      $issuecodes[$level2id]['children'][$level3id]['children'][$tID]['name'] = $tag['name'];
+      $issuecodes[$level2id]['children'][$level3id]['children'][$tID]['desc'] = $tag['desc'];
+      unset($tempother[$tID]);
+
+      //tag => parent
+      $level4[$tID] = $tag['parent_id'];
+      $allIssueCodes[] = $tID;
+    }
+  }
+
+  //level 5
+  foreach ( $tempother as $tID => $tag ) {
+    if ( array_key_exists($tag['parent_id'], $level4) ) {
+      //parent exists in level 4
+      $level4id = $tag['parent_id'];
+      $level3id = $level4[$level4id];
+      $level2id = $level3[$level3id];
+      $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['name'] = $tag['name'];
+      $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['desc'] = $tag['desc'];
+      unset($tempother[$tID]);
+
+      $allIssueCodes[] = $tID;
+    }
+  }
+
+  //if we have tags left over, it's because the tag assignment skipped a level and we need to reconstruct
+  //this isn't easily done. what we will do is find the immediate parent and store it, then search for those parents,
+  //see if they exist in our current list, and construct if needed
+  if ( !empty($tempother) ) {
+    $leftOver = array_keys($tempother);
+    $leftOverList = implode(',', $leftOver);
+    //bbscript_log("trace", '_getIssueCodeTree $leftOver', $leftOver);
+
+    $sql = "
+      SELECT p.*
+      FROM civicrm_tag p
+      JOIN civicrm_tag t
+        ON p.id = t.parent_id
+      WHERE t.id IN ({$leftOverList})
+    ";
+    //bbscript_log("trace", '_getIssueCodeTree $sql', $sql);
+    $leftTags = CRM_Core_DAO::executeQuery($sql);
+
+    while ( $leftTags->fetch() ) {
+      $tempother[$leftTags->id] = array(
+        'parent_id' => $leftTags->parent_id,
+        'name' => $leftTags->name,
+        'desc' => $leftTags->description,
+      );
+    }
+
+    //call this function recursively
+    _getIssueCodeTree($issuecodes, $tempother);
+  }
+
+  //bbscript_log("trace", '_getIssueCodeTree $issuecodes', $issuecodes);
+  //bbscript_log("trace", '_getIssueCodeTree $tempother', $tempother);
+}
 
 /*
  * trash contacts in source database if not FILE, DRYRUN, or NOTRASH
@@ -834,7 +1030,7 @@ function writeData($data, $fileResource, $optDry = FALSE) {
   $exportDataJSON = json_encode($data);
 
   if ( $optDry ) {
-    bbscript_log("info", 'Exported array:', $data);
+    //bbscript_log("info", 'Exported array:', $data);
     bbscript_log("info", 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
   }
   else {
@@ -939,6 +1135,7 @@ function importData($source, $dest, $importFile, $optDry) {
   }
 
   //TODO process the import
+  //TODO when processing tags, increase field length to varchar(80)
 
   //create group and add migrated contacts
   addToGroup($exportData, $optDry);
