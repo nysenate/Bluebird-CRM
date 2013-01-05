@@ -162,7 +162,7 @@ function run() {
 
   //set filename and create file
   $today = date('Ymd_Hi');
-  $fileName = $migrateTbl.'_'.$today.'.log';
+  $fileName = $migrateTbl.'_'.$today.'.txt';
   $filePath = $fileDir.'/'.$fileName;
   $fileResource = '';
   prepareData(array('filename' => $filePath), $optDry, 'full filepath/filename');
@@ -256,6 +256,10 @@ function run() {
   //trash contacts in source db after migration IF full processing (i.e. --file=FALSE and --dryrun=FALSE)
   if ( !$optFile && !$optDry && !$optlist['notrash']) {
     trashContacts($migrateTbl);
+  }
+
+  if ( $optFile ) {
+    bbscript_log("info", "File option selected. Export file has been created but not imported: {$filePath}.");
   }
 
   bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
@@ -669,7 +673,7 @@ function exportActivities($migrateTbl, $optDry) {
   $activityAttr = get_object_vars($activities);
 
   while ( $activities->fetch() ) {
-    bbscript_log("trace", 'exportActivities $activities', $activities);
+    //bbscript_log("trace", 'exportActivities $activities', $activities);
 
     foreach ($activities as $f => $v) {
       if ( !array_key_exists($f, $activityAttr) ) {
@@ -1209,33 +1213,95 @@ function importData($source, $dest, $importFile, $optDry) {
   //get data; if the import was internal, we can just use our global exportData array, else retrieve from file
   if ( empty($exportData) ) {
     //retrieve from file
-    $exportData = json_decode(file_get_contents($importFile));
+    $exportData = json_decode(file_get_contents($importFile), TRUE);
+    //bbscript_log("trace", "importData $exportData", $exportData);
 
     //parse the import file source/dest, compare with params and return a warning message if values do not match
     if ( $exportData['source']['name'] != $source['name'] ||
       $exportData['dest']['name'] != $dest['name'] ) {
       bbscript_log('fatal', 'The source/destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched source/destination could create significant data problems. Please investigate and then rerun the script.');
+      exit();
     }
   }
 
-  //TODO process the import
-  //TODO when processing tags, increase field length to varchar(80)
+  //process the import
+  importContacts($optDry);
+  importActivities($optDry);
+  importCases($optDry);
+  importTags($optDry);
+  importEmployment($optDry);
+  importDistrictInfo($optDry);
 
   //create group and add migrated contacts
-  addToGroup($exportData, $optDry);
+  addToGroup($optDry);
 
   bbscript_log("info", "Successfully imported from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
 }//importData
 
+function importContacts ($optDry) {
+  global $exportData;
+
+}//importContacts
+
+function importActivities($optDry) {
+  global $exportData;
+
+}//importActivities
+
+function importCases($optDry) {
+  global $exportData;
+
+}//importCases
+
+function importTags($optDry) {
+  global $exportData;
+  //TODO when processing tags, increase field length to varchar(80)
+
+}//importTags
+
+function importEmployment($optDry) {
+  global $exportData;
+
+}//importEmployment
+
+function importDistrictInfo($optDry) {
+  global $exportData;
+
+}//importDistrictInfo
+
+/*
+ * helper function to build entity_file record and pass back to originating function
+ * called during contact, activities, and case import
+ */
+function _importAttachments() {
+  global $exportData;
+
+}//_importAttachments
+
+/*
+ * helper function to copy files from the source directory to destination
+ * we copy instead of move because we are timid...
+ */
+function _moveAttachment() {
+  global $exportData;
+
+}//_moveAttachment
+
 /*
  * create group in destination database and add all contacts
  */
-function addToGroup($exportData, $optDry) {
+function addToGroup($optDry) {
   global $source;
   global $dest;
+  global $exportData;
 
   $g = $exportData['group'];
+
+  if ( $optDry ) {
+    bbscript_log("debug", "Imported contacts added to group:", $g);
+    return;
+  }
 
   //create group in destination database
   $sql = "
