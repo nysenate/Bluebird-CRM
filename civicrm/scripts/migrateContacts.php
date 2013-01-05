@@ -20,6 +20,7 @@ $daoFields =
   $source =
   $dest =
   $addressDistInfo =
+  $attachmentIDs =
   $exportData =
   array();
 
@@ -62,6 +63,8 @@ function run() {
     'name' => $optlist['site'],
     'num' => $bbcfg_source['district'],
     'db' => $bbcfg_source['db.civicrm.prefix'].$bbcfg_source['db.basename'],
+    'files' => $bbcfg_source['data.rootdir'],
+    'domain' => $optlist['site'].'.'.$bbcfg_source['base.domain'],
   );
 
   //destination may be passed as the instance name OR district ID
@@ -77,6 +80,8 @@ function run() {
           $dest['name'] = substr($group, 9);
           $bbcfg_dest = get_bluebird_instance_config($dest['name']);
           $dest['db'] = $bbcfg_dest['db.civicrm.prefix'].$bbcfg_dest['db.basename'];
+          $dest['files'] = $bbcfg_dest['data.rootdir'];
+          $dest['domain'] = $dest['name'].'.'.$bbcfg_dest['base.domain'];
           break;
         }
       }
@@ -88,6 +93,8 @@ function run() {
       'name' => $optlist['dest'],
       'num' => $bbcfg_dest['district'],
       'db' => $bbcfg_dest['db.civicrm.prefix'].$bbcfg_dest['db.basename'],
+      'files' => $bbcfg_dest['data.rootdir'],
+      'domain' => $optlist['dest'].'.'.$bbcfg_dest['base.domain'],
     );
   }
   //bbscript_log("trace", "$source", $source);
@@ -210,13 +217,13 @@ function run() {
     }
   }
 
-  //TODO process activities
+  //process activities
   exportActivities($migrateTbl, $optDry);
 
-  //TODO process cases
+  //process cases
   exportCases($migrateTbl, $optDry);
 
-  //TODO process tags
+  //process tags
   exportTags($migrateTbl, $optDry);
 
   //process current employers
@@ -224,6 +231,9 @@ function run() {
 
   //process district information (address custom fields)
   exportDistrictInfo($addressDistInfo, $optDry);
+
+  //get attachment details
+  _getAttachments();
 
   //construct group related values so we can store to our master array
   $group = array(
@@ -420,6 +430,7 @@ function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
   global $customGroups;
   global $source;
   global $addressDistInfo;
+  global $attachmentIDs;
 
   //get field list from dao
   if ( !$dao ) {
@@ -520,6 +531,12 @@ function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
 
           //store source address id and address key to build district info select
           $addressDistInfo[$rt->id] = $data[$f];
+        }
+
+        //account for file attachments
+        if ( $rType == 'Attachments' && !empty($v) ) {
+          //store to later process
+          $attachmentIDs[] = $v;
         }
       }
     }
@@ -939,7 +956,44 @@ function _getIssueCodeTree(&$issuecodes, $tempother) {
 
   //bbscript_log("trace", '_getIssueCodeTree $issuecodes', $issuecodes);
   //bbscript_log("trace", '_getIssueCodeTree $tempother', $tempother);
-}
+}//_getIssueCodeTree
+
+/*
+ * although we collected the attachments data earlier, we still have to retrieve the filename
+ * in order to copy the file to the new instance
+ */
+function _getAttachments() {
+  global $attachmentIDs;
+  global $source;
+  global $exportData;
+
+  $attachmentDetails = array();
+
+  if ( empty($attachmentIDs) ) {
+    return;
+  }
+
+  $attachmentsList = implode(',', $attachmentIDs);
+  $sql = "
+    SELECT *
+    FROM civicrm_file
+    WHERE id IN ($attachmentsList)
+  ";
+  $attachments = CRM_Core_DAO::executeQuery($sql);
+
+  while ( $attachments->fetch() ) {
+    $attachmentDetails[$attachments->id] = array(
+      'file_type_id' => $attachments->file_type_id,
+      'mime_type' => $attachments->mime_type,
+      'uri' => $attachments->uri,
+      'upload_date' => $attachments->upload_date,
+      'source_file_path' => $source['files'].'/'.$source['domain'].'/civicrm/custom/'.$attachments->uri,
+    );
+  }
+  //bbscript_log("trace", '_getAttachments $attachmentDetails', $attachmentDetails);
+
+  $exportData['attachments'] = $attachmentDetails;
+}//_getAttachments
 
 /*
  * trash contacts in source database if not FILE, DRYRUN, or NOTRASH
