@@ -417,11 +417,13 @@ function _civicrm_api3_greeting_format_params($params) {
     }
 
     // format params
-    if (CRM_Utils_Array::value('contact_type', $params) == 'Organization' && $key != 'addressee') {
+    //NYSS remove limitation
+    //http://issues.civicrm.org/jira/browse/CRM-11600
+    /*if (CRM_Utils_Array::value('contact_type', $params) == 'Organization' && $key != 'addressee') {
       return civicrm_api3_create_error(ts('You cannot use email/postal greetings for contact type %1.',
           array(1 => $params['contact_type'])
         ));
-    }
+    }*/
 
     $nullValue = FALSE;
     $filter = array(
