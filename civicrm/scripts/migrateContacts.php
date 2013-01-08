@@ -22,6 +22,8 @@ $daoFields =
   $addressDistInfo =
   $attachmentIDs =
   $exportData =
+  $shortopts =
+  $longopts =
   array();
 
 function run() {
@@ -32,6 +34,8 @@ function run() {
   global $dest;
   global $addressDistInfo;
   global $exportData;
+  global $shortopts;
+  global $longopts;
   global $_SERVER;
 
   require_once 'script_utils.php';
@@ -1209,6 +1213,13 @@ function checkExist($rType, $obj) {
 
 function importData($source, $dest, $importFile, $optDry) {
   global $exportData;
+  global $importDryrun;
+  global $shortopts;
+  global $longopts;
+  global $argv;//PHP global
+
+  //set dryrun global to make it easier to use later on
+  $importDryrun = $optDry;
 
   //get data; if the import was internal, we can just use our global exportData array, else retrieve from file
   if ( empty($exportData) ) {
@@ -1224,51 +1235,102 @@ function importData($source, $dest, $importFile, $optDry) {
     }
   }
 
+  //re-initialize civicrm as we want to shift the site context from the source to destination
+  //we do this by manually altering global $argv and then re-calling the init script
+  //cycle through $argv to find -S, set to destination name
+  foreach ( $argv as $k => $v ) {
+    if ( $v == '-S' ) {
+      $argv[$k+1] = $dest['name'];
+      break;
+    }
+  }
+  $importOpts = civicrm_script_init($shortopts, $longopts);
+  $bbcfgImport = get_bluebird_instance_config();
+  bbscript_log("trace", 'importData $bbcfgImport (after)', $bbcfgImport);
+
+  $config = CRM_Core_Config::singleton();
+  $session = CRM_Core_Session::singleton();
+
   //process the import
-  importContacts($optDry);
-  importActivities($optDry);
-  importCases($optDry);
-  importTags($optDry);
-  importEmployment($optDry);
-  importDistrictInfo($optDry);
+  importContacts();
+  importActivities();
+  importCases();
+  importTags();
+  importEmployment();
+  importDistrictInfo();
 
   //create group and add migrated contacts
-  addToGroup($optDry);
+  addToGroup();
 
   bbscript_log("info", "Successfully imported from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
 }//importData
 
-function importContacts ($optDry) {
+function importContacts() {
   global $exportData;
+  global $importDryrun;
+  global $targetIDs;
+
+  //make sure the target IDs array is reset during importContacts
+  //array( 'external_identifier' => 'target contact id' )
+  $targetIDs = array();
+
+  foreach ( $exportData['import'] as $extID => $details ) {
+    //import the contact via api
+    $contact = _importAPI('contact', 'create', $details['contact']);
+    bbscript_log("trace", "importContacts create contact", $contact);
+  }
 
 }//importContacts
 
-function importActivities($optDry) {
+function importActivities() {
   global $exportData;
+  global $importDryrun;
 
 }//importActivities
 
-function importCases($optDry) {
+function importCases() {
   global $exportData;
+  global $importDryrun;
 
 }//importCases
 
-function importTags($optDry) {
+function importTags() {
   global $exportData;
+  global $importDryrun;
   //TODO when processing tags, increase field length to varchar(80)
 
 }//importTags
 
-function importEmployment($optDry) {
+function importEmployment() {
   global $exportData;
+  global $importDryrun;
 
 }//importEmployment
 
-function importDistrictInfo($optDry) {
+function importDistrictInfo() {
   global $exportData;
+  global $importDryrun;
 
 }//importDistrictInfo
+
+/*
+ * wrapper for civicrm_api
+ * allows us to determine action based on dryrun status
+ */
+function _importAPI($entity, $action, $params) {
+  global $importDryrun;
+
+  if ( $importDryrun ) {
+    bbscript_log("debug", "_importAPI entity:{$entity} action: {$action} params: ", $params);
+  }
+  else {
+    //prepend api version
+    $params['version'] = 3;
+    $api = civicrm_api($entity, $action, $params);
+    return $api;
+  }
+}//_importAPI
 
 /*
  * helper function to build entity_file record and pass back to originating function
@@ -1276,6 +1338,7 @@ function importDistrictInfo($optDry) {
  */
 function _importAttachments() {
   global $exportData;
+  global $importDryrun;
 
 }//_importAttachments
 
@@ -1285,20 +1348,22 @@ function _importAttachments() {
  */
 function _moveAttachment() {
   global $exportData;
+  global $importDryrun;
 
 }//_moveAttachment
 
 /*
  * create group in destination database and add all contacts
  */
-function addToGroup($optDry) {
+function addToGroup() {
   global $source;
   global $dest;
   global $exportData;
+  global $importDryrun;
 
   $g = $exportData['group'];
 
-  if ( $optDry ) {
+  if ( $importDryrun ) {
     bbscript_log("debug", "Imported contacts added to group:", $g);
     return;
   }
@@ -1314,7 +1379,7 @@ function addToGroup($optDry) {
 
   //get newly created group
   $sql = "
-    SELECT id FROM civicrm_group WHERE name = '{$g['name']}';
+    SELECT id FROM {$dest['db']}.civicrm_group WHERE name = '{$g['name']}';
   ";
   $groupID = CRM_Core_DAO::singleValueQuery($sql);
 
