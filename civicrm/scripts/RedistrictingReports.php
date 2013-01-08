@@ -125,6 +125,7 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 		if (isset($district_contact_data[$contact_id])){
 			$district_contact_data[$contact_id]['note'] = $row['note'];
 			$district_contact_data[$contact_id]['subject'] = $row['subject'];
+			$district_contact_data[$contact_id]['prior_dist'] = get_former_district($row['note'], "-");
 		}
 	}
 	mysql_free_result($res);
@@ -390,6 +391,17 @@ function clear_reports_cache($db){
 // district specified by $district. $key refers to the district abbrv.
 function is_former_district($note_subject, $district = 0, $key = 'SD'){
 	return preg_match("/".$key.":".$district."=>(\d{0,2})/i", $note_subject);
+}
+
+// Return the former district if assigned
+function get_former_district($note, $default = "N/A"){
+
+	$matches = array();
+	preg_match("/SD:(\d{0,2}).{2}\d{0,2}/i", $note, $matches);
+	if (count($matches) == 2 && $matches[1] != ""){
+		return $matches[1];
+	}
+	return $default;
 }
 
 // Create a table header given an array of column names as keys and widths as values

@@ -197,13 +197,13 @@ Summary of contacts that are outside district {$senate_district}\n
 		// Table columns for contact details
 		$html_columns = array(
 			"individual" => array(
-				"Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID" ),
+				"Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "Prior District", "BB ID" ),
 
 			"organization" => array(
-				"Organization Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID" ),
+				"Organization Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "Prior District", "BB ID" ),
 
 			"household" => array(
-				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB ID")
+				"Household Name", "Address", "City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "Prior District", "BB ID")
 		);
 
 		// Ignore district 0
@@ -252,6 +252,7 @@ Summary of contacts that are outside district {$senate_district}\n
 					      	<td><?= $contact['case_count'] ?></td>
 					      	<td><?= $contact['activity_count'] ?></td>
 					      	<td><?= $contact['group_count'] ?></td>
+					      	<td><?= $contact['prior_dist'] ?></td>
 					      	<td><?= $contact['contact_id'] ?></td>
 					</tr>
 					<?php endforeach; ?>
