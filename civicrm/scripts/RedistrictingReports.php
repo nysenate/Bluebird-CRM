@@ -292,7 +292,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 	$contact_filter = "
 		# Filter out contacts without relevant data or those that don't want to be contacted
 		WHERE
-		c.contact_type = 'Individual' AND NOT ( c.source = 'BOE' AND c.is_deceased = 0 )
+		c.contact_type = 'Individual' AND NOT ( IFNULL(c.source,'') = 'BOE' AND c.is_deceased = 0 )
 		AND (
 		       (c.email IS NOT NULL AND c.is_primary = 1 )
 		       OR case_count > 0
