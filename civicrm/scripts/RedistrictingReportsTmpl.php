@@ -22,10 +22,6 @@ define('RESOURCES_DIR', 'redistricting_report');
 		$label = "
 ${senator_name} District {$senate_district}\n\n
 Summary of contacts that are outside district {$senate_district}\n
-The number on the left is a count of the contacts that were in District {$senate_district}
-and are now in district specified. The number on the right is the total count
-of value added contacts that reside in that district which includes contacts
-that were already there before redistricting.\n
 ";
 
 		$columns = array(
@@ -43,10 +39,10 @@ that were already there before redistricting.\n
 
 		foreach( $district_counts as $dist => $dist_cnts ){
 			$output_row .=  fixed_width($dist, 12, false, "Unknown")
-						   .fixed_width(get($dist_cnts['individual'], 'changed', '0') . " / " .get($dist_cnts['individual'], 'total', '0'), 15, true)
-						   .fixed_width(get($dist_cnts['household'], 'changed', '0') . " / " . get($dist_cnts['household'], 'total', '0'), 14, true)
-						   .fixed_width(get($dist_cnts['organization'], 'changed', '0') . " / " .get($dist_cnts['organization'], 'total', '0'), 14, true)
-						   .fixed_width(get($dist_cnts['all'], 'changed', '0') . " / " . get($dist_cnts['all'], 'total', '0'), 16, true) ."\n";
+						   .fixed_width(get($dist_cnts['individual'], 'total', '0'), 15, true)
+						   .fixed_width(get($dist_cnts['household'], 'total', '0'), 14, true)
+						   .fixed_width(get($dist_cnts['organization'], 'total', '0'), 14, true)
+						   .fixed_width(get($dist_cnts['all'], 'total', '0'), 16, true) ."\n";
 		}
 
 		print $heading . $output_row;
@@ -161,31 +157,16 @@ that were already there before redistricting.\n
 		}
 		?>
 
-		<p>Number of out of district contacts: <?= $total_contacts ?></p>
-		<p>The following table indicates the number of individuals, households, and organizations that will
-		   be in the districts shown in the left column.<br/>
-		   The 'Moved from Dist <?= $senate_district ?>' column shows the number of contacts that were assigned to District <?= $senate_district ?> prior to redistricting
-		   and have been assigned to the new district.
-		</p>
+		<p>Number of out of district contacts: <?= number_format($total_contacts) ?></p>
 
 		<table class='summary'>
 			<thead>
 			<tr>
-				<th rowspan="2">District</th>
-				<th colspan="2">Individuals</th>
-				<th colspan="2">Households</th>
-				<th colspan="2">Organizations</th>
-				<th colspan="2">All</th>
-			</tr>
-			<tr>
-				<th>Moved from Dist <?= $senate_district ?></th>
-				<th>Total Contacts</th>
-				<th>Moved from Dist <?= $senate_district ?></th>
-				<th>Total Contacts</th>
-				<th>Moved from Dist <?= $senate_district ?></th>
-				<th>Total Contacts</th>
-				<th>Moved from Dist <?= $senate_district ?></th>
-				<th>Total Contacts</th>
+				<th>District</th>
+				<th>Individuals</th>
+				<th>Households</th>
+				<th>Organizations</th>
+				<th>Total</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -194,13 +175,9 @@ that were already there before redistricting.\n
 			foreach( $district_counts as $dist => $dist_cnts ): ?>
 				<tr>
 					<td class='border-right'><?= $dist ?></td>
-					<td><?= get($dist_cnts['individual'], 'changed', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['individual'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['household'], 'changed', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['household'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['organization'], 'changed', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['organization'], 'total', '0') ?></td>
-					<td><?= get($dist_cnts['all'], 'changed', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['all'], 'total', '0') ?></td>
 				</tr>
 			<?php endforeach; ?>
@@ -288,6 +265,7 @@ that were already there before redistricting.\n
 		<?php endforeach; ?>
 	<?php endif; ?>
 	</div>
+	<br/>
 	</body>
 
 	<script>
@@ -307,10 +285,10 @@ that were already there before redistricting.\n
 		$heading = "District, Individuals from $senate_district, Individuals total, Households from $senate_district, Households total, Organizations from $senate_district, Organizations total, Total from $senate_district, Total\n";
 		foreach( $district_counts as $dist => $dist_cnts ){
 			$row = array(
-				$dist, get($dist_cnts['individual'], 'changed', '0'), get($dist_cnts['individual'], 'total', '0'),
-				get($dist_cnts['household'], 'changed', '0') , get($dist_cnts['household'], 'total', '0'),
-				get($dist_cnts['organization'], 'changed', '0') , get($dist_cnts['organization'], 'total', '0'),
-			    get($dist_cnts['all'], 'changed', '0') , get($dist_cnts['all'], 'total', '0')
+				$dist, get($dist_cnts['individual'], 'total', '0'),
+				get($dist_cnts['household'], 'total', '0'),
+				get($dist_cnts['organization'], 'total', '0'),
+			    get($dist_cnts['all'], 'total', '0')
 			);
 			$output_row .=  implode(',', $row) . "\n";
 		}
