@@ -283,7 +283,7 @@ Summary of contacts that are outside district {$senate_district}\n
 	$output_row = "";
 	if ($mode == "summary") {
 
-		$heading = "District, Individuals from $senate_district, Individuals total, Households from $senate_district, Households total, Organizations from $senate_district, Organizations total, Total from $senate_district, Total\n";
+		$heading = "District, Individuals, Households, Organizations, Total\n";
 		foreach( $district_counts as $dist => $dist_cnts ){
 			$row = array(
 				$dist, get($dist_cnts['individual'], 'total', '0'),
@@ -298,7 +298,7 @@ Summary of contacts that are outside district {$senate_district}\n
 	else if ($mode == "detail") {
 
 		$heading = array(
-			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "BB Rec#"
+			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "Prior District", "BB Rec#"
 		);
 
 		$output_row = "";
@@ -318,7 +318,7 @@ Summary of contacts that are outside district {$senate_district}\n
 				 		$dist, $type, $name, get_gender($contact['gender_id']), get_age($contact['birth_date']),
 				 		$contact['street_address'], $contact['city'], $contact['postal_code'], $contact['email'],
 				 		$contact['source'], $contact['case_count'], $contact['activity_count'], $contact['group_count'],
-				 		$contact['contact_id']
+				 		$contact['prior_dist'], $contact['contact_id']
 				 	);
 
 				 	// Replace commas with spaces
