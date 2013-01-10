@@ -22,8 +22,8 @@ set_time_limit(0);
 
 define('DEFAULT_FORMAT', 'text');
 define('DEFAULT_MODE', 'summary');
-define('RD_CONTACT_CACHE_TABLE', 'civicrm_redist_contact_cache');
-define('RD_NOTE_CACHE_TABLE', 'civicrm_redist_note_cache');
+define('RD_CONTACT_CACHE_TABLE', 'redist_report_contact_cache');
+define('RD_NOTE_CACHE_TABLE', 'redist_report_note_cache');
 
 // Parse the options
 require_once 'script_utils.php';
