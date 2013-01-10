@@ -297,7 +297,6 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 		       (c.email IS NOT NULL AND c.is_primary = 1 )
 		       OR case_count > 0
 		       OR activity_count > 0
-		       OR group_count > 0
 
 		       # Check if contact has any non-default notes
 		       OR c.contact_id IN (
