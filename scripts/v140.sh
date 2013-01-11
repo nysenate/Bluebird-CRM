@@ -421,6 +421,14 @@ INSERT INTO civicrm_group (name, title, description, source, saved_search_id, is
 "
 $execSql -i $instance -c "$authfwd"
 
+## 6053
+indivcat="
+SELECT @ic:=option_group_id FROM civicrm_custom_field WHERE name = 'Individual_Category';
+INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
+VALUES (@ic, 'Albany Staff', 'albany_staff', 'Albany_Staff', 12, 1);
+"
+$execSql -i $instance -c "$indivcat"
+
 ## 5993
 $drush $instance vset civicrm_error_to 'brian@lcdservices.biz,zalewski@nysenate.gov' -y
 
