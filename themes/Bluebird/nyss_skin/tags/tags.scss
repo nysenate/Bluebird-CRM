@@ -1,0 +1,68 @@
+/*
+
+Tags CSS
+SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.scss:C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.css
+
+
+*/
+/*mixins*/
+/*icons*/
+$functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
+$defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+@mixin functionIcon($setIconLink) {
+	background: url('#{$setIconLink}') transparent no-repeat;
+	height:16px;
+	width:16px;
+	float:left;
+	margin:0 10px 0 0;
+}
+@mixin addTag {background-position: 0;}
+@mixin removeTag {background-position: -17px 0px;}
+@mixin moveTag {background-position: -34px 0px;}
+@mixin updateTag {background-position: -50px 0px;}
+@mixin mergeTag {background-position: -66px 0px;}
+@mixin convertTag {background-position: -107px 0px;}
+@mixin printTag {background-position: -160px -96px;}
+
+
+/*pagestructure*/
+#crm-container #crm-tagListWrap {
+	clear:both;
+	height:auto;
+}
+.BBTree {
+	width:540px;
+	padding:10px;
+	line-height:150%;
+	overflow-x:hidden;
+	overflow-y:scroll;
+	height:400px;
+	background-color:#fff;
+	border:1px solid #ccc;
+	margin: 0 auto;
+	dt.lv-0 .fCB ul li.printTag {
+		@include functionIcon($defaultIconLink); @include printTag;
+	}
+}
+
+/* legend */
+#crm-container .crm-tagLegend {
+	td div {
+		
+	}
+	td.addTag div {@include functionIcon($functionIconLink); @include addTag;}
+	td.removeTag div {@include functionIcon($functionIconLink); @include removeTag;}
+	td.moveTag div {@include functionIcon($functionIconLink); @include moveTag;}
+	td.updateTag div {@include functionIcon($functionIconLink); @include updateTag;}
+	td.mergeTag div {@include functionIcon($functionIconLink); @include mergeTag;}
+	td.convertTag div {@include functionIcon($functionIconLink); @include convertTag;}
+	td.printTag div {@include functionIcon($defaultIconLink); @include printTag;}
+	th {border: 0px;}
+	* {border:0px;}
+	table
+	{
+		width: 380px;
+		float:right;
+		margin-bottom:-10px;
+	}
+}

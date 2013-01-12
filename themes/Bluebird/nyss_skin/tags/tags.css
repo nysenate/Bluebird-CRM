@@ -1,0 +1,90 @@
+/*
+
+Tags CSS
+SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.scss:C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.css
+
+
+*/
+/*mixins*/
+/*icons*/
+/*pagestructure*/
+#crm-container #crm-tagListWrap {
+  clear: both;
+  height: auto; }
+
+.BBTree {
+  width: 540px;
+  padding: 10px;
+  line-height: 150%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 400px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  margin: 0 auto; }
+  .BBTree dt.lv-0 .fCB ul li.printTag {
+    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") transparent no-repeat;
+    height: 16px;
+    width: 16px;
+    float: left;
+    margin: 0 10px 0 0;
+    background-position: -160px -96px; }
+
+/* legend */
+#crm-container .crm-tagLegend td.addTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: 0; }
+#crm-container .crm-tagLegend td.removeTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -17px 0px; }
+#crm-container .crm-tagLegend td.moveTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -34px 0px; }
+#crm-container .crm-tagLegend td.updateTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -50px 0px; }
+#crm-container .crm-tagLegend td.mergeTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -66px 0px; }
+#crm-container .crm-tagLegend td.convertTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -107px 0px; }
+#crm-container .crm-tagLegend td.printTag div {
+  background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") transparent no-repeat;
+  height: 16px;
+  width: 16px;
+  float: left;
+  margin: 0 10px 0 0;
+  background-position: -160px -96px; }
+#crm-container .crm-tagLegend th {
+  border: 0px; }
+#crm-container .crm-tagLegend * {
+  border: 0px; }
+#crm-container .crm-tagLegend table {
+  width: 380px;
+  float: right;
+  margin-bottom: -10px; }
