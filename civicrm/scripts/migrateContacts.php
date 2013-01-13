@@ -1172,9 +1172,6 @@ function checkExist($rType, $obj) {
     ),
     'Additional_Constituent_Information' => array(
       'professional_accreditations_16',
-      'interest_in_volunteering__17',
-      'active_constituent__18',
-      'friend_of_the_senator__19',
       'skills_areas_of_interest_20',
       'honors_and_awards_21',
       'voter_registration_status_23',

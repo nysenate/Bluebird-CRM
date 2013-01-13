@@ -112,7 +112,7 @@ class CRM_migrateContactsImport {
 
     //process the import
     self::importContacts($exportData);
-    self::importActivities($exportData, $optDry);
+    self::importActivities($exportData);
     self::importCases($exportData, $optDry);
     self::importTags($exportData, $optDry);
     self::importEmployment($exportData, $optDry);
@@ -126,12 +126,24 @@ class CRM_migrateContactsImport {
 
   function importContacts($exportData) {
     global $optDry;
+    global $extInt;
 
-    //make sure the target IDs array is reset during importContacts
+    //make sure the $extInt IDs array is reset during importContacts
     //array( 'external_identifier' => 'target contact id' )
-    $targetIDs = array();
+    $extInt = array();
+    $relatedTypes = array(
+      'email', 'phone', 'website', 'im', 'address', 'note',
+      'Additional_Constituent_Information', 'Attachments', 'Contact_Details', 'Organization_Constituent_Information'
+    );
+    //records which use entity_id rather than contact_id as foreign key
+    $fkEId = array(
+      'note', 'Additional_Constituent_Information', 'Attachments',
+      'Contact_Details', 'Organization_Constituent_Information'
+    );
 
     foreach ( $exportData['import'] as $extID => $details ) {
+      //bbscript_log("trace", 'importContacts importContacts $details', $details);
+
       //look for existing contact record in target db and add to params array
       $matchedContact = self::_contactLookup($details);
       if ( $matchedContact ) {
@@ -140,33 +152,95 @@ class CRM_migrateContactsImport {
 
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
-      bbscript_log("trace", "importContacts _importAPI contact", $contact);
-    }
+      //bbscript_log("trace", "importContacts _importAPI contact", $contact);
 
+      //set the contact ID for use in related records; also build mapping array
+      $contactID = $contact['id'];
+      $extInt[$extID] = $contactID;
+
+      //cycle through each set of related records
+      foreach ( $relatedTypes as $type ) {
+        $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
+        if ( isset($details[$type]) ) {
+          foreach ( $details[$type] as $record ) {
+            $record['version'] = 3;
+            $record[$fk] = $contactID;
+            self::_importAPI($type, 'create', $record);
+          }
+        }
+      }
+    }
   }//importContacts
 
-  function importActivities($exportData, $optDry) {
-    global $exportData;
-    global $importDryrun;
+  function importActivities($exportData) {
+    global $optDry;
+    global $extInt;
 
+    if ( !isset($exportData['activities']) ) {
+      return;
+    }
+
+    //get bluebird administrator id to set as source
+    $sql = "
+      SELECT id
+      FROM civicrm_contact
+      WHERE display_name = 'Bluebird Administrator'
+    ";
+    $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
+    $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
+
+    foreach ( $exportData['activities'] as $actID => $details ) {
+      $params = $details['activity'];
+      $params['source_contact_id'] = $bbAdmin;
+      unset($params['activity_id']);
+      unset($params['source_record_id']);
+      unset($params['parent_id']);
+      unset($params['original_id']);
+      unset($params['entity_id']);
+
+      $targets = array();
+      foreach ( $details['targets'] as $tExtID ) {
+        $targets[] = $extInt[$tExtID];
+      }
+      $params['target_contact_id'] = $targets;
+
+      if ( isset($details['custom']) ) {
+        $params['custom_43'] = $details['custom']['place_of_inquiry_43'];
+        $params['custom_44'] = $details['custom']['activity_category_44'];
+      }
+
+      self::_importAPI('activity', 'create', $params);
+    }
   }//importActivities
 
   function importCases($exportData, $optDry) {
-    global $exportData;
-    global $importDryrun;
+    global $optDry;
+    global $extInt;
+
+    if ( !isset($exportData['cases']) ) {
+      return;
+    }
 
   }//importCases
 
   function importTags($exportData, $optDry) {
-    global $exportData;
-    global $importDryrun;
+    global $optDry;
+    global $extInt;
+
+    if ( !isset($exportData['tags']) ) {
+      return;
+    }
     //TODO when processing tags, increase field length to varchar(80)
 
   }//importTags
 
   function importEmployment($exportData, $optDry) {
-    global $exportData;
-    global $importDryrun;
+    global $optDry;
+    global $extInt;
+
+    if ( !isset($exportData['employment']) ) {
+      return;
+    }
 
   }//importEmployment
 
@@ -184,7 +258,7 @@ class CRM_migrateContactsImport {
     global $optDry;
 
     if ( $optDry ) {
-      bbscript_log("debug", "_importAPI entity:{$entity} action: {$action} params: ", $params);
+      bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
     else {
       //prepend api version
@@ -339,14 +413,13 @@ class CRM_migrateContactsImport {
 
     //add contacts to group
     $sqlInsert = "
-      INSERT INTO {$dest['db']}.civicrm_group_contact
+      INSERT IGNORE INTO {$dest['db']}.civicrm_group_contact
       ( group_id, contact_id, status )
-      VALUES
       SELECT {$groupID} group_id, id contact_id, 'Added' status
       FROM civicrm_contact
       WHERE external_identifier IN ('{$contactsList}');
     ";
-    bbscript_log("trace", "Group insert:", $sqlInsert);
+    //bbscript_log("trace", "Group insert:", $sqlInsert);
     CRM_Core_DAO::executeQuery($sqlInsert);
 
     bbscript_log("info", "Imported contacts added to group: {$g['title']}");
