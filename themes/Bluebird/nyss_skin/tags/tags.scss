@@ -24,12 +24,14 @@ $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e
 @mixin convertTag {background-position: -107px 0px;}
 @mixin printTag {background-position: -160px -96px;}
 
-
-/*pagestructure*/
+/*to put in bb css, not tagging.css*/
 #crm-container #crm-tagListWrap {
 	clear:both;
 	height:auto;
 }
+
+
+/*pagestructure*/
 .BBTree {
 	width:540px;
 	padding:10px;
@@ -43,7 +45,24 @@ $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e
 	dt.lv-0 .fCB ul li.printTag {
 		@include functionIcon($defaultIconLink); @include printTag;
 	}
+	&.hidden{
+		display:none;
+	}
+	&.edit{
+
+	}
+	&.modal{
+
+	}
+	&.tagging{
+		
+	}
 }
+/* tabs */
+.crm-tagTabHeader {height:15px; clear:both;}
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer; font-size:12px;}
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {border-top:#457AA4 3px solid; margin-top:-3px; font-size: 14px;}
 
 /* legend */
 #crm-container .crm-tagLegend {

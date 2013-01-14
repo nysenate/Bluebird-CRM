@@ -7,11 +7,12 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 */
 /*mixins*/
 /*icons*/
-/*pagestructure*/
+/*to put in bb css, not tagging.css*/
 #crm-container #crm-tagListWrap {
   clear: both;
   height: auto; }
 
+/*pagestructure*/
 .BBTree {
   width: 540px;
   padding: 10px;
@@ -29,6 +30,34 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
     float: left;
     margin: 0 10px 0 0;
     background-position: -160px -96px; }
+  .BBTree.hidden {
+    display: none; }
+
+/* tabs */
+.crm-tagTabHeader {
+  height: 15px;
+  clear: both; }
+
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {
+  float: left;
+  margin-right: 15px;
+  background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px !important;
+  list-style: none;
+  width: 135px;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px; }
+
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {
+  color: #ccc;
+  border-top: #457AA4 3px solid;
+  margin-top: -3px; }
+
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {
+  border-top: #457AA4 3px solid;
+  margin-top: -3px;
+  font-size: 14px; }
 
 /* legend */
 #crm-container .crm-tagLegend td.addTag div {

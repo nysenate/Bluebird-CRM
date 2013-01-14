@@ -26,10 +26,26 @@
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script src="/sites/default/themes/Bluebird/scripts/bbtree3.js" type="text/javascript"></script>
+<style>
+.crm-tagListInfo {
+    padding:15px;
+    float:left;
+}
+.tagInfoBody {
+    margin-top:15px;
+}
+.tagInfoBody div {
+    margin-top:2px;
+    line-height:24px;
+}
+.crm-tagTreeDisplay {
+    float:right;
+}
+</style>
 {/literal}
 {literal}
 <script type="text/javascript">
-BBTree.startInstance({displaySettings:{allowedSets: [291,296], treeTypeSet: 'edit'}}); 
+BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'}}); 
 //document.ready(); this is when the page drops the results in. WAAAAAY FASTER.
 </script>
 {/literal}
@@ -77,11 +93,13 @@ BBTree.startInstance({displaySettings:{allowedSets: [291,296], treeTypeSet: 'edi
 			</div>
         </div>
         <!-- goes here -->
-        {literal}
-        <script>
-          	BBTree.initContainer();
-        </script>
-	    {/literal}
+        <div class="crm-tagTreeDisplay">
+            {literal}
+            <script>
+              	BBTree.initContainer();
+            </script>
+    	    {/literal}
+        </div>
 	</div>
 </div>
 {/if}
