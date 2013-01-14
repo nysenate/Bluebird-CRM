@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-23
 # Revised: 2012-12-21 (End of the World Day - Will Bluebird survive?)
+# Revised: 2013-01-07 (The world continued)
 #
 
 prog=`basename $0`
@@ -17,7 +18,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -42,6 +43,7 @@ default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --help) usage; exit 0 ;;
     -f|--sqlfile) shift; sqlfile="$1" ;;
     -c|--cmd) shift; sqlcmd="$1" ;;
     -d|--dump) dump_db=1 ;;
