@@ -889,7 +889,7 @@ function exportTags($migrateTbl, $optDry) {
   $tags['entities'] = $entityTags;
 
   //send tags to prep
-  prepareData($tags, $optDry, 'tags');
+  prepareData(array('tags' => $tags), $optDry, 'tags');
 }//exportTags
 
 /*

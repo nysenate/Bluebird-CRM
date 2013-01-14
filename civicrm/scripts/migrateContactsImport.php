@@ -110,11 +110,20 @@ class CRM_migrateContactsImport {
 
     $source = $exportData['source'];
 
+    //get bluebird administrator id to set as source
+    $sql = "
+      SELECT id
+      FROM civicrm_contact
+      WHERE display_name = 'Bluebird Administrator'
+    ";
+    $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
+    $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
+
     //process the import
     self::importContacts($exportData);
-    self::importActivities($exportData);
-    self::importCases($exportData, $optDry);
-    self::importTags($exportData, $optDry);
+    self::importActivities($exportData, $bbAdmin);
+    self::importCases($exportData, $bbAdmin);
+    self::importTags($exportData);
     self::importEmployment($exportData, $optDry);
     self::importDistrictInfo($exportData, $optDry);
 
@@ -172,22 +181,13 @@ class CRM_migrateContactsImport {
     }
   }//importContacts
 
-  function importActivities($exportData) {
+  function importActivities($exportData, $bbAdmin) {
     global $optDry;
     global $extInt;
 
     if ( !isset($exportData['activities']) ) {
       return;
     }
-
-    //get bluebird administrator id to set as source
-    $sql = "
-      SELECT id
-      FROM civicrm_contact
-      WHERE display_name = 'Bluebird Administrator'
-    ";
-    $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
-    $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
     foreach ( $exportData['activities'] as $actID => $details ) {
       $params = $details['activity'];
@@ -209,11 +209,12 @@ class CRM_migrateContactsImport {
         $params['custom_44'] = $details['custom']['activity_category_44'];
       }
 
-      self::_importAPI('activity', 'create', $params);
+      $newActivity = self::_importAPI('activity', 'create', $params);
+      //bbscript_log("trace", 'importActivities newActivity', $newActivity);
     }
   }//importActivities
 
-  function importCases($exportData, $optDry) {
+  function importCases($exportData, $bbAdmin) {
     global $optDry;
     global $extInt;
 
@@ -221,16 +222,185 @@ class CRM_migrateContactsImport {
       return;
     }
 
+    //cycle through contacts
+    foreach ( $exportData['cases'] as $extID => $cases ) {
+      $contactID = $extInt[$extID];
+
+      //cycle through cases
+      foreach ( $cases as $case ) {
+        $activities = $case['activities'];
+        unset($case['activities']);
+
+        $case['version'] = 3;
+        $case['contact_id'] = $contactID;
+        $case['creator_id'] = $bbAdmin;
+        //$case['debug'] = 1;
+        $newCase = self::_importAPI('case', 'create', $case);
+        //bbscript_log("trace", "importCases newCase", $newCase);
+
+        $caseID = $newCase['id'];
+
+        foreach ( $activities as $activity ) {
+          $activity['source_contact_id'] = $bbAdmin;
+          $activity['target_contact_id'] = $contactID;
+          $activity['case_id'] = $caseID;
+          $activity['version'] = 3;
+          $newActivity = self::_importAPI('activity', 'create', $activity);
+          //bbscript_log("trace", 'importCases newActivity', $newActivity);
+        }
+      }
+    }
   }//importCases
 
-  function importTags($exportData, $optDry) {
+  function importTags($exportData) {
     global $optDry;
     global $extInt;
+
+    $tagExtInt = array();
 
     if ( !isset($exportData['tags']) ) {
       return;
     }
-    //TODO when processing tags, increase field length to varchar(80)
+
+    //when processing tags, increase field length to varchar(80)
+    if ( !$optDry ) {
+      $sql = "
+        ALTER TABLE civicrm_tag
+        MODIFY name varchar(80);
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
+    //bbscript_log("trace", 'importTags tags', $exportData['tags']);
+
+    //process keywords
+    foreach ( $exportData['tags']['keywords'] as $keyID => $keyDetail ) {
+      $params = array(
+        'version' => 3,
+        'name' => $keyDetail['name'],
+        'description' => $keyDetail['desc'],
+        'parent_id' => 296, //keywords constant
+      );
+      $newKeyword = self::_importAPI('tag', 'create', $params);
+      //bbscript_log("trace", 'importTags newKeyword', $newKeyword);
+      $tagExtInt[$keyID] = $newKeyword['id'];
+    }
+
+    //process positions
+    foreach ( $exportData['tags']['positions'] as $posID => $posDetail ) {
+      $sql = "
+        SELECT id
+        FROM civicrm_tag
+        WHERE name = '{$posDetail['name']}'
+          AND parent_id = 292
+      ";
+      $intPosID = CRM_Core_DAO::singleValueQuery($sql);
+      if ( !$intPosID ) {
+        $params = array(
+          'version' => 3,
+          'name' => $posDetail['name'],
+          'description' => $posDetail['desc'],
+          'parent_id' => 292, //positions constant
+        );
+        $newPos = self::_importAPI('tag', 'create', $params);
+        //bbscript_log("trace", 'importTags newPos', $newPos);
+        $intPosID = $newPos['id'];
+      }
+      $tagExtInt[$posID] = $intPosID;
+    }
+
+    //process issue codes
+    //begin by constructing base level tag
+    $params = array(
+      'version' => 3,
+      'name' => "Migrated from: {$exportData['source']['name']} ({$exportData['source']['num']})",
+      'description' => 'Tags migrated from other district',
+      'parent_id' => 291,
+    );
+    $icParent = self::_importAPI('tag', 'create', $params);
+
+    //level 1
+    foreach ( $exportData['tags']['issuecodes']  as $icID1 => $icD1 ) {
+      $params = array(
+        'version' => 3,
+        'name' => $icD1['name'],
+        'description' => $icD1['desc'],
+        'parent_id' => $icParent['id'],
+      );
+      $icP1 = self::_importAPI('tag', 'create', $params);
+      $tagExtInt[$icID1] = $icP1['id'];
+
+      //level 2
+      if ( isset($icD1['children']) ) {
+        foreach ( $icD1['children'] as $icID2 => $icD2 ) {
+          $params = array(
+            'version' => 3,
+            'name' => $icD2['name'],
+            'description' => $icD2['desc'],
+            'parent_id' => $icP1['id'],
+          );
+          $icP2 = self::_importAPI('tag', 'create', $params);
+          $tagExtInt[$icID2] = $icP2['id'];
+
+          //level 3
+          if ( isset($icD2['children']) ) {
+            foreach ( $icD2['children'] as $icID3 => $icD3 ) {
+              $params = array(
+                'version' => 3,
+                'name' => $icD3['name'],
+                'description' => $icD3['desc'],
+                'parent_id' => $icP2['id'],
+              );
+              $icP3 = self::_importAPI('tag', 'create', $params);
+              $tagExtInt[$icID3] = $icP3['id'];
+
+              //level 4
+              if ( isset($icD3['children']) ) {
+                foreach ( $icD3['children'] as $icID4 => $icD4 ) {
+                  $params = array(
+                    'version' => 3,
+                    'name' => $icD4['name'],
+                    'description' => $icD4['desc'],
+                    'parent_id' => $icP3['id'],
+                  );
+                  $icP4 = self::_importAPI('tag', 'create', $params);
+                  $tagExtInt[$icID4] = $icP4['id'];
+
+                  //level 5
+                  if ( isset($icD4['children']) ) {
+                    foreach ( $icD4['children'] as $icID5 => $icD5 ) {
+                      $params = array(
+                        'version' => 3,
+                        'name' => $icD5['name'],
+                        'description' => $icD5['desc'],
+                        'parent_id' => $icP4['id'],
+                      );
+                      $icP5 = self::_importAPI('tag', 'create', $params);
+                      $tagExtInt[$icID5] = $icP5['id'];
+                    }
+                  }//end level 5
+                }
+              }//end level 4
+            }
+          }//end level 3
+        }
+      }//end level 2
+    }//end level 1
+    //bbscript_log("trace", '_importTags $tagExtInt', $tagExtInt);
+
+    //construct tag entity records
+    foreach ( $exportData['tags']['entities'] as $extID => $extTags ) {
+      $params = array(
+        'version' => 3,
+        'contact_id' => $extInt[$extID],
+      );
+      foreach ( $extTags as $tIndex => $tID ) {
+        $params['tag_id.'.$tIndex] = $tagExtInt[$tID];
+      }
+      //bbscript_log("trace", '_importTags entityTag $params', $params);
+      self::_importAPI('entity_tag', 'create', $params);
+    }
+
 
   }//importTags
 
