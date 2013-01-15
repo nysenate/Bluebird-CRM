@@ -9,27 +9,26 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 /*icons*/
 $functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
 $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+$levelClassSlug : "lv";
+
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
 @mixin functionIcon($setIconLink) {
-	background: url('#{$setIconLink}') transparent no-repeat;
-	height:16px;
-	width:16px;
-	float:left;
-	margin:0 10px 0 0;
+	background-image: url('#{$setIconLink}') !important;
+	cursor: pointer;
 }
-@mixin addTag {background-position: 0;}
-@mixin removeTag {background-position: -17px 0px;}
-@mixin moveTag {background-position: -34px 0px;}
-@mixin updateTag {background-position: -50px 0px;}
-@mixin mergeTag {background-position: -66px 0px;}
-@mixin convertTag {background-position: -107px 0px;}
-@mixin printTag {background-position: -160px -96px;}
+@mixin addTag {@include functionIcon($functionIconLink); background-position: 0;}
+@mixin removeTag {@include functionIcon($functionIconLink); background-position: -17px 0px;}
+@mixin moveTag {@include functionIcon($functionIconLink); background-position: -34px 0px;}
+@mixin updateTag {@include functionIcon($functionIconLink); background-position: -50px 0px;}
+@mixin mergeTag {@include functionIcon($functionIconLink); background-position: -66px 0px;}
+@mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
+@mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
 
 /*to put in bb css, not tagging.css*/
 #crm-container #crm-tagListWrap {
 	clear:both;
 	height:auto;
 }
-
 
 /*pagestructure*/
 .BBTree {
@@ -42,9 +41,85 @@ $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e
 	background-color:#fff;
 	border:1px solid #ccc;
 	margin: 0 auto;
-	dt.lv-0 .fCB ul li.printTag {
-		@include functionIcon($defaultIconLink); @include printTag;
+	cursor:default;
+	/* for tag hirarchy structure */
+	dl dt {
+		.ddControl {
+			height:16px; width:15px; float:left; margin:0px;
+			&.treeButton{
+				background: url($defaultIconLink) no-repeat -32px -15px;
+			 	cursor:pointer;
+			}
+		}
+		.tag {
+			display:inline;
+			font: {
+				family: Arial;
+    			size: 12px;
+    			weight: normal;
+			};
+			padding-left:5px;
+		}
+		.fCB {
+			display:none;
+			padding:1px 0;
+			float:right;
+			ul {
+				margin:0;
+				li {
+					height:16px;
+					width:16px;
+					float:left;
+					margin:0 2px 0 0;
+					list-style-image:none !important;
+					list-style-type:none !important;
+					&.addTag {@include addTag}
+					&.removeTag {@include removeTag}
+					&.moveTag {@include moveTag}
+					&.updateTag {@include updateTag}
+					&.mergeTag {@include mergeTag}
+					&.convertTag {@include convertTag}
+					&.printTag {@include printTag}
+				}
+			}
+		}
+		&:hover {
+			.fCB {
+				display:inline;
+			}
+			background-color:#DEDEDE;
+		}
 	}
+	@for $i from 0 through 10
+	{
+  		dl.#{$levelClassSlug}-#{$i}
+  		{
+			margin:0;
+			width: 525px - (10*$i);
+    		@if $i != 0
+    		{
+    			margin-left: 10px;
+    		}
+    		@if $i > 1
+    		{
+    			display:none;
+    		}
+  			
+  		}
+  		dt.#{$levelClassSlug}-#{$i}
+    	{
+    		@if $i == 0
+    		{
+    			.treeButton {
+    				display:none;
+    			}
+    			.tag {
+    				font-size: 14px;
+    				font-weight:bold;
+    			}
+    		}
+    	}
+    }
 	&.hidden{
 		display:none;
 	}
@@ -55,8 +130,19 @@ $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e
 
 	}
 	&.tagging{
-		
+
 	}
+	&.loadingGif{
+		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
+		.lv-0{
+			display:none;
+		}
+	}
+	* {
+		font-size: 1em;
+	}
+
+
 }
 /* tabs */
 .crm-tagTabHeader {height:15px; clear:both;}

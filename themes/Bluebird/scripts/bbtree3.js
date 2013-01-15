@@ -2,7 +2,7 @@
 * BBTree JS 0.3
 * Now with infinite looping!
 * And modular abilities!
-* Last Updated: 1-7-2013
+* Last Updated: 1-15-2013
 * Coded: Dan Pozzie (dpozzie@gmail.com)
 */
 
@@ -38,11 +38,14 @@ var BBTree = {
 	},
 	writeTree: function(next)
 	{
-		//set loadingDot?
 		callTree.writeParsedData();//written, but hidden
-		//START HERE
-		//MAKE SURE PARSED DATA IS HIDDEN BEFORE WRITTEN
-		//so that I can unhide data to show it when done
+		callTree.slideDownTree();
+		callTree.setTagInfo();
+		//now you need to find out what type of tree it is, and add other JS related tomfoolery with
+		//like tagging functionality and special hover overs
+		cj.each(callTree.currentSettings.displaySettings.writeSets, function(i, className){
+			cj('.'+addTagLabel(className)).removeClass('loadingGif');
+		});
 		next();
 	}
 	/*
@@ -146,8 +149,6 @@ var callTree =  {
 	},
 	writeTreeInit: function(tID){
 		//start testing
-		console.log('WriteStart');
-		returnTime();
 		var displayObj = new Object;
 		displayObj.tLvl = 0;
 		displayObj.treeTop = tID.id;
@@ -163,10 +164,8 @@ var callTree =  {
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
 		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
-		displayObj.output += '<div class=" '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>';
+		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop) + '</dt>';
-		console.log('endWrite');
-		returnTime();
 		return displayObj;
 	},
 	parseTreeAjax: function(tID, displayObj){
@@ -189,14 +188,14 @@ var callTree =  {
 	writeJsonTag: function(tID, displayObj){	
 		var tagLabel = addTagLabel(tID.id);
 		var isChecked = isItemMarked(tID.is_checked,'checked');
-		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+' '+isItemMarked(tID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'"  tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>' + addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+' '+isItemMarked(tID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'"  tID="'+tID.id+'"><div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>'+addEntityCount(tID.entity_count)+ addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
 		if(tID.children.length > 0)
 		{
 			cj.each(tID.children, function(i, cID){
 				var isCChecked = isItemMarked(cID.is_checked,'checked');
 				tagLabel = addTagLabel(cID.id);
 				callTree.openChildJsonTag(cID,displayObj);
-				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" cID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>' + addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
+				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" cID="'+cID.id+'"><div class="ddControl '+isItemChildless(cID.children.length)+'"></div><div class="tag">'+cID.name+'</div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
 				callTree.parseJsonInsides(cID,displayObj);	
 				callTree.closeChildJsonTag(tID, displayObj);
 			});
@@ -206,7 +205,7 @@ var callTree =  {
 	openChildJsonTag: function(tID, displayObj){
 		var tagLabel = addTagLabel(tID.id);
 		displayObj.tLvl++;
-		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'" style="">';	
+		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'" >';	
 	},
 	closeChildJsonTag: function(tID, displayObj){
 		displayObj.tLvl--;
@@ -220,8 +219,11 @@ var callTree =  {
 			{
 				treeBox += 'hidden ';
 			}
+			else { //or else we give it the 'loading' treatment
+				treeBox += 'loadingGif '; 
+			}
 			treeBox += addTagLabel(className);
-			treeBox += '"></div>';
+			treeBox += '" id="'+addTagLabel(className)+'"></div>';
 			cj(callTree.currentSettings.pageSettings.wrapper).append(treeBox);
 		});	
 	},
@@ -250,14 +252,103 @@ var callTree =  {
 			{
 				tabInfo.isActive = 'active';
 			}
-			var tabHTML = '<li class="tab '+ tabInfo.isActive+ ' ' +addTagLabel(tabInfo.id) + '" onclick="swapTrees(this);return false;">'+tabInfo.name+'</li>';
+			var tabHTML = '<li class="tab '+ tabInfo.isActive+ '" id="' +addTagLabel(tabInfo.id) + '" onclick="callTree.swapTrees(this);return false;">'+tabInfo.name+'</li>';
 			cj('.crm-tagTabHeader ul').append(tabHTML);
 		});
 		
 	},
+	slideDownTree: function()
+	{
+		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
+		cj(treeLoc + ' dt .treeButton').unbind('click');
+		cj(treeLoc + ' dt .treeButton').click(function() {
+			if(cj(this).parent().hasClass('lv-0'))
+			{
+				if(cj(this).parent().hasClass('open'))
+				{
+					cj(treeLoc + ' dt.lv-0').removeClass('open');
+					cj(treeLoc + ' dt.lv-0 .treeButton').removeClass('open');
+					cj(treeLoc + ' dl.lv-1').slideUp();
+				}
+				else {
+					cj(treeLoc + ' dt.lv-0').addClass('open');
+					cj(treeLoc + ' dt.lv-0 .treeButton').addClass('open');
+					cj(treeLoc + ' dl.lv-1').slideDown();
+				}
+			} else {
+
+				var tagLabel = cj(this).parent().attr('id');
+				var isOpen = cj('dl#'+tagLabel).hasClass('open');
+				switch(isOpen)
+				{
+					case true:
+					cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
+					cj(treeLoc + ' dl#'+tagLabel).children('dl').slideUp('400', function() {
+						cj('dl#'+tagLabel).removeClass('open');
+					});
+					break;
+					case false:
+					cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
+					cj(treeLoc + ' dl#'+tagLabel).children('dl').slideDown('400', function() {
+						cj('dl#'+tagLabel).addClass('open');
+					});
+				}
+			}
+		});
+	},
+	setTagInfo: function()
+	{
+		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
+		cj(treeLoc+' dt').unbind('mouseenter mouseleave');
+		cj(treeLoc+' dt').hover(
+		function(){
+			if(cj(this).attr('id') != 'tagLabel_291' && cj(this).attr('id') != 'tagLabel_296' )
+			{ 
+				var tagCount = ' ';
+				tagCount += cj('span.entityCount', this).html().match(/[0-9]+/);
+				if(tagCount == ' ' +null)
+				{
+					tagCount = cj('span.entityCount', this).html();
+				}
+			}
+			var tagName = cj('div.tag', this).html();
+			var tagId = cj(this).attr('tid');
+			var isReserved = 'False';
+			if(cj(this).hasClass('isReserved') == true)
+			{
+				isReserved = 'True';
+			}
+			cj('.crm-tagListInfo .tagInfoBody .tagName span').html(tagName);
+			cj('.crm-tagListInfo .tagInfoBody .tagId span').html(tagId);
+			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(cj(this).attr('description'));
+			cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
+			cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
+		}, 
+		function() {
+			cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
+			cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
+			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html('');
+			cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
+			cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
+		});
+	},
 	swapTrees: function(tab)
 	{
+		var currentTree = addTagLabel(callTree.currentSettings.displaySettings.treeCodeSet);
+		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
+		var getTab = cj(tab).attr('id');
+		console.log(currentTree);
+		console.log(treeLoc);
+		console.log(getTab);
 
+		if(currentTree != getTab){
+			cj(treeLoc +'#' + currentTree).addClass('hidden');
+			//cj('.BBtree.edit#' + currentTree).children().hide();
+			cj('.crm-tagTabHeader li.tab#' + getTab).addClass('active');
+			cj('.crm-tagTabHeader li.tab#' + currentTree).removeClass('active');
+			cj(treeLoc +'#' + getTab).removeClass('hidden');
+			callTree.currentSettings.displaySettings.treeCodeSet = [removeTagLabel(getTab)];
+		}
 	}
 	//still need a reload tree option.
 	//make sure to capture which ones are 'open'
@@ -335,35 +426,48 @@ function isItemChildless(childLength)
 		return '';
 	}
 }
+//add Entity Span
+function addEntityCount(count)
+{
+	if(callTree.currentSettings.callSettings.ajaxSettings.entity_counts != 0)
+	{
+		var add = '<span class="entityCount">('+count+')</span>';
+		return add;
+	}
+	else{
+		var add = '<span class="entityCount" style="display:none">Unknown</span>';
+		return add;
+	}
+}
 //adds Control Box
 function addControlBox(tagLabel, treeTop) {
 	var floatControlBox = '';
 	var tagMouse = 'dt#'+tagLabel;
-	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
+	floatControlBox = '<span class="fCB">';
 	floatControlBox += '<ul>';
 	if(treeTop == '291')
 	{
 
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="removeTag" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="moveTag" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="updateTag" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="mergeTag" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	}
 	if(treeTop == '296')
 	{
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Keyword" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Keyword" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Keyword" onclick="makeModalKWMerge(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -107px 0px; float:left;" title="Convert Keyword" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="removeTag" title="Remove Keyword" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="updateTag" title="Update Keyword" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="mergeTag" title="Merge Keyword" onclick="makeModalKWMerge(\''+ tagLabel +'\')"></li>';
+		floatControlBox += '<li class="convertTag" title="Convert Keyword" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
 	}
 	floatControlBox += '</span>';
 	if(tagMouse == 'dt#tagLabel_291')
 	{
-		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li class="printTag" style="height:16px; width:16px; margin:auto 1px; float:left;" onClick="printTags()"> </li><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
+		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
 	}else if(tagMouse == 'dt#tagLabel_296')
 	{
-		return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li class="printTag" style="height:16px; width:16px; margin:auto 1px; float:left;" onClick="printTags()"> </li><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
+		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
 	} else { return(floatControlBox); }
 }
 //remove at the end

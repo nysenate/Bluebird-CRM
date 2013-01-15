@@ -7,6 +7,7 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 */
 /*mixins*/
 /*icons*/
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
 /*to put in bb css, not tagging.css*/
 #crm-container #crm-tagListWrap {
   clear: both;
@@ -21,17 +22,134 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
   overflow-y: scroll;
   height: 400px;
   background-color: #fff;
-  border: 1px solid #ccc;
-  margin: 0 auto; }
-  .BBTree dt.lv-0 .fCB ul li.printTag {
-    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") transparent no-repeat;
+  border: 1px solid #cccccc;
+  margin: 0 auto;
+  cursor: default;
+  /* for tag hirarchy structure */ }
+  .BBTree dl dt .ddControl {
     height: 16px;
-    width: 16px;
+    width: 15px;
     float: left;
-    margin: 0 10px 0 0;
-    background-position: -160px -96px; }
+    margin: 0px; }
+    .BBTree dl dt .ddControl.treeButton {
+      background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
+      cursor: pointer; }
+  .BBTree dl dt .tag {
+    display: inline;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: normal;
+    padding-left: 5px; }
+  .BBTree dl dt .fCB {
+    display: none;
+    padding: 1px 0;
+    float: right; }
+    .BBTree dl dt .fCB ul {
+      margin: 0; }
+      .BBTree dl dt .fCB ul li {
+        height: 16px;
+        width: 16px;
+        float: left;
+        margin: 0 2px 0 0;
+        list-style-image: none !important;
+        list-style-type: none !important; }
+        .BBTree dl dt .fCB ul li.addTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: 0; }
+        .BBTree dl dt .fCB ul li.removeTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: -17px 0px; }
+        .BBTree dl dt .fCB ul li.moveTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: -34px 0px; }
+        .BBTree dl dt .fCB ul li.updateTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: -50px 0px; }
+        .BBTree dl dt .fCB ul li.mergeTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: -66px 0px; }
+        .BBTree dl dt .fCB ul li.convertTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+          cursor: pointer;
+          background-position: -107px 0px; }
+        .BBTree dl dt .fCB ul li.printTag {
+          background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+          cursor: pointer;
+          background-position: -160px -96px; }
+  .BBTree dl dt:hover {
+    background-color: #DEDEDE; }
+    .BBTree dl dt:hover .fCB {
+      display: inline; }
+  .BBTree dl.lv-0 {
+    margin: 0;
+    width: 525px; }
+  .BBTree dt.lv-0 .treeButton {
+    display: none; }
+  .BBTree dt.lv-0 .tag {
+    font-size: 14px;
+    font-weight: bold; }
+  .BBTree dl.lv-1 {
+    margin: 0;
+    width: 515px;
+    margin-left: 10px; }
+  .BBTree dl.lv-2 {
+    margin: 0;
+    width: 505px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-3 {
+    margin: 0;
+    width: 495px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-4 {
+    margin: 0;
+    width: 485px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-5 {
+    margin: 0;
+    width: 475px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-6 {
+    margin: 0;
+    width: 465px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-7 {
+    margin: 0;
+    width: 455px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-8 {
+    margin: 0;
+    width: 445px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-9 {
+    margin: 0;
+    width: 435px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-10 {
+    margin: 0;
+    width: 425px;
+    margin-left: 10px;
+    display: none; }
   .BBTree.hidden {
     display: none; }
+  .BBTree.loadingGif {
+    background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white; }
+    .BBTree.loadingGif .lv-0 {
+      display: none; }
+  .BBTree * {
+    font-size: 1em; }
 
 /* tabs */
 .crm-tagTabHeader {
@@ -51,63 +169,56 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 
 .crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {
   color: #ccc;
-  border-top: #457AA4 3px solid;
+  border-top: #457aa4 3px solid;
   margin-top: -3px; }
 
 .crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {
-  border-top: #457AA4 3px solid;
+  border-top: #457aa4 3px solid;
   margin-top: -3px;
   font-size: 14px; }
 
 /* legend */
 #crm-container .crm-tagLegend td.addTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: 0; }
 #crm-container .crm-tagLegend td.removeTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: -17px 0px; }
 #crm-container .crm-tagLegend td.moveTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: -34px 0px; }
 #crm-container .crm-tagLegend td.updateTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: -50px 0px; }
 #crm-container .crm-tagLegend td.mergeTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: -66px 0px; }
 #crm-container .crm-tagLegend td.convertTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
   background-position: -107px 0px; }
 #crm-container .crm-tagLegend td.printTag div {
-  background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") transparent no-repeat;
-  height: 16px;
-  width: 16px;
-  float: left;
-  margin: 0 10px 0 0;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
   background-position: -160px -96px; }
 #crm-container .crm-tagLegend th {
   border: 0px; }
