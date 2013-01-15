@@ -59,7 +59,8 @@ require_once 'CRM/Core/BAO/File.php';
  */
 function civicrm_api3_file_create($params) {
 
-  civicrm_api3_verify_mandatory($params, 'CRM_Core_DAO_File', array('file_type_id'));
+  //NYSS correct required field
+  civicrm_api3_verify_mandatory($params, 'CRM_Core_DAO_File', array('uri'));
 
   if (!isset($params['upload_date'])) {
     $params['upload_date'] = date("Ymd");
