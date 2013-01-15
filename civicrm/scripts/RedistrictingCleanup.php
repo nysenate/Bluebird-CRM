@@ -92,7 +92,7 @@ function do_import($db, $filename, $BB_DRY_RUN) {
 
         // Part the street address into its components
         $parsedFields = CRM_Core_BAO_Address::parseStreetAddress(strtoupper(trim($parts[1])));
-        $street_number = trim(get($parsedFields,'street_number',0));
+        $street_number = trim($parsedFields['street_number']);
         $street_number_suffix = trim($parsedFields['street_number_suffix']);
         $street_name   = convertProperCase(trim($parsedFields['street_name']));
         $street_unit   = trim($parsedFields['street_unit']);
