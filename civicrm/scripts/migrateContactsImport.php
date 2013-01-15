@@ -21,6 +21,7 @@ class CRM_migrateContactsImport {
     global $_SERVER;
     global $optDry;
     global $exportData;
+    global $mergedContacts;
 
     require_once 'script_utils.php';
 
@@ -94,7 +95,30 @@ class CRM_migrateContactsImport {
 
     bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
-
+    //generate report stats
+    $caseList = array();
+    foreach ( $exportData['cases'] as $extID => $cases ) {
+      foreach ( $cases as $case ) {
+        $caseList[] = $case;
+      }
+    }
+    $stats = array(
+      'total contacts' => count($exportData['import']),
+      'individuals' => count($exportData['import']) - count($exportData['employment']),
+      'employer organizations' => count($exportData['employment']),
+      'total contacts merged with existing records' => count($mergedContacts),
+      'individuals merged with existing records' =>
+        count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'organizations merged with existing records' =>
+        count($mergedContacts) - count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'activities' => count($exportData['activities']),
+      'cases' => count($caseList),
+      'keywords' => count($exportData['tags']['keywords']),
+      'first level issue codes' => count($exportData['tags']['issuecodes']),
+      'positions' => count($exportData['tags']['positions']),
+      'attachments' => count($exportData['attachments']),
+    );
+    bbscript_log("info", "Migration statistics:", $stats);
 
   }//run
 
@@ -171,6 +195,7 @@ class CRM_migrateContactsImport {
   function importContacts($exportData) {
     global $optDry;
     global $extInt;
+    global $mergedContacts;
 
     //make sure the $extInt IDs array is reset during importContacts
     //array( 'external_identifier' => 'target contact id' )
@@ -185,6 +210,7 @@ class CRM_migrateContactsImport {
       'Contact_Details', 'Organization_Constituent_Information'
     );
 
+    $mergedContacts = array();
     foreach ( $exportData['import'] as $extID => $details ) {
       //bbscript_log("trace", 'importContacts importContacts $details', $details);
 
@@ -192,6 +218,7 @@ class CRM_migrateContactsImport {
       $matchedContact = self::_contactLookup($details);
       if ( $matchedContact ) {
         $details['contact']['id'] = $matchedContact;
+        $mergedContacts[$extID] = $matchedContact;
       }
 
       //import the contact via api
@@ -792,6 +819,17 @@ class CRM_migrateContactsImport {
     ";
     //bbscript_log("trace", "Group insert:", $sqlInsert);
     CRM_Core_DAO::executeQuery($sqlInsert);
+
+    $now = date('Y-m-d H:i', strtotime('+3 hours', strtotime(date('Y-m-d H:i'))));
+    $sqlSubInsert = "
+      INSERT IGNORE INTO {$dest['db']}.civicrm_subscription_history
+      ( contact_id, group_id, date, method, status )
+      SELECT id contact_id, {$groupID} group_id, '{$now}' date, 'Admin' method, 'Added' status
+      FROM civicrm_contact
+      WHERE external_identifier IN ('{$contactsList}');
+    ";
+    //bbscript_log("trace", "Group insert:", $sqlInsert);
+    CRM_Core_DAO::executeQuery($sqlSubInsert);
 
     bbscript_log("info", "Imported contacts added to group: {$g['title']}");
   }//addToGroup
