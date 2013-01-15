@@ -27,6 +27,9 @@ var BBTree = {
 	    //ALSO REMEMBER TO SET entity_counts: 1
 	    //COOKIES REMEMBER CHECK COOKIES
 
+
+	    //civicrm/ajax/entity_tag/get
+
 	},
 	initContainer: function()
 	{
@@ -34,7 +37,7 @@ var BBTree = {
 	},
 	getAjaxData: function(next)
 	{
-		callTree.callTreeAjax(function(){next();});
+		 callTree.callTreeAjax(function(){next();});
 	},
 	writeTree: function(next)
 	{
@@ -71,6 +74,7 @@ var callTree =  {
 		displaySettings: { //Sets the default when the page has to be refreshed internally
 			writeSets: [291], //Set [one], or [other] to show only one, use [291,296] for both (when you want to show KW & IC)
 			treeCodeSet: 291, //IssueCodes = 291, KW = 296. Sets default tree to show first.
+			currentTree: 291,
 			treeTypeSet: 'tagging' //Sets default type to appear: edit, modal or tagging versions... adds 'boxes/checks'
 		},
 		callSettings:{
@@ -143,6 +147,7 @@ var callTree =  {
 			{
 				BBTree.rawJsonData[tID.id] = {'name':tID.name, 'children':tID.children};
 				var displayObj = callTree.writeTreeInit(tID);
+				callTree.currentSettings.displaySettings.currentTree = tID.id;
 				callTree.parseTreeAjax(tID, displayObj);
 			}
 		});
@@ -165,7 +170,7 @@ var callTree =  {
 		}
 		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
 		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>';
-		displayObj.output += addControlBox(tagLabel, displayObj.treeTop) + '</dt>';
+		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		return displayObj;
 	},
 	parseTreeAjax: function(tID, displayObj){
@@ -188,14 +193,14 @@ var callTree =  {
 	writeJsonTag: function(tID, displayObj){	
 		var tagLabel = addTagLabel(tID.id);
 		var isChecked = isItemMarked(tID.is_checked,'checked');
-		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+' '+isItemMarked(tID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'"  tID="'+tID.id+'"><div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>'+addEntityCount(tID.entity_count)+ addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+' '+isItemMarked(tID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'"  tID="'+tID.id+'"><div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>'+addEntityCount(tID.entity_count)+ addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked'))  + '</dt>';
 		if(tID.children.length > 0)
 		{
 			cj.each(tID.children, function(i, cID){
 				var isCChecked = isItemMarked(cID.is_checked,'checked');
 				tagLabel = addTagLabel(cID.id);
 				callTree.openChildJsonTag(cID,displayObj);
-				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" cID="'+cID.id+'"><div class="ddControl '+isItemChildless(cID.children.length)+'"></div><div class="tag">'+cID.name+'</div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop)  + '</dt>';
+				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" cID="'+cID.id+'"><div class="ddControl '+isItemChildless(cID.children.length)+'"></div><div class="tag">'+cID.name+'</div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked'))  + '</dt>';
 				callTree.parseJsonInsides(cID,displayObj);	
 				callTree.closeChildJsonTag(tID, displayObj);
 			});
@@ -440,35 +445,54 @@ function addEntityCount(count)
 	}
 }
 //adds Control Box
-function addControlBox(tagLabel, treeTop) {
-	var floatControlBox = '';
-	var tagMouse = 'dt#'+tagLabel;
-	floatControlBox = '<span class="fCB">';
-	floatControlBox += '<ul>';
-	if(treeTop == '291')
+function addControlBox(tagLabel, treeTop, isChecked) {
+	var floatControlBox;
+	if(callTree.currentSettings.displaySettings.treeTypeSet == 'edit')
 	{
+		floatControlBox = '<span class="fCB">';
+		floatControlBox += '<ul>';
+		if(treeTop == callTree.currentSettings.displaySettings.currentTree)
+		{
 
-		floatControlBox += '<li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="removeTag" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="moveTag" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="updateTag" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="mergeTag" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="removeTag" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="moveTag" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="updateTag" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="mergeTag" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+		}
+		if(treeTop == callTree.currentSettings.displaySettings.currentTree)
+		{
+			floatControlBox += '<li class="removeTag" title="Remove Keyword" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="updateTag" title="Update Keyword" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="mergeTag" title="Merge Keyword" onclick="makeModalKWMerge(\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="convertTag" title="Convert Keyword" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
+		}
+		floatControlBox += '</span>';
+		if(tagLabel == 'tagLabel_291' || tagLabel == 'tagLabel_296')
+		{
+			return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
+		} else { return(floatControlBox); }
 	}
-	if(treeTop == '296')
+	if(callTree.currentSettings.displaySettings.treeTypeSet == 'tagging')
 	{
-		floatControlBox += '<li class="removeTag" title="Remove Keyword" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="updateTag" title="Update Keyword" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="mergeTag" title="Merge Keyword" onclick="makeModalKWMerge(\''+ tagLabel +'\')"></li>';
-		floatControlBox += '<li class="convertTag" title="Convert Keyword" onclick="makeModalConvert(\''+ tagLabel +'\')"></li>';
+		console.log('here');
+		var displayChecked = '';
+		floatControlBox = '<span class="fCB">';
+		floatControlBox += '<ul>';
+		floatControlBox += '<li>';
+		if(isChecked == ' checked'){
+			floatControlBox += '<input type="checkbox" class="checkbox checked"  checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+		} else {
+			floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+		}
+		floatControlBox += '</span>';
+		if(tagLabel != 'tagLabel_291' && tagLabel != 'tagLabel_296')
+		{
+			return(floatControlBox);
+		} else { 
+			return ''; 
+		}
 	}
-	floatControlBox += '</span>';
-	if(tagMouse == 'dt#tagLabel_291')
-	{
-		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
-	}else if(tagMouse == 'dt#tagLabel_296')
-	{
-		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; 
-	} else { return(floatControlBox); }
 }
 //remove at the end
 function returnTime()

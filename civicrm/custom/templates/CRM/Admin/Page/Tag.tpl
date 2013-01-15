@@ -30,6 +30,7 @@
 .crm-tagListInfo {
     padding:15px;
     float:left;
+    width:370px;
 }
 .tagInfoBody {
     margin-top:15px;
@@ -41,11 +42,15 @@
 .crm-tagTreeDisplay {
     float:right;
 }
+.BBTree {
+    border:0;
+    border-left:1px solid #ccc;
+}
 </style>
 {/literal}
 {literal}
 <script type="text/javascript">
-BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'}}); 
+BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'tagging'}}); 
 //document.ready(); this is when the page drops the results in. WAAAAAY FASTER.
 </script>
 {/literal}

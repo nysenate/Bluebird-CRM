@@ -32,7 +32,7 @@ $levelClassSlug : "lv";
 
 /*pagestructure*/
 .BBTree {
-	width:540px;
+	width:510px;
 	padding:10px;
 	line-height:150%;
 	overflow-x:hidden;
@@ -80,6 +80,9 @@ $levelClassSlug : "lv";
 					&.mergeTag {@include mergeTag}
 					&.convertTag {@include convertTag}
 					&.printTag {@include printTag}
+					.checkbox {
+						right:3px;
+					}
 				}
 			}
 		}
@@ -95,7 +98,7 @@ $levelClassSlug : "lv";
   		dl.#{$levelClassSlug}-#{$i}
   		{
 			margin:0;
-			width: 525px - (10*$i);
+			width: 500px - (10*$i);
     		@if $i != 0
     		{
     			margin-left: 10px;

@@ -15,7 +15,7 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 
 /*pagestructure*/
 .BBTree {
-  width: 540px;
+  width: 510px;
   padding: 10px;
   line-height: 150%;
   overflow-x: hidden;
@@ -81,13 +81,15 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
           background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
           cursor: pointer;
           background-position: -160px -96px; }
+        .BBTree dl dt .fCB ul li .checkbox {
+          right: 3px; }
   .BBTree dl dt:hover {
     background-color: #DEDEDE; }
     .BBTree dl dt:hover .fCB {
       display: inline; }
   .BBTree dl.lv-0 {
     margin: 0;
-    width: 525px; }
+    width: 500px; }
   .BBTree dt.lv-0 .treeButton {
     display: none; }
   .BBTree dt.lv-0 .tag {
@@ -95,51 +97,51 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
     font-weight: bold; }
   .BBTree dl.lv-1 {
     margin: 0;
-    width: 515px;
+    width: 490px;
     margin-left: 10px; }
   .BBTree dl.lv-2 {
     margin: 0;
-    width: 505px;
+    width: 480px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-3 {
     margin: 0;
-    width: 495px;
+    width: 470px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-4 {
     margin: 0;
-    width: 485px;
+    width: 460px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-5 {
     margin: 0;
-    width: 475px;
+    width: 450px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-6 {
     margin: 0;
-    width: 465px;
+    width: 440px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-7 {
     margin: 0;
-    width: 455px;
+    width: 430px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-8 {
     margin: 0;
-    width: 445px;
+    width: 420px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-9 {
     margin: 0;
-    width: 435px;
+    width: 410px;
     margin-left: 10px;
     display: none; }
   .BBTree dl.lv-10 {
     margin: 0;
-    width: 425px;
+    width: 400px;
     margin-left: 10px;
     display: none; }
   .BBTree.hidden {
