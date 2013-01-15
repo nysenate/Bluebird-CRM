@@ -6,22 +6,17 @@
 // Date: 2012-10-26
 // Revised: 2012-11-21
 
-// ./migrateContacts.php -S skelos --dest 45 --file --dryrun
+// ./migrateContactsImport.php -S skelos --filename=migrate --dryrun
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DRY_COUNT', 25);
 define('DEFAULT_LOG_LEVEL', 'TRACE');
-define('LOC_TYPE_BOE', 6);
 
 class CRM_migrateContactsImport {
 
   function run() {
 
     global $_SERVER;
-    global $optDry;
-    global $exportData;
-    global $mergedContacts;
 
     require_once 'script_utils.php';
 
@@ -90,44 +85,23 @@ class CRM_migrateContactsImport {
     }
 
     //call main import function
-    $exportData = self::importData($dest, $importFile);
-    $source = $exportData['source'];
-
-    bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
-
-    //generate report stats
-    $caseList = array();
-    foreach ( $exportData['cases'] as $extID => $cases ) {
-      foreach ( $cases as $case ) {
-        $caseList[] = $case;
-      }
-    }
-    $stats = array(
-      'total contacts' => count($exportData['import']),
-      'individuals' => count($exportData['import']) - count($exportData['employment']),
-      'employer organizations' => count($exportData['employment']),
-      'total contacts merged with existing records' => count($mergedContacts),
-      'individuals merged with existing records' =>
-        count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
-      'organizations merged with existing records' =>
-        count($mergedContacts) - count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
-      'activities' => count($exportData['activities']),
-      'cases' => count($caseList),
-      'keywords' => count($exportData['tags']['keywords']),
-      'first level issue codes' => count($exportData['tags']['issuecodes']),
-      'positions' => count($exportData['tags']['positions']),
-      'attachments' => count($exportData['attachments']),
-    );
-    bbscript_log("info", "Migration statistics:", $stats);
-
+    self::importData($dest, $importFile, $optDry);
   }//run
 
-  function importData($dest, $importFile) {
+  function importData($dest, $importFile, $optDryParam) {
     global $optDry;
+    global $exportData;
+    global $mergedContacts;
+
+    //set global to value passed to function
+    $optDry = $optDryParam;
+
+    //bbscript_log("trace", "importData dest", $dest);
+    bbscript_log("info", "importing data using... $importFile");
 
     //retrieve data from file and set to variable as array
     $exportData = json_decode(file_get_contents($importFile), TRUE);
-    //bbscript_log("trace", "importData $exportData", $exportData);
+    //bbscript_log("trace", 'importData $exportData', $exportData);
 
     //parse the import file source/dest, compare with params and return a warning message if values do not match
     if ( $exportData['dest']['name'] != $dest['name'] ) {
@@ -158,7 +132,34 @@ class CRM_migrateContactsImport {
     //create group and add migrated contacts
     self::addToGroup($exportData);
 
-    return $exportData;
+    $source = $exportData['source'];
+
+    bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
+
+    //generate report stats
+    $caseList = array();
+    foreach ( $exportData['cases'] as $extID => $cases ) {
+      foreach ( $cases as $case ) {
+        $caseList[] = $case;
+      }
+    }
+    $stats = array(
+      'total contacts' => count($exportData['import']),
+      'individuals' => count($exportData['import']) - count($exportData['employment']),
+      'employer organizations' => count($exportData['employment']),
+      'total contacts merged with existing records' => count($mergedContacts),
+      'individuals merged with existing records' =>
+        count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'organizations merged with existing records' =>
+        count($mergedContacts) - count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'activities' => count($exportData['activities']),
+      'cases' => count($caseList),
+      'keywords' => count($exportData['tags']['keywords']),
+      'first level issue codes' => count($exportData['tags']['issuecodes']),
+      'positions' => count($exportData['tags']['positions']),
+      'attachments' => count($exportData['attachments']),
+    );
+    bbscript_log("info", "Migration statistics:", $stats);
   }//importData
 
   /*
