@@ -20,6 +20,7 @@ class CRM_migrateContactsImport {
 
     global $_SERVER;
     global $optDry;
+    global $exportData;
 
     require_once 'script_utils.php';
 
@@ -93,6 +94,8 @@ class CRM_migrateContactsImport {
 
     bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
+
+
   }//run
 
   function importData($dest, $importFile) {
@@ -120,18 +123,50 @@ class CRM_migrateContactsImport {
     $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
     //process the import
+    self::importAttachments($exportData);
     self::importContacts($exportData);
     self::importActivities($exportData, $bbAdmin);
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
-    self::importEmployment($exportData, $optDry);
-    self::importDistrictInfo($exportData, $optDry);
+    self::importEmployment($exportData);
+    self::importDistrictInfo($exportData);
 
     //create group and add migrated contacts
     self::addToGroup($exportData);
 
     return $exportData;
   }//importData
+
+  /*
+   * handles the creation of the file records in the db
+   * this function must precede activities, case activities and attachment custom fields
+   * so the new file record can be referenced when the entity record is created
+   */
+  function importAttachments($exportData) {
+    global $optDry;
+    global $attachmentIDs;
+
+    if ( !isset($exportData['attachments']) ) {
+      return;
+    }
+
+    $attachmentIDs = array();
+    $filePath = $exportData['dest']['files'].'/'.$exportData['dest']['domain'].'/civicrm/custom/';
+
+    foreach ( $exportData['attachments'] as $attachExtID => $details ) {
+      $sourceFilePath = $details['source_file_path'];
+
+      $details['source_file_path'] = $filePath.$details['uri'];
+      $file = self::_importAPI('file', 'create', $details);
+      //bbscript_log("trace", 'importAttachments $file', $file);
+
+      //construct source->dest IDs array
+      $attachmentIDs[$attachExtID] = $file['id'];
+
+      //copy the file to the destination folder
+      self::_copyAttachment($filePath, $sourceFilePath, $details['source_file_path']);
+    }
+  }//importAttachments
 
   function importContacts($exportData) {
     global $optDry;
@@ -172,9 +207,35 @@ class CRM_migrateContactsImport {
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
           foreach ( $details[$type] as $record ) {
-            $record['version'] = 3;
-            $record[$fk] = $contactID;
-            self::_importAPI($type, 'create', $record);
+            //handle attachments via sql rather than API
+            if ( $type == 'Attachments' ) {
+              $attachSqlEle = array();
+
+              //get new attachment IDs
+              foreach ( $record as $attF => $attV ) {
+                if ( !empty($attV) ) {
+                  $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
+                }
+              }
+              $attachSql = "
+                INSERT IGNORE INTO civicrm_value_attachments_5
+                (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
+                VALUES
+                ({$contactID}, ".implode(', ', $attachSqlEle).")
+              ";
+              //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
+
+              if ( $optDry ) {
+                bbscript_log("debug", "importing attachments for contact", $record);
+              }
+              else {
+                CRM_Core_DAO::executeQuery($attachSql);
+              }
+            }
+            else {
+              $record[$fk] = $contactID;
+              self::_importAPI($type, 'create', $record);
+            }
           }
         }
       }
@@ -211,6 +272,13 @@ class CRM_migrateContactsImport {
 
       $newActivity = self::_importAPI('activity', 'create', $params);
       //bbscript_log("trace", 'importActivities newActivity', $newActivity);
+
+      //handle attachments
+      if ( isset($details['attachments']) ) {
+        foreach ( $details['attachments'] as $attID ) {
+          self::_importEntityAttachments($newActivity['id'], $attID, 'civicrm_activity');
+        }
+      }
     }
   }//importActivities
 
@@ -231,7 +299,6 @@ class CRM_migrateContactsImport {
         $activities = $case['activities'];
         unset($case['activities']);
 
-        $case['version'] = 3;
         $case['contact_id'] = $contactID;
         $case['creator_id'] = $bbAdmin;
         //$case['debug'] = 1;
@@ -244,9 +311,15 @@ class CRM_migrateContactsImport {
           $activity['source_contact_id'] = $bbAdmin;
           $activity['target_contact_id'] = $contactID;
           $activity['case_id'] = $caseID;
-          $activity['version'] = 3;
           $newActivity = self::_importAPI('activity', 'create', $activity);
           //bbscript_log("trace", 'importCases newActivity', $newActivity);
+
+          //handle attachments
+          if ( isset($activity['attachments']) ) {
+            foreach ( $activity['attachments'] as $attID ) {
+              self::_importEntityAttachments($newActivity['id'], $attID, 'civicrm_activity');
+            }
+          }
         }
       }
     }
@@ -276,7 +349,6 @@ class CRM_migrateContactsImport {
     //process keywords
     foreach ( $exportData['tags']['keywords'] as $keyID => $keyDetail ) {
       $params = array(
-        'version' => 3,
         'name' => $keyDetail['name'],
         'description' => $keyDetail['desc'],
         'parent_id' => 296, //keywords constant
@@ -297,7 +369,6 @@ class CRM_migrateContactsImport {
       $intPosID = CRM_Core_DAO::singleValueQuery($sql);
       if ( !$intPosID ) {
         $params = array(
-          'version' => 3,
           'name' => $posDetail['name'],
           'description' => $posDetail['desc'],
           'parent_id' => 292, //positions constant
@@ -312,7 +383,6 @@ class CRM_migrateContactsImport {
     //process issue codes
     //begin by constructing base level tag
     $params = array(
-      'version' => 3,
       'name' => "Migrated from: {$exportData['source']['name']} ({$exportData['source']['num']})",
       'description' => 'Tags migrated from other district',
       'parent_id' => 291,
@@ -322,7 +392,6 @@ class CRM_migrateContactsImport {
     //level 1
     foreach ( $exportData['tags']['issuecodes']  as $icID1 => $icD1 ) {
       $params = array(
-        'version' => 3,
         'name' => $icD1['name'],
         'description' => $icD1['desc'],
         'parent_id' => $icParent['id'],
@@ -334,7 +403,6 @@ class CRM_migrateContactsImport {
       if ( isset($icD1['children']) ) {
         foreach ( $icD1['children'] as $icID2 => $icD2 ) {
           $params = array(
-            'version' => 3,
             'name' => $icD2['name'],
             'description' => $icD2['desc'],
             'parent_id' => $icP1['id'],
@@ -346,7 +414,6 @@ class CRM_migrateContactsImport {
           if ( isset($icD2['children']) ) {
             foreach ( $icD2['children'] as $icID3 => $icD3 ) {
               $params = array(
-                'version' => 3,
                 'name' => $icD3['name'],
                 'description' => $icD3['desc'],
                 'parent_id' => $icP2['id'],
@@ -358,7 +425,6 @@ class CRM_migrateContactsImport {
               if ( isset($icD3['children']) ) {
                 foreach ( $icD3['children'] as $icID4 => $icD4 ) {
                   $params = array(
-                    'version' => 3,
                     'name' => $icD4['name'],
                     'description' => $icD4['desc'],
                     'parent_id' => $icP3['id'],
@@ -370,7 +436,6 @@ class CRM_migrateContactsImport {
                   if ( isset($icD4['children']) ) {
                     foreach ( $icD4['children'] as $icID5 => $icD5 ) {
                       $params = array(
-                        'version' => 3,
                         'name' => $icD5['name'],
                         'description' => $icD5['desc'],
                         'parent_id' => $icP4['id'],
@@ -391,7 +456,6 @@ class CRM_migrateContactsImport {
     //construct tag entity records
     foreach ( $exportData['tags']['entities'] as $extID => $extTags ) {
       $params = array(
-        'version' => 3,
         'contact_id' => $extInt[$extID],
       );
       foreach ( $extTags as $tIndex => $tID ) {
@@ -404,7 +468,7 @@ class CRM_migrateContactsImport {
 
   }//importTags
 
-  function importEmployment($exportData, $optDry) {
+  function importEmployment($exportData) {
     global $optDry;
     global $extInt;
 
@@ -412,28 +476,111 @@ class CRM_migrateContactsImport {
       return;
     }
 
+    require_once 'CRM/Contact/BAO/Contact/Utils.php';
+
+    foreach ( $exportData['employment'] as $employerID => $employeeID ) {
+      if ( $optDry ) {
+        bbscript_log("debug", "creating employment relationship between I-{$extInt[$employeeID]} and O-{$extInt[$employerID]}");
+      }
+      else {
+        CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($extInt[$employeeID], $extInt[$employerID]);
+      }
+    }
   }//importEmployment
 
-  function importDistrictInfo($exportData, $optDry) {
-    global $exportData;
-    global $importDryrun;
+  function importDistrictInfo($exportData) {
+    global $optDry;
+    global $extInt;
 
+    if ( !isset($exportData['districtinfo']) ) {
+      return;
+    }
+
+    //build array referencing address name field (external address ID value)
+    $addrExtInt = array();
+    $sql = "
+      SELECT id, name
+      FROM civicrm_address
+      WHERE name IS NOT NULL
+    ";
+    $ids = CRM_Core_DAO::executeQuery($sql);
+    while ( $ids->fetch() ) {
+      $addrExtInt[$ids->name] = $ids->id;
+    }
+
+    //get fields and construct array
+    $distFields = array();
+    $distFieldsDetail = self::getCustomFields('District_Information');
+    foreach ( $distFieldsDetail as $field ) {
+      $distFields[$field['column_name']] = $field['id'];
+    }
+
+    foreach ( $exportData['districtinfo'] as $addrExtID => $details ) {
+      $details['entity_id'] = $addrExtInt[$addrExtID];
+
+      $distInfo = self::_importAPI('District_Information', 'create', $details);
+      //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
+    }
   }//importDistrictInfo
 
   /*
    * wrapper for civicrm_api
-   * allows us to determine action based on dryrun status
+   * allows us to determine action based on dryrun status and perform other formatting actions
    */
   function _importAPI($entity, $action, $params) {
     global $optDry;
+    global $customMap;
+
+    //record types which are custom groups
+    $customGroups = array(
+      'Additional_Constituent_Information', 'Attachments',
+      'Contact_Details', 'Organization_Constituent_Information',
+      'District_Information'
+    );
+    $dateFields = array(
+      'last_import_57', 'boe_date_of_registration_24'
+    );
+
+    //prepare custom fields
+    if ( in_array($entity, $customGroups) ) {
+      //get fields and construct array if not already constructed
+      if ( !isset($customMap[$entity]) || empty($customMap[$entity]) ) {
+        $customDetails = self::getCustomFields($entity);
+        foreach ( $customDetails as $field ) {
+          $customMap[$entity][$field['column_name']] = 'custom_'.$field['id'];
+        }
+      }
+      //bbscript_log("trace", '_importAPI $customMap', $customMap);
+
+      //cycle through custom fields and convert column name to custom_## format
+      foreach ( $params as $col => $v ) {
+        //if a date type column, strip punctuation
+        if ( in_array($col, $dateFields) ) {
+          $v = str_replace(array('-', ':', ' '), '', $v);
+        }
+        if ( array_key_exists($col, $customMap[$entity]) ) {
+          $params[$customMap[$entity][$col]] = $v;
+          unset($params[$col]);
+        }
+      }
+
+      //change entity value for api
+      $entity = 'custom_value';
+    }
 
     if ( $optDry ) {
       bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
     else {
-      //prepend api version
+      //add api version
       $params['version'] = 3;
+      //$params['debug'] = 1;
       $api = civicrm_api($entity, $action, $params);
+
+      if ( $api['is_error'] ) {
+        bbscript_log("debug", "_importAPI error", $api);
+        bbscript_log("debug", "_importAPI entity: {$entity} // action: {$action}", $params);
+      }
       return $api;
     }
   }//_importAPI
@@ -525,21 +672,75 @@ class CRM_migrateContactsImport {
   }//_contactLookup
 
   /*
-   * helper function to build entity_file record and pass back to originating function
+   * helper function to build entity_file record
    * called during contact, activities, and case import
+   * we don't have a nice API or BAO function to handle this, so using straight SQL
+   * return attachment ID (file_id)
    */
-  function _importAttachments() {
+  function _importEntityAttachments($entityID, $attID, $entityType = 'civicrm_activity') {
     global $optDry;
+    global $attachmentIDs;
 
+    //when cycling through custom field set, may be handed an array element with empty value
+    if ( empty($entityID) || empty($attID) ) {
+      return;
+    }
+
+    if ( $optDry ) {
+      bbscript_log("debug", "_importEntityAttachments insert file for {$entityType}");
+      return;
+    }
+
+    //first check for existence of record
+    $sql = "
+      SELECT id
+      FROM civicrm_entity_file
+      WHERE entity_table = '{$entityType}'
+        AND entity_id = {$entityID}
+        AND file_id = {$attachmentIDs[$attID]}
+    ";
+    //bbscript_log("trace", "_importEntityAttachments attID", $attID);
+    //bbscript_log("trace", "_importEntityAttachments search", $sql);
+    if ( CRM_Core_DAO::singleValueQuery($sql) ) {
+      return;
+    }
+
+    //record doesn't exist, proceed with insert
+    $sql = "
+      INSERT INTO civicrm_entity_file
+      ( entity_table, entity_id, file_id )
+      VALUES
+      ( '{$entityType}', {$entityID}, {$attachmentIDs[$attID]} )
+    ";
+    //bbscript_log("trace", "_importEntityAttachments insert", $sql);
+    CRM_Core_DAO::executeQuery($sql);
+
+    //return file ID
+    return $attachmentIDs[$attID];
   }//_importAttachments
 
   /*
    * helper function to copy files from the source directory to destination
    * we copy instead of move because we are timid...
    */
-  function _moveAttachment() {
+  function _copyAttachment($filePath, $sourceFile, $destFile) {
     global $optDry;
 
+    //make sure destination directory exists
+    if ( !file_exists($filePath) ) {
+      mkdir( $filePath, 0775, TRUE );
+    }
+
+    //now copy file and fix owner:group
+    if ( $optDry ) {
+      bbscript_log("debug", "_copyAttachment: {$sourceFile}");
+    }
+    else {
+      copy($sourceFile, $destFile);
+      chown($destFile, 'apache');
+      chgrp($destFile, 'bluebird');
+
+    }
   }//_moveAttachment
 
   /*
