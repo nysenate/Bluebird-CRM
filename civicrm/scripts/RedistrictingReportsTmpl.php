@@ -140,6 +140,7 @@ Summary of contacts that are outside district {$senate_district}\n
 	<?php if ($mode == "summary"): ?>
 
 		<h3>Summary Page | <?= $senator_name ?></h3>
+		<h5>Date Created | <?= date("F j, Y, g:i a") ?></h5>
 		<hr/>
 		<p>As per the 2012 Redistricting effort, the district assignments for contacts stored in Bluebird have been updated to reflect the most recent district boundaries. </p>
 		<p>This document is intended to indicate which contacts are outside District <?= $senate_district ?> after the redistricting process.</p>
@@ -187,6 +188,7 @@ Summary of contacts that are outside district {$senate_district}\n
 	<?php elseif ($mode == "detail"): ?>
 
 		<h3>Details Page | <?= $senator_name ?></h3>
+		<h5>Date Created | <?= date("F j, Y, g:i a") ?></h5>
 		<hr/>
 
 		<p id='detail_info_text'>The tables below list the contacts that will be in the districts specified.</p>

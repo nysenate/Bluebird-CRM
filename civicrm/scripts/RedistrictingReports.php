@@ -88,11 +88,9 @@ if ($opt['clear_cache'] != FALSE ){
 	die();
 }
 
-$district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
-
 // Process out of district summary report
 if ( $opt['mode'] == 'summary' ){
-
+	$district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
 	$district_counts = process_summary_data($district_contact_data, $senate_district, $opt['threshold']);
 	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts);
 	print $summary_output;
@@ -100,7 +98,7 @@ if ( $opt['mode'] == 'summary' ){
 
 // Process out of district detailed report
 if ( $opt['mode'] == 'detail' ){
-
+	$district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
 	$contacts_per_dist = process_detail_data($district_contact_data, $senate_district, $opt['threshold']);
 	$detail_output = get_detail_output($opt['format'], $senate_district, $senator_name, $contacts_per_dist);
 	print $detail_output;
@@ -262,22 +260,46 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     	bbscript_log("debug", "Fetching all contacts not in District $filter_district...");
     }
 
+    // Repeated conditions! 
+    $valid_source_activity = "NULLIF(source_activity.is_current_revision, 0), NULLIF(source_activity.is_deleted, 1), NULLIF(source_activity.is_test, 1)";
+    $valid_target_activity = "NULLIF(activity.is_current_revision, 0), NULLIF(activity.is_deleted, 1), NULLIF(activity.is_test, 1)";
+
 	$contact_query = "
 		SELECT * FROM (
 			SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
-			                 contact.birth_date, contact.gender_id,
-			                 contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
-			                 a.street_address, a.city, a.postal_code,
-			                 email.email, email.is_primary, district.ny_senate_district_47 AS district,
-	                         COUNT(DISTINCT case_contact.id) AS case_count,
-	                         COUNT(DISTINCT activity.id) AS activity_count,
-	                         COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
+			                contact.birth_date, contact.gender_id,
+			                contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
+			                a.street_address, a.city, a.postal_code,
+			                email.email, email.is_primary, district.ny_senate_district_47 AS district,
+	                         
+	                        COUNT(DISTINCT case_contact.id, NULLIF(c_case.is_deleted, 1)) AS case_count,
+	                         
+	                        GREATEST(
+	                        	COUNT(DISTINCT source_activity.id, {$valid_source_activity}) 
+	                        	- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity})
+	                            + COUNT(DISTINCT activity_target.id, {$valid_target_activity}) 
+	                         	- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity})
+	                        ,0) AS activity_count,
+
+	                        COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
+
 			FROM `civicrm_contact` AS contact
 			JOIN `civicrm_address` a ON contact.id = a.contact_id
 			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id
 			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id
+	   		
+	   		# Counts of cases
 	        LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
-	        LEFT JOIN `civicrm_activity_target` activity ON contact.id = activity.target_contact_id
+	        LEFT JOIN `civicrm_case` c_case ON c_case.id = case_contact.case_id
+	        
+	        # Counts of activities
+	        LEFT JOIN `civicrm_activity` source_activity ON source_activity.source_contact_id = contact.id
+	        LEFT JOIN `civicrm_case_activity` source_case_activity ON source_activity.id = source_case_activity.activity_id 
+	        LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
+	        LEFT JOIN `civicrm_activity` activity ON activity.id = activity_target.activity_id
+	        LEFT JOIN `civicrm_case_activity` case_activity ON activity_target.activity_id = case_activity.activity_id
+
+	   		# Counts of groups
 	        LEFT JOIN `civicrm_group_contact` group_contact ON contact.id = group_contact.contact_id
 
 			WHERE district.`ny_senate_district_47` != {$filter_district}
