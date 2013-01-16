@@ -152,18 +152,31 @@ Summary of contacts that are outside district {$senate_district}\n
 		unset($district_counts["0"]);
 		ksort($district_counts);
 
+		// Compute the totals
+
 		$total_contacts = 0;
+		$total_individuals = 0;
+		$total_organizations = 0;
+		$total_households = 0;
+
 		foreach( $district_counts as $dist => $dist_cnts ){
+			$total_individuals += get($dist_cnts['individual'], 'total', '0');
+			$total_households += get($dist_cnts['household'], 'total', '0');
+			$total_organizations += get($dist_cnts['organization'], 'total', '0');
 			$total_contacts += $dist_cnts['all']['total'];
 		}
 		?>
 
 		<p>Number of out of district contacts: <?= number_format($total_contacts) ?></p>
+		<p>Individuals: <?= number_format($total_individuals) ?>&nbsp; | &nbsp; 
+		Households: <?= number_format($total_households) ?>&nbsp; | &nbsp;
+		Organizations: <?= number_format($total_organizations) ?></p>
 
 		<table class='summary'>
 			<thead>
 			<tr>
 				<th>District</th>
+				<th>Senator</th>
 				<th>Individuals</th>
 				<th>Households</th>
 				<th>Organizations</th>
@@ -176,14 +189,15 @@ Summary of contacts that are outside district {$senate_district}\n
 			foreach( $district_counts as $dist => $dist_cnts ): ?>
 				<tr>
 					<td class='border-right'><?= $dist ?></td>
+					<td class='border-right'><a target="_blank" href="http://www.nysenate.gov/district/<?= str_pad($dist, 2, '0', STR_PAD_LEFT)?>"><?= get_senator_name($dist) ?></a></td>
 					<td class='border-right'><?= get($dist_cnts['individual'], 'total', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['household'], 'total', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['organization'], 'total', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['all'], 'total', '0') ?></td>
 				</tr>
-			<?php endforeach; ?>
+			<?php endforeach; ?>			
 		</tbody>
-		</table>
+		</table>						
 
 	<?php elseif ($mode == "detail"): ?>
 
@@ -217,7 +231,8 @@ Summary of contacts that are outside district {$senate_district}\n
 			<div id='dist_<?= $dist ?>' class='district-view' >
 
 	  <?php foreach( $contact_types as $type => $contact_array ): ?>
-				<h3>District <?= "$dist : " . ucfirst($type) . "s (" . count($contact_array) . ")"  ?></h3>
+				<h4 class='contrast'>District <?= "$dist | " . get_senator_name($dist) . " | " . ucfirst($type) . "s (" . count($contact_array) . ")"  ?></h4>
+				<hr/>
 				<table id="dist_<?= $dist . "_" . $type ?>" class='detail'>
 					<thead>
 						<tr>
@@ -264,7 +279,7 @@ Summary of contacts that are outside district {$senate_district}\n
 				<br/>
 				<br/>
 			<?php endforeach; ?>
-			<hr/>
+			
 		<?php endforeach; ?>
 	<?php endif; ?>
 	</div>
