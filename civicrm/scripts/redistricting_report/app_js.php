@@ -25,7 +25,8 @@ function init_summary_page(){
     $('table.summary').dataTable({
 		"bPaginate": false,
 		"bFilter": false,
-		"bInfo": false
+		"bInfo": false,
+        "aaSorting": [[ 5, "desc" ]] 
 	});
 
     var chart = new Highcharts.Chart({

@@ -23,6 +23,13 @@ h3, h4, h5 {
 	color:#435263;
 }
 
+h4.contrast {
+	margin-bottom: 0px;
+	background: #0495CC;
+	padding: 5px;
+	color: white;
+}
+
 p, label, a {
 	font-size:14px;
 }
