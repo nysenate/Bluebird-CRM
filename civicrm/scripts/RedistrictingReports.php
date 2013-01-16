@@ -79,69 +79,70 @@ $district_counts = array();
 // Store detailed contact information per district
 $contacts_per_dist = array();
 
+// Senator names and their url mapping
 $senator_names = array(
-	"1" => "LaValle, Kenneth P.",
-	"2" => "Flanagan, John J.",
-	"3" => "Zeldin, Lee M.",
-	"4" => "Boyle, Philip M.",
-	"5" => "Marcellino, Carl L",
-	"6" => "Hannon, Kemp",
-	"7" => "Martins, Jack M.",
-	"8" => "Fuschillo, Charles J. Jr.",
-	"9" => "Skelos, Dean G.",
-	"10" => "Sanders, James",
-	"11" => "Avella, Tony",
-	"12" => "Gianaris, Michael",
-	"13" => "Peralta, Jose",
-	"14" => "Smith, Malcolm A.",
-	"15" => "Addabbo, Joseph P., Jr",
-	"16" => "Stavisky, Toby Ann",
-	"17" => "Felder, Simcha",
-	"18" => "Dilan, Martin Malave",
-	"19" => "Sampson, John L.",
-	"20" => "Adams, Eric",
-	"21" => "Parker, Kevin S.",
-	"22" => "Golden, Martin J.",
-	"23" => "Savino, Diane J.",
-	"24" => "Lanza, Andrew J",
-	"25" => "Montgomery, Velmanette",
-	"26" => "Squadron, Daniel L",
-	"27" => "Hoylman, Brad",
-	"28" => "Krueger, Liz",
-	"29" => "Serrano, Jose M.",
-	"30" => "Perkins, Bill",
-	"31" => "Espaillat, Adriano",
-	"32" => "Diaz, Ruben",
-	"33" => "Rivera, Gustavo",
-	"34" => "Klein, Jeffrey D.",
-	"35" => "Stewart-Cousins, Andrea",
-	"36" => "Hassell-Thompson, Ruth",
-	"37" => "Latimer, George S.",
-	"38" => "Carlucci, David",
-	"39" => "Larkin, William J., Jr.",
-	"40" => "Ball, Greg",
-	"41" => "Gipson, Terry",
-	"42" => "Bonacic, John J.",
-	"43" => "Marchione, Kathleen A.",
-	"44" => "Breslin, Neil D.",
-	"45" => "Little, Elizabeth",
-	"47" => "Griffo, Joseph A.",
-	"48" => "Ritchie, Patty",
-	"49" => "Farley, Hugh T.",
-	"50" => "DeFrancisco, John A.",
-	"51" => "Seward, James L.",
-	"52" => "Libous, Tom",
-	"53" => "Valesky, David J.",
-	"54" => "Nozzolio, Michael F.",
-	"55" => "O'Brien, Ted",
-	"56" => "Robach, Joseph E.",
-	"57" => "Young, Catharine",
-	"58" => "O'Mara, Thomas F.",
-	"59" => "Gallivan, Patrick M.",
-	"60" => "Grisanti, Mark",
-	"61" => "Ranzenhofer, Michael H.",
-	"62" => "Maziarz, George D.",
-	"63" => "Kennedy, Timothy"
+	'1' => array('LaValle, Kenneth P.', 'kenneth-p-lavalle'),
+	'2' => array('Flanagan, John J.', 'john-j-flanagan'),
+	'3' => array('Zeldin, Lee M.', 'lee-m-zeldin'),
+	'4' => array('Boyle, Philip M.', 'philip-m-boyle'),
+	'5' => array('Marcellino, Carl L', 'carl-l-marcellino'),
+	'6' => array('Hannon, Kemp', 'kemp-hannon'),
+	'7' => array('Martins, Jack M.', 'jack-m-martins'),
+	'8' => array('Fuschillo, Charles J. Jr', 'charles-j-fuschillo-jr'),
+	'9' => array('Skelos, Dean G.', 'dean-g-skelos'),
+	'10' => array('Sanders, James', 'james-sanders-jr'),
+	'11' => array('Avella, Tony', 'tony-avella'),
+	'12' => array('Gianaris, Michael', 'michael-gianaris'),
+	'13' => array('Peralta, Jose', 'jose-peralta'),
+	'14' => array('Smith, Malcolm A.', 'malcolm-smith'),
+	'15' => array('Addabbo, Joseph P., Jr', 'joseph-p-addabbo-jr'),
+	'16' => array('Stavisky, Toby Ann', 'toby-ann-stavisky'),
+	'17' => array('Felder, Simcha', 'simcha-felder'),
+	'18' => array('Dilan, Martin Malave', 'martin-malave-dilan'),
+	'19' => array('Sampson, John L.', 'john-l-sampson'),
+	'20' => array('Adams, Eric', 'eric-adams'),
+	'21' => array('Parker, Kevin S.', 'kevin-s-parker'),
+	'22' => array('Golden, Martin J.', 'martin-j-golden'),
+	'23' => array('Savino, Diane J.', 'diane-j-savino'),
+	'24' => array('Lanza, Andrew J', 'andrew-j-lanza'),
+	'25' => array('Montgomery, Velmanette', 'velmanette-montgomery'),
+	'26' => array('Squadron, Daniel L', 'daniel-l-squadron'),
+	'27' => array('Hoylman, Brad', 'brad-hoylman'),
+	'28' => array('Krueger, Liz', 'liz-krueger'),
+	'29' => array('Serrano, Jose M.', 'jose-m-serrano'),
+	'30' => array('Perkins, Bill', 'bill-perkins'),
+	'31' => array('Espaillat, Adriano', 'adriano-espaillat'),
+	'32' => array('Diaz, Ruben', 'ruben-diaz'),
+	'33' => array('Rivera, Gustavo', 'gustavo-rivera'),
+	'34' => array('Klein, Jeffrey D.', 'jeffrey-d-klein'),
+	'35' => array('Stewart-Cousins, Andrea', 'andrea-stewart-cousins'),
+	'36' => array('Hassell-Thompson, Ruth', 'ruth-hassell-thompson'),
+	'37' => array('Latimer, George S.', 'george-s-latimer'),
+	'38' => array('Carlucci, David', 'david-carlucci'),
+	'39' => array('Larkin, William J., Jr', 'william-j-larkin-jr'),
+	'40' => array('Ball, Greg', 'greg-ball'),
+	'41' => array('Gipson, Terry', 'terry-gipson'),
+	'42' => array('Bonacic, John J.', 'john-j-bonacic'),
+	'43' => array('Marchione, Kathleen A.', 'kathleen-a-marchione'),
+	'44' => array('Breslin, Neil D.', 'neil-d-breslin'),
+	'45' => array('Little, Elizabeth', 'elizabeth-little'),
+	'47' => array('Griffo, Joseph A.', 'joseph-griffo'),
+	'48' => array('Ritchie, Patty', 'patty-ritchie'),
+	'49' => array('Farley, Hugh T.', 'hugh-t-farley'),
+	'50' => array('DeFrancisco, John A.', 'john-defrancisco'),
+	'51' => array('Seward, James L.', 'james-l-seward'),
+	'52' => array('Libous, Tom', 'tom-libous'),
+	'53' => array('Valesky, David J.', 'david-j-valesky'),
+	'54' => array('Nozzolio, Michael F.', 'michael-f-nozzolio'),
+	'55' => array('Brien, Ted', 'ted-obrien'),
+	'56' => array('Robach, Joseph E.', 'joseph-e-robach'),
+	'57' => array('Young, Catharine', 'catharine-young'),
+	'58' => array('Mara, Thomas F.', 'thomas-f-omara'),
+	'59' => array('Gallivan, Patrick M.', 'pat-gallivan'),
+	'60' => array('Grisanti, Mark', 'mark-grisanti'),
+	'61' => array('Ranzenhofer, Michael H.', 'michael-h-ranzenhofer'),
+	'62' => array('Maziarz, George D.', 'george-d-maziarz'),
+	'63' => array('Kennedy, Timothy', 'timothy-kennedy')
 );
 
 // ----------------------------------------------------------------------
@@ -558,7 +559,25 @@ function table_exists($db, $table_name){
 }
 
 function get_senator_name($district){
-
 	global $senator_names;
-	return get($senator_names, $district, "Undecided");
+	
+	if (isset($senator_names[$district][0])){
+		return $senator_names[$district][0];
+	}
+	else {
+		return "Undecided";
+	}
 }
+
+function get_senator_url($district){
+	global $senator_names;
+	
+	if (isset($senator_names[$district][1])){
+		return $senator_names[$district][1];
+	}
+	else {
+		return "";
+	}
+}
+
+
