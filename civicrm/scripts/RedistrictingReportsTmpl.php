@@ -189,7 +189,7 @@ Summary of contacts that are outside district {$senate_district}\n
 			foreach( $district_counts as $dist => $dist_cnts ): ?>
 				<tr>
 					<td class='border-right'><?= $dist ?></td>
-					<td class='border-right'><a target="_blank" href="http://www.nysenate.gov/district/<?= str_pad($dist, 2, '0', STR_PAD_LEFT)?>"><?= get_senator_name($dist) ?></a></td>
+					<td class='border-right'><a target="_blank" href="http://www.nysenate.gov/senator/<?= get_senator_url($dist) ?>"><?= get_senator_name($dist) ?></a></td>
 					<td class='border-right'><?= get($dist_cnts['individual'], 'total', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['household'], 'total', '0') ?></td>
 					<td class='border-right'><?= get($dist_cnts['organization'], 'total', '0') ?></td>
