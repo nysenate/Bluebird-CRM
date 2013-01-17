@@ -178,7 +178,7 @@ var callTree =  {
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
 		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
-		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag">'+tID.name+'</div>';
+		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
 		displayObj.tLvl++; //start the tree at lv-1
@@ -211,7 +211,7 @@ var callTree =  {
 	},
 	writeTagLabel: function(cID, displayObj){
 		var tagLabel = addTagLabel(cID.id);
-		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag">'+cID.name+'</div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag"><span class="name">'+cID.name+'</span></div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
 		//'/*+isItemChildless(cID.children.length)+*/
 	},
 	writeTagContainer: function(tID,displayObj){
@@ -395,7 +395,8 @@ var BBTreeTag = {
 	},
 	checkRemoveAdd: function(tagLabel) { //adds and removes the checkbox data
 		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
-		var n = cj(treeLoc + ' #'+ tagLabel).hasClass('checked');
+		var n = cj(treeLoc + ' dt#'+ tagLabel).hasClass('checked');
+		console.log(n);
 		if(n == false)
 		{	
 			cj.ajax({
@@ -410,10 +411,7 @@ var BBTreeTag = {
 				success: function(data, status, XMLHttpRequest) {
 					//console.log('success of cRA ajax: ' + returnTime());
 					if(data.code != 1) {alert('fails');}
-					cj('.BBtree.tagging dt#'+tagLabel).addClass('checked');
-					var temp = cj('.BBtree.tagging dt#'+tagLabel+' .fCB').attr('style');
-					temp += '; display:inline';
-					cj('.BBtree.tagging dt#'+tagLabel+' .fCB').attr('style', temp);
+					cj(treeLoc+' dt#'+tagLabel).addClass('checked');
 					BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
 					var tabCounter = cj('li#tab_tag em').html();
 					var tagLiteralName = cj('.BBtree.tagging dt#'+ tagLabel + ' .tag .name').html();
@@ -437,6 +435,7 @@ var BBTreeTag = {
 			});
 				
 		} else {
+			console.log('ohsotruee');
 			cj.ajax({
 				url: '/civicrm/ajax/entity_tag/delete',
 				data: {
@@ -448,20 +447,23 @@ var BBTreeTag = {
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
 					if(data.code != 1) {alert('fails');}
+					console.log('ohsotruee2');
+					console.log(cj(treeLoc+' dt#'+tagLabel));
+					cj(treeLoc+' dt#'+tagLabel).removeClass('checked');
 					BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
-					var tabCounter = cj('li#tab_tag em').html();
-					var tagLiteralName = cj('.BBtree.tagging dt#'+ tagLabel + ' .name').html();
-					var headList = cj('.contactTagsList.help span').html();
-					var headSplit = headList.split(" • ");
-					var appendAfter = headSplit.length;
-					for(var i=0; i<headSplit.length;i++ )
-					{ 
-					if(headSplit[i]==tagLiteralName)
-						headSplit.splice(i,1); 
-					} 
-					headList = headSplit.join(" • ");
-					cj('.contactTagsList.help span').html(headList);
-					cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
+					// var tabCounter = cj('li#tab_tag em').html();
+					// var tagLiteralName = cj(treeLoc + ' dt#'+ tagLabel + ' .name').html();
+					// var headList = cj('.contactTagsList.help span').html();
+					// var headSplit = headList.split(" • ");
+					// var appendAfter = headSplit.length;
+					// for(var i=0; i<headSplit.length;i++ )
+					// { 
+					// if(headSplit[i]==tagLiteralName)
+					// 	headSplit.splice(i,1); 
+					// } 
+					// headList = headSplit.join(" • ");
+					// cj('.contactTagsList.help span').html(headList);
+					// cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
 				}
 			});
 		}
@@ -469,13 +471,12 @@ var BBTreeTag = {
 	tagInheritanceFlag: function(tagLabel, toggle) //adds or removes inheritance toggle: add/remove/clear
 	{
 		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
-		if(toggle == 'add') //adds subchecked in one MONDO jq thingy.
+		if(toggle == 'add') //adds subchecked in one big jq string
 		{ 
-			cj(treeLoc + ' dt#' + tagLabel).parents('dl').not('.lv-0').not('.' + tagLabel).children('dt').addClass('subChecked');
+			cj(treeLoc + ' dt#' + tagLabel).parents('dl').not('.lv-0').prev('dt').addClass('subChecked');
 		}
 		if(toggle == 'remove') //remove subchecked 
 		{ 
-			cj(treeLoc + ' dt#' + tagLabel).removeClass('checked');
 			var getParents = cj(treeLoc + ' dt#' + tagLabel).parents('dl').not('.lv-0').children('dt');
 			cj.each(getParents, function(i, parent){
 				console.log(parent);
