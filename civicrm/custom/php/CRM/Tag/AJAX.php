@@ -45,15 +45,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         return $root;
     }
 
-    static function _build_node($source, $entity_tags, $entity_counts) {
+    static function _build_node($source, $entity_counts) {
         $node = array();
         foreach(self::$TAG_FIELDS as $field){
             $node[$field] = $source->$field;
         }
-
-        //A node is checked if there is a applicable entity tag for it.
-        if($entity_tags !== null)
-            $node['is_checked'] = in_array($source->id, $entity_tags);
 
         if($entity_counts !== null)
             $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 0);
@@ -114,22 +110,22 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // If they pass in an entity_id we can also get information on which tags apply
         // to the specified entity and include that along with the tree
         $et_start = microtime(TRUE);
-        if(array_key_exists('entity_id', $_GET)) {
-            $entity_id = $_GET['entity_id'];
+        // if(array_key_exists('entity_id', $_GET)) {
+        //     $entity_id = $_GET['entity_id'];
 
-            //Get the tags for the specifed entity
-            $params = array('version'=>3,
-                'entity_type'=>$entity_type,
-                'entity_id'=>$entity_id);
-            $result = civicrm_api('entity_tag', 'get', $params);
+        //     //Get the tags for the specifed entity
+        //     $params = array('version'=>3,
+        //         'entity_type'=>$entity_type,
+        //         'entity_id'=>$entity_id);
+        //     $result = civicrm_api('entity_tag', 'get', $params);
 
-            $entity_tags = array();
-            foreach($result['values'] as $entity_tag)
-                $entity_tags[] = $entity_tag['tag_id'];
+        //     $entity_tags = array();
+        //     foreach($result['values'] as $entity_tag)
+        //         $entity_tags[] = $entity_tag['tag_id'];
 
-        } else {
-            $entity_tags = null;
-        }
+        // } else {
+        //     $entity_tags = null;
+        // }
         $et_time = microtime(TRUE)-$et_start;
 
         // We need to build a list of tags ordered by hierarchy and sorted by
@@ -153,9 +149,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // to building the root nodes by moving tags from the nodes bucket.
         while($tags->fetch()) {
             if (!$tags->parent_id)
-                $roots[] = self::_build_node($tags, $entity_tags, $entity_counts);
+                $roots[] = self::_build_node($tags, $entity_counts);
             else
-                $nodes[] = self::_build_node($tags, $entity_tags ,$entity_counts);
+                $nodes[] = self::_build_node($tags, $entity_counts);
         }
 
         // Recursively build the tree from each "root" using the "nodes"
@@ -167,6 +163,30 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $bt_time = microtime(TRUE)-$bt_start;
 
         echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start),'ec_time'=>$ec_time,'et_time'=>$et_time,'bt_time'=>$bt_time));
+        CRM_Utils_System::civiExit();
+    }
+    static function get_entity_tag(){
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
+        if(array_key_exists('entity_id', $_GET)) {
+            $entity_id = $_GET['entity_id'];
+
+            //Get the tags for the specifed entity
+            $params = array('version'=>3,
+                'entity_type'=>$entity_type,
+                'entity_id'=>$entity_id);
+            $result = civicrm_api('entity_tag', 'get', $params);
+
+            $entity_tags = array();
+            foreach($result['values'] as $entity_tag)
+                $entity_tags[] = $entity_tag['tag_id'];
+        } else {
+            $entity_tags = null;
+        }
+        echo json_encode(array("code" => self::SUCCESS, "message" => $entity_tags));
         CRM_Utils_System::civiExit();
     }
 
