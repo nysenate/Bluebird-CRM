@@ -72,7 +72,7 @@ class CRM_migrateContactsImport {
     $optDry = $optlist['dryrun'];
 
     //set import folder based on environment
-    $fileDir = '/data/importData/migrate_'.$bbcfg_dest['install_class'];
+    $fileDir = '/data/redistricting/bluebird_'.$bbcfg_dest['install_class'].'/migrate';
     if ( !file_exists($fileDir) ) {
       mkdir( $fileDir, 0775, TRUE );
     }

@@ -112,7 +112,7 @@ class CRM_migrateContacts {
     $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts';
 
     //set import folder based on environment
-    $fileDir = '/data/importData/migrate_'.$bbcfg_source['install_class'];
+    $fileDir = '/data/redistricting/bluebird_'.$bbcfg_source['install_class'].'/migrate';
     if ( !file_exists($fileDir) ) {
       mkdir( $fileDir, 0775, TRUE );
     }
@@ -269,8 +269,21 @@ class CRM_migrateContacts {
     ";
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    //TODO need to limit by Ash's contact list report
+    //retrieve contacts from redistricting table
     $sql = "
+      INSERT INTO $tbl
+      SELECT rrcc.contact_id,
+        CONCAT('SD{$source['num']}_BB', rrcc.contact_id, '_EXT', c.external_identifier) external_id
+      FROM redist_report_contact_cache rrcc
+      JOIN civicrm_contact c
+        ON rrcc.contact_id = c.id
+        AND c.is_deleted = 0
+      WHERE rrcc.district = {$dest['num']}
+      GROUP BY rrcc.contact_id
+    ";
+
+    //original query to pull contacts
+    /*$sql = "
       INSERT INTO $tbl
       SELECT a.contact_id, CONCAT('SD{$source['num']}_BB', a.contact_id, '_EXT', c.external_identifier) external_id
       FROM civicrm_address a
@@ -282,12 +295,30 @@ class CRM_migrateContacts {
         AND c.is_deleted = 0
       WHERE a.location_type_id = ".LOC_TYPE_BOE."
       GROUP BY a.contact_id
-    ";
+    ";*/
     //bbscript_log("trace", "buildContactTable sql insertion", $sql);
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //also retrieve current employer contacts and insert in the table
     $sql = "
+      INSERT INTO $tbl
+      SELECT c.employer_id,
+        CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT', cce.external_identifier) external_id
+      FROM redist_report_contact_cache rrcc
+      JOIN civicrm_contact c
+        ON rrcc.contact_id = c.id
+        AND c.is_deleted = 0
+        AND c.employer_id IS NOT NULL
+        AND rrcc.contact_type = 'Individual'
+      JOIN civicrm_contact cce
+        ON c.employer_id = cce.id
+        AND cce.is_deleted = 0
+      WHERE rrcc.district = {$dest['num']}
+      GROUP BY rrcc.contact_id
+    ";
+
+    //original query to pull current employers
+    /*$sql = "
       INSERT INTO $tbl
       SELECT c.employer_id, CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT', cce.external_identifier) external_id
       FROM civicrm_address a
@@ -303,7 +334,8 @@ class CRM_migrateContacts {
         AND cce.is_deleted = 0
       WHERE a.location_type_id = ".LOC_TYPE_BOE."
       GROUP BY a.contact_id
-    ";
+    ";*/
+
     //bbscript_log("trace", "buildContactTable sql insertion", $sql);
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
