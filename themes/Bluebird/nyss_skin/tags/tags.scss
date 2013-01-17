@@ -94,16 +94,16 @@ $levelClassSlug : "lv";
 			}
 			background-color:#DEDEDE;
 		}
-		&.checked {
+		&.subChecked {
 			background-color: #F1F8EB;
-			border: 1px solid #B0D730;
+			border: 1px dashed #B0D730;
 			&:hover {
 				background-color:#DEDEDE;
 			}
 		}
-		&.subChecked {
+		&.checked {
 			background-color: #F1F8EB;
-			border: 1px dashed #B0D730;
+			border: 1px solid #B0D730;
 			&:hover {
 				background-color:#DEDEDE;
 			}
@@ -156,6 +156,10 @@ $levelClassSlug : "lv";
 			input[type="checkbox"]{
 				margin:0px;
 				top:1px;
+				&.checked
+				{
+					left:-1px;
+				}
 			}
 		}
 	}

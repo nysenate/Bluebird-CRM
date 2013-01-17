@@ -89,15 +89,15 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
       background-color: #DEDEDE; }
       .BBTree dl dt:hover .fCB {
         display: inline; }
-    .BBTree dl dt.checked {
-      background-color: #F1F8EB;
-      border: 1px solid #b0d730; }
-      .BBTree dl dt.checked:hover {
-        background-color: #DEDEDE; }
     .BBTree dl dt.subChecked {
       background-color: #F1F8EB;
       border: 1px dashed #b0d730; }
       .BBTree dl dt.subChecked:hover {
+        background-color: #DEDEDE; }
+    .BBTree dl dt.checked {
+      background-color: #F1F8EB;
+      border: 1px solid #b0d730; }
+      .BBTree dl dt.checked:hover {
         background-color: #DEDEDE; }
   .BBTree dl.lv-0 {
     margin: 0;
@@ -165,6 +165,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
     .BBTree.tagging .fCB input[type="checkbox"] {
       margin: 0px;
       top: 1px; }
+      .BBTree.tagging .fCB input[type="checkbox"].checked {
+        left: -1px; }
   .BBTree.loadingGif {
     background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white; }
     .BBTree.loadingGif .lv-0 {
