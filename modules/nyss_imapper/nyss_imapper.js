@@ -840,7 +840,7 @@ function destroyReSortable(){
 
 function makeListSortable(){
 	cj("#sortable_results").dataTable({
-		"aaSorting": [[ 4, "desc" ]],
+		"aaSorting": [[ 3, "desc" ]],
 	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"iDisplayLength": 50,
 	//	"bStateSave": true,
