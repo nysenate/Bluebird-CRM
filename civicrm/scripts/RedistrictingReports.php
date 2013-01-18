@@ -260,18 +260,7 @@ function process_summary_data($district_contact_data, $threshold = 0) {
 }// get_summary_report_data
 
 function compute_summary_totals($district_counts, $exclude_dist_zero = true) {
-	$total = array(
-			'individual' => 0,
-			'household' => 0,
-			'organization' => 0,
-			'contacts' => 0,
-			'active_emails' => 0,
-			'emails' => 0,
-			'active_cases' => 0,
-			'cases' => 0,
-			'open_activities' => 0,
-			'activities' => 0
-		);
+	$total = array();
 
 	if ($exclude_dist_zero){
 		unset($district_counts["0"]);
