@@ -333,12 +333,16 @@ WHERE option_group_id = @atgroup
 $execSql -i $instance -c "$contract" -q
 
 ## 5652 remove dupe reminder sent activity type
+## 6078 add social media type
 rs="
 SELECT @act:= id FROM civicrm_option_group WHERE name = 'activity_type';
 SELECT @rs1:= value FROM civicrm_option_value WHERE option_group_id = @act AND name = 'Reminder Sent' AND is_reserved = 0;
 SELECT @rs2:= value FROM civicrm_option_value WHERE option_group_id = @act AND name = 'Reminder Sent' AND is_reserved = 1;
 UPDATE civicrm_activity SET activity_type_id = @rs2 WHERE activity_type_id = @rs1;
 UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @act AND value = @rs1;
+SELECT @maxval:= max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @act;
+INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
+  VALUES (@act, 'Social Media', @maxval + 1, 'Social Media', @maxval + 1, 1);
 "
 $execSql -i $instance -c "$rs" -q
 
