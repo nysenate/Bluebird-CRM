@@ -319,11 +319,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
             // Error handling for entity tags is somewhat less informative...
             if($result['is_error'])
-                echo json_encode(array("code"=>self::ERROR, 'message'=>$result['error_message']));
+                $results[] = array("code"=>self::ERROR, 'message'=>$result['error_message']);
             else if($result['removed'])
-                echo json_encode(array("code" => self::SUCCESS, "message"=>"SUCCESS"));
+                $results[] = array("code" => self::SUCCESS, "message"=>"SUCCESS");
             else
-                echo json_encode(array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag [$new_tag_id] not found."));
+                $results[] = array("code" => self::SUCCESS, "message"=>"WARNING: Entity tag [$new_tag_id] not found.");
         }
 
         // Response is a json array of results if an array of ids was passed in.
