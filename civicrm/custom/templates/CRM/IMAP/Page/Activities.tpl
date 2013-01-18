@@ -17,7 +17,7 @@
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
-				<tr><td>Loading Message data</td></tr>
+				<tr><td>Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></td></tr>
 			</tbody>
 		</table>
 		<div class='page_actions'>
