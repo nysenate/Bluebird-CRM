@@ -76,6 +76,9 @@ $district_contact_data = array();
 // Stores the individual, household, and org counts for each district
 $district_counts = array();
 
+// Sum the total counts from district_counts
+$summary_totals = array();
+
 // Store detailed contact information per district
 $contacts_per_dist = array();
 
@@ -157,8 +160,9 @@ if ($opt['clear_cache'] != FALSE ){
 // Process out of district summary report
 if ( $opt['mode'] == 'summary' ){
 	$district_contact_data = get_redist_data($db, true, $senate_district, !$opt['disable_cache']);
-	$district_counts = process_summary_data($district_contact_data, $senate_district, $opt['threshold']);
-	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts);
+	$district_counts = process_summary_data($district_contact_data, $opt['threshold']);
+	$summary_totals = compute_summary_totals($district_counts);
+	$summary_output = get_summary_output($opt['format'], $senate_district, $senator_name, $district_counts, $summary_totals);
 	print $summary_output;
 }
 
@@ -170,26 +174,42 @@ if ( $opt['mode'] == 'detail' ){
 	print $detail_output;
 }
 
+// ----------------------------------------------------------------------
+//  Data Aggregator 													|
+// ----------------------------------------------------------------------
+
 function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $use_cache = true ){
 
 	$district_contact_data = array();
 
+	// Get all value added out of district contacts
 	$res = get_contacts($db, $filter_contacts, $senate_district, $use_cache);
 	while (($row = mysql_fetch_assoc($res)) != null ) {
-
 		$contact_id = $row['contact_id'];
 		$district_contact_data[$contact_id] = $row;
 	}
 	mysql_free_result($res);
 
+	// Append the redistricting note to the contact
 	$res = get_redist_notes($db, $senate_district, $use_cache);
 	while (($row = mysql_fetch_assoc($res)) != null ) {
-
 		$contact_id = $row['contact_id'];
 		if (isset($district_contact_data[$contact_id])){
 			$district_contact_data[$contact_id]['note'] = $row['note'];
 			$district_contact_data[$contact_id]['subject'] = $row['subject'];
 			$district_contact_data[$contact_id]['prior_dist'] = get_former_district($row['note'], "-");
+		}
+	}
+	mysql_free_result($res);
+
+	// Append the email counts to the contact
+	$res = get_email_counts($db);
+	while (($row = mysql_fetch_assoc($res)) != null ) {
+		$contact_id = $row['contact_id'];
+		if (isset($district_contact_data[$contact_id])){
+			$district_contact_data[$contact_id]['email_count'] = $row['email_count'];
+			$district_contact_data[$contact_id]['active_email_count'] = $row['active_email_count'];
+
 		}
 	}
 	mysql_free_result($res);
@@ -202,7 +222,7 @@ function get_redist_data($db, $filter_contacts = true, $senate_district = -1, $u
 // Summary Reports - Provide basic counts for each district 			|
 // ----------------------------------------------------------------------
 
-function process_summary_data($district_contact_data, $senate_district, $threshold = 0) {
+function process_summary_data($district_contact_data, $threshold = 0) {
 
 	$district_counts = array();
 	foreach( $district_contact_data as $contact ){
@@ -210,39 +230,70 @@ function process_summary_data($district_contact_data, $senate_district, $thresho
 		$district = $contact['district'];
 		$contact_id = $contact['contact_id'];
 		$contact_type = strtolower($contact['contact_type']);
-		$note = get($contact, 'note', '');
-
+		
 		// Create an array to store district counts
 		if (!isset($district_counts[$district])){
-			$district_counts[$district] = array(
-				'individual' => array("total"=>0,"changed"=>0),
-				'household' => array("total"=>0,"changed"=>0),
-				'organization' => array("total"=>0,"changed"=>0),
-				'all' => array("total"=>0,"changed"=>0)
-			);
+			$district_counts[$district] = array();
 		}
 
-		$district_counts[$district]['all']['total']++;
-		$district_counts[$district][$contact_type]['total']++;
-
-		// Count the number of contacts that are moving from the instance district
-		if (is_former_district($note, $senate_district)){
-			$district_counts[$district]['all']['changed']++;
-			$district_counts[$district][$contact_type]['changed']++;
-		}
+		$district_counts[$district]['contacts']++;
+		$district_counts[$district][$contact_type]++;
+		$district_counts[$district]['emails'] += $contact['email_count'];
+		$district_counts[$district]['active_emails'] += $contact['active_email_count'];
+		$district_counts[$district]['open_cases'] += $contact['open_case_count'];
+		$district_counts[$district]['assigned_cases'] += $contact['assigned_case_count'];
+		$district_counts[$district]['urgent_cases'] += $contact['urgent_case_count'];
+		$district_counts[$district]['inactive_cases'] += ($contact['case_count'] - $contact['open_case_count'] - $contact['assigned_case_count'] - $contact['urgent_case_count']);
+		$district_counts[$district]['all_cases'] += $contact['case_count'];		
+		$district_counts[$district]['open_activities'] += $contact['open_activity_count'];
+		$district_counts[$district]['activities'] += $contact['activity_count'];
 	}
 
 	// Apply the threshold
-	foreach($district_counts as $dist => $cnts){
-		if ($cnts['all']['total'] < $threshold){
-			unset($district_counts[$dist]);
+	foreach($district_counts as $district => $counts){
+		if ($counts['contacts'] < $threshold){
+			unset($district_counts[$district]);
 		}
 	}
 
 	return $district_counts;
 }// get_summary_report_data
 
-function get_summary_output($format, $senate_district, $senator_name, $district_counts){
+function compute_summary_totals($district_counts, $exclude_dist_zero = true) {
+	$total = array(
+			'individual' => 0,
+			'household' => 0,
+			'organization' => 0,
+			'contacts' => 0,
+			'active_emails' => 0,
+			'emails' => 0,
+			'active_cases' => 0,
+			'cases' => 0,
+			'open_activities' => 0,
+			'activities' => 0
+		);
+
+	if ($exclude_dist_zero){
+		unset($district_counts["0"]);
+	}
+
+	foreach( $district_counts as $district => $counts ){
+		$total['individual'] += get($counts,'individual',0);
+		$total['household'] += get($counts,'household',0);
+		$total['organization'] += get($counts,'organization',0);
+		$total['contacts'] += get($counts,'contacts',0);
+		$total['active_emails'] += get($counts,'active_emails',0);
+		$total['emails'] += get($counts,'emails',0);
+		$total['active_cases'] +=  get($counts,'all_cases',0) - get($counts,'inactive_cases',0);
+		$total['cases'] += get($counts,'all_cases',0);
+		$total['open_activities'] += get($counts,'open_activities',0);
+		$total['activities'] += get($counts,'activities',0);
+	}
+
+	return $total;
+}// compute_summary_totals
+
+function get_summary_output($format, $senate_district, $senator_name, $district_counts, $summary_totals){
 
 	global $site;
 	$title = "Redistricting 2012 Summary";
@@ -305,7 +356,7 @@ function get_detail_output($format, $senate_district, $senator_name, $contacts_p
 	include "RedistrictingReportsTmpl.php";
 	$output = ob_get_clean();
 
-	print $output;
+	return $output;
 }// output_detail_html
 
 // ----------------------------------------------------------------------
@@ -329,6 +380,9 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     // Repeated conditions! 
     $valid_source_activity = "NULLIF(source_activity.is_current_revision, 0), NULLIF(source_activity.is_deleted, 1), NULLIF(source_activity.is_test, 1)";
     $valid_target_activity = "NULLIF(activity.is_current_revision, 0), NULLIF(activity.is_deleted, 1), NULLIF(activity.is_test, 1)";
+    $open_source_activity = "NULLIF(source_activity.status_id = 1 OR source_activity.status_id = 7, 0)";
+    $open_target_activity = "NULLIF(activity.status_id = 1 OR activity.status_id = 7, 0)";
+    $valid_case = "NULLIF(c_case.is_deleted, 1)";
 
 	$contact_query = "
 		SELECT * FROM (
@@ -337,9 +391,14 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			                contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
 			                a.street_address, a.city, a.postal_code,
 			                email.email, email.is_primary, district.ny_senate_district_47 AS district,
-	                         
-	                        COUNT(DISTINCT case_contact.id, NULLIF(c_case.is_deleted, 1)) AS case_count,
-	                         
+
+			                # All case counts and also a breakdown by case status
+	                        COUNT(DISTINCT case_contact.id, {$valid_case}) AS case_count,
+							COUNT(DISTINCT case_contact.id, {$valid_case}, NULLIF(c_case.status_id = 1, 0)) AS open_case_count,
+							COUNT(DISTINCT case_contact.id, {$valid_case}, NULLIF(c_case.status_id = 3, 0)) AS urgent_case_count,
+							COUNT(DISTINCT case_contact.id, {$valid_case}, NULLIF(c_case.status_id = 5, 0)) AS assigned_case_count,
+
+	                        # The activity count does not include case activities
 	                        GREATEST(
 	                        	COUNT(DISTINCT source_activity.id, {$valid_source_activity}) 
 	                        	- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity})
@@ -347,13 +406,21 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 	                         	- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity})
 	                        ,0) AS activity_count,
 
+							# Also count the number of open activities
+	                        GREATEST(
+	                        	COUNT(DISTINCT source_activity.id, {$valid_source_activity}, {$open_source_activity}) 
+	                        	- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity}, {$open_source_activity})
+	                            + COUNT(DISTINCT activity_target.id, {$valid_target_activity}, {$open_target_activity}) 
+	                         	- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity}, {$open_target_activity})
+	                        ,0) AS open_activity_count,
+
 	                        COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
 
 			FROM `civicrm_contact` AS contact
 			JOIN `civicrm_address` a ON contact.id = a.contact_id
 			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id
 			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id
-	   		
+
 	   		# Counts of cases
 	        LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
 	        LEFT JOIN `civicrm_case` c_case ON c_case.id = case_contact.case_id
@@ -372,6 +439,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			AND a.is_primary = 1
 			AND contact.is_deleted = 0
 			AND NOT (contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 ))
+			AND (email.id IS NULL OR email.is_primary = 1)
 			GROUP BY contact_id
 		) AS c
 	";
@@ -382,7 +450,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 		WHERE
 		c.contact_type = 'Individual' AND NOT ( IFNULL(c.source,'') = 'BOE' AND c.is_deceased = 0 )
 		AND (
-		       (c.email IS NOT NULL AND c.is_primary = 1 )
+		       c.email IS NOT NULL
 		       OR case_count > 0
 		       OR activity_count > 0
 
@@ -391,6 +459,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 		         	SELECT note.entity_id
 			       	FROM `civicrm_note` AS note
 			       	WHERE note.entity_table = 'civicrm_contact'
+			       	AND privacy = 0
 			       	AND note.subject NOT LIKE 'OMIS%'
 			       	AND note.subject NOT LIKE 'REDIST2012%'
 		    	)
@@ -428,10 +497,12 @@ function get_redist_notes($db, $filter_district = -1, $use_cache = true){
 	bbscript_log("debug", "Fetching redistricting notes...");
 	$note_query = "
 		SELECT contact.id AS contact_id, address.id AS address_id, ny_senate_district_47 AS district, note.note, note.subject, note.modified_date
+
 		FROM `civicrm_note` note
 		JOIN `civicrm_contact` contact ON note.entity_id = contact.id
 		JOIN `civicrm_address` address ON contact.id = address.contact_id
 		JOIN `civicrm_value_district_information_7` district ON address.id = district.entity_id
+
 		WHERE
 		address.is_primary = 1 AND
 		district.`ny_senate_district_47` != {$filter_district} AND
@@ -456,6 +527,29 @@ function get_redist_notes($db, $filter_district = -1, $use_cache = true){
 	bbscript_log("debug", "Retrieved {$num_rows} notes");
 	return $res;
 }// get_redist_notes
+
+// The summary page displays email counts per district. This includes
+// non-primary email addresses. The following query returns the contact
+// id and the number of email addresses which will be joined to the 
+// main data array. 
+function get_email_counts($db){
+
+	$email_query = "
+		SELECT contact.id AS contact_id, 
+			COUNT(DISTINCT(email.email)) AS email_count,
+			COUNT(DISTINCT email.email, NULLIF(contact.do_not_email, 1),
+				  NULLIF(contact.is_opt_out, 1), NULLIF(email.on_hold = 0, 0)
+				) AS active_email_count
+		FROM `civicrm_contact` AS contact
+		JOIN `civicrm_email` email ON contact.id = email.contact_id
+		GROUP BY contact.id
+	";
+
+	$res = bb_mysql_query($email_query, $db, true);
+	$num_rows = mysql_num_rows($res);
+	bbscript_log("debug", "Retrieved {$num_rows} email records");
+	return $res;
+}// get_email_counts
 
 // ----------------------------------------------------------------------
 // Cache Functions 											    		|
@@ -579,5 +673,3 @@ function get_senator_url($district){
 		return "";
 	}
 }
-
-
