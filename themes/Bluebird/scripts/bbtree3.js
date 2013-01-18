@@ -370,14 +370,19 @@ var BBTreeTag = {
 			},
 			dataType: 'json',
 			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {
+				if(data.code != 1 ) {
 					alert('Error');
 				}
 				else{
 					BBTree.contactTagData['cid_'+pageCID.entity_id] = data.message;
 					BBTreeTag.applyContactTags();
 				}
-			}
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+        		alert(xhr.status);
+        		alert(thrownError);
+        	} 
+
 		});
 	},
 	applyContactTags: function()
