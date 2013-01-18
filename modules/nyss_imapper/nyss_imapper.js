@@ -883,7 +883,7 @@ function buildMessageList() {
 				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 				if( value.from_name != ''){
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
-					messagesHtml += '<span class="label marginL10">'+short_subject(value.from_email,15)+'</span>';
+					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
 					messagesHtml +='</td>';
 				}else {
 					messagesHtml += '<td class="name">N/A</td>';
@@ -942,7 +942,7 @@ function buildActivitiesList() {
 					messagesHtml += '<td class="name">N/A ';
 				}
 
-					messagesHtml += '<span class="label marginL10">'+short_subject(value.fromEmail,14)+'</span>';
+					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 				messagesHtml += '<td class="date">'+value.date +'</td>';

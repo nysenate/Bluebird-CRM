@@ -87,16 +87,16 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #assign_container {padding-left: 100px;}
 #imapper-messages {scrollbar: always;overflow: auto;height: 600px;float: left;}
 .imapper-message-box {background-color: #eeeeee;margin: 2px; height:40px;}
-.imapper-message-box:hover {cursor: pointer;}
+.imapper-message-box:hover {cursor: pointer;background-color: #e8eaeb!important;}
 .imapper-message-box .imapper-select-button {padding-top: 0px;}
 .imapper-contact-box {background-color: #f8f8f8;margin-bottom: 4px;padding: 4px 0;float:left;}
 .imapper-contact-box:hover {cursor: pointer; background-color: #eeeeee}
 .imapper-address-select-box {height: 16px;width: 20px;float: left;padding: 15px 0px;}
 .imapper-address-box {float: left;width: 215px;padding-left: 5px;}
 .clear {clear: both;}
-.label {padding: 2px 4px;border-radius: 3px 3px 3px 3px;}
+.emailbubble {padding: 2px 4px;border-radius: 3px 3px 3px 3px;}
 .marginL10 {margin-left: 10px;}
-.label, .badge {
+.emailbubble, .name .badge {
     background-color: #999999;
     color: #FFFFFF;
     display: inline-block;
