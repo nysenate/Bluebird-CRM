@@ -238,7 +238,7 @@ if ($format == 'text') {
 							<td class='border-right'>
 								<a target="_blank" href="http://www.nysenate.gov/senator/<?= get_senator_url($district) ?>"><?= get_senator_name($district) ?></a>
 							</td>
-							<td class='border-right'><?= get($counts,'active_emails','1') ?></td>
+							<td class='border-right'><?= get($counts,'active_emails','0') ?></td>
 							<td><?= get($counts,'emails','0') ?></td>					
 						</tr>
 					<?php endforeach; ?>			
