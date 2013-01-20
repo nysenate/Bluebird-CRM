@@ -23,15 +23,17 @@ $levelClassSlug : "lv";
 @mixin mergeTag {@include functionIcon($functionIconLink); background-position: -66px 0px;}
 @mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
 @mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
-
 /*to put in bb css, not tagging.css*/
-#crm-container #crm-tagListWrap {
-	clear:both;
-	height:auto;
+#crm-container 
+{
+	#crm-tagListWrap {
+		clear:both;
+		height:auto;
+	}
 }
 
 /*pagestructure*/
-.BBTree {
+#crm-container #BBTreeContainer .BBTree {
 	width:510px;
 	padding:10px;
 	overflow-x:hidden;
@@ -42,7 +44,15 @@ $levelClassSlug : "lv";
 	margin: 0 auto;
 	cursor:default;
 	/* for tag hirarchy structure */
-	dl dt {
+	dt {
+		float: inherit;
+		clear: inherit;
+		width: inherit;
+		text-align: inherit;
+		vertical-align: inherit;
+		padding: 0px;
+		font-size: inherit;
+		white-space: inherit;
 		height: 20px;
 		line-height:20px;
 		.ddControl {

@@ -33,6 +33,7 @@ var BBTree = {
 	},
 	initContainer: function()
 	{
+		console.log('here');
 		callTree.treeSetupPage();
 	},
 	getAjaxData: function(next)
@@ -108,12 +109,18 @@ var callTree =  {
 	    }
 	    cj.extend(true, callTree.defaultSettings, callTree.pulledConfig); //sets the inital settings
 		callTree['currentSettings'] = callTree.defaultSettings; //this is what EVERYTHING is based off of...
+		sortWindow(); //gets current window location
+		console.log(callTree.currentSettings.pageLocation);
 	},
 	treeSetupPage: function(){ 
+		console.log('hereTSP');
 		//overwrites defaults technically can post these to a cookie and rewrite ::TODO::
 		if(cj(callTree.currentSettings.pageSettings.wrapper).length == 0) //needs to append a div right after the function is called
 		{
-			document.write('<div id="BBTreeContainer"></div>'); //container needs to hold the size and shape
+			if(cj('#BBInit').length > 0)
+			{
+				cj('#BBInit').attr('id', callTree.currentSettings.pageSettings.idName);
+			}
 		}
 		//make this a function to build x trees with y attributes, and everyone is hidden but the first
 		callTree.buildBoxes(); //sends # of boxes to buildBoxes
@@ -167,7 +174,7 @@ var callTree =  {
 		displayObj.tLvl = 0;
 		displayObj.treeTop = tID.id;
 		var tagLabel = addTagLabel(tID.id); //writes the identifying tag label
-		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
+		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'">';
 		displayObj.output = '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id;
 		if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.writeSets)>-1) //only writes the 
 		{
@@ -201,7 +208,7 @@ var callTree =  {
 	writeJsonTag: function(tID, displayObj){//in second level & beyond
 		callTree.openChildJsonTag(tID, displayObj);
 		cj.each(tID.children, function(i, cID){
-			callTree.writeTagLabel(cID, displayObj);
+			callTree.writeTagLabel(cID, displayObj, tID.id);
 			if(cID.children.length > 0)
 			{
 				callTree.writeJsonTag(cID, displayObj);
@@ -209,14 +216,18 @@ var callTree =  {
 		});
 		callTree.closeChildJsonTag(tID, displayObj);
 	},
-	writeTagLabel: function(cID, displayObj){
+	writeTagLabel: function(cID, displayObj, parentTag){
+		if(typeof parentTag === 'undefined')
+		{
+			parentTag = callTree.currentSettings.displaySettings.currentTree;
+		}
 		var tagLabel = addTagLabel(cID.id);
-		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag"><span class="name">'+cID.name+'</span></div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'" parent="'+parentTag+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag"><span class="name">'+cID.name+'</span></div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
 		//'/*+isItemChildless(cID.children.length)+*/
 	},
 	writeTagContainer: function(tID,displayObj){
 		var tagLabel = addTagLabel(tID.id);
-		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'" >';
+		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'" >';
 	},
 	openChildJsonTag: function(tID, displayObj){
 		displayObj.tLvl++;
@@ -278,19 +289,19 @@ var callTree =  {
 		cj(treeLoc + ' dt .treeButton').unbind('click');
 		cj(treeLoc + ' dt .treeButton').click(function() {
 			var tagLabel = cj(this).parent().attr('id');
-			var isOpen = cj('dl.'+tagLabel).hasClass('open');
+			var isOpen = cj('dl#'+tagLabel).hasClass('open');
 			switch(isOpen)
 			{
 				case true:
 					cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-					cj(treeLoc + ' dl.'+tagLabel).slideUp('200', function() {
-						cj(treeLoc + ' dl.'+tagLabel).removeClass('open');
+					cj(treeLoc + ' dl#'+tagLabel).slideUp('200', function() {
+						cj(treeLoc + ' dl#'+tagLabel).removeClass('open');
 					});
 				break;
 				case false:
 					cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
-					cj(treeLoc + ' dl.'+tagLabel).slideDown('200', function() {
-						cj(treeLoc + ' dl.'+tagLabel).addClass('open');
+					cj(treeLoc + ' dl#'+tagLabel).slideDown('200', function() {
+						cj(treeLoc + ' dl#'+tagLabel).addClass('open');
 					});
 				break;
 			}
@@ -377,20 +388,15 @@ var BBTreeTag = {
 					BBTree.contactTagData['cid_'+pageCID.entity_id] = data.message;
 					BBTreeTag.applyContactTags();
 				}
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-        		alert(xhr.status);
-        		alert(thrownError);
-        	} 
-
+			}
 		});
 	},
 	applyContactTags: function()
 	{
 		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
 		cj.each(BBTree.contactTagData['cid_'+callTree.currentSettings.callSettings.ajaxSettings.entity_id], function(i, tag){
-			cj(treeLoc + ' #'+addTagLabel(tag)+' .checkbox').attr('checked','true').addClass('checked');
-			cj(treeLoc + ' #'+addTagLabel(tag)).addClass('checked');
+			cj(treeLoc + ' dt#'+addTagLabel(tag)+' .checkbox').attr('checked','true').addClass('checked');
+			cj(treeLoc + ' dt#'+addTagLabel(tag)).addClass('checked');
 		});
 	},
 	removeContactTags: function()
@@ -401,7 +407,6 @@ var BBTreeTag = {
 	checkRemoveAdd: function(tagLabel) { //adds and removes the checkbox data
 		var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
 		var n = cj(treeLoc + ' dt#'+ tagLabel).hasClass('checked');
-		console.log(n);
 		if(n == false)
 		{	
 			cj.ajax({
@@ -416,31 +421,14 @@ var BBTreeTag = {
 				success: function(data, status, XMLHttpRequest) {
 					//console.log('success of cRA ajax: ' + returnTime());
 					if(data.code != 1) {alert('fails');}
-					cj(treeLoc+' dt#'+tagLabel).addClass('checked');
-					BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
-					var tabCounter = cj('li#tab_tag em').html();
-					var tagLiteralName = cj('.BBtree.tagging dt#'+ tagLabel + ' .tag .name').html();
-					var headList = cj('.contactTagsList.help span').html();
-					if(headList)
-					{
-						var headSplit = headList.split(" • ");
-						var appendAfter = headSplit.length;
-						headSplit[appendAfter] = tagLiteralName;
-						headSplit.sort();
-						headList = headSplit.join(" • ");
-						cj('.contactTagsList.help span').html(headList);
+					else {
+						cj(treeLoc+' dt#'+tagLabel).addClass('checked');
+						BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
 					}
-					else
-					{
-						headList = tagLiteralName;
-						cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
-					}
-					cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 				}
 			});
 				
 		} else {
-			console.log('ohsotruee');
 			cj.ajax({
 				url: '/civicrm/ajax/entity_tag/delete',
 				data: {
@@ -452,23 +440,10 @@ var BBTreeTag = {
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
 					if(data.code != 1) {alert('fails');}
-					console.log('ohsotruee2');
-					console.log(cj(treeLoc+' dt#'+tagLabel));
-					cj(treeLoc+' dt#'+tagLabel).removeClass('checked');
-					BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
-					// var tabCounter = cj('li#tab_tag em').html();
-					// var tagLiteralName = cj(treeLoc + ' dt#'+ tagLabel + ' .name').html();
-					// var headList = cj('.contactTagsList.help span').html();
-					// var headSplit = headList.split(" • ");
-					// var appendAfter = headSplit.length;
-					// for(var i=0; i<headSplit.length;i++ )
-					// { 
-					// if(headSplit[i]==tagLiteralName)
-					// 	headSplit.splice(i,1); 
-					// } 
-					// headList = headSplit.join(" • ");
-					// cj('.contactTagsList.help span').html(headList);
-					// cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
+					else{
+						BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
+						updateViewContactPage(tagLabel);
+					}
 				}
 			});
 		}
@@ -482,33 +457,39 @@ var BBTreeTag = {
 		}
 		if(toggle == 'remove') //remove subchecked 
 		{ 
-			var getParents = cj(treeLoc + ' dt#' + tagLabel).parents('dl').not('.lv-0').children('dt');
-			cj.each(getParents, function(i, parent){
-				console.log(parent);
-				console.log(cj(parent).siblings('dt.subChecked'));
-				console.log(cj(parent).siblings().children('dt.checked'));
-				// if(cj(parent).siblings('dt.subChecked').length > 0 || cj(parent).siblings().children('dt.checked').length > 0)
-				// {
-				// 	console.log('hasSubchecked');
-				// 	console.log(parent);
-				// 	return false;
-				// }
-				// else {
-				// 	cj(parent).children('dt.subChecked').removeClass('subChecked').removeClass('checked');
-				// 	console.log('removed');
-				// 	console.log(parent);
-				// }
-
-				/*
-				current level tag needs to be nixed here
-				cj('dt#tagLabel_584').parent('dl').siblings('dt').removeClass('subChecked');
-				
-				*/
+			cj(treeLoc+' dt#'+tagLabel).removeClass('checked');
+			var checkChildren = cj(treeLoc+' dl#'+tagLabel).children('dt.checked').length + cj(treeLoc+' dl#'+tagLabel).children('dt.subChecked').length;
+			if(checkChildren > 0) // if children are checked, don't remove anything above
+			{
+				cj(treeLoc+' dt#'+tagLabel).removeClass('checked').addClass('subChecked');
+				return false;
+			}
+			var checkSiblings = cj(treeLoc+' dt#'+tagLabel).siblings('.checked').length + cj(treeLoc+' dt#'+tagLabel).children('.subChecked').length;
+			if(checkSiblings > 0) // if it has checked siblings, you shouldn't remove anything above
+			{
+				cj(treeLoc+' dt#'+tagLabel).removeClass('checked').removeClass('subChecked');
+				return false;
+			}
+			var getParents = cj(treeLoc + ' dt#' + tagLabel).parents('dl').not('.lv-0');
+			cj.each(getParents, function(i, parents) // if everything below and aside is ok, go up!
+			{
+				var parentID = cj(parents).attr('id');
+				if(cj(treeLoc + ' dt#'+parentID).hasClass('checked')){ //if the parent is checked
+					cj(treeLoc + ' dt#'+parentID).removeClass('subChecked');
+					return false;
+				}
+				var getSibLength = cj(treeLoc + ' dt#'+parentID).siblings('.checked').length + cj('#'+parentID).siblings('.subChecked').length;
+				if(getSibLength > 0 ){ //if the parent's siblings are checked/subchecked
+					var hasSibNoChildren = cj(treeLoc+' dl#'+parentID).children('dt.checked').length + cj(treeLoc+' dl#'+parentID).children('dt.subChecked').length 
+					if(hasSibNoChildren == 0)
+					{
+						cj(treeLoc+' dt#'+parentID).removeClass('subChecked');
+					}
+					return false;
+				}
+				cj(treeLoc + ' dt#'+parentID).removeClass('subChecked');
 			});
-			
-
 		}
-
 	}
 }
 
@@ -634,6 +615,41 @@ function addControlBox(tagLabel, treeTop, isChecked) {
 		} else { 
 			return ''; 
 		}
+	}
+}
+function updateViewContactPage(tagLabel)
+{
+	var treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase();
+	var tabCounter = cj('li#tab_tag em').html();
+	var tagLiteralName = cj(treeLoc + ' dt#'+ tagLabel + ' .tag .name').html();
+	var headList = cj('.contactTagsList.help span').html();
+	if(headList)
+	{
+		var headSplit = headList.split(" • ");
+		var appendAfter = headSplit.length;
+		headSplit[appendAfter] = tagLiteralName;
+		headSplit.sort();
+		headList = headSplit.join(" • ");
+		cj('.contactTagsList.help span').html(headList);
+	}
+	else
+	{
+		headList = tagLiteralName;
+		cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+	}
+	cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
+	return true;
+
+}
+function sortWindow()
+{
+	var path = window.location.pathname;
+	switch(path.toLowerCase())
+	{
+		case '/civicrm/contact/view': callTree.currentSettings['pageLocation'] ='view'; break;
+		case '/civicrm/contact/add': callTree.currentSettings['pageLocation'] = 'edit'; break;
+		case '/civicrm/admin/tag': callTree.currentSettings['pageLocation'] = 'manage'; break;
+		default: callTree.currentSettings['pageLocation'] = 'default'; break;
 	}
 }
 //remove at the end

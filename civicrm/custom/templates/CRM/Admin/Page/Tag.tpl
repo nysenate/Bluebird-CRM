@@ -50,7 +50,7 @@
 {/literal}
 {literal}
 <script type="text/javascript">
-BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'tagging'}}); 
+BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'}}); 
 //document.ready(); this is when the page drops the results in. WAAAAAY FASTER.
 </script>
 {/literal}
@@ -99,11 +99,12 @@ BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'taggi
         </div>
         <!-- goes here -->
         <div class="crm-tagTreeDisplay">
+            <div id="BBInit"></div>
             {literal}
             <script>
-              	BBTree.initContainer();
+                BBTree.initContainer();
             </script>
-    	    {/literal}
+            {/literal}
         </div>
 	</div>
 </div>

@@ -24,123 +24,11 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<style>
-.crm-tagGroup-accordion #crm-tagListWrap {
-	display:none;
-}
-.crm-tagGroupsList div.label, .crm-tagList div.label {
-	cursor:pointer;
-}
-.crm-tagGroupsList div.label div.arrow, .crm-tagList div.label div.arrow {
-	background: url('/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png') no-repeat -32px -15px;
-	height: 16px;
-	width: 15px;
-	float: left;
-	margin: 0px 5px 0 0px;
-}
-.crm-tagGroupsList div.label div.arrow.open, .crm-tagList div.label div.open {
-	background-position:-64px -15px;
-}
-.BBtree.edit.contact .fCB {
-	display:block;
-}
+<style type="text/css" rel="stylesheet" media="screen,projection">
+ @import url(/sites/default/themes/Bluebird/nyss_skin/tags/tags.css);
 </style>
-<script type="text/javascript">
-function rollDownGroup(tag){
-	if(cj(tag + ' div.label div.arrow').hasClass('open'))
-	{
-		cj(tag + ' div.label div.arrow').removeClass('open');
-	} else {
-		cj(tag + ' div.label div.arrow').addClass('open');
-	}
-	cj(tag + ' #crm-tagListWrap').toggle('fast');
-}
-var cidpre = /cid=\d*/.exec(document.location.search);
-var cidsplit = /\d.*/.exec(cidpre);
-if(cidsplit != null){
-	var cid = cidsplit[0];
-}
-else { var cid = ''; }
-cj(document).ready(function() {	
-	callTagAjaxInitLoader('#crm-tagListWrap .BBtree.edit');
-	callTagAjax();
-});
-function addControlBox(tagLabel, IDChecked, tagID) {
-	var floatControlBox;
-	var tagMouse = '.BBtree.edit dt#'+tagLabel;
-	var displayChecked = '';
-	if(IDChecked == ' checked'){displayChecked = 'display:inline;"';}
-	floatControlBox = '<span class="fCB" style="padding:1px 0; float:right; '+displayChecked+'">';
-	floatControlBox += '<ul>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';*/
-	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
-	if(IDChecked == ' checked'){
-		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')" class="checkbox form-checkbox" value="1" checked></input></li></ul>';
-	} else {
-		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')" class="checkbox form-checkbox" value="1"></input></li></ul>';
-	}
-	floatControlBox += '</span>';
-	if(tagMouse != '.BBtree.edit dt#tagLabel_291')
-	{
-		return(floatControlBox);
-	} else { return ''; }
-}
-function checkRemoveAdd(tagLabel) {
-	if(tagLabel != 'tagLabel_291'){
-		var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-		tagLabelID = tagLabel.replace('tagLabel_', '');
-		if(n == false)
-		{
-			cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-			var temp = cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style');
-			temp += '; display:inline';
-			cj('.BBtree.edit dt#'+tagLabel+' .fCB').attr('style', temp);			
-			giveParentsIndicator(tagLabel,'add');
-		} else {
-			findIDLv(tagLabel);
-		}
-	}
-}
-function findIDLv(tagLabel) {
-	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');
-	if(idLv.length > 0)
-	{
-		for(var i = 0; i < idLv.length; i++){
-			var checkForLv = idLv[i].search('lv\-.*');
-			if(checkForLv >= 0)
-			{
-				var tagLv = idLv[i].replace('lv\-','');
-				break;
-			}
-			else
-			{
-				alert('Error During Untagging');
-			}
-			
-		}
-	}
-	var tagLvLabel = tagLabel;
-	for(tagLv; tagLv >= 0; tagLv--){
-		var findSibMatch = 0;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.subChecked').length;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.checked').length;
-		if(findSibMatch == 0){
-			tagLvLabel = cj('dt#'+tagLvLabel).parent().attr('id');
-			cj('dt#'+tagLvLabel).removeClass('checked');
-			cj('dt#'+tagLvLabel).removeClass('subChecked');
-			break;
-		}
-		else{ break;}
-	}
-	cj('dt#'+tagLabel).removeClass('checked');
-	cj('dt#'+tagLabel+' .fCB').attr('style', 'padding:1px 0;float:right;'); 
-}
+<script src="/sites/default/themes/Bluebird/scripts/bbtree3.js" type="text/javascript"></script>
+<script>BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}});
 </script>
 {/literal}
 {if $title}
@@ -165,8 +53,6 @@ function findIDLv(tagLabel) {
 			<tr>
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				    <div id="crm-tagListWrap">
-					    <div class="BBtree edit contact">	
-						</div>
 						<div class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</div>
 					</div>
 					
