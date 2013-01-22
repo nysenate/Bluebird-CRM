@@ -96,26 +96,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .clear {clear: both;}
 .emailbubble {padding: 2px 4px;border-radius: 3px 3px 3px 3px;}
 .marginL10 {margin-left: 10px;}
-.emailbubble, .name .badge {
-    background-color: #999999;
-    color: #FFFFFF;
-    display: inline-block;
-    font-size: 11.844px;
-    font-weight: bold;
-    line-height: 14px;
-    padding: 2px 4px;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    vertical-align: baseline;
-    white-space: nowrap;
-}
+.emailbubble, .name .badge {background-color: #999999; color: #FFFFFF;display: inline-block;font-size: 11.844px;font-weight: bold; line-height: 14px;padding: 2px 4px; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); vertical-align: baseline;white-space: nowrap;}
 .imapper-message-box td { vertical-align: middle!important;  }
-#message_right label{
-	float: left;
-	display: block;
-}
-.label_def{
-	width: 86px;
-	font-weight: bold;
-	float: left;
-	margin: 0.4em 0 0.02em;
-}
+#message_right label{float: left;display: block;}
+.label_def{width: 86px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
