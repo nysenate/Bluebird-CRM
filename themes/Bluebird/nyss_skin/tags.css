@@ -352,3 +352,52 @@ width: 558px;
 	margin-top:3px;
 	margin-top:0px\9;
 }	
+
+
+/*stuff*/
+.crm-tagTabHeader {height:15px; clear:both;}
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer; font-size:12px;}
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {border-top:#457AA4 3px solid; margin-top:-3px; font-size: 14px;}
+#crm-container #crm-tagListWrap {clear:both;}
+.BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
+.crm-tagLegend td div {
+	background: url('/sites/default/themes/Bluebird/nyss_skin/images/fcb.png') transparent no-repeat;
+	height:16px;
+	width:16px;
+	float:left;
+	margin:0 10px 0 0;
+}
+.lv-0#tagLabel_291, .lv-0#tagLabel_296{
+	font-size: 14px;
+}
+.crm-tagLegend td.addTag div {}
+.crm-tagLegend td.removeTag div {background-position: -17px 0px;}
+.crm-tagLegend td.moveTag div {background-position: -34px 0px; }
+.crm-tagLegend td.updateTag div {background-position: -50px 0px;}
+.crm-tagLegend td.mergeTag div {background-position: -66px 0px;}
+.crm-tagLegend td.convertTag div {background-position: -107px 0px;}
+.crm-tagLegend td.printTag div, #crm-container .BBtree dt.lv-0 .fCB ul li.printTag {
+
+	background-image: url('/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png');
+	background-position: -160px -96px;
+}
+dt.lv-0 .fCB ul li.printTag {
+	height:16px;
+	width:16px;
+}
+#crm-container .crm-tagLegend th {border: 0px;}
+#crm-container .crm-tagLegend * {border:0px;}
+@media print {
+  body * {
+    visibility:hidden;
+  }
+  #BBtree.edit.manage, #BBtree.edit.manage * {
+    visibility:visible;
+  }
+  #BBtree.edit.manage {
+    position:absolute;
+    left:0;
+    top:0;
+  }
+}

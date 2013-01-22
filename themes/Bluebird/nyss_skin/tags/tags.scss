@@ -1,0 +1,231 @@
+/*
+
+Tags CSS
+SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.scss:C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.css
+
+
+*/
+/*mixins*/
+/*icons*/
+$functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
+$defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+$levelClassSlug : "lv";
+
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
+@mixin functionIcon($setIconLink) {
+	background-image: url('#{$setIconLink}') !important;
+	cursor: pointer;
+}
+@mixin addTag {@include functionIcon($functionIconLink); background-position: 0;}
+@mixin removeTag {@include functionIcon($functionIconLink); background-position: -17px 0px;}
+@mixin moveTag {@include functionIcon($functionIconLink); background-position: -34px 0px;}
+@mixin updateTag {@include functionIcon($functionIconLink); background-position: -50px 0px;}
+@mixin mergeTag {@include functionIcon($functionIconLink); background-position: -66px 0px;}
+@mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
+@mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
+/*to put in bb css, not tagging.css*/
+#crm-container 
+{
+	#crm-tagListWrap {
+		clear:both;
+		height:auto;
+	}
+}
+
+/*pagestructure*/
+#BBTreeContainer, #BBDialog {
+.BBTree{
+	width:510px;
+	padding:10px;
+	overflow-x:hidden;
+	overflow-y:scroll;
+	height:400px;
+	background-color:#fff;
+	border:1px solid #ccc;
+	margin: 0 auto;
+	cursor:default;
+	/* for tag hirarchy structure */
+	dt {
+		float: inherit;
+		clear: inherit;
+		text-align: inherit;
+		vertical-align: inherit;
+		padding: 0px;
+		font-size: inherit;
+		white-space: inherit;
+		width:inherit;
+		height: 20px;
+		line-height:20px;
+		.ddControl {
+			height:20px; width:20px; float:left; margin:0px;
+			&.treeButton{
+				background: url($defaultIconLink) no-repeat -32px -15px;
+			 	cursor:pointer;
+			 	&.open {
+			 		background-position: -64px -15px;
+			 	}
+			}
+
+		}
+		.tag {
+			display:inline;
+			font: {
+				family: Arial;
+    			size: 12px;
+    			weight: normal;
+			};
+			padding-left:5px;
+		}
+		.fCB {
+			display:none;
+			padding:1px 0;
+			float:right;
+			ul {
+				margin:0;
+				li {
+					height:16px;
+					width:16px;
+					float:left;
+					margin:1px 2px 0 0;
+					list-style-image:none !important;
+					list-style-type:none !important;
+					&.addTag {@include addTag}
+					&.removeTag {@include removeTag}
+					&.moveTag {@include moveTag}
+					&.updateTag {@include updateTag}
+					&.mergeTag {@include mergeTag}
+					&.convertTag {@include convertTag}
+					&.printTag {@include printTag}
+				}
+			}
+		}
+		&:hover {
+			.fCB {
+				display:inline;
+			}
+			background-color:#DEDEDE;
+			&.lv-0
+			{
+				background-color:transparent;
+			}
+		}
+		&.subChecked {
+			background-color: #F1F8EB;
+			border: 1px dashed #B0D730;
+			&:hover {
+				background-color:#DEDEDE;
+			}
+		}
+		&.checked {
+			background-color: #F1F8EB;
+			border: 1px solid #B0D730;
+			&:hover {
+				background-color:#DEDEDE;
+			}
+		}
+	}
+	@for $i from 0 through 10
+	{
+  		dl.#{$levelClassSlug}-#{$i}
+  		{
+			margin:0;
+			width: 500px - (10*$i);
+    		@if $i != 0
+    		{
+    			margin-left: 10px;
+    		}
+    		@if $i > 0
+    		{
+    			display:none;
+    		}
+  			
+  		}
+  		dt.#{$levelClassSlug}-#{$i}
+    	{
+    		@if $i == 0
+    		{
+    			width: 500px;
+    			.treeButton {
+    				display:none;
+    			}
+    			.tag {
+    				font-size: 14px;
+    				font-weight:bold;
+    			}
+    		}
+    	}
+    }
+	&.hidden{
+		display:none;
+	}
+	&.edit{
+
+	}
+	&.modal{
+		overflow: visible;
+		border: 0px;
+		.fCB {
+			display: inline;
+			float:left;
+			margin: -1px 0px -2px 0px;
+			input[type="checkbox"]{
+				margin:0px;
+				&.checked
+				{
+					left:-1px;
+				}
+			}
+		}
+	}
+	&.tagging{
+		.fCB {
+			display: inline;
+			float:left;
+			margin: 0px -2px 0px 5px;
+			input[type="checkbox"]{
+				margin:0px;
+				&.checked
+				{
+					left:-1px;
+				}
+			}
+		}
+	}
+	* {
+		font-size: 1em;
+	}
+}
+}
+.loadingGif{
+		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
+		.lv-0{
+			display:none;
+		}
+	}
+/* tabs */
+.crm-tagTabHeader {height:15px; clear:both;}
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer; font-size:12px;}
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {color:#ccc;border-top:#457AA4 3px solid; margin-top:-3px;}
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {border-top:#457AA4 3px solid; margin-top:-3px; font-size: 14px;}
+
+/* legend */
+#crm-container .crm-tagLegend {
+	td div {
+		
+	}
+	td.addTag div {@include functionIcon($functionIconLink); @include addTag;}
+	td.removeTag div {@include functionIcon($functionIconLink); @include removeTag;}
+	td.moveTag div {@include functionIcon($functionIconLink); @include moveTag;}
+	td.updateTag div {@include functionIcon($functionIconLink); @include updateTag;}
+	td.mergeTag div {@include functionIcon($functionIconLink); @include mergeTag;}
+	td.convertTag div {@include functionIcon($functionIconLink); @include convertTag;}
+	td.printTag div {@include functionIcon($defaultIconLink); @include printTag;}
+	th {border: 0px;}
+	* {border:0px;}
+	table
+	{
+		width: 380px;
+		float:right;
+		margin-bottom:-10px;
+	}
+}
