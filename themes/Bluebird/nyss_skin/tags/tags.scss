@@ -33,7 +33,8 @@ $levelClassSlug : "lv";
 }
 
 /*pagestructure*/
-#crm-container #BBTreeContainer .BBTree {
+#BBTreeContainer, #BBDialog {
+.BBTree{
 	width:510px;
 	padding:10px;
 	overflow-x:hidden;
@@ -47,12 +48,12 @@ $levelClassSlug : "lv";
 	dt {
 		float: inherit;
 		clear: inherit;
-		width: inherit;
 		text-align: inherit;
 		vertical-align: inherit;
 		padding: 0px;
 		font-size: inherit;
 		white-space: inherit;
+		width:inherit;
 		height: 20px;
 		line-height:20px;
 		.ddControl {
@@ -85,7 +86,7 @@ $levelClassSlug : "lv";
 					height:16px;
 					width:16px;
 					float:left;
-					margin:0 2px 0 0;
+					margin:1px 2px 0 0;
 					list-style-image:none !important;
 					list-style-type:none !important;
 					&.addTag {@include addTag}
@@ -103,6 +104,10 @@ $levelClassSlug : "lv";
 				display:inline;
 			}
 			background-color:#DEDEDE;
+			&.lv-0
+			{
+				background-color:transparent;
+			}
 		}
 		&.subChecked {
 			background-color: #F1F8EB;
@@ -129,7 +134,7 @@ $levelClassSlug : "lv";
     		{
     			margin-left: 10px;
     		}
-    		@if $i > 1
+    		@if $i > 0
     		{
     			display:none;
     		}
@@ -139,6 +144,7 @@ $levelClassSlug : "lv";
     	{
     		@if $i == 0
     		{
+    			width: 500px;
     			.treeButton {
     				display:none;
     			}
@@ -156,7 +162,20 @@ $levelClassSlug : "lv";
 
 	}
 	&.modal{
-
+		overflow: visible;
+		border: 0px;
+		.fCB {
+			display: inline;
+			float:left;
+			margin: -1px 0px -2px 0px;
+			input[type="checkbox"]{
+				margin:0px;
+				&.checked
+				{
+					left:-1px;
+				}
+			}
+		}
 	}
 	&.tagging{
 		.fCB {
@@ -165,7 +184,6 @@ $levelClassSlug : "lv";
 			margin: 0px -2px 0px 5px;
 			input[type="checkbox"]{
 				margin:0px;
-				top:1px;
 				&.checked
 				{
 					left:-1px;
@@ -173,18 +191,17 @@ $levelClassSlug : "lv";
 			}
 		}
 	}
-	&.loadingGif{
-		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white;
+	* {
+		font-size: 1em;
+	}
+}
+}
+.loadingGif{
+		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
 		.lv-0{
 			display:none;
 		}
 	}
-	* {
-		font-size: 1em;
-	}
-
-
-}
 /* tabs */
 .crm-tagTabHeader {height:15px; clear:both;}
 .crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {float:left;margin-right:15px;background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;cursor:pointer; font-size:12px;}

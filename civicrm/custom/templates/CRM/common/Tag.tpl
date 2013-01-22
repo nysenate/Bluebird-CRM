@@ -100,7 +100,6 @@
 </div>
 <div class="clear"></div>
 </div>
-<!--BBTagging Add for Contact -->
 {if $tagset.parentID eq 296}
     <div id="BBInit"></div>
     {literal}

@@ -42,7 +42,7 @@
 .crm-tagTreeDisplay {
     float:right;
 }
-.BBTree {
+#BBTreeContainer .BBTree {
     border:0;
     border-left:1px solid #ccc;
 }
