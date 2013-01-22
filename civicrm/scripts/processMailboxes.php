@@ -5,7 +5,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2011-03-22
-// Revised: 2012-12-04
+// Revised: 2013-1-18
 // 
 
 // Mailbox settings common to all CRM instances
@@ -24,8 +24,8 @@ define('INVALID_EMAIL_FROM', '"Bluebird Admin" <bluebird.admin@nysenate.gov>');
 define('INVALID_EMAIL_SUBJECT', 'Bluebird Inbox Polling Error: Not permitted to send e-mails to CRM');
 define('INVALID_EMAIL_TEXT', "You do not have permission to forward e-mails to this CRM instance.\n\nIn order to allow your e-mails to be accepted, you must request that your e-mail address be added to the Valid Senders list for this CRM.\n\nPlease contact Senate Technology Services for more information.\n\n");
 
-//email address of the contact to file unknown emails against.
-define('UNKNOWN_CONTACT_EMAIL', 'unknown.contact@nysenate.gov');
+// //email address of the contact to file unknown emails against.
+// define('UNKNOWN_CONTACT_EMAIL', 'unknown.contact@nysenate.gov');
 
 // The Bluebird predefined group name for contacts who are authorized
 // to forward messages to the CRM inbox.
@@ -60,6 +60,7 @@ require_once 'CRM/Core/Transaction.php';
 require_once 'CRM/Core/BAO/CustomValueTable.php';
 require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
+require_once 'api/api.php';
 
 /* More than one IMAP account can be checked per CRM instance.
 ** The username and password for each account is specified in the Bluebird
@@ -395,128 +396,152 @@ function getAttachments($conn, $num, $parts)
 } // getAttachments()
 
 
+// This is my email body text / LDAP parser 
+function extract_email_address ($string) {
 
-//attaches email to civiCRM
-//default: if no contact found, don't do anything
-//returns true/false to move the email to archive or not
+  // we have to parse out ldap stuff because sometimes addresses are
+  // embedded and, see NYSS #5748 for more details 
 
-function civiProcessEmail($email, $customHandler)
+  // if o= is appended to the end of the email address remove it 
+  $string = preg_replace('/\/senate@senate/i', '/senate', $string);
+
+  // ldap addresses have slashes, so we do an internal lookup
+  $internal = preg_match("/\//i", $string, $matches);
+
+  if($internal == 1){
+    $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
+      $retrieve = array("sn","givenname", "mail");
+      $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
+      $info = ldap_get_entries($ldapcon, $search);
+    if($info[0]){
+      $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
+      $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
+      return $return;
+    }else{
+      $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed');
+      return $return;
+    }
+  }else{
+    // clean out any anything that wouldn't be a name or email, html or plain-text
+    $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
+    $string = preg_replace('/<|>|"|\'/i', '', $string);
+    foreach(preg_split('/ /', $string) as $token) {
+        $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+        if ($email !== false) {
+            $emails[] = $email;
+        }
+    }
+    $name = str_replace($emails[0], '', $string);
+    $return = array('type'=>'inline','name'=>$name,'email'=>$emails[0]);
+    return $return;
+  }
+}
+
+
+// civiProcessEmail
+// Creates an activity from parsed email parts
+// Detects email type (html|plain)
+// Parses message body in search of target_contact & orgional subject
+// Looks for the source_contact and if not found uses bluebird admin as a stand in
+// Returns true/false to move the email to archive or not
+ function civiProcessEmail($email, $customHandler)
 {
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = false;
 
-  //match against allowed email list
-  //parse out the first email address which will be the "from" address of the forwarded email
-  $matches = array();
-/*
-  $qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]';
-  $dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]';
-  $atom = '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c'.
-          '\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+';
-  $quoted_pair = '\\x5c[\\x00-\\x7f]';
-  $domain_literal = "\\x5b($dtext|$quoted_pair)*\\x5d";
-  $quoted_string = "\\x22($qtext|$quoted_pair)*\\x22";
-  $domain_ref = $atom;
-  $sub_domain = "($domain_ref|$domain_literal)";
-  $word = "($atom|$quoted_string)";
-  $domain = "$sub_domain(\\x2e$sub_domain)*";
-  $local_part = "$word(\\x2e$word)*";
-  $addr_spec = "$local_part\\x40$domain";
+  // remove weirdness in html encoded messages 
+  $body = quoted_printable_decode($email->body);
 
-  $count = preg_match("/$addr_spec/i", $email->body, $matches);
-*/
-  $details = $email->body;
-  $tempDetails = preg_replace("/(=|\r\n|\r|\n)/i", "", $details);
-  //var_dump($details);
-  //var_dump($tempDetails);
-  $count = preg_match("/From:(?:\s*)(?:(?:\"|'|&quot;)(.*?)(?:\"|'|&quot;)|(.*?))(?:\s*)(?:\[mailto:|<|&lt;)(.*?)(?:]|>|&gt;)/", $tempDetails, $matches);
-  // Was this message forwarded or is this a raw message from the sender?
+  // detect if message is html / plaintext from body only
+  preg_match("/<br*>/i", $body, $html);
 
-  $forwarded = false;
-
-  // If you can find the From: text that means it was forwarded,
-  // so parse it out and use that.
-  if ($count > 0) {
-      $fromEmail = $matches[3];
-      //$header->from_name = !empty($matches[1]) ? $matches[1] : $matches[2];
-      $forwarded = true;
-  } else {
-      // Otherwise, search for a name and email address from
-      // the header and assume the person who sent it in
-      // is submitting the activity.
-      $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $email->replyTo, $matches);
-
-      $fromEmail = $matches[2];
-      //$header->from_name = $matches[1];
+  // convert html/plain line endings to be in the same format for our regexs' sake 
+  if($html){
+    $format = "html";
+    $tempbody = $body;
+    $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $tempbody);
+  }else{
+    $format = "plain";
+    $tempbody = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $body);
   }
 
-  //use the forward address, otherwise use the direct from address
-  if ($count > 0) {
-    $email->body = "Forwarded by: " . $email->replyTo."\n\n".$email->body;
-    $email->forwardedBy = $email->replyTo;
-    $email->replyTo = $fromEmail;
-  } 
+  // check to see if we can find an email address in the message body,
+  // else we use the email from the message header and call it a direct message
+  preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempbody, $froms);
 
-  // Force e-mail body to display cleanly in UI.
+  if($froms['2']){ 
+    $fromEmail = extract_email_address($froms['2']);
+    if(!$fromEmail['email']){
+      $status = 'forwarded';
+      $fromEmail = array('email' => $email->replyTo, 'type'=>'direct');
+    }
+  }else{
+    $fromEmail = array('email' => $email->replyTo, 'type'=>'direct');
+    $status = 'direct';
+  }
+  
+  // check to see if we can find a subject in the message body,
+  preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
+
+  $subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $email->subject) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
+
+  if($subject == "" | $subject == "(no subject)"){
+    $subject = "No Subject";
+  }
+ 
   $email->body = '<pre>'.$email->body.'</pre>';
 
-  // Find a contact that matches by e-mail address.
-  echo "[INFO] Matching CiviCRM contact based on e-mail: {$email->replyTo}\n";
-  $c = new CRM_Contact_BAO_Contact();
-  $cobj = $c->matchContactOnEmail($email->replyTo);
+  // Use the e-mail from the body of the message (or header if direct) to find traget contact
+  $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fromEmail['email'], );
+  $contact = civicrm_api('contact', 'get', $params);
+  echo "[INFO] FINDING match for the target email ".$fromEmail['email']." in Civi\n";
 
-  $contactID = null;
-  if (isset($cobj->contact_id)) {
-    $contactID = $cobj->contact_id;
-  }
-  
-  if ($contactID) {
+  // if there is more then one target for the message leave if for the user to deal with
+  if ($contact['count'] != 1 ){
+    error_log("[DEBUG] TARGET ".$fromEmail['email']." Matches [".$contact['count']."] Records in this instance . Leaving for manual addition.");
+  }else{
+    $contactID = $contact['id'];
     $bSuccess = true;
   }
-  else { 
-    //echo "[DEBUG] No match on {$email->replyTo}; assigning to anonymous contact.\n";
-    $bSuccess = false;
-    error_log("{$email->replyTo} is not in this instance. Leaving for manual addition.");
-    //$cobj = $c->matchContactOnEmail(UNKNOWN_CONTACT_EMAIL);
-    //if (isset($cobj->contact_id)) {
-    //  $contactID = $cobj->contact_id;
-    //}
-  }
-  
+
   //process any custom mailbox specific rules
   if ($customHandler != null) {
     include($customHandler);
   }
   //standard handling, add activity if we found a match
   elseif ($bSuccess) {
-    echo "[INFO] Adding standard activity to contact $contactID\n";
 
-    // Let's find the user ID of the person who forwarded the message
+    // Let's find the userID for the source of the activity
     $apiParams = array( 
-      'email' => $email->forwardedBy,
+      'email' =>  $email->replyTo,
       'version' => 3
     );
-
     $result = civicrm_api('contact', 'get', $apiParams);
- 
-    if ($result) {
-      $userId = $result['values'][ $result['id'] ]['contact_id'];  
-    }
-    else {
-      $userId = 1;
+
+    // In cases where there is more the one user found mark the message as assigned from bluebird admin 
+    $userId = 1;
+    if ($result['count'] == 1) {
+      $userId = $result['values'][ $result['id'] ]['contact_id'];
     }
 
+    // make note of this
+    // TODO: send out email to offending user asking them to clean up their accounts
+    if ($result['count'] != 1) {
+      error_log("[DEBUG] SOURCE ".$email->replyTo." Matches [".$result['count']."] Records in this instance . Adding with source Bluebird Admin.");
+    }
+
+    echo "[INFO] ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
     $apiParams = array(
                 "source_contact_id" => $userId,
-                "subject" => $email->subject,
+                "subject" => $subject,
                 "details" => imap_qprint($email->body),
                 "activity_date_time" => date('YmdHis',strtotime($email->date)),
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
                 "duration" => 1,
-                "is_auto" => 1, // we now know difference between match and processed
+                "is_auto" => 1,
                 "target_contact_id" => $contactID,
                 "version" => 3
     );
@@ -524,13 +549,12 @@ function civiProcessEmail($email, $customHandler)
     $result = civicrm_api('activity', 'create', $apiParams);
     if ($result['is_error']) {
       echo "[WARN] Could not save Activity\n";
-      if ($email->from == '') {
+      if ($fromEmail['email'] == '') {
         echo "[WARN] Forwarding e-mail address not found\n";
       }
       return false;
-    }
-    else {
-      echo "[INFO] Created e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
+    }else {
+      echo "[INFO] CREATED e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
       require_once 'CRM/Core/DAO.php';
       $nyss_conn = new CRM_Core_DAO();

@@ -98,8 +98,16 @@
     {/if}
 {/if}
 </div>
-<div class="clear"></div> 
+<div class="clear"></div>
 </div>
+{if $tagset.parentID eq 296}
+    <div id="BBInit"></div>
+    {literal}
+    <script>
+        BBTree.initContainer();
+    </script>
+    {/literal}
+{/if}   
 {/foreach}
 
 {elseif $tagsetType eq 'activity'}

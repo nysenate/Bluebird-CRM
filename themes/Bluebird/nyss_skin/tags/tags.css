@@ -1,0 +1,277 @@
+/*
+
+Tags CSS
+SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.scss:C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.css
+
+
+*/
+/*mixins*/
+/*icons*/
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
+/*to put in bb css, not tagging.css*/
+#crm-container #crm-tagListWrap {
+  clear: both;
+  height: auto; }
+
+/*pagestructure*/
+#BBTreeContainer .BBTree, #BBDialog .BBTree {
+  width: 510px;
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 400px;
+  background-color: #fff;
+  border: 1px solid #cccccc;
+  margin: 0 auto;
+  cursor: default;
+  /* for tag hirarchy structure */ }
+  #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
+    float: inherit;
+    clear: inherit;
+    text-align: inherit;
+    vertical-align: inherit;
+    padding: 0px;
+    font-size: inherit;
+    white-space: inherit;
+    width: inherit;
+    height: 20px;
+    line-height: 20px; }
+    #BBTreeContainer .BBTree dt .ddControl, #BBDialog .BBTree dt .ddControl {
+      height: 20px;
+      width: 20px;
+      float: left;
+      margin: 0px; }
+      #BBTreeContainer .BBTree dt .ddControl.treeButton, #BBDialog .BBTree dt .ddControl.treeButton {
+        background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
+        cursor: pointer; }
+        #BBTreeContainer .BBTree dt .ddControl.treeButton.open, #BBDialog .BBTree dt .ddControl.treeButton.open {
+          background-position: -64px -15px; }
+    #BBTreeContainer .BBTree dt .tag, #BBDialog .BBTree dt .tag {
+      display: inline;
+      font-family: Arial;
+      font-size: 12px;
+      font-weight: normal;
+      padding-left: 5px; }
+    #BBTreeContainer .BBTree dt .fCB, #BBDialog .BBTree dt .fCB {
+      display: none;
+      padding: 1px 0;
+      float: right; }
+      #BBTreeContainer .BBTree dt .fCB ul, #BBDialog .BBTree dt .fCB ul {
+        margin: 0; }
+        #BBTreeContainer .BBTree dt .fCB ul li, #BBDialog .BBTree dt .fCB ul li {
+          height: 16px;
+          width: 16px;
+          float: left;
+          margin: 1px 2px 0 0;
+          list-style-image: none !important;
+          list-style-type: none !important; }
+          #BBTreeContainer .BBTree dt .fCB ul li.addTag, #BBDialog .BBTree dt .fCB ul li.addTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: 0; }
+          #BBTreeContainer .BBTree dt .fCB ul li.removeTag, #BBDialog .BBTree dt .fCB ul li.removeTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -17px 0px; }
+          #BBTreeContainer .BBTree dt .fCB ul li.moveTag, #BBDialog .BBTree dt .fCB ul li.moveTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -34px 0px; }
+          #BBTreeContainer .BBTree dt .fCB ul li.updateTag, #BBDialog .BBTree dt .fCB ul li.updateTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -50px 0px; }
+          #BBTreeContainer .BBTree dt .fCB ul li.mergeTag, #BBDialog .BBTree dt .fCB ul li.mergeTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -66px 0px; }
+          #BBTreeContainer .BBTree dt .fCB ul li.convertTag, #BBDialog .BBTree dt .fCB ul li.convertTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -107px 0px; }
+          #BBTreeContainer .BBTree dt .fCB ul li.printTag, #BBDialog .BBTree dt .fCB ul li.printTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+            cursor: pointer;
+            background-position: -160px -96px; }
+    #BBTreeContainer .BBTree dt:hover, #BBDialog .BBTree dt:hover {
+      background-color: #DEDEDE; }
+      #BBTreeContainer .BBTree dt:hover .fCB, #BBDialog .BBTree dt:hover .fCB {
+        display: inline; }
+      #BBTreeContainer .BBTree dt:hover.lv-0, #BBDialog .BBTree dt:hover.lv-0 {
+        background-color: transparent; }
+    #BBTreeContainer .BBTree dt.subChecked, #BBDialog .BBTree dt.subChecked {
+      background-color: #F1F8EB;
+      border: 1px dashed #b0d730; }
+      #BBTreeContainer .BBTree dt.subChecked:hover, #BBDialog .BBTree dt.subChecked:hover {
+        background-color: #DEDEDE; }
+    #BBTreeContainer .BBTree dt.checked, #BBDialog .BBTree dt.checked {
+      background-color: #F1F8EB;
+      border: 1px solid #b0d730; }
+      #BBTreeContainer .BBTree dt.checked:hover, #BBDialog .BBTree dt.checked:hover {
+        background-color: #DEDEDE; }
+  #BBTreeContainer .BBTree dl.lv-0, #BBDialog .BBTree dl.lv-0 {
+    margin: 0;
+    width: 500px; }
+  #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
+    width: 500px; }
+    #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
+      display: none; }
+    #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
+      font-size: 14px;
+      font-weight: bold; }
+  #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
+    margin: 0;
+    width: 490px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-2, #BBDialog .BBTree dl.lv-2 {
+    margin: 0;
+    width: 480px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-3, #BBDialog .BBTree dl.lv-3 {
+    margin: 0;
+    width: 470px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-4, #BBDialog .BBTree dl.lv-4 {
+    margin: 0;
+    width: 460px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-5, #BBDialog .BBTree dl.lv-5 {
+    margin: 0;
+    width: 450px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-6, #BBDialog .BBTree dl.lv-6 {
+    margin: 0;
+    width: 440px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-7, #BBDialog .BBTree dl.lv-7 {
+    margin: 0;
+    width: 430px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-8, #BBDialog .BBTree dl.lv-8 {
+    margin: 0;
+    width: 420px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-9, #BBDialog .BBTree dl.lv-9 {
+    margin: 0;
+    width: 410px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree dl.lv-10, #BBDialog .BBTree dl.lv-10 {
+    margin: 0;
+    width: 400px;
+    margin-left: 10px;
+    display: none; }
+  #BBTreeContainer .BBTree.hidden, #BBDialog .BBTree.hidden {
+    display: none; }
+  #BBTreeContainer .BBTree.modal, #BBDialog .BBTree.modal {
+    overflow: visible;
+    border: 0px; }
+    #BBTreeContainer .BBTree.modal .fCB, #BBDialog .BBTree.modal .fCB {
+      display: inline;
+      float: left;
+      margin: -1px 0px -2px 0px; }
+      #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"], #BBDialog .BBTree.modal .fCB input[type="checkbox"] {
+        margin: 0px; }
+        #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"].checked, #BBDialog .BBTree.modal .fCB input[type="checkbox"].checked {
+          left: -1px; }
+  #BBTreeContainer .BBTree.tagging .fCB, #BBDialog .BBTree.tagging .fCB {
+    display: inline;
+    float: left;
+    margin: 0px -2px 0px 5px; }
+    #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"], #BBDialog .BBTree.tagging .fCB input[type="checkbox"] {
+      margin: 0px; }
+      #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"].checked, #BBDialog .BBTree.tagging .fCB input[type="checkbox"].checked {
+        left: -1px; }
+  #BBTreeContainer .BBTree *, #BBDialog .BBTree * {
+    font-size: 1em; }
+
+.loadingGif {
+  background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important; }
+  .loadingGif .lv-0 {
+    display: none; }
+
+/* tabs */
+.crm-tagTabHeader {
+  height: 15px;
+  clear: both; }
+
+.crm-tagTabHeader li, .crm-tagTabHeader li#tagLabel_291, .crm-tagTabHeader li#tagLabel_296 {
+  float: left;
+  margin-right: 15px;
+  background: transparent url(/sites/default/themes/Bluebird/nyss_skin/images/button.png) no-repeat scroll right -30px !important;
+  list-style: none;
+  width: 135px;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px; }
+
+.crm-tagTabHeader li:hover, .crm-tagTabHeader li#tagLabel_291:hover, .crm-tagTabHeader li#tagLabel_296:hover {
+  color: #ccc;
+  border-top: #457aa4 3px solid;
+  margin-top: -3px; }
+
+.crm-tagTabHeader li.active, .crm-tagTabHeader li#tagLabel_291.active, .crm-tagTabHeader li#tagLabel_296.active {
+  border-top: #457aa4 3px solid;
+  margin-top: -3px;
+  font-size: 14px; }
+
+/* legend */
+#crm-container .crm-tagLegend td.addTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: 0; }
+#crm-container .crm-tagLegend td.removeTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -17px 0px; }
+#crm-container .crm-tagLegend td.moveTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -34px 0px; }
+#crm-container .crm-tagLegend td.updateTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -50px 0px; }
+#crm-container .crm-tagLegend td.mergeTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -66px 0px; }
+#crm-container .crm-tagLegend td.convertTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+  cursor: pointer;
+  background-position: -107px 0px; }
+#crm-container .crm-tagLegend td.printTag div {
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
+  background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+  cursor: pointer;
+  background-position: -160px -96px; }
+#crm-container .crm-tagLegend th {
+  border: 0px; }
+#crm-container .crm-tagLegend * {
+  border: 0px; }
+#crm-container .crm-tagLegend table {
+  width: 380px;
+  float: right;
+  margin-bottom: -10px; }

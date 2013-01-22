@@ -211,14 +211,14 @@ class CRM_IMAP_AJAX {
                         'from_email' =>  $output['forwarded']['origin_email'],
                         'from_name' =>  $output['forwarded']['origin_name'],
                         'forwarder_email' =>  $output['header']['from_email'],
-                        'forwarder_name' =>  $output['header']['from_name'],
-                        'forwarder_time' =>  $output['forwarded']['date_clean'],
+                        // 'forwarder_name' =>  $output['header']['from_name'],
+                        // 'forwarder_time' =>  $output['forwarded']['date_clean'],
                         'attachmentfilename'  => $output['attachments'][0]['name'],
-                        'attachmentname'  =>  $output['attachments'][0]['name'],
+                        // 'attachmentname'  =>  $output['attachments'][0]['name'],
                         'attachment'  => $output['attachments']['overview']['total'],
                         'status' =>$output['header']['status'],
                         'imap_id' =>  $imap_id,
-                        'origin_lookup' => $output['forwarded']['origin_lookup']
+                        // 'origin_lookup' => $output['forwarded']['origin_lookup']
 
                         );
                  }

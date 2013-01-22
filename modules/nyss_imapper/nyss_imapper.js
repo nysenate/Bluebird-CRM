@@ -679,7 +679,7 @@ cj(document).ready(function(){
 					if(debug){
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
-							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Parse type: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
+							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
 						}
 						debugHTML +="<span class='search_info'></span></div></div>";
 						cj('#message_left_header').append(debugHTML);
@@ -840,7 +840,7 @@ function destroyReSortable(){
 
 function makeListSortable(){
 	cj("#sortable_results").dataTable({
-		"aaSorting": [[ 4, "desc" ]],
+		"aaSorting": [[ 3, "desc" ]],
 	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"iDisplayLength": 50,
 	//	"bStateSave": true,
@@ -882,7 +882,15 @@ function buildMessageList() {
 			if(value.date != null){
 				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 				if( value.from_name != ''){
-					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20)+'</td>';
+					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
+
+				  	if( value.from_email != ''){ 
+						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
+					}
+					messagesHtml +='</td>';
+
+				}else if( value.from_email != ''){ 
+					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span></td>';
 				}else {
 					messagesHtml += '<td class="name">N/A</td>';
 				}
@@ -890,9 +898,11 @@ function buildMessageList() {
 					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
 					icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
 				}
-				messagesHtml += '<td class="email">'+short_subject(value.from_email,15) +'</td>';
+
+				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 				messagesHtml += '<td class="date">'+value.date +'</td>';
+
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -933,11 +943,13 @@ function buildActivitiesList() {
 	 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
 	 				messagesHtml += '</a>';
 					messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
-					messagesHtml += '</td>';
+					messagesHtml += ' ';
 				}else {
-					messagesHtml += '<td class="name">N/A</td>';
+					messagesHtml += '<td class="name">N/A ';
 				}
-				messagesHtml += '<td class="email">'+short_subject(value.fromEmail,14)+'</td>';
+
+					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
+					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 				messagesHtml += '<td class="date">'+value.date +'</td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
