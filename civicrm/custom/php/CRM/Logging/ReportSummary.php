@@ -112,11 +112,6 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id';
   }
 
-  function orderBy() {
-    //NYSS 5751
-    $this->_orderBy = 'ORDER BY entity_log_civireport.log_date DESC';
-  }
-
   function select() {
     $select = array();
     $this->_columnHeaders = array();
@@ -138,21 +133,26 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
   function where() {
     parent::where();
 
-    list($offset, $rowCount) = $this->limit();
-    $this->_limit = NULL;
-
-    $tempClause    = ($offset && $rowCount) ? "AND temp.id BETWEEN $offset AND $rowCount" : null;
-    $this->_where .= " AND (entity_log_civireport.log_action != 'Initialization') {$tempClause}";//NYSS 5751
+    $this->_where .= " AND (entity_log_civireport.log_action != 'Initialization')";//NYSS 5751
   }
 
   function postProcess() {
     $this->beginPostProcess();
     $rows = array();
     // temp table to hold all altered contact-ids
+    //NYSS 5719 TODO - field order was modified (log_action); review in next version of core
     $sql = "
 CREATE TEMPORARY TABLE
-       civicrm_temp_civireport_logsummary ( id int PRIMARY KEY AUTO_INCREMENT,
-                                            contact_id int, UNIQUE UI_id (contact_id) ) ENGINE=HEAP";
+       civicrm_temp_civireport_logsummary ( id int(10),
+                                            log_type varchar(64),
+                                            log_user_id int(10),
+                                            log_date timestamp,
+                                            altered_contact varchar(128),
+                                            altered_contact_id int(10),
+                                            log_conn_id int(11),
+                                            log_action varchar(64),
+                                            is_deleted tinyint(4),
+                                            display_name varchar(128) ) ENGINE=HEAP";
     CRM_Core_DAO::executeQuery($sql);
 
     $logDateClause = $this->dateClause('log_date',
@@ -163,39 +163,6 @@ CREATE TEMPORARY TABLE
                                        CRM_Utils_Array::value("log_date_from_time", $this->_params),
                                        CRM_Utils_Array::value("log_date_to_time",   $this->_params));
     $logDateClause = $logDateClause ? "AND {$logDateClause}" : null;
-
-    $this->_limit = NULL;
-    //NYSS
-    if (!CRM_Utils_Array::value('altered_contact_id_value', $this->_params)) { 
-      // do not apply limit when its running from change-log TAB
-      list($offset, $rowCount) = $this->limit();
-      $this->_limit = "LIMIT {$rowCount}";
-    }
-
-    //NYSS updates from trunk
-    $sqlParams = array();
-    foreach ( $this->_logTables as $entity => $detail ) {
-      $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
-      $clause = array("log_action != 'Initialization'");
-      if (CRM_Utils_Array::value('entity_table', $detail)) {
-        $clause[] = "entity_table = 'civicrm_contact'";
-      }
-      if (CRM_Utils_Array::value('altered_contact_id_value', $this->_params)) { 
-        $clause[]  = "`{$this->loggingDB}`.{$tableName}.{$detail['fk']}= %1";
-        $sqlParams = array(1 => array($this->_params['altered_contact_id_value'], 'Integer'));
-      }
-      if ($logDateClause) {
-        $clause[]  = $logDateClause;
-      }
-      $clause = implode(' AND ', $clause);
-
-      $sql    = "
-INSERT IGNORE INTO civicrm_temp_civireport_logsummary ( contact_id )
-SELECT DISTINCT {$detail['fk']} FROM `{$this->loggingDB}`.{$tableName}
-WHERE {$clause} {$this->_limit}";
-      //CRM_Core_Error::debug_var('sql insert',$sql);
-      CRM_Core_DAO::executeQuery($sql, $sqlParams);
-    }
 
     $logTypes = CRM_Utils_Array::value('log_type_value', $this->_params);
     unset($this->_params['log_type_value']);
@@ -214,10 +181,19 @@ WHERE {$clause} {$this->_limit}";
         $this->from( $entity );
         $sql = $this->buildQuery(false);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
-        $this->buildRows($sql, $rows);
+        $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
+        CRM_Core_DAO::executeQuery($sql);
       }
     }
+
+    $this->limit();
+    $sql = "{$this->_select}
+FROM civicrm_temp_civireport_logsummary entity_log_civireport
+ORDER BY entity_log_civireport.log_date DESC {$this->_limit}";
+    $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
+    $this->buildRows($sql, $rows);
     //CRM_Core_Error::debug_var('$rows',$rows);
+
     //NYSS
     self::_combineContactRows($rows);
 

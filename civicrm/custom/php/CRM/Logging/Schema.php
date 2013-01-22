@@ -192,6 +192,14 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     CRM_Core_DAO::triggerRebuild($table);
   }
 
+  //NYSS 5719
+  function fixTimeStampSQL($query) {
+    $query = str_ireplace("TIMESTAMP NOT NULL", "TIMESTAMP NULL", $query);
+    $query = str_ireplace("DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", '', $query);
+    $query = str_ireplace("DEFAULT CURRENT_TIMESTAMP", '', $query);
+    return $query;
+  }
+
   /**
    * Find missing log table columns by comparing columns of the relevant tables.
    * Returns table-name-keyed array of arrays of missing columns, e.g. array('civicrm_value_foo_1' => array('bar_1', 'baz_2'))
