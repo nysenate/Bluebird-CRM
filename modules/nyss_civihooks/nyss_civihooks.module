@@ -35,6 +35,11 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
 
     $form['description']['#markup'] = 'Please confirm you wish to delete this account.';
   }
+
+  //6055
+  if ( $form_id == 'user_admin_account' ) {
+    unset($form['options']['operation']['#options']['cancel']);
+  }
 }
 
 function nyss_civihooks_page_alter(&$page) {

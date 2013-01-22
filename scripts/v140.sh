@@ -444,6 +444,18 @@ WHERE url = 'admin/user/user';
 "
 $execSql -i $instance -c "$mgusers"
 
+## 6055
+adminadmin="
+SELECT @role:=rid FROM role WHERE name = 'Administrator';
+INSERT INTO role_permission (rid, permission, module)
+VALUES
+  (@rid, 'edit users with role Administrator', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Administrator', 'administerusersbyrole'),
+  (@rid, 'edit users with role Administrator and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Administrator and other roles', 'administerusersbyrole')
+ON DUPLICATE KEY UPDATE module = 'administerusersbyrole';
+"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
