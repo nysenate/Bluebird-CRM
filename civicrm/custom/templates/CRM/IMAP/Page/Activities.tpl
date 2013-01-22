@@ -36,19 +36,41 @@
 			<div id="tabs">
 				<ul>
 					<li><a href="#tab1">Find Contact</a></li>
-					<!-- <li><a href="#tabs-2">Add Contact</a></li> -->
 				</ul>
 				<div id="tab1">
-						<input type="hidden" class="hidden" id="email_id" name="email_id">
-						<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+					<input type="hidden" class="hidden" id="email_id" name="email_id">
+					<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+						
+					<label for="first_name">
+						<span class="label_def">First Name: </span>
 						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
+					</label>
+					<label for="last_name">
+						<span class="label_def">Last Name: </span>
 						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
+					</label>
+					<label for="email_address">
+						<span class="label_def">Email: </span>
 						<input type="text" placeholder="Email Address" class="email-address email_address" name="email_address">
+					</label>
+					<label for="dob">
+						<span class="label_def">DOB: </span>
 						<input type="text" placeholder="yyyy-mm-dd" class="form-text dob" name="dob">
+					</label>
+					<label for="phone">
+						<span class="label_def">Phone #: </span>
 						<input type="text" placeholder="Phone Number" class="form-text phone" name="phone">
+					</label>
+					<label for="street_address">
+						<span class="label_def">St. Address: </span>
 						<input type="text" placeholder="Street Address"  class="form-text street_address" name="street_address">
+					</label>
+					<label for="city">
+						<span class="label_def">City: </span>
 						<input type="text" placeholder="City" class="form-text city" name="city">
-						<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
+					</label>
+
+					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"></div>
 					<input type="button" class="imapper-submit" id="reassign" value="Assign" name="reassign">
 				</div>
