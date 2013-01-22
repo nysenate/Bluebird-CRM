@@ -32,7 +32,7 @@
  *
  */
 require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/Type.php';
+//require_once 'CRM/Utils/Type.php'; //NYSS 6056
 class CRM_Core_DAO_UFMatch extends CRM_Core_DAO
 {
     /**
