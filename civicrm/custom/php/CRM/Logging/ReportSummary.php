@@ -55,7 +55,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
           'log_civicrm_note' =>
           array( 'fk'  => 'entity_id',
                  'entity_table' => true,
-                 'dao' => 'CRM_Core_DAO_Note',
+            'dao_log_table' => 'log_civicrm_note',
                  'dao_column'  => 'subject',
                  ),
       //NYSS 5751
@@ -63,12 +63,12 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
       array( 'fk'  => 'entity_id',
         'table_name'  => 'log_civicrm_note',
         'entity_table' => true,
-        'dao' => 'CRM_Core_DAO_Note',
+        'dao_log_table' => 'log_civicrm_note',
         'dao_column'  => 'subject',
       ),
           'log_civicrm_group_contact' =>
           array( 'fk'  => 'contact_id',
-                 'dao' => 'CRM_Contact_DAO_Group',
+            'dao_log_table' => 'log_civicrm_group',
                  'dao_column'    => 'title',
                  'entity_column' => 'group_id',
                  'action_column' => 'status',
@@ -76,7 +76,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
                  ),
           'log_civicrm_entity_tag' =>
           array( 'fk'  => 'entity_id',
-                 'dao' => 'CRM_Core_DAO_Tag',
+            'dao_log_table' => 'log_civicrm_tag',
                  'dao_column'    => 'name',
                  'entity_column' => 'tag_id',
                  'entity_table'  => true
@@ -84,7 +84,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
           'log_civicrm_relationship' =>
           array( 'fk'  => 'contact_id_a',
                  'entity_column' => 'relationship_type_id',
-                 'dao' => 'CRM_Contact_DAO_RelationshipType',
+            'dao_log_table' => 'log_civicrm_relationship_type',
                  'dao_column' => 'label_a_b',
                  ),
       //NYSS 5525
@@ -239,23 +239,43 @@ WHERE {$clause} {$this->_limit}";
     return $logType;
   }
 
-  function getEntityValue( $id, $entity ) {
-    if (CRM_Utils_Array::value('dao', $this->_logTables[$entity])) {
+  //NYSS 6056
+  function getEntityValue( $id, $entity, $logDate ) {
+    if (CRM_Utils_Array::value('dao_log_table', $this->_logTables[$entity])) {
       if (CRM_Utils_Array::value('entity_column', $this->_logTables[$entity])) {
         $sql = "select {$this->_logTables[$entity]['entity_column']} from `{$this->loggingDB}`.{$entity} where id = %1";
         $entityID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer')));
       } else {
         $entityID = $id;
       }
-      return CRM_Core_DAO::getFieldValue($this->_logTables[$entity]['dao'], $entityID, $this->_logTables[$entity]['dao_column']);
+
+      //NYSS 6056
+      if ($entityID && $logDate) {
+        $sql = "
+SELECT {$this->_logTables[$entity]['dao_column']}
+FROM  `{$this->loggingDB}`.{$this->_logTables[$entity]['dao_log_table']}
+WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
+        return CRM_Core_DAO::singleValueQuery($sql, array(1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'), 2 => array ($entityID, 'Integer')));
+      }
     }
     return null;
   }
 
-  function getEntityAction( $id, $connId, $entity ) {
+  //NYSS 6056
+  function getEntityAction( $id, $connId, $entity, $oldAction ) {
     if (CRM_Utils_Array::value('action_column', $this->_logTables[$entity])) {
       $sql = "select {$this->_logTables[$entity]['action_column']} from `{$this->loggingDB}`.{$entity} where id = %1 AND log_conn_id = %2";
-      return CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer'), 2 => array($connId, 'Integer')));
+      $newAction = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer'), 2 => array($connId, 'Integer')));
+
+      switch ($entity) {
+      case 'log_civicrm_group_contact':
+        if ($oldAction !== 'Update')
+          $newAction = $oldAction;
+        if ($oldAction == 'Insert')
+          $newAction = 'Added';
+        break;
+      }
+      return $newAction;
     }
     return null;
   }
