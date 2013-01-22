@@ -436,6 +436,14 @@ $execSql -i $instance -c "$indivcat"
 ## 5993
 $drush $instance vset civicrm_error_to 'brian@lcdservices.biz,zalewski@nysenate.gov' -y
 
+## 6062
+mgusers="
+UPDATE civicrm_navigation
+SET url = 'admin/people'
+WHERE url = 'admin/user/user';
+"
+$execSql -i $instance -c "$mgusers"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
