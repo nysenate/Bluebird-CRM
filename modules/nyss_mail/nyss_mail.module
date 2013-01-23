@@ -219,7 +219,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
     $dedupeEmails = $submitValues['dedupe_email'];
 
     //add exclude_ood to mailing record
-    $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : FILTER_ALL;
+    $excludeOOD = ( !empty($submitValues['exclude_ood']) ) ? $submitValues['exclude_ood'] : FILTER_ALL;
 
     //exclude_ood will be set from the config file initially, so we overwrite the form values
     $bbconfig   = get_bluebird_instance_config();
@@ -266,6 +266,28 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
       $form->set('count', $count);
       $form->assign('count', $count);
     }
+
+    //5996 set default header/footer if save later on step 1
+    $buttonName = $form->controller->getButtonName();
+    if ( $buttonName == '_qf_Group_submit' ) {
+      $mailing = new CRM_Mailing_DAO_Mailing();
+      $mailing->id = $mailingID;
+      $mailing->find(TRUE);
+      if ( empty($mailing->header_id) || empty($mailing->footer_id) ) {
+        //get default header/footer
+        $componentFields = array(
+          'header_id' => 'Header',
+          'footer_id' => 'Footer',
+        );
+        foreach ($componentFields as $componentVar => $componentType) {
+          $mailing->$componentVar = CRM_Mailing_PseudoConstant::defaultComponent($componentType, '');
+        }
+        $mailing->created_date = date( 'YmdHis', strtotime($mailing->created_date) );
+        $mailing->save();
+      }
+      //CRM_Core_Error::debug_var('$mailing',$mailing);
+    }
+
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
   //CRM_Core_Error::debug($form); exit();
