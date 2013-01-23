@@ -123,7 +123,6 @@ cj(document).ready(function(){
 						cj("#find-match-popup").dialog('close');  
 						help_message('Message assigned to contact');
 					}
-	 	
 				}
 			});
 			return false;
@@ -207,12 +206,17 @@ cj(document).ready(function(){
 							contactId: contactData.contact
 						},
 						success: function(data, status) {
-							cj("#find-match-popup").dialog('close'); 
-							cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
-							help_message('Contact created and message Assigned');
-							var old_total = parseInt(cj("#total_number").html(),10);
-							help_message('Activity Deleted');
-							cj("#total_number").html(old_total-1);
+							if (data.code == 'ERROR'){
+			    				alert('failure'+data.message);
+			    				return false;
+							}else{
+								cj("#find-match-popup").dialog('close'); 
+								cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
+								help_message('Contact created and message Assigned');
+								var old_total = parseInt(cj("#total_number").html(),10);
+								help_message('Message Assigned');
+								cj("#total_number").html(old_total-1);
+							}
 						},
 						error: function(){
     						alert('failure');

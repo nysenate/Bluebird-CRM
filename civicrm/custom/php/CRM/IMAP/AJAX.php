@@ -563,14 +563,6 @@ class CRM_IMAP_AJAX {
                 $results[] = $row;
             }
 
-            // On match add email to user
-            // Important
-            $params = array(
-                'contact_id' => $contactId,
-                'email' => $fromEmail,
-                'version' => 3,
-            );
-
             if ($debug){
                 echo "<h1>Contact ".$contactId." has the following emails </h1>";
                 var_dump($results);
@@ -590,7 +582,13 @@ class CRM_IMAP_AJAX {
                   }
               }
             }
-
+            
+            // Prams to add email to user
+            $params = array(
+                'contact_id' => $contactId,
+                'email' => $fromEmail,
+                'version' => 3,
+            );
             if(($emailsCount-$matches) == 0){
                 if ($debug) echo "<p> added ".$fromEmail."</p><hr/>";
                 $result = civicrm_api( 'email','create',$params );
@@ -857,7 +855,6 @@ class CRM_IMAP_AJAX {
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
-
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);
@@ -1066,14 +1063,14 @@ EOQ;
         //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes&debug=true
         // http://skelos/civicrm/imap/ajax/createNewContact?messageId=52&imap_id=0&first_name=Fakie&last_name=McTesterson&email_address=Test%40aol.com&phone=5185185555&street_address=1241+fake+street&street_address_2=floor+2&postal_code=12202&city=albany&debug=true
 
-        $first_name = (strtolower(self::get('first_name')) == 'first name') ? '' : self::get('first_name');
-        $last_name = (strtolower(self::get('last_name')) == 'last name') ? '' : self::get('last_name');
-        $email  = (strtolower(self::get('email_address')) == 'email address') ? '' : self::get('email_address');
-        $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
-        $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
-        $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address') ? '' : self::get('street_address_2');
-        $postal_code = (strtolower(self::get('postal_code')) == 'zip code') ? '' : self::get('postal_code');
-        $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
+        $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? '' : self::get('first_name');
+        $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? '' : self::get('last_name');
+        $email  = (strtolower(self::get('email_address')) == 'email address')|| trim(self::get('email_address')) =='' ? '' : self::get('email_address');
+        $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? '' : self::get('phone');
+        $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? '' : self::get('street_address');
+        $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address'|| trim(self::get('street_address_2')) =='') ? '' : self::get('street_address_2');
+        $postal_code = (strtolower(self::get('postal_code')) == 'zip code'|| trim(self::get('postal_code')) =='') ? '' : self::get('postal_code');
+        $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? '' : self::get('city');
 
         if ($debug){
           echo "<h1>inputs</h1>";
