@@ -19,7 +19,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   */
   $bodyvalues = array( 'text', 'html' );
   foreach ( $bodyvalues as $bodyvalue ) {
-    $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+    if ( isset($params[$bodyvalue]) ) {
+      $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+    }
   }
 
   $hdr = new SmtpApiHeader();
@@ -40,11 +42,11 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
   //set character encoding
-  $params['Content-Transfer-Encoding'] = 'Quoted-Printable';
+  //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
 
   //set some values based on context
   if ( $context == 'civimail' ) {
-    if (!isset($params['event_queue_id']) || empty($params['event_queue_id'])) {
+    if ( empty($params['event_queue_id']) && empty($params['is_test']) ) {
       CRM_Core_Error::debug_var('alterMailParams params: event_queue_id not found',$params);
     }
 
@@ -52,7 +54,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
     $params['List-Unsubscribe'] = '';
     $params['Reply-To'] = $replyto;
 
-    $test = 0;
+    $test = $event_queue_id = $jid = $mid = $mname = 0;
     if ( isset($params['job_id']) ) {
       $jid   = $params['job_id'];
       $mid   = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
@@ -179,7 +181,7 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
       //NYSS 4557
       //CRM_Core_Error::debug_var('form',$form);
       $session =& CRM_Core_Session::singleton();
-      if ( $form->_finalValues['name'] ) {
+      if ( !empty($form->_finalValues['name']) ) {
         $form->assign('mailingName', $form->_finalValues['name']);
         $session->set('mailingName', $form->_finalValues['name']);
       }
@@ -217,7 +219,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
     $dedupeEmails = $submitValues['dedupe_email'];
 
     //add exclude_ood to mailing record
-    $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : FILTER_ALL;
+    $excludeOOD = ( !empty($submitValues['exclude_ood']) ) ? $submitValues['exclude_ood'] : FILTER_ALL;
 
     //exclude_ood will be set from the config file initially, so we overwrite the form values
     $bbconfig   = get_bluebird_instance_config();
@@ -264,6 +266,28 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
       $form->set('count', $count);
       $form->assign('count', $count);
     }
+
+    //5996 set default header/footer if save later on step 1
+    $buttonName = $form->controller->getButtonName();
+    if ( $buttonName == '_qf_Group_submit' ) {
+      $mailing = new CRM_Mailing_DAO_Mailing();
+      $mailing->id = $mailingID;
+      $mailing->find(TRUE);
+      if ( empty($mailing->header_id) || empty($mailing->footer_id) ) {
+        //get default header/footer
+        $componentFields = array(
+          'header_id' => 'Header',
+          'footer_id' => 'Footer',
+        );
+        foreach ($componentFields as $componentVar => $componentType) {
+          $mailing->$componentVar = CRM_Mailing_PseudoConstant::defaultComponent($componentType, '');
+        }
+        $mailing->created_date = date( 'YmdHis', strtotime($mailing->created_date) );
+        $mailing->save();
+      }
+      //CRM_Core_Error::debug_var('$mailing',$mailing);
+    }
+
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
   //CRM_Core_Error::debug($form); exit();

@@ -19,6 +19,33 @@ function nyss_civihooks_menu_alter( &$items ) {
   $items['admin/user/user/create']['access arguments'] = array('create users');
 }//menu_alter
 
+function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
+  //dpm($form_id);
+  //dpm($form);
+
+  //6062
+  if ( $form_id == 'user_cancel_confirm_form' ) {
+    unset($form['user_cancel_method']['user_cancel_block']);
+    unset($form['user_cancel_method']['user_cancel_block_unpublish']);
+    unset($form['user_cancel_method']['user_cancel_reassign']);
+    $form['user_cancel_method']['user_cancel_delete']['#default_value'] = 'user_cancel_delete';
+    $form['user_cancel_method']['#title'] = '';
+
+    unset($form['user_cancel_confirm']);
+
+    $form['description']['#markup'] = 'Please confirm you wish to delete this account.';
+  }
+
+  //6055
+  if ( $form_id == 'user_admin_account' ) {
+    unset($form['options']['operation']['#options']['cancel']);
+  }
+}
+
+function nyss_civihooks_page_alter(&$page) {
+  //dpm($page);
+}
+
 function nyss_civihooks_permission() {
 
   return array(

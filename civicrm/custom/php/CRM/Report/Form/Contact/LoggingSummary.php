@@ -181,7 +181,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['log_civicrm_entity_altered_contact_link'] = 
           CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_entity_altered_contact_id']);
         $row['log_civicrm_entity_altered_contact_hover'] = ts("Go to contact summary");
-        $entity = $this->getEntityValue($row['log_civicrm_entity_id'], $row['log_civicrm_entity_log_type']);
+        //NYSS 6056
+        $entity = $this->getEntityValue($row['log_civicrm_entity_id'], $row['log_civicrm_entity_log_type'], $row['log_civicrm_entity_log_date']);
         if ($entity)
           $row['log_civicrm_entity_altered_contact'] = $row['log_civicrm_entity_altered_contact'] . " [{$entity}]";
       }
@@ -197,7 +198,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['log_civicrm_entity_log_action'] = ts('Update');
       }
 
-      if ($newAction = $this->getEntityAction($row['log_civicrm_entity_id'], $row['log_civicrm_entity_log_conn_id'], $row['log_civicrm_entity_log_type']))
+      //NYSS 6056
+      if ($newAction =
+          $this->getEntityAction($row['log_civicrm_entity_id'],
+                                 $row['log_civicrm_entity_log_conn_id'],
+                                 $row['log_civicrm_entity_log_type'],
+                                 $row['log_civicrm_entity_log_action']))
         $row['log_civicrm_entity_log_action'] = $newAction;
 
       $row['log_civicrm_entity_log_type'] = $this->getLogType($row['log_civicrm_entity_log_type']);
@@ -218,8 +224,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $q .= '&instanceID='.$this->_id;
 
         //NYSS 5267
-        $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&layout=overlay", FALSE, TRUE);
-        $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}", FALSE, TRUE);
+        $url1 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&snippet=4&section=2&layout=overlay", FALSE, TRUE);
+        $url2 = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', "{$q}&section=2", FALSE, TRUE);
         $row['log_civicrm_entity_log_action'] = "<a href='{$url1}' class='crm-summary-link'><div class='icon details-icon'></div></a>&nbsp;<a title='View details for this update' href='{$url2}'>" . ts('Update') . '</a>';
       }
 
@@ -276,15 +282,11 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
 
     //NYSS 5751
     $joinClause = "
-INNER JOIN civicrm_temp_civireport_logsummary temp 
-        ON (entity_log_civireport.{$detail['fk']} = temp.contact_id)
 INNER JOIN civicrm_contact modified_contact_civireport 
         ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id {$clause})";
     if ($entity == 'log_civicrm_note_comment') {
       $joinClause = "
 INNER JOIN `{$this->loggingDB}`.log_civicrm_note note ON entity_log_civireport.entity_id = note.id AND entity_log_civireport.entity_table = 'civicrm_note'
-INNER JOIN civicrm_temp_civireport_logsummary temp
-        ON (note.{$detail['fk']} = temp.contact_id)
 INNER JOIN civicrm_contact modified_contact_civireport
         ON (note.{$detail['fk']} = modified_contact_civireport.id AND note.entity_table = 'civicrm_contact')";
     }

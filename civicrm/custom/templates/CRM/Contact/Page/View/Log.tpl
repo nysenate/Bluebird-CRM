@@ -64,6 +64,28 @@
       }
     });
   });
+
+  //NYSS 5719
+  cj('div#changeLog div#instance_data .report-pager .crm-pager-nav a').live("click", function(e) {
+    cj.ajax({
+      url: this.href + '&snippet=4&section=2',
+      success: function( content ) {
+        cj('div#changeLog div#instance_data').html(content);
+      }
+    });
+    return false;
+  });
+
+  cj('input[name="PagerBottomButton"], input[name="PagerTopButton"]').live("click", function(e) {
+    var crmpid  = (this.name == 'PagerBottomButton') ? cj('input[name="crmPID_B"]').val() : cj('input[name="crmPID"]').val();
+    cj.ajax({
+      url: cj('div#changeLog div#instance_data .report-pager .crm-pager-nav a:first').attr('href') + '&snippet=4&section=2&crmPID=' + crmpid,
+      success: function( content ) {
+        cj('div#changeLog div#instance_data').html(content);
+      }
+    });
+    return false;
+  });
 </script>
 {/literal}
 {/if}
