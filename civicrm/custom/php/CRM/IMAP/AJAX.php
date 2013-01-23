@@ -148,6 +148,11 @@ class CRM_IMAP_AJAX {
           $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
+          $origin_subject = preg_replace("/(\(|\))/i", "", $origin_subject);
+          if($origin_subject =='' || strtolower($origin_subject) == 'no subject' ){ 
+            $origin_subject = "No Subject";
+          }
+
           // contains info about the forwarded message in the email body
           $forwarded = array(
               'date_clean' => $origin_date, 
