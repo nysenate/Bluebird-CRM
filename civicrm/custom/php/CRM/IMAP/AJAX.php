@@ -554,8 +554,8 @@ class CRM_IMAP_AJAX {
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
 
-            // check to see if contact has the email being assigend to it,
-            // if doesn't have email, add it to contact
+            // Check to see if contact has the email address being assigend to it,
+            // if doesn't have email address, add it to contact
             $query = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
             $result = mysql_query($query, self::db());
             $results = array();
