@@ -391,28 +391,28 @@ class CRM_IMAP_AJAX {
         $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
         $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
-        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name') ? NULL : self::get('first_name');
+        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name'  || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
         if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
 
-        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name') ? NULL : self::get('last_name');
+        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name'  || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
 
-        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address') ? NULL : self::get('email_address');
+        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
         if($email_address) {
           // $from.="  JOIN  civicrm_email email ON (email.email = '$email_address')\n";
           $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
 
-        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
         // block epoch date
         if ($dob == '1969-12-31') $dob  = NULL ;
         // convert dob to standard format
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
         $state_id = self::get('state');
-        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address') ? NULL : self::get('street_address');
-        if(self::get('city')) $city = (strtolower(self::get('city')) == 'city') ? NULL : self::get('city');
+        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
+        if(self::get('city')) $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? NULL : self::get('city');
 
 
         if($street_address || $city){
@@ -431,12 +431,20 @@ class CRM_IMAP_AJAX {
           $where.="  AND (state.id='$state_id' OR state.id IS NULL)\n";
         }
 
-        if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number') ? NULL : self::get('phone');
+        if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? NULL : self::get('phone');
         if ($phone) {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
-
-        $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+        if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
+          $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+        }else{
+          // do nothing if no query
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Need INPUT!');
+          echo json_encode($returnCode);
+          mysql_close(self::$db);
+          CRM_Utils_System::civiExit();
+        }
+        
 
         $result = mysql_query($query, self::db());
         $results = array();
@@ -456,7 +464,7 @@ class CRM_IMAP_AJAX {
           print_r($query);
           echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
           print_r($results);
-          exit();
+          // exit();
         }
         if(count($results) > 0){
           $returnCode = $results;

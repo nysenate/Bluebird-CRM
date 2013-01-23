@@ -198,31 +198,37 @@ cj(document).ready(function(){
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
-					cj.ajax({
-						url: '/civicrm/imap/ajax/assignMessage',
-						data: {
-							messageId: create_messageId,
-							imapId: create_imap_id,
-							contactId: contactData.contact
-						},
-						success: function(data, status) {
-							if (data.code == 'ERROR'){
-			    				alert('failure'+data.message);
-			    				return false;
-							}else{
-								cj("#find-match-popup").dialog('close'); 
-								cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
-								help_message('Contact created and message Assigned');
-								var old_total = parseInt(cj("#total_number").html(),10);
-								help_message('Message Assigned');
-								cj("#total_number").html(old_total-1);
-							}
-						},
-						error: function(){
-    						alert('failure');
-  						}
+					if (contactData.code == 'ERROR'){
+	    				alert(contactData.message);
+	    				return false;
+					}else{
 
-				});
+						cj.ajax({
+							url: '/civicrm/imap/ajax/assignMessage',
+							data: {
+								messageId: create_messageId,
+								imapId: create_imap_id,
+								contactId: contactData.contact
+							},
+							success: function(data, status) {
+								if (data.code == 'ERROR'){
+				    				alert('failure'+data.message);
+				    				return false;
+								}else{
+									cj("#find-match-popup").dialog('close'); 
+									cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
+									help_message('Contact created and message Assigned');
+									var old_total = parseInt(cj("#total_number").html(),10);
+									help_message('Message Assigned');
+									cj("#total_number").html(old_total-1);
+								}
+							},
+							error: function(){
+	    						alert('failure');
+	  						}
+
+					});
+					}	
 				}			
 			});
 			return false;
