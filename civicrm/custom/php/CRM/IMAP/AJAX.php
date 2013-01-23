@@ -90,8 +90,9 @@ class CRM_IMAP_AJAX {
         $time = time()-(self::$contTime*60);;
         if( $email->time > $time){
           // email hasn't been processed yet
-
+          $status = 'FAILURE';
         }else{
+          $status = 'SUCCESS';
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
@@ -120,9 +121,15 @@ class CRM_IMAP_AJAX {
           $attachmentArray['overview'] = array('total'=>$attachmentCount); 
 
           // here we grab the details from the message;
-          preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempDetails, $subjects);
+          preg_match("/(Subject:|subject:)([^\r\n]*)/i", $tempDetails, $subjects);
           preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempDetails, $froms);
 
+          if ($debug){
+            echo "<h1>Subjects</h1>";
+            var_dump($subjects);
+            echo "<h1>From</h1>";
+            var_dump($froms);
+          }
           $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
 
           // check ot see if forwarded 
@@ -146,10 +153,11 @@ class CRM_IMAP_AJAX {
           $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
           $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
           $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
+
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
           $origin_subject = preg_replace("/(\(|\))/i", "", $origin_subject);
-          if($origin_subject =='' || strtolower($origin_subject) == 'no subject' ){ 
+          if( trim($origin_subject) =='' || strtolower($origin_subject) == 'no subject' ){ 
             $origin_subject = "No Subject";
           }
 
@@ -163,7 +171,7 @@ class CRM_IMAP_AJAX {
               'origin_lookup' => $fromEmail['type'], 
           );
 
-          $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+          $output = array('status'=>$status,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
           if ($debug){
             echo "<h1>Full Email OUTPUT</h1>";
             var_dump($output);
@@ -206,8 +214,8 @@ class CRM_IMAP_AJAX {
                     // Get the message based on the UID of the header.
                     $email = $imap->getmsg_uid($header->uid);
                     $output = self::unifiedMessageInfo($email);
-
-                    $returnMessage[$header->uid] =  array( 
+                    if ($output['status'] == "SUCCESS"){
+                        $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
                         'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                         'uid' =>  $header->uid,
@@ -226,6 +234,13 @@ class CRM_IMAP_AJAX {
                         // 'origin_lookup' => $output['forwarded']['origin_lookup']
 
                         );
+
+                    }else{
+                      $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
+
+                    }
+
+             
                  }
             }
         }       
@@ -305,6 +320,7 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
+        if ($output['status'] == "SUCCESS"){
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
@@ -327,6 +343,10 @@ class CRM_IMAP_AJAX {
                                'header_subject' => $output['header']['subject'],
                                'date'   =>  $output['header']['date_clean'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
+          }else{
+            $returnMessage = array('code' => 'ERROR','message'=>"It's likely that message #{$id} has not be proccessed by the processMailboxes script, wait a few mins");
+
+          }
         // var_dump($returnMessage);  exit();
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
