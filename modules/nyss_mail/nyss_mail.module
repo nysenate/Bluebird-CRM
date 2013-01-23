@@ -19,7 +19,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   */
   $bodyvalues = array( 'text', 'html' );
   foreach ( $bodyvalues as $bodyvalue ) {
-    $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+    if ( isset($params[$bodyvalue]) ) {
+      $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+    }
   }
 
   $hdr = new SmtpApiHeader();
@@ -52,7 +54,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
     $params['List-Unsubscribe'] = '';
     $params['Reply-To'] = $replyto;
 
-    $test = 0;
+    $test = $event_queue_id = $jid = $mid = $mname = 0;
     if ( isset($params['job_id']) ) {
       $jid   = $params['job_id'];
       $mid   = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
@@ -179,7 +181,7 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
       //NYSS 4557
       //CRM_Core_Error::debug_var('form',$form);
       $session =& CRM_Core_Session::singleton();
-      if ( $form->_finalValues['name'] ) {
+      if ( !empty($form->_finalValues['name']) ) {
         $form->assign('mailingName', $form->_finalValues['name']);
         $session->set('mailingName', $form->_finalValues['name']);
       }
