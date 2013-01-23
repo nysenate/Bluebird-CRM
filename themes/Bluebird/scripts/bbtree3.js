@@ -138,30 +138,21 @@ var callTree =  {
 		sortWindow(); //gets current window location
 	},
 	treeSetupPage: function(instance){ 
-		instance = 'BB' + instance;
 		if(instance == null)
 		{
-			instance = 'BBdefault';
+			instance = 'default';
 		}
-		if(callTree.currentSettings.instances.preset == false ){
+		instance = 'BB' + instance;
+		if(callTree.currentSettings.instances.preset != true ){
 			delete callTree.currentSettings.instances.preset;
 			callTree.currentSettings.instances[instance] = {};
 			callTree.currentSettings.instances[instance]['displaySettings'] = callTree.currentSettings.displaySettings;
 		}
-		//overwrites defaults technically can post these to a cookie and rewrite ::TODO::
-		if(cj(callTree.currentSettings.pageSettings.wrapper).length == 0) //needs to append a div right after the function is called
-		{
-			if(cj('.BBInit').length > 0)
-			{
-				cj('.BBInit').attr('id', callTree.currentSettings.pageSettings.idName);
-
-			}
-		}
+		cj('.BBInit').attr('id', callTree.currentSettings.pageSettings.idName);
+		cj('.BBInit').addClass(callTree.currentSettings.pageSettings.idName+'-'+instance).removeClass('BBInit');
 		//make this a function to build x trees with y attributes, and everyone is hidden but the first
-		cj.each(callTree.currentSettings.instances, function(k, boxName){
-			callTree.currentSettings.displaySettings['currentInstance'] = k;
-			callTree.buildBoxes(); //sends # of boxes to buildBoxes
-		});
+		callTree.currentSettings.displaySettings['currentInstance'] = instance;
+		callTree.buildBoxes(); //sends # of boxes to buildBoxes
 		//cj(callTree.defaultSettings.pageSettings.wrapper).append('<div class="BBTree '+ this.config.displaySettings.treeTypeSet.toLowerCase() +'"></div>');
 	},
 	callTreeAjax: function(callback){
@@ -288,7 +279,7 @@ var callTree =  {
 			}
 			treeBox += addTagLabel(className);
 			treeBox += '" id="'+addTagLabel(className)+'"></div>';
-			cj(callTree.currentSettings.pageSettings.wrapper).append(treeBox);
+			cj('.'+callTree.currentSettings.pageSettings.idName+'-'+callTree.currentSettings.displaySettings.currentInstance+callTree.currentSettings.pageSettings.wrapper).append(treeBox);
 		});	
 	},
 	writeParsedData: function()//write the tree to the CORRECT div
