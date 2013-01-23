@@ -435,6 +435,22 @@ class CRM_IMAP_AJAX {
         if ($phone) {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
+        
+        if ($debug){
+          echo "<h1>inputs</h1>";
+          var_dump($first_name);
+          var_dump($last_name);
+          var_dump($email_address);
+          var_dump($dob);
+          var_dump($phone);
+          var_dump($street_address);
+          var_dump($city);
+          echo "<h1>Query</h1><pre>";
+          print_r($query);
+          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
+          print_r($results);
+        }
+
         if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
           $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
         }else{
@@ -450,21 +466,6 @@ class CRM_IMAP_AJAX {
         $results = array();
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
-        }
-        if ($debug){
-          echo "<h1>inputs</h1>";
-          var_dump($first_name);
-          var_dump($last_name);
-          var_dump($email_address);
-          var_dump($dob);
-          var_dump($phone);
-          var_dump($street_address);
-          var_dump($city);
-          echo "<h1>Query</h1><pre>";
-          print_r($query);
-          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
-          print_r($results);
-          // exit();
         }
         if(count($results) > 0){
           $returnCode = $results;
