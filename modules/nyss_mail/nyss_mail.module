@@ -42,11 +42,11 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
   //set character encoding
-  $params['Content-Transfer-Encoding'] = 'Quoted-Printable';
+  //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
 
   //set some values based on context
   if ( $context == 'civimail' ) {
-    if (!isset($params['event_queue_id']) || empty($params['event_queue_id'])) {
+    if ( empty($params['event_queue_id']) && empty($params['is_test']) ) {
       CRM_Core_Error::debug_var('alterMailParams params: event_queue_id not found',$params);
     }
 
