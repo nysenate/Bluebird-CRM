@@ -868,17 +868,23 @@ class CRM_IMAP_AJAX {
     public static function deleteActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
-        
+        $tagid = self::getInboxPollingTagId();
+        $error = false;
+
         // deleteing a activity
         $params = array( 
             'id' => $id,
             'activity_type_id' => 1,
             'version' => 3,
         );
-        $result = civicrm_api( 'activity','delete',$params );
+
+        $deleteActivity = civicrm_api('activity','delete',$params );
+        if($deleteActivity['is_error'] == 1){
+          $error = true;
+        }
+
 
         // deleteing a entity is hard via api without entity id, time to use sql 
-        $tagid = self::getInboxPollingTagId();
         $query = <<<EOQ
 DELETE FROM `civicrm_entity_tag`
 WHERE `entity_id` =  $id
@@ -889,7 +895,19 @@ EOQ;
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
         }
-        echo json_encode($result);
+
+        if(mysql_affected_rows() != 1){
+          $error = true;
+        }
+ 
+ 
+        if(!$error){
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+        }
+        echo json_encode($returnCode);
+
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
@@ -900,6 +918,7 @@ EOQ;
         $id = self::get('id');
         $contact = self::get('contact');
         $tagid = self::getInboxPollingTagId();
+        $error = false;
 
         // deleteing a entity is hard via api without entity id, time to use sql 
         $tagid = self::getInboxPollingTagId();
@@ -913,7 +932,19 @@ EOQ;
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
         }
-        echo json_encode($result);
+
+        if(mysql_affected_rows() != 1){
+          $error = true;
+        }
+ 
+ 
+        if(!$error){
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Cleared');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+        }
+
+        echo json_encode($returnCode);
         mysql_close(self::$db);
 
         CRM_Utils_System::civiExit();

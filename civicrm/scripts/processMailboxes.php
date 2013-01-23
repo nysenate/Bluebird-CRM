@@ -542,6 +542,7 @@ function extract_email_address ($string) {
                 "activity_type_id" => $activityType,
                 "duration" => 1,
                 "is_auto" => 1,
+                "original_id" => $email->uid,
                 "target_contact_id" => $contactID,
                 "version" => 3
     );

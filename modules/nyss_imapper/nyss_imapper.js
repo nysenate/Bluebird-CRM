@@ -228,6 +228,7 @@ cj(document).ready(function(){
 	});
 
 	if(cj("#Activities").length){
+
 		pullActivitiesHeaders();
  		autocomplete_setup();
  	}else if(cj("#Unmatched").length){
@@ -261,11 +262,15 @@ cj(document).ready(function(){
 							url: '/civicrm/imap/ajax/deleteActivity',
 							data: {id: messageId},
 							success: function(data,status) {
-								cj("#"+messageId).remove();
-								var old_total = parseInt(cj("#total_number").html(),10);
-								help_message('Activity Deleted');
-								cj("#total_number").html(old_total-1);
-								// console.log(old_total-1);
+								deleted = cj.parseJSON(data);
+								if(deleted.code == 'ERROR'){
+									alert('unable to delete Activity');
+								}else{
+									cj("#"+messageId).remove();
+									var old_total = parseInt(cj("#total_number").html(),10);
+									help_message('Activity Deleted');
+									cj("#total_number").html(old_total-1);
+								}
 							},
 							error: function(){
     							alert('unable to delete activity');
@@ -310,12 +315,20 @@ cj(document).ready(function(){
 		var delete_secondary = new Array();
 		var rows = new Array();
 
+
 		cj('#imapper-messages-list input:checked').each(function() {
  			delete_ids.push(cj(this).attr('name'));
 			delete_secondary.push(cj(this).attr('data-id'));
 			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
 		});
-
+		if(!rows.length){
+			cj("#loading-popup").dialog('close');
+			alert('Use the checkbox to select a Message');
+			return false;
+		}
+		// console.log(delete_ids);
+		// console.log(delete_secondary);
+		// console.log(rows);
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Delete": function() {
@@ -326,13 +339,18 @@ cj(document).ready(function(){
 								url: '/civicrm/imap/ajax/deleteActivity',
 								data: {id: value},
 								success: function(data,status) {
-									cj('#'+rows[key]).remove();
-									var old_total = parseInt(cj("#total_number").html(),10);
-									cj("#total_number").html(old_total-1);
-									help_message('Activities Deleted');
+									deleted = cj.parseJSON(data);
+									if(deleted.code == 'ERROR'){
+    									alert('unable to delete Activity');
+									}else{
+										cj('#'+rows[key]).remove();
+										var old_total = parseInt(cj("#total_number").html(),10);
+										cj("#total_number").html(old_total-1);
+										help_message('Activities Deleted');
+									}
 								},
 								error: function(){
-    								alert('unable to delete Activitie');
+    								alert('unable to delete Activity');
   								}
 							});
 						});		
@@ -340,8 +358,8 @@ cj(document).ready(function(){
 						cj.each(delete_ids, function(key, value) { 
 							cj.ajax({
 								url: '/civicrm/imap/ajax/deleteMessage',
-										data: {id: value,
-									    imapId: delete_secondary[key] },
+								data: {id: value,
+							imapId: delete_secondary[key] },
 								success: function(data,status) {
 									cj('#'+rows[key]).remove();
 									var old_total = parseInt(cj("#total_number").html(),10);
@@ -391,8 +409,8 @@ cj(document).ready(function(){
 	// add a loading icon popup
 	cj( "#tagging-popup" ).dialog({
 		modal: true,
-		height: 500,
-		width: 540,
+		height: 510,
+		width: 960,
 		autoOpen: false,
 		resizable: false,
 		title: 'Loading Data',
@@ -871,7 +889,7 @@ function checks(){
 }
 
 function buildMessageList() {
-	if(messages == '' || messages == null){
+	if(messages.count == '0' || messages == null){
 		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
 		cj("#total_number").html('0');
 	}else{
@@ -927,7 +945,7 @@ function buildMessageList() {
 
 // matched messages screen 
 function buildActivitiesList() {
-	if(messages == '' || messages == null){
+	if(messages.count == '0' || messages == null){
 		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
 		cj("#total_number").html('0');
 	}else{
