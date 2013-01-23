@@ -99,7 +99,7 @@ BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'
         </div>
         <!-- goes here -->
         <div class="crm-tagTreeDisplay">
-            <div id="BBInit"></div>
+            <div class="BBInit"></div>
             {literal}
             <script>
                 BBTree.initContainer();

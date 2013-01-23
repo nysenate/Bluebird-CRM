@@ -101,7 +101,7 @@
 <div class="clear"></div>
 </div>
 {if $tagset.parentID eq 296}
-    <div id="BBInit"></div>
+    <div class="BBInit"></div>
     {literal}
     <script>
         BBTree.initContainer();
