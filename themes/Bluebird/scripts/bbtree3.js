@@ -62,9 +62,10 @@ var BBTree = {
 	{
 		BBTreeEdit.setTagInfo();
 	},
-	tagTree: function()
+	tagTree: function(cid, entity_type)
 	{
-		BBTreeTag.getContactTags();
+		BBTreeTag.getPageCID(cid, entity_type);
+		BBTreeTag.getContactTags(); // if get contact tags becomes an array, don't link together the apply/get.
 	},
 	getMaxID: function(){ //isn't actually necessary, should make based on response
 		var idarray = cj('dt', callTree.currentSettings.pageSettings.wrapper + ' .' + callTree.currentSettings.pageSettings.tagHolder);
@@ -141,7 +142,6 @@ var callTree =  {
 		//cj(callTree.defaultSettings.pageSettings.wrapper).append('<div class="BBTree '+ this.config.displaySettings.treeTypeSet.toLowerCase() +'"></div>');
 	},
 	callTreeAjax: function(callback){
-		// var pageCID = getPageCID();
 		// cj.extend(callTree.currentSettings.callSettings.ajaxSettings.entity_id,pageCID); //overwrites CID if page is different. Check Add Contact?
 		cj.ajax({
 			url: callTree.currentSettings.callSettings.ajaxUrl,
@@ -377,14 +377,32 @@ var BBTreeEdit = {
 	}
 }
 var BBTreeTag = {
+	getPageCID: function(passedCID, passedEntityType){
+		var pageCID = {entity_id: 0, entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type};
+		var cid = 0 ;
+		var cidpre = /cid=\d*/.exec(document.location.search);
+		var cidsplit = /\d.*/.exec(cidpre);
+		if(cidsplit)
+		{
+			cid = cidsplit[0];
+			pageCID.entity_id = cid;
+		}
+		if(passedCID != null)
+		{
+			pageCID.entity_id = passedCID;
+		}
+		if(passedEntityType != null)
+		{
+			pageCID.entity_type = passedEntityType;
+		}
+		cj.extend(true, callTree.currentSettings.callSettings.ajaxSettings,pageCID); //overwrites CID if page is different. Check Add Contact?
+	},
 	getContactTags: function()
 	{
-		var pageCID = {entity_id : getPageCID()};
-		if(typeof BBTree.contactTagData === 'undefined')
+		if(typeof BBTree.contactTagData === 'undefined') 
 		{
 			BBTree.contactTagData = {};
 		}
-		cj.extend(true, callTree.currentSettings.callSettings.ajaxSettings,pageCID); //overwrites CID if page is different. Check Add Contact?
 		cj.ajax({
 			url: '/civicrm/ajax/entity_tag/get',
 			data: {
@@ -396,9 +414,11 @@ var BBTreeTag = {
 			success: function(data, status, XMLHttpRequest) {
 				if(data.code != 1 ) {
 					alert('Error');
+					console.log('errorInAjax');
+					console.log(callTree.currentSettings.callSettings.ajaxSettings);
 				}
 				else{
-					BBTree.contactTagData['cid_'+pageCID.entity_id] = data.message;
+					BBTree.contactTagData['cid_'+ callTree.currentSettings.callSettings.ajaxSettings.entity_id] = data.message;
 					BBTreeTag.applyContactTags();
 				}
 			}
@@ -415,6 +435,8 @@ var BBTreeTag = {
 	removeContactTags: function()
 	{
 		cj(BBTree.treeLoc + ' .checkbox').removeAttr('checked');
+		cj(BBTree.treeLoc).find('*').removeClass('checked');
+		cj(BBTree.treeLoc).find('*').removeClass('subChecked');
 	},
 	checkRemoveAdd: function(tagLabel) { //adds and removes the checkbox data
 		var n = cj(BBTree.treeLoc + ' dt#'+ tagLabel).hasClass('checked');
@@ -744,7 +766,6 @@ var BBTreeModal = {
 			BBTreeModal.getModalTagTree();
 		},
 		runFunction: function(){
-			console.log(BBTreeModal.radioSelectedTid);
 			cj("#BBDialog").dialog( "option", "buttons", [
 			{
 				text: "Done",
@@ -829,7 +850,6 @@ var BBTreeModal = {
 						{
 							tidMatch = true;
 						}
-			 			//console.log(tidMatch);
 						if(tidMatch == false)
 						{	
 							cj.ajax({
@@ -848,7 +868,6 @@ var BBTreeModal = {
 										var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
 										var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + BBTreeModal.taggedName + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + BBTreeModal.taggedName + "' are now tagged with '" + toIdTag + "'.</li></ul>";
 										cj('#tagStatusBar').html(msg);
-										console.log(tagMerge.currentId);
 										BBTreeModal.removeTag.removeInline(tagMerge.currentId);
 									}
 									else
@@ -1137,7 +1156,6 @@ var BBTreeModal = {
 			}
 			if(data.parent_id == 296)
 			{
-				console.log('296')
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
 				if(data.is_reserved != null)
@@ -1151,19 +1169,6 @@ var BBTreeModal = {
 			}
 		}
 	}
-}
-
-//finds Page CID
-function getPageCID()
-{
-	var cid = 0 ;
-	var cidpre = /cid=\d*/.exec(document.location.search);
-	var cidsplit = /\d.*/.exec(cidpre);
-	if(cidsplit)
-	{
-		cid = cidsplit[0];
-	}
-	return cid;
 }
 function addTagLabel(tag)
 {
