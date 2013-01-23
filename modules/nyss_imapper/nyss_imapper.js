@@ -228,6 +228,7 @@ cj(document).ready(function(){
 	});
 
 	if(cj("#Activities").length){
+
 		pullActivitiesHeaders();
  		autocomplete_setup();
  	}else if(cj("#Unmatched").length){
@@ -888,7 +889,7 @@ function checks(){
 }
 
 function buildMessageList() {
-	if(messages == '' || messages == null){
+	if(messages.count == '0' || messages == null){
 		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
 		cj("#total_number").html('0');
 	}else{
@@ -944,7 +945,7 @@ function buildMessageList() {
 
 // matched messages screen 
 function buildActivitiesList() {
-	if(messages == '' || messages == null){
+	if(messages.count == '0' || messages == null){
 		cj('#imapper-messages-list').html('<strong>No Messages found</strong>');
 		cj("#total_number").html('0');
 	}else{

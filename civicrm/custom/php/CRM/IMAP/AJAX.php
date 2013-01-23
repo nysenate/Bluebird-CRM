@@ -939,12 +939,12 @@ EOQ;
  
  
         if(!$error){
-          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Cleared');
         }else{
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
         }
 
-        echo json_encode($result);
+        echo json_encode($returnCode);
         mysql_close(self::$db);
 
         CRM_Utils_System::civiExit();
