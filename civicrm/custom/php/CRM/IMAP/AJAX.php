@@ -373,7 +373,7 @@ class CRM_IMAP_AJAX {
 
         // reformat the date to something standard here.
         if($type=='long'){
-          return date("YmdHi", strtotime($date_string_short));
+          return date("U", strtotime($date_string_short));
         }else{
           // check if the message is from last year
           if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
