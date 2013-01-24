@@ -664,17 +664,15 @@ cj(document).ready(function(){
 	});
 
 	// toggle Debug info for find match message popup
-	// function debug_setup(){
-		cj(".debug_on").live('click', function() { 
-			var debug_info = cj(".debug_info").html();
-			cj("#message_left_email").prepend(debug_info);
-			cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
-		});
-		cj(".debug_off").live('click', function() { 
-			cj("#message_left_email .debug_remove").remove();
-			cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
-		});
-	// };
+	cj(".debug_on").live('click', function() { 
+		var debug_info = cj(".debug_info").html();
+		cj("#message_left_email").prepend(debug_info);
+		cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
+	});
+	cj(".debug_off").live('click', function() { 
+		cj("#message_left_email .debug_remove").remove();
+		cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
+	});
 
 	// opening find match window
 	cj(".find_match").live('click', function() {
@@ -694,6 +692,8 @@ cj(document).ready(function(){
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 				var icon ='';
+
+				// simple check to see if the message exists 
 				if(messages.date != null){
 			 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
 						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
@@ -709,8 +709,6 @@ cj(document).ready(function(){
 					}
 					// add some debug info to the message body on toggle
 					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-						// cj('.debug_remove').html('');
-
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
 							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
@@ -723,7 +721,6 @@ cj(document).ready(function(){
 						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
 						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
 						cj('.debug_remove').append(bugHTML);
-						debug_setup();
 					}
 
 					cj('#message_left_email').html(messages.details);
@@ -740,7 +737,6 @@ cj(document).ready(function(){
 					cj('.last_name').val(lastName);
 				}else{
 					alert('unable to load message');
-
 				}
 			},
 			error: function(){
@@ -751,7 +747,7 @@ cj(document).ready(function(){
 	});
 
 	// Edit a match allready assigned to an Activity 
-	cj(".pre_find_match").live('click', function() {
+	cj(".edit_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
 
 		var activityId = cj(this).parent().parent().attr('data-id');
@@ -789,7 +785,6 @@ cj(document).ready(function(){
 						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
 						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
 						cj('.debug_remove').append(bugHTML);
-						debug_setup();
 
 					}
 
@@ -995,7 +990,7 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 				messagesHtml += '<td class="date">'+value.date +'</td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -1008,6 +1003,7 @@ function buildActivitiesList() {
 function buildContactList() {
 	var contactsHtml = '';
 		html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
+
 		if(contacts.length < 1){
 			html += "(No Matches)";	
 		}else if(contacts.length == 1){
