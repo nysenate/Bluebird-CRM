@@ -77,20 +77,29 @@
 			</div>
 		</div>
 	</div>
-	<div id="delete-confirm" title="Delete Message from Matched Messages?">
+	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
-	<div id="loading-popup" title="please wait">
+	<div id="loading-popup" title="please wait" style="display:none;">
  		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
      </p>
 	</div>
-	<div id="tagging-popup" title="Tagging">
+	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="tagging-popup-header"> </div>
 		<hr/>
-		<input type='text' id='autocomplete_tag'/><br/>  <hr/>
-		<div class="autocomplete-tags-bank" style=""></div>
-		<div class="autocomplete-dropdown" style=""></div>
-		<hr/><strong>Add to: </strong> <br/> <input type="checkbox" name="Contact" class="Contact-checkbox" value="Contact">Contact<br/><input type="checkbox" class="Activity-checkbox" name="Activity" value="Activity"> Activity<br>
-		<input type="button" class="tagger-submit push_tag" id="add-tag" value="Add Tag" name="add-tag">
+		<div id="tagging">
+				<ul>
+					<li><a href="#tab1">Tag Contact</a></li>
+					<li><a href="#tab2">Tag Activity</a></li>
+				</ul>
+				<input type="hidden" class="hidden" id="email_id" name="email_id">
+				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+				<div id="tab1">
+					<div id='TagContact'></div>
+				</div>
+				<div id="tab2">
+					<div id='TagActivity'></div>
+			</div>
+		</div>
 	</div> 
 </div>

@@ -90,8 +90,9 @@ class CRM_IMAP_AJAX {
         $time = time()-(self::$contTime*60);;
         if( $email->time > $time){
           // email hasn't been processed yet
-
+          $status = 'FAILURE';
         }else{
+          $status = 'SUCCESS';
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
@@ -120,9 +121,15 @@ class CRM_IMAP_AJAX {
           $attachmentArray['overview'] = array('total'=>$attachmentCount); 
 
           // here we grab the details from the message;
-          preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempDetails, $subjects);
+          preg_match("/(Subject:|subject:)([^\r\n]*)/i", $tempDetails, $subjects);
           preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempDetails, $froms);
 
+          if ($debug){
+            echo "<h1>Subjects</h1>";
+            var_dump($subjects);
+            echo "<h1>From</h1>";
+            var_dump($froms);
+          }
           $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
 
           // check ot see if forwarded 
@@ -146,7 +153,13 @@ class CRM_IMAP_AJAX {
           $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
           $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
           $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
+
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
+
+          $origin_subject = preg_replace("/(\(|\))/i", "", $origin_subject);
+          if( trim($origin_subject) =='' || strtolower($origin_subject) == 'no subject' ){ 
+            $origin_subject = "No Subject";
+          }
 
           // contains info about the forwarded message in the email body
           $forwarded = array(
@@ -158,7 +171,7 @@ class CRM_IMAP_AJAX {
               'origin_lookup' => $fromEmail['type'], 
           );
 
-          $output = array('header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+          $output = array('status'=>$status,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
           if ($debug){
             echo "<h1>Full Email OUTPUT</h1>";
             var_dump($output);
@@ -201,8 +214,8 @@ class CRM_IMAP_AJAX {
                     // Get the message based on the UID of the header.
                     $email = $imap->getmsg_uid($header->uid);
                     $output = self::unifiedMessageInfo($email);
-
-                    $returnMessage[$header->uid] =  array( 
+                    if ($output['status'] == "SUCCESS"){
+                        $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
                         'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                         'uid' =>  $header->uid,
@@ -221,6 +234,13 @@ class CRM_IMAP_AJAX {
                         // 'origin_lookup' => $output['forwarded']['origin_lookup']
 
                         );
+
+                    }else{
+                      $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
+
+                    }
+
+             
                  }
             }
         }       
@@ -300,6 +320,7 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
+        if ($output['status'] == "SUCCESS"){
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
@@ -322,6 +343,10 @@ class CRM_IMAP_AJAX {
                                'header_subject' => $output['header']['subject'],
                                'date'   =>  $output['header']['date_clean'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
+          }else{
+            $returnMessage = array('code' => 'ERROR','message'=>"It's likely that message #{$id} has not be proccessed by the processMailboxes script, wait a few mins");
+
+          }
         // var_dump($returnMessage);  exit();
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
@@ -391,28 +416,28 @@ class CRM_IMAP_AJAX {
         $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
         $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
-        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name') ? NULL : self::get('first_name');
+        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name'  || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
         if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
 
-        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name') ? NULL : self::get('last_name');
+        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name'  || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
         if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
 
-        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address') ? NULL : self::get('email_address');
+        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
         if($email_address) {
           // $from.="  JOIN  civicrm_email email ON (email.email = '$email_address')\n";
           $where.="  AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
 
-        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
         // block epoch date
         if ($dob == '1969-12-31') $dob  = NULL ;
         // convert dob to standard format
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
         $state_id = self::get('state');
-        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address') ? NULL : self::get('street_address');
-        if(self::get('city')) $city = (strtolower(self::get('city')) == 'city') ? NULL : self::get('city');
+        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
+        if(self::get('city')) $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? NULL : self::get('city');
 
 
         if($street_address || $city){
@@ -431,18 +456,11 @@ class CRM_IMAP_AJAX {
           $where.="  AND (state.id='$state_id' OR state.id IS NULL)\n";
         }
 
-        if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number') ? NULL : self::get('phone');
+        if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? NULL : self::get('phone');
         if ($phone) {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
-
-        $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
-
-        $result = mysql_query($query, self::db());
-        $results = array();
-        while($row = mysql_fetch_assoc($result)) {
-            $results[] = $row;
-        }
+        
         if ($debug){
           echo "<h1>inputs</h1>";
           var_dump($first_name);
@@ -456,7 +474,23 @@ class CRM_IMAP_AJAX {
           print_r($query);
           echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
           print_r($results);
-          exit();
+        }
+
+        if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
+          $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+        }else{
+          // do nothing if no query
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Need INPUT!');
+          echo json_encode($returnCode);
+          mysql_close(self::$db);
+          CRM_Utils_System::civiExit();
+        }
+        
+
+        $result = mysql_query($query, self::db());
+        $results = array();
+        while($row = mysql_fetch_assoc($result)) {
+            $results[] = $row;
         }
         if(count($results) > 0){
           $returnCode = $results;
@@ -554,22 +588,14 @@ class CRM_IMAP_AJAX {
         $contactIds = explode(',', $contactIds);
         foreach($contactIds as $contactId) {
 
-            // check to see if contact has the email being assigend to it,
-            // if doesn't have email, add it to contact
+            // Check to see if contact has the email address being assigend to it,
+            // if doesn't have email address, add it to contact
             $query = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
             $result = mysql_query($query, self::db());
             $results = array();
             while($row = mysql_fetch_assoc($result)) {
                 $results[] = $row;
             }
-
-            // On match add email to user
-            // Important
-            $params = array(
-                'contact_id' => $contactId,
-                'email' => $fromEmail,
-                'version' => 3,
-            );
 
             if ($debug){
                 echo "<h1>Contact ".$contactId." has the following emails </h1>";
@@ -590,7 +616,13 @@ class CRM_IMAP_AJAX {
                   }
               }
             }
-
+            
+            // Prams to add email to user
+            $params = array(
+                'contact_id' => $contactId,
+                'email' => $fromEmail,
+                'version' => 3,
+            );
             if(($emailsCount-$matches) == 0){
                 if ($debug) echo "<p> added ".$fromEmail."</p><hr/>";
                 $result = civicrm_api( 'email','create',$params );
@@ -857,7 +889,6 @@ class CRM_IMAP_AJAX {
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
-
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);
@@ -868,17 +899,23 @@ class CRM_IMAP_AJAX {
     public static function deleteActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
-        
+        $tagid = self::getInboxPollingTagId();
+        $error = false;
+
         // deleteing a activity
         $params = array( 
             'id' => $id,
             'activity_type_id' => 1,
             'version' => 3,
         );
-        $result = civicrm_api( 'activity','delete',$params );
+
+        $deleteActivity = civicrm_api('activity','delete',$params );
+        if($deleteActivity['is_error'] == 1){
+          $error = true;
+        }
+
 
         // deleteing a entity is hard via api without entity id, time to use sql 
-        $tagid = self::getInboxPollingTagId();
         $query = <<<EOQ
 DELETE FROM `civicrm_entity_tag`
 WHERE `entity_id` =  $id
@@ -889,7 +926,19 @@ EOQ;
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
         }
-        echo json_encode($result);
+
+        if(mysql_affected_rows() != 1){
+          $error = true;
+        }
+ 
+ 
+        if(!$error){
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+        }
+        echo json_encode($returnCode);
+
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
@@ -900,6 +949,7 @@ EOQ;
         $id = self::get('id');
         $contact = self::get('contact');
         $tagid = self::getInboxPollingTagId();
+        $error = false;
 
         // deleteing a entity is hard via api without entity id, time to use sql 
         $tagid = self::getInboxPollingTagId();
@@ -913,7 +963,19 @@ EOQ;
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
         }
-        echo json_encode($result);
+
+        if(mysql_affected_rows() != 1){
+          $error = true;
+        }
+ 
+ 
+        if(!$error){
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Cleared');
+        }else{
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+        }
+
+        echo json_encode($returnCode);
         mysql_close(self::$db);
 
         CRM_Utils_System::civiExit();
@@ -1035,14 +1097,14 @@ EOQ;
         //http://skelos/civicrm/imap/ajax/createNewContact?first_name=dan&last_name=pozzi&email=dpozzie@gmail.com&street_address=26%20Riverwalk%20Way&city=Cohoes&debug=true
         // http://skelos/civicrm/imap/ajax/createNewContact?messageId=52&imap_id=0&first_name=Fakie&last_name=McTesterson&email_address=Test%40aol.com&phone=5185185555&street_address=1241+fake+street&street_address_2=floor+2&postal_code=12202&city=albany&debug=true
 
-        $first_name = (strtolower(self::get('first_name')) == 'first name') ? '' : self::get('first_name');
-        $last_name = (strtolower(self::get('last_name')) == 'last name') ? '' : self::get('last_name');
-        $email  = (strtolower(self::get('email_address')) == 'email address') ? '' : self::get('email_address');
-        $phone = (strtolower(self::get('phone')) == 'phone number') ? '' : self::get('phone');
-        $street_address = (strtolower(self::get('street_address')) == 'street address') ? '' : self::get('street_address');
-        $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address') ? '' : self::get('street_address_2');
-        $postal_code = (strtolower(self::get('postal_code')) == 'zip code') ? '' : self::get('postal_code');
-        $city = (strtolower(self::get('city')) == 'city') ? '' : self::get('city');
+        $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? '' : self::get('first_name');
+        $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? '' : self::get('last_name');
+        $email  = (strtolower(self::get('email_address')) == 'email address')|| trim(self::get('email_address')) =='' ? '' : self::get('email_address');
+        $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? '' : self::get('phone');
+        $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? '' : self::get('street_address');
+        $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address'|| trim(self::get('street_address_2')) =='') ? '' : self::get('street_address_2');
+        $postal_code = (strtolower(self::get('postal_code')) == 'zip code'|| trim(self::get('postal_code')) =='') ? '' : self::get('postal_code');
+        $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? '' : self::get('city');
 
         if ($debug){
           echo "<h1>inputs</h1>";
