@@ -701,7 +701,7 @@ cj(document).ready(function(){
 					}
 					cj('#message_left_header').html('');
 	 		 		if(messages.fromName) cj('#message_left_header').append("<strong>From: </strong>"+messages.fromName +"  ");
-					if(messages.fromEmail) cj('#message_left_header').append("<i>&lt;"+ messages.fromEmail+"&gt;</i>");
+					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble'>"+short_subject(messages.fromEmail)+"</span>");
 					cj('#message_left_header').append("<br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
@@ -897,7 +897,6 @@ function makeListSortable(){
 		"aaSorting": [[ 3, "desc" ]],
 		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
 	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
-		"iDisplayLength": 50,
 		"bStateSave": true,
 		'aTargets': [ 1 ],
 		"bPaginate": false,
@@ -944,17 +943,24 @@ function buildMessageList() {
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
 
 				  	if( value.from_email != '' && value.from_email != null){ 
-						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
-					messagesHtml += '<span class="matchbubble marginL10" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
+						messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.from_email,15)+'</span>';
+						if(value.match_count == 1){
+							messagesHtml += '<span class="matchbubble warn marginL5" title="This Record Should have Automatched as it matches '+value.match_count+' Record in bluebird ">'+value.match_count+'</span>';
+						}else{
+							messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
+
+						}
+					}else{
+						messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
 					}
 					messagesHtml +='</td>';
 
 				}else if( value.from_email != '' && value.from_email != null ){ 
 					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span>';
-					messagesHtml += '<span class="matchbubble marginL10" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span></td>';
+					messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span></td>';
 
 				}else {
-					messagesHtml += '<td class="name">N/A</td>';
+					messagesHtml += '<td class="name"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
 				}
 				if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
@@ -974,7 +980,7 @@ function buildMessageList() {
 					messagesHtml += '<td class="forwarder"> N/A </td>';
 				}
 				
-				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match </a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -1009,7 +1015,7 @@ function buildActivitiesList() {
 					messagesHtml += '<td class="name">N/A ';
 				}
 
-					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
+					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
 				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
