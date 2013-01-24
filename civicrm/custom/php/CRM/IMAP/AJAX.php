@@ -157,7 +157,7 @@ class CRM_IMAP_AJAX {
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
           $origin_subject = preg_replace("/(\(|\))/i", "", $origin_subject);
-          if( trim($origin_subject) =='' || strtolower($origin_subject) == 'no subject' ){ 
+          if( trim(strip_tags($origin_subject)) =='' || strtolower($origin_subject) == 'no subject' ){ 
             $origin_subject = "No Subject";
           }
 
@@ -479,7 +479,7 @@ class CRM_IMAP_AJAX {
           $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
         }else{
           // do nothing if no query
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Please Enter a query');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Please Enter a query.');
           echo json_encode($returnCode);
           mysql_close(self::$db);
           CRM_Utils_System::civiExit();
