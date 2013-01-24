@@ -100,7 +100,5 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-message-box td { vertical-align: middle!important;  }
 #message_right label{float: left;display: block;}
 .label_def{width: 95px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
-#message_right input {width: 150px;  }
-#tagging #BBTreeContainer .BBTree, #BBDialog .BBTree{
-	height: 200px;
-}
+#message_right label input {width: 150px;  }
+#tagging #BBTreeContainer .BBTree, #BBDialog .BBTree{height: 200px;}
