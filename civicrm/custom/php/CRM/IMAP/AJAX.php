@@ -472,22 +472,24 @@ class CRM_IMAP_AJAX {
           var_dump($phone);
           var_dump($street_address);
           var_dump($city);
-          echo "<h1>Query</h1><pre>";
-          print_r($query);
-          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
-          print_r($results);
+
         }
 
         if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
           $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
         }else{
           // do nothing if no query
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Need INPUT!');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Please Enter a query');
           echo json_encode($returnCode);
           mysql_close(self::$db);
           CRM_Utils_System::civiExit();
         }
-        
+        if ($debug){
+          echo "<h1>Query</h1><pre>";
+          print_r($query);
+          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
+          print_r($results);
+        }
 
         $result = mysql_query($query, self::db());
         $results = array();

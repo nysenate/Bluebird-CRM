@@ -77,7 +77,7 @@ cj(document).ready(function(){
 					if(data != null || data != ''){
 						contacts = cj.parseJSON(data);
 						if(contacts.code == 'ERROR'){
-							cj('#imapper-contacts-list').html('No Results Found');
+							cj('#imapper-contacts-list').html(contacts.message);
 						}else{
 							cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
 							buildContactList();
