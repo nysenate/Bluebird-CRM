@@ -452,7 +452,70 @@ VALUES
   (@rid, 'edit users with role Administrator', 'administerusersbyrole'),
   (@rid, 'cancel users with role Administrator', 'administerusersbyrole'),
   (@rid, 'edit users with role Administrator and other roles', 'administerusersbyrole'),
-  (@rid, 'cancel users with role Administrator and other roles', 'administerusersbyrole')
+  (@rid, 'cancel users with role Administrator and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with no custom roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with no custom roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role DataEntry', 'administerusersbyrole'),
+  (@rid, 'cancel users with role DataEntry', 'administerusersbyrole'),
+  (@rid, 'edit users with role DataEntry and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role DataEntry and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role MailingApprover', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingApprover', 'administerusersbyrole'),
+  (@rid, 'edit users with role MailingApprover and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingApprover and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role MailingCreator', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingCreator', 'administerusersbyrole'),
+  (@rid, 'edit users with role MailingCreator and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingCreator and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role MailingScheduler', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingScheduler', 'administerusersbyrole'),
+  (@rid, 'edit users with role MailingScheduler and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingScheduler and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role MailingViewer', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingViewer', 'administerusersbyrole'),
+  (@rid, 'edit users with role MailingViewer and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role MailingViewer and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
+  (@rid, 'cancel users with role OfficeAdministrator', 'administerusersbyrole'),
+  (@rid, 'edit users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role OfficeManager', 'administerusersbyrole'),
+  (@rid, 'cancel users with role OfficeManager', 'administerusersbyrole'),
+  (@rid, 'edit users with role OfficeManager and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role OfficeManager and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role PrintProduction', 'administerusersbyrole'),
+  (@rid, 'cancel users with role PrintProduction', 'administerusersbyrole'),
+  (@rid, 'edit users with role PrintProduction and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role PrintProduction and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role PrintProductionStaff', 'administerusersbyrole'),
+  (@rid, 'cancel users with role PrintProductionStaff', 'administerusersbyrole'),
+  (@rid, 'edit users with role PrintProductionStaff and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role PrintProductionStaff and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role SOS', 'administerusersbyrole'),
+  (@rid, 'cancel users with role SOS', 'administerusersbyrole'),
+  (@rid, 'edit users with role SOS and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role SOS and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role Staff', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Staff', 'administerusersbyrole'),
+  (@rid, 'edit users with role Staff and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Staff and other roles', 'administerusersbyrole'),
+
+  (@rid, 'edit users with role Volunteer', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Volunteer', 'administerusersbyrole'),
+  (@rid, 'edit users with role Volunteer and other roles', 'administerusersbyrole'),
+  (@rid, 'cancel users with role Volunteer and other roles', 'administerusersbyrole')
 ON DUPLICATE KEY UPDATE module = 'administerusersbyrole';
 "
 
