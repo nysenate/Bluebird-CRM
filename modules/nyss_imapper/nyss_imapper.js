@@ -664,7 +664,7 @@ cj(document).ready(function(){
 	});
 
 	// toggle Debug info for find match message popup
-	if(debug){
+	function debug_setup(){
 		cj(".debug_on").live('click', function() { 
 			var debug_info = cj(".debug_info").html();
 			cj("#message_left_email").prepend(debug_info);
@@ -704,10 +704,11 @@ cj(document).ready(function(){
 						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 					}
 					// add some debug info to the message body on toggle
-					if(debug){
+					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
 							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
+
 						}
 						debugHTML +="<span class='search_info'></span></div></div>";
 						cj('#message_left_header').append(debugHTML);
@@ -716,6 +717,7 @@ cj(document).ready(function(){
 						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
 						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
 						cj('.debug_remove').append(bugHTML);
+						debug_setup();
 					}
 
 					cj('#message_left_email').html(messages.details);
@@ -727,7 +729,7 @@ cj(document).ready(function(){
 	 				cj("#tabs").tabs();
 	 				cj('.email_address').val(messages.fromEmail);
 
-	 				cj('#filter').click();
+	 				if(messages.fromEmail) cj('#filter').click();
 					cj('.first_name').val(firstName);
 					cj('.last_name').val(lastName);
 				}else{
@@ -769,7 +771,8 @@ cj(document).ready(function(){
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
-				if(debug){
+				// if we are on crmdev or crmtest show a debug window 
+				if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
 						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
 						debugHTML +="<span class='search_info'></span></div></div>";
@@ -778,9 +781,9 @@ cj(document).ready(function(){
 						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
 						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
 						cj('.debug_remove').append(bugHTML);
+						debug_setup();
+
 					}
-
-
 
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(activityId);

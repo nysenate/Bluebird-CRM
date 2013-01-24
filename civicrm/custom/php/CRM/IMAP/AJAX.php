@@ -90,9 +90,9 @@ class CRM_IMAP_AJAX {
         $time = time()-(self::$contTime*60);;
         if( $email->time > $time){
           // email hasn't been processed yet
-          $status = 'FAILURE';
+          $code = 'FAILURE';
         }else{
-          $status = 'SUCCESS';
+          $code = 'SUCCESS';
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
@@ -171,7 +171,7 @@ class CRM_IMAP_AJAX {
               'origin_lookup' => $fromEmail['type'], 
           );
 
-          $output = array('status'=>$status,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
+          $output = array('code'=>$code,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
           if ($debug){
             echo "<h1>Full Email OUTPUT</h1>";
             var_dump($output);
@@ -214,7 +214,7 @@ class CRM_IMAP_AJAX {
                     // Get the message based on the UID of the header.
                     $email = $imap->getmsg_uid($header->uid);
                     $output = self::unifiedMessageInfo($email);
-                    if ($output['status'] == "SUCCESS"){
+                    if ($output['code'] == "SUCCESS"){
                         $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
                         'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
@@ -320,7 +320,9 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
-        if ($output['status'] == "SUCCESS"){
+
+        // var_dump($output);
+        if ($output['code'] == "SUCCESS"){
 
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
@@ -856,6 +858,9 @@ class CRM_IMAP_AJAX {
         require_once 'CRM/Core/BAO/EntityTag.php';
         require_once 'CRM/Activity/BAO/ActivityTarget.php';
 
+        //grab the imap user
+        self::setupImap();
+
         $params = array('version'   =>  3,
                         'activity'  =>  'get',
                        'id' => $activitId,
@@ -889,6 +894,7 @@ class CRM_IMAP_AJAX {
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
+                            'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
                             'date'   =>  $date);
 
         echo json_encode($returnMessage);
