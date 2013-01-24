@@ -8,7 +8,7 @@
 			<thead>
 				<tr class='list_header'>
 				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
-			   		<th class='Name'>Sender’s Name</th> 
+			   		<th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
 				    <th class='Date'>Date Sent</th> 
 				    <th class='Forwarded'>Forwarded By</th> 

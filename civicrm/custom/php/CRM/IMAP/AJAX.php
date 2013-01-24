@@ -377,9 +377,13 @@ class CRM_IMAP_AJAX {
         }else{
           // check if the message is from last year
           if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
-            return date("M d, Y h:i A", strtotime($date_string_short));
+            return date("M d, Y", strtotime($date_string_short));
           }else{
-            return date("M d, h:i A", strtotime($date_string_short));
+            if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
+              return date("M d h:i A", strtotime($date_string_short));
+            }else{
+              return 'Today @ '.date("h:i A", strtotime($date_string_short));
+            }
           }
         } 
 
