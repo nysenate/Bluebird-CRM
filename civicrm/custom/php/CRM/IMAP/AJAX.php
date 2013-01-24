@@ -209,12 +209,45 @@ class CRM_IMAP_AJAX {
             $ids = imap_search($imap->conn(),"",SE_UID);
             $headers = imap_fetch_overview($imap->conn(),implode(',',$ids),FT_UID);
 
+            $checked = array();
+
             // Loop through the headers and check to make sure they're valid UIDs
             foreach($headers as $header) {
                 if( in_array($header->uid,$ids)) {
                     // Get the message based on the UID of the header.
                     $email = $imap->getmsg_uid($header->uid);
                     $output = self::unifiedMessageInfo($email);
+
+                    if($output['forwarded']['origin_email']){
+                      // Don't double check email addresses
+                      if(!$checked[$output['forwarded']['origin_email']] ){
+                        // leaving civi here for records, it was really really slow 
+                        // $params = array('version'   =>  3, 'contact'  =>  'get', 'email' => $output['forwarded']['origin_email'] );
+                        // $contact = civicrm_api('contact', 'get', $params);
+
+                        // lets reuse the search function
+                        $email = $output['forwarded']['origin_email'];
+                        $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
+  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
+WHERE contact.is_deleted=0
+  AND email.email LIKE '$email'
+GROUP BY contact.id
+ORDER BY contact.id ASC, email.is_primary DESC";
+
+                      $result = mysql_query($Query, self::db());
+                      $results = array();
+                      while($row = mysql_fetch_assoc($result)) {
+                          $results[] = $row;
+                      }
+                
+
+                      $checked[$output['forwarded']['origin_email']] = count($results);
+                      }
+                    }else{ 
+                      $checked[''] = 0;
+                    }
+
+
                     if ($output['code'] == "SUCCESS"){
                         $returnMessage[$header->uid] =  array( 
                         'subject' =>  $output['forwarded']['subject'],
@@ -226,6 +259,7 @@ class CRM_IMAP_AJAX {
                         'from_email' =>  $output['forwarded']['origin_email'],
                         'from_name' =>  $output['forwarded']['origin_name'],
                         'forwarder_email' =>  $output['header']['from_email'],
+                        'match_count'=> $checked[$output['forwarded']['origin_email']],
                         // 'forwarder_name' =>  $output['header']['from_name'],
                         // 'forwarder_time' =>  $output['forwarded']['date_clean'],
                         'attachmentfilename'  => $output['attachments'][0]['name'],
@@ -237,7 +271,7 @@ class CRM_IMAP_AJAX {
                         );
 
                     }else{
-                      $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
+                      // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
 
                     }
 
@@ -380,9 +414,9 @@ class CRM_IMAP_AJAX {
             return date("M d, Y", strtotime($date_string_short));
           }else{
             if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
-              return date("M d @ h:i A", strtotime($date_string_short));
+              return date("M d h:iA", strtotime($date_string_short));
             }else{
-              return 'Today @ '.date("h:i A", strtotime($date_string_short));
+              return 'Today '.date("h:iA", strtotime($date_string_short));
             }
           }
         } 

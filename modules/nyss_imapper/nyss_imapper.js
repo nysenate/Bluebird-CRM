@@ -945,11 +945,14 @@ function buildMessageList() {
 
 				  	if( value.from_email != '' && value.from_email != null){ 
 						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
+					messagesHtml += '<span class="matchbubble marginL10" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
 					}
 					messagesHtml +='</td>';
 
 				}else if( value.from_email != '' && value.from_email != null ){ 
-					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span></td>';
+					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span>';
+					messagesHtml += '<span class="matchbubble marginL10" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span></td>';
+
 				}else {
 					messagesHtml += '<td class="name">N/A</td>';
 				}
@@ -971,7 +974,7 @@ function buildMessageList() {
 					messagesHtml += '<td class="forwarder"> N/A </td>';
 				}
 				
-				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match </a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);

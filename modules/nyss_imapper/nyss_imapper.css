@@ -94,9 +94,11 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-address-select-box {height: 16px;width: 20px;float: left;padding: 15px 0px;}
 .imapper-address-box {float: left;width: 215px;padding-left: 5px;}
 .clear {clear: both;}
-.emailbubble {padding: 2px 4px;border-radius: 3px 3px 3px 3px;}
+.emailbubble,.matchbubble {padding: 2px 4px;border-radius: 3px 3px 3px 3px;}
 .marginL10 {margin-left: 10px;}
-.emailbubble, .name .badge {background-color: #999999; color: #FFFFFF;display: inline-block;font-size: 11.844px;font-weight: bold; line-height: 14px;padding: 2px 4px; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); vertical-align: baseline;white-space: nowrap;}
+.emailbubble, .name .badge,.matchbubble {background-color: #999999; color: #FFFFFF;display: inline-block;font-size: 11.844px;font-weight: bold; line-height: 14px;padding: 2px 4px; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); vertical-align: baseline;white-space: nowrap;}
+.matchbubble {background-color: #457AA4; color: #FFFFFF;}
+
 .imapper-message-box td { vertical-align: middle!important;  }
 #message_right label{float: left;display: block;}
 .label_def{width: 95px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
