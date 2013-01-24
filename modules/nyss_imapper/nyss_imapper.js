@@ -664,7 +664,7 @@ cj(document).ready(function(){
 	});
 
 	// toggle Debug info for find match message popup
-	function debug_setup(){
+	// function debug_setup(){
 		cj(".debug_on").live('click', function() { 
 			var debug_info = cj(".debug_info").html();
 			cj("#message_left_email").prepend(debug_info);
@@ -674,7 +674,7 @@ cj(document).ready(function(){
 			cj("#message_left_email .debug_remove").remove();
 			cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
 		});
-	};
+	// };
 
 	// opening find match window
 	cj(".find_match").live('click', function() {
@@ -699,12 +699,18 @@ cj(document).ready(function(){
 						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 					}
-					cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					cj('#message_left_header').html('');
+	 		 		if(messages.fromName) cj('#message_left_header').append("<strong>From: </strong>"+messages.fromName +"  ");
+					if(messages.fromEmail) cj('#message_left_header').append("<i>&lt;"+ messages.fromEmail+"&gt;</i>");
+					cj('#message_left_header').append("<br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					
 					if ((messages.forwardedEmail != '')){
 						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 					}
 					// add some debug info to the message body on toggle
 					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
+						// cj('.debug_remove').html('');
+
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
 							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
@@ -753,8 +759,8 @@ cj(document).ready(function(){
 		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
 		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
 
-		if(firstName) cj('.first_name').val(firstName);
-	    if(lastName) cj('.last_name').val(lastName);
+		if(firstName && firstName !='null') cj('.first_name').val(firstName);
+	    if(lastName && lastName !='null') cj('.last_name').val(lastName);
 
 		cj('#imapper-contacts-list').html('');
 
@@ -764,8 +770,10 @@ cj(document).ready(function(){
 			success: function(data,status) {
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
-
- 		 		cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				cj('#message_left_header').html('');
+ 		 		if(messages.fromName) cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  ");
+				if(messages.fromEmail) cj('#message_left_header').append("<i>&lt;"+ messages.fromEmail+"&gt;</i>");
+ 		 		cj('#message_left_header').append("<br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
 		 		cj('.email_address').val(messages.fromEmail);
 
 				if ((messages.forwardedEmail != '')){
