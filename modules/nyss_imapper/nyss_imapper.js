@@ -918,16 +918,17 @@ function buildMessageList() {
 			var icon ='';
 			if(value.date != null){
 				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
-				if( value.from_name != ''){
+ 
+				if( value.from_name != ''  && value.from_name != null){
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
 
-				  	if( value.from_email != ''){ 
-						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
+				  	if( value.from_email != '' && value.from_email != null){ 
+						messagesHtml += '<span class="emailbubble marginL10">1'+short_subject(value.from_email,15)+'</span>';
 					}
 					messagesHtml +='</td>';
 
-				}else if( value.from_email != ''){ 
-					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span></td>';
+				}else if( value.from_email != '' && value.from_email != null ){ 
+					messagesHtml += '<td class="name"><span class="emailbubble">2'+short_subject(value.from_email,25)+'</span></td>';
 				}else {
 					messagesHtml += '<td class="name">N/A</td>';
 				}
