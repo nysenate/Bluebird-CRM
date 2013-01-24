@@ -923,12 +923,12 @@ function buildMessageList() {
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
 
 				  	if( value.from_email != '' && value.from_email != null){ 
-						messagesHtml += '<span class="emailbubble marginL10">1'+short_subject(value.from_email,15)+'</span>';
+						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
 					}
 					messagesHtml +='</td>';
 
 				}else if( value.from_email != '' && value.from_email != null ){ 
-					messagesHtml += '<td class="name"><span class="emailbubble">2'+short_subject(value.from_email,25)+'</span></td>';
+					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span></td>';
 				}else {
 					messagesHtml += '<td class="name">N/A</td>';
 				}
