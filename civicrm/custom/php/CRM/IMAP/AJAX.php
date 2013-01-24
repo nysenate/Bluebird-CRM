@@ -380,7 +380,7 @@ class CRM_IMAP_AJAX {
             return date("M d, Y", strtotime($date_string_short));
           }else{
             if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
-              return date("M d h:i A", strtotime($date_string_short));
+              return date("M d @ h:i A", strtotime($date_string_short));
             }else{
               return 'Today @ '.date("h:i A", strtotime($date_string_short));
             }

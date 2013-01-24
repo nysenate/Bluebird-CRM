@@ -960,7 +960,7 @@ function buildMessageList() {
 
 				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'<span></td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -1009,7 +1009,7 @@ function buildActivitiesList() {
 					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'<span></td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}

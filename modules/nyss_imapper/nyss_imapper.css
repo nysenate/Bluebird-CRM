@@ -47,11 +47,11 @@
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
 .imapperbox .full .list_header{ font-weight: bold;}
 .imapperbox .full .checkboxieout{ left:5px;  }
-/*.imapperbox .full .name,.imapperbox .full .email, .imapperbox .full .date { width:140px;}*/
 .imapperbox .full .subject { width:330px;}
 .name{min-width: 285px !important}
 .forwarder,.Forwarder{ overflow: hidden;width: 100px;}
-.date{width: 110px !important; overflow: hidden;}
+.date{width: 100px !important; overflow: hidden; display: block; height: 32px;}
+.date span{float: left; margin: 8px 0;}
 .checkbox_switch{ margin-left: 10px;}
 #Activities .Actions{ width:155px !important;}
 #Unmatched .Actions{ width:110px !important;}
