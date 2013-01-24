@@ -488,7 +488,7 @@ function extract_email_address ($string) {
   
   // remove () sometimes found in emails with no subject
   $subject = preg_replace("/(\(|\))/i", "", $subject);
-  if( trim(strip_tags($origin_subject)) == "" | $subject == "no subject"){
+  if( trim(strip_tags($subject)) == "" | trim($subject) == "no subject"){
     $subject = "No Subject";
   }
 

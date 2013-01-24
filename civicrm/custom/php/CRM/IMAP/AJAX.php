@@ -157,7 +157,7 @@ class CRM_IMAP_AJAX {
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
           $origin_subject = preg_replace("/(\(|\))/i", "", $origin_subject);
-          if( trim(strip_tags($origin_subject)) =='' || strtolower($origin_subject) == 'no subject' ){ 
+          if( trim(strip_tags($origin_subject)) == "" | trim($origin_subject) == "no subject"){
             $origin_subject = "No Subject";
           }
 
