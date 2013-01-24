@@ -493,11 +493,8 @@ function extract_email_address ($string) {
   }
 
   // html emails need to be pre tagged
-  if($html){
+
     $email->body = '<pre>'.$email->body.'</pre>';
-  }else{
-    $email->body = $email->body;
-  }
 
   // Use the e-mail from the body of the message (or header if direct) to find traget contact
   $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fromEmail['email'], );
