@@ -875,13 +875,34 @@ function destroyReSortable(){
 	makeListSortable();
 }
 
+// needed to format timestamps to allow sorting:  
+// make a hidden title with the non-readable date and sort on that
+
+cj.extend( cj.fn.dataTableExt.oSort, {
+	"title-string-pre": function ( a ) {
+		return a.match(/data="(.*?)"/)[1].toLowerCase();
+	},
+
+	"title-string-asc": function ( a, b ) {
+		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+	},
+
+	"title-string-desc": function ( a, b ) {
+		return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+	}
+} );
+
 function makeListSortable(){
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 3, "desc" ]],
+		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
 	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"iDisplayLength": 50,
-	//	"bStateSave": true,
-		'aTargets': [ 1 ] 
+		"bStateSave": true,
+		'aTargets': [ 1 ],
+		"bPaginate": false,
+		"bAutoWidth": false,
+		"bInfo": false,
 	});
 	// unbind the sort on the checkbox and actions
 	cj("th.checkbox").removeClass('sorting').unbind('click');
@@ -939,8 +960,7 @@ function buildMessageList() {
 
 				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
-				messagesHtml += '<td class="date">'+value.date +'</td>';
-
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'<span></td>';
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -989,7 +1009,7 @@ function buildActivitiesList() {
 					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
-				messagesHtml += '<td class="date">'+value.date +'</td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'<span></td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}

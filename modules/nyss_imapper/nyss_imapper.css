@@ -102,3 +102,5 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .label_def{width: 95px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
 #message_right label input {width: 150px;  }
 #tagging #BBTreeContainer .BBTree, #BBDialog .BBTree{height: 200px;}
+.loading_message{ margin: 0px auto; background: #fff; padding:5px; width: 200px}
+ 

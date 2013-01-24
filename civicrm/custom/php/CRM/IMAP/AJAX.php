@@ -144,7 +144,8 @@ class CRM_IMAP_AJAX {
               'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,                      
               'subject' => $email->subject,
               'body' => $body,                      
-              'date_clean' => self::cleanDate($email->date),
+              'date_clean' => self::cleanDate($email->date,'short'),
+              'date_long' => self::cleanDate($email->date,'long'),
               'status' => $status,
           );
 
@@ -152,7 +153,7 @@ class CRM_IMAP_AJAX {
           $origin = ($status == 'direct') ?  $header['from'] : $froms['2'];        
           $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
           $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
-          $origin_date = (substr(self::cleanDate($tempDetails),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails);
+          $origin_date = (substr(self::cleanDate($tempDetails,'short'),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails,'short');
 
           $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
@@ -220,6 +221,7 @@ class CRM_IMAP_AJAX {
                         'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                         'uid' =>  $header->uid,
                         'date' =>  $output['header']['date_clean'],
+                        'date_long' =>  $output['header']['date_long'],
                         'format' =>  $output['header']['format'],
                         'from_email' =>  $output['forwarded']['origin_email'],
                         'from_name' =>  $output['forwarded']['origin_name'],
@@ -232,7 +234,6 @@ class CRM_IMAP_AJAX {
                         'status' =>$output['header']['status'],
                         'imap_id' =>  $imap_id,
                         // 'origin_lookup' => $output['forwarded']['origin_lookup']
-
                         );
 
                     }else{
@@ -360,7 +361,7 @@ class CRM_IMAP_AJAX {
      * Returns: The 'm-d-y h:i A' formatted date date .
      * This function will format many types of incoming dates
      */
-    public static function cleanDate($date_string){
+    public static function cleanDate($date_string, $type){
         $matches = array();
 
         // search for the word date
@@ -371,8 +372,17 @@ class CRM_IMAP_AJAX {
         $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
 
         // reformat the date to something standard here.
-        $date_string_short = date("m-d-y H:i", strtotime($date_string_short));
-        return $date_string_short;
+        if($type=='long'){
+          return date("YmdHi", strtotime($date_string_short));
+        }else{
+          // check if the message is from last year
+          if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
+            return date("M d, Y h:i A", strtotime($date_string_short));
+          }else{
+            return date("M d, h:i A", strtotime($date_string_short));
+          }
+        } 
+
     }
 
     /* deleteMessage()
@@ -825,7 +835,8 @@ class CRM_IMAP_AJAX {
             $forwarder = civicrm_api('contact', 'get', $params );
             $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-            $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
+            $date = self::cleanDate($activity_node['activity_date_time'],'short');
+            $date_long =  self::cleanDate($activity_node['activity_date_time'],'long');
             // message to return 
             if ($debug){
               var_dump($activity_node);
@@ -844,7 +855,9 @@ class CRM_IMAP_AJAX {
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
-                            'date'   =>  $date);
+                            'date'   =>  $date,
+                            'date_long' => $date_long
+                            );
          }
          $returnMessage['count'] = count($returnMessage);
         echo json_encode($returnMessage);
@@ -884,7 +897,7 @@ class CRM_IMAP_AJAX {
         $forwarder = civicrm_api('contact', 'get', $params );
         $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-        $date =  date('m-d-y h:i A', strtotime($activity_node['activity_date_time'])); 
+        $date = self::cleanDate($activity_node['activity_date_time'],'short');
 
         $returnMessage = array('uid'    =>  $activitId,
                             'fromName'   =>  $contact_node['display_name'],
