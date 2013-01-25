@@ -646,6 +646,11 @@ cj(document).ready(function(){
 		cj('#imapper-messages-list input:checked').each(function() {
 			delete_ids.push(cj(this).attr('name'));
 		});
+		if(!delete_ids.length){
+			cj("#loading-popup").dialog('close');
+			alert('Use the checkbox to select a Message');
+			return false;
+		}
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
