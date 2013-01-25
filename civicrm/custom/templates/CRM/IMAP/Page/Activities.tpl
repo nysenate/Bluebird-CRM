@@ -86,7 +86,6 @@
 	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="tagging-popup-header"> </div>
-		<hr/>
 		<div id="tagging">
 				<ul>
 					<li><a href="#tab1">Tag Contact</a></li>

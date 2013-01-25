@@ -146,6 +146,8 @@ class CRM_IMAP_AJAX {
               'body' => $body,                      
               'date_clean' => self::cleanDate($email->date,'short'),
               'date_long' => self::cleanDate($email->date,'long'),
+              'date_u' => self::cleanDate($email->date,'u'),
+
               'status' => $status,
           );
 
@@ -256,6 +258,7 @@ class CRM_IMAP_AJAX {
                         'uid' =>  $header->uid,
                         'date' =>  $output['header']['date_clean'],
                         'date_long' =>  $output['header']['date_long'],
+                        'date_u' =>  $output['header']['date_u'],
                         'format' =>  $output['header']['format'],
                         'from_email' =>  $output['forwarded']['origin_email'],
                         'from_name' =>  $output['forwarded']['origin_name'],
@@ -380,6 +383,7 @@ class CRM_IMAP_AJAX {
                                'origin_lookup' => $output['forwarded']['origin_lookup'],
                                'header_subject' => $output['header']['subject'],
                                'date'   =>  $output['header']['date_clean'],
+                               'date_long'   =>  $output['header']['date_long'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
           }else{
             $returnMessage = array('code' => 'ERROR','message'=>"It's likely that message #{$id} has not be proccessed by the processMailboxes script, wait a few mins");
@@ -408,6 +412,8 @@ class CRM_IMAP_AJAX {
 
         // reformat the date to something standard here.
         if($type=='long'){
+          return date("M d, Y h:i A", strtotime($date_string_short));
+        }if($type=='u'){
           return date("U", strtotime($date_string_short));
         }else{
           // check if the message is from last year
@@ -876,6 +882,8 @@ class CRM_IMAP_AJAX {
 
             $date = self::cleanDate($activity_node['activity_date_time'],'short');
             $date_long =  self::cleanDate($activity_node['activity_date_time'],'long');
+            $date_u =  self::cleanDate($activity_node['activity_date_time'],'u');
+
             // message to return 
             if ($debug){
               var_dump($activity_node);
@@ -895,7 +903,9 @@ class CRM_IMAP_AJAX {
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
                             'date'   =>  $date,
-                            'date_long' => $date_long
+                            'date_long' => $date_long,
+                            'date_u' => $date_u
+
                             );
          }
          $returnMessage['count'] = count($returnMessage);
@@ -937,6 +947,7 @@ class CRM_IMAP_AJAX {
         $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
         $date = self::cleanDate($activity_node['activity_date_time'],'short');
+        $date_long = self::cleanDate($activity_node['activity_date_time'],'long');
 
         $returnMessage = array('uid'    =>  $activitId,
                             'fromName'   =>  $contact_node['display_name'],
@@ -949,7 +960,8 @@ class CRM_IMAP_AJAX {
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
                             'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
-                            'date'   =>  $date);
+                            'date'   =>  $date, 
+                            'date_long' =>$date_long);
 
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
