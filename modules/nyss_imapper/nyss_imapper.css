@@ -92,7 +92,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #message_left_email{ padding:10px ;width:640px; height:340px; overflow:auto;  }
 
 #message_left_email.crmdev,#message_left_email.crmtest{height: 320px;}
-#message_right{ width:275px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:470px;}
+#message_right{ width:265px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:470px;}
 #find-match-popup .ui-tabs-panel { padding:0;}
 /*.first_name,.last_name {width:46%;}*/
 .hidden{display:none;}
@@ -135,14 +135,14 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-message-box td { vertical-align: middle!important;  }
 #message_right label{float: left;display: block;}
 .label_def{width: 110px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
-#message_right label input {width: 145px;  }
+#message_right label input {width: 130px;  }
 #tagging #BBTreeContainer .BBTree, #BBDialog .BBTree{height: 200px;  width: 250px; float: left;}
 .loading_message{ margin: 0px auto; background: #fff; padding:5px; width: 200px}
 .popup_def{ color: #777777;
     float: left;
     margin: 0 10px 0 0;
     text-align: right;
-    width: 100px;}
+    width: 110px;}
 
 .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
