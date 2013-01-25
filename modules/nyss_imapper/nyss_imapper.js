@@ -1036,13 +1036,13 @@ function buildActivitiesList() {
 					messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
 	 				messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
 	 				messagesHtml += '</a>';
-					messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,20)+'</a>';
+					messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.contactId+'" title="'+value.fromName+'">'+short_subject(value.fromName,19)+'</a>';
 					messagesHtml += ' ';
 				}else {
 					messagesHtml += '<td class="name">N/A ';
 				}
 
-					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,14)+'</span>';
+					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,13)+'</span>';
 
 				match_sort = 'ProcessError';
 				if(value.match_type){
