@@ -16,35 +16,34 @@ cj(document).ready(function(){
 	var reassign = cj('#reassign');
 	var create = cj('#add-contact');
 	
-	var debug = true;
 
-	// Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
-	placeholderSupport = ("placeholder" in document.createElement("input"));
+	// // Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
+	// placeholderSupport = ("placeholder" in document.createElement("input"));
 
-	if(!placeholderSupport ){
- 		cj('[placeholder]').focus(function() {
-			var input = cj(this);
-			if (input.val() == input.attr('placeholder')) {
-				input.val('');
-			    input.removeClass('placeholder');
-			}
-		}).blur(function() {
-			var input = cj(this);
-			if (input.val() == '' || input.val() == input.attr('placeholder')) {
-				input.addClass('placeholder');
-				input.val(input.attr('placeholder'));
-			}
-		}).blur().parents('form').submit(function() {
-			cj(this).find('[placeholder]').each(function() {
-				var input = cj(this);
-				if (input.val() == input.attr('placeholder')) {
-					input.val('');
-				}
-			})
-		});
-	}else{
-		// console.log('placeholder Support');
-	}
+	// if(!placeholderSupport ){
+ // 		cj('[placeholder]').focus(function() {
+	// 		var input = cj(this);
+	// 		if (input.val() == input.attr('placeholder')) {
+	// 			input.val('');
+	// 		    input.removeClass('placeholder');
+	// 		}
+	// 	}).blur(function() {
+	// 		var input = cj(this);
+	// 		if (input.val() == '' || input.val() == input.attr('placeholder')) {
+	// 			input.addClass('placeholder');
+	// 			input.val(input.attr('placeholder'));
+	// 		}
+	// 	}).blur().parents('form').submit(function() {
+	// 		cj(this).find('[placeholder]').each(function() {
+	// 			var input = cj(this);
+	// 			if (input.val() == input.attr('placeholder')) {
+	// 				input.val('');
+	// 			}
+	// 		})
+	// 	});
+	// }else{
+	// 	// console.log('placeholder Support');
+	// }
 
 
 
@@ -534,10 +533,25 @@ cj(document).ready(function(){
 	// add tag modal 
 	cj(".add_tag").live('click', function() { 
 		cj("#loading-popup").dialog('open');
+
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
-		cj("#autocomplete_tag").val();
-		cj(".autocomplete-tags-bank").html('');
+ 
+		// BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'tagging'}}); 
+
+		// cj('#TagActivity').append('<div class="BBInit"></div><script>BBTree.initContainer("TagActivity");</script>');
+		// cj('#TagContact').append('<div class="BBInit"></div><script>BBTree.initContainer("TagContact");</script>');
+
+		// callTree.currentSettings.callSettings.ajaxSettings.entity_id = contactId;
+		// BBTreeTag.getPageCID(activityId, 'civicrm_activity'); 
+
+		// // BBTreeTag.getPageCID(contactId, 'civicrm_contact'); 
+
+
+		// console.log(callTree.currentSettings.callSettings.ajaxSettings.entity_id);
+
+		// cj("#autocomplete_tag").val();
+		// cj(".autocomplete-tags-bank").html('');
 		cj('#tagging-popup-header').html('');
 
 		cj.ajax({
@@ -901,7 +915,6 @@ function makeListSortable(){
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 3, "desc" ]],
 		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
-	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
 		"bStateSave": true,
 		'aTargets': [ 1 ],
 		"bPaginate": false,
@@ -973,6 +986,12 @@ function buildMessageList() {
 				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
+				if(value.match_count != 1){
+					var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
+					messagesHtml += '<td class="match hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
+				}else{
+					messagesHtml += '<td class="match hidden"><span data="Error">ProcessError</span></td>';
+				}
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -1019,11 +1038,23 @@ function buildActivitiesList() {
 				}
 
 					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,14)+'</span>';
+
+				match_sort = 'ProcessError';
+				if(value.match_type){
+					var match_string = (value.match_type == 0) ? "Manually matched" : "Automatically Matched" ;
+					var match_short = (value.match_type == 0) ? "H" : "A" ;
+					match_sort = (value.match_type == 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+					messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+				}
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +'</td>';
 				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
+				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
+
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -1137,3 +1168,7 @@ function autocomplete_setup () {
         	},
     	});	 
 }
+
+	// unbind the sort on the checkbox and actions
+	cj("th.checkbox").removeClass('sorting').unbind('click');
+	cj("th.Actions").removeClass('sorting').unbind('click');
