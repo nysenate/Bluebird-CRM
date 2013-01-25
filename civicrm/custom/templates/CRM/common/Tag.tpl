@@ -100,14 +100,17 @@
 </div>
 <div class="clear"></div>
 </div>
-{if $tagset.parentID eq 296}
-    <div class="BBInit"></div>
-    {literal}
-    <script>
-        BBTree.initContainer();
-    </script>
-    {/literal}
-{/if}   
+
+{if $action eq 16 || $action eq 2 }
+    {if $tagset.parentID eq 296}
+        <div class="BBInit"></div>
+        {literal}
+        <script>
+            BBTree.initContainer('', {pullSets: [291]});
+        </script>
+        {/literal}
+    {/if}   
+{/if}  
 {/foreach}
 
 {elseif $tagsetType eq 'activity'}
