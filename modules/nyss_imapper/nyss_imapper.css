@@ -145,7 +145,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
     float: left;
     margin: 0 10px 0 0;
     text-align: right;
-    width: 100px;}
+    width: 110px;}
 
 .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
