@@ -983,7 +983,7 @@ function buildMessageList() {
 					messagesHtml += '<td class="forwarder"> N/A </td>';
 				}
 				
-				messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -1023,7 +1023,7 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +'</td>';
 				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
