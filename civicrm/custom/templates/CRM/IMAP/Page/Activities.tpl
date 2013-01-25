@@ -10,7 +10,8 @@
 				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
 			   		<th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
-				    <th class='Date'>Date Sent</th> 
+				    <th class='Date'>Date Sent</th>
+				    <th class='Match_type hidden'>Match Type</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr>
@@ -20,8 +21,8 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
-			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
+<!-- 			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
+ -->			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
 			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 		</div>
 	</div>

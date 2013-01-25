@@ -104,9 +104,12 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-contact-box {background-color: #f8f8f8;margin-bottom: 4px;padding: 4px 0;float:left;}
 .imapper-contact-box:hover {  background-color: #eeeeee}
 .imapper-address-select-box {height: 16px;width: 20px;float: left;padding: 15px 0px;}
-.imapper-address-box {float: left;width: 230px;padding-left: 5px;}
+.imapper-address-box {float: left;width: 220px;padding-left: 5px;}
 .clear {clear: both;}
 .emailbubble,.matchbubble {padding: 2px 4px;}
+.matchbubble.H{ font-size:10px; background-color: #fce093; }
+.matchbubble.A{font-size:10px; background-color: #dee7f8; }
+
 .marginL10 {margin-left: 10px;}
 .marginL5  {margin-left: 5px;}
 .emailbubble{
@@ -142,7 +145,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
     float: left;
     margin: 0 10px 0 0;
     text-align: right;
-    width: 110px;}
+    width: 100px;}
 
 .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
@@ -150,3 +153,10 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 
 #tagging-popup-header{ padding:10px 0;  background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px; line-height: 23px;width: 960px; }
 #tagging-popup{ padding: 0; margin: 0;}
+
+tr.odd td.sorting_1 {background-color:#f1f1f1!important;}
+
+/* use the group that is allowed to forward to search for the contact 
+uniquely sortable tabs for 
+
+*/

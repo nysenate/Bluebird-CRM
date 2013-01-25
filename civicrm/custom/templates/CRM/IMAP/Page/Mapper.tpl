@@ -11,6 +11,7 @@
 				    <th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
 				    <th class='Date'>Date Sent</th> 
+				    <th class='Match_type hidden'>Match Type</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr> 

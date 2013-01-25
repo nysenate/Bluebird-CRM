@@ -9,7 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $contTime = 6; // time between processMailboxes cron job in mins
+    private static $contTime = 1; // time between processMailboxes cron job in mins
 
     /* setupImap()
      * Parameters: None.
@@ -749,7 +749,7 @@ class CRM_IMAP_AJAX {
     }
 
 
-
+    // TODO: use dan's tagging system 
     public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
@@ -1104,6 +1104,7 @@ EOQ;
         CRM_Utils_System::civiExit();
     }
 
+    // TODO: use dan's tagging system 
     public static function getTags() {
         require_once 'api/api.php';
         $name = self::get('s');
@@ -1128,7 +1129,7 @@ EOQ;
 
 
 
-
+    // TODO: use dan's tagging system 
     public static function addTags() {
         require_once 'api/api.php';
         $tag_ids = self::get('tags');
