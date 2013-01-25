@@ -696,7 +696,7 @@ class CRM_IMAP_AJAX {
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
               'subject' => $subject,
-              'is_auto' => false, // we manually add it, right ?
+              'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
               'original_id' => $messageUid,
               'details' => $body,
@@ -1093,6 +1093,19 @@ EOQ;
             while($row = mysql_fetch_assoc($Updated_results)) {
                  $results[] = $row; 
             }
+
+                        $Source_update = <<<EOQ
+UPDATE `civicrm_activity`
+SET  `is_auto`= 0
+WHERE `id` =  $id
+EOQ;
+
+            // change the row           
+            $Source_results = mysql_query($Source_update, self::db());
+            while($row = mysql_fetch_assoc($Source_results)) {
+                 $results[] = $row; 
+            }
+
             $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
         }else{
             $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
