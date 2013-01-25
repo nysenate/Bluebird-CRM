@@ -8,15 +8,15 @@
 			<thead> 
 				<tr class='list_header'> 
 				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th> 
-				    <th class='Name'>Sender’s Name</th> 
+				    <th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
 				    <th class='Date'>Date Sent</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr> 
 			</thead> 
-			<tbody id='imapper-messages-list' > 
-				<tr><td>Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></td></tr>
+			<tbody id='imapper-messages-list'> 
+				<tr><td><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td></tr>
 			</tbody> 
 		</table>		
 		<div class='page_actions'>

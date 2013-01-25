@@ -485,12 +485,16 @@ function extract_email_address ($string) {
   preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
 
   $subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $email->subject) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
-
-  if($subject == "" | $subject == "(no subject)"){
+  
+  // remove () sometimes found in emails with no subject
+  $subject = preg_replace("/(\(|\))/i", "", $subject);
+  if( trim(strip_tags($subject)) == "" | trim($subject) == "no subject"){
     $subject = "No Subject";
   }
- 
-  $email->body = '<pre>'.$email->body.'</pre>';
+
+  // html emails need to be pre tagged
+
+    $email->body = '<pre>'.$email->body.'</pre>';
 
   // Use the e-mail from the body of the message (or header if direct) to find traget contact
   $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fromEmail['email'], );

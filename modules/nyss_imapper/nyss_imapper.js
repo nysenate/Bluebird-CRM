@@ -77,7 +77,7 @@ cj(document).ready(function(){
 					if(data != null || data != ''){
 						contacts = cj.parseJSON(data);
 						if(contacts.code == 'ERROR'){
-							cj('#imapper-contacts-list').html('No Results Found');
+							cj('#imapper-contacts-list').html(contacts.message);
 						}else{
 							cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
 							buildContactList();
@@ -123,7 +123,6 @@ cj(document).ready(function(){
 						cj("#find-match-popup").dialog('close');  
 						help_message('Message assigned to contact');
 					}
-	 	
 				}
 			});
 			return false;
@@ -199,26 +198,37 @@ cj(document).ready(function(){
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
-					cj.ajax({
-						url: '/civicrm/imap/ajax/assignMessage',
-						data: {
-							messageId: create_messageId,
-							imapId: create_imap_id,
-							contactId: contactData.contact
-						},
-						success: function(data, status) {
-							cj("#find-match-popup").dialog('close'); 
-							cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
-							help_message('Contact created and message Assigned');
-							var old_total = parseInt(cj("#total_number").html(),10);
-							help_message('Activity Deleted');
-							cj("#total_number").html(old_total-1);
-						},
-						error: function(){
-    						alert('failure');
-  						}
+					if (contactData.code == 'ERROR'){
+	    				alert(contactData.message);
+	    				return false;
+					}else{
 
-				});
+						cj.ajax({
+							url: '/civicrm/imap/ajax/assignMessage',
+							data: {
+								messageId: create_messageId,
+								imapId: create_imap_id,
+								contactId: contactData.contact
+							},
+							success: function(data, status) {
+								if (data.code == 'ERROR'){
+				    				alert('failure'+data.message);
+				    				return false;
+								}else{
+									cj("#find-match-popup").dialog('close'); 
+									cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
+									help_message('Contact created and message Assigned');
+									var old_total = parseInt(cj("#total_number").html(),10);
+									help_message('Message Assigned');
+									cj("#total_number").html(old_total-1);
+								}
+							},
+							error: function(){
+	    						alert('failure');
+	  						}
+
+					});
+					}	
 				}			
 			});
 			return false;
@@ -654,17 +664,15 @@ cj(document).ready(function(){
 	});
 
 	// toggle Debug info for find match message popup
-	if(debug){
-		cj(".debug_on").live('click', function() { 
-			var debug_info = cj(".debug_info").html();
-			cj("#message_left_email").prepend(debug_info);
-			cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
-		});
-		cj(".debug_off").live('click', function() { 
-			cj("#message_left_email .debug_remove").remove();
-			cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
-		});
-	};
+	cj(".debug_on").live('click', function() { 
+		var debug_info = cj(".debug_info").html();
+		cj("#message_left_email").prepend(debug_info);
+		cj(this).removeClass('debug_on').addClass('debug_off').html('Hide Debug info');
+	});
+	cj(".debug_off").live('click', function() { 
+		cj("#message_left_email .debug_remove").remove();
+		cj(this).removeClass('debug_off').addClass('debug_on').html('Show Debug info');
+	});
 
 	// opening find match window
 	cj(".find_match").live('click', function() {
@@ -684,20 +692,27 @@ cj(document).ready(function(){
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 				var icon ='';
+
+				// simple check to see if the message exists 
 				if(messages.date != null){
 			 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
 						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 					}
-					cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					cj('#message_left_header').html('');
+	 		 		if(messages.fromName) cj('#message_left_header').append("<strong>From: </strong>"+messages.fromName +"  ");
+					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble'>"+short_subject(messages.fromEmail)+"</span>");
+					cj('#message_left_header').append("<br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					
 					if ((messages.forwardedEmail != '')){
 						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 					}
 					// add some debug info to the message body on toggle
-					if(debug){
+					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
 							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
+
 						}
 						debugHTML +="<span class='search_info'></span></div></div>";
 						cj('#message_left_header').append(debugHTML);
@@ -717,12 +732,11 @@ cj(document).ready(function(){
 	 				cj("#tabs").tabs();
 	 				cj('.email_address').val(messages.fromEmail);
 
-	 				cj('#filter').click();
+	 				if(messages.fromEmail) cj('#filter').click();
 					cj('.first_name').val(firstName);
 					cj('.last_name').val(lastName);
 				}else{
 					alert('unable to load message');
-
 				}
 			},
 			error: function(){
@@ -733,7 +747,7 @@ cj(document).ready(function(){
 	});
 
 	// Edit a match allready assigned to an Activity 
-	cj(".pre_find_match").live('click', function() {
+	cj(".edit_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
 
 		var activityId = cj(this).parent().parent().attr('data-id');
@@ -741,8 +755,8 @@ cj(document).ready(function(){
 		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
 		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
 
-		cj('.first_name').val(firstName);
-	    cj('.last_name').val(lastName);
+		if(firstName && firstName !='null') cj('.first_name').val(firstName);
+	    if(lastName && lastName !='null') cj('.last_name').val(lastName);
 
 		cj('#imapper-contacts-list').html('');
 
@@ -752,11 +766,17 @@ cj(document).ready(function(){
 			success: function(data,status) {
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
-		 		cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+				cj('#message_left_header').html('');
+ 		 		if(messages.fromName) cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  ");
+				if(messages.fromEmail) cj('#message_left_header').append("<i>&lt;"+ messages.fromEmail+"&gt;</i>");
+ 		 		cj('#message_left_header').append("<br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+		 		cj('.email_address').val(messages.fromEmail);
+
 				if ((messages.forwardedEmail != '')){
 					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
 				}
-				if(debug){
+				// if we are on crmdev or crmtest show a debug window 
+				if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
 						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
 						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
 						debugHTML +="<span class='search_info'></span></div></div>";
@@ -765,9 +785,8 @@ cj(document).ready(function(){
 						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
 						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
 						cj('.debug_remove').append(bugHTML);
+
 					}
-
-
 
 				cj('#message_left_email').html(messages.details);
 				cj('#email_id').val(activityId);
@@ -856,13 +875,33 @@ function destroyReSortable(){
 	makeListSortable();
 }
 
+// needed to format timestamps to allow sorting:  
+// make a hidden title with the non-readable date and sort on that
+
+cj.extend( cj.fn.dataTableExt.oSort, {
+	"title-string-pre": function ( a ) {
+		return a.match(/data="(.*?)"/)[1].toLowerCase();
+	},
+
+	"title-string-asc": function ( a, b ) {
+		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+	},
+
+	"title-string-desc": function ( a, b ) {
+		return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+	}
+} );
+
 function makeListSortable(){
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 3, "desc" ]],
+		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
 	//	"aoColumnDefs": [  { "bSearchable": true, "bVisible": false, "aTargets": [ 3 ] }  ],
-		"iDisplayLength": 50,
-	//	"bStateSave": true,
-		'aTargets': [ 1 ] 
+		"bStateSave": true,
+		'aTargets': [ 1 ],
+		"bPaginate": false,
+		"bAutoWidth": false,
+		"bInfo": false,
 	});
 	// unbind the sort on the checkbox and actions
 	cj("th.checkbox").removeClass('sorting').unbind('click');
@@ -899,18 +938,29 @@ function buildMessageList() {
 			var icon ='';
 			if(value.date != null){
 				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
-				if( value.from_name != ''){
+ 
+				if( value.from_name != ''  && value.from_name != null){
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
 
-				  	if( value.from_email != ''){ 
-						messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.from_email,15)+'</span>';
+				  	if( value.from_email != '' && value.from_email != null){ 
+						messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.from_email,15)+'</span>';
+						if(value.match_count == 1){
+							messagesHtml += '<span class="matchbubble warn marginL5" title="This Record Should have Automatched as it matches '+value.match_count+' Record in bluebird ">'+value.match_count+'</span>';
+						}else{
+							messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
+
+						}
+					}else{
+						messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
 					}
 					messagesHtml +='</td>';
 
-				}else if( value.from_email != ''){ 
-					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span></td>';
+				}else if( value.from_email != '' && value.from_email != null ){ 
+					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span>';
+					messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span></td>';
+
 				}else {
-					messagesHtml += '<td class="name">N/A</td>';
+					messagesHtml += '<td class="name"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
 				}
 				if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
@@ -919,8 +969,7 @@ function buildMessageList() {
 
 				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
-				messagesHtml += '<td class="date">'+value.date +'</td>';
-
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -966,12 +1015,12 @@ function buildActivitiesList() {
 					messagesHtml += '<td class="name">N/A ';
 				}
 
-					messagesHtml += '<span class="emailbubble marginL10">'+short_subject(value.fromEmail,14)+'</span>';
+					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
-				messagesHtml += '<td class="subject">'+short_subject(value.subject,50) +'</td>';
-				messagesHtml += '<td class="date">'+value.date +'</td>';
+				messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +'</td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="Actions"> <span class="pre_find_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
 		});
 		cj('#imapper-messages-list').html(messagesHtml);
@@ -984,6 +1033,7 @@ function buildActivitiesList() {
 function buildContactList() {
 	var contactsHtml = '';
 		html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
+
 		if(contacts.length < 1){
 			html += "(No Matches)";	
 		}else if(contacts.length == 1){
