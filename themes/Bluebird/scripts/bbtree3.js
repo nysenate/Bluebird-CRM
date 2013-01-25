@@ -129,7 +129,7 @@ var callTree =  {
 		//and now display settings
 		cj.extend(true,callTree.currentSettings.displaySettings, callTree.defaultSettings.displaySettings);
 		cj.extend(callTree.currentSettings.displaySettings, settings);
-		if(instance == null)
+		if(instance == null || instance == '')
 		{
 			instance = 'default';
 		}
@@ -172,7 +172,6 @@ var callTree =  {
 		var dataStore = $.cookie("basket-data", JSON.stringify($("#ArticlesHolder").data()));
 		var data=JSON.parse($.cookie("basket-data"))
 		*/
-		//console.log(callTree.defaultSettings.displaySettings.pullSets);
 		BBTree["rawJsonData"] = {}; //add new data properties
 		BBTree["parsedJsonData"] = {};
 		cj.each(data, function(i,tID){
@@ -186,7 +185,6 @@ var callTree =  {
 				callTree.parseTreeAjax(tID, displayObj);
 			}
 		});
-		console.log()
 		return true;
 	},
 	writeTreeInit: function(tID){
@@ -469,7 +467,6 @@ var BBTreeTag = {
 	},
 	applyContactTags: function(holdID, holdLoc)
 	{
-		console.log(holdLoc);
 		cj.each(BBTree.contactTagData['cid_'+holdID], function(i, tag){
 			cj(holdLoc + ' dt#'+addTagLabel(tag)+' .checkbox').attr('checked','true').addClass('checked');
 			cj(holdLoc + ' dt#'+addTagLabel(tag)).addClass('checked');
