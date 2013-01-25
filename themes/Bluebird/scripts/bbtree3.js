@@ -317,7 +317,6 @@ var callTree =  {
 	slideDownTree: function()
 	{
 		var treeLoc = aCSel(callTree.currentSettings.displaySettings.currentInstance) + BBTree.treeLoc;
-		console.log(treeLoc);
 		cj(treeLoc + ' dt .treeButton').unbind('click');
 		cj(treeLoc + ' dt .treeButton').click(function() {
 			var tagLabel = cj(this).parent().attr('id');
@@ -1258,7 +1257,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 	{
 		floatControlBox = '<span class="fCB">';
 		floatControlBox += '<ul>';
-		if(291 == callTree.currentSettings.displaySettings.currentTree)
+		if(291 == treeTop)
 		{
 			floatControlBox += '<li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="removeTag" title="Remove Tag" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
@@ -1266,7 +1265,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 			floatControlBox += '<li class="updateTag" title="Update Tag" do="update" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="mergeTag" title="Merge Tag" do="merge" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 		}
-		if(296 == callTree.currentSettings.displaySettings.currentTree)
+		if(296 == treeTop)
 		{
 			floatControlBox += '<li class="removeTag" title="Remove Keyword" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="updateTag" title="Update Keyword" do="update"  onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
