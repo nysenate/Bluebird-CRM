@@ -641,7 +641,9 @@ var BBTreeModal = {
 			callTree.currentSettings.displaySettings['previousTree'] = callTree.currentSettings.displaySettings.buttonType;
 		}	
 		callTree.currentSettings.displaySettings.buttonType = 'modal';
-		setTreeLoc();
+		//Have to set Tree Loc individually, because the function add the instance name, and that'll screw up everything here
+		BBTree.treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
+		console.log(BBTree.treeLoc);
 	},
 	addModalTagTree: function() // modal needs to add a tree
 	{
