@@ -546,21 +546,21 @@ cj(document).ready(function(){
 			success: function(data,status) {
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
-		 		cj('#tagging-popup-header').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+ 
 
-		 		cj('#tagging-popup-header').html('').append("<strong>From: </strong>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+		 		cj('#tagging-popup-header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date+"<br/>");
 				cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
 				if ((messages.forwardedEmail != '')){
-					cj('#tagging-popup-header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					cj('#tagging-popup-header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
 				}
-				if ((messages.fromAddress)){
-					cj('#tagging-popup-header').append("<strong>Address by: </strong>"+messages.fromAddress);
-				}
+				// if ((messages.fromAddress)){
+				// 	cj('#tagging-popup-header').append("<span class='popup_def'>Address by: </strong>"+messages.fromAddress);
+				// }
  			
 				cj("#tagging-popup").dialog({ title:  "Tagging: "+ short_subject(messages.subject,50) });
 				cj("#tagging-popup").dialog('open');
- 				 
+ 				cj("#tagging").tabs();
 			},
 			error: function(){
 				alert('unable to find activity');
@@ -699,17 +699,20 @@ cj(document).ready(function(){
 						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 					}
+					cj('#message_left_header').addClass(messages.email_user);
+					cj('#message_left_email').addClass(messages.email_user);
+
 					cj('#message_left_header').html('');
-	 		 		if(messages.fromName) cj('#message_left_header').append("<strong>From: </strong>"+messages.fromName +"  ");
+	 		 		if(messages.fromName) cj('#message_left_header').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble'>"+short_subject(messages.fromEmail)+"</span>");
-					cj('#message_left_header').append("<br/><strong>Subject: </strong>"+short_subject(messages.subject,70)+" "+ icon+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header').append("<strong>"+messages.status+" from: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
 					}
 					// add some debug info to the message body on toggle
 					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
+						var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
 						if(messages.status !== 'direct'){
 							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_time+"";
 
@@ -767,18 +770,20 @@ cj(document).ready(function(){
 		 		cj("#loading-popup").dialog('close');
 		 		messages = cj.parseJSON(data);
 				cj('#message_left_header').html('');
- 		 		if(messages.fromName) cj('#message_left_header').html('').append("<strong>From: </strong>"+messages.fromName +"  ");
-				if(messages.fromEmail) cj('#message_left_header').append("<i>&lt;"+ messages.fromEmail+"&gt;</i>");
- 		 		cj('#message_left_header').append("<br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Date: </strong>"+messages.date+"<br/>");
+ 		 		if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
+				if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble '>"+ messages.fromEmail+"</span>");
+ 		 		cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70) +"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 		 		cj('.email_address').val(messages.fromEmail);
 
 				if ((messages.forwardedEmail != '')){
-					cj('#message_left_header').append("<strong>Forwarded by: </strong>"+messages.forwardedName+" <i>&lt;"+ messages.forwardedEmail+"&gt;</i><br/>");
+					cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.fromEmail+"</span><br/>");
 				}
 				// if we are on crmdev or crmtest show a debug window 
+				cj('#message_left_header').addClass(messages.email_user);
+				cj('#message_left_email').addClass(messages.email_user);
 				if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
 						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
-						var debugHTML ="<div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
+						var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
 						debugHTML +="<span class='search_info'></span></div></div>";
 						cj('#message_left_header').append(debugHTML);
 						// we can create redmine issues with message details and assign to stefan from a url ! 
@@ -903,9 +908,7 @@ function makeListSortable(){
 		"bAutoWidth": false,
 		"bInfo": false,
 	});
-	// unbind the sort on the checkbox and actions
-	cj("th.checkbox").removeClass('sorting').unbind('click');
-	cj("th.Actions").removeClass('sorting').unbind('click');
+
 
 	checks();
 
@@ -969,7 +972,7 @@ function buildMessageList() {
 
 				// messagesHtml += '<td class="email"></td>';
 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
 
 				// check for direct messages & not empty forwarded messages
 				if((value.status == 'direct' ) && (value.forwarder_email != '')){
@@ -1018,7 +1021,7 @@ function buildActivitiesList() {
 					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,14)+'</span>';
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_long+'">'+value.date +'</span></td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
 				messagesHtml += '<td class="Actions"> <span class="edit_match"><a href="#">Edit</a></span> |  <span class="add_tag"><a href="#">Tag</a></span> | <span class="clear_activity"><a href="#">Clear</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 			}
