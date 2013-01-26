@@ -928,7 +928,6 @@ function makeListSortable(){
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 3, "desc" ]],
 		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
-		"bStateSave": true,
 		'aTargets': [ 1 ],
 		"bPaginate": false,
 		"bAutoWidth": false,
