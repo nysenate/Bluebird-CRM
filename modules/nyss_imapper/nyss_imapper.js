@@ -237,7 +237,6 @@ cj(document).ready(function(){
 	});
 
 	if(cj("#Activities").length){
-
 		pullActivitiesHeaders();
  		autocomplete_setup();
  	}else if(cj("#Unmatched").length){
@@ -736,12 +735,12 @@ cj(document).ready(function(){
 					cj('#message_left_header').html('');
 	 		 		cj('#message_left_header').append("<span class='popup_def'>From: </span>");
 	 		 		if(messages.fromName) cj('#message_left_header').append(messages.fromName);
-					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble'>"+short_subject(messages.fromEmail)+"</span>");
+					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+short_subject(messages.fromEmail)+"</span>");
 
 					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span><br/>");
 					}
 					// add some debug info to the message body on toggle
 					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
@@ -969,18 +968,24 @@ function buildMessageList() {
 		cj.each(messages, function(key, value) {
 			var icon ='';
 			if(value.date != null){
+
+				// wrap the row
 				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
- 
+
+				// build a match count bubble 
+				countWarn = (value.match_count == 1) ? 'warn' :  '';
+				countMessage = (value.match_count == 1) ? 'This address should have matched automatically' :  'This email address matches '+value.match_count+' records in bluebird';
+				countStatus = (value.match_count == 0) ? 'empty' :  'multi'; 
+ 				countIcon = '<span class="matchbubble marginL5 '+countWarn+' '+countStatus+'" title="'+countMessage+'">'+value.match_count+'</span></td>';
+
+
+ 				// build the name box  
 				if( value.from_name != ''  && value.from_name != null){
 					messagesHtml += '<td class="name" data-firstName="'+firstName(value.from_name)+'" data-lastName="'+lastName(value.from_name)+'">'+short_subject(value.from_name,20);
 
 				  	if( value.from_email != '' && value.from_email != null){ 
 						messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.from_email,15)+'</span>';
-						if(value.match_count == 1){
-							messagesHtml += '<span class="matchbubble warn marginL5" title="This Record Should have Automatched as it matches '+value.match_count+' Record in bluebird ">'+value.match_count+'</span>';
-						}else{
-							messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
-						}
+						messagesHtml +=  countIcon;
 					}else{
 						messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
 					}
@@ -988,19 +993,22 @@ function buildMessageList() {
 
 				}else if( value.from_email != '' && value.from_email != null ){ 
 					messagesHtml += '<td class="name"><span class="emailbubble">'+short_subject(value.from_email,25)+'</span>';
-					messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span></td>';
-
+					messagesHtml +=  countIcon;
 				}else {
 					messagesHtml += '<td class="name"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
+					messagesHtml +=  countIcon;
 				}
+
+				// dealing with attachments 
 				if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){ 
 					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
 					icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
 				}
 
-				// messagesHtml += '<td class="email"></td>';
-		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
+ 		 		messagesHtml += '<td class="subject">'+short_subject(value.subject,40) +' '+icon+'</td>';
 				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date +'</span></td>';
+
+				// hidden column to sort by 
 				if(value.match_count != 1){
 					var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
 					messagesHtml += '<td class="match hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
@@ -1052,7 +1060,7 @@ function buildActivitiesList() {
 					messagesHtml += '<td class="name">N/A ';
 				}
 
-					messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,13)+'</span>';
+				messagesHtml += '<span class="emailbubble marginL5">'+short_subject(value.fromEmail,13)+'</span>';
 
 				match_sort = 'ProcessError';
 				if(value.match_type){

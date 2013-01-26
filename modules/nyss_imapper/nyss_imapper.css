@@ -135,8 +135,10 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 }
 
 .matchbubble {background-color: #B2E1C2;}
-.warn {background-color: #FAA732; 	border: #FAA732 solid 1px;
-}
+.multi {background-color: #eb79ef;   border: #eb79ef solid 1px;}
+.empty {background-color: #b0e3a9;   border: #a2d79b solid 1px;}
+.warn {background-color: #FAA732;   border: #FAA732 solid 1px;}
+
 .imapper-message-box td { vertical-align: middle!important;  }
 #message_right label{float: left;display: block;}
 .label_def{width: 110px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
