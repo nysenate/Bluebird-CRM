@@ -1076,6 +1076,7 @@ EOQ;
         $firstName = $changeData['values'][$change]['first_name'];
         $LastName = $changeData['values'][$change]['last_name'];
         $contactType = $changeData['values'][$change]['contact_type'];
+        $email = $changeData['values'][$change]['email'];
 
         // want to update the activity_target, time to use sql 
         // get the the record id please 
@@ -1116,7 +1117,7 @@ EOQ;
                  $results[] = $row; 
             }
 
-            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
+            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
         }else{
             $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
 
