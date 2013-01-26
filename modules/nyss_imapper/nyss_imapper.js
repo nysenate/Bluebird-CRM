@@ -293,6 +293,7 @@ cj(document).ready(function(){
 							success: function(data,status) {
 								deleted = cj.parseJSON(data);
 								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+									if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
 									alert('Unable to Delete Message : '+deleted.message);
 								}else{
 									cj("#"+messageId+'_'+imapId).remove();
@@ -354,6 +355,7 @@ cj(document).ready(function(){
 								success: function(data,status) {
 									deleted = cj.parseJSON(data);
 									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+										if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
 										alert('Unable to Delete Activity : '+deleted.message);
 									}else{
 										cj('#'+rows[key]).remove();
@@ -717,12 +719,13 @@ cj(document).ready(function(){
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
-				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
-				var icon ='';
-
-				// simple check to see if the message exists 
-				if(messages.date != null){
+				cj("#loading-popup").dialog('close');
+				if(messages.code == 'ERROR'){
+					if(messages.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
+					alert('Unable to load Message : '+ messages.message);
+				}else{ 
+					var icon ='';
 			 		if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){ 
 						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
@@ -768,12 +771,10 @@ cj(document).ready(function(){
 	 				if(messages.fromEmail) cj('#filter').click();
 					cj('.first_name').val(firstName);
 					cj('.last_name').val(lastName);
-				}else{
-					alert('unable to load message');
 				}
 			},
 			error: function(){
-				alert('unable to load message');
+				alert('Unable to load Message');
 			}
 		});
   		return false;

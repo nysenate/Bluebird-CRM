@@ -77,22 +77,17 @@ class CRM_IMAP_AJAX {
           echo "</pre>";
         }
 
-        if((count($email->time)!= 1)||(count($email->uid) != 1)){
-          $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This email no longer exists');
-            echo json_encode($returnCode);
-            // CRM_Utils_System::civiExit();
-        }
-
         // if message is less the x mins old, check it to see if it matches a contact,
         // if it does directly match, don't allow it to show up in the unmatches screen
         // we do this because the processing scritp hasn't had a chance to match it yet
-        $time = time()-(self::$contTime*60);;
-        if( $email->time > $time){
-          // email hasn't been processed yet
-          $code = 'FAILURE';
+        $time = time()-(self::$contTime*60);
+
+         if( $email->uid == '' || $email->time =='' || $email->time > $time){
+          $code = 'ERROR';
+          $output = array('code'=>$code,'status'=>'0','message'=>'Message no longer exists','clear'=>'true');
         }else{
           $code = 'SUCCESS';
+
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
@@ -173,14 +168,14 @@ class CRM_IMAP_AJAX {
               'origin_email' => $origin_email,
               'origin_lookup' => $fromEmail['type'], 
           );
-
           $output = array('code'=>$code,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
-          if ($debug){
-            echo "<h1>Full Email OUTPUT</h1>";
-            var_dump($output);
-          }
-          return $output;
         }
+
+        if ($debug){
+          echo "<h1>Full Email OUTPUT</h1>";
+          var_dump($output);
+        }
+        return $output;
     }
 
     /* getUnmatchedMessages()
@@ -359,10 +354,9 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
-
+        // var_dump($email);
         // var_dump($output);
-        if ($output['code'] == "SUCCESS"){
-
+        if($output['code'] != "ERROR" ){
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'format' => $output['header']['format'],
@@ -386,7 +380,7 @@ class CRM_IMAP_AJAX {
                                'date_long'   =>  $output['header']['date_long'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
           }else{
-            $returnMessage = array('code' => 'ERROR','message'=>"It's likely that message #{$id} has not be proccessed by the processMailboxes script, wait a few mins");
+            $returnMessage = array('code' => 'ERROR','message'=>"This message Does not exist",'clear'=>'true');
 
           }
         // var_dump($returnMessage);  exit();
@@ -452,7 +446,7 @@ class CRM_IMAP_AJAX {
         $email = $imap->getmsg_uid($id);
         if((count($email->time)!= 1)||(count($email->uid)!= 1)){
           $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This Message no longer exists');
+              'message'   => 'This Message no longer exists', 'clear'=>'true');
         }else{ 
           $status = $imap->deletemsg_uid($id);
           if($status == true){
