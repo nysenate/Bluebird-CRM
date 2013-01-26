@@ -197,8 +197,8 @@ cj(document).ready(function(){
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
-					if (contactData.code == 'ERROR' || data.code == '' || data.code == null ){
-	    				alert('Could Not Create Contact : '+data.message);
+					if (contactData.code == 'ERROR' || contactData.code == '' || contactData.code == null ){
+	    				alert('Could Not Create Contact : '+contactData.message);
 	    				return false;
 					}else{
 						cj.ajax({
@@ -209,6 +209,7 @@ cj(document).ready(function(){
 								contactId: contactData.contact
 							},
 							success: function(data, status) {
+								data = cj.parseJSON(data);
 								if (data.code == 'ERROR' || data.code == '' || data.code == null ){
 	    							alert('Could Not Assign Message : '+data.message);
 				    				return false;
