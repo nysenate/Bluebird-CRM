@@ -450,9 +450,9 @@ class CRM_IMAP_AJAX {
         // return standard response 
         // check to see if this message exists 
         $email = $imap->getmsg_uid($id);
-        if((count($email->time)!= 1)||(count($email->uid) != 1)){
+        if((count($email->time)!= 1)||(count($email->uid)!= 1)){
           $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This email no longer exists');
+              'message'   => 'This Message no longer exists');
         }else{ 
           $status = $imap->deletemsg_uid($id);
           if($status == true){

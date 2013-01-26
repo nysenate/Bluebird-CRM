@@ -264,7 +264,7 @@ cj(document).ready(function(){
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
-					row.remove();
+					// row.remove();
 					if(cj("#Activities").length){
 						cj.ajax({
 							url: '/civicrm/imap/ajax/deleteActivity',
@@ -290,8 +290,9 @@ cj(document).ready(function(){
 							data: {id: messageId,
 						    imapId: imapId },
 							success: function(data,status) {
-								if(data.code == 'ERROR' || data.code == '' || data.code == null){
-									alert('Unable to Delete Message : '+data.message);
+								deleted = cj.parseJSON(data);
+								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+									alert('Unable to Delete Message : '+deleted.message);
 								}else{
 									cj("#"+messageId+'_'+imapId).remove();
 	 								var old_total = parseInt(cj("#total_number").html(),10);
@@ -372,8 +373,9 @@ cj(document).ready(function(){
 								data: {id: value,
 							imapId: delete_secondary[key] },
 								success: function(data,status) {
-									if(data.code == 'ERROR' || data.code == '' || data.code == null){
-										alert('Unable to Delete Message : '+data.message);
+									deleted = cj.parseJSON(data);
+									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+										alert('Unable to Delete Message : '+deleted.message);
 									}else{
 										cj('#'+rows[key]).remove();
 										var old_total = parseInt(cj("#total_number").html(),10);
@@ -976,7 +978,6 @@ function buildMessageList() {
 							messagesHtml += '<span class="matchbubble warn marginL5" title="This Record Should have Automatched as it matches '+value.match_count+' Record in bluebird ">'+value.match_count+'</span>';
 						}else{
 							messagesHtml += '<span class="matchbubble marginL5" title="This email address matches '+value.match_count+' Records in bluebird ">'+value.match_count+'</span>';
-
 						}
 					}else{
 						messagesHtml += '<span class="emailbubble warn marginL5" title="We could not find the email address of this record">No email found!</span>';
