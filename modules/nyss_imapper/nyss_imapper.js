@@ -114,7 +114,7 @@ cj(document).ready(function(){
 				success: function(data, status) {
 					data = cj.parseJSON(data);
 					if (data.code == 'ERROR'){
-	    				alert('failure'+data.message);
+	    				alert('Could Not Assign message : '+data.message);
 					}else{
 						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 						var old_total = parseInt(cj("#total_number").html(),10);
@@ -722,8 +722,10 @@ cj(document).ready(function(){
 					cj('#message_left_email').addClass(messages.email_user);
 
 					cj('#message_left_header').html('');
-	 		 		if(messages.fromName) cj('#message_left_header').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
+	 		 		cj('#message_left_header').append("<span class='popup_def'>From: </span>");
+	 		 		if(messages.fromName) cj('#message_left_header').append(messages.fromName);
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble'>"+short_subject(messages.fromEmail)+"</span>");
+
 					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
