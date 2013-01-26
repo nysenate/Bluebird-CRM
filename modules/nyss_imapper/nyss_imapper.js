@@ -198,7 +198,7 @@ cj(document).ready(function(){
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
 					if (contactData.code == 'ERROR'){
-	    				alert(contactData.message);
+	    				alert('Could Not Create Contact : '+data.message);
 	    				return false;
 					}else{
 
@@ -211,7 +211,7 @@ cj(document).ready(function(){
 							},
 							success: function(data, status) {
 								if (data.code == 'ERROR'){
-				    				alert('failure'+data.message);
+	    							alert('Could Not Assign Message : '+data.message);
 				    				return false;
 								}else{
 									cj("#find-match-popup").dialog('close'); 
