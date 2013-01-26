@@ -447,8 +447,21 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
         // Delete the message with the specified UID
-        $status = $imap->deletemsg_uid($id);
-        echo json_encode($status);
+        // return standard response 
+        // check to see if this message exists 
+        $email = $imap->getmsg_uid($id);
+        if((count($email->time)!= 1)||(count($email->uid) != 1)){
+          $returnCode = array('code'      =>  'ERROR',
+              'message'   => 'This email no longer exists');
+        }else{ 
+          $status = $imap->deletemsg_uid($id);
+          if($status == true){
+            $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
+          }else{
+            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Could not Delete Message');
+          }
+        }
+        echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
     }
 
@@ -704,8 +717,13 @@ class CRM_IMAP_AJAX {
           );
           $activity = civicrm_api('activity', 'create', $params);
 
+          if ($debug){
+            echo "<h1>Activity Created ?</h1>";
+            var_dump($activity);
+          }
+
           // if its an error or doesnt return we need errors 
-          if (($activity['is_error']==1)){
+          if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
             $returnCode = array('code'      =>  'ERROR',
               'message'   =>  $activity['error_message']);
             echo json_encode($returnCode);
@@ -716,12 +734,10 @@ class CRM_IMAP_AJAX {
             if ($debug){
               echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
             }else{
-                $imap->movemsg_uid($messageUid, 'Archive');
+              $imap->movemsg_uid($messageUid, 'Archive');
             }
-
             // add attachment to activity
           };
-
         }
         // Move the message to the archive folder!
         CRM_Utils_System::civiExit();

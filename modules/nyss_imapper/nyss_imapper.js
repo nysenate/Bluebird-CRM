@@ -197,11 +197,10 @@ cj(document).ready(function(){
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
-					if (contactData.code == 'ERROR'){
+					if (contactData.code == 'ERROR' || data.code == '' || data.code == null ){
 	    				alert('Could Not Create Contact : '+data.message);
 	    				return false;
 					}else{
-
 						cj.ajax({
 							url: '/civicrm/imap/ajax/assignMessage',
 							data: {
@@ -210,7 +209,7 @@ cj(document).ready(function(){
 								contactId: contactData.contact
 							},
 							success: function(data, status) {
-								if (data.code == 'ERROR'){
+								if (data.code == 'ERROR' || data.code == '' || data.code == null ){
 	    							alert('Could Not Assign Message : '+data.message);
 				    				return false;
 								}else{
@@ -272,8 +271,8 @@ cj(document).ready(function(){
 							data: {id: messageId},
 							success: function(data,status) {
 								deleted = cj.parseJSON(data);
-								if(deleted.code == 'ERROR'){
-									alert('unable to delete Activity');
+								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+									alert('Unable to Delete Activity : '+data.message);
 								}else{
 									cj("#"+messageId).remove();
 									var old_total = parseInt(cj("#total_number").html(),10);
@@ -282,7 +281,7 @@ cj(document).ready(function(){
 								}
 							},
 							error: function(){
-    							alert('unable to delete activity');
+								alert('Unable to Delete Activity');
   							}
 						});
 					}else{
@@ -291,14 +290,17 @@ cj(document).ready(function(){
 							data: {id: messageId,
 						    imapId: imapId },
 							success: function(data,status) {
-								cj("#"+messageId+'_'+imapId).remove();
- 								var old_total = parseInt(cj("#total_number").html(),10);
- 								help_message('Message Deleted');
-
-								cj("#total_number").html(old_total-1);
+								if(data.code == 'ERROR' || data.code == '' || data.code == null){
+									alert('Unable to Delete Message : '+data.message);
+								}else{
+									cj("#"+messageId+'_'+imapId).remove();
+	 								var old_total = parseInt(cj("#total_number").html(),10);
+	 								help_message('Message Deleted');
+									cj("#total_number").html(old_total-1);
+								}
 							},
 							error: function(){
-    							alert('unable to delete Message');
+    							alert('Unable to delete Message');
   							}
 						});
 					}
@@ -349,17 +351,17 @@ cj(document).ready(function(){
 								data: {id: value},
 								success: function(data,status) {
 									deleted = cj.parseJSON(data);
-									if(deleted.code == 'ERROR'){
-    									alert('unable to delete Activity');
+									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+										alert('Unable to Delete Activity : '+deleted.message);
 									}else{
 										cj('#'+rows[key]).remove();
 										var old_total = parseInt(cj("#total_number").html(),10);
 										cj("#total_number").html(old_total-1);
-										help_message('Activities Deleted');
+										help_message('Activity Deleted');
 									}
 								},
 								error: function(){
-    								alert('unable to delete Activity');
+    								alert('Unable to Delete Activity ');
   								}
 							});
 						});		
@@ -370,13 +372,17 @@ cj(document).ready(function(){
 								data: {id: value,
 							imapId: delete_secondary[key] },
 								success: function(data,status) {
-									cj('#'+rows[key]).remove();
-									var old_total = parseInt(cj("#total_number").html(),10);
-									cj("#total_number").html(old_total-1);
-									help_message('Messages Deleted');
+									if(data.code == 'ERROR' || data.code == '' || data.code == null){
+										alert('Unable to Delete Message : '+data.message);
+									}else{
+										cj('#'+rows[key]).remove();
+										var old_total = parseInt(cj("#total_number").html(),10);
+		 								help_message('Message Deleted');
+										cj("#total_number").html(old_total-1);
+									}
 								},
 								error: function(){
-    								alert('unable to delete Message');
+    								alert('Unable to Delete Message');
   								}
 							});
 						});				
