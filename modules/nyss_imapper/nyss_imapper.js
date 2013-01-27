@@ -148,16 +148,14 @@ cj(document).ready(function(){
 			success: function(data, status) {
 				var data = cj.parseJSON(data);
 				if (data.code =='ERROR'){
-    				alert('failure');
+    				alert('Could not reassign Message : '+data.message);
 				}else{
 					cj("#find-match-popup").dialog('close'); 
-
 					// reset activity to new data 
 					cj('#'+activityId).attr("data-contact_id",data.contact_id);	// contact_id
 					cj('#'+activityId+" .name").attr("data-firstname",data.first_name);	// first_name
 					cj('#'+activityId+" .name").attr("data-last_name",data.last_name);	// last_name
  					cj('#'+activityId+' .name').html('<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+short_subject(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>');
-
 		       		help_message(data.message);
 				}
 			},
@@ -830,40 +828,45 @@ cj(document).ready(function(){
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
-		 		cj("#loading-popup").dialog('close');
-		 		messages = cj.parseJSON(data);
-				cj('#message_left_header').html('');
- 		 		if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
-				if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble '>"+ messages.fromEmail+"</span>");
- 		 		cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70) +"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
-		 		cj('.email_address').val(messages.fromEmail);
+				data = cj.parseJSON(data);
+				if (data.code == 'ERROR'){
+	    			alert('Could not load message Details: '+data.message);
+				}else{
+			 		cj("#loading-popup").dialog('close');
+			 		messages = cj.parseJSON(data);
+					cj('#message_left_header').html('');
+	 		 		if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
+					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble '>"+ messages.fromEmail+"</span>");
+	 		 		cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70) +"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+			 		cj('.email_address').val(messages.fromEmail);
 
-				if ((messages.forwardedEmail != '')){
-					cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.fromEmail+"</span><br/>");
-				}
-				// if we are on crmdev or crmtest show a debug window 
-				cj('#message_left_header').addClass(messages.email_user);
-				cj('#message_left_email').addClass(messages.email_user);
-				if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-						var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
-						var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
-						debugHTML +="<span class='search_info'></span></div></div>";
-						cj('#message_left_header').append(debugHTML);
-						// we can create redmine issues with message details and assign to stefan from a url ! 
-						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
-						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
-						cj('.debug_remove').append(bugHTML);
-
+					if ((messages.forwardedEmail != '')){
+						cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.fromEmail+"</span><br/>");
 					}
+					// if we are on crmdev or crmtest show a debug window 
+					cj('#message_left_header').addClass(messages.email_user);
+					cj('#message_left_email').addClass(messages.email_user);
+					if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
+							var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
+							var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
+							debugHTML +="<span class='search_info'></span></div></div>";
+							cj('#message_left_header').append(debugHTML);
+							// we can create redmine issues with message details and assign to stefan from a url ! 
+							submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+							bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+							cj('.debug_remove').append(bugHTML);
 
-				cj('#message_left_email').html(messages.details);
-				cj('#email_id').val(activityId);
-				cj('#imap_id').val(contactId);
-				cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100)  });
-				cj("#find-match-popup").dialog('open');
- 				cj("#tabs").tabs();
- 
-  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> ");
+						}
+
+					cj('#message_left_email').html(messages.details);
+					cj('#email_id').val(activityId);
+					cj('#imap_id').val(contactId);
+					cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100)  });
+					cj("#find-match-popup").dialog('open');
+	 				cj("#tabs").tabs();
+	 
+	  				cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> ");
+	  			}
 			},
 			error: function(){
 				alert('unable to Load Message');
