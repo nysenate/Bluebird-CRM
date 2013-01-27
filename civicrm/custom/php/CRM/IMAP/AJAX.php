@@ -1143,14 +1143,15 @@ EOQ;
       $LastName = $changeData['values'][$change]['last_name'];
       $contactType = $changeData['values'][$change]['contact_type'];
       $email = $changeData['values'][$change]['email'];
-      
+      $tagid = self::getInboxPollingTagId();
+
       // we need to check to see if the activity is still assigned to the same contact
       // if not, kill it
 
       $query = <<<EOQ
 SELECT COUNT(id) 
 FROM `civicrm_entity_tag`
-WHERE `entity_id` =  $activitId
+WHERE `entity_id` =  $id
 AND `tag_id` = $tagid
 EOQ;
       $check_tag = mysql_query($query, self::db());

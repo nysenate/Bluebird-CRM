@@ -116,9 +116,9 @@ cj(document).ready(function(){
 					if (data.code == 'ERROR'){
 	    				alert('Could Not Assign message : '+data.message);
 					}else{
-						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
- 						update_count();
-						cj("#find-match-popup").dialog('close');  
+						// cj(".imapper-message-box[data-id='"+messageId+"']").remove();
+						removeRow(messageId);
+ 						cj("#find-match-popup").dialog('close');  
 						help_message('Message assigned to contact');
 					}
 				}
@@ -155,6 +155,7 @@ cj(document).ready(function(){
 					cj('#'+activityId+" .name").attr("data-firstname",data.first_name);	// first_name
 					cj('#'+activityId+" .name").attr("data-last_name",data.last_name);	// last_name
  					cj('#'+activityId+' .name').html('<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+short_subject(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>');
+
 		       		help_message(data.message);
 				}
 			},
@@ -212,11 +213,9 @@ cj(document).ready(function(){
 				    				return false;
 								}else{
 									cj("#find-match-popup").dialog('close'); 
-									cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
+									// cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
+									removeRow(create_messageId);
 									help_message('Contact created and message Assigned');
-									var old_total = parseInt(cj("#total_number").html(),10);
-									help_message('Message Assigned');
-									cj("#total_number").html(old_total-1);
 								}
 							},
 							error: function(){
@@ -285,9 +284,8 @@ cj(document).ready(function(){
 								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
 									alert('Unable to Delete Activity : '+data.message);
 								}else{
-									cj("#"+messageId).remove();
+									removeRow(messageId);
 									help_message('Activity Deleted');
-									update_count();
 								}
 							},
 							error: function(){
@@ -302,13 +300,11 @@ cj(document).ready(function(){
 							success: function(data,status) {
 								deleted = cj.parseJSON(data);
 								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-									if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
+									if(deleted.clear =='true')  removeRow(messageId+'_'+imapId);
 									alert('Unable to Delete Message : '+deleted.message);
-									update_count();
 								}else{
-									cj("#"+messageId+'_'+imapId).remove();
+									removeRow(messageId+'_'+imapId); ;
  	 								help_message('Message Deleted');
-									update_count();
 								}
 							},
 							error: function(){
@@ -372,13 +368,10 @@ cj(document).ready(function(){
 								success: function(data,status) {
 									deleted = cj.parseJSON(data);
 									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-										if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
+										if(deleted.clear =='true')  removeRow(messageId+'_'+imapId);
 										alert('Unable to Delete Activity : '+deleted.message);
-										update_count();
-									}else{
-										cj('#'+rows[key]).remove();
-										var old_total = parseInt(cj("#total_number").html(),10);
-										cj("#total_number").html(old_total-1);
+ 									}else{
+										removeRow(messageId+'_'+imapId);
 										help_message('Activity Deleted');
 									}
 								},
@@ -398,10 +391,8 @@ cj(document).ready(function(){
 									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
 										alert('Unable to Delete Message : '+deleted.message);
 									}else{
-										cj('#'+rows[key]).remove();
-										var old_total = parseInt(cj("#total_number").html(),10);
+										removeRow(rows[key]);
 		 								help_message('Message Deleted');
-										cj("#total_number").html(old_total-1);
 									}
 								},
 								error: function(){
@@ -501,10 +492,7 @@ cj(document).ready(function(){
 									success: function(data,status) { 
 										cj("#tagging-popup").dialog('close');
 										help_message('Tag Added');
-										cj("#"+value).remove();
-										var old_total = parseInt(cj("#total_number").html(),10);
-										// help_message('Activity Deleted');
-										cj("#total_number").html(old_total-1);
+ 										removeRow(value);
 									},
 									error: function(){
 	    								alert('unable to add tag');
@@ -518,11 +506,8 @@ cj(document).ready(function(){
 								data: {id: activityId},
 								success: function(data,status) { 
 									cj("#tagging-popup").dialog('close');
-									cj("#"+activityId).remove();
+									removeRow(activityId);
 									help_message('Tag Added');
-									var old_total = parseInt(cj("#total_number").html(),10);
-									// help_message('Activity Deleted');
-									cj("#total_number").html(old_total-1);
 								},
 								error: function(){
     								alert('unable to add tag');
@@ -650,8 +635,7 @@ cj(document).ready(function(){
   							}else{
 								help_message('Activity Removed');
 							}
-							cj("#"+activityId).remove();
-							update_count();
+							removeRow(activityId);
 							cj("#clear-confirm").dialog('close');
 						},
 						error: function(){
@@ -698,8 +682,8 @@ cj(document).ready(function(){
 	  							}else{
 									help_message('Activity Removed');
 								}
-								cj("#"+value).remove();
-								update_count();
+								removeRow(value);
+
 								cj("#clear-confirm").dialog('close');
  							},
 							error: function(){
@@ -748,7 +732,7 @@ cj(document).ready(function(){
 				messages = cj.parseJSON(data);
 				cj("#loading-popup").dialog('close');
 				if(messages.code == 'ERROR'){
-					if(messages.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
+					if(messages.clear =='true')  removeRow(messageId+'_'+imapId);
 					alert('Unable to load Message : '+ messages.message);
 				}else{ 
 					var icon ='';
@@ -828,7 +812,7 @@ cj(document).ready(function(){
 				if (messages.code == 'ERROR'){
 	    			alert('Could not load message Details: '+messages.message);
 	    			cj("#loading-popup").dialog('close');
-					if(messages.clear =='true')  cj("#"+activityId).remove();
+					if(messages.clear =='true')   removeRow(activityId);
 				}else{
 					cj('#message_left_header').html('');
 	 		 		if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
@@ -1203,15 +1187,21 @@ function short_subject(subject, length){
  }
 
 function update_count(){
-	setTimeout(function(){
-		count = cj('.imapper-message-box').length;
-		cj("#total_number").html(count);
-		if(count < 1){
-			cj('#imapper-messages-list').html('<strong>No Messages left, Reload maybe?</strong>');
-		}
-    }, 100);
+	count = cj('.imapper-message-box').length;
+	cj("#total_number").html(count);
+	if(count < 1){
+		cj("#total_number").html('0');
+		cj('#imapper-messages-list').html('<strong>No Messages left, Reload maybe?</strong>');
+	}
+ }
+function removeRow(id){
+	var oTable = cj('#sortable_results').dataTable();
+	// var row_index = cj("#"+id).closest("tr")[0].rowIndex;
+	var row_index = oTable.fnGetPosition( document.getElementById(id)); 
+	// console.log('id : #'+id+' -  index : '+row_index);
+	oTable.fnDeleteRow(row_index);
+	update_count();
 }
-
 
 function autocomplete_setup () {
 		var value = cj("#autocomplete_tag").val();
