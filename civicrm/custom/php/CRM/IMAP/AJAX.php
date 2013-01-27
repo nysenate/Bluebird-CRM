@@ -142,7 +142,6 @@ class CRM_IMAP_AJAX {
               'date_clean' => self::cleanDate($email->date,'short'),
               'date_long' => self::cleanDate($email->date,'long'),
               'date_u' => self::cleanDate($email->date,'u'),
-
               'status' => $status,
           );
 
@@ -444,7 +443,7 @@ class CRM_IMAP_AJAX {
         // return standard response 
         // check to see if this message exists 
         $email = $imap->getmsg_uid($id);
-        if((count($email->time)!= 1)||(count($email->uid)!= 1)){
+        if(($email->time == '')||($email->uid == '')){
           $returnCode = array('code'      =>  'ERROR',
               'message'   => 'This Message no longer exists', 'clear'=>'true');
         }else{ 

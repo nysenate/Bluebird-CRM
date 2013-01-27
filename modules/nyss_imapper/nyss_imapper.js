@@ -117,8 +117,7 @@ cj(document).ready(function(){
 	    				alert('Could Not Assign message : '+data.message);
 					}else{
 						cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-						var old_total = parseInt(cj("#total_number").html(),10);
-						cj("#total_number").html(old_total-1);
+ 						update_count();
 						cj("#find-match-popup").dialog('close');  
 						help_message('Message assigned to contact');
 					}
@@ -287,9 +286,8 @@ cj(document).ready(function(){
 									alert('Unable to Delete Activity : '+data.message);
 								}else{
 									cj("#"+messageId).remove();
-									var old_total = parseInt(cj("#total_number").html(),10);
 									help_message('Activity Deleted');
-									cj("#total_number").html(old_total-1);
+									update_count();
 								}
 							},
 							error: function(){
@@ -306,11 +304,11 @@ cj(document).ready(function(){
 								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
 									if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
 									alert('Unable to Delete Message : '+deleted.message);
+									update_count();
 								}else{
 									cj("#"+messageId+'_'+imapId).remove();
-	 								var old_total = parseInt(cj("#total_number").html(),10);
-	 								help_message('Message Deleted');
-									cj("#total_number").html(old_total-1);
+ 	 								help_message('Message Deleted');
+									update_count();
 								}
 							},
 							error: function(){
@@ -376,6 +374,7 @@ cj(document).ready(function(){
 									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
 										if(deleted.clear =='true')  cj("#"+messageId+'_'+imapId).remove();
 										alert('Unable to Delete Activity : '+deleted.message);
+										update_count();
 									}else{
 										cj('#'+rows[key]).remove();
 										var old_total = parseInt(cj("#total_number").html(),10);
@@ -647,13 +646,12 @@ cj(document).ready(function(){
 						success: function(data,status) {
 							data = cj.parseJSON(data);
 							if (data.code =='ERROR'){
-								alert('Unable to clear Activity : '+data.message+", It has been from the screen because it has been edited, Reload Please");
+								alert('Unable to clear Activity : '+data.message);
   							}else{
 								help_message('Activity Removed');
 							}
 							cj("#"+activityId).remove();
-							var old_total = parseInt(cj("#total_number").html(),10);
-							cj("#total_number").html(old_total-1);
+							update_count();
 							cj("#clear-confirm").dialog('close');
 						},
 						error: function(){
@@ -701,8 +699,7 @@ cj(document).ready(function(){
 									help_message('Activity Removed');
 								}
 								cj("#"+value).remove();
-								var old_total = parseInt(cj("#total_number").html(),10);
-								cj("#total_number").html(old_total-1);
+								update_count();
 								cj("#clear-confirm").dialog('close');
  							},
 							error: function(){
@@ -1204,6 +1201,17 @@ function short_subject(subject, length){
  	}	
 
  }
+
+function update_count(){
+	setTimeout(function(){
+		count = cj('.imapper-message-box').length;
+		cj("#total_number").html(count);
+		if(count < 1){
+			cj('#imapper-messages-list').html('<strong>No Messages left, Reload maybe?</strong>');
+		}
+    }, 100);
+}
+
 
 function autocomplete_setup () {
 		var value = cj("#autocomplete_tag").val();
