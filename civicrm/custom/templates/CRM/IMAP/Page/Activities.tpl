@@ -78,6 +78,15 @@
 			</div>
 		</div>
 	</div>
+	<div id="help-popup" title="Search Help" style="display:none;">
+		<ul>
+			<li>one</li>
+			<li>two</li>
+			<li>three</li>
+			<li>four</li>
+			<li>five</li>
+		</ul>
+	</div>
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>

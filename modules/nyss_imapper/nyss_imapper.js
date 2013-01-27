@@ -45,8 +45,17 @@ cj(document).ready(function(){
 	// 	// console.log('placeholder Support');
 	// }
 
+	cj( "#help-popup" ).dialog({
+		modal: true,
+		width: 600,
+		autoOpen: false,
+		resizable: false,
+		draggable: false	
+	});
 
-
+	cj('#help').live('click', function() {
+		cj("#help-popup").dialog('open'); 
+	});
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -845,15 +854,14 @@ function makeListSortable(){
 	cj("#sortable_results").dataTable({
 		"aaSorting": [[ 3, "desc" ]],
 		"aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
-		'aTargets': [ 1 ],
+ 		'aTargets': [ 1 ],
 		"bPaginate": false,
 		"bAutoWidth": false,
 		"bInfo": false,
 	});
-
+	cj("#sortable_results_filter").append('<a id="help" href="#">help</a>')
 
 	checks();
-
 }
 
 // a complicated checkbox method,
