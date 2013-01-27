@@ -956,7 +956,7 @@ EOQ;
 
  
       if($result_tag != '1' ){
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was cleared, Please Reload','clear'=>'true');
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was Cleared or Deleted, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
       }
