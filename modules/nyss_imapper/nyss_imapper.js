@@ -249,7 +249,6 @@ cj(document).ready(function(){
 		resizable: false,
 		draggable: false	
 	});
-	
 	// add a clear conform popup
 	cj( "#clear-confirm" ).dialog({
 		modal: true,
@@ -828,12 +827,12 @@ cj(document).ready(function(){
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
-				data = cj.parseJSON(data);
-				if (data.code == 'ERROR'){
-	    			alert('Could not load message Details: '+data.message);
+			 	messages = cj.parseJSON(data);
+				if (messages.code == 'ERROR'){
+	    			alert('Could not load message Details: '+messages.message);
+	    			cj("#loading-popup").dialog('close');
+					if(messages.clear =='true')  cj("#"+activityId).remove();
 				}else{
-			 		cj("#loading-popup").dialog('close');
-			 		messages = cj.parseJSON(data);
 					cj('#message_left_header').html('');
 	 		 		if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble '>"+ messages.fromEmail+"</span>");
@@ -861,6 +860,7 @@ cj(document).ready(function(){
 					cj('#message_left_email').html(messages.details);
 					cj('#email_id').val(activityId);
 					cj('#imap_id').val(contactId);
+					cj("#loading-popup").dialog('close');
 					cj("#find-match-popup").dialog({ title:  "Reading: "+short_subject(messages.subject,100)  });
 					cj("#find-match-popup").dialog('open');
 	 				cj("#tabs").tabs();

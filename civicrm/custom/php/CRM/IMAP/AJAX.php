@@ -928,6 +928,7 @@ class CRM_IMAP_AJAX {
       $activitId = self::get('id');
       $userId = self::get('contact');
       $debug = self::get('debug');
+      $tagid = self::getInboxPollingTagId();
 
       require_once 'CRM/Core/BAO/Tag.php';
       require_once 'CRM/Core/BAO/EntityTag.php';
@@ -937,8 +938,30 @@ class CRM_IMAP_AJAX {
       //grab the imap user
       self::setupImap();
 
-      // we need to check to see if the activity is still assigned to the same contact
-      // if not, kill it
+      // we need to check to see if:
+      // the inbox polling tag,
+      // assigned to the same contact,
+      // exists,
+      // contact still exists
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $activitId
+AND `tag_id` = $tagid
+EOQ;
+      $check_tag = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_tag)) {
+        $result_tag = $row['COUNT(id)']; 
+      }
+
+ 
+      if($result_tag != '1' ){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was cleared, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+
+
       $query = <<<EOQ
 SELECT COUNT(id) 
 FROM `civicrm_activity_target` 
@@ -947,10 +970,10 @@ AND `target_contact_id` = $userId
 EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
-      $check = $row['COUNT(id)']; 
+        $result_target = $row['COUNT(id)']; 
       }
 
-      if($check != '1'){
+      if($result_target != '1' ){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
@@ -1002,7 +1025,8 @@ EOQ;
       $date = self::cleanDate($activity_node['activity_date_time'],'short');
       $date_long = self::cleanDate($activity_node['activity_date_time'],'long');
 
-      $returnMessage = array('uid'    =>  $activitId,
+      $returnMessage = array('code'=>'SUCCESS','message'=>'SUCCESS',
+                          'uid'    =>  $activitId,
                           'fromName'   =>  $contact_node['display_name'],
                           'fromEmail'  =>  $contact_node['email'],
                           'fromId'  =>  $contact_node['id'],
@@ -1123,6 +1147,26 @@ EOQ;
       
       // we need to check to see if the activity is still assigned to the same contact
       // if not, kill it
+
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $activitId
+AND `tag_id` = $tagid
+EOQ;
+      $check_tag = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_tag)) {
+        $result_tag = $row['COUNT(id)']; 
+      }
+
+ 
+      if($result_tag != '1' ){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was cleared, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+
+
       $query = <<<EOQ
 SELECT COUNT(id) 
 FROM `civicrm_activity_target` 
@@ -1140,77 +1184,78 @@ EOQ;
         CRM_Utils_System::civiExit();
       }
 
-      // want to update the activity_target, time to use sql 
-      // get the the record id please 
-      $tagid = self::getInboxPollingTagId();
-      $query = <<<EOQ
+
+        // want to update the activity_target, time to use sql 
+        // get the the record id please 
+        $tagid = self::getInboxPollingTagId();
+        $query = <<<EOQ
 SELECT id
 FROM `civicrm_activity_target`
 WHERE `activity_id` = $id
 AND `target_contact_id` = $contact
 EOQ;
 
-      $activity_id = mysql_query($query, self::db());
-      if($row = mysql_fetch_assoc($activity_id)) {
-          // the activity id
-          $row_id = $row['id']; 
-          // change the contact
-          $Update = <<<EOQ
+        $activity_id = mysql_query($query, self::db());
+        if($row = mysql_fetch_assoc($activity_id)) {
+            // the activity id
+            $row_id = $row['id']; 
+            // change the contact
+            $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change
 WHERE `id` =  $row_id
 EOQ;
 
-          // change the row           
-          $Updated_results = mysql_query($Update, self::db());
-          while($row = mysql_fetch_assoc($Updated_results)) {
-               $results[] = $row; 
-          }
+            // change the row           
+            $Updated_results = mysql_query($Update, self::db());
+            while($row = mysql_fetch_assoc($Updated_results)) {
+                 $results[] = $row; 
+            }
 
-                      $Source_update = <<<EOQ
+                        $Source_update = <<<EOQ
 UPDATE `civicrm_activity`
 SET  `is_auto`= 0
 WHERE `id` =  $id
 EOQ;
 
-          // change the row           
-          $Source_results = mysql_query($Source_update, self::db());
-          while($row = mysql_fetch_assoc($Source_results)) {
-               $results[] = $row; 
-          }
+            // change the row           
+            $Source_results = mysql_query($Source_update, self::db());
+            while($row = mysql_fetch_assoc($Source_results)) {
+                 $results[] = $row; 
+            }
 
-          $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
-      }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
+        }else{
+            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
 
-      }
+        }
 
-      echo json_encode($returnCode);
-      mysql_close(self::$db);
-      CRM_Utils_System::civiExit();
-  }
+        echo json_encode($returnCode);
+        mysql_close(self::$db);
+        CRM_Utils_System::civiExit();
+    }
 
-  // TODO: use dan's tagging system 
-  public static function getTags() {
-      require_once 'api/api.php';
-      $name = self::get('s');
-      $i = 0;
-      $results = array();
+    // TODO: use dan's tagging system 
+    public static function getTags() {
+        require_once 'api/api.php';
+        $name = self::get('s');
+        $i = 0;
+        $results = array();
 
-      $query = <<<EOQ
+        $query = <<<EOQ
 SELECT id, name
 FROM `civicrm_tag`
 WHERE `parent_id` ='296' && `name` LIKE '$name%'
 EOQ;
-      $result = mysql_query($query, self::db());
-      while($row = mysql_fetch_assoc($result)) {
-          array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));
-          $i++;
-      }
-      $final_results = array('items'=> $results);
-      echo json_encode($final_results);
-      mysql_close(self::$db);
-      CRM_Utils_System::civiExit();
+        $result = mysql_query($query, self::db());
+        while($row = mysql_fetch_assoc($result)) {
+            array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));
+            $i++;
+        }
+        $final_results = array('items'=> $results);
+        echo json_encode($final_results);
+        mysql_close(self::$db);
+        CRM_Utils_System::civiExit();
     }
 
 
