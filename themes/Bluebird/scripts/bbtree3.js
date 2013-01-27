@@ -397,13 +397,18 @@ var BBTreeEdit = {
 			var tagName = cj('div.tag', this).html();
 			var tagId = cj(this).attr('tid');
 			var isReserved = 'False';
+			var tagDescription = cj(this).attr('description');
+			if(tagDescription == 'null')
+			{
+				tagDescription = tagName;
+			}
 			if(cj(this).hasClass('isReserved') == true)
 			{
 				isReserved = 'True';
 			}
 			cj('.crm-tagListInfo .tagInfoBody .tagName span').html(tagName);
 			cj('.crm-tagListInfo .tagInfoBody .tagId span').html(tagId);
-			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(cj(this).attr('description'));
+			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(tagDescription);
 			cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
 			cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
 		}, 
@@ -661,6 +666,7 @@ var BBTreeModal = {
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
 		BBTreeModal.setTreeType();
+		//TODO: Make it so that the modal tree doesn't have to be rewritten EVERY TIME.
 		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
 		// {	
 			this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] = cj(BBTree.parsedJsonData[callTree.currentSettings.displaySettings.currentTree].data).clone(true, true);
