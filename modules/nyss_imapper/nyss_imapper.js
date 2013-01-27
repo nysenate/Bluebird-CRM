@@ -53,7 +53,7 @@ cj(document).ready(function(){
 		draggable: false	
 	});
 
-	cj('#help').live('click', function() {
+	cj('#search_help').live('click', function() {
 		cj("#help-popup").dialog('open'); 
 	});
 
@@ -250,6 +250,7 @@ cj(document).ready(function(){
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
 		modal: true,
+		dialogClass: 'delete_popup_class',
 		width: 370,
 		autoOpen: false,
 		resizable: false,
@@ -280,6 +281,9 @@ cj(document).ready(function(){
 		}
 
 		cj( "#delete-confirm" ).dialog({
+			open:function () {
+        		$(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
+    		},
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
@@ -292,7 +296,7 @@ cj(document).ready(function(){
 				Cancel: function() {
 					cj( this ).dialog( "close" );
 				}
-			}
+			},
 		});
 		cj("#delete-confirm").dialog('open');
 		return false;
@@ -859,7 +863,7 @@ function makeListSortable(){
 		"bAutoWidth": false,
 		"bInfo": false,
 	});
-	cj("#sortable_results_filter").append('<a id="help" href="#">help</a>')
+	cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
 
 	checks();
 }
