@@ -442,8 +442,9 @@ class CRM_IMAP_AJAX {
         // Delete the message with the specified UID
         // return standard response 
         // check to see if this message exists 
-        $email = $imap->getmsg_uid($id);
-        if(($email->time == '')||($email->uid == '')){
+        // $email = $imap->getmsg_uid($id);
+        $headers = imap_fetch_overview($imap->conn(),$id,FT_UID);
+        if(sizeof($headers) != 1 ){
           $returnCode = array('code'      =>  'ERROR',
               'message'   => 'This Message no longer exists', 'clear'=>'true');
         }else{ 
@@ -789,8 +790,7 @@ class CRM_IMAP_AJAX {
             $data = self::tagRaw($tagId);
             $tagName = $data['values'][$tagId]['name'];
             foreach($contactIds as $contactId) {
-                 if($contactId == 0)
-                    break;
+                if($contactId == 0)  break;
                 $params = array( 
                                 'entity_table'  =>  'civicrm_contact',
                                 'entity_id'     =>  $contactId,
@@ -804,18 +804,17 @@ class CRM_IMAP_AJAX {
                 $name = $data['values'][$contactId]['display_name'];
                 // exit();
                 if($result['is_error']==1){
-                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
+                    $returnCode = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
                 }elseif ($result['not_added']==1 ) {
-                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
+                    $returnCode = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
                 }else{
-                    $returnCode[$tagId.":".$contactId] = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
+                    $returnCode = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
                 }
 
             }
             foreach($activityIds as $activityId) {
 
-                  if($activityId == 0)
-                    break;
+                if($activityId == 0) break;
                 //get data about tag
                 $data = self::activityRaw($activityId);
                 $subject = $data['values'][$activityId]['subject'];
@@ -834,14 +833,14 @@ class CRM_IMAP_AJAX {
 
  
                     if($result == null) {
-                        $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
+                        $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
                     }else{
-                        $returnCode[$tagId.":".$activityId] = array('code'=>'SUCCESS','message'=>"Tag '{$tagName}' Added to {$subject}");
+                         $returnCode = array('code'=>'SUCCESS','status'=> '1','message'=>"Tag '{$tagName}' Added to {$subject}",'clear'=>'true');
                     }
                 }else{
-                    $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
+                    $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
                 }
-             }
+          }
         }
         echo json_encode($returnCode);
 
@@ -1049,7 +1048,15 @@ EOQ;
         $id = self::get('id');
         $tagid = self::getInboxPollingTagId();
         $error = false;
+        $debug = self::get('debug');
 
+        if($debug){
+          sleep(2);
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
+          echo json_encode($returnCode);
+          exit(); 
+        }
+        
         // deleteing a activity
         $params = array( 
             'id' => $id,
@@ -1083,7 +1090,7 @@ EOQ;
         if(!$error){
           $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
         }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
         }
         echo json_encode($returnCode);
 

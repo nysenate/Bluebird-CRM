@@ -117,7 +117,7 @@ cj(document).ready(function(){
 	    				alert('Could Not Assign message : '+data.message);
 					}else{
 						// cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-						removeRow(messageId);
+						removeRow(messageId+'_'+imapId);
  						cj("#find-match-popup").dialog('close');  
 						help_message('Message assigned to contact');
 					}
@@ -195,7 +195,7 @@ cj(document).ready(function(){
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
-					if (contactData.code == 'ERROR' || contactData.code == '' || contactData.code == null ){
+					if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
 	    				alert('Could Not Create Contact : '+contactData.message);
 	    				return false;
 					}else{
@@ -207,14 +207,13 @@ cj(document).ready(function(){
 								contactId: contactData.contact
 							},
 							success: function(data, status) {
-								data = cj.parseJSON(data);
-								if (data.code == 'ERROR' || data.code == '' || data.code == null ){
-	    							alert('Could Not Assign Message : '+data.message);
+								contactData = cj.parseJSON(data);
+								if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
+									alert('Could Not Assign Message : '+data.message);
 				    				return false;
 								}else{
 									cj("#find-match-popup").dialog('close'); 
-									// cj(".imapper-message-box[data-id='"+create_messageId+"']").remove();
-									removeRow(create_messageId);
+									removeRow(create_messageId+'_'+create_imap_id);
 									help_message('Contact created and message Assigned');
 								}
 							},
@@ -242,7 +241,7 @@ cj(document).ready(function(){
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
 		modal: true,
-		width: 350,
+		width: 370,
 		autoOpen: false,
 		resizable: false,
 		draggable: false	
@@ -250,7 +249,7 @@ cj(document).ready(function(){
 	// add a clear conform popup
 	cj( "#clear-confirm" ).dialog({
 		modal: true,
-		width: 350,
+		width: 370,
 		autoOpen: false,
 		resizable: false,
 		draggable: false	
@@ -276,41 +275,9 @@ cj(document).ready(function(){
 				"Delete": function() {
 					cj( this ).dialog( "close" );
 					if(cj("#Activities").length){
-						cj.ajax({
-							url: '/civicrm/imap/ajax/deleteActivity',
-							data: {id: messageId},
-							success: function(data,status) {
-								deleted = cj.parseJSON(data);
-								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-									alert('Unable to Delete Activity : '+data.message);
-								}else{
-									removeRow(messageId);
-									help_message('Activity Deleted');
-								}
-							},
-							error: function(){
-								alert('Unable to Delete Activity');
-  							}
-						});
+						DeleteActivity(messageId);
 					}else{
-						cj.ajax({
-							url: '/civicrm/imap/ajax/deleteMessage',
-							data: {id: messageId,
-						    imapId: imapId },
-							success: function(data,status) {
-								deleted = cj.parseJSON(data);
-								if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-									if(deleted.clear =='true')  removeRow(messageId+'_'+imapId);
-									alert('Unable to Delete Message : '+deleted.message);
-								}else{
-									removeRow(messageId+'_'+imapId); ;
- 	 								help_message('Message Deleted');
-								}
-							},
-							error: function(){
-    							alert('Unable to delete Message');
-  							}
-						});
+						DeleteMessage(messageId,imapId);
 					}
 				},
 				Cancel: function() {
@@ -325,7 +292,6 @@ cj(document).ready(function(){
 
 	// multi_delete confirm & processing 
 	cj(".multi_delete").live('click', function() {
-
 		cj("#loading-popup").dialog('open');
 
 		// delete_ids = message id / activity id 
@@ -353,52 +319,17 @@ cj(document).ready(function(){
 			cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" messages from Unmatched Messages?"});
 		}
 
-		// console.log(delete_ids);
-		// console.log(delete_secondary);
-		// console.log(rows);
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
 					if(cj("#Activities").length){
-						cj.each(delete_ids, function(key, value) { 
-							cj.ajax({
-								url: '/civicrm/imap/ajax/deleteActivity',
-								data: {id: value},
-								success: function(data,status) {
-									deleted = cj.parseJSON(data);
-									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-										if(deleted.clear =='true')  removeRow(messageId+'_'+imapId);
-										alert('Unable to Delete Activity : '+deleted.message);
- 									}else{
-										removeRow(messageId+'_'+imapId);
-										help_message('Activity Deleted');
-									}
-								},
-								error: function(){
-    								alert('Unable to Delete Activity ');
-  								}
-							});
-						});		
+						cj.each(delete_ids, function(key, value) {
+							DeleteActivity(value);
+						});
 					}else{
 						cj.each(delete_ids, function(key, value) { 
-							cj.ajax({
-								url: '/civicrm/imap/ajax/deleteMessage',
-								data: {id: value,
-							imapId: delete_secondary[key] },
-								success: function(data,status) {
-									deleted = cj.parseJSON(data);
-									if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
-										alert('Unable to Delete Message : '+deleted.message);
-									}else{
-										removeRow(rows[key]);
-		 								help_message('Message Deleted');
-									}
-								},
-								error: function(){
-    								alert('Unable to Delete Message');
-  								}
-							});
+							DeleteMessage(value,delete_secondary[key]);
 						});				
 					}
 
@@ -625,24 +556,7 @@ cj(document).ready(function(){
 		cj( "#clear-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
-					cj.ajax({
-						url: '/civicrm/imap/ajax/unproccessedActivity',
-						data: {id: activityId},
-						success: function(data,status) {
-							data = cj.parseJSON(data);
-							if (data.code =='ERROR'){
-								alert('Unable to clear Activity : '+data.message);
-  							}else{
-								help_message('Activity Removed');
-							}
-							removeRow(activityId);
-							cj("#clear-confirm").dialog('close');
-						},
-						error: function(){
-							alert('Unable to clear Activity');
-						}
-					});
-					
+					ClearActivity(activityId);
 				},
 				Cancel: function() {
 					cj("#clear-confirm").dialog('close');
@@ -672,24 +586,7 @@ cj(document).ready(function(){
 			buttons: {
 				"Clear": function() {
 					cj.each(delete_ids, function(key, value) {
-						cj.ajax({
-							url: '/civicrm/imap/ajax/unproccessedActivity',
-							data: {id: value},
-							success: function(data,status) { 
-							data = cj.parseJSON(data);
-								if (data.code =='ERROR'){
-									alert('Unable to clear Activity : '+data.message+", It has been from the screen because it has been edited, Reload Please");
-	  							}else{
-									help_message('Activity Removed');
-								}
-								removeRow(value);
-
-								cj("#clear-confirm").dialog('close');
- 							},
-							error: function(){
-								alert('unable to delete Activity');
-							}
-						});
+						ClearActivity(value);
 					});
 				},
 				Cancel: function() {
@@ -1053,6 +950,78 @@ function buildMessageList() {
 
 	}
 }
+function DeleteMessage(id,imapid){
+	cj.ajax({
+		url: '/civicrm/imap/ajax/deleteMessage',
+		data: {id: id,
+	    imapId: imapid },
+	    async:false,
+		success: function(data,status) {
+			deleted = cj.parseJSON(data);
+			if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+				if(deleted.clear =='true')  removeRow(id+'_'+imapid);
+				alert('Unable to Delete Message : '+deleted.message);
+			}else{
+				removeRow(id+'_'+imapid); ;
+				help_message('Message Deleted');
+			}
+		},
+		error: function(){
+			alert('Unable to delete Message');
+			}
+	});
+}
+
+// Clear activities 
+// args : value = activity ID
+// Result : A few things
+function ClearActivity(value){
+	cj.ajax({
+		url: '/civicrm/imap/ajax/unproccessedActivity',
+		data: {id: value},
+		async:false,
+		success: function(data,status) {
+			data = cj.parseJSON(data);
+			if (data.code =='ERROR'){
+				alert('Unable to Clear Activity : '+data.message);
+				if(deleted.clear =='true')  removeRow(value);
+			}else{
+				help_message('Activity Cleared');
+			}
+			removeRow(value);
+			cj("#clear-confirm").dialog('close');
+		},
+		error: function(){
+			alert('Unable to Clear Activity');
+		}
+	});
+}
+
+// Delete activities 
+// args : value = activity ID
+// Result : A few things
+function DeleteActivity(value){
+    // setTimeout(this.resolve, (1500));
+	// console.log(value);
+	cj.ajax({
+		url: '/civicrm/imap/ajax/deleteActivity',
+		data: {id: value},
+		async:false,
+		success: function(data,status) {
+			deleted = cj.parseJSON(data);
+			if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
+				if(deleted.clear =='true')  removeRow(value);
+				alert('Unable to Delete Activity : '+deleted.message);
+ 			}else{
+				removeRow(value);
+				help_message('Activity Deleted');
+ 			}
+		},
+		error: function(){
+			alert('Unable to Delete Activity ');
+ 		}
+	});
+}
 
 // matched messages screen 
 function buildActivitiesList() {
@@ -1195,12 +1164,15 @@ function update_count(){
 	}
  }
 function removeRow(id){
-	var oTable = cj('#sortable_results').dataTable();
-	// var row_index = cj("#"+id).closest("tr")[0].rowIndex;
-	var row_index = oTable.fnGetPosition( document.getElementById(id)); 
-	// console.log('id : #'+id+' -  index : '+row_index);
-	oTable.fnDeleteRow(row_index);
-	update_count();
+	if(cj("#"+id).length){
+		var oTable = cj('#sortable_results').dataTable();
+		var row_index = oTable.fnGetPosition( document.getElementById(id)); 
+		oTable.fnDeleteRow(row_index);
+		update_count();
+	}else{
+		alert('could not delete row');
+	}
+
 }
 
 function autocomplete_setup () {
