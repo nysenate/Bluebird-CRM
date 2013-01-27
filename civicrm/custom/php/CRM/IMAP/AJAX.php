@@ -77,22 +77,17 @@ class CRM_IMAP_AJAX {
           echo "</pre>";
         }
 
-        if((count($email->time)!= 1)||(count($email->uid) != 1)){
-          $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This email no longer exists');
-            echo json_encode($returnCode);
-            // CRM_Utils_System::civiExit();
-        }
-
         // if message is less the x mins old, check it to see if it matches a contact,
         // if it does directly match, don't allow it to show up in the unmatches screen
         // we do this because the processing scritp hasn't had a chance to match it yet
-        $time = time()-(self::$contTime*60);;
-        if( $email->time > $time){
-          // email hasn't been processed yet
-          $code = 'FAILURE';
+        $time = time()-(self::$contTime*60);
+
+         if( $email->uid == '' || $email->time =='' || $email->time > $time){
+          $code = 'ERROR';
+          $output = array('code'=>$code,'status'=>'0','message'=>'Message no longer exists','clear'=>'true');
         }else{
           $code = 'SUCCESS';
+
           // email has absolutely been processed by script so return it
           $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
           $format = ($email->plainmsg) ? "plain" : "html";
@@ -147,7 +142,6 @@ class CRM_IMAP_AJAX {
               'date_clean' => self::cleanDate($email->date,'short'),
               'date_long' => self::cleanDate($email->date,'long'),
               'date_u' => self::cleanDate($email->date,'u'),
-
               'status' => $status,
           );
 
@@ -173,14 +167,14 @@ class CRM_IMAP_AJAX {
               'origin_email' => $origin_email,
               'origin_lookup' => $fromEmail['type'], 
           );
-
           $output = array('code'=>$code,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
-          if ($debug){
-            echo "<h1>Full Email OUTPUT</h1>";
-            var_dump($output);
-          }
-          return $output;
         }
+
+        if ($debug){
+          echo "<h1>Full Email OUTPUT</h1>";
+          var_dump($output);
+        }
+        return $output;
     }
 
     /* getUnmatchedMessages()
@@ -359,10 +353,9 @@ class CRM_IMAP_AJAX {
 
         // emails use a standard formatter
         $output = self::unifiedMessageInfo($email);
-
+        // var_dump($email);
         // var_dump($output);
-        if ($output['code'] == "SUCCESS"){
-
+        if($output['code'] != "ERROR" ){
         $returnMessage = array('uid'    =>  $id,
                                'imapId' =>  $imap_id,
                                'format' => $output['header']['format'],
@@ -386,7 +379,7 @@ class CRM_IMAP_AJAX {
                                'date_long'   =>  $output['header']['date_long'],
                                'forwarder_time'   =>  $output['forwarded']['date_clean']);
           }else{
-            $returnMessage = array('code' => 'ERROR','message'=>"It's likely that message #{$id} has not be proccessed by the processMailboxes script, wait a few mins");
+            $returnMessage = array('code' => 'ERROR','message'=>"This message Does not exist",'clear'=>'true');
 
           }
         // var_dump($returnMessage);  exit();
@@ -449,10 +442,11 @@ class CRM_IMAP_AJAX {
         // Delete the message with the specified UID
         // return standard response 
         // check to see if this message exists 
-        $email = $imap->getmsg_uid($id);
-        if((count($email->time)!= 1)||(count($email->uid)!= 1)){
+        // $email = $imap->getmsg_uid($id);
+        $headers = imap_fetch_overview($imap->conn(),$id,FT_UID);
+        if(sizeof($headers) != 1 ){
           $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This Message no longer exists');
+              'message'   => 'This Message no longer exists', 'clear'=>'true');
         }else{ 
           $status = $imap->deletemsg_uid($id);
           if($status == true){
@@ -796,8 +790,7 @@ class CRM_IMAP_AJAX {
             $data = self::tagRaw($tagId);
             $tagName = $data['values'][$tagId]['name'];
             foreach($contactIds as $contactId) {
-                 if($contactId == 0)
-                    break;
+                if($contactId == 0)  break;
                 $params = array( 
                                 'entity_table'  =>  'civicrm_contact',
                                 'entity_id'     =>  $contactId,
@@ -811,18 +804,17 @@ class CRM_IMAP_AJAX {
                 $name = $data['values'][$contactId]['display_name'];
                 // exit();
                 if($result['is_error']==1){
-                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
+                    $returnCode = array('code' => 'ERROR','message'=>$result['error_message']." on {$name}");
                 }elseif ($result['not_added']==1 ) {
-                    $returnCode[$tagId.":".$contactId] = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
+                    $returnCode = array('code' => 'ERROR','message'=>"Tag '{$tagName}' Already exists on {$name}");
                 }else{
-                    $returnCode[$tagId.":".$contactId] = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
+                    $returnCode = array('code' =>'SUCCESS','message'=> "Tag '{$tagName}' Added to {$name}");
                 }
 
             }
             foreach($activityIds as $activityId) {
 
-                  if($activityId == 0)
-                    break;
+                if($activityId == 0) break;
                 //get data about tag
                 $data = self::activityRaw($activityId);
                 $subject = $data['values'][$activityId]['subject'];
@@ -841,14 +833,14 @@ class CRM_IMAP_AJAX {
 
  
                     if($result == null) {
-                        $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
+                        $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
                     }else{
-                        $returnCode[$tagId.":".$activityId] = array('code'=>'SUCCESS','message'=>"Tag '{$tagName}' Added to {$subject}");
+                         $returnCode = array('code'=>'SUCCESS','status'=> '1','message'=>"Tag '{$tagName}' Added to {$subject}",'clear'=>'true');
                     }
                 }else{
-                    $returnCode[$tagId.":".$activityId] = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
+                    $returnCode = array('code'=>'ERROR','message'=> "'$subject' on  '{$tagName}'");
                 }
-             }
+          }
         }
         echo json_encode($returnCode);
 
@@ -931,56 +923,123 @@ class CRM_IMAP_AJAX {
 
     public static function getActivityDetails() {
 
-        $activitId = self::get('id');
-        $userId = self::get('contact');
+      $activitId = self::get('id');
+      $userId = self::get('contact');
+      $debug = self::get('debug');
+      $tagid = self::getInboxPollingTagId();
 
-        require_once 'CRM/Core/BAO/Tag.php';
-        require_once 'CRM/Core/BAO/EntityTag.php';
-        require_once 'CRM/Activity/BAO/ActivityTarget.php';
+      require_once 'CRM/Core/BAO/Tag.php';
+      require_once 'CRM/Core/BAO/EntityTag.php';
+      require_once 'CRM/Activity/BAO/ActivityTarget.php';
+      require_once 'api/api.php';
 
-        //grab the imap user
-        self::setupImap();
+      //grab the imap user
+      self::setupImap();
 
-        $params = array('version'   =>  3,
-                        'activity'  =>  'get',
-                       'id' => $activitId,
-        );
-        $activity = civicrm_api('activity', 'get', $params);
-        $activity_node = $activity['values'][$activitId];
+      // we need to check to see if:
+      // the inbox polling tag,
+      // assigned to the same contact,
+      // exists,
+      // contact still exists
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $activitId
+AND `tag_id` = $tagid
+EOQ;
+      $check_tag = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_tag)) {
+        $result_tag = $row['COUNT(id)']; 
+      }
 
-        $params = array('version'   =>  3,
-                    'activity' => 'get',
-                    'id' => $userId,
-                );
-        $contact = civicrm_api('contact', 'get', $params);
-        $contact_node = $contact['values'][$userId];
+ 
+      if($result_tag != '1' ){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was Cleared or Deleted, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
 
 
-        $params = array('version'   =>  3,
-                        'id' => $activity_node['source_contact_id'],
-        );
-        $forwarder = civicrm_api('contact', 'get', $params );
-        $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_activity_target` 
+WHERE `activity_id` = $activitId 
+AND `target_contact_id` = $userId
+EOQ;
+      $check_result = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_result)) {
+        $result_target = $row['COUNT(id)']; 
+      }
 
-        $date = self::cleanDate($activity_node['activity_date_time'],'short');
-        $date_long = self::cleanDate($activity_node['activity_date_time'],'long');
+      if($result_target != '1' ){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
 
-        $returnMessage = array('uid'    =>  $activitId,
-                            'fromName'   =>  $contact_node['display_name'],
-                            'fromEmail'  =>  $contact_node['email'],
-                            'fromId'  =>  $contact_node['id'],
-                            'forwardedName' => $forwarder_node['display_name'],
-                            'forwardedEmail' => $forwarder_node['email'],
-                            'subject'    =>  $activity_node['subject'],
-                            'details'  =>  $activity_node['details'],
-                            'match_type'  =>  $activity_node['is_auto'],
-                            'original_id'  =>  $activity_node['original_id'],
-                            'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
-                            'date'   =>  $date, 
-                            'date_long' =>$date_long);
+      $params = array('version'   =>  3,
+                      'activity'  =>  'get',
+                      'id' => $activitId,
+      );
+      $activity = civicrm_api('activity', 'get', $params);
+      $activity_node = $activity['values'][$activitId];
 
+      if(($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
+      }
+
+      if ($debug){
+        echo "<h1>Activity</h1>";
+        var_dump($activity);
+       }
+
+      $params = array('version'   =>  3,
+                  'activity' => 'get',
+                  'id' => $userId,
+              );
+      $contact = civicrm_api('contact', 'get', $params);
+      $contact_node = $contact['values'][$userId];
+
+      if(($contact['is_error']==1) || ($contact['values']==null ) || (count($contact['values']) !=  1 )){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity\'s Contact not found');
+        echo json_encode($returnMessage);
+        CRM_Utils_System::civiExit();
+      }
+
+      if ($debug){
+        echo "<h1>Contact</h1>";
+        var_dump($contact);
+       }
+
+      $params = array('version'   =>  3,
+                      'id' => $activity_node['source_contact_id'],
+      );
+
+      $forwarder = civicrm_api('contact', 'get', $params );
+      $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
+
+      $date = self::cleanDate($activity_node['activity_date_time'],'short');
+      $date_long = self::cleanDate($activity_node['activity_date_time'],'long');
+
+      $returnMessage = array('code'=>'SUCCESS','message'=>'SUCCESS',
+                          'uid'    =>  $activitId,
+                          'fromName'   =>  $contact_node['display_name'],
+                          'fromEmail'  =>  $contact_node['email'],
+                          'fromId'  =>  $contact_node['id'],
+                          'forwardedName' => $forwarder_node['display_name'],
+                          'forwardedEmail' => $forwarder_node['email'],
+                          'subject'    =>  $activity_node['subject'],
+                          'details'  =>  $activity_node['details'],
+                          'match_type'  =>  $activity_node['is_auto'],
+                          'original_id'  =>  $activity_node['original_id'],
+                          'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
+                          'date'   =>  $date, 
+                          'date_long' =>$date_long);
+
+      echo json_encode($returnMessage);
+      CRM_Utils_System::civiExit();
     }
     
     // delete activit and enttity ref 
@@ -989,7 +1048,15 @@ class CRM_IMAP_AJAX {
         $id = self::get('id');
         $tagid = self::getInboxPollingTagId();
         $error = false;
+        $debug = self::get('debug');
 
+        if($debug){
+          sleep(2);
+          $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
+          echo json_encode($returnCode);
+          exit(); 
+        }
+        
         // deleteing a activity
         $params = array( 
             'id' => $id,
@@ -1023,7 +1090,7 @@ EOQ;
         if(!$error){
           $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
         }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
         }
         echo json_encode($returnCode);
 
@@ -1060,7 +1127,7 @@ EOQ;
         if(!$error){
           $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Cleared');
         }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
         }
 
         echo json_encode($returnCode);
@@ -1072,16 +1139,58 @@ EOQ;
 
     // reAssignActivity 
     public static function reassignActivity() {
-        require_once 'api/api.php';
-        $id = self::get('id');
-        $contact = self::get('contact');
-        $change = self::get('change');
-        $results = array();
-        $changeData = self::contactRaw($change);
-        $changeName = $changeData['values'][$change]['display_name'];
-        $firstName = $changeData['values'][$change]['first_name'];
-        $LastName = $changeData['values'][$change]['last_name'];
-        $contactType = $changeData['values'][$change]['contact_type'];
+      require_once 'api/api.php';
+      $id = self::get('id');
+      $contact = self::get('contact');
+      $change = self::get('change');
+      $results = array();
+      $changeData = self::contactRaw($change);
+      $changeName = $changeData['values'][$change]['display_name'];
+      $firstName = $changeData['values'][$change]['first_name'];
+      $LastName = $changeData['values'][$change]['last_name'];
+      $contactType = $changeData['values'][$change]['contact_type'];
+      $email = $changeData['values'][$change]['email'];
+      $tagid = self::getInboxPollingTagId();
+
+      // we need to check to see if the activity is still assigned to the same contact
+      // if not, kill it
+
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_entity_tag`
+WHERE `entity_id` =  $id
+AND `tag_id` = $tagid
+EOQ;
+      $check_tag = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_tag)) {
+        $result_tag = $row['COUNT(id)']; 
+      }
+
+ 
+      if($result_tag != '1' ){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was cleared, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+
+
+      $query = <<<EOQ
+SELECT COUNT(id) 
+FROM `civicrm_activity_target` 
+WHERE `activity_id` = $id 
+AND `target_contact_id` = $contact
+EOQ;
+      $check_result = mysql_query($query, self::db());
+      if($row = mysql_fetch_assoc($check_result)) {
+      $check = $row['COUNT(id)']; 
+      }
+
+      if($check != '1'){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+      }
+
 
         // want to update the activity_target, time to use sql 
         // get the the record id please 
@@ -1122,7 +1231,7 @@ EOQ;
                  $results[] = $row; 
             }
 
-            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
+            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
         }else{
             $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
 

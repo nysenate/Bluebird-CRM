@@ -109,9 +109,6 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .imapper-address-box {float: left;width: 220px;padding-left: 5px;}
 .clear {clear: both;}
 .emailbubble,.matchbubble {padding: 2px 4px;}
-.matchbubble.H{ font-size:10px; background-color: #fce093; }
-.matchbubble.A{font-size:10px; background-color: #dee7f8; }
-
 .marginL10 {margin-left: 10px;}
 .marginL5  {margin-left: 5px;}
 .emailbubble{
@@ -125,7 +122,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
     border-radius: 6px 6px 6px 6px;
 }
 
-.name .badge,.matchbubble {   background-color: #B2C7E1;
+.name .badge {   background-color: #B2C7E1;
     color: #444444;
     line-height: 14px;
     padding: 2px 4px;
@@ -134,9 +131,22 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
     border-radius: 3px 3px 3px 3px;
 }
 
-.matchbubble {background-color: #B2E1C2;}
-.warn {background-color: #FAA732; 	border: #FAA732 solid 1px;
+.matchbubble {background-color: #B2E1C2;
+    color: #fff;
+    font-weight: bold;
+    line-height: 14px;
+    padding: 2px 4px;
+    vertical-align: baseline;
+    white-space: nowrap;
+    border-radius: 3px 3px 3px 3px;
 }
+.multi { background-color: #468847;  }
+.empty { background-color: #999999; }
+.warn { background-color: #FAA732; border-color: #FAA732; }
+.matchbubble.H{ background-color: #468847; }
+.matchbubble.A{ background-color: #999999; }
+
+
 .imapper-message-box td { vertical-align: middle!important;  }
 #message_right label{float: left;display: block;}
 .label_def{width: 110px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}

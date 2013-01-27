@@ -81,6 +81,9 @@
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
+	<div id="clear-confirm" title="Clear Message from Matched Messages?" style="display:none;">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be cleared from this screen but will not be deleted. Are you sure?</p>
+	</div>
 	<div id="loading-popup" title="please wait" style="display:none;">
  		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
      </p>
