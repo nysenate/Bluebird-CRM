@@ -661,21 +661,22 @@ var BBTreeModal = {
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
 		BBTreeModal.setTreeType();
-		if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
-		{	
+		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
+		// {	
 			this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] = cj(BBTree.parsedJsonData[callTree.currentSettings.displaySettings.currentTree].data).clone(true, true);
 			cj('span.fCB', this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
-			cj(aIDSel(this.taggedID, this.modalParsedData[callTree.currentSettings.displaySettings.currentTree])).hide();
+			cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
 			cj('.fCB', BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).parent('.lv-0').children('span.fCB').html('');
 			cj(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).html();
 			cj(aIDSel(addTagLabel(callTree.currentSettings.displaySettings.currentTree))+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
 			this.radioButtonAction();
-		}
-		else
-		{
-			cj('#'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
-			this.radioButtonAction();
-		}
+		// }
+		// else
+		// {
+		// 	cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
+		// 	cj('#'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
+		// 	this.radioButtonAction();
+		// }
 	},
 	radioButtonAction: function(){
 		switch(BBTreeModal.taggedMethod){
