@@ -1054,7 +1054,7 @@ EOQ;
         if(!$error){
           $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Cleared');
         }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
         }
 
         echo json_encode($returnCode);

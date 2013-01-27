@@ -252,6 +252,15 @@ cj(document).ready(function(){
 		draggable: false	
 	});
 	
+	// add a clear conform popup
+	cj( "#clear-confirm" ).dialog({
+		modal: true,
+		width: 350,
+		autoOpen: false,
+		resizable: false,
+		draggable: false	
+	});
+	
 	// delete confirm & processing 
 	cj(".delete").live('click', function() {
 
@@ -260,11 +269,17 @@ cj(document).ready(function(){
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		var row = cj(this).parent().parent();
 
+		// reset the headers
+		if(cj("#Activities").length){
+			cj("#delete-confirm").dialog({ title:  "Delete this message from Matched Messages ?"});
+		}else{
+			cj("#delete-confirm").dialog({ title:  "Delete this message from Unmatched Messages ?"});
+		}
+
 		cj( "#delete-confirm" ).dialog({
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
-					// row.remove();
 					if(cj("#Activities").length){
 						cj.ajax({
 							url: '/civicrm/imap/ajax/deleteActivity',
@@ -312,7 +327,7 @@ cj(document).ready(function(){
 				}
 			}
 		});
-		cj( "#delete-confirm" ).dialog('open');
+		cj("#delete-confirm").dialog('open');
 		return false;
 	});
 
@@ -339,6 +354,14 @@ cj(document).ready(function(){
 			alert('Use the checkbox to select a Message');
 			return false;
 		}
+		
+		// reset the headers
+		if(cj("#Activities").length){
+			cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" messages from Matched Messages?"});
+		}else{
+			cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" messages from Unmatched Messages?"});
+		}
+
 		// console.log(delete_ids);
 		// console.log(delete_secondary);
 		// console.log(rows);
@@ -398,7 +421,6 @@ cj(document).ready(function(){
 				}
 			}
 		});	
-		cj("#delete-confirm").dialog({ title:  "Delete "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
 		cj("#delete-confirm").dialog('open');
 		return false;
@@ -619,36 +641,42 @@ cj(document).ready(function(){
 		cj("#loading-popup").dialog('open');
 		var activityId = cj(this).parent().parent().attr('data-id');
 
-		cj( "#delete-confirm" ).dialog({
+		cj( "#clear-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
 					cj.ajax({
 						url: '/civicrm/imap/ajax/unproccessedActivity',
 						data: {id: activityId},
-						success: function(data,status) { 
-							help_message('Activity Removed');
+						success: function(data,status) {
+							data = cj.parseJSON(data);
+							if (data.code =='ERROR'){
+								alert('Unable to clear Activity : '+data.message+", It has been from the screen because it has been edited, Reload Please");
+  							}else{
+								help_message('Activity Removed');
+							}
+							cj("#"+activityId).remove();
+							var old_total = parseInt(cj("#total_number").html(),10);
+							cj("#total_number").html(old_total-1);
+							cj("#clear-confirm").dialog('close');
 						},
 						error: function(){
-							alert('unable to delete Activity');
+							alert('Unable to clear Activity');
 						}
 					});
-					var old_total = parseInt(cj("#total_number").html(),10);
-					cj("#total_number").html(old_total-1);
-					cj("#"+activityId).remove();
-					cj( this ).dialog( "close" );
+					
 				},
 				Cancel: function() {
-					cj( this ).dialog( "close" );
+					cj("#clear-confirm").dialog('close');
 				}
 			}
 		});
-		cj("#delete-confirm").dialog({ title:  "Remove this Messages from this list?"});
-		cj("#loading-popup").dialog('close');
-		cj("#delete-confirm").dialog('open');
+		cj("#clear-confirm").dialog({ title:  "Clear Message from Matched Messages?"});
+ 		cj("#loading-popup").dialog('close');
+		cj("#clear-confirm").dialog('open');
 	    return false;
 	});
 	
-
+	// remove multiple activities
 	cj(".multi_clear").live('click', function() { 
 		cj("#loading-popup").dialog('open');
  		var delete_ids = new Array();
@@ -661,7 +689,7 @@ cj(document).ready(function(){
 			alert('Use the checkbox to select a Message');
 			return false;
 		}
-		cj( "#delete-confirm" ).dialog({
+		cj( "#clear-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
 					cj.each(delete_ids, function(key, value) {
@@ -669,12 +697,17 @@ cj(document).ready(function(){
 							url: '/civicrm/imap/ajax/unproccessedActivity',
 							data: {id: value},
 							success: function(data,status) { 
-								cj('#'+value).remove();
+							data = cj.parseJSON(data);
+								if (data.code =='ERROR'){
+									alert('Unable to clear Activity : '+data.message+", It has been from the screen because it has been edited, Reload Please");
+	  							}else{
+									help_message('Activity Removed');
+								}
+								cj("#"+value).remove();
 								var old_total = parseInt(cj("#total_number").html(),10);
 								cj("#total_number").html(old_total-1);
-								cj("#delete-confirm").dialog( "close" );
-								help_message('Activity Removed');
-							},
+								cj("#clear-confirm").dialog('close');
+ 							},
 							error: function(){
 								alert('unable to delete Activity');
 							}
@@ -686,9 +719,9 @@ cj(document).ready(function(){
 				}
 			}
 		});
-		cj("#delete-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
+		cj("#clear-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
 		cj("#loading-popup").dialog('close');
-		cj( "#delete-confirm" ).dialog('open');
+		cj( "#clear-confirm" ).dialog('open');
     	return false;
 	});
 
