@@ -321,7 +321,7 @@ class CRM_IMAP_AJAX {
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
         $returnMessage['count'] = count($returnMessage['successes']);
         $returnMessage['startcount'] =  $startcount;
-        $returnMessage['errors'] =  count($returnMessage['errors']);;
+        $returnMessage['errorcount'] =  count($returnMessage['errors']);;
 
         // Encode the messages variable and return it to the AJAX call
         if ($debug) echo "<pre>";

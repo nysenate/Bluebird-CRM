@@ -1173,7 +1173,7 @@ function update_count(){
 	cj("#total_number").html(count);
 	if(count < 1){
 		cj("#total_number").html('0');
-		cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found, Please Reload the page</td>');
+		cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records left, Please Reload the page</td>');
 	}
 }
 function removeRow(id){
