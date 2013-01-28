@@ -163,9 +163,19 @@ cj(document).ready(function(){
 					cj('#'+activityId).attr("data-contact_id",data.contact_id);	// contact_id
 					cj('#'+activityId+" .name").attr("data-firstname",data.first_name);	// first_name
 					cj('#'+activityId+" .name").attr("data-last_name",data.last_name);	// last_name
- 					cj('#'+activityId+' .name').html('<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+short_subject(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>');
+					cj('#'+activityId+" .match").html("ManuallyMatched");
+ 					contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+short_subject(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>';
 
 		       		help_message(data.message);
+
+					// redraw the table 
+					console.log('reload');
+					var oTable = cj('#sortable_results').dataTable();
+					var row_index = oTable.fnGetPosition(document.getElementById(activityId)); 
+					oTable.fnUpdate('ManuallyMatched', row_index, 4 );
+					oTable.fnUpdate(contact, row_index, 1 );
+
+					oTable.fnDraw();
 				}
 			},
 			error: function(){
@@ -1173,6 +1183,7 @@ function update_count(){
 	if(count < 1){
 		cj("#total_number").html('0');
 		cj('#imapper-messages-list').html('<strong>No Messages left, Reload maybe?</strong>');
+		//<td valign="top" colspan="7" class="dataTables_empty">No matching records found</td>
 	}
  }
 function removeRow(id){
