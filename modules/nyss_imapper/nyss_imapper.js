@@ -343,6 +343,9 @@ cj(document).ready(function(){
 		}
 
 		cj( "#delete-confirm" ).dialog({
+			open:function () {
+        		$(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
+    		},
 			buttons: {
 				"Delete": function() {
 					cj( this ).dialog( "close" );
