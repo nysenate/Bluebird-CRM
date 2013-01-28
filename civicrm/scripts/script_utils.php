@@ -206,28 +206,32 @@ function civicrm_script_usage()
 } // civicrm_script_usage()
 
 
-
 function get_elapsed_time($start_time = 0)
 {
   return microtime(true) - $start_time;
 } // get_elapsed_time()
 
 
-
-function bbscript_log($message_level, $message)
-{
+function bbscript_log($message_level, $message, $var = null){
   global $BB_LOG_LEVEL, $LOG_LEVELS;
   $log_level = strtoupper($message_level);
   list($log_num, $color) = $LOG_LEVELS[$log_level];
-  if ($log_num >= $BB_LOG_LEVEL) {
+  if($log_num >= $BB_LOG_LEVEL) {
     $timestamp = date('G:i:s');
     $log_level = $color.$log_level."\33[0m";
     // Extra large padding to account for color strings!
     echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
+
+    if ( !empty($var) ) {
+      if ( is_array($var) || is_object($var) ) {
+        print_r($var);
+      }
+      else {
+        echo "\n{$var}\n";
+      }
+    }
   }
 } // bbscript_log()
-
-
 
 function bb_mysql_query($query, $db, $exit_on_fail = false)
 {
