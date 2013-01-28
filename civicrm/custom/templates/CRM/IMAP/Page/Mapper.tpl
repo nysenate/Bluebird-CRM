@@ -117,12 +117,11 @@
 		</div>
 	</div>
 	<div id="help-popup" title="Search Help" style="display:none;">
+		<h3>Hidden Columns</h3>
 		<ul>
-			<li>one</li>
-			<li>two</li>
-			<li>three</li>
-			<li>four</li>
-			<li>five</li>
+			<li><strong>NoMatch : </strong><span class="matchbubble marginL5 empty" title="">0</span> When Imapper can't find a person with a matching email address</li>
+			<li><strong>MultiMatch : </strong> <span class="matchbubble marginL5 multi" title="">>1</span> When Imapper finds several people a matching email address</li>
+			<li><strong>ProcessError : </strong> <span class="matchbubble marginL5 warn" title="">1</span> When Imapper Couldn't proccess the email and it directly matched a contact</li>
 		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Unmatched Messages?">

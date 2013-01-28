@@ -79,12 +79,10 @@
 		</div>
 	</div>
 	<div id="help-popup" title="Search Help" style="display:none;">
+		<h3>Hidden Columns</h3>
 		<ul>
-			<li>one</li>
-			<li>two</li>
-			<li>three</li>
-			<li>four</li>
-			<li>five</li>
+			<li><strong>ManuallyMatched : </strong> <span class="matchbubble marginL5 A" title="This email was manually matched">M</span> When an Matched message was manually matched by a user</li>
+			<li><strong>AutomaticallyMatched : </strong> <span class="matchbubble marginL5 H" title="This email was automatically matched">H</span> When an Matched message was automatically matched by imapper </li>
 		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
