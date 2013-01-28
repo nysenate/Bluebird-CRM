@@ -7,13 +7,13 @@
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
-				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
-			   		<th class='Name'>Sender’s Info</th> 
- 				    <th class='Subject'>Subject</th> 
-				    <th class='Date'>Date Sent</th>
-				    <th class='Match_type hidden'>Match Type</th> 
-				    <th class='Forwarded'>Forwarded By</th> 
-				   	<th class='Actions'>Actions</th> 
+				<th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+				<th class='Name'>Sender’s Info</th>
+				<th class='Subject'>Subject</th>
+				<th class='Date'>Date Sent</th>
+				<th class='Match_type hidden'>Match Type</th>
+				<th class='Forwarded'>Forwarded By</th>
+				<th class='Actions'>Actions</th>
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
@@ -92,12 +92,19 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be cleared from this screen but will not be deleted. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait" style="display:none;">
- 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
-     </p>
+		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
+	</p>
 	</div>
+
 	<div id="tagging-popup" title="Tagging" style="display:none;">
-		<div id="tagging-popup-header"> </div>
-		<div id="tagging">
+		<div id="message_left_tag">
+			<div id="message_left_header_tag"> over
+			</div>
+			<div id="message_left_email_tag">
+			</div>
+		</div>
+		<div id="message_right_tag">
+			<div id="tabs_tag">
 				<ul>
 					<li><a href="#tab1">Tag Contact</a></li>
 					<li><a href="#tab2">Tag Activity</a></li>
@@ -109,7 +116,8 @@
 				</div>
 				<div id="tab2">
 					<div id='TagActivity'></div>
+				</div>
 			</div>
 		</div>
-	</div> 
+	</div>
 </div>

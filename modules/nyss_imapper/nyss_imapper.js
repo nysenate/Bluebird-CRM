@@ -506,40 +506,36 @@ cj(document).ready(function(){
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 
-		// BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'tagging'}}); 
-
-		// cj('#TagActivity').append('<div class="BBInit"></div><script>BBTree.initContainer("TagActivity");</script>');
-		// cj('#TagContact').append('<div class="BBInit"></div><script>BBTree.initContainer("TagContact");</script>');
-
-		// callTree.currentSettings.callSettings.ajaxSettings.entity_id = contactId;
-		// BBTreeTag.getPageCID(activityId, 'civicrm_activity'); 
-
-		// // BBTreeTag.getPageCID(contactId, 'civicrm_contact'); 
-
-
-		// console.log(callTree.currentSettings.callSettings.ajaxSettings.entity_id);
-
 		// cj("#autocomplete_tag").val();
 		// cj(".autocomplete-tags-bank").html('');
-		cj('#tagging-popup-header').html('');
+		cj('#message_left_header_tag').html('');
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
+
 				cj("#loading-popup").dialog('close');
 				messages = cj.parseJSON(data);
 
-		 		cj('#tagging-popup-header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date+"<br/>");
-				cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
+				if(messages.code == 'ERROR'){
+					if(messages.clear =='true')  removeRow(activityId);
+					alert('Unable to load Message : '+ messages.message);
+					return false;
+				}else{ 
+			 		cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date+"<br/>");
+					cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
-				if ((messages.forwardedEmail != '')){
-					cj('#tagging-popup-header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+					if ((messages.forwardedEmail != '')){
+						cj('#message_left_header_tag').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+					}
+					cj('#message_left_email_tag').html(messages.details);
+
+					cj("#tabs_tag").tabs();
+					cj("#tagging-popup").dialog({ title:  "Tagging: "+ short_subject(messages.subject,50) });
+					cj("#tagging-popup").dialog('open');
+
 				}
-			
-				cj("#tagging-popup").dialog({ title:  "Tagging: "+ short_subject(messages.subject,50) });
-				cj("#tagging-popup").dialog('open');
-				cj("#tagging").tabs();
 			},
 			error: function(){
 				alert('unable to find activity');
