@@ -17,8 +17,8 @@
 				</tr> 
 			</thead> 
 			<tbody id='imapper-messages-list'> 
-				<tr><td><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td></tr>
-			</tbody> 
+				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
+ 			</tbody> 
 		</table>		
 		<div class='page_actions'>
 			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
