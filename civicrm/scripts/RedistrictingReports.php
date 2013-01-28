@@ -376,7 +376,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     
     if (!table_exists($db, RD_ACTS_CACHE_TABLE)){
     	$act_query = 
-	    	"CREATE TABLE IF NOT EXISTS `redist_report_acts_cache` (
+	    	"CREATE TABLE IF NOT EXISTS `" . RD_ACTS_CACHE_TABLE . "` (
 			  `act_contact_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Unique Contact ID',
 			  `activity_count` bigint(24) NOT NULL DEFAULT '0',
 			  `open_activity_count` bigint(24) NOT NULL DEFAULT '0',
