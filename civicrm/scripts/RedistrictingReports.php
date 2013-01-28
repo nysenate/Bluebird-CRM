@@ -24,6 +24,7 @@ define('DEFAULT_FORMAT', 'text');
 define('DEFAULT_MODE', 'summary');
 define('RD_CONTACT_CACHE_TABLE', 'redist_report_contact_cache');
 define('RD_NOTE_CACHE_TABLE', 'redist_report_note_cache');
+define('RD_ACTS_CACHE_TABLE', 'redist_report_acts_cache');
 
 // Parse the options
 require_once 'script_utils.php';
@@ -372,9 +373,58 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
     $open_source_activity = "NULLIF(source_activity.status_id = 1 OR source_activity.status_id = 7, 0)";
     $open_target_activity = "NULLIF(activity.status_id = 1 OR activity.status_id = 7, 0)";
     $valid_case = "NULLIF(c_case.is_deleted, 1)";
+    
+    if (!table_exists($db, RD_ACTS_CACHE_TABLE)){
+    	$act_query = 
+	    	"CREATE TABLE IF NOT EXISTS `redist_report_acts_cache` (
+			  `act_contact_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Unique Contact ID',
+			  `activity_count` bigint(24) NOT NULL DEFAULT '0',
+			  `open_activity_count` bigint(24) NOT NULL DEFAULT '0',
+			  PRIMARY KEY (`act_contact_id`)
+			) ENGINE=InnoDB;";
+		
+		bbscript_log("info", "Creating redist activities cache table");
+		bb_mysql_query($act_query, $db, true);
 
-	$contact_query = "
-		SELECT * FROM (
+		$q = 	"INSERT INTO " . RD_ACTS_CACHE_TABLE . " 
+	    	SELECT 
+	    		contact.id AS act_contact_id,
+
+				# The activity count does not include case activities
+				GREATEST(
+				COUNT(DISTINCT source_activity.id, {$valid_source_activity}) 
+				- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity})
+				+ COUNT(DISTINCT activity_target.id, {$valid_target_activity}) 
+				- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity})
+				,0) AS activity_count,
+
+				# Also count the number of open activities
+				GREATEST(
+				COUNT(DISTINCT source_activity.id, {$valid_source_activity}, {$open_source_activity}) 
+				- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity}, {$open_source_activity})
+				+ COUNT(DISTINCT activity_target.id, {$valid_target_activity}, {$open_target_activity}) 
+				- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity}, {$open_target_activity})
+				,0) AS open_activity_count
+
+			FROM `civicrm_contact` AS contact
+			JOIN `civicrm_address` a ON contact.id = a.contact_id
+			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id
+			LEFT JOIN `civicrm_activity` source_activity ON source_activity.source_contact_id = contact.id
+			LEFT JOIN `civicrm_case_activity` source_case_activity ON source_activity.id = source_case_activity.activity_id 
+			LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
+			LEFT JOIN `civicrm_activity` activity ON activity.id = activity_target.activity_id
+			LEFT JOIN `civicrm_case_activity` case_activity ON activity_target.activity_id = case_activity.activity_id
+
+			WHERE district.`ny_senate_district_47` != {$filter_district} AND a.is_primary = 1
+			AND contact.id != 1
+			GROUP BY contact.id
+			";
+		bbscript_log("info", "Populating redist activities cache table");
+		bb_mysql_query($q, $db, true);	
+    }      
+
+	$contact_query = 
+		"SELECT * FROM (
 			SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
 			                contact.birth_date, contact.gender_id,
 			                contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
@@ -387,22 +437,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 							COUNT(DISTINCT case_contact.id, {$valid_case}, NULLIF(c_case.status_id = 3, 0)) AS urgent_case_count,
 							COUNT(DISTINCT case_contact.id, {$valid_case}, NULLIF(c_case.status_id = 5, 0)) AS assigned_case_count,
 
-	                        # The activity count does not include case activities
-	                        GREATEST(
-	                        	COUNT(DISTINCT source_activity.id, {$valid_source_activity}) 
-	                        	- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity})
-	                            + COUNT(DISTINCT activity_target.id, {$valid_target_activity}) 
-	                         	- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity})
-	                        ,0) AS activity_count,
-
-							# Also count the number of open activities
-	                        GREATEST(
-	                        	COUNT(DISTINCT source_activity.id, {$valid_source_activity}, {$open_source_activity}) 
-	                        	- COUNT(DISTINCT source_activity.id, source_case_activity.id, {$valid_source_activity}, {$open_source_activity})
-	                            + COUNT(DISTINCT activity_target.id, {$valid_target_activity}, {$open_target_activity}) 
-	                         	- COUNT(DISTINCT activity_target.id, case_activity.id, {$valid_target_activity}, {$open_target_activity})
-	                        ,0) AS open_activity_count,
-
+							# Group Count
 	                        COUNT(DISTINCT group_contact.group_id, NULLIF(group_contact.status, 'Removed') ) AS group_count
 
 			FROM `civicrm_contact` AS contact
@@ -412,16 +447,9 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 
 	   		# Counts of cases
 	        LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
-	        LEFT JOIN `civicrm_case` c_case ON c_case.id = case_contact.case_id
-	        
-	        # Counts of activities
-	        LEFT JOIN `civicrm_activity` source_activity ON source_activity.source_contact_id = contact.id
-	        LEFT JOIN `civicrm_case_activity` source_case_activity ON source_activity.id = source_case_activity.activity_id 
-	        LEFT JOIN `civicrm_activity_target` activity_target ON contact.id = activity_target.target_contact_id
-	        LEFT JOIN `civicrm_activity` activity ON activity.id = activity_target.activity_id
-	        LEFT JOIN `civicrm_case_activity` case_activity ON activity_target.activity_id = case_activity.activity_id
+	        LEFT JOIN `civicrm_case` c_case ON c_case.id = case_contact.case_id        
 
-	   		# Counts of groups
+	        # Counts of groups
 	        LEFT JOIN `civicrm_group_contact` group_contact ON contact.id = group_contact.contact_id
 
 			WHERE district.`ny_senate_district_47` != {$filter_district}
@@ -431,6 +459,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			AND (email.id IS NULL OR email.is_primary = 1)
 			GROUP BY contact_id
 		) AS c
+		LEFT JOIN `" . RD_ACTS_CACHE_TABLE . "` acts_cache ON acts_cache.act_contact_id = c.contact_id
 	";
 
 	// Filter critera
@@ -551,6 +580,10 @@ function clear_reports_cache($db){
 	bbscript_log("info", "Clearing redist report note cache table");
 	$drop = "DROP TABLE IF EXISTS " . RD_NOTE_CACHE_TABLE .";";
 	bb_mysql_query($drop, $db, true);
+
+	bbscript_log("info", "Clearing redist act cache table");
+	$drop = "DROP TABLE IF EXISTS " . RD_ACTS_CACHE_TABLE .";";
+	bb_mysql_query($drop, $db, true);	
 }
 
 // ----------------------------------------------------------------------
