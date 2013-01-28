@@ -435,7 +435,7 @@ class CRM_IMAP_AJAX {
           }else if($output['code'] == "ERROR" ){
             $returnMessage = $output;
           }
-        // var_dump($returnMessage);  exit();
+        imap_close($imap->conn());
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
     }
@@ -639,6 +639,7 @@ class CRM_IMAP_AJAX {
         $email = $imap->getmsg_uid($messageUid);
 
         $output = self::unifiedMessageInfo($imap,$messageUid,$imapId);
+        imap_close($imap->conn());
 
         // probably could user better names 
         $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : '' ;
