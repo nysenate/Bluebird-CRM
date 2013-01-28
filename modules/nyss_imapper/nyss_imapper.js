@@ -893,7 +893,7 @@ function buildMessageList() {
 		cj("#total_number").html('0');
 	}else{
 		var messagesHtml = '';
-		var total_results = messages.count;
+		var total_results = messages.stats.overview.successes;
 		cj.each(messages.successes, function(key, value) {
 			var icon ='';
 			if(value.date != null){
@@ -1076,8 +1076,8 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="disabled not_add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
 			}
 		});

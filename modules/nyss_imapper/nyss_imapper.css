@@ -95,10 +95,10 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #message_left {float:left; }
 #message_left .debug_info {display: none; }
 #message_left .debug_on,#message_left .debug_off {color: #336699!important; }
-.debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin-bottom: 10px;}
+.debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
 #message_left_header{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
-
+.disabled a{ color: #999!important; text-decoration: line-through!important;}
 
 
 #message_left_header.crmdev,#message_left_header.crmtest{height: 110px;}

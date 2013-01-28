@@ -9,7 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $contTime = 1; // time between processMailboxes cron job in mins
+    private static $contTime = 6; // time between processMailboxes cron job in mins
 
     /* setupImap()
      * Parameters: None.
@@ -196,6 +196,14 @@ class CRM_IMAP_AJAX {
         // imap_close($imap->conn());
     }
 
+    // properly encode bytes to larger numbers
+    public static function decodeSize($bytes){
+        $types = array( 'B', 'KB', 'MB', 'GB', 'TB' );
+        for( $i = 0; $bytes >= 1024 && $i < ( count( $types ) -1 ); $bytes /= 1024, $i++ );
+        return( round( $bytes, 2 ) . " " . $types[$i] );
+    }
+
+
     /* getUnmatchedMessages()
      * Parameters: None.
      * Returns: A JSON Object of messages in all IMAP inboxes.
@@ -206,6 +214,7 @@ class CRM_IMAP_AJAX {
     public static function getUnmatchedMessages() {
         require_once 'CRM/Utils/IMAP.php';
         $debug = self::get('debug');
+        $start = microtime(true);
 
 
         // Pull all of the IMAP usernames into the $imap_accounts variable
@@ -222,10 +231,61 @@ class CRM_IMAP_AJAX {
             // Search for all UIDs that meet the criteria of ""
             // Then get the headers for some basic information.
             // then grab the structure for attachments
-            $ids = imap_search($imap->conn(),"",SE_UID);
+            $ids = imap_search($imap->conn(), ALL ,SE_UID);
+
             $startcount= count($ids);
+            $returnMessage['stats']['overview']['count'] = $startcount;
+            $limit_b =  536870912; // 500mb in byte
+            $limit_kb =  512000; // 500mb in KB
+
+
+
+            
+            // echo "imap_check() failed: " . imap_last_error() . "<br />\n<br />\n";
+
             
 
+            $quota_INBOX = imap_get_quotaroot($imap->conn(), 'INBOX');
+            // var_dump($quota_INBOX);
+            if ($quota_INBOX) {
+              $storage = $quota_INBOX['STORAGE'];
+              $precent = round((($storage['usage'] / $limit_kb )*100),2);
+              $returnMessage['stats'][$imap_id]['imap_usage'] = $storage['usage'];
+              $returnMessage['stats'][$imap_id]['imap_limit'] = $limit_kb;
+              $returnMessage['stats'][$imap_id]['imap_precent'] = $precent;
+              $warn_level = round((($storage['usage'] / $limit_kb )*10),0);
+              $returnMessage['stats'][$imap_id]['imap_warn_level'] = $warn_level;
+              $returnMessage['stats'][$imap_id]['imap_size_formatted'] =  self::decodeSize($storage['usage'] *1024);
+              $returnMessage['stats'][$imap_id]['imap_limit_formatted'] =  self::decodeSize($limit_kb *1024);
+            }
+
+            if(!$ids){
+              $returnMessage['errors'] = array('code' =>  'ERROR','message'   => 'No Messages Found', 'clear'=>'true');
+              echo json_encode($returnMessage);
+              CRM_Utils_System::civiExit();
+            } 
+
+            // $check = imap_mailboxmsginfo($imap->conn());
+            // var_dump($check);
+            // if ($check) {
+            //     $precent = round((($check->Size / $limit_b )*100),2);
+            //     $warn_level = round((($check->Size / $limit_b )*10),0);
+            //     $returnMessage['stats']['imap_'.$imap_id.'_deleted'] =  $check->Deleted;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_recent'] =  $check->Recent;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_size'] =  $check->Size;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_precent'] =  $precent;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_limit'] = $limit_b;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_warn_level'] = $warn_level;
+            //     $returnMessage['stats']['imap_'.$imap_id.'_size_formatted'] =  self::decodeSize($check->Size);
+            //     $returnMessage['stats']['imap_'.$imap_id.'_limit_formatted'] =  self::decodeSize($limit);
+
+            // } else {
+            //     // echo "imap_check() failed: " . imap_last_error() . "<br />\n";
+            // }
+
+
+
+            // exit();
             $checked = array();
             // Loop through the headers and check to make sure they're valid UIDs
             foreach($ids as $id) {
@@ -234,15 +294,7 @@ class CRM_IMAP_AJAX {
               // var_dump($output);
               // var_dump($id);
 
-              $quota_INBOX = imap_get_quotaroot($imap->conn(), 'INBOX');
-              if ($quota_INBOX) {
-                $storage = $quota_INBOX['STORAGE'];
-                $returnMessage['stats']['imap_'.$imap_id.'_usage'] =  $storage['usage'];
-                $returnMessage['stats']['imap_'.$imap_id.'_limit'] =  $storage['limit'];
-                $returnMessage['stats']['imap_'.$imap_id.'_precent'] =  round((($storage['usage'] / $storage['limit'] )*100),2);
-              }else{
-                // echo "imap_check() failed: " . imap_last_error() . "<br />\n";
-              }
+              
 
               if ($output['code'] == "SUCCESS"){
                 if($output['forwarded']['origin_email']){
@@ -279,7 +331,7 @@ class CRM_IMAP_AJAX {
                 'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                 'uid' =>  $id,
                 'date' =>  $output['header']['date_clean'],
-                'date_long' =>  $output['header']['date_long'],
+                // 'date_long' =>  $output['header']['date_long'],
                 'date_u' =>  $output['header']['date_u'],
                 'format' =>  $output['header']['format'],
                 'from_email' =>  $output['forwarded']['origin_email'],
@@ -303,27 +355,14 @@ class CRM_IMAP_AJAX {
           imap_close($imap->conn());
         }
 
-        // $check = imap_mailboxmsginfo($imap->conn());
-
-        // if ($check) {
-        //     echo "Date: "     . $check->Date    . "<br />\n" ;
-        //     echo "Driver: "   . $check->Driver  . "<br />\n" ;
-        //     echo "Mailbox: "  . $check->Mailbox . "<br />\n" ;
-        //     echo "Messages: " . $check->Nmsgs   . "<br />\n" ;
-        //     echo "Recent: "   . $check->Recent  . "<br />\n" ;
-        //     echo "Unread: "   . $check->Unread  . "<br />\n" ;
-        //     echo "Deleted: "  . $check->Deleted . "<br />\n" ;
-        //     echo "Size: "     . $check->Size    . "<br />\n" ;
-        // } else {
-        //     echo "imap_check() failed: " . imap_last_error() . "<br />\n";
-        // }
+        $end = microtime(true);
 
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
-        $returnMessage['count'] = count($returnMessage['successes']);
-        $returnMessage['startcount'] =  $startcount;
-        $returnMessage['errorcount'] =  count($returnMessage['errors']);;
+        $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
+        $returnMessage['stats']['overview']['errors'] =  count($returnMessage['errors']);
+        $returnMessage['stats']['overview']['time'] = $end-$start;
 
-        // Encode the messages variable and return it to the AJAX call
+         // Encode the messages variable and return it to the AJAX call
         if ($debug) echo "<pre>";
         echo (!$debug) ?  json_encode($returnMessage) : print_r($returnMessage);
         if ($debug) echo "</pre>";
