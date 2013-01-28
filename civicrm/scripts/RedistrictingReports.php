@@ -30,7 +30,7 @@ require_once 'script_utils.php';
 $shortopts = "l:f:m:tdc";
 $longopts = array("log=", "format=", "mode=", "threshold=", "disableCache", "clearCache");
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = 'RedistrictingReports.php -S mcdonald [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --mode=[summary|detail], --threshold=[THRESH], --disableCache, --clearCache';
+$usage = '[--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] --format= [html|txt|csv], --mode=[summary|detail], --threshold=[THRESH], --disableCache, --clearCache';
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
