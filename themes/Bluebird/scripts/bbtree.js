@@ -1620,9 +1620,10 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		floatControlBox += '<ul>';
 		floatControlBox += '<li>';
 		if(isChecked == ' checked'){
-			floatControlBox += '<input type="checkbox" class="checkbox checked"  checked onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
+			//NOTE: HAVE TO HAVE name="tag[###]" in order for edit tags to work
+			floatControlBox += '<input type="checkbox" name="tag['+removeTagLabel(tagLabel)+']" class="checkbox checked"  checked onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
 		} else {
-			floatControlBox += '<input type="checkbox" class="checkbox" onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
+			floatControlBox += '<input type="checkbox" name="tag['+removeTagLabel(tagLabel)+']" class="checkbox" onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
 		}
 		floatControlBox += '</span>';
 		if(tagLabel != 'tagLabel_291' && tagLabel != 'tagLabel_296')
