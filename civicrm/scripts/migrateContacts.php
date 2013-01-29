@@ -958,6 +958,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * such that there are > 1 address block with the same location type
    */
   function _cleanLocType($migrateTbl, $optDry) {
+    bbscript_log("info", "cleaning up duplicate location type addresses in source database...");
+
     //preferred loc type order
     $locTypes = array(
       1, //home
@@ -1258,6 +1260,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         fwrite($fileResource, $data);
       }
       else {
+        ini_set('memory_limit', '2000M');
+
         $exportDataJSON = json_encode($data);
         fwrite($fileResource, $exportDataJSON);
       }
