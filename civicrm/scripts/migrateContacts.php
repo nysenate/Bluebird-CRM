@@ -396,7 +396,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         ON mt.contact_id = civicrm_contact.id
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
-    bbscript_log("trace", 'exportContacts sql', $sql);
+    //bbscript_log("trace", 'exportContacts sql', $sql);
 
     $contactsAttr = get_object_vars($contacts);
     //bbscript_log("trace", 'exportContacts contactsAttr', $contactsAttr);
