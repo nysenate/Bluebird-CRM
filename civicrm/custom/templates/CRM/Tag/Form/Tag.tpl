@@ -25,8 +25,10 @@
 *}
 {* this template is used for adding/editing tags  *}
 {literal}
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree3.js" type="text/javascript"></script>
+<style type="text/css" rel="stylesheet" media="screen,projection">
+ @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
+</style>
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <script type="text/javascript">
 BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}}); 
 //document.ready(); this is when the page drops the results in. WAAAAAY FASTER.

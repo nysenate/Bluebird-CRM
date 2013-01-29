@@ -71,7 +71,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 
 #BBTreeContainer, #BBDialog {
   width: 521px;
-  position: relative; }
+  position: relative;
+  margin: 0 auto; }
 
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
   width: 520px;
@@ -80,9 +81,7 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
   height: 400px;
   background-color: #fff;
   border: 1px solid #cccccc;
-  margin: 0 auto;
   cursor: default;
-  /* for message bucket */
   /* for tag hirarchy structure */ }
   .BBTree dt, #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
     float: inherit;

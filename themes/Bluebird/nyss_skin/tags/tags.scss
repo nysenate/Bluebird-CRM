@@ -112,6 +112,7 @@ $levelClassSlug : "lv";
 #BBTreeContainer, #BBDialog {
 	width:521px;
 	position:relative;
+	margin: 0 auto;
 }
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree{
 	width:520px;
@@ -120,10 +121,7 @@ $levelClassSlug : "lv";
 	height:400px;
 	background-color:#fff;
 	border:1px solid #ccc;
-	margin: 0 auto;
 	cursor:default;
-	/* for message bucket */
-
 	/* for tag hirarchy structure */
 	dt {
 		float: inherit;
