@@ -420,6 +420,7 @@ class CRM_IMAP_AJAX {
           $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
           $string = preg_replace('/<|>|"|\'/i', '', $string);
           $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
+          $string = preg_replace('/"|\'/i', '', $string);
 
           foreach(preg_split('/ /', $string) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
