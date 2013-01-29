@@ -78,7 +78,6 @@ var BBTree = {
 		BBTreeTag.getContactTags(); // if get contact tags becomes an array, don't link together the apply/get.
 	},
 	addIndicator: function(code){ //makes the dropdown indicator work
-		debugger;
 		var messageHandler = callTree.currentSettings.pageSettings.messageHandler;
 		var currentInstance = callTree.currentSettings.displaySettings.currentInstance;
 		var codeName;
@@ -96,7 +95,6 @@ var BBTree = {
 			messageBox = cj(aCSel(currentInstance) + aCSel(messageHandler));
 			totMessages = messageBox;
 		}
-		debugger;
 		switch(code.errorClass)
 		{//.addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)})
 			case 'BBSuccess': messageBox.addClass(code.errorClass); codeName = 'success';break;
@@ -104,7 +102,6 @@ var BBTree = {
 			case 'BBError': messageBox.addClass(code.errorClass); codeName = 'error';break;
 			default: codeName = 'notice'; return true; break; //don't show notices
 		}
-		debugger;
 		messageBox.prepend('<div class="title">'+BBTree.actionInfo.last.name+'</div>');
 		messageBox.prepend('<div class="closeMessage item-'+ totLength +'"></div>');
 		cj('.closeMessage.item-'+ totLength, messageBox).click(function() {
@@ -115,7 +112,6 @@ var BBTree = {
 		{
 			messageBox.append('<div class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
 		}
-		debugger;
 		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
 			if(cj(this).hasClass('open'))
 			{
@@ -129,7 +125,6 @@ var BBTree = {
 			}
 			
 		});
-		debugger;
 		messageBox.slideDown();
 		setTimeout(function(){
 			BBTree.removeIndicator(messageBox);
@@ -1707,4 +1702,21 @@ function returnTime()
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
 	console.log(rTime);
+}
+
+function printTags()
+{
+	var data = cj(BBTree.treeLoc+aIDSel(addTagLabel(callTree.currentSettings.displaySettings.currentTree))).html();
+	var mywindow = window.open('', 'PrintTags');
+	mywindow.document.body.innerHTML="";
+	mywindow.document.write('<!DOCTYPE html><html><head><title>Print Tags</title>');
+    mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />');
+   //mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
+    mywindow.document.write('</head><body class="popup">');
+    mywindow.document.write('<div class="BBTree" style="height:auto;width:auto;overflow-y:hidden;">');
+    mywindow.document.write(data);
+    mywindow.document.write('</div>');
+    mywindow.document.write('</body></html>');
+    mywindow.print();
+    return true;
 }
