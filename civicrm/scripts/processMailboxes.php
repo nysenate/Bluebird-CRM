@@ -267,6 +267,7 @@ function checkImapAccount($conn, $params)
     $sender = strtolower($email->replyTo);
 
     // check whether or not the forwarder/sender is valid
+    // if (in_array('crain@nysenate.gov', $params['validsenders'])) {
     if (in_array($sender, $params['validsenders'])) {
       echo "[DEBUG] Sender $sender is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
@@ -280,7 +281,7 @@ function checkImapAccount($conn, $params)
       }
     }
     else {
-      echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
+       echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
       if (imap_delete($conn, $msg_num) === true) {
         echo "[DEBUG] Message $msg_num has been deleted\n";
@@ -310,7 +311,9 @@ function retrieveMessage($conn, $idx)
   //get the header
   $header = imap_headerinfo($conn, $idx);
 
+  // echo($idx);
   $email = new stdClass();
+  // $email->header = $header;
   $email->id = $header->message_id;
   $email->subject = $header->subject;
   $reply_to = $header->reply_to[0];
@@ -320,7 +323,7 @@ function retrieveMessage($conn, $idx)
 
   echo "[INFO] Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
 
-  // Skip message if we are processing unread only.
+  // // Skip message if we are processing unread only.
   if ($header->Unseen != "U" && $params['unreadonly']) {
     echo "[INFO] Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
     return null;
@@ -449,6 +452,7 @@ function extract_email_address ($string) {
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = false;
+  // print_r($email); exit();
 
   // remove weirdness in html encoded messages 
   $body = quoted_printable_decode($email->body);
@@ -485,12 +489,16 @@ function extract_email_address ($string) {
   preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
 
   $subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $email->subject) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
-
-  if($subject == "" | $subject == "(no subject)"){
+  
+  // remove () sometimes found in emails with no subject
+  $subject = preg_replace("/(\(|\))/i", "", $subject);
+  if( trim(strip_tags($subject)) == "" | trim($subject) == "no subject"){
     $subject = "No Subject";
   }
- 
-  $email->body = '<pre>'.$email->body.'</pre>';
+
+  // html emails need to be pre tagged
+
+    $email->body = '<pre>'.$email->body.'</pre>';
 
   // Use the e-mail from the body of the message (or header if direct) to find traget contact
   $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fromEmail['email'], );
@@ -572,15 +580,14 @@ function extract_email_address ($string) {
                   VALUES ('civicrm_activity',$activityId,$inboxPollingTagId);";
         $result = mysql_query($query, $conn);
         if ($result) {
-          echo "[DEBUG] Added Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+          echo "[DEBUG] ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
         else {
-          echo "[ERROR] Could Not add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+          echo "[ERROR] COULD NOT add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
       }
     }
   }
-
   return $bSuccess;
 } // civiProcessEmail()
 
@@ -641,24 +648,24 @@ function getInboxPollingTagId()
 
 function sendDenialEmail($site, $email)
 {
-  require_once 'CRM/Utils/Mail.php';
-  $subj = INVALID_EMAIL_SUBJECT." [$site]";
-  $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
-  $mailParams = array('from'    => INVALID_EMAIL_FROM,
-                      'toEmail' => $email,
-                      'subject' => $subj,
-                      'html'    => str_replace("\n", '<br/>', $text),
-                      'text'    => $text
-                     );
+  // require_once 'CRM/Utils/Mail.php';
+  // $subj = INVALID_EMAIL_SUBJECT." [$site]";
+  // $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
+  // $mailParams = array('from'    => INVALID_EMAIL_FROM,
+  //                     'toEmail' => $email,
+  //                     'subject' => $subj,
+  //                     'html'    => str_replace("\n", '<br/>', $text),
+  //                     'text'    => $text
+  //                    );
 
-  $rc = CRM_Utils_Mail::send($mailParams);
-  if ($rc == true) {
-    echo "[INFO] Denial e-mail has been sent to $email\n";
-  }
-  else {
-    echo "[WARN] Unable to send a denial e-mail to $email\n";
-  }
-  return $rc;
+  // $rc = CRM_Utils_Mail::send($mailParams);
+  // if ($rc == true) {
+  //   echo "[INFO] Denial e-mail has been sent to $email\n";
+  // }
+  // else {
+  //   echo "[WARN] Unable to send a denial e-mail to $email\n";
+  // }
+  // return $rc;
 } // sendDenialEmail()
 
 ?>

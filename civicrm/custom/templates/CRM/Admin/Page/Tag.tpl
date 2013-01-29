@@ -50,8 +50,8 @@
 {/literal}
 {literal}
 <script type="text/javascript">
-BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'}}); 
-//document.ready(); this is when the page drops the results in. WAAAAAY FASTER.
+BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}); 
+
 </script>
 {/literal}
 {capture assign=docLink}{docURL page="Tags Admin"}{/capture}
@@ -102,10 +102,11 @@ BBTree.startInstance({displaySettings:{writeSets: [291,296], treeTypeSet: 'edit'
             <div class="BBInit"></div>
             {literal}
             <script>
-                BBTree.initContainer();
+                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {entity_id: 256531});
+                //BBTree.initContainer('two', {pullSets: [296], buttonType: 'tagging'}, {entity_id: 216352, entity_type: 'civicrm_activity'});
             </script>
             {/literal}
         </div>
-	</div>
+    </div>
 </div>
 {/if}

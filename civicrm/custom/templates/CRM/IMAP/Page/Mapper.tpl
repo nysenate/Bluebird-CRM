@@ -8,16 +8,17 @@
 			<thead> 
 				<tr class='list_header'> 
 				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th> 
-				    <th class='Name'>Sender’s Name</th> 
+				    <th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
 				    <th class='Date'>Date Sent</th> 
+				    <th class='Match_type hidden'>Match Type</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr> 
 			</thead> 
-			<tbody id='imapper-messages-list' > 
-				<tr><td>Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></td></tr>
-			</tbody> 
+			<tbody id='imapper-messages-list'> 
+				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
+ 			</tbody> 
 		</table>		
 		<div class='page_actions'>
 			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
@@ -114,6 +115,14 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div id="help-popup" title="Search Help" style="display:none;">
+		<h3>Hidden Columns</h3>
+		<ul>
+			<li><strong>NoMatch : </strong><span class="matchbubble marginL5 empty" title="">0</span> When Imapper can't find a person with a matching email address</li>
+			<li><strong>MultiMatch : </strong> <span class="matchbubble marginL5 multi" title="">>1</span> When Imapper finds several people a matching email address</li>
+			<li><strong>ProcessError : </strong> <span class="matchbubble marginL5 warn" title="">1</span> When Imapper Couldn't proccess the email and it directly matched a contact</li>
+		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Unmatched Messages?">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>

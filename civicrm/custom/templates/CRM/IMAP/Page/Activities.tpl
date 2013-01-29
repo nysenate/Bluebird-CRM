@@ -8,20 +8,21 @@
 			<thead>
 				<tr class='list_header'>
 				    <th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
-			   		<th class='Name'>Sender’s Name</th> 
+			   		<th class='Name'>Sender’s Info</th> 
  				    <th class='Subject'>Subject</th> 
-				    <th class='Date'>Date Sent</th> 
+				    <th class='Date'>Date Sent</th>
+				    <th class='Match_type hidden'>Match Type</th> 
 				    <th class='Forwarded'>Forwarded By</th> 
 				   	<th class='Actions'>Actions</th> 
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
-				<tr><td>Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></td></tr>
+				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
-			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
+<!-- 			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
+ -->			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
 			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 		</div>
 	</div>
@@ -77,8 +78,18 @@
 			</div>
 		</div>
 	</div>
+	<div id="help-popup" title="Search Help" style="display:none;">
+		<h3>Hidden Columns</h3>
+		<ul>
+			<li><strong>ManuallyMatched : </strong> <span class="matchbubble marginL5 A" title="This email was manually matched">M</span> When an Matched message was manually matched by a user</li>
+			<li><strong>AutomaticallyMatched : </strong> <span class="matchbubble marginL5 H" title="This email was automatically matched">H</span> When an Matched message was automatically matched by imapper </li>
+		</ul>
+	</div>
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
+	</div>
+	<div id="clear-confirm" title="Clear Message from Matched Messages?" style="display:none;">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be cleared from this screen but will not be deleted. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait" style="display:none;">
  		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
@@ -86,7 +97,6 @@
 	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="tagging-popup-header"> </div>
-		<hr/>
 		<div id="tagging">
 				<ul>
 					<li><a href="#tab1">Tag Contact</a></li>

@@ -1,12 +1,12 @@
 /*
-* BBTree JS 0.3
+* BBTree JS 0.8
 * Now with infinite looping!
 * And modular abilities!
-* Last Updated: 1-15-2013
+* Last Updated: 1-23-2013
 * Coded: Dan Pozzie (dpozzie@gmail.com)
 */
 
-//alias for basic functionality, also provides pathing for calling function types
+//alias/pathing object
 var BBTree = {
 	startInstance: function(config)
 	{	
@@ -14,27 +14,22 @@ var BBTree = {
 		//then check cookie timestamp	
 		//if cookies found skip getAjaxData
 		//if cookie is found, send json to separate.
-		//Config - BBTree.startInstance({writeSets: [291,296], treeTypeSet: 'edit'}); 
+
+		//set settings, 
+		//BBTree.startInstance({displaySettings:{pullSets: [291,296], buttonType: 'edit'}}); 
 		callTree.setCurrentSettings(config);
-	    //have to use a queue with ajax data
+		BBTreeModal.makeModalInit();
+	    //have to use a queue with ajax data because you do A, and once A is done, then do B.
 	    cj({})
 	    	.queue(BBTree.getAjaxData)
 	    	.queue(BBTree.writeTree);
-	    //IDEA HERE IS TO GET THE DATA ASYNCHRONOUSLY THE FIRST TIME, IF DATA DOESN'T EXIST.
-	    //AND THEN WRITE IT. THIS IS IMPORTANT BECAUSE WE DON'T WANT TO READ THE DATA EVERY TIME
-	    //YOU GO AND FIND NEW CONTACTS. YOU WANT TO READ THE CONTACT DATA, NOT THE ENTIRE TREE
-	    //AND THEN APPLY THE CONTACT DATA
-	    //ALSO REMEMBER TO SET entity_counts: 1
-	    //COOKIES REMEMBER CHECK COOKIES
-
-
-	    //civicrm/ajax/entity_tag/get
-
 	},
-	initContainer: function(instances)
+	initContainer: function(instances, settings, contact)
 	{
-		callTree.treeSetupPage(instances); //gives number instances and names in an array[tagActivites, tagContacts] which gives classes or whatever
-		BBTreeModal.makeModalInit();
+		//this is called x times, don't use each when none will do (this means you build boxes)
+		//format ('className', {treesToWrite: [array], typeOfManip: [edit/manage], tabLocation: 'class'})
+		//BBTree.initContainer('one', {write: [291,296], type: 'edit'});
+		callTree.treeSetupPage(instances, settings, contact); 
 	},
 	getAjaxData: function(next)
 	{
@@ -42,26 +37,32 @@ var BBTree = {
 	},
 	writeTree: function(next)
 	{
+		//for multiple instantiations
 		cj.each(callTree.currentSettings.instances, function(k, boxName){
+			callTree.currentSettings.displaySettings = {};
 			callTree.currentSettings.displaySettings['currentInstance'] = k;
+			//copies all settings to a local setting
+			cj.extend(callTree.currentSettings.displaySettings, callTree.currentSettings.instances[k].displaySettings);
+			cj.extend(callTree.currentSettings.callSettings, callTree.currentSettings.instances[k].callSettings);
 			//sets tree location variable which is used EVERYWHERE
 			setTreeLoc();
-			callTree.writeParsedData();//written, but hidden
-			callTree.slideDownTree(); //writes jquery slidedown function
-			sortWindow(); //list of where you're located, sets pageLocation, needs to be updated with each instance added
-			switch(callTree.currentSettings.pageLocation) //gives manage/
+			//puts ALL THE DATA into the BBTree object
+			callTree.writeParsedData();
+			callTree.writeTabs(); 
+			//writes jquery slidedown function (but needs to make sure it writes the CORRECT tree)
+			callTree.slideDownTree(); 
+			//list of where you're located. I don't think it's actually useful.
+			sortWindow(); 
+			switch(callTree.currentSettings.displaySettings.buttonType) //useless.
 			{
-				case 'manage': BBTree.manageTree(); break;
-				case 'edit': BBTree.tagTree(); break;
-				case 'view': BBTree.tagTree(); break;
+				case 'edit': BBTree.manageTree(); break;
+				case 'tagging': BBTree.tagTree(); break;
 			}
-			
-			cj.each(callTree.currentSettings.displaySettings.writeSets, function(i, className){
+			//removes gif from each instance once both parts have loaded.
+			cj.each(callTree.currentSettings.displaySettings.pullSets, function(i, className){
 				cj('.'+k+'.'+addTagLabel(className)).removeClass('loadingGif');
 			});
 		});
-			
-		//BBTree.getMaxID();
 		next();
 	},
 	manageTree: function()
@@ -70,45 +71,321 @@ var BBTree = {
 	},
 	tagTree: function(cid, entity_type)
 	{
-		BBTreeTag.getPageCID(cid, entity_type);
+		if(callTree.currentSettings.callSettings.ajaxSettings.entity_id == 0 || cid > 0)
+		{
+			BBTreeTag.getPageCID(cid, entity_type);
+		}
 		BBTreeTag.getContactTags(); // if get contact tags becomes an array, don't link together the apply/get.
 	},
-	getMaxID: function(){ //isn't actually necessary, should make based on response
-		var idarray = cj('dt', callTree.currentSettings.pageSettings.wrapper + ' .' + callTree.currentSettings.pageSettings.tagHolder);
-		var passarray = [];
-		cj.each(idarray, function(i, v){
-			passarray[i] = cj(v).attr('tid');
+	addIndicator: function(code){ //makes the dropdown indicator work
+		var messageHandler = callTree.currentSettings.pageSettings.messageHandler;
+		var currentInstance = callTree.currentSettings.displaySettings.currentInstance;
+		var codeName;
+		var totMessages = cj(aCSel(currentInstance) + aCSel(messageHandler));
+		var totLength = totMessages.length;
+		var messageBox;
+		if(totLength > 0)
+		{
+			totMessages.last().after('<div class="'+ messageHandler + ' ' + currentInstance+ '"></div>');
+			messageBox = cj(aCSel(currentInstance) + aCSel(messageHandler)).last();
+		}
+		else if(totLength == 0)
+		{
+			cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)).prepend('<div class="'+ messageHandler + ' ' + currentInstance+ '"></div>');
+			messageBox = cj(aCSel(currentInstance) + aCSel(messageHandler));
+			totMessages = messageBox;
+		}
+		switch(code.errorClass)
+		{
+			case 'BBSuccess': messageBox.addClass(code.errorClass).addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)}); codeName = 'success';break;
+			case 'BBWarning': messageBox.addClass(code.errorClass); codeName = 'warning';break;
+			case 'BBError': messageBox.addClass(code.errorClass); codeName = 'error';break;
+			default: codeName = 'notice'; return true; break; //don't show notices
+		}
+		messageBox.prepend('<div class="title">'+BBTree.actionInfo.last.name+'</div>');
+		messageBox.prepend('<div class="closeMessage item-'+ totLength +'"></div>');
+		cj('.closeMessage.item-'+ totLength, messageBox).click(function() {
+			BBTree.removeIndicator(messageBox);
 		});
-		callTree.currentSettings.pageSettings.tagIdMax = Math.max.apply( Math, passarray );
-		return callTree.currentSettings.pageSettings.tagIdMax;
+		messageBox.append(BBTree.actionInfo.last.description);
+		if(code.more.length > 0)
+		{
+			messageBox.append('<div class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
+		}
+		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
+			if(cj(this).hasClass('open'))
+			{
+				cj('.moreHidden.item-'+totLength, messageBox).slideUp().removeClass('open');
+				cj('.seeMore.item-'+ totLength, messageBox).removeClass('open');
+			}
+			else
+			{
+				cj('.moreHidden.item-'+totLength, messageBox).slideDown().addClass('open');
+				cj('.seeMore.item-'+ totLength, messageBox).addClass('open');
+			}
+			
+		});
+		messageBox.slideDown();
+		setTimeout(function(){
+			BBTree.removeIndicator(messageBox);
+		}, BBTree.actionInfo.timeoutLength[codeName]);
+	},
+	messageBoxesHeight: function(boxes)
+	{
+		var totalBoxHeight = 0;
+		boxes.each(function(i, k){
+			var cBox = cj(k);
+			if(!cBox.hasClass('static'))
+			{
+				console.log(cBox.hasClass('static'));
+				totalBoxHeight += parseInt(cBox.css('height'));
+				totalBoxHeight += parseInt(cBox.css('padding-top'));
+				totalBoxHeight += parseInt(cBox.css('padding-bottom'));
+				totalBoxHeight += parseInt(cBox.css('border-top'));
+				totalBoxHeight += parseInt(cBox.css('border-bottom'));
+			}
+		});
+		if(boxes.length == 1 && totalBoxHeight < 15)
+		{
+			totalBoxHeight = 0;
+		}
+		return totalBoxHeight;
+	},
+	removeIndicator: function(thisBox){
+		thisBox.slideUp(function(){
+			thisBox.remove();
+		});
+	},
+	actionInfo: {
+		timeoutLength: {
+			success: 10000,
+			warning: 30000,
+			error: 1000000,
+			notice: 2000
+		},
+		last: {
+			name: null,
+			description: null
+		},
+		countAction: 0
+	},
+	setLastAction: function(data){
+		BBTree.actionInfo['action_'+BBTree.actionInfo.countAction] = {};
+		cj.extend(BBTree.actionInfo['action_'+BBTree.actionInfo.countAction], BBTree.actionInfo.last);
+		BBTree.actionInfo.last.name = data.name;
+		BBTree.actionInfo.last.description = data.description;
+		BBTree.actionInfo.countAction++;
+	},
+	reportAction: function(data)
+	{
+		//action, code, to, from, this
+		var message = [];
+		var obj = {};
+		var actionData = {name: '', description:'', more: '',reload:false};
+		cj.each(data,function(i,k){
+			if(typeof k === 'object'){
+				cj.extend(obj, k);
+				message[i] = 'object';
+			}
+			else if(typeof k === 'undefined')
+			{
+				message[i] = null;	
+			} else {
+				message[i] = k;
+			}
+		});
+		var passes = true;
+		switch(message[1])
+		{
+			case 0: actionData.name += 'Error'; actionData['errorClass'] = 'BBError'; passes = false; break;
+			case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'BBWarning'; break;
+			case 1: actionData.name += 'Success'; actionData['errorClass'] = 'BBSuccess'; break;
+			default: actionData.name += 'Notice';
+		}
+
+		switch(message[0])
+		{
+			case 'craa': //["crar", 1, "123d", null] 
+				actionData.name += ' - Add Tag';
+				if(passes)
+				{
+					actionData.description += message[2] + ' has been added to this entity.';
+				}
+				else {
+					actionData.description += message[2] + ' was unable to be added to this entity.';
+					actionData.more += message[3];
+				}
+				break;
+			case 'crar': //["crar", 1, "123d", null] 
+				actionData.name += ' - Add Tag';
+				if(passes)
+				{
+					actionData.description += message[2] + ' has been removed from this entity.';
+				}
+				else {
+					actionData.description += message[2] + ' was unable to be removed from this entity.';
+					actionData.more += message[3];
+				}
+				break;
+			case 'cta':
+				actionData.name += ' - Get All Tags';
+				if(passes)
+				{
+					actionData.description += 'Keywords and Issue Codes have been loaded successfully.';
+				}
+				else {
+					actionData.description += 'Keywords and Issue Codes have been loaded unsuccessfully. Will attempt to reload again.';
+					//if you load 3 times and it fails, throw a different message. 
+					actionData.more += message[3];
+					actionData.reload = true;
+				}
+				break;
+			case 'gct':
+				actionData.name += ' - Retrieve Contact Tags';
+				if(passes)
+				{
+					actionData.description += 'Contact tags for '+message[2]+' have been loaded successfully.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Contact tags for '+message[2]+' have been loaded unsuccessfully.';
+					//if you load 3 times and it fails, throw a different message. 
+				}
+				break;
+			case 'convt':
+				//BBTree.reportAction(['convt',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				//BBTree.reportAction(['convt',1,tagMove.currentId,BBTreeModal.radioSelectedTid]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Convert Keyword to Issue Code';
+				if(passes)
+				{
+					actionData.description += 'Keyword '+tagname+' has been converted into an Issue Code under '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Keyword '+tagname+' failed to be converted into an Issue Code under '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'movct':
+				//BBTree.reportAction(['movct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Move Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+tagname+' has been moved successfully under '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Tag '+tagname+' failed to be moved successfully under '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'merct':
+				//BBTree.reportAction(['merct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Merge Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+tagname+' has been merged successfully into '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Tag '+tagname+' failed to be merged successfully into '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'updat':
+				//BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(obj.parentId)) + ' .tag .name').html();
+				actionData.name += ' - Update Tag';
+				if(passes)
+				{
+					
+					actionData.description += 'Tag <span>'+obj.prevName+'</span> has been updated successfully. ';
+					if(obj.tagName != null || obj.prevName != obj.tagName)
+					{
+						actionData.description += 'It\'s new name is <span>'+obj.tagName+'</span>. ';
+					}
+					if(obj.description != null && obj.description != '' && obj.description != 'null')
+					{
+						actionData.description += 'It\'s new description is <span>'+obj.description+'</span>. ';
+					}
+					actionData.description += 'It is <span>';
+					if(obj.isReserved == 0)
+					{
+						actionData.description += 'not ';
+					}
+					actionData.description += 'reserved</span>.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be updated.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'removt':
+				//BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Remove Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+message[2]+' has been removed under '+parentTagName+'.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be removed.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'addt':
+				//BBTree.reportAction(['addt',1,tagUpdate, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(obj.parentId)) + ' .tag .name').html();
+				actionData.name += ' - Add Tags';
+				if(passes)
+				{
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> has been added successfully under <span>'+parentTagName+'</span>. ';
+					if(obj.tagName != null)
+					{
+						actionData.description += 'It\'s name is <span>'+obj.tagName+'</span>. ';
+					}
+					if(obj.description != null && obj.description != '' && obj.description != 'null')
+					{
+						actionData.description += 'It\'s description is <span>'+obj.description+'</span>. ';
+					}
+					actionData.description += 'It is <span>';
+					if(obj.isReserved == 0)
+					{
+						actionData.description += 'not ';
+					}
+					actionData.description += 'reserved</span>.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be added.';
+					actionData.more += data.message;
+				}	
+				break;
+			default: actionData.description	+= 'No defined message.';
+		}
+		actionData.more += 'this is more data. a lot more data. a lot more data. a lot more data.a lot more data.a lot more data.a lot more data. a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.pageSettings a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.';
+		BBTree.setLastAction(actionData);
+		BBTree.addIndicator(actionData);
+
+
 	}
-	/*
-		Dynamically Added
-		----------------
-		SeparateTreeAjax
-		----------------
-		BBTree["rawJsonData"] = {};
-		BBTree["parsedJsonData"] = {};
-		BBTree["pulledData"] = {};
-		BBTree["treeLoc"] = {};
-	*/
 };
 //
 var callTree =  {
 	defaultSettings: {
 		pageSettings:{
-			wrapper: '#BBTreeContainer',
-			idName: 'BBTreeContainer',
+			wrapper: 'BBTreeContainer',
 			tagHolder: 'BBTree',
-			container: 'div',
-			hiddenTag: 'hidden'
+ 			hiddenTag: 'hidden',
+ 			messageHandler: 'BBMessages'
 		},
 		displaySettings: { //Sets the default when the page has to be refreshed internally
-			writeSets: [291], //Set [one], or [other] to show only one, use [291,296] for both (when you want to show KW & IC)
-			treeCodeSet: 291, //IssueCodes = 291, KW = 296. Sets default tree to show first.
-			currentTree: 291,
-			treeTypeSet: 'tagging',//Sets default type to appear: edit, modal or tagging versions... adds 'boxes/checks'
-			tabLocation: '.crm-tagTabHeader' //where tabs, if needed, go
+			pullSets: [291], //Set [one], or [other] to show only one, use [291,296] for both (when you want to show KW & IC)
+			defaultTree: 291, //IssueCodes = 291, KW = 296. Sets default tree to show first.
+			currentTree: 291, //what the current tag tree is
+			buttonType: 'tagging',//Sets default type to appear: edit, modal or tagging versions... adds 'boxes/checks'
+			tabLocation: 'BBTree-Tags' //where tabs, if needed, go.
 		},
 		callSettings:{
 			ajaxUrl: '/civicrm/ajax/tag/tree',
@@ -117,14 +394,17 @@ var callTree =  {
 				entity_id: 0,
 				call_uri: window.location.href,
 				entity_counts: 0
-			},
-			callback: false
+			}
 		},
 		instances: {
-			preset: false //says you didn't instantiate instances previously
+			//preset: false //says you didn't instantiate instances previously, explicitly
+			//in here x copies display settings & call settings go
+			//which correlate to each version that's on the page.
 		}
 	},
 	setCurrentSettings: function(config){
+		callTree['currentSettings'] = {};
+		cj.extend(true,callTree.currentSettings, callTree.defaultSettings); //gives fresh copy to work off of.
 		if(config)
 		{
 			callTree["pulledConfig"] = {};
@@ -133,44 +413,70 @@ var callTree =  {
 	            	callTree.pulledConfig[i] = value;
 	       	});
 	    }
-	    cj.extend(true, callTree.defaultSettings, callTree.pulledConfig); //sets the inital settings
-		callTree['currentSettings'] = callTree.defaultSettings; //this is what EVERYTHING is based off of...
-		sortWindow(); //gets current window location
+	    cj.extend(true, callTree.defaultSettings.displaySettings, callTree.pulledConfig); //sets the inital settings
 	},
-	treeSetupPage: function(instance){ 
-		if(instance == null)
+	treeSetupPage: function(instance, settings, contact){ 
+		//BBTree.initContainer('one', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {cid: 216352});
+		//first make current settings for the ajax
+		cj.extend(true,callTree.currentSettings.callSettings.ajaxSettings, callTree.defaultSettings.callSettings.ajaxSettings);
+		cj.extend(callTree.currentSettings.callSettings.ajaxSettings, contact);
+		//and now display settings
+		cj.extend(true,callTree.currentSettings.displaySettings, callTree.defaultSettings.displaySettings);
+		cj.extend(callTree.currentSettings.displaySettings, settings);
+
+		if(instance == null || instance == '')
 		{
 			instance = 'default';
 		}
-		instance = 'BB' + instance;
-		if(callTree.currentSettings.instances.preset != true ){
-			delete callTree.currentSettings.instances.preset;
-			callTree.currentSettings.instances[instance] = {};
-			callTree.currentSettings.instances[instance]['displaySettings'] = callTree.currentSettings.displaySettings;
-		}
-		cj('.BBInit').attr('id', callTree.currentSettings.pageSettings.idName);
-		cj('.BBInit').addClass(callTree.currentSettings.pageSettings.idName+'-'+instance).removeClass('BBInit');
-		//make this a function to build x trees with y attributes, and everyone is hidden but the first
+		instance = 'BB_' + instance;
+
 		callTree.currentSettings.displaySettings['currentInstance'] = instance;
+		callTree.currentSettings.instances[instance] = {displaySettings: {}, callSettings: {ajaxSettings:{}}};
+		cj.extend(callTree.currentSettings.instances[instance].displaySettings, callTree.currentSettings.displaySettings);
+		cj.extend(callTree.currentSettings.instances[instance].callSettings.ajaxSettings, callTree.currentSettings.callSettings.ajaxSettings);
+
+		//Gives BBInit custom class/name
+		cj('.BBInit').attr('id', callTree.currentSettings.pageSettings.wrapper).attr('cid', 'cid-'+callTree.currentSettings.callSettings.ajaxSettings.entity_id);
+		cj('.BBInit').addClass(instance).removeClass('BBInit');
+		//make this a function to build x trees with y attributes, and everyone is hidden but the first
 		callTree.buildBoxes(); //sends # of boxes to buildBoxes
-		//cj(callTree.defaultSettings.pageSettings.wrapper).append('<div class="BBTree '+ this.config.displaySettings.treeTypeSet.toLowerCase() +'"></div>');
 	},
+	buildBoxes: function() //reads from currentSettings to make the boxes to put lists in
+	{
+		cj.each(callTree.currentSettings.displaySettings.pullSets, function(i, className){
+			var treeBox = '<div class="'+ callTree.currentSettings.pageSettings.tagHolder +' '+ callTree.currentSettings.displaySettings.buttonType.toLowerCase() + ' ' + callTree.currentSettings.displaySettings.currentInstance + ' ';
+			if(className != callTree.currentSettings.displaySettings.defaultTree && callTree.currentSettings.displaySettings.pullSets.length > 1) //hide all boxes that aren't 'default' 
+			{
+				treeBox += 'hidden ';
+			}
+			else { //or else we give it the 'loading' treatment
+				treeBox += 'loadingGif '; 
+			}
+			treeBox += addTagLabel(className);
+			treeBox += '" id="'+addTagLabel(className)+'"></div>';
+			cj(aCSel(callTree.currentSettings.displaySettings.currentInstance)+aIDSel(callTree.currentSettings.pageSettings.wrapper)).append(treeBox);
+		});
+		if(callTree.currentSettings.displaySettings.tabLocation == 'BBTree-Tags')
+		{
+			cj(aCSel(callTree.currentSettings.displaySettings.currentInstance)+aIDSel(callTree.currentSettings.pageSettings.wrapper)).prepend('<div class="BBTree-Tags"></div>');	
+		}
+	},
+	//starts building tree data
 	callTreeAjax: function(callback){
-		// cj.extend(callTree.currentSettings.callSettings.ajaxSettings.entity_id,pageCID); //overwrites CID if page is different. Check Add Contact?
 		cj.ajax({
 			url: callTree.currentSettings.callSettings.ajaxUrl,
 			data: {
 				entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
-				// entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
 				call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri,
 				entity_counts: callTree.currentSettings.callSettings.ajaxSettings.entity_counts
 			},
 			dataType: 'json',
 			success: function(data, status, XMLHttpRequest) {
 				if(data.code != 1) {
-					alert('Error');
+					BBTree.reportAction(['cta', 0, callTree.currentSettings.callSettings.ajaxSettings, data.message]);
 				}
 				else{
+					BBTree.reportAction(['cta',, callTree.currentSettings.callSettings.ajaxSettings]);
 					callTree.separateTreeAjax(data.message);
 					callback();
 				}
@@ -185,27 +491,27 @@ var callTree =  {
 		*/
 		BBTree["rawJsonData"] = {}; //add new data properties
 		BBTree["parsedJsonData"] = {};
-
 		cj.each(data, function(i,tID){
-			if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.writeSets)>-1) //Checks against Allowed Sets
+			//HAVE TO USE DEFAULT SETTINGS HERE BECAUSE OF AWESOME TIMING ISSUES, it's set early for a reason
+			//default is how you pull with, current is how you output
+			if(cj.inArray(parseFloat(tID.id), callTree.defaultSettings.displaySettings.pullSets)>-1) //Checks against Allowed Sets
 			{
 				BBTree.rawJsonData[tID.id] = {'name':tID.name, 'children':tID.children};
 				var displayObj = callTree.writeTreeInit(tID);
-				callTree.currentSettings.displaySettings.currentTree = tID.id;
+				callTree.defaultSettings.displaySettings.currentTree = tID.id;
 				callTree.parseTreeAjax(tID, displayObj);
 			}
 		});
-		callTree.currentSettings.displaySettings.currentTree = callTree.currentSettings.displaySettings.treeCodeSet; //sets tree back to original code
+		return true;
 	},
 	writeTreeInit: function(tID){
-		//start testing
 		var displayObj = {};
 		displayObj.tLvl = 0;
 		displayObj.treeTop = tID.id;
 		var tagLabel = addTagLabel(tID.id); //writes the identifying tag label
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="'+tagLabel+'" tLvl="'+displayObj.tLvl+'">';
 		displayObj.output = '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id;
-		if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.writeSets)>-1) //only writes the 
+		if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.pullSets)>-1) //only writes the 
 		{
 			if(callTree.currentSettings.callSettings.ajaxSettings.entity_id != 0)
 			{
@@ -266,59 +572,73 @@ var callTree =  {
 		displayObj.tLvl--;
 		displayObj.output += '</dl>';
 	},
-	buildBoxes: function() //reads from currentSettings to make the boxes to put lists in
+	//writes data to the correct div
+	writeParsedData: function()
 	{
-		cj.each(callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets, function(i, className){
-			var treeBox = '<div class="'+ callTree.currentSettings.pageSettings.tagHolder +' '+ callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase() + ' ' + callTree.currentSettings.displaySettings.currentInstance + ' ';
-			if(className != callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.treeCodeSet) //hide all boxes that aren't 'default' 
-			{
-				treeBox += 'hidden ';
-			}
-			else { //or else we give it the 'loading' treatment
-				treeBox += 'loadingGif '; 
-			}
-			treeBox += addTagLabel(className);
-			treeBox += '" id="'+addTagLabel(className)+'"></div>';
-			cj('.'+callTree.currentSettings.pageSettings.idName+'-'+callTree.currentSettings.displaySettings.currentInstance+callTree.currentSettings.pageSettings.wrapper).append(treeBox);
-		});	
-	},
-	writeParsedData: function()//write the tree to the CORRECT div
-	{
-		callTree.writeTabs();
-		cj.each(callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets, function(i, className){
-			var treeTarget = callTree.currentSettings.pageSettings.wrapper + ' ';
-			treeTarget += '.'+ callTree.currentSettings.pageSettings.tagHolder;
-			treeTarget += '.'+ callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.treeTypeSet.toLowerCase();
-			treeTarget += '.'+ addTagLabel(className);
-			treeTarget += '.'+ callTree.currentSettings.displaySettings.currentInstance;
+		cj.each(callTree.currentSettings.displaySettings.pullSets, function(i, className){
+			var treeTarget = aIDSel(callTree.currentSettings.pageSettings.wrapper);
+			treeTarget += aCSel(callTree.currentSettings.displaySettings.currentInstance) + ' ';
+			treeTarget += aCSel(callTree.currentSettings.pageSettings.tagHolder);
+			treeTarget += aCSel(callTree.currentSettings.displaySettings.buttonType.toLowerCase());
+			treeTarget += aCSel(addTagLabel(className));
+			treeTarget += aCSel(callTree.currentSettings.displaySettings.currentInstance);
 			cj(treeTarget).append(BBTree.parsedJsonData[className].data);
 		});
 	},
+	//writes the tabs out
 	writeTabs: function()
 	{
-		//need to figure out how to 
-		if(cj(callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.tabLocation +' ul li').length > 0)
+		if(callTree.currentSettings.displaySettings.pullSets.length == 1)
 		{
-			cj('.crm-tagTabHeader ul').html('');
+			return true;
 		}
-		cj.each(callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets, function(i, className){
+		if(callTree.currentSettings.displaySettings.tabLocation != callTree.defaultSettings.displaySettings.tabLocation)
+		{ //if the custom location is set, don't add the dispay settings to it.
+			var tabLoc = aCSel(callTree.currentSettings.displaySettings.tabLocation)
+		}
+		else
+		{
+			var tabLoc = aCSel(callTree.currentSettings.displaySettings.currentInstance) + ' '+ aCSel(callTree.currentSettings.displaySettings.tabLocation);
+		}
+		cj(tabLoc).html('<ul></ul>');
+		cj.each(callTree.currentSettings.displaySettings.pullSets, function(i, className){
 			var tabInfo = {
-				id: callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets[i],
-				name: BBTree.parsedJsonData[callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets[i]].name,
+				id: callTree.currentSettings.displaySettings.pullSets[i],
+				name: BBTree.parsedJsonData[callTree.currentSettings.displaySettings.pullSets[i]].name,
 				position: i,
-				length: callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.writeSets.length, 
+				length: callTree.currentSettings.displaySettings.pullSets.length, 
 				isActive: ''
 			};
 
-			if(className == callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.treeCodeSet) //hide all boxes that aren't 
+			if(className == callTree.currentSettings.displaySettings.defaultTree) //hide all boxes that aren't 
 			{
 				tabInfo.isActive = 'active';
 			}
 			var tabHTML = '<li class="tab '+ callTree.currentSettings.displaySettings.currentInstance + ' ' + tabInfo.isActive+ '" id="' +addTagLabel(tabInfo.id) + '" onclick="callTree.swapTrees(this);return false;">'+tabInfo.name+'</li>';
-			cj(callTree.currentSettings.instances[callTree.currentSettings.displaySettings.currentInstance].displaySettings.tabLocation+' ul').append(tabHTML);
+			cj(tabLoc+' ul').append(tabHTML);
 		});
+		cj(tabLoc).attr('assocTree', callTree.currentSettings.displaySettings.currentInstance);
+		cj(tabLoc).addClass('BBTree_Tabs_'+callTree.currentSettings.displaySettings.currentInstance);
 		
 	},
+	swapTrees: function(tab)
+	{
+		var getTabSet = cj(tab).parent().parent().attr('assoctree');
+		callTree.swapCurrentSettings(getTabSet);
+		var currentTree = addTagLabel(callTree.currentSettings.displaySettings.defaultTree);
+		var getTab = cj(tab).attr('id');
+		if(currentTree != getTab){
+			cj(aCSel(getTabSet) + ' ' + BBTree.treeLoc +'#' + currentTree).addClass('hidden');
+			//cj('.BBtree.edit#' + currentTree).children().hide();
+			cj(aCSel(callTree.currentSettings.displaySettings.tabLocation)+ ' li.tab#' + getTab).addClass('active');
+			cj(aCSel(callTree.currentSettings.displaySettings.tabLocation)+ ' li.tab#' + currentTree).removeClass('active');
+			cj(aCSel(getTabSet) + ' ' + BBTree.treeLoc +'#' + getTab).removeClass('hidden');
+			callTree.currentSettings.displaySettings.defaultTree = [removeTagLabel(getTab)];
+			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(getTab);
+		}
+		callTree.saveCurrentSettings(getTabSet);
+	},
+	//slidedown function
 	slideDownTree: function()
 	{
 		cj(BBTree.treeLoc + ' dt .treeButton').unbind('click');
@@ -342,19 +662,17 @@ var callTree =  {
 			}
 		});
 	},
-	swapTrees: function(tab)
+	swapCurrentSettings: function(instance)
 	{
-		var currentTree = addTagLabel(callTree.currentSettings.displaySettings.treeCodeSet);
-		var getTab = cj(tab).attr('id');
-		if(currentTree != getTab){
-			cj(BBTree.treeLoc +'#' + currentTree).addClass('hidden');
-			//cj('.BBtree.edit#' + currentTree).children().hide();
-			cj('.crm-tagTabHeader li.tab#' + getTab).addClass('active');
-			cj('.crm-tagTabHeader li.tab#' + currentTree).removeClass('active');
-			cj(BBTree.treeLoc +'#' + getTab).removeClass('hidden');
-			callTree.currentSettings.displaySettings.treeCodeSet = [removeTagLabel(getTab)];
-			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(getTab);
-		}
+		cj.extend(true, callTree.currentSettings.displaySettings, callTree.currentSettings.instances[instance].displaySettings);
+		cj.extend(true, callTree.currentSettings.callSettings, callTree.currentSettings.instances[instance].callSettings);
+		setTreeLoc();
+	},
+	saveCurrentSettings: function(instance)
+	{
+		cj.extend(true, callTree.currentSettings.instances[instance].displaySettings, callTree.currentSettings.displaySettings);
+		cj.extend(true, callTree.currentSettings.instances[instance].callSettings, callTree.currentSettings.callSettings);
+		setTreeLoc();
 	}
 	//still need a reload tree option.
 	//make sure to capture which ones are 'open'
@@ -378,13 +696,18 @@ var BBTreeEdit = {
 			var tagName = cj('div.tag', this).html();
 			var tagId = cj(this).attr('tid');
 			var isReserved = 'False';
+			var tagDescription = cj(this).attr('description');
+			if(tagDescription == 'null')
+			{
+				tagDescription = tagName;
+			}
 			if(cj(this).hasClass('isReserved') == true)
 			{
 				isReserved = 'True';
 			}
 			cj('.crm-tagListInfo .tagInfoBody .tagName span').html(tagName);
 			cj('.crm-tagListInfo .tagInfoBody .tagId span').html(tagId);
-			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(cj(this).attr('description'));
+			cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(tagDescription);
 			cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
 			cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
 		}, 
@@ -420,9 +743,12 @@ var BBTreeTag = {
 	},
 	getContactTags: function()
 	{
+		var holdID = callTree.currentSettings.callSettings.ajaxSettings.entity_id;
+		var holdLoc = BBTree.treeLoc;
 		if(typeof BBTree.contactTagData === 'undefined') 
 		{
 			BBTree.contactTagData = {};
+			BBTree.contactTagData['cid_' + holdID] = {};
 		}
 		cj.ajax({
 			url: '/civicrm/ajax/entity_tag/get',
@@ -434,22 +760,21 @@ var BBTreeTag = {
 			dataType: 'json',
 			success: function(data, status, XMLHttpRequest) {
 				if(data.code != 1 ) {
-					alert('Error');
-					console.log('errorInAjax');
-					console.log(callTree.currentSettings.callSettings.ajaxSettings);
+					BBTree.reportAction(['gct', 0, callTree.currentSettings.callSettings.ajaxSettings.entity_id, data.message]);
 				}
 				else{
-					BBTree.contactTagData['cid_'+ callTree.currentSettings.callSettings.ajaxSettings.entity_id] = data.message;
-					BBTreeTag.applyContactTags();
+					BBTree.reportAction(['gct',, callTree.currentSettings.callSettings.ajaxSettings.entity_id]);
+					BBTree.contactTagData['cid_'+ holdID] = data.message;
+					BBTreeTag.applyContactTags(holdID, holdLoc);
 				}
 			}
 		});
 	},
-	applyContactTags: function()
+	applyContactTags: function(holdID, holdLoc)
 	{
-		cj.each(BBTree.contactTagData['cid_'+callTree.currentSettings.callSettings.ajaxSettings.entity_id], function(i, tag){
-			cj(BBTree.treeLoc + ' dt#'+addTagLabel(tag)+' .checkbox').attr('checked','true').addClass('checked');
-			cj(BBTree.treeLoc + ' dt#'+addTagLabel(tag)).addClass('checked');
+		cj.each(BBTree.contactTagData['cid_'+holdID], function(i, tag){
+			cj(holdLoc + ' dt#'+addTagLabel(tag)+' .checkbox').attr('checked','true').addClass('checked');
+			cj(holdLoc + ' dt#'+addTagLabel(tag)).addClass('checked');
 			BBTreeTag.tagInheritanceFlag(addTagLabel(tag), 'add');
 		});
 	},
@@ -459,8 +784,10 @@ var BBTreeTag = {
 		cj(BBTree.treeLoc).find('*').removeClass('checked');
 		cj(BBTree.treeLoc).find('*').removeClass('subChecked');
 	},
-	checkRemoveAdd: function(tagLabel) { //adds and removes the checkbox data
-		var n = cj(BBTree.treeLoc + ' dt#'+ tagLabel).hasClass('checked');
+	checkRemoveAdd: function(obj, tagLabel) { //adds and removes the checkbox data
+		callTree.swapCurrentSettings(cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class'));
+		var v = cj(BBTree.treeLoc + ' dt#'+ tagLabel);
+		var n = v.hasClass('checked');
 		if(n == false)
 		{	
 			cj.ajax({
@@ -473,9 +800,13 @@ var BBTreeTag = {
 				},
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {alert('fails');}
+					if(data.code != 1) {
+						BBTree.reportAction(['craa', 0, v.find('.name').text(),,data.message]);
+					}
 					else {
+						BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
 						cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
+						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
 					}
 				}
@@ -492,8 +823,12 @@ var BBTreeTag = {
 				},
 				dataType: 'json',
 				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {alert('fails');}
+					if(data.code != 1) {
+						BBTree.reportAction(['crar', 0, v.find('.name').text(),,data.message]);
+					}
 					else{
+						BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
+						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
 						updateViewContactPage(tagLabel);
 					}
@@ -546,15 +881,8 @@ var BBTreeTag = {
 			});
 		}
 	}
-}
-function getMaxID(){
-	var idarray = cj('dt', callTree.currentSettings.pageSettings.wrapper + ' .' + callTree.currentSettings.pageSettings.tagHolder);
-	var passarray = [];
-	cj.each(idarray, function(i, v){
-		passarray[i] = cj(v).attr('tid');
-	});
-	callTree.currentSettings.pageSettings.tagIdMax = Math.max.apply( Math, passarray );
-	return callTree.currentSettings.pageSettings.tagIdMax;
+	//this is where I add the add tag & remove tag to box & tab number function
+	//TODO
 }
 var BBTreeModal = {
 	defaultSettings: {
@@ -569,14 +897,14 @@ var BBTreeModal = {
 			background: "black" 
 		},
 		close: function() {
-			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj('.crm-tagTabHeader li.tab.active').attr('id'));
-			if(callTree.currentSettings.displaySettings.treeTypeSet == 'modal')
+			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)+aCSel(BBTreeModal.parentInstance)+' '+aCSel(callTree.currentSettings.pageSettings.tagHolder)).not('.hidden').attr('id')) ;
+			if(callTree.currentSettings.displaySettings.buttonType == 'modal')
 			{
-				callTree.currentSettings.displaySettings.treeTypeSet = callTree.currentSettings.displaySettings.previousTree.toLowerCase();
+				callTree.currentSettings.displaySettings.buttonType = callTree.currentSettings.displaySettings.previousTree.toLowerCase();
 				callTree.currentSettings.displaySettings.previousTree = 'modal';
 			}
-			if(typeof BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree] !== 'undefined') //TODO
-			{
+			if(typeof BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree] !== 'undefined') 
+			{ //TODO -- Does this actually work? I think it does.
 				cj(BBTreeModal.taggedID, BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).show();
 			}
 			setTreeLoc();
@@ -601,6 +929,7 @@ var BBTreeModal = {
 		var jq_tagLabelDL = cj(BBTree.treeLoc + ' dl#' + tagLabel);
 		this.taggedObject = obj;
 		this.taggedMethod = cj(obj).attr('do');
+		this.treeParent = jq_tagLabelDT.parents('.lv-0').siblings('dt').attr('tid');
 		this.taggedReserved = jq_tagLabelDT.hasClass('isReserved');
 		this.taggedID = tagLabel;
 		this.taggedName = jq_tagLabelDT.find('.tag .name').html();
@@ -624,12 +953,13 @@ var BBTreeModal = {
 	},
 	setTreeType: function() // sets previous tree
 	{
-		if(callTree.currentSettings.displaySettings.treeTypeSet != 'modal')
+		if(callTree.currentSettings.displaySettings.buttonType != 'modal')
 		{
-			callTree.currentSettings.displaySettings['previousTree'] = callTree.currentSettings.displaySettings.treeTypeSet;
+			callTree.currentSettings.displaySettings['previousTree'] = callTree.currentSettings.displaySettings.buttonType;
 		}	
-		callTree.currentSettings.displaySettings.treeTypeSet = 'modal';
-		setTreeLoc();
+		callTree.currentSettings.displaySettings.buttonType = 'modal';
+		//Have to set Tree Loc individually, because the function add the instance name, and that'll screw up everything here
+		BBTree.treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
 	},
 	addModalTagTree: function() // modal needs to add a tree
 	{
@@ -647,21 +977,23 @@ var BBTreeModal = {
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
 		BBTreeModal.setTreeType();
-		if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
-		{	
+		//TODO: Make it so that the modal tree doesn't have to be rewritten EVERY TIME.
+		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
+		// {	
 			this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] = cj(BBTree.parsedJsonData[callTree.currentSettings.displaySettings.currentTree].data).clone(true, true);
 			cj('span.fCB', this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
-			cj('#'+this.taggedID, this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
+			cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
 			cj('.fCB', BBTreeModal.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).parent('.lv-0').children('span.fCB').html('');
 			cj(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).html();
-			cj('#'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
+			cj(aIDSel(addTagLabel(callTree.currentSettings.displaySettings.currentTree))+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
 			this.radioButtonAction();
-		}
-		else
-		{
-			cj('#'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
-			this.radioButtonAction();
-		}
+		// }
+		// else
+		// {
+		// 	cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
+		// 	cj('#'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal').html(this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]);
+		// 	this.radioButtonAction();
+		// }
 	},
 	radioButtonAction: function(){
 		switch(BBTreeModal.taggedMethod){
@@ -753,6 +1085,7 @@ var BBTreeModal = {
 		cj('body').append('<div id="BBDialog"></div>');
 	},
 	makeModal: function(obj, tagLabel){ //sorts and separates & should read settings
+		BBTreeModal['parentInstance'] = cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class');
 		this.resetCurrentSettings();
 		BBTreeModal.tagInfo(obj, tagLabel);
 		switch(this.taggedMethod) //sets both open
@@ -805,13 +1138,14 @@ var BBTreeModal = {
 						success: function(data, status, XMLHttpRequest) {
 							if(data.code != 1)
 							{
-								alert(data.message);
+								BBTree.reportAction(['convt',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
 								modalLoadingGif('remove');
 							}
 							else
 							{
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
+								BBTree.reportAction(['convt',1,tagMove.currentId,BBTreeModal.radioSelectedTid]);
 								BBTreeModal.convertTag.moveKW(data.message);
 								callTree.swapTrees(cj('li#tagLabel_'+callTree.currentSettings.displaySettings.currentTree));
 							}
@@ -830,6 +1164,10 @@ var BBTreeModal = {
 		moveKW: function(data){ //removes from kw and appends to issue codes
 			var parentId = addTagLabel(BBTreeModal.radioSelectedTid);
 			var toMove = cj('dt#'+addTagLabel(data.id));
+			var aParent = toMove.attr('parent');
+			toMove.attr('parent', BBTreeModal.radioSelectedTid);
+			var moveFrom = cj('dl#'+BBTreeModal.taggedParent);
+
 			if(cj('dt#'+parentId+' .ddControl').hasClass('treeButton') == false)
 			{
 				cj('dt#'+parentId+' .ddControl').addClass('treeButton');
@@ -845,6 +1183,11 @@ var BBTreeModal = {
 			}
 			else if(BBTreeModal.radioSelectedTid == 291){
 				cj('dl.'+parentId).prepend(toMove);
+			}
+			if(moveFrom.children('dt').length == 0)
+			{
+				cj('dt#'+addTagLabel(aParent)+' .ddControl').removeClass('treeButton');
+				cj(moveFrom).remove();
 			}
 			callTree.slideDownTree();
 			BBTreeEdit.setTagInfo();
@@ -882,17 +1225,12 @@ var BBTreeModal = {
 									if ( data.status == true ) {
 										cj("#BBDialog").dialog("close"); 
 										cj("#BBDialog").dialog("destroy"); 
-										if(cj('.contactTagsList.help').length < 1)
-										{
-											cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
-										}
-										var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
-										var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + BBTreeModal.taggedName + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + BBTreeModal.taggedName + "' are now tagged with '" + toIdTag + "'.</li></ul>";
-										cj('#tagStatusBar').html(msg);
+										BBTree.reportAction(['merct',1,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 										BBTreeModal.removeTag.removeInline(tagMerge.currentId);
 									}
 									else
 									{
+										BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 										modalLoadingGif('remove');
 									}
 									
@@ -927,6 +1265,7 @@ var BBTreeModal = {
 				click: function () {
 					modalLoadingGif('add');
 					tagUpdate = new Object();
+					tagUpdate.prevName = BBTreeModal.taggedName;
 					tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
 					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -944,13 +1283,14 @@ var BBTreeModal = {
 						success: function(data, status, XMLHttpRequest) {
 							if(data.code != 1)
 							{
-								alert(data.message);
+								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
 								modalLoadingGif('remove');
 							}
 							else
 							{
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
+								BBTree.reportAction(['updat',1,tagUpdate, data.message]);
 								BBTreeModal.updateTag.updateInline(data.message);
 							}
 						}
@@ -1004,13 +1344,14 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
-									alert(data.message);
+									BBTree.reportAction(['movct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
 									modalLoadingGif('remove');
 								}
 								else
 								{
 									cj('#BBDialog').dialog('close');
 									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['movct',1,tagMove.currentId,BBTreeModal.radioSelectedTid,data.message]);
 									BBTreeModal.convertTag.moveKW(data.message);
 									callTree.swapTrees(cj('li#tagLabel_'+callTree.currentSettings.displaySettings.currentTree));
 								}
@@ -1055,19 +1396,16 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
-									if(data.message == 'DB Error: constraint violation')
-									{
-										alert('Error: Child Tag Exists');
-									}
-									else { alert(data.message); }
+									BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
 									modalLoadingGif('remove');
 								}
 								else
 								{	
-									cj('#BBDialog').dialog('close');
-									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['removt',1,BBTreeModal.taggedName,removeTagLabel(BBTreeModal.taggedParent)]);
 									BBTreeModal.removeTag.removeInline(tagRemove.parentId);
 								}
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
 							}
 						});
 					} else {
@@ -1110,6 +1448,7 @@ var BBTreeModal = {
 						tagCreate.tagDescription = '';
 						modalLoadingGif('add');
 						tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
+						tagCreate.treeParent = BBTreeModal.treeParent;
 						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
@@ -1126,15 +1465,16 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
-									alert(data.message);
+									BBTree.reportAction(['addt',0,tagCreate, data.message]);
 									modalLoadingGif('remove');
 								}
 								else
 								{
-									cj('#BBDialog').dialog('close');
-									cj('#BBDialog').dialog('destroy');
-									BBTreeModal.addTag.createAddInline(data.message);
+									BBTreeModal.addTag.createAddInline(tagCreate, data.message);
+									BBTree.reportAction(['addt',1,tagCreate, data.message]);
 								}
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
 							}
 						});
 					}
@@ -1148,8 +1488,8 @@ var BBTreeModal = {
 				}
 			]);
 		},
-		createAddInline: function(data){ // adds an element inline with all the fixins
-			if(data.parent_id == 291)
+		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
+			if(tdata.treeParent == 291)
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				tlvl++;
@@ -1175,7 +1515,7 @@ var BBTreeModal = {
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();
 			}
-			if(data.parent_id == 296)
+			if(tdata.treeParent == 296)
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
@@ -1252,11 +1592,11 @@ function addEntityCount(count)
 //adds Control Box
 function addControlBox(tagLabel, treeTop, isChecked) { //should break this up 
 	var floatControlBox;
-	if(callTree.currentSettings.displaySettings.treeTypeSet == 'edit')
+	if(callTree.currentSettings.displaySettings.buttonType == 'edit')
 	{
 		floatControlBox = '<span class="fCB">';
 		floatControlBox += '<ul>';
-		if(291 == callTree.currentSettings.displaySettings.currentTree)
+		if(291 == treeTop)
 		{
 			floatControlBox += '<li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="removeTag" title="Remove Tag" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
@@ -1264,7 +1604,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 			floatControlBox += '<li class="updateTag" title="Update Tag" do="update" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="mergeTag" title="Merge Tag" do="merge" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 		}
-		if(296 == callTree.currentSettings.displaySettings.currentTree)
+		if(296 == treeTop)
 		{
 			floatControlBox += '<li class="removeTag" title="Remove Keyword" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="updateTag" title="Update Keyword" do="update"  onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
@@ -1274,16 +1614,16 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		floatControlBox += '</span>';
 		
 	}
-	if(callTree.currentSettings.displaySettings.treeTypeSet == 'tagging')
+	if(callTree.currentSettings.displaySettings.buttonType == 'tagging')
 	{
 		var displayChecked = '';
 		floatControlBox = '<span class="fCB">';
 		floatControlBox += '<ul>';
 		floatControlBox += '<li>';
 		if(isChecked == ' checked'){
-			floatControlBox += '<input type="checkbox" class="checkbox checked"  checked onclick="BBTreeTag.checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+			floatControlBox += '<input type="checkbox" class="checkbox checked"  checked onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
 		} else {
-			floatControlBox += '<input type="checkbox" class="checkbox" onclick="BBTreeTag.checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+			floatControlBox += '<input type="checkbox" class="checkbox" onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
 		}
 		floatControlBox += '</span>';
 		if(tagLabel != 'tagLabel_291' && tagLabel != 'tagLabel_296')
@@ -1293,7 +1633,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 			return ''; 
 		}
 	}
-	if((tagLabel == 'tagLabel_291' || tagLabel == 'tagLabel_296') && callTree.currentSettings.displaySettings.treeTypeSet != 'modal')
+	if((tagLabel == 'tagLabel_291' || tagLabel == 'tagLabel_296') && callTree.currentSettings.displaySettings.buttonType != 'modal')
 	{
 		return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li></ul></span>'; 
 	} 
@@ -1344,10 +1684,18 @@ function sortWindow()
 		default: callTree.currentSettings['pageLocation'] = 'default'; break;
 	}
 }
+function aCSel(selector) //addClassSelector
+{
+	return '.'+selector;
+}
+function aIDSel(selector) //addIDSelector
+{
+	return '#'+selector;
+}
 function setTreeLoc()
 {
 	BBTree["treeLoc"] = {};
-	BBTree.treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.treeTypeSet.toLowerCase()+'.'+callTree.currentSettings.displaySettings.currentInstance;
+	BBTree.treeLoc = '.'+callTree.currentSettings.displaySettings.currentInstance+ '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
 }
 //remove at the end
 function returnTime()
