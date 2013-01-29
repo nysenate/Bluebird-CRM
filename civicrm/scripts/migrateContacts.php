@@ -102,6 +102,8 @@ class CRM_migrateContacts {
       exit();
     }
 
+    $startTime = microtime(true);
+
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
@@ -255,6 +257,8 @@ class CRM_migrateContacts {
 
     bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
 
+    $elapsedTime = get_elapsed_time($startTime);
+    bbscript_log("info", "Time elapsed: {$elapsedTime} secs");
   }//run
 
   /*
@@ -264,6 +268,8 @@ class CRM_migrateContacts {
    * if no contacts are found to migrate, return FALSE so we can exit immediately.
    */
   function buildContactTable($source, $dest) {
+    bbscript_log("info", "building contact table from redistricting report records...");
+
     //create table to store contact IDs with constructed external_id
     $tbl = "migrate_{$source['num']}_{$dest['num']}";
     CRM_Core_DAO::executeQuery( "DROP TABLE IF EXISTS $tbl;", CRM_Core_DAO::$_nullArray );
@@ -369,6 +375,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
   function exportContacts($migrateTbl, $optDry = FALSE) {
     require_once 'CRM/Contact/DAO/Contact.php';
+
+    bbscript_log("info", "assembling and exporting contacts...");
 
     //get field list
     $c = new CRM_Contact_DAO_Contact();
@@ -605,6 +613,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * array( employeeKey => employerKey )
    */
   function exportCurrentEmployers($migrateTable, $optDry) {
+    bbscript_log("info", "exporting current employers...");
+
     $data = array();
     $sql = "
       SELECT mtI.external_id employeeKey, mtO.external_id employerKey
@@ -634,6 +644,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * which we can now use to retrieve the records and construct the SQL
    */
   function exportDistrictInfo($addressDistInfo, $optDry) {
+    bbscript_log("info", "exporting district information for addresses...");
+
     $tbl = self::getCustomFields('District_Information', FALSE);
     $flds = self::getCustomFields('District_Information', TRUE);
     $addressIDs = implode(', ', array_keys($addressDistInfo));
@@ -686,6 +698,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportActivities($migrateTbl, $optDry) {
     global $attachmentIDs;
+
+    bbscript_log("info", "exporting activities...");
 
     $data = $actCustFields = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
@@ -764,6 +778,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportCases($migrateTbl, $optDry) {
     global $attachmentIDs;
+
+    bbscript_log("info", "exporting cases...");
 
     $data = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
@@ -854,6 +870,9 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportTags($migrateTbl, $optDry) {
     global $source;
+
+    bbscript_log("info", "exporting tags...");
+
     $keywords = $issuecodes = $positions = $tempother = array();
 
     $kParent = 296;
