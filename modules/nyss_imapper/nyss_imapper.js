@@ -229,12 +229,12 @@ cj(document).ready(function(){
 							success: function(data, status) {
 								contactData = cj.parseJSON(data);
 								if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
-									alert('Could Not Assign Message : '+data.message);
+									alert('Could Not Assign Message : '+contactData.message);
 									return false;
 								}else{
 									cj("#find-match-popup").dialog('close'); 
 									removeRow(create_messageId+'_'+create_imap_id);
-									help_message('Contact created and message Assigned');
+									help_message('Contact created and '+contactData.message);
 								}
 							},
 							error: function(){
