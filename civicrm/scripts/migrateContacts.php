@@ -199,6 +199,9 @@ class CRM_migrateContacts {
     $mC = CRM_Core_DAO::executeQuery("SELECT * FROM {$migrateTbl};");
     //bbscript_log("trace", "mC", $mC);
 
+    bbscript_log("info", "cycling through related records for contacts...");
+    $totalCount = $tempCount = 0;
+
     while ( $mC->fetch() ) {
       $IDs = array(
         'contact_id' => $mC->contact_id,
@@ -206,6 +209,14 @@ class CRM_migrateContacts {
       );
       foreach ( $recordTypes as $rType ) {
         self::processData($rType, $IDs, $optDry);
+      }
+
+      //print record count so we can track progress
+      $tempCount++;
+      $totalCount++;
+      if ( $tempCount == 500 ) {
+        bbscript_log("info", "contacts processed: {$totalCount}...");
+        $tempCount = 0;
       }
     }
 
