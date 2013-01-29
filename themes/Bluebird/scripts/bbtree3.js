@@ -96,8 +96,8 @@ var BBTree = {
 			totMessages = messageBox;
 		}
 		switch(code.errorClass)
-		{
-			case 'BBSuccess': messageBox.addClass(code.errorClass).addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)}); codeName = 'success';break;
+		{//.addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)})
+			case 'BBSuccess': messageBox.addClass(code.errorClass); codeName = 'success';break;
 			case 'BBWarning': messageBox.addClass(code.errorClass); codeName = 'warning';break;
 			case 'BBError': messageBox.addClass(code.errorClass); codeName = 'error';break;
 			default: codeName = 'notice'; return true; break; //don't show notices
@@ -137,7 +137,6 @@ var BBTree = {
 			var cBox = cj(k);
 			if(!cBox.hasClass('static'))
 			{
-				console.log(cBox.hasClass('static'));
 				totalBoxHeight += parseInt(cBox.css('height'));
 				totalBoxHeight += parseInt(cBox.css('padding-top'));
 				totalBoxHeight += parseInt(cBox.css('padding-bottom'));
@@ -1703,4 +1702,21 @@ function returnTime()
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
 	console.log(rTime);
+}
+
+function printTags()
+{
+	var data = cj(BBTree.treeLoc+aIDSel(addTagLabel(callTree.currentSettings.displaySettings.currentTree))).html();
+	var mywindow = window.open('', 'PrintTags');
+	mywindow.document.body.innerHTML="";
+	mywindow.document.write('<!DOCTYPE html><html><head><title>Print Tags</title>');
+    mywindow.document.write('<link type="text/css" rel="stylesheet" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />');
+   //mywindow.document.write('<script type="text/javascript" src="/sites/all/modules/civicrm/packages/jquery/jquery.js"></'+'script>');
+    mywindow.document.write('</head><body class="popup">');
+    mywindow.document.write('<div class="BBTree" style="height:auto;width:auto;overflow-y:hidden;">');
+    mywindow.document.write(data);
+    mywindow.document.write('</div>');
+    mywindow.document.write('</body></html>');
+    mywindow.print();
+    return true;
 }
