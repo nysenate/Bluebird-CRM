@@ -24,10 +24,19 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
   border-bottom-width: 1px;
   padding: 5px;
   display: none; }
-  .BBMessages div {
+  .BBMessages .title {
     margin: 5px 0;
     font-weight: bold;
     font-size: 18px; }
+  .BBMessages .seeMore {
+    cursor: pointer;
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: underline; }
+  .BBMessages .moreHidden {
+    display: none; }
+  .BBMessages span {
+    font-weight: bold; }
   .BBMessages.static {
     position: absolute;
     top: 0px;
@@ -233,6 +242,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
           left: -1px; }
     #BBTreeContainer .BBTree *, #BBDialog .BBTree * {
       font-size: 1em; }
+    #BBTreeContainer .BBTree dl, #BBDialog .BBTree dl {
+      margin: 0px; }
 
 /*BBContainer*/
 .loadingGif {

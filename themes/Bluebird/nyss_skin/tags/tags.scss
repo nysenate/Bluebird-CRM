@@ -49,10 +49,22 @@ $levelClassSlug : "lv";
 		color: darken($standardColor,10%);
 		bottom-width: 1px;
 	}
-	div {
+	.title {
 		margin:5px 0;
 		font-weight: bold;
 		font-size:18px;
+	}
+	.seeMore {
+		cursor:pointer;
+		font-weight:bold;
+		font-style:italic;
+		text-decoration: underline;
+	}
+	.moreHidden {
+		display:none;
+	}
+	span {
+		font-weight:bold;
 	}
 	padding:5px;
 	display:none;
@@ -265,6 +277,9 @@ $levelClassSlug : "lv";
 	}
 	* {
 		font-size: 1em;
+	}
+	dl {
+		margin: 0px;
 	}
 } /*BBTree*/
 } /*BBContainer*/

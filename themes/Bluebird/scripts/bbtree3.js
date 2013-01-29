@@ -95,21 +95,36 @@ var BBTree = {
 			messageBox = cj(aCSel(currentInstance) + aCSel(messageHandler));
 			totMessages = messageBox;
 		}
-		switch(code.class)
+		switch(code.errorClass)
 		{
-			case 'BBSuccess': messageBox.addClass(code.class).addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)}); codeName = 'success';break;
-			case 'BBWarning': messageBox.addClass(code.class); codeName = 'warning';break;
-			case 'BBError': messageBox.addClass(code.class); codeName = 'error';break;
-			default: codeName = 'notice';break;
+			case 'BBSuccess': messageBox.addClass(code.errorClass).addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)}); codeName = 'success';break;
+			case 'BBWarning': messageBox.addClass(code.errorClass); codeName = 'warning';break;
+			case 'BBError': messageBox.addClass(code.errorClass); codeName = 'error';break;
+			default: codeName = 'notice'; return true; break; //don't show notices
 		}
-
 		messageBox.prepend('<div class="title">'+BBTree.actionInfo.last.name+'</div>');
 		messageBox.prepend('<div class="closeMessage item-'+ totLength +'"></div>');
-		console.log(messageBox);
 		cj('.closeMessage.item-'+ totLength, messageBox).click(function() {
 			BBTree.removeIndicator(messageBox);
 		});
 		messageBox.append(BBTree.actionInfo.last.description);
+		if(code.more.length > 0)
+		{
+			messageBox.append('<div class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
+		}
+		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
+			if(cj(this).hasClass('open'))
+			{
+				cj('.moreHidden.item-'+totLength, messageBox).slideUp().removeClass('open');
+				cj('.seeMore.item-'+ totLength, messageBox).removeClass('open');
+			}
+			else
+			{
+				cj('.moreHidden.item-'+totLength, messageBox).slideDown().addClass('open');
+				cj('.seeMore.item-'+ totLength, messageBox).addClass('open');
+			}
+			
+		});
 		messageBox.slideDown();
 		setTimeout(function(){
 			BBTree.removeIndicator(messageBox);
@@ -122,6 +137,7 @@ var BBTree = {
 			var cBox = cj(k);
 			if(!cBox.hasClass('static'))
 			{
+				console.log(cBox.hasClass('static'));
 				totalBoxHeight += parseInt(cBox.css('height'));
 				totalBoxHeight += parseInt(cBox.css('padding-top'));
 				totalBoxHeight += parseInt(cBox.css('padding-bottom'));
@@ -129,15 +145,11 @@ var BBTree = {
 				totalBoxHeight += parseInt(cBox.css('border-bottom'));
 			}
 		});
+		if(boxes.length == 1 && totalBoxHeight < 15)
+		{
+			totalBoxHeight = 0;
+		}
 		return totalBoxHeight;
-	},
-	makeTimeout: function(fn, interval) {
-	    var id = setTimeout(fn, interval);
-	    this.cleared = false;
-	    this.clear = function () {
-	        this.cleared = true;
-	        clearTimeout(id);
-	    };
 	},
 	removeIndicator: function(thisBox){
 		thisBox.slideUp(function(){
@@ -146,10 +158,10 @@ var BBTree = {
 	},
 	actionInfo: {
 		timeoutLength: {
-			success: 5000,
-			warning: 10000,
+			success: 10000,
+			warning: 30000,
 			error: 1000000,
-			notice: 5000
+			notice: 2000
 		},
 		last: {
 			name: null,
@@ -182,14 +194,12 @@ var BBTree = {
 				message[i] = k;
 			}
 		});
-		console.log(message);
-		console.log(obj);
 		var passes = true;
 		switch(message[1])
 		{
-			case 0: actionData.name += 'Error'; actionData['class'] = 'BBError'; passes = false; break;
-			case 2: actionData.name += 'Warning'; actionData['class'] = 'BBWarning'; break;
-			case 1: actionData.name += 'Success'; actionData['class'] = 'BBSuccess'; break;
+			case 0: actionData.name += 'Error'; actionData['errorClass'] = 'BBError'; passes = false; break;
+			case 2: actionData.name += 'Warning'; actionData['errorClass'] = 'BBWarning'; break;
+			case 1: actionData.name += 'Success'; actionData['errorClass'] = 'BBSuccess'; break;
 			default: actionData.name += 'Notice';
 		}
 
@@ -241,10 +251,120 @@ var BBTree = {
 					//if you load 3 times and it fails, throw a different message. 
 				}
 				break;
-
-
+			case 'convt':
+				//BBTree.reportAction(['convt',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				//BBTree.reportAction(['convt',1,tagMove.currentId,BBTreeModal.radioSelectedTid]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Convert Keyword to Issue Code';
+				if(passes)
+				{
+					actionData.description += 'Keyword '+tagname+' has been converted into an Issue Code under '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Keyword '+tagname+' failed to be converted into an Issue Code under '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'movct':
+				//BBTree.reportAction(['movct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Move Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+tagname+' has been moved successfully under '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Tag '+tagname+' failed to be moved successfully under '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'merct':
+				//BBTree.reportAction(['merct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+				var tagname = cj(aIDSel(addTagLabel(message[2])) + ' .tag .name').html();
+				var tagdest = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Merge Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+tagname+' has been merged successfully into '+tagdest+'.';
+				}
+				else { 
+					actionData.description += 'Tag '+tagname+' failed to be merged successfully into '+tagdest+'.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'updat':
+				//BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(obj.parentId)) + ' .tag .name').html();
+				actionData.name += ' - Update Tag';
+				if(passes)
+				{
+					
+					actionData.description += 'Tag <span>'+obj.prevName+'</span> has been updated successfully. ';
+					if(obj.tagName != null || obj.prevName != obj.tagName)
+					{
+						actionData.description += 'It\'s new name is <span>'+obj.tagName+'</span>. ';
+					}
+					if(obj.description != null && obj.description != '' && obj.description != 'null')
+					{
+						actionData.description += 'It\'s new description is <span>'+obj.description+'</span>. ';
+					}
+					actionData.description += 'It is <span>';
+					if(obj.isReserved == 0)
+					{
+						actionData.description += 'not ';
+					}
+					actionData.description += 'reserved</span>.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be updated.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'removt':
+				//BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(message[3])) + ' .tag .name').html();
+				actionData.name += ' - Remove Tag';
+				if(passes)
+				{
+					actionData.description += 'Tag '+message[2]+' has been removed under '+parentTagName+'.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be removed.';
+					actionData.more += data.message;
+				}	
+				break;
+			case 'addt':
+				//BBTree.reportAction(['addt',1,tagUpdate, data.message]);
+				var parentTagName = cj(aIDSel(addTagLabel(obj.parentId)) + ' .tag .name').html();
+				actionData.name += ' - Add Tags';
+				if(passes)
+				{
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> has been added successfully under <span>'+parentTagName+'</span>. ';
+					if(obj.tagName != null)
+					{
+						actionData.description += 'It\'s name is <span>'+obj.tagName+'</span>. ';
+					}
+					if(obj.description != null && obj.description != '' && obj.description != 'null')
+					{
+						actionData.description += 'It\'s description is <span>'+obj.description+'</span>. ';
+					}
+					actionData.description += 'It is <span>';
+					if(obj.isReserved == 0)
+					{
+						actionData.description += 'not ';
+					}
+					actionData.description += 'reserved</span>.';
+				}
+				else { //would LOVE to be able to get contact name here...
+					actionData.description += 'Tag '+obj.taggedName+' failed to be added.';
+					actionData.more += data.message;
+				}	
+				break;
 			default: actionData.description	+= 'No defined message.';
 		}
+		actionData.more += 'this is more data. a lot more data. a lot more data. a lot more data.a lot more data.a lot more data.a lot more data. a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.pageSettings a lot more data.a lot more data.a lot more data.a lot more data.a lot more data.';
 		BBTree.setLastAction(actionData);
 		BBTree.addIndicator(actionData);
 
@@ -686,6 +806,7 @@ var BBTreeTag = {
 					else {
 						BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
 						cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
+						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
 					}
 				}
@@ -707,6 +828,7 @@ var BBTreeTag = {
 					}
 					else{
 						BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
+						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
 						updateViewContactPage(tagLabel);
 					}
@@ -807,6 +929,7 @@ var BBTreeModal = {
 		var jq_tagLabelDL = cj(BBTree.treeLoc + ' dl#' + tagLabel);
 		this.taggedObject = obj;
 		this.taggedMethod = cj(obj).attr('do');
+		this.treeParent = jq_tagLabelDT.parents('.lv-0').siblings('dt').attr('tid');
 		this.taggedReserved = jq_tagLabelDT.hasClass('isReserved');
 		this.taggedID = tagLabel;
 		this.taggedName = jq_tagLabelDT.find('.tag .name').html();
@@ -837,7 +960,6 @@ var BBTreeModal = {
 		callTree.currentSettings.displaySettings.buttonType = 'modal';
 		//Have to set Tree Loc individually, because the function add the instance name, and that'll screw up everything here
 		BBTree.treeLoc = '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
-		console.log(BBTree.treeLoc);
 	},
 	addModalTagTree: function() // modal needs to add a tree
 	{
@@ -1042,6 +1164,10 @@ var BBTreeModal = {
 		moveKW: function(data){ //removes from kw and appends to issue codes
 			var parentId = addTagLabel(BBTreeModal.radioSelectedTid);
 			var toMove = cj('dt#'+addTagLabel(data.id));
+			var aParent = toMove.attr('parent');
+			toMove.attr('parent', BBTreeModal.radioSelectedTid);
+			var moveFrom = cj('dl#'+BBTreeModal.taggedParent);
+
 			if(cj('dt#'+parentId+' .ddControl').hasClass('treeButton') == false)
 			{
 				cj('dt#'+parentId+' .ddControl').addClass('treeButton');
@@ -1057,6 +1183,11 @@ var BBTreeModal = {
 			}
 			else if(BBTreeModal.radioSelectedTid == 291){
 				cj('dl.'+parentId).prepend(toMove);
+			}
+			if(moveFrom.children('dt').length == 0)
+			{
+				cj('dt#'+addTagLabel(aParent)+' .ddControl').removeClass('treeButton');
+				cj(moveFrom).remove();
 			}
 			callTree.slideDownTree();
 			BBTreeEdit.setTagInfo();
@@ -1094,19 +1225,12 @@ var BBTreeModal = {
 									if ( data.status == true ) {
 										cj("#BBDialog").dialog("close"); 
 										cj("#BBDialog").dialog("destroy"); 
-										if(cj('.contactTagsList.help').length < 1)
-										{
-											cj('.crm-content-block #help').after('<div class="contactTagsList help" id="tagStatusBar"></div>');
-										}
-										var toIdTag = cj('#tagLabel_' + tagMerge.destinationId + ' .tag .name').html();
-										var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + BBTreeModal.taggedName + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + BBTreeModal.taggedName + "' are now tagged with '" + toIdTag + "'.</li></ul>";
-										cj('#tagStatusBar').html(msg);
-										BBTree.reportAction(['merct',1,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+										BBTree.reportAction(['merct',1,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 										BBTreeModal.removeTag.removeInline(tagMerge.currentId);
 									}
 									else
 									{
-										BBTree.reportAction(['merct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+										BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
 										modalLoadingGif('remove');
 									}
 									
@@ -1141,6 +1265,7 @@ var BBTreeModal = {
 				click: function () {
 					modalLoadingGif('add');
 					tagUpdate = new Object();
+					tagUpdate.prevName = BBTreeModal.taggedName;
 					tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
 					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -1158,14 +1283,14 @@ var BBTreeModal = {
 						success: function(data, status, XMLHttpRequest) {
 							if(data.code != 1)
 							{
-								BBTree.reportAction(['updat',1,tagUpdate, data.message]);
+								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
 								modalLoadingGif('remove');
 							}
 							else
 							{
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
-								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+								BBTree.reportAction(['updat',1,tagUpdate, data.message]);
 								BBTreeModal.updateTag.updateInline(data.message);
 							}
 						}
@@ -1271,13 +1396,13 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
-									BBTree.reportAction(['removt',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
+									BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
 									modalLoadingGif('remove');
 								}
 								else
 								{	
+									BBTree.reportAction(['removt',1,BBTreeModal.taggedName,removeTagLabel(BBTreeModal.taggedParent)]);
 									BBTreeModal.removeTag.removeInline(tagRemove.parentId);
-									BBTree.reportAction(['removt',1,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
 								}
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
@@ -1323,6 +1448,7 @@ var BBTreeModal = {
 						tagCreate.tagDescription = '';
 						modalLoadingGif('add');
 						tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
+						tagCreate.treeParent = BBTreeModal.treeParent;
 						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
@@ -1339,13 +1465,13 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
-									BBTree.reportAction(['addt',0,tagUpdate, data.message]);
+									BBTree.reportAction(['addt',0,tagCreate, data.message]);
 									modalLoadingGif('remove');
 								}
 								else
 								{
-									BBTreeModal.addTag.createAddInline(data.message);
-									BBTree.reportAction(['addt',1,tagUpdate, data.message]);
+									BBTreeModal.addTag.createAddInline(tagCreate, data.message);
+									BBTree.reportAction(['addt',1,tagCreate, data.message]);
 								}
 								cj('#BBDialog').dialog('close');
 								cj('#BBDialog').dialog('destroy');
@@ -1362,8 +1488,8 @@ var BBTreeModal = {
 				}
 			]);
 		},
-		createAddInline: function(data){ // adds an element inline with all the fixins
-			if(data.parent_id == 291)
+		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
+			if(tdata.treeParent == 291)
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				tlvl++;
@@ -1389,7 +1515,7 @@ var BBTreeModal = {
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();
 			}
-			if(data.parent_id == 296)
+			if(tdata.treeParent == 296)
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
