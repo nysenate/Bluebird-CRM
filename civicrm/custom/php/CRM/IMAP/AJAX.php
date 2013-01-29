@@ -823,7 +823,7 @@ class CRM_IMAP_AJAX {
               'subject' => $subject,
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
-              'original_id' => $messageUid,
+              // 'original_id' => $messageUid,
               'details' => $body,
               'version' => 3
           );
