@@ -969,6 +969,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $boeLocTypes = array(
       6, //boe
       13, //boe mailing
+      4, //other
+      11, //other2
     );
 
     //get migrateable contacts with > 1 address of the same loc type
