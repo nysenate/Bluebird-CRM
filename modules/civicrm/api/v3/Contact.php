@@ -523,10 +523,10 @@ function _civicrm_api3_greeting_format_params( $params )
         if ( !$formatParams ) continue;
     
         // format params
-        if ( CRM_Utils_Array::value( 'contact_type', $params ) == 'Organization' && $key != 'addressee' ) {
+        /*if ( CRM_Utils_Array::value( 'contact_type', $params ) == 'Organization' && $key != 'addressee' ) {
             return civicrm_api3_create_error( ts( 'You cannot use email/postal greetings for contact type %1.', 
                                                   array( 1 => $params['contact_type'] ) ) );
-        }
+        }*/
         
         $nullValue      = false; 
         $filter         = array( 'contact_type'  => $params['contact_type'],

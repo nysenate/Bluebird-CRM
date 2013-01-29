@@ -31,13 +31,13 @@ class CRM_migrateContacts {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = "d:fn:i:t:e";
-    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers");
-    $optlist = civicrm_script_init($shortopts, $longopts);
+    $shortopts = "d:fn:i:t:e:a";
+    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers", "array");
+    $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers]';
+        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
@@ -46,12 +46,14 @@ class CRM_migrateContacts {
     $bbcfg_source = get_bluebird_instance_config($optlist['site']);
     //bbscript_log("trace", "bbcfg_source", $bbcfg_source);
 
+    require_once 'CRM/Utils/System.php';
+
     $civicrm_root = $bbcfg_source['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
+    /*if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from migrateContacts.');
       return FALSE;
-    }
+    }*/
 
     $source = array(
       'name' => $optlist['site'],
@@ -146,7 +148,8 @@ class CRM_migrateContacts {
 
     //set filename and create file
     $today = date('Ymd_Hi');
-    $fileName = $migrateTbl.'_'.$today.'.txt';
+    $suffix = ($optlist['array']) ? '_structured' : '';
+    $fileName = $migrateTbl.'_'.$today.$suffix.'.txt';
     $filePath = $fileDir.'/'.$fileName;
     $fileResource = '';
     self::prepareData(array('filename' => $filePath), $optDry, 'full filepath/filename');
@@ -222,7 +225,7 @@ class CRM_migrateContacts {
     self::prepareData($group, $optDry, 'group values to store migrated contacts');
 
     //write completed exportData to file
-    self::writeData($exportData, $fileResource, $optDry);
+    self::writeData($exportData, $fileResource, $optDry, $optlist['array']);
 
     //import data if not --file
     if ( !$optFile ) {
@@ -268,6 +271,15 @@ class CRM_migrateContacts {
       ENGINE = myisam;
     ";
     CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //check for existence of redist contact cache table
+    $redistTbl = "redist_report_contact_cache";
+    $sql = "SHOW TABLES LIKE '{$redistTbl}'";
+    if ( !CRM_Core_DAO::singleValueQuery($sql) ) {
+      bbscript_log("fatal",
+        "Redistricting contact cache table for this district does not exist. Exiting migration process.");
+      exit();
+    }
 
     //retrieve contacts from redistricting table
     $sql = "
@@ -351,6 +363,8 @@ class CRM_migrateContacts {
   }//buildContactTable
 
   function exportContacts($migrateTbl, $optDry = FALSE) {
+    require_once 'CRM/Contact/DAO/Contact.php';
+
     //get field list
     $c = new CRM_Contact_DAO_Contact();
     $fields = $c->fields();
@@ -406,6 +420,13 @@ class CRM_migrateContacts {
    * it also triggers the data write to screen or file
    */
   function processData($rType, $IDs, $optDry) {
+    require_once 'CRM/Core/DAO/Email.php';
+    require_once 'CRM/Core/DAO/Phone.php';
+    require_once 'CRM/Core/DAO/Website.php';
+    require_once 'CRM/Core/DAO/Address.php';
+    require_once 'CRM/Core/DAO/IM.php';
+    require_once 'CRM/Core/DAO/Note.php';
+
     global $customGroups;
     $data = $contactData = array();
 
@@ -1111,15 +1132,20 @@ class CRM_migrateContacts {
    * write data to file in json encoded format
    * if dryrun option is selected, do nothing but return a message to the user
    */
-  function writeData($data, $fileResource, $optDry = FALSE) {
-    $exportDataJSON = json_encode($data);
+  function writeData($data, $fileResource, $optDry = FALSE, $structured = FALSE) {
 
     if ( $optDry ) {
       //bbscript_log("info", 'Exported array:', $data);
       bbscript_log("info", 'Dryrun is enabled... output has not been written to file.', $exportDataJSON);
     }
     else {
-      fwrite($fileResource, $exportDataJSON);
+      if ($structured) {
+        fwrite($fileResource, $data);
+      }
+      else {
+        $exportDataJSON = json_encode($data);
+        fwrite($fileResource, $exportDataJSON);
+      }
     }
   }
 
