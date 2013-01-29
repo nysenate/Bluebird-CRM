@@ -705,7 +705,7 @@ class CRM_IMAP_AJAX {
         // probably could user better names 
         $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : '' ;
         $senderEmailAddress = ($output['header']['from_email']) ?  $output['header']['from_email'] : '' ;
-        $date = ($output['forwarded']['date_short']) ?  $output['forwarded']['date_short'] : 'could not find message date' ;
+        $date = ($output['forwarded']['date_long']) ?  $output['forwarded']['date_long'] : null ;
         $subject = ($output['forwarded']['subject']) ?  $output['forwarded']['subject'] : 'could not find message subject' ;
         $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
@@ -823,7 +823,7 @@ class CRM_IMAP_AJAX {
               'subject' => $subject,
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
-              // 'original_id' => $messageUid,
+              'activity_date_time' => $date,
               'details' => $body,
               'version' => 3
           );
