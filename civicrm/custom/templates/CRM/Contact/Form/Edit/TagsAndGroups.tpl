@@ -25,9 +25,9 @@
 *}
 {literal}
 <style type="text/css" rel="stylesheet" media="screen,projection">
- @import url(/sites/default/themes/Bluebird/nyss_skin/tags/tags.css);
+ @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
 </style>
-<script src="/sites/default/themes/Bluebird/scripts/bbtree3.js" type="text/javascript"></script>
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <script>BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}});
 </script>
 {/literal}
