@@ -106,16 +106,24 @@
 		<div id="message_right_tag">
 			<div id="tabs_tag">
 				<ul>
-					<li><a href="#tab1">Tag Contact</a></li>
-					<li><a href="#tab2">Tag Activity</a></li>
+					<li><a href="#tab1_tag">Tag Contact</a></li>
+					<li><a href="#tab2_tag">Tag Activity</a></li>
 				</ul>
 				<input type="hidden" class="hidden" id="email_id" name="email_id">
 				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
-				<div id="tab1">
-					<div id='TagContact'></div>
+				<div id="tab1_tag">
+					<div id='TagContact'>
+					<input type="text" id="tag_name"/>
+					<input type="hidden" id="tag_name_id" value="">
+					<div id="used_for_warning" class="status message"></div>
+					</div>
 				</div>
-				<div id="tab2">
-					<div id='TagActivity'></div>
+				<div id="tab2_tag">
+					<div id='TagActivity'>
+						<div class="autocomplete-tags-bank" id="activity" style=""></div>
+						<input type='text' class='autocomplete_tag' id='autocomplete_tag_activity' data-id="activity"/><br/> <hr/>
+						<div class="autocomplete-dropdown" id="activity"  style=""></div>
+					</div>
 				</div>
 			</div>
 		</div>
