@@ -285,7 +285,8 @@ class CRM_migrateContacts {
     $sql = "
       INSERT INTO $tbl
       SELECT rrcc.contact_id,
-        CONCAT('SD{$source['num']}_BB', rrcc.contact_id, '_EXT', c.external_identifier) external_id
+        CONCAT('SD{$source['num']}_BB', rrcc.contact_id, '_EXT',  IF(c.external_identifier <> ''
+AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
       FROM redist_report_contact_cache rrcc
       JOIN civicrm_contact c
         ON rrcc.contact_id = c.id
@@ -315,7 +316,8 @@ class CRM_migrateContacts {
     $sql = "
       INSERT INTO $tbl
       SELECT c.employer_id,
-        CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT', cce.external_identifier) external_id
+        CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT',  IF(cce.external_identifier <> ''
+AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external_id
       FROM redist_report_contact_cache rrcc
       JOIN civicrm_contact c
         ON rrcc.contact_id = c.id
@@ -391,7 +393,7 @@ class CRM_migrateContacts {
         ON mt.contact_id = civicrm_contact.id
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
-    //bbscript_log("trace", 'exportContacts sql', $sql);
+    bbscript_log("trace", 'exportContacts sql', $sql);
 
     $contactsAttr = get_object_vars($contacts);
     //bbscript_log("trace", 'exportContacts contactsAttr', $contactsAttr);
@@ -691,7 +693,10 @@ class CRM_migrateContacts {
       $actCustFields[$field['name']] = $field['column_name'];
     }
 
-    //get all activities (non bulk email) for contacts
+    //ensure group_concat can handle large values
+    CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 1000000;");
+
+    //get all activities (non bulk email = 19) for contacts
     $sql = "
       SELECT at.activity_id, a.*, ad.*, GROUP_CONCAT(mt.external_id SEPARATOR '|') targetIDs
       FROM civicrm_activity_target at
@@ -703,6 +708,7 @@ class CRM_migrateContacts {
         ON a.id = ad.entity_id
       WHERE a.is_deleted = 0
         AND a.is_current_revision = 1
+        AND a.activity_type_id != 19
       GROUP BY at.activity_id
     ";
     //bbscript_log("trace", 'exportActivities $sql', $sql);
@@ -1140,6 +1146,7 @@ class CRM_migrateContacts {
     }
     else {
       if ($structured) {
+        $data = print_r($data, TRUE);
         fwrite($fileResource, $data);
       }
       else {
