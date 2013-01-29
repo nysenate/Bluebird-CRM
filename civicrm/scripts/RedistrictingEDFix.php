@@ -248,32 +248,45 @@ function fix_election_districts($db, &$orig_batch, &$batch_results)
 
             /*Note       ED:N=>0 
               Dist Table ED: 0 
-              Correct    ED: N 
-              Action:    Update note to read ED:N==N  and set correct dist value in table if needed
+              Correct    ED: N or M 
+              Action:    Update note to read ED:N==N or ED:N=>M and set correct dist value in table if needed
             */
             if ($ed_assigned == 0){
               
                 if ($ed_previous == $new_ed_from_sage) {
                     $new_note = preg_replace('/(ED:[0-9]+)(==|=>|~=)([0-9]+)/', "$1==$new_ed_from_sage", $orig_rec['note']);
-                    $new_subject = preg_replace('/(,ED|ED,|,ED,)/', '', $note_subject);
+                    $new_subject = preg_replace('/(,ED|ED,|,ED,|ED$)/', '', $note_subject);
+                    if (preg_match('/UPDATED \[id=\d+\]:\s*$/', $new_subject)){
+                        // Change UPDATED to VERIFIED if only the election district changed previously.
+                        $new_subject = preg_replace('/UPDATED/', 'VERIFIED', $new_subject);
+                        bbscript_log("trace", "Note subject should say 'VERIFIED' now");    
+                    }
                 }
                 else {
                     $new_note = preg_replace('/(ED:[0-9]+)(==|=>|~=)([0-9]+)/', "$1=>$new_ed_from_sage", $orig_rec['note']);
-                    $new_subject = $note_subject;      
+                    $new_subject = $note_subject;
+                    if (preg_match('/VERIFIED/', $new_subject)){
+                        $new_subject = preg_replace('/VERIFIED/', 'UPDATED', $new_subject . " ED");
+                    }                          
                 }
                 
-                if ($ed_in_table == 0){
+                if ($ed_in_table == 0 || $ed_in_table == $new_ed_from_sage){
                     $cnts['FIXED_NOTES']++;
-                    bbscript_log("debug","[FIX NOTES] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
+                    bbscript_log("debug","[FIX NOTES | " . (($ed_previous == $new_ed_from_sage) ? "SAME ED" : "DIFF ED") . "] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
                     update_note($db, $note_id, $new_note, $new_subject);   
 
-                    $cnts['FIXED_DIST']++;
-                    bbscript_log("debug","[FIX DIST] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
-                    update_election_district($db, $address_id, $new_ed_from_sage);
+                    // Only want to update instances where the district was set to zero.
+                    if ($ed_in_table == 0){
+                        $cnts['FIXED_DIST']++;
+                        bbscript_log("debug","[FIX DIST] Address ID: {$address_id} - Note: $ed_note Assigned in table: $ed_in_table New ED: $new_ed_from_sage");
+                        update_election_district($db, $address_id, $new_ed_from_sage);    
+                    }
+                    // Somehow the district may already be set to the correct value.
+                    else {
+                        bbscript_log("warn", "[ALREADY SET] Redist Note [id:$note_id] shows $ed_note, but district table is already set with the correct ED = $ed_in_table.");
+                    }                    
                 }
-                else if ($ed_in_table == $new_ed_from_sage){
-                    bbscript_log("warn", "[ALREADY SET] Redist Note [id:$note_id] shows $ed_note but in the district table ED = $ed_in_table.");
-                }
+                // Don't know how to deal with a mismatch between the new sage ed and the district stored in the table.
                 else {
                     $cnts['MISMATCH']++;
                     bbscript_log("warn", "[MISMATCH] Redist Note [id:$note_id] shows $ed_note but in the district table ED = $ed_in_table and SAGE returned ED = $new_ed_from_sage. $message");
@@ -402,7 +415,7 @@ function update_note($db, $note_id, $new_note, $new_subject){
   if ($BB_UPDATE_FLAGS >= UPDATE_NOTES){
    
     $q ="UPDATE civicrm_note n
-        SET n.note = '$new_note', n.subject = '$new_subject'
+        SET n.note = '$new_note', n.subject = '$new_subject', n.modified_date = '" . date("Y-m-d") . "' 
         WHERE n.id = $note_id";
 
     bbscript_log("trace", "Updating note $note_id");
