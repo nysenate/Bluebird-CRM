@@ -114,6 +114,21 @@ function Bluebird_preprocess_page(&$vars) {
   $vars['styles'] = drupal_get_css($css);   
   */
 
+  //NYSS 5434
+  $msgs = drupal_get_messages('error', TRUE);
+  if ( isset($vars['page']['content']['user_login']) ) {
+    $errorMsg = 'Sorry, unrecognized username or password.';
+    foreach ( $msgs['error'] as $key => $msg ) {
+      if ( strpos($msg, $errorMsg) !== FALSE ) {
+        $newMsg = 'Sorry, unrecognized username or password. Please try again, or contact your OSR for assistance.';
+        drupal_set_message($newMsg, 'error');
+      }
+      else {
+        drupal_set_message($msg, 'error');
+      }
+    }
+
+  }
 }
 
 /**
