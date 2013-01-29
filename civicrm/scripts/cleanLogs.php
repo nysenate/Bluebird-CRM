@@ -122,8 +122,10 @@ class CRM_cleanLogs {
             }
             $stats[$tbl]++;
           }
-          //now set lastRecord to current record
-          $lastRecord = $thisRecord;
+          else {
+            //set lastRecord to current record if we didn't delete this record
+            $lastRecord = $thisRecord;
+          }
         }
       }
     }//end table loop

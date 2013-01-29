@@ -4,22 +4,22 @@
 	</div>
 	<div id='top'></div>
 	<div class='full'>
-		<table id="sortable_results" class=""> 
-			<thead> 
-				<tr class='list_header'> 
-				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th> 
-				    <th class='Name'>Sender’s Info</th> 
- 				    <th class='Subject'>Subject</th> 
-				    <th class='Date'>Date Sent</th> 
-				    <th class='Match_type hidden'>Match Type</th> 
-				    <th class='Forwarded'>Forwarded By</th> 
-				   	<th class='Actions'>Actions</th> 
-				</tr> 
-			</thead> 
+		<table id="sortable_results" class="">
+			<thead>
+				<tr class='list_header'>
+				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th>
+				    <th class='Name'>Sender’s Info</th>
+ 				    <th class='Subject'>Subject</th>
+				    <th class='Date'>Date Sent</th>
+				    <th class='Match_type hidden'>Match Type</th>
+				    <th class='Forwarded'>Forwarded By</th>
+				   	<th class='Actions'>Actions</th>
+				</tr>
+			</thead>
 			<tbody id='imapper-messages-list'> 
 				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
- 			</tbody> 
-		</table>		
+			</tbody>
+		</table>
 		<div class='page_actions'>
 			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
 		</div>
@@ -68,7 +68,7 @@
 						<span class="label_def">City: </span>
 						<input type="text" placeholder="City" class="form-text city" name="city">
 					</label>
-				 									
+
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
 					<input type="button" class="imapper-submit" id="assign" value="Assign" name="Assign">
@@ -128,6 +128,6 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
- 		<p> Loading message details.</p>
+		<p> Loading message details.</p>
 	</div>
 </div>

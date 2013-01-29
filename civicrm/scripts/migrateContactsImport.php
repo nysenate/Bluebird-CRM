@@ -23,7 +23,7 @@ class CRM_migrateContactsImport {
     // Parse the options
     $shortopts = "f:n";
     $longopts = array("filename=", "dryrun");
-    $optlist = civicrm_script_init($shortopts, $longopts);
+    $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
@@ -41,12 +41,14 @@ class CRM_migrateContactsImport {
     $bbcfg_dest = get_bluebird_instance_config($optlist['site']);
     //bbscript_log("trace", '$bbcfg_dest', $bbcfg_dest);
 
+    require_once 'CRM/Utils/System.php';
+
     $civicrm_root = $bbcfg_dest['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
+    /*if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from migrateContactsImport.');
       return FALSE;
-    }
+    }*/
 
     $dest = array(
       'name' => $optlist['site'],
@@ -67,6 +69,9 @@ class CRM_migrateContactsImport {
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
     $session = CRM_Core_Session::singleton();
+
+    //override geocode method
+    $config->geocodeMethod = '';
 
     //retrieve/set other options
     $optDry = $optlist['dryrun'];
@@ -496,11 +501,12 @@ class CRM_migrateContactsImport {
 
   }//importTags
 
-  function importEmployment($exportData) {
+  function importEmployment(&$exportData) {
     global $optDry;
     global $extInt;
 
     if ( !isset($exportData['employment']) ) {
+      $exportData['employment'] = array();
       return;
     }
 
@@ -545,6 +551,13 @@ class CRM_migrateContactsImport {
 
     foreach ( $exportData['districtinfo'] as $addrExtID => $details ) {
       $details['entity_id'] = $addrExtInt[$addrExtID];
+
+      //clean array: remove elements with no value
+      foreach ( $details as $f => $v ) {
+        if ( empty($v) ) {
+          unset($details[$f]);
+        }
+      }
 
       $distInfo = self::_importAPI('District_Information', 'create', $details);
       //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
