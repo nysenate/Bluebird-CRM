@@ -17,7 +17,7 @@
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
-				<tr><td><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td></tr>
+				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
 			</tbody>
 		</table>
 		<div class='page_actions'>
@@ -77,6 +77,13 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div id="help-popup" title="Search Help" style="display:none;">
+		<h3>Hidden Columns</h3>
+		<ul>
+			<li><strong>ManuallyMatched : </strong> <span class="matchbubble marginL5 A" title="This email was manually matched">M</span> When an Matched message was manually matched by a user</li>
+			<li><strong>AutomaticallyMatched : </strong> <span class="matchbubble marginL5 H" title="This email was automatically matched">H</span> When an Matched message was automatically matched by imapper </li>
+		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
