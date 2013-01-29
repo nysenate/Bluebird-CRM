@@ -95,8 +95,9 @@ class CRM_IMAP_AJAX {
           $time = time()-(self::$contTime*60);
 
           if( $email->uid == '' || $email->time =='' || $email->time > $time){
+
             $code = 'ERROR';
-            $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true');
+            $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true','debug'=> $email->uid.':'.$email->time.':'.$email->time.':'. $time);
           }else{
             $code = 'SUCCESS';
 
@@ -145,7 +146,11 @@ class CRM_IMAP_AJAX {
           }else{
             $status ='forwarded';
           }
-         
+          $cleanDate = self::cleanDate($email->date);
+          $date_short = $cleanDate['short'];
+          $date_long =  $cleanDate['long'];
+          $date_u =  $cleanDate['u'];
+
             // contains info directly from the email header
             $header = array(
                 'messageId'=>$id,
@@ -156,9 +161,9 @@ class CRM_IMAP_AJAX {
                 'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,
                 'subject' => $email->subject,
                 'body' => $body,
-                'date_clean' => self::cleanDate($email->date,'short'),
-                'date_long' => self::cleanDate($email->date,'long'),
-                'date_u' => self::cleanDate($email->date,'u'),
+                'date_short' => $date_short,
+                'date_long' => $date_long,
+                'date_u' => $date_u,
                 'status' => $status,
             );
 
@@ -166,7 +171,17 @@ class CRM_IMAP_AJAX {
             $origin = ($status == 'direct') ?  $header['from'] : $froms['2'];
             $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
             $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
-            $origin_date = (substr(self::cleanDate($tempDetails,'short'),0,8) == '12-31-69') ?  $header['date_clean'] : self::cleanDate($tempDetails,'short');
+
+
+
+            $fwdcleanDate = self::cleanDate($tempDetails);
+            $fwddate = $fwdcleanDate['short'];
+            $fwddate_u = $fwdcleanDate['u'];
+            $fwddate_long = $fwdcleanDate['long'];
+
+            $origin_date = ($fwddate_u < 10000) ?  $date_short : $fwddate ;
+            $origin_date_long = ($fwddate_u < 10000) ?  $date_long : $fwddate_long ;
+            $origin_date_u = ($fwddate_u < 10000) ?  $date_u : $fwddate_u ;
 
             $origin_subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $header['subject']) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
 
@@ -177,7 +192,9 @@ class CRM_IMAP_AJAX {
 
             // contains info about the forwarded message in the email body
             $forwarded = array(
-                'date_clean' => $origin_date,
+                'date_short' => $origin_date,
+                'date_long' => $origin_date_long,
+                'date_u' => $origin_date_u,
                 'subject' => $origin_subject,
                 'origin' => $origin,
                 'origin_name' => $origin_name,
@@ -287,8 +304,11 @@ class CRM_IMAP_AJAX {
 
             // exit();
             $checked = array();
+            $count = 0;
             // Loop through the headers and check to make sure they're valid UIDs
             foreach($ids as $id) {
+              // if($count < 50){
+              $count++;
               $output = self::unifiedMessageInfo($imap,$id,$imap_id);
 
               // var_dump($output);
@@ -330,16 +350,15 @@ class CRM_IMAP_AJAX {
                 'subject' =>  $output['forwarded']['subject'],
                 'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
                 'uid' =>  $id,
-                'date' =>  $output['header']['date_clean'],
-                // 'date_long' =>  $output['header']['date_long'],
-                'date_u' =>  $output['header']['date_u'],
+                'date_short' =>  $output['forwarded']['date_short'],
+                'date_u' =>  $output['forwarded']['date_u'],
                 'format' =>  $output['header']['format'],
                 'from_email' =>  $output['forwarded']['origin_email'],
                 'from_name' =>  $output['forwarded']['origin_name'],
                 'forwarder_email' =>  $output['header']['from_email'],
                 'match_count'=> $checked[$output['forwarded']['origin_email']],
                 // 'forwarder_name' =>  $output['header']['from_name'],
-                // 'forwarder_time' =>  $output['forwarded']['date_clean'],
+                // 'forwarder_time' =>  $output['forwarded']['date_short'],
                 'attachmentfilename'  => $output['attachments'][0]['name'],
                 // 'attachmentname'  =>  $output['attachments'][0]['name'],
                 'attachment'  => $output['attachments']['overview']['total'],
@@ -351,6 +370,7 @@ class CRM_IMAP_AJAX {
               }else{
                 $returnMessage['errors'][$id] = array('code' => $output['code'],'message'=> $output['message']);
               }
+          // }
           }
           imap_close($imap->conn());
         }
@@ -360,6 +380,7 @@ class CRM_IMAP_AJAX {
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
         $returnMessage['stats']['overview']['errors'] =  count($returnMessage['errors']);
+        $returnMessage['stats']['overview']['total'] =  count($ids);
         $returnMessage['stats']['overview']['time'] = $end-$start;
 
          // Encode the messages variable and return it to the AJAX call
@@ -398,6 +419,9 @@ class CRM_IMAP_AJAX {
           // clean out any anything that wouldn't be a name or email, html or plain-text
           $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
           $string = preg_replace('/<|>|"|\'/i', '', $string);
+          $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
+          $string = preg_replace('/"|\'/i', '', $string);
+
           foreach(preg_split('/ /', $string) as $token) {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
@@ -456,7 +480,7 @@ class CRM_IMAP_AJAX {
                                'forwardedEmail'  =>  $output['header']['from_email'],
                                'fromName'  =>  mb_convert_encoding($output['forwarded']['origin_name'], 'UTF-8'),
                                'fromEmail' =>  $output['forwarded']['origin_email'],
-                               'forwardedDate' =>  $output['forwarded']['date_clean'],
+                               // 'forwardedDate' =>  $output['forwarded']['date_short'],
                                'subject'    =>  mb_convert_encoding($output['forwarded']['subject'], 'UTF-8'),
                                'details'  =>  mb_convert_encoding($output['header']['body'], 'UTF-8'),
                                'attachmentfilename'  => $output['attachments'][0]['name'],
@@ -467,9 +491,11 @@ class CRM_IMAP_AJAX {
                                'status' =>$output['header']['status'],
                                'origin_lookup' => $output['forwarded']['origin_lookup'],
                                'header_subject' => $output['header']['subject'],
-                               'date'   =>  $output['header']['date_clean'],
+                               'date_short'   =>  $output['header']['date_short'],
                                'date_long'   =>  $output['header']['date_long'],
-                               'forwarder_time'   =>  $output['forwarded']['date_clean']);
+                               'forwarder_date_short'   =>  $output['forwarded']['date_short'],
+                               'forwarder_date_long'   =>  $output['forwarded']['date_long'],
+                              );
 
           }else if($output['code'] == "ERROR" ){
             $returnMessage = $output;
@@ -485,7 +511,7 @@ class CRM_IMAP_AJAX {
      * Returns: The 'm-d-y h:i A' formatted date date .
      * This function will format many types of incoming dates
      */
-    public static function cleanDate($date_string, $type){
+    public static function cleanDate($date_string){
         $matches = array();
 
         // search for the word date
@@ -493,25 +519,22 @@ class CRM_IMAP_AJAX {
         $date_string_short = ($count == 1 ) ? $matches[2]  : $date_string;
 
         // sometimes email clients think its fun to add stuff to the date, remove it here.
-        $date_string_short = preg_replace("/(at)/i", "", $date_string_short);
-
-        // reformat the date to something standard here.
-        if($type=='long'){
-          return date("M d, Y h:i A", strtotime($date_string_short));
-        }if($type=='u'){
-          return date("U", strtotime($date_string_short));
+        $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
+   
+        // check if the message is from last year
+        if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
+          $formatted = date("M d, Y", strtotime($date_string_short));
         }else{
-          // check if the message is from last year
-          if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
-            return date("M d, Y", strtotime($date_string_short));
+          if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
+            $formatted = date("M d h:i A", strtotime($date_string_short));
           }else{
-            if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
-              return date("M d h:i A", strtotime($date_string_short));
-            }else{
-              return 'Today '.date("h:i A", strtotime($date_string_short));
-            }
+            $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
           }
         }
+        return array('debug'=>$date_string_short, 
+                  'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
+                  'u'=>date("U", strtotime($date_string_short)),
+                  'short'=>$formatted);
     }
 
     /* deleteMessage()
@@ -675,19 +698,23 @@ class CRM_IMAP_AJAX {
         $contactIds = self::get('contactId');
         $imapId = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[$imapId]['user'], self::$imap_accounts[$imapId]['pass']);
-        $email = $imap->getmsg_uid($messageUid);
+        // $email = $imap->getmsg_uid($messageUid);
 
         $output = self::unifiedMessageInfo($imap,$messageUid,$imapId);
-        imap_close($imap->conn());
+ 
 
         // probably could user better names 
         $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : '' ;
         $senderEmailAddress = ($output['header']['from_email']) ?  $output['header']['from_email'] : '' ;
-        $date = ($output['header']['date_clean']) ?  $output['header']['date_clean'] : 'could not find message date' ;
+        $date = ($output['forwarded']['date_long']) ?  $output['forwarded']['date_long'] : null ;
         $subject = ($output['forwarded']['subject']) ?  $output['forwarded']['subject'] : 'could not find message subject' ;
         $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
         if ($debug){
+          var_dump($messageUid);
+          var_dump($imapId);
+          var_dump($imap);
+          var_dump($output);
           echo "<h1>inputs</h1>";
           var_dump($senderName);
           var_dump($senderEmailAddress);
@@ -700,9 +727,9 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
 
         // if this email has been moved / assigned already 
-        if( $email->sender[0] == null){
+        if( $output['code'] == "ERROR"){
           $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This email no longer exists');
+              'message'   =>  $output['message'] );
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
         }
@@ -770,7 +797,13 @@ class CRM_IMAP_AJAX {
                   }
               }
             }
-            
+            // get contact info for return message
+            $ContactInfo = self::contactRaw($contactId);
+            $ContactName = $ContactInfo['values'][$contactId]['display_name'];
+            if ($debug){
+              echo "<h1>Contact Info</h1>";
+              var_dump($ContactInfo['values'][$contactId]);
+            } 
             // Prams to add email to user
             $params = array(
                 'contact_id' => $contactId,
@@ -791,7 +824,7 @@ class CRM_IMAP_AJAX {
               'subject' => $subject,
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
-              'original_id' => $messageUid,
+              'activity_date_time' => $date,
               'details' => $body,
               'version' => 3
           );
@@ -809,17 +842,39 @@ class CRM_IMAP_AJAX {
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
           } else{
+
             // Now we need to assign the tag to the activity
-            self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
-            if ($debug){
-              echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
+            $tagid= self::getInboxPollingTagId();
+            $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
+
+            if($assignTag['code'] == "ERROR"){
+              var_dump($assignTag);
+              $returnCode = array('code'      =>  'ERROR',
+              'message'   =>  $assignTag['message']);
+              echo json_encode($returnCode);
+              CRM_Utils_System::civiExit();
             }else{
-              $imap->movemsg_uid($messageUid, 'Archive');
+                if ($debug){
+                  echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
+                }else{
+                  // Move the message to the archive folder!
+                  $imap->movemsg_uid($messageUid, 'Archive');
+
+                  // check to see it it was deleted 
+                  $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
+                  if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 
+                    $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$output['forwarded']['origin_email']);
+                  }else{
+                    $returnCode = array('code' =>  'ERROR','message' =>  "Message was not deleted ");
+                  }
+                  echo json_encode($returnCode);
+                }
             }
+    
             // add attachment to activity
           };
         }
-        // Move the message to the archive folder!
+        imap_close($imap->conn());
         CRM_Utils_System::civiExit();
     }
 
@@ -846,7 +901,7 @@ class CRM_IMAP_AJAX {
 
 
     // TODO: use dan's tagging system 
-    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null) {
+    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
@@ -927,7 +982,11 @@ class CRM_IMAP_AJAX {
                 }
           }
         }
-        echo json_encode($returnCode);
+        if($response){
+          return $returnCode;
+        }else{
+          echo json_encode($returnCode);
+        }
 
         //the following causes exit before the loop in assignMessage can complete. commenting it allows multi-match
         //but without it the script returns a full page, a new addition in 1.4
@@ -973,9 +1032,10 @@ class CRM_IMAP_AJAX {
             $forwarder = civicrm_api('contact', 'get', $params );
             $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-            $date = self::cleanDate($activity_node['activity_date_time'],'short');
-            $date_long =  self::cleanDate($activity_node['activity_date_time'],'long');
-            $date_u =  self::cleanDate($activity_node['activity_date_time'],'u');
+            $cleanDate = self::cleanDate($activity_node['activity_date_time']);
+            $date_short = $cleanDate['short'];
+            $date_long =  $cleanDate['long'];
+            $date_u =  $cleanDate['u'];
 
             // message to return 
             if ($debug){
@@ -995,7 +1055,7 @@ class CRM_IMAP_AJAX {
                             'details'  =>  $activity_node['details'],
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
-                            'date'   =>  $date,
+                            'date_short'   =>  $date_short,
                             'date_long' => $date_long,
                             'date_u' => $date_u
 
@@ -1105,8 +1165,10 @@ EOQ;
       $forwarder = civicrm_api('contact', 'get', $params );
       $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
-      $date = self::cleanDate($activity_node['activity_date_time'],'short');
-      $date_long = self::cleanDate($activity_node['activity_date_time'],'long');
+      $cleanDate = self::cleanDate($activity_node['activity_date_time']);
+      $date_short = $cleanDate['short'];
+      $date_long =  $cleanDate['long'];
+      $date_u =  $cleanDate['u'];
 
       $returnMessage = array('code'=>'SUCCESS','message'=>'SUCCESS',
                           'uid'    =>  $activitId,
@@ -1120,7 +1182,7 @@ EOQ;
                           'match_type'  =>  $activity_node['is_auto'],
                           'original_id'  =>  $activity_node['original_id'],
                           'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
-                          'date'   =>  $date, 
+                          'date_short'   =>  $date_short, 
                           'date_long' =>$date_long);
 
       echo json_encode($returnMessage);
@@ -1333,6 +1395,9 @@ SELECT id, name
 FROM `civicrm_tag`
 WHERE `parent_id` ='296' && `name` LIKE '$name%'
 EOQ;
+
+        // [{"name":"aaa","id":"aaa:::value"}]
+
         $result = mysql_query($query, self::db());
         while($row = mysql_fetch_assoc($result)) {
             array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));

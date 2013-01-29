@@ -24,8 +24,10 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree3.js" type="text/javascript"></script>
+<style type="text/css" rel="stylesheet" media="screen,projection">
+ @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
+</style>
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <style>
 .crm-tagListInfo {
     padding:15px;
@@ -102,7 +104,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'});
             <div class="BBInit"></div>
             {literal}
             <script>
-                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {entity_id: 256531});
+                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'edit',tabLocation: 'crm-tagTabHeader'});
                 //BBTree.initContainer('two', {pullSets: [296], buttonType: 'tagging'}, {entity_id: 216352, entity_type: 'civicrm_activity'});
             </script>
             {/literal}

@@ -34,7 +34,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
     font-style: italic;
     text-decoration: underline; }
   .BBMessages .moreHidden {
-    display: none; }
+    display: none;
+    word-wrap: break-word; }
   .BBMessages span {
     font-weight: bold; }
   .BBMessages.static {
@@ -72,179 +73,180 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 #BBTreeContainer, #BBDialog {
   width: 521px;
   position: relative;
-  /*BBTree*/ }
-  #BBTreeContainer .BBTree, #BBDialog .BBTree {
-    width: 520px;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    height: 400px;
-    background-color: #fff;
-    border: 1px solid #cccccc;
-    margin: 0 auto;
-    cursor: default;
-    /* for message bucket */
-    /* for tag hirarchy structure */ }
-    #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
-      float: inherit;
-      clear: inherit;
-      text-align: inherit;
-      vertical-align: inherit;
-      padding: 0px;
-      font-size: inherit;
-      white-space: inherit;
-      width: inherit;
+  margin: 0 auto;
+  overflow: hidden; }
+
+.BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
+  width: 520px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 400px;
+  background-color: #fff;
+  border: 1px solid #cccccc;
+  cursor: default;
+  /* for tag hirarchy structure */ }
+  .BBTree dt, #BBTreeContainer .BBTree dt, #BBDialog .BBTree dt {
+    float: inherit;
+    clear: inherit;
+    text-align: inherit;
+    vertical-align: inherit;
+    padding: 0px;
+    font-size: inherit;
+    white-space: inherit;
+    width: inherit;
+    height: 20px;
+    line-height: 20px; }
+    .BBTree dt .ddControl, #BBTreeContainer .BBTree dt .ddControl, #BBDialog .BBTree dt .ddControl {
       height: 20px;
-      line-height: 20px; }
-      #BBTreeContainer .BBTree dt .ddControl, #BBDialog .BBTree dt .ddControl {
-        height: 20px;
-        width: 20px;
-        float: left;
-        margin: 0px; }
-        #BBTreeContainer .BBTree dt .ddControl.treeButton, #BBDialog .BBTree dt .ddControl.treeButton {
-          background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
-          cursor: pointer; }
-          #BBTreeContainer .BBTree dt .ddControl.treeButton.open, #BBDialog .BBTree dt .ddControl.treeButton.open {
-            background-position: -64px -15px; }
-      #BBTreeContainer .BBTree dt .tag, #BBDialog .BBTree dt .tag {
-        display: inline;
-        font-family: Arial;
-        font-size: 12px;
-        font-weight: normal;
-        padding-left: 5px; }
-      #BBTreeContainer .BBTree dt .fCB, #BBDialog .BBTree dt .fCB {
-        display: none;
-        padding: 1px 0;
-        float: right; }
-        #BBTreeContainer .BBTree dt .fCB ul, #BBDialog .BBTree dt .fCB ul {
-          margin: 0; }
-          #BBTreeContainer .BBTree dt .fCB ul li, #BBDialog .BBTree dt .fCB ul li {
-            height: 16px;
-            width: 16px;
-            float: left;
-            margin: 1px 2px 0 0;
-            list-style-image: none !important;
-            list-style-type: none !important; }
-            #BBTreeContainer .BBTree dt .fCB ul li.addTag, #BBDialog .BBTree dt .fCB ul li.addTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: 0; }
-            #BBTreeContainer .BBTree dt .fCB ul li.removeTag, #BBDialog .BBTree dt .fCB ul li.removeTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: -17px 0px; }
-            #BBTreeContainer .BBTree dt .fCB ul li.moveTag, #BBDialog .BBTree dt .fCB ul li.moveTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: -34px 0px; }
-            #BBTreeContainer .BBTree dt .fCB ul li.updateTag, #BBDialog .BBTree dt .fCB ul li.updateTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: -50px 0px; }
-            #BBTreeContainer .BBTree dt .fCB ul li.mergeTag, #BBDialog .BBTree dt .fCB ul li.mergeTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: -66px 0px; }
-            #BBTreeContainer .BBTree dt .fCB ul li.convertTag, #BBDialog .BBTree dt .fCB ul li.convertTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-              cursor: pointer;
-              background-position: -107px 0px; }
-            #BBTreeContainer .BBTree dt .fCB ul li.printTag, #BBDialog .BBTree dt .fCB ul li.printTag {
-              background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
-              cursor: pointer;
-              background-position: -160px -96px; }
-      #BBTreeContainer .BBTree dt:hover, #BBDialog .BBTree dt:hover {
+      width: 20px;
+      float: left;
+      margin: 0px; }
+      .BBTree dt .ddControl.treeButton, #BBTreeContainer .BBTree dt .ddControl.treeButton, #BBDialog .BBTree dt .ddControl.treeButton {
+        background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
+        cursor: pointer; }
+        .BBTree dt .ddControl.treeButton.open, #BBTreeContainer .BBTree dt .ddControl.treeButton.open, #BBDialog .BBTree dt .ddControl.treeButton.open {
+          background-position: -64px -15px; }
+    .BBTree dt .tag, #BBTreeContainer .BBTree dt .tag, #BBDialog .BBTree dt .tag {
+      display: inline;
+      font-family: Arial;
+      font-size: 12px;
+      font-weight: normal;
+      padding-left: 5px; }
+    .BBTree dt .fCB, #BBTreeContainer .BBTree dt .fCB, #BBDialog .BBTree dt .fCB {
+      display: none;
+      padding: 1px 0;
+      float: right; }
+      .BBTree dt .fCB ul, #BBTreeContainer .BBTree dt .fCB ul, #BBDialog .BBTree dt .fCB ul {
+        margin: 0; }
+        .BBTree dt .fCB ul li, #BBTreeContainer .BBTree dt .fCB ul li, #BBDialog .BBTree dt .fCB ul li {
+          height: 16px;
+          width: 16px;
+          float: left;
+          margin: 1px 2px 0 0;
+          list-style-image: none !important;
+          list-style-type: none !important; }
+          .BBTree dt .fCB ul li.addTag, #BBTreeContainer .BBTree dt .fCB ul li.addTag, #BBDialog .BBTree dt .fCB ul li.addTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: 0; }
+          .BBTree dt .fCB ul li.removeTag, #BBTreeContainer .BBTree dt .fCB ul li.removeTag, #BBDialog .BBTree dt .fCB ul li.removeTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -17px 0px; }
+          .BBTree dt .fCB ul li.moveTag, #BBTreeContainer .BBTree dt .fCB ul li.moveTag, #BBDialog .BBTree dt .fCB ul li.moveTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -34px 0px; }
+          .BBTree dt .fCB ul li.updateTag, #BBTreeContainer .BBTree dt .fCB ul li.updateTag, #BBDialog .BBTree dt .fCB ul li.updateTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -50px 0px; }
+          .BBTree dt .fCB ul li.mergeTag, #BBTreeContainer .BBTree dt .fCB ul li.mergeTag, #BBDialog .BBTree dt .fCB ul li.mergeTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -66px 0px; }
+          .BBTree dt .fCB ul li.convertTag, #BBTreeContainer .BBTree dt .fCB ul li.convertTag, #BBDialog .BBTree dt .fCB ul li.convertTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+            cursor: pointer;
+            background-position: -107px 0px; }
+          .BBTree dt .fCB ul li.printTag, #BBTreeContainer .BBTree dt .fCB ul li.printTag, #BBDialog .BBTree dt .fCB ul li.printTag {
+            background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+            cursor: pointer;
+            background-position: -160px -96px; }
+    .BBTree dt:hover, #BBTreeContainer .BBTree dt:hover, #BBDialog .BBTree dt:hover {
+      background-color: #DEDEDE; }
+      .BBTree dt:hover .fCB, #BBTreeContainer .BBTree dt:hover .fCB, #BBDialog .BBTree dt:hover .fCB {
+        display: inline; }
+      .BBTree dt:hover.lv-0, #BBTreeContainer .BBTree dt:hover.lv-0, #BBDialog .BBTree dt:hover.lv-0 {
+        background-color: transparent; }
+    .BBTree dt.subChecked, #BBTreeContainer .BBTree dt.subChecked, #BBDialog .BBTree dt.subChecked {
+      background-color: #F1F8EB;
+      border: 1px dashed #b0d730; }
+      .BBTree dt.subChecked:hover, #BBTreeContainer .BBTree dt.subChecked:hover, #BBDialog .BBTree dt.subChecked:hover {
         background-color: #DEDEDE; }
-        #BBTreeContainer .BBTree dt:hover .fCB, #BBDialog .BBTree dt:hover .fCB {
-          display: inline; }
-        #BBTreeContainer .BBTree dt:hover.lv-0, #BBDialog .BBTree dt:hover.lv-0 {
-          background-color: transparent; }
-      #BBTreeContainer .BBTree dt.subChecked, #BBDialog .BBTree dt.subChecked {
-        background-color: #F1F8EB;
-        border: 1px dashed #b0d730; }
-        #BBTreeContainer .BBTree dt.subChecked:hover, #BBDialog .BBTree dt.subChecked:hover {
-          background-color: #DEDEDE; }
-      #BBTreeContainer .BBTree dt.checked, #BBDialog .BBTree dt.checked {
-        background-color: #F1F8EB;
-        border: 1px solid #b0d730; }
-        #BBTreeContainer .BBTree dt.checked:hover, #BBDialog .BBTree dt.checked:hover {
-          background-color: #DEDEDE; }
-    #BBTreeContainer .BBTree dl.lv-0, #BBDialog .BBTree dl.lv-0 {
-      width: 485px;
-      margin: 0 10px; }
-    #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
-      width: 485px;
-      margin: 10px 10px 0; }
-      #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
-        display: none; }
-      #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
-        font-size: 14px;
-        font-weight: bold; }
-    #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
-      width: 475px;
-      margin-left: 10px;
+    .BBTree dt.checked, #BBTreeContainer .BBTree dt.checked, #BBDialog .BBTree dt.checked {
+      background-color: #F1F8EB;
+      border: 1px solid #b0d730; }
+      .BBTree dt.checked:hover, #BBTreeContainer .BBTree dt.checked:hover, #BBDialog .BBTree dt.checked:hover {
+        background-color: #DEDEDE; }
+  .BBTree dl.lv-0, #BBTreeContainer .BBTree dl.lv-0, #BBDialog .BBTree dl.lv-0 {
+    width: 485px;
+    margin: 0 10px; }
+  .BBTree dt.lv-0, #BBTreeContainer .BBTree dt.lv-0, #BBDialog .BBTree dt.lv-0 {
+    width: 485px;
+    margin: 10px 10px 0; }
+    .BBTree dt.lv-0 .treeButton, #BBTreeContainer .BBTree dt.lv-0 .treeButton, #BBDialog .BBTree dt.lv-0 .treeButton {
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-2, #BBDialog .BBTree dl.lv-2 {
-      width: 465px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-3, #BBDialog .BBTree dl.lv-3 {
-      width: 455px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-4, #BBDialog .BBTree dl.lv-4 {
-      width: 445px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-5, #BBDialog .BBTree dl.lv-5 {
-      width: 435px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-6, #BBDialog .BBTree dl.lv-6 {
-      width: 425px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-7, #BBDialog .BBTree dl.lv-7 {
-      width: 415px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-8, #BBDialog .BBTree dl.lv-8 {
-      width: 405px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-9, #BBDialog .BBTree dl.lv-9 {
-      width: 395px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree dl.lv-10, #BBDialog .BBTree dl.lv-10 {
-      width: 385px;
-      margin-left: 10px;
-      display: none; }
-    #BBTreeContainer .BBTree.hidden, #BBDialog .BBTree.hidden {
-      display: none; }
-    #BBTreeContainer .BBTree.modal, #BBDialog .BBTree.modal {
-      overflow: visible;
-      border: 0px; }
-      #BBTreeContainer .BBTree.modal .fCB, #BBDialog .BBTree.modal .fCB {
-        display: inline;
-        float: left;
-        margin: -1px 0px -2px 0px; }
-        #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"], #BBDialog .BBTree.modal .fCB input[type="checkbox"] {
-          margin: 0px; }
-          #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"].checked, #BBDialog .BBTree.modal .fCB input[type="checkbox"].checked {
-            left: -1px; }
-    #BBTreeContainer .BBTree.tagging .fCB, #BBDialog .BBTree.tagging .fCB {
+    .BBTree dt.lv-0 .tag, #BBTreeContainer .BBTree dt.lv-0 .tag, #BBDialog .BBTree dt.lv-0 .tag {
+      font-size: 14px;
+      font-weight: bold; }
+  .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
+    width: 475px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-2, #BBTreeContainer .BBTree dl.lv-2, #BBDialog .BBTree dl.lv-2 {
+    width: 465px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-3, #BBTreeContainer .BBTree dl.lv-3, #BBDialog .BBTree dl.lv-3 {
+    width: 455px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-4, #BBTreeContainer .BBTree dl.lv-4, #BBDialog .BBTree dl.lv-4 {
+    width: 445px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-5, #BBTreeContainer .BBTree dl.lv-5, #BBDialog .BBTree dl.lv-5 {
+    width: 435px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-6, #BBTreeContainer .BBTree dl.lv-6, #BBDialog .BBTree dl.lv-6 {
+    width: 425px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-7, #BBTreeContainer .BBTree dl.lv-7, #BBDialog .BBTree dl.lv-7 {
+    width: 415px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-8, #BBTreeContainer .BBTree dl.lv-8, #BBDialog .BBTree dl.lv-8 {
+    width: 405px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-9, #BBTreeContainer .BBTree dl.lv-9, #BBDialog .BBTree dl.lv-9 {
+    width: 395px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree dl.lv-10, #BBTreeContainer .BBTree dl.lv-10, #BBDialog .BBTree dl.lv-10 {
+    width: 385px;
+    margin-left: 10px;
+    display: none; }
+  .BBTree.hidden, #BBTreeContainer .BBTree.hidden, #BBDialog .BBTree.hidden {
+    display: none; }
+  .BBTree.modal, #BBTreeContainer .BBTree.modal, #BBDialog .BBTree.modal {
+    overflow: visible;
+    border: 0px; }
+    .BBTree.modal .fCB, #BBTreeContainer .BBTree.modal .fCB, #BBDialog .BBTree.modal .fCB {
       display: inline;
       float: left;
-      margin: 0px -2px 0px 5px; }
-      #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"], #BBDialog .BBTree.tagging .fCB input[type="checkbox"] {
+      margin: -1px 0px -2px 0px; }
+      .BBTree.modal .fCB input[type="checkbox"], #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"], #BBDialog .BBTree.modal .fCB input[type="checkbox"] {
         margin: 0px; }
-        #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"].checked, #BBDialog .BBTree.tagging .fCB input[type="checkbox"].checked {
+        .BBTree.modal .fCB input[type="checkbox"].checked, #BBTreeContainer .BBTree.modal .fCB input[type="checkbox"].checked, #BBDialog .BBTree.modal .fCB input[type="checkbox"].checked {
           left: -1px; }
-    #BBTreeContainer .BBTree *, #BBDialog .BBTree * {
-      font-size: 1em; }
-    #BBTreeContainer .BBTree dl, #BBDialog .BBTree dl {
+  .BBTree.tagging .fCB, #BBTreeContainer .BBTree.tagging .fCB, #BBDialog .BBTree.tagging .fCB {
+    display: inline;
+    float: left;
+    margin: 0px -2px 0px 5px; }
+    .BBTree.tagging .fCB input[type="checkbox"], #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"], #BBDialog .BBTree.tagging .fCB input[type="checkbox"] {
       margin: 0px; }
+      .BBTree.tagging .fCB input[type="checkbox"].checked, #BBTreeContainer .BBTree.tagging .fCB input[type="checkbox"].checked, #BBDialog .BBTree.tagging .fCB input[type="checkbox"].checked {
+        left: -1px; }
+  .BBTree *, #BBTreeContainer .BBTree *, #BBDialog .BBTree * {
+    font-size: 1em; }
+  .BBTree dl, #BBTreeContainer .BBTree dl, #BBDialog .BBTree dl {
+    margin: 0px; }
 
+/*BBTree*/
 /*BBContainer*/
 .loadingGif {
   background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important; }
@@ -330,3 +332,40 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
   width: 380px;
   float: right;
   margin-bottom: -10px; }
+
+/* print tags */
+@media print, screen {
+  body.popup .BBTree, body.popup .BBTree * {
+    visibility: visible; }
+  body.popup .BBTree {
+    position: absolute;
+    left: 0;
+    top: 0; }
+    body.popup .BBTree div.treeButton {
+      background-position: -64px -15px; }
+    body.popup .BBTree dl.lv-0 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-1 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-2 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-3 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-4 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-5 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-6 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-7 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-8 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-9 {
+      display: block !important; }
+    body.popup .BBTree dl.lv-10 {
+      display: block !important; }
+    body.popup .BBTree dt:hover {
+      background-color: transparent; }
+      body.popup .BBTree dt:hover .fCB {
+        display: none; } }
