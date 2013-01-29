@@ -62,6 +62,7 @@ $levelClassSlug : "lv";
 	}
 	.moreHidden {
 		display:none;
+		word-wrap:break-word;
 	}
 	span {
 		font-weight:bold;
@@ -113,6 +114,7 @@ $levelClassSlug : "lv";
 	width:521px;
 	position:relative;
 	margin: 0 auto;
+	overflow:hidden;
 }
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree{
 	width:520px;

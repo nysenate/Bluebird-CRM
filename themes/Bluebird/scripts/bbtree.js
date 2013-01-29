@@ -104,14 +104,14 @@ var BBTree = {
 			default: codeName = 'notice'; BBTree.removeIndicator(messageBox); return true; break; //don't show notices
 		}
 		messageBox.prepend('<div class="title">'+BBTree.actionInfo.last.name+'</div>');
-		messageBox.prepend('<div class="closeMessage item-'+ totLength +'"></div>');
+		messageBox.prepend('<div title="Close Message" class="closeMessage item-'+ totLength +'"></div>');
 		cj('.closeMessage.item-'+ totLength, messageBox).click(function() {
 			BBTree.removeIndicator(messageBox);
 		});
 		messageBox.append(BBTree.actionInfo.last.description);
 		if(code.more.length > 2)
 		{
-			messageBox.append('<div class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
+			messageBox.append('<div title="See More Information" class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
 		}
 		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
 			if(cj(this).hasClass('open'))
@@ -334,7 +334,7 @@ var BBTree = {
 					actionData.description += 'Tag <span>'+message[2]+'</span> has been removed under <span>'+parentTagName+'</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag <span>'+obj.taggedName+'</span> failed to be removed.';
+					actionData.description += 'Tag <span>'+message[2]+'</span> failed to be removed.';
 					actionData.more += message[4];
 				}	
 				break;
@@ -361,7 +361,7 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag '+obj.taggedName+' failed to be added.';
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added.';
 				}	
 				break;
 			default: actionData.description	+= 'No defined message.';

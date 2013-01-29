@@ -34,7 +34,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
     font-style: italic;
     text-decoration: underline; }
   .BBMessages .moreHidden {
-    display: none; }
+    display: none;
+    word-wrap: break-word; }
   .BBMessages span {
     font-weight: bold; }
   .BBMessages.static {
@@ -72,7 +73,8 @@ SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tag
 #BBTreeContainer, #BBDialog {
   width: 521px;
   position: relative;
-  margin: 0 auto; }
+  margin: 0 auto;
+  overflow: hidden; }
 
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
   width: 520px;
