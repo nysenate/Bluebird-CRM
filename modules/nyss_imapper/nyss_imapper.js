@@ -71,6 +71,7 @@ cj(document).ready(function(){
 		if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/contacts',
+				async:false,
 				data: {
 					state: '1031',
 					city: city,
@@ -128,7 +129,7 @@ cj(document).ready(function(){
 						// cj(".imapper-message-box[data-id='"+messageId+"']").remove();
 						removeRow(messageId+'_'+imapId);
 						cj("#find-match-popup").dialog('close');
-						help_message('Message assigned to contact');
+						help_message(data.message);
 					}
 				}
 			});
@@ -687,7 +688,7 @@ cj(document).ready(function(){
 					if(messages.fromName) cj('#message_left_header').append(messages.fromName);
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+short_subject(messages.fromEmail)+"</span>");
 
-					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.forwarder_date_long+"<br/>");
+					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
 						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span><br/>");
@@ -1171,7 +1172,7 @@ function help_message(message){
 	// fade out and remove
 	setTimeout(function(){
 		cj("."+messageclass).fadeOut(1000, function(){
-			cj(this).remove();
+			$(this).remove();
 		});
 	}, 60000);
 }

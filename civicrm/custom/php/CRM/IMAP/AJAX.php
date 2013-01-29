@@ -95,8 +95,9 @@ class CRM_IMAP_AJAX {
           $time = time()-(self::$contTime*60);
 
           if( $email->uid == '' || $email->time =='' || $email->time > $time){
+
             $code = 'ERROR';
-            $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true');
+            $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true','debug'=> $email->uid.':'.$email->time.':'.$email->time.':'. $time);
           }else{
             $code = 'SUCCESS';
 
@@ -306,7 +307,7 @@ class CRM_IMAP_AJAX {
             $count = 0;
             // Loop through the headers and check to make sure they're valid UIDs
             foreach($ids as $id) {
-              if($count < 50){
+              // if($count < 50){
               $count++;
               $output = self::unifiedMessageInfo($imap,$id,$imap_id);
 
@@ -369,7 +370,7 @@ class CRM_IMAP_AJAX {
               }else{
                 $returnMessage['errors'][$id] = array('code' => $output['code'],'message'=> $output['message']);
               }
-          }
+          // }
           }
           imap_close($imap->conn());
         }
@@ -379,6 +380,7 @@ class CRM_IMAP_AJAX {
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
         $returnMessage['stats']['overview']['errors'] =  count($returnMessage['errors']);
+        $returnMessage['stats']['overview']['total'] =  count($ids);
         $returnMessage['stats']['overview']['time'] = $end-$start;
 
          // Encode the messages variable and return it to the AJAX call
@@ -693,10 +695,10 @@ class CRM_IMAP_AJAX {
         $contactIds = self::get('contactId');
         $imapId = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server, self::$imap_accounts[$imapId]['user'], self::$imap_accounts[$imapId]['pass']);
-        $email = $imap->getmsg_uid($messageUid);
+        // $email = $imap->getmsg_uid($messageUid);
 
         $output = self::unifiedMessageInfo($imap,$messageUid,$imapId);
-        imap_close($imap->conn());
+ 
 
         // probably could user better names 
         $senderName = ($output['header']['from_name']) ?  $output['header']['from_name'] : '' ;
@@ -706,6 +708,10 @@ class CRM_IMAP_AJAX {
         $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
         if ($debug){
+          var_dump($messageUid);
+          var_dump($imapId);
+          var_dump($imap);
+          var_dump($output);
           echo "<h1>inputs</h1>";
           var_dump($senderName);
           var_dump($senderEmailAddress);
@@ -718,9 +724,9 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
 
         // if this email has been moved / assigned already 
-        if( $email->sender[0] == null){
+        if( $output['code'] == "ERROR"){
           $returnCode = array('code'      =>  'ERROR',
-              'message'   => 'This email no longer exists');
+              'message'   =>  $output['message'] );
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
         }
@@ -788,7 +794,13 @@ class CRM_IMAP_AJAX {
                   }
               }
             }
-            
+            // get contact info for return message
+            $ContactInfo = self::contactRaw($contactId);
+            $ContactName = $ContactInfo['values'][$contactId]['display_name'];
+            if ($debug){
+              echo "<h1>Contact Info</h1>";
+              var_dump($ContactInfo['values'][$contactId]);
+            } 
             // Prams to add email to user
             $params = array(
                 'contact_id' => $contactId,
@@ -827,17 +839,39 @@ class CRM_IMAP_AJAX {
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
           } else{
+
             // Now we need to assign the tag to the activity
-            self::assignTag($activity['id'], 0, self::getInboxPollingTagId());
-            if ($debug){
-              echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
+            $tagid= self::getInboxPollingTagId();
+            $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
+
+            if($assignTag['code'] == "ERROR"){
+              var_dump($assignTag);
+              $returnCode = array('code'      =>  'ERROR',
+              'message'   =>  $assignTag['message']);
+              echo json_encode($returnCode);
+              CRM_Utils_System::civiExit();
             }else{
-              $imap->movemsg_uid($messageUid, 'Archive');
+                if ($debug){
+                  echo "<h1>Message not archived in debug mode, feel free to try again</h1>";
+                }else{
+                  // Move the message to the archive folder!
+                  $imap->movemsg_uid($messageUid, 'Archive');
+
+                  // check to see it it was deleted 
+                  $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
+                  if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 
+                    $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$output['forwarded']['origin_email']);
+                  }else{
+                    $returnCode = array('code' =>  'ERROR','message' =>  "Message was not deleted ");
+                  }
+                  echo json_encode($returnCode);
+                }
             }
+    
             // add attachment to activity
           };
         }
-        // Move the message to the archive folder!
+        imap_close($imap->conn());
         CRM_Utils_System::civiExit();
     }
 
@@ -864,7 +898,7 @@ class CRM_IMAP_AJAX {
 
 
     // TODO: use dan's tagging system 
-    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null) {
+    public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
         $tagIds         =   ($inTagIds) ? $inTagIds : self::get('tagIds');
@@ -945,7 +979,11 @@ class CRM_IMAP_AJAX {
                 }
           }
         }
-        echo json_encode($returnCode);
+        if($response){
+          return $returnCode;
+        }else{
+          echo json_encode($returnCode);
+        }
 
         //the following causes exit before the loop in assignMessage can complete. commenting it allows multi-match
         //but without it the script returns a full page, a new addition in 1.4
