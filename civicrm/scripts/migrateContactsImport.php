@@ -552,6 +552,11 @@ class CRM_migrateContactsImport {
     foreach ( $exportData['districtinfo'] as $addrExtID => $details ) {
       $details['entity_id'] = $addrExtInt[$addrExtID];
 
+      //capture errors mapping address external ID
+      if ( empty($details['entity_id']) ) {
+        bbscript_log("debug", 'importDistrictInfo: unmatched addrExtID', $addrExtID);
+      }
+
       //clean array: remove elements with no value
       foreach ( $details as $f => $v ) {
         if ( empty($v) ) {
@@ -560,8 +565,18 @@ class CRM_migrateContactsImport {
       }
 
       $distInfo = self::_importAPI('District_Information', 'create', $details);
-      //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
+      bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
     }
+
+    //cleanup address name field (temp ext address ID)
+    if ( !$optDry ) {
+      $sql = "
+          UPDATE civicrm_address
+          SET name = NULL
+          WHERE name IS NOT NULL;
+        ";
+        //CRM_Core_DAO::executeQuery($sql);
+      }
   }//importDistrictInfo
 
   /*
