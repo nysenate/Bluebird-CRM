@@ -168,7 +168,6 @@ class CRM_migrateContactsTrash {
     //check for existence of redist contact cache table
     $redistTbl = "redist_report_contact_cache";
     $sql = "SHOW TABLES LIKE '{$redistTbl}'";
-
     if ( !CRM_Core_DAO::singleValueQuery($sql) ) {
       bbscript_log("fatal",
         "Redistricting contact cache table for this district does not exist. Exiting trashing process.");
