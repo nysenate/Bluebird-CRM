@@ -317,7 +317,7 @@ AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
 
     //also retrieve current employer contacts and insert in the table
     $sql = "
-      INSERT INTO $tbl
+      INSERT IGNORE INTO $tbl
       SELECT c.employer_id,
         CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT',  IF(cce.external_identifier <> ''
 AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external_id

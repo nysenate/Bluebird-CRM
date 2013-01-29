@@ -303,6 +303,9 @@ class CRM_migrateContactsImport {
         $params['custom_44'] = $details['custom']['activity_category_44'];
       }
 
+      //clean params array
+      $params = self::_cleanArray($params);
+
       $newActivity = self::_importAPI('activity', 'create', $params);
       //bbscript_log("trace", 'importActivities newActivity', $newActivity);
 
@@ -558,14 +561,10 @@ class CRM_migrateContactsImport {
       }
 
       //clean array: remove elements with no value
-      foreach ( $details as $f => $v ) {
-        if ( empty($v) ) {
-          unset($details[$f]);
-        }
-      }
+      $details = self::_cleanArray($details);
 
       $distInfo = self::_importAPI('District_Information', 'create', $details);
-      bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
+      //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
     }
 
     //cleanup address name field (temp ext address ID)
@@ -798,6 +797,18 @@ class CRM_migrateContactsImport {
 
     }
   }//_moveAttachment
+
+  /*
+   * given an array, cycle through and unset any elements with no value
+   */
+  function _cleanArray($data) {
+    foreach ( $data as $f => $v ) {
+      if ( empty($v) && $v !== 0 ) {
+        unset($data[$f]);
+      }
+    }
+    return $data;
+  }//_cleanArray
 
   /*
    * create group in destination database and add all contacts
