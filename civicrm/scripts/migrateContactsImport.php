@@ -227,6 +227,9 @@ class CRM_migrateContactsImport {
         $mergedContacts[$extID] = $matchedContact;
       }
 
+      //check greeting fields
+      self::_checkGreeting($details['contact']);
+
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
       //bbscript_log("trace", "importContacts _importAPI contact", $contact);
@@ -623,6 +626,9 @@ class CRM_migrateContactsImport {
       $entity = 'custom_value';
     }
 
+    //clean the params array
+    $params = self::_cleanArray($params);
+
     if ( $optDry ) {
       bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
@@ -630,6 +636,7 @@ class CRM_migrateContactsImport {
       //add api version
       $params['version'] = 3;
       //$params['debug'] = 1;
+
       $api = civicrm_api($entity, $action, $params);
 
       if ( $api['is_error'] ) {
@@ -727,6 +734,28 @@ class CRM_migrateContactsImport {
   }//_contactLookup
 
   /*
+   * given contact params, ensure greetings are constructed
+   */
+  function _checkGreeting(&$contact) {
+    $gTypes = array(
+      'email_greeting',
+      'postal_greeting',
+      'addressee',
+    );
+
+    foreach ( $gTypes as $type ) {
+      if ( $contact[$type.'_id'] == 4 ) {
+        if ( empty($contact[$type.'_custom']) ) {
+          $contact[$type.'_custom'] = $contact[$type.'_display'];
+        }
+      }
+      else {
+        $contact[$type.'_custom'] = '';
+      }
+    }
+  }//_checkGreeting
+
+  /*
    * helper function to build entity_file record
    * called during contact, activities, and case import
    * we don't have a nice API or BAO function to handle this, so using straight SQL
@@ -791,10 +820,16 @@ class CRM_migrateContactsImport {
       bbscript_log("debug", "_copyAttachment: {$sourceFile}");
     }
     else {
-      copy($sourceFile, $destFile);
-      chown($destFile, 'apache');
-      chgrp($destFile, 'bluebird');
-
+      //ensure source file exists
+      if ( file_exists($sourceFile) ) {
+        copy($sourceFile, $destFile);
+        chown($destFile, 'apache');
+        chgrp($destFile, 'bluebird');
+      }
+      else {
+        //file couldn't be found and moved
+        bbscript_log("debug", "file could not be located and copied: {$sourceFile}");
+      }
     }
   }//_moveAttachment
 

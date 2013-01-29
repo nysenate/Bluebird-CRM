@@ -269,7 +269,13 @@ class CRM_migrateContacts {
     bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
 
     $elapsedTime = get_elapsed_time($startTime);
-    bbscript_log("info", "Time elapsed: {$elapsedTime} secs");
+    if ( $elapsedTime < 60 ) {
+      $elapsedTime = "$elapsedTime secs";
+    }
+    else {
+      $elapsedTime = ($elapsedTime/60)." mins";
+    }
+    bbscript_log("info", "Time elapsed: {$elapsedTime}");
   }//run
 
   /*
