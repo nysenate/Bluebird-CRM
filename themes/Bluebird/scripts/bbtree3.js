@@ -78,6 +78,7 @@ var BBTree = {
 		BBTreeTag.getContactTags(); // if get contact tags becomes an array, don't link together the apply/get.
 	},
 	addIndicator: function(code){ //makes the dropdown indicator work
+		debugger;
 		var messageHandler = callTree.currentSettings.pageSettings.messageHandler;
 		var currentInstance = callTree.currentSettings.displaySettings.currentInstance;
 		var codeName;
@@ -95,13 +96,15 @@ var BBTree = {
 			messageBox = cj(aCSel(currentInstance) + aCSel(messageHandler));
 			totMessages = messageBox;
 		}
+		debugger;
 		switch(code.errorClass)
-		{
-			case 'BBSuccess': messageBox.addClass(code.errorClass).addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)}); codeName = 'success';break;
+		{//.addClass('static').animate({top: '+='+BBTree.messageBoxesHeight(totMessages)})
+			case 'BBSuccess': messageBox.addClass(code.errorClass); codeName = 'success';break;
 			case 'BBWarning': messageBox.addClass(code.errorClass); codeName = 'warning';break;
 			case 'BBError': messageBox.addClass(code.errorClass); codeName = 'error';break;
 			default: codeName = 'notice'; return true; break; //don't show notices
 		}
+		debugger;
 		messageBox.prepend('<div class="title">'+BBTree.actionInfo.last.name+'</div>');
 		messageBox.prepend('<div class="closeMessage item-'+ totLength +'"></div>');
 		cj('.closeMessage.item-'+ totLength, messageBox).click(function() {
@@ -112,6 +115,7 @@ var BBTree = {
 		{
 			messageBox.append('<div class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
 		}
+		debugger;
 		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
 			if(cj(this).hasClass('open'))
 			{
@@ -125,6 +129,7 @@ var BBTree = {
 			}
 			
 		});
+		debugger;
 		messageBox.slideDown();
 		setTimeout(function(){
 			BBTree.removeIndicator(messageBox);
@@ -137,7 +142,6 @@ var BBTree = {
 			var cBox = cj(k);
 			if(!cBox.hasClass('static'))
 			{
-				console.log(cBox.hasClass('static'));
 				totalBoxHeight += parseInt(cBox.css('height'));
 				totalBoxHeight += parseInt(cBox.css('padding-top'));
 				totalBoxHeight += parseInt(cBox.css('padding-bottom'));
