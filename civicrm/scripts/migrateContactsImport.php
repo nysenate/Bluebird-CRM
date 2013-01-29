@@ -575,7 +575,7 @@ class CRM_migrateContactsImport {
           SET name = NULL
           WHERE name IS NOT NULL;
         ";
-        //CRM_Core_DAO::executeQuery($sql);
+        CRM_Core_DAO::executeQuery($sql);
       }
   }//importDistrictInfo
 

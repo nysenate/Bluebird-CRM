@@ -162,6 +162,9 @@ class CRM_migrateContacts {
     //get contacts and write data
     self::exportContacts($migrateTbl, $optDry);
 
+    //clean up location types
+    self::_cleanLocType($migrateTbl, $optDry);
+
     //related records that we will be exporting with the contact
     $recordTypes = array(
       'email',
@@ -930,6 +933,90 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //send tags to prep
     self::prepareData(array('tags' => $tags), $optDry, 'tags');
   }//exportTags
+
+  /*
+   * ensure there is no bad data in the source address table,
+   * such that there are > 1 address block with the same location type
+   */
+  function _cleanLocType($migrateTbl, $optDry) {
+    //preferred loc type order
+    $locTypes = array(
+      1, //home
+      3, //main
+      4, //other
+      12, //main2
+      11, //other2
+    );
+    $boeLocTypes = array(
+      6, //boe
+      13, //boe mailing
+    );
+
+    //get migrateable contacts with > 1 address of the same loc type
+    $sql = "
+      SELECT a.contact_id, count(a.id) addrCount
+      FROM civicrm_address a
+      JOIN {$migrateTbl} m
+        ON a.contact_id = m.contact_id
+      GROUP BY a.contact_id, a.location_type_id
+      HAVING count(a.id) > 1
+    ";
+    $addr = CRM_Core_DAO::executeQuery($sql);
+
+    while ( $addr->fetch() ) {
+      //get all addresses associated with the contact
+      $sql = "
+        SELECT id, contact_id, location_type_id
+        FROM civicrm_address
+        WHERE contact_id = {$addr->contact_id};
+      ";
+      $dupeLocAddr = CRM_Core_DAO::executeQuery($sql);
+
+      $unusedTypes = $locTypes;
+      $unusedBOETypes = $boeLocTypes;
+      $typeFixes = array();
+      while ( $dupeLocAddr->fetch() ) {
+        if ( in_array($dupeLocAddr->location_type_id, $locTypes) ) {
+          //if unused, leave and remove from unused list
+          if ( in_array($dupeLocAddr->location_type_id, $unusedTypes) ) {
+            unset($unusedTypes[array_search($dupeLocAddr->location_type_id, $unusedTypes)]);
+          }
+          //we need to assign new value
+          else {
+            $unusedTypes = array_values($unusedTypes);
+            $typeFixes[$dupeLocAddr->id] = $unusedTypes[0];
+          }
+        }
+        //boe types
+        elseif ( in_array($dupeLocAddr->location_type_id, $boeLocTypes) ) {
+          //if unused, leave and remove from unused list
+          if ( in_array($dupeLocAddr->location_type_id, $unusedBOETypes) ) {
+            unset($unusedBOETypes[array_search($dupeLocAddr->location_type_id, $unusedBOETypes)]);
+          }
+          //we need to assign new value
+          else {
+            $unusedBOETypes = array_values($unusedBOETypes);
+            $typeFixes[$dupeLocAddr->id] = $unusedBOETypes[0];
+          }
+        }
+      }
+
+      //now update records
+      if ( $optDry ) {
+        bbscript_log("info", 'Addresses with duplicate loc type to be fixed.', $typeFixes);
+      }
+      else {
+        foreach ( $typeFixes as $addrID => $locType ) {
+          $sql = "
+            UPDATE civicrm_address
+            SET location_type_id = {$locType}
+            WHERE id = {$addrID}
+          ";
+          CRM_Core_DAO::executeQuery($sql);
+        }
+      }
+    }
+  }//_cleanLocType
 
   /*
    * build issue code tree
