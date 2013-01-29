@@ -102,7 +102,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'});
             <div class="BBInit"></div>
             {literal}
             <script>
-                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'edit',tabLocation: 'crm-tagTabHeader'}, {entity_id: 216352});
+                BBTree.initContainer('', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {entity_id: 256531});
                 //BBTree.initContainer('two', {pullSets: [296], buttonType: 'tagging'}, {entity_id: 216352, entity_type: 'civicrm_activity'});
             </script>
             {/literal}

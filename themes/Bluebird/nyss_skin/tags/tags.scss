@@ -23,6 +23,7 @@ $levelClassSlug : "lv";
 @mixin mergeTag {@include functionIcon($functionIconLink); background-position: -66px 0px;}
 @mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
 @mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
+@mixin closeButton {@include functionIcon($defaultIconLink); background-position: -97px -129px;}
 /*to put in bb css, not tagging.css*/
 #crm-container 
 {
@@ -33,10 +34,86 @@ $levelClassSlug : "lv";
 }
 
 /*pagestructure*/
+.BBMessages
+{
+	$successColor: #B0D730;
+	$standardColor: #DAF2FF;
+	$errorColor: #EC2E08;
+	$warningColor:#EDF2A0;
+	overflow:visible;
+	height:auto;
+	background-color: $standardColor;
+	color: darken($standardColor, 80%);
+	border: {
+		style: solid;
+		color: darken($standardColor,10%);
+		bottom-width: 1px;
+	}
+	.title {
+		margin:5px 0;
+		font-weight: bold;
+		font-size:18px;
+	}
+	.seeMore {
+		cursor:pointer;
+		font-weight:bold;
+		font-style:italic;
+		text-decoration: underline;
+	}
+	.moreHidden {
+		display:none;
+	}
+	span {
+		font-weight:bold;
+	}
+	padding:5px;
+	display:none;
+	&.static {
+		position:absolute;
+		top:0px;
+		left:0px;
+		z-index: 1;
+		width:495px;
+	}
+	&.BBError {
+		background-color: lighten($errorColor, 10%);
+		color: darken($errorColor, 80%);
+		border: {
+			style: solid;
+			color: $errorColor;
+			bottom-width: 1px;
+		}
+	}
+	&.BBWarning {
+		background-color: $warningColor;
+		color: darken($warningColor, 80%);
+		border: {
+			style: solid;
+			color: darken($warningColor,10%);
+			bottom-width: 1px;
+		}
+	}
+	&.BBSuccess {
+		background-color: $successColor;
+		color: darken($successColor, 80%);
+		border: {
+			style: solid;
+			color: darken($successColor,10%);
+			bottom-width: 1px;
+		}
+	}
+	.closeMessage {
+		@include closeButton;
+		height:16px;
+		width:16px;
+		float:right;
+	}
+}
 #BBTreeContainer, #BBDialog {
+	width:521px;
+	position:relative;
 .BBTree{
-	width:510px;
-	padding:10px;
+	width:520px;
 	overflow-x:hidden;
 	overflow-y:scroll;
 	height:400px;
@@ -44,6 +121,8 @@ $levelClassSlug : "lv";
 	border:1px solid #ccc;
 	margin: 0 auto;
 	cursor:default;
+	/* for message bucket */
+
 	/* for tag hirarchy structure */
 	dt {
 		float: inherit;
@@ -128,11 +207,15 @@ $levelClassSlug : "lv";
 	{
   		dl.#{$levelClassSlug}-#{$i}
   		{
-			margin:0;
-			width: 500px - (10*$i);
+			
+			width: 485px - (10*$i);
     		@if $i != 0
     		{
     			margin-left: 10px;
+    		}
+    		@if $i == 0
+    		{
+    			margin:0 10px;
     		}
     		@if $i > 0
     		{
@@ -144,7 +227,8 @@ $levelClassSlug : "lv";
     	{
     		@if $i == 0
     		{
-    			width: 500px;
+    			width: 485px;
+    			margin: 10px 10px 0;
     			.treeButton {
     				display:none;
     			}
@@ -194,8 +278,11 @@ $levelClassSlug : "lv";
 	* {
 		font-size: 1em;
 	}
-}
-}
+	dl {
+		margin: 0px;
+	}
+} /*BBTree*/
+} /*BBContainer*/
 .loadingGif{
 		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;
 		.lv-0{
