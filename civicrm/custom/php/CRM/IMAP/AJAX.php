@@ -9,7 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $contTime = 6; // time between processMailboxes cron job in mins
+    private static $countTime = 6; // time between processMailboxes cron job in mins
 
     /* setupImap()
      * Parameters: None.
@@ -70,11 +70,12 @@ class CRM_IMAP_AJAX {
      */   
     public static function unifiedMessageInfo($imap,$id,$imap_id) {
 
+        $debug = self::get('debug');
+        $uniStart = microtime(true);
         // check to see if we are connected
         $connection = imap_check($imap->conn());
         if(!$connection ){
           $output = array('code'=>'ERROR','status'=>'0','message'=>'Imap Connection failed');
-
         }else{
           // Pull the message via the UID and output it as plain text if possible
           $email = $imap->getmsg_uid($id);
@@ -87,12 +88,14 @@ class CRM_IMAP_AJAX {
             echo "<h1>Full Email RAW DATA</h1><pre>";
             var_dump($email);
             echo "</pre>";
+            var_dump($countTime);
+
           }
 
           // if message is less the x mins old, check it to see if it matches a contact,
           // if it does directly match, don't allow it to show up in the unmatches screen
           // we do this because the processing scritp hasn't had a chance to match it yet
-          $time = time()-(self::$contTime*60);
+          $time = time()-(self::$countTime*60);
 
           if( $email->uid == '' || $email->time =='' || $email->time > $time){
 
@@ -104,6 +107,16 @@ class CRM_IMAP_AJAX {
             // email has absolutely been processed by script so return it
             $details = ($email->plainmsg) ? $email->plainmsg : $email->htmlmsg;
             $format = ($email->plainmsg) ? "plain" : "html";
+
+            // print_r($details);
+            // var_dump($format);
+
+            // check for fake html 
+            // we don't care if the body only has <br/> tags
+            if(strip_tags($details) != strip_tags($details,"<br>")){
+              $format = 'html';
+            }
+            // var_dump($format);
 
             if($format =='plain'){
                 $tempDetails = preg_replace("/>|</i", "", $details);
@@ -203,6 +216,9 @@ class CRM_IMAP_AJAX {
             );
             $output = array('code'=>$code,'header'=>$header,'forwarded'=>$forwarded,'attachments'=>$attachmentArray);
           }
+
+          $uniEnd = microtime(true);
+          $output['stats']['overview']['time'] = $uniEnd-$uniStart;
 
           if ($debug){
             echo "<h1>Full Email OUTPUT</h1>";
@@ -345,6 +361,7 @@ class CRM_IMAP_AJAX {
                   $checked[''] = 0;
                 }
 
+                $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
 
                 $returnMessage['successes'][$id] =  array( 
                 'subject' =>  $output['forwarded']['subject'],
@@ -364,6 +381,8 @@ class CRM_IMAP_AJAX {
                 'attachment'  => $output['attachments']['overview']['total'],
                 'status' =>$output['header']['status'],
                 'imap_id' =>  $imap_id,
+                'key' => $key,
+
                 // 'origin_lookup' => $output['forwarded']['origin_lookup']
                 );
 
@@ -392,14 +411,18 @@ class CRM_IMAP_AJAX {
     }
 
     public function extract_email_address ($string) {
+        $debug = self::get('debug');
+
         // we have to parse out ldap stuff because sometimes addresses are
         // embedded and, see NYSS #5748 for more details 
 
         // if o= is appended to the end of the email address remove it 
         $string = preg_replace('/\/senate@senate/i', '/senate', $string);
+        $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
+        $string = preg_replace('/"|\'/i', '', $string);
 
         // ldap addresses have slashes, so we do an internal lookup
-        $internal = preg_match("/\//i", $string, $matches);
+        $internal = preg_match("/\/senate/i", $string, $matches);
 
         if($internal == 1){
           $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
@@ -411,7 +434,7 @@ class CRM_IMAP_AJAX {
             $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
             return $return;
           }else{
-            $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed');
+            $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
             return $return;
           }
           
@@ -419,17 +442,22 @@ class CRM_IMAP_AJAX {
           // clean out any anything that wouldn't be a name or email, html or plain-text
           $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
           $string = preg_replace('/<|>|"|\'/i', '', $string);
-          $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
-          $string = preg_replace('/"|\'/i', '', $string);
-
           foreach(preg_split('/ /', $string) as $token) {
+            $name .=$token." ";
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
                   $emails[] = $email;
+                  break; // only want one match 
               }
           }
-          $name = str_replace($emails[0], '', $string);
+          $name = trim(str_replace($emails[0], '', $name));
           $return = array('type'=>'inline','name'=>$name,'email'=>$emails[0]);
+          if ($debug) {
+
+            echo "<h1> extract_email_address Output</h1>";
+            echo "Input : ".$string;
+            var_dump($return);
+          }
           return $return;
         }
     }
@@ -495,6 +523,7 @@ class CRM_IMAP_AJAX {
                                'date_long'   =>  $output['header']['date_long'],
                                'forwarder_date_short'   =>  $output['forwarded']['date_short'],
                                'forwarder_date_long'   =>  $output['forwarded']['date_long'],
+                               'time' => $output['stats']['overview']['time']
                               );
 
           }else if($output['code'] == "ERROR" ){
@@ -859,11 +888,11 @@ class CRM_IMAP_AJAX {
                 }else{
                   // Move the message to the archive folder!
                   $imap->movemsg_uid($messageUid, 'Archive');
-
+                  $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
                   // check to see it it was deleted 
                   $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
                   if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 
-                    $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$output['forwarded']['origin_email']);
+                    $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$output['forwarded']['origin_email'],'key'=>$key);
                   }else{
                     $returnCode = array('code' =>  'ERROR','message' =>  "Message was not deleted ");
                   }

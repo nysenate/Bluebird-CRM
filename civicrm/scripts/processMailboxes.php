@@ -401,16 +401,15 @@ function getAttachments($conn, $num, $parts)
 
 // This is my email body text / LDAP parser 
 function extract_email_address ($string) {
-
   // we have to parse out ldap stuff because sometimes addresses are
   // embedded and, see NYSS #5748 for more details 
 
   // if o= is appended to the end of the email address remove it 
   $string = preg_replace('/\/senate@senate/i', '/senate', $string);
-
+  $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
+  $string = preg_replace('/"|\'/i', '', $string);
   // ldap addresses have slashes, so we do an internal lookup
-  $internal = preg_match("/\//i", $string, $matches);
-
+  $internal = preg_match("/\/senate/i", $string, $matches);
   if($internal == 1){
     $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
       $retrieve = array("sn","givenname", "mail");
@@ -421,26 +420,53 @@ function extract_email_address ($string) {
       $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
       return $return;
     }else{
-      $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed');
+      $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
       return $return;
     }
+    
   }else{
     // clean out any anything that wouldn't be a name or email, html or plain-text
     $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
     $string = preg_replace('/<|>|"|\'/i', '', $string);
-    $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
-    $string = preg_replace('/"|\'/i', '', $string);
-    
     foreach(preg_split('/ /', $string) as $token) {
+      $name .=$token." ";
         $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
         if ($email !== false) {
             $emails[] = $email;
+            break; // only want one match 
         }
     }
-    $name = str_replace($emails[0], '', $string);
+    $name = trim(str_replace($emails[0], '', $name));
     $return = array('type'=>'inline','name'=>$name,'email'=>$emails[0]);
     return $return;
   }
+}
+
+
+function cleanDate($date_string){
+        $matches = array();
+
+        // search for the word date
+        $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
+        $date_string_short = ($count == 1 ) ? $matches[2]  : $date_string;
+
+        // sometimes email clients think its fun to add stuff to the date, remove it here.
+        $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
+   
+        // check if the message is from last year
+        if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
+          $formatted = date("M d, Y", strtotime($date_string_short));
+        }else{
+          if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
+            $formatted = date("M d h:i A", strtotime($date_string_short));
+          }else{
+            $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
+          }
+        }
+        return array('debug'=>$date_string_short, 
+                  'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
+                  'u'=>date("U", strtotime($date_string_short)),
+                  'short'=>$formatted);
 }
 
 
@@ -464,6 +490,13 @@ function extract_email_address ($string) {
   preg_match("/<br*>/i", $body, $html);
 
   // convert html/plain line endings to be in the same format for our regexs' sake 
+
+  // check for fake html
+  // we don't care if the body only has <br/> tags
+  if(strip_tags($details) != strip_tags($details,"<br>")){
+    $format = true;
+  }
+
   if($html){
     $format = "html";
     $tempbody = $body;
@@ -542,12 +575,15 @@ function extract_email_address ($string) {
       error_log("[DEBUG] SOURCE ".$email->replyTo." Matches [".$result['count']."] Records in this instance . Adding with source Bluebird Admin.");
     }
 
+    $fwdDate = cleanDate($tempbody);
+    error_log("[DEBUG] FWD Date ".$fwdDate['long']);
+
     echo "[INFO] ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
     $apiParams = array(
                 "source_contact_id" => $userId,
                 "subject" => $subject,
                 "details" => imap_qprint($email->body),
-                "activity_date_time" => date('YmdHis',strtotime($email->date)),
+                "activity_date_time" => $fwdDate['long'],
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,

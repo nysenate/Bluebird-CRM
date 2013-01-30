@@ -130,4 +130,7 @@
 	<div id="loading-popup" title="please wait">
 		<p> Loading message details.</p>
 	</div>
+	<div id="no_find_match" title="This Message was already matched" style="display:none;">
+		<p> We will automatically assign this message in the next 5 mins.</p>
+	</div>
 </div>

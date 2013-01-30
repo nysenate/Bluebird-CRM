@@ -130,6 +130,7 @@ cj(document).ready(function(){
 						removeRow(messageId+'_'+imapId);
 						cj("#find-match-popup").dialog('close');
 						help_message(data.message);
+						checkForMatch(data.key);
 					}
 				}
 			});
@@ -235,6 +236,7 @@ cj(document).ready(function(){
 									cj("#find-match-popup").dialog('close'); 
 									removeRow(create_messageId+'_'+create_imap_id);
 									help_message('Contact created and '+contactData.message);
+									checkForMatch(contactData.key);
 								}
 							},
 							error: function(){
@@ -257,7 +259,19 @@ cj(document).ready(function(){
  	}else if(cj("#Unmatched").length){
 		pullMessageHeaders();
 	}
-
+		// add a delete conform popup
+	cj( "#no_find_match" ).dialog({
+		modal: true,
+		dialogClass: 'no_find_match',
+		width: 370,
+		autoOpen: false,
+		resizable: false,
+		draggable: false
+	});
+	cj(".no_find_match").live('click', function() {
+		cj("#no_find_match").dialog('open');
+		return false;
+	});
 	// add a delete conform popup
 	cj( "#delete-confirm" ).dialog({
 		modal: true,
@@ -688,10 +702,10 @@ cj(document).ready(function(){
 					if(messages.fromName) cj('#message_left_header').append(messages.fromName);
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+short_subject(messages.fromEmail)+"</span>");
 
-					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.forwarder_date_long+"<br/>");
 					
 					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span><br/>");
+						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span> "+ messages.date_short+ "<br/>");
 					}
 					// add some debug info to the message body on toggle
 					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
@@ -921,7 +935,7 @@ function buildMessageList() {
 			if(value.date_short != null){
 
 				// wrap the row
-				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
+				messagesHtml += '<tr id="'+value.uid+'_'+value.imap_id+'" data-key="'+value.key+'" data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.uid+'"  data-id="'+value.imap_id+'"/></td>';
 
 				// build a match count bubble
 				countWarn = (value.match_count == 1) ? 'warn' :  '';
@@ -1189,7 +1203,18 @@ function short_subject(subject, length){
 		return "N/A";
 	}
  }
-
+						
+function checkForMatch(key){
+	cj('.imapper-message-box').each(function(i, item) {
+		check = cj(this).data('key'); 
+		if (key == check) {
+			$('.matchbubble',this).addClass('warn').html('1').attr('title', 'Will Auto Match In the next few mins');
+			$('.find_match',this).remove();
+			$('.actions',this).prepend('<span class="no_find_match disabled"><a>Find match</a></span>');
+		};
+	});
+ // id = cj(this).data('key');
+}
 function update_count(){
 	count = cj('.imapper-message-box').length;
 	cj("#total_number").html(count);
