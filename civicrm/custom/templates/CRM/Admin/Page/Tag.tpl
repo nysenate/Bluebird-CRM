@@ -24,10 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<style type="text/css" rel="stylesheet" media="screen,projection">
- @import url("/sites/default/themes/Bluebird/nyss_skin/tags/tags.css");
-</style>
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <style>
 .crm-tagListInfo {
     padding:15px;

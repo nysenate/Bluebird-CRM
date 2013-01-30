@@ -787,7 +787,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     'attributes' => array (
       'label'      => 'Unmatched Inbox Messages',
       'name'       => 'Unmatched Inbox Messages',
-      'url'        => 'civicrm/imap/mapper',
+      'url'        => 'civicrm/imap/unmatched',
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
       'separator'  => 2,
@@ -801,7 +801,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     'attributes' => array (
       'label'      => 'Matched Inbox Messages',
       'name'       => 'Matched Inbox Messages',
-      'url'        => 'civicrm/imap/activities',
+      'url'        => 'civicrm/imap/matched',
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
       'separator'  => 0,
