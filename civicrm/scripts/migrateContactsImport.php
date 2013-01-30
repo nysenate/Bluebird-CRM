@@ -746,7 +746,8 @@ class CRM_migrateContactsImport {
     foreach ( $gTypes as $type ) {
       if ( $contact[$type.'_id'] == 4 ) {
         if ( empty($contact[$type.'_custom']) ) {
-          $contact[$type.'_custom'] = $contact[$type.'_display'];
+          $custVal = (!empty($contact[$type.'_display'])) ? $contact[$type.'_display'] : 'Dear Friend';
+          $contact[$type.'_custom'] = $custVal;
         }
       }
       else {

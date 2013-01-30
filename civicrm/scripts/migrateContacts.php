@@ -1208,7 +1208,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function additionalWhere($rType) {
     switch($rType) {
       case 'note':
-        $sql = " AND privacy = 0 ";
+        $sql = " AND privacy = 0 AND entity_table = 'civicrm_contact' ";
         break;
       default:
         $sql = '';
