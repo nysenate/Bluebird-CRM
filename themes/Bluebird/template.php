@@ -120,7 +120,7 @@ function Bluebird_preprocess_page(&$vars) {
     $errorMsg = 'Sorry, unrecognized username or password.';
     foreach ( $msgs['error'] as $key => $msg ) {
       if ( strpos($msg, $errorMsg) !== FALSE ) {
-        $newMsg = 'Sorry, unrecognized username or password. Please try again, or contact your OSR for assistance.';
+        $newMsg = 'Sorry, unrecognized username or password. Please try again, or contact the STS Help Line at x2011 for assistance.';
         drupal_set_message($newMsg, 'error');
       }
       else {
