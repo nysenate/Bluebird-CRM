@@ -24,9 +24,10 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<style type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script>BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}});
+<script>
+BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}});
 </script>
 {/literal}
 {if $title}
