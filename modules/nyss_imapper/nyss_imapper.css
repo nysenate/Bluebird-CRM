@@ -74,7 +74,7 @@ td.name{ padding-left: 0px;margin-left: 0px;}
 .delete a{color:red !important;}
 .delete a:hover{background: #ff9999; }
 
-.autocomplete_tag,.autocomplete-tags-bank{ width: 250px; padding: 10px 4px!important; margin-bottom:10px; float:left;}
+.ac_input,.autocomplete-tags-bank{ width: 250px; padding: 10px 4px!important; margin-bottom:10px; float:left;}
 .autocomplete-tags-bank{width: 258px; padding: 0px;  min-height: 20px; margin-top:10px; max-height: 170px; overflow-y:scroll; overflow-x: hidden; }
 .autocomplete-dropdown{ padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden;}
 .autocomplete-dropdown a{ float: left; width: 100%;}
@@ -95,22 +95,26 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #delete-confirm,#loading-popup{ display: none;}
 .ui-dialog #find-match-popup.ui-dialog-content {padding:0; }
 #message_left,#message_left_tag{float:left; }
+.tag_over_ride{width:655px; height:465px; overflow:auto; }
+
 #message_left .debug_info {display: none; }
 #message_left .debug_on,#message_left .debug_off {color: #336699!important; }
 .debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
 #message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
-
+.message_left_header_tags{  padding:10px 0 ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
 #message_left_header.crmdev,#message_left_header.crmtest{height: 110px;}
 #message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:340px; overflow:auto;  }
-#message_left_email pre,#message_left_email_tag pre{  white-space: pre-wrap;       /* css-3 */
+pre{  white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
  white-space: -pre-wrap;      /* Opera 4-6 */
  white-space: -o-pre-wrap;    /* Opera 7 */
  word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 #message_left_email.crmdev,#message_left_email.crmtest{height: 320px;}
-#message_right,#message_right_tag{ width:265px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:470px;}
+#message_right{ width:265px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:470px;}
+#message_right_tag{ width:255px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 10px; height:465px;}
+
 #find-match-popup .ui-tabs-panel,#tagging-popup .ui-tabs-panel { padding:0;}
 /*.first_name,.last_name {width:46%;}*/
 .hidden{display:none;}
@@ -190,3 +194,10 @@ uniquely sortable tabs for
 
 */
 .disabled a{ color: #999!important; text-decoration: line-through!important;}
+.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px;}
+.shown_email{ margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 640px;}
+.email{ overflow-y: scroll;width: 620px; }
+.email pre { padding: 10px;}
+.info.hidden_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
+.info.shown_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
+.info:hover{background: #ccc; }

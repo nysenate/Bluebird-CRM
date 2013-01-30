@@ -434,9 +434,9 @@ cj(document).ready(function(){
 			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
 		});
 
-		console.log(delete_ids);
-		console.log(delete_secondary);
-		console.log(rows);
+		// console.log(delete_ids);
+		// console.log(delete_secondary);
+		// console.log(rows);
 
 		// // if there are tags selected
 		// // we can either have multiple rows, or single rows selected 
@@ -515,6 +515,17 @@ cj(document).ready(function(){
 		return false;
 	});
 
+	cj(".hidden_email_info").live('click', function() {
+		id = cj(this).data('id');
+		cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
+		cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
+	});
+
+	cj(".shown_email_info").live('click', function() {
+		id = cj(this).data('id');
+		cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
+		cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
+	});
 
 	// add tag modal 
 	cj(".add_tag").live('click', function() {
@@ -522,12 +533,14 @@ cj(document).ready(function(){
 
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
-
+		cj('#message_left_tag').html('').removeClass('tag_over_ride');
 		cj(".autocomplete_tag").val('');
+		cj("#contact_tag_name").val('');
+		cj("#activity_tag_name").val('');
 		cj(".autocomplete-tags-bank").html('');
 		cj('#message_left_header_tag').html('');
-		cj('.autocomplete-dropdown').html('');
-
+		cj('#message_left_tag').html('').html('<div id="message_left_header_tag"></div><div id="message_left_email_tag"></div>');
+		
 		cj.ajax({
 			url: '/civicrm/imap/ajax/activityDetails',
 			data: {id: activityId, contact: contactId },
@@ -537,22 +550,27 @@ cj(document).ready(function(){
 				messages = cj.parseJSON(data);
 
 				if(messages.code == 'ERROR'){
-					if(messages.clear =='true')  removeRow(activityId);
+					if(messages.clear =='true') removeRow(activityId);
 					alert('Unable to load Message : '+ messages.message);
 					return false;
 				}else{
- 
-					cj('#tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 180, selectFirst : false, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 1
-					}).result( function(event, data, json) { 
-					}).bind( 'click', function( ) {  });
-			cj('#tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 180, selectFirst : false, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 1
-					}).result( function(event, data, json) { 
-					}).bind( 'click', function( ) {  });
 
+					cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+					}).result( function(event, data, json) {
+						// console.log('Results : '+data);  // when you click on the results
+					}).bind( 'click', function( ) {
+						// console.log('Click : '+data); ? wtf 
+					});
 
-					http://skelos/civicrm/ajax/taglist?parentId=296&key=7371d1bba6c7758e9f8a570874c6c547&name=brown
+					cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+					}).result( function(event, data, json) {
+						// console.log('Results : '+data);  // when you click on the results
+					}).bind( 'click', function( ) {
+						// console.log('Click : '+data); ? wtf 
+					});
+					// http://skelos/civicrm/ajax/taglist?parentId=296&key=7371d1bba6c7758e9f8a570874c6c547&name=brown
 
-			 		cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+			 		cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
 					if ((messages.forwardedEmail != '')){
@@ -564,6 +582,22 @@ cj(document).ready(function(){
 						buttons: {
 							"Tag": function() {
 								pushtag();
+							},
+							"Tag and Clear": function() {
+								// pushtag();
+								cj("#clear-confirm").dialog('open');
+								cj("#clear-confirm").dialog({
+									buttons: {
+										"Clear": function() {
+											// ClearActivity(activityId);
+											cj("#clear-confirm").dialog('close');
+										},
+										Cancel: function() {
+											cj("#clear-confirm").dialog('close');
+										}
+									}
+								});
+								cj("#tagging-popup").dialog('close');
 							},
 							Cancel: function() {
 								cj("#tagging-popup").dialog('close');
@@ -583,6 +617,7 @@ cj(document).ready(function(){
  		return false;
 	});
 
+
 	// dropdown functions on the matched Messages page
 	// modal for tagging multiple contacts, different header info is shown
 	// opens the add_tag popup
@@ -596,11 +631,113 @@ cj(document).ready(function(){
 			contactIds.push(cj(this).attr('data-id'));
 		});
 
-		cj("#loading-popup").dialog('close');
-		cj('#tagging-popup-header').html('');
-		cj('#tagging-popup-header').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
+		if(!activityIds.length){
+			cj("#loading-popup").dialog('close');
+			alert('Use the checkbox to select a Message');
+			return false;
+		}
+		// render the multi message view 
+
+		cj("#contact_tag_name").val('');
+		cj("#activity_tag_name").val('');
+		cj(".autocomplete_tag").val('');
+
+		cj(".autocomplete-tags-bank").html('');
+		cj('#message_left_header_tag').html('');
+		cj('.autocomplete-dropdown').html('');
+		cj('#message_left_tag').html('').addClass('tag_over_ride');
+		cj('#message_right_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
+
+		cj.each(activityIds, function(key, activityId) {
+			// console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
+
+			// return false;
+
+			cj.ajax({
+				url: '/civicrm/imap/ajax/activityDetails',
+				data: {id: activityId, contact: contactIds[key] },
+				success: function(data,status) {
+
+					cj("#loading-popup").dialog('close');
+					messages = cj.parseJSON(data);
+
+					if(messages.code == 'ERROR'){
+						if(messages.clear =='true') removeRow(activityId);
+						alert('Unable to load Message : '+ messages.message);
+						return false;
+					}else{
+
+						// .append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+
+						
+						// cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+						// }).result( function(event, data, json) {
+						// 	// console.log('Results : '+data);  // when you click on the results
+						// }).bind( 'click', function( ) {
+						// 	// console.log('Click : '+data); ? wtf 
+						// });
+
+						// cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+						// }).result( function(event, data, json) {
+						// 	// console.log('Results : '+data);  // when you click on the results
+						// }).bind( 'click', function( ) {
+						// 	// console.log('Click : '+data); ? wtf 
+						// });
+						// // http://skelos/civicrm/ajax/taglist?parentId=296&key=7371d1bba6c7758e9f8a570874c6c547&name=brown
+
+				 		cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+short_subject(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
+
+						if ((messages.forwardedEmail != '')){
+							cj('#header_'+activityId).append("<span class='popup_def' >Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+						}
+						
+						cj('#email_'+activityId).html("<span class='info hidden_email_info' data-id='"+activityId+"'>Show Email</span><br/><span class='email'>"+messages.details+"</span>");
+						
+				
+						
+					}
+
+				},
+				error: function(){
+					alert('Unable to load Message');
+				}
+			});
+
+		});
+
+		cj( "#tagging-popup" ).dialog({
+			buttons: {
+				"Tag": function() {
+					pushtag();
+				},
+				"Tag and Clear": function() {
+					// pushtag();
+					cj("#clear-confirm").dialog('open');
+					cj("#clear-confirm").dialog({
+						buttons: {
+							"Clear": function() {
+								// ClearActivity(activityId);
+								cj("#clear-confirm").dialog('close');
+							},
+							Cancel: function() {
+								cj("#clear-confirm").dialog('close');
+							}
+						}
+					});
+					cj("#tagging-popup").dialog('close');
+				},
+				Cancel: function() {
+					cj("#tagging-popup").dialog('close');
+				}
+			}
+		});
+
+		cj("#tabs_tag").tabs();
+		cj('#tabs_tag').tabs({ selected: 0 });
 		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
 		cj("#tagging-popup").dialog('open');
+
+		cj("#loading-popup").dialog('close');
 		return false;
 	});
 
@@ -1112,8 +1249,8 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+short_subject(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="disabled no_add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="disabled no_add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
 			}
 		});

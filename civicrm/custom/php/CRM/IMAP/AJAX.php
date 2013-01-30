@@ -382,6 +382,7 @@ class CRM_IMAP_AJAX {
                 'status' =>$output['header']['status'],
                 'imap_id' =>  $imap_id,
                 'key' => $key,
+                'time' => $output['stats']['overview']['time'],
 
                 // 'origin_lookup' => $output['forwarded']['origin_lookup']
                 );
@@ -850,11 +851,11 @@ class CRM_IMAP_AJAX {
               'source_contact_id' => $forwarderId,
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
-              'subject' => $subject,
+              'subject' => strip_tags($subject),
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
               'activity_date_time' => $date,
-              'details' => $body,
+              'details' => strip_tags($body),
               'version' => 3
           );
           $activity = civicrm_api('activity', 'create', $params);
@@ -1026,38 +1027,75 @@ class CRM_IMAP_AJAX {
         require_once 'CRM/Core/BAO/Tag.php';
         require_once 'CRM/Core/BAO/EntityTag.php';
         require_once 'CRM/Activity/BAO/ActivityTarget.php';
+        require_once 'api/api.php';
 
         // getEntitiesByTag  = get activities id's that are tagged with inbox polling tag
         $tag     = new CRM_Core_BAO_Tag();
         $tag->id = self::getInboxPollingTagId();
         $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
         $debug = self::get('debug');
-
+        if($debug){
+          // var_dump($result);
+        }
         foreach($result as $id) {
-            // pull in full activity record 
-            $params = array('version'   =>  3,
-                            'activity'  =>  'get',
-                           'id' => $id,
-                            );
-            $activity = civicrm_api('activity', 'get', $params);
-            $activity_node = $activity['values'][$id];
+          // pull in full activity record 
+          $params = array('version'   =>  3,
+                          'activity'  =>  'get',
+                         'id' => $id,
+                          );
+          $activity = civicrm_api('activity', 'get', $params);
+          $activity_node = $activity['values'][$id];
 
-            // get the user the activity is attached to
-            $user_id = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId($id);
-            if($user_id){
-                $params = array('version'   =>  3,
-                            'activity' => 'get',
-                            'id' => $user_id[0],
-                        );
-                $contact = civicrm_api('contact', 'get', $params);
-                $contact_node = $contact['values'][$user_id[0]];
-            }
+          if($debug){
+            // var_dump($activity_node);
+          }
 
+          // get the user the activity is attached to
+          // $user_id = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId($id);
+          // this shit just randomly broke
+
+            $query = <<<EOQ
+SELECT *
+FROM `civicrm_activity_target`
+WHERE `activity_id` = $id
+EOQ;
+
+          $check_tag = mysql_query($query, self::db());
+          if($row = mysql_fetch_assoc($check_tag)) {
+            $result_user = $row; 
+          }
+
+          if($debug){
+            var_dump($query);
+            // var_dump($result_user);
+            var_dump($result_user['target_contact_id']);
+          }
+
+          $user_id = $result_user['target_contact_id'];
+
+          if($user_id){
+              $params = array('version'   =>  3,
+                          'activity' => 'get',
+                          'id' => $user_id,
+                      );
+              $contact = civicrm_api('contact', 'get', $params);
+              $contact_node = $contact['values'][$user_id];
+          }
+
+          if($debug){
+            var_dump($contact_node);
+            var_dump($contact_node['contact_is_deleted']);
+          }
+
+          if($contact_node['contact_is_deleted'] == '1'){
+            $errors[$id] = array('activitId' =>  $id, 'user'=>$user_id,'contact_is_deleted'=>$contact_node['contact_is_deleted']);
+          }else{
 
             // find out who the forwarder is
             $params = array('version'   =>  3,
                             'id' => $activity_node['source_contact_id'],
             );
+
             $forwarder = civicrm_api('contact', 'get', $params );
             $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
 
@@ -1066,10 +1104,6 @@ class CRM_IMAP_AJAX {
             $date_long =  $cleanDate['long'];
             $date_u =  $cleanDate['u'];
 
-            // message to return 
-            if ($debug){
-              var_dump($activity_node);
-            }
             $returnMessage[$id] = array('activitId'    =>  $id,
                             'contactId' =>  $contact_node['contact_id'],
                             'fromName'   =>  $contact_node['display_name'],
@@ -1079,18 +1113,20 @@ class CRM_IMAP_AJAX {
                             'fromEmail'  =>  $contact_node['email'],
                             'forwarderName' => $forwarder_node['display_name'],
                             'forwarder' => $forwarder_node['email'],
-                            'activityId' => $activity_node['id'],
                             'subject'    =>  $activity_node['subject'],
-                            'details'  =>  $activity_node['details'],
+                            // 'details'  =>  strip_tags($activity_node['details'],"<br/>"),
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
                             'date_short'   =>  $date_short,
                             'date_long' => $date_long,
                             'date_u' => $date_u
-
                             );
+           } 
          }
-         $returnMessage['count'] = count($returnMessage);
+        $returnMessage['count'] = count($returnMessage);
+        $returnMessage['error_count'] = count($errors);
+        $returnMessage['errors'] = $errors;
+
         echo json_encode($returnMessage);
         CRM_Utils_System::civiExit();
     }
@@ -1145,6 +1181,12 @@ EOQ;
         $result_target = $row['COUNT(id)'];
       }
 
+      // message to return 
+      if ($debug){
+        var_dump($query);
+        var_dump($result_target);
+      }
+      
       if($result_target != '1' ){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
@@ -1416,7 +1458,8 @@ EOQ;
     public static function getTags() {
         require_once 'api/api.php';
         $name = self::get('s');
-        $i = 0;
+        $start = self::get('timestamp');
+
         $results = array();
 
         $query = <<<EOQ
@@ -1428,12 +1471,15 @@ EOQ;
         // [{"name":"aaa","id":"aaa:::value"}]
 
         $result = mysql_query($query, self::db());
+        $output = array("name"=>$name, "id"=> $name.':::value');
         while($row = mysql_fetch_assoc($result)) {
-            array_push( $results,  array("label"=>$row['name'], "value"=>$row['id']));
-            $i++;
+            array_push( $output,  array("name"=>$row['name'], "id"=>$row['id']));
         }
-        $final_results = array('items'=> $results);
-        echo json_encode($final_results);
+        // $final_results = array('items'=> $results);
+
+        $final_results = '[{"name":"'.$name.'","id":"'.$name.':::value"},{"name":"'.$name.'","id":"'.$name.':::value"}]';
+        echo $final_results;
+        // echo json_encode($output);
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }

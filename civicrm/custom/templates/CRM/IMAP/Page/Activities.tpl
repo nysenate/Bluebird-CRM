@@ -21,8 +21,8 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-<!-- 			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
- -->			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
+			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
+			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
 			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 		</div>
 	</div>
@@ -113,16 +113,16 @@
 				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
 				<div id="tab1_tag">
 					<div id='TagContact'>
-					<input type="text" id="tag_name"/>
+					<input type="text" id="contact_tag_name"/>
 					<input type="hidden" id="tag_name_id" value="">
 					<div id="used_for_warning" class="status message"></div>
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
-						<div class="autocomplete-tags-bank" id="activity" style=""></div>
-						<input type='text' class='autocomplete_tag' id='autocomplete_tag_activity' data-id="activity"/><br/> <hr/>
-						<div class="autocomplete-dropdown" id="activity"  style=""></div>
+						<input type="text" id="activity_tag_name"/>
+						<input type="hidden" id="tag_name_id" value="">
+						<div id="used_for_warning" class="status message"></div>
 					</div>
 				</div>
 			</div>
