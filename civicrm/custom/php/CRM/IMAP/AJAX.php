@@ -1104,7 +1104,7 @@ EOQ;
             $date_long =  $cleanDate['long'];
             $date_u =  $cleanDate['u'];
 
-            $returnMessage[$id] = array('activitId'    =>  $id,
+            $returnMessage['successes'][$id] = array('activitId'    =>  $id,
                             'contactId' =>  $contact_node['contact_id'],
                             'fromName'   =>  $contact_node['display_name'],
                             'contactType'   =>  $contact_node['contact_type'],
@@ -1114,7 +1114,6 @@ EOQ;
                             'forwarderName' => $forwarder_node['display_name'],
                             'forwarder' => $forwarder_node['email'],
                             'subject'    =>  $activity_node['subject'],
-                            // 'details'  =>  strip_tags($activity_node['details'],"<br/>"),
                             'match_type'  =>  $activity_node['is_auto'],
                             'original_id'  =>  $activity_node['original_id'],
                             'date_short'   =>  $date_short,
@@ -1123,8 +1122,10 @@ EOQ;
                             );
            } 
          }
-        $returnMessage['count'] = count($returnMessage);
-        $returnMessage['error_count'] = count($errors);
+        $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
+        $returnMessage['stats']['overview']['errors'] =   count($errors);
+        $returnMessage['stats']['overview']['total'] =  count($returnMessage['successes']) + count($errors);
+        $returnMessage['stats']['overview']['time'] = $end-$start;
         $returnMessage['errors'] = $errors;
 
         echo json_encode($returnMessage);

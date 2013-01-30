@@ -1218,8 +1218,9 @@ function buildActivitiesList() {
 		cj("#total_number").html('0');
 	}else{
 		var messagesHtml = '';
-		var total_results = messages.count;
-		cj.each(messages, function(key, value) {
+		var total_results = messages.stats.overview.successes;
+		// console.log(messages);
+		cj.each(messages.successes, function(key, value) {
 			if(value.date_short != null){
 				messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
 
