@@ -1208,9 +1208,11 @@ function checkForMatch(key){
 	cj('.imapper-message-box').each(function(i, item) {
 		check = cj(this).data('key'); 
 		if (key == check) {
-			$('.matchbubble',this).addClass('warn').html('1').attr('title', 'Will Auto Match In the next few mins');
-			$('.find_match',this).remove();
-			$('.actions',this).prepend('<span class="no_find_match disabled"><a>Find match</a></span>');
+			if($('.matchbubble.empty',this).length){
+				$('.matchbubble',this).removeClass('empty').addClass('warn').html('1').attr('title', 'Will Auto Match In the next few mins');
+				$('.find_match',this).remove();
+				$('.actions',this).prepend('<span class="no_find_match disabled"><a>Find match</a></span>');	
+			}
 		};
 	});
  // id = cj(this).data('key');

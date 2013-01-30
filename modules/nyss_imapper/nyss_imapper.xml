@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <menu>
   <item>
-     <path>civicrm/imap/mapper</path>
+     <path>civicrm/imap/unmatched</path>
      <title>IMAP Unmatched Messages</title>
      <page_callback>CRM_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
     <item>
-     <path>civicrm/imap/activities</path>
+     <path>civicrm/imap/matched</path>
      <title>IMAP Matched Messages</title>
      <page_callback>CRM_IMAP_Page_Activities</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
