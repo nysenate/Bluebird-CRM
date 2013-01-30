@@ -141,6 +141,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $rows = array();
     // temp table to hold all altered contact-ids
     //NYSS 5719 TODO - field order was modified (log_action); review in next version of core
+    CRM_Core_DAO::executeQuery('DROP TABLE IF EXISTS civicrm_temp_civireport_logsummary');
     $sql = "
 CREATE TEMPORARY TABLE
        civicrm_temp_civireport_logsummary ( id int(10),
@@ -191,6 +192,15 @@ CREATE TEMPORARY TABLE
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
 ORDER BY entity_log_civireport.log_date DESC {$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
+    //NYSS 6111 - hackish temporary solution; see Jira 11798
+    $sql = str_replace('entity_log_civireport.id as log_civicrm_entity_altered_contact_id',
+      'entity_log_civireport.altered_contact_id as log_civicrm_entity_altered_contact_id',
+      $sql);
+    $sql = str_replace('entity_log_civireport.display_name as log_civicrm_entity_altered_contact',
+      'entity_log_civireport.altered_contact as log_civicrm_entity_altered_contact',
+      $sql);
+    //CRM_Core_Error::debug_var('sql',$sql);exit();
+
     $this->buildRows($sql, $rows);
     //CRM_Core_Error::debug_var('$rows',$rows);
 
