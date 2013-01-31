@@ -365,13 +365,18 @@ cj(document).ready(function(){
 				"Delete": function() {
 					cj( this ).dialog( "close" );
 					if(cj("#Activities").length){
+						cj("#reloading-popup").dialog('open');
 						cj.each(delete_ids, function(key, value) {
 							DeleteActivity(value);
 						});
+						cj("#reloading-popup").dialog('close');
 					}else{
+						cj("#reloading-popup").dialog('open');
 						cj.each(delete_ids, function(key, value) {
 							DeleteMessage(value,delete_secondary[key]);
 						});
+						cj("#reloading-popup").dialog('close');
+
 					}
 				},
 				Cancel: function() {
@@ -397,6 +402,16 @@ cj(document).ready(function(){
 
 	// add a loading icon popup
 	cj( "#loading-popup" ).dialog({
+		modal: true,
+		width: 200,
+		autoOpen: false,
+		resizable: false,
+		title: 'Please Wait',
+		draggable: false
+	});
+
+	// add a reloading icon popup
+	cj( "#reloading-popup" ).dialog({
 		modal: true,
 		width: 200,
 		autoOpen: false,
@@ -779,9 +794,12 @@ cj(document).ready(function(){
 		cj( "#clear-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
+					cj("#reloading-popup").dialog('open');
 					cj.each(delete_ids, function(key, value) {
 						ClearActivity(value);
 					});
+					cj("#reloading-popup").dialog('close');
+
 				},
 				Cancel: function() {
 					cj( this ).dialog( "close" );

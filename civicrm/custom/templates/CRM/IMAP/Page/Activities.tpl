@@ -94,6 +94,9 @@
 	<div id="loading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
 	</p>
+	<div id="reloading-popup" title="please wait" style="display:none;">
+		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.
+	</p>
 	</div>
 
 	<div id="tagging-popup" title="Tagging" style="display:none;">
