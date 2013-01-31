@@ -831,7 +831,6 @@ class CRM_IMAP_AJAX {
             if ($debug){
               echo "<h1>Contact Non matching results </h1>";
             }
-
             // if the records don't match, count it, an if the number is > 1 add the record
             foreach($results as $email) {
                 if($email['email'] == $fromEmail){

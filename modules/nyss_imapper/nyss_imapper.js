@@ -1305,16 +1305,11 @@ function checkForMatch(key){
 			}
 		};
 	});
+	helpMessage(remove+' Records Automatically Matched')
 }
 
 // updates the count at the top of the page 
 function updateTotalCount(){
-	// count = cj('.imapper-message-box').length;
-	// cj("#total_number").html(count);
-	// if(count < 1){
-	// 	cj("#total_number").html('0');
-	// 	cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records left, Please Reload the page</td>');
-	// }
 	var count = cj("#total_number").html();
 	count = parseInt(count,10);
 	output = count -1;
