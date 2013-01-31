@@ -22,6 +22,9 @@ cj(document).ready(function(){
  	}else if(cj("#Unmatched").length){
 		pullMessageHeaders();
 	}
+	cj('#search_help').live('click', function() {
+		cj("#help-popup").dialog('open'); 
+	});
 
 	// Dialogs
 	cj( "#help-popup" ).dialog({
@@ -61,9 +64,7 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
-	cj('#search_help').live('click', function() {
-		cj("#help-popup").dialog('open'); 
-	});
+
 	
 	// add a find match popup
 	cj( "#find-match-popup" ).dialog({
@@ -107,10 +108,10 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
-	cj(".no_find_match").live('click', function() {
-		cj("#no_find_match").dialog('open');
-		return false;
-	});
+	// cj(".no_find_match").live('click', function() {
+	// 	cj("#no_find_match").dialog('open');
+	// 	return false;
+	// });
 
 
 	filter.live('click', function() {
@@ -1316,16 +1317,18 @@ function short_subject(subject, length){
 						
 function checkForMatch(key){
 	cj('.imapper-message-box').each(function(i, item) {
-		check = cj(this).data('key'); 
+		check = cj(this).data('key'); 		
+		id = cj(this).attr('id'); 
+		remove = 0;
 		if (key == check) {
 			if($('.matchbubble.empty',this).length){
-				$('.matchbubble',this).removeClass('empty').addClass('warn').html('1').attr('title', 'Will Auto Match In the next few mins');
-				$('.find_match',this).remove();
-				$('.actions',this).prepend('<span class="no_find_match disabled"><a>Find match</a></span>');	
+				remove++;
+				removeRow(id);
 			}
 		};
 	});
- // id = cj(this).data('key');
+	cj("#reloading-popup").dialog('open');
+ 
 }
 function update_count(){
 	// count = cj('.imapper-message-box').length;
