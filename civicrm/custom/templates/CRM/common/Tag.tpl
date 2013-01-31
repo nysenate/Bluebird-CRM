@@ -34,24 +34,20 @@
             hintText: hintText, 
             onAdd: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
-				
                 //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                    var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj(".BBtree.edit.tab input:checkbox:checked").length + existingTagsInTagset;  
-                    console.log(tagCount);
-                    cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount++;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
             },
             onDelete: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'delete', item.id );
-				
                 //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                    var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj(".BBtree.edit.tab input:checkbox:checked").length + existingTagsInTagset;
-                    console.log(tagCount); 
-                    cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount--;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
             } 
          });

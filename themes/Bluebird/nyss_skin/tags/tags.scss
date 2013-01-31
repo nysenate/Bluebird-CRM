@@ -1,7 +1,8 @@
 /*
 
 Tags CSS
-SassCommand: sass --watch C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.scss:C:\projects\Bluebird-CRM\themes\Bluebird\nyss_skin\tags\tags.css
+SassCommandWin: sass --watch themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
+SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
 
 
 */
@@ -111,7 +112,7 @@ $levelClassSlug : "lv";
 	}
 }
 #BBTreeContainer, #BBDialog {
-	width:521px;
+	width:522px;
 	position:relative;
 	margin: 0 auto;
 	overflow:hidden;
