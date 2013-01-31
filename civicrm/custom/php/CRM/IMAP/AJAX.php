@@ -830,16 +830,18 @@ class CRM_IMAP_AJAX {
             $matches = 0;
             if ($debug){
               echo "<h1>Contact Non matching results </h1>";
-              // if the records don't match, count it, an if the number is > 1 add the record
-              foreach($results as $email) {
-                  if($email['email'] == $fromEmail){
-                      if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
-                  }else{
-                      $matches++;
-                      if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
-                  }
-              }
             }
+            
+            // if the records don't match, count it, an if the number is > 1 add the record
+            foreach($results as $email) {
+                if($email['email'] == $fromEmail){
+                    if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                }else{
+                    $matches++;
+                    if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                }
+            }
+            
             // get contact info for return message
             $ContactInfo = self::contactRaw($contactId);
             $ContactName = $ContactInfo['values'][$contactId]['display_name'];
@@ -864,7 +866,7 @@ class CRM_IMAP_AJAX {
               'source_contact_id' => $forwarderId,
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
-              'subject' => strip_tags($subject),
+              'subject' => substr(strip_tags($subject),0,200),
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
               'activity_date_time' => $date,
