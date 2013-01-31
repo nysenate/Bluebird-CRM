@@ -1015,6 +1015,7 @@ var BBTreeModal = {
 			}
 		});
 		callTree.slideDownTree();
+		modalLoadingGif('remove', '.BBTree.modal');
 	},
 	addDialogInfo: function() //writes what's in the modal
 	{
@@ -1088,6 +1089,7 @@ var BBTreeModal = {
 		BBTreeModal['parentInstance'] = cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class');
 		this.resetCurrentSettings();
 		BBTreeModal.tagInfo(obj, tagLabel);
+		this.makeModalBox();
 		switch(this.taggedMethod) //sets both open
 		{
 			case 'convert': BBTreeModal.defaultSettings['open'] = BBTreeModal.convertTag.setOpen(); break;
@@ -1099,7 +1101,7 @@ var BBTreeModal = {
 			case 'add': BBTreeModal.defaultSettings['open'] = BBTreeModal.addTag.setOpen(); break;
 			default: alert('Invalid Modifier'); break;
 		}
-		this.makeModalBox();
+		
 	},
 	applyHtml: function(data){
 		cj('#BBDialog').append(data);
@@ -1114,6 +1116,7 @@ var BBTreeModal = {
 			case 'add': BBTreeModal.addTag.runFunction(); break;
 			default: break;
 		}
+		modalLoadingGif('add', '.BBTree.modal');
 	},
 	convertTag: {
 		setOpen: function(){
@@ -1684,11 +1687,29 @@ function updateViewContactPage(tagLabel, remove)
 	}
 	return true;
 }
-function modalLoadingGif(path)
+function modalLoadingGif(path, addLoc)
 {
 	switch(path){
-		case 'add': cj('.ui-dialog-buttonpane').addClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "hidden"); break;
-		case 'remove': cj('.ui-dialog-buttonpane').removeClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "visible"); break;
+		case 'add': 
+			if(addLoc)
+			{
+				cj(addLoc).addClass('loadingGif');
+			}
+			else
+			{
+				cj('.ui-dialog-buttonpane').addClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "hidden"); 
+			}
+			break;
+		case 'remove': 
+			if(addLoc)
+			{
+				cj(addLoc).removeClass('loadingGif');
+			}
+			else
+			{
+				cj('.ui-dialog-buttonpane').removeClass('loadingGif');cj('.ui-dialog-buttonset').css("visibility", "visible"); 
+			}
+			break;
 		default: break;
 	}		
 }
