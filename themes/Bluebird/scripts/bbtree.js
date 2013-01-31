@@ -1492,7 +1492,7 @@ var BBTreeModal = {
 			]);
 		},
 		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
-			if(tdata.treeParent == 291)
+			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				tlvl++;
@@ -1505,7 +1505,7 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span><span class="fCB">'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
+				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
 				if(cj('dl#'+BBTreeModal.taggedID).length != 0)
 				{
 					cj('dl#'+BBTreeModal.taggedID).append(toAddDT);
