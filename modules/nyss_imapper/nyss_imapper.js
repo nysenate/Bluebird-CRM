@@ -1248,7 +1248,9 @@ function helpMessage(message){
 	var d = new Date();
 	var h = d.getHours();
 	var m = d.getMinutes();
+	if(m < 10){ m = '0'+m;}
 	var s = d.getSeconds();
+	if(s < 10){ s = '0'+s;}
 	var rm = h+"_"+m;
 	var messageclass = message.replace(/ /g,'');
 	var updateCheck = cj("#top").find("."+messageclass).html();
