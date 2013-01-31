@@ -29,16 +29,8 @@
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script type="text/javascript">
 BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}}); 
-//document.ready(); this is when the page drops the results in. WAAAAAY FASTER.
 </script>
 <style>
-/*.hit {ldelim}padding-left:10px;{rdelim}*/ /*NYSS*/
-/*.tree li {ldelim}padding-left:10px;{rdelim}
-#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
-.jstree-icon {ldelim}border: 1px solid white;{rdelim}*/ /*NYSS*/
-/*to add to tags.css*/
 #crm-tagListWrap {padding:10px; height:auto;}
 </style>
 {/literal}

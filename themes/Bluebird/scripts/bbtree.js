@@ -806,6 +806,7 @@ var BBTreeTag = {
 						BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
 						cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
 						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
+						updateViewContactPage(tagLabel);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
 					}
 				}
@@ -829,7 +830,7 @@ var BBTreeTag = {
 						BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
 						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
 						BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
-						updateViewContactPage(tagLabel);
+						updateViewContactPage(tagLabel, 'remove');
 					}
 				}
 			});
@@ -1642,28 +1643,46 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		return(floatControlBox); 
 	}
 }
-function updateViewContactPage(tagLabel)
+function updateViewContactPage(tagLabel, remove)
 {
 	var tabCounter = cj('li#tab_tag em').html();
 	var tagLiteralName = cj(BBTree.treeLoc + ' dt#'+ tagLabel + ' .tag .name').html();
 	var headList = cj('.contactTagsList.help span').html();
-	if(headList)
+	if(remove == 'remove')
 	{
+		headList = headList.replace(tagLiteralName, '');
 		var headSplit = headList.split(" • ");
-		var appendAfter = headSplit.length;
-		headSplit[appendAfter] = tagLiteralName;
+		cj.each(headSplit, function(i, k){
+			if(k == '')
+			{
+				headSplit.splice(i,1);
+			}
+		});
 		headSplit.sort();
 		headList = headSplit.join(" • ");
 		cj('.contactTagsList.help span').html(headList);
+		cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
 	}
 	else
 	{
-		headList = tagLiteralName;
-		cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+		
+		if(headList)
+		{
+			var headSplit = headList.split(" • ");
+			var appendAfter = headSplit.length;
+			headSplit[appendAfter] = tagLiteralName;
+			headSplit.sort();
+			headList = headSplit.join(" • ");
+			cj('.contactTagsList.help span').html(headList);
+		}
+		else
+		{
+			headList = tagLiteralName;
+			cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+		}
+		cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 	}
-	cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 	return true;
-
 }
 function modalLoadingGif(path)
 {
