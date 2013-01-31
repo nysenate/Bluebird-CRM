@@ -1252,7 +1252,8 @@ function helpMessage(message){
 	var s = d.getSeconds();
 	if(s < 10){ s = '0'+s;}
 	var rm = h+"_"+m;
-	var messageclass = message.replace(/ /g,'');
+	var messageclass = message.replace(/[^a-z0-9]/gi,'');;
+
 	var updateCheck = cj("#top").find("."+messageclass).html();
 
 	if(updateCheck){
