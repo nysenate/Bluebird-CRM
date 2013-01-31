@@ -374,7 +374,7 @@ class CRM_IMAP_AJAX {
                   $checked[''] = 0;
                 }
 
-                $key =  substr(md5($output['forwarded']['origin_email'].$output['forwarded']['origin_name']), 0, 8);
+                $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
 
                 $returnMessage['successes'][$id] =  array( 
                 'subject' =>  $output['forwarded']['subject'],
@@ -831,7 +831,7 @@ class CRM_IMAP_AJAX {
             if ($debug){
               echo "<h1>Contact Non matching results </h1>";
             }
-            
+
             // if the records don't match, count it, an if the number is > 1 add the record
             foreach($results as $email) {
                 if($email['email'] == $fromEmail){
@@ -904,7 +904,7 @@ class CRM_IMAP_AJAX {
                 }else{
                   // Move the message to the archive folder!
                   $imap->movemsg_uid($messageUid, 'Archive');
-                  $key =  substr(md5($output['forwarded']['origin_email'].$output['forwarded']['origin_name']), 0, 8);
+                  $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
                   // check to see it it was deleted 
                   $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
                   if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 
