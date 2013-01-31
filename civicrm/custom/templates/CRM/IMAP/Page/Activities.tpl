@@ -21,8 +21,8 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-<!-- 			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
- -->			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
+			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
+			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
 			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
 		</div>
 	</div>
@@ -118,14 +118,14 @@
 					<div id='TagContact'>
 					<input type="text" id="contact_tag_name"/>
 					<input type="hidden" id="tag_name_id" value="">
-					<div id="used_for_warning" class="status message"></div>
+					<div id="" class="">tagging is not working yet, but check the interface out</div>
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
 						<input type="text" id="activity_tag_name"/>
 						<input type="hidden" id="tag_name_id" value="">
-						<div id="used_for_warning" class="status message"></div>
+						<div id="" class="">tagging is not working yet, but check the interface out</div>
 					</div>
 				</div>
 			</div>

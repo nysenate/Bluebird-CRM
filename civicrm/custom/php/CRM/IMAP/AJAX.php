@@ -1487,14 +1487,15 @@ EOQ;
         // [{"name":"aaa","id":"aaa:::value"}]
 
         $result = mysql_query($query, self::db());
-        $output = array("name"=>$name, "id"=> $name.':::value');
+        $output = '';
+        // $output = array("name"=>$name, "id"=> $name.':::value');
         while($row = mysql_fetch_assoc($result)) {
-            array_push( $output,  array("name"=>$row['name'], "id"=>$row['id']));
+         $output .= $row['name']."|".$row['id']."\n";
         }
         // $final_results = array('items'=> $results);
 
-        $final_results = '[{"name":"'.$name.'","id":"'.$name.':::value"},{"name":"'.$name.'","id":"'.$name.':::value"}]';
-        echo $final_results;
+        // $final_results = '[{"name":"'.$name.'","id":"'.$name.':::value"},{"name":"'.$name.'","id":"'.$name.':::value"}]';
+        echo $output;
         // echo json_encode($output);
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
