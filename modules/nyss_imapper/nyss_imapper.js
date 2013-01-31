@@ -1245,27 +1245,29 @@ function buildContactList() {
 // displays a help window + current date time
 // if same message and hasn't disappared yet, update
 function helpMessage(message){
+	// parse date
 	var d = new Date();
 	var h = d.getHours();
 	var m = d.getMinutes();
 	if(m < 10){ m = '0'+m;}
 	var s = d.getSeconds();
 	if(s < 10){ s = '0'+s;}
-	var rm = h+"_"+m;
-	var messageclass = message.replace(/[^a-z0-9]/gi,'');;
 
+	// keep track of unique messages with a class based on the message
+	// replace to eliminate things that would break a class
+	var messageclass = message.replace(/[^a-z0-9]/gi,'');
+
+	// check to see if it exists
 	var updateCheck = cj("#top").find("."+messageclass).html();
-
 	if(updateCheck){
+		// update old count
 		var oldCount = cj("#top ."+messageclass).find(".count").html();
-		var oldMessage = cj("#top ."+messageclass).find(".message").html();
-		oldCount = parseInt(oldCount,10);
-		count = oldCount+1;
+		oldCount = parseInt(oldCount,10)+1;
 		cj("#top ."+messageclass).html("<p><span class='count'>"+count+"</span> <span class='message'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p>");
 	}else{
-		cj("#top").append("<div class='"+rm+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
+		cj("#top").append("<div class='"+h+"_"+m+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
 	}
-	// fade out and remove
+	// fade out and remove after 60 seconds
 	setTimeout(function(){
 		cj("."+messageclass).fadeOut(1000, function(){
 			$(this).remove();
@@ -1273,7 +1275,8 @@ function helpMessage(message){
 	}, 60000);
 }
 
-// Create shortended String with yitle tag for hover 
+// Create shortended String with title tag for hover
+// If subject is null return N/A
 function shortenString(subject, length){
 	if(subject){
 		if (subject.length > length ){
