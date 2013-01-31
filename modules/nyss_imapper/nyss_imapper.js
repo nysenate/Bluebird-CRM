@@ -15,36 +15,15 @@ cj(document).ready(function(){
 	var assign = cj('#assign');
 	var reassign = cj('#reassign');
 	var create = cj('#add-contact');
-	
 
-	// // Checking to see if we are in a browser that the placeholder tag is not yet supported in. We regressively add it here.
-	// placeholderSupport = ("placeholder" in document.createElement("input"));
+	// onpageload 
+	if(cj("#Activities").length){
+		pullActivitiesHeaders();
+ 	}else if(cj("#Unmatched").length){
+		pullMessageHeaders();
+	}
 
-	// if(!placeholderSupport ){
- // 		cj('[placeholder]').focus(function() {
-	// 		var input = cj(this);
-	// 		if (input.val() == input.attr('placeholder')) {
-	// 			input.val('');
-	// 		    input.removeClass('placeholder');
-	// 		}
-	// 	}).blur(function() {
-	// 		var input = cj(this);
-	// 		if (input.val() == '' || input.val() == input.attr('placeholder')) {
-	// 			input.addClass('placeholder');
-	// 			input.val(input.attr('placeholder'));
-	// 		}
-	// 	}).blur().parents('form').submit(function() {
-	// 		cj(this).find('[placeholder]').each(function() {
-	// 			var input = cj(this);
-	// 			if (input.val() == input.attr('placeholder')) {
-	// 				input.val('');
-	// 			}
-	// 		})
-	// 	});
-	// }else{
-	// 	// console.log('placeholder Support');
-	// }
-
+	// Dialogs
 	cj( "#help-popup" ).dialog({
 		modal: true,
 		width: 600,
@@ -53,13 +32,89 @@ cj(document).ready(function(){
 		draggable: false	
 	});
 
+	// After we've already matched something
+	cj( "#no_find_match" ).dialog({
+		modal: true,
+		dialogClass: 'no_find_match',
+		width: 370,
+		autoOpen: false,
+		resizable: false,
+		draggable: false
+	});
+
+	// add a delete conform popup thats alarmingly red
+	cj( "#delete-confirm" ).dialog({
+		modal: true,
+		dialogClass: 'delete_popup_class',
+		width: 370,
+		autoOpen: false,
+		resizable: false,
+		draggable: false
+	});
+
+	// add a clear conform popup
+	cj( "#clear-confirm" ).dialog({
+		modal: true,
+		width: 370,
+		autoOpen: false,
+		resizable: false,
+		draggable: false
+	});
+
 	cj('#search_help').live('click', function() {
 		cj("#help-popup").dialog('open'); 
 	});
+	
+	// add a find match popup
+	cj( "#find-match-popup" ).dialog({
+		modal: true,
+		height: 510,
+		width: 960, // in ie the popup was overflowing
+		autoOpen: false,
+		resizable: false,
+		title: 'Loading Data',
+		draggable: false
+	});
+
+	// add a loading icon popup
+	cj( "#loading-popup" ).dialog({
+		modal: true,
+		width: 200,
+		autoOpen: false,
+		resizable: false,
+		title: 'Please Wait',
+		draggable: false
+	});
+
+	// add a reloading icon popup
+	cj( "#reloading-popup" ).dialog({
+		modal: true,
+		width: 200,
+		autoOpen: false,
+		resizable: false,
+		title: 'Please Wait',
+		draggable: false
+	});
+
+	// add a tagging popup
+	cj( "#tagging-popup" ).dialog({
+		modal: true,
+		height: 565,
+		width: 960,
+		autoOpen: false,
+		resizable: false,
+		title: 'Loading Data',
+		draggable: false
+	});
+
+	cj(".no_find_match").live('click', function() {
+		cj("#no_find_match").dialog('open');
+		return false;
+	});
+
 
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
-
 		// checks for deault data
 		if(cj('#tab1 .first_name').val() != "First Name"){ var first_name = cj('#tab1 .first_name').val();}
 		if(cj('#tab1 .last_name').val() != "Last Name"){ var last_name = cj('#tab1 .last_name').val();}
@@ -242,8 +297,7 @@ cj(document).ready(function(){
 							error: function(){
 								alert('failure');
 							}
-
-					});
+						});
 					}
 				}
 			});
@@ -253,42 +307,6 @@ cj(document).ready(function(){
 		};
 	});
 
-	if(cj("#Activities").length){
-		pullActivitiesHeaders();
- 		autocomplete_setup();
- 	}else if(cj("#Unmatched").length){
-		pullMessageHeaders();
-	}
-		// add a delete conform popup
-	cj( "#no_find_match" ).dialog({
-		modal: true,
-		dialogClass: 'no_find_match',
-		width: 370,
-		autoOpen: false,
-		resizable: false,
-		draggable: false
-	});
-	cj(".no_find_match").live('click', function() {
-		cj("#no_find_match").dialog('open');
-		return false;
-	});
-	// add a delete conform popup
-	cj( "#delete-confirm" ).dialog({
-		modal: true,
-		dialogClass: 'delete_popup_class',
-		width: 370,
-		autoOpen: false,
-		resizable: false,
-		draggable: false
-	});
-	// add a clear conform popup
-	cj( "#clear-confirm" ).dialog({
-		modal: true,
-		width: 370,
-		autoOpen: false,
-		resizable: false,
-		draggable: false
-	});
 	
 	// delete confirm & processing
 	cj(".delete").live('click', function() {
@@ -337,7 +355,6 @@ cj(document).ready(function(){
 		var delete_ids = new Array();
 		var delete_secondary = new Array();
 		var rows = new Array();
-
 
 		cj('#imapper-messages-list input:checked').each(function() {
  			delete_ids.push(cj(this).attr('name'));
@@ -388,48 +405,7 @@ cj(document).ready(function(){
 		cj("#delete-confirm").dialog('open');
 		return false;
 	});
-	
-	// add a find match popup
-	cj( "#find-match-popup" ).dialog({
-		modal: true,
-		height: 510,
-		width: 960, // in ie the popup was overflowing
-		autoOpen: false,
-		resizable: false,
-		title: 'Loading Data',
-		draggable: false
-	});
 
-	// add a loading icon popup
-	cj( "#loading-popup" ).dialog({
-		modal: true,
-		width: 200,
-		autoOpen: false,
-		resizable: false,
-		title: 'Please Wait',
-		draggable: false
-	});
-
-	// add a reloading icon popup
-	cj( "#reloading-popup" ).dialog({
-		modal: true,
-		width: 200,
-		autoOpen: false,
-		resizable: false,
-		title: 'Please Wait',
-		draggable: false
-	});
-
-	// add a loading icon popup
-	cj( "#tagging-popup" ).dialog({
-		modal: true,
-		height: 565,
-		width: 960,
-		autoOpen: false,
-		resizable: false,
-		title: 'Loading Data',
-		draggable: false
-	});
 
 	// adding (single / multiple) tags to (single / multiple) contacts,
 	// function works for multi contact tagging and single
@@ -507,28 +483,6 @@ cj(document).ready(function(){
 		// }
 		return false;
 	};
-
-
-	// adding from list of tags to selected tag area
-	cj(".tag-item").live('click', function() {
-		var tag_id = cj(this).attr('data-id');
-		var parent_div = cj(this).parent().attr('id');
-		var tag_text = cj(this).html();
-		if( cj("#"+parent_div+".autocomplete-tags-bank ."+tag_id).length < 1 )  {
-			cj("#"+parent_div+".autocomplete-tags-bank").append('<a data-id="'+tag_id+'" class="tag-selected '+tag_id+'" href="#">'+tag_text+'<span class="tag-delete-icon">&nbsp;</span></a>');
-			cj("#"+parent_div+" .tag-item[data-id='"+tag_id+"']").addClass('hidden');
-		}
-		return false;
-	});
-
-	// remove from list of tags
-	cj(".tag-selected").live('click', function() {
-		id = cj(this).data('id');
-		parent_div = cj(this).parent().attr('id');
-		cj("#"+parent_div+" .tag-item[data-id='"+id+"']").removeClass('hidden');
-		cj(this).remove();
-		return false;
-	});
 
 	cj(".hidden_email_info").live('click', function() {
 		id = cj(this).data('id');
@@ -1399,109 +1353,7 @@ function removeRow(id){
 		alert('could not delete row');
 	}
 }
- 
 
-// function autocomplete_setup () {};
-// cj( "#autocomplete_tag_contact" ).autocomplete({
-// 	source: "/civicrm/imap/ajax/getTags.php",
-// 	minLength: 2,
-// 	select: function( event, ui ) {
-// 	log( ui.item ?
-// 	"Selected: " + ui.item.value + " aka " + ui.item.id :
-// 	"Nothing selected, input was " + this.value );
-// 	}
-// });
-
-function autocomplete_setup (){
-	// console.log('autocomplete');
-	// //attach autocomplete
-	// cj("#to").autocomplete({
-		
-	// 	//define callback to format results
-	// 	source: function(req, add){
-		
-	// 		//pass request to server
-	// 		cj.getJSON("http://www.danwellman.co.uk/demos/friends.php?callback=?", req, function(data) {
-				
-	// 			//create array for response objects
-	// 			var suggestions = [];
-				
-	// 			//process response
-	// 			cj.each(data, function(i, val){								
-	// 				suggestions.push(val.name);
-	// 			});
-				
-	// 			//pass array to callback
-	// 			add(suggestions);
-	// 		});
-	// 	},
-		
-	// 	//define select handler
-	// 	select: function(e, ui) {
-			
-	// 		//create formatted friend
-	// 		var friend = ui.item.value,
-	// 			span = cj("<span>").text(friend),
-	// 			a = cj("<a>").addClass("remove").attr({
-	// 				href: "javascript:",
-	// 				title: "Remove " + friend
-	// 			}).text("x").appendTo(span);
-			
-	// 		//add friend to friend div
-	// 		span.insertBefore("#to");
-	// 	},
-		
-	// 	//define select handler
-	// 	change: function() {
-			
-	// 		//prevent 'to' field being updated and correct position
-	// 		cj("#to").val("").css("top", 2);
-	// 	}
-	// });
-	
-	// //add click handler to friends div
-	// cj("#friends").click(function(){
-		
-	// 	//focus 'to' field
-	// 	cj("#to").focus();
-	// });
-	
-	// //add live handler for clicks on remove links
-	// cj(".remove", document.getElementById("friends")).live("click", function(){
-	
-	// 	//remove current friend
-	// 	cj(this).parent().remove();
-		
-	// 	//correct 'to' field position
-	// 	if(cj("#friends span").length === 0) {
-	// 		cj("#to").css("top", 0);
-	// 	}				
-	// });
-
-   
-
-
-
-
-
-		// cj(".autocomplete_tag").autocomplete("/civicrm/imap/ajax/getTags",  {
-		// 	width: 250,
-		// 	dataType: 'json',
-		// 	scroll: true,
-		// 	scrollHeight: 300,
-		// 	parse: function(data) {
-		// 		messagesHtml = '';
-		// 		var array = new Array();
-		// 		cj(".autocomplete-dropdown").html('');
-		// 		cj(data.items).each(function(i, item) {
-		// 			messagesHtml += '<a data-id="'+item.value+'" class="tag-item" href="#">'+item.label+'</a>'
-		// 		});
-		// 		cj(".autocomplete-dropdown").html(messagesHtml);
-		// 		return array;
-		// 	},
-		// });
-}
-
-	// unbind the sort on the checkbox and actions
-	cj("th.checkbox").removeClass('sorting').unbind('click');
-	cj("th.Actions").removeClass('sorting').unbind('click');
+// unbind the sort on the checkbox and actions
+cj("th.checkbox").removeClass('sorting').unbind('click');
+cj("th.Actions").removeClass('sorting').unbind('click');
