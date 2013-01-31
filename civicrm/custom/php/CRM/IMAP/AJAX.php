@@ -63,6 +63,40 @@ class CRM_IMAP_AJAX {
         return mysql_real_escape_string($_GET[$key], self::db());
     }
 
+    public static function strip_HTML_tags($text){ // Strips HTML 4.01 start and end tags. Preserves contents.
+        return preg_replace('%
+            # Match an opening or closing HTML 4.01 tag.
+            </?                  # Tag opening "<" delimiter.
+            (?:                  # Group for HTML 4.01 tags.
+              ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+              BLOCKQUOTE|BODY|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
+              COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
+              FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
+              ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+              NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+              SCRIPT|SELECT|SMALL|SPAN|STRIKE|STRONG|STYLE|SUB|SUP|S|
+              TABLE|TD|TBODY|TEXTAREA|TFOOT|TH|THEAD|TITLE|TR|TT|U|UL|VAR
+            )\b                  # End group of tag name alternative.
+            (?:                  # Non-capture group for optional attribute(s).
+              \s+                # Attributes must be separated by whitespace.
+              [\w\-.:]+          # Attribute name is required for attr=value pair.
+              (?:                # Non-capture group for optional attribute value.
+                \s*=\s*          # Name and value separated by "=" and optional ws.
+                (?:              # Non-capture group for attrib value alternatives.
+                  "[^"]*"        # Double quoted string.
+                | \'[^\']*\'     # Single quoted string.
+                | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
+                )                # End of attribute value alternatives.
+              )?                 # Attribute value is optional.
+            )*                   # Allow zero or more attribute=value pairs
+            \s*                  # Whitespace is allowed before closing delimiter.
+            /?                   # Tag may be empty (with self-closing "/>" sequence.
+            >                    # Opening tag closing ">" delimiter.
+            | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
+            | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
+            %six', '', $text);
+    }
+
     /* unifiedMessageInfo()
      * Parameters: imap = object of inbox, id = messageid. imap_id = imap mailbox 
      * Returns: An Object message details to map to the output.
@@ -125,8 +159,13 @@ class CRM_IMAP_AJAX {
                 // currently strips content 
                 $tempDetails = strip_tags($details,'<br>');
                 $tempDetails = preg_replace("/<br>/i", "\r\n<br>\n", $tempDetails);
+                // $tempDetails = self::strip_HTML_tags($tempDetails);
+
                 $body = $details; // switch us back to the html version
             }
+
+            // print_r($tempDetails);
+            // exit();
 
             // grab attachments
             $attachmentCount = 0;
@@ -298,27 +337,6 @@ class CRM_IMAP_AJAX {
               CRM_Utils_System::civiExit();
             } 
 
-            // $check = imap_mailboxmsginfo($imap->conn());
-            // var_dump($check);
-            // if ($check) {
-            //     $precent = round((($check->Size / $limit_b )*100),2);
-            //     $warn_level = round((($check->Size / $limit_b )*10),0);
-            //     $returnMessage['stats']['imap_'.$imap_id.'_deleted'] =  $check->Deleted;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_recent'] =  $check->Recent;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_size'] =  $check->Size;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_precent'] =  $precent;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_limit'] = $limit_b;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_warn_level'] = $warn_level;
-            //     $returnMessage['stats']['imap_'.$imap_id.'_size_formatted'] =  self::decodeSize($check->Size);
-            //     $returnMessage['stats']['imap_'.$imap_id.'_limit_formatted'] =  self::decodeSize($limit);
-
-            // } else {
-            //     // echo "imap_check() failed: " . imap_last_error() . "<br />\n";
-            // }
-
-
-
-            // exit();
             $checked = array();
             $count = 0;
             // Loop through the headers and check to make sure they're valid UIDs
@@ -326,11 +344,6 @@ class CRM_IMAP_AJAX {
               // if($count < 50){
               $count++;
               $output = self::unifiedMessageInfo($imap,$id,$imap_id);
-
-              // var_dump($output);
-              // var_dump($id);
-
-              
 
               if ($output['code'] == "SUCCESS"){
                 if($output['forwarded']['origin_email']){
@@ -361,7 +374,7 @@ class CRM_IMAP_AJAX {
                   $checked[''] = 0;
                 }
 
-                $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
+                $key =  substr(md5($output['forwarded']['origin_email'].$output['forwarded']['origin_name']), 0, 8);
 
                 $returnMessage['successes'][$id] =  array( 
                 'subject' =>  $output['forwarded']['subject'],
@@ -889,7 +902,7 @@ class CRM_IMAP_AJAX {
                 }else{
                   // Move the message to the archive folder!
                   $imap->movemsg_uid($messageUid, 'Archive');
-                  $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
+                  $key =  substr(md5($output['forwarded']['origin_email'].$output['forwarded']['origin_name']), 0, 8);
                   // check to see it it was deleted 
                   $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
                   if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 

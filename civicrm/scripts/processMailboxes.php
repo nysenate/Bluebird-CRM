@@ -165,12 +165,12 @@ foreach (explode(',', $imap_accounts) as $imap_account) {
 
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    echo "[ERROR] Failed to process IMAP account $imapUser@$imap_server\n";
+    echo "[ERROR]   Failed to process IMAP account $imapUser@$imap_server\n";
     print_r(imap_errors());
   }
 }
 
-echo "[INFO] Finished processing all mailboxes for CRM instance [$site]\n";
+echo "[INFO]    Finished processing all mailboxes for CRM instance [$site]\n";
 exit(0);
 
 
@@ -206,11 +206,11 @@ ORDER BY gc.contact_id ASC";
 function processMailboxCommand($cmd, $params)
 {
   $serverspec = '{'.$params['server'].$params['opts'].'}'.$params['mailbox'];
-  echo "[INFO] Opening IMAP connection to {$params['user']}@$serverspec\n";
+  echo "[INFO]    Opening IMAP connection to {$params['user']}@$serverspec\n";
   $imap_conn = imap_open($serverspec, $params['user'], $params['pass']);
 
   if ($imap_conn === false) {
-    echo "[ERROR] Unable to open IMAP connection to $serverspec\n";
+    echo "[ERROR]   Unable to open IMAP connection to $serverspec\n";
     return false;
   }
 
@@ -240,7 +240,7 @@ function processMailboxCommand($cmd, $params)
 
 function checkImapAccount($conn, $params)
 {
-  echo "[INFO] Polling CRM [".$params['site']."] using IMAP account ".
+  echo "[INFO]    Polling CRM [".$params['site']."] using IMAP account ".
        $params['user'].'@'.$params['server'].$params['opts']."\n";
 
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
@@ -250,26 +250,26 @@ function checkImapAccount($conn, $params)
   if ($params['archivemail'] == true) {
     $rc = imap_createmailbox($conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
-      echo "[DEBUG] Created new mailbox: $crm_archivebox\n";
+      echo "[DEBUG]   Created new mailbox: $crm_archivebox\n";
     }
     else {
-      echo "[DEBUG] Archive mailbox $crm_archivebox already exists.\n";
+      echo "[DEBUG]   Archive mailbox $crm_archivebox already exists.\n";
     }
   }
 
   $msg_count = imap_num_msg($conn);
   $invalid_senders = array();
-  echo "[INFO] Number of messages: $msg_count\n";
+  echo "[INFO]    Number of messages: $msg_count\n";
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
-    echo "[INFO] Retrieving message $msg_num / $msg_count\n";
+    echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $email = retrieveMessage($conn, $msg_num);
     $sender = strtolower($email->replyTo);
 
     // check whether or not the forwarder/sender is valid
     // if (in_array('crain@nysenate.gov', $params['validsenders'])) {
     if (in_array($sender, $params['validsenders'])) {
-      echo "[DEBUG] Sender $sender is allowed to send to this mailbox\n";
+      echo "[DEBUG]   Sender $sender is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
       if (civiProcessEmail($email, null) == true) {
         //mark as read
@@ -281,26 +281,26 @@ function checkImapAccount($conn, $params)
       }
     }
     else {
-       echo "[WARN] Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
+       echo "[WARN]     Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
       if (imap_delete($conn, $msg_num) === true) {
         echo "[DEBUG] Message $msg_num has been deleted\n";
       }
       else {
-        echo "[WARN] Unable to delete message $msg_num from mailbox\n";
+        echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
       }
     }
   }
 
   $invalid_sender_count = count($invalid_senders);
   if ($invalid_sender_count > 0) {
-    echo "[INFO] Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
+    echo "[INFO]     Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
     foreach ($invalid_senders as $invalid_sender => $dummy) {
       sendDenialEmail($params['site'], $invalid_sender);
     }
   }
 
-  echo "[INFO] Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
+  echo "[INFO]    Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
   return true;
 } // checkImapAccount()
 
@@ -321,11 +321,11 @@ function retrieveMessage($conn, $idx)
   $email->date = $header->MailDate;
   $email->uid = imap_uid($conn, $idx);
 
-  echo "[INFO] Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
+  echo "[INFO]    Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
 
   // // Skip message if we are processing unread only.
   if ($header->Unseen != "U" && $params['unreadonly']) {
-    echo "[INFO] Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
+    echo "[INFO]     Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
     return null;
   }
 
@@ -398,6 +398,39 @@ function getAttachments($conn, $num, $parts)
   return $attachments;
 } // getAttachments()
 
+function strip_HTML_tags($text){ // Strips HTML 4.01 start and end tags. Preserves contents.
+        return preg_replace('%
+            # Match an opening or closing HTML 4.01 tag.
+            </?                  # Tag opening "<" delimiter.
+            (?:                  # Group for HTML 4.01 tags.
+              ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+              BLOCKQUOTE|BODY|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
+              COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
+              FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
+              ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+              NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+              SCRIPT|SELECT|SMALL|SPAN|STRIKE|STRONG|STYLE|SUB|SUP|S|
+              TABLE|TD|TBODY|TEXTAREA|TFOOT|TH|THEAD|TITLE|TR|TT|U|UL|VAR
+            )\b                  # End group of tag name alternative.
+            (?:                  # Non-capture group for optional attribute(s).
+              \s+                # Attributes must be separated by whitespace.
+              [\w\-.:]+          # Attribute name is required for attr=value pair.
+              (?:                # Non-capture group for optional attribute value.
+                \s*=\s*          # Name and value separated by "=" and optional ws.
+                (?:              # Non-capture group for attrib value alternatives.
+                  "[^"]*"        # Double quoted string.
+                | \'[^\']*\'     # Single quoted string.
+                | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
+                )                # End of attribute value alternatives.
+              )?                 # Attribute value is optional.
+            )*                   # Allow zero or more attribute=value pairs
+            \s*                  # Whitespace is allowed before closing delimiter.
+            /?                   # Tag may be empty (with self-closing "/>" sequence.
+            >                    # Opening tag closing ">" delimiter.
+            | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
+            | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
+            %six', '', $text);
+}
 
 // This is my email body text / LDAP parser 
 function extract_email_address ($string) {
@@ -423,7 +456,6 @@ function extract_email_address ($string) {
       $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
       return $return;
     }
-    
   }else{
     // clean out any anything that wouldn't be a name or email, html or plain-text
     $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
@@ -444,29 +476,38 @@ function extract_email_address ($string) {
 
 
 function cleanDate($date_string){
-        $matches = array();
-
-        // search for the word date
-        $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
-        $date_string_short = ($count == 1 ) ? $matches[2]  : $date_string;
-
-        // sometimes email clients think its fun to add stuff to the date, remove it here.
-        $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
-   
-        // check if the message is from last year
-        if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
-          $formatted = date("M d, Y", strtotime($date_string_short));
-        }else{
-          if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
-            $formatted = date("M d h:i A", strtotime($date_string_short));
-          }else{
-            $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
-          }
+    $matches = array();
+    // search for the word date
+    $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
+    $date ='';
+    // in some emails line breaks don't exist, so parse the string after Date:
+    if($count == 1 && strlen($matches[2])>60){
+      foreach(preg_split('/ /', $matches[2]) as $token) {
+        $check = strtolower($token);
+        $date .= $check." ";
+        if($check == 'am'||$check == 'pm'||$check == 'subject:'||$check == 'from:'||$check == 'to:'){
+          break;
         }
-        return array('debug'=>$date_string_short, 
-                  'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
-                  'u'=>date("U", strtotime($date_string_short)),
-                  'short'=>$formatted);
+      }
+    }elseif (strlen($matches[2])<60) {
+      $date = $matches[2];
+    }
+
+    $date_string_short = ($count == 1 ) ? $date  : $date_string;
+    // sometimes email clients think its fun to add stuff to the date, remove it here.
+    $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
+
+    // check if the message is from last year
+    if ( date("U", strtotime($date_string_short)) < 10000) {
+      return array('debug'=>$date_string_short,
+        'long'=> date("M d, Y h:i A"),
+        'u'=>date("U"));
+    }else{
+      return array('debug'=>$date_string_short,
+        'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
+        'u'=>date("U", strtotime($date_string_short)));
+    }
+
 }
 
 
@@ -481,50 +522,46 @@ function cleanDate($date_string){
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = false;
-  // print_r($email); exit();
 
   // remove weirdness in html encoded messages 
-  $body = quoted_printable_decode($email->body);
+  $OrgionalBody =  quoted_printable_decode($email->body);
+  // $body = strip_HTML_tags($OrgionalBody);
 
   // detect if message is html / plaintext from body only
-  preg_match("/<br*>/i", $body, $html);
-
-  // convert html/plain line endings to be in the same format for our regexs' sake 
-
-  // check for fake html
-  // we don't care if the body only has <br/> tags
-  if(strip_tags($details) != strip_tags($details,"<br>")){
-    $format = true;
-  }
+  preg_match("/</i", $OrgionalBody, $html);
+  // var_dump($html);
 
   if($html){
     $format = "html";
-    $tempbody = $body;
-    $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $tempbody);
+    $tempbody = $OrgionalBody;
+    $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $OrgionalBody);
   }else{
     $format = "plain";
-    $tempbody = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $body);
+    $tempbody = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $OrgionalBody);
   }
 
   // check to see if we can find an email address in the message body,
   // else we use the email from the message header and call it a direct message
   preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempbody, $froms);
-
   if($froms['2']){ 
     $fromEmail = extract_email_address($froms['2']);
     if(!$fromEmail['email']){
-      $status = 'forwarded';
       $fromEmail = array('email' => $email->replyTo, 'type'=>'direct');
+      $status='parse fail';
+      error_log("[ERROR]   Parse Failure ON ".$format." : ".$froms['0']);
+    }else{
+      $status='forwarded';
     }
   }else{
     $fromEmail = array('email' => $email->replyTo, 'type'=>'direct');
-    $status = 'direct';
+    $status='direct';
   }
-  
+  // error_log("[DEBUG]   Message Type ".$status);
+
   // check to see if we can find a subject in the message body,
   preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
 
-  $subject = ($status == 'direct') ?  preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $email->subject) : preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']);
+  $subject = ($status == 'forwarded') ? preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']) : $email->subject ;
   
   // remove () sometimes found in emails with no subject
   $subject = preg_replace("/(\(|\))/i", "", $subject);
@@ -533,17 +570,16 @@ function cleanDate($date_string){
   }
 
   // html emails need to be pre tagged
-
-    $email->body = '<pre>'.$email->body.'</pre>';
+  $details = '<pre>'.$tempbody.'</pre>';
 
   // Use the e-mail from the body of the message (or header if direct) to find traget contact
   $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fromEmail['email'], );
   $contact = civicrm_api('contact', 'get', $params);
-  echo "[INFO] FINDING match for the target email ".$fromEmail['email']." in Civi\n";
+  echo "[INFO]    FINDING match for the target email ".$fromEmail['email']." in Civi\n";
 
   // if there is more then one target for the message leave if for the user to deal with
   if ($contact['count'] != 1 ){
-    error_log("[DEBUG] TARGET ".$fromEmail['email']." Matches [".$contact['count']."] Records in this instance . Leaving for manual addition.");
+    error_log("[DEBUG]   TARGET  ".$fromEmail['email']." Matches [".$contact['count']."] Records in this instance . Leaving for manual addition.");
   }else{
     $contactID = $contact['id'];
     $bSuccess = true;
@@ -572,37 +608,38 @@ function cleanDate($date_string){
     // make note of this
     // TODO: send out email to offending user asking them to clean up their accounts
     if ($result['count'] != 1) {
-      error_log("[DEBUG] SOURCE ".$email->replyTo." Matches [".$result['count']."] Records in this instance . Adding with source Bluebird Admin.");
+      error_log("[DEBUG]   SOURCE ".$email->replyTo." Matches [".$result['count']."] Records in this instance . Adding with source Bluebird Admin.");
     }
 
     $fwdDate = cleanDate($tempbody);
-    error_log("[DEBUG] FWD Date ".$fwdDate['long']);
+    error_log("[DEBUG]   FWD Date ".$fwdDate['long']);
 
-    echo "[INFO] ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
+    echo "[INFO]    ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
     $apiParams = array(
                 "source_contact_id" => $userId,
-                "subject" => $subject,
-                "details" => imap_qprint($email->body),
+                "subject" => substr($subject, 0, 255),
+                "details" => $details,
                 "activity_date_time" => $fwdDate['long'],
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
                 "duration" => 1,
                 "is_auto" => 1,
-                "original_id" => $email->uid,
+                // "original_id" => $email->uid,
                 "target_contact_id" => $contactID,
                 "version" => 3
     );
 
     $result = civicrm_api('activity', 'create', $apiParams);
     if ($result['is_error']) {
-      echo "[WARN] Could not save Activity\n";
+      echo "[ERROR]   Could not save Activity\n";
+      var_dump($result);
       if ($fromEmail['email'] == '') {
-        echo "[WARN] Forwarding e-mail address not found\n";
+        echo "[ERROR]    Forwarding e-mail address not found\n";
       }
       return false;
     }else {
-      echo "[INFO] CREATED e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
+      echo "[INFO]    CREATED e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
       require_once 'CRM/Core/DAO.php';
       $nyss_conn = new CRM_Core_DAO();
@@ -619,10 +656,10 @@ function cleanDate($date_string){
                   VALUES ('civicrm_activity',$activityId,$inboxPollingTagId);";
         $result = mysql_query($query, $conn);
         if ($result) {
-          echo "[DEBUG] ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+          echo "[DEBUG]   ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
         else {
-          echo "[ERROR] COULD NOT add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+          echo "[ERROR]   COULD NOT add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
         }
       }
     }
@@ -646,7 +683,7 @@ function listMailboxes($conn, $params)
 function deleteArchiveBox($conn, $params)
 {
   $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-  echo "[INFO] Deleting archive mailbox: $crm_archivebox\n";
+  echo "[INFO]    Deleting archive mailbox: $crm_archivebox\n";
   return imap_deletemailbox($conn, $crm_archivebox);
 } // deleteArchiveBox()
 
