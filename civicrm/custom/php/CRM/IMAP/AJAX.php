@@ -614,14 +614,14 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
-    /* getContacts
+    /* searchContacts
      * Paramters: None.
      * Returns: None.
      * This function will grab the inputs from the GET variable and
      * do a search for contacts and return them as a JSON object.
      * Only returns Records with Primary emails & addresse (so no dupes)
      */
-    public static function getContacts() {
+    public static function searchContacts() {
         $start = microtime(true);
         $s = self::get('s');
         $debug = self::get('debug');
@@ -1330,7 +1330,7 @@ EOQ;
     }
 
     // remove the activity tag
-    public static function unproccessedActivity() {
+    public static function untagActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
         $contact = self::get('contact');
@@ -1470,7 +1470,7 @@ EOQ;
     }
 
     // TODO: use dan's tagging system 
-    public static function getTags() {
+    public static function searchTags() {
         require_once 'api/api.php';
         $name = self::get('s');
         $start = self::get('timestamp');

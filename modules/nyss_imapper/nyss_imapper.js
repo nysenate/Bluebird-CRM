@@ -123,7 +123,7 @@ cj(document).ready(function(){
 		if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
 		if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
 			cj.ajax({
-				url: '/civicrm/imap/ajax/contacts',
+				url: '/civicrm/imap/ajax/searchContacts',
 				async:false,
 				data: {
 					state: '1031',
@@ -396,7 +396,7 @@ cj(document).ready(function(){
 
 		cj('#imapper-contacts-list').html('');
 		cj.ajax({
-			url: '/civicrm/imap/ajax/message',
+			url: '/civicrm/imap/ajax/getMessageDetails',
 			data: {id: messageId,
 				   imapId: imapId },
 			success: function(data,status) {
@@ -541,7 +541,7 @@ cj(document).ready(function(){
 		cj('#imapper-contacts-list').html('');
 
 		cj.ajax({
-			url: '/civicrm/imap/ajax/activityDetails',
+			url: '/civicrm/imap/ajax/getActivityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
 				messages = cj.parseJSON(data);
@@ -606,7 +606,7 @@ cj(document).ready(function(){
 		cj('#message_left_tag').html('').html('<div id="message_left_header_tag"></div><div id="message_left_email_tag"></div>');
 
 		cj.ajax({
-			url: '/civicrm/imap/ajax/activityDetails',
+			url: '/civicrm/imap/ajax/getActivityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
 
@@ -619,14 +619,14 @@ cj(document).ready(function(){
 					return false;
 				}else{
 
-					cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+					cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/searchTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
 					}).result( function(event, data, json) {
 						// console.log('Results : '+data);  // when you click on the results
 					}).bind( 'click', function( ) {
 						// console.log('Click : '+data); ? wtf 
 					});
 
-					cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
+					cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/searchTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
 					}).result( function(event, data, json) {
 						// console.log('Results : '+data);  // when you click on the results
 					}).bind( 'click', function( ) {
@@ -714,7 +714,7 @@ cj(document).ready(function(){
 		cj.each(activityIds, function(key, activityId) {
 			// console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
 			cj.ajax({
-				url: '/civicrm/imap/ajax/activityDetails',
+				url: '/civicrm/imap/ajax/getActivityDetails',
 				data: {id: activityId, contact: contactIds[key] },
 				success: function(data,status) {
 
@@ -858,7 +858,7 @@ function lastName(nameVal){
 
 function getUnmatchedMessages() {
 	cj.ajax({
-		url: '/civicrm/imap/ajax/unmatchedMessages',
+		url: '/civicrm/imap/ajax/listUnmatchedMessages',
 		success: function(data,status) {
 			messages = cj.parseJSON(data);
 			buildMessageList();
@@ -871,7 +871,7 @@ function getUnmatchedMessages() {
 
 function getMatchedMessages() {
 	cj.ajax({
-		url: '/civicrm/imap/ajax/getMatchedMessages',
+		url: '/civicrm/imap/ajax/listMatchedMessages',
 		success: function(data,status) {
 			messages = cj.parseJSON(data);
 			buildActivitiesList();
@@ -1030,7 +1030,7 @@ function DeleteMessage(id,imapid){
 // Result : A few things
 function ClearActivity(value){
 	cj.ajax({
-		url: '/civicrm/imap/ajax/unproccessedActivity',
+		url: '/civicrm/imap/ajax/untagActivity',
 		data: {id: value},
 		async:false,
 		success: function(data,status) {
@@ -1262,7 +1262,7 @@ function helpMessage(message){
 	if(updateCheck){
 		// update old count
 		var oldCount = cj("#top ."+messageclass).find(".count").html();
-		oldCount = parseInt(oldCount,10)+1;
+		count = parseInt(oldCount,10)+1;
 		cj("#top ."+messageclass).html("<p><span class='count'>"+count+"</span> <span class='message'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p>");
 	}else{
 		cj("#top").append("<div class='"+h+"_"+m+" "+messageclass+"' id='help' ><p><span class='count'>1</span> <span class='message "+messageclass+"'>"+message+"</span> <small>"+h+":"+m+":"+s+"</small></p></div>");
@@ -1290,9 +1290,9 @@ function shortenString(subject, length){
 	}
  }
 			
-// Look for rows that match the KEY of a matched row
+// Look for empty rows that match the KEY of a matched row
 // Remove them from the view so the user doesn't re-add / create duplicates
-// key = md5 ( shortened to 8 ) of user_email + user_name	
+// key = md5 ( shortened to 8 ) of user_email
 function checkForMatch(key){
 	cj('.imapper-message-box').each(function(i, item) {
 		check = cj(this).data('key'); 		
