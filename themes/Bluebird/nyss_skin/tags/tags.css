@@ -224,7 +224,7 @@ SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bl
   .BBTree.hidden, #BBTreeContainer .BBTree.hidden, #BBDialog .BBTree.hidden {
     display: none; }
   .BBTree.modal, #BBTreeContainer .BBTree.modal, #BBDialog .BBTree.modal {
-    overflow: visible;
+    margin: 0 auto;
     border: 0px; }
     .BBTree.modal .fCB, #BBTreeContainer .BBTree.modal .fCB, #BBDialog .BBTree.modal .fCB {
       display: inline;
