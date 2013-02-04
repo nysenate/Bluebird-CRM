@@ -64,7 +64,6 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
-
   <item>
     <path>civicrm/imap/ajax/untagActivity</path>
     <page_callback>CRM_IMAP_AJAX::untagActivity</page_callback>
@@ -88,5 +87,4 @@
     <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
-
 </menu>

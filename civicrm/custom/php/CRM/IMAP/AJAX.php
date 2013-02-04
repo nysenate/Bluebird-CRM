@@ -227,11 +227,12 @@ class CRM_IMAP_AJAX {
 
 
             $fwdcleanDate = self::cleanDate($tempDetails);
-            $fwddate = $fwdcleanDate['short'];
+            $fwddate_short = $fwdcleanDate['short'];
             $fwddate_u = $fwdcleanDate['u'];
             $fwddate_long = $fwdcleanDate['long'];
+            // $fwddate_debug = $fwdcleanDate['date_debug'];
 
-            $origin_date = ($fwddate_u < 10000) ?  $date_short : $fwddate ;
+            $origin_date_short = ($fwddate_u < 10000) ?  $date_short : $fwddate_short ;
             $origin_date_long = ($fwddate_u < 10000) ?  $date_long : $fwddate_long ;
             $origin_date_u = ($fwddate_u < 10000) ?  $date_u : $fwddate_u ;
 
@@ -244,9 +245,10 @@ class CRM_IMAP_AJAX {
 
             // contains info about the forwarded message in the email body
             $forwarded = array(
-                'date_short' => $origin_date,
+                'date_short' => $origin_date_short,
                 'date_long' => $origin_date_long,
                 'date_u' => $origin_date_u,
+                // 'date_debug' => $fwddate_debug,
                 'subject' => $origin_subject,
                 'origin' => $origin,
                 'origin_name' => $origin_name,
@@ -555,29 +557,44 @@ class CRM_IMAP_AJAX {
      * This function will format many types of incoming dates
      */
     public static function cleanDate($date_string){
-        $matches = array();
-
-        // search for the word date
-        $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
-        $date_string_short = ($count == 1 ) ? $matches[2]  : $date_string;
-
-        // sometimes email clients think its fun to add stuff to the date, remove it here.
-        $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
-   
-        // check if the message is from last year
-        if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
-          $formatted = date("M d, Y", strtotime($date_string_short));
-        }else{
-          if ( (date("d", strtotime($date_string_short)) - date("d")) < 0 ){
-            $formatted = date("M d h:i A", strtotime($date_string_short));
-          }else{
-            $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
-          }
+    $matches = array();
+    // search for the word date
+    $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
+    $date ='';
+    // in some emails line breaks don't exist, so parse the string after Date:
+    if($count == 1){
+      foreach(preg_split('/ /', $matches[2]) as $token) {
+        $check = strtolower($token);
+        $date .= $check." ";
+        if($check == 'am'||$check == 'pm'||$check == 'subject:'||$check == 'from:'||$check == 'to:'){
+          break;
         }
-        return array('debug'=>$date_string_short, 
-                  'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
-                  'u'=>date("U", strtotime($date_string_short)),
-                  'short'=>$formatted);
+      }
+    }
+
+    $date_string_short = ($count == 1 ) ? $date  : $date_string;
+
+    // sometimes email clients think its fun to add stuff to the date, remove it here.
+    $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
+
+    $daysago = floor((time() - strtotime($date_string_short))/86400); 
+    $yearsago = floor((time() - strtotime($date_string_short))/86400); 
+
+    // check if the message is from last year
+    if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
+      $formatted = date("M d, Y", strtotime($date_string_short));
+    }else{
+      // if the message is from this year, see if the message is from today
+      if ($daysago > 1 ){
+        $formatted = date("M d h:i A", strtotime($date_string_short));
+      }else{
+        $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
+      }
+    }
+    return array('date_debug'=>$date_string_short, 
+              'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
+              'u'=>date("U", strtotime($date_string_short)),
+              'short'=>$formatted);
     }
 
     /* deleteMessage()

@@ -973,7 +973,8 @@ function buildMessageList() {
 				}
 
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date_short +'</span></td>';
+
+				messagesHtml += '<td class="date"><span data="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
 				// hidden column to sort by
 				if(value.match_count != 1){
@@ -1188,7 +1189,7 @@ function buildActivitiesList() {
 				}
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_u+'">'+value.date_short +'</span></td>';
+				messagesHtml += '<td class="date"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
