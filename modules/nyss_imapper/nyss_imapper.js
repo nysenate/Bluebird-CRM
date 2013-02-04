@@ -416,7 +416,7 @@ cj(document).ready(function(){
 
 					cj('#message_left_header').html('');
 					cj('#message_left_header').append("<span class='popup_def'>From: </span>");
-					if(messages.fromName) cj('#message_left_header').append(messages.fromName);
+					if(messages.fromName) cj('#message_left_header').append(shortenString(messages.fromName,50));
 					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(messages.fromEmail)+"</span>");
 
 					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.forwarder_date_long+"<br/>");
