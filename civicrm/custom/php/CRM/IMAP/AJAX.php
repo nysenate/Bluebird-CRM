@@ -230,7 +230,6 @@ class CRM_IMAP_AJAX {
             $fwddate_short = $fwdcleanDate['short'];
             $fwddate_u = $fwdcleanDate['u'];
             $fwddate_long = $fwdcleanDate['long'];
-            // $fwddate_debug = $fwdcleanDate['date_debug'];
 
             $origin_date_short = ($fwddate_u < 10000) ?  $date_short : $fwddate_short ;
             $origin_date_long = ($fwddate_u < 10000) ?  $date_long : $fwddate_long ;
@@ -248,7 +247,6 @@ class CRM_IMAP_AJAX {
                 'date_short' => $origin_date_short,
                 'date_long' => $origin_date_long,
                 'date_u' => $origin_date_u,
-                // 'date_debug' => $fwddate_debug,
                 'subject' => $origin_subject,
                 'origin' => $origin,
                 'origin_name' => $origin_name,
@@ -384,6 +382,7 @@ class CRM_IMAP_AJAX {
                 'uid' =>  $id,
                 'date_short' =>  $output['forwarded']['date_short'],
                 'date_u' =>  $output['forwarded']['date_u'],
+                'date_long' =>  $output['forwarded']['date_long'],
                 'format' =>  $output['header']['format'],
                 'from_email' =>  $output['forwarded']['origin_email'],
                 'from_name' =>  $output['forwarded']['origin_name'],

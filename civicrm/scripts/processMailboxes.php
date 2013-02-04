@@ -497,7 +497,7 @@ function cleanDate($date_string){
     // sometimes email clients think its fun to add stuff to the date, remove it here.
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
-    // check if the message is from last year
+    // check if the date could be found
     if ( date("U", strtotime($date_string_short)) < 10000) {
       return array('debug'=>$date_string_short,
         'long'=> date("M d, Y h:i A"),
