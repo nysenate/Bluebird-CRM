@@ -698,7 +698,7 @@ var BBTreeEdit = {
 			var tagDescription = cj(this).attr('description');
 			if(tagDescription == 'null')
 			{
-				tagDescription = tagName;
+				tagDescription = '';
 			}
 			if(cj(this).hasClass('isReserved') == true)
 			{
