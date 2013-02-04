@@ -926,7 +926,7 @@ function checks(){
 }
 
 function buildMessageList() {
-	if(messages.count == '0' || messages == null){
+	if(messages.stats.overview.successes == '0' || messages == null){
 		cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
 		cj("#total_number").html('0');
 	}else{
@@ -1156,7 +1156,7 @@ function pushtag(){
 
 // matched messages screen 
 function buildActivitiesList() {
-	if(messages.count == '0' || messages == null){
+	if(messages.stats.overview.successes == '0' || messages == null){
 		cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
 		cj("#total_number").html('0');
 	}else{
@@ -1298,15 +1298,13 @@ function checkForMatch(key){
 	cj('.imapper-message-box').each(function(i, item) {
 		check = cj(this).data('key'); 		
 		id = cj(this).attr('id'); 
-		remove = 0;
 		if (key == check) {
 			if($('.matchbubble.empty',this).length){
-				remove++;
 				removeRow(id);
+				helpMessage('Other Records Automatically Matched');
 			}
 		};
 	});
-	helpMessage(remove+' Records Automatically Matched')
 }
 
 // updates the count at the top of the page 
