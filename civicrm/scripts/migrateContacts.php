@@ -31,13 +31,13 @@ class CRM_migrateContacts {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = "d:fn:i:t:e:a";
-    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers", "array");
+    $shortopts = "d:fn:i:t:e:a:y:x";
+    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers", "array", "types=", "exclude=");
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array]';
+        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array] [--types IHO] [--exclude NACT]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
@@ -102,6 +102,48 @@ class CRM_migrateContacts {
       exit();
     }
 
+    $types = $cTypes = $cTypesInclude = $exclusions = $eTypes = array();
+
+    //check contact types param
+    if ( $optlist['types'] ) {
+      $cTypes = array(
+        'I' => 'Individual',
+        'H' => 'Household',
+        'O' => 'Organization',
+      );
+      $types = str_split($optlist['types']);
+      foreach ( $types as $type ) {
+        if ( !in_array(strtoupper($type), array('I','H','O')) ) {
+          bbscript_log("fatal", "You selected invalid options for the contact type parameter. Please enter any combination of IHO (individual, household, organization), with no spaces between the characters.");
+          exit();
+        }
+        else {
+          $cTypesInclude[] = $cTypes[$type];
+          bbscript_log("info", "{$cTypes[$type]} contacts will be included.");
+        }
+      }
+    }
+
+    //check record type exclusion param
+    if ( $optlist['exclude'] ) {
+      $eTypes = array(
+        'N' => 'Note',
+        'A' => 'Activity',
+        'C' => 'Case',
+        'T' => 'Tag',
+      );
+      $exclusions = str_split($optlist['exclude']);
+      foreach ( $exclusions as $rec ) {
+        if ( !in_array(strtoupper($rec), array('N','A','C', 'T')) ) {
+          bbscript_log("fatal", "You selected invalid options for the exclusions parameter. Please enter any combination of NACT (notes, activities, cases, tags), with no spaces between the characters.");
+          exit();
+        }
+        else {
+          bbscript_log("info", "{$eTypes[$rec]} record types will be excluded.");
+        }
+      }
+    }
+
     $startTime = microtime(true);
 
     // Initialize CiviCRM
@@ -140,7 +182,7 @@ class CRM_migrateContacts {
     $exportData = array();
 
     //get contacts to migrate and construct in migration table
-    $migrateTbl = self::buildContactTable($source, $dest);
+    $migrateTbl = self::buildContactTable($source, $dest, $cTypesInclude);
 
     //if no contacts found we can exit immediately
     if ( !$migrateTbl ) {
@@ -185,6 +227,11 @@ class CRM_migrateContacts {
       'Contact_Details',
     );
 
+    //check if we need to exclude notes
+    if ( in_array('N', $exclusions) ) {
+      unset($recordTypes['note']);
+    }
+
     //customGroups that we may work with;
     $customGroups = array(
       'Additional_Constituent_Information',
@@ -220,10 +267,17 @@ class CRM_migrateContacts {
       }
     }
 
-    //process records
-    self::exportActivities($migrateTbl, $optDry);
-    self::exportCases($migrateTbl, $optDry);
-    self::exportTags($migrateTbl, $optDry);
+    //process records; take into account exclusions
+    if ( !in_array('A', $exclusions) ) {
+      self::exportActivities($migrateTbl, $optDry);
+    }
+    if ( !in_array('C', $exclusions) ) {
+      self::exportCases($migrateTbl, $optDry);
+    }
+    if ( !in_array('T', $exclusions) ) {
+      self::exportTags($migrateTbl, $optDry);
+    }
+
     self::exportCurrentEmployers($migrateTbl, $optDry);
     self::exportDistrictInfo($addressDistInfo, $optDry);
 
@@ -284,7 +338,7 @@ class CRM_migrateContacts {
    * query criteria: exclude trashed contacts; only include those with a BOE address in destination district
    * if no contacts are found to migrate, return FALSE so we can exit immediately.
    */
-  function buildContactTable($source, $dest) {
+  function buildContactTable($source, $dest, $cTypesInclude) {
     bbscript_log("info", "building contact table from redistricting report records...");
 
     //create table to store contact IDs with constructed external_id
@@ -307,6 +361,12 @@ class CRM_migrateContacts {
       exit();
     }
 
+    //determine contact_type clause
+    $cTypeClause = '';
+    if ( !empty($cTypesInclude) ) {
+      $cTypeClause = " AND rrcc.contact_type IN ('".implode("', '", $cTypesInclude)."')";
+    }
+
     //retrieve contacts from redistricting table
     $sql = "
       INSERT INTO $tbl
@@ -317,6 +377,7 @@ AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
       JOIN civicrm_contact c
         ON rrcc.contact_id = c.id
         AND c.is_deleted = 0
+        $cTypeClause
       WHERE rrcc.district = {$dest['num']}
       GROUP BY rrcc.contact_id
     ";
