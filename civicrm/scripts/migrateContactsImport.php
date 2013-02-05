@@ -125,9 +125,11 @@ class CRM_migrateContactsImport {
     $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
     $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
+    $statsTemp = array();
+
     //process the import
     self::importAttachments($exportData);
-    self::importContacts($exportData);
+    self::importContacts($exportData, $statsTemp);
     self::importActivities($exportData, $bbAdmin);
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
@@ -150,7 +152,9 @@ class CRM_migrateContactsImport {
     }
     $stats = array(
       'total contacts' => count($exportData['import']),
-      'individuals' => count($exportData['import']) - count($exportData['employment']),
+      'individuals' => $statsTemp['Individual'],
+      'organizations' => $statsTemp['Organization'],
+      'households' => $statsTemp['Household'],
       'employer organizations' => count($exportData['employment']),
       'total contacts merged with existing records' => count($mergedContacts),
       'individuals merged with existing records' =>
@@ -198,7 +202,7 @@ class CRM_migrateContactsImport {
     }
   }//importAttachments
 
-  function importContacts($exportData) {
+  function importContacts($exportData, &$stats) {
     global $optDry;
     global $extInt;
     global $mergedContacts;
@@ -216,9 +220,17 @@ class CRM_migrateContactsImport {
       'Contact_Details', 'Organization_Constituent_Information'
     );
 
+    //initialize arrays
     $mergedContacts = array();
+    $stats = array(
+      'Individual' => 0,
+      'Organization' => 0,
+      'Household' => 0,
+    );
+
     foreach ( $exportData['import'] as $extID => $details ) {
       //bbscript_log("trace", 'importContacts importContacts $details', $details);
+      $stats[$details['contact_type']] ++;
 
       //look for existing contact record in target db and add to params array
       $matchedContact = self::_contactLookup($details);
