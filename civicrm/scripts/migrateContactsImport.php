@@ -143,6 +143,8 @@ class CRM_migrateContactsImport {
 
     bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
 
+    //bbscript_log("trace", 'importData $mergedContacts', $mergedContacts);
+
     //generate report stats
     $caseList = array();
     foreach ( $exportData['cases'] as $extID => $cases ) {
@@ -156,11 +158,10 @@ class CRM_migrateContactsImport {
       'organizations' => $statsTemp['Organization'],
       'households' => $statsTemp['Household'],
       'employer organizations' => count($exportData['employment']),
-      'total contacts merged with existing records' => count($mergedContacts),
-      'individuals merged with existing records' =>
-        count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
-      'organizations merged with existing records' =>
-        count($mergedContacts) - count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'total contacts merged with existing records' => $mergedContacts['All'],
+      'individuals merged with existing records' => $mergedContacts['Individual'],
+      'organizations merged with existing records' => $mergedContacts['Organization'],
+      'households merged with existing records' => $mergedContacts['Household'],
       'activities' => count($exportData['activities']),
       'cases' => count($caseList),
       'keywords' => count($exportData['tags']['keywords']),
@@ -221,11 +222,11 @@ class CRM_migrateContactsImport {
     );
 
     //initialize stats arrays
-    $mergedContacts = array();
-    $stats = array(
+    $mergedContacts = $stats = array(
       'Individual' => 0,
       'Organization' => 0,
       'Household' => 0,
+      'All' => 0,
     );
 
     foreach ( $exportData['import'] as $extID => $details ) {
@@ -238,12 +239,15 @@ class CRM_migrateContactsImport {
       //look for existing contact record in target db and add to params array
       $matchedContact = self::_contactLookup($details);
       if ( $matchedContact ) {
+        //count merged
+        $mergedContacts[$details['contact']['contact_type']] ++;
+        $mergedContacts['All'] ++;
+
         //if updating existing contact, fill only
         self::_fillContact($matchedContact, $details);
 
-        //set id and count merged
+        //set id
         $details['contact']['id'] = $matchedContact;
-        $mergedContacts[$extID] = $matchedContact;
       }
 
       //clean the contact array
