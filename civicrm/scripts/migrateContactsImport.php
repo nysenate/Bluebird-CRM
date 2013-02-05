@@ -23,7 +23,7 @@ class CRM_migrateContactsImport {
     // Parse the options
     $shortopts = "f:n";
     $longopts = array("filename=", "dryrun");
-    $optlist = civicrm_script_init($shortopts, $longopts);
+    $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
@@ -41,12 +41,14 @@ class CRM_migrateContactsImport {
     $bbcfg_dest = get_bluebird_instance_config($optlist['site']);
     //bbscript_log("trace", '$bbcfg_dest', $bbcfg_dest);
 
+    require_once 'CRM/Utils/System.php';
+
     $civicrm_root = $bbcfg_dest['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
+    /*if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from migrateContactsImport.');
       return FALSE;
-    }
+    }*/
 
     $dest = array(
       'name' => $optlist['site'],
@@ -67,6 +69,9 @@ class CRM_migrateContactsImport {
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
     $session = CRM_Core_Session::singleton();
+
+    //override geocode method
+    $config->geocodeMethod = '';
 
     //retrieve/set other options
     $optDry = $optlist['dryrun'];
@@ -109,6 +114,10 @@ class CRM_migrateContactsImport {
       exit();
     }
 
+    //add app.dir so we can use it later
+    $bbconfig = get_bluebird_instance_config($dest['name']);
+    $exportData['dest']['app'] = $bbconfig['app.rootdir'];
+
     $source = $exportData['source'];
 
     //get bluebird administrator id to set as source
@@ -120,13 +129,16 @@ class CRM_migrateContactsImport {
     $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
     $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
+    $statsTemp = array();
+
     //process the import
     self::importAttachments($exportData);
-    self::importContacts($exportData);
+    self::importContacts($exportData, $statsTemp);
     self::importActivities($exportData, $bbAdmin);
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
     self::importEmployment($exportData);
+    self::importHouseholdRels($exportData);
     self::importDistrictInfo($exportData);
 
     //create group and add migrated contacts
@@ -135,6 +147,8 @@ class CRM_migrateContactsImport {
     $source = $exportData['source'];
 
     bbscript_log("info", "Completed contact migration import from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}) using {$importFile}.");
+
+    //bbscript_log("trace", 'importData $mergedContacts', $mergedContacts);
 
     //generate report stats
     $caseList = array();
@@ -145,13 +159,14 @@ class CRM_migrateContactsImport {
     }
     $stats = array(
       'total contacts' => count($exportData['import']),
-      'individuals' => count($exportData['import']) - count($exportData['employment']),
+      'individuals' => $statsTemp['Individual'],
+      'organizations' => $statsTemp['Organization'],
+      'households' => $statsTemp['Household'],
       'employer organizations' => count($exportData['employment']),
-      'total contacts merged with existing records' => count($mergedContacts),
-      'individuals merged with existing records' =>
-        count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
-      'organizations merged with existing records' =>
-        count($mergedContacts) - count(array_diff(array_keys($mergedContacts), $exportData['employment'])),
+      'total contacts merged with existing records' => $mergedContacts['All'],
+      'individuals merged with existing records' => $mergedContacts['Individual'],
+      'organizations merged with existing records' => $mergedContacts['Organization'],
+      'households merged with existing records' => $mergedContacts['Household'],
       'activities' => count($exportData['activities']),
       'cases' => count($caseList),
       'keywords' => count($exportData['tags']['keywords']),
@@ -160,6 +175,17 @@ class CRM_migrateContactsImport {
       'attachments' => count($exportData['attachments']),
     );
     bbscript_log("info", "Migration statistics:", $stats);
+
+    //now run cleanup scripts
+    $dryParam = ($optDry) ? "--dryrun" : '';
+    $scriptPath = $bbconfig['app.rootdir'].'/civicrm/scripts';
+    $cleanAddress = "php {$scriptPath}/dedupeAddress.php -S {$dest['name']}";
+    if ( !$optDry ) {
+      system($cleanAddress);
+    }
+    $cleanRecords = "php {$scriptPath}/dedupeSubRecords.php -S {$dest['name']} {$dryParam}";
+    system($cleanRecords);
+
   }//importData
 
   /*
@@ -193,7 +219,7 @@ class CRM_migrateContactsImport {
     }
   }//importAttachments
 
-  function importContacts($exportData) {
+  function importContacts($exportData, &$stats) {
     global $optDry;
     global $extInt;
     global $mergedContacts;
@@ -211,16 +237,37 @@ class CRM_migrateContactsImport {
       'Contact_Details', 'Organization_Constituent_Information'
     );
 
-    $mergedContacts = array();
+    //initialize stats arrays
+    $mergedContacts = $stats = array(
+      'Individual' => 0,
+      'Organization' => 0,
+      'Household' => 0,
+      'All' => 0,
+    );
+
     foreach ( $exportData['import'] as $extID => $details ) {
       //bbscript_log("trace", 'importContacts importContacts $details', $details);
+      $stats[$details['contact']['contact_type']] ++;
+
+      //check greeting fields
+      self::_checkGreeting($details['contact']);
 
       //look for existing contact record in target db and add to params array
-      $matchedContact = self::_contactLookup($details);
+      $matchedContact = self::_contactLookup($details, $exportData['dest']);
       if ( $matchedContact ) {
+        //count merged
+        $mergedContacts[$details['contact']['contact_type']] ++;
+        $mergedContacts['All'] ++;
+
+        //if updating existing contact, fill only
+        self::_fillContact($matchedContact, $details);
+
+        //set id
         $details['contact']['id'] = $matchedContact;
-        $mergedContacts[$extID] = $matchedContact;
       }
+
+      //clean the contact array
+      $details['contact'] = self::_cleanArray($details['contact']);
 
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
@@ -297,6 +344,9 @@ class CRM_migrateContactsImport {
         $params['custom_43'] = $details['custom']['place_of_inquiry_43'];
         $params['custom_44'] = $details['custom']['activity_category_44'];
       }
+
+      //clean params array
+      $params = self::_cleanArray($params);
 
       $newActivity = self::_importAPI('activity', 'create', $params);
       //bbscript_log("trace", 'importActivities newActivity', $newActivity);
@@ -496,11 +546,12 @@ class CRM_migrateContactsImport {
 
   }//importTags
 
-  function importEmployment($exportData) {
+  function importEmployment(&$exportData) {
     global $optDry;
     global $extInt;
 
     if ( !isset($exportData['employment']) ) {
+      $exportData['employment'] = array();
       return;
     }
 
@@ -515,6 +566,24 @@ class CRM_migrateContactsImport {
       }
     }
   }//importEmployment
+
+  function importHouseholdRels(&$exportData) {
+    global $optDry;
+    global $extInt;
+
+    if ( !isset($exportData['houserels']) ) {
+      $exportData['houserels'] = array();
+      return;
+    }
+
+    foreach ( $exportData['houserels'] as $rel ) {
+      $rel['contact_id_a'] = $extInt[$rel['contact_id_a']];
+      $rel['contact_id_b'] = $extInt[$rel['contact_id_b']];
+
+      self::_importAPI('relationship', 'create', $rel);
+    }
+    exit();
+  }//importHouseholdRels
 
   function importDistrictInfo($exportData) {
     global $optDry;
@@ -546,9 +615,27 @@ class CRM_migrateContactsImport {
     foreach ( $exportData['districtinfo'] as $addrExtID => $details ) {
       $details['entity_id'] = $addrExtInt[$addrExtID];
 
+      //capture errors mapping address external ID
+      if ( empty($details['entity_id']) ) {
+        bbscript_log("debug", 'importDistrictInfo: unmatched addrExtID', $addrExtID);
+      }
+
+      //clean array: remove elements with no value
+      $details = self::_cleanArray($details);
+
       $distInfo = self::_importAPI('District_Information', 'create', $details);
       //bbscript_log("trace", 'importDistrictInfo $distInfo', $distInfo);
     }
+
+    //cleanup address name field (temp ext address ID)
+    if ( !$optDry ) {
+      $sql = "
+          UPDATE civicrm_address
+          SET name = NULL
+          WHERE name IS NOT NULL;
+        ";
+        CRM_Core_DAO::executeQuery($sql);
+      }
   }//importDistrictInfo
 
   /*
@@ -596,13 +683,18 @@ class CRM_migrateContactsImport {
       $entity = 'custom_value';
     }
 
+    //clean the params array
+    $params = self::_cleanArray($params);
+
     if ( $optDry ) {
       bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
-    else {
+
+    if ( !$optDry || $action == 'get' ) {
       //add api version
       $params['version'] = 3;
       //$params['debug'] = 1;
+
       $api = civicrm_api($entity, $action, $params);
 
       if ( $api['is_error'] ) {
@@ -618,10 +710,12 @@ class CRM_migrateContactsImport {
    * given the values to be imported, lookup using indiv strict default rule
    * return contact ID if found
    */
-  function _contactLookup($contact) {
+  function _contactLookup($contact, $dest) {
     require_once 'CRM/Dedupe/Finder.php';
-    require_once '/opt/bluebird_dev/modules/nyss_dedupe/nyss_dedupe.module';
+    require_once 'CRM/Import/DataSource/CSV.php';
+    require_once $dest['app'].'/modules/nyss_dedupe/nyss_dedupe.module';
     //bbscript_log("trace", '_contactLookup $contact', $contact);
+    //bbscript_log("trace", '_contactLookup $dest', $dest);
 
     //set contact type
     $cType = $contact['contact']['contact_type'];
@@ -641,6 +735,11 @@ class CRM_migrateContactsImport {
       case 'Organization':
         $params['civicrm_contact']['organization_name'] = CRM_Utils_Array::value('organization_name', $contact['contact']);
         $ruleName = 'Organization 1 (name + street + city + email)';
+        break;
+
+      case 'Household':
+        $params['civicrm_contact']['household_name'] = CRM_Utils_Array::value('household_name', $contact['contact']);
+        $ruleName = 'Household 1 (name + street + city + email)';
         break;
 
       default:
@@ -688,16 +787,107 @@ class CRM_migrateContactsImport {
 
     //also try a lookup on external id (which should really only happen during testing)
     if ( !$cid ) {
+      $extID = civicrm_mysql_real_escape_string($contact['contact']['external_identifier']);
       $sql = "
         SELECT id
         FROM civicrm_contact
-        WHERE external_identifier = '{$contact['contact']['external_identifier']}'
+        WHERE external_identifier = '{$extID}'
       ";
       $cid = CRM_Core_DAO::singleValueQuery($sql);
     }
+    //bbscript_log("trace", '_contactLookup $cid', $cid);
 
     return $cid;
   }//_contactLookup
+
+  /*
+   * given contact params, ensure greetings are constructed
+   */
+  function _checkGreeting(&$contact) {
+    $gTypes = array(
+      'email_greeting',
+      'postal_greeting',
+      'addressee',
+    );
+
+    foreach ( $gTypes as $type ) {
+      if ( $contact[$type.'_id'] == 4 ) {
+        if ( empty($contact[$type.'_custom']) ) {
+          $custVal = (!empty($contact[$type.'_display'])) ? $contact[$type.'_display'] : 'Dear Friend';
+          $contact[$type.'_custom'] = $custVal;
+        }
+      }
+      else {
+        $contact[$type.'_custom'] = '';
+      }
+    }
+  }//_checkGreeting
+
+  /*
+   * if we are merging the contact with an existing record, we need to fill only
+   * (not overwrite) during import
+   */
+  function _fillContact($matchedID, &$details) {
+    global $customGroupID;
+    global $customMapID; // array('id' => 'col_name')
+
+    $params = array(
+      'version' => 3,
+      'id' => $matchedID,
+    );
+    $contact = civicrm_api('contact', 'getsingle', $params);
+
+    foreach ( $contact as $f => $v ) {
+      //if existing record field has a value, remove from imported record array
+      if ( (!empty($v) || $v === 0) &&
+        isset($details['contact'][$f]) &&
+        $f != 'source' ) {
+        //unset from imported contact array
+        unset($details['contact'][$f]);
+      }
+    }
+
+    //process custom field data
+    $customSets = array(
+      'Additional_Constituent_Information',
+      'Attachments',
+      'Contact_Details',
+      'Organization_Constituent_Information',
+    );
+    foreach ( $customSets as $set ) {
+      //get/set custom group ID
+      if ( !isset($customGroupID[$set]) || empty($customGroupID[$set]) ) {
+        $customGroupID[$set] = self::getCustomFields($set, 'groupid');
+      }
+
+      //get/set custom fields
+      if ( !isset($customMapID[$set]) || empty($customMapID[$set]) ) {
+        $customDetails = self::getCustomFields($set);
+        foreach ( $customDetails as $field ) {
+          $customMapID[$set][$field['id']] = $field['column_name'];
+        }
+      }
+
+      if ( isset($details[$set]) ) {
+        $params = array(
+          'version' => 3,
+          'entity_id' => $matchedID,
+          'custom_group_id' => $customGroupID[$set],
+        );
+        $data = self::_importAPI($set, 'get', $params);
+        //bbscript_log("trace", "_fillContact data: $set", $data);
+
+        //cycle through existing custom data and unset from $details if value exists
+        foreach ( $data['values'] as $custFID => $existingData ) {
+          //TODO should probably handle attachments more intelligently
+          if ( !empty($existingData['latest']) || $existingData['latest'] === 0 ) {
+            $colName = $customMapID[$set][$custFID];
+            unset($details[$set][$colName]);
+          }
+        }
+      }
+    }
+  }//_fillContact
 
   /*
    * helper function to build entity_file record
@@ -764,12 +954,30 @@ class CRM_migrateContactsImport {
       bbscript_log("debug", "_copyAttachment: {$sourceFile}");
     }
     else {
-      copy($sourceFile, $destFile);
-      chown($destFile, 'apache');
-      chgrp($destFile, 'bluebird');
-
+      //ensure source file exists
+      if ( file_exists($sourceFile) ) {
+        copy($sourceFile, $destFile);
+        chown($destFile, 'apache');
+        chgrp($destFile, 'bluebird');
+      }
+      else {
+        //file couldn't be found and moved
+        bbscript_log("debug", "file could not be located and copied: {$sourceFile}");
+      }
     }
   }//_moveAttachment
+
+  /*
+   * given an array, cycle through and unset any elements with no value
+   */
+  function _cleanArray($data) {
+    foreach ( $data as $f => $v ) {
+      if ( empty($v) && $v !== 0 ) {
+        unset($data[$f]);
+      }
+    }
+    return $data;
+  }//_cleanArray
 
   /*
    * create group in destination database and add all contacts
@@ -838,15 +1046,18 @@ class CRM_migrateContactsImport {
   /*
    * given a custom data group name, return array of fields
    */
-  function getCustomFields($name, $flds = TRUE) {
+  function getCustomFields($name, $return = 'fields') {
     $group = civicrm_api('custom_group', 'getsingle', array('version' => 3, 'name' => $name ));
-    if ( $flds ) {
+    if ( $return == 'fields' ) {
       $fields = civicrm_api('custom_field', 'get', array('version' => 3, 'custom_group_id' => $group['id']));
       //bbscript_log("trace", 'getCustomFields fields', $fields);
       return $fields['values'];
     }
-    else {
+    elseif ( $return == 'table' ) {
       return $group['table_name'];
+    }
+    elseif ( $return == 'groupid' ) {
+      return $group['id'];
     }
   }//getCustomFields
 
