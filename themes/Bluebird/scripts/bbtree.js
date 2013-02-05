@@ -1492,6 +1492,18 @@ var BBTreeModal = {
 			]);
 		},
 		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
+			if(tdata.parentId == '291')
+			{
+				var tlvl = parseFloat(BBTreeModal.tlvl);
+				tlvl++;
+				var toAddDT = '<dt class="lv-' + tlvl + ' ';
+				if(data.is_reserved != null)
+				{
+					toAddDT += 'isReserved';
+				}
+				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
+				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
+			}
 			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
