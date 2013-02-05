@@ -220,7 +220,7 @@ class CRM_migrateContactsImport {
       'Contact_Details', 'Organization_Constituent_Information'
     );
 
-    //initialize arrays
+    //initialize stats arrays
     $mergedContacts = array();
     $stats = array(
       'Individual' => 0,
@@ -230,17 +230,24 @@ class CRM_migrateContactsImport {
 
     foreach ( $exportData['import'] as $extID => $details ) {
       //bbscript_log("trace", 'importContacts importContacts $details', $details);
-      $stats[$details['contact_type']] ++;
+      $stats[$details['contact']['contact_type']] ++;
+
+      //check greeting fields
+      self::_checkGreeting($details['contact']);
 
       //look for existing contact record in target db and add to params array
       $matchedContact = self::_contactLookup($details);
       if ( $matchedContact ) {
+        //if updating existing contact, fill only
+        self::_fillContact($matchedContact, $details);
+
+        //set id and count merged
         $details['contact']['id'] = $matchedContact;
         $mergedContacts[$extID] = $matchedContact;
       }
 
-      //check greeting fields
-      self::_checkGreeting($details['contact']);
+      //clean the contact array
+      $details['contact'] = self::_cleanArray($details['contact']);
 
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
@@ -644,7 +651,8 @@ class CRM_migrateContactsImport {
     if ( $optDry ) {
       bbscript_log("debug", "_importAPI entity:{$entity} action:{$action} params:", $params);
     }
-    else {
+
+    if ( !$optDry || $action == 'get' ) {
       //add api version
       $params['version'] = 3;
       //$params['debug'] = 1;
@@ -767,6 +775,72 @@ class CRM_migrateContactsImport {
       }
     }
   }//_checkGreeting
+
+  /*
+   * if we are merging the contact with an existing record, we need to fill only
+   * (not overwrite) during import
+   */
+  function _fillContact($matchedID, &$details) {
+    global $customGroupID;
+    global $customMapID; // array('id' => 'col_name')
+
+    $params = array(
+      'version' => 3,
+      'id' => $matchedID,
+    );
+    $contact = civicrm_api('contact', 'getsingle', $params);
+
+    foreach ( $contact as $f => $v ) {
+      //if existing record field has a value, remove from imported record array
+      if ( (!empty($v) || $v === 0) &&
+        isset($details['contact'][$f]) &&
+        $f != 'source' ) {
+        //unset from imported contact array
+        unset($details['contact'][$f]);
+      }
+    }
+
+    //process custom field data
+    $customSets = array(
+      'Additional_Constituent_Information',
+      'Attachments',
+      'Contact_Details',
+      'Organization_Constituent_Information',
+    );
+    foreach ( $customSets as $set ) {
+      //get/set custom group ID
+      if ( !isset($customGroupID[$set]) || empty($customGroupID[$set]) ) {
+        $customGroupID[$set] = self::getCustomFields($set, 'groupid');
+      }
+
+      //get/set custom fields
+      if ( !isset($customMapID[$set]) || empty($customMapID[$set]) ) {
+        $customDetails = self::getCustomFields($set);
+        foreach ( $customDetails as $field ) {
+          $customMapID[$set][$field['id']] = $field['column_name'];
+        }
+      }
+
+      if ( isset($details[$set]) ) {
+        $params = array(
+          'version' => 3,
+          'entity_id' => $matchedID,
+          'custom_group_id' => $customGroupID[$set],
+        );
+        $data = self::_importAPI($set, 'get', $params);
+        //bbscript_log("trace", "_fillContact data: $set", $data);
+
+        //cycle through existing custom data and unset from $details if value exists
+        foreach ( $data['values'] as $custFID => $existingData ) {
+          //TODO should probably handle attachments more intelligently
+          if ( !empty($existingData['latest']) || $existingData['latest'] === 0 ) {
+            $colName = $customMapID[$set][$custFID];
+            unset($details[$set][$colName]);
+          }
+        }
+      }
+    }
+  }//_fillContact
 
   /*
    * helper function to build entity_file record
@@ -925,15 +999,18 @@ class CRM_migrateContactsImport {
   /*
    * given a custom data group name, return array of fields
    */
-  function getCustomFields($name, $flds = TRUE) {
+  function getCustomFields($name, $return = 'fields') {
     $group = civicrm_api('custom_group', 'getsingle', array('version' => 3, 'name' => $name ));
-    if ( $flds ) {
+    if ( $return == 'fields' ) {
       $fields = civicrm_api('custom_field', 'get', array('version' => 3, 'custom_group_id' => $group['id']));
       //bbscript_log("trace", 'getCustomFields fields', $fields);
       return $fields['values'];
     }
-    else {
+    elseif ( $return == 'table' ) {
       return $group['table_name'];
+    }
+    elseif ( $return == 'groupid' ) {
+      return $group['id'];
     }
   }//getCustomFields
 
