@@ -518,20 +518,20 @@ var callTree =  {
 			}
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
-		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
+		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" parent="'+tID.id+'" tID="'+tID.id+'">';
 		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
 		displayObj.tLvl++; //start the tree at lv-1
 		return displayObj;
 	},
-	parseTreeAjax: function(tID, displayObj){
+	parseTreeAjax: function(tID, displayObj, parentTag){
 		var treeData = callTree.parseJsonInsides(tID, displayObj);
 		BBTree.parsedJsonData[tID.id] = {'name':tID.name, 'data':treeData};
 	},
 	parseJsonInsides: function(tID, displayObj){
 		cj.each(tID.children, function(i, cID){//runs all first level
-			callTree.writeTagLabel(cID, displayObj);
+			callTree.writeTagLabel(cID, displayObj, tID.id);
 			if(cID.children.length > 0)
 			{
 				callTree.writeJsonTag(cID, displayObj);
