@@ -46,6 +46,9 @@
     border:0;
     border-left:1px solid #ccc;
 }
+.container #status {
+    display:none;
+}
 </style>
 {/literal}
 {literal}
