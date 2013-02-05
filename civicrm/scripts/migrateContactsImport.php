@@ -170,6 +170,18 @@ class CRM_migrateContactsImport {
       'attachments' => count($exportData['attachments']),
     );
     bbscript_log("info", "Migration statistics:", $stats);
+
+    //now run cleanup scripts
+    $bbconfig = get_bluebird_instance_config($dest['name']);
+    $dryParam = ($optDry) ? "--dryrun" : '';
+    $scriptPath = $bbconfig['app.rootdir'].'/civicrm/scripts';
+    $cleanAddress = "php {$scriptPath}/dedupeAddress.php -S {$dest['name']}";
+    if ( !$optDry ) {
+      system($cleanAddress);
+    }
+    $cleanRecords = "php {$scriptPath}/dedupeSubRecords.php -S {$dest['name']} {$dryParam}";
+    system($cleanRecords);
+
   }//importData
 
   /*
