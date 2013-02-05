@@ -107,7 +107,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         ),
         'Household 1 (name + street + city + email)' => array(
             'internal' => 'nyss_dedupe_house1_internal',
-            'record' => ''
+            'record' => 'nyss_dedupe_house1_record'
         ),
         'Household 2 (name + street + city + zip)' => array(
             'internal' => 'nyss_dedupe_house2_internal',
@@ -127,6 +127,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         //Set some default override values, individual rule functions can override these
         $o->threshold = 5;
         // Build our customized query, allow override of $o values.
+
         $query = call_user_func($rule, $o);
 
         // For internal queries, make sure to respect the contactIds constraints
@@ -665,6 +666,88 @@ function nyss_dedupe_house3_internal($o) {
               AND address1.city IS NOT NULL
               ";
 }
+
+/*
+ * household rules
+ * record deduping
+ */
+function nyss_dedupe_house1_record($o) {
+  //name + street + city + email
+
+  //fetch and clean all input data
+  $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
+  $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
+  $civicrm_email = CRM_Utils_Array::value('civicrm_email',$o->params);
+
+  $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
+  $household_name  = nyss_dedupe_get_safe('household_name'   , $civicrm_contact, '');
+  $city            = nyss_dedupe_get_safe('city'             , $civicrm_address, '');
+  $postal_code     = nyss_dedupe_get_safe('postal_code'      , $civicrm_address, '');
+  $street_address  = nyss_dedupe_get_safe('street_address'   , $civicrm_address, '');
+  $state_id        = nyss_dedupe_get_safe('state_province_id', $civicrm_address, '');
+  $country_id      = nyss_dedupe_get_safe('country_id'       , $civicrm_address, '');
+
+  // If we don't have a house name, do nothing
+  if(!$household_name)
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
+
+  // If we don't have some sort of address element, do nothing
+  if((!$street_address || !$postal_code) && !$email)
+    return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1";
+
+  // Build the barebones query if no address or email is present
+  $select = "
+    SELECT DISTINCT contact1.contact_id id1, 5 weight";
+
+  $from = "
+    FROM shadow_contact AS contact1";
+
+  $where = "
+    WHERE contact1.contact_type = 'Household'
+      AND contact1.household_name = BB_NORMALIZE('$household_name')
+  ";
+
+  // Add on the bits that make us smart around addresses
+  if($street_address && $postal_code) {
+    $from .= "
+      LEFT JOIN shadow_address AS address1 USING(contact_id)";
+
+    if($city)
+      $where .= "
+        AND (address1.city IS NULL or address1.city = '$city')";
+
+    if($state_id)
+      $where .= "
+        AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')\n";
+
+    if($country_id)
+      $where .= "
+        AND (address1.country_id IS NULL or address1.country_id = '$country_id')\n";
+  }
+
+  // Add on the bits that make us smart around emails
+  if($email) {
+    $from .= "
+      LEFT JOIN civicrm_email AS email1 USING(contact_id)";
+  }
+
+  // Add on the primary inclusion rules
+  if($street_address && $postal_code && $email)
+    $where .= "
+      AND (
+        (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code')
+        OR (email1.email = '$email')
+      )";
+  elseif($street_address && $postal_code)
+    $where .= "
+      AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+      AND address1.postal_code = '$postal_code'";
+  elseif($email)
+    $where .= "
+      AND email1.email = '$email'";
+
+  return $select.$from.$where;
+}//nyss_dedupe_house1_record
 
 function nyss_dedupe_get_safe($key, $array, $default) {
     return CRM_Core_DAO::escapeString(CRM_Utils_Array::value($key, $array, $default));
