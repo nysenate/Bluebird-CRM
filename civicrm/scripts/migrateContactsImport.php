@@ -114,6 +114,10 @@ class CRM_migrateContactsImport {
       exit();
     }
 
+    //add app.dir so we can use it later
+    $bbconfig = get_bluebird_instance_config($dest['name']);
+    $exportData['dest']['app'] = $bbconfig['app.rootdir'];
+
     $source = $exportData['source'];
 
     //get bluebird administrator id to set as source
@@ -134,6 +138,7 @@ class CRM_migrateContactsImport {
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
     self::importEmployment($exportData);
+    self::importHouseholdRels($exportData);
     self::importDistrictInfo($exportData);
 
     //create group and add migrated contacts
@@ -172,7 +177,6 @@ class CRM_migrateContactsImport {
     bbscript_log("info", "Migration statistics:", $stats);
 
     //now run cleanup scripts
-    $bbconfig = get_bluebird_instance_config($dest['name']);
     $dryParam = ($optDry) ? "--dryrun" : '';
     $scriptPath = $bbconfig['app.rootdir'].'/civicrm/scripts';
     $cleanAddress = "php {$scriptPath}/dedupeAddress.php -S {$dest['name']}";
@@ -249,7 +253,7 @@ class CRM_migrateContactsImport {
       self::_checkGreeting($details['contact']);
 
       //look for existing contact record in target db and add to params array
-      $matchedContact = self::_contactLookup($details);
+      $matchedContact = self::_contactLookup($details, $exportData['dest']);
       if ( $matchedContact ) {
         //count merged
         $mergedContacts[$details['contact']['contact_type']] ++;
@@ -563,6 +567,24 @@ class CRM_migrateContactsImport {
     }
   }//importEmployment
 
+  function importHouseholdRels(&$exportData) {
+    global $optDry;
+    global $extInt;
+
+    if ( !isset($exportData['houserels']) ) {
+      $exportData['houserels'] = array();
+      return;
+    }
+
+    foreach ( $exportData['houserels'] as $rel ) {
+      $rel['contact_id_a'] = $extInt[$rel['contact_id_a']];
+      $rel['contact_id_b'] = $extInt[$rel['contact_id_b']];
+
+      self::_importAPI('relationship', 'create', $rel);
+    }
+    exit();
+  }//importHouseholdRels
+
   function importDistrictInfo($exportData) {
     global $optDry;
     global $extInt;
@@ -688,10 +710,12 @@ class CRM_migrateContactsImport {
    * given the values to be imported, lookup using indiv strict default rule
    * return contact ID if found
    */
-  function _contactLookup($contact) {
+  function _contactLookup($contact, $dest) {
     require_once 'CRM/Dedupe/Finder.php';
-    require_once '/opt/bluebird_dev/modules/nyss_dedupe/nyss_dedupe.module';
+    require_once 'CRM/Import/DataSource/CSV.php';
+    require_once $dest['app'].'/modules/nyss_dedupe/nyss_dedupe.module';
     //bbscript_log("trace", '_contactLookup $contact', $contact);
+    //bbscript_log("trace", '_contactLookup $dest', $dest);
 
     //set contact type
     $cType = $contact['contact']['contact_type'];
@@ -711,6 +735,11 @@ class CRM_migrateContactsImport {
       case 'Organization':
         $params['civicrm_contact']['organization_name'] = CRM_Utils_Array::value('organization_name', $contact['contact']);
         $ruleName = 'Organization 1 (name + street + city + email)';
+        break;
+
+      case 'Household':
+        $params['civicrm_contact']['household_name'] = CRM_Utils_Array::value('household_name', $contact['contact']);
+        $ruleName = 'Household 1 (name + street + city + email)';
         break;
 
       default:
@@ -758,13 +787,15 @@ class CRM_migrateContactsImport {
 
     //also try a lookup on external id (which should really only happen during testing)
     if ( !$cid ) {
+      $extID = civicrm_mysql_real_escape_string($contact['contact']['external_identifier']);
       $sql = "
         SELECT id
         FROM civicrm_contact
-        WHERE external_identifier = '{$contact['contact']['external_identifier']}'
+        WHERE external_identifier = '{$extID}'
       ";
       $cid = CRM_Core_DAO::singleValueQuery($sql);
     }
+    //bbscript_log("trace", '_contactLookup $cid', $cid);
 
     return $cid;
   }//_contactLookup
