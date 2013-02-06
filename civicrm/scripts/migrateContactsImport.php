@@ -162,7 +162,7 @@ class CRM_migrateContactsImport {
       'individuals' => $statsTemp['Individual'],
       'organizations' => $statsTemp['Organization'],
       'households' => $statsTemp['Household'],
-      'employer organizations' => count($exportData['employment']),
+      'employee/employer relationships' => count($exportData['employment']),
       'total contacts merged with existing records' => $mergedContacts['All'],
       'individuals merged with existing records' => $mergedContacts['Individual'],
       'organizations merged with existing records' => $mergedContacts['Organization'],
@@ -179,7 +179,7 @@ class CRM_migrateContactsImport {
     //now run cleanup scripts
     $dryParam = ($optDry) ? "--dryrun" : '';
     $scriptPath = $bbconfig['app.rootdir'].'/civicrm/scripts';
-    $cleanAddress = "php {$scriptPath}/dedupeAddress.php -S {$dest['name']}";
+    $cleanAddress = "php {$scriptPath}/dedupeAddresses.php -S {$dest['name']}";
     if ( !$optDry ) {
       system($cleanAddress);
     }
@@ -582,7 +582,6 @@ class CRM_migrateContactsImport {
 
       self::_importAPI('relationship', 'create', $rel);
     }
-    exit();
   }//importHouseholdRels
 
   function importDistrictInfo($exportData) {
@@ -841,7 +840,8 @@ class CRM_migrateContactsImport {
       //if existing record field has a value, remove from imported record array
       if ( (!empty($v) || $v === 0) &&
         isset($details['contact'][$f]) &&
-        $f != 'source' ) {
+        $f != 'source' &&
+        $f != 'external_identifier' ) {
         //unset from imported contact array
         unset($details['contact'][$f]);
       }

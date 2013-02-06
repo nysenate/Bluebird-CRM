@@ -536,7 +536,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $data = self::exportStandard($rType, $IDs, 'contact_id', 'CRM_Core_DAO_IM');
         break;
       case 'note':
-        bbscript_log("trace", "processData switch", $rType);
         $data = self::exportStandard($rType, $IDs, 'entity_id', null);
         break;
       case 'activity':
