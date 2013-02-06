@@ -518,20 +518,20 @@ var callTree =  {
 			}
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
-		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
+		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" parent="'+tID.id+'" tID="'+tID.id+'">';
 		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
 		displayObj.tLvl++; //start the tree at lv-1
 		return displayObj;
 	},
-	parseTreeAjax: function(tID, displayObj){
+	parseTreeAjax: function(tID, displayObj, parentTag){
 		var treeData = callTree.parseJsonInsides(tID, displayObj);
 		BBTree.parsedJsonData[tID.id] = {'name':tID.name, 'data':treeData};
 	},
 	parseJsonInsides: function(tID, displayObj){
 		cj.each(tID.children, function(i, cID){//runs all first level
-			callTree.writeTagLabel(cID, displayObj);
+			callTree.writeTagLabel(cID, displayObj, tID.id);
 			if(cID.children.length > 0)
 			{
 				callTree.writeJsonTag(cID, displayObj);
@@ -698,7 +698,7 @@ var BBTreeEdit = {
 			var tagDescription = cj(this).attr('description');
 			if(tagDescription == 'null')
 			{
-				tagDescription = tagName;
+				tagDescription = '';
 			}
 			if(cj(this).hasClass('isReserved') == true)
 			{
@@ -1492,6 +1492,18 @@ var BBTreeModal = {
 			]);
 		},
 		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
+			if(tdata.parentId == '291')
+			{
+				var tlvl = parseFloat(BBTreeModal.tlvl);
+				tlvl++;
+				var toAddDT = '<dt class="lv-' + tlvl + ' ';
+				if(data.is_reserved != null)
+				{
+					toAddDT += 'isReserved';
+				}
+				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
+				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
+			}
 			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
