@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-12
 # Revised: 2012-04-18
+# Revised: 2013-02-05 - changed temp dir to be within /data
 #
 
 prog=`basename $0`
@@ -14,7 +15,7 @@ script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-tmpdir=/tmp/dumpInstance_$$
+tmpdir=/data/tmp/dumpInstance_$$
 civi_file=
 no_civi=0
 drup_file=
