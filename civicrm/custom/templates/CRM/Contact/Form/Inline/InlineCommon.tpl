@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* This file contain js used for form submitting for inline edit *}
-
+{*NYSS 5816 throughout*}
 {literal}
 <script type="text/javascript">
 function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
@@ -38,10 +38,9 @@ function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
       'groupID'   : cgId,
       'locno'     : locNo,
       'aid'       : addId,
-	    'snippet'   : 5
+	    'snippet'   : 6
       },
-	  error:    onError,
-    success:  onSuccess  // after submit callback
+	  success:  onSuccess  // after submit callback
   }; 
 
   var actualFormName = formName;
@@ -51,62 +50,54 @@ function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
     actualFormName = formName + '_' + locNo;
   }
 
-  //NYSS 5816
   // bind form using 'ajaxForm'
   cj('#' + actualFormName ).ajaxForm( options );
 
-  // bind form using 'ajaxForm'
-  //cj('#' + formName ).ajaxForm( options );
-
-	// error callback
-	function onError( response ) {
-		var blockSelector = cj('#' + blockName);
-    blockSelector.html( response.responseText );
-  }
-
   // success callback
-  function onSuccess( response, status ) {
+  function onSuccess( response ) {
     //check if form is submitted successfully
+    if ( response.status == 'save' || response.status == 'cancel' ) {
+      if ( response.addressId ) {
+        addId = response.addressId;
+      }
 
-		if ( status == 'success' ) {
-	    if ( response.addressId ) {
-	      addId = response.addressId;
-	    }
+      // fetch the view of the block after edit
+      var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal};
+      var queryString = 'class_name=CRM_Contact_Page_Inline_' + formName + '&type=page&cid=' + contactId;
 
-	    // fetch the view of the block after edit
-	    var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal};
-	    var queryString = 'class_name=CRM_Contact_Page_Inline_' + formName + '&type=page&cid=' + contactId;
+      if ( cgId ) {
+        queryString += '&groupID=' + cgId;
+      }
 
-			if ( cgId ) {
-	      queryString += '&groupID=' + cgId;
-	    }
+      if ( locNo ) {
+        queryString += '&locno=' + locNo;
+      }
 
-	    if ( locNo ) {
-	      queryString += '&locno=' + locNo;
-	    }
+      if ( addId ) {
+        queryString += '&aid=' + addId;
+      }
 
-	    if ( addId ) {
-	      queryString += '&aid=' + addId;
-	    }
+      var response = cj.ajax({
+            type: "POST",
+            url: postUrl,
+            async: false,
+            data: queryString,
+            dataType: "json"
+            }).responseText;
 
-	    var response = cj.ajax({
-	          type: "POST",
-	          url: postUrl,
-	          async: false,
-	          data: queryString,
-	          dataType: "json"
-	          }).responseText;
+      var blockSelector = cj('#' + blockName);
 
-	    var blockSelector = cj('#' + blockName);
+      blockSelector.html( response );
 
-	    blockSelector.html( response );
-
-	    // append add link only in case of save
-	    if ( formName == 'Address' ) {
-	      var addLinkBlock = cj('#' + blockName + ' div.appendAddLink');
-	      blockSelector.parents('.contact_panel').append(addLinkBlock);
-	    }
-		}
+      // append add link only in case of save
+      if ( formName == 'Address' ) {
+        var addLinkBlock = cj('#' + blockName + ' div.appendAddLink');
+        blockSelector.parents('.contact_panel').append(addLinkBlock);
+      }
+    }
+    else {
+      cj('#' + blockName).html(response.content);
+    }
   }
 }
 
