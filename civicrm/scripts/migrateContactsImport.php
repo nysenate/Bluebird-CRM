@@ -550,6 +550,8 @@ class CRM_migrateContactsImport {
     global $optDry;
     global $extInt;
 
+    bbscript_log("info", "importing employer/employee relationships...");
+
     if ( !isset($exportData['employment']) ) {
       $exportData['employment'] = array();
       return;
@@ -557,9 +559,9 @@ class CRM_migrateContactsImport {
 
     require_once 'CRM/Contact/BAO/Contact/Utils.php';
 
-    foreach ( $exportData['employment'] as $employerID => $employeeID ) {
+    foreach ( $exportData['employment'] as  $employeeID => $employerID ) {
       if ( $optDry ) {
-        bbscript_log("debug", "creating employment relationship between I-{$extInt[$employeeID]} and O-{$extInt[$employerID]}");
+        bbscript_log("debug", "creating employment relationship between I-{$employeeID} and O-{$employerID}");
       }
       else {
         CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($extInt[$employeeID], $extInt[$employerID]);
