@@ -97,6 +97,7 @@ class CRM_migrateContactsImport {
     global $optDry;
     global $exportData;
     global $mergedContacts;
+    global $selfMerged;
 
     //set global to value passed to function
     $optDry = $optDryParam;
@@ -167,6 +168,7 @@ class CRM_migrateContactsImport {
       'individuals merged with existing records' => $mergedContacts['Individual'],
       'organizations merged with existing records' => $mergedContacts['Organization'],
       'households merged with existing records' => $mergedContacts['Household'],
+      'contacts self-merged with other imported records' => count($selfMerged),
       'activities' => count($exportData['activities']),
       'cases' => count($caseList),
       'keywords' => count($exportData['tags']['keywords']),
@@ -562,7 +564,6 @@ class CRM_migrateContactsImport {
 
   function importEmployment(&$exportData) {
     global $optDry;
-    global $extInt;
 
     bbscript_log("info", "importing employer/employee relationships...");
 
@@ -578,14 +579,15 @@ class CRM_migrateContactsImport {
         bbscript_log("debug", "creating employment relationship between I-{$employeeID} and O-{$employerID}");
       }
       else {
-        CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($extInt[$employeeID], $extInt[$employerID]);
+        $employeeIntID = self::_getIntID($employeeID);
+        $employerIntID = self::_getIntID($employerID);
+        CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($employeeIntID, $employerIntID);
       }
     }
   }//importEmployment
 
   function importHouseholdRels(&$exportData) {
     global $optDry;
-    global $extInt;
 
     if ( !isset($exportData['houserels']) ) {
       $exportData['houserels'] = array();
@@ -593,8 +595,8 @@ class CRM_migrateContactsImport {
     }
 
     foreach ( $exportData['houserels'] as $rel ) {
-      $rel['contact_id_a'] = $extInt[$rel['contact_id_a']];
-      $rel['contact_id_b'] = $extInt[$rel['contact_id_b']];
+      $rel['contact_id_a'] = self::_getIntID($rel['contact_id_a']);
+      $rel['contact_id_b'] = self::_getIntID($rel['contact_id_b']);
 
       self::_importAPI('relationship', 'create', $rel);
     }
@@ -602,7 +604,6 @@ class CRM_migrateContactsImport {
 
   function importDistrictInfo($exportData) {
     global $optDry;
-    global $extInt;
 
     if ( !isset($exportData['districtinfo']) ) {
       return;
@@ -726,6 +727,9 @@ class CRM_migrateContactsImport {
    * return contact ID if found
    */
   function _contactLookup($contact, $dest) {
+    global $extInt;
+    global $selfMerged;
+
     require_once 'CRM/Dedupe/Finder.php';
     require_once 'CRM/Import/DataSource/CSV.php';
     require_once $dest['app'].'/modules/nyss_dedupe/nyss_dedupe.module';
@@ -790,7 +794,7 @@ class CRM_migrateContactsImport {
     nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
     $sql = $tableQueries['civicrm.custom.5'];
     $sql = "
-      SELECT contact.id
+      SELECT contact.id, contact.external_identifier
       FROM civicrm_contact as contact
       JOIN ($sql) as dupes
       WHERE dupes.id1 = contact.id
@@ -798,11 +802,17 @@ class CRM_migrateContactsImport {
       LIMIT 1
     ";
     //bbscript_log("trace", '_contactLookup $sql', $sql);
-    $cid = CRM_Core_DAO::singleValueQuery($sql);
+    $c = CRM_Core_DAO::executeQuery($sql);
+
+    while ( $c->fetch() ) {
+      $cid = $c->id;
+      $xid = $c->external_identifier;
+    }
+
+    $extID = civicrm_mysql_real_escape_string($contact['contact']['external_identifier']);
 
     //also try a lookup on external id (which should really only happen during testing)
     if ( !$cid ) {
-      $extID = civicrm_mysql_real_escape_string($contact['contact']['external_identifier']);
       $sql = "
         SELECT id
         FROM civicrm_contact
@@ -812,8 +822,47 @@ class CRM_migrateContactsImport {
     }
     //bbscript_log("trace", '_contactLookup $cid', $cid);
 
+    //if a contact is found which we will merge to, check to see if that contact was in our import set
+    if ( $xid ) {
+      //see if the matched record external_id is already in our $extInt array
+      if ( array_key_exists($xid, $extInt) ) {
+        //current record's ext id => matched record's ext id
+        $selfMerged[$extID] = $xid;
+      }
+    }
+
     return $cid;
   }//_contactLookup
+
+  /*
+   * given an external identifier, try to determine the internal id in the destination db
+   */
+  function _getIntID($extID) {
+    global $extInt;
+    global $selfMerged;
+
+    //first look in ext->int mapping
+    if ( isset($extInt[$extID]) ) {
+      return $extInt[$extID];
+    }
+    //see if the record self-merged
+    elseif ( in_array($extID, $selfMerged) ) {
+      $mergedExtID = array_search($extID, $selfMerged);
+      if ( isset($extInt[$mergedExtID]) ) {
+        return $extInt[$mergedExtID];
+      }
+    }
+    //try a db lookup
+    else {
+      $sql = "SELECT id FROM civicrm_contact WHERE external_identifier = '{$extID}';";
+      $intID = CRM_Core_DAO::singleValueQuery($sql);
+      if ( $intID ) {
+        return $intID;
+      }
+    }
+
+    return null;
+  }//_getIntID
 
   /*
    * given contact params, ensure greetings are constructed
