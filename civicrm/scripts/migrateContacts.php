@@ -157,6 +157,9 @@ class CRM_migrateContacts {
     $dryParam = ($optDry) ? "--dryrun" : '';
     $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts';
 
+    //save options to the export array
+    self::prepareData(array('options' => $optlist), $optDry, 'options passed to the script');
+
     //set import folder based on environment
     $fileDir = '/data/redistricting/bluebird_'.$bbcfg_source['install_class'].'/migrate';
     if ( !file_exists($fileDir) ) {

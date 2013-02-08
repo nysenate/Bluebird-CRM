@@ -178,7 +178,25 @@ class CRM_migrateContactsImport {
     );
     bbscript_log("info", "Migration statistics:", $stats);
 
-    //TODO log these to file
+    //log to file
+    if ( !$optDry ) {
+      //set import folder based on environment
+      $fileDir = '/data/redistricting/bluebird_'.$bbconfig['install_class'].'/Reports';
+      if ( !file_exists($fileDir) ) {
+        mkdir( $fileDir, 0775, TRUE );
+      }
+
+      $reportFile = $fileDir.'/'.$source['name'].'_'.$dest['name'].'_migration.txt';
+      $fileResource = fopen($reportFile, 'w');
+
+      $content = array(
+        'options' => $exportData['options'],
+        'stats' => $stats,
+      );
+
+      $content = print_r($content, TRUE);
+      fwrite($fileResource, $content);
+    }
 
     //now run cleanup scripts
     $dryParam = ($optDry) ? "--dryrun" : '';
