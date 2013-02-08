@@ -186,6 +186,9 @@ class CRM_migrateContactsImport {
     $cleanRecords = "php {$scriptPath}/dedupeSubRecords.php -S {$dest['name']} {$dryParam}";
     system($cleanRecords);
 
+    //cleanup log records
+    self::_cleanLogRecords();
+
   }//importData
 
   /*
@@ -968,6 +971,31 @@ class CRM_migrateContactsImport {
       }
     }
   }//_moveAttachment
+
+  /*
+   * a log record is created by virtue of using the notes api, which is not desired.
+   * rather than mess with core, we will just run a cleanup to remove these log records
+   * the records are unique in that the entity_id matches the modified_id (because there is no user session)
+   * so we retrieve records like that created within the last hour and delete them
+   */
+  function _cleanLogRecords() {
+    $dateTime = date('Y-m-d H:i:s');
+    $sql = "
+      DELETE FROM civicrm_log
+      WHERE id IN (
+        SELECT *
+        FROM (
+          SELECT id
+          FROM civicrm_log
+          WHERE modified_date >= DATE_SUB('{$dateTime}', INTERVAL 1 HOUR)
+            AND entity_table = 'civicrm_contact'
+            AND entity_id = modified_id
+        ) migrationLog
+      )
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+    bbscript_log("info", "cleaning up log table records...");
+  }//_cleanLogRecords
 
   /*
    * given an array, cycle through and unset any elements with no value
