@@ -176,6 +176,8 @@ class CRM_migrateContactsImport {
     );
     bbscript_log("info", "Migration statistics:", $stats);
 
+    //TODO log these to file
+
     //now run cleanup scripts
     $dryParam = ($optDry) ? "--dryrun" : '';
     $scriptPath = $bbconfig['app.rootdir'].'/civicrm/scripts';
@@ -247,6 +249,15 @@ class CRM_migrateContactsImport {
       'Household' => 0,
       'All' => 0,
     );
+
+    //increase external_identifier field length to varchar(64)
+    if ( !$optDry ) {
+      $sql = "
+        ALTER TABLE civicrm_contact
+        MODIFY external_identifier varchar(64);
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
 
     foreach ( $exportData['import'] as $extID => $details ) {
       //bbscript_log("trace", 'importContacts importContacts $details', $details);
@@ -1019,8 +1030,12 @@ class CRM_migrateContactsImport {
     $dest = $exportData['dest'];
     $g = $exportData['group'];
 
+    //contacts
+    $contactsList = implode("','", array_keys($exportData['import']));
+
     if ( $optDry ) {
-      bbscript_log("debug", "Imported contacts added to group:", $g);
+      bbscript_log("debug", "Imported contacts to be added to group:", $g);
+      bbscript_log("debug", "List of contacts (external ids) added:", $contactsList);
       return;
     }
 
@@ -1044,9 +1059,6 @@ class CRM_migrateContactsImport {
       bbscript_log("fatal", "Unable to retrieve migration group ({$g['title']}) and add contacts to group.");
       return;
     }
-
-    //contacts
-    $contactsList = implode("','", array_keys($exportData['import']));
 
     //add contacts to group
     $sqlInsert = "
