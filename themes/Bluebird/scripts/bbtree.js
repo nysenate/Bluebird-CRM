@@ -971,6 +971,7 @@ var BBTreeModal = {
 			this.currentSettings.getTree = true;
 			this.currentSettings.height = 500;
 			this.currentSettings.width = 600;
+			this.currentSettings['maxHeight'] = 500;
 			return '<div class="' + callTree.currentSettings.pageSettings.tagHolder + ' modal '+ addTagLabel(callTree.currentSettings.displaySettings.currentTree) + '" id="'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal"></div>';
 		}
 	},
