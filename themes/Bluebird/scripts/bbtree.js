@@ -890,12 +890,9 @@ var BBTreeModal = {
 		draggable: true,
 		height: 300,
 		width: 300,
-		modal: true, 
+		modal: true,
+		resizable: false,
 		bgiframe: true,
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
 		close: function() {
 			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)+aCSel(BBTreeModal.parentInstance)+' '+aCSel(callTree.currentSettings.pageSettings.tagHolder)).not('.hidden').attr('id')) ;
 			if(callTree.currentSettings.displaySettings.buttonType == 'modal')
