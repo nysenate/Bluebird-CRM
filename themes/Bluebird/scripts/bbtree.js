@@ -1090,6 +1090,10 @@ var BBTreeModal = {
 		BBTreeModal.tagInfo(obj, tagLabel);
 		returnTime('Before Modal Box');
 		this.makeModalBox();
+		if(this.taggedReserved && this.taggedMethod != 'update')
+		{
+			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
+		}
 		switch(this.taggedMethod) //sets both open
 		{
 			case 'convert': BBTreeModal.defaultSettings['open'] = BBTreeModal.convertTag.setOpen(); break;
@@ -1110,6 +1114,10 @@ var BBTreeModal = {
 		cj("#BBDialog").show();
 		cj("#BBDialog").removeClass('loadingGif');
 		cj("#BBDialog").dialog(this.currentSettings);
+		if(this.taggedReserved && this.taggedMethod != 'update')
+		{
+			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
+		}
 		switch(this.taggedMethod) //sets both open
 		{
 			case 'update': BBTreeModal.updateTag.runFunction(); break;
