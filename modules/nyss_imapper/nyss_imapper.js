@@ -1139,6 +1139,7 @@ function pushtag(clear){
 		cj.each(contact_ids_array, function(key, id) {
 			cj.ajax({
 				url: '/civicrm/imap/ajax/addTags',
+				async:false,
 				data: { contactId: id, tags: contact_tag_ids},
 				success: function(data,status) {
 					helpMessage('Contact Tagged');
@@ -1153,6 +1154,7 @@ function pushtag(clear){
 		cj.each(activity_ids_array, function(key, id) {
 			cj.ajax({
 				url: '/civicrm/imap/ajax/addTags',
+				async:false,
 				data: { activityId: id, tags: activity_tag_ids},
 				success: function(data,status) {
 					helpMessage('Message Tagged');
