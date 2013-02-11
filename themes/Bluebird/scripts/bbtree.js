@@ -974,10 +974,12 @@ var BBTreeModal = {
 	},
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
+		
 		BBTreeModal.setTreeType();
 		//TODO: Make it so that the modal tree doesn't have to be rewritten EVERY TIME.
 		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
 		// {	
+			returnTime('After Set Tag Type');
 			this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] = cj(BBTree.parsedJsonData[callTree.currentSettings.displaySettings.currentTree].data).clone(true, true);
 			cj('span.fCB', this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).empty().html('<input type="radio" class="selectRadio" name="selectTag"/>');
 			cj(aIDSel(this.taggedID), this.modalParsedData[callTree.currentSettings.displaySettings.currentTree]).hide();
@@ -1076,7 +1078,8 @@ var BBTreeModal = {
 				break;
 		}
 		if(this.taggedReserved){
-			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';			
+			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
+			console.log()			
 		}
 		return addDialogText;
 	},
@@ -1094,15 +1097,16 @@ var BBTreeModal = {
 		{
 			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
 		}
+		returnTime('After Make Box');
 		switch(this.taggedMethod) //sets both open
 		{
-			case 'convert': BBTreeModal.defaultSettings['open'] = BBTreeModal.convertTag.setOpen(); break;
+			case 'convert': BBTreeModal.convertTag.setOpen(); break;
 			case 'mergeKW':
-			case 'merge': BBTreeModal.defaultSettings['open'] = BBTreeModal.mergeTag.setOpen();break;
-			case 'update': BBTreeModal.defaultSettings['open'] = BBTreeModal.updateTag.setOpen(); break;
-			case 'move': BBTreeModal.defaultSettings['open'] = BBTreeModal.moveTag.setOpen(); break;
-			case 'remove': BBTreeModal.defaultSettings['open'] = BBTreeModal.removeTag.setOpen(); break;
-			case 'add': BBTreeModal.defaultSettings['open'] = BBTreeModal.addTag.setOpen(); break;
+			case 'merge': BBTreeModal.mergeTag.setOpen();break;
+			case 'update': BBTreeModal.updateTag.setOpen(); break;
+			case 'move': BBTreeModal.moveTag.setOpen(); break;
+			case 'remove': BBTreeModal.removeTag.setOpen(); break;
+			case 'add': BBTreeModal.addTag.setOpen(); break;
 			default: alert('Invalid Modifier'); break;
 		}
 		
@@ -1111,9 +1115,12 @@ var BBTreeModal = {
 		cj('#BBDialog').append(data);
 	},
 	makeModalBox: function(){
-		cj("#BBDialog").show();
+		//cj("#BBDialog").show();
+		cj("#BBDialog").dialog("open");
+		returnTime('After Show');
 		cj("#BBDialog").removeClass('loadingGif');
 		cj("#BBDialog").dialog(this.currentSettings);
+		returnTime('Add Settings');
 		if(this.taggedReserved && this.taggedMethod != 'update')
 		{
 			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
@@ -1333,7 +1340,9 @@ var BBTreeModal = {
 	},
 	moveTag:  {
 		setOpen: function(){
+			returnTime('Before Get Tag Tree');
 			BBTreeModal.getModalTagTree();
+			returnTime('After Get Tag Tree');
 		},
 		runFunction: function(){
 			cj("#BBDialog").dialog( "option", "buttons", [
