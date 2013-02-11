@@ -1081,12 +1081,14 @@ var BBTreeModal = {
 		return addDialogText;
 	},
 	makeModalInit: function(){ //creates the dialog box to make and move
-		cj('body').append('<div id="BBDialog"></div>');
+		cj('body').append('<div id="BBDialog" class="loadingGif"></div>');
 	},
 	makeModal: function(obj, tagLabel){ //sorts and separates & should read settings
+		returnTime('Begin of Make Modal');
 		BBTreeModal['parentInstance'] = cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class');
 		this.resetCurrentSettings();
 		BBTreeModal.tagInfo(obj, tagLabel);
+		returnTime('Before Modal Box');
 		this.makeModalBox();
 		switch(this.taggedMethod) //sets both open
 		{
@@ -1106,6 +1108,7 @@ var BBTreeModal = {
 	},
 	makeModalBox: function(){
 		cj("#BBDialog").show();
+		cj("#BBDialog").removeClass('loadingGif');
 		cj("#BBDialog").dialog(this.currentSettings);
 		switch(this.taggedMethod) //sets both open
 		{
@@ -1613,7 +1616,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		{
 			floatControlBox += '<li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="removeTag" title="Remove Tag" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
-			floatControlBox += '<li class="moveTag" title="Move Tag" do="move" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="moveTag" title="Move Tag" do="move" onclick="returnTime(); BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="updateTag" title="Update Tag" do="update" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="mergeTag" title="Merge Tag" do="merge" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 		}
@@ -1748,10 +1751,15 @@ function setTreeLoc()
 	BBTree.treeLoc = '.'+callTree.currentSettings.displaySettings.currentInstance+ '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
 }
 //remove at the end
-function returnTime()
+function returnTime(note)
 {
+	if(!note)
+	{
+		note = '';
+	}
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
+	console.log(note);
 	console.log(rTime);
 }
 
