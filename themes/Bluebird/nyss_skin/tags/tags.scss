@@ -111,12 +111,6 @@ $levelClassSlug : "lv";
 		float:right;
 	}
 }
-#BBTreeContainer, #BBDialog {
-	width:522px;
-	position:relative;
-	margin: 0 auto;
-	overflow:hidden;
-}
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree{
 	width:520px;
 	overflow-x:hidden;
@@ -284,6 +278,21 @@ $levelClassSlug : "lv";
 		margin: 0px;
 	}
 } /*BBTree*/
+
+#BBTreeContainer, #BBDialog {
+	width:522px;
+	position:relative;
+	margin: 0 auto;
+	overflow:hidden;
+}
+#BBDialog {
+	overflow:auto;
+	.BBTree{
+		overflow:visible;
+		height:auto;
+	}
+}
+
 /*BBContainer*/
 .loadingGif{
 		background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important;

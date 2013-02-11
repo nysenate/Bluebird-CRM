@@ -518,20 +518,20 @@ var callTree =  {
 			}
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
-		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" tID="'+tID.id+'">';
+		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" parent="'+tID.id+'" tID="'+tID.id+'">';
 		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
 		displayObj.tLvl++; //start the tree at lv-1
 		return displayObj;
 	},
-	parseTreeAjax: function(tID, displayObj){
+	parseTreeAjax: function(tID, displayObj, parentTag){
 		var treeData = callTree.parseJsonInsides(tID, displayObj);
 		BBTree.parsedJsonData[tID.id] = {'name':tID.name, 'data':treeData};
 	},
 	parseJsonInsides: function(tID, displayObj){
 		cj.each(tID.children, function(i, cID){//runs all first level
-			callTree.writeTagLabel(cID, displayObj);
+			callTree.writeTagLabel(cID, displayObj, tID.id);
 			if(cID.children.length > 0)
 			{
 				callTree.writeJsonTag(cID, displayObj);
@@ -890,12 +890,9 @@ var BBTreeModal = {
 		draggable: true,
 		height: 300,
 		width: 300,
-		modal: true, 
+		modal: true,
+		resizable: false,
 		bgiframe: true,
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
 		close: function() {
 			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)+aCSel(BBTreeModal.parentInstance)+' '+aCSel(callTree.currentSettings.pageSettings.tagHolder)).not('.hidden').attr('id')) ;
 			if(callTree.currentSettings.displaySettings.buttonType == 'modal')
@@ -971,6 +968,7 @@ var BBTreeModal = {
 			this.currentSettings.getTree = true;
 			this.currentSettings.height = 500;
 			this.currentSettings.width = 600;
+			this.currentSettings['maxHeight'] = 500;
 			return '<div class="' + callTree.currentSettings.pageSettings.tagHolder + ' modal '+ addTagLabel(callTree.currentSettings.displaySettings.currentTree) + '" id="'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal"></div>';
 		}
 	},
@@ -1083,12 +1081,14 @@ var BBTreeModal = {
 		return addDialogText;
 	},
 	makeModalInit: function(){ //creates the dialog box to make and move
-		cj('body').append('<div id="BBDialog"></div>');
+		cj('body').append('<div id="BBDialog" class="loadingGif"></div>');
 	},
 	makeModal: function(obj, tagLabel){ //sorts and separates & should read settings
+		returnTime('Begin of Make Modal');
 		BBTreeModal['parentInstance'] = cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class');
 		this.resetCurrentSettings();
 		BBTreeModal.tagInfo(obj, tagLabel);
+		returnTime('Before Modal Box');
 		this.makeModalBox();
 		switch(this.taggedMethod) //sets both open
 		{
@@ -1108,6 +1108,7 @@ var BBTreeModal = {
 	},
 	makeModalBox: function(){
 		cj("#BBDialog").show();
+		cj("#BBDialog").removeClass('loadingGif');
 		cj("#BBDialog").dialog(this.currentSettings);
 		switch(this.taggedMethod) //sets both open
 		{
@@ -1492,6 +1493,18 @@ var BBTreeModal = {
 			]);
 		},
 		createAddInline: function(tdata,data){ // adds an element inline with all the fixins
+			if(tdata.parentId == '291')
+			{
+				var tlvl = parseFloat(BBTreeModal.tlvl);
+				tlvl++;
+				var toAddDT = '<dt class="lv-' + tlvl + ' ';
+				if(data.is_reserved != null)
+				{
+					toAddDT += 'isReserved';
+				}
+				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
+				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
+			}
 			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
@@ -1603,7 +1616,7 @@ function addControlBox(tagLabel, treeTop, isChecked) { //should break this up
 		{
 			floatControlBox += '<li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="removeTag" title="Remove Tag" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
-			floatControlBox += '<li class="moveTag" title="Move Tag" do="move" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+			floatControlBox += '<li class="moveTag" title="Move Tag" do="move" onclick="returnTime(); BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="updateTag" title="Update Tag" do="update" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 			floatControlBox += '<li class="mergeTag" title="Merge Tag" do="merge" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
 		}
@@ -1738,10 +1751,15 @@ function setTreeLoc()
 	BBTree.treeLoc = '.'+callTree.currentSettings.displaySettings.currentInstance+ '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
 }
 //remove at the end
-function returnTime()
+function returnTime(note)
 {
+	if(!note)
+	{
+		note = '';
+	}
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
+	console.log(note);
 	console.log(rTime);
 }
 

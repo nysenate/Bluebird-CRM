@@ -537,6 +537,17 @@ INSERT INTO rules_trigger (id, event) VALUES
 "
 $execSql -i $instance -c "$rules" --drupal
 
+## 6208
+sqlprefix="
+SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'individual_prefix';
+SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
+SELECT @wght:=weight FROM civicrm_option_value WHERE option_group_id = @optgrp AND name = 'Sergeant';
+UPDATE civicrm_option_value SET weight = weight + 1 WHERE option_group_id = @optgrp AND weight >= @wght;
+INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
+VALUES (@optgrp, 'Senator', @maxval+1, 'Senator', @wght, 1);
+"
+$execSql -i $instance -c "$sqlprefix"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance

@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2011-05-02
 # Revised: 2011-08-05
+# Revised: 2013-02-05 - changed temp dir to be within /data
 #
 
 prog=`basename $0`
@@ -17,7 +18,7 @@ readConfig=$script_dir/readConfig.sh
 archive_file=
 force_ok=0
 ignore_mismatch=0
-tmpdir="/tmp/restoreInstance_$$"
+tmpdir="/data/tmp/restoreInstance_$$"
 
 . $script_dir/defaults.sh
 
