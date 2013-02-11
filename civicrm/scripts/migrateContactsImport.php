@@ -766,6 +766,8 @@ class CRM_migrateContactsImport {
         $params['civicrm_contact']['middle_name'] = CRM_Utils_Array::value('middle_name', $contact['contact']);
         $params['civicrm_contact']['last_name'] = CRM_Utils_Array::value('last_name', $contact['contact']);
         $params['civicrm_contact']['suffix_id'] = CRM_Utils_Array::value('suffix_id', $contact['contact']);
+        $params['civicrm_contact']['birth_date'] = CRM_Utils_Array::value('birth_date', $contact['contact']);
+        $params['civicrm_contact']['gender_id'] = CRM_Utils_Array::value('gender_id', $contact['contact']);
         $ruleName = 'Individual Strict (first + last + (street + zip | email))';
         break;
 
