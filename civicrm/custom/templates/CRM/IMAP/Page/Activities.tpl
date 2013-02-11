@@ -92,12 +92,10 @@
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be cleared from this screen but will not be deleted. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait" style="display:none;">
-		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.
-	</p>
+		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.</p>
 	</div>
 	<div id="reloading-popup" title="please wait" style="display:none;">
-		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.
-	</p>
+		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
 
 	<div id="tagging-popup" title="Tagging" style="display:none;">
@@ -113,20 +111,19 @@
 					<li><a href="#tab1_tag">Tag Contact</a></li>
 					<li><a href="#tab2_tag">Tag Activity</a></li>
 				</ul>
-				<input type="hidden" class="hidden" id="email_id" name="email_id">
-				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+
+				<input type="hidden" class="hidden" id="contact_tag_ids" name="contact_tag_ids">
+				<input type="hidden" class="hidden" id="contact_ids" name="contact_ids">
+				<input type="hidden" class="hidden" id="activity_tag_ids" name="activity_tag_ids">
+				<input type="hidden" class="hidden" id="activity_ids" name="activity_ids">
 				<div id="tab1_tag">
 					<div id='TagContact'>
-					<input type="text" id="contact_tag_name"/>
-					<input type="hidden" id="tag_name_id" value="">
-					<div id="" class="">tagging is not working yet, but check the interface out</div>
+						<input type="text" id="contact_tag_name"/>
 					</div>
 				</div>
 				<div id="tab2_tag">
 					<div id='TagActivity'>
 						<input type="text" id="activity_tag_name"/>
-						<input type="hidden" id="tag_name_id" value="">
-						<div id="" class="">tagging is not working yet, but check the interface out</div>
 					</div>
 				</div>
 			</div>

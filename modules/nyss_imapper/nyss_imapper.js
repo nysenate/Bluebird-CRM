@@ -108,8 +108,7 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
-// BOTH MATCHED & UNMATCHED
-
+	// BOTH MATCHED & UNMATCHED
 	// search function in find_match and edit_match
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -598,12 +597,14 @@ cj(document).ready(function(){
 		var activityId = cj(this).parent().parent().attr('data-id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		cj('#message_left_tag').html('').removeClass('tag_over_ride');
-		cj(".autocomplete_tag").val('');
-		cj("#contact_tag_name").val('');
-		cj("#activity_tag_name").val('');
-		cj(".autocomplete-tags-bank").html('');
 		cj('#message_left_header_tag').html('');
 		cj('#message_left_tag').html('').html('<div id="message_left_header_tag"></div><div id="message_left_email_tag"></div>');
+		cj('#contact_ids').val('').val(contactId);
+		cj('#activity_ids').val('').val(activityId);
+		cj('#contact_tag_ids').val('');
+		cj('#activity_tag_ids').val('');
+		cj('.token-input-dropdown-facebook').html('').remove();
+		cj('.token-input-list-facebook').html('').remove();
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/getActivityDetails',
@@ -619,21 +620,39 @@ cj(document).ready(function(){
 					return false;
 				}else{
 
-					cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/searchTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
-					}).result( function(event, data, json) {
-						// console.log('Results : '+data);  // when you click on the results
-					}).bind( 'click', function( ) {
-						// console.log('Click : '+data); ? wtf 
+					// autocomplete 
+					cj('#contact_tag_name')    
+						.tokenInput( '/civicrm/imap/ajax/searchTags', {
+						theme: 'facebook',
+						zindex: 9999,
+						onAdd: function ( item ) {
+							current_contact_tags = cj('#contact_tag_ids').val();
+							current_contact_tags = current_contact_tags.replace(/,,/g, ",");
+							cj('#contact_tag_ids').val(current_contact_tags+','+item.id);
+						},
+						onDelete: function ( item ) { 
+							current_contact_tags = cj('#contact_tag_ids').val();
+							result = string_replace(current_contact_tags, ','+item.id,',');
+							result = result.replace(/,,/g, ",");
+							cj('#contact_tag_ids').val(result);
+						}
 					});
-
-					cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/searchTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
-					}).result( function(event, data, json) {
-						// console.log('Results : '+data);  // when you click on the results
-					}).bind( 'click', function( ) {
-						// console.log('Click : '+data); ? wtf 
+					cj('#activity_tag_name')    
+						.tokenInput( '/civicrm/imap/ajax/searchTags', { 
+						theme: 'facebook', 
+						zindex: 9999,
+						onAdd: function ( item ) { 
+							current_activity_tags = cj('#activity_tag_ids').val();
+							current_activity_tags = current_activity_tags.replace(/,,/g, ",");
+							cj('#activity_tag_ids').val(current_activity_tags+','+item.id);
+						},
+						onDelete: function ( item ) { 
+							current_activity_tags = cj('#activity_tag_ids').val();
+							result = string_replace(current_activity_tags, ','+item.id,',');
+							result = result.replace(/,,/g, ",");
+							cj('#activity_tag_ids').val(result);
+						} 
 					});
-					// http://skelos/civicrm/ajax/taglist?parentId=296&key=7371d1bba6c7758e9f8a570874c6c547&name=brown
-
 					cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
@@ -646,25 +665,21 @@ cj(document).ready(function(){
 						buttons: {
 							"Tag": function() {
 								pushtag();
+								cj("#tagging-popup").dialog('close');
+								cj('.token-input-list-facebook').html('').remove();
+								cj('.token-input-dropdown-facebook').html('').remove();
 							},
 							"Tag and Clear": function() {
-								// pushtag();
-								cj("#clear-confirm").dialog('open');
-								cj("#clear-confirm").dialog({
-									buttons: {
-										"Clear": function() {
-											// ClearActivity(activityId);
-											cj("#clear-confirm").dialog('close');
-										},
-										Cancel: function() {
-											cj("#clear-confirm").dialog('close');
-										}
-									}
-								});
+								pushtag('clear');
 								cj("#tagging-popup").dialog('close');
+								cj('.token-input-list-facebook').html('').remove();
+								cj('.token-input-dropdown-facebook').html('').remove();
 							},
 							Cancel: function() {
 								cj("#tagging-popup").dialog('close');
+								cj('.token-input-list-facebook').html('').remove();
+								cj('.token-input-dropdown-facebook').html('').remove();
+
 							}
 						}
 					});
@@ -675,6 +690,9 @@ cj(document).ready(function(){
 			},
 			error: function(){
 				alert('Unable to load Message');
+				cj('.token-input-dropdown-facebook').html('').remove();
+				cj('.token-input-list-facebook').html('').remove();
+
 			}
 		});
  		return false;
@@ -700,16 +718,49 @@ cj(document).ready(function(){
 			return false;
 		}
 		// render the multi message view 
+		cj('#contact_ids').val('').val(contactIds);
+		cj('#activity_ids').val('').val(activityIds);
+		cj('#contact_tag_ids').val('');
+		cj('#activity_tag_ids').val('');
+		cj('.token-input-dropdown-facebook').html('').remove();
+		cj('.token-input-list-facebook').html('').remove();
 
-		cj("#contact_tag_name").val('');
-		cj("#activity_tag_name").val('');
-		cj(".autocomplete_tag").val('');
+ 		cj('#message_left_header_tag').html('');
+ 		cj('#message_left_tag').html('').addClass('tag_over_ride');
 
-		cj(".autocomplete-tags-bank").html('');
-		cj('#message_left_header_tag').html('');
-		cj('.autocomplete-dropdown').html('');
-		cj('#message_left_tag').html('').addClass('tag_over_ride');
-		cj('#message_right_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityIds+"'><input class='hidden' type='hidden' id='contactId' value='"+contactIds+"'>");
+		// autocomplete 
+		cj('#contact_tag_name')    
+			.tokenInput( '/civicrm/imap/ajax/searchTags', {
+			theme: 'facebook',
+			zindex: 9999,
+			onAdd: function ( item ) {
+				current_contact_tags = cj('#contact_tag_ids').val();
+				current_contact_tags = current_contact_tags.replace(/,,/g, ",");
+				cj('#contact_tag_ids').val(current_contact_tags+','+item.id);
+			},
+			onDelete: function ( item ) { 
+				current_contact_tags = cj('#contact_tag_ids').val();
+				result = string_replace(current_contact_tags, ','+item.id,',');
+				result = result.replace(/,,/g, ",");
+				cj('#contact_tag_ids').val(result);
+			}
+		});
+		cj('#activity_tag_name')    
+			.tokenInput( '/civicrm/imap/ajax/searchTags', { 
+			theme: 'facebook', 
+			zindex: 9999,
+			onAdd: function ( item ) { 
+				current_activity_tags = cj('#activity_tag_ids').val();
+				current_activity_tags = current_activity_tags.replace(/,,/g, ",");
+				cj('#activity_tag_ids').val(current_activity_tags+','+item.id);
+			},
+			onDelete: function ( item ) { 
+				current_activity_tags = cj('#activity_tag_ids').val();
+				result = string_replace(current_activity_tags, ','+item.id,',');
+				result = result.replace(/,,/g, ",");
+				cj('#activity_tag_ids').val(result);
+			} 
+		});
 
 		cj.each(activityIds, function(key, activityId) {
 			// console.log('activity :'+activityId+" - key : "+key+" - Contact : "+contactIds[key]);
@@ -726,23 +777,6 @@ cj(document).ready(function(){
 						alert('Unable to load Message : '+ messages.message);
 						return false;
 					}else{
-
-						// .append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+messages.subject+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
-
-						// cj('#contact_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
-						// }).result( function(event, data, json) {
-						// 	// console.log('Results : '+data);  // when you click on the results
-						// }).bind( 'click', function( ) {
-						// 	// console.log('Click : '+data); ? wtf 
-						// });
-
-						// cj('#activity_tag_name').autocomplete( "/civicrm/imap/ajax/getTags", { width : 220, selectFirst : true, hintText: 'Type in a partial or complete name of an existing tag.', matchContains: true, minChars: 3
-						// }).result( function(event, data, json) {
-						// 	// console.log('Results : '+data);  // when you click on the results
-						// }).bind( 'click', function( ) {
-						// 	// console.log('Click : '+data); ? wtf 
-						// });
-						// // http://skelos/civicrm/ajax/taglist?parentId=296&key=7371d1bba6c7758e9f8a570874c6c547&name=brown
 
 				 		cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
 
@@ -763,25 +797,20 @@ cj(document).ready(function(){
 			buttons: {
 				"Tag": function() {
 					pushtag();
+					cj("#tagging-popup").dialog('close');
+					cj('.token-input-list-facebook').html('').remove();
+					cj('.token-input-dropdown-facebook').html('').remove();
 				},
 				"Tag and Clear": function() {
-					// pushtag();
-					cj("#clear-confirm").dialog('open');
-					cj("#clear-confirm").dialog({
-						buttons: {
-							"Clear": function() {
-								// ClearActivity(activityId);
-								cj("#clear-confirm").dialog('close');
-							},
-							Cancel: function() {
-								cj("#clear-confirm").dialog('close');
-							}
-						}
-					});
+					pushtag('clear');
 					cj("#tagging-popup").dialog('close');
+					cj('.token-input-list-facebook').html('').remove();
+					cj('.token-input-dropdown-facebook').html('').remove();
 				},
 				Cancel: function() {
 					cj("#tagging-popup").dialog('close');
+					cj('.token-input-list-facebook').html('').remove();
+					cj('.token-input-dropdown-facebook').html('').remove();
 				}
 			}
 		});
@@ -790,7 +819,6 @@ cj(document).ready(function(){
 		cj('#tabs_tag').tabs({ selected: 0 });
 		cj("#tagging-popup").dialog({ title: "Tagging "+contactIds.length+" Matched messages"});
 		cj("#tagging-popup").dialog('open');
-
 		cj("#loading-popup").dialog('close');
 		return false;
 	});
@@ -1080,78 +1108,79 @@ function DeleteActivity(value){
 // adding (single / multiple) tags to (single / multiple) contacts,
 // function works for multi contact tagging and single
 // cj(".push_tag").live('click', function(){
-function pushtag(){
-	var tags = new Array();
+function pushtag(clear){
 
-	// delete_ids = message id / activity id 
-	// delete_secondary = imap id / contact id 
-	var delete_ids = new Array();
-	var delete_secondary = new Array();
-	var rows = new Array();
+ 	contact_ids = cj("#contact_ids").val();
+	activity_ids = cj("#activity_ids").val();
 
-	cj('#imapper-messages-list input:checked').each(function() {
-		delete_ids.push(cj(this).attr('name'));
-		delete_secondary.push(cj(this).attr('data-id'));
-		rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
-	});
+	contact_tag_ids ='';
+	activity_tag_ids ='';
 
-	// console.log(delete_ids);
-	// console.log(delete_secondary);
-	// console.log(rows);
-
-	// // if there are tags selected
-	// // we can either have multiple rows, or single rows selected 
-	if(cj(".autocomplete-tags-bank").html().length){
-		cj('.autocomplete-tags-bank a').each(function(index) {
-			var tagId = cj(this).attr('data-id');
-			console.log(tagId);
-		});
-	}else{
-		alert('Please Enter a tag or 2');
+	contact_input = cj("#contact_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
+	if(contact_input.length){
+		contact_tag_ids = contact_input;
 	}
-	// 		cj.ajax({
-	// 			url: '/civicrm/imap/ajax/addTags',
-	// 			data: {activityId: activityId, contactId: contactId, tags: tagId},
-	// 			success: function(data,status) {
-	// 				if(delete_ids.length > 0 ){
-	// 					cj.each(delete_ids, function(key, value) { 
-	// 						cj.ajax({
-	// 							url: '/civicrm/imap/ajax/unproccessedActivity',
-	// 							data: {id: value},
-	// 							success: function(data,status) { 
-	// 								cj("#tagging-popup").dialog('close');
-	// 								helpMessage('Tag Added');
-	// 									removeRow(value);
-	// 							},
-	// 							error: function(){
-	// 								alert('unable to add tag');
-	// 							}
-	// 						});
-	// 					});
-	// 				}else{
-	// 					var activityId = cj("#activityId").val();
-	// 					cj.ajax({
-	// 						url: '/civicrm/imap/ajax/unproccessedActivity',
-	// 						data: {id: activityId},
-	// 						success: function(data,status) { 
-	// 							cj("#tagging-popup").dialog('close');
-	// 							removeRow(activityId);
-	// 							helpMessage('Tag Added');
-	// 						},
-	// 						error: function(){
-	// 							alert('unable to add tag');
-	// 						}
-	// 					});
-	// 				}
-					
-	// 			}
-	// 	 	});
-	// 	});
-	// }else{
-	// 	alert("please select a tag");
-	// 	return;
-	// }
-	return false;
+
+	activity_input = cj("#activity_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
+	if(activity_input.length){
+		activity_tag_ids = activity_input;
+	}
+
+	if (activity_tag_ids =='' && contact_tag_ids == ''){
+		alert("please select a tag");
+		return false;
+	}
+ 
+	console.log("Contacts: "+contact_ids+" Tags: "+contact_tag_ids);
+	console.log("Activities: "+activity_ids+" Tags: "+activity_tag_ids);
+
+	if(contact_tag_ids){
+		contact_ids_array = contact_ids.split(',');
+		cj.each(contact_ids_array, function(key, id) {
+			cj.ajax({
+				url: '/civicrm/imap/ajax/addTags',
+				data: { contactId: id, tags: contact_tag_ids},
+				success: function(data,status) {
+					helpMessage('Contact Tagged');
+				},error: function(){
+					alert('failure');
+				}
+			});
+		});
+	}
+	if(activity_tag_ids){
+		activity_ids_array = activity_ids.split(',');
+		cj.each(activity_ids_array, function(key, id) {
+			cj.ajax({
+				url: '/civicrm/imap/ajax/addTags',
+				data: { activityId: id, tags: activity_tag_ids},
+				success: function(data,status) {
+					helpMessage('Message Tagged');
+				},error: function(){
+					alert('failure');
+				}
+			});
+		});
+	}
+ 
+ 	if(clear){
+		cj("#clear-confirm").dialog('open');
+		cj("#clear-confirm").dialog({
+			buttons: {
+				"Clear": function() {
+					cj("#clear-confirm").dialog('close');
+					activity_ids_array = activity_ids.split(',');
+					cj.each(activity_ids_array, function(key, id) {
+ 						ClearActivity(id);
+					});
+				},
+				Cancel: function() {
+					cj("#clear-confirm").dialog('close');
+				}
+			}
+		});
+	}
+ // return false;
 };
 
 // matched messages screen 
@@ -1331,6 +1360,9 @@ function removeRow(id){
 	}
 }
 
+function string_replace(haystack, find, sub) {
+    return haystack.split(find).join(sub);
+}
 // unbind the sort on the checkbox and actions
 cj("th.checkbox").removeClass('sorting').unbind('click');
 cj("th.Actions").removeClass('sorting').unbind('click');
