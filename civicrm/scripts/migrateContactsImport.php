@@ -183,12 +183,12 @@ class CRM_migrateContactsImport {
     //log to file
     if ( !$optDry ) {
       //set import folder based on environment
-      $fileDir = '/data/redistricting/bluebird_'.$bbconfig['install_class'].'/Reports';
+      $fileDir = '/data/redistricting/bluebird_'.$bbconfig['install_class'].'/MigrationReports';
       if ( !file_exists($fileDir) ) {
         mkdir( $fileDir, 0775, TRUE );
       }
 
-      $reportFile = $fileDir.'/'.$source['name'].'_'.$dest['name'].'_migration.txt';
+      $reportFile = $fileDir.'/'.$source['name'].'_'.$dest['name'].'.txt';
       $fileResource = fopen($reportFile, 'w');
 
       $content = array(
