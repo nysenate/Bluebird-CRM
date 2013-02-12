@@ -576,7 +576,7 @@ class CRM_IMAP_AJAX {
     // sometimes email clients think its fun to add stuff to the date, remove it here.
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
-    $daysago = floor((time() - strtotime($date_string_short))/86400); 
+    if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; }; 
     $yearsago = floor((time() - strtotime($date_string_short))/86400); 
 
     // check if the message is from last year
@@ -584,10 +584,10 @@ class CRM_IMAP_AJAX {
       $formatted = date("M d, Y", strtotime($date_string_short));
     }else{
       // if the message is from this year, see if the message is from today
-      if ($daysago > 1 ){
-        $formatted = date("M d h:i A", strtotime($date_string_short));
-      }else{
+      if ($today){
         $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
+      }else{
+        $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
     return array('date_debug'=>$date_string_short, 
