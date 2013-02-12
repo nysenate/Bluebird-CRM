@@ -153,9 +153,11 @@ class CRM_migrateContactsImport {
 
     //generate report stats
     $caseList = array();
-    foreach ( $exportData['cases'] as $extID => $cases ) {
-      foreach ( $cases as $case ) {
-        $caseList[] = $case;
+    if ( isset($exportData['cases']) ) {
+      foreach ( $exportData['cases'] as $extID => $cases ) {
+        foreach ( $cases as $case ) {
+          $caseList[] = $case;
+        }
       }
     }
     $stats = array(

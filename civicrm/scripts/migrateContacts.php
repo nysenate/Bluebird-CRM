@@ -28,6 +28,9 @@ class CRM_migrateContacts {
     global $longopts;
     global $_SERVER;
 
+    //initialize global export array
+    $exportData = array();
+
     require_once 'script_utils.php';
 
     // Parse the options
@@ -180,9 +183,6 @@ class CRM_migrateContacts {
       system($importScript);
       exit();
     }
-
-    //initialize global export array
-    $exportData = array();
 
     //get contacts to migrate and construct in migration table
     $migrateTbl = self::buildContactTable($source, $dest, $cTypesInclude);
