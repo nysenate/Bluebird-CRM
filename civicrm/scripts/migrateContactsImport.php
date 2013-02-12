@@ -947,7 +947,7 @@ class CRM_migrateContactsImport {
 
     foreach ( $contact as $f => $v ) {
       //if existing record field has a value, remove from imported record array
-      if ( (!empty($v) && $v === 0) &&
+      if ( (!empty($v) || $v == '0') &&
         isset($details['contact'][$f]) &&
         $f != 'source' &&
         $f != 'external_identifier' ) {
@@ -989,7 +989,7 @@ class CRM_migrateContactsImport {
         //cycle through existing custom data and unset from $details if value exists
         foreach ( $data['values'] as $custFID => $existingData ) {
           //TODO should probably handle attachments more intelligently
-          if ( !empty($existingData['latest']) && $existingData['latest'] === 0 ) {
+          if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
             $colName = $customMapID[$set][$custFID];
             unset($details[$set][$colName]);
           }
