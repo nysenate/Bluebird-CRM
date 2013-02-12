@@ -428,6 +428,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
 			                contact.birth_date, contact.gender_id,
 			                contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
+			                constituent.contact_source_60 AS const_source,
 			                a.street_address, a.city, a.postal_code,
 			                email.email, email.is_primary, district.ny_senate_district_47 AS district,
 
@@ -442,7 +443,8 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 
 			FROM `civicrm_contact` AS contact
 			JOIN `civicrm_address` a ON contact.id = a.contact_id
-			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id
+			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id			
+			LEFT JOIN `civicrm_value_constituent_information_1` constituent on contact.id = constituent.entity_id  
 			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id
 
 	   		# Counts of cases
@@ -466,22 +468,24 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 	$contact_filter = "
 		# Filter out contacts without relevant data or those that don't want to be contacted
 		WHERE
-		c.contact_type = 'Individual' AND NOT ( IFNULL(c.source,'') = 'BOE' AND c.is_deceased = 0 )
-		AND (
-		       c.email IS NOT NULL
-		       OR case_count > 0
-		       OR activity_count > 0
+		c.contact_type = 'Individual' 
+		AND NOT ( 
+				  IFNULL(c.const_source,'') = 'boe' 
+			      AND c.is_deceased = 0 
+				  AND c.email IS NULL
+				  AND case_count = 0
+				  AND activity_count = 0
 
-		       # Check if contact has any non-default notes
-		       OR c.contact_id IN (
-		         	SELECT note.entity_id
-			       	FROM `civicrm_note` AS note
-			       	WHERE note.entity_table = 'civicrm_contact'
-			       	AND privacy = 0
-			       	AND note.subject NOT LIKE 'OMIS%'
-			       	AND note.subject NOT LIKE 'REDIST2012%'
+			      # Check if contact has any non-default notes
+			      AND c.contact_id NOT IN (
+			        SELECT note.entity_id
+				    FROM `civicrm_note` AS note
+				    WHERE note.entity_table = 'civicrm_contact'
+				    AND privacy = 0
+				    AND note.subject NOT LIKE 'OMIS%'
+				    AND note.subject NOT LIKE 'REDIST2012%'
+			      )
 		    	)
-		    )
 		OR c.contact_type = 'Household'
 		OR c.contact_type = 'Organization'
 	";
