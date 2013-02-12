@@ -201,3 +201,5 @@ uniquely sortable tabs for
 .info.hidden_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
 .info.shown_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
 .info:hover{background: #ccc; }
+
+.token-input-dropdown-facebook { z-index: 999999!important;}

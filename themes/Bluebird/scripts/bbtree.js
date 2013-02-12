@@ -890,12 +890,9 @@ var BBTreeModal = {
 		draggable: true,
 		height: 300,
 		width: 300,
-		modal: true, 
+		modal: true,
+		resizable: false,
 		bgiframe: true,
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
 		close: function() {
 			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)+aCSel(BBTreeModal.parentInstance)+' '+aCSel(callTree.currentSettings.pageSettings.tagHolder)).not('.hidden').attr('id')) ;
 			if(callTree.currentSettings.displaySettings.buttonType == 'modal')
@@ -971,11 +968,13 @@ var BBTreeModal = {
 			this.currentSettings.getTree = true;
 			this.currentSettings.height = 500;
 			this.currentSettings.width = 600;
+			this.currentSettings['maxHeight'] = 500;
 			return '<div class="' + callTree.currentSettings.pageSettings.tagHolder + ' modal '+ addTagLabel(callTree.currentSettings.displaySettings.currentTree) + '" id="'+addTagLabel(callTree.currentSettings.displaySettings.currentTree)+'_modal"></div>';
 		}
 	},
 	getModalTagTree: function() //on open, so it all loads asynch
 	{
+		
 		BBTreeModal.setTreeType();
 		//TODO: Make it so that the modal tree doesn't have to be rewritten EVERY TIME.
 		// if(typeof this.modalParsedData[callTree.currentSettings.displaySettings.currentTree] === 'undefined')
@@ -1078,27 +1077,31 @@ var BBTreeModal = {
 				break;
 		}
 		if(this.taggedReserved){
-			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';			
+			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
 		}
 		return addDialogText;
 	},
 	makeModalInit: function(){ //creates the dialog box to make and move
-		cj('body').append('<div id="BBDialog"></div>');
+		cj('body').append('<div id="BBDialog" class="loadingGif"></div>');
 	},
 	makeModal: function(obj, tagLabel){ //sorts and separates & should read settings
 		BBTreeModal['parentInstance'] = cj(obj).parents(aIDSel(callTree.currentSettings.pageSettings.wrapper)).attr('class');
 		this.resetCurrentSettings();
 		BBTreeModal.tagInfo(obj, tagLabel);
 		this.makeModalBox();
+		if(this.taggedReserved && this.taggedMethod != 'update')
+		{
+			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
+		}
 		switch(this.taggedMethod) //sets both open
 		{
-			case 'convert': BBTreeModal.defaultSettings['open'] = BBTreeModal.convertTag.setOpen(); break;
+			case 'convert': BBTreeModal.convertTag.setOpen(); break;
 			case 'mergeKW':
-			case 'merge': BBTreeModal.defaultSettings['open'] = BBTreeModal.mergeTag.setOpen();break;
-			case 'update': BBTreeModal.defaultSettings['open'] = BBTreeModal.updateTag.setOpen(); break;
-			case 'move': BBTreeModal.defaultSettings['open'] = BBTreeModal.moveTag.setOpen(); break;
-			case 'remove': BBTreeModal.defaultSettings['open'] = BBTreeModal.removeTag.setOpen(); break;
-			case 'add': BBTreeModal.defaultSettings['open'] = BBTreeModal.addTag.setOpen(); break;
+			case 'merge': BBTreeModal.mergeTag.setOpen();break;
+			case 'update': BBTreeModal.updateTag.setOpen(); break;
+			case 'move': BBTreeModal.moveTag.setOpen(); break;
+			case 'remove': BBTreeModal.removeTag.setOpen(); break;
+			case 'add': BBTreeModal.addTag.setOpen(); break;
 			default: alert('Invalid Modifier'); break;
 		}
 		
@@ -1108,7 +1111,13 @@ var BBTreeModal = {
 	},
 	makeModalBox: function(){
 		cj("#BBDialog").show();
+		cj("#BBDialog").dialog("open");
+		cj("#BBDialog").removeClass('loadingGif');
 		cj("#BBDialog").dialog(this.currentSettings);
+		if(this.taggedReserved && this.taggedMethod != 'update')
+		{
+			return true;//if it's reserved, there should be no ability to edit it, unless you're updating it.
+		}
 		switch(this.taggedMethod) //sets both open
 		{
 			case 'update': BBTreeModal.updateTag.runFunction(); break;
@@ -1750,10 +1759,15 @@ function setTreeLoc()
 	BBTree.treeLoc = '.'+callTree.currentSettings.displaySettings.currentInstance+ '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
 }
 //remove at the end
-function returnTime()
+function returnTime(note)
 {
+	if(!note)
+	{
+		note = '';
+	}
 	var time = new Date();
 	var rTime = time.getMinutes() + ':' + time.getSeconds() + ':' + time.getMilliseconds();
+	console.log(note);
 	console.log(rTime);
 }
 

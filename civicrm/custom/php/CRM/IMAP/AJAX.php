@@ -576,7 +576,7 @@ class CRM_IMAP_AJAX {
     // sometimes email clients think its fun to add stuff to the date, remove it here.
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
-    $daysago = floor((time() - strtotime($date_string_short))/86400); 
+    if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; }; 
     $yearsago = floor((time() - strtotime($date_string_short))/86400); 
 
     // check if the message is from last year
@@ -584,10 +584,10 @@ class CRM_IMAP_AJAX {
       $formatted = date("M d, Y", strtotime($date_string_short));
     }else{
       // if the message is from this year, see if the message is from today
-      if ($daysago > 1 ){
-        $formatted = date("M d h:i A", strtotime($date_string_short));
-      }else{
+      if ($today){
         $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
+      }else{
+        $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
     return array('date_debug'=>$date_string_short, 
@@ -987,9 +987,25 @@ class CRM_IMAP_AJAX {
         $returnCode = array();
 
         foreach($tagIds as $tagId) {
-            //get data about tag
-            $data = self::tagRaw($tagId);
-            $tagName = $data['values'][$tagId]['name'];
+          // check to see if it is a new tag
+          preg_match('/\:\:\:/',$tagId,$matches,PREG_OFFSET_CAPTURE);
+
+          if(count($matches) > 0){
+            $newtag = substr($tagId, 0, $matches[0][1]);
+            // If there's no tag, create it.
+            $params = array(
+                'name' => $newtag,
+                'version' => 3,
+                'parent_id' => 296
+            );
+            $result = civicrm_api('tag', 'create', $params);
+            $tagId = $result['id'];
+          }
+
+          //get data about tag
+          $data = self::tagRaw($tagId);
+          $tagName = $data['values'][$tagId]['name'];
+
             foreach($contactIds as $contactId) {
                 if($contactId == 0)  break;
                 $params = array( 
@@ -1488,7 +1504,7 @@ EOQ;
     // TODO: use dan's tagging system 
     public static function searchTags() {
         require_once 'api/api.php';
-        $name = self::get('s');
+        $name = self::get('name');
         $start = self::get('timestamp');
 
         $results = array();
@@ -1498,20 +1514,30 @@ SELECT id, name
 FROM `civicrm_tag`
 WHERE `parent_id` ='296' && `name` LIKE '$name%'
 EOQ;
-
-        // [{"name":"aaa","id":"aaa:::value"}]
-
+ 
         $result = mysql_query($query, self::db());
-        $output = '';
-        // $output = array("name"=>$name, "id"=> $name.':::value');
-        while($row = mysql_fetch_assoc($result)) {
-         $output .= $row['name']."|".$row['id']."\n";
-        }
-        // $final_results = array('items'=> $results);
 
-        // $final_results = '[{"name":"'.$name.'","id":"'.$name.':::value"},{"name":"'.$name.'","id":"'.$name.':::value"}]';
-        echo $output;
-        // echo json_encode($output);
+        // there are no results, add a new tag
+        if(mysql_num_rows($result) == 0) {
+          $output = array(array("name"=>$name, "id"=> $name.':::value'));
+        } else {
+
+          // add results to the output
+          $output = array();
+          while($row = mysql_fetch_assoc($result)) {
+              array_push( $output, array("name"=>$row['name'], "id"=>$row['id']));
+          }
+          // if not result exactly matches out search, make it a new tag at the beginning 
+          $matches = 0;
+          foreach ($output as $key => $value) {
+            if($value['name'] != $name ){
+              $matches++;
+            }
+          }
+          if($matches == count($output)) $output = array_merge( array(array("name"=>$name, "id"=> $name.':::value')), $output); 
+        }
+
+        echo json_encode($output);
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
@@ -1522,7 +1548,8 @@ EOQ;
         $tag_ids = self::get('tags');
         $activityId = self::get('activityId');
         $contactId = self::get('contactId');
-        self::assignTag($activityId, $contactId, $tag_ids);
+        // self::assignTag($activityId, $contactId, $tag_ids );
+        self::assignTag($activityId, $contactId, $tag_ids,'quiet');
     }
 
     function getInboxPollingTagId() {
@@ -1539,7 +1566,7 @@ EOQ;
       }
 
       // If there's no tag, create it.
-      $params = array( 
+      $params = array(
           'name' => 'Inbox Polling Unprocessed',
           'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
           'version' => 3,
