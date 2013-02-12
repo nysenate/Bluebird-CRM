@@ -22,7 +22,7 @@ class CRM_migrateContactsViewFile {
     // Parse the options
     $shortopts = "f:s";
     $longopts = array("filename=", "save");
-    $optlist = civicrm_script_init($shortopts, $longopts);
+    $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
