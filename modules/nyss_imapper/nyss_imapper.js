@@ -1131,38 +1131,43 @@ function pushtag(clear){
 		return false;
 	}
  
-	console.log("Contacts: "+contact_ids+" Tags: "+contact_tag_ids);
-	console.log("Activities: "+activity_ids+" Tags: "+activity_tag_ids);
+	// console.log("Contacts: "+contact_ids+" Tags: "+contact_tag_ids);
+	// console.log("Activities: "+activity_ids+" Tags: "+activity_tag_ids);
 
 	if(contact_tag_ids){
 		contact_ids_array = contact_ids.split(',');
 		cj.each(contact_ids_array, function(key, id) {
-			cj.ajax({
-				url: '/civicrm/imap/ajax/addTags',
-				async:false,
-				data: { contactId: id, tags: contact_tag_ids},
-				success: function(data,status) {
-					helpMessage('Contact Tagged');
-				},error: function(){
-					alert('failure');
-				}
-			});
+			helpMessage('Contact Tagged');
 		});
+
+		cj.ajax({
+			url: '/civicrm/imap/ajax/addTags',
+			async:false,
+			data: { contactId: contact_ids, tags: contact_tag_ids},
+			success: function(data,status) {
+				// helpMessage('Message Tagged');
+			},error: function(){
+				alert('failure');
+			}
+		});
+		
 	}
 	if(activity_tag_ids){
 		activity_ids_array = activity_ids.split(',');
 		cj.each(activity_ids_array, function(key, id) {
-			cj.ajax({
-				url: '/civicrm/imap/ajax/addTags',
-				async:false,
-				data: { activityId: id, tags: activity_tag_ids},
-				success: function(data,status) {
-					helpMessage('Message Tagged');
-				},error: function(){
-					alert('failure');
-				}
-			});
+			helpMessage('Message Tagged');
 		});
+
+		cj.ajax({
+			url: '/civicrm/imap/ajax/addTags',
+			async:false,
+			data: { activityId: activity_ids, tags: activity_tag_ids},
+			success: function(data,status) {
+				// helpMessage('Message Tagged');
+			},error: function(){
+				alert('failure');
+			}
+ 		});
 	}
  
  	if(clear){
