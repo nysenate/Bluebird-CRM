@@ -318,34 +318,53 @@ class CRM_migrateContactsImport {
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
           foreach ( $details[$type] as $record ) {
-            //handle attachments via sql rather than API
-            if ( $type == 'Attachments' ) {
-              $attachSqlEle = array();
+            switch( $type ) {
+              case 'Attachments':
+                //handle attachments via sql rather than API
+                $attachSqlEle = array();
 
-              //get new attachment IDs
-              foreach ( $record as $attF => $attV ) {
-                if ( !empty($attV) ) {
-                  $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
+                //get new attachment IDs
+                foreach ( $record as $attF => $attV ) {
+                  if ( !empty($attV) ) {
+                    $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
+                  }
                 }
-              }
-              $attachSql = "
-                INSERT IGNORE INTO civicrm_value_attachments_5
-                (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
-                VALUES
-                ({$contactID}, ".implode(', ', $attachSqlEle).")
-              ";
-              //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
+                $attachSql = "
+                  INSERT IGNORE INTO civicrm_value_attachments_5
+                  (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
+                  VALUES
+                  ({$contactID}, ".implode(', ', $attachSqlEle).")
+                ";
+                //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
 
-              if ( $optDry ) {
-                bbscript_log("debug", "importing attachments for contact", $record);
-              }
-              else {
-                CRM_Core_DAO::executeQuery($attachSql);
-              }
-            }
-            else {
-              $record[$fk] = $contactID;
-              self::_importAPI($type, 'create', $record);
+                if ( $optDry ) {
+                  bbscript_log("debug", "importing attachments for contact", $record);
+                }
+                else {
+                  CRM_Core_DAO::executeQuery($attachSql);
+                }
+                break;
+
+              case 'Address':
+                //need to fix location types so we don't overwrite
+                $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactId );
+                if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
+                  //attempt to assign to other, other2, main, main2
+                  foreach ( array(4,11,3, 12) as $newLocType ) {
+                    if ( !array_key_exists($newLocType, $existingAddresses) ) {
+                      $record['location_type_id'] = $newLocType;
+                      break;
+                    }
+                  }
+                }
+
+                $record[$fk] = $contactID;
+                self::_importAPI($type, 'create', $record);
+                break;
+
+              default:
+                $record[$fk] = $contactID;
+                self::_importAPI($type, 'create', $record);
             }
           }
         }
