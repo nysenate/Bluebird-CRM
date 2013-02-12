@@ -1110,7 +1110,7 @@ function DeleteActivity(value){
 // cj(".push_tag").live('click', function(){
 function pushtag(clear){
 
- 	contact_ids = cj("#contact_ids").val();
+	contact_ids = cj("#contact_ids").val();
 	activity_ids = cj("#activity_ids").val();
 
 	contact_tag_ids ='';
@@ -1130,9 +1130,6 @@ function pushtag(clear){
 		alert("please select a tag");
 		return false;
 	}
- 
-	// console.log("Contacts: "+contact_ids+" Tags: "+contact_tag_ids);
-	// console.log("Activities: "+activity_ids+" Tags: "+activity_tag_ids);
 
 	if(contact_tag_ids){
 		contact_ids_array = contact_ids.split(',');
@@ -1145,12 +1142,10 @@ function pushtag(clear){
 			async:false,
 			data: { contactId: contact_ids, tags: contact_tag_ids},
 			success: function(data,status) {
-				// helpMessage('Message Tagged');
 			},error: function(){
 				alert('failure');
 			}
 		});
-		
 	}
 	if(activity_tag_ids){
 		activity_ids_array = activity_ids.split(',');
@@ -1163,13 +1158,12 @@ function pushtag(clear){
 			async:false,
 			data: { activityId: activity_ids, tags: activity_tag_ids},
 			success: function(data,status) {
-				// helpMessage('Message Tagged');
 			},error: function(){
 				alert('failure');
 			}
- 		});
+		});
 	}
- 
+
  	if(clear){
 		cj("#clear-confirm").dialog('open');
 		cj("#clear-confirm").dialog({
@@ -1187,7 +1181,6 @@ function pushtag(clear){
 			}
 		});
 	}
- // return false;
 };
 
 // matched messages screen 

@@ -111,7 +111,6 @@
 					<li><a href="#tab1_tag">Tag Contact</a></li>
 					<li><a href="#tab2_tag">Tag Activity</a></li>
 				</ul>
-
 				<input type="hidden" class="hidden" id="contact_tag_ids" name="contact_tag_ids">
 				<input type="hidden" class="hidden" id="contact_ids" name="contact_ids">
 				<input type="hidden" class="hidden" id="activity_tag_ids" name="activity_tag_ids">
