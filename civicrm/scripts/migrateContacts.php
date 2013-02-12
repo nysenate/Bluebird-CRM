@@ -220,21 +220,11 @@ class CRM_migrateContacts {
       'im',
       'address',
       'note',
-      //'activity',
-      //'case',
-      //'relationship',
-      //'group',
       'Additional_Constituent_Information',
       'Organization_Constituent_Information',
       'Attachments',
       'Contact_Details',
     );
-
-    //check if we need to exclude notes
-    if ( in_array('N', $exclusions) ) {
-      unset($recordTypes[array_search('note', $recordTypes)]);
-    }
-    //bbscript_log("trace", "importScript recordTypes", $recordTypes);
 
     //customGroups that we may work with;
     $customGroups = array(
@@ -259,7 +249,7 @@ class CRM_migrateContacts {
         'external_id' => $mC->external_id,
       );
       foreach ( $recordTypes as $rType ) {
-        self::processData($rType, $IDs, $optDry);
+        self::processData($rType, $IDs, $optDry, $exclusions);
       }
 
       //print record count so we can track progress
@@ -517,7 +507,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * process the data in a special way
    * it also triggers the data write to screen or file
    */
-  function processData($rType, $IDs, $optDry) {
+  function processData($rType, $IDs, $optDry, $exclusions) {
     require_once 'CRM/Core/DAO/Email.php';
     require_once 'CRM/Core/DAO/Phone.php';
     require_once 'CRM/Core/DAO/Website.php';
@@ -539,7 +529,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $data = self::exportStandard($rType, $IDs, 'contact_id', 'CRM_Core_DAO_IM');
         break;
       case 'note':
-        $data = self::exportStandard($rType, $IDs, 'entity_id', null);
+        $data = self::exportStandard($rType, $IDs, 'entity_id', null, $exclusions);
         break;
       case 'activity':
         break;
@@ -566,7 +556,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * standard related record export function
    * we use the record type to retrieve the DAO and the foreign key to link to the contact record
    */
-  function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null) {
+  function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null, $exclusions = array() ) {
     global $daoFields;
     global $customGroups;
     global $source;
@@ -639,7 +629,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       FROM $tableName rt
       WHERE rt.{$fk} = {$IDs['contact_id']}
     ";
-    $sql .= self::additionalWhere($rType);
+    $sql .= self::additionalWhere($rType, $exclusions);
     //bbscript_log("trace", 'exportStandard sql', $sql);
     $rt = CRM_Core_DAO::executeQuery($sql);
 
@@ -1313,10 +1303,19 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * construct additional WHERE clause attributes by record type
    * return sql statement with prepended AND
    */
-  function additionalWhere($rType) {
+  function additionalWhere($rType, $exclusions) {
     switch($rType) {
       case 'note':
         $sql = " AND privacy = 0 AND entity_table = 'civicrm_contact' ";
+
+        if ( in_array('N', $exclusions) ) {
+          $sql = "
+            AND ( subject LIKE 'OMIS DATA'
+              OR subject LIKE 'OMIS ISSUE CODES'
+              OR subject LIKE 'REDIST2012%'
+            )
+          ";
+        }
         break;
       default:
         $sql = '';
