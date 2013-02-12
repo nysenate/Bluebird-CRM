@@ -130,6 +130,7 @@ $senator_names = array(
 	'43' => array('Marchione, Kathleen A.', 'kathleen-a-marchione'),
 	'44' => array('Breslin, Neil D.', 'neil-d-breslin'),
 	'45' => array('Little, Elizabeth', 'elizabeth-little'),
+	'46' => array('Tkaczyk, Cecilia', 'cecilia-tkaczyk'),
 	'47' => array('Griffo, Joseph A.', 'joseph-griffo'),
 	'48' => array('Ritchie, Patty', 'patty-ritchie'),
 	'49' => array('Farley, Hugh T.', 'hugh-t-farley'),
