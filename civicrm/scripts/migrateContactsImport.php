@@ -347,9 +347,10 @@ class CRM_migrateContactsImport {
 
               case 'address':
                 //need to fix location types so we don't overwrite
-                $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactId );
+                $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
                   if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
+                    //bbscript_log("trace", 'importContacts $record', $record);
                     //attempt to assign to other, other2, main, main2
                     foreach ( array(4,11,3, 12) as $newLocType ) {
                       if ( !array_key_exists($newLocType, $existingAddresses) ) {
