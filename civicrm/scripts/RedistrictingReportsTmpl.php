@@ -387,7 +387,15 @@ if ($format == 'text') {
 								<td><?= $contact['city'] ?></td>
 								<td><?= $contact['postal_code'] ?></td>
 						      	<td><?= $contact['email'] ?></td>
-						      	<td><?= $contact['source'] ?></td>
+						      	<td><?php 
+						      	   if( $contact['const_source'] != null && $contact['const_source'] != "" ){
+						      	   		echo $contact['const_source']; 
+						      	   		if ( $contact['source'] != null && $contact['source'] != "" ){
+						      	   			echo " / ";
+						      	   		}
+						      	   }
+								   echo $contact['source'];						      	   
+						      	   ?></td>
 						      	<td><?= $contact['case_count'] ?></td>
 						      	<td><?= $contact['activity_count'] ?></td>
 						      	<td><?= $contact['group_count'] ?></td>
@@ -442,7 +450,7 @@ if ($format == 'text') {
 	else if ($mode == "detail") {
 
 		$heading = array(
-			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Cases", "Acts", "Groups", "Prior District", "BB Rec#"
+			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Source 2", "Cases", "Acts", "Groups", "Prior District", "BB Rec#"
 		);
 
 		$output_row = "";
@@ -461,7 +469,7 @@ if ($format == 'text') {
 				 	$row = array(
 				 		$dist, $type, $name, get_gender($contact['gender_id']), get_age($contact['birth_date']),
 				 		$contact['street_address'], $contact['city'], $contact['postal_code'], $contact['email'],
-				 		$contact['source'], $contact['case_count'], $contact['activity_count'], $contact['group_count'],
+				 		$contact['source'], $contact['const_source'], $contact['case_count'], $contact['activity_count'], $contact['group_count'],
 				 		$contact['prior_dist'], $contact['contact_id']
 				 	);
 
