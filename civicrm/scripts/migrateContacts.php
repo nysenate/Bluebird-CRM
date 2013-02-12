@@ -31,13 +31,13 @@ class CRM_migrateContacts {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = "d:fn:i:t:e:a";
-    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers", "array");
+    $shortopts = "d:fn:i:t:e:a:y:x";
+    $longopts = array("dest=", "file", "dryrun", "import=", "trash=", "employers", "array", "types=", "exclude=");
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array]';
+        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array] [--types IHO] [--exclude NACT]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
@@ -102,6 +102,50 @@ class CRM_migrateContacts {
       exit();
     }
 
+    $types = $cTypes = $cTypesInclude = $exclusions = $eTypes = array();
+
+    //check contact types param
+    if ( $optlist['types'] ) {
+      $cTypes = array(
+        'I' => 'Individual',
+        'H' => 'Household',
+        'O' => 'Organization',
+      );
+      $types = str_split($optlist['types']);
+      foreach ( $types as $type ) {
+        if ( !in_array(strtoupper($type), array('I','H','O')) ) {
+          bbscript_log("fatal", "You selected invalid options for the contact type parameter. Please enter any combination of IHO (individual, household, organization), with no spaces between the characters.");
+          exit();
+        }
+        else {
+          $cTypesInclude[] = $cTypes[$type];
+          bbscript_log("info", "{$cTypes[$type]} contacts will be included.");
+        }
+      }
+    }
+
+    //check record type exclusion param
+    if ( $optlist['exclude'] ) {
+      $eTypes = array(
+        'N' => 'Note',
+        'A' => 'Activity',
+        'C' => 'Case',
+        'T' => 'Tag',
+      );
+      $exclusions = str_split($optlist['exclude']);
+      foreach ( $exclusions as $rec ) {
+        if ( !in_array(strtoupper($rec), array('N','A','C','T')) ) {
+          bbscript_log("fatal", "You selected invalid options for the exclusions parameter. Please enter any combination of NACT (notes, activities, cases, tags), with no spaces between the characters.");
+          exit();
+        }
+        else {
+          bbscript_log("info", "{$eTypes[$rec]} record types will be excluded.");
+        }
+      }
+    }
+
+    $startTime = microtime(true);
+
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
@@ -112,6 +156,9 @@ class CRM_migrateContacts {
     $optDry = $optlist['dryrun'];
     $dryParam = ($optDry) ? "--dryrun" : '';
     $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts';
+
+    //save options to the export array
+    self::prepareData(array('options' => $optlist), $optDry, 'options passed to the script');
 
     //set import folder based on environment
     $fileDir = '/data/redistricting/bluebird_'.$bbcfg_source['install_class'].'/migrate';
@@ -138,7 +185,7 @@ class CRM_migrateContacts {
     $exportData = array();
 
     //get contacts to migrate and construct in migration table
-    $migrateTbl = self::buildContactTable($source, $dest);
+    $migrateTbl = self::buildContactTable($source, $dest, $cTypesInclude);
 
     //if no contacts found we can exit immediately
     if ( !$migrateTbl ) {
@@ -162,6 +209,9 @@ class CRM_migrateContacts {
     //get contacts and write data
     self::exportContacts($migrateTbl, $optDry);
 
+    //clean up location types
+    self::_cleanLocType($migrateTbl, $optDry);
+
     //related records that we will be exporting with the contact
     $recordTypes = array(
       'email',
@@ -180,6 +230,12 @@ class CRM_migrateContacts {
       'Contact_Details',
     );
 
+    //check if we need to exclude notes
+    if ( in_array('N', $exclusions) ) {
+      unset($recordTypes[array_search('note', $recordTypes)]);
+    }
+    //bbscript_log("trace", "importScript recordTypes", $recordTypes);
+
     //customGroups that we may work with;
     $customGroups = array(
       'Additional_Constituent_Information',
@@ -194,6 +250,9 @@ class CRM_migrateContacts {
     $mC = CRM_Core_DAO::executeQuery("SELECT * FROM {$migrateTbl};");
     //bbscript_log("trace", "mC", $mC);
 
+    bbscript_log("info", "cycling through related records for contacts...");
+    $totalCount = $tempCount = 0;
+
     while ( $mC->fetch() ) {
       $IDs = array(
         'contact_id' => $mC->contact_id,
@@ -202,13 +261,29 @@ class CRM_migrateContacts {
       foreach ( $recordTypes as $rType ) {
         self::processData($rType, $IDs, $optDry);
       }
+
+      //print record count so we can track progress
+      $tempCount++;
+      $totalCount++;
+      if ( $tempCount == 500 ) {
+        bbscript_log("info", "contacts processed: {$totalCount}...");
+        $tempCount = 0;
+      }
     }
 
-    //process records
-    self::exportActivities($migrateTbl, $optDry);
-    self::exportCases($migrateTbl, $optDry);
-    self::exportTags($migrateTbl, $optDry);
+    //process records; take into account exclusions
+    if ( !in_array('A', $exclusions) ) {
+      self::exportActivities($migrateTbl, $optDry);
+    }
+    if ( !in_array('C', $exclusions) ) {
+      self::exportCases($migrateTbl, $optDry);
+    }
+    if ( !in_array('T', $exclusions) ) {
+      self::exportTags($migrateTbl, $optDry);
+    }
+
     self::exportCurrentEmployers($migrateTbl, $optDry);
+    self::exportHouseholdRels($migrateTbl, $optDry);
     self::exportDistrictInfo($addressDistInfo, $optDry);
 
     //get attachment details
@@ -247,11 +322,20 @@ class CRM_migrateContacts {
     }
 
     if ( $optFile ) {
-      bbscript_log("info", "File option selected. Export file has been created but not imported: {$filePath}.");
+      bbscript_log("info", "File option selected. Export file has been created but not imported:");
+      bbscript_log("info", "{$filePath}");
     }
 
     bbscript_log("info", "Completed contact migration from district {$source['num']} ({$source['name']}) to district {$dest['num']} ({$dest['name']}).");
 
+    $elapsedTime = get_elapsed_time($startTime);
+    if ( $elapsedTime < 60 ) {
+      $elapsedTime = "$elapsedTime secs";
+    }
+    else {
+      $elapsedTime = ($elapsedTime/60)." mins";
+    }
+    bbscript_log("info", "Time elapsed: {$elapsedTime}");
   }//run
 
   /*
@@ -260,7 +344,9 @@ class CRM_migrateContacts {
    * query criteria: exclude trashed contacts; only include those with a BOE address in destination district
    * if no contacts are found to migrate, return FALSE so we can exit immediately.
    */
-  function buildContactTable($source, $dest) {
+  function buildContactTable($source, $dest, $cTypesInclude) {
+    bbscript_log("info", "building contact table from redistricting report records...");
+
     //create table to store contact IDs with constructed external_id
     $tbl = "migrate_{$source['num']}_{$dest['num']}";
     CRM_Core_DAO::executeQuery( "DROP TABLE IF EXISTS $tbl;", CRM_Core_DAO::$_nullArray );
@@ -281,6 +367,12 @@ class CRM_migrateContacts {
       exit();
     }
 
+    //determine contact_type clause
+    $cTypeClause = '';
+    if ( !empty($cTypesInclude) ) {
+      $cTypeClause = " AND rrcc.contact_type IN ('".implode("', '", $cTypesInclude)."')";
+    }
+
     //retrieve contacts from redistricting table
     $sql = "
       INSERT INTO $tbl
@@ -291,6 +383,7 @@ AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
       JOIN civicrm_contact c
         ON rrcc.contact_id = c.id
         AND c.is_deleted = 0
+        $cTypeClause
       WHERE rrcc.district = {$dest['num']}
       GROUP BY rrcc.contact_id
     ";
@@ -314,7 +407,7 @@ AND c.external_identifier IS NOT NULL, c.external_identifier, '' )) external_id
 
     //also retrieve current employer contacts and insert in the table
     $sql = "
-      INSERT INTO $tbl
+      INSERT IGNORE INTO $tbl
       SELECT c.employer_id,
         CONCAT('SD{$source['num']}_CE_BB', c.employer_id, '_EXT',  IF(cce.external_identifier <> ''
 AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external_id
@@ -324,6 +417,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         AND c.is_deleted = 0
         AND c.employer_id IS NOT NULL
         AND rrcc.contact_type = 'Individual'
+        $cTypeClause
       JOIN civicrm_contact cce
         ON c.employer_id = cce.id
         AND cce.is_deleted = 0
@@ -367,6 +461,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function exportContacts($migrateTbl, $optDry = FALSE) {
     require_once 'CRM/Contact/DAO/Contact.php';
 
+    bbscript_log("info", "assembling and exporting contacts...");
+
     //get field list
     $c = new CRM_Contact_DAO_Contact();
     $fields = $c->fields();
@@ -393,7 +489,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         ON mt.contact_id = civicrm_contact.id
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
-    bbscript_log("trace", 'exportContacts sql', $sql);
+    //bbscript_log("trace", 'exportContacts sql', $sql);
 
     $contactsAttr = get_object_vars($contacts);
     //bbscript_log("trace", 'exportContacts contactsAttr', $contactsAttr);
@@ -602,6 +698,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * array( employeeKey => employerKey )
    */
   function exportCurrentEmployers($migrateTable, $optDry) {
+    bbscript_log("info", "exporting current employers...");
+
     $data = array();
     $sql = "
       SELECT mtI.external_id employeeKey, mtO.external_id employerKey
@@ -625,12 +723,54 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   }//exportCurrentEmployers
 
   /*
+   * construct arr
+   */
+  function exportHouseholdRels($migrateTable, $optDry) {
+    bbscript_log("info", "exporting household relationships...");
+
+    $data = array();
+    $sql = "
+      SELECT rel.*, mt1.external_id ext_a, mt2.external_id ext_b
+      FROM civicrm_relationship rel
+      JOIN {$migrateTable} mt1
+        ON rel.contact_id_a = mt1.contact_id
+      JOIN {$migrateTable} mt2
+        ON rel.contact_id_b = mt2.contact_id
+      WHERE rel.relationship_type_id IN (6,7)
+        AND rel.is_active = 1
+    ";
+    //bbscript_log("trace", "exportHouseholdRels sql", $sql);
+    $rels = CRM_Core_DAO::executeQuery($sql);
+
+    if ( $rels->N == 0 ) {
+      return;
+    }
+
+    //cycle through and construct data array
+    while ( $rels->fetch() ) {
+      $data['houserels'][] = array(
+        'contact_id_a' => $rels->ext_a,
+        'contact_id_b' => $rels->ext_b,
+        'relationship_type_id' => $rels->relationship_type_id,
+        'start_date' => $rels->start_date,
+        'end_date' => $rels->end_date,
+        'is_active' => $rels->is_active,
+        'description' => $rels->description,
+      );
+    }
+
+    self::prepareData($data, $optDry, 'household relationships array');
+  }//exportHouseholdRels
+
+  /*
    * prepare address custom fields (district information) for export
    * this is done by creating a unique key ID in the _address.name field during the
    * address export. the address ID and key ID was stored in $addressDistInfo
    * which we can now use to retrieve the records and construct the SQL
    */
   function exportDistrictInfo($addressDistInfo, $optDry) {
+    bbscript_log("info", "exporting district information for addresses...");
+
     $tbl = self::getCustomFields('District_Information', FALSE);
     $flds = self::getCustomFields('District_Information', TRUE);
     $addressIDs = implode(', ', array_keys($addressDistInfo));
@@ -683,6 +823,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportActivities($migrateTbl, $optDry) {
     global $attachmentIDs;
+
+    bbscript_log("info", "exporting activities...");
 
     $data = $actCustFields = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
@@ -761,6 +903,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportCases($migrateTbl, $optDry) {
     global $attachmentIDs;
+
+    bbscript_log("info", "exporting cases...");
 
     $data = array();
     $actCustTbl = self::getCustomFields('Activity_Details', FALSE);
@@ -851,6 +995,9 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportTags($migrateTbl, $optDry) {
     global $source;
+
+    bbscript_log("info", "exporting tags...");
+
     $keywords = $issuecodes = $positions = $tempother = array();
 
     $kParent = 296;
@@ -930,6 +1077,94 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //send tags to prep
     self::prepareData(array('tags' => $tags), $optDry, 'tags');
   }//exportTags
+
+  /*
+   * ensure there is no bad data in the source address table,
+   * such that there are > 1 address block with the same location type
+   */
+  function _cleanLocType($migrateTbl, $optDry) {
+    bbscript_log("info", "cleaning up duplicate location type addresses in source database...");
+
+    //preferred loc type order
+    $locTypes = array(
+      1, //home
+      3, //main
+      4, //other
+      12, //main2
+      11, //other2
+    );
+    $boeLocTypes = array(
+      6, //boe
+      13, //boe mailing
+      4, //other
+      11, //other2
+    );
+
+    //get migrateable contacts with > 1 address of the same loc type
+    $sql = "
+      SELECT a.contact_id, count(a.id) addrCount
+      FROM civicrm_address a
+      JOIN {$migrateTbl} m
+        ON a.contact_id = m.contact_id
+      GROUP BY a.contact_id, a.location_type_id
+      HAVING count(a.id) > 1
+    ";
+    $addr = CRM_Core_DAO::executeQuery($sql);
+
+    while ( $addr->fetch() ) {
+      //get all addresses associated with the contact
+      $sql = "
+        SELECT id, contact_id, location_type_id
+        FROM civicrm_address
+        WHERE contact_id = {$addr->contact_id};
+      ";
+      $dupeLocAddr = CRM_Core_DAO::executeQuery($sql);
+
+      $unusedTypes = $locTypes;
+      $unusedBOETypes = $boeLocTypes;
+      $typeFixes = array();
+      while ( $dupeLocAddr->fetch() ) {
+        if ( in_array($dupeLocAddr->location_type_id, $locTypes) ) {
+          //if unused, leave and remove from unused list
+          if ( in_array($dupeLocAddr->location_type_id, $unusedTypes) ) {
+            unset($unusedTypes[array_search($dupeLocAddr->location_type_id, $unusedTypes)]);
+          }
+          //we need to assign new value
+          else {
+            $unusedTypes = array_values($unusedTypes);
+            $typeFixes[$dupeLocAddr->id] = $unusedTypes[0];
+          }
+        }
+        //boe types
+        elseif ( in_array($dupeLocAddr->location_type_id, $boeLocTypes) ) {
+          //if unused, leave and remove from unused list
+          if ( in_array($dupeLocAddr->location_type_id, $unusedBOETypes) ) {
+            unset($unusedBOETypes[array_search($dupeLocAddr->location_type_id, $unusedBOETypes)]);
+          }
+          //we need to assign new value
+          else {
+            $unusedBOETypes = array_values($unusedBOETypes);
+            $typeFixes[$dupeLocAddr->id] = $unusedBOETypes[0];
+          }
+        }
+      }
+
+      //now update records
+      if ( $optDry ) {
+        bbscript_log("info", 'Addresses with duplicate loc type to be fixed.', $typeFixes);
+      }
+      else {
+        foreach ( $typeFixes as $addrID => $locType ) {
+          $sql = "
+            UPDATE civicrm_address
+            SET location_type_id = {$locType}
+            WHERE id = {$addrID}
+          ";
+          CRM_Core_DAO::executeQuery($sql);
+        }
+      }
+    }
+  }//_cleanLocType
 
   /*
    * build issue code tree
@@ -1081,7 +1316,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
   function additionalWhere($rType) {
     switch($rType) {
       case 'note':
-        $sql = " AND privacy = 0 ";
+        $sql = " AND privacy = 0 AND entity_table = 'civicrm_contact' ";
         break;
       default:
         $sql = '';
@@ -1150,6 +1385,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         fwrite($fileResource, $data);
       }
       else {
+        ini_set('memory_limit', '2000M');
+
         $exportDataJSON = json_encode($data);
         fwrite($fileResource, $exportDataJSON);
       }
