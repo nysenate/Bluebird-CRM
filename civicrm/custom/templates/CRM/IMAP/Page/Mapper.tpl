@@ -68,7 +68,6 @@
 						<span class="label_def">City: </span>
 						<input type="text" placeholder="City" class="form-text city" name="city">
 					</label>
-
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
 					<input type="button" class="imapper-submit" id="assign" value="Assign" name="Assign">
@@ -110,7 +109,6 @@
 						<span class="label_def">Zip Code: </span>
 					<input type="text" placeholder="Zip Code"  class="form-text zip" name="zip">
 					</label>
-
 					<input type="button" class="imapper-submit" id="add-contact" value="Add Contact" name="add-contact">
 				</div>
 			</div>

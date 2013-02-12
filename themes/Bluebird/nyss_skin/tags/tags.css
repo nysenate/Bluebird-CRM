@@ -71,12 +71,6 @@ SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bl
     width: 16px;
     float: right; }
 
-#BBTreeContainer, #BBDialog {
-  width: 522px;
-  position: relative;
-  margin: 0 auto;
-  overflow: hidden; }
-
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
   width: 520px;
   overflow-x: hidden;
@@ -248,6 +242,18 @@ SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bl
     margin: 0px; }
 
 /*BBTree*/
+#BBTreeContainer, #BBDialog {
+  width: 522px;
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden; }
+
+#BBDialog {
+  overflow: auto; }
+  #BBDialog .BBTree {
+    overflow: visible;
+    height: auto; }
+
 /*BBContainer*/
 .loadingGif {
   background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white !important; }
