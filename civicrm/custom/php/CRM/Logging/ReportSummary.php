@@ -87,14 +87,11 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
             'dao_log_table' => 'log_civicrm_relationship_type',
                  'dao_column' => 'label_a_b',
                  ),
-      //NYSS 5525
-      'log_civicrm_value_constituent_information_1' =>
-      array( 'fk' => 'entity_id',
-        'log_type' => 'Contact',
-      ),
            );
 
-  protected $loggingDB; function __construct() {
+  protected $loggingDB;
+
+  function __construct() {
     // don’t display the ‘Add these Contacts to Group’ button
     $this->_add2groupSupported = FALSE;
 
@@ -103,6 +100,13 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
     // used for redirect back to contact summary
     $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
+
+    //NYSS 5525/Jira 11854
+    $logging = new CRM_Logging_Schema;
+    $customTables = $logging->customDataLogTables();
+    foreach ($customTables as $table) {
+      $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
+    }
 
     parent::__construct();
   }
