@@ -11,6 +11,23 @@ function nyss_export_civicrm_buildForm( $formName, &$form ) {
   }
 } //end buildForm
 
+function nyss_export_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+  //6248
+  if ( $formName == 'CRM_Export_Form_Map' ) {
+    if ( $form->_streetLong ) {
+      $streetAddressFound = FALSE;
+      foreach ( $fields['mapper'][1] as $f ) {
+        if ( $f[1] == 'street_address' ) {
+          $streetAddressFound = TRUE;
+        }
+      }
+      if ( !$streetAddressFound ) {
+        $errors['street_long'] = 'You chose to export street addresses in long form, but have not included the street address field in your export mapping. Please add that field or return to the first step and deselect the long address option.';
+      }
+    }
+  }
+}
+
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
   //CRM_Core_Error::debug('POST', $_POST);
   //CRM_Core_Error::debug($headerRows);
@@ -124,7 +141,7 @@ WHERE c.do_not_trade = 1
     //CRM_Core_Error::debug('patReplace', $patReplace);exit();
 
     //get street_address for all records from the temp table
-    $sql = "SELECT id, civicrm_primary_id, street_address
+    $sql = "SELECT id, street_address
             FROM $exportTempTable
             WHERE street_address IS NOT NULL
               AND street_address != '';";
