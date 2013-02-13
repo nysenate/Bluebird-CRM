@@ -212,7 +212,7 @@ class CRM_IMAP_AJAX {
                 'from_name' => $email->sender[0]->personal,                      
                 'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,
                 'subject' => $email->subject,
-                'body' => $body,
+                'body' =>    self::strip_HTML_tags($body),
                 'date_short' => $date_short,
                 'date_long' => $date_long,
                 'date_u' => $date_u,
@@ -885,7 +885,7 @@ class CRM_IMAP_AJAX {
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
               'activity_date_time' => $date,
-              'details' => strip_tags($body),
+              'details' => $body,
               'version' => 3
           );
           $activity = civicrm_api('activity', 'create', $params);
