@@ -577,6 +577,7 @@ class CRM_IMAP_AJAX {
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
     if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; }; 
+
     $yearsago = floor((time() - strtotime($date_string_short))/86400); 
 
     // check if the message is from last year
@@ -1157,6 +1158,10 @@ EOQ;
                             'firstName'   =>  $contact_node['first_name'],
                             'lastName'   =>  $contact_node['last_name'],
                             'fromEmail'  =>  $contact_node['email'],
+                            'fromdob'  =>  $contact_node['birth_date'],
+                            'fromphone'  =>  $contact_node['phone'],
+                            'fromstreet'  =>  $contact_node['street_address'],
+                            'fromcity'  =>  $contact_node['city'],
                             'forwarderName' => $forwarder_node['display_name'],
                             'forwarder' => $forwarder_node['email'],
                             'subject'    =>  $activity_node['subject'],
@@ -1290,6 +1295,8 @@ EOQ;
 
       $returnMessage = array('code'=>'SUCCESS','message'=>'SUCCESS',
                           'uid'    =>  $activitId,
+                          'contactId' =>  $contact_node['contact_id'],
+                          'contactType'   =>  $contact_node['contact_type'],
                           'fromName'   =>  $contact_node['display_name'],
                           'fromEmail'  =>  $contact_node['email'],
                           'fromId'  =>  $contact_node['id'],
