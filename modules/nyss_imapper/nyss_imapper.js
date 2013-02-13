@@ -330,6 +330,7 @@ cj(document).ready(function(){
 		var create_street_address_2 = cj("#tab2 .street_address_2").val();
 		var create_zip = cj("#tab2 .zip").val();
 		var create_city = cj("#tab2 .city").val();
+		var create_dob = cj("#tab2 .dob").val();
 
 		if((!!create_first_name) && (!!create_last_name)){
 			cj.ajax({
@@ -344,7 +345,8 @@ cj(document).ready(function(){
 					street_address: create_street_address,
 					street_address_2: create_street_address_2,
 					postal_code: create_zip,
-					city: create_city
+					city: create_city,
+					dob: create_dob
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);

@@ -1597,6 +1597,7 @@ EOQ;
         $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address'|| trim(self::get('street_address_2')) =='') ? '' : self::get('street_address_2');
         $postal_code = (strtolower(self::get('postal_code')) == 'zip code'|| trim(self::get('postal_code')) =='') ? '' : self::get('postal_code');
         $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? '' : self::get('city');
+        $dob = (strtolower(self::get('dob')) == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? '' : self::get('dob');
 
         if ($debug){
           echo "<h1>inputs</h1>";
@@ -1608,6 +1609,7 @@ EOQ;
           var_dump($street_address_2);
           var_dump($postal_code);
           var_dump($city);
+          var_dump($dob);
         }
   
         if((!$first_name)|| (!$last_name) || (!$email))
@@ -1625,6 +1627,7 @@ EOQ;
             'last_name' => $last_name,
             'email' => $email,
             'contact_type' => 'Individual',
+            'birth_date' => $dob,
             'version' => 3,
         );
 
@@ -1639,7 +1642,6 @@ EOQ;
 
           var_dump($contact);
         }
-        
 
         if($street_address && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
