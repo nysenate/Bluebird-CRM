@@ -1,0 +1,14 @@
+
+.cke_editor .cke_button_aspell .cke_icon
+{
+	background-position: 0 -192px !important;
+}
+
+#adsBlock {
+	visibility:hidden !important;
+	display:none !important;
+}
+#adsBlock div {
+	visibility:hidden !important;
+	display:none !important;
+}
