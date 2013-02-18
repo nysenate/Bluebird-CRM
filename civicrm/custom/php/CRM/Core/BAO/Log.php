@@ -272,6 +272,18 @@ UPDATE civicrm_log
         'id'     => 'contact_id_b',
         'table'  => 'civicrm_relationship',
       ),
+      'civicrm_value_constituent_information_1' =>
+      array(
+        'id' => 'entity_id',
+      ),
+      'civicrm_value_contact_details_8' =>
+      array(
+        'id' => 'entity_id',
+      ),
+      'civicrm_value_organization_constituent_informa_3' =>
+      array(
+        'id' => 'entity_id',
+      ),
     );
 
     $logRows = array();
