@@ -136,20 +136,31 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
     }
   }
 
-  if ( $formName == 'CRM_Contact_Form_Inline_Email' ||
-       $formName == 'CRM_Contact_Form_Inline_Phone'
-  ) {
+  $inlineBlockBOE = array(
+    'CRM_Contact_Form_Inline_Email',
+    'CRM_Contact_Form_Inline_Phone',
+    'CRM_Contact_Form_Inline_Address',
+  );
+  if ( in_array($formName, $inlineBlockBOE) ) {
 
     require_once 'CRM/Core/PseudoConstant.php';
     $locationTypes     = CRM_Core_PseudoConstant::locationType( );
     $boardOfElectionId = CRM_Utils_Array::key( 'BOE', $locationTypes );
 
-    //determine if phone or email
-    $name    = 'phone';
-    $objName = '_phones';
-    if ( $formName == 'CRM_Contact_Form_Inline_Email' ) {
-      $name    = 'email';
-      $objName = '_emails';
+    //determine name and object
+    switch ($formName) {
+      case 'CRM_Contact_Form_Inline_Email':
+        $name    = 'email';
+        $objName = '_emails';
+        break;
+      case 'CRM_Contact_Form_Inline_Phone':
+        $name    = 'phone';
+        $objName = '_phones';
+        break;
+      case 'CRM_Contact_Form_Inline_Address':
+        $name    = 'address';
+        $objName = '_addresses';
+        break;
     }
 
     $b = 0;
