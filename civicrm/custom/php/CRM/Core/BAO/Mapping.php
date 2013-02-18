@@ -381,6 +381,13 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
         unset($fields['Household'][$value]);
         unset($fields['Organization'][$value]);
       }
+      //NYSS 6016
+      if (array_key_exists('note', $fields['Contact'])) {
+        $noteTitle = $fields['Contact']['note']['title'];
+        $fields['Contact']['note']['title'] = $noteTitle . ': ' . ts('Body and Subject');
+        $fields['Contact']['note_body']    = array( 'title' => $noteTitle . ': ' . ts('Body only'),    'name' => 'note_body' );
+        $fields['Contact']['note_subject'] = array( 'title' => $noteTitle . ': ' . ts('Subject only'), 'name' => 'note_subject' );
+      }
     }
 
     if (($mappingType == 'Search Builder') || ($exportMode == CRM_Export_Form_Select::CONTRIBUTE_EXPORT)) {

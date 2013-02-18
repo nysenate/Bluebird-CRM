@@ -225,8 +225,9 @@
         <thead>
         <tr>
 	        <th></th>
+        {*NYSS 6016 shuffle column order*}
+          <th>{ts}Subject{/ts}</th>
 	        <th>{ts}Note{/ts}</th>
-	        <th>{ts}Subject{/ts}</th>
 	        <th>{ts}Date{/ts}</th>
 	        <th>{ts}Created By{/ts}</th>
 	        <th></th>
@@ -247,6 +248,8 @@
                     <span class="ui-icon ui-icon-triangle-1-e" id="{$note.id}_hide" style="display:none"></span>
                 {/if}
             </td>
+          {*NYSS 6016 shuffle column order*}
+            <td class="crm-note-subject">{$note.subject}</td>
             <td class="crm-note-note">
                 {$note.note|mb_truncate:80:"...":false|nl2br}
                 {* Include '(more)' link to view entire note if it has been truncated *}
@@ -255,7 +258,6 @@
 		        <a href="{crmURL p='civicrm/contact/view/note' q="action=view&selectedChild=note&reset=1&cid=`$contactId`&id=`$note.id`"}">{ts}(more){/ts}</a>
                 {/if}
             </td>
-            <td class="crm-note-subject">{$note.subject}</td>
             <td class="crm-note-modified_date">{$note.modified_date|crmDate}</td>
             <td class="crm-note-createdBy">
                 <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$note.contact_id`"}">{$note.createdBy}</a>

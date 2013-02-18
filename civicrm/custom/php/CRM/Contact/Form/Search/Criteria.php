@@ -492,7 +492,17 @@ class CRM_Contact_Form_Search_Criteria {
   function notes(&$form) {
     $form->add('hidden', 'hidden_notes', 1);
 
+    //NYSS 6016
+    $options = array(
+      2 => ts('Body Only'),
+      3 => ts('Subject Only'),
+      6 => ts('Both'),
+    );
+    $form->addRadio('note_option', '', $options);
+
     $form->addElement('text', 'note', ts('Note Text'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name'));
+
+    $form->setDefaults(array('note_option' => 6));
   }
 
   /**
