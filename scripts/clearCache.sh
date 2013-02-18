@@ -87,7 +87,7 @@ if [ $tmp_only -eq 1 ]; then
   drop_temp_tables $instance
   exit $?
 elif [ $wd_only -eq 1 ]; then
-  sql="truncate watchdog"
+  sql="TRUNCATE watchdog"
   ( set -x
     $execSql -i $instance -c "$sql" --drupal
   )
@@ -105,8 +105,17 @@ echo "Clearing CiviCRM filesystem caches"
 [ $tpl_only -eq 1 ] && exit 0
 
 echo "Clearing CiviCRM database caches"
-sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; "
-[ $clear_all -eq 1 ] && sql="truncate civicrm_log; $sql"
+sql="
+  TRUNCATE civicrm_acl_cache;
+  TRUNCATE civicrm_acl_contact_cache;
+  TRUNCATE civicrm_cache;
+  TRUNCATE civicrm_group_contact_cache;
+  TRUNCATE civicrm_menu;
+  TRUNCATE civicrm_task_action_temp;
+  UPDATE civicrm_preferences SET navigation=null;
+  UPDATE civicrm_setting SET value = null WHERE name = 'navigation';
+"
+[ $clear_all -eq 1 ] && sql="TRUNCATE civicrm_log; $sql"
 ( set -x
   $execSql -i $instance -c "$sql"
 )
@@ -115,7 +124,16 @@ echo "Run Civi clear cache via drush to cover our bases"
 $drush $instance cache-clear civicrm
 
 echo "Clearing Drupal database caches"
-sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
+sql="
+  TRUNCATE cache;
+  TRUNCATE cache_page;
+  TRUNCATE cache_form;
+  TRUNCATE cache_update;
+  TRUNCATE cache_menu;
+  TRUNCATE cache_block;
+  TRUNCATE cache_filter;
+  TRUNCATE sessions;
+"
 [ $clear_all -eq 1 ] && sql="truncate watchdog; $sql"
 ( set -x
   $execSql -i $instance -c "$sql" --drupal
