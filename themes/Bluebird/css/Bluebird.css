@@ -1692,3 +1692,11 @@ form#Contact .groupTagsKeywords .crm-section .label {
 #crm-container #CommunicationPreferences #preferred_language {
   width: 225px;
 }
+
+/*5828*/
+li.crm-delete-action.crm-contact-delete {
+  display: none;
+}
+div#contact-summary div#contactTopBar {
+  display: none;
+}

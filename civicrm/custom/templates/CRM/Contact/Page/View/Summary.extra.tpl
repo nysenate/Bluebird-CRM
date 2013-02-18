@@ -52,7 +52,7 @@
 {include file="CRM/Contact/Page/View/nyssSummaryTop.tpl" assign="newTopBar"}
 {literal}
 <script type="text/javascript">
-  cj('#contactTopBar').html('{/literal}{$newTopBar|escape:"javascript"}{literal}');
+  cj('#contactTopBar').html('{/literal}{$newTopBar|escape:"javascript"}{literal}').show();
 </script>
 {/literal}
 
