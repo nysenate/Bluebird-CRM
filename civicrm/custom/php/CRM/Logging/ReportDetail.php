@@ -133,7 +133,8 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     list($titles, $values) = $differ->titlesAndValuesForTable($table);
 
     // populate $rows with only the differences between $changed and $original (skipping certain columns and NULL ↔ empty changes unless raw requested)
-    $skipped = array('contact_id', 'entity_id', 'id');
+    //NYSS 5994 exclude is_billing
+    $skipped = array('contact_id', 'entity_id', 'id', 'is_billing');
     foreach ($diffs as $diff) {
       $field = $diff['field'];
       $from  = $diff['from'];

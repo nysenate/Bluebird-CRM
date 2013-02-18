@@ -219,6 +219,7 @@ class CRM_Core_DAO_Email extends CRM_Core_DAO
                 'is_primary' => array(
                     'name' => 'is_primary',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'title' => ts('Is Email Primary?'),//NYSS
                 ) ,
                 'is_billing' => array(
                     'name' => 'is_billing',
