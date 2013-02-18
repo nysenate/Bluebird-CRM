@@ -548,6 +548,14 @@ VALUES (@optgrp, 'Senator', @maxval+1, 'Senator', @wght, 1);
 "
 $execSql -i $instance -c "$sqlprefix"
 
+## 5808 remove new tag menu item
+sqlNewTag="
+  UPDATE civicrm_navigation
+  SET is_active = 0
+  WHERE name = 'New Tag';
+"
+$execSql -i $instance -c "sqlNewTag"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
