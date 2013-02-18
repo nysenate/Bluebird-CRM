@@ -381,12 +381,18 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
         unset($fields['Household'][$value]);
         unset($fields['Organization'][$value]);
       }
-      //NYSS 6016
-      if (array_key_exists('note', $fields['Contact'])) {
-        $noteTitle = $fields['Contact']['note']['title'];
-        $fields['Contact']['note']['title'] = $noteTitle . ': ' . ts('Body and Subject');
-        $fields['Contact']['note_body']    = array( 'title' => $noteTitle . ': ' . ts('Body only'),    'name' => 'note_body' );
-        $fields['Contact']['note_subject'] = array( 'title' => $noteTitle . ': ' . ts('Subject only'), 'name' => 'note_subject' );
+    }
+
+    //NYSS 6016 -- this will be reworked in future core as there are other changes implemented
+    if ($mappingType == 'Search Builder') {
+      $cTypes = array('Individual','Household','Organization');
+      foreach ( $cTypes as $cType ) {
+        if (array_key_exists('note', $fields[$cType])) {
+          $noteTitle = $fields[$cType]['note']['title'];
+          $fields[$cType]['note']['title'] = $noteTitle . ': ' . ts('Body and Subject');
+          $fields[$cType]['note_body']    = array( 'title' => $noteTitle . ': ' . ts('Body only'),    'name' => 'note_body' );
+          $fields[$cType]['note_subject'] = array( 'title' => $noteTitle . ': ' . ts('Subject only'), 'name' => 'note_subject' );
+        }
       }
     }
 
