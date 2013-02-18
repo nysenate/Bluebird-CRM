@@ -330,6 +330,7 @@ cj(document).ready(function(){
 		var create_street_address_2 = cj("#tab2 .street_address_2").val();
 		var create_zip = cj("#tab2 .zip").val();
 		var create_city = cj("#tab2 .city").val();
+		var create_dob = cj("#tab2 .dob").val();
 
 		if((!!create_first_name) && (!!create_last_name)){
 			cj.ajax({
@@ -344,7 +345,8 @@ cj(document).ready(function(){
 					street_address: create_street_address,
 					street_address_2: create_street_address_2,
 					postal_code: create_zip,
-					city: create_city
+					city: create_city,
+					dob: create_dob
 				},
 				success: function(data, status) {
 					contactData = cj.parseJSON(data);
@@ -533,9 +535,17 @@ cj(document).ready(function(){
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
 		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+		var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
+		var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
+		var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
+		var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
 
 		if(firstName && firstName !='null') cj('.first_name').val(firstName);
 		if(lastName && lastName !='null') cj('.last_name').val(lastName);
+		if(fromdob && fromdob !='null') cj('.dob').val(fromdob);
+		if(fromphone && fromphone !='null') cj('.phone').val(fromphone);
+		if(fromstreet && fromstreet !='null') cj('.street_address').val(fromstreet);
+		if(fromcity && fromcity !='null') cj('.city').val(fromcity);
 
 		cj('#imapper-contacts-list').html('');
 
@@ -580,7 +590,7 @@ cj(document).ready(function(){
 					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(messages.subject,100)  });
 					cj("#find-match-popup").dialog('open');
 					cj("#tabs").tabs();
-					cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>"+messages.fromName +"  <i>&lt;"+ messages.fromEmail+"&gt;</i> <br/> ");
+					cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/> 					"+'<a href="/civicrm/contact/view?reset=1&cid='+messages.contactId+'" title="'+messages.fromName+'">'+shortenString(messages.fromName,35)+'</a>'+" <br/><i>&lt;"+ messages.fromEmail+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
 				}
 			},
 			error: function(){
@@ -1197,7 +1207,7 @@ function buildActivitiesList() {
 				messagesHtml += '<tr id="'+value.activitId+'" data-id="'+value.activitId+'" data-contact_id="'+value.contactId+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activitId+'" data-id="'+value.contactId+'"/></td>';
 
 				if( value.fromName != ''){
-					messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+					messagesHtml += '<td class="name" data-fromdob="'+value.fromdob +'" data-fromphone="'+value.fromphone +'" data-fromstreet="'+value.fromstreet +'" data-fromcity="'+value.fromcity +'"data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
 					messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.contactId+'&snippet=4">';
 					messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
 					messagesHtml += '</a>';
@@ -1222,7 +1232,6 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
-				// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="disabled no_add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
 			}
