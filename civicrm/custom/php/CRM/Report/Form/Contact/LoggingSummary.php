@@ -312,8 +312,9 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
     return $statistics;
   }
 
+  //NYSS revert 5184 with 6093/5719
   //NYSS 5184 alter pager url
-  function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
+  /*function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
     if ( $this->_limit && ($this->_limit != '') ) {
       $sql = "SELECT FOUND_ROWS();";
       $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
@@ -344,10 +345,10 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
 
       $this->assign_by_ref( 'pager', $pager );
     }
-  }
+  }*/
 
   //NYSS change how pagination works in contact context
-  function buildForm( ) {
+  /*function buildForm( ) {
 
     parent::buildForm( );
 
@@ -361,7 +362,7 @@ LEFT  JOIN civicrm_contact altered_by_contact_civireport
       //CRM_Core_Error::debug_var('LoggingSummary buildForm this',$this);
       //CRM_Core_Error::debug_var('cid',$cid);
     }
-  }
+  }*/
 
   function getContactDetails( $cid ) {
 
