@@ -135,7 +135,11 @@ class CRM_migrateContactsTrash {
 
     $totalCount = 0;
     foreach ( $trashContactTypes as $type ) {
-      if ( $optDry && !empty($trashedIDs[$type]) ) {
+      if ( empty($trashedIDs[$type]) ) {
+        continue;
+      }
+
+      if ( $optDry ) {
         bbscript_log("debug", "The following {$type} contacts would be trashed:", $trashedIDs[$type]);
       }
       else {
@@ -252,7 +256,7 @@ class CRM_migrateContactsTrash {
     $contacts = CRM_Core_DAO::executeQuery($sql);
 
     while ( $contacts->fetch() ) {
-      $trashedIDs[$contact->contact_type][] = $contacts->id;
+      $trashedIDs[$contacts->contact_type][] = $contacts->id;
 
       //if employers option true, add employer ids
       if ( !empty($contacts->employer_id) && $employers ) {
