@@ -383,6 +383,19 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
       }
     }
 
+    //NYSS 6016 -- this will be reworked in future core as there are other changes implemented
+    if ($mappingType == 'Search Builder') {
+      $cTypes = array('Individual','Household','Organization');
+      foreach ( $cTypes as $cType ) {
+        if (array_key_exists('note', $fields[$cType])) {
+          $noteTitle = $fields[$cType]['note']['title'];
+          $fields[$cType]['note']['title'] = $noteTitle . ': ' . ts('Body and Subject');
+          $fields[$cType]['note_body']    = array( 'title' => $noteTitle . ': ' . ts('Body only'),    'name' => 'note_body' );
+          $fields[$cType]['note_subject'] = array( 'title' => $noteTitle . ': ' . ts('Subject only'), 'name' => 'note_subject' );
+        }
+      }
+    }
+
     if (($mappingType == 'Search Builder') || ($exportMode == CRM_Export_Form_Select::CONTRIBUTE_EXPORT)) {
       if (CRM_Core_Permission::access('CiviContribute')) {
         $fields['Contribution'] = CRM_Contribute_BAO_Contribution::exportableFields();

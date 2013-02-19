@@ -133,7 +133,8 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     list($titles, $values) = $differ->titlesAndValuesForTable($table);
 
     // populate $rows with only the differences between $changed and $original (skipping certain columns and NULL ↔ empty changes unless raw requested)
-    $skipped = array('contact_id', 'entity_id', 'id');
+    //NYSS 5994 exclude is_billing
+    $skipped = array('contact_id', 'entity_id', 'id', 'is_billing');
     foreach ($diffs as $diff) {
       $field = $diff['field'];
       $from  = $diff['from'];
@@ -212,6 +213,36 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
     $q = "reset=1&log_conn_id={$this->log_conn_id}&log_date={$this->log_date}";
     $this->assign('revertURL', CRM_Report_Utils_Report::getNextUrl($this->detail, "$q&revert=1", FALSE, TRUE));
     $this->assign('revertConfirm', ts('Are you sure you want to revert all these changes?'));
+  }
+
+  //NYSS 6268 display attachment filename instead of ID
+  function alterDisplay(&$rows) {
+    //CRM_Core_Error::debug_var('ReportDetail alterDisplay rows',$rows);
+
+    static $fileRecords = array();
+
+    if ( empty($fileRecords) ) {
+      $sql = "
+        SELECT id, uri
+        FROM civicrm_file;
+      ";
+      $files = CRM_Core_DAO::executeQuery($sql);
+
+      while ( $files->fetch() ) {
+        $fileRecords[$files->id] = CRM_Utils_File::cleanFileName($files->uri);
+      }
+    }
+
+    foreach ($rows as $key => &$row) {
+      if ( strstr($row['field'], 'File Attachments') !== FALSE ) {
+        if ( !empty($row['from']) ) {
+          $row['from'] = $fileRecords[$row['from']];
+        }
+        if ( !empty($row['to']) ) {
+          $row['to'] = $fileRecords[$row['to']];
+        }
+      }
+    }
   }
 
   // redefine this accordingly in ancestors for buildQuickForm()’s sake

@@ -618,7 +618,7 @@ function cleanDate($date_string){
     $apiParams = array(
                 "source_contact_id" => $userId,
                 "subject" => substr($subject, 0, 255),
-                "details" => $details,
+                "details" =>  strip_HTML_tags($OrgionalBody),
                 "activity_date_time" => $fwdDate['long'],
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,

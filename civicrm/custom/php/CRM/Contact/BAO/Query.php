@@ -1355,7 +1355,10 @@ class CRM_Contact_BAO_Query {
         $this->tag($values);
         return;
 
+      //NYSS 6016
       case 'note':
+      case 'note_body':
+      case 'note_subject':
         $this->notes($values);
         return;
 
@@ -2752,6 +2755,11 @@ WHERE  id IN ( $groupIDs )
   function notes(&$values) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
+    //NYSS 6016
+    $noteOptionValues = $this->getWhereValues('note_option', $grouping);
+    $noteOption = CRM_Utils_Array::value('2', $noteOptionValues, '6');
+    $noteOption = ($name == 'note_body') ? 2 : (($name == 'note_subject') ? 3 : $noteOption);
+
     $this->_useDistinct = TRUE;
 
     //NYSS 4802
@@ -2778,8 +2786,21 @@ WHERE  id IN ( $groupIDs )
     else {
       $value = "'$value'";
     }
-    $this->_where[$grouping][] = self::buildClause('civicrm_note.note', $op, $value, 'String');//NYSS 4802
-    $this->_qill[$grouping][] = ts('Note') . " $op - '$n'";
+    //NYSS 6016
+    //$this->_where[$grouping][] = self::buildClause('civicrm_note.note', $op, $value, 'String');//NYSS 4802
+    //$this->_qill[$grouping][] = ts('Note') . " $op - '$n'";
+    $label = NULL;
+    $clauses = array();
+    if ( $noteOption % 2 ==  0 ) {
+      $clauses[] = self::buildClause('civicrm_note.note', $op, $value, 'String');
+      $label = ts('Note: Body Only');
+    }
+    if ( $noteOption % 3 ==  0 ) {
+      $clauses[] = self::buildClause('civicrm_note.subject', $op, $value, 'String');
+      $label = $label ? ts('Note: Body and Subject') : ts('Note: Subject Only');
+    }
+    $this->_where[$grouping][] = "( " . implode(' OR ', $clauses) . " )";
+    $this->_qill[$grouping][]  = label . " $op - '$n'";
   }
 
   //NYSS 5518
@@ -3466,7 +3487,7 @@ WHERE  id IN ( $groupIDs )
     if (empty($value) ||
       !is_array($value)
     ) {
-      continue;
+      return;//NYSS fix 'continue'
     }
 
     // get the operator and toggle values

@@ -12,6 +12,7 @@ CKEDITOR.editorConfig = function( config )
     // disable auto spell check
     config.scayt_autoStartup = false;
 
+
     //NYSS integrate kcfinder
     config.filebrowserBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=files';
     config.filebrowserImageBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=images';
@@ -36,10 +37,15 @@ CKEDITOR.editorConfig = function( config )
         ['Image'], //NYSS ,'HorizontalRule','Smiley'],
         ['NumberedList','BulletedList'], //NYSS ,'Outdent','Indent','Blockquote'],
         ['PasteText','PasteFromWord'], //NYSS ,'SpellChecker'],
+        ['SpellCheck'],
         ['RemoveFormat'],
         //['Undo','Redo'], //NYSS
         ['Source'] //NYSS ,'-','Preview','-','About'],
     ];
+    config.plugins += ',aspell';
+    //allows the browser (non-ie) to take out the context menues
+    config.disableNativeSpellChecker = false;
+    config.removePlugins = 'scayt,menubutton,contextmenu';
 };
 
 //NYSS 3878 remove some unnecessary elements

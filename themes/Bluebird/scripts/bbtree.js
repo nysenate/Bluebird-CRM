@@ -322,7 +322,12 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag '+obj.taggedName+' failed to be updated.';
+					actionData.description += 'Tag '+obj.tagName+' failed to be updated';
+					if(data[3] == 'DB Error: already exists')
+					{
+						actionData.description += ' because tag '+obj.tagName+' already exists';
+					}
+					actionData.description += ' .';
 				}	
 				break;
 			case 'removt':
@@ -960,7 +965,7 @@ var BBTreeModal = {
 	},
 	addModalTagTree: function() // modal needs to add a tree
 	{
-		if(this.taggedReserved){
+		if(this.taggedReserved || this.taggedChildren > 0){
 			this.resetCurrentSettings();
 		}
 		else{
@@ -1076,6 +1081,10 @@ var BBTreeModal = {
 				this.currentSettings['title'] = 'Convert Keyword to Tag';
 				break;
 		}
+		if(BBTreeModal.taggedChildren > 0) //if there's children, you might get an early warning.
+		{
+			addDialogText = this.taggedName + ' cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Make sure any child tags are ' + this.currentSettings.actionName + ' first.';
+		}
 		if(this.taggedReserved){
 			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
 		}
@@ -1129,7 +1138,10 @@ var BBTreeModal = {
 	},
 	convertTag: {
 		setOpen: function(){
-			BBTreeModal.getModalTagTree();
+			if(BBTreeModal.taggedChildren == 0) //if there's no children, convert!
+			{
+				BBTreeModal.getModalTagTree();
+			}
 		},
 		runFunction: function(){
 			cj("#BBDialog").dialog( "option", "buttons", [
@@ -1150,6 +1162,8 @@ var BBTreeModal = {
 						success: function(data, status, XMLHttpRequest) {
 							if(data.code != 1)
 							{
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
 								BBTree.reportAction(['convt',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
 								modalLoadingGif('remove');
 							}
@@ -1208,7 +1222,10 @@ var BBTreeModal = {
 	},
 	mergeTag: {
 		setOpen: function(){
-			BBTreeModal.getModalTagTree();
+			if(BBTreeModal.taggedChildren == 0) //if there's no children, merge!
+			{
+				BBTreeModal.getModalTagTree();
+			}
 		},
 		runFunction: function(){
 			cj("#BBDialog").dialog( "option", "buttons", [
@@ -1221,39 +1238,28 @@ var BBTreeModal = {
 						tagMerge.destinationId = BBTreeModal.radioSelectedTid;
 						var postUrl = '/civicrm/ajax/mergeTags';
 		 				var data    = 'fromId='+ tagMerge.currentId + '&toId='+ tagMerge.destinationId;
-		 				var tidMatch = false;
-						if(BBTreeModal.taggedChildren > 0)
-						{
-							tidMatch = true;
-						}
-						if(tidMatch == false)
-						{	
-							cj.ajax({
-								type: "POST",
-								url: postUrl,
-								data: data,
-								dataType: 'json',
-								success: function(data, status, XMLHttpRequest) {
-									if ( data.status == true ) {
-										cj("#BBDialog").dialog("close"); 
-										cj("#BBDialog").dialog("destroy"); 
-										BBTree.reportAction(['merct',1,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
-										BBTreeModal.removeTag.removeInline(tagMerge.currentId);
-									}
-									else
-									{
-										BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
-										modalLoadingGif('remove');
-									}
-									
-								}	
-							});
-						}
-						else {
-							alert("Cannot merge a parent tag into another tag. Try moving sub-tags into the parent you want to merge into and then merge the tag into the destination");
-							modalLoadingGif('remove');
-						}
-
+						cj.ajax({
+							type: "POST",
+							url: postUrl,
+							data: data,
+							dataType: 'json',
+							success: function(data, status, XMLHttpRequest) {
+								if ( data.status == true ) {
+									cj("#BBDialog").dialog("close"); 
+									cj("#BBDialog").dialog("destroy"); 
+									BBTree.reportAction(['merct',1,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
+									BBTreeModal.removeTag.removeInline(tagMerge.currentId);
+								}
+								else
+								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, data.message]);
+									modalLoadingGif('remove');
+								}
+								
+							}	
+						});
 					}
 				},
 				{
@@ -1295,8 +1301,9 @@ var BBTreeModal = {
 						success: function(data, status, XMLHttpRequest) {
 							if(data.code != 1)
 							{
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
 								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
-								modalLoadingGif('remove');
 							}
 							else
 							{
@@ -1333,7 +1340,10 @@ var BBTreeModal = {
 	},
 	moveTag:  {
 		setOpen: function(){
-			BBTreeModal.getModalTagTree();
+			if(BBTreeModal.taggedChildren == 0) //if there's no children, move!
+			{
+				BBTreeModal.getModalTagTree();
+			}
 		},
 		runFunction: function(){
 			cj("#BBDialog").dialog( "option", "buttons", [
@@ -1356,6 +1366,8 @@ var BBTreeModal = {
 							success: function(data, status, XMLHttpRequest) {
 								if(data.code != 1)
 								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
 									BBTree.reportAction(['movct',0,tagMove.currentId,BBTreeModal.radioSelectedTid, data.message]);
 									modalLoadingGif('remove');
 								}
@@ -1396,35 +1408,28 @@ var BBTreeModal = {
 					tagRemove = new Object();
 					tagRemove.parentId = removeTagLabel(BBTreeModal.taggedID);
 					modalLoadingGif('add');
-					if(BBTreeModal.taggedChildren == 0)
-					{
-							cj.ajax({
-							url: '/civicrm/ajax/tag/delete',
-							data: {
-								id: tagRemove.parentId,
-								call_uri: window.location.href
-							},
-							dataType: 'json',
-							success: function(data, status, XMLHttpRequest) {
-								if(data.code != 1)
-								{
-									BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
-									modalLoadingGif('remove');
-								}
-								else
-								{	
-									BBTree.reportAction(['removt',1,BBTreeModal.taggedName,removeTagLabel(BBTreeModal.taggedParent)]);
-									BBTreeModal.removeTag.removeInline(tagRemove.parentId);
-								}
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
+					cj.ajax({
+						url: '/civicrm/ajax/tag/delete',
+						data: {
+							id: tagRemove.parentId,
+							call_uri: window.location.href
+						},
+						dataType: 'json',
+						success: function(data, status, XMLHttpRequest) {
+							if(data.code != 1)
+							{
+								BBTree.reportAction(['removt',0,BBTreeModal.taggedName, tagRemove.parentId, data.message]);
+								modalLoadingGif('remove');
 							}
-						});
-					} else {
-						alert("Cannot remove a parent tag. Try deleting subtags before deleting parent tag.");
-						modalLoadingGif('remove');
-					}
-
+							else
+							{	
+								BBTree.reportAction(['removt',1,BBTreeModal.taggedName,removeTagLabel(BBTreeModal.taggedParent)]);
+								BBTreeModal.removeTag.removeInline(tagRemove.parentId);
+							}
+							cj('#BBDialog').dialog('close');
+							cj('#BBDialog').dialog('destroy');
+						}
+					});
 				}
 			},
 			{

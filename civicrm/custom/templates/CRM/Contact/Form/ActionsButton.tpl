@@ -63,7 +63,7 @@
                  {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
                  {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
                      {assign var='deleteParams' value=$urlParams|cat:"&reset=1&delete=1&cid=$contactId"}
-                     <li class="crm-delete-action crm-contact-delete">
+                     <li class="crm-delete-action crm-contact-delete-action">
                          <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete" title="{ts}Delete{/ts}">
                          <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
                          </a>
