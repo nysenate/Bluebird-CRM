@@ -365,6 +365,14 @@ class CRM_migrateContactsImport {
                 self::_importAPI($type, 'create', $record);
                 break;
 
+              case 'note':
+                if ( empty($record['modified_date']) ) {
+                  $record['modified_date'] = '2009-12-31';
+                }
+                $record[$fk] = $contactID;
+                self::_importAPI($type, 'create', $record);
+                break;
+
               default:
                 $record[$fk] = $contactID;
                 self::_importAPI($type, 'create', $record);
@@ -519,7 +527,7 @@ class CRM_migrateContactsImport {
     //process issue codes
     //begin by constructing base level tag
     $params = array(
-      'name' => "Migrated from: {$exportData['source']['name']} ({$exportData['source']['num']})",
+      'name' => "Migrated from: {$exportData['source']['name']} (SD{$exportData['source']['num']})",
       'description' => 'Tags migrated from other district',
       'parent_id' => 291,
     );
