@@ -197,10 +197,11 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
     $params = array();
     $whereClause = "$mailingACL AND " . $this->whereClause($params);
 
+    //NYSS 6006 added addition ON clauses to mailing_job to match getRows
     $query = "
    SELECT  COUNT( DISTINCT $mailing.id ) as count
      FROM  $mailing
-LEFT JOIN  $job ON ( $mailing.id = $job.mailing_id) 
+LEFT JOIN  $job ON ( $mailing.id = $job.mailing_id AND civicrm_mailing_job.is_test = 0 AND civicrm_mailing_job.parent_id IS NULL )
 LEFT JOIN  civicrm_contact createdContact   ON ( $mailing.created_id   = createdContact.id )
 LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = scheduledContact.id ) 
     WHERE  $whereClause";
