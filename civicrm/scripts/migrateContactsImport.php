@@ -367,7 +367,7 @@ class CRM_migrateContactsImport {
 
               case 'note':
                 if ( empty($record['modified_date']) ) {
-                  $record['modified_date'] = '2009-12-31';
+                  $record['modified_date'] = '2009-09-30';
                 }
                 $record[$fk] = $contactID;
                 self::_importAPI($type, 'create', $record);
