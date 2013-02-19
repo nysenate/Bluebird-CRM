@@ -198,142 +198,81 @@ UPDATE civicrm_log
   //NYSS 5173 calculate log records using enhanced logging
   static function getEnhancedContactLogCount( $contactID ) {
 
+    $rptSummary = new CRM_Logging_ReportSummary();
+    //CRM_Core_Error::debug_var('rptSummary',$rptSummary);
+
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
     $loggingDB = $dsn['database'];
 
     $bbconfig = get_bluebird_instance_config();
     $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
 
-    $counts = array();
-    $tblKey = array(
-      'civicrm_contact' =>
-      array(
-        'id'     => 'id',
-        'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
-      ),
-      'civicrm_phone' =>
-      array(
-        'id' => 'contact_id',
-      ),
-      'civicrm_email' =>
-      array(
-        'id' => 'contact_id',
-      ),
-      'civicrm_im' =>
-      array(
-        'id' => 'contact_id',
-      ),
-      /*'civicrm_website' =>
-      array(
-        'id' => 'contact_id',
-      ),*/
-      'civicrm_address' =>
-      array(
-        'id' => 'contact_id',
-      ),
-      'civicrm_entity_tag' =>
-      array(
-        'id'     => 'entity_id',
-        'where'  => 'entity_table = "civicrm_contact"'
-      ),
-      'civicrm_note' =>
-      array(
-        'id'     => 'entity_id',
-        'where'  => 'entity_table = "civicrm_contact"'
-      ),
-      'civicrm_comments' =>
-      array(
-        'table'  => 'civicrm_note',
-        'id'     => 'n.entity_id',
-        'join'   => "JOIN $loggingDB.log_civicrm_note n
-                     ON civicrm_comments.entity_id = n.id
-                     AND n.log_action = 'Insert'",
-        'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
-      ),
-      'civicrm_group_contact' =>
-      array(
-        'id'     => 'contact_id',
-        'noinit' => TRUE,
-        'join'   => "JOIN (
-                       SELECT id, name, title, is_hidden
-                       FROM $loggingDB.log_civicrm_group
-                       GROUP BY id ) cg
-                     ON civicrm_group_contact.group_id = cg.id",
-        'where'  => "cg.is_hidden != 1
-                     AND log_action != 'Initialization'",
-      ),
-      'civicrm_relationship_a' =>
-      array(
-        'id'     => 'contact_id_a',
-        'table'  => 'civicrm_relationship',
-      ),
-      'civicrm_relationship_b' =>
-      array(
-        'id'     => 'contact_id_b',
-        'table'  => 'civicrm_relationship',
-      ),
-      'civicrm_value_constituent_information_1' =>
-      array(
-        'id' => 'entity_id',
-      ),
-      'civicrm_value_contact_details_8' =>
-      array(
-        'id' => 'entity_id',
-      ),
-      'civicrm_value_organization_constituent_informa_3' =>
-      array(
-        'id' => 'entity_id',
-      ),
-    );
+    CRM_Core_DAO::executeQuery('DROP TABLE IF EXISTS civicrm_temp_logcount');
+    $sql = "
+      CREATE TEMPORARY TABLE civicrm_temp_logcount (
+        id int(10),
+        log_type varchar(64),
+        log_user_id int(10),
+        log_date timestamp,
+        altered_contact varchar(128),
+        altered_contact_id int(10),
+        log_conn_id int(11),
+        log_action varchar(64),
+        is_deleted tinyint(4),
+        display_name varchar(128) ) ENGINE=HEAP";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $logTables = $rptSummary->getVar('_logTables');
+
+    foreach ( $logTables as $entity => $detail ) {
+      //CRM_Core_Error::debug_var('entity',$entity);
+      //CRM_Core_Error::debug_var('detail',$detail);
+
+      $from = "FROM {$loggingDB}.{$entity} entity_log_civireport";
+      if ( $entity == 'log_civicrm_note_comment' ) {
+        $from = "
+          FROM {$loggingDB}.log_civicrm_note entity_log_civireport
+          INNER JOIN {$loggingDB}.log_civicrm_note note
+            ON entity_log_civireport.entity_id = note.id
+            AND entity_log_civireport.entity_table = 'civicrm_note'";
+      }
+
+      $sql = "
+        SELECT entity_log_civireport.id as log_civicrm_entity_id, entity_log_civireport.log_type as log_civicrm_entity_log_type, entity_log_civireport.log_user_id as log_civicrm_entity_log_user_id, entity_log_civireport.log_date as log_civicrm_entity_log_date, modified_contact_civireport.display_name as log_civicrm_entity_altered_contact, modified_contact_civireport.id as log_civicrm_entity_altered_contact_id, entity_log_civireport.log_conn_id as log_civicrm_entity_log_conn_id, entity_log_civireport.log_action as log_civicrm_entity_log_action, modified_contact_civireport.is_deleted as log_civicrm_entity_is_deleted, altered_by_contact_civireport.display_name as altered_by_contact_display_name
+        {$from}
+        INNER JOIN {$civiDB}.civicrm_contact modified_contact_civireport
+          ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id )
+        LEFT JOIN {$civiDB}.civicrm_contact altered_by_contact_civireport
+          ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)
+        WHERE ( modified_contact_civireport.id = {$contactID} )
+          AND (entity_log_civireport.log_action != 'Initialization')
+        GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id
+      ";
+      $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
+      $sql = "INSERT IGNORE INTO civicrm_temp_logcount {$sql}";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
+    $sql = "
+      SELECT *
+      FROM civicrm_temp_logcount
+      ORDER BY log_date DESC;
+    ";
+    $logs = CRM_Core_DAO::executeQuery($sql);
 
     $logRows = array();
-    foreach ( $tblKey as $tbl => $details ) {
-      $alias = $tbl;
-      if ( isset($details['table']) && $details['table'] ) {
-        $tbl = $details['table'];
-      }
-
-      $sql = "SELECT {$alias}.id, 'log_{$tbl}' as log_type, {$alias}.log_conn_id, {$alias}.log_date
-              FROM $loggingDB.log_{$tbl} $alias
-              {$details['join']}
-              WHERE {$details['id']} = $contactID";
-      if ( !isset($details['noinit']) || !$details['noinit'] ) {
-        $sql .= " AND ($alias.log_action != 'Initialization') ";
-      }
-      if ( isset($details['where']) && $details['where'] ) {
-        $sql .= " AND {$details['where']} ";
-      }
-      if ( isset($details['group']) && $details['group'] ) {
-        $sql .= " GROUP BY {$details['group']} ";
-
-        //now wrap in a subquery to get total count
-        //$sql = "SELECT count(*) FROM ( $sql ) tmp";
-      }
-      //CRM_Core_Error::debug_var('sql',$sql);
-      $logs = CRM_Core_DAO::executeQuery($sql);
-
-      while ( $logs->fetch() ) {
-        $logRows[] = array(
-          'log_civicrm_entity_log_type' => $logs->log_type,
-          'log_civicrm_entity_log_date' => $logs->log_date,
-          'log_civicrm_entity_log_conn_id' => $logs->log_conn_id,
-        );
-      }
-
-      $sqlCount = "SELECT count(*) FROM ( $sql ) tmp";
-      $counts[$alias] = CRM_Core_DAO::singleValueQuery($sqlCount);
+    while ( $logs->fetch() ) {
+      $logRows[] = array(
+        'log_civicrm_entity_log_type' => $logs->log_type,
+        'log_civicrm_entity_log_date' => $logs->log_date,
+        'log_civicrm_entity_log_conn_id' => $logs->log_conn_id,
+        'log_civicrm_entity_log_action' => $logs->log_action,
+      );
     }
 
     CRM_Logging_ReportSummary::_combineContactRows($logRows);
     //CRM_Core_Error::debug_var('$logRows',$logRows);
     //CRM_Core_Error::debug_var('$counts',$counts);
-
-    /*$totalCount = 0;
-    foreach ( $counts as $count ) {
-      if ( $count ) {
-        $totalCount += $count;
-      }
-    }*/
 
     $totalCount = count($logRows);
 

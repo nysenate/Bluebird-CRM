@@ -82,12 +82,13 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
                  'entity_table'  => true
                  ),
           'log_civicrm_relationship' =>
-          array( 'fk'  => 'contact_id_a',
-                 'entity_column' => 'relationship_type_id',
+          array(
+            'fk'  => 'contact_id_a',
+            'entity_column' => 'relationship_type_id',
             'dao_log_table' => 'log_civicrm_relationship_type',
-                 'dao_column' => 'label_a_b',
-                 ),
-           );
+            'dao_column' => 'label_a_b',
+          ),
+        );
 
   protected $loggingDB;
 
@@ -185,6 +186,7 @@ CREATE TEMPORARY TABLE
           CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')) {
         $this->from( $entity );
         $sql = $this->buildQuery(false);
+        //CRM_Core_Error::debug_var('sql',$sql);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
         $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
         CRM_Core_DAO::executeQuery($sql);
@@ -273,14 +275,16 @@ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
   //NYSS
   static
   function _combineContactRows(&$rows) {
-    //if log_type in contact set, and log_date same, and conn_id same, combine
+    //if log_type in contact set, and log_date, conn_id same, combine
     $rowKeys = array();
     $logTypes = array(
       'log_civicrm_contact',
       'log_civicrm_address',
-      'log_civicrm_value_constituent_information_1',
       'log_civicrm_email',
       'log_civicrm_phone',
+      'log_civicrm_value_constituent_information_1',
+      'log_civicrm_value_attachments_5',
+      'log_civicrm_value_contact_details_8',
     );
 
     //sort so that Insert is preserved when it exists
@@ -288,6 +292,7 @@ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
 
     foreach ( $rows as $k => $row ) {
       $keyDate = substr($row['log_civicrm_entity_log_date'], 0, strlen($row['log_civicrm_entity_log_date']) - 3);
+      //$key = "{$row['log_civicrm_entity_log_conn_id']}_{$row['log_civicrm_entity_log_action']}_{$keyDate}";
       $key = "{$row['log_civicrm_entity_log_conn_id']}_{$keyDate}";
       if ( in_array($row['log_civicrm_entity_log_type'], $logTypes) ) {
         if ( in_array($key, $rowKeys) ) {
