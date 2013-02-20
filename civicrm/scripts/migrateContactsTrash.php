@@ -130,6 +130,11 @@ class CRM_migrateContactsTrash {
       default:
     }
 
+    //cleanup trashedIDs and remove duplicates
+    foreach( $trashedIDs as $type => $trashedByType ) {
+      $trashedIDs[$type] = array_unique($trashedByType);
+    }
+
     //process orgs and remove from trash list if various criteria met
     self::_trashOrgs($trashedIDs, $source, $trashopt, $employers);
 
@@ -347,24 +352,26 @@ class CRM_migrateContactsTrash {
       if ( empty($trashedIDs['Organization']) )
         return;
 
-      //rebuild orgList
-      $orgList = implode(', ', $trashedIDs['Organization']);
-      $indivList = implode(', ', $trashedIDs['Individual']);
-
       //get relationships with org where related record is not in indiv list
-      $sql = "
-        SELECT $c1
-        FROM civicrm_relationship
-        WHERE $c1 IN ({$orgList})
-          AND $c2 NOT IN ({$indivList})
-          AND is_active = 1
-      ";
-      $rels = CRM_Core_DAO::executeQuery($sql);
-      while ( $rels->fetch() ) {
-        if ( in_array($rels->$c1, $trashedIDs['Organization']) ) {
-          $key = array_search($rels->$c1, $trashedIDs['Organization']);
-          $trashedIDs['OrgsRetained'][$key] = $orgsInDistrict->contact_id;
-          unset($trashedIDs['Organization'][$key]);
+      if ( !empty($trashedIDs['Organization']) && !empty($trashedIDs['Individual']) ) {
+        //rebuild orgList and indivList
+        $orgList = implode(', ', $trashedIDs['Organization']);
+        $indivList = implode(', ', $trashedIDs['Individual']);
+
+        $sql = "
+          SELECT $c1
+          FROM civicrm_relationship
+          WHERE $c1 IN ({$orgList})
+            AND $c2 NOT IN ({$indivList})
+            AND is_active = 1
+        ";
+        $rels = CRM_Core_DAO::executeQuery($sql);
+        while ( $rels->fetch() ) {
+          if ( in_array($rels->$c1, $trashedIDs['Organization']) ) {
+            $key = array_search($rels->$c1, $trashedIDs['Organization']);
+            $trashedIDs['OrgsRetained'][$key] = $orgsInDistrict->contact_id;
+            unset($trashedIDs['Organization'][$key]);
+          }
         }
       }
     }
