@@ -138,6 +138,8 @@ class CRM_migrateContactsTrash {
     //process orgs and remove from trash list if various criteria met
     self::_trashOrgs($trashedIDs, $source, $trashopt, $employers);
 
+    self::_tagContacts($trashedIDs, $dest);
+
     $totalCount = 0;
     foreach ( $trashContactTypes as $type ) {
       if ( empty($trashedIDs[$type]) ) {
@@ -377,6 +379,35 @@ class CRM_migrateContactsTrash {
     }
     //bbscript_log("trace", '_trashOrgs $trashedIDs after relationships', $trashedIDs['Organization']);
   }//_trashOrgs
+
+  //tag all contacts to be trashed
+  function _tagContacts($trashedIDs, $dest) {
+    //create tag
+    $params = array(
+      'version' => 3,
+      'name' => 'Redist2013 Trashed SD'.$dest['num'],
+      'description' => "Out of district contacts trashed from redistricting ({$dest['name']}).",
+      'parent_id' => 296, //keywords
+    );
+    $tag = civicrm_api('tag', 'create', $params);
+
+    foreach ( $trashedIDs as $type => $contacts ) {
+      if ( $type == 'OrgsRetained' ) {
+        continue;
+      }
+
+      $params = array(
+        'version' => 3,
+        'tag_id' => $tag['id'],
+      );
+      foreach ( $contacts as $k => $contactID ) {
+        $params['contact_id.'.$k] = $contactID;
+      }
+
+      $entityTags = civicrm_api('entity_tag', 'create', $params);
+      //bbscript_log("trace", '_tagContacts $entityTags', $entityTags);
+    }
+  }
 
 }//end class
 
