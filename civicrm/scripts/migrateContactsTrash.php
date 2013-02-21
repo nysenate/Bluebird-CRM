@@ -20,13 +20,13 @@ class CRM_migrateContactsTrash {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = "d:t:en";
-    $longopts = array("dest=", "trash=", "employers", "dryrun");
+    $shortopts = "d:t:en:y";
+    $longopts = array("dest=", "trash=", "employers", "dryrun", "types=");
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--trash OPTION] [--employers] [--dryrun]';
+        $usage = '[--dest ID|DISTNAME] [--trash OPTION] [--employers] [--dryrun] [--types IHO]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
@@ -95,19 +95,40 @@ class CRM_migrateContactsTrash {
       exit();
     }
 
+    //determine if we need to restrict by contact type
+    $types = array();
+    if ( $optlist['types'] ) {
+      $cTypes = array(
+        'I' => 'Individual',
+        'H' => 'Household',
+        'O' => 'Organization',
+      );
+      $types = str_split($optlist['types']);
+      foreach ( $types as $type ) {
+        if ( !in_array(strtoupper($type), array('I','H','O')) ) {
+          bbscript_log("fatal", "You selected invalid options for the contact type parameter. Please enter any combination of IHO (individual, household, organization), with no spaces between the characters.");
+          exit();
+        }
+        else {
+          $cTypesInclude[] = $cTypes[$type];
+          bbscript_log("info", "{$cTypes[$type]} contacts will be included.");
+        }
+      }
+    }
+
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
     $session = CRM_Core_Session::singleton();
 
-    self::trashContacts($source, $dest, $optlist['trash'], $optlist['employers'], $optlist['dryrun']);
+    self::trashContacts($source, $dest, $optlist['trash'], $optlist['employers'], $optlist['dryrun'], $cTypesInclude);
   }//run
 
   /*
    * trash contacts in source database using options
    * we use the api to ensure all associated records are dealt with correctly
    */
-  function trashContacts($source, $dest, $trashopt, $employers = FALSE, $optDry) {
+  function trashContacts($source, $dest, $trashopt, $employers = FALSE, $optDry, $cTypesInclude) {
 
     if ( $trashopt == 'none' ) {
       bbscript_log("info", "No records trashed (trash action = none).");
@@ -117,8 +138,13 @@ class CRM_migrateContactsTrash {
     bbscript_log("info", "Starting trashing process.");
     bbscript_log("info", "Removing district {$dest['num']} contacts from district {$source['num']} database.");
 
-    $trashedIDs = array();
-    $trashContactTypes = array( 'Individual', 'Organization', 'Household' );
+    $trashedIDs = $trashContactTypes = array();
+    if ( !empty($cTypesInclude) ) {
+      $trashContactTypes = $cTypesInclude;
+    }
+    else {
+      $trashContactTypes = array( 'Individual', 'Organization', 'Household' );
+    }
 
     switch ( $trashopt ) {
       case 'migrated':
@@ -132,6 +158,10 @@ class CRM_migrateContactsTrash {
 
     //cleanup trashedIDs and remove duplicates
     foreach( $trashedIDs as $type => $trashedByType ) {
+      if ( !in_array($type, $trashContactTypes) && $type != 'OrgsRetained' ) {
+        unset($trashedIDs[$type]);
+        continue;
+      }
       $trashedIDs[$type] = array_unique($trashedByType);
     }
 
