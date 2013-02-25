@@ -348,7 +348,7 @@ class CRM_migrateContactsTrash {
     //bbscript_log("trace", '_trashOrgs $trashedIDs after in district', $trashedIDs['Organization']);
 
     //remove orgs with meaningful data
-    $valueAdded = array(
+    /*$valueAdded = array(
       'email' => 'contact_id',
       'activity_target' => 'target_contact_id',
       'note' => 'entity_id',
@@ -377,7 +377,7 @@ class CRM_migrateContactsTrash {
           unset($trashedIDs['Organization'][$key]);
         }
       }
-    }
+    }*/
     //bbscript_log("trace", '_trashOrgs $trashedIDs after value records', $trashedIDs['Organization']);
 
     //remove orgs with relationships
