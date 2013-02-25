@@ -16,7 +16,6 @@
 // http://dev.nysenate.gov/projects/2012_redistricting/wiki/Redistricting_Process_Flow
 // and Issue 5940: http://dev.nysenate.gov/issues/5940
 //-------------------------------------------------------------------------------------
-
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
@@ -427,9 +426,9 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 	$contact_query = 
 		"SELECT * FROM (
 			SELECT DISTINCT contact.id AS contact_id, contact.contact_type, contact.first_name, contact.last_name,
-			                contact.birth_date, contact.gender_id,
+			                contact.birth_date, contact.gender_id, 
 			                contact.household_name, contact.organization_name, contact.is_deceased, contact.source,
-			                constituent.contact_source_60 AS const_source,
+			                constituent.contact_source_60 AS const_source, phone.phone AS phone,
 			                a.street_address, a.city, a.postal_code,
 			                email.email, email.is_primary, district.ny_senate_district_47 AS district,
 
@@ -447,6 +446,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id			
 			LEFT JOIN `civicrm_value_constituent_information_1` constituent on contact.id = constituent.entity_id  
 			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id
+			LEFT JOIN `civicrm_phone` phone ON contact.id = phone.contact_id
 
 	   		# Counts of cases
 	        LEFT JOIN `civicrm_case_contact` case_contact ON contact.id = case_contact.contact_id
@@ -476,7 +476,16 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 				  AND c.email IS NULL
 				  AND case_count = 0
 				  AND activity_count = 0
+				  AND phone IS NULL
 
+				  # Check if contact has any non-boe addresses
+				  AND c.contact_id NOT IN (
+				  	SELECT address.contact_id
+				  	FROM `civicrm_address` AS address
+				  	WHERE address.location_type_id != 6 AND 
+				  	      address.location_type_id != 13
+				  )
+			      
 			      # Check if contact has any non-default notes
 			      AND c.contact_id NOT IN (
 			        SELECT note.entity_id
