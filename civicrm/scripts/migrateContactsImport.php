@@ -134,7 +134,7 @@ class CRM_migrateContactsImport {
 
     //process the import
     self::importAttachments($exportData);
-    self::importContacts($exportData, $statsTemp);
+    self::importContacts($exportData, $statsTemp, $bbAdmin);
     self::importActivities($exportData, $bbAdmin);
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
@@ -246,7 +246,7 @@ class CRM_migrateContactsImport {
     }
   }//importAttachments
 
-  function importContacts($exportData, &$stats) {
+  function importContacts($exportData, &$stats, $bbAdmin) {
     global $optDry;
     global $extInt;
     global $mergedContacts;
@@ -370,6 +370,7 @@ class CRM_migrateContactsImport {
                   $record['modified_date'] = '2009-09-30';
                 }
                 $record[$fk] = $contactID;
+                $record['contact_id'] = $bbAdmin;
                 self::_importAPI($type, 'create', $record);
                 break;
 
@@ -399,6 +400,11 @@ class CRM_migrateContactsImport {
       unset($params['parent_id']);
       unset($params['original_id']);
       unset($params['entity_id']);
+
+      //prevent error if subject is missing
+      if ( empty($params['subject']) ) {
+        $params['subject'] = '(none)';
+      }
 
       $targets = array();
       foreach ( $details['targets'] as $tExtID ) {
@@ -434,6 +440,9 @@ class CRM_migrateContactsImport {
       return;
     }
 
+    //store old->new activity ID so we can set original id value
+    $oldNewActID = array();
+
     //cycle through contacts
     foreach ( $exportData['cases'] as $extID => $cases ) {
       $contactID = $extInt[$extID];
@@ -446,17 +455,42 @@ class CRM_migrateContactsImport {
         $case['contact_id'] = $contactID;
         $case['creator_id'] = $bbAdmin;
         //$case['debug'] = 1;
+
+        //prevent error if case subject is missing
+        if ( empty($case['subject']) ) {
+          $case['subject'] = '(none)';
+        }
+
         $newCase = self::_importAPI('case', 'create', $case);
         //bbscript_log("trace", "importCases newCase", $newCase);
 
         $caseID = $newCase['id'];
 
-        foreach ( $activities as $activity ) {
+        foreach ( $activities as $oldID => $activity ) {
           $activity['source_contact_id'] = $bbAdmin;
           $activity['target_contact_id'] = $contactID;
           $activity['case_id'] = $caseID;
+
+          //check for and reset original_id
+          if ( !empty($activity['original_id']) ) {
+            if ( array_key_exists($activity['original_id'], $oldNewActID) ) {
+              $activity['original_id'] = $oldNewActID[$activity['original_id']];
+            }
+            elseif ( !$optDry ) {
+              bbscript_log("debug", "Unable to set the original_id for case activity.", $activity);
+              unset($activity['original_id']);
+            }
+          }
+
+          //prevent error if subject is missing
+          if ( empty($activity['subject']) ) {
+            $activity['subject'] = '(none)';
+          }
+
           $newActivity = self::_importAPI('activity', 'create', $activity);
           //bbscript_log("trace", 'importCases newActivity', $newActivity);
+
+          $oldNewActID[$oldID] = $newActivity['id'];
 
           //handle attachments
           if ( isset($activity['attachments']) ) {
@@ -995,11 +1029,13 @@ class CRM_migrateContactsImport {
         //bbscript_log("trace", "_fillContact data: $set", $data);
 
         //cycle through existing custom data and unset from $details if value exists
-        foreach ( $data['values'] as $custFID => $existingData ) {
-          //TODO should probably handle attachments more intelligently
-          if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
-            $colName = $customMapID[$set][$custFID];
-            unset($details[$set][$colName]);
+        if ( !empty($data['values']) ) {
+          foreach ( $data['values'] as $custFID => $existingData ) {
+            //TODO should probably handle attachments more intelligently
+            if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
+              $colName = $customMapID[$set][$custFID];
+              unset($details[$set][$colName]);
+            }
           }
         }
       }

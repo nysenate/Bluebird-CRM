@@ -31,9 +31,13 @@ class CRM_migrateContactsTrash {
         exit(1);
     }
 
-    if ( empty($optlist['dest']) || empty($optlist['trash']) ) {
-      bbscript_log("fatal", "The destination and trash options must be defined.");
+    if ( empty($optlist['dest']) ) {
+      bbscript_log("fatal", "The destination option must be defined.");
       exit();
+    }
+
+    if ( empty($optlist['trash']) ) {
+      $optlist['trash'] = 'migrated';
     }
 
     //get instance settings for source and destination
@@ -111,7 +115,7 @@ class CRM_migrateContactsTrash {
         }
         else {
           $cTypesInclude[] = $cTypes[$type];
-          bbscript_log("info", "{$cTypes[$type]} contacts will be included.");
+          bbscript_log("info", "{$cTypes[$type]} contacts will be trashed.");
         }
       }
     }
