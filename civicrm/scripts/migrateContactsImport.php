@@ -134,7 +134,7 @@ class CRM_migrateContactsImport {
 
     //process the import
     self::importAttachments($exportData);
-    self::importContacts($exportData, $statsTemp);
+    self::importContacts($exportData, $statsTemp, $bbAdmin);
     self::importActivities($exportData, $bbAdmin);
     self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
@@ -246,7 +246,7 @@ class CRM_migrateContactsImport {
     }
   }//importAttachments
 
-  function importContacts($exportData, &$stats) {
+  function importContacts($exportData, &$stats, $bbAdmin) {
     global $optDry;
     global $extInt;
     global $mergedContacts;
@@ -318,34 +318,65 @@ class CRM_migrateContactsImport {
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
           foreach ( $details[$type] as $record ) {
-            //handle attachments via sql rather than API
-            if ( $type == 'Attachments' ) {
-              $attachSqlEle = array();
+            switch( $type ) {
+              case 'Attachments':
+                //handle attachments via sql rather than API
+                $attachSqlEle = array();
 
-              //get new attachment IDs
-              foreach ( $record as $attF => $attV ) {
-                if ( !empty($attV) ) {
-                  $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
+                //get new attachment IDs
+                foreach ( $record as $attF => $attV ) {
+                  if ( !empty($attV) ) {
+                    $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
+                  }
                 }
-              }
-              $attachSql = "
-                INSERT IGNORE INTO civicrm_value_attachments_5
-                (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
-                VALUES
-                ({$contactID}, ".implode(', ', $attachSqlEle).")
-              ";
-              //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
+                $attachSql = "
+                  INSERT IGNORE INTO civicrm_value_attachments_5
+                  (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
+                  VALUES
+                  ({$contactID}, ".implode(', ', $attachSqlEle).")
+                ";
+                //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
 
-              if ( $optDry ) {
-                bbscript_log("debug", "importing attachments for contact", $record);
-              }
-              else {
-                CRM_Core_DAO::executeQuery($attachSql);
-              }
-            }
-            else {
-              $record[$fk] = $contactID;
-              self::_importAPI($type, 'create', $record);
+                if ( $optDry ) {
+                  bbscript_log("debug", "importing attachments for contact", $record);
+                }
+                else {
+                  CRM_Core_DAO::executeQuery($attachSql);
+                }
+                break;
+
+              case 'address':
+                //need to fix location types so we don't overwrite
+                $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
+                if ( !empty($existingAddresses) ) {
+                  if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
+                    //bbscript_log("trace", 'importContacts $record', $record);
+                    //attempt to assign to other, other2, main, main2
+                    foreach ( array(4,11,3, 12) as $newLocType ) {
+                      if ( !array_key_exists($newLocType, $existingAddresses) ) {
+                        $record['location_type_id'] = $newLocType;
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                $record[$fk] = $contactID;
+                self::_importAPI($type, 'create', $record);
+                break;
+
+              case 'note':
+                if ( empty($record['modified_date']) ) {
+                  $record['modified_date'] = '2009-09-30';
+                }
+                $record[$fk] = $contactID;
+                $record['contact_id'] = $bbAdmin;
+                self::_importAPI($type, 'create', $record);
+                break;
+
+              default:
+                $record[$fk] = $contactID;
+                self::_importAPI($type, 'create', $record);
             }
           }
         }
@@ -369,6 +400,11 @@ class CRM_migrateContactsImport {
       unset($params['parent_id']);
       unset($params['original_id']);
       unset($params['entity_id']);
+
+      //prevent error if subject is missing
+      if ( empty($params['subject']) ) {
+        $params['subject'] = '(none)';
+      }
 
       $targets = array();
       foreach ( $details['targets'] as $tExtID ) {
@@ -404,6 +440,9 @@ class CRM_migrateContactsImport {
       return;
     }
 
+    //store old->new activity ID so we can set original id value
+    $oldNewActID = array();
+
     //cycle through contacts
     foreach ( $exportData['cases'] as $extID => $cases ) {
       $contactID = $extInt[$extID];
@@ -416,17 +455,42 @@ class CRM_migrateContactsImport {
         $case['contact_id'] = $contactID;
         $case['creator_id'] = $bbAdmin;
         //$case['debug'] = 1;
+
+        //prevent error if case subject is missing
+        if ( empty($case['subject']) ) {
+          $case['subject'] = '(none)';
+        }
+
         $newCase = self::_importAPI('case', 'create', $case);
         //bbscript_log("trace", "importCases newCase", $newCase);
 
         $caseID = $newCase['id'];
 
-        foreach ( $activities as $activity ) {
+        foreach ( $activities as $oldID => $activity ) {
           $activity['source_contact_id'] = $bbAdmin;
           $activity['target_contact_id'] = $contactID;
           $activity['case_id'] = $caseID;
+
+          //check for and reset original_id
+          if ( !empty($activity['original_id']) ) {
+            if ( array_key_exists($activity['original_id'], $oldNewActID) ) {
+              $activity['original_id'] = $oldNewActID[$activity['original_id']];
+            }
+            elseif ( !$optDry ) {
+              bbscript_log("debug", "Unable to set the original_id for case activity.", $activity);
+              unset($activity['original_id']);
+            }
+          }
+
+          //prevent error if subject is missing
+          if ( empty($activity['subject']) ) {
+            $activity['subject'] = '(none)';
+          }
+
           $newActivity = self::_importAPI('activity', 'create', $activity);
           //bbscript_log("trace", 'importCases newActivity', $newActivity);
+
+          $oldNewActID[$oldID] = $newActivity['id'];
 
           //handle attachments
           if ( isset($activity['attachments']) ) {
@@ -497,7 +561,7 @@ class CRM_migrateContactsImport {
     //process issue codes
     //begin by constructing base level tag
     $params = array(
-      'name' => "Migrated from: {$exportData['source']['name']} ({$exportData['source']['num']})",
+      'name' => "Migrated from: {$exportData['source']['name']} (SD{$exportData['source']['num']})",
       'description' => 'Tags migrated from other district',
       'parent_id' => 291,
     );
@@ -925,7 +989,7 @@ class CRM_migrateContactsImport {
 
     foreach ( $contact as $f => $v ) {
       //if existing record field has a value, remove from imported record array
-      if ( (!empty($v) && $v === 0) &&
+      if ( (!empty($v) || $v == '0') &&
         isset($details['contact'][$f]) &&
         $f != 'source' &&
         $f != 'external_identifier' ) {
@@ -965,11 +1029,13 @@ class CRM_migrateContactsImport {
         //bbscript_log("trace", "_fillContact data: $set", $data);
 
         //cycle through existing custom data and unset from $details if value exists
-        foreach ( $data['values'] as $custFID => $existingData ) {
-          //TODO should probably handle attachments more intelligently
-          if ( !empty($existingData['latest']) && $existingData['latest'] === 0 ) {
-            $colName = $customMapID[$set][$custFID];
-            unset($details[$set][$colName]);
+        if ( !empty($data['values']) ) {
+          foreach ( $data['values'] as $custFID => $existingData ) {
+            //TODO should probably handle attachments more intelligently
+            if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
+              $colName = $customMapID[$set][$custFID];
+              unset($details[$set][$colName]);
+            }
           }
         }
       }

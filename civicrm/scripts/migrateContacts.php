@@ -302,8 +302,9 @@ class CRM_migrateContacts {
     //trash contacts in source db after migration IF specifically requested
     if ( isset($optlist['trash']) && $optlist['trash'] != 'none' ) {
       $emplParam = ($optlist['employers']) ? "--employers" : '';
+      $typesParam = ($optlist['types']) ? "--types={$optlist['types']}" : '';
 
-      $importScript = "php {$scriptPath}/migrateContactsTrash.php -S {$source['name']} --dest={$dest['name']} --trash={$optlist['trash']} {$emplParam} {$dryParam}";
+      $importScript = "php {$scriptPath}/migrateContactsTrash.php -S {$source['name']} --dest={$dest['name']} --trash={$optlist['trash']} {$emplParam} {$typesParam} {$dryParam}";
       //bbscript_log("trace", "importScript: $importScript");
       system($importScript);
 
@@ -964,7 +965,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           $activity['attachments'][] = $actAttach->file_id;
         }
 
-        $caseActivities[] = $activity;
+        $caseActivities[$actID] = $activity;
       }
 
       //assign activities

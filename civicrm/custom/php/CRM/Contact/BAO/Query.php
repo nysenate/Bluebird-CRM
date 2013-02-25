@@ -3571,6 +3571,13 @@ WHERE  id IN ( $groupIDs )
         $onlyDeleted = false;
         $onlyDeleted = in_array(array('deleted_contacts', '=', '1', '0', '0'), $this->_params);
 
+        //NYSS 6287 check if we need to skipDeleteClause
+        $session = CRM_Core_Session::singleton();
+        if ( $session->get('skipDeleteClause') && !$this->_skipDeleteClause ) {
+          $this->_skipDeleteClause = TRUE;
+          $session->set('skipDeleteClause', FALSE);
+        }
+
         // if we’re explicitely looking for a certain contact’s contribs, events, etc.
         // and that contact happens to be deleted, set $onlyDeleted to true
         foreach ($this->_params as $values) {
