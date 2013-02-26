@@ -1081,7 +1081,7 @@ var BBTreeModal = {
 				this.currentSettings['title'] = 'Convert Keyword to Tag';
 				break;
 		}
-		if(BBTreeModal.taggedChildren > 0) //if there's children, you might get an early warning.
+		if(BBTreeModal.taggedChildren > 0 && this.taggedMethod != 'add' && this.taggedMethod != 'update' ) //if there's children, you might get an early warning.
 		{
 			addDialogText = this.taggedName + ' cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Make sure any child tags are ' + this.currentSettings.actionName + ' first.';
 		}
