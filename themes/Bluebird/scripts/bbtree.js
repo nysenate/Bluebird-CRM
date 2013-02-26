@@ -898,6 +898,7 @@ var BBTreeModal = {
 		modal: true,
 		resizable: false,
 		bgiframe: true,
+		ysnp: false,
 		close: function() {
 			callTree.currentSettings.displaySettings.currentTree = removeTagLabel(cj(aIDSel(callTree.currentSettings.pageSettings.wrapper)+aCSel(BBTreeModal.parentInstance)+' '+aCSel(callTree.currentSettings.pageSettings.tagHolder)).not('.hidden').attr('id')) ;
 			if(callTree.currentSettings.displaySettings.buttonType == 'modal')
@@ -1081,12 +1082,14 @@ var BBTreeModal = {
 				this.currentSettings['title'] = 'Convert Keyword to Tag';
 				break;
 		}
-		if(BBTreeModal.taggedChildren > 0 && this.taggedMethod != 'add' && this.taggedMethod != 'update' ) //if there's children, you might get an early warning.
+		if(BBTreeModal.taggedChildren > 0  && this.taggedMethod != 'add' && this.taggedMethod != 'update') //if there's children, you might get an early warning.
 		{
 			addDialogText = this.taggedName + ' cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Make sure any child tags are ' + this.currentSettings.actionName + ' first.';
+			this.currentSettings.ysnp = true;
 		}
 		if(this.taggedReserved){
 			addDialogText = this.taggedName + ' is reserved and cannot be ' + this.currentSettings.actionName + '. <br /> <br /> Try updating tag first.';
+			this.currentSettings.ysnp = true;
 		}
 		return addDialogText;
 	},
@@ -1401,6 +1404,10 @@ var BBTreeModal = {
 
 		},
 		runFunction: function(){
+			if(BBTreeModal.escapeModalCheck() == true)
+			{
+				return true;
+			}
 			cj("#BBDialog").dialog( "option", "buttons", [
 			{
 				text: "Done",
@@ -1455,6 +1462,10 @@ var BBTreeModal = {
 
 		},
 		runFunction: function(){
+			if(BBTreeModal.escapeModalCheck() == true)
+			{
+				return true;
+			}
 			cj('#BBDialog input:[name=tagName]').focus();
 			cj("#BBDialog").dialog( "option", "buttons", 
 			[
@@ -1557,6 +1568,23 @@ var BBTreeModal = {
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();
 			}
+		}
+	},
+	escapeModalCheck: function()
+	{
+		if(this.currentSettings.ysnp == true)
+		{
+			cj("#BBDialog").dialog( "option", "buttons", 
+			[
+				{
+					text: "Cancel",
+					click: function() { 
+						cj(this).dialog("close"); 
+						cj(this).dialog("destroy"); 
+					}
+				}
+			]);
+			return true;
 		}
 	}
 }
