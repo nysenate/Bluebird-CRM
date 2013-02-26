@@ -347,6 +347,11 @@ class CRM_migrateContactsImport {
                 break;
 
               case 'address':
+                //if location type is missing, set it to home and if needed, it will be corrected below
+                if ( empty($record['location_type_id']) ) {
+                  $record['location_type_id'] = 1;
+                }
+
                 //need to fix location types so we don't overwrite
                 $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
@@ -362,7 +367,7 @@ class CRM_migrateContactsImport {
                     }
                     elseif ( $action == 'newloc' ) {
                       //attempt to assign to other, other2, main, main2
-                      foreach ( array(4,11,3, 12) as $newLocType ) {
+                      foreach ( array(4,11,3,12) as $newLocType ) {
                         if ( !array_key_exists($newLocType, $existingAddresses) ) {
                           $record['location_type_id'] = $newLocType;
                           break;
