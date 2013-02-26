@@ -165,6 +165,7 @@ class CRM_migrateContactsImport {
       'individuals' => $statsTemp['Individual'],
       'organizations' => $statsTemp['Organization'],
       'households' => $statsTemp['Household'],
+      'addresses with location conflicts' => count($statsTemp['address_location_conflicts']),
       'employee/employer relationships' => count($exportData['employment']),
       'total contacts merged with existing records' => $mergedContacts['All'],
       'individuals merged with existing records' => $mergedContacts['Individual'],
@@ -350,12 +351,22 @@ class CRM_migrateContactsImport {
                 $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
                   if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
+                    $stats['address_location_conflicts'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                     //bbscript_log("trace", 'importContacts $record', $record);
-                    //attempt to assign to other, other2, main, main2
-                    foreach ( array(4,11,3, 12) as $newLocType ) {
-                      if ( !array_key_exists($newLocType, $existingAddresses) ) {
-                        $record['location_type_id'] = $newLocType;
-                        break;
+
+                    //we have a location conflict -- either skip importing this address, or assign new loc type
+                    $action = self::_compareAddresses($record['location_type_id'], $existingAddresses, $record);
+
+                    if ( $action == 'skip' ) {
+                      continue;
+                    }
+                    elseif ( $action == 'newloc' ) {
+                      //attempt to assign to other, other2, main, main2
+                      foreach ( array(4,11,3, 12) as $newLocType ) {
+                        if ( !array_key_exists($newLocType, $existingAddresses) ) {
+                          $record['location_type_id'] = $newLocType;
+                          break;
+                        }
                       }
                     }
                   }
@@ -1031,7 +1042,7 @@ class CRM_migrateContactsImport {
         //cycle through existing custom data and unset from $details if value exists
         if ( !empty($data['values']) ) {
           foreach ( $data['values'] as $custFID => $existingData ) {
-            //TODO should probably handle attachments more intelligently
+            //should probably handle attachments more intelligently
             if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
               $colName = $customMapID[$set][$custFID];
               unset($details[$set][$colName]);
@@ -1041,6 +1052,40 @@ class CRM_migrateContactsImport {
       }
     }
   }//_fillContact
+
+  /*
+   * compare imported conflicting address with existing and decide if they match
+   * and we should skip import, or they are different and we should assign a new loc type
+   */
+  function _compareAddresses($locType, $existing, $record) {
+    global $exportData;
+
+    //get existing address
+    $params = array(
+      'id' => $existing[$locType],
+    );
+    $address = self::_importAPI('address', 'getsingle', $params);
+
+    //bbscript_log("trace", "_compareAddresses address", $address);
+    //bbscript_log("trace", "_compareAddresses record", $record);
+
+    $dupe = TRUE;
+    $afs = array('street_address', 'supplemental_address_1', 'city', 'postal_code');
+    foreach ( $afs as $af ) {
+      if ( $address[$af] != $record[$af] ) {
+        $dupe = FALSE;
+        break;
+      }
+    }
+
+    if ( $dupe ) {
+      unset($exportData['districtinfo'][$record['name']]);
+      return 'skip';
+    }
+    else {
+      return 'newloc';
+    }
+  }
 
   /*
    * helper function to build entity_file record
