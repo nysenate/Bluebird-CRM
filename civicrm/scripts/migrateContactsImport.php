@@ -482,6 +482,30 @@ class CRM_migrateContactsImport {
 
         $caseID = $newCase['id'];
 
+        //6313 remove newly created open case activity before we migrate activities
+        $sql = "
+          SELECT ca.id, ca.activity_id
+          FROM civicrm_case_activity ca
+          JOIN civicrm_activity a
+            ON ca.activity_id = a.id
+            AND a.activity_type_id = 13
+          WHERE ca.case_id = {$caseID}
+        ";
+        $openCase = CRM_Core_DAO::executeQuery($sql);
+        if ( !$optDry ) {
+          while ( $openCase->fetch() ) {
+            $sql = "
+              DELETE FROM civicrm_activity
+              WHERE id = {$openCase->activity_id}
+            ";
+            CRM_Core_DAO::executeQuery($sql);
+            $sql = "
+              DELETE FROM civicrm_case_activity
+              WHERE id = {$openCase->id}
+            ";
+          }
+        }
+
         foreach ( $activities as $oldID => $activity ) {
           $activity['source_contact_id'] = $bbAdmin;
           $activity['target_contact_id'] = $contactID;
