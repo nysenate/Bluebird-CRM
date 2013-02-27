@@ -9,8 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $countTime = 1; // time between processMailboxes cron job in mins
-
+ 
     /* setupImap()
      * Parameters: None.
      * Returns: None.
@@ -122,16 +121,13 @@ class CRM_IMAP_AJAX {
             echo "<h1>Full Email RAW DATA</h1><pre>";
             var_dump($email);
             echo "</pre>";
-            var_dump($countTime);
-
           }
 
           // if message is less the x mins old, check it to see if it matches a contact,
           // if it does directly match, don't allow it to show up in the unmatches screen
           // we do this because the processing scritp hasn't had a chance to match it yet
-          $time = time()-(self::$countTime*60);
 
-          if( $email->uid == '' || $email->time =='' || $email->time > $time){
+          if( $email->uid == '' || $email->time =='' ){
 
             $code = 'ERROR';
             $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true','debug'=> $email->uid.':'.$email->time.':'.$email->time.':'. $time);
@@ -303,9 +299,10 @@ class CRM_IMAP_AJAX {
             // Search for all UIDs that meet the criteria of ""
             // Then get the headers for some basic information.
             // then grab the structure for attachments
-            $ids = imap_search($imap->conn(), ALL ,SE_UID);
-
+            $ids = imap_search($imap->conn(), 'SEEN',SE_UID);
+            $UNSEEN = imap_search($imap->conn(), 'UNSEEN',SE_UID);
             $startcount= count($ids);
+            $unseencount= count($UNSEEN);
             $returnMessage['stats']['overview']['count'] = $startcount;
             $limit_b =  536870912; // 500mb in byte
             $limit_kb =  512000; // 500mb in KB
@@ -329,6 +326,7 @@ class CRM_IMAP_AJAX {
               $returnMessage['stats'][$imap_id]['imap_warn_level'] = $warn_level;
               $returnMessage['stats'][$imap_id]['imap_size_formatted'] =  self::decodeSize($storage['usage'] *1024);
               $returnMessage['stats'][$imap_id]['imap_limit_formatted'] =  self::decodeSize($limit_kb *1024);
+              $returnMessage['stats'][$imap_id]['unseen_count'] = $unseencount;
             }
 
             if(!$ids){
