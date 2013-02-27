@@ -487,6 +487,40 @@ class CRM_Contact_BAO_Query
 
     function buildParamsLookup( ) 
     {
+    //NYSS 6287
+    // first fix and handle contact deletion nicely
+    // this code is primarily for search builder use case
+    // where different clauses can specify if they want deleted
+    // contacts or not
+    // CRM-11971
+    $trashParamExists = FALSE;
+    $paramByGroup    = array();
+    foreach ( $this->_params as $k => $param ) {
+      if ( $param[0] == 'contact_is_deleted' ) {
+        $trashParamExists = TRUE;
+      }
+      $paramByGroup[$param[3]][$k] = $param;
+    }
+
+    if ( $trashParamExists ) {
+      $this->_skipDeleteClause = TRUE;
+
+      //cycle through group sets and explicitly add trash param if not set
+      foreach ( $paramByGroup as $setID => $set ) {
+        if (
+          !in_array(array('contact_is_deleted', '=', '1', $setID, '0'), $this->_params) &&
+          !in_array(array('contact_is_deleted', '=', '0', $setID, '0'), $this->_params) ) {
+          $this->_params[] = array(
+            'contact_is_deleted',
+            '=',
+            '0',
+            $setID,
+            '0',
+          );
+        }
+      }
+    }
+
         foreach ( $this->_params as $value ) {
             $cfID = CRM_Core_BAO_CustomField::getKeyID( $value[0] );
             if ( $cfID ) {
@@ -3570,13 +3604,6 @@ WHERE  id IN ( $groupIDs )
         $permission = ' ( 1 ) ';
         $onlyDeleted = false;
         $onlyDeleted = in_array(array('deleted_contacts', '=', '1', '0', '0'), $this->_params);
-
-        //NYSS 6287 check if we need to skipDeleteClause
-        $session = CRM_Core_Session::singleton();
-        if ( $session->get('skipDeleteClause') && !$this->_skipDeleteClause ) {
-          $this->_skipDeleteClause = TRUE;
-          $session->set('skipDeleteClause', FALSE);
-        }
 
         // if we’re explicitely looking for a certain contact’s contribs, events, etc.
         // and that contact happens to be deleted, set $onlyDeleted to true
