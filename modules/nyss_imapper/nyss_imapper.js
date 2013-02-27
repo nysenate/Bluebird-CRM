@@ -108,7 +108,61 @@ cj(document).ready(function(){
 		draggable: false
 	});
 
+	
+ 
 	// BOTH MATCHED & UNMATCHED
+	// file a bug 
+	cj(".fileBug").live('click', function() {
+		return false;
+		cj.each(jQuery.browser, function(i, val) {
+			if(cj.browser.msie){ 
+				browsertype = "IE";
+			}else if(cj.browser.webkit){
+				browsertype = "Webkit";
+			}else if(cj.browser.opera){
+				browsertype = "Opera";
+			}else if(cj.browser.mozilla){
+				browsertype = "Mozilla";
+			}
+		});
+ 
+		browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
+		id = cj('#email_id').val();
+		imap = cj('#imap_id').val();
+
+		if(cj("#Activities").length){
+			type ='Activity';
+		}else if(cj("#Unmatched").length){
+			type ='Message';
+		}
+ 		url = document.location.href;
+
+ 		
+		cj.ajax({
+			url: '/civicrm/imap/ajax/fileBug',
+			data: {
+				browser: browser,
+				id: id,
+				imap: imap,
+				type: type,
+				url: url
+			},
+			success: function(data,status) {
+				if(data != null || data != ''){
+					contacts = cj.parseJSON(data);
+					if(contacts.code == 'ERROR'){
+						cj('#imapper-contacts-list').html(contacts.message);
+					}else{
+						cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
+						buildContactList();
+					}
+				}
+			}
+		});
+
+		return false;
+	});
+
 	// search function in find_match and edit_match
 	filter.live('click', function() {
 		cj('#imapper-contacts-list').html('Searching...');
@@ -426,20 +480,22 @@ cj(document).ready(function(){
 						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span> "+ messages.date_short+ "<br/>");
 					}
 					// add some debug info to the message body on toggle
-					if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-						var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date_long+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
-						if(messages.status !== 'direct'){
-							debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_date_long+"";
+					cj('#message_left_header').append("<span class='popup_def'> a</span><a class='fileBug'>Report Bug</a><br/>");
 
-						}
-						debugHTML +="<span class='search_info'></span></div></div>";
-						cj('#message_left_header').append(debugHTML);
+					// if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
+					// 	var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date_long+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
+					// 	if(messages.status !== 'direct'){
+					// 		debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_date_long+"";
 
-						// we can create redmine issues with message details and assign to stefan from a url!
-						submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
-						bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
-						cj('.debug_remove').append(bugHTML);
-					}
+					// 	}
+					// 	debugHTML +="<span class='search_info'></span></div></div>";
+					// 	cj('#message_left_header').append(debugHTML);
+
+					// 	// we can create redmine issues with message details and assign to stefan from a url!
+					// 	submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+					// 	bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+					// 	cj('.debug_remove').append(bugHTML);
+					// }
 
 					cj('#message_left_email').html(messages.details);
 					cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
@@ -571,17 +627,18 @@ cj(document).ready(function(){
 					// if we are on crmdev or crmtest show a debug window 
 					cj('#message_left_header').addClass(messages.email_user);
 					cj('#message_left_email').addClass(messages.email_user);
-					if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-							var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
-							var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
-							debugHTML +="<span class='search_info'></span></div></div>";
-							cj('#message_left_header').append(debugHTML);
-							// we can create redmine issues with message details and assign to stefan from a url ! 
-							submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
-							bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
-							cj('.debug_remove').append(bugHTML);
+					cj('#message_left_header').append("<span class='popup_def'> a</span><a class='fileBug'>Report Bug</a><br/>");
+					// if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
+					// 		var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
+					// 		var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
+					// 		debugHTML +="<span class='search_info'></span></div></div>";
+					// 		cj('#message_left_header').append(debugHTML);
+					// 	Dev &	// we can create redmine issues with message details and assign to stefan from a url ! 
+					// 		submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
+					// 		bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
+					// 		cj('.debug_remove').append(bugHTML);
 
-						}
+					// 	}
 
 					cj('#message_left_email').html(messages.details);
 					cj('#email_id').val(activityId);
