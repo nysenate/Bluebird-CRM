@@ -982,7 +982,7 @@ function getMatchedMessages() {
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
 	"title-string-pre": function ( a ) {
-		return a.match(/data="(.*?)"/)[1].toLowerCase();
+		return a.match(/id="(.*?)"/)[1].toLowerCase();
 	},
 	"title-string-asc": function ( a, b ) {
 		return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1070,7 +1070,7 @@ function buildMessageList() {
 
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
 
-				messagesHtml += '<td class="date"><span data="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+				messagesHtml += '<td class="date"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
 				// hidden column to sort by
 				if(value.match_count != 1){
@@ -1286,7 +1286,7 @@ function buildActivitiesList() {
 				}
 					messagesHtml +='</td>';
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +'</td>';
-				messagesHtml += '<td class="date"><span data="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+				messagesHtml += '<td class="date"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
