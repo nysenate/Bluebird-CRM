@@ -9,7 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $countTime = 6; // time between processMailboxes cron job in mins
+    private static $countTime = 1; // time between processMailboxes cron job in mins
 
     /* setupImap()
      * Parameters: None.
@@ -583,7 +583,7 @@ class CRM_IMAP_AJAX {
 
     $date_string_short = ($count == 1 ) ? $date  : $date_string;
 
-    // sometimes email clients think its fun to add stuff to the date, remove it here.
+    // somestrs email clients think its fun to add stuff to the date, remove it here.
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
     if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; }; 
