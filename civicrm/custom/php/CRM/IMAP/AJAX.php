@@ -9,8 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
-    private static $countTime = 1; // time between processMailboxes cron job in mins
-
+ 
     /* setupImap()
      * Parameters: None.
      * Returns: None.
@@ -122,16 +121,13 @@ class CRM_IMAP_AJAX {
             echo "<h1>Full Email RAW DATA</h1><pre>";
             var_dump($email);
             echo "</pre>";
-            var_dump($countTime);
-
           }
 
           // if message is less the x mins old, check it to see if it matches a contact,
           // if it does directly match, don't allow it to show up in the unmatches screen
           // we do this because the processing scritp hasn't had a chance to match it yet
-          $time = time()-(self::$countTime*60);
 
-          if( $email->uid == '' || $email->time =='' || $email->time > $time){
+          if( $email->uid == '' || $email->time =='' ){
 
             $code = 'ERROR';
             $output = array('code'=>$code,'status'=>'0','message'=>'This message does not exist','clear'=>'true','debug'=> $email->uid.':'.$email->time.':'.$email->time.':'. $time);
@@ -303,9 +299,10 @@ class CRM_IMAP_AJAX {
             // Search for all UIDs that meet the criteria of ""
             // Then get the headers for some basic information.
             // then grab the structure for attachments
-            $ids = imap_search($imap->conn(), ALL ,SE_UID);
-
+            $ids = imap_search($imap->conn(), 'SEEN',SE_UID);
+            $UNSEEN = imap_search($imap->conn(), 'UNSEEN',SE_UID);
             $startcount= count($ids);
+            $unseencount= count($UNSEEN);
             $returnMessage['stats']['overview']['count'] = $startcount;
             $limit_b =  536870912; // 500mb in byte
             $limit_kb =  512000; // 500mb in KB
@@ -329,6 +326,7 @@ class CRM_IMAP_AJAX {
               $returnMessage['stats'][$imap_id]['imap_warn_level'] = $warn_level;
               $returnMessage['stats'][$imap_id]['imap_size_formatted'] =  self::decodeSize($storage['usage'] *1024);
               $returnMessage['stats'][$imap_id]['imap_limit_formatted'] =  self::decodeSize($limit_kb *1024);
+              $returnMessage['stats'][$imap_id]['unseen_count'] = $unseencount;
             }
 
             if(!$ids){
@@ -804,25 +802,33 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
         }
 
-        // Get the user information for the person who forwarded the email, or bluebird admin
-        $params = array( 
-            'email' => $senderEmailAddress,
-            'version' => 3,
-        );
-        $result = civicrm_api('contact', 'get', $params );
+$query = "
+SELECT e.contact_id
+FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+WHERE g.title='Authorized_Forwarders'
+  AND e.email='".$senderEmailAddress."'
+  AND g.id=gc.group_id
+  AND gc.status='Added'
+  AND gc.contact_id=e.contact_id
+ORDER BY gc.contact_id ASC";
+
+            $result = mysql_query($query, self::db());
+            $results = array();
+            while($row = mysql_fetch_assoc($result)) {
+                $results[] = $row;
+            }
 
         if ($debug){
-          echo "<h1>Get forwarder Contact Record</h1>";
-          if (count($result['values']) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
-          var_dump($result);
-
+          echo "<h1>Get forwarder Contact Record for {$senderEmailAddress}</h1>";
+          if (count($results) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
+          var_dump($results);
         }
 
         // error checking for forwarderId
-        if (($result['is_error']==1) || ($result['values']==null ) || (count($result['values']) !=  1 )){
+        if (!$results){
           $forwarderId = 1; // bluebird admin
         } else{
-          $forwarderId = $result['id'];
+          $forwarderId = $results[0]['contact_id'];
         };
 
         if ($debug){
@@ -860,11 +866,11 @@ class CRM_IMAP_AJAX {
             }
             // if the records don't match, count it, an if the number is > 1 add the record
             foreach($results as $email) {
-                if($email['email'] == $fromEmail){
-                    if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                if(strtolower($email['email']) == strtolower($fromEmail)){
+                    if ($debug) echo "<p>".$email['email'] ." == ".strtolower($fromEmail)."</p>";
                 }else{
                     $matches++;
-                    if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                    if ($debug) echo "<p>".$email['email'] ." != ".strtolower($fromEmail)."</p>";
                 }
             }
             
