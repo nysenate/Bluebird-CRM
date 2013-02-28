@@ -802,25 +802,33 @@ class CRM_IMAP_AJAX {
             CRM_Utils_System::civiExit();
         }
 
-        // Get the user information for the person who forwarded the email, or bluebird admin
-        $params = array( 
-            'email' => $senderEmailAddress,
-            'version' => 3,
-        );
-        $result = civicrm_api('contact', 'get', $params );
+$query = "
+SELECT e.contact_id
+FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+WHERE g.title='Authorized_Forwarders'
+  AND e.email='".$senderEmailAddress."'
+  AND g.id=gc.group_id
+  AND gc.status='Added'
+  AND gc.contact_id=e.contact_id
+ORDER BY gc.contact_id ASC";
+
+            $result = mysql_query($query, self::db());
+            $results = array();
+            while($row = mysql_fetch_assoc($result)) {
+                $results[] = $row;
+            }
 
         if ($debug){
-          echo "<h1>Get forwarder Contact Record</h1>";
-          if (count($result['values']) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
-          var_dump($result);
-
+          echo "<h1>Get forwarder Contact Record for {$senderEmailAddress}</h1>";
+          if (count($results) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
+          var_dump($results);
         }
 
         // error checking for forwarderId
-        if (($result['is_error']==1) || ($result['values']==null ) || (count($result['values']) !=  1 )){
+        if ( count($result) !=  1 ){
           $forwarderId = 1; // bluebird admin
         } else{
-          $forwarderId = $result['id'];
+          $forwarderId = $results[0]['contact_id'];
         };
 
         if ($debug){
