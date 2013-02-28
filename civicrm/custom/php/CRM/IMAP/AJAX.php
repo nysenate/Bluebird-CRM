@@ -825,7 +825,7 @@ ORDER BY gc.contact_id ASC";
         }
 
         // error checking for forwarderId
-        if ( count($result) !=  1 ){
+        if (!$results){
           $forwarderId = 1; // bluebird admin
         } else{
           $forwarderId = $results[0]['contact_id'];
@@ -866,11 +866,11 @@ ORDER BY gc.contact_id ASC";
             }
             // if the records don't match, count it, an if the number is > 1 add the record
             foreach($results as $email) {
-                if($email['email'] == $fromEmail){
-                    if ($debug) echo "<p>".$email['email'] ." == ".$fromEmail."</p>";
+                if(strtolower($email['email']) == strtolower($fromEmail)){
+                    if ($debug) echo "<p>".$email['email'] ." == ".strtolower($fromEmail)."</p>";
                 }else{
                     $matches++;
-                    if ($debug) echo "<p>".$email['email'] ." != ".$fromEmail."</p>";
+                    if ($debug) echo "<p>".$email['email'] ." != ".strtolower($fromEmail)."</p>";
                 }
             }
             
