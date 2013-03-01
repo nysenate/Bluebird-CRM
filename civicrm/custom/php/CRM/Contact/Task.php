@@ -325,7 +325,7 @@ class CRM_Contact_Task
         $tasks = array( );
         if ($deletedContacts) {
             if ( CRM_Core_Permission::check( 'access deleted contacts' ) ) {
-                $tasks = array( self::RESTORE => self::$_tasks[self::RESTORE]['title'] );
+        $tasks[self::RESTORE] = self::$_tasks[self::RESTORE]['title'];
                 if ( CRM_Core_Permission::check( 'delete contacts' ) &&
 				     CRM_Core_Permission::check( 'delete contacts permanently' ) ) { //NYSS 3598
                     $tasks[self::DELETE_PERMANENTLY] = self::$_tasks[self::DELETE_PERMANENTLY]['title'];

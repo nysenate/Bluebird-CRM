@@ -366,7 +366,8 @@ class CRM_Contact_BAO_Query {
    *
    * @return Object
    * @access public
-   */ function __construct($params = NULL, $returnProperties = NULL, $fields = NULL,
+   */
+  function __construct($params = NULL, $returnProperties = NULL, $fields = NULL,
     $includeContactIds = FALSE, $strict = FALSE, $mode = 1,
     $skipPermission    = FALSE, $searchDescendentGroups = TRUE,
     $smartGroupCache   = TRUE, $displayRelationshipType = NULL,
@@ -1201,15 +1202,13 @@ class CRM_Contact_BAO_Query {
     return $result;
   }
 
-  static
-  function fixDateValues($relative, &$from, &$to) {
+  static function fixDateValues($relative, &$from, &$to) {
     if ($relative) {
       list($from, $to) = CRM_Utils_Date::getFromTo($relative, $from, $to);
     }
   }
 
-  static
-  function convertFormValues(&$formValues, $wildcard = 0, $useEquals = FALSE) {
+  static function convertFormValues(&$formValues, $wildcard = 0, $useEquals = FALSE) {
     $params = array();
     if (empty($formValues)) {
       return $params;
@@ -1259,8 +1258,7 @@ class CRM_Contact_BAO_Query {
     return $params;
   }
 
-  static
-  function &fixWhereValues($id, &$values, $wildcard = 0, $useEquals = FALSE) {
+  static function &fixWhereValues($id, &$values, $wildcard = 0, $useEquals = FALSE) {
     // skip a few search variables
     static $skipWhere = NULL;
     static $arrayValues = NULL;
@@ -1349,7 +1347,7 @@ class CRM_Contact_BAO_Query {
       (substr($values[0], 0, 13) == 'contribution_') ||
       (substr($values[0], 0, 6) == 'event_') ||
       (substr($values[0], 0, 12) == 'participant_') ||
-      (substr($values[0], 0, 12) == 'member_') ||
+      (substr($values[0], 0, 7) == 'member_') ||
       (substr($values[0], 0, 6) == 'quest_') ||
       (substr($values[0], 0, 8) == 'kabissa_') ||
       (substr($values[0], 0, 4) == 'tmf_') ||
@@ -1990,8 +1988,7 @@ class CRM_Contact_BAO_Query {
   }
 
 
-  static
-  function getLocationTableName(&$where, &$locType) {
+  static function getLocationTableName(&$where, &$locType) {
     if (isset($locType[1]) && is_numeric($locType[1])) {
       list($tbName, $fldName) = explode(".", $where);
 
@@ -2104,8 +2101,7 @@ class CRM_Contact_BAO_Query {
    * @access public
    * @static
    */
-  static
-  function getWhereClause($params, $fields, &$tables, &$whereTables, $strict = FALSE) {
+  static function getWhereClause($params, $fields, &$tables, &$whereTables, $strict = FALSE) {
     $query = new CRM_Contact_BAO_Query($params, NULL, $fields,
       FALSE, $strict
     );
@@ -2128,8 +2124,7 @@ class CRM_Contact_BAO_Query {
    * @access public
    * @static
    */
-  static
-  function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1) {
+  static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1) {
 
     $from = ' FROM civicrm_contact contact_a';
     if (empty($tables)) {
@@ -2764,9 +2759,7 @@ WHERE  id IN ( $groupIDs )
     else {
       $this->_tables[$etTable] =
       $this->_whereTables[$etTable] =
-        " LEFT JOIN civicrm_entity_tag {$etTable}
-            ON ( {$etTable}.entity_id = contact_a.id
-            AND {$etTable}.entity_table = 'civicrm_contact') ";
+      " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND {$etTable}.entity_table = 'civicrm_contact' ) ";
 
       // CRM-10338
       $op = str_replace( 'EMPTY', 'NULL', $op );
@@ -3750,8 +3743,7 @@ civicrm_relationship.start_date > {$today}
    * @return void
    * @access public
    */
-  static
-  function &defaultReturnProperties($mode = 1) {
+  static function &defaultReturnProperties($mode = 1) {
     if (!isset(self::$_defaultReturnProperties)) {
       self::$_defaultReturnProperties = array();
     }
@@ -3829,8 +3821,7 @@ civicrm_relationship.start_date > {$today}
    * @return void
    * @access public
    */
-  static
-  function getPrimaryCondition($value) {
+  static function getPrimaryCondition($value) {
     if (is_numeric($value)) {
       $value = (int ) $value;
       return ($value == 1) ? 'is_primary = 1' : 'is_primary = 0';
@@ -3848,8 +3839,7 @@ civicrm_relationship.start_date > {$today}
    * @return void
    * @access public
    */
-  static
-  function getQuery($params = NULL, $returnProperties = NULL, $count = FALSE) {
+  static function getQuery($params = NULL, $returnProperties = NULL, $count = FALSE) {
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
     list($select, $from, $where, $having) = $query->query();
 
@@ -3868,8 +3858,7 @@ civicrm_relationship.start_date > {$today}
    * @return void
    * @access public
    */
-  static
-  function apiQuery($params = NULL,
+  static function apiQuery($params = NULL,
     $returnProperties = NULL,
     $fields           = NULL,
     $sort             = NULL,
@@ -4312,8 +4301,7 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
    * @return void
    * @access public
    */
-  static
-  function &defaultHierReturnProperties() {
+  static function &defaultHierReturnProperties() {
     if (!isset(self::$_defaultHierReturnProperties)) {
       self::$_defaultHierReturnProperties = array(
         'home_URL' => 1,
@@ -4454,7 +4442,7 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
       }
 
       if (!$appendTimeStamp) {
-        $firstDate = substr($date, 0, 8);
+        $firstDate = substr($firstDate, 0, 8);
       }
       $firstDateFormat = CRM_Utils_Date::customFormat($firstDate);
 

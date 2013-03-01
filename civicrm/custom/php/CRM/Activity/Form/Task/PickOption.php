@@ -128,7 +128,6 @@ class CRM_Activity_Form_Task_PickOption extends CRM_Activity_Form_Task {
    */
   static
   function formRule($fields) {
-    //NYSS 5620
     if ( !isset($fields['with_contact']) &&
       !isset($fields['assigned_to']) &&
       !isset($fields['created_by'])
