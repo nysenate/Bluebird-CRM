@@ -12,3 +12,5 @@ dependencies[] = list
 
 files[] = civicrm_contact_ref.install
 files[] = civicrm_contact_ref.module
+files[] = civicrm_contact_ref.feeds.inc
+

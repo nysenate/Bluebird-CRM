@@ -96,7 +96,14 @@
                 {/if}
 	
             {/if}
-            <span id="main_{$blockName}_{$blockId}">{$row.main}</span>
+            {*NYSS 5546*}
+            <span id="main_{$blockName}_{$blockId}">
+              {if !is_array($row.main)}
+                {$row.main}
+              {else}
+                {$row.main.fileName}
+              {/if}
+            </span>
         </td>
      </tr>
   {/foreach}

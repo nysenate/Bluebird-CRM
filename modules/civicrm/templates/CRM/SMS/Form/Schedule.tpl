@@ -83,7 +83,7 @@ cj(function() {
 
 {literal}
 cj(function() {
-   cj('#start_date').change( function( ) { 
+   cj('#start_date_display').change( function( ) { 
        if ( cj(this).val( ) ) {
           cj('#now').attr( 'checked', false );
        }

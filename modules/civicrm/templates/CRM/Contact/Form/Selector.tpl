@@ -156,6 +156,8 @@ var url         = "{/literal}{crmURL p='civicrm/contact/view/changeaction' q='re
 var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q="action=browse&selectedChild=activity&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
 var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q="atype=3&action=add&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
 var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q="reset=1&cid=changeid&key=`$qfKey`&context=`$context`" h=0}{literal}";
+var tagUrl  = "{/literal}{crmURL p='civicrm/contact/view' q="selectedChild=tag&reset=1&cid=changeid&key=`$qfKey`" h=0}{literal}";
+
 // Show menu when contact row is right clicked
 cj(".selector tr").contextMenu({
       menu: 'contactMenu'
@@ -164,12 +166,17 @@ cj(".selector tr").contextMenu({
         switch (action) {
           case 'activity':
           case 'email':
+            var qfKey = "{/literal}{$qfKey}{literal}";
+            emailUrl = emailUrl+'&key='+qfKey;
             eval( 'locationUrl = '+action+'Url;');
             break;
           case 'add':
             contactId += '&action=update';
           case 'view':
             locationUrl = contactUrl.replace( /changeaction/g, action );
+            break;
+          case 'tag':
+            locationUrl = tagUrl;
             break;
           default:
             locationUrl = url.replace( /changeaction/g, action );

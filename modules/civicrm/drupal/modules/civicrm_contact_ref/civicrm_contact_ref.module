@@ -84,6 +84,10 @@ function civicrm_contact_ref_field_formatter_info() {
       'label' => t('Title (plain)'),
       'field types' => array('civicrm_contact_ref_contact'),
     ),
+    'civicrm_contact_ref_raw' => array(
+      'label' => t('CID (raw)'),
+      'field types' => array('civicrm_contact_ref_contact'),
+    ),
   );
 }
 
@@ -122,6 +126,14 @@ function civicrm_contact_ref_field_formatter_view($entity_type, $entity, $field,
       foreach ($items as $delta => $item) {
         $element[$delta] = array(
           '#markup' => _civicrm_contact_ref_titles($item['contact_id']),
+        );
+      }
+      break;
+
+    case 'civicrm_contact_ref_raw':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#markup' => $item['contact_id'],
         );
       }
       break;

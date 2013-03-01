@@ -148,7 +148,6 @@ function civicrm_source($dsn, $fileName, $lineMode = FALSE) {
       $query = trim($query);
       if (!empty($query)) {
         $res = &$db->query($query);
-        error_log(get_include_path(), 3, '/tmp/include_path.log');
         if (PEAR::isError($res)) {
           print_r($res);
           die("Cannot execute $query: " . $res->getMessage());

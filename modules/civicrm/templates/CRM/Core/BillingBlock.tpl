@@ -105,7 +105,7 @@
                 <fieldset class="billing_name_address-group">
                 	<legend>{ts}Billing Name and Address{/ts}</legend>
                 	  {if $profileAddressFields}
-                    	<input type="checkbox" id="billingcheckbox" value=0> {ts}Billing Address is same as above{/ts}
+                    	<input type="checkbox" id="billingcheckbox" value=0> <label for="billingcheckbox">{ts}Billing Address is same as above{/ts}</label>
                     {/if}
                     <div class="crm-section billing_name_address-section">
                         <div class="crm-section billingNameInfo-section">
@@ -221,12 +221,12 @@ function sameAddress( setValue ) {
       }
     });
 
-    // now set the state province, we are delaying setdefaults
-    // before onchange takes some time / to load states
+    // now set the state province
+    // after ajax call loads all the states
     if ( stateId ) {
-      setTimeout(function(){
+      cj('select[id^="billing_state_province_id"]').ajaxStop(function() {
         cj( 'select[id^="billing_state_province_id"]').val( stateId );
-      }, 500);
+      });
     }  
   }
 }

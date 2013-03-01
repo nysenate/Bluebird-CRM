@@ -370,9 +370,14 @@
  {if $selectedChild}selectedTab = "{$selectedChild}";{/if}
  {literal}
 
+ //explicitly stop spinner
+ function stopSpinner( ) {
+   cj('li.crm-tab-button').each(function(){ cj(this).find('span').text(' ');})
+ }
+
  cj( function() {
   var tabIndex = cj('#tab_' + selectedTab).prevAll().length;
-  cj("#mainTabContainer").tabs({ selected: tabIndex, spinner: spinnerImage,cache: true});
+  cj("#mainTabContainer").tabs({ selected: tabIndex, spinner: spinnerImage, cache: true, load: stopSpinner});
   cj(".crm-tab-button").addClass("ui-corner-bottom");
  });
  {/literal}

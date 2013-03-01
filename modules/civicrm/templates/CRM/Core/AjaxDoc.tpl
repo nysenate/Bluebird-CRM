@@ -125,7 +125,7 @@ function runQuery(query) {
       $('#result').text(data);
     },'text');
     link="<a href='"+query+"' title='open in a new tab' target='_blank'>ajax query</a>&nbsp;";
-    var RESTquery = resourceBase +"/extern/rest.php?"+ query.substring(restURL.length,query.length) + "&api_key={yoursitekey}&key={yourkey}";
+    var RESTquery = resourceBase +"/extern/rest.php?"+ query.substring(restURL.length,query.length) + "&key={yoursitekey}&api_key={yourkey}";
     $("#link").html(link+"|<a href='"+RESTquery+"' title='open in a new tab' target='_blank'>REST query</a>.");
 
     var hashes = query.slice(query.indexOf('?') + 1).split('&');

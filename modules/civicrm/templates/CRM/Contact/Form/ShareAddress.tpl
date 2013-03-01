@@ -96,11 +96,16 @@ cj( function( ) {
       }
 
       var addressHTML = '';	    
-      var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' q='class_name=CRM_Contact_Page_AJAX::getAddressDisplay' h=0}"{literal};	
+      var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0}"{literal};
       
       addCiviOverlay('div.crm-address_' + blockNo);   
  
-      cj.post( postUrl, { 'contact_id': sharedContactId , 'type': 'method' }, 
+      cj.post( postUrl, {
+        'contact_id': sharedContactId,
+        'type': 'method',
+        'class_name': 'CRM_Contact_Page_AJAX',
+        'fn_name': 'getAddressDisplay'
+        },
         function( response ) {
           if ( response ) {
             var selected = 'checked';

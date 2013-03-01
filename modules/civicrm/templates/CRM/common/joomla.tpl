@@ -31,9 +31,7 @@
     
 {* Only include joomla.css in administrator (backend). Page layout style ids and classes conflict with typical front-end css and break the page layout. *}
 {include file="CRM/common/action.tpl"}
-{if $buildNavigation }
-    {include file="CRM/common/Navigation.tpl" }
-{/if}
+{crmNavigationMenu is_default=1}
 
 {* include wysiwyg related files*}
 {include file="CRM/common/wysiwyg.tpl"}

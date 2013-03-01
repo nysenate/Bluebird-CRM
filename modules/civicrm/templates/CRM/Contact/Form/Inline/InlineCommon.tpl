@@ -30,7 +30,17 @@
 function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
   // handle ajax form submitting
   var options = { 
-    beforeSubmit:  showRequest  // pre-submit callback  
+    method: 'POST',
+	  dataType: 'json',
+    data: { // pass extra params
+      'class_name': 'CRM_Contact_Form_Inline_' + formName,
+      'cid'       : contactId,
+      'groupID'   : cgId,
+      'locno'     : locNo,
+      'aid'       : addId,
+	    'snippet'   : 6
+      },
+	  success:  onSuccess  // after submit callback
   }; 
 
   var actualFormName = formName;
@@ -40,54 +50,25 @@ function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
     actualFormName = formName + '_' + locNo;
   }
 
+  // bind form using 'ajaxForm'
   cj('#' + actualFormName ).ajaxForm( options );
 
-  // bind form using 'ajaxForm'
-  cj('#' + formName ).ajaxForm( options );
-
-  // pre-submit callback 
-  function showRequest(formData, jqForm, options) { 
-    // formData is an array; here we use $.param to convert it to a string to display it 
-    // but the form plugin does this for you automatically when it submits the data 
-    var queryString = cj.param(formData); 
-    queryString = queryString + '&class_name=CRM_Contact_Form_Inline_' + formName + '&snippet=5&cid=' + contactId;
-    if ( cgId ) {
-      queryString += '&groupID=' + cgId;
-    }
-
-    if ( locNo ) {
-      queryString += '&locno=' + locNo;
-    }
-
-    if ( addId ) {
-      queryString += '&aid=' + addId;
-    }
-
-    var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 }"{literal}; 
-    var status = '';
-    var response = cj.ajax({
-        type: "POST",
-        url: postUrl,
-        async: false,
-        data: queryString,
-        dataType: "json",
-        success: function( response ) {
-          status = response.status;
-          if ( response.addressId ) {
-            addId = response.addressId;
-          }
-        }
-    }).responseText;
-
+  // success callback
+  function onSuccess( response ) {
     //check if form is submitted successfully
-    if ( status ) {
+    if ( response.status == 'save' || response.status == 'cancel' ) {
+      if ( response.addressId ) {
+        addId = response.addressId;
+      }
+
       // fetch the view of the block after edit
-      var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal}; 
+      var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal};
       var queryString = 'class_name=CRM_Contact_Page_Inline_' + formName + '&type=page&cid=' + contactId;
+
       if ( cgId ) {
         queryString += '&groupID=' + cgId;
       }
- 
+
       if ( locNo ) {
         queryString += '&locno=' + locNo;
       }
@@ -97,29 +78,26 @@ function inlineEditForm( formName, blockName, contactId, cgId, locNo, addId ) {
       }
 
       var response = cj.ajax({
-          type: "POST",
-          url: postUrl,
-          async: false,
-          data: queryString,
-          dataType: "json",
-          success: function( response ) {
-          }
-          }).responseText;
-    }
-    
-    var blockSelector = cj('#' + blockName);
+            type: "POST",
+            url: postUrl,
+            async: false,
+            data: queryString,
+            dataType: "json"
+            }).responseText;
 
-    blockSelector.html( response );
-    
-    // hack to append add link properly.
-    if ( formName == 'Address' ) {
-      var addLinkBlock = cj('#' + blockName + ' div.appendAddLink');
-      blockSelector.parents('.contact_panel').append(addLinkBlock);
-    }
+      var blockSelector = cj('#' + blockName);
 
-    // here we could return false to prevent the form from being submitted; 
-    // returning anything other than false will allow the form submit to continue 
-    return false; 
+      blockSelector.html( response );
+
+      // append add link only in case of save
+      if ( formName == 'Address' ) {
+        var addLinkBlock = cj('#' + blockName + ' div.appendAddLink');
+        blockSelector.parents('.contact_panel').append(addLinkBlock);
+      }
+    }
+    else {
+      cj('#' + blockName).html(response.content);
+    }
   }
 }
 

@@ -69,7 +69,17 @@
 				if(tmp.styleSheet) {
 					if(is_new) { 
 						document.getElementsByTagName("head")[0].appendChild(tmp); 
+            //tmp.styleSheet.cssText = opts.str;
+            var setFunc = function(){  
+              try{
 						tmp.styleSheet.cssText = opts.str; 
+              }catch(e){  }
+            };
+            if(tmp.styleSheet.disabled){
+              setTimeout(setFunc, 10);
+            }else{
+              setFunc();
+            }
 					}
 					else {
 						tmp.styleSheet.cssText = tmp.styleSheet.cssText + " " + opts.str; 

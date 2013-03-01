@@ -593,14 +593,10 @@ $.fn.ajaxSubmit = function(options) {
                         var pre = doc.getElementsByTagName('pre')[0];
                         var b = doc.getElementsByTagName('body')[0];
                         if (pre) {
-                          //NYSS 5816
-                          //  xhr.responseText = pre.textContent ? pre.textContent : pre.innerText;
-                          xhr.responseText = pre.innerHTML ? pre.innerHTML : pre.textContent;
+                            xhr.responseText = pre.innerHTML ? pre.innerHTML : pre.textContent;  
                         }
                         else if (b) {
-                          //NYSS 5816
-                          //  xhr.responseText = b.textContent ? b.textContent : b.innerText;
-                          xhr.responseText = b.innerHTML ? b.innerHTML : b.textContent
+                          xhr.responseText = b.innerHTML ? b.innerHTML : b.textContent;
                         }
                     }
                 }
@@ -682,11 +678,7 @@ $.fn.ajaxSubmit = function(options) {
             }
             return (doc && doc.documentElement && doc.documentElement.nodeName != 'parsererror') ? doc : null;
         };
-        //NYSS 5816
-        /*var parseJSON = $.parseJSON || function(s) {
-            *//*jslint evil:true *//*
-            return window['eval']('(' + s + ')');
-        };*/
+        
         var parseJSON = $.parseJSON;
 
         var httpData = function( xhr, type, s ) { // mostly lifted from jq1.4.4
@@ -704,7 +696,7 @@ $.fn.ajaxSubmit = function(options) {
             }
             if (typeof data === 'string') {
                 if (type === 'json' || !type && ct.indexOf('json') >= 0) {
-                  data = parseJSON(data);
+                    data = parseJSON(data);
                 } else if (type === "script" || !type && ct.indexOf("javascript") >= 0) {
                     $.globalEval(data);
                 }

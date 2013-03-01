@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="messages status float-right" style="margin-left: 1em;">
+<div class="messages status float-right">
     {ts}Total Recipients:{/ts} <strong>{$count|crmNumberFormat}</strong><br />
    {if $action eq 256 & $ssid eq null}
    <div id="popupContainer">

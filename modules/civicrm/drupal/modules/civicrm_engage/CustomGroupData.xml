@@ -1221,23 +1221,6 @@ N - New</help_post>
 		<option_group_name>elected_staffer_role_options</option_group_name>
         <custom_group_name>Elected_Official_Info</custom_group_name>
     </CustomField>
-    <CustomField>
-        <label>Ward</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-        <weight>94</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-        <column_name>ward</column_name>
-        <custom_group_name>Voter_Info</custom_group_name>
-    </CustomField>
   </CustomFields>
   <OptionGroups>
     <OptionGroup>

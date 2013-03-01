@@ -34,9 +34,7 @@
 
 
 {include file="CRM/common/action.tpl"}
-{if $buildNavigation }
-    {include file="CRM/common/Navigation.tpl"}
-{/if}
+{crmNavigationMenu is_default=1}
 
 {if isset($browserPrint) and $browserPrint}
 {* Javascript window.print link. Used for public pages where we can't do printer-friendly view. *}

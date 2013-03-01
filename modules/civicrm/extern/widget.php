@@ -30,7 +30,6 @@
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
- *
  */
 require_once '../civicrm.config.php';
 require_once 'CRM/Core/Config.php';
@@ -58,4 +57,3 @@ $output = '
 
 echo $output;
 CRM_Utils_System::civiExit();
-
