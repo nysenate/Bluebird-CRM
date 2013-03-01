@@ -116,8 +116,8 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
                 if ( !$dao->is_active ) {
                     continue;
                 }
-                // append weight so that order is preserved.
-                $dashlets[$dao->column_no]["$dao->weight}-{$dao->dashboard_id}"] = $dao->is_minimized;
+         // append weight so that order is preserved.
+        $dashlets[$dao->column_no]["{$dao->weight}-{$dao->dashboard_id}"] = $dao->is_minimized;
       }
       else {
                 $dashlets[$dao->dashboard_id] = $dao->dashboard_id;

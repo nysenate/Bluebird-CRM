@@ -37,8 +37,8 @@
  * Main page for Cases dashlet
  *
  */
-class CRM_Dashlet_Page_MyCases extends CRM_Core_Page
-{
+class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
+
   /**
    * List activities as dashlet
    *
@@ -46,8 +46,7 @@ class CRM_Dashlet_Page_MyCases extends CRM_Core_Page
    *
    * @access public
    */
-  function run()
-  {
+  function run() {
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
     $this->assign('context', $context );
 

@@ -141,10 +141,8 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
     );
 
 
-    //NYSS 6271 all should set sortByCharacter to null, not empty string
-    if (strtolower($this->_sortByCharacter) == 'all' ||
-      !empty($_POST)
-    ) {
+    // CRM-11920 all should set sortByCharacter to null, not empty string
+    if (strtolower($this->_sortByCharacter) == 'all' || !empty($_POST)) {
       $this->_sortByCharacter = null;
       $this->set('sortByCharacter', null);
     }
