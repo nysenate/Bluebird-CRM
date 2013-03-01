@@ -68,22 +68,32 @@ class CRM_Logging_Differ {
       $params[3] = array($contactID, 'Integer');
       switch ($table) {
       case 'civicrm_contact':
-        $contactIdClause = "AND id = {$contactID}";
+        $contactIdClause = "AND id = %3";
         break;
       case 'civicrm_note':
         //NYSS 5751
-        $contactIdClause = "AND ( entity_id = {$contactID} AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM {$this->db}.log_civicrm_note note WHERE note.entity_id = {$contactID} AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
+        $contactIdClause = "AND ( entity_id = %3 AND entity_table = 'civicrm_contact' ) OR (entity_id IN (SELECT note.id FROM {$this->db}.log_civicrm_note note WHERE note.entity_id = %3 AND note.entity_table = 'civicrm_contact') AND entity_table = 'civicrm_note')";
         break;
       case 'civicrm_entity_tag':
-        $contactIdClause = "AND entity_id = {$contactID} AND entity_table = 'civicrm_contact'";
+        $contactIdClause = "AND entity_id = %3 AND entity_table = 'civicrm_contact'";
         break;
       case 'civicrm_relationship':
-        $contactIdClause = "AND (contact_id_a = {$contactID} OR contact_id_b = {$contactID})";
+        $contactIdClause = "AND (contact_id_a = %3 OR contact_id_b = %3)";
         break;
+      //NYSS 6275
+      case 'civicrm_activity':
+        $contactIdClause = "
+AND (id = (select activity_id FROM civicrm_activity_target WHERE target_contact_id = %3 LIMIT 1) OR
+     id = (select activity_id FROM civicrm_activity_assignment WHERE assignee_contact_id = %3 LIMIT 1) OR
+     source_contact_id = %3)";
+        break;
+      case 'civicrm_case':
+        $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
+ 	 	 	  break;
       default:
-        $contactIdClause = "AND contact_id = {$contactID}";
+        $contactIdClause = "AND contact_id = %3";
         if ( strpos($table, 'civicrm_value') !== false ) {
-          $contactIdClause = "AND entity_id = {$contactID}";
+          $contactIdClause = "AND entity_id = %3";
         }
       }
     }
@@ -154,6 +164,19 @@ class CRM_Logging_Differ {
           continue;
         }
 
+        //NYSS 6275
+        // hack: case_type_id column is a varchar with separator. For proper mapping to type labels,
+        // we need to make sure separators are trimmed
+        if ($diff == 'case_type_id') {
+          foreach (array('original', 'changed') as $var)  {
+            if (CRM_Utils_Array::value($diff, $$var)) {
+              $holder =& $$var;
+              $val = explode(CRM_Case_BAO_Case::VALUE_SEPARATOR, $holder[$diff]);
+              $holder[$diff] = CRM_Utils_Array::value(1, $val);
+            }
+          }
+        }
+
         $diffs[] = array(
           'action' => $changed['log_action'],
           'id' => $id,
@@ -184,6 +207,8 @@ class CRM_Logging_Differ {
       'civicrm_contribution' => 'CRM_Contribute_DAO_Contribution',
       'civicrm_note' => 'CRM_Core_DAO_Note',
       'civicrm_relationship' => 'CRM_Contact_DAO_Relationship',
+      'civicrm_activity' => 'CRM_Activity_DAO_Activity',//NYSS 6275
+      'civicrm_case' => 'CRM_Case_DAO_Case',//NYSS 6275
     );
 
     if (!isset($titles[$table]) or !isset($values[$table])) {
@@ -207,7 +232,21 @@ class CRM_Logging_Differ {
           'state_province_id' => CRM_Core_PseudoConstant::stateProvince(),
           'suffix_id' => CRM_Core_PseudoConstant::individualSuffix(),
           'website_type_id' => CRM_Core_PseudoConstant::websiteType(),
+          'activity_type_id' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE),//NYSS 6275
+          'case_type_id' => CRM_Case_PseudoConstant::caseType('label', FALSE),//NYSS 6275
+          'priority_id' => CRM_Core_PseudoConstant::priority(),//NYSS 6275
         );
+
+        //NYSS 6275
+        // for columns that appear in more than 1 table
+        switch ($table) {
+          case 'civicrm_case':
+            $values[$table]['status_id'] = CRM_Case_PseudoConstant::caseStatus('label', FALSE);
+            break;
+          case 'civicrm_activity':
+            $values[$table]['status_id'] = CRM_Core_PseudoConstant::activityStatus( );
+            break;
+        }
 
         require_once str_replace('_', DIRECTORY_SEPARATOR, $daos[$table]) . '.php';
         eval("\$dao = new $daos[$table];");

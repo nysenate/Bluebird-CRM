@@ -198,7 +198,7 @@ UPDATE civicrm_log
   //NYSS 5173 calculate log records using enhanced logging
   static function getEnhancedContactLogCount( $contactID ) {
 
-    $rptSummary = new CRM_Logging_ReportSummary();
+    $rptSummary = new CRM_Report_Form_Contact_LoggingSummary();
     //CRM_Core_Error::debug_var('rptSummary',$rptSummary);
 
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
@@ -228,28 +228,20 @@ UPDATE civicrm_log
       //CRM_Core_Error::debug_var('entity',$entity);
       //CRM_Core_Error::debug_var('detail',$detail);
 
-      $from = "FROM {$loggingDB}.{$entity} entity_log_civireport";
-      if ( $entity == 'log_civicrm_note_comment' ) {
-        $from = "
-          FROM {$loggingDB}.log_civicrm_note entity_log_civireport
-          INNER JOIN {$loggingDB}.log_civicrm_note note
-            ON entity_log_civireport.entity_id = note.id
-            AND entity_log_civireport.entity_table = 'civicrm_note'";
-      }
+      $rptSummary->from($entity);
+      $from = $rptSummary->_from;
+      //CRM_Core_Error::debug_var('from',$rptSummary->_from);
 
       $sql = "
         SELECT entity_log_civireport.id as log_civicrm_entity_id, entity_log_civireport.log_type as log_civicrm_entity_log_type, entity_log_civireport.log_user_id as log_civicrm_entity_log_user_id, entity_log_civireport.log_date as log_civicrm_entity_log_date, modified_contact_civireport.display_name as log_civicrm_entity_altered_contact, modified_contact_civireport.id as log_civicrm_entity_altered_contact_id, entity_log_civireport.log_conn_id as log_civicrm_entity_log_conn_id, entity_log_civireport.log_action as log_civicrm_entity_log_action, modified_contact_civireport.is_deleted as log_civicrm_entity_is_deleted, altered_by_contact_civireport.display_name as altered_by_contact_display_name
         {$from}
-        INNER JOIN {$civiDB}.civicrm_contact modified_contact_civireport
-          ON (entity_log_civireport.{$detail['fk']} = modified_contact_civireport.id )
-        LEFT JOIN {$civiDB}.civicrm_contact altered_by_contact_civireport
-          ON (entity_log_civireport.log_user_id = altered_by_contact_civireport.id)
         WHERE ( modified_contact_civireport.id = {$contactID} )
           AND (entity_log_civireport.log_action != 'Initialization')
         GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id
       ";
       $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
       $sql = "INSERT IGNORE INTO civicrm_temp_logcount {$sql}";
+      //CRM_Core_Error::debug_var('sql',$sql);
       CRM_Core_DAO::executeQuery($sql);
     }
 
