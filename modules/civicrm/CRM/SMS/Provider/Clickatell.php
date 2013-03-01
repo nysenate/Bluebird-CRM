@@ -110,8 +110,8 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
    * Create and auth a Clickatell session.
    *
    * @return void
-   */ function __construct($provider = array(
-     ), $skipAuth = FALSE) {
+   */
+  function __construct($provider = array( ), $skipAuth = FALSE) {
     // initialize vars
     $this->_apiType = CRM_Utils_Array::value('api_type', $provider, 'http');
     $this->_providerInfo = $provider;
@@ -148,8 +148,7 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
    * @static
    *
    */
-  static
-  function &singleton($providerParams = array(
+  static function &singleton($providerParams = array(
     ), $force = FALSE) {
     $providerID = CRM_Utils_Array::value('provider_id', $providerParams);
     $skipAuth   = $providerID ? FALSE : TRUE;
@@ -175,13 +174,18 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
   function authenticate() {
     $url = $this->_providerInfo['api_url'] . "/http/auth";
 
-    $postData = "user=" . $this->_providerInfo['username'] . "&password=" . $this->_providerInfo['password'] . "&api_id=" . $this->_providerInfo['api_params']['api_id'];
+    $postDataArray = array(
+      'user'     => $this->_providerInfo['username'],
+      'password' => $this->_providerInfo['password'],
+      'api_id'    => $this->_providerInfo['api_params']['api_id']
+    );
 
     if (array_key_exists('is_test', $this->_providerInfo['api_params']) &&
         $this->_providerInfo['api_params']['is_test'] == 1 ) {
         $response = array('data' => 'OK:' . rand());
     } else {
-        $response = $this->curl($url, $postData);
+      $postData = CRM_Utils_Array::urlEncode($postDataArray);
+      $response = $this->curl($url, $postData);
     }
     if (PEAR::isError($response)) {
       return $response;
@@ -191,23 +195,23 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
     $this->_sessionID = trim($sess[1]);
 
     if ($sess[0] == "OK") {
-      return (TRUE);
+      return TRUE;
     }
     else {
       return PEAR::raiseError($response['data']);
     }
   }
 
-  function formURLPostData($url, $id = NULL) {
+  function formURLPostData($url, &$postDataArray, $id = NULL) {
     $url = $this->_providerInfo['api_url'] . $url;
-    $postData = "session_id=" . $this->_sessionID;
+    $postDataArray['session_id'] = $this->_sessionID;
     if ($id) {
       if (strlen($id) < 32 || strlen($id) > 32) {
         return PEAR::raiseError('Invalid API Message Id');
       }
-      $postData .= "&apimsgid=" . $id;
+      $postDataArray['apimsgid'] = $id;
     }
-    return array($url, $postData);
+    return $url;
   }
 
   /**
@@ -220,19 +224,19 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
    */
   function send($recipients, $header, $message, $jobID = NULL) {
     if ($this->_apiType = 'http') {
-      list($url, $postData) = $this->formURLPostData("/http/sendmsg");
+      $postDataArray = array( );
+      $url = $this->formURLPostData("/http/sendmsg", $postDataArray);
 
       if (array_key_exists('from', $this->_providerInfo['api_params'])) {
-        $postData .= "&from=" . $this->_providerInfo['api_params']['from'];
+        $postDataArray['from'] = $this->_providerInfo['api_params']['from'];
       }
-      $postData .= "&to=" . $header['To'];
-      $postData .= "&text=" . $message;
-      //$postData .= "&climsgid=" . $header['id'];
+      $postDataArray['to']   = $header['To'];
+      $postDataArray['text'] = substr($message, 0, 160); // max of 160 characters, is probably not multi-lingual
       if (array_key_exists('mo', $this->_providerInfo['api_params'])) {
-        $postData .= "&mo=" . $this->_providerInfo['api_params']['mo'];
+        $postDataArray['mo'] = $this->_providerInfo['api_params']['mo'];
       }
       // sendmsg with callback request:
-      $postData .= "&callback=3";
+      $postDataArray['callback'] = 3;
 
       $isTest = 0;
       if (array_key_exists('is_test', $this->_providerInfo['api_params']) &&
@@ -247,7 +251,7 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
        */
       if (isset($header['queue']) && is_numeric($header['queue'])) {
         if (in_array($header['queue'], range(1, 3))) {
-          $postData .= "&queue=" . $header['queue'];
+          $postDataArray['queue'] = $header['queue'];
         }
       }
 
@@ -258,7 +262,7 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
       if (isset($header['escalate']) && !empty($header['escalate'])) {
         if (is_numeric($header['escalate'])) {
           if (in_array($header['escalate'], range(1, 2))) {
-            $postData .= "&escalate=" . $header['escalate'];
+            $postDataArray['escalate'] = $header['escalate'];
           }
         }
       }
@@ -267,6 +271,7 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
         $response = array('data' => 'ID:' . rand());
       }
       else {
+        $postData = CRM_Utils_Array::urlEncode($postDataArray);
         $response = $this->curl($url, $postData);
       }
       if (PEAR::isError($response)) {
@@ -275,10 +280,17 @@ class CRM_SMS_Provider_Clickatell extends CRM_SMS_Provider {
       $send = explode(":", $response['data']);
 
       if ($send[0] == "ID") {
-        $this->createActivity($send[1], $message, $header, $jobID);
-        return $send[1];
+        //trim whitespace around the id
+        $apiMsgID = trim($send[1], " \t\r\n");
+        $this->createActivity($apiMsgID, $message, $header, $jobID);
+        return $apiMsgID;
       }
       else {
+        // delete any parent activity & throw error
+        if (CRM_Utils_Array::value('parent_activity_id', $header)) {
+          $params = array('id' => $header['parent_activity_id']);
+          CRM_Activity_BAO_Activity::deleteActivity($params);
+        }
         return PEAR::raiseError($response['data']);
       }
     }

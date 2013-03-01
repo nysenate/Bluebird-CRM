@@ -1,5 +1,5 @@
 <?php
-// $Id: Contact.php 40968 2012-06-12 14:28:16Z kurund $
+// $Id: Contact.php 43319 2012-10-31 20:32:06Z totten $
 
 
 /*
@@ -36,7 +36,7 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Contact
  * @copyright CiviCRM LLC (c) 2004-2012
- * $Id: Contact.php 40968 2012-06-12 14:28:16Z kurund $
+ * $Id: Contact.php 43319 2012-10-31 20:32:06Z totten $
  *
  */
 
@@ -62,7 +62,8 @@ require_once 'CRM/Contact/BAO/Contact.php';
  */
 function civicrm_contact_create(&$params) {
   // call update and tell it to create a new contact
-  _civicrm_initialize(TRUE);
+  _civicrm_initialize();
+  $errorScope = CRM_Core_TemporaryErrorScope::useException();
   try {
     civicrm_api_check_permission(__FUNCTION__, $params, TRUE);
     $create_new = TRUE;

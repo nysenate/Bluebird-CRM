@@ -162,18 +162,18 @@ class CRM_Utils_System {
 
   //NYSS 3331
   static function makeQueryString($query) {
- 	  if (is_array($query)) {
- 	 	  $buf = '';
- 	 	  foreach ($query as $key => $value) {
- 	 	    if ($buf != '') {
- 	 	      $buf .= '&';
- 	 	    }
- 	 	    $buf .= urlencode($key) . '=' . urlencode($value);
- 	 	  }
- 	 	  $query = $buf;
- 	 	}
- 	 	return $query;
- 	}
+    if (is_array($query)) {
+      $buf = '';
+      foreach ($query as $key => $value) {
+        if ($buf != '') {
+          $buf .= '&';
+        }
+        $buf .= urlencode($key) . '=' . urlencode($value);
+      }
+      $query = $buf;
+    }
+    return $query;
+  }
 
   /**
    * Generate an internal CiviCRM URL
@@ -197,16 +197,16 @@ class CRM_Utils_System {
     $frontend = FALSE
   ) {
     //NYSS
-        /*if (is_array($query)) {
-            $buf = '';
-            foreach ($query as $key => $value) {
-              if ($buf != '') {
-                $buf .= '&';
-              }
-              $buf .= urlencode($key) . '=' . urlencode($value);
-            }
-            $query = $buf;
-        }*/
+    /*if (is_array($query)) {
+      $buf = '';
+      foreach ($query as $key => $value) {
+        if ($buf != '') {
+          $buf .= '&';
+        }
+        $buf .= urlencode($key) . '=' . urlencode($value);
+      }
+      $query = $buf;
+    }*/
     $query = self::makeQueryString($query);
 
     // we have a valid query and it has not yet been transformed
@@ -218,7 +218,7 @@ class CRM_Utils_System {
     return $config->userSystem->url($path, $query, $absolute, $fragment, $htmlize, $frontend);
   }
 
-  static function href($text, $path = NULL, $query = NULL, $absolute = TRUE,
+  function href($text, $path = NULL, $query = NULL, $absolute = TRUE,
     $fragment = NULL, $htmlize = TRUE, $frontend = FALSE
   ) {
     $url = self::url($path, $query, $absolute, $fragment, $htmlize, $frontend);
@@ -1206,7 +1206,7 @@ class CRM_Utils_System {
         $errorMessage = ts('Your database is marked with an unexpected version number: %1. The v%2 codebase may not be compatible with your database state. You will need to determine the correct version corresponding to your current database state. You may want to revert to the codebase you were using until you resolve this problem.',
           array(1 => $dbVersion, 2 => $codeVersion)
         );
-        $errorMessage .= "<p>" . ts('OR if this is an svn install, you might want to fix version.txt file.') . "</p>";
+        $errorMessage .= "<p>" . ts('OR if this is an svn install, you might want to fix civicrm-version.php file.') . "</p>";
         return FALSE;
       }
     }

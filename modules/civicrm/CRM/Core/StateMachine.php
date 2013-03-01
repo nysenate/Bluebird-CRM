@@ -369,5 +369,19 @@ class CRM_Core_StateMachine {
   function cancelAction() {
     return $this->_controller->cancelAction();
   }
+
+  /**
+   * Should the controller reset the session
+   * In some cases, specifically search we want to remember
+   * state across various actions and want to go back to the
+   * beginning from the final state, but retain the same session
+   * values
+   *
+   * @return boolean
+   */
+  function shouldReset() {
+    return TRUE;
+  }
+
 }
 

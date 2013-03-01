@@ -67,7 +67,6 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
     /*
      * initialize the task and row fields
      */
-
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -220,7 +219,11 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
    */
   public function postProcess() {
     $params = $this->exportValues();
-
+    $dates = array(
+      'join_date',
+      'membership_start_date',
+      'membership_end_date',
+     );
     if (isset($params['field'])) {
       $customFields = array();
       foreach ($params['field'] as $key => $value) {
@@ -230,7 +233,7 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
         }
 
         if (CRM_Utils_Array::value('membership_type', $value)) {
-          $membershipTypeId = $value['membership_type_id'] = $value['membership_type'];
+          $membershipTypeId = $value['membership_type_id'] = $value['membership_type'][1];
         }
 
         unset($value['membership_source']);
@@ -239,7 +242,11 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
         //Get the membership status
         $value['status_id'] = (CRM_Utils_Array::value('membership_status', $value)) ? $value['membership_status'] : CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $key, 'status_id');
         unset($value['membership_status']);
-
+        foreach ($dates as $val) {
+          if (isset($value[$val])) {
+            $value[$val] = CRM_Utils_Date::processDate($value[$val]);
+          }
+        }
         if (empty($customFields)) {
           if (!CRM_Utils_Array::value('membership_type_id', $value)) {
             $membershipTypeId = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $key, 'membership_type_id');
@@ -271,10 +278,10 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
           CRM_Core_BAO_CustomValueTable::store($value['custom'], 'civicrm_membership', $membership->id);
         }
       }
-      CRM_Core_Session::setStatus("Your updates have been saved.");
+      CRM_Core_Session::setStatus(ts('Your updates have been saved.'));
     }
     else {
-      CRM_Core_Session::setStatus("No updates have been saved.");
+      CRM_Core_Session::setStatus(ts('No updates have been saved.'));
     }
   }
   //end of function

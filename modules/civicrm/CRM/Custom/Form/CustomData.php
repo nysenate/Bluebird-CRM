@@ -93,11 +93,16 @@ class CRM_Custom_Form_CustomData {
 
     $form->_groupID = CRM_Utils_Request::retrieve('groupID', 'Positive', $form);
 
+    $subType = $form->_subType;
+    if (!is_array($subType) && strstr($subType, CRM_Core_DAO::VALUE_SEPARATOR)) {
+      $subType = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, ',', trim($subType, CRM_Core_DAO::VALUE_SEPARATOR));
+    }
+    
     $groupTree = &CRM_Core_BAO_CustomGroup::getTree($form->_type,
       $form,
       $form->_entityId,
       $form->_groupID,
-      $form->_subType,
+      $subType,
       $form->_subName
     );
 

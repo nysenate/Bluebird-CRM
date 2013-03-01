@@ -1015,7 +1015,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       return FALSE;
     }
 
-    static $skipFields = array('location_type_id', 'is_primary', 'phone_type_id', 'provider_id', 'country_id', 'website_type_id');
+    static $skipFields = array('location_type_id', 'is_primary', 'phone_type_id', 'provider_id', 'country_id', 'website_type_id', 'master_id');
     foreach ($fields as $name => $value) {
       $skipField = FALSE;
       foreach ($skipFields as $skip) {

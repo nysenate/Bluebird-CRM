@@ -215,8 +215,8 @@ SELECT id
               foreach ($options as $optionId => $optionValue) {
                 $countRow++;
                 $defaults['value'][$countRow] = $optionValue['amount'];
-                $defaults['label'][$countRow] = $optionValue['label'];
-                $defaults['name'][$countRow] = $optionValue['name'];
+                $defaults['label'][$countRow] = CRM_Utils_Array::value('label', $optionValue);
+                $defaults['name'][$countRow] = CRM_Utils_Array::value('name', $optionValue);
                 $defaults['weight'][$countRow] = $optionValue['weight'];
 
                 $defaults["price_field_value"][$countRow] = $optionValue['id'];
@@ -507,6 +507,7 @@ SELECT id
           }
             /* || CRM_Utils_Array::value( 'price_field_value', $params )|| CRM_Utils_Array::value( 'price_field_other', $params )*/
           if (!empty($options) || CRM_Utils_Array::value('is_allow_other_amount', $params)) {
+            $fieldParams['is_quick_config'] = 1;
             $noContriAmount = NULL;
             $usedPriceSetId = CRM_Price_BAO_Set::getFor('civicrm_contribution_page', $this->_id, 3);
             if (!(CRM_Utils_Array::value('price_field_id', $params) || CRM_Utils_Array::value('price_field_other', $params)) && !$usedPriceSetId) {

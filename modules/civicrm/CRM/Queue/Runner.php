@@ -145,8 +145,9 @@ class CRM_Queue_Runner {
       // setting -- it should be more of a contextual/stack-based setting. 
       // This should be appropriate because queue-runners are not used with
       // basic web pages -- they're used with CLI/REST/AJAX.
-      CRM_Core_Error::setRaiseException();
+      $errorScope = CRM_Core_TemporaryErrorScope::useException();
       $taskResult = $this->runNext();
+      $errorScope = NULL;
     }
 
     if ($taskResult['numberOfItems'] == 0) {

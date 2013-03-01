@@ -751,4 +751,9 @@
      <page_type>1</page_type>
      <weight>610</weight>
   </item>
+     <item>
+     <path>civicrm/sms/callback</path>
+     <page_callback>CRM_SMS_Page_Callback</page_callback>
+     <access_callback>1</access_callback>
+  </item>
 </menu>

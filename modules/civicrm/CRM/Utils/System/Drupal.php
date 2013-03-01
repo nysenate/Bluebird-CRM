@@ -509,11 +509,10 @@ AND    u.status = 1
     $user = user_load_by_name($username);
 
     if (empty($user->uid)) {
-
       return FALSE;
-
     }
 
+    $uid = $user->uid;
     $contact_id = CRM_Core_BAO_UFMatch::getContactId($uid);
 
     // lets store contact id and user id in session
@@ -601,7 +600,7 @@ AND    u.status = 1
 
     if (!file_exists("$cmsPath/includes/bootstrap.inc")) {
       if ($throwError) {
-        echo '<br />Sorry, could not able to locate bootstrap.inc.';
+        echo '<br />Sorry, could not locate bootstrap.inc\n';
         exit();
       }
       return FALSE;
@@ -610,6 +609,14 @@ AND    u.status = 1
     // load drupal bootstrap
     chdir($cmsPath);
     define('DRUPAL_ROOT', $cmsPath);
+
+    // For drupal multi-site CRM-11313
+    if ($realPath && strpos($realPath, 'sites/all/modules/') === FALSE) {
+      preg_match('@sites/([^/]*)/modules@s', $realPath, $matches);
+      if (!empty($matches[1])) {
+        $_SERVER['HTTP_HOST'] = $matches[1];
+      }
+    }
     require_once 'includes/bootstrap.inc';
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 

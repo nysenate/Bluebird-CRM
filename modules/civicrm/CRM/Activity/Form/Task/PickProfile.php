@@ -119,7 +119,7 @@ class CRM_Activity_Form_Task_PickProfile extends CRM_Activity_Form_Task {
     }
 
     if (empty($profiles)) {
-      CRM_Core_Session::setStatus("You will need to create a Profile containing the {$types[0]} fields you want to edit before you can use Batch Update via Profile. Navigate to Administer Civicrm >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.");
+      CRM_Core_Session::setStatus("You will need to create a Profile containing the {$types[0]} fields you want to edit before you can use Batch Update via Profile. Navigate to Administer CiviCRM >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.");
       CRM_Utils_System::redirect($this->_userContext);
     }
     elseif ($notEditable) {

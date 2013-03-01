@@ -57,8 +57,6 @@ class CRM_Core_QuickForm_Action_Cancel extends CRM_Core_QuickForm_Action {
    * @access public
    */
   function perform(&$page, $actionName) {
-    // $this->_stateMachine->reset( );
-
     // conditional actions if cancelAction is defined
     $this->_stateMachine->cancelAction();
 

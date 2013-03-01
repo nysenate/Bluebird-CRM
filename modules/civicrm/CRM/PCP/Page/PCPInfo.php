@@ -88,7 +88,7 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
       switch (ucfirst($config->userFramework)) {
         case 'Joomla':
           $loginUrl = str_replace('administrator/', '', $loginUrl);
-          $loginUrl .= 'index.php?option=com_user&view=login';
+          $loginUrl .= 'index.php?option=com_users&view=login';
           break;
 
         case 'Drupal':
@@ -158,7 +158,7 @@ class CRM_PCP_Page_PCPInfo extends CRM_Core_Page {
         $pcpInfo['page_id'], $default, array('start_date', 'end_date')
       );
     }
-    
+
     $pageInfo = $default[$pcpInfo['page_id']];
 
     if ($pcpInfo['contact_id'] == $session->get('userID')) {

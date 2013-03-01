@@ -12,7 +12,7 @@ LEFT JOIN civicrm_price_field_value cpfv ON cpf.id = cpfv.price_field_id
 WHERE cps.name = 'default_contribution_amount';
 
 INSERT INTO civicrm_line_item ( entity_table, entity_id, price_field_id,label, qty, unit_price, line_total, participant_count, price_field_value_id )
-SELECT 'civicrm_contribution', cc.id, @fieldID, 'Contribution Amount', ROUND(total_amount,0), '1.00', total_amount , 0, @fieldValueID
+SELECT 'civicrm_contribution', cc.id, @fieldID, 'Contribution Amount', 1, total_amount, total_amount , 0, @fieldValueID
 FROM `civicrm_contribution` cc
 LEFT JOIN civicrm_line_item cli ON cc.id=cli.entity_id and cli.entity_table = 'civicrm_contribution'
 LEFT JOIN civicrm_membership_payment cmp ON cc.id = cmp.contribution_id

@@ -51,7 +51,7 @@ require_once 'CRM/Campaign/BAO/Petition.php';
  * @access public
  * @deprecated - api currently not supported
  */
-function &civicrm_api3_survey_respondant_get($params) {
+function civicrm_api3_survey_respondant_get(&$params) {
 
   civicrm_api3_verify_one_mandatory($params, NULL, array('survey_id', 'id'));
 

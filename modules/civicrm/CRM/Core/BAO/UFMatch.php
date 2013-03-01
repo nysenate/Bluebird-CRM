@@ -254,8 +254,12 @@ class CRM_Core_BAO_UFMatch extends CRM_Core_DAO_UFMatch {
 SELECT id
 FROM   civicrm_uf_match
 WHERE  contact_id = %1
+AND    domain_id = %2
 ";
-        $params = array(1 => array($dao->contact_id, 'Integer'));
+        $params = array(
+          1 => array($dao->contact_id, 'Integer'),
+          2 => array(CRM_Core_Config::domainID(), 'Integer'),
+        );
         $conflict = CRM_Core_DAO::singleValueQuery($sql, $params);
 
         if (!$conflict) {

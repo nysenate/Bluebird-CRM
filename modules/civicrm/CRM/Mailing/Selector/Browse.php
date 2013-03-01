@@ -122,10 +122,11 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
         // sort by completed date for archived and undefined get
         $completedOrder = CRM_Utils_Sort::DESCENDING;
       }
+      $nameHeaderLabel = ($this->_parent->get('sms')) ? ts('SMS Name') : ts('Mailing Name');
 
       self::$_columnHeaders = array(
         array(
-          'name' => ts('Mailing Name'),
+          'name' => $nameHeaderLabel,
           'sort' => 'name',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
@@ -197,12 +198,13 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
     $params = array();
     $whereClause = "$mailingACL AND " . $this->whereClause($params);
 
+    // CRM-11919 added addition ON clauses to mailing_job to match getRows
     $query = "
    SELECT  COUNT( DISTINCT $mailing.id ) as count
      FROM  $mailing
-LEFT JOIN  $job ON ( $mailing.id = $job.mailing_id) 
+LEFT JOIN  $job ON ( $mailing.id = $job.mailing_id AND civicrm_mailing_job.is_test = 0 AND civicrm_mailing_job.parent_id IS NULL )
 LEFT JOIN  civicrm_contact createdContact   ON ( $mailing.created_id   = createdContact.id )
-LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = scheduledContact.id ) 
+LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = scheduledContact.id )
     WHERE  $whereClause";
 
     return CRM_Core_DAO::singleValueQuery($query, $params);
@@ -556,7 +558,7 @@ SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
 FROM civicrm_mailing
 LEFT JOIN civicrm_mailing_job ON (civicrm_mailing_job.mailing_id = civicrm_mailing.id)
 LEFT JOIN civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
-LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id ) 
+LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id )
 WHERE $whereClause
 ORDER BY LEFT(name, 1)
 ";

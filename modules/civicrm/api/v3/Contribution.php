@@ -75,6 +75,11 @@ function civicrm_api3_contribution_create($params) {
     $ids['contribution'] = $params['id'];
   }
   $contribution = CRM_Contribute_BAO_Contribution::create($values, $ids);
+
+  if(is_a($contribution, 'CRM_Core_Error')) {
+    return civicrm_api3_create_error($contribution->_errors[0]['message']);
+  } 
+
   if(!empty($params['use_default_price_set']) && empty($params['id'] )){
     _civicrm_api3_contribution_createdefaultlineitem($params, $contribution);
   }

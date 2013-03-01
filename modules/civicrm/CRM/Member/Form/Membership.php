@@ -38,6 +38,7 @@
  *
  */
 class CRM_Member_Form_Membership extends CRM_Member_Form {
+
   protected $_memType = NULL;
 
   protected $_onlinePendingContributionId;
@@ -49,34 +50,47 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
   protected $_recurMembershipTypes;
 
   protected $_memTypeSelected;
+
   /*
    * Display name of the member
    */
   protected $_memberDisplayName = null;
+
   /*
   * email of the person paying for the membership (used for receipts)
   */
   protected $_memberEmail = null;
+
   /*
   * Contact ID of the member
   */
   protected $_contactID = null;
+
   /*
   * Display name of the person paying for the membership (used for receipts)
   */
   protected $_contributorDisplayName = null;
+
  /*
   * email of the person paying for the membership (used for receipts)
   */
   protected $_contributorEmail = null;
+
   /*
   * email of the person paying for the membership (used for receipts)
   */
   protected $_contributorContactID = null;
+
  /*
   * ID of the person the receipt is to go to
   */
   protected $_receiptContactId = null;
+
+  /*
+   * Keep a class variable for ALL membeshipID's so
+   * postProcess hook function can do something with it
+   */
+  protected $_membershipIDs = array( );
 
   public function preProcess() {
     //custom data related code
@@ -93,15 +107,9 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     $this->assign('priceSetId', $this->_priceSetId);
 
     // action
-    $this->_action = CRM_Utils_Request::retrieve('action', 'String',
-      $this, FALSE, 'add'
-    );
-    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive',
-      $this
-    );
-    $this->_contactID = CRM_Utils_Request::retrieve('cid', 'Positive',
-      $this
-    );
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'add');
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+    $this->_contactID = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
     $this->_processors = array();
 
 
@@ -114,10 +122,10 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     $this->assign('context', $this->_context);
 
     if ($this->_id) {
-      $this->_memType = CRM_Core_DAO::getFieldValue("CRM_Member_DAO_Membership", $this->_id,
-        "membership_type_id"
-      );
+      $this->_memType = CRM_Core_DAO::getFieldValue("CRM_Member_DAO_Membership", $this->_id, "membership_type_id");
+      $this->_membershipIDs[] = $this->_id;
     }
+
     $this->_mode = CRM_Utils_Request::retrieve('mode', 'String', $this);
     $this->assign('membershipMode', $this->_mode);
 
@@ -493,29 +501,44 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     $dao = new CRM_Member_DAO_MembershipType();
     $dao->domain_id = CRM_Core_Config::domainID();
     $dao->find();
-    $membershipType = array();
-    while ($dao->fetch()) {
-      if ($dao->is_active) {
-        $membershipType[$dao->id] = $dao->name;
-        if ($this->_mode && !$dao->minimum_fee) {
+
+    // retrieve all memberships
+    $allMemberships = CRM_Member_BAO_Membership::buildMembershipTypeValues($this);
+
+    $allMembershipInfo = $membershipType = array();
+    foreach( $allMemberships as $key => $values ) {
+      if (CRM_Utils_Array::value('is_active', $values) ) {
+        $membershipType[$key] = CRM_Utils_Array::value('name', $values);
+        if ($this->_mode && !CRM_Utils_Array::value('minimum_fee', $values)) {
           continue;
         }
         else {
-          if (!CRM_Utils_Array::value($dao->member_of_contact_id, $selMemTypeOrg)) {
-            $selMemTypeOrg[$dao->member_of_contact_id] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
-              $dao->member_of_contact_id,
+          $memberOfContactId = CRM_Utils_Array::value('member_of_contact_id', $values);
+          if (!CRM_Utils_Array::value($memberOfContactId, $selMemTypeOrg)) {
+            $selMemTypeOrg[$memberOfContactId] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+              $memberOfContactId,
               'display_name',
               'id'
             );
 
-            $selOrgMemType[$dao->member_of_contact_id][0] = ts('- select -');
+            $selOrgMemType[$memberOfContactId][0] = ts('- select -');
           }
-          if (!CRM_Utils_Array::value($dao->id, $selOrgMemType[$dao->member_of_contact_id])) {
-            $selOrgMemType[$dao->member_of_contact_id][$dao->id] = $dao->name;
+          if (!CRM_Utils_Array::value($key, $selOrgMemType[$memberOfContactId])) {
+            $selOrgMemType[$memberOfContactId][$key] = CRM_Utils_Array::value('name', $values);
           }
         }
+
+        // build membership info array, which is used to set the payment information block when
+        // membership type is selected.
+        $allMembershipInfo[$key] = array(
+          'contribution_type_id' => CRM_Utils_Array::value('contribution_type_id', $values),
+          'total_amount'         => CRM_Utils_Money::format($values['minimum_fee'], NULL, '%a'),
+          'auto_renew'           => CRM_Utils_Array::value('auto_renew', $values)
+        );
       }
     }
+
+    $this->assign('allMembershipInfo', json_encode($allMembershipInfo));
 
     // show organization by default, if only one organization in
     // the list
@@ -965,12 +988,12 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
    * @return None
    */
   public function postProcess() {
-
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Member_BAO_Membership::deleteRelatedMemberships($this->_id);
       CRM_Member_BAO_Membership::deleteMembership($this->_id);
       return;
     }
+
     $config = CRM_Core_Config::singleton();
     // get the submitted form values.
     $this->_params = $formValues = $this->controller->exportValues($this->_name);
@@ -983,9 +1006,7 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
     }
 
     //take the required membership recur values.
-    if ($this->_mode &&
-      CRM_Utils_Array::value('auto_renew', $this->_params)
-    ) {
+    if ($this->_mode && CRM_Utils_Array::value('auto_renew', $this->_params)) {
       $params['is_recur'] = $this->_params['is_recur'] = $formValues['is_recur'] = TRUE;
       $mapping = array(
         'frequency_interval' => 'duration_interval',
@@ -1395,6 +1416,7 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
         $membershipParams = array_merge($membershipTypeValues[$memType], $params);
         $membership = CRM_Member_BAO_Membership::create($membershipParams, $ids);
 
+        $this->_membershipIDs[] = $membership->id;
         $createdMemberships[$memType] = $membership;
         $count++;
       }
@@ -1488,6 +1510,8 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
           }
           $membershipParams = array_merge($params, $membershipTypeValues[$memType]);
           $membership = CRM_Member_BAO_Membership::create($membershipParams, $ids);
+
+          $this->_membershipIDs[] = $membership->id;
           $createdMemberships[$memType] = $membership;
           $count++;
         }
@@ -1560,6 +1584,12 @@ WHERE   id IN ( ' . implode(' , ', array_keys($membershipType)) . ' )';
         $statusMsg .= '<br/>' . ts('A membership confirmation and receipt has been sent to %1.', array(1 => $this->_contributorEmail));
       }
     }
+
+    // finally set membership id if already not set
+    if (!$this->_id) {
+      $this->_id = $membership->id;
+    }
+
     CRM_Core_Session::setStatus($statusMsg);
 
     $buttonName = $this->controller->getButtonName();

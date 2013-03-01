@@ -50,6 +50,10 @@ class CRM_Upgrade_Headless {
       throw new Exception($error);
     }
 
+    // CRM-11156
+    $preUpgradeMessage = NULL;
+    $upgrade->setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
+
     $postUpgradeMessageFile = CRM_Utils_File::tempnam('civicrm-post-upgrade');
     $queueRunner = new CRM_Queue_Runner(array(
         'title' => ts('CiviCRM Upgrade Tasks'),

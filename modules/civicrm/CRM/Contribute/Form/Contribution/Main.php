@@ -66,14 +66,14 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
    */
   public function preProcess() {
     parent::preProcess();
-    
+
     $this->_ppType = CRM_Utils_Array::value('type', $_GET);
     $this->assign('ppType', FALSE);
     if ($this->_ppType) {
       $this->assign('ppType', TRUE);
       return CRM_Core_Payment_ProcessorForm::preProcess($this);
     }
-    
+
     //get payPal express id and make it available to template
     $paymentProcessors = $this->get('paymentProcessors');
     if (!empty($paymentProcessors)) {
@@ -412,6 +412,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     $this->addRule("email-{$this->_bltID}", ts('Email is not valid.'), 'email');
 
     $this->_paymentProcessors = $this->get('paymentProcessors');
+    $pps = array();
     if (!empty($this->_paymentProcessors)) {
       $pps = $this->_paymentProcessors;
       foreach ($pps as $key => & $name) {
@@ -489,7 +490,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $this->set('useForMember', $this->_useForMember);
       }
     }
-    
+
     if ($this->_values['is_for_organization']) {
       $this->buildOnBehalfOrganization();
     }
@@ -570,27 +571,29 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $elements[]  = &$this->createElement('radio', NULL, '', ts('List my contribution anonymously'), 1, $extraOption);
       $this->addGroup($elements, 'pcp_is_anonymous', NULL, '&nbsp;&nbsp;&nbsp;');
       $this->_defaults['pcp_is_anonymous'] = 0;
-      
+
       $this->add('text', 'pcp_roll_nickname', ts('Name'), array('maxlength' => 30));
       $this->add('textarea', 'pcp_personal_note', ts('Personal Note'), array('style' => 'height: 3em; width: 40em;'));
     }
-    
+
     //we have to load confirm contribution button in template
-    //when multiple payment processor as the user 
+    //when multiple payment processor as the user
     //can toggle with payment processor selection
     $billingModePaymentProcessors = 0;
-    foreach ($this->_paymentProcessors as $key => $values) {
-      if ($values['billing_mode'] == CRM_Core_Payment::BILLING_MODE_BUTTON) {
-        $billingModePaymentProcessors++;
+    if ( !empty( $this->_paymentProcessors ) ) {
+      foreach ($this->_paymentProcessors as $key => $values) {
+        if ($values['billing_mode'] == CRM_Core_Payment::BILLING_MODE_BUTTON) {
+          $billingModePaymentProcessors++;
+        }
       }
     }
-    
+
     if ($billingModePaymentProcessors && count($this->_paymentProcessors) == $billingModePaymentProcessors) {
       $allAreBillingModeProcessors = TRUE;
     } else {
       $allAreBillingModeProcessors = FALSE;
     }
-    
+
     if (!($allAreBillingModeProcessors && !$this->_values['is_pay_later'])) {
       $this->addButtons(array(
           array(
@@ -1223,7 +1226,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $check = array();
         $otherAmount = FALSE;
         while ($priceField->fetch()) {
-          CRM_Price_BAO_FieldValue::getValues($priceField->id,&$values);
+          CRM_Price_BAO_FieldValue::getValues($priceField->id, $values);
           if ($priceField->name == "membership_amount") {
             if ($priceFiledID = CRM_Utils_Array::value("price_{$priceField->id}", $params)) {
               $this->_params['selectMembership'] = $params['selectMembership'] = CRM_Utils_Array::value('membership_type_id', $values[$priceFiledID]);

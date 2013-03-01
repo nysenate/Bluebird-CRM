@@ -1560,4 +1560,43 @@ function _civicrm_api3_deprecated_contact_check_params(&$params, $dupeCheck = TR
   return NULL;
 }
 
+/**
+ *
+ * @param <type> $result
+ * @param <type> $activityTypeID
+ *
+ * @return <type> $params
+ */
+function _civicrm_api3_deprecated_activity_buildmailparams($result, $activityTypeID) {
+  // get ready for collecting data about activity to be created
+  $params = array();
+
+  $params['activity_type_id'] = $activityTypeID;
+
+  $params['status_id'] = 2;
+  $params['source_contact_id'] = $params['assignee_contact_id'] = $result['from']['id'];
+  $params['target_contact_id'] = array();
+  $keys = array('to', 'cc', 'bcc');
+  foreach ($keys as $key) {
+    if (is_array($result[$key])) {
+      foreach ($result[$key] as $key => $keyValue) {
+        if (!empty($keyValue['id'])) {
+          $params['target_contact_id'][] = $keyValue['id'];
+        }
+      }
+    }
+  }
+  $params['subject'] = $result['subject'];
+  $params['activity_date_time'] = $result['date'];
+  $params['details'] = $result['body'];
+
+  for ($i = 1; $i <= 5; $i++) {
+    if (isset($result["attachFile_$i"])) {
+      $params["attachFile_$i"] = $result["attachFile_$i"];
+    }
+  }
+
+  return $params;
+}
+
 // @codeCoverageIgnoreEnd

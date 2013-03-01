@@ -110,7 +110,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     $args['version'] = '56.0';
 
     //LCD if recurring, collect additional data and set some values
-    if ($params['is_recur']) {
+    if (CRM_Utils_Array::value('is_recur',$params)) {
       $args['L_BILLINGTYPE0'] = 'RecurringPayments';
       //$args['L_BILLINGAGREEMENTDESCRIPTION0'] = 'Recurring Contribution';
       $args['L_BILLINGAGREEMENTDESCRIPTION0'] = $params['amount'] . " Per " . $params['frequency_interval'] . " " . $params['frequency_unit'];

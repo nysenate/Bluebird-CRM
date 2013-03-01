@@ -13,8 +13,7 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
    *
    * @return None
    */
-  static
-  function postProcess(&$form) {
+  static function postProcess(&$form) {
 
     list($formValues, $categories, $html_message, $messageToken, $returnProperties) = self::processMessageTemplate($form);
 
@@ -66,9 +65,7 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
       $tokenHtml = CRM_Utils_Token::replaceContributionTokens($tokenHtml, $contribution[$contributionId], TRUE, $messageToken);
       $tokenHtml = CRM_Utils_Token::replaceHookTokens($tokenHtml, $contact[$contactId], $categories, TRUE);
 
-      if (defined('CIVICRM_MAIL_SMARTY') &&
-        CIVICRM_MAIL_SMARTY
-      ) {
+      if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
         $smarty = CRM_Core_Smarty::singleton();
         // also add the tokens to the template
         $smarty->assign_by_ref('contact', $contact);
@@ -79,16 +76,16 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
 
       // update dates (do it for each contribution including grouped recurring contribution)
       if ($receipt_update) {
-        $results = civicrm_api("Contribution", "create", array('version' => '3', 'id' => $contributionId, 'receipt_date' => $nowDate));
+        $result = CRM_Core_DAO::setFieldValue('CRM_Contribute_DAO_Contribution', $contributionId, 'receipt_date', $nowDate);
         // We can't use CRM_Core_Error::fatal here because the api error elevates the exception level. FIXME. dgg
-        if (! $results['is_error']) {
+        if ($result) {
           $receipts++;
         }
       }
       if ($thankyou_update) {
-        $results = civicrm_api("Contribution", "create", array('version' => '3', 'id' => $contributionId, 'thankyou_date' => $nowDate));
+        $result = CRM_Core_DAO::setFieldValue('CRM_Contribute_DAO_Contribution', $contributionId, 'thankyou_date', $nowDate);
         // We can't use CRM_Core_Error::fatal here because the api error elevates the exception level. FIXME. dgg
-        if (! $results['is_error']) {
+        if ($result) {
           $thanks++;
         }
       }
@@ -110,7 +107,7 @@ class CRM_Contribute_Form_Task_PDFLetterCommon extends CRM_Contact_Form_Task_PDF
     if ($updateStatus) {
       CRM_Core_Session::setStatus($updateStatus);
     }
-    
+
     CRM_Utils_System::civiExit(1);
   }
   //end of function

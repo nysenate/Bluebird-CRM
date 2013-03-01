@@ -1,6 +1,8 @@
 <?php
 // $Id$
 
+define(API_V3_EXTENSION_DELIMITER, ',');
+
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.2                                                |
@@ -43,31 +45,38 @@
  *
  * @param  array   	  $params input parameters
  *                          - key: string, eg "com.example.myextension"
+ *                          - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
+ *                            using 'keys' should be more performant than making multiple API calls with 'key'
  *
- * @return boolean        true if success, else false
+ * @return array API result
  * @static void
  * @access public
  * @example ExtensionInstall.php
  *
  */
 function civicrm_api3_extension_install($params) {
-  $ext = new CRM_Core_Extensions();
-  $exts = $ext->getExtensions();
-  if (!$ext->isEnabled()) {
-    return civicrm_api3_create_error('Extension support is not enabled');
-  } elseif (!isset($params['key'])) {
-    return civicrm_api3_create_error('Missing required parameter: key');
-  } elseif (!$ext->isExtensionKey($params['key']) || !array_key_exists($params['key'], $exts)) {
-    return civicrm_api3_create_error('Unknown extension key');
-  } elseif ($exts[$params['key']]->status == 'installed' && $exts[$params['key']]->is_active == TRUE) {
-    return civicrm_api3_create_success(); // already installed
-  } elseif (!in_array($exts[$params['key']]->status, array('remote', 'local'))) {
-    return civicrm_api3_create_error('Can only install extensions with status "Available (Local)" or "Available (Remote)"');
-  } else {
-    // pre-condition not installed
-    $ext->install(NULL, $params['key']);
+  $keys = _civicrm_api3_getKeys($params);
+  if (count($keys) == 0) {
     return civicrm_api3_create_success();
   }
+
+  $ext = new CRM_Core_Extensions();
+  $exts = $ext->getExtensions();
+  foreach ($keys as $key) {
+    if (!$ext->isEnabled()) {
+      return civicrm_api3_create_error('Extension support is not enabled');
+    } elseif (!$ext->isExtensionKey($key) || !array_key_exists($key, $exts)) {
+      return civicrm_api3_create_error('Invalid extension key: ' . $key);
+    } elseif ($exts[$key]->status == 'installed' && $exts[$key]->is_active == TRUE) {
+      // already installed
+    } elseif (!in_array($exts[$key]->status, array('remote', 'local'))) {
+      return civicrm_api3_create_error('Can only install extensions with status "Available (Local)" or "Available (Remote)"');
+    } else {
+      // pre-condition: not installed
+      $ext->install(NULL, $key); // FIXME: only rebuild cache one time
+    }
+  }
+  return civicrm_api3_create_success();
 }
 
 /**
@@ -75,33 +84,40 @@ function civicrm_api3_extension_install($params) {
  *
  * @param  array   	  $params input parameters
  *                          - key: string, eg "com.example.myextension"
+ *                          - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
+ *                            using 'keys' should be more performant than making multiple API calls with 'key'
  *
- * @return boolean        true if success, else false
+ * @return array API result
  * @static void
  * @access public
  * @example ExtensionEnable.php
  *
  */
 function civicrm_api3_extension_enable($params) {
-  $ext = new CRM_Core_Extensions();
-  $exts = $ext->getExtensions();
-  if (!$ext->isEnabled()) {
-    return civicrm_api3_create_error('Extension support is not enabled');
-  } elseif (!array_key_exists('key', $params)) {
-    return civicrm_api3_create_error('Missing required parameter: key');
-  } elseif (!$ext->isExtensionKey($params['key']) || !array_key_exists($params['key'], $exts)) {
-    return civicrm_api3_create_error('Unknown extension key');
-  } elseif ($exts[$params['key']]->status == 'installed' && $exts[$params['key']]->is_active == TRUE) {
-    return civicrm_api3_create_success(); // already enabled
-  } elseif ($exts[$params['key']]->status != 'installed') {
-    return civicrm_api3_create_error('Can only enable extensions which have been previously installed');
-  } elseif ($exts[$params['key']]->is_active == TRUE) {
-    return civicrm_api3_create_error('Can only enable extensions which are currently inactive');
-  } else {
-    // pre-condition: installed and inactive
-    $ext->enable(NULL, $params['key']);
+  $keys = _civicrm_api3_getKeys($params);
+  if (count($keys) == 0) {
     return civicrm_api3_create_success();
   }
+
+  $ext = new CRM_Core_Extensions();
+  $exts = $ext->getExtensions();
+  foreach ($keys as $key) {
+    if (!$ext->isEnabled()) {
+      return civicrm_api3_create_error('Extension support is not enabled');
+    } elseif (!$ext->isExtensionKey($key) || !array_key_exists($key, $exts)) {
+      return civicrm_api3_create_error('Invalid extension key: ' . $key);
+    } elseif ($exts[$key]->status == 'installed' && $exts[$key]->is_active == TRUE) {
+      // already enabled
+    } elseif ($exts[$key]->status != 'installed') {
+      return civicrm_api3_create_error('Can only enable extensions which have been previously installed');
+    } elseif ($exts[$key]->is_active == TRUE) {
+      return civicrm_api3_create_error('Can only enable extensions which are currently inactive');
+    } else {
+      // pre-condition: installed and inactive
+      $ext->enable(NULL, $key); // FIXME: only rebuild cache one time
+    }
+  }
+  return civicrm_api3_create_success();
 }
 
 /**
@@ -109,33 +125,40 @@ function civicrm_api3_extension_enable($params) {
  *
  * @param  array   	  $params input parameters
  *                          - key: string, eg "com.example.myextension"
+ *                          - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
+ *                            using 'keys' should be more performant than making multiple API calls with 'key'
  *
- * @return boolean        true if success, else false
+ * @return array API result
  * @static void
  * @access public
  * @example ExtensionDisable.php
  *
  */
 function civicrm_api3_extension_disable($params) {
-  $ext = new CRM_Core_Extensions();
-  $exts = $ext->getExtensions();
-  if (!$ext->isEnabled()) {
-    return civicrm_api3_create_error('Extension support is not enabled');
-  } elseif (!isset($params['key'])) {
-    return civicrm_api3_create_error('Missing required parameter: key');
-  } elseif (!$ext->isExtensionKey($params['key']) || !array_key_exists($params['key'], $exts)) {
-    return civicrm_api3_create_error('Unknown extension key');
-  } elseif ($exts[$params['key']]->status == 'installed' && $exts[$params['key']]->is_active != TRUE) {
-    return civicrm_api3_create_success(); // already disabled
-  } elseif ($exts[$params['key']]->status != 'installed') {
-    return civicrm_api3_create_error('Can only disable extensions which have been previously installed');
-  } elseif ($exts[$params['key']]->is_active != TRUE) {
-    return civicrm_api3_create_error('Can only disable extensions which are active');
-  } else {
-    // pre-condition: installed and active
-    $ext->disable(NULL, $params['key']);
+  $keys = _civicrm_api3_getKeys($params);
+  if (count($keys) == 0) {
     return civicrm_api3_create_success();
   }
+
+  $ext = new CRM_Core_Extensions();
+  $exts = $ext->getExtensions();
+  foreach ($keys as $key) {
+    if (!$ext->isEnabled()) {
+      return civicrm_api3_create_error('Extension support is not enabled');
+    } elseif (!$ext->isExtensionKey($key) || !array_key_exists($key, $exts)) {
+      return civicrm_api3_create_error('Invalid extension key: ' . $key);
+    } elseif ($exts[$key]->status == 'installed' && $exts[$key]->is_active != TRUE) {
+      // already disabled
+    } elseif ($exts[$key]->status != 'installed') {
+      return civicrm_api3_create_error('Can only disable extensions which have been previously installed');
+    } elseif ($exts[$key]->is_active != TRUE) {
+      return civicrm_api3_create_error('Can only disable extensions which are active');
+    } else {
+      // pre-condition: installed and active
+      $ext->disable(NULL, $key); // FIXME: only rebuild cache one time
+    }
+  }
+  return civicrm_api3_create_success();
 }
 
 /**
@@ -143,29 +166,62 @@ function civicrm_api3_extension_disable($params) {
  *
  * @param  array   	  $params input parameters
  *                          - key: string, eg "com.example.myextension"
+ *                          - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
+ *                            using 'keys' should be more performant than making multiple API calls with 'key'
+ *                          - removeFiles: bool, whether to remove source tree; default: FALSE
  *
- * @return boolean        true if success, else false
+ * @return array API result
  * @static void
  * @access public
  * @example ExtensionUninstall.php
  *
  */
 function civicrm_api3_extension_uninstall($params) {
+  $keys = _civicrm_api3_getKeys($params);
+  if (count($keys) == 0) {
+    return civicrm_api3_create_success();
+  }
+
   $ext = new CRM_Core_Extensions();
   $exts = $ext->getExtensions();
-  if (!$ext->isEnabled()) {
-    return civicrm_api3_create_error('Extension support is not enabled');
-  } elseif (!isset($params['key'])) {
-    return civicrm_api3_create_error('Missing required parameter: key');
-  } elseif (!$ext->isExtensionKey($params['key']) || !array_key_exists($params['key'], $exts)) {
-    return civicrm_api3_create_error('Unknown extension key');
-  } elseif ($exts[$params['key']]->status != 'installed') {
-    return civicrm_api3_create_error('Can only uninstall extensions which have been previously installed');
-  } elseif ($exts[$params['key']]->is_active == TRUE) {
-    return civicrm_api3_create_error('Extension must be disabled before uninstalling');
+  foreach ($keys as $key) {
+    if (!$ext->isEnabled()) {
+      return civicrm_api3_create_error('Extension support is not enabled');
+    } elseif (!$ext->isExtensionKey($key) || !array_key_exists($key, $exts)) {
+      // FIXME: is this necesary? if $key is not in $exts, can't we assume it's uninstalled
+      return civicrm_api3_create_error('Invalid extension key: ' . $key);
+    } elseif ($exts[$key]->status != 'installed') {
+      return civicrm_api3_create_error('Can only uninstall extensions which have been previously installed');
+    } elseif ($exts[$key]->is_active == TRUE) {
+      return civicrm_api3_create_error('Extension must be disabled before uninstalling');
+    } else {
+      // pre-condition: installed and inactive
+      $removeFiles = CRM_Utils_Array::value('removeFiles', $params, FALSE);
+      $ext->uninstall(NULL, $key, $removeFiles); // FIXME: only rebuild cache one time
+    }
+  }
+  return civicrm_api3_create_success();
+}
+
+/**
+ * Determine the list of extension keys
+ *
+ * @param array $params API request params with 'key' or 'keys'
+ * @return array of extension keys
+ * @throws API_Exception
+ */
+function _civicrm_api3_getKeys($params) {
+  if (array_key_exists('keys', $params) && is_array($params['keys'])) {
+    return $params['keys'];
+  } elseif (array_key_exists('keys', $params) && is_string($params['keys'])) {
+    if ($params['keys'] == '') {
+      return array();
+    } else {
+      return explode(API_V3_EXTENSION_DELIMITER, $params['keys']);
+    }
+  } elseif (array_key_exists('key', $params)) {
+    return array($params['key']);
   } else {
-    // pre-condition: installed and inactive
-    $ext->uninstall(NULL, $params['key']);
-    return civicrm_api3_create_success();
+    throw new API_Exception('Missing required parameter: key or keys');
   }
 }

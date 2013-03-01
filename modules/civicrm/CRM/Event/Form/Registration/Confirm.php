@@ -94,8 +94,12 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
       //we lost rfp in case of additional participant. So set it explicitly.
       if ($rfp || CRM_Utils_Array::value('additional_participants', $this->_params[0], FALSE)) {
         $payment = CRM_Core_Payment::singleton($this->_mode, $this->_paymentProcessor, $this);
-        $expressParams = $payment->getExpressCheckoutDetails($this->get('token'));
-
+        $paymentObjError = ts('The system did not record payment details for this payment and so could not process the transaction. Please report this error to the site administrator.');
+        if (is_object($payment)) 
+          $expressParams = $payment->getExpressCheckoutDetails($this->get('token'));
+        else
+          CRM_Core_Error::fatal($paymentObjError);
+        
         $params['payer'] = $expressParams['payer'];
         $params['payer_id'] = $expressParams['payer_id'];
         $params['payer_status'] = $expressParams['payer_status'];
@@ -487,6 +491,8 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
     }
 
     $payment = $registerByID = $primaryCurrencyID = $contribution = NULL;
+    $paymentObjError = ts('The system did not record payment details for this payment and so could not process the transaction. Please report this error to the site administrator.');
+
     $this->participantIDS = array();
 
     foreach ($params as $key => $value) {
@@ -581,11 +587,17 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
           }
         }
         elseif ($this->_contributeMode == 'express' && CRM_Utils_Array::value('is_primary', $value)) {
-          $result = &$payment->doExpressCheckout($value);
+          if (is_object($payment)) 
+            $result = &$payment->doExpressCheckout($value);
+          else 
+            CRM_Core_Error::fatal($paymentObjError);
         }
         elseif (CRM_Utils_Array::value('is_primary', $value)) {
           CRM_Core_Payment_Form::mapParams($this->_bltID, $value, $value, TRUE);
-          $result = &$payment->doDirectPayment($value);
+          if (is_object($payment)) 
+            $result = &$payment->doDirectPayment($value);
+          else 
+            CRM_Core_Error::fatal($paymentObjError);
         }
 
         if (is_a($result, 'CRM_Core_Error')) {
@@ -756,8 +768,11 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
       }
 
       // do a transfer only if a monetary payment greater than 0
-      if ($this->_values['event']['is_monetary'] && $primaryParticipant && $payment) {
-        $payment->doTransferCheckout($primaryParticipant, 'event');
+      if ($this->_values['event']['is_monetary'] && $primaryParticipant) {
+        if ($payment && is_object($payment)) 
+          $payment->doTransferCheckout($primaryParticipant, 'event');
+        else 
+          CRM_Core_Error::fatal($paymentObjError);
       }
     }
     else {

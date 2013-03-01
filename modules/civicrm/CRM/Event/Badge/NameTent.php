@@ -62,7 +62,7 @@ class CRM_Event_Badge_NameTent extends CRM_Event_Badge {
   protected function writeOneSide(&$participant) {
     $this->pdf->SetXY(0, $this->pdf->height / 2);
     $this->printBackground(TRUE);
-    $txt = $participant['first_name'] . " " . $participant['last_name'];
+    $txt = $participant['display_name'];
     $this->pdf->SetXY(0, $this->pdf->height / 2 + 20);
     $this->pdf->SetFontSize(54);
     $this->pdf->Write(0, $txt, NULL, NULL, 'C');

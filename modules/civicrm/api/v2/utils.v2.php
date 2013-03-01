@@ -43,12 +43,9 @@ require_once 'api/api.php';
  * @todo Write documentation
  *
  */
-function _civicrm_initialize($useException = FALSE) {
+function _civicrm_initialize() {
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
-  if ($useException) {
-    CRM_Core_Error::setRaiseException();
-  }
 }
 
 function civicrm_verify_mandatory(&$params, $daoName = NULL, $keys = array(

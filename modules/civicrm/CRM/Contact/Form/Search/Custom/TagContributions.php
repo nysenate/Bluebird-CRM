@@ -90,15 +90,15 @@ class CRM_Contact_Form_Search_Custom_TagContributions implements CRM_Contact_For
 
     // SELECT clause must include contact_id as an alias for civicrm_contact.id
     if ($onlyIDs) {
-      $select = "DISTINCT civicrm_contact.id as contact_id";
+      $select = "contact_a.id as contact_id";
     }
     else {
       $select = "
 DISTINCT
-civicrm_contact.id as contact_id,
-civicrm_contact.sort_name as sort_name,
-civicrm_contact.first_name as first_name,
-civicrm_contact.last_name as last_name,
+contact_a.id as contact_id,
+contact_a.sort_name as sort_name,
+contact_a.first_name as first_name,
+contact_a.last_name as last_name,
 GROUP_CONCAT(DISTINCT civicrm_tag.name ORDER BY  civicrm_tag.name ASC ) as tag_name,
 sum(civicrm_contribution.total_amount) as amount
 ";
@@ -111,10 +111,10 @@ sum(civicrm_contribution.total_amount) as amount
 SELECT $select
 FROM   $from
 WHERE  $where
-GROUP BY civicrm_contact.id
 ";
-    //for only contact ids ignore order.
+    //for only contact ids ignore order and group by.
     if (!$onlyIDs) {
+      $sql .= " GROUP BY contact_a.id";
       // Define ORDER BY for query in $sort, with default value
       if (!empty($sort)) {
         if (is_string($sort)) {
@@ -134,9 +134,9 @@ GROUP BY civicrm_contact.id
   function from() {
     return "
       civicrm_contribution,
-      civicrm_contact
+      civicrm_contact contact_a
       LEFT JOIN civicrm_entity_tag ON ( civicrm_entity_tag.entity_table = 'civicrm_contact' AND
-                                        civicrm_entity_tag.entity_id = civicrm_contact.id )
+                                        civicrm_entity_tag.entity_id = contact_a.id )
       LEFT JOIN civicrm_tag ON civicrm_tag.id = civicrm_entity_tag.tag_id
 ";
   }
@@ -148,8 +148,8 @@ GROUP BY civicrm_contact.id
   function where($includeContactIDs = FALSE) {
     $clauses = array();
 
-    $clauses[] = "civicrm_contact.contact_type = 'Individual'";
-    $clauses[] = "civicrm_contribution.contact_id = civicrm_contact.id";
+    $clauses[] = "contact_a.contact_type = 'Individual'";
+    $clauses[] = "civicrm_contribution.contact_id = contact_a.id";
 
     $startDate = CRM_Utils_Date::processDate($this->_formValues['start_date']);
     if ($startDate) {
@@ -182,7 +182,7 @@ GROUP BY civicrm_contact.id
 
       if (!empty($contactIDs)) {
         $contactIDs = implode(', ', $contactIDs);
-        $clauses[] = "civicrm_contact.id IN ( $contactIDs )";
+        $clauses[] = "contact_a.id IN ( $contactIDs )";
       }
     }
     return implode(' AND ', $clauses);

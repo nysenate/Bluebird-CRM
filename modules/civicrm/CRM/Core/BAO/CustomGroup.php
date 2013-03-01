@@ -1830,7 +1830,7 @@ SELECT IF( EXISTS(SELECT name FROM civicrm_contact_type WHERE name like %1), 1, 
             $checked = in_array($optionValue, $customData) ? $freezeStringChecked : $freezeString;
             if (!$optionPerLine || $dncOptionPerLine) {
               if ($retValue) {
-                $retValue .= ",&nbsp;";
+                $retValue .= ", ";
               }
               $retValue .= $checked . $optionLabel;
             }
@@ -1847,10 +1847,10 @@ SELECT IF( EXISTS(SELECT name FROM civicrm_contact_type WHERE name like %1), 1, 
       $rowCounter    = 0;
       $fieldCounter  = 0;
       $displayValues = array();
-      $displayString = NULL;
+      $displayString = '';
       foreach ($retValue as $val) {
         if ($displayString) {
-          $displayString .= ",&nbsp;";
+          $displayString .= ", ";
         }
 
         $displayString .= $val;
@@ -1859,7 +1859,7 @@ SELECT IF( EXISTS(SELECT name FROM civicrm_contact_type WHERE name like %1), 1, 
 
         if (($rowCounter == $optionPerLine) || ($fieldCounter == count($retValue))) {
           $displayValues[] = $displayString;
-          $displayString   = NULL;
+          $displayString   = '';
           $rowCounter      = 0;
         }
       }

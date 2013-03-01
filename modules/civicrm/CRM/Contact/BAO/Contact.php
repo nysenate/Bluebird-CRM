@@ -1071,7 +1071,8 @@ WHERE id={$id}; ";
     $cacheKeyString .= $isProfile ? '_1' : '_0';
     $cacheKeyString .= $checkPermission ? '_1' : '_0';
 
-    if (!self::$_importableFields || !CRM_Utils_Array::value($cacheKeyString, self::$_importableFields)) {
+    $fields = CRM_Utils_Array::value($cacheKeyString, self::$_importableFields);
+    if (!$fields) {
       if (!self::$_importableFields) {
         self::$_importableFields = array();
       }
@@ -1972,7 +1973,15 @@ ORDER BY civicrm_email.is_primary DESC";
             $value .= ' ' . $params[$key . '_time'];
           }
 
-          $type = CRM_Utils_Array::value('contact_sub_type', $data) ? $data['contact_sub_type'] : $data['contact_type'];
+          $type = $data['contact_type'];
+          if ( CRM_Utils_Array::value('contact_sub_type', $data) ) { 
+            $type = $data['contact_sub_type'];
+            $type = explode(CRM_Core_DAO::VALUE_SEPARATOR, trim($type, CRM_Core_DAO::VALUE_SEPARATOR));
+            // generally a contact even if, has multiple subtypes the parent-type is going to be one only
+            // and since formatCustomField() would be interested in parent type, lets consider only one subtype
+            // as the results going to be same.
+            $type = $type[0];
+          }
 
           CRM_Core_BAO_CustomField::formatCustomField($customFieldId,
             $data['custom'],

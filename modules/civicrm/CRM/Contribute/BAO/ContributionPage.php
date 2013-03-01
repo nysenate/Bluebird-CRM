@@ -114,7 +114,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
       if ($preProfileType == 'Membership' && CRM_Utils_Array::value('membership_id', $values)) {
         $params['custom_pre_id'] = array(
           array(
-            'membership_id',
+            'member_id',
             '=',
             $values['membership_id'],
             0,
@@ -142,7 +142,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
       if ($postProfileType == 'Membership' && CRM_Utils_Array::value('membership_id', $values)) {
         $params['custom_post_id'] = array(
           array(
-            'membership_id',
+            'member_id',
             '=',
             $values['membership_id'],
             0,
@@ -169,7 +169,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
       if (CRM_Utils_Array::value('membership_id', $values)) {
         $params['onbehalf_profile'] = array(
           array(
-            'membership_id',
+            'member_id',
             '=',
             $values['membership_id'],
             0,

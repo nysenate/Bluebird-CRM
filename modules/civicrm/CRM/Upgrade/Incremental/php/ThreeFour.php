@@ -330,7 +330,7 @@ VALUES
 
     // CRM-8774
     $config = CRM_Core_Config::singleton();
-    if ($config->userFramework == 'Drupal') {
+    if ($config->userFramework == 'Drupal' || $config->userFramework == 'Drupal6') {
       db_query("UPDATE {system} SET weight = 100 WHERE name = 'civicrm'");
       drupal_flush_all_caches();
     }

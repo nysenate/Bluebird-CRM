@@ -311,7 +311,7 @@ class CRM_Event_Form_EventFees {
           }
         }
       }
-      $form->assign('amountId', $defaults[$form->_pId]['amount']);
+      $form->assign('amountId', CRM_Utils_Array::value('amount', $defaults[$form->_pId]));
     }
 
     //CRM-4453

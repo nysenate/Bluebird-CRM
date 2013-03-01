@@ -40,20 +40,13 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
 
   /*
    * Create phone object - note that the create function calls 'add' but
-   * has more business logic & calls the hooks
+   * has more business logic 
    *
    * @param array $params input parameters
    */
 
   static
   function create($params) {
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'Phone', $params['id'], $params);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'Phone', NULL, $params);
-      $isEdit = FALSE;
-    }
     if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) ||
       // if id is set & is_primary isn't we can assume no change
       empty($params['id'])
@@ -62,12 +55,6 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
     }
     $phone = self::add($params);
 
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'Phone', $phone->id, $phone);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Phone', $phone->id, $phone);
-    }
     return $phone;
   }
 
@@ -85,8 +72,26 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
     $phone = new CRM_Core_DAO_Phone();
 
     $phone->copyValues($params);
+    
+    // CRM-11006 move calls to pre hook from create function to add function
+    if (!empty($params['id'])) {
+      CRM_Utils_Hook::pre('edit', 'Phone', $params['id'], $params);
+    }
+    else {
+      CRM_Utils_Hook::pre('create', 'Phone', NULL, $params);
+    }
+    
+    $phone->save();
+    
+    //CRM-11006 move calls to pre hook from create function to add function
+    if (!empty($params['id'])) {
+      CRM_Utils_Hook::post('edit', 'Phone', $phone->id, $phone);
+    }
+    else {
+      CRM_Utils_Hook::post('create', 'Phone', $phone->id, $phone);
+    }
 
-    return $phone->save();
+    return $phone;
   }
 
   /**

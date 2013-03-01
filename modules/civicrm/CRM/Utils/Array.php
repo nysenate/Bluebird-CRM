@@ -462,5 +462,18 @@ class CRM_Utils_Array {
 
     return $array;
   }
+
+  static function urlEncode($values) {
+    $uri = '';
+    foreach ($values as $key => $value) {
+      $value = urlencode($value);
+      $uri .= "&{$key}={$value}";
+    }
+    if (!empty($uri)) {
+      $uri = substr($uri, 1);
+    }
+    return $uri;
+  }
+
 }
 

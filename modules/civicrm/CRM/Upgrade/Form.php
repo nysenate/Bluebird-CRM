@@ -599,4 +599,31 @@ SET    version = '$version'
     $config = CRM_Core_Config::singleton();
     $config->cleanupCaches(1, FALSE);
   }
+
+  /**
+   * Compute any messages which should be displayed before upgrade
+   * by calling the 'setPreUpgradeMessage' on each incremental upgrade
+   * object.
+   *
+   * @param $preUpgradeMessage string, alterable
+   */
+  function setPreUpgradeMessage(&$preUpgradeMessage, $currentVer, $latestVer) {
+    CRM_Upgrade_Incremental_Legacy::setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
+
+    // Scan through all php files and see if any file is interested in setting pre-upgrade-message
+    // based on $currentVer, $latestVer.
+    // Please note, at this point upgrade hasn't started executing queries.
+    $revisions = $this->getRevisionSequence();
+    foreach ($revisions as $rev) {
+      if (version_compare($currentVer, $rev) < 0 &&
+        version_compare($rev, '3.2.alpha1') > 0
+      ) {
+        $versionObject = $this->incrementalPhpObject($rev);
+        if (is_callable(array(
+          $versionObject, 'setPreUpgradeMessage'))) {
+          $versionObject->setPreUpgradeMessage($preUpgradeMessage, $rev);
+        }
+      }
+    }
+  }
 }

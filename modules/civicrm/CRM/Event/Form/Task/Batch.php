@@ -68,11 +68,11 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     /*
-         * initialize the task and row fields
-         */
-
+     * initialize the task and row fields
+     */
     parent::preProcess();
 
     //get the contact read only fields to display.
@@ -333,8 +333,7 @@ class CRM_Event_Form_Task_Batch extends CRM_Event_Form_Task {
   }
   //end of function
 
-  static
-  function updatePendingOnlineContribution($participantId, $statusId) {
+  static function updatePendingOnlineContribution($participantId, $statusId) {
     if (!$participantId || !$statusId) {
       return;
     }

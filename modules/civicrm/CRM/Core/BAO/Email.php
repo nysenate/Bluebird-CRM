@@ -39,19 +39,12 @@
 class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
   /*
    * Create email address - note that the create function calls 'add' but
-   * has more business logic & calls the hooks
+   * has more business logic 
    *
    * @param array $params input parameters
    */
 
   static function create($params) {
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'Email', $params['id'], $params);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'Email', NULL, $params);
-      $isEdit = FALSE;
-    }
     if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) ||
       // if id is set & is_primary isn't we can assume no change
       empty($params['id'])
@@ -60,12 +53,6 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
     }
     $email = CRM_Core_BAO_Email::add($params);
 
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'Email', $email->id, $email);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Email', $email->id, $email);
-    }
     return $email;
   }
 
@@ -81,6 +68,14 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
   static function add(&$params) {
     $email = new CRM_Core_DAO_Email();
     $email->copyValues($params);
+
+    // CRM-11006 move calls to pre hook from create function to add function
+    if (!empty($params['id'])) {
+      CRM_Utils_Hook::pre('edit', 'Email', $params['id'], $email);
+    }
+    else {
+      CRM_Utils_Hook::pre('create', 'Email', NULL, $e);
+    }
 
     // lower case email field to optimize queries
     $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
@@ -100,7 +95,17 @@ WHERE  contact_id = {$params['contact_id']}
     // handle if email is on hold
     self::holdEmail($email);
 
-    return $email->save();
+    $email->save();
+        
+    // CRM-11006 move calls to pre hook from create function to add function
+    if (!empty($params['id'])) {
+      CRM_Utils_Hook::post('edit', 'Email', $email->id, $email);
+    }
+    else {
+      CRM_Utils_Hook::post('create', 'Email', $email->id, $email);
+    }
+
+    return $email;
   }
 
   /**

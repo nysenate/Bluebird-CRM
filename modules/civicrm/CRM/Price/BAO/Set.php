@@ -156,10 +156,11 @@ WHERE       ps.name = '{$entityName}'
    * Return a list of all forms which use this price set.
    *
    * @param int  $id id of price set
+   * @param str  $simpleReturn - get raw data. Possible values: 'entity', 'table'
    *
    * @return array
    */
-  public static function &getUsedBy($id, $onlyTable = FALSE) {
+  public static function &getUsedBy($id, $simpleReturn = FALSE) {
     $usedBy = $forms = $tables = array();
     $queryString = "
 SELECT   entity_table, entity_id
@@ -172,8 +173,8 @@ WHERE    price_set_id = %1";
       $forms[$crmFormDAO->entity_table][] = $crmFormDAO->entity_id;
       $tables[] = $crmFormDAO->entity_table;
     }
-
-    if ($onlyTable == TRUE) {
+    // Return only tables
+    if ($simpleReturn == 'table') {
       return $tables;
     }
     if (empty($forms)) {
@@ -191,6 +192,10 @@ WHERE     cpf.price_set_id = %1";
       if (empty($forms)) {
         return $usedBy;
       }
+    }
+    // Return only entity data
+    if ($simpleReturn == 'entity') {
+      return $forms;
     }
     foreach ($forms as $table => $entities) {
       switch ($table) {
@@ -523,7 +528,7 @@ AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
 
     // also get the pre and post help from this price set
     $sql = "
-SELECT extends, contribution_type_id, help_pre, help_post
+SELECT extends, contribution_type_id, help_pre, help_post, is_quick_config
 FROM   civicrm_price_set
 WHERE  id = %1";
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
@@ -532,6 +537,7 @@ WHERE  id = %1";
       $setTree[$setID]['contribution_type_id'] = $dao->contribution_type_id;
       $setTree[$setID]['help_pre'] = $dao->help_pre;
       $setTree[$setID]['help_post'] = $dao->help_post;
+      $setTree[$setID]['is_quick_config'] = $dao->is_quick_config;
     }
     return $setTree;
   }
@@ -655,7 +661,7 @@ WHERE  id = %1";
           }
         $params["price_{$id}"] = array($params["price_{$id}"] => 1);
         $optionValueId = CRM_Utils_Array::key(1, $params["price_{$id}"]);
-        $optionLabel = $field['options'][$optionValueId]['label'];
+        $optionLabel = CRM_Utils_Array::value('label', $field['options'][$optionValueId]);
         $params['amount_priceset_level_radio'] = array();
         $params['amount_priceset_level_radio'][$optionValueId] = $optionLabel;
         if (isset($radioLevel)) {

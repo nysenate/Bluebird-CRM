@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
 
   /**
    * email addresses of the contact that is been viewed
@@ -134,13 +134,10 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
           $hasData[] = $instance;
           if ( CRM_Utils_Array::value( 'is_primary', $blockValues ) ) {
             $hasPrimary[] = $instance;
-            if ( !$primaryID &&
-              CRM_Utils_Array::value( 'email', $blockValues ) ) {
-                $primaryID = $blockValues['email'];
-            }
           }
         }
       }
+
 
       if ( empty( $hasPrimary ) && !empty( $hasData ) ) {
         $errors["email[1][is_primary]"] = ts('One email should be marked as primary.' );
@@ -207,6 +204,7 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
     );
 
     $response = array('status' => 'save');
+    $this->postProcessHook();
     echo json_encode($response);
     CRM_Utils_System::civiExit();
   }

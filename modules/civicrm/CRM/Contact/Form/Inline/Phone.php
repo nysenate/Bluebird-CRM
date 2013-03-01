@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
 
   /**
    * phones of the contact that is been viewed
@@ -207,6 +207,7 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
     );
 
     $response = array('status' => 'save');
+    $this->postProcessHook();
     echo json_encode($response);
     CRM_Utils_System::civiExit();
   }

@@ -73,7 +73,15 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
     if ($cid) {
       $ids = array($cid);
       $this->_single = TRUE;
-      if ($context && !$profileGID) {
+      if ($profileGID) {
+        // this does a check and ensures that the user has permission on this profile
+        // CRM-11766
+        $profileIDs = CRM_Profile_Page_Listings::getProfileContact($profileGID);
+        if (!in_array($cid, $profileIDs)) {
+          CRM_Core_Error::fatal();
+        }
+      }
+      elseif ($context) {
         $qfKey = CRM_Utils_Request::retrieve('key', 'String', $this);
         $urlParams = 'force=1';
         if (CRM_Utils_Rule::qfKey($qfKey)) {

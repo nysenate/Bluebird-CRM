@@ -107,7 +107,7 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
       $groupList = $allGroups;
     }
     //sort groups then prepend 'select'
-    asort($groupList, SORT_NATURAL | SORT_FLAG_CASE);
+    asort($groupList, SORT_STRING);
     $groupList = array( '' => ts('- select group -')) + $groupList;
 
     if (count($groupList) > 1) {

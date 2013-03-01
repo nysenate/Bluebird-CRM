@@ -871,13 +871,20 @@ WHERE civicrm_event.is_active = 1
       $fieldsFix
     );
 
-    $copyPriceSet = &CRM_Core_DAO::copyGeneric('CRM_Price_DAO_SetEntity',
-      array(
-        'entity_id' => $id,
-        'entity_table' => 'civicrm_event',
-      ),
-      array('entity_id' => $copyEvent->id)
-    );
+    $isQuickConfig = CRM_Price_BAO_Set::getFor('civicrm_event', $id, NULL, 1);
+    if(!$isQuickConfig && $copyEvent->is_monetary) {
+       $priceSetId = CRM_Price_BAO_Set::getFor('civicrm_event', $id);
+       $copyPriceSet = &CRM_Price_BAO_Set::copy($priceSetId);
+       CRM_Price_BAO_Set::addTo('civicrm_event', $copyEvent->id, $copyPriceSet->id);
+    } else {
+      $copyPriceSet = &CRM_Core_DAO::copyGeneric('CRM_Price_DAO_SetEntity',
+        array(
+          'entity_id' => $id,
+          'entity_table' => 'civicrm_event',
+        ),
+        array('entity_id' => $copyEvent->id)
+      );
+    }
 
     $copyUF = &CRM_Core_DAO::copyGeneric('CRM_Core_DAO_UFJoin',
       array(

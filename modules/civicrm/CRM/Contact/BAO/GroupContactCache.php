@@ -275,10 +275,7 @@ WHERE  id = %1
 
 
       $returnProperties = array();
-      if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_SavedSearch',
-          $savedSearchID,
-          'mapping_id'
-        )) {
+      if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_SavedSearch', $savedSearchID, 'mapping_id')) {
         $fv = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
         $returnProperties = CRM_Core_BAO_Mapping::returnProperties($fv);
       }
@@ -297,26 +294,26 @@ WHERE  id = %1
       else {
         $formValues = CRM_Contact_BAO_SavedSearch::getFormValues($savedSearchID);
 
-        $query = new CRM_Contact_BAO_Query($ssParams, $returnProperties, NULL,
-                 FALSE, FALSE, 1,
-                 TRUE, TRUE,
-                 FALSE,
-                 CRM_Utils_Array::value('display_relationship_type',
-                   $formValues
-                 ),
-                 CRM_Utils_Array::value('operator',
-                   $formValues, 'AND'
-                 )
-        );
+        $query =
+          new CRM_Contact_BAO_Query(
+            $ssParams, $returnProperties, NULL,
+            FALSE, FALSE, 1,
+            TRUE, TRUE,
+            FALSE,
+            CRM_Utils_Array::value('display_relationship_type', $formValues),
+            CRM_Utils_Array::value('operator', $formValues, 'AND')
+          );
         $query->_useDistinct = FALSE;
         $query->_useGroupBy  = FALSE;
-        $searchSQL           = $query->searchQuery(0, 0, NULL,
-                               FALSE, FALSE,
-                               FALSE, TRUE,
-                               TRUE,
-                               NULL, NULL, NULL,
-                               TRUE
-        );
+        $searchSQL           =
+          $query->searchQuery(
+            0, 0, NULL,
+            FALSE, FALSE,
+            FALSE, TRUE,
+            TRUE,
+            NULL, NULL, NULL,
+            TRUE
+          );
       }
       $groupID = CRM_Utils_Type::escape($groupID, 'Integer');
       $sql = $searchSQL . " AND contact_a.id NOT IN (
@@ -345,7 +342,6 @@ WHERE  civicrm_group_contact.status = 'Added'
         continue;
       }
       $insertSql = "INSERT IGNORE INTO civicrm_group_contact_cache (group_id,contact_id) ($selectSql);";
-      // CRM_Core_Error::debug_var('insertSql', $insertSql);
       $processed = TRUE; // FIXME
       $result = CRM_Core_DAO::executeQuery($insertSql);
     }

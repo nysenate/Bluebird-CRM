@@ -55,7 +55,8 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */ 
+  function preProcess() {
     $this->_addProfileBottom = CRM_Utils_Array::value('addProfileBottom', $_GET, FALSE);
     $this->_profileBottomNum = CRM_Utils_Array::value('addProfileNum', $_GET, 0);
     $this->_addProfileBottomAdd = CRM_Utils_Array::value('addProfileBottomAdd', $_GET, FALSE);

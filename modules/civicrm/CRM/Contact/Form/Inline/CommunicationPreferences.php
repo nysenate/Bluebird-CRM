@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
 
   /**
    * contact type of the contact that is been viewed
@@ -55,6 +55,11 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Core_Form {
     //get all the existing email addresses
     $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE, NULL, $_REQUEST);
     $this->assign('contactId', $this->_contactId);
+
+    // Get contact type if not set
+    if (empty($this->_contactType)) {
+      $this->_contactType = CRM_Contact_BAO_Contact::getContactType($this->_contactId);
+    }
   }
 
   /**
@@ -144,6 +149,7 @@ class CRM_Contact_Form_Inline_CommunicationPreferences extends CRM_Core_Form {
     CRM_Contact_BAO_Contact::create( $params );
 
     $response = array('status' => 'save');
+    $this->postProcessHook();
     echo json_encode($response);
     CRM_Utils_System::civiExit();
   }

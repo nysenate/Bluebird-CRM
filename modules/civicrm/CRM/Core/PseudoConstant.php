@@ -73,7 +73,7 @@ class CRM_Core_PseudoConstant {
    * @static
    */
   private static $activityType = array();
-  
+
   /**
    * payment processor billing modes
    * @var array
@@ -813,7 +813,6 @@ class CRM_Core_PseudoConstant {
       $whereClause = FALSE;
       $config = CRM_Core_Config::singleton();
       if ($limit) {
-        // limit the state/province list to the countries specified in CIVICRM_PROVINCE_LIMIT
         $countryIsoCodes = self::countryIsoCode();
         $limitCodes      = $config->provinceLimit();
         $limitIds        = array();
@@ -880,7 +879,6 @@ WHERE  id = %1";
 
     if (!self::$stateProvinceAbbreviation || !$id) {
 
-      // limit the state/province list to the countries specified in CIVICRM_PROVINCE_LIMIT, unless id is specified
       $whereClause = FALSE;
 
       if ($limit) {

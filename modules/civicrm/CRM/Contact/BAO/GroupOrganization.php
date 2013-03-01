@@ -110,7 +110,7 @@ class CRM_Contact_BAO_GroupOrganization extends CRM_Contact_DAO_GroupOrganizatio
   }
 
   static
-  function &retrieve($groupID, &$defaults) {
+  function retrieve($groupID, &$defaults) {
     $dao = new CRM_Contact_DAO_GroupOrganization();
     $dao->group_id = $groupID;
     if ($dao->find(TRUE)) {

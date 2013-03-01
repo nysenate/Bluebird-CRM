@@ -394,7 +394,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
             $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
             $to       = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
 
-            $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
+            $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, $field['type']);
           }
           else {
 

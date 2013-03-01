@@ -54,7 +54,8 @@ require_once 'api/v3/utils.php';
  */
 function civicrm_api3_mailing_event_bounce($params) {
 
-  civicrm_api3_verify_mandatory($params,
+  civicrm_api3_verify_mandatory(
+    $params,
     'CRM_Mailing_Event_DAO_Bounce',
     array('job_id', 'event_queue_id', 'hash', 'body'),
     FALSE

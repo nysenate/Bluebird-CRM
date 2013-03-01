@@ -147,7 +147,7 @@ class CRM_Utils_Geocode_Google {
         }
       }
       elseif ($xml->status == 'OVER_QUERY_LIMIT') {
-        CRM_Core_Error::fatal('Geocoding failed. Message from Google: ', $xml->status);
+        CRM_Core_Error::fatal('Geocoding failed. Message from Google: ' . $xml->status);
       }
     }
 

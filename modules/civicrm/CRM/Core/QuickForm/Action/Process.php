@@ -57,7 +57,9 @@ class CRM_Core_QuickForm_Action_Process extends CRM_Core_QuickForm_Action {
    * @access public
    */
   function perform(&$page, $actionName) {
-    $this->_stateMachine->reset();
+    if ($this->_stateMachine->shouldReset()) {
+      $this->_stateMachine->reset();
+    }
     $this->popUserContext();
   }
 }

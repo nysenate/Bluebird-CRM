@@ -105,7 +105,11 @@ class CRM_Utils_Mail {
     $headers['Content-Disposition'] = 'inline';
     $headers['Content-Transfer-Encoding'] = '8bit';
     $headers['Return-Path'] = CRM_Utils_Array::value('returnPath', $params);
-    $headers['Reply-To'] = CRM_Utils_Array::value('replyTo', $params, $from);
+    // CRM-11295: Omit reply-to headers if empty; this avoids issues with overzealous mailservers
+    $replyTo = CRM_Utils_Array::value('replyTo', $params, $from);
+    if (!empty($replyTo)) {
+      $headers['Reply-To'] = $replyTo;
+    }
     $headers['Date'] = date('r');
     if ($includeMessageId) {
       $headers['Message-ID'] = '<' . uniqid('civicrm_', TRUE) . "@$emailDomain>";
@@ -117,7 +121,9 @@ class CRM_Utils_Mail {
     //make sure we has to have space, CRM-6977
     foreach (array(
       'From', 'To', 'Cc', 'Bcc', 'Reply-To', 'Return-Path') as $fld) {
-      $headers[$fld] = str_replace('"<', '" <', $headers[$fld]);
+      if (isset($headers[$fld])) {
+        $headers[$fld] = str_replace('"<', '" <', $headers[$fld]);
+      }
     }
 
     // quote FROM, if comma is detected AND is not already quoted. CRM-7053

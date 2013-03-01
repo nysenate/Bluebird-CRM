@@ -79,11 +79,7 @@ class CRM_Contact_Form_Search_Custom extends CRM_Contact_Form_Search {
   }
 
   function setDefaultValues() {
-    if (empty($this->_formValues) &&
-      method_exists($this->_customSearchClass,
-        'setDefaultValues'
-      )
-    ) {
+    if (method_exists($this->_customSearchClass, 'setDefaultValues')) {
       return $this->_customClass->setDefaultValues();
     }
     return $this->_formValues;

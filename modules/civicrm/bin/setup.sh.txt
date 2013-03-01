@@ -125,7 +125,7 @@ echo; echo "DONE!"
 # mysql -u $DBUSER $PASSWDSECTION $DBNAME < civicrm_sample.mysql
 # mysql -u $DBUSER $PASSWDSECTION $DBNAME < zipcodes.mysql
 # php GenerateData.php
-# echo "drop table zipcodes ; update civicrm_domain set config_backend = null" | mysql -u $DBUSER $PASSWDSECTION $DBNAME
+# echo "drop table zipcodes ; update civicrm_domain set config_backend = null; UPDATE civicrm_setting SET value = NULL WHERE name = 'userFrameworkResourceURL' OR name = 'imageUploadURL';" | mysql -u $DBUSER $PASSWDSECTION $DBNAME
 # mysqldump -c -e -t -n -u $DBUSER $PASSWDSECTION $DBNAME  > civicrm_generated.mysql
 # add sample custom data
 # cat civicrm_sample_custom_data.mysql >> civicrm_generated.mysql

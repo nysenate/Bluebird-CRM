@@ -110,6 +110,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
       // get price set options, - CRM-5209
       if ($priceSetId) {
         $setDetails = CRM_Price_BAO_Set::getSetDetail($priceSetId, TRUE, TRUE);
+        
         $priceSetFields = $setDetails[$priceSetId]['fields'];
         if (is_array($priceSetFields)) {
           $fieldCnt = 1;
@@ -144,8 +145,9 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
             }
           }
         }
-        // Tell tpl we have price set fee data
+        // Tell tpl we have price set fee data and whether it's a quick_config price set
         $this->assign('isPriceSet', 1);
+        $this->assign('isQuickConfig', $setDetails[$priceSetId]['is_quick_config']);
       }
     }
 

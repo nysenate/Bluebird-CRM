@@ -31,9 +31,7 @@ class CRM_Utils_System_Base {
   function theme($type, &$content, $args = NULL, $print = FALSE, $ret = FALSE, $maintenance = FALSE) {
     // TODO: Split up; this was copied verbatim from CiviCRM 4.0's multi-UF theming function
     // but the parts should be copied into cleaner subclass implementations
-    if (function_exists('theme') &&
-      !$print
-    ) {
+    if (function_exists('theme') && !$print) {
       if ($maintenance) {
         drupal_set_breadcrumb('');
         drupal_maintenance_theme();
@@ -83,7 +81,8 @@ class CRM_Utils_System_Base {
    * @return string $url, formatted url.
    * @static
    */
-  function languageNegotiationURL($url,
+  function languageNegotiationURL(
+    $url,
     $addLanguagePart = TRUE,
     $removeLanguagePart = FALSE
   ) {
@@ -93,6 +92,7 @@ class CRM_Utils_System_Base {
   /*
      * Currently this is just helping out the test class as defaults is calling it - maybe move fix to defaults
      */
-  function cmsRootPath() {}
+  function cmsRootPath() {
+  }
 }
 

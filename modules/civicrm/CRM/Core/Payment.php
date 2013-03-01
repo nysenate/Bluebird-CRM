@@ -233,11 +233,12 @@ abstract class CRM_Core_Payment {
       CRM_Core_Error::fatal("No active instances of the '{$params['processor_name']}' payment processor were found.");
     }
 
-    // In all likelihood, we'll just end up with the one instance returned here. But it's
-    // possible we may get more. Hence, iterate through all instances ..
-
+    $method = 'handle' . $method;
     $extension_instance_found = FALSE;
 
+    // In all likelihood, we'll just end up with the one instance returned here. But it's
+    // possible we may get more. Hence, iterate through all instances ..
+    
     while ($dao->fetch()) {
 
       // Check pp is extension
@@ -265,7 +266,6 @@ abstract class CRM_Core_Payment {
       eval('$processorInstance = ' . $paymentClass . '::singleton( $mode, $paymentProcessor );');
 
       // Does PP implement this method, and can we call it?
-      $method = 'handle' . $method;
       if (!method_exists($processorInstance, $method) ||
         !is_callable(array($processorInstance, $method))
       ) {

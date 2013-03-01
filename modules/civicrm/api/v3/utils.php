@@ -40,15 +40,10 @@
 
 /**
  * Initialize CiviCRM - should be run at the start of each API function
- *
- * $useException boolean raise exception if set
  */
-function _civicrm_api3_initialize($useException = TRUE) {
+function _civicrm_api3_initialize() {
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
-  if ($useException) {
-    CRM_Core_Error::setRaiseException();
-  }
 }
 
 /*
@@ -1032,8 +1027,11 @@ function _civicrm_api3_validate_fields($entity, $action, &$params, $errorMode = 
         //field is of type date or datetime
         _civicrm_api3_validate_date($params, $fieldname, $fieldInfo);
         break;
-
+    case 32://blob
+        _civicrm_api3_validate_html($params, $fieldname, $fieldInfo);
+        break;
       case CRM_Utils_Type::T_STRING:
+
         _civicrm_api3_validate_string($params, $fieldname, $fieldInfo);
         break;
 
@@ -1417,6 +1415,15 @@ function _civicrm_api3_validate_integer(&$params, &$fieldname, &$fieldInfo) {
     }
   }
 }
+
+function _civicrm_api3_validate_html(&$params, &$fieldname, &$fieldInfo) {
+  if ($value = CRM_Utils_Array::value($fieldname, $params)) {
+    if (!CRM_Utils_Rule::xssString($value)) {
+      throw new Exception('Illegal characters in input (potential scripting attack)');
+    }
+  }
+}
+
 /*
  * Validate string fields being passed into API.
  * @param array $params params from civicrm_api
@@ -1426,6 +1433,9 @@ function _civicrm_api3_validate_integer(&$params, &$fieldname, &$fieldInfo) {
 function _civicrm_api3_validate_string(&$params, &$fieldname, &$fieldInfo) {
   // If fieldname exists in params
   if ($value = CRM_Utils_Array::value($fieldname, $params)) {
+    if (!CRM_Utils_Rule::xssString($value)) {
+      throw new Exception('Illegal characters in input (potential scripting attack)');
+    }
     if ($fieldname == 'currency') {
       if (!CRM_Utils_Rule::currencyCode($value)) {
         throw new Exception("Currency not a valid code: $value");

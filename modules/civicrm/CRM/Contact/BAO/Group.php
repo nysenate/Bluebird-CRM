@@ -810,8 +810,11 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
             $values[$object->id]['org_info'] = "<a href='{$contactUrl}'>{$object->org_name}</a>";
           }
           else {
-            $values[$object->id]['org_info'] = '';
+            $values[$object->id]['org_info'] = ''; // Empty cell
           }
+        }
+        else {
+          $values[$object->id]['org_info'] = NULL; // Collapsed column if all cells are NULL
         }
       }
     }

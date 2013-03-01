@@ -141,7 +141,7 @@ class CRM_Campaign_Form_SurveyType extends CRM_Admin_Form {
     if ($this->_action == CRM_Core_Action::UPDATE &&
       CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', $this->_id, 'is_reserved')
     ) {
-            $this->freeze(array('label', 'description', 'is_active' ));
+      $this->freeze(array('label', 'is_active'));
     }
     $this->add('text', 'weight', ts('Weight'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_OptionValue', 'weight'), TRUE);
 

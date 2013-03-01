@@ -31,7 +31,7 @@ class CRM_Event_Badge_Logo5395 extends CRM_Event_Badge {
     $this->pdf->Cell($this->pdf->width, 0, $date, $this->border, 2, "R");
 
     $this->pdf->SetFontSize(20);
-    $this->pdf->MultiCell($this->pdf->width, 10, $participant['first_name'] . " " . $participant['last_name'], $this->border, "C", 0, 1, $x, $y + $this->tMarginName);
+    $this->pdf->MultiCell($this->pdf->width, 10, $participant['display_name'], $this->border, "C", 0, 1, $x, $y + $this->tMarginName);
     $this->pdf->SetFontSize(15);
     $this->pdf->MultiCell($this->pdf->width, 0, $participant['current_employer'], $this->border, "C", 0, 1, $x, $this->pdf->getY());
   }

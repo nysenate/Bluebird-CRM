@@ -146,7 +146,7 @@ class CRM_Event_Badge {
    **/
   public function generateLabel($participant) {
     $txt = "{$this->event['title']}
-{$participant['first_name']} {$participant['last_name']}
+{$participant['display_name']}
 {$participant['current_employer']}";
 
     $this->pdf->MultiCell($this->pdf->width, $this->pdf->lineHeight, $txt);
