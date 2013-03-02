@@ -127,14 +127,12 @@
             elRow.removeClass('view-comments');
         } else {
             var getUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0}"{literal};
-            //NYSS 5690 use post, retrieve sequential
             cj.post(getUrl, { fnName: 'civicrm/note/tree_get', json: 1, id: noteId, sequential: 1 }, showComments, 'json' );
         }
 
     }
 
     function showComments (response) {
-        //NYSS 5690 refer to values subarray
         var urlTemplate = '{/literal}{crmURL p='civicrm/contact/view' q="reset=1&cid=" h=0 }{literal}'
         if (response['values'][0] && response['values'][0].entity_id) {
             var noteId = response['values'][0].entity_id
