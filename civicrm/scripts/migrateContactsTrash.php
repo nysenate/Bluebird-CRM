@@ -219,7 +219,8 @@ class CRM_migrateContactsTrash {
       'total organizations trashed' => count($trashedIDs['Organization']),
       'total households trashed' => count($trashedIDs['Household']),
       'total contacts trashed' => count($trashedIDs['Individual']) + count($trashedIDs['Organization']) + count($trashedIDs['Household']),
-      'organization records retained' => count($trashedIDs['OrgsRetained']),
+      'organization records retained (count)' => count($trashedIDs['OrgsRetained']),
+      'organization records retained (list)' => $trashedIDs['OrgsRetained'],
     );
     bbscript_log("info", "Trashing statistics:", $stats);
 
@@ -397,8 +398,11 @@ class CRM_migrateContactsTrash {
         $indivList = implode(', ', $trashedIDs['Individual']);
 
         $sql = "
-          SELECT $c1
-          FROM civicrm_relationship
+          SELECT r.{$c1}
+          FROM civicrm_relationship r
+          JOIN civicrm_contact c
+            ON r.{$c2} = c.id
+            AND c.is_deleted != 1
           WHERE $c1 IN ({$orgList})
             AND $c2 NOT IN ({$indivList})
             AND is_active = 1
@@ -407,7 +411,7 @@ class CRM_migrateContactsTrash {
         while ( $rels->fetch() ) {
           if ( in_array($rels->$c1, $trashedIDs['Organization']) ) {
             $key = array_search($rels->$c1, $trashedIDs['Organization']);
-            $trashedIDs['OrgsRetained'][$key] = $orgsInDistrict->contact_id;
+            $trashedIDs['OrgsRetained'][$key] = $rels->$c1;
             unset($trashedIDs['Organization'][$key]);
           }
         }
