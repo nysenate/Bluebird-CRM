@@ -219,7 +219,8 @@ class CRM_migrateContactsTrash {
       'total organizations trashed' => count($trashedIDs['Organization']),
       'total households trashed' => count($trashedIDs['Household']),
       'total contacts trashed' => count($trashedIDs['Individual']) + count($trashedIDs['Organization']) + count($trashedIDs['Household']),
-      'organization records retained' => count($trashedIDs['OrgsRetained']),
+      'organization records retained (count)' => count($trashedIDs['OrgsRetained']),
+      'organization records retained (list)' => $trashedIDs['OrgsRetained'],
     );
     bbscript_log("info", "Trashing statistics:", $stats);
 
@@ -397,8 +398,11 @@ class CRM_migrateContactsTrash {
         $indivList = implode(', ', $trashedIDs['Individual']);
 
         $sql = "
-          SELECT $c1
-          FROM civicrm_relationship
+          SELECT r.{$c1}
+          FROM civicrm_relationship r
+          JOIN civicrm_contact c
+            ON r.{$c2} = c.id
+            AND c.is_deleted != 1
           WHERE $c1 IN ({$orgList})
             AND $c2 NOT IN ({$indivList})
             AND is_active = 1
@@ -407,7 +411,7 @@ class CRM_migrateContactsTrash {
         while ( $rels->fetch() ) {
           if ( in_array($rels->$c1, $trashedIDs['Organization']) ) {
             $key = array_search($rels->$c1, $trashedIDs['Organization']);
-            $trashedIDs['OrgsRetained'][$key] = $orgsInDistrict->contact_id;
+            $trashedIDs['OrgsRetained'][$key] = $rels->$c1;
             unset($trashedIDs['Organization'][$key]);
           }
         }
@@ -430,6 +434,14 @@ class CRM_migrateContactsTrash {
     }
     else {
       $tag = civicrm_api('tag', 'create', $params);
+      //bbscript_log("trace", '_tagContacts $tag', $tag);
+
+      //if error, may be because tag already exists
+      if ( $tag['is_error'] ) {
+        unset($params['description']);
+        $tag = civicrm_api('tag', 'get', $params);
+        //bbscript_log("trace", '_tagContacts $tag', $tag);
+      }
     }
 
     foreach ( $trashedIDs as $type => $contacts ) {
@@ -439,11 +451,13 @@ class CRM_migrateContactsTrash {
 
       $params = array(
         'version' => 3,
+        'entity_table' => 'civicrm_contact',
         'tag_id' => $tag['id'],
       );
       foreach ( $contacts as $k => $contactID ) {
         $params['contact_id.'.$k] = $contactID;
       }
+      //bbscript_log("trace", '_tagContacts $params', $params);
 
       if ( $optDry ) {
         bbscript_log("debug", "{$type} contacts would be tagged...");
@@ -453,7 +467,42 @@ class CRM_migrateContactsTrash {
         //bbscript_log("trace", '_tagContacts $entityTags', $entityTags);
       }
     }
-  }
+
+    //validation: we had some occurrences of contacts not getting tagged, so do a check
+    $unTagged = array();
+    $reprocessTags = FALSE;
+    foreach ( $trashedIDs as $type => $contacts ) {
+      if ( $type == 'OrgsRetained' ) {
+        continue;
+      }
+
+      $contactList = implode(',', $contacts);
+      $sql = "
+        SELECT c.id
+        FROM civicrm_contact c
+        LEFT JOIN civicrm_entity_tag et
+          ON c.id = et.entity_id
+          AND et.entity_table = 'civicrm_contact'
+        WHERE c.id IN ($contactList)
+          AND et.id IS NULL
+      ";
+      $noTag = CRM_Core_DAO::executeQuery($sql);
+      while ( $noTag->fetch() ) {
+        if ( !$optDry ) {
+          bbscript_log("debug", "Contact ID{$noTag->id} was not tagged successfully. Queued for reprocessing...");
+        }
+        $unTagged[$type][] = $noTag->id;
+      }
+
+      if ( !empty($unTagged[$type]) ) {
+        $reprocessTags = TRUE;
+      }
+    }
+    if ( $reprocessTags && !$optDry ) {
+      bbscript_log("info", "Reprocessing untagged contacts...");
+      self::_tagContacts($unTagged, $dest, $optDry);
+    }
+  }//_tagContacts
 
 }//end class
 
