@@ -1700,3 +1700,8 @@ li.crm-delete-action.crm-contact-delete {
 div#contact-summary div#contactTopBar {
   display: none;
 }
+
+/*ensure log popup is wide enough*/
+.crm-report-log_civicrm_entity_log_action .crm-tooltip-wrapper {
+  min-width: 500px;
+}
