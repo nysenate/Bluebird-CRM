@@ -315,70 +315,70 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         // dummy DAO
         $this->_columns[$curTable] = array(
           'dao' => 'CRM_Contact_DAO_Contact',
-                                                   'fields' => $curFields,
-                                                   'ext' => $curExt,                   
-                                                  );
-                $curTable = $crmDAO->table_name;
-                $curExt = $crmDAO->ext;
-                $curFields = array();
-          }      
-          
-          $curFields[$crmDAO->column_name] = array('title' => $crmDAO->label);
-        }
-    if (! empty($curFields)) {
+          'fields' => $curFields,
+          'ext' => $curExt,
+        );
+        $curTable  = $crmDAO->table_name;
+        $curExt    = $crmDAO->ext;
+        $curFields = array();
+      }
+
+      $curFields[$crmDAO->column_name] = array('title' => $crmDAO->label);
+    }
+    if (!empty($curFields)) {
       // dummy DAO
       $this->_columns[$curTable] = array(
         'dao' => 'CRM_Contact_DAO_Contact',
-                                               'fields' => $curFields,
-                                               'ext' => $curExt,                   
-                                              );
+        'fields' => $curFields,
+        'ext' => $curExt,
+      );
     }*/
     
-        $this->_genders = CRM_Core_PseudoConstant::gender(); 
+    $this->_genders = CRM_Core_PseudoConstant::gender();
 
-        parent::__construct( );
-    }
-    
-    function preProcess( ) {
-        parent::preProcess( );
-    }
-    
-    function select( ) {
-        $select = array( );
-        $this->_columnHeaders = array( );
-        foreach ( $this->_columns as $tableName => $table ) {
-            if ( array_key_exists('fields', $table) ) {
-                foreach ( $table['fields'] as $fieldName => $field ) {
-                    if ( CRM_Utils_Array::value( 'required', $field ) ||
+    parent::__construct();
+  }
+
+  function preProcess() {
+    parent::preProcess();
+  }
+
+  function select() {
+    $select = array();
+    $this->_columnHeaders = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if (CRM_Utils_Array::value('required', $field) ||
             CRM_Utils_Array::value($fieldName, $this->_params['fields'])
           ) {
-                        if ( $tableName == 'civicrm_email' ) {
+            if ($tableName == 'civicrm_email') {
               $this->_emailField = TRUE;
             }
             elseif ($tableName == 'civicrm_phone') {
               $this->_phoneField = TRUE;
-                        }
-
-                        $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = CRM_Utils_Array::value( 'no_display', $field ); //NYSS
-                    }
-                }
             }
-        }
 
-        $this->_select = "SELECT " . implode( ', ', $select ) . " ";
+            $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+            $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+            $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+            $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = CRM_Utils_Array::value( 'no_display', $field ); //NYSS
+          }
+        }
+      }
     }
+
+    $this->_select = "SELECT " . implode(', ', $select) . " ";
+  }
 
   static
   function formRule($fields, $files, $self) {
-        $errors = $grouping = array( );
-        return $errors;
-    }
+    $errors = $grouping = array();
+    return $errors;
+  }
 
-    function from( ) {
-        $this->_from = "
+  function from() {
+    $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']}
             LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
@@ -390,6 +390,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             LEFT JOIN civicrm_value_constituent_information_1 value_constituent_information_1_civireport ON value_constituent_information_1_civireport.entity_id = {$this->_aliases['civicrm_contact']}.id 
         ";//NYSS add left join to custom table
             
+
     /*foreach($this->_columns as $t => $c) {
       if (substr($t, 0, 13) == 'civicrm_value' || substr($t, 0, 12) == 'custom_value') {
                 $this->_from .= " LEFT JOIN $t {$this->_aliases[$t]} ON {$this->_aliases[$t]}.entity_id = ";
@@ -397,141 +398,141 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
       }
     }*/
             
-        if ( $this->_emailField ) {
-            $this->_from .= "
+    if ($this->_emailField) {
+      $this->_from .= "
             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1) ";
-        }
+    }
 
-        if ( $this->_phoneField ) {
-            $this->_from .= "
+    if ($this->_phoneField) {
+      $this->_from .= "
             LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
-        }   
     }
+  }
 
-    function where( ) {
-        $clauses = array( );
-        $this->_having = '';
-        foreach ( $this->_columns as $tableName => $table ) {
-            if ( array_key_exists('filters', $table) ) {
-                foreach ( $table['filters'] as $fieldName => $field ) {
+  function where() {
+    $clauses = array();
+    $this->_having = '';
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('filters', $table)) {
+        foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-                    if ( $field['operatorType'] & CRM_Report_Form::OP_DATE ) {
-                        $relative = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params );
-                        $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
-                        $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
-                        
+          if ($field['operatorType'] & CRM_Report_Form::OP_DATE) {
+            $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
+            $from     = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
+            $to       = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
+
             $clause = $this->dateClause($field['dbAlias'], $relative, $from, $to, CRM_Utils_type::T_DATE);
           }
           else {
-                        $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
-                        if ( $op ) {
-                          // handle special case
-                          if ($fieldName == 'case_id_filter') {
-                            $choice = CRM_Utils_Array::value( "{$fieldName}_value", $this->_params );
-                            if ($choice == 1) {
-                              $clause = "({$this->_aliases['civicrm_case']}.id Is Not Null)";
+            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
+            if ($op) {
+              // handle special case
+              if ($fieldName == 'case_id_filter') {
+                $choice = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
+                if ($choice == 1) {
+                  $clause = "({$this->_aliases['civicrm_case']}.id Is Not Null)";
                 }
                 elseif ($choice == 2) {
-                              $clause = "({$this->_aliases['civicrm_case']}.id Is Null)";
-                            }
+                  $clause = "({$this->_aliases['civicrm_case']}.id Is Null)";
+                }
               }
               else {
                 $clause = $this->whereClause($field,
-                                                    $op,
-                                                    CRM_Utils_Array::value( "{$fieldName}_value", $this->_params ),
-                                                    CRM_Utils_Array::value( "{$fieldName}_min", $this->_params ),
+                  $op,
+                  CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
+                  CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
                   CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
                 );
-                          }
-                        }
-                    }
-
-                    if ( ! empty( $clause ) ) {
-                        $clauses[ ] = $clause;
-                    }
-                }
+              }
             }
+          }
+
+          if (!empty($clause)) {
+            $clauses[] = $clause;
+          }
         }
-        
-        $clauses[] = "(({$this->_aliases['civicrm_case']}.is_deleted = 0) OR ({$this->_aliases['civicrm_case']}.is_deleted Is Null))";
-        $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_deleted = 0) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
-        $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_current_revision = 1) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
-  
-        $this->_where = "WHERE " . implode( ' AND ', $clauses );
+      }
     }
 
-    function groupBy( ) {
-        $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_case']}.id";
-    }
+    $clauses[] = "(({$this->_aliases['civicrm_case']}.is_deleted = 0) OR ({$this->_aliases['civicrm_case']}.is_deleted Is Null))";
+    $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_deleted = 0) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
+    $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_current_revision = 1) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
 
-    //NYSS 4936 - handle in report criteria
-    /*function orderBy( ) {
-        $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_case']}.id";
-    }*/
+    $this->_where = "WHERE " . implode(' AND ', $clauses);
+  }
 
-    function postProcess( ) {
+  function groupBy() {
+    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_case']}.id";
+  }
 
-        $this->beginPostProcess( );
+  //NYSS 4936 - handle in report criteria
+  /*function orderBy( ) {
+    $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_case']}.id";
+  }*/
+
+  function postProcess() {
+
+    $this->beginPostProcess();
 
     $sql = $this->buildQuery(TRUE);
-//CRM_Core_Error::debug('sql', $sql);             
-        $rows = $graphRows = array();
-        $this->buildRows ( $sql, $rows );
-        
-        $this->formatDisplay( $rows );
-        $this->doTemplateAssignment( $rows );
-        $this->endPostProcess( $rows );  
-    }
+    //CRM_Core_Error::debug('sql', $sql);
+    $rows = $graphRows = array();
+    $this->buildRows($sql, $rows);
 
-    function alterDisplay( &$rows ) {
-        // custom code to alter rows
+    $this->formatDisplay($rows);
+    $this->doTemplateAssignment($rows);
+    $this->endPostProcess($rows);
+  }
+
+  function alterDisplay(&$rows) {
+    // custom code to alter rows
     $entryFound = FALSE;
-        foreach ( $rows as $rowNum => $row ) {
-            // make count columns point to detail report
-            // convert display name to links
-            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
+    foreach ($rows as $rowNum => $row) {
+      // make count columns point to detail report
+      // convert display name to links
+      if (array_key_exists('civicrm_contact_sort_name', $row) &&
         array_key_exists('civicrm_contact_id', $row)
       ) {
-                $url = CRM_Utils_System::url( 'civicrm/contact/view', 
-                                              'reset=1&cid=' . $row['civicrm_contact_id'],
+        $url = CRM_Utils_System::url('civicrm/contact/view',
+          'reset=1&cid=' . $row['civicrm_contact_id'],
           $this->_absoluteUrl
         );
-                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact details for this contact.");
+        $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
+        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact details for this contact.");
         $entryFound = TRUE;
-            }
+      }
 
-            // handle gender
-            if ( array_key_exists('civicrm_contact_gender_id', $row) ) {
-                if ( $value = $row['civicrm_contact_gender_id'] ) {
-                    $rows[$rowNum]['civicrm_contact_gender_id'] = $this->_genders[$value];
-                }
+      // handle gender
+      if (array_key_exists('civicrm_contact_gender_id', $row)) {
+        if ($value = $row['civicrm_contact_gender_id']) {
+          $rows[$rowNum]['civicrm_contact_gender_id'] = $this->_genders[$value];
+        }
         $entryFound = TRUE;
-            }
+      }
 
-            // handle country
-            if ( array_key_exists('civicrm_address_country_id', $row) ) {
-                if ( $value = $row['civicrm_address_country_id'] ) {
+      // handle country
+      if (array_key_exists('civicrm_address_country_id', $row)) {
+        if ($value = $row['civicrm_address_country_id']) {
           $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country($value, FALSE);
-                }
+        }
         $entryFound = TRUE;
-            }
-            if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
-                if ( $value = $row['civicrm_address_state_province_id'] ) {
+      }
+      if (array_key_exists('civicrm_address_state_province_id', $row)) {
+        if ($value = $row['civicrm_address_state_province_id']) {
           $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
-                }
+        }
         $entryFound = TRUE;
-            }
+      }
 
       // handle custom fields
-      foreach($row as $k => $r) {
+      foreach ($row as $k => $r) {
         if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
-          if ( $r || $r=='0' ) {
-            if ($newval = $this->getCustomFieldLabel( $k, $r )) {
+          if ($r || $r == '0') {
+            if ($newval = $this->getCustomFieldLabel($k, $r)) {
               $rows[$rowNum][$k] = $newval;
             }
           }
@@ -539,25 +540,25 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         }
       }
 
-            // skip looking further in rows, if first row itself doesn't 
-            // have the column we need
-            if ( !$entryFound ) {
-                break;
-            }
-        }
+      // skip looking further in rows, if first row itself doesn't
+      // have the column we need
+      if (!$entryFound) {
+        break;
+      }
     }
-    
+  }
+
   function getCustomFieldLabel($fname, $val) {
-        $query = "
+    $query = "
 SELECT v.label
   FROM civicrm_custom_group cg INNER JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
   INNER JOIN civicrm_option_group g ON cf.option_group_id = g.id
   INNER JOIN civicrm_option_value v ON g.id = v.option_group_id
   WHERE CONCAT(cg.table_name, '_', cf.column_name) = %1 AND v.value = %2";
-        $params = array( 1 => array( $fname, 'String' ),
-                         2 => array( $val, 'String' ),
-                       );
-        return CRM_Core_DAO::singleValueQuery( $query, $params );
-    }
+    $params = array(1 => array($fname, 'String'),
+      2 => array($val, 'String'),
+    );
+    return CRM_Core_DAO::singleValueQuery($query, $params);
+  }
 }
 

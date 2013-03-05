@@ -39,30 +39,30 @@
  */
 class CRM_Dashlet_Page_AllCases extends CRM_Core_Page {
 
-    /**
-     * List activities as dashlet
-     *
-     * @return none
-     *
-     * @access public
-     */
-    function run( ) {
+  /**
+   * List activities as dashlet
+   *
+   * @return none
+   *
+   * @access public
+   */
+  function run() {
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
-        $this->assign('context', $context );
- 
-        //check for civicase access.
-        if ( !CRM_Case_BAO_Case::accessCiviCase( ) ) {
-            CRM_Core_Error::fatal( ts( 'You are not authorized to access this page.' ) );
-        }
+    $this->assign('context', $context);
 
-        $session  = CRM_Core_Session::singleton();
-        $userID   = $session->get('userID');        
-        $upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'all', $context); //NYSS 2173
-
-        if ( !empty( $upcoming ) ) {
-            $this->assign('AllCases', $upcoming);
-        }
-        return parent::run( );
+    //check for civicase access.
+    if (!CRM_Case_BAO_Case::accessCiviCase()) {
+      CRM_Core_Error::fatal(ts('You are not authorized to access this page.'));
     }
+
+    $session  = CRM_Core_Session::singleton();
+    $userID   = $session->get('userID');
+    $upcoming = CRM_Case_BAO_Case::getCases(TRUE, $userID, 'all', $context);//NYSS 2173
+
+    if (!empty($upcoming)) {
+      $this->assign('AllCases', $upcoming);
+    }
+    return parent::run();
+  }
 }
 
