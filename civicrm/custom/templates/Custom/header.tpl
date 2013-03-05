@@ -197,7 +197,8 @@ cj( document ).ready( function( ) {
 </div>
 {/if}
 <ul id="nyss-menu">
-{$navigation}
+  {crmNavigationMenu is_default=1}
+  {$navigation}
 </ul>
 {literal}
 <script type="text/javascript">
