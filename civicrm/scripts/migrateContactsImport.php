@@ -464,6 +464,9 @@ class CRM_migrateContactsImport {
     //store old->new activity ID so we can set original id value
     $oldNewActID = array();
 
+    //store activities where is_current_revision = 0 for post processing
+    $nonCurrentActivity = array();
+
     //cycle through contacts
     foreach ( $exportData['cases'] as $extID => $cases ) {
       $contactID = $extInt[$extID];
@@ -508,6 +511,7 @@ class CRM_migrateContactsImport {
               DELETE FROM civicrm_case_activity
               WHERE id = {$openCase->id}
             ";
+            CRM_Core_DAO::executeQuery($sql);
           }
         }
 
@@ -537,6 +541,11 @@ class CRM_migrateContactsImport {
 
           $oldNewActID[$oldID] = $newActivity['id'];
 
+          //check is_current_revision
+          if ( isset($activity['is_current_revision']) && $activity['is_current_revision'] != 1 ) {
+            $nonCurrentActivity[] = $newActivity['id'];
+          }
+
           //handle attachments
           if ( isset($activity['attachments']) ) {
             foreach ( $activity['attachments'] as $attID ) {
@@ -545,6 +554,17 @@ class CRM_migrateContactsImport {
           }
         }
       }
+    }
+
+    //process non current activities
+    if ( !empty($nonCurrentActivity) && !$optDry ) {
+      $nonCurrentActivityList = implode(',', $nonCurrentActivity);
+      $sql = "
+        UPDATE civicrm_activity
+        SET is_current_revision = 0
+        WHERE id IN ({$nonCurrentActivityList})
+      ";
+      CRM_Core_DAO::executeQuery($sql);
     }
   }//importCases
 

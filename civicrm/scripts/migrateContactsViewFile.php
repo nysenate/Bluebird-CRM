@@ -71,7 +71,7 @@ class CRM_migrateContactsViewFile {
 
     if ( $save ) {
       $data = print_r($data, TRUE);
-      $fileResource = fopen($filename.'_structured', 'w');
+      $fileResource = fopen($filename.'_structured.txt', 'w');
       fwrite($fileResource, $data);
     }
 
