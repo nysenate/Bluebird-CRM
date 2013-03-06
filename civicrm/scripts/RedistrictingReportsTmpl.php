@@ -450,7 +450,7 @@ if ($format == 'text') {
 	else if ($mode == "detail") {
 
 		$heading = array(
-			"District", "Contact Type", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Source 2", "Cases", "Acts", "Groups", "Prior District", "BB Rec#"
+			"District", "Contact Type", "BB Rec#", "Name","Sex","Age","Address","City", "Zip", "Email", "Source", "Source 2", "Cases", "Acts", "Groups", "Prior District"
 		);
 
 		$output_row = "";
@@ -467,10 +467,10 @@ if ($format == 'text') {
 						$name = get($contact,'organization_name','Unknown');
 
 				 	$row = array(
-				 		$dist, $type, $name, get_gender($contact['gender_id']), get_age($contact['birth_date']),
+				 		$dist, $type, $contact['contact_id'], $name, get_gender($contact['gender_id']), get_age($contact['birth_date']),
 				 		$contact['street_address'], $contact['city'], $contact['postal_code'], $contact['email'],
 				 		$contact['source'], $contact['const_source'], $contact['case_count'], $contact['activity_count'], $contact['group_count'],
-				 		$contact['prior_dist'], $contact['contact_id']
+				 		$contact['prior_dist']
 				 	);
 
 				 	// Replace commas with spaces
