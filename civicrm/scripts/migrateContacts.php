@@ -31,6 +31,9 @@ class CRM_migrateContacts {
     //initialize global export array
     $exportData = array();
 
+    //set memory limit so we don't max out
+    ini_set('memory_limit', '2000M');
+
     require_once 'script_utils.php';
 
     // Parse the options
@@ -260,6 +263,7 @@ class CRM_migrateContacts {
         $tempCount = 0;
       }
     }
+    $mC->free();
 
     //process records; take into account exclusions
     if ( !in_array('A', $exclusions) ) {
@@ -507,6 +511,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       }
       $data['import'][$contacts->external_identifier]['contact']['source'] = 'Redist2012';
     }
+    $contacts->free();
 
     //add to master global export
     self::prepareData($data, $optDry, 'exportContacts data');
@@ -695,6 +700,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //bbscript_log("trace", 'exportStandard $recordData', $recordData);
     //bbscript_log("trace", 'exportStandard $addressDistInfo', $addressDistInfo);
 
+    $rt->free();
+
     //only return string to write if we actually have values
     if ( $recordCount ) {
       return $recordData;
@@ -723,6 +730,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     while ( $dao->fetch() ) {
       $data['employment'][$dao->employeeKey] = $dao->employerKey;
     }
+    $dao->free();
 
     if ( !empty($data) ) {
       self::prepareData($data, $optDry, 'employee/employer array');
@@ -766,6 +774,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         'description' => $rels->description,
       );
     }
+    $rels->free();
 
     self::prepareData($data, $optDry, 'household relationships array');
   }//exportHouseholdRels
@@ -819,6 +828,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       $addressData['districtinfo'][$addressDistInfo[$di->entity_id]] = $data;
       $recordCount++;
     }
+    $di->free();
 
     //send to prep function if records exist
     if ( $recordCount ) {
@@ -898,7 +908,9 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $attachmentIDs[] = $actAttach->file_id;
         $data['activities'][$activities->activity_id]['attachments'][] = $actAttach->file_id;
       }
+      $actAttach->free();
     }
+    $activities->free();
 
     //bbscript_log("trace", 'exportActivities $data', $data);
     self::prepareData($data, $optDry, 'exportActivities');
@@ -968,6 +980,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
             $activity["custom_{$fldID}"] = $actCustom->$fld['column_name'];
           }
         }
+        $actCustom->free();
 
         //retrieve attachments
         $sql = "
@@ -981,6 +994,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           $attachmentIDs[] = $actAttach->file_id;
           $activity['attachments'][] = $actAttach->file_id;
         }
+        $actAttach->free();
 
         $caseActivities[$actID] = $activity;
       }
@@ -991,6 +1005,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       //assign to data array
       $data[$contactCases->external_id][] = $case['values'][$contactCases->case_id];
     }
+    $contactCases->free();
 
     $casesData = array('cases' => $data);
     //bbscript_log("trace", 'exportCases $casesData', $casesData);
@@ -1055,6 +1070,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           );
       }
     }
+    $allTags->free();
 
     //get issue code tree
     self::_getIssueCodeTree($issuecodes, $tempother);
@@ -1079,6 +1095,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       $entityTags[$eT->external_id][] = $eT->tag_id;
     }
     //bbscript_log("trace", 'exportTags $entityTags', $entityTags);
+    $eT->free();
 
     $tags['entities'] = $entityTags;
 
@@ -1156,6 +1173,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           }
         }
       }
+      $dupeLocAddr->free();
 
       //now update records
       if ( $optDry ) {
@@ -1172,6 +1190,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         }
       }
     }
+    $addr->free();
   }//_cleanLocType
 
   /*
@@ -1272,6 +1291,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           'desc' => $leftTags->description,
         );
       }
+      $leftTags->free();
 
       //call this function recursively
       self::_getIssueCodeTree($issuecodes, $tempother);
@@ -1313,6 +1333,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       );
     }
     //bbscript_log("trace", '_getAttachments $attachmentDetails', $attachmentDetails);
+    $attachments->free();
 
     self::prepareData( array('attachments' => $attachmentDetails), $optDry, '_getAttachments' );
   }//_getAttachments
@@ -1402,8 +1423,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         fwrite($fileResource, $data);
       }
       else {
-        ini_set('memory_limit', '2000M');
-
         $exportDataJSON = json_encode($data);
         fwrite($fileResource, $exportDataJSON);
       }
