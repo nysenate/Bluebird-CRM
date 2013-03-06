@@ -463,12 +463,22 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       $fieldNames[] = $field['name'];
     }
 
-    //unset these from select statement
-    unset($fieldNames[array_search('id', $fieldNames)]);
-    unset($fieldNames[array_search('external_identifier', $fieldNames)]);
-    unset($fieldNames[array_search('primary_contact_id', $fieldNames)]);
-    unset($fieldNames[array_search('employer_id', $fieldNames)]);
-    unset($fieldNames[array_search('source', $fieldNames)]);
+    //6309 unset these from select statement
+    $selectRemove = array(
+      'id',
+      'external_identifier',
+      'primary_contact_id',
+      'employer_id',
+      'source',
+      'do_not_email',
+      'do_not_phone',
+      'do_not_mail',
+      'do_not_sms',
+      'is_opt_out',
+    );
+    foreach ( $selectRemove as $f ) {
+      unset($fieldNames[array_search($f, $fieldNames)]);
+    }
 
     $select = 'external_id external_identifier, '.implode(', ',$fieldNames);
     //bbscript_log("trace", "exportContacts select", $select);
@@ -669,6 +679,13 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           if ( $rType == 'Attachments' && !empty($v) ) {
             //store to later process
             $attachmentIDs[] = $v;
+          }
+
+          //6309 unset on hold opt out
+          if ( $rType == 'email' && $f == 'on_hold' ) {
+            if ( $v == 2 ) {
+              $data[$f] = 0;
+            }
           }
         }
       }

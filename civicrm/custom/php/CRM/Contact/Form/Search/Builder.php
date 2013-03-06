@@ -369,35 +369,6 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search
           $this->_params[$k][2] = self::checkArrayKeyEmpty($v[2]);
         }
 
-      //NYSS 6287 determine how we handle trashing
-      //CRM_Core_Error::debug_var('builder postProcess params', $this->_params);
-      $trashParamExists = FALSE;
-      $paramByGroup = array();
-      foreach ( $this->_params as $k => $param ) {
-        if ( $param[0] == 'contact_is_deleted' ) {
-          $trashParamExists = TRUE;
-        }
-        $paramByGroup[$param[3]][$k] = $param;
-      }
-      if ( $trashParamExists ) {
-        $session = CRM_Core_Session::singleton();
-        $session->set('skipDeleteClause', TRUE);
-
-        //cycle through group sets and explicitly add trash param if not set
-        foreach ( $paramByGroup as $setID => $set ) {
-          if ( !in_array(array('contact_is_deleted', '=', '1', $setID, '0'), $this->_params) &&
-            !in_array(array('contact_is_deleted', '=', '0', $setID, '0'), $this->_params) ) {
-            $this->_params[] = array(
-              'contact_is_deleted',
-              '=',
-              '0',
-              $setID,
-              '0',
-            );
-          }
-        }
-      }
-
         parent::postProcess( );
     }
 

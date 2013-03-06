@@ -165,12 +165,14 @@ class CRM_migrateContactsImport {
       'individuals' => $statsTemp['Individual'],
       'organizations' => $statsTemp['Organization'],
       'households' => $statsTemp['Household'],
+      'addresses with location conflicts' => count($statsTemp['address_location_conflicts']),
       'employee/employer relationships' => count($exportData['employment']),
       'total contacts merged with existing records' => $mergedContacts['All'],
       'individuals merged with existing records' => $mergedContacts['Individual'],
       'organizations merged with existing records' => $mergedContacts['Organization'],
       'households merged with existing records' => $mergedContacts['Household'],
-      'contacts self-merged with other imported records' => count($selfMerged),
+      'contacts self-merged with other imported records (count)' => count($selfMerged),
+      'contacts self-merged with other imported records (current contact -> existing contact)' => $selfMerged,
       'activities' => count($exportData['activities']),
       'cases' => count($caseList),
       'keywords' => count($exportData['tags']['keywords']),
@@ -315,11 +317,13 @@ class CRM_migrateContactsImport {
 
       //cycle through each set of related records
       foreach ( $relatedTypes as $type ) {
+        //bbscript_log("trace", "importContacts related type: {$type}");
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
           foreach ( $details[$type] as $record ) {
             switch( $type ) {
               case 'Attachments':
+                //bbscript_log("trace", "importContacts attachments record", $record);
                 //handle attachments via sql rather than API
                 $attachSqlEle = array();
 
@@ -329,33 +333,50 @@ class CRM_migrateContactsImport {
                     $attachSqlEle[$attF] = self::_importEntityAttachments($contactID, $attV, 'civicrm_value_attachments_5');
                   }
                 }
-                $attachSql = "
-                  INSERT IGNORE INTO civicrm_value_attachments_5
-                  (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
-                  VALUES
-                  ({$contactID}, ".implode(', ', $attachSqlEle).")
-                ";
-                //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
+                if ( !empty($attachSqlEle) ) {
+                  $attachSql = "
+                    INSERT IGNORE INTO civicrm_value_attachments_5
+                    (entity_id, ".implode(', ', array_keys($attachSqlEle)).")
+                    VALUES
+                    ({$contactID}, ".implode(', ', $attachSqlEle).")
+                  ";
+                  //bbscript_log("trace", 'importContacts $attachSql', $attachSql);
 
-                if ( $optDry ) {
-                  bbscript_log("debug", "importing attachments for contact", $record);
-                }
-                else {
-                  CRM_Core_DAO::executeQuery($attachSql);
+                  if ( $optDry ) {
+                    bbscript_log("debug", "importing attachments for contact", $record);
+                  }
+                  else {
+                    CRM_Core_DAO::executeQuery($attachSql);
+                  }
                 }
                 break;
 
               case 'address':
+                //if location type is missing, set it to home and if needed, it will be corrected below
+                if ( empty($record['location_type_id']) ) {
+                  $record['location_type_id'] = 1;
+                }
+
                 //need to fix location types so we don't overwrite
                 $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
                   if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
+                    $stats['address_location_conflicts'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                     //bbscript_log("trace", 'importContacts $record', $record);
-                    //attempt to assign to other, other2, main, main2
-                    foreach ( array(4,11,3, 12) as $newLocType ) {
-                      if ( !array_key_exists($newLocType, $existingAddresses) ) {
-                        $record['location_type_id'] = $newLocType;
-                        break;
+
+                    //we have a location conflict -- either skip importing this address, or assign new loc type
+                    $action = self::_compareAddresses($record['location_type_id'], $existingAddresses, $record);
+
+                    if ( $action == 'skip' ) {
+                      continue;
+                    }
+                    elseif ( $action == 'newloc' ) {
+                      //attempt to assign to other, other2, main, main2
+                      foreach ( array(4,11,3,12) as $newLocType ) {
+                        if ( !array_key_exists($newLocType, $existingAddresses) ) {
+                          $record['location_type_id'] = $newLocType;
+                          break;
+                        }
                       }
                     }
                   }
@@ -443,6 +464,9 @@ class CRM_migrateContactsImport {
     //store old->new activity ID so we can set original id value
     $oldNewActID = array();
 
+    //store activities where is_current_revision = 0 for post processing
+    $nonCurrentActivity = array();
+
     //cycle through contacts
     foreach ( $exportData['cases'] as $extID => $cases ) {
       $contactID = $extInt[$extID];
@@ -465,6 +489,31 @@ class CRM_migrateContactsImport {
         //bbscript_log("trace", "importCases newCase", $newCase);
 
         $caseID = $newCase['id'];
+
+        //6313 remove newly created open case activity before we migrate activities
+        $sql = "
+          SELECT ca.id, ca.activity_id
+          FROM civicrm_case_activity ca
+          JOIN civicrm_activity a
+            ON ca.activity_id = a.id
+            AND a.activity_type_id = 13
+          WHERE ca.case_id = {$caseID}
+        ";
+        $openCase = CRM_Core_DAO::executeQuery($sql);
+        if ( !$optDry ) {
+          while ( $openCase->fetch() ) {
+            $sql = "
+              DELETE FROM civicrm_activity
+              WHERE id = {$openCase->activity_id}
+            ";
+            CRM_Core_DAO::executeQuery($sql);
+            $sql = "
+              DELETE FROM civicrm_case_activity
+              WHERE id = {$openCase->id}
+            ";
+            CRM_Core_DAO::executeQuery($sql);
+          }
+        }
 
         foreach ( $activities as $oldID => $activity ) {
           $activity['source_contact_id'] = $bbAdmin;
@@ -492,6 +541,11 @@ class CRM_migrateContactsImport {
 
           $oldNewActID[$oldID] = $newActivity['id'];
 
+          //check is_current_revision
+          if ( isset($activity['is_current_revision']) && $activity['is_current_revision'] != 1 ) {
+            $nonCurrentActivity[] = $newActivity['id'];
+          }
+
           //handle attachments
           if ( isset($activity['attachments']) ) {
             foreach ( $activity['attachments'] as $attID ) {
@@ -500,6 +554,17 @@ class CRM_migrateContactsImport {
           }
         }
       }
+    }
+
+    //process non current activities
+    if ( !empty($nonCurrentActivity) && !$optDry ) {
+      $nonCurrentActivityList = implode(',', $nonCurrentActivity);
+      $sql = "
+        UPDATE civicrm_activity
+        SET is_current_revision = 0
+        WHERE id IN ({$nonCurrentActivityList})
+      ";
+      CRM_Core_DAO::executeQuery($sql);
     }
   }//importCases
 
@@ -971,6 +1036,11 @@ class CRM_migrateContactsImport {
         $contact[$type.'_custom'] = '';
       }
     }
+
+    //random bad data fix
+    if ( $contact['email_greeting_id'] == 9 ) {
+      $contact['email_greeting_id'] = 6;
+    }
   }//_checkGreeting
 
   /*
@@ -980,6 +1050,7 @@ class CRM_migrateContactsImport {
   function _fillContact($matchedID, &$details) {
     global $customGroupID;
     global $customMapID; // array('id' => 'col_name')
+    global $optDry;
 
     $params = array(
       'version' => 3,
@@ -1028,10 +1099,20 @@ class CRM_migrateContactsImport {
         $data = self::_importAPI($set, 'get', $params);
         //bbscript_log("trace", "_fillContact data: $set", $data);
 
+        //trap the error: if get failed, we need to insert a record in the custom data table
+        if ( $data['is_error'] && !$optDry ) {
+          bbscript_log("debug", "unable to retrieve {$set} custom data for ID {$matchedID}. inserting record and proceeding.");
+          $tbl = self::getCustomFields($set, 'table');
+          $sql = "
+            INSERT IGNORE INTO {$tbl} (entity_id)
+            VALUES ({$matchedID});
+          ";
+        }
+
         //cycle through existing custom data and unset from $details if value exists
         if ( !empty($data['values']) ) {
           foreach ( $data['values'] as $custFID => $existingData ) {
-            //TODO should probably handle attachments more intelligently
+            //should probably handle attachments more intelligently
             if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
               $colName = $customMapID[$set][$custFID];
               unset($details[$set][$colName]);
@@ -1041,6 +1122,40 @@ class CRM_migrateContactsImport {
       }
     }
   }//_fillContact
+
+  /*
+   * compare imported conflicting address with existing and decide if they match
+   * and we should skip import, or they are different and we should assign a new loc type
+   */
+  function _compareAddresses($locType, $existing, $record) {
+    global $exportData;
+
+    //get existing address
+    $params = array(
+      'id' => $existing[$locType],
+    );
+    $address = self::_importAPI('address', 'getsingle', $params);
+
+    //bbscript_log("trace", "_compareAddresses address", $address);
+    //bbscript_log("trace", "_compareAddresses record", $record);
+
+    $dupe = TRUE;
+    $afs = array('street_address', 'supplemental_address_1', 'city', 'postal_code');
+    foreach ( $afs as $af ) {
+      if ( $address[$af] != $record[$af] ) {
+        $dupe = FALSE;
+        break;
+      }
+    }
+
+    if ( $dupe ) {
+      unset($exportData['districtinfo'][$record['name']]);
+      return 'skip';
+    }
+    else {
+      return 'newloc';
+    }
+  }
 
   /*
    * helper function to build entity_file record
