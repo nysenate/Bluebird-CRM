@@ -445,7 +445,7 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			JOIN `civicrm_address` a ON contact.id = a.contact_id
 			JOIN `civicrm_value_district_information_7` district ON a.id = district.entity_id			
 			LEFT JOIN `civicrm_value_constituent_information_1` constituent on contact.id = constituent.entity_id  
-			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id
+			LEFT JOIN `civicrm_email` email ON contact.id = email.contact_id AND email.is_primary = 1
 			LEFT JOIN `civicrm_phone` phone ON contact.id = phone.contact_id
 
 	   		# Counts of cases
@@ -459,7 +459,6 @@ function get_contacts($db, $use_contact_filter = true, $filter_district = -1, $u
 			AND a.is_primary = 1
 			AND contact.is_deleted = 0
 			AND NOT (contact.do_not_phone = 1 AND contact.do_not_mail = 1 AND ( contact.do_not_email = 1 OR contact.is_opt_out = 1 ))
-			AND (email.id IS NULL OR email.is_primary = 1)
 			GROUP BY contact_id
 		) AS c
 		LEFT JOIN `" . RD_ACTS_CACHE_TABLE . "` acts_cache ON acts_cache.act_contact_id = c.contact_id
