@@ -1288,7 +1288,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
       //if $tempother is not empty, but $leftTags returns 0 records, it is an indication that we have
       //an orphaned child in the tree (a parent_id is set but that parent does not exist)
-      if ( $leftTags['N'] ) {
+      if ( $leftTags->N ) {
         while ( $leftTags->fetch() ) {
           $tempother[$leftTags->id] = array(
             'parent_id' => $leftTags->parent_id,
