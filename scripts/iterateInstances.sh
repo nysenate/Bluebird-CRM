@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2012-04-26
+# Revised: 2013-03-07
 #
 
 prog=`basename $0`
@@ -20,7 +20,7 @@ piddir=/var/run
 . "$script_dir/defaults.sh"
 
 usage() {
-  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName] [--exclude-set instanceSet] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName [--exclude ...]] [--exclude-set instanceSet [--exclude-set ...]] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -35,10 +35,10 @@ cmdfile=
 use_all=0
 use_live=0
 fast_live=0
-instance_set=
+instance_sets=
 instances=
 excludes=
-exclude_set=
+exclude_sets=
 quiet_mode=0
 bg_jobs=
 no_wait=0
@@ -51,14 +51,14 @@ while [ $# -gt 0 ]; do
     --all) use_all=1 ;;
     --live) use_live=1 ;;
     --live-fast) use_live=1; fast_live=1 ;;
-    --locked) instance_set="LOCKED" ;;
-    --civimail) instance_set="civimail" ;;
-    --signups) instance_set="signups" ;;
-    --training) instance_set="training" ;;
-    --set|-s) shift; instance_set="$1" ;;
+    --locked) instance_sets="$instance_sets LOCKED" ;;
+    --civimail) instance_sets="$instance_sets civimail" ;;
+    --signups) instance_sets="$instance_sets signups" ;;
+    --training) instance_sets="$instance_sets training" ;;
+    --set|-s) shift; instance_sets="$instance_sets $1" ;;
     --instance|-i) shift; instances="$instances $1" ;;
     --exclude|-e) shift; excludes="$excludes $1" ;;
-    --exclude-set) shift; exclude_set="$1" ;;
+    --exclude-set|-E) shift; exclude_sets="$exclude_sets $1" ;;
     --quiet|-q) quiet_mode=1 ;;
     --bg) bg_jobs="&" ;;
     --no-wait) no_wait=1 ;;
@@ -89,7 +89,7 @@ if [ "$serial_id" ]; then
 fi
 
 if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
-  if [ "$instances" -o "$instance_set" ]; then
+  if [ "$instances" -o "$instance_sets" ]; then
     echo "$prog: Cannot use --all or --live if instances have been specified">&2
     cleanup_and_exit 1
   else
@@ -128,23 +128,27 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
       instances="$live_instances"
     fi
   fi
-elif [ "$instance_set" ]; then
-  ival=`$readConfig --instance-set "$instance_set"`
-  if [ ! "$ival" ]; then
-    echo "$prog: Instance set [$instance_set] not found" >&2
-    cleanup_and_exit 1
-  fi
-  instances="$instances $ival"
+elif [ "$instance_sets" ]; then
+  for iset in $instance_sets; do
+    ival=`$readConfig --instance-set "$iset"`
+    if [ ! "$ival" ]; then
+      echo "$prog: Instance set [$iset] not found" >&2
+      cleanup_and_exit 1
+    fi
+    instances="$instances $ival"
+  done
 fi
 
 # Now remove excluded instances.
-if [ "$exclude_set" ]; then
-  ival=`$readConfig --instance-set "$exclude_set"`
-  if [ ! "$ival" ]; then
-    echo "$prog: Instance set [$exclude_set] not found for exclusion" >&2
-    cleanup_and_exit 1
-  fi
-  excludes="$excludes $ival"
+if [ "$exclude_sets" ]; then
+  for iset in $exclude_sets; do
+    ival=`$readConfig --instance-set "$iset"`
+    if [ ! "$ival" ]; then
+      echo "$prog: Instance set [$iset] not found for exclusion" >&2
+      cleanup_and_exit 1
+    fi
+    excludes="$excludes $ival"
+  done
 fi
 
 tmp_instances=
