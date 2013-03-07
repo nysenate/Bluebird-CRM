@@ -165,20 +165,25 @@ class CRM_migrateContactsImport {
       'individuals' => $statsTemp['Individual'],
       'organizations' => $statsTemp['Organization'],
       'households' => $statsTemp['Household'],
-      'addresses with location conflicts' => count($statsTemp['address_location_conflicts']),
+      'addresses with location conflicts (skipped)' => count($statsTemp['address_location_conflicts']['skip']),
+      'addresses with location conflicts (new location assigned)' => count($statsTemp['address_location_conflicts']['newloc']),
       'employee/employer relationships' => count($exportData['employment']),
       'total contacts merged with existing records' => $mergedContacts['All'],
       'individuals merged with existing records' => $mergedContacts['Individual'],
       'organizations merged with existing records' => $mergedContacts['Organization'],
       'households merged with existing records' => $mergedContacts['Household'],
       'contacts self-merged with other imported records (count)' => count($selfMerged),
-      'contacts self-merged with other imported records (current contact -> existing contact)' => $selfMerged,
       'activities' => count($exportData['activities']),
       'cases' => count($caseList),
       'keywords' => count($exportData['tags']['keywords']),
       'first level issue codes' => count($exportData['tags']['issuecodes']),
       'positions' => count($exportData['tags']['positions']),
       'attachments' => count($exportData['attachments']),
+      'expanded details for various stats' => array(
+        'contacts self-merged with other imported records (current contact -> existing contact)' => $selfMerged,
+        'addresses with location conflicts (skipped)' => $statsTemp['address_location_conflicts']['skip'],
+        'addresses with location conflicts (new location assigned)' => $statsTemp['address_location_conflicts']['newloc'],
+      ),
     );
     bbscript_log("info", "Migration statistics:", $stats);
 
@@ -312,7 +317,12 @@ class CRM_migrateContactsImport {
       //bbscript_log("trace", "importContacts _importAPI contact", $contact);
 
       //set the contact ID for use in related records; also build mapping array
-      $contactID = $contact['id'];
+      if ( $optDry && $matchedContact ) {
+        $contactID = $matchedContact;
+      }
+      else {
+        $contactID = $contact['id'];
+      }
       $extInt[$extID] = $contactID;
 
       //cycle through each set of related records
@@ -361,16 +371,17 @@ class CRM_migrateContactsImport {
                 $existingAddresses = CRM_Core_BAO_Address::allAddress( $contactID );
                 if ( !empty($existingAddresses) ) {
                   if ( array_key_exists($record['location_type_id'], $existingAddresses) ) {
-                    $stats['address_location_conflicts'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                     //bbscript_log("trace", 'importContacts $record', $record);
 
                     //we have a location conflict -- either skip importing this address, or assign new loc type
                     $action = self::_compareAddresses($record['location_type_id'], $existingAddresses, $record);
 
                     if ( $action == 'skip' ) {
+                      $stats['address_location_conflicts']['skip'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                       continue;
                     }
                     elseif ( $action == 'newloc' ) {
+                      $stats['address_location_conflicts']['newloc'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                       //attempt to assign to other, other2, main, main2
                       foreach ( array(4,11,3,12) as $newLocType ) {
                         if ( !array_key_exists($newLocType, $existingAddresses) ) {
@@ -499,8 +510,8 @@ class CRM_migrateContactsImport {
             AND a.activity_type_id = 13
           WHERE ca.case_id = {$caseID}
         ";
-        $openCase = CRM_Core_DAO::executeQuery($sql);
         if ( !$optDry ) {
+          $openCase = CRM_Core_DAO::executeQuery($sql);
           while ( $openCase->fetch() ) {
             $sql = "
               DELETE FROM civicrm_activity
