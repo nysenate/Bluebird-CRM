@@ -614,10 +614,11 @@ class CRM_migrateContactsImport {
 
     //process positions
     foreach ( $exportData['tags']['positions'] as $posID => $posDetail ) {
+      $pName = civicrm_mysql_real_escape_string($posDetail['name']);
       $sql = "
         SELECT id
         FROM civicrm_tag
-        WHERE name = '{$posDetail['name']}'
+        WHERE name = '{$pName}'
           AND parent_id = 292
       ";
       $intPosID = CRM_Core_DAO::singleValueQuery($sql);
