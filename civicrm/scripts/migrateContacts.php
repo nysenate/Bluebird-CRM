@@ -1018,6 +1018,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    */
   function exportTags($migrateTbl, $optDry) {
     global $source;
+    global $dest;
 
     bbscript_log("info", "exporting tags...");
 
@@ -1028,6 +1029,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $pParent = 292;
 
     $kPrefix = 'RD '.substr($source['name'], 0, 5).': ';
+    $kPrefixDest = 'RD '.substr($dest['name'], 0, 5).': ';
 
     //first get all tags associated with contacts
     $sql = "
@@ -1038,6 +1040,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         AND et.entity_table = 'civicrm_contact'
       JOIN civicrm_tag t
         ON et.tag_id = t.id
+        AND t.name NOT LIKE '{$kPrefixDest}%'
       GROUP BY t.id
     ";
     $allTags = CRM_Core_DAO::executeQuery($sql);
@@ -1089,6 +1092,9 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       JOIN {$migrateTbl} mt
         ON et.entity_id = mt.contact_id
         AND et.entity_table = 'civicrm_contact'
+      JOIN civicrm_tag t
+        ON et.tag_id = t.id
+        AND t.name NOT LIKE '{$kPrefixDest}%'
     ";
     $eT = CRM_Core_DAO::executeQuery($sql);
     while ( $eT->fetch() ) {
