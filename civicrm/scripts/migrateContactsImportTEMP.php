@@ -132,6 +132,8 @@ class CRM_migrateContactsImport {
 
     $statsTemp = array();
 
+    require_once 'CRM/Import/DataSource/CSV.php';
+
     self::_tempBuildExtInt($source, $dest);
 
     //process the import
