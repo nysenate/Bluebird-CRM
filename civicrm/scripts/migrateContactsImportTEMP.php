@@ -592,18 +592,18 @@ class CRM_migrateContactsImport {
     }
 
     //when processing tags, increase field length to varchar(80)
-    /*if ( !$optDry ) {
+    if ( !$optDry ) {
       $sql = "
         ALTER TABLE civicrm_tag
         MODIFY name varchar(80);
       ";
       CRM_Core_DAO::executeQuery($sql);
-    }*/
+    }
 
     //bbscript_log("trace", 'importTags tags', $exportData['tags']);
 
     //process keywords
-    /*foreach ( $exportData['tags']['keywords'] as $keyID => $keyDetail ) {
+    foreach ( $exportData['tags']['keywords'] as $keyID => $keyDetail ) {
       $params = array(
         'name' => $keyDetail['name'],
         'description' => $keyDetail['desc'],
@@ -612,10 +612,10 @@ class CRM_migrateContactsImport {
       $newKeyword = self::_importAPI('tag', 'create', $params);
       //bbscript_log("trace", 'importTags newKeyword', $newKeyword);
       $tagExtInt[$keyID] = $newKeyword['id'];
-    }*/
+    }
 
     //process positions
-    /*foreach ( $exportData['tags']['positions'] as $posID => $posDetail ) {
+    foreach ( $exportData['tags']['positions'] as $posID => $posDetail ) {
       $pName = civicrm_mysql_real_escape_string($posDetail['name']);
       $sql = "
         SELECT id
@@ -635,7 +635,7 @@ class CRM_migrateContactsImport {
         $intPosID = $newPos['id'];
       }
       $tagExtInt[$posID] = $intPosID;
-    }*/
+    }
 
     //process issue codes
     //begin by constructing base level tag
@@ -1381,9 +1381,10 @@ class CRM_migrateContactsImport {
   //cleanup purposes only
   function _tempBuildExtInt($source, $dest) {
     global $extInt;
+    global $optDry;
 
     $sourcePrefix = 'SD'.$source['num'].'_';
-    bbscript_log("trace", '_tempBuildExtInt sourcePrefix', $sourcePrefix);
+    //bbscript_log("trace", '_tempBuildExtInt sourcePrefix', $sourcePrefix);
 
     $sql = "
       SELECT id, external_identifier
@@ -1394,8 +1395,17 @@ class CRM_migrateContactsImport {
     while ( $migratedContacts->fetch() ) {
       $extInt[$migratedContacts->external_identifier] = $migratedContacts->id;
     }
+    //bbscript_log("trace", '_tempBuildExtInt extInt', $extInt);
 
-    bbscript_log("trace", '_tempBuildExtInt extInt', $extInt);
+    //we need to cleanup keyword tags that were previously created and allow them to be recreated
+    $kPrefix = 'RD '.substr($source['name'], 0, 5).': ';
+    $sql = "
+      DELETE FROM civicrm_tag
+      WHERE name LIKE '{$kPrefix}%';
+    ";
+    if ( !$optDry ) {
+      CRM_Core_DAO::executeQuery($sql);
+    }
   }//_tempBuildExtInt
 }
 
