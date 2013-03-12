@@ -719,8 +719,6 @@ class CRM_migrateContactsImport {
       //bbscript_log("trace", '_importTags entityTag $params', $params);
       self::_importAPI('entity_tag', 'create', $params);
     }
-
-
   }//importTags
 
   function importEmployment(&$exportData) {
@@ -1280,7 +1278,9 @@ class CRM_migrateContactsImport {
       if ( empty($v) && $v !== 0 ) {
         unset($data[$f]);
       }
-      $data[$f] = stripslashes($v);
+      if ( is_string($v) ) {
+        $data[$f] = stripslashes($v);
+      }
     }
     return $data;
   }//_cleanArray
