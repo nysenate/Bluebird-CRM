@@ -1280,6 +1280,7 @@ class CRM_migrateContactsImport {
       if ( empty($v) && $v !== 0 ) {
         unset($data[$f]);
       }
+      $data[$f] = stripslashes($v);
     }
     return $data;
   }//_cleanArray
