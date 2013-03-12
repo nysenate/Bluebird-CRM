@@ -232,9 +232,8 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
     );
 
     //Added code to add custom field as Reply-To on form when it is enabled from Mailer settings
-
-    if (isset($config->replyTo) && !empty($config->replyTo) && 
-! CRM_Utils_Array::value( 'override_verp', $options ) ) {
+    if (isset($config->replyTo) && !empty($config->replyTo) &&
+      ! CRM_Utils_Array::value( 'override_verp', $options ) ) {
 
       $this->add('select', 'reply_to_address', ts('Reply-To'),
         array('' => '- select -') + $fromEmailAddress
@@ -294,6 +293,8 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
 
     $this->addFormRule(array('CRM_Mailing_Form_Upload', 'formRule'), $this);
 
+    //FIXME : currently we are hiding save an continue later when
+    //search base mailing, we should handle it when we fix CRM-3876
     $buttons = array(
       array('type' => 'back',
         'name' => ts('<< Previous'),
@@ -463,11 +464,12 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form {
     }
 
     /* Build the mailing object */
-
     CRM_Mailing_BAO_Mailing::create($params, $ids);
 
+    //NYSS 6337 need to account for our submit button alteration
     if (isset($this->_submitValues['_qf_Upload_upload_save']) &&
-      $this->_submitValues['_qf_Upload_upload_save'] == 'Save & Continue Later'
+      ( $this->_submitValues['_qf_Upload_upload_save'] == 'Save & Continue Later' ||
+        $this->_submitValues['_qf_Upload_upload_save'] == 'Processing...' )
     ) {
       //when user perform mailing from search context
       //redirect it to search result CRM-3711.
