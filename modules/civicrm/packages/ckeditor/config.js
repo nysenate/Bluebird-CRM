@@ -44,7 +44,7 @@ CKEDITOR.editorConfig = function( config ) {
     ];
     config.plugins += ',aspell';
     //allows the browser (non-ie) to take out the context menues
-    config.disableNativeSpellChecker = false;
+    config.disableNativeSpellChecker = true;
     config.removePlugins = 'scayt,menubutton,contextmenu';
 };
 
