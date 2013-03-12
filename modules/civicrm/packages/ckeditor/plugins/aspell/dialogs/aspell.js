@@ -8,7 +8,7 @@ CKEDITOR.dialog.add('aspell', function( editor )
 		iframeId = 'cke_frame_' + number,
 		textareaId = 'cke_data_' + number,
 		interval,
-		errorMsg = editor.lang.spellCheck.notAvailable;
+		errorMsg = editor.lang.aspell.notAvailable;
 	
 	var spellHTML =
 	// Input for exchanging data CK<--->spellcheck
@@ -42,22 +42,22 @@ CKEDITOR.dialog.add('aspell', function( editor )
 				// A bit of a hack, but how does e.g. controls.html know which language to use?
 				FCKLang = {};
 				// spellChecker.js
-				FCKLang.DlgSpellNoChanges     = CKEDITOR.lang[editor.langCode].spellCheck.noChanges;
-				FCKLang.DlgSpellNoMispell     = CKEDITOR.lang[editor.langCode].spellCheck.noMispell;
-				FCKLang.DlgSpellOneChange     = CKEDITOR.lang[editor.langCode].spellCheck.oneChange;
-				FCKLang.DlgSpellManyChanges   = CKEDITOR.lang[editor.langCode].spellCheck.manyChanges;
+				FCKLang.DlgSpellNoChanges     = editor.lang.aspell.noChanges;
+				FCKLang.DlgSpellNoMispell     = editor.lang.aspell.noMispell;
+				FCKLang.DlgSpellOneChange     = editor.lang.aspell.oneChange;
+				FCKLang.DlgSpellManyChanges   = editor.lang.aspell.manyChanges;
 				// controls.html
-				FCKLang.DlgSpellNotInDic      = CKEDITOR.lang[editor.langCode].spellCheck.notInDic;
-				FCKLang.DlgSpellChangeTo      = CKEDITOR.lang[editor.langCode].spellCheck.changeTo;
-				FCKLang.DlgSpellBtnIgnore     = CKEDITOR.lang[editor.langCode].spellCheck.btnIgnore;
-				FCKLang.DlgSpellBtnIgnoreAll  = CKEDITOR.lang[editor.langCode].spellCheck.btnIgnoreAll;
-				FCKLang.DlgSpellBtnReplace    = CKEDITOR.lang[editor.langCode].spellCheck.btnReplace;
-				FCKLang.DlgSpellBtnReplaceAll = CKEDITOR.lang[editor.langCode].spellCheck.btnReplaceAll;
-				FCKLang.DlgSpellBtnUndo       = CKEDITOR.lang[editor.langCode].spellCheck.btnUndo;
+				FCKLang.DlgSpellNotInDic      = editor.lang.aspell.notInDic;
+				FCKLang.DlgSpellChangeTo      = editor.lang.aspell.changeTo;
+				FCKLang.DlgSpellBtnIgnore     = editor.lang.aspell.btnIgnore;
+				FCKLang.DlgSpellBtnIgnoreAll  = editor.lang.aspell.btnIgnoreAll;
+				FCKLang.DlgSpellBtnReplace    = editor.lang.aspell.btnReplace;
+				FCKLang.DlgSpellBtnReplaceAll = editor.lang.aspell.btnReplaceAll;
+				FCKLang.DlgSpellBtnUndo       = editor.lang.aspell.btnUndo;
 				// controlWindow.js
-				FCKLang.DlgSpellNoSuggestions = CKEDITOR.lang[editor.langCode].spellCheck.noSuggestions;
+				FCKLang.DlgSpellNoSuggestions = editor.lang.aspell.noSuggestions;
 				// spellchecker.html
-				FCKLang.DlgSpellProgress      = CKEDITOR.lang[editor.langCode].spellCheck.progress;
+				FCKLang.DlgSpellProgress      = editor.lang.aspell.progress;
 				// End language
 				
 				// Start spellcheck!
@@ -93,7 +93,7 @@ CKEDITOR.dialog.add('aspell', function( editor )
 	}
 	
 	return {
-		title: editor.lang.spellCheck.title,
+		title: editor.lang.aspell.title,
 		minWidth: minW,
 		minHeight: minH,
 		buttons: [ CKEDITOR.dialog.cancelButton ],
@@ -153,7 +153,7 @@ CKEDITOR.dialog.add('aspell', function( editor )
 		contents: [
 			{
 				id: 'general',
-				label: editor.lang.spellCheck.title,
+				label: editor.lang.aspell.title,
 				padding: 0,
 				elements: [
 					{

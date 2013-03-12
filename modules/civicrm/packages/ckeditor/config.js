@@ -25,7 +25,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordRemoveFontStyles = false;
   config.pasteFromWordNumberedHeadingToList = true;
 
-  config.extraPlugins = 'font';
+  config.extraPlugins = 'font,aspell';
 
   // The toolbar groups arrangement, optimized for two toolbar rows.
   config.toolbarGroups = [
@@ -64,10 +64,10 @@ CKEDITOR.editorConfig = function( config ) {
       //['Undo','Redo'], //NYSS
       ['Source'] //NYSS ,'-','Preview','-','About'],
   ];*/
-  //config.plugins += ',aspell';
+
   //allows the browser (non-ie) to take out the context menues
   config.disableNativeSpellChecker = true;
-  config.removePlugins = 'scayt,menubutton'//,contextmenu';
+  config.removePlugins = 'scayt,menubutton,wsj'//,contextmenu';
 };
 
 //NYSS 3878 remove some unnecessary elements
