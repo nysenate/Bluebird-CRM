@@ -46,7 +46,22 @@
 *}
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-   {include file="CRM/common/formButtons.tpl" location="top"}
+  {*NYSS 6340 move save matching button (and rename)*}
+  {if $isDuplicate}
+    <span class="crm-button crm-button_qf_Contact_upload_duplicate">
+      {$form._qf_Contact_upload_duplicate.html}
+    </span>
+    {include file="CRM/common/formButtons.tpl" location="top"}
+    {literal}
+    <script style="text/javascript">
+      //cj('span.crm-button crm-button_qf_Contact_upload_duplicate').insertBefore(cj('span.crm-button_qf_Contact_upload_view'));
+      cj('input#_qf_Contact_upload_duplicate').val('Save Contact Anyway');
+      cj('span.crm-button-type-upload').hide();
+    </script>
+    {/literal}
+  {else}
+    {include file="CRM/common/formButtons.tpl" location="top"}
+  {/if}
 </div>
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
@@ -62,12 +77,6 @@
         	<span class="crm-button crm-button_qf_Contact_refresh_dedupe">
         	    {$form._qf_Contact_refresh_dedupe.html}
         	</span>
-        	{if $isDuplicate}
-            &nbsp;&nbsp;
-            <span class="crm-button crm-button_qf_Contact_upload_duplicate">
-                {$form._qf_Contact_upload_duplicate.html}
-            </span>
-            {/if}
 			</td>
 		</tr>
         <tr>
