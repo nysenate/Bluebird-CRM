@@ -97,8 +97,7 @@
 </div>
 <div class="clear"></div>
 </div>
-
-{if $action eq 16 || $action eq 2 }
+{if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
         <div class="BBInit"></div>
         {literal}
