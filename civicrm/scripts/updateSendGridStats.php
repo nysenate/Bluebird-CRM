@@ -49,7 +49,7 @@ global $messages;
 $messages = array();
 
 // process all th event_types one by one
-log_("Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.", 'NOTICE' );
+log_("Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.", 'INFO' );
 $total_events = 0;
 $total_events_processed = 0;
 foreach ($event_map as $event_type => $callback) {
@@ -65,7 +65,7 @@ foreach ($event_map as $event_type => $callback) {
 
     $event_count = mysql_num_rows($result);
     $total_events += $event_count;
-    log_("Processing ".$event_count." {$event_type} events.", 'NOTICE');
+    log_("Processing ".$event_count." {$event_type} events.", 'INFO');
 
     $batch = array();
     $errors = array();
@@ -105,12 +105,12 @@ foreach ($event_map as $event_type => $callback) {
             }
 
             if (count($archived)) {
-                log_(count($archived)." events were archived.", "NOTICE");
+                log_(count($archived)." events were archived.", "INFO");
                 archive_events($archived, "ARCHIVED", $optList, $bbconfig);
             }
 
             if (count($skipped)) {
-                log_(count($skipped)." events were skipped.", 'NOTICE');
+                log_(count($skipped)." events were skipped.", 'INFO');
                 archive_events($skipped, "SKIPPED", $optList, $bbconfig);
             }
 
@@ -121,7 +121,7 @@ foreach ($event_map as $event_type => $callback) {
 
     }
 }
-log_("Processed $total_events events.", 'NOTICE');
+log_("Processed $total_events events.", 'INFO');
 
 $result = exec_query("SELECT * FROM incoming WHERE IFNULL(servername, '')=''", $conn);
 archive_orphaned_events($result, 'no servername');

@@ -38,9 +38,9 @@ $result = exec_query("
     WHERE instance='{$optList['instance']}'
     ORDER BY mailing_id
     ", $conn);
+
 //eventually: join mailing id keys on summary for initial processed (dt_first)
 //can't do it because some old events get lodged without mailing_id's in the summary table
-
 archive_orphaned_events($result, $optList);
 
 

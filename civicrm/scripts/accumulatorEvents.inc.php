@@ -141,7 +141,6 @@ function archive_orphaned_events($result, $optList)
         $newOptList = $optList;
         $optList = '';
         $optList['instance'] = $newOptList;
-        print_r($optList);
     }
     $event_count = mysql_num_rows($result);
     if($event_count != 0)
@@ -165,16 +164,19 @@ function archive_orphaned_events($result, $optList)
         log_('There are no orphaned events for '.$optList['instance'].'.','ERROR');    
     }  
 }
+// flagged with the -t, which allows a preview of all emails that are to be archived.
 function test_orphaned_events($orphans, $optList) 
 {
     $limit = 20;
     $tracker = 1;
     if(getBoolInput('Show queued orphaned events?'))
     {
+        //spacing the rows for command line, 9, 25, 8, 4, 4, 7, 16, set for 80x24 terminal control
         $header_row = 'event_id |      email address      | e_type |m_id|j_id| q_id  | dt_recieved';
         foreach($orphans as $forrow)
         {
             $rowparse = $forrow[0];
+            //every 20, show a prompt to continue showing.
             if($tracker != 1 && $tracker%$limit == 1)
             {
                 $tracker--;
@@ -191,6 +193,7 @@ function test_orphaned_events($orphans, $optList)
                
                 print($header_row . "\n");
             }
+            //pads the rows for command line, 9, 25, 8, 4, 4, 7, 16
             $printed_row = str_pad($rowparse['event_id'], 9);
             $printed_row .= '|'. str_pad(substr($rowparse['email'],0,25), 25);
             $printed_row .= '|'. str_pad(substr($rowparse['event_type'],0,8), 8);
@@ -202,6 +205,7 @@ function test_orphaned_events($orphans, $optList)
             $tracker++;
         }
     }
+    //choice to continue archiving after either an escape from the queue or finished queue view
     if(!getBoolInput('Continue with archiving orphaned events from '.$optList['instance'].'?'))
     {
         log_("No events processed!",'WARN');
