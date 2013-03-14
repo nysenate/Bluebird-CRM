@@ -177,7 +177,7 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
           $this->_groupOrganizationID = $defaults['group_organization'];
         }
 
-        $this->assign('organizationID', $defaults['organization_id']);
+        $this->assign('organizationID', CRM_Utils_Array::value('organization_id', $defaults));
       }
     }
 

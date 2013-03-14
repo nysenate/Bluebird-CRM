@@ -123,23 +123,25 @@ class CRM_Core_Extensions {
         }
       }
       else {
-        $civicrmDestination = urlencode(CRM_Utils_System::url('civicrm/admin/extensions', 'reset=1'));
-        $url = CRM_Utils_System::url('civicrm/admin/setting/path', "reset=1&civicrmDestination=${civicrmDestination}");
-        CRM_Core_Session::setStatus(ts('Your extensions directory: %1 is not web server writable. Please go to the <a href="%2">path setting page</a> and correct it.<br/>',
+        if (CRM_Core_Permission::check('administer CiviCRM') && $this->isDownloadEnabled()) {
+          $civicrmDestination = urlencode(CRM_Utils_System::url('civicrm/admin/extensions', 'reset=1'));
+          $url = CRM_Utils_System::url('civicrm/admin/setting/path', "reset=1&civicrmDestination=${civicrmDestination}");
+          CRM_Core_Session::setStatus(ts('Your extensions directory: %1 is not web server writable. Please go to the <a href="%2">path setting page</a> and correct it.<br/>',
             array(
               1 => $this->_extDir,
               2 => $url,
             )
           ));
+        }
         $this->_extDir = NULL;
       }
 
-      if (!class_exists('ZipArchive')) {
+      if (!class_exists('ZipArchive') && CRM_Core_Permission::check('administer CiviCRM') && $this->isDownloadEnabled()) {
         // everyone else is dumping messages wily-nily, why can't I?
         CRM_Core_Session::setStatus(ts('You will not be able to install extensions at this time because your installation of PHP does not support ZIP archives. Please ask your system administrator to install the standard PHP-ZIP extension.'));
       }
 
-      if (empty($config->extensionsURL)) {
+      if (empty($config->extensionsURL) && CRM_Core_Permission::check('administer CiviCRM')) {
         $civicrmDestination = urlencode(CRM_Utils_System::url('civicrm/admin/extensions', 'reset=1'));
         $url = CRM_Utils_System::url('civicrm/admin/setting/url', "reset=1&civicrmDestination=${civicrmDestination}");
         CRM_Core_Session::setStatus(ts('Your Extensions Directory (%1) does not have a matching Extensions Resource URL. Please go to the <a href="%2">URL setting page</a> and correct it.<br/>',
@@ -648,14 +650,15 @@ class CRM_Core_Extensions {
    *
    * @param int $id id of the extension record
    * @param string $key extension key
+   * @param bool $removeFiles whether to remove PHP source tree for the extension
    *
    * @return void
    */
-  public function uninstall($id, $key) {
+  public function uninstall($id, $key, $removeFiles = TRUE) {
     $this->populate();
     $e = $this->getExtensions();
     $ext = $e[$key];
-    if ($ext->uninstall()) {
+    if ($ext->uninstall($removeFiles)) {
       return TRUE;
     }
   }
@@ -812,6 +815,15 @@ class CRM_Core_Extensions {
    */
   public function isEnabled() {
       return $this->enabled;
+  }
+
+  /**
+   * Determine whether the system allows downloading new extensions
+   *
+   * @return bool
+   */
+  public function isDownloadEnabled() {
+    return (FALSE !== $this->getRepositoryUrl());
   }
 }
 

@@ -25,15 +25,19 @@
 *}
 {if $sms}
   {assign var='newMassUrl' value='civicrm/sms/send'}
-  {assign var='qVal' value='&sms=1'}	
+  {assign var='qVal' value='&sms=1'}
+  {assign var='linkTitle' value='New SMS'}
+  {assign var='componentName' value='Mass SMS'}
 {else}
   {assign var='newMassUrl' value='civicrm/mailing/send'}
   {assign var='qVal' value=''}
+  {assign var='linkTitle' value='New Mailing'}
+  {assign var='componentName' value='Mailings'}
 {/if}
 
 {if $showLinks}
     <div class="action-link">
-    	<a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/><br/>
+    	<a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}{$linkTitle}{/ts}</span></a><br/><br/>
     </div>
 {/if}
 {include file="CRM/Mailing/Form/Search.tpl"}
@@ -96,7 +100,7 @@
     {include file="CRM/common/pager.tpl" location="bottom"}
     {if $showLinks}
     	<div class="action-link">
-            <a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/>
+            <a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}{$linkTitle}{/ts}</span></a><br/>
     	</div>
     {/if}
 
@@ -115,14 +119,14 @@
     <div class="status messages">
         <table class="form-layout">
             <tr><div class="icon inform-icon"></div>
-               {ts}No Mailings match your search criteria. Suggestions:{/ts} 
+               {ts 1=$componentName}No %1 match your search criteria. Suggestions:{/ts} 
 	    </tr>
                 <div class="spacer"></div>
                 <ul>
                 <li>{ts}Check your spelling.{/ts}</li>
                 <li>{ts}Try a different spelling or use fewer letters.{/ts}</li>
                 </ul>
-            <tr>{ts 1=$browseURL 2=$browseType}Or you can <a href='%1'>browse all %2 mailings</a>.{/ts}</tr>
+            <tr>{ts 1=$browseURL 2=$browseType 3=$componentName}Or you can <a href='%1'>browse all %2 %3</a>.{/ts}</tr>
         </table>
     </div>
 {elseif $unscheduled}
@@ -130,7 +134,7 @@
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp;
             {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
-            {ts}There are no Unscheduled Mailings.{/ts}
+            {ts 1=$componentName}There are no Unscheduled %1.{/ts}
 	    {if $showLinks}{ts 1=$crmURL}You can <a href='%1'>create and send one</a>.{/ts}{/if}
    </div>
 
@@ -138,14 +142,14 @@
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp
             {capture assign=crmURL}{crmURL p='civicrm/mailing/browse/scheduled' q='scheduled=true&reset=1'}{$qVal}{/capture}
-            {ts 1=$crmURL}There are no Archived Mailings. You can archive mailings from <a href='%1'>Scheduled or Sent Mailings</a>.{/ts}
+            {ts 1=$crmURL 2=$componentName}There are no Archived %2. You can archive %2 from <a href='%1'>Scheduled or Sent %2</a>.{/ts}
    </div>
 {else}
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp;
             {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
             {capture assign=archiveURL}{crmURL p='civicrm/mailing/browse/archived' q='reset=1'}{$qVal}{/capture}
-            {ts}There are no Scheduled or Sent Mailings.{/ts}
-	    {if $showLinks}{ts 1=$crmURL}You can <a href='%1'>create and send one</a>{/ts}{/if}{if $archiveLinks}{ts 1=$archiveURL} OR you can search the <a href='%1'>Archived Mailings</a>{/ts}{/if}.	    
+            {ts 1=$componentName}There are no Scheduled or Sent %1.{/ts}
+	    {if $showLinks}{ts 1=$crmURL}You can <a href='%1'>create and send one</a>{/ts}{/if}{if $archiveLinks}{ts 1=$archiveURL 2=$componentName} OR you can search the <a href='%1'>Archived %2</a>{/ts}{/if}.	    
    </div>
 {/if}

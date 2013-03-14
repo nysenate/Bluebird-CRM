@@ -142,7 +142,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    *
    * @return CRM_Contact_Selector
    * @access public
-   */ function __construct($customSearchClass,
+   */
+  function __construct(
+    $customSearchClass,
     $formValues = NULL,
     $params = NULL,
     $returnProperties = NULL,
@@ -153,9 +155,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     $contextMenu = NULL
   ) {
     //don't build query constructor, if form is not submitted
-    $force = CRM_Utils_Request::retrieve('force', 'Boolean',
-      CRM_Core_DAO::$_nullObject
-    );
+    $force = CRM_Utils_Request::retrieve('force', 'Boolean', CRM_Core_DAO::$_nullObject);
     if (empty($formValues) && !$force) {
       return;
     }
@@ -182,8 +182,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       );
       self::$_columnHeaders = NULL;
 
-      //CRM_Core_Error::debug( 'f', $this->_fields );
-
       $this->_customFields = CRM_Core_BAO_CustomField::getFieldsForImport('Individual');
 
       $this->_returnProperties = CRM_Contact_BAO_Contact::makeHierReturnProperties($this->_fields);
@@ -201,7 +199,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       CRM_Contact_BAO_ProximityQuery::fixInputParams($this->_params);
     }
 
-    $this->_query = new CRM_Contact_BAO_Query($this->_params,
+    $this->_query = new CRM_Contact_BAO_Query(
+      $this->_params,
       $this->_returnProperties,
       NULL,
       $includeContactIds,
@@ -501,9 +500,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // note the formvalues were given by CRM_Contact_Form_Search to us
     // and contain the search criteria (parameters)
     // note that the default action is basic
-    $result = $this->_query->searchQuery($offset, $rowCount, $sort,
-      FALSE, $includeContactIds
-    );
+    $result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
 
     // process the result of the query
     $rows = array();
@@ -795,14 +792,13 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 
   function buildPrevNextCache($sort) {
     $cacheKey = CRM_Utils_Array::value('qfKey', $this->_formValues);
+
     //for prev/next pagination
-    $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer',
-      CRM_Core_DAO::$_nullObject
-    );
+    $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+
     //for alphabetic pagination selection save
-    $sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String',
-      CRM_Core_DAO::$_nullObject
-    );
+    $sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String', CRM_Core_DAO::$_nullObject);
+
     //for text field pagination selection save
     $countRow = CRM_Core_BAO_PrevNextCache::getCount("%civicrm search {$cacheKey}%", NULL, "entity_table = 'civicrm_contact'", "LIKE");
 
@@ -888,8 +884,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       elseif ( CRM_Utils_Array::value('contact_type_orig', $row) ) {
         $contactType = $row['contact_type_orig'];
       }
-      
-      if ( $contactType ) { 
+
+      if ( $contactType ) {
         $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($contactType,
           FALSE, $row['contact_id']);
       }
@@ -915,6 +911,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       FALSE, FALSE,
       FALSE, TRUE, TRUE, NULL
     );
+
     // CRM-9096
     // due to limitations in our search query writer, the above query does not work
     // in cases where the query is being sorted on a non-contact table
@@ -946,10 +943,7 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
     }
 
     // also record an entry in the cache key table, so we can delete it periodically
-    CRM_Core_BAO_Cache::setItem($cacheKey,
-      'CiviCRM Search PrevNextCache',
-      $cacheKey
-    );
+    CRM_Core_BAO_Cache::setItem($cacheKey, 'CiviCRM Search PrevNextCache', $cacheKey);
   }
 
   /**

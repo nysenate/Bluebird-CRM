@@ -76,7 +76,7 @@ class CRM_Core_ManagedEntities {
     // an active module -- because we got it from a hook!
 
     // index by moduleName,name
-    $decls = self::createDeclarationIndex($this->declarations);
+    $decls = self::createDeclarationIndex($this->moduleIndex, $this->declarations);
     foreach ($decls as $moduleName => $todos) {
       if (isset($this->moduleIndex[TRUE][$moduleName])) {
         $this->reconcileEnabledModule($this->moduleIndex[TRUE][$moduleName], $todos);
@@ -214,8 +214,17 @@ class CRM_Core_ManagedEntities {
   /**
    * @return array indexed by module,name
    */
-  protected static function createDeclarationIndex($declarations) {
+  protected static function createDeclarationIndex($moduleIndex, $declarations) {
     $result = array();
+    if (!isset($moduleIndex[TRUE])) {
+      return $result;
+    }
+    foreach ($moduleIndex[TRUE] as $moduleName => $module) {
+      if ($module->is_active) {
+        // need an empty array() for all active modules, even if there are no current $declarations
+        $result[$moduleName] = array();
+      }
+    }
     foreach ($declarations as $declaration) {
       $result[$declaration['module']][$declaration['name']] = $declaration;
     }

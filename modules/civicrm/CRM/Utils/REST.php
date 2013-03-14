@@ -378,19 +378,7 @@ class CRM_Utils_REST {
 
       // functions that are defined only in AJAX.php can be called via
       // rest interface
-      $class = explode('_', $params['className']);
-      if ($class[0] != 'CRM' ||
-        count($class) < 4 ||
-        $class[count($class) - 1] != 'AJAX'
-      ) {
-        return self::error('Unknown function invocation.');
-      }
-
-      $params['fnName'] = CRM_Utils_String::munge($params['fnName']);
-
-      // evaluate and call the AJAX function
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $params['className']) . ".php");
-      if (!method_exists($params['className'], $params['fnName'])) {
+      if (!CRM_Core_Page_AJAX::checkAuthz('method', $params['className'], $params['fnName'])) {
         return self::error('Unknown function invocation.');
       }
 
@@ -440,8 +428,18 @@ class CRM_Utils_REST {
       'q' => 1,
       'json' => 1,
       'key' => 1,
+      'api_key' => 1,
+      'entity' => 1,
+      'action' => 1,
     );
 
+    if (array_key_exists('json', $_REQUEST) &&  $_REQUEST['json'][0] == "{") {
+      $params = json_decode($_REQUEST['json'], TRUE);
+      if(empty($params)) {
+        echo json_encode(array('is_error' => 1, 'error_message', 'invalid json format: ?{"param_with_double_quote":"value"}'));
+        CRM_Utils_System::civiExit();
+      }
+    }
     foreach ($_REQUEST as $n => $v) {
       if (!array_key_exists($n, $skipVars)) {
         $params[$n] = $v;
@@ -494,7 +492,7 @@ class CRM_Utils_REST {
   }
 
   /** used to load a template "inline", eg. for ajax, without having to build a menu for each template */
-  static 
+  static
   function loadTemplate () {
     $request = CRM_Utils_Request::retrieve( 'q', 'String');
     if (false !== strpos($request, '..')) {
@@ -509,7 +507,7 @@ class CRM_Utils_REST {
     $smarty= CRM_Core_Smarty::singleton( );
     CRM_Utils_System::setTitle( "$entity::$tplfile inline $tpl" );
     if( !$smarty->template_exists($tpl) ){
-      header("Status: 404 Not Found"); 
+      header("Status: 404 Not Found");
       die ("Can't find the requested template file templates/$tpl");
     }
     if (array_key_exists('id',$_GET)) {// special treatmenent, because it's often used
@@ -608,8 +606,7 @@ class CRM_Utils_REST {
     // restrict calls to this etc
     // the request has to be sent by an ajax call. First line of protection against csrf
     $config = CRM_Core_Config::singleton();
-    if (FALSE &&
-      !$config->debug &&
+    if (!$config->debug &&
       (!array_key_exists('HTTP_X_REQUESTED_WITH', $_SERVER) ||
         $_SERVER['HTTP_X_REQUESTED_WITH'] != "XMLHttpRequest"
       )

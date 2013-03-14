@@ -842,7 +842,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
               if (is_object($relDAO) && $relationField == 'id') {
                 $row[$field . $relationField] = $relDAO->contact_id;
               }
-              elseif (is_object($relDAO) && is_array($relationValue) && $relationField == 'location') {
+              elseif (is_array($relationValue) && $relationField == 'location') {
                 foreach ($relationValue as $ltype => $val) {
                   foreach (array_keys($val) as $fld) {
                     $type = explode('-', $fld);
@@ -853,6 +853,10 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                     // CRM-3157: localise country, region (both have ‘country’ context)
                     // and state_province (‘province’ context)
                     switch (TRUE) {
+                    case (!is_object($relDAO)):
+                        $row[$field . '_' . $fldValue] = '';
+                        break;
+
                       case in_array('country', $type):
                       case in_array('world_region', $type):
                         $row[$field . '_' . $fldValue] = $i18n->crm_translate($relDAO->$fldValue,

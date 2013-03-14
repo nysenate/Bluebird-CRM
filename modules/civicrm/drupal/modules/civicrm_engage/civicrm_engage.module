@@ -42,7 +42,7 @@ function _civicrm_engage_getCustomGroupID($customGroupName) {
 }
 
 function civicrm_engage_civicrm_buildForm($formName, &$form) {
-  if ($formName == 'CRM_Contact_Form_Contact') {
+  if ($formName == 'CRM_Contact_Form_Contact' || 'CRM_Contact_Form_Inline_Demographics') {
     $cgID = _civicrm_engage_getCustomGroupID(CIVICRM_ENGAGE_CG_DEMOGRAPHICS_NAME);
     if (empty($cgID)) {
       return;
@@ -70,7 +70,7 @@ function civicrm_engage_civicrm_buildForm($formName, &$form) {
 }
 
 function civicrm_engage_civicrm_postProcess($class, &$form) {
-  if (is_a($form, 'CRM_Contact_Form_Contact')) {
+  if (is_a($form, 'CRM_Contact_Form_Contact') || is_a($form, 'CRM_Contact_Form_Inline_Demographics')) {
     if (array_key_exists('_qf_Contact_refresh_dedupe', $form->_submitValues)) {
       // don't execute when checking for duplicates - it fails (CRM-8994)
       return;
@@ -104,14 +104,19 @@ function civicrm_engage_civicrm_postProcess($class, &$form) {
 }
 
 function civicrm_engage_civicrm_pageRun(&$page) {
-  if ($page->getVar('_name') == 'CRM_Contact_Page_View_Summary') {
+  if ($page->getVar('_name') == 'CRM_Contact_Page_View_Summary' ||
+    $page->getVar('_name') == 'CRM_Contact_Page_Inline_Demographics') {
     $cgID = _civicrm_engage_getCustomGroupID(CIVICRM_ENGAGE_CG_DEMOGRAPHICS_NAME);
     if (empty($cgID)) {
       return;
     }
+    $contactId = $page->getVar('_contactId');
+    if(empty($contactId)) {
+      $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE, NULL, $_REQUEST);
+    }
     $groupTree = &CRM_Core_BAO_CustomGroup::getTree('Individual',
       $page,
-      $page->getVar('_contactId'),
+      $contactId,
       $cgID,
       NULL, NULL
     );

@@ -34,6 +34,7 @@
             hintText: hintText, 
             onAdd: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
+                
                 //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
                     var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
@@ -96,8 +97,7 @@
 </div>
 <div class="clear"></div>
 </div>
-
-{if $action eq 16 || $action eq 2 }
+{if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
         <div class="BBInit"></div>
         {literal}

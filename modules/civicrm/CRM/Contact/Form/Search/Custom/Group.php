@@ -116,8 +116,11 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       )
     );
 
-    $andOr = array('1' => ts('Require all inclusion criteria'), '0' => ts('Select contacts with any of the criteria for inclusion'));
-    $form->addRadio('andOr', ts('And/or'), $andOr, TRUE, NULL, TRUE);
+    $andOr = array(
+      '1' => ts('Show contacts that meet the Groups criteria AND the Tags criteria'),
+      '0' => ts('Show contacts that meet the Groups criteria OR  the Tags criteria'),
+    );
+    $form->addRadio('andOr', ts('AND/OR'), $andOr, TRUE, '<br />', TRUE);
 
     $int = &$form->addElement('advmultiselect', 'includeTags',
       ts('Include Tag(s)') . ' ', $tags,
@@ -156,6 +159,14 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $form->assign('elements', array('includeGroups', 'excludeGroups', 'andOr', 'includeTags', 'excludeTags'));
   }
 
+  /*
+   * Set search form field defaults here.
+   */
+  function setDefaultValues() {
+    return
+      array( 'andOr' => '1' );
+  }
+
   function all(
     $offset = 0, $rowcount = 0, $sort = NULL,
     $includeContactIDs = FALSE, $justIDs = FALSE
@@ -192,15 +203,15 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $where = $this->where($includeContactIDs);
 
     if (!$justIDs && !$this->_allSearch) {
+      $groupBy = " GROUP BY contact_a.id";
+    }
+    else {
       // CRM-10850
       // we do this since this if stmt is called by the smart group part of the code
       // adding a groupBy clause and saving it as a smart group messes up the query and
       // bad things happen
       // andrew hunt seemed to have rewritten this piece when he worked on this search
       $groupBy = null;
-    }
-    else {
-      $groupBy = " GROUP BY contact_a.id";
     }
 
     $sql = "SELECT $selectClause $from WHERE  $where $groupBy";
@@ -458,7 +469,12 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
 
     $from = " FROM civicrm_contact contact_a";
 
-    $this->buildACLClause('contact_a');
+    /*
+     * CRM-10850 / CRM-10848
+     * If we use include / exclude groups as smart groups for ACL's having the below causes
+     * a cycle which messes things up. Hence commenting out for now
+     * $this->buildACLClause('contact_a');
+     */
 
     /*
      * check the situation and set booleans
@@ -476,13 +492,12 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     if (!$this->_groups && !$this->_tags) {
       $this->_andOr = 1;
     }
-    /*
-         * Set from statement depending on array sel
-         */
 
+    /*
+     * Set from statement depending on array sel
+     */
     $whereitems = array();
-    foreach (array(
-      'Ig', 'It') as $inc) {
+    foreach (array('Ig', 'It') as $inc) {
       if ($this->_andOr == 1) {
         if ($$inc) {
           $from .= " INNER JOIN {$inc}_{$this->_tableName} temptable$inc ON (contact_a.id = temptable$inc.contact_id)";
@@ -498,8 +513,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       }
     }
     $this->_where = $whereitems ? "(" . implode(' OR ', $whereitems) . ')' : '(1)';
-    foreach (array(
-      'Xg', 'Xt') as $exc) {
+    foreach (array('Xg', 'Xt') as $exc) {
       if ($$exc) {
         $from .= " LEFT JOIN {$exc}_{$this->_tableName} temptable$exc ON (contact_a.id = temptable$exc.contact_id)";
         $this->_where .= " AND temptable$exc.contact_id IS NULL";
@@ -512,11 +526,14 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       $this->_where .= " AND {$this->_aclWhere} ";
     }
 
+    // also exclude all contacts that are deleted
+    // CRM-11627
+    $this->_where .= " AND (contact_a.is_deleted != 1) ";
+
     return $from;
   }
 
   function where($includeContactIDs = FALSE) {
-
     if ($includeContactIDs) {
       $contactIDs = array();
 

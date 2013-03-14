@@ -805,7 +805,7 @@ class CRM_IMAP_AJAX {
 $query = "
 SELECT e.contact_id
 FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-WHERE g.title='Authorized_Forwarders'
+WHERE g.title='Authorized Forwarders'
   AND e.email='".$senderEmailAddress."'
   AND g.id=gc.group_id
   AND gc.status='Added'

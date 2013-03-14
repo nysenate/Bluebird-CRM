@@ -265,6 +265,9 @@ class CRM_Report_Form extends CRM_Core_Form {
     $this->_section = CRM_Utils_Request::retrieve('section', 'Integer', CRM_Core_DAO::$_nullObject);
 
     $this->assign('section', $this->_section);
+    CRM_Core_Region::instance('page-header')->add(array(
+      'markup' => sprintf('<!-- Report class: [%s] -->', htmlentities(get_class($this))),
+    ));
 
     $this->_id = $this->get('instanceId');
     if (!$this->_id) {
@@ -1316,7 +1319,7 @@ class CRM_Report_Form extends CRM_Core_Form {
     if ($relative) {
       list($term, $unit) = CRM_Utils_System::explode('.', $relative, 2);
       $dateRange = CRM_Utils_Date::relativeToAbsolute($term, $unit);
-      $from = $dateRange['from'];
+      $from = substr($dateRange['from'], 0, 8);
       //Take only Date Part, Sometime Time part is also present in 'to'
       $to = substr($dateRange['to'], 0, 8);
     }
@@ -2054,6 +2057,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
 
     // use this method to modify $this->_columnHeaders
+    $this->modifyColumnHeaders();
 
     $unselectedSectionColumns = $this->unselectedSectionColumns();
 

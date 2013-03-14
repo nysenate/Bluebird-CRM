@@ -270,8 +270,8 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
 
       // CRM-6819 + CRM-7086
       $lang     = substr($config->lcMessages, 0, 2);
-      $l10nFile = "{$config->smartyDir}../jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
-      $l10nURL  = "{$config->resourceBase}packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
+      $l10nFile = "{$config->smartyDir}../jquery/jquery-ui-1.8.16/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
+      $l10nURL  = "{$config->resourceBase}packages/jquery/jquery-ui-1.8.16/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
       if (file_exists($l10nFile)) {
         $template->assign('l10nURL', $l10nURL);
       }
@@ -538,6 +538,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     require $joomlaBase . '/libraries/import.php';
     require $joomlaBase . '/libraries/joomla/event/dispatcher.php';
     require $joomlaBase . '/libraries/joomla/environment/uri.php';
+    require $joomlaBase . '/libraries/joomla/application/component/helper.php';
     require $joomlaBase . '/configuration.php';
 
     jimport('joomla.application.cli');

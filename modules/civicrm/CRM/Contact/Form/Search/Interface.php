@@ -74,9 +74,7 @@ interface CRM_Contact_Form_Search_Interface {
    * Retrieve all the values that match the current input parameters
    * Used by the selector
    */
-  function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
-  );
+  function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE);
 
   /**
    * The below two functions (from and where) are ONLY used if you want to

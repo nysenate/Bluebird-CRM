@@ -30,6 +30,7 @@
     var isAdditionalParticipants = false;
     var pPartiCount = 0;
     var pPartiRef   = Array( );
+    var optionSep   = '|';
         	
     cj(document).ready( function( ) {
       pricesetParticipantCount( );

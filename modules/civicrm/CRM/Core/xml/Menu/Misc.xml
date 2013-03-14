@@ -123,24 +123,24 @@
   </item>
   <item>
       <path>civicrm/batch</path>
-     <title>Batches</title>
+     <title>Bulk Data Entry</title>
      <page_callback>CRM_Batch_Page_Batch</page_callback>
-     <access_arguments>administer CiviCRM</access_arguments>
+     <access_arguments>access CiviContribute</access_arguments>
   </item>
   <item>
      <path>civicrm/batch/add</path>
      <page_callback>CRM_Batch_Form_Batch</page_callback>
-     <access_arguments>administer CiviCRM</access_arguments>
+     <access_arguments>access CiviContribute</access_arguments>
   </item>
   <item>
      <path>civicrm/batch/entry</path>
      <page_callback>CRM_Batch_Form_Entry</page_callback>
-     <access_arguments>administer CiviCRM</access_arguments>
+     <access_arguments>access CiviContribute</access_arguments>
   </item>
   <item>
       <path>civicrm/ajax/batch</path>
      <page_callback>CRM_Batch_Page_AJAX::batchSave</page_callback>
-     <access_arguments>administer CiviCRM</access_arguments>
+     <access_arguments>access CiviContribute</access_arguments>
   </item>
   <item>
      <path>civicrm/ajax/batchlist</path>

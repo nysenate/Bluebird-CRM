@@ -200,6 +200,11 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
 
     $path = CRM_Utils_String::stripPathChars($path);
 
+    //this means wp function we are trying to use is not available,
+    //so load bootStrap
+    if (!function_exists('get_option')) {
+      $this->loadBootStrap();
+    }
     $permlinkStructure = get_option('permalink_structure');
     if ($config->userFrameworkFrontend) {
       if ($permlinkStructure != '') {

@@ -115,21 +115,12 @@ class CRM_Utils_System_Drupal6 extends CRM_Utils_System_Base {
 
     $config->inCiviCRM = FALSE;
 
-    if (form_get_errors()) {
+    if (form_get_errors() || !isset($form_state['user'])) {
       return FALSE;
     }
 
-    // looks like we created a drupal user, lets make another db call to get the user id!
-    $db_cms = DB::connect($config->userFrameworkDSN);
-    if (DB::isError($db_cms)) {
-      die("Cannot connect to UF db via $dsn, " . $db_cms->getMessage());
-    }
-
-    //Fetch id of newly added user
-    $id_sql   = "SELECT uid FROM {$config->userFrameworkUsersTableName} where name = '{$params['cms_name']}'";
-    $id_query = $db_cms->query($id_sql);
-    $id_row   = $id_query->fetchRow(DB_FETCHMODE_ASSOC);
-    return $id_row['uid'];
+    return $form_state['user']->uid;
+    
   }
   /*
      *  Change user name in host CMS
@@ -487,6 +478,7 @@ SELECT name, mail
       return FALSE;
     }
 
+    $uid = $user->uid;
     $contact_id = CRM_Core_BAO_UFMatch::getContactId($uid);
 
     // lets store contact id and user id in session

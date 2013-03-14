@@ -85,6 +85,8 @@ class CRM_Contribute_BAO_Contribution_Utils {
     $paymentParams['contributionPageID'] = $form->_params['contributionPageID'] = $form->_values['id'];
 
 
+    $payment = NULL;
+    $paymentObjError = ts('The system did not record payment details for this payment and so could not process the transaction. Please report this error to the site administrator.');
     if ($form->_values['is_monetary'] && $form->_amount > 0.0 && is_array($form->_paymentProcessor)) {
       $payment = CRM_Core_Payment::singleton($form->_mode, $form->_paymentProcessor, $form);
     }
@@ -108,11 +110,11 @@ class CRM_Contribute_BAO_Contribution_Utils {
         $contributionType,
         TRUE, TRUE, TRUE
       );
-      
+
       if ($contribution) {
         $form->_params['contributionID'] = $contribution->id;
       }
-      
+
       $form->_params['contributionTypeID'] = $contributionType->id;
       $form->_params['item_name'] = $form->_params['description'];
       $form->_params['receive_date'] = $now;
@@ -135,7 +137,10 @@ class CRM_Contribute_BAO_Contribution_Utils {
         }
         else {
           if (!$form->_params['is_pay_later']) {
-            $result = &$payment->doTransferCheckout($form->_params, 'contribute');
+            if (is_object($payment))
+              $result = &$payment->doTransferCheckout($form->_params, 'contribute');
+            else
+              CRM_Core_Error::fatal($paymentObjError);
           }
           else {
             // follow similar flow as IPN
@@ -172,10 +177,16 @@ class CRM_Contribute_BAO_Contribution_Utils {
 
         // determine if express + recurring and direct accordingly
         if ($paymentParams['is_recur'] == 1) {
-          $result = &$payment->createRecurringPayments($paymentParams);
+          if (is_object($payment))
+            $result = &$payment->createRecurringPayments($paymentParams);
+          else
+            CRM_Core_Error::fatal($paymentObjError);
         }
         else {
-          $result = &$payment->doExpressCheckout($paymentParams);
+          if (is_object($payment))
+            $result = &$payment->doExpressCheckout($paymentParams);
+          else
+            CRM_Core_Error::fatal($paymentObjError);
         }
       }
     }
@@ -207,7 +218,10 @@ class CRM_Contribute_BAO_Contribution_Utils {
         }
       }
 
-      $result = &$payment->doDirectPayment($paymentParams);
+      if (is_object($payment))
+        $result = &$payment->doDirectPayment($paymentParams);
+      else
+        CRM_Core_Error::fatal($paymentObjError);
     }
 
     if ($component == 'membership') {
@@ -215,8 +229,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
     }
 
     if (is_a($result, 'CRM_Core_Error')) {
-
-      //make sure to cleanup db for recurring case.
+      // make sure to cleanup db for recurring case.
       if (CRM_Utils_Array::value('contributionID', $paymentParams)) {
         CRM_Contribute_BAO_Contribution::deleteContribution($paymentParams['contributionID']);
       }
@@ -276,8 +289,9 @@ class CRM_Contribute_BAO_Contribution_Utils {
     if ($component == 'membership') {
       return $membershipResult;
     }
-    //Do not send an email if Recurring contribution is done via Direct Mode
-    //We will send email once the IPN is received.
+
+    // Do not send an email if Recurring contribution is done via Direct Mode
+    // We will send email once the IPN is received.
     if (!empty($paymentParams['is_recur']) && $form->_contributeMode == 'direct') {
       return TRUE;
     }
@@ -291,7 +305,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
     // finally send an email receipt
     if ($contribution) {
       $form->_values['contribution_id'] = $contribution->id;
-      CRM_Contribute_BAO_ContributionPage::sendMail($contactID, 
+      CRM_Contribute_BAO_ContributionPage::sendMail($contactID,
         $form->_values, $contribution->is_test,
         FALSE, $fieldTypes
       );

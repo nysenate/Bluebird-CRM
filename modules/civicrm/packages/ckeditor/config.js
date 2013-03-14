@@ -1,51 +1,73 @@
-﻿/*
-Copyright (c) 2003-2009, CKSource - Frederico Knabben. All rights reserved.
-For licensing, see LICENSE.html or http://ckeditor.com/license
+﻿/**
+ * @license Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
-CKEDITOR.editorConfig = function( config )
-{
-	// Define changes to default configuration here. For example:
-	// config.language = 'fr';
-	//config.uiColor = '#AADC6E';
+CKEDITOR.editorConfig = function( config ) {
+	// Define changes to default configuration here.
+	// For the complete reference:
+	// http://docs.ckeditor.com/#!/api/CKEDITOR.config
     
-    // disable auto spell check
-    config.scayt_autoStartup = false;
+  // disable auto spell check
+  config.scayt_autoStartup = false;
 
+  //NYSS integrate kcfinder
+  config.filebrowserBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=files';
+  config.filebrowserImageBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=images';
+  config.filebrowserFlashBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=flash';
+  config.filebrowserUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=files';
+  config.filebrowserImageUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=images';
+  config.filebrowserFlashUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=flash';
 
-    //NYSS integrate kcfinder
-    config.filebrowserBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=files';
-    config.filebrowserImageBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=images';
-    config.filebrowserFlashBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=flash';
-    config.filebrowserUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=files';
-    config.filebrowserImageUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=images';
-    config.filebrowserFlashUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=flash';
+  //NYSS
+  config.pasteFromWordPromptCleanup = false;
+  config.pasteFromWordRemoveStyles = true;
+  config.pasteFromWordRemoveFontStyles = false;
+  config.pasteFromWordNumberedHeadingToList = true;
 
-    //NYSS
-    config.pasteFromWordPromptCleanup = false;
-    config.pasteFromWordRemoveStyles = true;
-    config.pasteFromWordRemoveFontStyles = false;
-    config.pasteFromWordNumberedHeadingToList = true;
-    
-    // This is actually the default value.
-    config.toolbar_Full =
-    [
-        ['Bold','Italic','Underline'],
-        ['Font','FontSize'],
-        //['TextColor','BGColor'], //NYSS
-        ['Link','Unlink'],
-        ['Image'], //NYSS ,'HorizontalRule','Smiley'],
-        ['NumberedList','BulletedList'], //NYSS ,'Outdent','Indent','Blockquote'],
-        ['PasteText','PasteFromWord'], //NYSS ,'SpellChecker'],
-        ['SpellCheck'],
-        ['RemoveFormat'],
-        //['Undo','Redo'], //NYSS
-        ['Source'] //NYSS ,'-','Preview','-','About'],
-    ];
-    config.plugins += ',aspell';
-    //allows the browser (non-ie) to take out the context menues
-    config.disableNativeSpellChecker = false;
-    config.removePlugins = 'scayt,menubutton,contextmenu';
+  config.extraPlugins = 'font,aspell';
+
+  // The toolbar groups arrangement, optimized for two toolbar rows.
+  config.toolbarGroups = [
+    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ] },
+    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
+    { name: 'links' },
+    { name: 'insert' },
+    { name: 'forms' },
+    { name: 'tools' },
+    { name: 'document',	   groups: [ 'mode', 'document', 'doctools' ] },
+    { name: 'others' },
+    '/',
+    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ] },
+    { name: 'styles' },
+    { name: 'colors' },
+    { name: 'about' }
+  ];
+
+  // Remove some buttons, provided by the standard plugins, which we don't
+  // need to have in the Standard(s) toolbar.
+  config.removeButtons = 'Underline,Subscript,Superscript,Anchor,Table,Styles,Format,Symbols,Strike,About';
+
+  //NYSS old config retained for reference
+  /*config.toolbar_Full =
+  [
+      ['Bold','Italic','Underline'],
+      ['Font','FontSize'],
+      //['TextColor','BGColor'], //NYSS
+      ['Link','Unlink'],
+      ['Image'], //NYSS ,'HorizontalRule','Smiley'],
+      ['NumberedList','BulletedList'], //NYSS ,'Outdent','Indent','Blockquote'],
+      ['PasteText','PasteFromWord'], //NYSS ,'SpellChecker'],
+      ['SpellCheck'],
+      ['RemoveFormat'],
+      //['Undo','Redo'], //NYSS
+      ['Source'] //NYSS ,'-','Preview','-','About'],
+  ];*/
+
+  //allows the browser (non-ie) to take out the context menues
+  config.disableNativeSpellChecker = true;
+  config.removePlugins = 'scayt,menubutton,wsj'//,contextmenu';
 };
 
 //NYSS 3878 remove some unnecessary elements

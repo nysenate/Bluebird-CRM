@@ -35,109 +35,105 @@
  *
  */
 class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
-    
+
   protected $_relField = FALSE;
-    
+
   protected $_addressField = FALSE;
-    
+
   protected $_emailField = FALSE;
-    
+
   protected $_phoneField = FALSE;
-    
+
   protected $_worldRegionField = FALSE;
-    
+
   protected $_activityLast = FALSE;
 
   protected $_activityLastCompleted = FALSE;
-    
+
   protected $_includeCaseDetailExtra = FALSE;
 
-  protected $_caseDetailExtra = array( );
+  protected $_caseDetailExtra = array();
   
-  function __construct( ) {
-    	$this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
-        asort($this->case_statuses);//NYSS
-        $this->case_types = CRM_Case_PseudoConstant::caseType();
-        asort($this->case_types);//NYSS
-        $rels = CRM_Core_PseudoConstant::relationshipType();
-        $caseRels = array( 8, 13, 14, 15 ); //NYSS 4942
-     	foreach ( $rels as $relid => $v ) {
-            if ( in_array($relid, $caseRels) ) {
-			    $this->rel_types[$relid] = $v['label_b_a'];
-            }
-        }
+  function __construct() {
+    $this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
+    asort($this->case_statuses);//NYSS
+    $this->case_types = CRM_Case_PseudoConstant::caseType();
+    asort($this->case_types);//NYSS
+    $rels = CRM_Core_PseudoConstant::relationshipType();
+    $caseRels = array( 8, 13, 14, 15 ); //NYSS 4942
+    foreach ($rels as $relid => $v) {
+      if ( in_array($relid, $caseRels) ) {
+        $this->rel_types[$relid] = $v['label_b_a'];
+      }
+    }
 
-        $this->caseActivityTypes = array( );
+    $this->caseActivityTypes = array();
     foreach (CRM_Case_PseudoConstant::caseActivityType() as $typeDetail) {
-           $this->caseActivityTypes[$typeDetail['id']] = $typeDetail['label'];
-        }
-        //NYSS 5102 added order bys throughout
+      $this->caseActivityTypes[$typeDetail['id']] = $typeDetail['label'];
+    }
+    //NYSS 5102 added order bys throughout
     $this->_columns = array(
       'civicrm_case' =>
       array(
         'dao' => 'CRM_Case_DAO_Case',
-                         'fields'    =>
-                         array( 
-                               'id'           => array( 'title'     => ts('Case ID'),
+        'fields' =>
+        array(
+          'id' => array('title' => ts('Case ID'),
             'no_display' => TRUE,
             'required' => TRUE,
-                                                        ),
-                               'subject'      => array( 'title'     => ts('Subject'),
+          ),
+          'subject' => array('title' => ts('Subject'),
             'required' => TRUE,
-                                                        ),   
-                               'start_date'   => array( 'title' => ts('Start Date'),
+          ),
+          'start_date' => array('title' => ts('Start Date'),
             'type' => CRM_Utils_Type::T_DATE,
           ),
-                               'end_date'     => array( 'title' => ts('End Date'),
+          'end_date' => array('title' => ts('End Date'),
             'type' => CRM_Utils_Type::T_DATE,
           ),
-                               'status_id'    => array( 'title' => ts('Case Status') ),
+          'status_id' => array('title' => ts('Case Status')),
           'case_type_id' => array('title' => ts('Case Type')),
-                                ),
-                         'filters'   =>  
-                         array( 
-                               'start_date'   => array( 'title'        => ts( 'Start Date' ),
-                                                        'operatorType' => CRM_Report_Form::OP_DATE,
+        ),
+        'filters' =>
+        array(
+          'start_date' => array('title' => ts('Start Date'),
+            'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
-                                                        ),
-                               'end_date'     => array( 'title'        => ts( 'End Date' ),
-                                                        'operatorType' => CRM_Report_Form::OP_DATE,
+          ),
+          'end_date' => array('title' => ts('End Date'),
+            'operatorType' => CRM_Report_Form::OP_DATE,
             'type' => CRM_Utils_Type::T_DATE,
-                                                        ),
-                               'status_id'    => array( 'title'        => ts( 'Case Status' ),
-                                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                        'options'      => $this->case_statuses,
-                                                        ),
-                               'case_type_id' => array('title'        => ts('Case Type'),
-                                                       'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                       'options'      => $this->case_types),
-                                ),
-                         'order_bys'  =>
-                         array( 'subject' =>
-                                array( 'title' => ts('Subject'),
-								       ),
-								'start_date' =>
-                                array( 'title' => ts('Start Date'),
-								       ),
-								'end_date' =>
-                                array( 'title' => ts('End Date'),
-								       ),
-								'status_id' =>
-                                array( 'title' => ts('Case Status'),
-								       ),
-								'case_type_name' =>
-                                array( 'title' => ts('Case Type'),
-								       ),
-                                ),
-						 ),
-                  'civicrm_contact' =>
+          ),
+          'status_id' => array('title' => ts('Case Status'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => $this->case_statuses,
+          ),
+          'case_type_id' => array('title' => ts('Case Type'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => $this->case_types,
+          ),
+        'order_bys'  =>
+        array(
+          'subject' => array( 'title' => ts('Subject'),
+					),
+					'start_date' => array( 'title' => ts('Start Date'),
+					),
+					'end_date' => array( 'title' => ts('End Date'),
+					),
+					'status_id' => array( 'title' => ts('Case Status'),
+					),
+					'case_type_name' => array( 'title' => ts('Case Type'),
+					),
+        ),
+      ),
+      'civicrm_contact' =>
       array(
         'dao' => 'CRM_Contact_DAO_Contact',
-                         'fields'    =>
-                         array( 
+        'fields' =>
+        array(
           'client_sort_name' => array(
             'name' => 'sort_name',
-            'title'    => ts('Contact Name'),
+            'title' => ts('Contact Name'),//NYSS
             'required' => TRUE,
           ),
           'id' => array(
@@ -156,16 +152,16 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                 ),
 						 ),
                   
-                  'civicrm_relationship' =>
+      'civicrm_relationship' =>
       array(
         'dao' => 'CRM_Contact_DAO_Relationship',
-                         'fields'    =>
+        'fields' =>
         array(
           'case_role' => array('name' => 'relationship_type_id',
             'title' => ts('Case Role(s)'),
-                                ),
+          ),
         ),
-                         'filters'   =>  
+        'filters' =>
         array(
           'case_role' =>
           array(

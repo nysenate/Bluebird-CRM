@@ -71,7 +71,7 @@ class CRM_Contact_Form_Edit_TagsandGroups {
     }
 
     //NYSS 5670
-    if ( empty($contactId) && !empty($form->_contactId) ) {
+    if (!$contactId && !empty($form->_contactId)) {
       $contactId = $form->_contactId;
     }
 

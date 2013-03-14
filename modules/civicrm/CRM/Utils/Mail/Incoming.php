@@ -33,7 +33,11 @@
  *
  */
 class CRM_Utils_Mail_Incoming {
-  CONST EMAILPROCESSOR_CREATE_INDIVIDUAL = 1, EMAILPROCESSOR_OVERRIDE = 2, EMAILPROCESSOR_IGNORE = 3;
+  CONST
+    EMAILPROCESSOR_CREATE_INDIVIDUAL = 1,
+    EMAILPROCESSOR_OVERRIDE = 2,
+    EMAILPROCESSOR_IGNORE = 3;
+
   function formatMail($mail, &$attachments) {
     $t = '';
     $t .= "From:      " . self::formatAddress($mail->from) . "\n";
@@ -49,7 +53,6 @@ class CRM_Utils_Mail_Incoming {
   }
 
   function formatMailPart($part, &$attachments) {
-
     if ($part instanceof ezcMail) {
       return self::formatMail($part, $attachments);
     }
@@ -70,13 +73,10 @@ class CRM_Utils_Mail_Incoming {
       return self::formatMailMultipart($part, $attachments);
     }
 
-    CRM_Core_Error::fatal(ts("No clue about the %1",
-        array(1 => get_class($part))
-      ));
+    CRM_Core_Error::fatal(ts("No clue about the %1", array(1 => get_class($part))));
   }
 
   function formatMailMultipart($part, &$attachments) {
-
     if ($part instanceof ezcMailMultiPartAlternative) {
       return self::formatMailMultipartAlternative($part, $attachments);
     }
@@ -97,9 +97,7 @@ class CRM_Utils_Mail_Incoming {
       return self::formatMailMultipartReport($part, $attachments);
     }
 
-    CRM_Core_Error::fatal(ts("No clue about the %1",
-        array(1 => get_class($part))
-      ));
+    CRM_Core_Error::fatal(ts("No clue about the %1", array(1 => get_class($part))));
   }
 
   function formatMailMultipartMixed($part, &$attachments) {
@@ -152,8 +150,7 @@ class CRM_Utils_Mail_Incoming {
   }
 
   function formatMailText($part, &$attachments) {
-    $t = '';
-    $t .= "\n{$part->text}\n";
+    $t = "\n{$part->text}\n";
     return $t;
   }
 

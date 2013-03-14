@@ -923,6 +923,7 @@ class CRM_Utils_Token {
    * @param  boolean $skipDeceased     don't return deceased contact info.
    * @param  array   $extraParams      extra params
    * @param  array   $tokens           the list of tokens we've extracted from the content
+   * @param  int     $jobID            the mailing list jobID - this is a legacy param
    *
    * @return array
    * @access public
@@ -934,7 +935,8 @@ class CRM_Utils_Token {
     $skipDeceased     = TRUE,
     $extraParams      = NULL,
     $tokens           = array(),
-    $className        = NULL
+    $className        = NULL,
+    $jobID            = NULL
   ) {
     if (empty($contactIDs)) {
       // putting a fatal here so we can track if/when this happens
@@ -983,8 +985,6 @@ class CRM_Utils_Token {
 
     //get the total number of contacts to fetch from database.
     $numberofContacts = count($contactIDs);
-
-
     $query = new CRM_Contact_BAO_Query($params, $returnProperties);
 
     $details = $query->apiQuery($params, $returnProperties, NULL, NULL, 0, $numberofContacts);
@@ -1032,7 +1032,7 @@ class CRM_Utils_Token {
     // also call a hook and get token details
     CRM_Utils_Hook::tokenValues($details[0],
       $contactIDs,
-      NULL,
+      $jobID,
       $tokens,
       $className
     );

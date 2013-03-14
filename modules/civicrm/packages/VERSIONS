@@ -94,6 +94,7 @@ html2text      1.0.0      GPL 2+      http://chuggnutt.com/html2text.php        
 reCAPTCHA      1.10       X11         http://recaptcha.net/
 OpenFlashChart 2.0        LGPL        http://teethgrinder.co.uk/open-flash-chart-2/
 Snappy         ??         X11         https://github.com/knplabs/snappy
+CKEditor       4.0.1      GPL 3/LGPL 3/MPL 1.1
 
 payment processors for CiviCRM
 ==============================
@@ -106,7 +107,6 @@ eWAY             AGPL 3   by Dolphin Software
 
 Unknown status
 ==============
-CKEditor      GPL 3/LGPL 3/MPL 1.1
 Facebook      BSD 2-cl.
 Google        Apache 2/GPL 2+
 TinyMCE       LGPL 2.1

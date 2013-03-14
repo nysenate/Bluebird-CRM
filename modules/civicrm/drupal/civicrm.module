@@ -677,9 +677,10 @@ function civicrm_user_form_validate($form, &$form_state) {
   require_once 'CRM/Core/BAO/UFGroup.php';
 
   // check for either user/register or admin/people/create
-  $register = ((arg(0) == 'user' && arg(1) == 'register') ||
-    (arg(0) == 'admin' && arg(1) == 'people' && arg(2) == 'create')
-  ) ? TRUE : FALSE;
+  $register =
+    ((arg(0) == 'user' && arg(1) == 'register') ||
+      (arg(0) == 'admin' && arg(1) == 'people' && arg(2) == 'create')
+    ) ? TRUE : FALSE;
   $userID = NULL;
   if ($form['#user']) {
     $userID = CRM_Core_BAO_UFMatch::getContactId($form['#user']->uid);
@@ -844,6 +845,7 @@ function civicrm_form_alter(&$form, $formValues, $formID) {
         arg(2) == 'edit' &&
         arg(3)
       ) {
+        $form['#validate'][] = 'civicrm_user_form_validate';
         $output = civicrm_form_data($form, $form['#user'], $form['#user_category'], TRUE);
         if (!empty($output)) {
           $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -1048,7 +1050,7 @@ function _civicrm_filter_process($text, $filter, $format, $langcode, $cache, $ca
 
 function civicrm_civicrm_postProcess($formName, $form) {
   // Reset Views Cache when CiviCRM components page is saved
-  if ($form instanceof CRM_Admin_Form_Setting_Component) {
+  if ($form instanceof CRM_Admin_Form_Setting_Component || $form instanceof CRM_Custom_Form_Group || $form instanceof CRM_Custom_Form_Field) {
     if (module_exists('views')) {
       views_invalidate_cache();
     }

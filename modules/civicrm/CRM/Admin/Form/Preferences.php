@@ -286,7 +286,9 @@ class CRM_Admin_Form_Preferences extends CRM_Core_Form {
         );
       }
     }
+
+    CRM_Core_Session::setStatus(ts('Your changes have been saved.'));
   }
-  //end of function
+
 }
 

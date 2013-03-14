@@ -106,8 +106,7 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     // end of hack
 
     $preUpgradeMessage = NULL;
-    CRM_Upgrade_Incremental_Legacy::setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
-    self::setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
+    $upgrade->setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
 
     $template->assign('currentVersion', $currentVer);
     $template->assign('newVersion', $latestVer);
@@ -185,34 +184,6 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
 
     $content = $template->fetch('CRM/common/success.tpl');
     echo CRM_Utils_System::theme('page', $content, TRUE, $this->_print, FALSE, TRUE);
-  }
-
-  /**
-   * Compute any messages which should be displayed before upgrade
-   * by calling the 'setPreUpgradeMessage' on each incremental upgrade
-   * object.
-   *
-   * @param $preUpgradeMessage string, alterable
-   */
-  static
-  function setPreUpgradeMessage(&$preUpgradeMessage, $currentVer, $latestVer) {
-    $upgrade = new CRM_Upgrade_Form();
-
-    // Scan through all php files and see if any file is interested in setting pre-upgrade-message
-    // based on $currentVer, $latestVer.
-    // Please note, at this point upgrade hasn't started executing queries.
-    $revisions = $upgrade->getRevisionSequence();
-    foreach ($revisions as $rev) {
-      if (version_compare($currentVer, $rev) < 0 &&
-        version_compare($rev, '3.2.alpha1') > 0
-      ) {
-        $versionObject = $upgrade->incrementalPhpObject($rev);
-        if (is_callable(array(
-          $versionObject, 'setPreUpgradeMessage'))) {
-          $versionObject->setPreUpgradeMessage($preUpgradeMessage, $rev);
-        }
-      }
-    }
   }
 }
 

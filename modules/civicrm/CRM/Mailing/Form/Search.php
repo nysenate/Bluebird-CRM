@@ -33,13 +33,16 @@
  *
  */
 class CRM_Mailing_Form_Search extends CRM_Core_Form {
-
+ 
   public function preProcess() {
     parent::preProcess();
   }
 
   public function buildQuickForm() {
-    $this->add('text', 'mailing_name', ts('Mailing Name'),
+    $parent = $this->controller->getParent();
+    $nameTextLabel = ($parent->_sms) ? ts('SMS Name') : ts('Mailing Name');
+
+    $this->add('text', 'mailing_name', $nameTextLabel,
       CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'title')
     );
 
@@ -55,9 +58,11 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
       'Scheduled', 'Complete', 'Running') as $status) {
       $this->addElement('checkbox', "mailing_status[$status]", NULL, $status);
     }
-
-    $this->addElement('checkbox', "sms", 'Is SMS');
-
+    
+    if ($parent->_sms) {
+      $this->addElement('hidden', 'sms', $parent->_sms);
+    }
+    
     $this->addButtons(array(
         array(
           'type' => 'refresh',

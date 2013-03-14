@@ -25,11 +25,11 @@
 *}
 {* this template is used for adding/editing batch  *}
 {if $action eq 8}
-  <h3>{ts}Delete Batch{/ts}</h3>
+  <h3>{ts}Delete Bulk Data Entry Batch{/ts}</h3>
 {elseif $action eq 2}
-	<h3>{ts}Edit Batch{/ts}</h3>
+	<h3>{ts}Edit Bulk Data Entry Batch{/ts}</h3>
 {else}
-  <h3>{ts}New Batch{/ts}</h3>
+  <h3>{ts}New Bulk Data Entry Batch{/ts}</h3>
 {/if}
 <div class="crm-block crm-form-block crm-batch-form-block">
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>

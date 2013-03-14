@@ -47,8 +47,23 @@
  * @access public
  */
 function civicrm_api3_price_set_create($params) {
-  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  $result = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  // Handle price_set_entity
+  if (!empty($result['id']) && !empty($params['entity_table']) && !empty($params['entity_id'])) {
+    $entityId = $params['entity_id'];
+    if (!is_array($params['entity_id'])) {
+      $entityId = explode(',', $entityId);
+    }
+    foreach ($entityId as $eid) {
+      $eid = (int) trim($eid);
+      if ($eid) {
+        CRM_Price_BAO_Set::addTo($params['entity_table'], $eid, $result['id']);
+      }
+    }
+  }
+  return $result;
 }
+
 /*
  * Adjust Metadata for Create action
  *
@@ -69,7 +84,12 @@ function _civicrm_api3_price_set_create_spec(&$params) {
  * @access public
  */
 function civicrm_api3_price_set_get($params) {
-  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  $result = _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params, FALSE);
+  // Fetch associated entities
+  foreach ($result as &$item) {
+    $item['entity'] = CRM_Price_BAO_Set::getUsedBy($item['id'], 'entity');
+  }
+  return civicrm_api3_create_success($result, $params);
 }
 
 /**

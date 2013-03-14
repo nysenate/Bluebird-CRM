@@ -96,8 +96,7 @@ class CRM_Core_I18n {
    *
    * @return             array    of code/language name mappings
    */
-  static
-  function languages($justEnabled = FALSE) {
+  static function languages($justEnabled = FALSE) {
     static $all = NULL;
     static $enabled = NULL;
 
@@ -361,8 +360,7 @@ class CRM_Core_I18n {
   /**
    * Static instance provider - return the instance for the current locale.
    */
-  static
-  function &singleton() {
+  static function &singleton() {
     static $singleton = array();
 
     global $tsLocale;
@@ -378,8 +376,7 @@ class CRM_Core_I18n {
    *
    * @return string  the final LC_TIME that got set
    */
-  static
-  function setLcTime() {
+  static function setLcTime() {
     static $locales = array();
 
     global $tsLocale;
@@ -401,8 +398,7 @@ class CRM_Core_I18n {
  *
  * @return         string  the translated string
  */
-function ts($text, $params = array(
-  )) {
+function ts($text, $params = array()) {
   static $config = NULL;
   static $locale = NULL;
   static $i18n = NULL;

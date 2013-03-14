@@ -98,3 +98,18 @@ function civicrm_api3_participant_payment_delete($params) {
   return $participant->deleteParticipantPayment($params) ? civicrm_api3_create_success() : civicrm_api3_create_error('Error while deleting participantPayment');
 }
 
+/**
+ * Retrieve one / all contribution(s) / participant(s) linked to a
+ * contrbution.
+ *
+ * @param  array   $params  input parameters
+ *
+ * @return array  array of properties, if error an array with an error id and error message
+ *  @example ParticipantPaymentGet
+ * {@getfields ParticipantPayment_get}
+ * @access public
+ */
+function civicrm_api3_participant_payment_get($params) {
+  return _civicrm_api3_basic_get('CRM_Event_DAO_ParticipantPayment', $params);
+}
+

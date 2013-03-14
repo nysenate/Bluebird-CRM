@@ -58,7 +58,7 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
 
   protected $_limitDetailClause = NULL;
 
-  protected $_limitNumber      = 10;
+  protected $_limitNumber = 10;
   protected $_limitNumberPlus1 = 11; // this should be one more than self::LIMIT
 
   protected $_foundRows = array();

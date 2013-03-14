@@ -1,5 +1,5 @@
 <?php
-// $Id: Event.php 40968 2012-06-12 14:28:16Z kurund $
+// $Id: Event.php 43319 2012-10-31 20:32:06Z totten $
 
 
 /*
@@ -36,7 +36,7 @@
  * @subpackage API_Event
  *
  * @copyright CiviCRM LLC (c) 2004-2012
- * @version $Id: Event.php 40968 2012-06-12 14:28:16Z kurund $
+ * @version $Id: Event.php 43319 2012-10-31 20:32:06Z totten $
  *
  */
 
@@ -58,7 +58,8 @@ require_once 'api/v2/utils.php';
  * @access public
  */
 function civicrm_event_create(&$params) {
-  _civicrm_initialize(TRUE);
+  _civicrm_initialize();
+  $errorScope = CRM_Core_TemporaryErrorScope::useException();
   try {
     civicrm_api_check_permission(__FUNCTION__, $params, TRUE);
     civicrm_verify_mandatory($params, 'CRM_Event_DAO_Event', array('start_date', 'event_type_id', 'title'));

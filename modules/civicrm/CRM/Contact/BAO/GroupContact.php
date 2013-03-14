@@ -54,9 +54,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @access public
    * @static
    */
-  static
-  function add(&$params) {
-
+  static function add(&$params) {
     $dataExists = self::dataExists($params);
     if (!$dataExists) {
       return NULL;
@@ -78,8 +76,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @access public
    * @static
    */
-  static
-  function dataExists(&$params) {
+  static function dataExists(&$params) {
     // return if no data present
     if ($params['group_id'] == 0) {
       return FALSE;
@@ -100,8 +97,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @access public
    * @static
    */
-  static
-  function getValues(&$params, &$values) {
+  static function getValues(&$params, &$values) {
     if (empty($params)) {
       return NULL;
     }
@@ -130,8 +126,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @access public
    * @static
    */
-  static
-  function addContactsToGroup(&$contactIds,
+  static function addContactsToGroup(&$contactIds,
     $groupId,
     $method   = 'Admin',
     $status   = 'Added',
@@ -175,8 +170,8 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @access public
    * @static
    */
-  static
-  function removeContactsFromGroup(&$contactIds,
+  static function removeContactsFromGroup(
+    &$contactIds,
     $groupId,
     $method   = 'Admin',
     $status   = 'Removed',
@@ -273,8 +268,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    * @return array $values this array has key-> group id and value group title
    * @static
    */
-  static
-  function getGroupList($contactId = 0, $visibility = FALSE) {
+  static function getGroupList($contactId = 0, $visibility = FALSE) {
     $group = new CRM_Contact_DAO_Group();
 
     $select = $from = $where = '';
@@ -284,7 +278,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
     $where  = " WHERE civicrm_group.is_active = 1 ";
     if ($contactId) {
       $from .= ' , civicrm_group_contact ';
-      $where .= " AND civicrm_group.id = civicrm_group_contact.group_id 
+      $where .= " AND civicrm_group.id = civicrm_group_contact.group_id
                         AND civicrm_group_contact.contact_id = " . CRM_Utils_Type::escape($contactId, 'Integer');
     }
 
@@ -321,8 +315,8 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    *
    * $access public
    */
-  static
-  function &getContactGroup($contactId,
+  static function &getContactGroup(
+    $contactId,
     $status           = NULL,
     $numGroupContact  = NULL,
     $count            = FALSE,
@@ -334,11 +328,11 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
       $select = 'SELECT count(DISTINCT civicrm_group_contact.id)';
     }
     else {
-      $select = 'SELECT 
-                    civicrm_group_contact.id as civicrm_group_contact_id, 
+      $select = 'SELECT
+                    civicrm_group_contact.id as civicrm_group_contact_id,
                     civicrm_group.title as group_title,
                     civicrm_group.visibility as visibility,
-                    civicrm_group_contact.status as status, 
+                    civicrm_group_contact.status as status,
                     civicrm_group.id as group_id,
                     civicrm_group.is_hidden as is_hidden,
                     civicrm_subscription_history.date as date,
@@ -450,8 +444,8 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
    *
    * @access public
    */
-  static
-  function getGroupContacts(&$group,
+  static function getGroupContacts(
+    &$group,
     $returnProperties   = NULL,
     $status             = 'Added',
     $sort               = NULL,
@@ -531,23 +525,35 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
   /**
    * Returns membership details of a contact for a group
    *
-   * @param  int  $contactId id of the contact
-   *
-   * @param  int  $groupID   Id of a perticuler group
+   * @param  int    $contactId id of the contact
+   * @param  int    $groupID   Id of a perticuler group
+   * @param  string $method    If we want the subscription history details for a specific method
    *
    * @return object of group contact
    * @access public
    * @static
    */
-  function &getMembershipDetail($contactId, $groupID) {
-    $query = "SELECT * 
-FROM civicrm_group_contact 
-LEFT JOIN civicrm_subscription_history ON (civicrm_group_contact.contact_id = civicrm_subscription_history.contact_id) 
-WHERE civicrm_group_contact.contact_id = %1
-AND civicrm_group_contact.group_id = %2
-AND civicrm_subscription_history.method ='Email' ";
+  function &getMembershipDetail($contactId, $groupID, $method = 'Email') {
+    $leftJoin = $where = $orderBy = null;
 
-    $params = array(1 => array($contactId, 'Integer'),
+    if ($method) {
+      $leftJoin =
+        "LEFT JOIN civicrm_subscription_history ON (civicrm_group_contact.contact_id = civicrm_subscription_history.contact_id)";
+      $where = "AND civicrm_subscription_history.method ='Email'";
+      $orderBy = "ORDER BY civicrm_subscription_history.id DESC";
+    }
+    $query = "
+SELECT    *
+FROM      civicrm_group_contact
+          $leftJoin
+WHERE     civicrm_group_contact.contact_id = %1
+AND       civicrm_group_contact.group_id = %2
+          $where
+          $orderBy
+";
+
+    $params = array(
+      1 => array($contactId, 'Integer'),
       2 => array($groupID, 'Integer'),
     );
     $dao = CRM_Core_DAO::executeQuery($query, $params);
@@ -573,11 +579,13 @@ AND civicrm_subscription_history.method ='Email' ";
       return CRM_Core_Error::fatal("$contactId or $groupID should not empty");
     }
 
-    $query = "UPDATE civicrm_group_contact 
-SET civicrm_group_contact.status = 'Added'
-WHERE civicrm_group_contact.contact_id = %1
-AND civicrm_group_contact.group_id = %2";
-    $params = array(1 => array($contactId, 'Integer'),
+    $query = "
+UPDATE civicrm_group_contact
+SET    civicrm_group_contact.status = 'Added'
+WHERE  civicrm_group_contact.contact_id = %1
+AND    civicrm_group_contact.group_id = %2";
+    $params = array(
+      1 => array($contactId, 'Integer'),
       2 => array($groupID, 'Integer'),
     );
 
@@ -624,8 +632,7 @@ AND civicrm_group_contact.group_id = %2";
    * @access public
    * @static
    */
-  static
-  function create(&$params, $contactId, $visibility = FALSE, $method = 'Admin') {
+  static function create(&$params, $contactId, $visibility = FALSE, $method = 'Admin') {
     $contactIds = array();
     $contactIds[] = $contactId;
 
@@ -673,8 +680,7 @@ AND civicrm_group_contact.group_id = %2";
     }
   }
 
-  static
-  function isContactInGroup($contactID, $groupID) {
+  static function isContactInGroup($contactID, $groupID) {
     if (!CRM_Utils_Rule::positiveInteger($contactID) ||
       !CRM_Utils_Rule::positiveInteger($groupID)
     ) {
@@ -704,8 +710,7 @@ AND civicrm_group_contact.group_id = %2";
    * @return void.
    * @static
    */
-  static
-  function mergeGroupContact($mainContactId, $dontCare, $otherContactId) {
+  static function mergeGroupContact($mainContactId, $dontCare, $otherContactId) {
     $params = array(1 => array($mainContactId, 'Integer'),
       2 => array($otherContactId, 'Integer'),
     );
@@ -785,14 +790,14 @@ AND       group_id IN ( $groupIDString )
 
     // delete all the other group contacts
     $sql = "
-DELETE 
-FROM   civicrm_group_contact 
+DELETE
+FROM   civicrm_group_contact
 WHERE  contact_id = %2
 ";
     CRM_Core_DAO::executeQuery($sql, $params);
 
     $sql = "
-DELETE 
+DELETE
 FROM   civicrm_subscription_history
 WHERE  contact_id = %2
 ";
@@ -810,8 +815,7 @@ WHERE  contact_id = %2
    * @return void.
    * @static
    */
-  static
-  function ignoreMergeSubscriptionHistory($mainContactId, $dontCare, $otherContactId) {
+  static function ignoreMergeSubscriptionHistory($mainContactId, $dontCare, $otherContactId) {
     // this is handled by merge group contacts
     return;
   }
@@ -826,8 +830,7 @@ WHERE  contact_id = %2
    * @access public
    * @static
    */
-  static
-  function bulkAddContactsToGroup($contactIDs,
+  static function bulkAddContactsToGroup($contactIDs,
     $groupID,
     $method   = 'Admin',
     $status   = 'Added',

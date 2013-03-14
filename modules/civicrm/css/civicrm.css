@@ -2768,15 +2768,6 @@ div#crm-toolTip #hide-tooltip {
     margin-bottom: 0px;
 }
 
-/*NYSS 5267*/
-.crm-tooltip .crm-report-overlay {
-  width: 500px;
-  margin-bottom: 0px;
-}
-.crm-tooltip .crm-report-overlay thead td {
-  font-weight: bold;
-}
-
 /* crm-summary-group appears outside crm-container for contact summary icon overlay */
 #crm-container .crm-summary-group .crm-section .label,
 .crm-summary-group .crm-section .label {

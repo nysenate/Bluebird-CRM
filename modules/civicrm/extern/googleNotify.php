@@ -26,11 +26,9 @@
 */
 
 /**
- *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
- *
  */
 
 session_start();
@@ -41,4 +39,3 @@ $config = CRM_Core_Config::singleton();
 
 $rawPostData = file_get_contents('php://input');
 CRM_Core_Payment_GoogleIPN::main($rawPostData);
-

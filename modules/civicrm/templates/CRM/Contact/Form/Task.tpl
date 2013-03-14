@@ -26,7 +26,7 @@
 {ts 1=$totalSelectedContacts}Number of selected contacts: %1{/ts}
 
 {if $searchtype eq 'ts_sel'}
-<div id="popupContainer" class="hidden">
+<div id="popupContainer">
 {ts 1=$totalSelectedContacts}Number of selected contacts: %1{/ts}    
      {include file="CRM/common/pager.tpl" location="top" noForm=1}
 <table>
@@ -41,59 +41,35 @@
 </table>
  {include file="CRM/common/pager.tpl" location="bottom" noForm=1}
 </div>
-<br /><a href="#"id="button">{ts}View Selected Contacts{/ts}</a>
-{/if}
-{if $searchtype eq 'ts_sel'}
+<br /><a href="#" id="popup-button">{ts}View Selected Contacts{/ts}</a>
+
 {literal}
 <script type="text/javascript">
-cj("#popupContainer").css({
-		"background-color":"#E0E0E0"
-		});
+cj(function($) {
+  $("#popupContainer").css({
+    "background-color":"#E0E0E0",
+    'display':'none',
+  });
 
-cj("#button").click(function(){
-cj("#popupContainer").dialog({
-	title: "Selected Contacts",
-	width:600,
-	height:400,
-	modal: true,
-	overlay: {
-            		opacity: 0.5,
-             		background: "black"
-             	}
+  $("#popup-button").click(function() {
+    $("#popupContainer").dialog({
+      title: "Selected Contacts",
+      width:600,
+      height:400,
+      modal: true,
+      overlay: {
+        opacity: 0.5,
+        background: "black"
+      }
+    });
+    return false;
+  });
+  // FIXME
+  var url=location.href.split('&');
+  if (url[3]) {   
+    $('#popup-button').click();
+  }
 });
-});
-var url=location.href.split('&');
-    if(url[3])
-{   
-	cj("#popupContainer").dialog({
-			title: "Selected Contacts",
-			width:600,
-			height:400,
-			modal: true,
-			overlay: {
-					opacity: 0.5,
-             			 	background: "black"
-             			 }
-		});
-}
-else
-{
-cj(document).ready(function(){
-cj("#popupContainer").hide();
-cj("#button").click(function(){
-		cj("#popupContainer").dialog({
-			title: "Selected Contacts",
-			width:600,
-			height:400,
-			modal: true,
-			overlay: {
-					opacity: 0.5,
-             				background: "black"
-             			}
-			});
-		});
-});
-}
 </script>
 {/literal}
 {/if}

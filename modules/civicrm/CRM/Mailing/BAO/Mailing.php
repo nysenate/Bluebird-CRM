@@ -249,8 +249,7 @@ WHERE  c.group_id = {$groupDAO->id}
                     ORDER BY $email.is_bulkmail";
 
     if ($mode == 'sms') {
-      $phoneTypes = CRM_Core_PseudoConstant::phoneType();
-      $phoneTypes = array_flip($phoneTypes);
+      $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
       $query      = "REPLACE INTO       I_$job_id (phone_id, contact_id)
 
                     SELECT DISTINCT     $phone.id as phone_id,
@@ -934,8 +933,7 @@ AND civicrm_contact.is_opt_out =0";
    *
    * @return void
    */
-  static
-  function addMessageIdHeader(&$headers, $prefix, $job_id, $event_queue_id, $hash) {
+  static function addMessageIdHeader(&$headers, $prefix, $job_id, $event_queue_id, $hash) {
     $config           = CRM_Core_Config::singleton();
     $localpart        = CRM_Core_BAO_MailSettings::defaultLocalpart();
     $emailDomain      = CRM_Core_BAO_MailSettings::defaultDomain();
@@ -963,8 +961,7 @@ AND civicrm_contact.is_opt_out =0";
    *
    * @return (reference) array    array ref that hold array refs to the verp info and urls
    */
-  static
-  function getVerpAndUrls($job_id, $event_queue_id, $hash, $email) {
+  static function getVerpAndUrls($job_id, $event_queue_id, $hash, $email) {
     // create a skeleton object and set its properties that are required by getVerpAndUrlsAndHeaders()
     $config         = CRM_Core_Config::singleton();
     $bao            = new CRM_Mailing_BAO_Mailing();
@@ -1444,9 +1441,7 @@ AND civicrm_contact.is_opt_out =0";
    *
    * @return object
    */
-  static
-  function add(&$params, &$ids) {
-
+  static function add(&$params, &$ids) {
     if (CRM_Utils_Array::value('mailing', $ids)) {
       CRM_Utils_Hook::pre('edit', 'Mailing', $ids['mailing_id'], $params);
     }
@@ -1928,6 +1923,10 @@ AND civicrm_contact.is_opt_out =0";
         'civicrm/mailing/report/event',
         "reset=1&event=unsubscribe&mid=$mailing_id"
       ),
+      'optout' => CRM_Utils_System::url(
+        'civicrm/mailing/report/event',
+        "reset=1&event=optout&mid=$mailing_id"
+      ),
       'forward' => CRM_Utils_System::url(
         'civicrm/mailing/report/event',
         "reset=1&event=forward&mid=$mailing_id"
@@ -2032,8 +2031,7 @@ AND civicrm_contact.is_opt_out =0";
   }
 
 
-  static
-  function checkPermission($id) {
+  static function checkPermission($id) {
     if (!$id) {
       return;
     }
@@ -2047,8 +2045,7 @@ AND civicrm_contact.is_opt_out =0";
     return;
   }
 
-  static
-  function mailingACL($alias = NULL) {
+  static function mailingACL($alias = NULL) {
     $mailingACL = " ( 0 ) ";
 
     $mailingIDs = self::mailingACLIDs();
@@ -2060,24 +2057,21 @@ AND civicrm_contact.is_opt_out =0";
     return $mailingACL;
   }
 
-  static
-  function &mailingACLIDs($count = FALSE, $condition = NULL) {
+  static function &mailingACLIDs($count = FALSE, $condition = NULL) {
     $mailingIDs = array();
 
     // get all the groups that this user can access
     // if they dont have universal access
     $groups = CRM_Core_PseudoConstant::group();
     if (!empty($groups)) {
-      $groupIDs = implode(',',
-        array_keys($groups)
-      );
+      $groupIDs = implode(',', array_keys($groups));
       $selectClause = ($count) ? 'COUNT( DISTINCT m.id) as count' : 'DISTINCT( m.id ) as id';
       // get all the mailings that are in this subset of groups
       $query = "
 SELECT    $selectClause
   FROM    civicrm_mailing m
 LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
- WHERE ( ( g.entity_table = 'civicrm_group' AND g.entity_id IN ( $groupIDs ) )
+ WHERE ( ( g.entity_table like 'civicrm_group%' AND g.entity_id IN ( $groupIDs ) )
     OR   ( g.entity_table IS NULL AND g.entity_id IS NULL ) )
    $condition";
       $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
@@ -2191,8 +2185,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
    * @access public
    */
 
-  static
-  function showEmailDetails($id) {
+  static function showEmailDetails($id) {
     return CRM_Utils_System::url('civicrm/mailing/report', "mid=$id");
   }
 
@@ -2532,8 +2525,7 @@ SELECT  $mailing.id as mailing_id
     return $report;
   }
 
-  static
-  function overrideVerp($jobID) {
+  static function overrideVerp($jobID) {
     static $_cache = array();
 
     if (!isset($_cache[$jobID])) {
@@ -2549,8 +2541,7 @@ WHERE  civicrm_mailing_job.id = %1
     return $_cache[$jobID];
   }
 
-  static
-  function processQueue($mode = NULL) {
+  static function processQueue($mode = NULL) {
     $config = &CRM_Core_Config::singleton();
     CRM_Core_Error::debug_log_message("Beginning processQueue run: {$config->mailerJobsMax}, {$config->mailerJobSize}");
 

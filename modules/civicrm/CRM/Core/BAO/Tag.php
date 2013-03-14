@@ -283,7 +283,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
     if ($tag->delete()) {
       CRM_Utils_Hook::post('delete', 'Tag', $id, $tag);
-      CRM_Core_Session::setStatus(ts('Selected Tag has been Deleted Successfuly.'));
+      CRM_Core_Session::setStatus(ts('Selected tag has been deleted successfully.'));
       return TRUE;
     }
     return FALSE;

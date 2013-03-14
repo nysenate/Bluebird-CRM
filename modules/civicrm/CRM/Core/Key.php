@@ -107,6 +107,10 @@ class CRM_Core_Key {
    */
   static
   function validate($key, $name, $addSequence = FALSE) {
+    if (!is_string($key)) {
+      return NULL;
+    }
+
     if ($addSequence) {
       list($k, $t) = explode('_', $key);
       if ($t < 1 || $t > 10000) {

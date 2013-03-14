@@ -46,8 +46,7 @@ class CRM_Core_BAO_FinancialTrxn extends CRM_Core_DAO_FinancialTrxn {
    * @access public
    * @static
    */
-  static
-  function create(&$params) {
+  static function create(&$params) {
     $trxn = new CRM_Core_DAO_FinancialTrxn();
     $trxn->copyValues($params);
 
@@ -100,8 +99,7 @@ class CRM_Core_BAO_FinancialTrxn extends CRM_Core_DAO_FinancialTrxn {
    * @access public
    * @static
    */
-  static
-  function getFinancialTrxnIds($entity_id, $entity_table = 'civicrm_contribution') {
+  static function getFinancialTrxnIds($entity_id, $entity_table = 'civicrm_contribution') {
     $ids = array('entityFinancialTrxnId' => NULL, 'financialTrxnId' => NULL);
 
     $query = "
@@ -128,8 +126,7 @@ class CRM_Core_BAO_FinancialTrxn extends CRM_Core_DAO_FinancialTrxn {
    * @access public
    * @static
    */
-  static
-  function deleteFinancialTrxn($entity_id, $entity_table = 'civicrm_contribution') {
+  static function deleteFinancialTrxn($entity_id, $entity_table = 'civicrm_contribution') {
     $fids = self::getFinancialTrxnIds($entity_id, $entity_table);
 
     if ($fids['financialTrxnId']) {

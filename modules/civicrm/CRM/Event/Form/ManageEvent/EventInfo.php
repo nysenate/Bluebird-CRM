@@ -332,6 +332,14 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
       // copy price sets if any
       $priceSetId = CRM_Price_BAO_Set::getFor('civicrm_event', $params['template_id']);
       if ($priceSetId) {
+        $isQuickConfig = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set',
+          $priceSetId,
+          'is_quick_config'
+        );
+        if ($isQuickConfig) {
+          $copyPriceSet = &CRM_Price_BAO_Set::copy($priceSetId);
+          $priceSetId = $copyPriceSet->id;
+        }
         CRM_Price_BAO_Set::addTo('civicrm_event', $event->id, $priceSetId);
       }
 

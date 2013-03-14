@@ -26,11 +26,9 @@
 */
 
 /**
- *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
- *
  */
 
 session_start();
@@ -40,4 +38,3 @@ $config = CRM_Core_Config::singleton();
 
 $authorizeNetIPN = new CRM_Core_Payment_AuthorizeNetIPN();
 $authorizeNetIPN->main();
-

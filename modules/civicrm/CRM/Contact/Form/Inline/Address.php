@@ -239,6 +239,7 @@ class CRM_Contact_Form_Inline_Address extends CRM_Core_Form {
       'status'    => 'save',
       'addressId' => $address[0]->id
     );
+    $this->postProcessHook();
     echo json_encode($response);
     CRM_Utils_System::civiExit();
   }

@@ -112,6 +112,7 @@ SELECT    li.id,
           li.line_total,
           pf.label as field_title,
           pf.html_type,
+          pfv.membership_type_id,
           li.price_field_id,
           li.participant_count,
           li.price_field_value_id,
@@ -157,6 +158,7 @@ WHERE     %2.id = %1";
         'html_type' => $dao->html_type,
         'description' => $dao->description,
         'entity_id' => $entityId,
+        'membership_type_id' => $dao->membership_type_id,
       );
     }
     return $lineItems;
@@ -200,12 +202,17 @@ WHERE     %2.id = %1";
 
     foreach ($params["price_{$fid}"] as $oid => $qty) {
       $price = $options[$oid]['amount'];
+
+      // lets clean the price in case it is not yet cleant
+      // CRM-10974
+      $price = CRM_Utils_Rule::cleanMoney($price);
+
       $participantsPerField = CRM_Utils_Array::value('count', $options[$oid], 0);
 
       $values[$oid] = array(
         'price_field_id' => $fid,
         'price_field_value_id' => $oid,
-        'label' => $options[$oid]['label'],
+        'label' => CRM_Utils_Array::value('label', $options[$oid]),
         'field_title' => $fieldTitle,
         'description' => CRM_Utils_Array::value('description', $options[$oid]),
         'qty' => $qty,
@@ -243,31 +250,31 @@ WHERE     %2.id = %1";
     $dao = CRM_Core_DAO::executeQuery($query);
     return $result;
   }
-      
+
   public static function syncLineItems($entityId, $entityTable = 'civicrm_contribution', $amount, $otherParams = NULL) {
     if (!$entityId || CRM_Utils_System::isNull($amount))
       return;
-    
+
     $from = " civicrm_line_item li
 LEFT JOIN   civicrm_price_field pf ON pf.id = li.price_field_id
 LEFT JOIN   civicrm_price_set ps ON ps.id = pf.price_set_id ";
 
-    $set = " li.unit_price = %3, 
+    $set = " li.unit_price = %3,
              li.line_total = %3 ";
 
-    $where = " li.entity_id = %1 AND 
+    $where = " li.entity_id = %1 AND
                li.entity_table = %2 ";
-    
+
     $params = array(
       1 => array($entityId, 'Integer'),
       2 => array($entityTable, 'String'),
       3 => array($amount, 'Float'),
     );
-    
+
     if ($entityTable == 'civicrm_contribution') {
       $entityName = 'default_contribution_amount';
       $where .= " AND ps.name = %4 ";
-      $params[4] = array($entityName, 'String'); 
+      $params[4] = array($entityName, 'String');
     } elseif ($entityTable == 'civicrm_participant') {
       $from .= "
 LEFT JOIN civicrm_price_set_entity cpse ON cpse.price_set_id = ps.id
@@ -281,14 +288,13 @@ LEFT JOIN civicrm_price_field_value cpfv ON cpfv.price_field_id = pf.id and cpfv
         5 => array($otherParams['event_id'], 'String'),
       );
     }
-      
-    $query = "                                          
+
+    $query = "
 UPDATE $from
 SET    $set
-WHERE  $where    
+WHERE  $where
 ";
 
     CRM_Core_DAO::executeQuery($query, $params);
   }
 }
-

@@ -37,8 +37,8 @@
  * Main page for Cases dashlet
  *
  */
-class CRM_Dashlet_Page_MyCases extends CRM_Core_Page
-{
+class CRM_Dashlet_Page_MyCases extends CRM_Core_Page {
+
   /**
    * List activities as dashlet
    *
@@ -46,10 +46,9 @@ class CRM_Dashlet_Page_MyCases extends CRM_Core_Page
    *
    * @access public
    */
-  function run()
-  {
+  function run() {
     $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'dashlet');
-    $this->assign('context', $context );
+    $this->assign('context', $context);
 
     //check for civicase access.
     if (!CRM_Case_BAO_Case::accessCiviCase()) {
@@ -57,7 +56,7 @@ class CRM_Dashlet_Page_MyCases extends CRM_Core_Page
     }
 
     $session  = CRM_Core_Session::singleton();
-    $userID   = $session->get('userID');        
+    $userID   = $session->get('userID');
     //NYSS 2173
     $upcoming = CRM_Case_BAO_Case::getCases(FALSE, $userID, 'all', $context);
 

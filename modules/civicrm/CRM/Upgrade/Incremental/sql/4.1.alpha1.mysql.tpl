@@ -29,7 +29,7 @@ VALUES
 
 -- CRM-8780
 
--- add the settings table
+-- add the settings table //NYSS
 -- CREATE TABLE `civicrm_setting` (
 --  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 --  `group_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for setting element, useful in caching setting elements',
@@ -252,7 +252,7 @@ VALUES
     ( @domainID, 'civicrm/admin/setting/preferences/member&reset=1',    '{ts escape="sql" skip="true"}CiviMember Component Settings{/ts}', 'CiviMember Component Settings','access CiviMember,administer CiviCRM', 'AND', @memberAdminID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/options/event_badge&group=event_badge&reset=1', '{ts escape="sql" skip="true"}Event Badge Formats{/ts}', 'Event Badge Formats', 'access CiviEvent,administer CiviCRM', 'AND', @eventAdminID, '1', NULL, 11 );
 
--- CRM-9113
+-- CRM-9113 //NYSS
 --ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
 
 -- CRM-8762 Fix option_group table

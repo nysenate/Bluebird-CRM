@@ -238,9 +238,7 @@ class CRM_Contact_Form_Edit_Address {
       }
       $defaults = array();
       CRM_Core_BAO_CustomGroup::setDefaults($groupTree, $defaults);
-      // For some of the custom fields like checkboxes, the defaults doesn't populate
-      // in proper format due to the different element-name format - 'address[$blockId][custom-X]'.
-      // Below eval() fixes this issue.
+      // Set default values
       $address = array();
       foreach ($defaults as $key => $val) {
         if ( empty( $val ) ) {
@@ -249,8 +247,7 @@ class CRM_Contact_Form_Edit_Address {
         elseif ( is_array($val) ) {
           $val = var_export($val, TRUE);
         }
-        //NYSS 5718
-        @eval("\${$key} = '" .$val . "';" );
+        $$key = "$val";
       }
       
       $defaults = array('address' => $address);

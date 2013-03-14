@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
     
   /**
    * email addresses of the contact that is been viewed
@@ -240,6 +240,7 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
     );
 
       $response = array( 'status' => 'save' );
+    $this->postProcessHook();
     echo json_encode( $response );
     CRM_Utils_System::civiExit( );    
   }

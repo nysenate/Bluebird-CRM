@@ -35,64 +35,88 @@
 class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $cid;
 
-  protected $_logTables =
-    array(
-          'log_civicrm_contact' =>
-          array( 'fk'  => 'id',
-                 ),
-          'log_civicrm_email' =>
-          array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact',
-                 ),
-          'log_civicrm_phone' =>
-          array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact',
-                 ),
-          'log_civicrm_address' =>
-          array( 'fk'  => 'contact_id',
-                 'log_type' => 'Contact',
-                 ),
-          'log_civicrm_note' =>
-          array( 'fk'  => 'entity_id',
-                 'entity_table' => true,
-            'dao_log_table' => 'log_civicrm_note',
-                 'dao_column'  => 'subject',
-                 ),
-      //NYSS 5751
-      'log_civicrm_note_comment' =>
-      array( 'fk'  => 'entity_id',
-        'table_name'  => 'log_civicrm_note',
-        'entity_table' => true,
-        'dao_log_table' => 'log_civicrm_note',
-        'dao_column'  => 'subject',
-      ),
-          'log_civicrm_group_contact' =>
-          array( 'fk'  => 'contact_id',
-            'dao_log_table' => 'log_civicrm_group',
-                 'dao_column'    => 'title',
-                 'entity_column' => 'group_id',
-                 'action_column' => 'status',
-                 'log_type'      => 'Group',
-                 ),
-          'log_civicrm_entity_tag' =>
-          array( 'fk'  => 'entity_id',
-            'dao_log_table' => 'log_civicrm_tag',
-                 'dao_column'    => 'name',
-                 'entity_column' => 'tag_id',
-                 'entity_table'  => true
-                 ),
-          'log_civicrm_relationship' =>
-          array(
-            'fk'  => 'contact_id_a',
-            'entity_column' => 'relationship_type_id',
-            'dao_log_table' => 'log_civicrm_relationship_type',
-            'dao_column' => 'label_a_b',
-          ),
-        );
+  protected $_logTables = array();
 
   protected $loggingDB;
 
   function __construct() {
+    $this->_logTables =
+    array(
+      'log_civicrm_contact' =>
+      array( 'fk'  => 'id',
+      ),
+      'log_civicrm_email' =>
+      array( 'fk'  => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      'log_civicrm_phone' =>
+      array( 'fk'  => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      'log_civicrm_address' =>
+      array( 'fk'  => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      //NYSS 6275
+      'log_civicrm_note' =>
+      array( 'fk'  => 'entity_id',
+        'entity_table' => true,
+        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
+      ),
+      //NYSS 5751
+      'log_civicrm_note_comment' =>
+      array( 'fk'  => 'entity_id',
+        'table_name'  => 'log_civicrm_note',
+        'joins' => array('table' => 'log_civicrm_note',
+                         'join'  => "entity_log_civireport.entity_id = fk_table.id AND entity_log_civireport.entity_table = 'civicrm_note'"),
+        'entity_table' => true,
+        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
+      ),
+      //NYSS 6275
+      'log_civicrm_group_contact' =>
+      array( 'fk'  => 'contact_id',
+        'bracket_info'  => array('entity_column' => 'group_id', 'table' => 'log_civicrm_group', 'column' => 'title'),
+        'action_column' => 'status',
+        'log_type'      => 'Group',
+      ),
+      'log_civicrm_entity_tag' =>
+      array( 'fk'  => 'entity_id',
+        'bracket_info'  => array('entity_column' => 'tag_id', 'table' => 'log_civicrm_tag', 'column' => 'name'),
+        'entity_table'  => true
+      ),
+      'log_civicrm_relationship' =>
+      array(
+        'fk'  => 'contact_id_a',
+        'bracket_info'  => array('entity_column' => 'relationship_type_id', 'table' => 'log_civicrm_relationship_type', 'column' => 'label_a_b'),
+      ),
+      //NYSS 6275
+      'log_civicrm_activity_for_target' =>
+      array( 'fk'  => 'target_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'joins' => array('table' => 'log_civicrm_activity_target', 'join' => 'entity_log_civireport.id = fk_table.activity_id'),
+        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_activity_for_assignee' =>
+      array( 'fk'  => 'assignee_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'joins' => array('table' => 'log_civicrm_activity_assignment', 'join' => 'entity_log_civireport.id = fk_table.activity_id'),
+        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_activity_for_source' =>
+      array( 'fk'  => 'source_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_case' =>
+      array( 'fk'  => 'contact_id',
+        'joins' => array('table' => 'log_civicrm_case_contact', 'join' => 'entity_log_civireport.id = fk_table.case_id'),
+        'bracket_info'  => array('entity_column' => 'case_type_id', 'options' => CRM_Case_PseudoConstant::caseType('label', FALSE)),
+      ),
+    );
+
     // don’t display the ‘Add these Contacts to Group’ button
     $this->_add2groupSupported = FALSE;
 
@@ -231,23 +255,36 @@ ORDER BY entity_log_civireport.log_date DESC {$this->_limit}";
     return $logType;
   }
 
-  //NYSS 6056
+  //NYSS 6056/6275
   function getEntityValue( $id, $entity, $logDate ) {
-    if (CRM_Utils_Array::value('dao_log_table', $this->_logTables[$entity])) {
-      if (CRM_Utils_Array::value('entity_column', $this->_logTables[$entity])) {
-        $sql = "select {$this->_logTables[$entity]['entity_column']} from `{$this->loggingDB}`.{$entity} where id = %1";
-        $entityID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer')));
+    if (CRM_Utils_Array::value('bracket_info', $this->_logTables[$entity])) {
+      if (CRM_Utils_Array::value('entity_column', $this->_logTables[$entity]['bracket_info'])) {
+        $logTable = CRM_Utils_Array::value('table_name', $this->_logTables[$entity]) ? $this->_logTables[$entity]['table_name'] : $entity;
+        $sql = "
+SELECT {$this->_logTables[$entity]['bracket_info']['entity_column']}
+  FROM `{$this->loggingDB}`.{$logTable}
+ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
+        $entityID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'), 2 => array ($id, 'Integer')));
       } else {
         $entityID = $id;
       }
 
-      //NYSS 6056
-      if ($entityID && $logDate) {
+      //NYSS 6275
+      // since case_type_id is a varchar field with separator
+      if ($entity == 'log_civicrm_case') {
+        $entityID = explode(CRM_Case_BAO_Case::VALUE_SEPARATOR,$entityID);
+        $entityID = CRM_Utils_Array::value(1, $entityID);
+      }
+
+      //NYSS 6056/6275
+      if ($entityID && $logDate && array_key_exists('table', $this->_logTables[$entity]['bracket_info'])) {
         $sql = "
-SELECT {$this->_logTables[$entity]['dao_column']}
-FROM  `{$this->loggingDB}`.{$this->_logTables[$entity]['dao_log_table']}
+SELECT {$this->_logTables[$entity]['bracket_info']['column']}
+FROM  `{$this->loggingDB}`.{$this->_logTables[$entity]['bracket_info']['table']}
 WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
         return CRM_Core_DAO::singleValueQuery($sql, array(1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'), 2 => array ($entityID, 'Integer')));
+      } else if (array_key_exists('options', $this->_logTables[$entity]['bracket_info']) && $entityID) {
+        return CRM_Utils_Array::value($entityID, $this->_logTables[$entity]['bracket_info']['options']);
       }
     }
     return null;

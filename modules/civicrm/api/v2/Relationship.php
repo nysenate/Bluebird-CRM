@@ -1,5 +1,5 @@
 <?php
-// $Id: Relationship.php 40968 2012-06-12 14:28:16Z kurund $
+// $Id: Relationship.php 43319 2012-10-31 20:32:06Z totten $
 
 
 /*
@@ -35,7 +35,7 @@
  * @subpackage API_Relationship
  *
  * @copyright CiviCRM LLC (c) 2004-2012
- * @version $Id: Relationship.php 40968 2012-06-12 14:28:16Z kurund $
+ * @version $Id: Relationship.php 43319 2012-10-31 20:32:06Z totten $
  *
  */
 
@@ -151,7 +151,8 @@ function civicrm_relationship_delete(&$params) {
  */
 function civicrm_relationship_update($params) {
   try {
-    _civicrm_initialize(TRUE);
+    _civicrm_initialize();
+    $errorScope = CRM_Core_TemporaryErrorScope::useException();
 
     /*
         * Erik Hommel, 5 Oct 2010 : fix for CRM-6895

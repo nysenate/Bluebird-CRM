@@ -5,14 +5,17 @@
  */
 
 CKEDITOR.plugins.add('aspell', {
+  lang: 'en', // %REMOVE_LINE_CORE%
+  icons: 'spellchecker', // %REMOVE_LINE_CORE%
 	init: function (editor) {
 		// Create dialog-based command named "aspell"
 		editor.addCommand('aspell', new CKEDITOR.dialogCommand('aspell'));
 		
 		// Add button to toolbar. Not sure why only that name works for me.
-		editor.ui.addButton('SpellCheck', {
-			label: editor.lang.spellCheck.toolbar,
-			command: 'aspell'
+		editor.ui.addButton('SpellChecker', {
+			label: editor.lang.aspell.toolbar,
+			command: 'aspell',
+      toolbar: 'spellchecker,10'
 		});
 		
 		// Add link dialog code

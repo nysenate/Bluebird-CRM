@@ -55,7 +55,8 @@ class CRM_Contact_Form_Task_PDF extends CRM_Contact_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
 
     $this->skipOnHold = $this->skipDeceased = FALSE;
     CRM_Contact_Form_Task_PDFLetterCommon::preProcess($this);
@@ -84,7 +85,7 @@ class CRM_Contact_Form_Task_PDF extends CRM_Contact_Form_Task {
     if (isset($this->_activityId)) {
       $params = array('id' => $this->_activityId);
       CRM_Activity_BAO_Activity::retrieve($params, $defaults);
-      $defaults['html_message'] = $defaults['details'];
+      $defaults['html_message'] = CRM_Utils_Array::value('details', $defaults);
     }
     $defaults = $defaults + CRM_Contact_Form_Task_PDFLetterCommon::setDefaultValues();
     return $defaults;

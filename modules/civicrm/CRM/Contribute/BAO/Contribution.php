@@ -1980,50 +1980,48 @@ SELECT source_contact_id
       $this->_relatedObjects['contact']->find(TRUE);
     }
     $this->_relatedObjects['contributionType'] = $contributionType;
-    if ($this->_component == 'contribute') {
 
+    if ($this->_component == 'contribute') {
       // retrieve the other optional objects first so
       // stuff down the line can use this info and do things
       // CRM-6056
-      if (!empty($ids['membership'])) {
-        if (is_numeric($ids['membership'])) {
-          // see if there are any other memberships to be considered for same contribution.
-          $query = "
+      //in any case get the memberships associated with the contribution
+      //because we now support multiple memberships w/ price set
+      // see if there are any other memberships to be considered for same contribution.
+      $query = "
 SELECT membership_id
 FROM   civicrm_membership_payment
-WHERE  contribution_id = %1 AND membership_id != %2";
-          $dao = CRM_Core_DAO::executeQuery($query,
-            array(1 => array($this->id, 'Integer'),
-              2 => array($ids['membership'], 'Integer'),
-            )
-          );
+WHERE  contribution_id = %1 ";
+      $params = array(1 => array($this->id, 'Integer'));
 
-          $ids['membership'] = array($ids['membership']);
-          while ($dao->fetch()) {
-            $ids['membership'][] = $dao->membership_id;
+      $dao = CRM_Core_DAO::executeQuery($query, $params );
+      while ($dao->fetch()) {
+        if ($dao->membership_id) {
+          if (!is_array($ids['membership'])) {
+            $ids['membership'] = array();
           }
-        }
-
-        if (is_array($ids['membership'])) {
-          foreach ($ids['membership'] as $id) {
-            if (!empty($id)) {
-              $membership = new CRM_Member_BAO_Membership();
-              $membership->id = $id;
-              if (!$membership->find(TRUE)) {
-                throw new Exception("Could not find membership record: $id");
-              }
-              $membership->join_date = CRM_Utils_Date::isoToMysql($membership->join_date);
-              $membership->start_date = CRM_Utils_Date::isoToMysql($membership->start_date);
-              $membership->end_date = CRM_Utils_Date::isoToMysql($membership->end_date);
-              $membership->reminder_date = CRM_Utils_Date::isoToMysql($membership->reminder_date);
-
-              $this->_relatedObjects['membership'][] = $membership;
-              $membership->free();
-            }
-          }
+          $ids['membership'][] = $dao->membership_id;
         }
       }
 
+      if (array_key_exists('membership', $ids) && is_array($ids['membership'])) {
+        foreach ($ids['membership'] as $id) {
+          if (!empty($id)) {
+            $membership = new CRM_Member_BAO_Membership();
+            $membership->id = $id;
+            if (!$membership->find(TRUE)) {
+              throw new Exception("Could not find membership record: $id");
+            }
+            $membership->join_date = CRM_Utils_Date::isoToMysql($membership->join_date);
+            $membership->start_date = CRM_Utils_Date::isoToMysql($membership->start_date);
+            $membership->end_date = CRM_Utils_Date::isoToMysql($membership->end_date);
+            $membership->reminder_date = CRM_Utils_Date::isoToMysql($membership->reminder_date);
+            $this->_relatedObjects['membership'][$membership->membership_type_id] = $membership;
+            $membership->free();
+          }
+        }
+      }
+      
       if (!empty($ids['pledge_payment'])) {
 
         foreach ($ids['pledge_payment'] as $key => $paymentID) {
@@ -2114,20 +2112,20 @@ WHERE  contribution_id = %1 AND membership_id != %2";
   }
 
   /*
-     * Create array of message information - ie. return html version, txt version, to field
-     *
-     * @param array $input incoming information
-     *  - is_recur - should this be treated as recurring (not sure why you wouldn't
-     *    just check presence of recur object but maintaining legacy approach
-     *    to be careful)
-     * @param array $ids IDs of related objects
-     * @param array $values any values that may have already been compiled by calling process
-     *   This is augmented by values 'gathered' by gatherMessageValues
-     * @param bool $returnMessageText distinguishes between whether to send message or return
-     *   message text. We are working towards this function ALWAYS returning message text & calling
-     *   function doing emails / pdfs with it
-     * @return array $messageArray - messages
-     */
+   * Create array of message information - ie. return html version, txt version, to field
+   *
+   * @param array $input incoming information
+   *  - is_recur - should this be treated as recurring (not sure why you wouldn't
+   *    just check presence of recur object but maintaining legacy approach
+   *    to be careful)
+   * @param array $ids IDs of related objects
+   * @param array $values any values that may have already been compiled by calling process
+   *   This is augmented by values 'gathered' by gatherMessageValues
+   * @param bool $returnMessageText distinguishes between whether to send message or return
+   *   message text. We are working towards this function ALWAYS returning message text & calling
+   *   function doing emails / pdfs with it
+   * @return array $messageArray - messages
+   */
   function composeMessageArray(&$input, &$ids, &$values, $recur = FALSE, $returnMessageText = TRUE) {
     if (empty($this->_relatedObjects)) {
       $this->loadRelatedObjects($input, $ids);
@@ -2290,11 +2288,19 @@ WHERE  contribution_id = %1 AND membership_id != %2";
       if ($this->id) {
         $lineItem = CRM_Price_BAO_LineItem::getLineItems($this->id, 'contribution', 1);
         if (!empty($lineItem)) {
-          $itemId                = key($lineItem);
+          $itemId  = key($lineItem);
+          foreach ($lineItem as &$eachItem) {
+            if (array_key_exists($eachItem['membership_type_id'], $this->_relatedObjects['membership']) ) {
+              $eachItem['join_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->join_date);
+              $eachItem['start_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->start_date);
+              $eachItem['end_date'] = CRM_Utils_Date::customFormat($this->_relatedObjects['membership'][$eachItem['membership_type_id']]->end_date);  
+            }
+          }
           $values['lineItem'][0] = $lineItem;
           $values['priceSetID']  = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Field', $lineItem[$itemId]['price_field_id'], 'price_set_id');
         }
       }
+
       $relatedContact = CRM_Contribute_BAO_Contribution::getOnbehalfIds(
         $this->id,
         $this->contact_id
@@ -2360,6 +2366,9 @@ WHERE  contribution_id = %1 AND membership_id != %2";
     $template->assign('first_name', $this->_relatedObjects['contact']->first_name);
     $template->assign('last_name', $this->_relatedObjects['contact']->last_name);
     $template->assign('displayName', $this->_relatedObjects['contact']->display_name);
+    if (!empty($values['lineItem']) && !empty($this->_relatedObjects['membership'])) {
+      $template->assign('useForMember', true);
+    }
     //assign honor infomation to receiptmessage
     $honorID = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution',
       $this->id,

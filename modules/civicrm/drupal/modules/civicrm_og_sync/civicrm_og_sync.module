@@ -73,21 +73,33 @@ function civicrm_og_sync_node_delete($node) {
   }
   require_once 'CRM/Bridge/OG/Drupal.php';
 
-  if ($group = og_get_group('node', $node->nid)) {
-    if (empty($group->gid)) {
-      return;
+  $groupid = 0;
+
+  if (function_exists('og_get_group')) {
+    if ( $group = og_get_group('node', $node->nid) ) {
+        if ( empty($group->gid) ) {
+            return;
+        }
+        $groupid = $group->gid;
     }
-
-    _civicrm_og_sync_skip_process_request(TRUE);
-
-    $params = array(
-      'name' => $node->title,
-      'title' => $node->title,
-      'og_id' => $group->gid,
-    );
-
-    CRM_Bridge_OG_Drupal::nodeapi($params, 'delete');
+  } else {
+    $groupid = $node->nid;
   }
+  
+  if ($groupid == 0) {
+    return;
+  }
+
+  _civicrm_og_sync_skip_process_request(TRUE);
+
+  $params = array(
+    'name' => $node->title,
+    'title' => $node->title,
+    'og_id' => $groupid,
+  );
+
+  CRM_Bridge_OG_Drupal::nodeapi($params, 'delete');
+
 }
 
 function civicrm_og_sync_og_membership_insert($membership) {
@@ -182,7 +194,11 @@ function civicrm_og_sync_enable() {
     return;
   }
 
-  $ogGroupIds = og_get_group_ids('node');
+  if (function_exists('og_get_group_ids')) {
+    $ogGroupIds  =  og_get_group_ids('node');
+  } else {
+    $ogGroupIds  =  og_get_all_group('node');
+  }
 
   // FIX ME
   $subscribers = array();
@@ -233,33 +249,46 @@ function _civicrm_og_sync_node_action($node) {
   }
 
   $title = trim($node->title);
-  if ($group = og_get_group('node', $node->nid)) {
-    if (empty($group->gid)) {
-      return;
+
+  $groupid = 0;
+
+  if (function_exists('og_get_group')) {
+    if ( $group = og_get_group('node', $node->nid) ) {
+      if ( empty($group->gid) ) {
+        return;
+      }
+      $groupid = $group->gid;
     }
-    $params = array(
-      'name' => $title,
-      'title' => $title,
-      'is_active' => 1,
-      'og_id' => $group->gid,
-    );
-
-    require_once 'CRM/Bridge/OG/Drupal.php';
-
-    CRM_Bridge_OG_Drupal::nodeapi($params, 'add');
-
-    _civicrm_og_sync_skip_process_request(TRUE);
-
-    // also call the user hook since OG does not for admin
-    $params = array(
-      'og_id' => $group->gid,
-      'uf_id' => $node->uid,
-      'is_active' => 1,
-      'is_admin' => 1,
-    );
-
-    CRM_Bridge_OG_Drupal::og($params, 'add');
+  } else {
+    $groupid = $node->nid;
   }
+  
+  if ($groupid == 0) {
+    return;
+  }
+
+  $params = array(
+    'name' => $title,
+    'title' => $title,
+    'is_active' => 1,
+    'og_id' => $groupid,
+  );
+
+  require_once 'CRM/Bridge/OG/Drupal.php';
+
+  CRM_Bridge_OG_Drupal::nodeapi($params, 'add');
+
+  _civicrm_og_sync_skip_process_request(TRUE);
+
+  // also call the user hook since OG does not for admin
+  $params = array(
+    'og_id' => $groupid,
+    'uf_id' => $node->uid,
+    'is_active' => 1,
+    'is_admin' => 1,
+  );
+
+  CRM_Bridge_OG_Drupal::og($params, 'add');
 }
 
 function _civicrm_og_sync_group_action($membership, $op = 'add') {

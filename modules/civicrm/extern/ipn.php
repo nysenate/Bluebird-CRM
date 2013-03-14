@@ -26,11 +26,9 @@
 */
 
 /**
- *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
- *
  */
 
 session_start();
@@ -71,4 +69,3 @@ switch ($value) {
     echo "Could not get module name from request url<p>";
     break;
 }
-

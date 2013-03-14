@@ -34,77 +34,77 @@
  */
 class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
-    /**
-     * class constructor
-     */
-    function __construct( ) {
-        parent::__construct( );
-    }
+  /**
+   * class constructor
+   */
+  function __construct() {
+    parent::__construct();
+  }
 
-    /**
-     * Create a new delivery event
+  /**
+   * Create a new delivery event
    *
-     * @param array $params     Associative array of delivery event values
+   * @param array $params     Associative array of delivery event values
    *
-     * @return void
-     * @access public
-     * @static
-     */
-    public static function &create(&$params) {
-        $q =& CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
-                                                  $params['event_queue_id'],
+   * @return void
+   * @access public
+   * @static
+   */
+  public static function &create(&$params) {
+    $q = &CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
+      $params['event_queue_id'],
       $params['hash']
     );
 
-        if (! $q) {
+    if (!$q) {
       return NULL;
-        }
-        $q->free( );
+    }
+    $q->free();
 
-        $delivered = new CRM_Mailing_Event_BAO_Delivered();
-        $delivered->time_stamp = date('YmdHis');
-        $delivered->copyValues($params);
-        $delivered->save();
-        
-        $queue = new CRM_Mailing_Event_BAO_Queue();
-        $queue->id = $params['event_queue_id'];
+    $delivered = new CRM_Mailing_Event_BAO_Delivered();
+    $delivered->time_stamp = date('YmdHis');
+    $delivered->copyValues($params);
+    $delivered->save();
+
+    $queue = new CRM_Mailing_Event_BAO_Queue();
+    $queue->id = $params['event_queue_id'];
     $queue->find(TRUE);
-        
-        while ( $queue->fetch() ) {
-            $email = new CRM_Core_BAO_Email();
-            $email->id         = $queue->email_id;
-            $email->hold_date  = '';
-            $email->reset_date = date( 'YmdHis' );
-            $email->save();
-        }
-        
-        return $delivered;
+
+    while ($queue->fetch()) {
+      $email             = new CRM_Core_BAO_Email();
+      $email->id         = $queue->email_id;
+      $email->hold_date  = '';
+      $email->reset_date = date('YmdHis');
+      $email->save();
     }
 
-    /**
-     * Get row count for the event selector
-     *
-     * @param int $mailing_id       ID of the mailing
-     * @param int $job_id           Optional ID of a job to filter on
-     * @param boolean $is_distinct  Group by queue ID?
+    return $delivered;
+  }
+
+  /**
+   * Get row count for the event selector
    *
-     * @return int                  Number of rows in result set
-     * @access public
-     * @static
-     */
+   * @param int $mailing_id       ID of the mailing
+   * @param int $job_id           Optional ID of a job to filter on
+   * @param boolean $is_distinct  Group by queue ID?
+   *
+   * @return int                  Number of rows in result set
+   * @access public
+   * @static
+   */
   public static function getTotalCount($mailing_id, $job_id = NULL,
     $is_distinct = FALSE
   ) {
-        $dao = new CRM_Core_DAO();
+    $dao = new CRM_Core_DAO();
         
-        //$delivered  = self::getTableName();
-		$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
-        $bounce     = CRM_Mailing_Event_BAO_Bounce::getTableName();
-        $queue      = CRM_Mailing_Event_BAO_Queue::getTableName();
-        $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
-        $job        = CRM_Mailing_BAO_Job::getTableName();
+    //$delivered  = self::getTableName();
+	$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
+    $bounce    = CRM_Mailing_Event_BAO_Bounce::getTableName();
+    $queue     = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $mailing   = CRM_Mailing_BAO_Mailing::getTableName();
+    $job       = CRM_Mailing_BAO_Job::getTableName();
 
-        $query = "
+    $query = "
             SELECT      COUNT($delivered.id) as delivered
             FROM        $delivered
             INNER JOIN  $queue
@@ -119,54 +119,54 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
             WHERE       $bounce.id IS null
                 AND     $mailing.id = " . CRM_Utils_Type::escape($mailing_id, 'Integer');
 
-        if (!empty($job_id)) {
+    if (!empty($job_id)) {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
-        }
-        
-        if ($is_distinct) {
-            $query .= " GROUP BY $queue.id ";
-        }
-        
+    }
+
+    if ($is_distinct) {
+      $query .= " GROUP BY $queue.id ";
+    }
+
     // query was missing
     $dao->query($query);
 
-        if ( $dao->fetch() ) {
-            return $dao->delivered;
-        }
-        
-    return NULL;
+    if ($dao->fetch()) {
+      return $dao->delivered;
     }
 
-    /**
-     * Get rows for the event browser
-     *
-     * @param int $mailing_id       ID of the mailing
-     * @param int $job_id           optional ID of the job
-     * @param boolean $is_distinct  Group by queue id?
-     * @param int $offset           Offset
-     * @param int $rowCount         Number of rows
-     * @param array $sort           sort array
+    return NULL;
+  }
+
+  /**
+   * Get rows for the event browser
    *
-     * @return array                Result set
-     * @access public
-     * @static
-     */
+   * @param int $mailing_id       ID of the mailing
+   * @param int $job_id           optional ID of the job
+   * @param boolean $is_distinct  Group by queue id?
+   * @param int $offset           Offset
+   * @param int $rowCount         Number of rows
+   * @param array $sort           sort array
+   *
+   * @return array                Result set
+   * @access public
+   * @static
+   */
   public static function &getRows($mailing_id, $job_id = NULL,
     $is_distinct = FALSE, $offset = NULL, $rowCount = NULL, $sort = NULL
   ) {
-        
-        $dao = new CRM_Core_Dao();
-        
-        //$delivered  = self::getTableName();
-		$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
-        $bounce     = CRM_Mailing_Event_BAO_Bounce::getTableName();
-        $queue      = CRM_Mailing_Event_BAO_Queue::getTableName();
-        $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
-        $job        = CRM_Mailing_BAO_Job::getTableName();
-        $contact    = CRM_Contact_BAO_Contact::getTableName();
-        $email      = CRM_Core_BAO_Email::getTableName();
 
-        $query =    "
+    $dao = new CRM_Core_Dao();
+        
+    //$delivered  = self::getTableName();
+	$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
+    $bounce    = CRM_Mailing_Event_BAO_Bounce::getTableName();
+    $queue     = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $mailing   = CRM_Mailing_BAO_Mailing::getTableName();
+    $job       = CRM_Mailing_BAO_Job::getTableName();
+    $contact   = CRM_Contact_BAO_Contact::getTableName();
+    $email     = CRM_Core_BAO_Email::getTableName();
+
+    $query = "
             SELECT      $contact.display_name as display_name,
                         $contact.id as contact_id,
                         $email.email as email,
@@ -187,66 +187,66 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
                     ON  $job.mailing_id = $mailing.id
             WHERE       $bounce.id IS null
                 AND     $mailing.id = " . CRM_Utils_Type::escape($mailing_id, 'Integer');
-    
-        if (!empty($job_id)) {
+
+    if (!empty($job_id)) {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
-        }
+    }
 
-        if ($is_distinct) {
-            $query .= " GROUP BY $queue.id ";
-        }
+    if ($is_distinct) {
+      $query .= " GROUP BY $queue.id ";
+    }
 
-        $orderBy = "sort_name ASC, {$delivered}.time_stamp DESC";
-        if ($sort) {
-            if ( is_string( $sort ) ) {
-                $orderBy = $sort;
+    $orderBy = "sort_name ASC, {$delivered}.time_stamp DESC";
+    if ($sort) {
+      if (is_string($sort)) {
+        $orderBy = $sort;
       }
       else {
-                $orderBy = trim( $sort->orderBy() );
-            }
-        }
+        $orderBy = trim($sort->orderBy());
+      }
+    }
 
-        $query .= " ORDER BY {$orderBy} ";
+    $query .= " ORDER BY {$orderBy} ";
 
     if ($offset || $rowCount) {
       //Added "||$rowCount" to avoid displaying all records on first page
       $query .= ' LIMIT ' . CRM_Utils_Type::escape($offset, 'Integer') . ', ' . CRM_Utils_Type::escape($rowCount, 'Integer');
-        }
+    }
 
-        $dao->query($query);
-        
-        $results = array();
+    $dao->query($query);
 
-        while ($dao->fetch()) {
-            $url = CRM_Utils_System::url('civicrm/contact/view',
+    $results = array();
+
+    while ($dao->fetch()) {
+      $url = CRM_Utils_System::url('civicrm/contact/view',
         "reset=1&cid={$dao->contact_id}"
       );
-            $results[] = array(
-                'name'      => "<a href=\"$url\">{$dao->display_name}</a>",
-                'email'     => $dao->email,
+      $results[] = array(
+        'name' => "<a href=\"$url\">{$dao->display_name}</a>",
+        'email' => $dao->email,
         'date' => CRM_Utils_Date::customFormat($dao->date),
-            );
-        }
-        return $results;
+      );
     }
+    return $results;
+  }
 
   static function bulkCreate($eventQueueIDs, $time = NULL) {
-        if ( ! $time ) {
-            $time = date( 'YmdHis' );
-        }
-
-        // construct a bulk insert statement
-        $values = array( );
-        foreach ( $eventQueueIDs as $eqID ) {
-            $values[] = "( $eqID, '{$time}' )";
-        }
-
-        while ( ! empty( $values ) ) {
-            $input = array_splice( $values, 0, CRM_Core_DAO::BULK_INSERT_COUNT );
-            $str   = implode( ',', $input );
-            $sql = "INSERT INTO civicrm_mailing_event_delivered ( event_queue_id, time_stamp ) VALUES $str;";
-            CRM_Core_DAO::executeQuery( $sql );
-        }
+    if (!$time) {
+      $time = date('YmdHis');
     }
+
+    // construct a bulk insert statement
+    $values = array();
+    foreach ($eventQueueIDs as $eqID) {
+      $values[] = "( $eqID, '{$time}' )";
+    }
+
+    while (!empty($values)) {
+      $input = array_splice($values, 0, CRM_Core_DAO::BULK_INSERT_COUNT);
+      $str   = implode(',', $input);
+      $sql   = "INSERT INTO civicrm_mailing_event_delivered ( event_queue_id, time_stamp ) VALUES $str;";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+  }
 }
 

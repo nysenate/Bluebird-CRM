@@ -80,7 +80,12 @@ fi
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
-data_dirname="$data_basename.$base_domain"
+
+if [ -z "$base_domain" ]; then
+  data_dirname="$data_basename"
+else
+  data_dirname="$data_basename.$base_domain"
+fi
 
 
 if [ $tmp_only -eq 1 ]; then

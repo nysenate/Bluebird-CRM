@@ -35,18 +35,19 @@
 
 /**
  * This class generates form components for Activity Filter
- * 
+ *
  */
 class CRM_Activity_Form_ActivityFilter extends CRM_Core_Form {
-    public function buildQuickForm( ) {
-        // add activity search filter
+  public function buildQuickForm() {
+    // add activity search filter
     $activityOptions = CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE);
-        asort( $activityOptions );
-        
-        $this->add('select', 'activity_type_filter_id',  ts( 'Activity Type' ), array( '' => ts( '- all activity type(s) -' ) ) +  $activityOptions );
+    asort($activityOptions);
+
+    $this->add('select', 'activity_type_filter_id', ts('Activity Type'), array('' => ts('- all activity type(s) -')) + $activityOptions);
+
     //NYSS 5462
     $this->add('select', 'activity_type_exclude_filter_id', ts('Activity Type Exclude'), array('' => ts('- activity type exclusion -')) + $activityOptions);
     $this->assign('suppressForm', TRUE);
-    }
+  }
 }
 

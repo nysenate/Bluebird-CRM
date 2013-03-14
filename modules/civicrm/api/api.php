@@ -19,13 +19,15 @@
  *   array to be passed to function
  */
 function civicrm_api($entity, $action, $params, $extra = NULL) {
+  $apiWrappers = array(CRM_Core_HTMLInputCoder::singleton());
   try {
     require_once ('api/v3/utils.php');
     require_once 'api/Exception.php';
     if (!is_array($params)) {
       throw new API_Exception('Input variable `params` is not an array', 2000);
     }
-    _civicrm_api3_initialize(TRUE);
+    _civicrm_api3_initialize();
+    $errorScope = CRM_Core_TemporaryErrorScope::useException();
     require_once 'CRM/Utils/String.php';
     require_once 'CRM/Utils/Array.php';
     $apiRequest = array();
@@ -53,6 +55,11 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
       //if 'id' is set then only 'version' will be checked but should still be checked for consistency
       civicrm_api3_verify_mandatory($apiRequest['params'], NULL, _civicrm_api3_getrequired($apiRequest));
     }
+
+    foreach ($apiWrappers as $apiWrapper) {
+      $apiRequest = $apiWrapper->fromApiInput($apiRequest);
+    }
+
     $function = $apiRequest['function'];
     if ($apiRequest['function'] && $apiRequest['is_generic']) {
       // Unlike normal API implementations, generic implementations require explicit
@@ -66,6 +73,10 @@ function civicrm_api($entity, $action, $params, $extra = NULL) {
     }
     else {
       return $errorFnName("API (" . $apiRequest['entity'] . "," . $apiRequest['action'] . ") does not exist (join the API team and implement it!)");
+    }
+
+    foreach ($apiWrappers as $apiWrapper) {
+      $result = $apiWrapper->toApiOutput($apiRequest, $result);
     }
 
     if (CRM_Utils_Array::value('format.is_success', $apiRequest['params']) == 1) {
@@ -217,6 +228,59 @@ function _civicrm_api_resolve($apiRequest) {
 
   $cache[$cachekey] = array('function' => FALSE, 'is_generic' => FALSE);
   return $cache[$cachekey];
+}
+
+/**
+ * Load/require all files related to an entity.
+ *
+ * This should not normally be called because it's does a file-system scan; it's
+ * only appropriate when introspection is really required (eg for "getActions").
+ *
+ * @param string $entity
+ * @return void
+ */
+function _civicrm_api_loadEntity($entity, $version = 3) {
+  /*
+  $apiRequest = array();
+  $apiRequest['entity'] = $entity;
+  $apiRequest['action'] = 'pretty sure it will never exist. Trick to [try to] force resolve to scan everywhere';
+  $apiRequest['version'] = $version;
+  // look up function, file, is_generic
+  $apiRequest = _civicrm_api_resolve($apiRequest);
+  */
+
+  $camelName = _civicrm_api_get_camel_name($entity, $version);
+
+  // Check for master entity file; to match _civicrm_api_resolve(), only load the first one
+  require_once 'CRM/Utils/File.php';
+  $stdFile = 'api/v' . $version . '/' . $camelName . '.php';
+  if (CRM_Utils_File::isIncludable($stdFile)) {
+    require_once $stdFile;
+  }
+
+  // Check for standalone action files; to match _civicrm_api_resolve(), only load the first one
+  $loaded_files = array(); // array($relativeFilePath => TRUE)
+  $include_dirs = array_unique(explode(PATH_SEPARATOR, get_include_path()));
+  foreach ($include_dirs as $include_dir) {
+    $action_dir = implode(DIRECTORY_SEPARATOR, array($include_dir, 'api', "v${version}", $camelName));
+    if (! is_dir($action_dir)) {
+      continue;
+    }
+
+    $iterator = new DirectoryIterator($action_dir);
+    foreach ($iterator as $fileinfo) {
+      $file = $fileinfo->getFilename();
+      if (array_key_exists($file, $loaded_files)) {
+        continue; // action provided by an earlier item on include_path
+      }
+
+      $parts = explode(".", $file);
+      if (end($parts) == "php" && !preg_match('/Tests?\.php$/', $file) ) {
+        require_once $action_dir . DIRECTORY_SEPARATOR . $file;
+        $loaded_files[$file] = TRUE;
+      }
+    }
+  }
 }
 
 /**
@@ -395,6 +459,9 @@ function _civicrm_api_call_nested_api(&$params, &$result, $action, $entity, $ver
 
 
         $subParams['version'] = $version;
+        if(!empty($params['check_permissions'])){
+          $subParams['check_permissions'] = $params['check_permissions'];
+        }
         $subParams['sequential'] = 1;
         $subParams['api.has_parent'] = 1;
         if (array_key_exists(0, $newparams)) {

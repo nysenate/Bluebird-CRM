@@ -1,5 +1,5 @@
 <?php
-// $Id: Tag.php 40968 2012-06-12 14:28:16Z kurund $
+// $Id: Tag.php 43319 2012-10-31 20:32:06Z totten $
 
 
 /*
@@ -35,7 +35,7 @@
  * @subpackage API_Tag
  *
  * @copyright CiviCRM LLC (c) 2004-2012
- * @version $Id: Tag.php 40968 2012-06-12 14:28:16Z kurund $
+ * @version $Id: Tag.php 43319 2012-10-31 20:32:06Z totten $
  * @todo Erik Hommel 15/12/2010 version to be implemented
  */
 
@@ -56,7 +56,8 @@ require_once 'api/v2/utils.php';
  * @todo Erik Hommel 15/12/2010 : check if function is ok for update
  */
 function civicrm_tag_create(&$params) {
-  _civicrm_initialize(TRUE);
+  _civicrm_initialize();
+  $errorScope = CRM_Core_TemporaryErrorScope::useException();
   try {
 
     civicrm_verify_mandatory($params, 'CRM_Core_DAO_Tag', array('name'));
@@ -103,7 +104,8 @@ function civicrm_tag_create(&$params) {
  * @access public
  */
 function civicrm_tag_delete(&$params) {
-  _civicrm_initialize(TRUE);
+  _civicrm_initialize();
+  $errorScope = CRM_Core_TemporaryErrorScope::useException();
   try {
     civicrm_verify_mandatory($params, NULL, array('tag_id'));
     $tagID = CRM_Utils_Array::value('tag_id', $params);

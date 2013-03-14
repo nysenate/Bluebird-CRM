@@ -105,7 +105,7 @@ class CRM_Price_DAO_LineItem extends CRM_Core_DAO
      */
     public $price_field_id;
     /**
-     * descriptive label for item - from custom_option.label
+     * descriptive label for item - from price_field_value.label
      *
      * @var string
      */
@@ -205,9 +205,9 @@ class CRM_Price_DAO_LineItem extends CRM_Core_DAO
                     'name' => 'label',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Label') ,
-                    'required' => true,
                     'maxlength' => 255,
                     'size' => CRM_Utils_Type::HUGE,
+                    'default' => 'UL',
                 ) ,
                 'qty' => array(
                     'name' => 'qty',

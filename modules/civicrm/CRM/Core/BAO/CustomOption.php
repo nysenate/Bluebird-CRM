@@ -232,7 +232,6 @@ WHERE  f.custom_group_id = g.id
       if ($dao->dataType == 'Money') {
         $params['value'] = CRM_Utils_Rule::cleanMoney($params['value']);
       }
-      CRM_Core_Error::debug($params);
       switch ($dao->htmlType) {
         case 'Autocomplete-Select':
         case 'Select':

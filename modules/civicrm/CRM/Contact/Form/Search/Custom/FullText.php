@@ -56,8 +56,9 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
 
   protected $_limitNumber = 10;
 
-  protected $_foundRows = array(
-    ); function __construct(&$formValues) {
+  protected $_foundRows = array();
+
+  function __construct(&$formValues) {
     $this->_formValues = &$formValues;
 
     $this->_text = CRM_Utils_Array::value('text',
@@ -85,7 +86,6 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
         $formValues['table'] = $this->_table;
       }
     }
-
 
     // fix text to include wild card characters at begining and end
     if ($this->_text) {

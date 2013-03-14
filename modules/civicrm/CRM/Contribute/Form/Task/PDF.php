@@ -74,9 +74,7 @@ SELECT count(*)
 FROM   civicrm_contribution
 WHERE  contribution_status_id != 1
 AND    {$this->_componentClause}";
-    $count = CRM_Core_DAO::singleValueQuery($query,
-      CRM_Core_DAO::$_nullArray
-    );
+    $count = CRM_Core_DAO::singleValueQuery($query);
     if ($count != 0) {
       CRM_Core_Error::statusBounce("Please select only online contributions with Completed status.");
     }
@@ -225,7 +223,7 @@ AND    {$this->_componentClause}";
       $input['trxn_id']    = $contribution->trxn_id;
       $input['trxn_date']  = isset($contribution->trxn_date) ? $contribution->trxn_date : NULL;
 
-      // CRM_Contribute_BAO_Contribution::composeMessageArray expects mysql formatted date     
+      // CRM_Contribute_BAO_Contribution::composeMessageArray expects mysql formatted date
       $objects['contribution']->receive_date = CRM_Utils_Date::isoToMysql($objects['contribution']->receive_date);
 
       // CRM_Core_Error::debug('input',$input);

@@ -102,7 +102,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
           continue;
         }
         // append weight so that order is preserved.
-        $dashlets[$dao->column_no]["$dao->weight}-{$dao->dashboard_id}"] = $dao->is_minimized;
+        $dashlets[$dao->column_no]["{$dao->weight}-{$dao->dashboard_id}"] = $dao->is_minimized;
       }
       else {
         $dashlets[$dao->dashboard_id] = $dao->dashboard_id;
@@ -308,12 +308,12 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
         foreach ($dashlets as $dashletID => $isMinimized) {
           $isMinimized = (int) $isMinimized;
           if (in_array($dashletID, $contactDashlets)) {
-            $query = " UPDATE civicrm_dashboard_contact 
+            $query = " UPDATE civicrm_dashboard_contact
                                         SET weight = {$weight}, is_minimized = {$isMinimized}, column_no = {$colNo}, is_active = 1
                                       WHERE dashboard_id = {$dashletID} AND contact_id = {$contactID} ";
           }
           else {
-            $query = " INSERT INTO civicrm_dashboard_contact 
+            $query = " INSERT INTO civicrm_dashboard_contact
                                         ( weight, is_minimized, column_no, is_active, dashboard_id, contact_id )
                                      VALUES( {$weight},  {$isMinimized},  {$colNo}, 1, {$dashletID}, {$contactID} )";
           }
@@ -328,13 +328,13 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
 
     if (!empty($dashletIDs)) {
       // we need to disable widget that removed
-      $updateQuery = " UPDATE civicrm_dashboard_contact 
+      $updateQuery = " UPDATE civicrm_dashboard_contact
                                SET is_active = 0
                                WHERE dashboard_id NOT IN  ( " . implode(',', $dashletIDs) . ") AND contact_id = {$contactID}";
     }
     else {
       // this means all widgets are disabled
-      $updateQuery = " UPDATE civicrm_dashboard_contact 
+      $updateQuery = " UPDATE civicrm_dashboard_contact
                                SET is_active = 0
                                WHERE contact_id = {$contactID}";
     }
@@ -399,10 +399,10 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
     // else just add to contact who is creating this dashlet
     $contactIDs = array();
     if ($admin) {
-      $query = "SELECT distinct( contact_id ) 
-                        FROM civicrm_dashboard_contact 
-                        WHERE contact_id NOT IN ( 
-                            SELECT distinct( contact_id ) 
+      $query = "SELECT distinct( contact_id )
+                        FROM civicrm_dashboard_contact
+                        WHERE contact_id NOT IN (
+                            SELECT distinct( contact_id )
                             FROM civicrm_dashboard_contact WHERE dashboard_id = {$dashlet->id}
                             )";
 

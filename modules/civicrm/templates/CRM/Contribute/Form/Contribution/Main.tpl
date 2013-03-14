@@ -100,7 +100,7 @@ var priceset = {/literal}{if $priceset}'#{$priceset}'{else}0{/if}{literal}
       {$intro_text}
   </div>
   {if $islifetime or $ispricelifetime }
-    <div id="help">You have a current Lifetime Membership which does not need top be renewed.</div>
+    <div id="help">You have a current Lifetime Membership which does not need to be renewed.</div>
   {/if}
 
   {if !empty($useForMember)}
@@ -292,7 +292,7 @@ var priceset = {/literal}{if $priceset}'#{$priceset}'{else}0{/if}{literal}
     {/if}
 
     <div id="billing-payment-block"></div>
-    {include file="CRM/common/paymentBlock.tpl'}
+    {include file="CRM/common/paymentBlock.tpl"}
 
     <div class="crm-group custom_post_profile-group">
     {include file="CRM/UF/Form/Block.tpl" fields=$customPost}
@@ -444,7 +444,7 @@ function pcpAnonymous( ) {
 {literal}
 
 function toggleConfirmButton() {
-  var payPalExpressId = {/literal}{$payPalExpressId}{literal};
+  var payPalExpressId = "{/literal}{$payPalExpressId}{literal}";
   var elementObj = cj('input[name="payment_processor"]');
    if ( elementObj.attr('type') == 'hidden' ) {
       var processorTypeId = elementObj.val( );

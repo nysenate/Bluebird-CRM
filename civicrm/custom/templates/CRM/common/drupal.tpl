@@ -33,7 +33,6 @@
 
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
-
 {include file="CRM/common/action.tpl"}
 {*NYSS remove nav*}
 

@@ -46,14 +46,20 @@ class CRM_Core_Invoke {
    * @static
    * @access public
    */
-  static
-  function invoke($args) {
+  static function invoke($args) {
+    try {
+      return self::_invoke($args);
+    } catch (Exception $e) {
+      return CRM_Core_Error::handleUnhandledException($e);
+    }
+  }
+  
+  protected static function _invoke($args) {
     if ($args[0] !== 'civicrm') {
       return;
     }
 
     require_once 'CRM/Core/I18n.php';
-
     $config = CRM_Core_Config::singleton();
 
     if (isset($args[1]) and $args[1] == 'menu' and
@@ -174,13 +180,8 @@ class CRM_Core_Invoke {
       // CRM_Core_Error::debug( $item ); exit( );
       $result = NULL;
       if (is_array($item['page_callback'])) {
-        $newArgs = explode('/',
-          $_GET[$config->userFrameworkURLVar]
-        );
-        require_once (str_replace('_',
-            DIRECTORY_SEPARATOR,
-            $item['page_callback'][0]
-          ) . '.php');
+        $newArgs = explode('/', $_GET[$config->userFrameworkURLVar]);
+        require_once (str_replace('_', DIRECTORY_SEPARATOR, $item['page_callback'][0]) . '.php');
         $result = call_user_func($item['page_callback'],
           $newArgs
         );
@@ -193,13 +194,8 @@ class CRM_Core_Invoke {
         );
       }
       else {
-        $newArgs = explode('/',
-          $_GET[$config->userFrameworkURLVar]
-        );
-        require_once (str_replace('_',
-            DIRECTORY_SEPARATOR,
-            $item['page_callback']
-          ) . '.php');
+        $newArgs = explode('/', $_GET[$config->userFrameworkURLVar]);
+        require_once (str_replace('_', DIRECTORY_SEPARATOR, $item['page_callback']) . '.php');
         $mode = 'null';
         if (isset($pageArgs['mode'])) {
           $mode = $pageArgs['mode'];
@@ -207,9 +203,7 @@ class CRM_Core_Invoke {
         }
         $title = CRM_Utils_Array::value('title', $item);
         if (strstr($item['page_callback'], '_Page')) {
-          eval('$object = ' .
-            "new {$item['page_callback']}( \$title, \$mode );"
-          );
+          eval("\$object = new {$item['page_callback']}( \$title, \$mode );");
         }
         elseif (strstr($item['page_callback'], '_Controller')) {
           $addSequence = 'false';
@@ -218,9 +212,7 @@ class CRM_Core_Invoke {
             $addSequence = $addSequence ? 'true' : 'false';
             unset($pageArgs['addSequence']);
           }
-          eval('$object = ' .
-            "new {$item['page_callback']} ( \$title, true, \$mode, null, \$addSequence );"
-          );
+          eval("\$object = new {$item['page_callback']}( \$title, true, \$mode, null, \$addSequence );");
         }
         else {
           CRM_Core_Error::fatal();
@@ -245,8 +237,7 @@ class CRM_Core_Invoke {
    * @static
    * @access public
    */
-  static
-  function form($action, $contact_type, $contact_sub_type) {
+  static function form($action, $contact_type, $contact_sub_type) {
     CRM_Utils_System::setUserContext(array('civicrm/contact/search/basic', 'civicrm/contact/view'));
     $wrapper = new CRM_Utils_Wrapper();
 
@@ -267,8 +258,7 @@ class CRM_Core_Invoke {
    * @static
    * @access public
    */
-  static
-  function profile($args) {
+  static function profile($args) {
     if ($args[1] !== 'profile') {
       return;
     }
@@ -373,8 +363,7 @@ class CRM_Core_Invoke {
     return $page->run();
   }
 
-  static
-  function rebuildMenuAndCaches($triggerRebuild = FALSE, $sessionReset = FALSE) {
+  static function rebuildMenuAndCaches($triggerRebuild = FALSE, $sessionReset = FALSE) {
     $config = CRM_Core_Config::singleton();
     $config->clearModuleList();
 
@@ -393,7 +382,7 @@ class CRM_Core_Invoke {
     ) {
       CRM_Core_DAO::triggerRebuild();
     }
-    
+
     CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();
   }
 }

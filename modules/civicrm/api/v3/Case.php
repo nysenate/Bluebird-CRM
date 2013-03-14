@@ -206,7 +206,7 @@ function civicrm_api3_case_get($params) {
 
     foreach ($ids as $id) {
       $cases[$id] = _civicrm_api3_case_read($id);
-
+      //NYSS
       if ($cases[$id]) {
         //get case contacts
         $contacts         = CRM_Case_BAO_Case::getcontactNames($id);

@@ -55,14 +55,7 @@ class CRM_Case_XMLProcessor_Report extends CRM_Case_XMLProcessor {
       $this
     );
 
-    return Audit::run($contents, $clientID, $caseID);
-
-    /******
-     CRM_Utils_System::download( "{$case['clientName']} {$case['caseType']}",
-     'text/xml',
-     $contents,
-     'xml', true );
-     ******/
+    return CRM_Case_Audit_Audit::run($contents, $clientID, $caseID);
   }
 
   function &getRedactionRules() {
@@ -247,7 +240,7 @@ FROM       civicrm_activity a
 {$joinCaseActivity}
 LEFT JOIN civicrm_activity_target at ON a.id = at.activity_id
 LEFT JOIN civicrm_activity_assignment aa ON a.id = aa.activity_id
-WHERE      a.id = %1 
+WHERE      a.id = %1
     ";
       $params = array(1 => array($activityID, 'Integer'));
       $dao = CRM_Core_DAO::executeQuery($query, $params);
@@ -554,7 +547,7 @@ WHERE      a.id = %1
 
     if (!isset($cache[$activityTypeID])) {
       $query = "
-SELECT cg.title           as groupTitle, 
+SELECT cg.title           as groupTitle,
        cg.table_name      as tableName ,
        cf.column_name     as columnName,
        cf.label           as label     ,
@@ -902,7 +895,7 @@ LIMIT  1
       $params,
       $report
     );
-    $printReport = Audit::run($contents, $clientID, $caseID, TRUE);
+    $printReport = CRM_Case_Audit_Audit::run($contents, $clientID, $caseID, TRUE);
     echo $printReport;
     CRM_Utils_System::civiExit();
   }

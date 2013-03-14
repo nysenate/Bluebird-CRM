@@ -92,7 +92,7 @@ class CRM_Contact_Page_AJAX {
       'version' => 3,
     );
 
-    $result = civicrm_api('Contact', 'quicksearch', $params);
+    $result = civicrm_api('Contact', 'getquick', $params);
     if ($result['is_error'] == 0 && is_array($result['values'])) {
       foreach ($result['values'] as $key => & $values) {
         echo $contactList = "{$values['data']}|{$values['id']}\n";
@@ -760,8 +760,8 @@ LIMIT {$offset}, {$rowCount}
 
     $queryString = NULL;
     //check for mobile type
-    $phoneTypes = CRM_Core_PseudoConstant::phoneType();
-    $mobileType = CRM_Utils_Array::key('Mobile', $phoneTypes);
+    $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
+    $mobileType = CRM_Utils_Array::value('Mobile', $phoneTypes);
 
     if ($name = CRM_Utils_Array::value('name', $_GET)) {
       $name = CRM_Utils_Type::escape($name, 'String');

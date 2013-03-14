@@ -41,7 +41,7 @@ class CRM_Contact_Form_Inline_CustomData extends CRM_Core_Form {
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
 
   /**
    * custom group id 
@@ -145,6 +145,7 @@ class CRM_Contact_Form_Inline_CustomData extends CRM_Core_Form {
     CRM_Contact_BAO_GroupContactCache::remove();
 
     $response = array('status' => 'save');
+    $this->postProcessHook();
     echo json_encode($response);
     CRM_Utils_System::civiExit();
   }

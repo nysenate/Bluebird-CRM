@@ -119,7 +119,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
   function doDirectPayment(&$params) {
 
     if (!defined('CURLOPT_SSLCERT')) {
-      return self::error(9001, 'RealAuth requires curl with SSL support');
+      return self::error(9001, ts('RealAuth requires curl with SSL support'));
     }
 
     $result = $this->setRealexFields($params);
@@ -132,7 +132,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
      * Check to see if we have a duplicate before we send
      **********************************************************/
     if ($this->_checkDupe($this->_getParam('order_id'))) {
-      return self::error(9004, 'It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from Authorize.net.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.');
+      return self::error(9004, ts('It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from Authorize.net.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.'));
     }
 
     // Create sha1 hash for request
@@ -176,7 +176,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
     $submit = curl_init($this->_paymentProcessor['url_site']);
 
     if (!$submit) {
-      return self::error(9002, 'Could not initiate connection to payment gateway');
+      return self::error(9002, ts('Could not initiate connection to payment gateway'));
     }
 
     curl_setopt($submit, CURLOPT_HTTPHEADER, array('SOAPAction: ""'));
@@ -305,7 +305,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
       if ($data['level'] == $depth) {
         switch ($data['type']) {
           case 'complete':
-            $output[$data['tag']] = $data['value'];
+            $output[$data['tag']] = isset($data['value']) ? $data['value'] : '';
             break;
 
           case 'open':
@@ -329,7 +329,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
    */
   function setRealexFields(&$params) {
     if ((int)$params['amount'] <= 0) {
-      return self::error(9001, 'Amount must be positive');
+      return self::error(9001, ts('Amount must be positive'));
     }
 
     // format amount to be in smallest possible units
@@ -366,7 +366,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
         break;
 
       default:
-        return self::error(9001, 'Credit card type not supported by Realex: ' . $params['credit_card_type']);
+        return self::error(9001, ts('Credit card type not supported by Realex:') . ' ' . $params['credit_card_type']);
     }
 
     // get the card holder name - cater cor customized billing forms
@@ -399,9 +399,9 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
     $this->_setParam('currency', $config->defaultCurrency);
 
     // Format the expiry date to MMYY
-    $expmonth = (string)$params['credit_card_exp_date']['M'];
+    $expmonth = (string)$params['month'];
     $expmonth = (strlen($expmonth) === 1) ? '0' . $expmonth : $expmonth;
-    $expyear  = substr((string)$params['credit_card_exp_date']['Y'], 2, 2);
+    $expyear  = substr((string)$params['year'], 2, 2);
     $this->_setParam('exp_date', $expmonth . $expyear);
 
     if (isset($params['credit_card_start_date']) && (strlen($params['credit_card_start_date']['M']) !== 0) &&
@@ -473,24 +473,24 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
 
     if ($errorCode) {
       if ($errorCode == '101' || $errorCode == '102') {
-        $display_error = 'Card declined by bank. Please try with a different card.';
+        $display_error = ts('Card declined by bank. Please try with a different card.');
       }
       elseif ($errorCode == '103') {
-        $display_error = 'Card reported lot or stolen - This incident will be reported.';
+        $display_error = ts('Card reported lost or stolen. This incident will be reported.');
       }
       elseif ($errorCode == '501') {
-        $display_error = "It appears that this transaction is a duplicate. Have you already submitted the form once? If so there may have been a connection problem. Check your email for a receipt for this transaction.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.";
+        $display_error = ts("It appears that this transaction is a duplicate. Have you already submitted the form once? If so there may have been a connection problem. Check your email for a receipt for this transaction.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.");
       }
       elseif ($errorCode == '509') {
         $display_error = $errorMessage;
       }
       else {
-        $display_error = 'We were unable to process your payment at this time. Please try again later.';
+        $display_error = ts('We were unable to process your payment at this time. Please try again later.');
       }
       $e->push($errorCode, 0, NULL, $display_error);
     }
     else {
-      $e->push(9001, 0, NULL, 'We were unable to process your payment at this time. Please try again later.');
+      $e->push(9001, 0, NULL, ts('We were unable to process your payment at this time. Please try again later.'));
     }
     return $e;
   }

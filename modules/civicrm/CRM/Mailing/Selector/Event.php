@@ -213,6 +213,15 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
           $dateSort = CRM_Mailing_Event_BAO_Unsubscribe::getTableName() . '.time_stamp';
           $this->_columnHeaders = array_merge($this->_columnHeaders, array(
             array(
+                'name' => ts('Unsubscribe'),
+              ),
+            ));
+          break;
+
+        case 'optout':
+          $dateSort = CRM_Mailing_Event_BAO_Unsubscribe::getTableName() . '.time_stamp';
+          $this->_columnHeaders = array_merge($this->_columnHeaders, array(
+            array(
                 'name' => ts('Opt-Out'),
               ),
             ));
@@ -309,6 +318,15 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
         );
       break;
 
+      case 'optout':
+        $event = new CRM_Mailing_Event_BAO_Unsubscribe();
+        return $event->getTotalCount($this->_mailing_id,
+          $this->_job_id,
+          $this->_is_distinct,
+          FALSE
+        );
+      break;
+
       case 'click':
         $event = new CRM_Mailing_Event_BAO_TrackableURLOpen();
         return $event->getTotalCount($this->_mailing_id,
@@ -379,7 +397,14 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
       case 'unsubscribe':
         return CRM_Mailing_Event_BAO_Unsubscribe::getRows($this->_mailing_id,
           $this->_job_id, $this->_is_distinct,
-          $offset, $rowCount, $sort
+          $offset, $rowCount, $sort, TRUE
+        );
+      break;
+
+      case 'optout':
+        return CRM_Mailing_Event_BAO_Unsubscribe::getRows($this->_mailing_id,
+          $this->_job_id, $this->_is_distinct,
+          $offset, $rowCount, $sort, FALSE
         );
       break;
 
@@ -418,6 +443,7 @@ class CRM_Mailing_Selector_Event extends CRM_Core_Selector_Base implements CRM_C
          ? ts('Unique Replies')
          : ts('Replies'),
         'unsubscribe' => ts('Unsubscribe Requests'),
+        'optout' => ts('Opt-out Requests'),
         'click' => $this->_is_distinct
          ? ts('Unique Click-throughs')
          : ts('Click-throughs'),

@@ -147,10 +147,9 @@
  </div>
 
  <div id="billing-payment-block"></div>
- {include file="CRM/common/paymentBlock.tpl'}
+ {include file="CRM/common/paymentBlock.tpl"}
 
-
-{include file="CRM/UF/Form/Block.tpl" fields=$customPost}   
+ {include file="CRM/UF/Form/Block.tpl" fields=$customPost}
 
 {if $isCaptcha}
     {include file='CRM/common/ReCAPTCHA.tpl'}

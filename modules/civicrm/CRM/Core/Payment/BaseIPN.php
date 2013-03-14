@@ -113,7 +113,7 @@ class CRM_Core_Payment_BaseIPN {
     else {
       //legacy support - functions are 'used' to be able to pass in a DAO
       $contribution = new CRM_Contribute_BAO_Contribution();
-      $contribution->id = $ids['contribution'];
+      $contribution->id = CRM_Utils_Array::value('contribution', $ids);
       $contribution->find(TRUE);
       $objects['contribution'] = &$contribution;
     }
@@ -283,7 +283,7 @@ class CRM_Core_Payment_BaseIPN {
       }
 
       if (!empty($memberships)) {
-        foreach ($memberships as $membership) {
+        foreach ($memberships as $membershipTypeIdKey => $membership) {
           if ($membership) {
             $format = '%Y%m%d';
 
@@ -350,7 +350,7 @@ LIMIT 1;";
             $formatedParams['is_override'] = FALSE;
             $membership->copyValues($formatedParams);
             $membership->save();
-
+               
             //updating the membership log
             $membershipLog = array();
             $membershipLog = $formatedParams;
@@ -371,6 +371,15 @@ LIMIT 1;";
 
             //update related Memberships.
             CRM_Member_BAO_Membership::updateRelatedMemberships($membership->id, $formatedParams);
+            
+            //update the membership type key of membership relatedObjects array
+            //if it has changed after membership update
+            if ($membershipTypeIdKey != $membership->membership_type_id) {
+              $memberships[$membership->membership_type_id] = $membership;
+              $contribution->_relatedObjects['membership'][$membership->membership_type_id] = $membership;
+              unset($contribution->_relatedObjects['membership'][$membershipTypeIdKey]);
+              unset($memberships[$membershipTypeIdKey]);
+            }
           }
         }
       }
@@ -493,7 +502,7 @@ LIMIT 1;";
     else {
       CRM_Activity_BAO_Activity::addActivity($participant);
     }
-
+        
     CRM_Core_Error::debug_log_message("Contribution record updated successfully");
     $transaction->commit();
 
@@ -646,7 +655,7 @@ LIMIT 1;";
 
     //complete the contribution.
     $baseIPN->completeTransaction($input, $ids, $objects, $transaction, FALSE);
-
+    
     // reset template values before processing next transactions
     $template->clearTemplateVars();
 

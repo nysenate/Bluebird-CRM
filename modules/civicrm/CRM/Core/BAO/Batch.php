@@ -118,10 +118,8 @@ class CRM_Core_BAO_Batch extends CRM_Core_DAO_Batch {
   static
   function generateBatchName() {
     $sql = "SELECT max(id) FROM civicrm_batch";
-    $batchNo = CRM_Core_DAO::singleValueQuery($sql);
-    $batchNo++;
-    $batchName = "Batch {$batchNo} - " . date('Y-m-d');
-    return $batchName;
+    $batchNo = CRM_Core_DAO::singleValueQuery($sql) + 1;
+    return ts('Batch %1', array(1 => $batchNo)) . ': ' . date('Y-m-d');
   }
 
   /**
@@ -319,7 +317,7 @@ class CRM_Core_BAO_Batch extends CRM_Core_DAO_Batch {
         'name' => ts('Enter records'),
         'url' => 'civicrm/batch/entry',
         'qs' => 'id=%%id%%&reset=1',
-        'title' => ts('Batch Entry'),
+        'title' => ts('Bulk Data Entry'),
       ),
       CRM_Core_Action::UPDATE => array(
         'name' => ts('Edit'),

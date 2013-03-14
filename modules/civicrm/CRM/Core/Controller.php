@@ -106,6 +106,18 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
   public $_print = 0;
 
   /**
+   * Should we generate a qfKey, true by default
+   *
+   * @var boolean
+   */
+  public $_generateQFKey = TRUE;
+
+  /**
+   * QF response type
+   */
+  public $_QFResponseType = 'html';
+
+  /**
    * cache the smarty template for efficiency reasons
    *
    * @var CRM_Core_Smarty
@@ -148,9 +160,13 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
    *
    */
 
-  function __construct($title = NULL, $modal = TRUE,
-    $mode = NULL, $scope = NULL,
-    $addSequence = FALSE, $ignoreKey = FALSE
+  function __construct(
+    $title = NULL,
+    $modal = TRUE,
+    $mode = NULL,
+    $scope = NULL,
+    $addSequence = FALSE,
+    $ignoreKey = FALSE
   ) {
     // this has to true for multiple tab session fix
     $addSequence = TRUE;
@@ -185,7 +201,6 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     }
 
     $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
-    //$snippet = CRM_Utils_Request::retrieve( 'snippet', 'Integer', $this, false, null, $_REQUEST );
     if ($snippet) {
       if ($snippet == 3) {
         $this->_print = CRM_Core_Smarty::PRINT_PDF;
@@ -193,9 +208,14 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
       elseif ($snippet == 4) {
         $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
         self::$_template->assign('suppressForm', TRUE);
+        $this->_generateQFKey = FALSE;
       }
       elseif ($snippet == 5) {
         $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
+      }
+      elseif ($snippet == 6) {
+        $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
+        $this->_QFResponseType = 'json';
       }
       else {
         $this->_print = CRM_Core_Smarty::PRINT_SNIPPET;
@@ -231,7 +251,8 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
   function key($name, $addSequence = FALSE, $ignoreKey = FALSE) {
     $config = CRM_Core_Config::singleton();
 
-    if ($ignoreKey ||
+    if (
+      $ignoreKey ||
       (isset($config->keyDisable) && $config->keyDisable)
     ) {
       return NULL;
@@ -239,7 +260,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
 
 
     $key = CRM_Utils_Array::value('qfKey', $_REQUEST, NULL);
-    if (!$key) {
+    if (!$key && $_SERVER['REQUEST_METHOD'] === 'GET') {
       $key = CRM_Core_Key::get($name, $addSequence);
     }
     else {
@@ -328,6 +349,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
       'process' => 'CRM_Core_QuickForm_Action_Process',
       'cancel' => 'CRM_Core_QuickForm_Action_Cancel',
       'refresh' => 'CRM_Core_QuickForm_Action_Refresh',
+      'reload' => 'CRM_Core_QuickForm_Action_Reload',
       'done' => 'CRM_Core_QuickForm_Action_Done',
       'jump' => 'CRM_Core_QuickForm_Action_Jump',
       'submit' => 'CRM_Core_QuickForm_Action_Submit',

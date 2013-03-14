@@ -474,7 +474,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
         array(
           'class' => 'form-submit',
           'id' => 'Go',
-          'onclick' => "return checkPerformAction('mark_x', '" . $this->getName() . "', 0, 1);",
+          'onclick' => "return checkPerformAction('mark_x', '" . $this->getName() . "', 0, " . (int) empty($this->_customSearchClass) . ");",
         )
       );
     }
@@ -550,7 +550,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
    * @access public
    */
   function preProcess() {
-    // set the varios class variables
+    // set the various class variables
 
     $this->_group = CRM_Core_PseudoConstant::group();
 
@@ -567,34 +567,14 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       CRM_Core_DAO::$_nullObject
     );
 
-    $this->_force = CRM_Utils_Request::retrieve('force', 'Boolean',
-      CRM_Core_DAO::$_nullObject
-    );
-
-    $this->_groupID = CRM_Utils_Request::retrieve('gid', 'Positive',
-      $this
-    );
-    $this->_amtgID = CRM_Utils_Request::retrieve('amtgID', 'Positive',
-      $this
-    );
-    $this->_ssID = CRM_Utils_Request::retrieve('ssID', 'Positive',
-      $this
-    );
-    $this->_sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String',
-      $this
-    );
-    $this->_ufGroupID = CRM_Utils_Request::retrieve('id', 'Positive',
-      $this
-    );
-    $this->_componentMode = CRM_Utils_Request::retrieve('component_mode', 'Positive',
-      $this,
-      FALSE, 1, $_REQUEST
-    );
-    $this->_operator = CRM_Utils_Request::retrieve('operator', 'String',
-      $this,
-      FALSE, 1, $_REQUEST,
-      'AND'
-    );
+    $this->_force = CRM_Utils_Request::retrieve('force', 'Boolean', CRM_Core_DAO::$_nullObject);
+    $this->_groupID = CRM_Utils_Request::retrieve('gid', 'Positive', $this);
+    $this->_amtgID = CRM_Utils_Request::retrieve('amtgID', 'Positive', $this);
+    $this->_ssID = CRM_Utils_Request::retrieve('ssID', 'Positive', $this);
+    $this->_sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String', $this);
+    $this->_ufGroupID = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+    $this->_componentMode = CRM_Utils_Request::retrieve('component_mode', 'Positive', $this, FALSE, 1, $_REQUEST);
+    $this->_operator = CRM_Utils_Request::retrieve('operator', 'String', $this, FALSE, 1, $_REQUEST, 'AND');
 
     /**
      * set the button names
@@ -839,7 +819,11 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
     }
     $this->_done = TRUE;
 
-    if (array_key_exists($this->_searchButtonName, $_POST)) {
+    //for prev/next pagination
+    $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+
+    if (array_key_exists($this->_searchButtonName, $_POST) ||
+      ($this->_force && !$crmPID)) {
       //reset the cache table for new search
       $cacheKey = "civicrm search {$this->controller->_key}";
       CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey);
@@ -929,9 +913,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       // we'll ignore for now
       $config = CRM_Core_Config::singleton();
       // do this only for contact search
-      if ($setDynamic &&
-        $config->includeAlphabeticalPager
-      ) {
+      if ($setDynamic && $config->includeAlphabeticalPager) {
         if ($this->_reset ||
           ($this->_sortByCharacter === NULL || $this->_sortByCharacter == '')
         ) {

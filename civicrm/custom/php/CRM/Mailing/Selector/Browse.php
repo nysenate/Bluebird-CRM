@@ -122,10 +122,11 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
         // sort by completed date for archived and undefined get
         $completedOrder = CRM_Utils_Sort::DESCENDING;
       }
+      $nameHeaderLabel = ($this->_parent->get('sms')) ? ts('SMS Name') : ts('Mailing Name');
 
       self::$_columnHeaders = array(
         array(
-          'name' => ts('Mailing Name'),
+          'name' => $nameHeaderLabel,
           'sort' => 'name',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
@@ -197,7 +198,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
     $params = array();
     $whereClause = "$mailingACL AND " . $this->whereClause($params);
 
-    //NYSS 6006 added addition ON clauses to mailing_job to match getRows
+    // CRM-11919 added addition ON clauses to mailing_job to match getRows
     $query = "
    SELECT  COUNT( DISTINCT $mailing.id ) as count
      FROM  $mailing

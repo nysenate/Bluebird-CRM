@@ -229,21 +229,23 @@ class CRM_Core_Extensions_Extension {
   /**
    * Uninstall an extension.
    *
+   * @param bool $removeFiles whether to remove PHP source tree for the extension
    * @return boolean Whether all tasks completed successfully.
    */
-  public function uninstall() {
+  public function uninstall($removeFiles = TRUE) {
     if ($this->type == 'payment' && $this->status != 'missing') {
       $this->_runPaymentHook('uninstall');
     }
     if ($this->_removeExtensionByType()) {
       if ($this->_removeExtensionEntry()) {
         // remove files *after* invoking hook_civicrm_uninstall
-        if ($this->removeFiles()) {
+        if ((!$removeFiles) || $this->removeFiles()) {
+          //MOVE AND TEST// CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
           return TRUE;
         }
       }
     }
-    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+   CRM_Core_Invoke::rebuildMenuAndCaches(TRUE); //MOVE AND TEST//
   }
 
   public function upgrade() {

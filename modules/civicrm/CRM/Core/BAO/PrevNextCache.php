@@ -44,7 +44,7 @@ class CRM_Core_BAO_PrevNextCache extends CRM_Core_DAO_PrevNextCache {
 
     if ($mergeId == NULL) {
       $query = "
-SELECT id 
+SELECT id
 FROM   civicrm_prevnext_cache
 WHERE  cacheKey     = %3 AND
        entity_id1 = %1 AND
@@ -141,7 +141,7 @@ WHERE  cacheKey     = %3 AND
 
   function retrieve($cacheKey, $join = NULL, $where = NULL, $offset = 0, $rowCount = 0) {
     $query = "
-SELECT data 
+SELECT data
 FROM   civicrm_prevnext_cache pn
 {$join}
 WHERE  cacheKey = %1
@@ -169,14 +169,14 @@ WHERE  cacheKey = %1
                 $main[] = $dao->data;
             }
     }
-    
+
     return $main;
   }
-  
+
   public static function is_serialized($string) {
       return (@unserialize($string) !== false);
   }
-  
+
   function setItem($values) {
     $insert = "INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data ) VALUES \n";
     $query = $insert . implode(",\n ", $values);
@@ -187,7 +187,7 @@ WHERE  cacheKey = %1
 
   function getCount($cacheKey, $join = NULL, $where = NULL, $op = "=") {
     $query = "
-SELECT COUNT(*) FROM civicrm_prevnext_cache pn 
+SELECT COUNT(*) FROM civicrm_prevnext_cache pn
 {$join}
 WHERE cacheKey " . $op . " %1
 ";
@@ -308,13 +308,13 @@ AND        c.created_date < date_sub( NOW( ), INTERVAL %2 day )
       if (is_array($cIds)) {
         $cIdFilter = "(" . implode(',', $cIds) . ")";
         $whereClause = "
-WHERE cacheKey LIKE %1 
+WHERE cacheKey LIKE %1
 AND (entity_id1 IN {$cIdFilter} OR entity_id2 IN {$cIdFilter})
 ";
       }
       else {
         $whereClause = "
-WHERE cacheKey LIKE %1 
+WHERE cacheKey LIKE %1
 AND (entity_id1 = %2 OR entity_id2 = %2)
 ";
         $params[2] = array("{$cIds}", 'Integer');
@@ -344,13 +344,13 @@ WHERE cacheKey LIKE %1 AND is_selected = 1
   }
 
   /**
-   * function to get the selections 
-   * 
+   * function to get the selections
+   *
    * @param string $cacheKey     cache key
    * @param string $action       action
-   *  $action : get - get only selection records 
+   *  $action : get - get only selection records
    *            getall - get all the records of the specified cache key
-   * @param string $entity_table entity table 
+   * @param string $entity_table entity table
    */
   static function getSelection($cacheKey, $action = 'get', $entity_table = 'civicrm_contact') {
     if (!$cacheKey) {
@@ -362,8 +362,12 @@ WHERE cacheKey LIKE %1 AND is_selected = 1
     if ($cacheKey && ($action == 'get' || $action == 'getall')) {
       $actionGet = ($action == "get") ? " AND is_selected = 1 " : "";
       $sql = "
-SELECT entity_id1, entity_id2 FROM civicrm_prevnext_cache 
-WHERE cacheKey LIKE %1 " . $actionGet . $entity_whereClause;
+SELECT entity_id1, entity_id2 FROM civicrm_prevnext_cache
+WHERE cacheKey LIKE %1
+      $actionGet
+      $entity_whereClause
+ORDER BY id
+";
       $params[1] = array("%{$cacheKey}%", 'String');
 
       $contactIds = array($cacheKey => array());
@@ -400,14 +404,14 @@ LIMIT $offset, $rowCount";
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
     $params['rowCount'] = $obj->get(CRM_Utils_Pager::PAGE_ROWCOUNT);
-    
+
     if (!$params['rowCount']) {
       $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
     }
-  
+
     $qfKey = CRM_Utils_Request::retrieve('qfKey','String', $this);
     $cacheKey = "civicrm search {$qfKey}";
-    
+
     $query = "
 SELECT count(id)
 FROM civicrm_prevnext_cache

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -84,8 +84,8 @@
 		        {/if}
 				</td>
             {else}
-                <td><strong>{$rel.relation}</strong><br />
-                {$rel.name}</td>
+                <td class="bold">{$rel.relation}</strong></td>
+                <td>{$rel.name}</td>
             {/if}
                 <td>{$rel.start_date|crmDate}</td>
                 <td>{$rel.end_date|crmDate}</td>
@@ -100,9 +100,11 @@
         {/strip}
         </div>
 
+        {if $relationshipTabContext}
         <div id="permission-legend" class="crm-content-block">
 	     <span class="crm-marker">* </span>{ts}Indicates a permissioned relationship. This contact can be viewed and updated by the other.{/ts}
         </div>
+        {/if}
 {/if}
 {* end of code to show current relationships *}
 

@@ -63,6 +63,8 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
   
   public $_mode;
 
+  public $_params;
+
   public $_membershipId = null;
   /**
    * when not to reset sort_name
@@ -106,18 +108,18 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
    */
   function buildQuickForm() {
     if (!$this->_profileId) {
-      CRM_Core_Error::fatal('Profile that is used for batch entry is missing.');
+      CRM_Core_Error::fatal('Profile that is used for bulk data entry is missing.');
     }
 
     $this->addElement('hidden', 'batch_id', $this->_batchId);
 
     // get the profile information
     if ($this->_batchInfo['type_id'] == 1) {
-      CRM_Utils_System::setTitle(ts('Batch Entry for Contributions'));
+      CRM_Utils_System::setTitle(ts('Bulk Data Entry for Contributions'));
       $customFields = CRM_Core_BAO_CustomField::getFields('Contribution');
     }
     else {
-      CRM_Utils_System::setTitle(ts('Batch Entry for Memberships'));
+      CRM_Utils_System::setTitle(ts('Bulk Data Entry for Memberships'));
       $customFields = CRM_Core_BAO_CustomField::getFields('Membership');
     }
 
@@ -380,7 +382,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
         $this->updateContactInfo($value);
 
         // handle soft credit
-        if (CRM_Utils_Array::value($key, $params['soft_credit_contact_select_id'])) {
+        if (CRM_Utils_Array::value('soft_credit_contact_select_id', $params) && CRM_Utils_Array::value($key, $params['soft_credit_contact_select_id'])) {
           $value['soft_credit_to'] = $params['soft_credit_contact_select_id'][$key];
         }
 
@@ -486,7 +488,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
    *
    * @return None
    */
-  private function processMembership(&$params) {
+  private function processMembership(&$params) {    
     $dateTypes = array(
       'join_date' => 'joinDate',
       'membership_start_date' => 'startDate',
@@ -584,7 +586,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
         }
 
         // handle soft credit
-        if (CRM_Utils_Array::value($key, $params['soft_credit_contact_select_id'])) {
+        if (CRM_Utils_Array::value('soft_credit_contact_select_id', $params) && CRM_Utils_Array::value($key, $params['soft_credit_contact_select_id'])) {
           $value['soft_credit_to'] = $params['soft_credit_contact_select_id'][$key];
         }
 
@@ -645,8 +647,9 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
         unset($value['membership_end_date']);
         
         $value['is_renew'] = false; 
-        if ( CRM_Utils_Array::value( $key, $params['member_option'] ) == 2 ) {
-          $value['is_renew'] = true; 
+        if ( CRM_Utils_Array::value('member_option', $params) && CRM_Utils_Array::value( $key, $params['member_option'] ) == 2 ) {
+          $this->_params = $params;
+          $value['is_renew'] = true;
           $membership = CRM_Member_BAO_Membership::renewMembership( 
             $value['contact_id'],
             $value['membership_type_id'],

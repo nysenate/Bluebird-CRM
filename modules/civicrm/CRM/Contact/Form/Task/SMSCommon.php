@@ -193,7 +193,7 @@ class CRM_Contact_Form_Task_SMSCommon {
         $value = $form->_contactDetails[$contactId];
 
         //to check if the phone type is "Mobile"
-        $phoneTypes = CRM_Core_PseudoConstant::phoneType();
+        $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
 
         if (CRM_Utils_System::getClassName($form) == 'CRM_Activity_Form_Task_SMS') {
           //to check for "if the contact id belongs to a specified activity type"
@@ -207,11 +207,11 @@ class CRM_Contact_Form_Task_SMSCommon {
           }
         }
 
-        if ((isset($value['phone_type_id']) && $value['phone_type_id'] != CRM_Utils_Array::key('Mobile', $phoneTypes)) || $value['do_not_sms'] || empty($value['phone']) || CRM_Utils_Array::value('is_deceased', $value)) {
+        if ((isset($value['phone_type_id']) && $value['phone_type_id'] != CRM_Utils_Array::value('Mobile', $phoneTypes)) || $value['do_not_sms'] || empty($value['phone']) || CRM_Utils_Array::value('is_deceased', $value)) {
 
           //if phone is not primary check if non-primary phone is "Mobile"
           if (!empty($value['phone'])
-            && $value['phone_type_id'] != CRM_Utils_Array::key('Mobile', $phoneTypes)
+            && $value['phone_type_id'] != CRM_Utils_Array::value('Mobile', $phoneTypes)
             && !CRM_Utils_Array::value('is_deceased', $value)
           ) {
             $filter = array('do_not_sms' => 0);
@@ -220,7 +220,7 @@ class CRM_Contact_Form_Task_SMSCommon {
               $mobilePhone = CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'phone');
               $form->_contactDetails[$contactId]['phone_id'] =  CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'id');
               $form->_contactDetails[$contactId]['phone'] = $mobilePhone;
-              $form->_contactDetails[$contactId]['phone_type_id'] = CRM_Utils_Array::key('Mobile', $phoneTypes);
+              $form->_contactDetails[$contactId]['phone_type_id'] = CRM_Utils_Array::value('Mobile', $phoneTypes);
             }
             else {
               $suppressedSms++;
@@ -320,6 +320,7 @@ class CRM_Contact_Form_Task_SMSCommon {
     else {
       if (CRM_Utils_Array::value('text_message', $fields)) {
         $messageCheck = CRM_Utils_Array::value('text_message', $fields);
+        $messageCheck = str_replace("\r\n", "\n", $messageCheck);
         if ($messageCheck && (strlen($messageCheck) > CRM_SMS_Provider::MAX_SMS_CHAR)) {
           $errors['text_message'] = ts("You can configure the SMS message body up to %1 characters", array(1 => CRM_SMS_Provider::MAX_SMS_CHAR));
         }

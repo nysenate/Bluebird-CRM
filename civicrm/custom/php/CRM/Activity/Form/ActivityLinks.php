@@ -35,22 +35,22 @@
 
 /**
  * This class generates form components for Activity Links
- * 
+ *
  */
 class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
-    public function buildQuickForm( ) {
-        $contactId = CRM_Utils_Request::retrieve( 'cid' , 'Positive', $this );
-        $urlParams = "action=add&reset=1&cid={$contactId}&selectedChild=activity&atype=";
+  public function buildQuickForm() {
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+    $urlParams = "action=add&reset=1&cid={$contactId}&selectedChild=activity&atype=";
 
-        $activityTypes = $urls = array( );
+    $activityTypes = $urls = array();
 
-        $emailTypeId = CRM_Core_OptionGroup::getValue( 'activity_type',
-                                                       'Email',
+    $emailTypeId = CRM_Core_OptionGroup::getValue('activity_type',
+      'Email',
       'name'
     );
-        
-        $letterTypeId = CRM_Core_OptionGroup::getValue( 'activity_type',
-                                                        'Print PDF Letter',
+
+    $letterTypeId = CRM_Core_OptionGroup::getValue('activity_type',
+      'Print PDF Letter',
       'name'
     );
     $SMSId = CRM_Core_OptionGroup::getValue('activity_type',
@@ -58,13 +58,12 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
       'label'
     );
    
-        if ( CRM_Utils_Mail::validOutBoundMail() && $contactId ) { 
-            list( $name, $email, $doNotEmail, $onHold, $isDeseased ) = CRM_Contact_BAO_Contact::getContactDetails( $contactId );
-            if ( !$doNotEmail && $email && !$isDeseased ) {
-                $activityTypes = array( $emailTypeId => ts('Send an Email') );
-            }
-        }
-        
+    if (CRM_Utils_Mail::validOutBoundMail() && $contactId) {
+      list($name, $email, $doNotEmail, $onHold, $isDeseased) = CRM_Contact_BAO_Contact::getContactDetails($contactId);
+      if (!$doNotEmail && $email && !$isDeseased) {
+        $activityTypes = array($emailTypeId => ts('Send an Email'));
+      }
+    }
     if ($contactId && CRM_SMS_BAO_Provider::activeProviderCount()) {
       list($name, $phone, $doNotSMS) = CRM_Contact_BAO_Contact_Location::getPhoneDetails($contactId);
       if (!$doNotSMS && $phone) {
@@ -72,16 +71,16 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
         $activityTypes += $sendSMS;
       }
     }
-        // this returns activity types sorted by weight
+    // this returns activity types sorted by weight
     $otherTypes = CRM_Core_PseudoConstant::activityType(FALSE);
-        
-        $activityTypes += $otherTypes;
-        asort($activityTypes); //NYSS 4921
-        //unset( $activityTypes[22] ); //NYSS - LCD remove Print PDF option from contact actions list #2435
+    
+    $activityTypes += $otherTypes;
+    asort($activityTypes); //NYSS 4921
+    //unset( $activityTypes[22] ); //NYSS - LCD remove Print PDF option from contact actions list #2435
 
-        foreach( array_keys($activityTypes) as $typeId ) {
-            if ( $typeId == $emailTypeId ) {
-                $urls[$typeId] = CRM_Utils_System::url( 'civicrm/activity/email/add', 
+    foreach (array_keys($activityTypes) as $typeId) {
+      if ($typeId == $emailTypeId) {
+        $urls[$typeId] = CRM_Utils_System::url('civicrm/activity/email/add',
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE
         );
       }
@@ -91,21 +90,21 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form {
         );
         }
       elseif ($typeId == $letterTypeId) {
-                $urls[$typeId] = CRM_Utils_System::url( 'civicrm/activity/pdf/add', 
+        $urls[$typeId] = CRM_Utils_System::url('civicrm/activity/pdf/add',
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE
         );
       }
       else {
-                $urls[$typeId] = CRM_Utils_System::url( 'civicrm/activity/add', 
+        $urls[$typeId] = CRM_Utils_System::url('civicrm/activity/add',
           "{$urlParams}{$typeId}", FALSE, NULL, FALSE
         );
-            }
-        }
+      }
+    }
 
-        $this->assign( 'activityTypes', $activityTypes );
-        $this->assign( 'urls', $urls );
+    $this->assign('activityTypes', $activityTypes);
+    $this->assign('urls', $urls);
 
     $this->assign('suppressForm', TRUE);
-    }
+  }
 }
 

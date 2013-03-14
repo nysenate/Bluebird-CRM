@@ -687,8 +687,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
    * @access public
    * @static
    */
-  static
-  function &getActivities($input) {
+  static function &getActivities($input) {
     //step 1: Get the basic activity data
     $bulkActivityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
       'Bulk Email',
@@ -933,8 +932,7 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
    * return an array of component id and name.
    * @static
    **/
-  static
-  function activityComponents() {
+  static function activityComponents() {
     $components = array();
     $compInfo = CRM_Core_Component::getEnabledComponents();
     foreach ($compInfo as $compObj) {
@@ -975,8 +973,7 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
    * @access public
    * @static
    */
-  static
-  function &getActivitiesCount($input) {
+  static function &getActivitiesCount($input) {
     $input['count'] = TRUE;
     list($sqlClause, $params) = self::getActivitySQLClause($input);
 
@@ -1013,8 +1010,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
    * @access public
    * @static
    */
-  static
-  function getActivitySQLClause($input) {
+  static function getActivitySQLClause($input) {
     $params = array();
     $sourceWhere = $targetWhere = $assigneeWhere = $caseWhere = 1;
 
@@ -1231,8 +1227,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
    * @access public
    * @static
    */
-  static
-  function sendEmail(&$contactDetails,
+  static function sendEmail(&$contactDetails,
     &$subject,
     &$text,
     &$html,
@@ -1415,8 +1410,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
     return array($sent, $activity->id);
   }
 
-  static
-  function sendSMS(&$contactDetails,
+  static function sendSMS(&$contactDetails,
     &$activityParams,
     &$smsParams = array(),
     &$contactIds,
@@ -1535,8 +1529,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
    * @static
    */
 
-  static
-  function sendSMSMessage($toID,
+  static function sendSMSMessage($toID,
     &$tokenText,
     &$tokenHtml,
     $smsParams = array(),
@@ -1569,6 +1562,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
     $message = $tokenHtml ? $tokenHtml : $tokenText;
     $recipient = $smsParams['To'];
     $smsParams['contact_id'] = $toID;
+    $smsParams['parent_activity_id'] = $activityID;
 
     $providerObj = CRM_SMS_Provider::singleton(array('provider_id' => $smsParams['provider_id']));
     if (!$providerObj->send($recipient, $smsParams, $message, NULL)) {
@@ -1599,8 +1593,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
    * @access public
    * @static
    */
-  static
-  function sendMessage($from,
+  static function sendMessage($from,
     $fromID,
     $toID,
     &$subject,
@@ -1666,8 +1659,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
    * @access public
    * @static
    */
-  static
-  function &importableFields($status = FALSE) {
+  static function &importableFields($status = FALSE) {
     if (!self::$_importableFields) {
       if (!self::$_importableFields) {
         self::$_importableFields = array();
@@ -1910,8 +1902,7 @@ SELECT  display_name
    * @return int $parentId  Id of parent acyivity otherwise false.
    * @access public
    */
-  static
-  function getParentActivity($activityId) {
+  static function getParentActivity($activityId) {
     static $parentActivities = array();
 
     $activityId = CRM_Utils_Type::escape($activityId, 'Integer');
@@ -1938,8 +1929,7 @@ SELECT  display_name
    * @return int $params  count of prior acyivities otherwise false.
    * @access public
    */
-  static
-  function getPriorCount($activityID) {
+  static function getPriorCount($activityID) {
     static $priorCounts = array();
 
     $activityID = CRM_Utils_Type::escape($activityID, 'Integer');
@@ -1976,8 +1966,7 @@ AND id < {$activityID}
    * @return array $result  prior acyivities info.
    * @access public
    */
-  static
-  function getPriorAcitivities($activityID, $onlyPriorRevisions = FALSE) {
+  static function getPriorAcitivities($activityID, $onlyPriorRevisions = FALSE) {
     static $priorActivities = array();
 
     $activityID = CRM_Utils_Type::escape($activityID, 'Integer');
@@ -2027,8 +2016,7 @@ AND cl.modified_id  = c.id
    * @return int $params  current activity id.
    * @access public
    */
-  static
-  function getLatestActivityId($activityID) {
+  static function getLatestActivityId($activityID) {
     static $latestActivityIds = array();
 
     $activityID = CRM_Utils_Type::escape($activityID, 'Integer');
@@ -2061,8 +2049,7 @@ AND cl.modified_id  = c.id
    *
    * @access public
    */
-  static
-  function createFollowupActivity($activityId, $params) {
+  static function createFollowupActivity($activityId, $params) {
     if (!$activityId) {
       return;
     }
@@ -2100,8 +2087,7 @@ AND cl.modified_id  = c.id
    *
    * @static
    */
-  static
-  function getFileForActivityTypeId($activityTypeId, $crmDir = 'Activity') {
+  static function getFileForActivityTypeId($activityTypeId, $crmDir = 'Activity') {
     $activityTypes = CRM_Case_PseudoConstant::caseActivityType(FALSE, TRUE);
 
     if ($activityTypes[$activityTypeId]['name']) {
@@ -2153,8 +2139,7 @@ AND cl.modified_id  = c.id
    * @access public
    * @static
    */
-  static
-  function &exportableFields($name = 'Activity') {
+  static function &exportableFields($name = 'Activity') {
     if (!isset(self::$_exportableFields[$name])) {
       self::$_exportableFields[$name] = array();
 
@@ -2484,7 +2469,7 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
           $contactActivities[$activityId]['source_contact'] = '<em>n/a</em>';
         }
 
-        if (isset($values['mailingId'])) {
+        if (isset($values['mailingId']) && !empty($values['mailingId'])) {
           $contactActivities[$activityId]['target_contact'] = CRM_Utils_System::href($values['recipients'], 'civicrm/mailing/report', "mid={$values['source_record_id']}&reset=1&cid={$values['source_contact_id']}&context=activitySelector");
         }
         elseif (CRM_Utils_Array::value('recipients', $values)) {
