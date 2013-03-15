@@ -1530,12 +1530,13 @@ var BBTreeModal = {
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				tlvl++;
 				var toAddDT = '<dt class="lv-' + tlvl + ' ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}
 				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
 				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
+				BBTreeEdit.setTagInfo();
 			}
 			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
@@ -1546,7 +1547,7 @@ var BBTreeModal = {
 					cj('dt#'+BBTreeModal.taggedID+' .ddControl').addClass('treeButton');
 				}
 				var toAddDT = '<dt class="lv-' + tlvl + ' ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}
@@ -1567,7 +1568,7 @@ var BBTreeModal = {
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}
