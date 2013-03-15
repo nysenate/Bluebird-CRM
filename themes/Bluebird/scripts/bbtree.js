@@ -1262,8 +1262,15 @@ var BBTreeModal = {
 									modalLoadingGif('remove');
 								}
 								
+							},
+							error: function(data, status, errorThrown)	{
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
+								BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, errorThrown]);
+								modalLoadingGif('remove');
 							}	
 						});
+
 					}
 				},
 				{
