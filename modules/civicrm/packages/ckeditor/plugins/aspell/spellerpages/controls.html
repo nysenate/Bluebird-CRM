@@ -6,8 +6,8 @@
 var spellerObject;
 var controlWindowObj;
 
-if( parent.opener ) {
-	spellerObject = parent.opener.speller;
+if( parent.openerWindow() ) {//NYSS
+	spellerObject = parent.openerWindow().speller;//NYSS
 }
 
 function ignore_word() {
@@ -69,6 +69,17 @@ function init_spell() {
 	} else {
 		alert( 'This page was loaded outside of a frameset. It might not display properly' );
 	}
+}
+
+//NYSS 5353 - http://ckeditor.com/forums/CKEditor-3.x/Spellchecker-Fails-IE9
+function openerWindow() {
+  if (opener && opener.speller)
+    return opener;
+  if (parent.opener && parent.opener.speller)
+    return parent.opener;
+  if (parent.parent && parent.parent.speller)
+    return parent.parent;
+  return undefined;
 }
 
 </script>
