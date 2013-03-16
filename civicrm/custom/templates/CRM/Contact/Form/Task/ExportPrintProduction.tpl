@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -90,6 +90,9 @@
 
 <dt>{$form.restrict_state.label}</dt>
   <dd>{$form.restrict_state.html}</dd>
+
+<dt>{$form.orderBy.label}</dt>
+  <dd>{$form.orderBy.html}</dd>
 
 <dt></dt>
   <dd>{$form.buttons.html}</dd>

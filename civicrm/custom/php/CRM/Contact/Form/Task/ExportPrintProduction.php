@@ -143,12 +143,30 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
       )
     );
 
+    //6397
+    $orderBy = array(
+      'male_eldest' => 'Eldest Male',
+      'female_eldest' => 'Eldest Female',
+    );
+    $this->add( 'select',
+      'orderBy',
+      ts( 'Order By' ),
+      $orderBy,
+      false,
+      array(
+        'id' => 'orderBy',
+      )
+    );
+
     $this->addDefaultButtons( 'Export Print Production' );
   }
 
   function setDefaultValues() {
-    $defaults = array();
+    $defaults = array(
+      'orderBy' => 'male_eldest',
+    );
     //$defaults['restrict_state'] = 1031; //NY
+
 
     return $defaults;
   }
@@ -176,6 +194,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $excludeSeeds     = $params['excludeSeeds'];
     $restrictDistrict = $params['restrict_district'];
     $restrictState    = $params['restrict_state'];
+    $orderByOpt       = $params['orderBy'];
 
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -334,9 +353,28 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
     $sql .= " GROUP BY c.id ";
 
-    //order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
+    //6397 - determine gender based order by clause from params
+    switch ($orderByOpt) {
+      case 'female_eldest':
+        $orderByGender = " CASE
+          WHEN c.gender_id=1 THEN 1
+          WHEN c.gender_id=2 THEN 2
+          WHEN c.gender_id=4 THEN 3
+          ELSE 999 END,
+        ";
+        break;
+      default: //male_eldest
+        $orderByGender = " CASE
+          WHEN c.gender_id=2 THEN 1
+          WHEN c.gender_id=1 THEN 2
+          WHEN c.gender_id=4 THEN 3
+          ELSE 999 END,
+        ";
+    }
+
+    //order export by individuals, gender parameter, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, ";
-    $sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+    $sql .= $orderByGender;
     $sql .= " IFNULL(c.birth_date, '9999-01-01');";
 
     idebug($sql, 'sql');
