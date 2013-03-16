@@ -1009,6 +1009,7 @@ var BBTreeModal = {
 		}
 		cj(BBTree.treeLoc + ' input.selectRadio, '+ BBTree.treeLoc + ' div.tag').unbind('click');
 		cj(BBTree.treeLoc + ' input.selectRadio, '+ BBTree.treeLoc + ' div.tag').click(function(){
+			cj(this).siblings('.fCB').children('input.selectRadio').prop('checked', true);
 			BBTreeModal['radioSelectedTid'] = cj(this).parent('.fCB').parent('dt').attr('tid');
 			switch(BBTreeModal.taggedMethod) //sets both open
 			{
