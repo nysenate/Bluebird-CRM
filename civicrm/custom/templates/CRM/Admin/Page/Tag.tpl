@@ -54,7 +54,6 @@
 {literal}
 <script type="text/javascript">
 BBTree.startInstance({pullSets: [291, 296], buttonType: 'edit'}); 
-
 </script>
 {/literal}
 {capture assign=docLink}{docURL page="Tags Admin"}{/capture}

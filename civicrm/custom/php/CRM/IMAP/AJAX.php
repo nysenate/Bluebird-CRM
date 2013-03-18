@@ -778,6 +778,12 @@ class CRM_IMAP_AJAX {
         $subject = ($output['forwarded']['subject']) ?  $output['forwarded']['subject'] : 'could not find message subject' ;
         $body = ($output['header']['body']) ?  $output['header']['body'] : 'could not find message body' ;
         
+        $senderName = mysql_real_escape_string($senderName);
+        $senderEmailAddress = mysql_real_escape_string($senderEmailAddress);
+        $date = mysql_real_escape_string($date);
+        $subject = mysql_real_escape_string($subject);
+        $body = mysql_real_escape_string($body);
+
         if ($debug){
           var_dump($messageUid);
           var_dump($imapId);

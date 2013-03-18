@@ -524,7 +524,7 @@ function cleanDate($date_string){
   $bSuccess = false;
 
   // remove weirdness in html encoded messages 
-  $OrgionalBody =  quoted_printable_decode($email->body);
+  $OrgionalBody =  mysql_real_escape_string(quoted_printable_decode($email->body));
   // $body = strip_HTML_tags($OrgionalBody);
 
   // detect if message is html / plaintext from body only
@@ -562,7 +562,7 @@ function cleanDate($date_string){
   preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
 
   $subject = ($status == 'forwarded') ? preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']) : $email->subject ;
-  
+  $subject = mysql_real_escape_string($subject);
   // remove () sometimes found in emails with no subject
   $subject = preg_replace("/(\(|\))/i", "", $subject);
   if( trim(strip_tags($subject)) == "" | trim($subject) == "no subject"){
