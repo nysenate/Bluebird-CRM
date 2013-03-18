@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -143,12 +143,30 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
       )
     );
 
+    //6397
+    $orderBy = array(
+      'male_eldest' => 'Eldest Male',
+      'female_eldest' => 'Eldest Female',
+    );
+    $this->add( 'select',
+      'orderBy',
+      ts( 'Order By' ),
+      $orderBy,
+      false,
+      array(
+        'id' => 'orderBy',
+      )
+    );
+
     $this->addDefaultButtons( 'Export Print Production' );
   }
 
   function setDefaultValues() {
-    $defaults = array();
+    $defaults = array(
+      'orderBy' => 'male_eldest',
+    );
     //$defaults['restrict_state'] = 1031; //NY
+
 
     return $defaults;
   }
@@ -176,6 +194,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $excludeSeeds     = $params['excludeSeeds'];
     $restrictDistrict = $params['restrict_district'];
     $restrictState    = $params['restrict_state'];
+    $orderByOpt       = $params['orderBy'];
 
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -334,9 +353,28 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
     $sql .= " GROUP BY c.id ";
 
-    //order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
+    //6397 - determine gender based order by clause from params
+    switch ($orderByOpt) {
+      case 'female_eldest':
+        $orderByGender = " CASE
+          WHEN c.gender_id=1 THEN 1
+          WHEN c.gender_id=2 THEN 2
+          WHEN c.gender_id=4 THEN 3
+          ELSE 999 END,
+        ";
+        break;
+      default: //male_eldest
+        $orderByGender = " CASE
+          WHEN c.gender_id=2 THEN 1
+          WHEN c.gender_id=1 THEN 2
+          WHEN c.gender_id=4 THEN 3
+          ELSE 999 END,
+        ";
+    }
+
+    //order export by individuals, gender parameter, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, ";
-    $sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+    $sql .= $orderByGender;
     $sql .= " IFNULL(c.birth_date, '9999-01-01');";
 
     idebug($sql, 'sql');
@@ -375,10 +413,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( !file_exists($path) ) {
       mkdir( $path, 0775 );
     }
-  
+
     //set filename, environment, and full path
-    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
-  
+    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
+
     //strip /data/ and everything after environment value
     $env   = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
     $fname = $path.'/'.$filename;
@@ -404,7 +442,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $firstLine         = true;
     $adjusted_count    = 0;
     $nonPrimaryMailing = array();
-  
+
     //skip DAO fields
     $skipVars['_DB_DataObject_version'] = 1;
     $skipVars['__table'] = 1;
@@ -418,20 +456,20 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $skipVars['_lastError'] = 1;
     $skipVars['_database_dsn_md5'] = 1;
     $skipVars['_database'] = 1;
-  
+
     //retrieve records from temp table
     $sql = "SELECT * FROM tmpExport$rnd";
     $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
-  
+
     //fetch records
     while ($dao->fetch()) {
       idebug($dao, 'dao retrieve from temp table', 2);
- 
+
       //set ids to have primary address removed if mailing address exists and not primary
       if ( $dao->addr_location_id == 13 && !$dao->addr_primary ) {
         $nonPrimaryMailing[] = $dao->id;
       }
-    
+
       //add the issue codes
       if (!empty($iss[$dao->id])) $dao->issueCodes = implode(',',$iss[$dao->id]);
 
@@ -447,7 +485,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         if ( end( $aHeader ) != 'issueCodes' ) {
           $aHeader[] = "issueCodes";
         }
-      
+
         fputcsv2($fhout, $aHeader,"\t",'',false,false);
         $firstLine=false;
       }
@@ -464,7 +502,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
           if ($name=="birth_date") {
             if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
           }
-          
+
           $val = str_replace("'","",$val);
           $val = str_replace("\"","",$val);
           $aOut[$name] =  $val;
@@ -473,14 +511,14 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
       idebug($aOut, 'aOut', 2);
       iexit(2);
-    
+
       //handle empty prefix values and special prefixes that need reinterpreting
       if ( strlen(trim($aOut['prefix_id'])) == 0 && $aOut['contact_type'] == 'Individual' ) {
         //construct prefix using gender if possible
         if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
         elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
         else $aOut['prefix_id']="";
-      
+
         //reconstruct postal_greeting if Dear Lastname; else assume it's been set purposely
         if ( $aOut['postal_greeting_display'] == 'Dear '.$aOut['last_name'] ) {
           $aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
@@ -491,13 +529,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
         elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
         else $aOut['prefix_id']="";
-      
+
         //reconstruct postal_greeting if Dear The Honorable Lastname; else assume it's been set purposely
         if ( $aOut['postal_greeting_display'] == 'Dear The Honorable '.$aOut['last_name'] ) {
           $aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
         }
       }
- 
+
       fputcsv2($fhout, $aOut,"\t",'',false,false);
       $adjusted_count++;
     } //dao fetch end
@@ -510,48 +548,48 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //CRM_Core_Error::debug($ic_stats); exit();
     //CRM_Core_Error::debug($key_stats); exit();
     //CRM_Core_Error::debug($tag_stats); exit();
-  
+
     //set filename and full path
     $filenameStats = 'printExportTagStats_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
     $fnameStats    = $path.'/'.$filenameStats;
     $fhoutStats    = fopen($fnameStats, 'w');
-  
+
     //write to file
     foreach ( $tag_stats as $tag_name => $tag_stat ) {
       //fputcsv2($fhoutStats, $tag_stats,"\t",'',false,false);
       fwrite($fhoutStats, $tag_name."\t".$tag_stat."\n" );
     }
-  
+
     $urlStats = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filenameStats;
     $urlcleanStats = urlencode( $urlStats );
     //end stats
-  
+
     //get rid of temp tables
     $sql = "DROP TABLE tmpExport{$rnd}, tmpExport{$rnd}_IDs;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );  
-    
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
     $url  = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
     $urlclean = urlencode( $url );
     $body = "Contact export: $urlclean \r\n\r\n
              Tag stats export: $urlcleanStats \r\n";
     $href = "mailto:?subject=print export: $filename&body=$body";
-    
+
     $status = array();
     $status[] = "Print Production Export";
     $status[] = "District: $instance (task $rnd).";
     $status[] = sizeof($this->_contactIds). " contact(s) were originally retrieved.";
     $status[] = $adjusted_count. " contact(s) were exported after adjustments.";
     $status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
-    
+
     require_once 'CRM/Core/Permission.php';
     if ( CRM_Core_Permission::check( 'export print production files' ) ) {
       $status[] = "Download the export file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
       $status[] = "Download the stats file: <a href=\"$urlStats\" target=\"_blank\">".$filenameStats.'</a>';
     }
-    
+
     CRM_Core_Session::setStatus( $status );
     iexit(4);
-  
+
   } //end of function
 }//end class
 
@@ -588,8 +626,8 @@ function getIssueCodesRecursive(&$issueCodes, $parent_id=null) {
 
   $newCodes=array();
   $dao = &CRM_Core_DAO::executeQuery("SELECT id,name from civicrm_tag where parent_id = $parent_id;", CRM_Core_DAO::$_nullArray);
-  while ($dao->fetch()) $newCodes[$dao->id] = $dao->name; 
-    
+  while ($dao->fetch()) $newCodes[$dao->id] = $dao->name;
+
   foreach ($newCodes as $key=>$val) {
     $issueCodes[$key] = $val;
     getIssueCodesRecursive($issueCodes, $key);
@@ -642,7 +680,7 @@ function statsIssueCodes( $tmpTbl ) {
       AND ( civicrm_tag.is_tagset != 1 )
     GROUP BY name
     ORDER BY ic_count DESC;";
-  
+
   $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
   $ic_stats = array();
   while ($dao->fetch()) {
@@ -664,7 +702,7 @@ function statsKeywords( $tmpTbl ) {
       AND ( civicrm_tag.parent_id = 296 )
     GROUP BY name
     ORDER BY key_count DESC;";
-  
+
   $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
   $key_stats = array();
   while ($dao->fetch()) {
@@ -676,11 +714,11 @@ function statsKeywords( $tmpTbl ) {
 
 //merge temp table down into households
 function mergeHouseholds( $tbl ) {
-  
+
   //our resulting export could have actual household records OR
   //individuals who are part of households OR both
-  
-  //if a household record exists along with individuals, 
+
+  //if a household record exists along with individuals,
   //we can simply remove the individual records from the export
   $sql = "
     DELETE t1.*
@@ -689,25 +727,25 @@ function mergeHouseholds( $tbl ) {
       ON t1.household_id = t2.id
     WHERE t1.contact_type = 'Individual';";
   CRM_Core_DAO::executeQuery($sql);
-  
+
   //if we have multiple individuals from a single household
   //we need to condense into a single record
   $sql = "
-    CREATE TEMPORARY TABLE {$tbl}_hdupe 
+    CREATE TEMPORARY TABLE {$tbl}_hdupe
     SELECT id
     FROM $tbl
     WHERE household_id IS NOT NULL
     GROUP BY household_id
     HAVING count(id) > 1 ";
   CRM_Core_DAO::executeQuery($sql);
-  
+
   $sql = "
     DELETE t1.*
     FROM $tbl t1
     JOIN {$tbl}_hdupe t2
     ON t1.id = t2.id";
   CRM_Core_DAO::executeQuery($sql);
-  
+
   //now we want to copy the household greeting/address to the primary fields
   $sql = "
     UPDATE $tbl
@@ -717,18 +755,18 @@ function mergeHouseholds( $tbl ) {
     WHERE household_id IS NOT NULL AND
         contact_type = 'Individual';";
   CRM_Core_DAO::executeQuery($sql);
-  
+
   //drop temp table
   $sql = "DROP TEMPORARY TABLE {$tbl}_hdupe;";
   $dao = CRM_Core_DAO::executeQuery( $sql );
-  
+
   return;
 } //end mergeHouseholds
 
 //defines the columns in our table and select statement
 function getColumns( $output = 'select' ) {
 
-  $fields = array( 
+  $fields = array(
     'c.id' => array(
       'alias' => 'id',
       'def'   => 'int not null primary key'
@@ -894,32 +932,32 @@ function getColumns( $output = 'select' ) {
       'def'   => 'varchar(12)'
     ),
   );
-  
+
   switch ( $output ) {
     case 'select':
       $selectVals = array();
       $selectList = '';
-      
+
       foreach ( $fields as $field => $details ) {
         $selectVals[] = $field.' as '.$details['alias'];
       }
       $selectList = implode( ', ', $selectVals );
       return $selectList;
-      
+
       break;
 
     case 'columns':
       $colVals = array();
       $colList = '';
-      
+
       foreach ( $fields as $field => $details ) {
         $colVals[] = $details['alias'].' '.$details['def'];
       }
       $colList = implode( ', ', $colVals );
       return $colList;
-      
+
       break;
-    
+
     default:
       return '';
   }
@@ -980,7 +1018,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
 
   //need to list sa columns to avoid naming conflicts
   $sql  = "
-    CREATE TABLE $dTbl 
+    CREATE TABLE $dTbl
     (INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id))
     ENGINE=myisam
     SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city
@@ -997,7 +1035,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
   //now compare the district exclude table ($dTbl) to the main export table ($tbl)
   //and remove matches from the main table
   //run with three separate queries as it's much faster than a single where clause with OR
-  $contactElements = array( 
+  $contactElements = array(
     "-- Individual check
     ( contact_type = 'Individual'
       AND BB_NORMALIZE(source.last_name) = district.last_name
