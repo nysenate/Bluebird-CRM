@@ -16,7 +16,7 @@ function init_spell( spellerWindow ) {
 
 	if( controlWindow && wordWindow ) {
 		// populate the speller object and start it off!
-		var speller = opener.speller;
+		var speller = openerWindow().speller;//NYSS 5353
 		wordWindow.speller = speller;
 		speller.startCheck( wordWindow, controlWindow );
 	}
@@ -39,8 +39,8 @@ function postWords() {
 	bodyDoc.write('<html>');
 	bodyDoc.write('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
 	bodyDoc.write('<link rel="stylesheet" type="text/css" href="spellerStyle.css"/>');
-	if (opener) {
-		var speller = opener.speller;
+	if (openerWindow()) {//NYSS
+		var speller = openerWindow().speller;//NYSS
 		bodyDoc.write('<body class="normalText" onLoad="document.forms[0].submit();">');
 		bodyDoc.write('<p>' + window.parent.FCKLang.DlgSpellProgress + '<\/p>');		// by FredCK
 		bodyDoc.write('<form action="'+speller.spellCheckScript+'" method="post">');
@@ -56,6 +56,17 @@ function postWords() {
 	}
 	bodyDoc.write('<\/html>');
 	bodyDoc.close();
+}
+
+//NYSS 5353 - http://ckeditor.com/forums/CKEditor-3.x/Spellchecker-Fails-IE9
+function openerWindow() {
+  if (opener && opener.speller)
+    return opener;
+  if (parent.opener && parent.opener.speller)
+    return parent.opener;
+  if (parent.parent && parent.parent.speller)
+    return parent.parent;
+  return undefined;
 }
 </script>
 
