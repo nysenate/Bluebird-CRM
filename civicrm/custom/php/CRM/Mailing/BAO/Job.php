@@ -321,7 +321,7 @@ class CRM_Mailing_BAO_Job extends CRM_Mailing_DAO_Job {
         continue;
       }
 
-      CRM_Core_Error::debug_var( "Splitting Job: {$job->id} into $offset child jobs" ); //NYSS
+      CRM_Core_Error::debug_log_message( "Splitting Job: {$job->id} into $offset child jobs" ); //NYSS
       $job->split_job($offset);
 
       // update the status of the parent job
