@@ -24,10 +24,16 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
+<script>
+var BBCID = {/literal}{if isset($entityID) }{$entityID}{else}0{/if}{literal};
+var BBActionConst = {/literal}{$action}{literal};
+</script>
+{/literal}
+{literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 <script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
 <script>
-BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}});
+BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true});
 </script>
 {/literal}
 {if $title}
@@ -41,7 +47,6 @@ BBTree.startInstance({displaySettings:{writeSets: [291], treeTypeSet: 'tagging'}
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
-
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
 	
 	    {foreach key=key item=item from=$tagGroup}
