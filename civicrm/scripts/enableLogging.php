@@ -26,6 +26,7 @@ $logging->enableLogging();
 echo "setting logging flag in domain record...\n";
 $sql = "
   UPDATE civicrm_domain
-  SET config_backend = REPLACE( config_backend, 's:7:\"logging\";i:0', 's:7:\"logging\";i:1' )
-  WHERE id = 1;";
+  SET config_backend = REPLACE( config_backend, 'logging\';s:1:\'0', 'logging\';s:1:\'1' )
+  WHERE id = 1;
+";
 CRM_Core_DAO::executeQuery($sql);
