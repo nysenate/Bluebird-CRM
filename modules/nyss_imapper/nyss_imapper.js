@@ -386,7 +386,7 @@ cj(document).ready(function(){
 		var create_city = cj("#tab2 .city").val();
 		var create_dob = cj("#tab2 .dob").val();
 
-		if((!!create_first_name) && (!!create_last_name)){
+		if((create_first_name)||(create_last_name)||(create_email_address)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
@@ -436,7 +436,7 @@ cj(document).ready(function(){
 			});
 			return false;
 		}else{
-			alert("Please Enter a first & last name");
+			alert("Required: First Name or Last Name or Email");
 		};
 	});
 
