@@ -12,5 +12,9 @@
 
   //5556
   cj('#all_tag_types').appendTo(cj('.contact-tagset-296-section .content'));
+
+  //6383 repeat reset form button
+  var rfb = cj('div.reset-advanced-search').clone();
+  cj('input#_qf_Advanced_refresh').after(rfb);
 </script>
 {/literal}

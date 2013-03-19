@@ -389,7 +389,8 @@ var callTree =  {
 			defaultTree: 291, //IssueCodes = 291, KW = 296. Sets default tree to show first.
 			currentTree: 291, //what the current tag tree is
 			buttonType: 'tagging',//Sets default type to appear: edit, modal or tagging versions... adds 'boxes/checks'
-			tabLocation: 'BBTree-Tags' //where tabs, if needed, go.
+			tabLocation: 'BBTree-Tags', //where tabs, if needed, go.
+			onSave: false //interrupts ajax tag save process to not happen
 		},
 		callSettings:{
 			ajaxUrl: '/civicrm/ajax/tag/tree',
@@ -414,10 +415,10 @@ var callTree =  {
 			callTree["pulledConfig"] = {};
 			cj.each(
 				config,function(i, value){
-	            	callTree.pulledConfig[i] = value;
-	       	});
-	    }
-	    cj.extend(true, callTree.defaultSettings.displaySettings, callTree.pulledConfig); //sets the inital settings
+	       	callTree.pulledConfig[i] = value;
+	     	});
+	  }
+	  cj.extend(true, callTree.defaultSettings.displaySettings, callTree.pulledConfig); //sets the inital settings
 	},
 	treeSetupPage: function(instance, settings, contact){ 
 		//BBTree.initContainer('one', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {cid: 216352});
@@ -725,16 +726,10 @@ var BBTreeEdit = {
 	}
 }
 var BBTreeTag = {
+	//YOU HAVE TO HAVE BBCID declared somewhere on the page in order for the CID to pass without being explicitly passed in the function declaration
 	getPageCID: function(passedCID, passedEntityType){
 		var pageCID = {entity_id: 0, entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type};
-		var cid = 0 ;
-		var cidpre = /cid=\d*/.exec(document.location.search);
-		var cidsplit = /\d.*/.exec(cidpre);
-		if(cidsplit)
-		{
-			cid = cidsplit[0];
-			pageCID.entity_id = cid;
-		}
+		pageCID.entity_id = BBCID;
 		if(passedCID != null)
 		{
 			pageCID.entity_id = passedCID;
@@ -794,51 +789,65 @@ var BBTreeTag = {
 		var n = v.hasClass('checked');
 		if(n == false)
 		{	
-			cj.ajax({
+			if(!callTree.currentSettings.displaySettings.onSave)
+			{
+				cj.ajax({
 				url: '/civicrm/ajax/entity_tag/create',
-				data: {
-					entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
-					entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
-					call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri,
-					tag_id: removeTagLabel(tagLabel)
-				},
-				dataType: 'json',
-				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {
-						BBTree.reportAction(['craa', 0, v.find('.name').text(),,data.message]);
+					data: {
+						entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
+						entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
+						call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri,
+						tag_id: removeTagLabel(tagLabel)
+					},
+					dataType: 'json',
+					success: function(data, status, XMLHttpRequest) {
+						if(data.code != 1) {
+							BBTree.reportAction(['craa', 0, v.find('.name').text(),,data.message]);
+						}
+						else {
+							BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
+						}
 					}
-					else {
-						BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
-						cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
-						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
-						updateViewContactPage(tagLabel);
-						BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
-					}
-				}
-			});
-				
+				});
+			}
+			cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
+			cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
+			//if you're viewing the page, not using the 'add' method
+			if(BBActionConst == 16)
+			{
+				updateViewContactPage(tagLabel);
+			}
+			BBTreeTag.tagInheritanceFlag(tagLabel, 'add');	
 		} else {
-			cj.ajax({
-				url: '/civicrm/ajax/entity_tag/delete',
-				data: {
-					entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
-					entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
-					call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri,
-					tag_id: removeTagLabel(tagLabel)
-				},
-				dataType: 'json',
-				success: function(data, status, XMLHttpRequest) {
-					if(data.code != 1) {
-						BBTree.reportAction(['crar', 0, v.find('.name').text(),,data.message]);
+			if(!callTree.currentSettings.displaySettings.onSave)
+			{
+				cj.ajax({
+					url: '/civicrm/ajax/entity_tag/delete',
+					data: {
+						entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
+						entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
+						call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri,
+						tag_id: removeTagLabel(tagLabel)
+					},
+					dataType: 'json',
+					success: function(data, status, XMLHttpRequest) {
+						if(data.code != 1) {
+							BBTree.reportAction(['crar', 0, v.find('.name').text(),,data.message]);
+						}
+						else{
+							BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
+							
+						}
 					}
-					else{
-						BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
-						cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
-						BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
-						updateViewContactPage(tagLabel, 'remove');
-					}
-				}
-			});
+				});
+			}
+			cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
+			BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
+			//if you're viewing the page, not using the 'add' method
+			if(BBActionConst == 16)
+			{
+				updateViewContactPage(tagLabel, 'remove');
+			}
 		}
 	},
 	tagInheritanceFlag: function(tagLabel, toggle) //adds or removes inheritance toggle: add/remove/clear
@@ -1262,8 +1271,15 @@ var BBTreeModal = {
 									modalLoadingGif('remove');
 								}
 								
+							},
+							error: function(data, status, errorThrown)	{
+								cj('#BBDialog').dialog('close');
+								cj('#BBDialog').dialog('destroy');
+								BBTree.reportAction(['merct',0,tagMerge.currentId,BBTreeModal.radioSelectedTid, errorThrown]);
+								modalLoadingGif('remove');
 							}	
 						});
+
 					}
 				},
 				{
@@ -1523,12 +1539,13 @@ var BBTreeModal = {
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				tlvl++;
 				var toAddDT = '<dt class="lv-' + tlvl + ' ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}
 				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
 				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
+				BBTreeEdit.setTagInfo();
 			}
 			if(tdata.treeParent == 291) //if the parent is issue codes, make DL to put the DT in if necessary
 			{
@@ -1539,7 +1556,7 @@ var BBTreeModal = {
 					cj('dt#'+BBTreeModal.taggedID+' .ddControl').addClass('treeButton');
 				}
 				var toAddDT = '<dt class="lv-' + tlvl + ' ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}
@@ -1560,7 +1577,7 @@ var BBTreeModal = {
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
-				if(data.is_reserved != null)
+				if(data.is_reserved != null && data.is_reserved.length != 0 && data.is_reserved == true)
 				{
 					toAddDT += 'isReserved';
 				}

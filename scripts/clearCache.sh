@@ -25,10 +25,9 @@ usage() {
   echo "Usage: $prog [--all] [--tmp-only] [--tpl-only] [--wd-only] instanceName" >&2
 }
 
-
 drop_temp_tables() {
   inst="$1"
-  tmptabs=`$execSql -i $inst -c "show tables like 'civicrm\_%\_temp\_%'"`
+  tmptabs=`$execSql -i $inst -c "show tables like 'civicrm\_%temp\_%'"`
   if [ "$tmptabs" ]; then
     tmptabs=`echo $tmptabs | tr " " ,`
     echo "Temporary tables to drop: $tmptabs"
@@ -109,6 +108,8 @@ echo "Clearing CiviCRM filesystem caches"
 
 [ $tpl_only -eq 1 ] && exit 0
 
+drop_temp_tables $instance
+
 echo "Clearing CiviCRM database caches"
 sql="
   TRUNCATE civicrm_acl_cache;
@@ -116,7 +117,7 @@ sql="
   TRUNCATE civicrm_cache;
   TRUNCATE civicrm_group_contact_cache;
   TRUNCATE civicrm_menu;
-  TRUNCATE civicrm_task_action_temp;
+  DROP TABLE IF EXISTS civicrm_task_action_temp;
   UPDATE civicrm_preferences SET navigation=null;
   UPDATE civicrm_setting SET value = null WHERE name = 'navigation';
 "
