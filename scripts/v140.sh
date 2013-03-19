@@ -429,8 +429,9 @@ $execSql -i $instance -c "$authfwd"
 ## 6053
 indivcat="
 SELECT @ic:=option_group_id FROM civicrm_custom_field WHERE name = 'Individual_Category';
+SELECT @w:=weight FROM civicrm_option_value WHERE name = 'District_Staff' AND option_group_id = @ic;
 INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
-VALUES (@ic, 'Albany Staff', 'albany_staff', 'Albany_Staff', 12, 1);
+VALUES (@ic, 'Albany Staff', 'albany_staff', 'Albany_Staff', @w, 1);
 "
 $execSql -i $instance -c "$indivcat"
 
