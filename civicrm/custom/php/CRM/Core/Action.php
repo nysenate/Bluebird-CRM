@@ -295,11 +295,12 @@ class CRM_Core_Action {
     }
     else {
       $extra = '';
-      $urlOrig = $url;
+      $urlOrig = $url;//NYSS
       $extraLinks = array_splice($url, 2);
       //NYSS 5942
       $mainLinksLength = array_sum(array_map('strlen',array_map('strip_tags',array_slice($url, 0, 2))));
-      if (count($extraLinks) > 1 || $mainLinksLength > 10) {
+      if (count($extraLinks) > 1 ||
+        ($mainLinksLength > 10 && count($url) > 1) ) {
         if ( $mainLinksLength > 10 ) {
           $mainLinks = array_slice($url, 0, 1);
           $extraLinks = array_splice($urlOrig, 1);

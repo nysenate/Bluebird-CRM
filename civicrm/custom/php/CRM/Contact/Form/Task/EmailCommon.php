@@ -218,6 +218,7 @@ class CRM_Contact_Form_Task_EmailCommon {
         NULL,
         array(),
         NULL,
+        NULL,
         'is_primary DESC'
       );
 

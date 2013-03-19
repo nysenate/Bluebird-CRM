@@ -233,6 +233,7 @@ navigation="
 SELECT @admin := id FROM civicrm_navigation WHERE name = 'Administer';
 UPDATE civicrm_navigation SET parent_id = @admin WHERE name = 'Batches' AND parent_id IS NULL;
 UPDATE civicrm_navigation SET is_active = 0 WHERE name = 'New SMS';
+UPDATE civicrm_navigation SET is_active = 0 WHERE name = 'Find Mass SMS';
 UPDATE civicrm_navigation SET parent_id = @admin WHERE name = 'New SMS' AND parent_id IS NULL;
 UPDATE civicrm_navigation SET parent_id = @admin WHERE name = 'CiviMail Component Settings' AND parent_id IS NULL;
 UPDATE civicrm_navigation SET parent_id = @admin WHERE name = 'CiviEvent Component Settings' AND parent_id IS NULL;

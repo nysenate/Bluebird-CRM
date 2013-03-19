@@ -936,6 +936,7 @@ class CRM_Utils_Token {
     $extraParams      = NULL,
     $tokens           = array(),
     $className        = NULL,
+    $jobID            = NULL,
     $sortBy           = NULL
   ) {
     if (empty($contactIDs)) {
@@ -1035,7 +1036,7 @@ class CRM_Utils_Token {
     // also call a hook and get token details
     CRM_Utils_Hook::tokenValues($details[0],
       $contactIDs,
-      NULL,
+      $jobID,
       $tokens,
       $className
     );
