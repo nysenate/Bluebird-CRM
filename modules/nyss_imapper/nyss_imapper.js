@@ -386,7 +386,7 @@ cj(document).ready(function(){
 		var create_city = cj("#tab2 .city").val();
 		var create_dob = cj("#tab2 .dob").val();
 
-		if((!!create_first_name) && (!!create_last_name)){
+		if((create_first_name)||(create_last_name)||(create_email_address)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
@@ -436,7 +436,7 @@ cj(document).ready(function(){
 			});
 			return false;
 		}else{
-			alert("Please Enter a first & last name");
+			alert("Required: First Name or Last Name or Email");
 		};
 	});
 
@@ -1178,18 +1178,18 @@ function DeleteActivity(value){
 // cj(".push_tag").live('click', function(){
 function pushtag(clear){
 
-	contact_ids = cj("#contact_ids").val();
-	activity_ids = cj("#activity_ids").val();
+	var contact_ids = cj("#contact_ids").attr('value');
+	var activity_ids = cj("#activity_ids").attr('value');
 
-	contact_tag_ids ='';
-	activity_tag_ids ='';
+	var contact_tag_ids ='';
+	var activity_tag_ids ='';
 
-	contact_input = cj("#contact_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
+	var contact_input = cj("#contact_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
 	if(contact_input.length){
 		contact_tag_ids = contact_input;
 	}
 
-	activity_input = cj("#activity_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
+	var activity_input = cj("#activity_tag_ids").val().replace(/,,/g, ",").replace(/^,/g, "");
 	if(activity_input.length){
 		activity_tag_ids = activity_input;
 	}
@@ -1200,7 +1200,7 @@ function pushtag(clear){
 	}
 
 	if(contact_tag_ids){
-		contact_ids_array = contact_ids.split(',');
+		var contact_ids_array = contact_ids.split(',');
 		cj.each(contact_ids_array, function(key, id) {
 			helpMessage('Contact Tagged');
 		});
@@ -1216,7 +1216,7 @@ function pushtag(clear){
 		});
 	}
 	if(activity_tag_ids){
-		activity_ids_array = activity_ids.split(',');
+		var activity_ids_array = activity_ids.split(',');
 		cj.each(activity_ids_array, function(key, id) {
 			helpMessage('Message Tagged');
 		});
@@ -1290,7 +1290,7 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
 			}
 		});
