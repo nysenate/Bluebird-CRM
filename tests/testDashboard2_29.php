@@ -1,4 +1,4 @@
-<?php /* 
+<?php /*
 
     Feb 29, 2012
     This test script checks if all the menus exisis on the Dashboard
@@ -19,7 +19,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     protected $captureScreenshotOnFailure = FALSE;
     protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
- 
+
     protected function setUp()
     {
         $this->settings = new BluebirdSeleniumSettings();
@@ -32,7 +32,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         }
         //$this->setSleep($this->settings->sleepTime);
     }
- 
+
     public function testTitle()
     {
         $myurl = getMainURL();
@@ -81,7 +81,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->check("Find Anything!","civi_text_search");   // Find Anything!
 
         $this->check("CREATE","create-link");   // create
-        
+
         $this->check("Dashboard","dashboard-link-wrapper");   // bottom Dashboard link
 
     }
@@ -92,7 +92,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     private function check($name, $id) {
         if ($name=='' || $id=='') return 0;
         $this->assertTrue($this->isTextPresent("$name"),"\"$name\" not found on the page\n ");
-        $this->waitForElementPresent("$id");        
+        $this->waitForElementPresent("$id");
     }
 
     private function stop() {

@@ -16,7 +16,7 @@
 				   	<th class='Actions'>Actions</th>
 				</tr>
 			</thead>
-			<tbody id='imapper-messages-list'> 
+			<tbody id='imapper-messages-list'>
 				<td valign="top" colspan="7" class="dataTables_empty"><span class="loading_row"><span class="loading_message">Loading Message data <img src="/sites/default/themes/Bluebird/images/loading.gif"/></span></span></td>
 			</tbody>
 		</table>
@@ -133,5 +133,8 @@
 	</div>
 	<div id="no_find_match" title="This Message was already matched" style="display:none;">
 		<p> We will automatically assign this message in the next 5 mins.</p>
+	</div>
+	<div id="matchCheck-popup" title="Checking Other Emails">
+		<p> Currently Checking for other emails that match this address.</p>
 	</div>
 </div>

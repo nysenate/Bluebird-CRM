@@ -2,11 +2,11 @@
 // processMailboxes.php
 //
 // Project: BluebirdCRM
-// Author: Ken Zalewski
+// Author: Ken Zalewski & Stefan Crain
 // Organization: New York State Senate
 // Date: 2011-03-22
-// Revised: 2013-1-18
-// 
+// Revised: 2013-3-21
+//
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
@@ -333,70 +333,171 @@ function retrieveMessage($conn, $idx)
   $msg_struct = imap_fetchstructure($conn, $idx);
 
   // Extract the body using one of two functions, depending on the message type.
-  if ($msg_struct->type == TYPEMULTIPART) {
-    $email->body = imap_fetchbody($conn, $idx, "1");
-  }
-  else {
-    $email->body = imap_body($conn, $idx);
-  }
- 
-  //get the attachments
-  if (isset($msg_struct->parts) && count($msg_struct->parts > 0)) {
-    $email->attachments = getAttachments($conn, $idx, $msg_struct->parts);
-  }
-  else {
-    $email->attachments = null;
+  // if ($msg_struct->type == TYPEMULTIPART) {
+  //   $email->body = imap_fetchbody($conn, $idx, "1");
+  // }
+  // else {
+  //   $email->body = imap_body($conn, $idx);
+  // }
+
+  foreach($msg_struct->parts as $partNumber => $part) {
+    echo $part->type."\n";
+    switch($part->type) {
+
+      case 0:
+        // the HTML or plain text part of the email
+        $email->body = getPart($conn, $idx, $partNumber, $part->encoding);
+        // now do something with the message, e.g. render it
+      break;
+      case 1:
+        // multi-part headers, can ignore
+      break;
+      case 2:
+        // attached message headers, can ignore
+      break;
+
+      case 3: // application
+      case 4: // audio
+      case 5: // image
+       // var_dump($part);
+       $filename = getFilenameFromPart($part);
+       var_dump($filename);
+
+      case 6: // video
+      case 7: // other
+        $filename = getFilenameFromPart($part);
+        if($filename) {
+           // it's an attachment
+          $attachment = getPart($conn, $idx, $partNumber, $part->encoding);
+          // now do something with the attachment, e.g. save it somewhere
+        }
+        else {
+          // don't know what it is
+        }
+      break;
+
+    }
+
   }
 
+  print_r($email->body);
   return $email;
 } // retrieveMessage()
 
-
-
-function getAttachments($conn, $num, $parts)
-{
-  $attachments = array();
-
-  for ($i = 0; $i < count($parts); $i++) {
-    $cur_att = array(
-      'is_attachment' => false,
-      'filename' => '',
-      'name' => '',
-      'attachment' => ''
-    );
-  
-    if ($parts[$i]->ifdparameters == true) {
-      foreach ($parts[$i]->dparameters as $object) {
-        if (strtolower($object->attribute) == 'filename') {
-          $cur_att['is_attachment'] = true;
-          $cur_att['filename'] = $object->value;
-        }
+//http://www.electrictoolbox.com/php-imap-message-body-attachments/
+function flattenParts($messageParts, $flattenedParts = array(), $prefix = '', $index = 1, $fullPrefix = true) {
+  // if(isset($structure->parts)) $flattenedParts = self::flattenParts($structure->parts);else $flattenedParts['1'] = $structure;
+  foreach($messageParts as $part) {
+    $flattenedParts[$prefix.$index] = $part;
+    if(isset($part->parts)) {
+      if($part->type == 2) {
+        $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix.$index.'.', 0, false);
       }
+      elseif($fullPrefix) {
+        $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix.$index.'.');
+      }
+      else {
+        $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix);
+      }
+      unset($flattenedParts[$prefix.$index]->parts);
     }
-  
-    if ($parts[$i]->ifparameters == true) {
-      foreach ($parts[$i]->parameters as $object) {
-        if (strtolower($object->attribute) == 'name') {
-          $cur_att['is_attachment'] = true;
-          $cur_att['name'] = $object->value;
-        }
-      }
-    }
-  
-    if ($cur_att['is_attachment'] == true) {
-      $cur_att['attachment'] = imap_fetchbody($conn, $num, $i + 1);
-      if ($parts[$i]->encoding == ENCBASE64) {
-        $cur_att['attachment'] = base64_decode($cur_att['attachment']);
-      }
-      elseif ($parts[$i]->encoding == ENCQUOTEDPRINTABLE) {
-        $cur_att['attachment'] = quoted_printable_decode($cur_att['attachment']);
-      }
-      $attachments[] = $cur_att;
+    $index++;
+  }
+
+  return $flattenedParts;
+
+}
+
+function getPart($connection, $messageNumber, $partNumber, $encoding) {
+
+  $data = imap_fetchbody($connection, $messageNumber, $partNumber);
+  switch($encoding) {
+    case 0: return $data; // 7BIT
+    case 1: return $data; // 8BIT
+    case 2: return $data; // BINARY
+    case 3: return base64_decode($data); // BASE64
+    case 4: return quoted_printable_decode($data); // QUOTED_PRINTABLE
+    case 5: return $data; // OTHER
+  }
+
+
+}
+function getFilenameFromPart($part) {
+
+  $filename = '';
+
+  if($part->ifdparameters) {
+    foreach($part->dparameters as $object) {
+      $text = iconv($charset, 'UTF-8', $text);
+      $input = str_replace($encoded, $text, $input);
+      if(strtolower($object->attribute) == 'filename') {
+        $filename = quoted_printable_decode($object->value);
+        $filename2 = iconv($charset, 'UTF-8', $filename);
+        var_dump($filename2);
+        var_dump($charset);
+        $filename3 = trim(preg_replace('/^(.*)$/m', ' =?'.$charset.'?Q?$1?=', $filename2));
+        // $filename3 = preg_replace('/^|\?$/i', '', $string);
+        var_dump($filename3);
+       }
     }
   }
 
-  return $attachments;
-} // getAttachments()
+  if(!$filename && $part->ifparameters) {
+    foreach($part->parameters as $object) {
+      if(strtolower($object->attribute) == 'name') {
+        $filename = $object->value;
+      }
+    }
+  }
+
+  return $filename;
+
+}
+
+// function getAttachments($conn, $num, $parts)
+// {
+//   $attachments = array();
+
+//   for ($i = 0; $i < count($parts); $i++) {
+//     $cur_att = array(
+//       'is_attachment' => false,
+//       'filename' => '',
+//       'name' => '',
+//       'attachment' => ''
+//     );
+
+//     if ($parts[$i]->ifdparameters == true) {
+//       foreach ($parts[$i]->dparameters as $object) {
+//         if (strtolower($object->attribute) == 'filename') {
+//           $cur_att['is_attachment'] = true;
+//           $cur_att['filename'] = $object->value;
+//         }
+//       }
+//     }
+
+//     if ($parts[$i]->ifparameters == true) {
+//       foreach ($parts[$i]->parameters as $object) {
+//         if (strtolower($object->attribute) == 'name') {
+//           $cur_att['is_attachment'] = true;
+//           $cur_att['name'] = $object->value;
+//         }
+//       }
+//     }
+
+//     if ($cur_att['is_attachment'] == true) {
+//       $cur_att['attachment'] = imap_fetchbody($conn, $num, $i + 1);
+//       if ($parts[$i]->encoding == ENCBASE64) {
+//         $cur_att['attachment'] = base64_decode($cur_att['attachment']);
+//       }
+//       elseif ($parts[$i]->encoding == ENCQUOTEDPRINTABLE) {
+//         $cur_att['attachment'] = quoted_printable_decode($cur_att['attachment']);
+//       }
+//       $attachments[] = $cur_att;
+//     }
+//   }
+
+//   return $attachments;
+// } // getAttachments()
 
 function strip_HTML_tags($text){ // Strips HTML 4.01 start and end tags. Preserves contents.
         return preg_replace('%
@@ -432,15 +533,16 @@ function strip_HTML_tags($text){ // Strips HTML 4.01 start and end tags. Preserv
             %six', '', $text);
 }
 
-// This is my email body text / LDAP parser 
+// This is my email body text / LDAP parser
 function extract_email_address ($string) {
   // we have to parse out ldap stuff because sometimes addresses are
-  // embedded and, see NYSS #5748 for more details 
+  // embedded and, see NYSS #5748 for more details
 
-  // if o= is appended to the end of the email address remove it 
+  // if o= is appended to the end of the email address remove it
   $string = preg_replace('/\/senate@senate/i', '/senate', $string);
   $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
   $string = preg_replace('/"|\'/i', '', $string);
+  $string = preg_replace('/<|>/i', '', $string);
   // ldap addresses have slashes, so we do an internal lookup
   $internal = preg_match("/\/senate/i", $string, $matches);
   if($internal == 1){
@@ -453,7 +555,7 @@ function extract_email_address ($string) {
       $return = array('type'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
       return $return;
     }else{
-      $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
+      $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string "'.$string.'"');
       return $return;
     }
   }else{
@@ -465,7 +567,7 @@ function extract_email_address ($string) {
         $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
         if ($email !== false) {
             $emails[] = $email;
-            break; // only want one match 
+            break; // only want one match
         }
     }
     $name = trim(str_replace($emails[0], '', $name));
@@ -519,11 +621,12 @@ function cleanDate($date_string){
 // Returns true/false to move the email to archive or not
  function civiProcessEmail($email, $customHandler)
 {
-  global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId;
+  global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId,$imap_user;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = false;
+  require_once 'CRM/Core/DAO.php';
 
-  // remove weirdness in html encoded messages 
+  // remove weirdness in html encoded messages
   $OrgionalBody =  mysql_real_escape_string(quoted_printable_decode($email->body));
   // $body = strip_HTML_tags($OrgionalBody);
 
@@ -539,11 +642,20 @@ function cleanDate($date_string){
     $format = "plain";
     $tempbody = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $OrgionalBody);
   }
+  $tempbody_old = $tempbody;
+  $tempbody = strip_HTML_tags($tempbody);
+  $tempbody = html_entity_decode($tempbody);
+  $tempbody = preg_replace('/ +/', ' ', $tempbody);
+  $tempbody = preg_replace('/\\\r|\\\n|\>/', '', $tempbody);
+  $tempbody = preg_replace('/\r|\n/', '', $tempbody);
+  $tempbody = preg_replace('/\>/', '\r\n', $tempbody);
+  $tempbody = preg_replace('/</', '', $tempbody);
+  $tempbody = mysql_real_escape_string($tempbody);
 
   // check to see if we can find an email address in the message body,
   // else we use the email from the message header and call it a direct message
-  preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempbody, $froms);
-  if($froms['2']){ 
+  preg_match("/(From:|from:)\s*([^\r\n]*)/i", $tempbody_old, $froms);
+  if($froms['2']){
     $fromEmail = extract_email_address($froms['2']);
     if(!$fromEmail['email']){
       $fromEmail = array('email' => $email->replyTo, 'type'=>'direct');
@@ -559,15 +671,18 @@ function cleanDate($date_string){
   // error_log("[DEBUG]   Message Type ".$status);
 
   // check to see if we can find a subject in the message body,
-  preg_match("/(Subject:|subject:)\s*([^\r\n]*)/i", $tempbody, $subjects);
 
+
+  preg_match("/(Subject:|subject:)\s*([^\r\n|\r|\n]*)/i", $tempbody, $subjects);
   $subject = ($status == 'forwarded') ? preg_replace("/(Fwd:|fwd:|Fw:|fw:|Re:|re:) /i", "", $subjects['2']) : $email->subject ;
-  $subject = mysql_real_escape_string($subject);
+  $subject = substr($subject,0,245);
+
   // remove () sometimes found in emails with no subject
   $subject = preg_replace("/(\(|\))/i", "", $subject);
   if( trim(strip_tags($subject)) == "" | trim($subject) == "no subject"){
     $subject = "No Subject";
   }
+
 
   // html emails need to be pre tagged
   $details = '<pre>'.$tempbody.'</pre>';
@@ -578,12 +693,37 @@ function cleanDate($date_string){
   echo "[INFO]    FINDING match for the target email ".$fromEmail['email']." in Civi\n";
 
   // if there is more then one target for the message leave if for the user to deal with
+  $addition_status = 0;
   if ($contact['count'] != 1 ){
     error_log("[DEBUG]   TARGET  ".$fromEmail['email']." Matches [".$contact['count']."] Records in this instance . Leaving for manual addition.");
+    $addition_status = 0;
   }else{
     $contactID = $contact['id'];
     $bSuccess = true;
+    $addition_status = 1;
   }
+  $fwdDate = cleanDate($tempbody);
+  error_log("[DEBUG]   FWD Date ".$fwdDate['long']);
+
+  $fromEmail_str = $fromEmail['email'];
+  $fromName_str = $fromEmail['name'];
+  $message_id = $email->uid;
+  $olddate = $fwdDate['u'];
+  $originDate = date('Y-m-d H:i:s', $olddate);
+  $imap_id = 0;
+  $forwarder = $email->replyTo;
+  $nyss_conn = new CRM_Core_DAO();
+  $nyss_conn = $nyss_conn->getDatabaseConnection();
+  $conn = $nyss_conn->connection;
+
+  $SearchQuery = "select * from nyss_inbox_messages where `message_id` = {$message_id} && `imap_id` = {$imap_id}";
+  $SearchForExisting = mysql_query($SearchQuery, $conn);
+
+  if (mysql_num_rows($SearchForExisting) == 0) {
+    $insertQuery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `matcher`, `format`, `email_date`) VALUES ({$message_id}, {$imap_id}, '{$fromName_str}', '{$fromEmail_str}', '{$subject}', '{$tempbody}', '{$forwarder}', {$addition_status}, 0, 0,'{$originDate}');";
+      $insertMessage = mysql_query($insertQuery, $conn);
+  }
+
 
   //process any custom mailbox specific rules
   if ($customHandler != null) {
@@ -593,13 +733,13 @@ function cleanDate($date_string){
   elseif ($bSuccess) {
 
     // Let's find the userID for the source of the activity
-    $apiParams = array( 
+    $apiParams = array(
       'email' =>  $email->replyTo,
       'version' => 3
     );
     $result = civicrm_api('contact', 'get', $apiParams);
 
-    // In cases where there is more the one user found mark the message as assigned from bluebird admin 
+    // In cases where there is more the one user found mark the message as assigned from bluebird admin
     $userId = 1;
     if ($result['count'] == 1) {
       $userId = $result['values'][ $result['id'] ]['contact_id'];
@@ -611,14 +751,21 @@ function cleanDate($date_string){
       error_log("[DEBUG]   SOURCE ".$email->replyTo." Matches [".$result['count']."] Records in this instance . Adding with source Bluebird Admin.");
     }
 
-    $fwdDate = cleanDate($tempbody);
-    error_log("[DEBUG]   FWD Date ".$fwdDate['long']);
+
 
     echo "[INFO]    ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
+
+    $body = strip_HTML_tags($OrgionalBody);
+    $body = html_entity_decode($OrgionalBody);
+    $body = preg_replace('/ +/', ' ', $body);
+    $body = preg_replace('/\r\r|\n\n/', '<br/>', $body);
+    $body = preg_replace('/\r|\n/', '', $body);
+    $body = mysql_real_escape_string($body);
+
     $apiParams = array(
                 "source_contact_id" => $userId,
-                "subject" => substr($subject, 0, 255),
-                "details" =>  strip_HTML_tags($OrgionalBody),
+                "subject" => $subject,
+                "details" =>  $body,
                 "activity_date_time" => $fwdDate['long'],
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
@@ -657,6 +804,12 @@ function cleanDate($date_string){
         $result = mysql_query($query, $conn);
         if ($result) {
           echo "[DEBUG]   ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
+
+          $query = "UPDATE `nyss_inbox_messages`
+                    SET  `status`= 1, `matcher` = 1, `matched_to` = {$contactID}, `activity_id` = $activityId
+                    WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
+          $updateMessage = mysql_query($query, $conn);
+
         }
         else {
           echo "[ERROR]   COULD NOT add Tag id=$inboxPollingTagId to Activity id=$activityId\n";
@@ -704,7 +857,7 @@ function getInboxPollingTagId()
   }
 
   // If there's no tag, create it.
-  $apiParams = array( 
+  $apiParams = array(
     'name' => 'Inbox Polling Unprocessed',
     'description' => 'Tag noting that this activity has been created by Inbox Polling and is still Unprocessed.',
     'parent_id' => 296,

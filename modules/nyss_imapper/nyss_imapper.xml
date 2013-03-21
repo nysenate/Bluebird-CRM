@@ -2,17 +2,22 @@
 <menu>
   <item>
      <path>civicrm/imap/unmatched</path>
-     <title>IMAP Unmatched Messages</title>
+     <title>Inbox Unmatched Messages</title>
      <page_callback>CRM_IMAP_Page_Mapper</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
     <item>
      <path>civicrm/imap/matched</path>
-     <title>IMAP Matched Messages</title>
+     <title>Inbox Matched Messages</title>
      <page_callback>CRM_IMAP_Page_Activities</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
-
+  <item>
+     <path>civicrm/imap/reports</path>
+     <title>Inbox Reports</title>
+     <page_callback>CRM_IMAP_Page_Reports</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
   <item>
     <path>civicrm/imap/ajax/listUnmatchedMessages</path>
     <page_callback>CRM_IMAP_AJAX::getUnmatchedMessages</page_callback>
@@ -29,7 +34,7 @@
      <page_callback>CRM_IMAP_AJAX::getMessageDetails</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
   </item>
- 
+
   <item>
     <path>civicrm/imap/ajax/getActivityDetails</path>
     <page_callback>CRM_IMAP_AJAX::getActivityDetails</page_callback>
@@ -87,7 +92,7 @@
     <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
-  
+
   <item>
     <path>civicrm/imap/ajax/fileBug</path>
     <page_callback>CRM_IMAP_AJAX::fileBug</page_callback>

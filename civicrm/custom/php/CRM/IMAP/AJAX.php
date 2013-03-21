@@ -9,7 +9,7 @@ class CRM_IMAP_AJAX {
     private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
- 
+
     /* setupImap()
      * Parameters: None.
      * Returns: None.
@@ -110,9 +110,10 @@ class CRM_IMAP_AJAX {
         if(!$connection ){
           $output = array('code'=>'ERROR','status'=>'0','message'=>'Imap Connection failed');
         }else{
+
           // Pull the message via the UID and output it as plain text if possible
           $email = $imap->getmsg_uid($id);
-          if ($debug){          
+          if ($debug){
             echo "<h1>Imap Errors</h1>";
             var_dump(imap_errors());;
             echo "<h1>Input</h1>";
@@ -122,7 +123,6 @@ class CRM_IMAP_AJAX {
             var_dump($email);
             echo "</pre>";
           }
-
           // if message is less the x mins old, check it to see if it matches a contact,
           // if it does directly match, don't allow it to show up in the unmatches screen
           // we do this because the processing scritp hasn't had a chance to match it yet
@@ -141,7 +141,7 @@ class CRM_IMAP_AJAX {
             // print_r($details);
             // var_dump($format);
 
-            // check for fake html 
+            // check for fake html
             // we don't care if the body only has <br/> tags
             if(strip_tags($details) != strip_tags($details,"<br>")){
               $format = 'html';
@@ -152,7 +152,7 @@ class CRM_IMAP_AJAX {
                 $tempDetails = preg_replace("/>|</i", "", $details);
                 $body = preg_replace("/(=|\r\n|\r|\n)/i", "\r\n<br>\n", $tempDetails);
             }else{
-                // currently strips content 
+                // currently strips content
                 $tempDetails = strip_tags($details,'<br>');
                 $tempDetails = preg_replace("/<br>/i", "\r\n<br>\n", $tempDetails);
                 // $tempDetails = self::strip_HTML_tags($tempDetails);
@@ -188,7 +188,7 @@ class CRM_IMAP_AJAX {
             }
             $fromEmail = self::extract_email_address($froms['2']); // removes the email from the name <email> combo
 
-            // check ot see if forwarded 
+            // check to see if forwarded
           if(!$froms['2'] || !$subjects['2']){
             $status =  'direct';
           }else{
@@ -199,23 +199,36 @@ class CRM_IMAP_AJAX {
           $date_long =  $cleanDate['long'];
           $date_u =  $cleanDate['u'];
 
+          $body = self::strip_HTML_tags($body);
+          // maybe im a type nerd, but proper quotes are important
+          $body = preg_replace('/\'/', '&#8217;', $body);
+          $body = preg_replace('/ "/', ' &#8220;', $body);
+          $body = preg_replace('/" |"$/', '&#8221; ', $body);
+          $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
+
+          //  other normalizing work
+          $body = preg_replace('/ +/', ' ', $body);
+          $body = preg_replace('/\r\r|\n\n/', '<br/>', $body);
+          $body = preg_replace('/\r|\n/', '', $body);
+          $body = mysql_real_escape_string($body);
+
             // contains info directly from the email header
             $header = array(
                 'messageId'=>$id,
                 'format' => $format,
                 'uid' => $email->uid,
                 'from' => $email->sender[0]->personal.' '.$email->sender[0]->mailbox . '@' . $email->sender[0]->host,
-                'from_name' => $email->sender[0]->personal,                      
+                'from_name' => $email->sender[0]->personal,
                 'from_email' => $email->sender[0]->mailbox.'@'.$email->sender[0]->host,
-                'subject' => $email->subject,
-                'body' =>    self::strip_HTML_tags($body),
+                'subject' => trim(substr(strip_tags($email->subject),0,255)),
+                'body' =>    $body,
                 'date_short' => $date_short,
                 'date_long' => $date_long,
                 'date_u' => $date_u,
                 'status' => $status,
             );
 
-            // if we have a direct message populate accordingly 
+            // if we have a direct message populate accordingly
             $origin = ($status == 'direct') ?  $header['from'] : $froms['2'];
             $origin_name = ($status == 'direct') ?  $header['from_name']  :  $fromEmail['name'];
             $origin_email = ($status == 'direct') ?  $header['from_email'] : $fromEmail['email'];
@@ -243,7 +256,7 @@ class CRM_IMAP_AJAX {
                 'date_short' => $origin_date_short,
                 'date_long' => $origin_date_long,
                 'date_u' => $origin_date_u,
-                'subject' => $origin_subject,
+                'subject' => trim(substr(strip_tags($origin_subject),0,255)),
                 'origin' => $origin,
                 'origin_name' => $origin_name,
                 'origin_email' => $origin_email,
@@ -284,135 +297,60 @@ class CRM_IMAP_AJAX {
         $debug = self::get('debug');
         $start = microtime(true);
 
-
-        // Pull all of the IMAP usernames into the $imap_accounts variable
-        self::setupImap();
-        $messages = array();
-
-        // Loop through the imap accounts and assign an "imap id"
-        for($imap_id = 0; $imap_id < count(self::$imap_accounts); $imap_id++) {
-            // $imap will be your connection to the IMAP server
-            $imap = new CRM_Utils_IMAP(self::$server,
-                                    self::$imap_accounts[$imap_id]['user'],
-                                    self::$imap_accounts[$imap_id]['pass']);
-
-            // Search for all UIDs that meet the criteria of ""
-            // Then get the headers for some basic information.
-            // then grab the structure for attachments
-            $ids = imap_search($imap->conn(), 'SEEN',SE_UID);
-            $UNSEEN = imap_search($imap->conn(), 'UNSEEN',SE_UID);
-            $startcount= count($ids);
-            $unseencount= count($UNSEEN);
-            $returnMessage['stats']['overview']['count'] = $startcount;
-            $limit_b =  536870912; // 500mb in byte
-            $limit_kb =  512000; // 500mb in KB
+        $UnprocessedQuery = " SELECT *
+        FROM `nyss_inbox_messages`
+        WHERE `status` = 0
+        LIMIT 0 , 100000";
 
 
+        $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
+        $UnprocessedOutput = array();
+        while($row = mysql_fetch_assoc($UnprocessedResult)) {
+            $UnprocessedOutput = $row;
+            $message_id = $row['id'];
+            $returnMessage['Unprocessed'][$message_id] = $UnprocessedOutput;
+            $cleanDate = self::cleanDate($row['email_date']);
+            $date_short = $cleanDate['short'];
+            $date_long =  $cleanDate['long'];
+            $date_u =  $cleanDate['u'];
+            $returnMessage['Unprocessed'][$message_id]['date_short'] = $date_short;
+            $returnMessage['Unprocessed'][$message_id]['date_u'] = $date_u;
+            $returnMessage['Unprocessed'][$message_id]['date_long'] = $date_long;
+            // usefully when setting status for other unmatched messages
+            $returnMessage['Unprocessed'][$message_id]['key'] = $row['sender_email'];
 
-            
-            // echo "imap_check() failed: " . imap_last_error() . "<br />\n<br />\n";
-
-            
-
-            $quota_INBOX = imap_get_quotaroot($imap->conn(), 'INBOX');
-            // var_dump($quota_INBOX);
-            if ($quota_INBOX) {
-              $storage = $quota_INBOX['STORAGE'];
-              $precent = round((($storage['usage'] / $limit_kb )*100),2);
-              $returnMessage['stats'][$imap_id]['imap_usage'] = $storage['usage'];
-              $returnMessage['stats'][$imap_id]['imap_limit'] = $limit_kb;
-              $returnMessage['stats'][$imap_id]['imap_precent'] = $precent;
-              $warn_level = round((($storage['usage'] / $limit_kb )*10),0);
-              $returnMessage['stats'][$imap_id]['imap_warn_level'] = $warn_level;
-              $returnMessage['stats'][$imap_id]['imap_size_formatted'] =  self::decodeSize($storage['usage'] *1024);
-              $returnMessage['stats'][$imap_id]['imap_limit_formatted'] =  self::decodeSize($limit_kb *1024);
-              $returnMessage['stats'][$imap_id]['unseen_count'] = $unseencount;
+            // find matches
+            // lets reuse the search function
+            $sender_email = $row['sender_email'];
+            $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
+            LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
+            WHERE contact.is_deleted=0
+            AND email.email LIKE '$sender_email'
+            GROUP BY contact.id
+            ORDER BY contact.id ASC, email.is_primary DESC";
+            $matches = array();
+            $result = mysql_query($Query, self::db());
+            while($row = mysql_fetch_assoc($result)) {
+              $matches[] = $row;
             }
+            $returnMessage['Unprocessed'][$message_id]['matches'] = count($matches);
 
-            if(!$ids){
-              $returnMessage['errors'] = array('code' =>  'ERROR','message'   => 'No Messages Found', 'clear'=>'true');
-              echo json_encode($returnMessage);
-              CRM_Utils_System::civiExit();
-            } 
 
-            $checked = array();
-            $count = 0;
-            // Loop through the headers and check to make sure they're valid UIDs
-            foreach($ids as $id) {
-              // if($count < 50){
-              $count++;
-              $output = self::unifiedMessageInfo($imap,$id,$imap_id);
-
-              if ($output['code'] == "SUCCESS"){
-                if($output['forwarded']['origin_email']){
-                  // Don't double check email addresses
-                  if(!$checked[$output['forwarded']['origin_email']] ){
-                    // leaving civi here for records, it was really really slow 
-                    // $params = array('version'   =>  3, 'contact'  =>  'get', 'email' => $output['forwarded']['origin_email'] );
-                    // $contact = civicrm_api('contact', 'get', $params);
-
-                    // lets reuse the search function
-                    $email = $output['forwarded']['origin_email'];
-                    $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
-  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
-  WHERE contact.is_deleted=0
-  AND email.email LIKE '$email'
-  GROUP BY contact.id
-  ORDER BY contact.id ASC, email.is_primary DESC";
-
-                  $result = mysql_query($Query, self::db());
-                  $results = array();
-                  while($row = mysql_fetch_assoc($result)) {
-                      $results[] = $row;
-                  }
-
-                  $checked[$output['forwarded']['origin_email']] = count($results);
-                  }
-                }else{ 
-                  $checked[''] = 0;
-                }
-
-                $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
-
-                $returnMessage['successes'][$id] =  array( 
-                'subject' =>  $output['forwarded']['subject'],
-                'from' =>  $output['forwarded']['origin_name'].' '.$output['forwarded']['origin_email'],
-                'uid' =>  $id,
-                'date_short' =>  $output['forwarded']['date_short'],
-                'date_u' =>  $output['forwarded']['date_u'],
-                'date_long' =>  $output['forwarded']['date_long'],
-                'format' =>  $output['header']['format'],
-                'from_email' =>  $output['forwarded']['origin_email'],
-                'from_name' =>  $output['forwarded']['origin_name'],
-                'forwarder_email' =>  $output['header']['from_email'],
-                'match_count'=> $checked[$output['forwarded']['origin_email']],
-                // 'forwarder_name' =>  $output['header']['from_name'],
-                // 'forwarder_time' =>  $output['forwarded']['date_short'],
-                'attachmentfilename'  => $output['attachments'][0]['name'],
-                // 'attachmentname'  =>  $output['attachments'][0]['name'],
-                'attachment'  => $output['attachments']['overview']['total'],
-                'status' =>$output['header']['status'],
-                'imap_id' =>  $imap_id,
-                'key' => $key,
-                'time' => $output['stats']['overview']['time'],
-
-                // 'origin_lookup' => $output['forwarded']['origin_lookup']
-                );
-
-              }else{
-                $returnMessage['errors'][$id] = array('code' => $output['code'],'message'=> $output['message']);
-              }
-          // }
-          }
-          imap_close($imap->conn());
         }
 
-        $end = microtime(true);
+        $ProcessedQuery = " SELECT count(id)
+        FROM `nyss_inbox_messages`
+        WHERE `status` = 1";
+
+        $ProcessedResult = mysql_query($ProcessedQuery, self::db());
+        while($row = mysql_fetch_assoc($ProcessedResult)) {
+            $returnMessage['stats']['overview']['Processed'] = $row['count(id)'];
+        }
 
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
-        $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
-        $returnMessage['stats']['overview']['errors'] =  count($returnMessage['errors']);
-        $returnMessage['stats']['overview']['total'] =  count($ids);
+        $returnMessage['stats']['overview']['Unprocessed'] = count($returnMessage['Unprocessed']);
+         $returnMessage['stats']['overview']['total'] =  count($ids);
+        $end = microtime(true);
         $returnMessage['stats']['overview']['time'] = $end-$start;
 
          // Encode the messages variable and return it to the AJAX call
@@ -427,9 +365,9 @@ class CRM_IMAP_AJAX {
         $debug = self::get('debug');
 
         // we have to parse out ldap stuff because sometimes addresses are
-        // embedded and, see NYSS #5748 for more details 
+        // embedded and, see NYSS #5748 for more details
 
-        // if o= is appended to the end of the email address remove it 
+        // if o= is appended to the end of the email address remove it
         $string = preg_replace('/\/senate@senate/i', '/senate', $string);
         $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
         $string = preg_replace('/"|\'/i', '', $string);
@@ -450,7 +388,7 @@ class CRM_IMAP_AJAX {
             $return = array('type'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
             return $return;
           }
-          
+
         }else{
           // clean out any anything that wouldn't be a name or email, html or plain-text
           $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
@@ -460,7 +398,7 @@ class CRM_IMAP_AJAX {
               $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
               if ($email !== false) {
                   $emails[] = $email;
-                  break; // only want one match 
+                  break; // only want one match
               }
           }
           $name = trim(str_replace($emails[0], '', $name));
@@ -584,9 +522,9 @@ class CRM_IMAP_AJAX {
     // somestrs email clients think its fun to add stuff to the date, remove it here.
     $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
 
-    if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; }; 
+    if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; };
 
-    $yearsago = floor((time() - strtotime($date_string_short))/86400); 
+    $yearsago = floor((time() - strtotime($date_string_short))/86400);
 
     // check if the message is from last year
     if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
@@ -599,8 +537,8 @@ class CRM_IMAP_AJAX {
         $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
-    return array('date_debug'=>$date_string_short, 
-              'long'=> date("M d, Y h:i A", strtotime($date_string_short)), 
+    return array('date_debug'=>$date_string_short,
+              'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
               'u'=>date("U", strtotime($date_string_short)),
               'short'=>$formatted);
     }
@@ -620,14 +558,14 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
         // Delete the message with the specified UID
-        // return standard response 
-        // check to see if this message exists 
+        // return standard response
+        // check to see if this message exists
         // $email = $imap->getmsg_uid($id);
         $headers = imap_fetch_overview($imap->conn(),$id,FT_UID);
         if(sizeof($headers) != 1 ){
           $returnCode = array('code'      =>  'ERROR',
               'message'   => 'This Message no longer exists', 'clear'=>'true');
-        }else{ 
+        }else{
           $status = $imap->deletemsg_uid($id);
           if($status == true){
             $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
@@ -704,7 +642,7 @@ class CRM_IMAP_AJAX {
         if ($phone) {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
-        
+
         if ($debug){
           echo "<h1>inputs</h1>";
           var_dump($first_name);
@@ -756,7 +694,7 @@ class CRM_IMAP_AJAX {
      * Returns: None.
      * Takes message information and saves it as an activity and assigns it to
      * the selected contact ID.
-     */ 
+     */
     public static function assignMessage() {
         require_once 'CRM/Utils/IMAP.php';
         self::setupImap();
@@ -796,11 +734,13 @@ class CRM_IMAP_AJAX {
           var_dump($subject);
           var_dump($body);
           var_dump($messageUid);
+          echo "<h1>Attachments</h1>";
+          var_dump($attachments);
         }
 
         require_once 'api/api.php';
 
-        // if this email has been moved / assigned already 
+        // if this email has been moved / assigned already
         if( $output['code'] == "ERROR"){
           $returnCode = array('code'      =>  'ERROR',
               'message'   =>  $output['message'] );
@@ -879,14 +819,14 @@ ORDER BY gc.contact_id ASC";
                     if ($debug) echo "<p>".$email['email'] ." != ".strtolower($fromEmail)."</p>";
                 }
             }
-            
+
             // get contact info for return message
             $ContactInfo = self::contactRaw($contactId);
             $ContactName = $ContactInfo['values'][$contactId]['display_name'];
             if ($debug){
               echo "<h1>Contact Info</h1>";
               var_dump($ContactInfo['values'][$contactId]);
-            } 
+            }
             // Prams to add email to user
             $params = array(
                 'contact_id' => $contactId,
@@ -904,7 +844,7 @@ ORDER BY gc.contact_id ASC";
               'source_contact_id' => $forwarderId,
               'assignee_contact_id' => $forwarderId,
               'target_contact_id' => $contactId,
-              'subject' => substr(strip_tags($subject),0,200),
+              'subject' => $subject,
               'is_auto' => 0, // we manually add it, right ?
               'status_id' => 2,
               'activity_date_time' => $date,
@@ -942,18 +882,26 @@ ORDER BY gc.contact_id ASC";
                 }else{
                   // Move the message to the archive folder!
                   $imap->movemsg_uid($messageUid, 'Archive');
-                  $key =  substr(md5($output['forwarded']['origin_email']), 0, 8);
-                  // check to see it it was deleted 
+                  $key =  $output['forwarded']['origin_email'];
+                  // check to see it it was deleted
                   $delete_check = self::unifiedMessageInfo($imap,$messageUid,$imapId);
-                  if($delete_check['code']=="ERROR"){ // ERROR is what we expect here 
+                  if($delete_check['code']=="ERROR"){ // ERROR is what we expect here
                     $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$output['forwarded']['origin_email'],'key'=>$key);
+                    $activity_id =$activity['id'];
+
+                        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+                        SET  `status`= 1, `matcher` = $currentUserId, `activity_id` = $activity_id, `matched_to` = $contactId
+                        WHERE `message_id` =  {$messageUid} && `imap_id`= {$imapId}";
+                        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+
+                        // var_dump($result);
                   }else{
                     $returnCode = array('code' =>  'ERROR','message' =>  "Message was not deleted ");
                   }
                   echo json_encode($returnCode);
                 }
             }
-    
+
             // add attachment to activity
           };
         }
@@ -983,7 +931,6 @@ ORDER BY gc.contact_id ASC";
     }
 
 
-    // TODO: use dan's tagging system 
     public static function assignTag($inActivityIds = null, $inContactIds = null, $inTagIds = null, $response = null) {
         $activityIds    =   ($inActivityIds) ? $inActivityIds : self::get('activityIds');
         $contactIds     =   ($inContactIds) ? $inContactIds : self::get('contactIds');
@@ -1006,7 +953,7 @@ ORDER BY gc.contact_id ASC";
         $nyss_conn = new CRM_Core_DAO();
         $nyss_conn = $nyss_conn->getDatabaseConnection();
         $conn = $nyss_conn->connection;
-        
+
         $returnCode = array();
 
         foreach($tagIds as $tagId) {
@@ -1031,7 +978,7 @@ ORDER BY gc.contact_id ASC";
 
             foreach($contactIds as $contactId) {
                 if($contactId == 0)  break;
-                $params = array( 
+                $params = array(
                                 'entity_table'  =>  'civicrm_contact',
                                 'entity_id'     =>  $contactId,
                                 'tag_id'        =>  $tagId,
@@ -1093,115 +1040,54 @@ ORDER BY gc.contact_id ASC";
     }
 
     public static function getMatchedMessages() {
-        require_once 'CRM/Core/BAO/Tag.php';
-        require_once 'CRM/Core/BAO/EntityTag.php';
-        require_once 'CRM/Activity/BAO/ActivityTarget.php';
         require_once 'api/api.php';
-
-        // getEntitiesByTag  = get activities id's that are tagged with inbox polling tag
-        $tag     = new CRM_Core_BAO_Tag();
-        $tag->id = self::getInboxPollingTagId();
-        $result = CRM_Core_BAO_EntityTag::getEntitiesByTag($tag);
         $debug = self::get('debug');
-        if($debug){
-          // var_dump($result);
-        }
-        foreach($result as $id) {
-          // pull in full activity record 
-          $params = array('version'   =>  3,
-                          'activity'  =>  'get',
-                         'id' => $id,
-                          );
-          $activity = civicrm_api('activity', 'get', $params);
-          $activity_node = $activity['values'][$id];
 
-          if($debug){
-            // var_dump($activity_node);
-          }
 
-          // get the user the activity is attached to
-          // $user_id = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId($id);
-          // this shit just randomly broke
+        $UnprocessedQuery = " SELECT *
+        FROM `nyss_inbox_messages`
+        WHERE `status` = 1
+        LIMIT 0 , 100000";
 
-            $query = <<<EOQ
-SELECT *
-FROM `civicrm_activity_target`
-WHERE `activity_id` = $id
-EOQ;
 
-          $check_tag = mysql_query($query, self::db());
-          if($row = mysql_fetch_assoc($check_tag)) {
-            $result_user = $row; 
-          }
-
-          if($debug){
-            var_dump($query);
-            // var_dump($result_user);
-            var_dump($result_user['target_contact_id']);
-          }
-
-          $user_id = $result_user['target_contact_id'];
-
-          if($user_id){
-              $params = array('version'   =>  3,
-                          'activity' => 'get',
-                          'id' => $user_id,
-                      );
-              $contact = civicrm_api('contact', 'get', $params);
-              $contact_node = $contact['values'][$user_id];
-          }
-
-          if($debug){
-            var_dump($contact_node);
-            var_dump($contact_node['contact_is_deleted']);
-          }
-
-          if($contact_node['contact_is_deleted'] == '1'){
-            $errors[$id] = array('activitId' =>  $id, 'user'=>$user_id,'contact_is_deleted'=>$contact_node['contact_is_deleted']);
-          }else{
-
-            // find out who the forwarder is
-            $params = array('version'   =>  3,
-                            'id' => $activity_node['source_contact_id'],
-            );
-
-            $forwarder = civicrm_api('contact', 'get', $params );
-            $forwarder_node = $forwarder['values'][$activity_node['source_contact_id']];
-
-            $cleanDate = self::cleanDate($activity_node['activity_date_time']);
+        $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
+        $UnprocessedOutput = array();
+        while($row = mysql_fetch_assoc($UnprocessedResult)) {
+            $UnprocessedOutput = $row;
+            $message_id = $row['id'];
+            $returnMessage['successes'][$message_id] = $UnprocessedOutput;
+            $cleanDate = self::cleanDate($row['email_date']);
             $date_short = $cleanDate['short'];
             $date_long =  $cleanDate['long'];
             $date_u =  $cleanDate['u'];
+            $returnMessage['successes'][$message_id]['date_short'] = $date_short;
+            $returnMessage['successes'][$message_id]['date_u'] = $date_u;
+            $returnMessage['successes'][$message_id]['date_long'] = $date_long;
+            $returnMessage['successes'][$message_id]['fromEmail'] = $row['sender_email'];
 
-            $returnMessage['successes'][$id] = array('activitId'    =>  $id,
-                            'contactId' =>  $contact_node['contact_id'],
-                            'fromName'   =>  $contact_node['display_name'],
-                            'contactType'   =>  $contact_node['contact_type'],
-                            'firstName'   =>  $contact_node['first_name'],
-                            'lastName'   =>  $contact_node['last_name'],
-                            'fromEmail'  =>  $contact_node['email'],
-                            'fromdob'  =>  $contact_node['birth_date'],
-                            'fromphone'  =>  $contact_node['phone'],
-                            'fromstreet'  =>  $contact_node['street_address'],
-                            'fromcity'  =>  $contact_node['city'],
-                            'forwarderName' => $forwarder_node['display_name'],
-                            'forwarder' => $forwarder_node['email'],
-                            'subject'    =>  $activity_node['subject'],
-                            'match_type'  =>  $activity_node['is_auto'],
-                            'original_id'  =>  $activity_node['original_id'],
-                            'date_short'   =>  $date_short,
-                            'date_long' => $date_long,
-                            'date_u' => $date_u
-                            );
-           } 
-         }
+            // getting contact details
+            $contactId = $row['matched_to'];
+            $contact_info = self::contactRaw($contactId);
+            $returnMessage['successes'][$message_id]['contactType'] = $contact_info['values'][$contactId]['contact_type'];
+            $returnMessage['successes'][$message_id]['firstName'] = $contact_info['values'][$contactId]['first_name'];
+            $returnMessage['successes'][$message_id]['lastName'] = $contact_info['values'][$contactId]['last_name'];
+            $returnMessage['successes'][$message_id]['fromName'] = $contact_info['values'][$contactId]['display_name'];
+            $returnMessage['successes'][$message_id]['fromdob'] = $contact_info['values'][$contactId]['birth_date'];
+            $returnMessage['successes'][$message_id]['fromphone'] = $contact_info['values'][$contactId]['phone'];
+            $returnMessage['successes'][$message_id]['fromstreet'] = $contact_info['values'][$contactId]['street_address'];
+            $returnMessage['successes'][$message_id]['fromcity'] = $contact_info['values'][$contactId]['city'];
+
+        }
+
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
         $returnMessage['stats']['overview']['errors'] =   count($errors);
         $returnMessage['stats']['overview']['total'] =  count($returnMessage['successes']) + count($errors);
-        $returnMessage['stats']['overview']['time'] = $end-$start;
-        $returnMessage['errors'] = $errors;
+        // $returnMessage['stats']['overview']['time'] = $end-$start;
+        // $returnMessage['errors'] = $errors;
 
-        echo json_encode($returnMessage);
+        if ($debug) echo "<pre>";
+        echo (!$debug) ?  json_encode($returnMessage) : print_r($returnMessage);
+        if ($debug) echo "</pre>";
         CRM_Utils_System::civiExit();
     }
 
@@ -1243,7 +1129,7 @@ AND `tag_id` = $tagid
 EOQ;
       $check_tag = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_tag)) {
-        $result_tag = $row['COUNT(id)']; 
+        $result_tag = $row['COUNT(id)'];
       }
 
 
@@ -1257,7 +1143,7 @@ EOQ;
       $query = <<<EOQ
 SELECT COUNT(id)
 FROM `civicrm_activity_target`
-WHERE `activity_id` = $id 
+WHERE `activity_id` = $id
 AND `target_contact_id` = $userId
 EOQ;
       $check_result = mysql_query($query, self::db());
@@ -1265,12 +1151,12 @@ EOQ;
         $result_target = $row['COUNT(id)'];
       }
 
-      // message to return 
+      // message to return
       if ($debug){
         var_dump($query);
         var_dump($result_target);
       }
-      
+
       if($result_target != '1' ){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
@@ -1337,8 +1223,8 @@ EOQ;
                           'subject'    =>  $activity_node['subject'],
                           'match_type'  =>  $activity_node['is_auto'],
                           'original_id'  =>  $activity_node['original_id'],
-                          'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0 
-                          'date_short'   =>  $date_short, 
+                          'email_user' => self::$imap_accounts[0]['user'], // not ideal for the hardcoded 0
+                          'date_short'   =>  $date_short,
                           'date_long' =>$date_long,
                           'details'  =>  $activity_node['details']
                           );
@@ -1349,7 +1235,7 @@ EOQ;
         }
       CRM_Utils_System::civiExit();
     }
-    // delete activit and enttity ref 
+    // delete activit and enttity ref
     public static function deleteActivity() {
         require_once 'api/api.php';
         $id = self::get('id');
@@ -1361,11 +1247,11 @@ EOQ;
           sleep(2);
           $returnCode = array('code'=>'SUCCESS','id'=>$id, 'message'=>'Activity Deleted');
           echo json_encode($returnCode);
-          exit(); 
+          exit();
         }
 
         // deleteing a activity
-        $params = array( 
+        $params = array(
             'id' => $id,
             'activity_type_id' => 1,
             'version' => 3,
@@ -1377,7 +1263,7 @@ EOQ;
         }
 
 
-        // deleteing a entity is hard via api without entity id, time to use sql 
+        // deleteing a entity is hard via api without entity id, time to use sql
         $query = <<<EOQ
 DELETE FROM `civicrm_entity_tag`
 WHERE `entity_id` =  $id
@@ -1412,7 +1298,7 @@ EOQ;
         $tagid = self::getInboxPollingTagId();
         $error = false;
 
-        // deleteing a entity is hard via api without entity id, time to use sql 
+        // deleteing a entity is hard via api without entity id, time to use sql
         $tagid = self::getInboxPollingTagId();
         $query = <<<EOQ
 DELETE FROM `civicrm_entity_tag`
@@ -1442,7 +1328,7 @@ EOQ;
 
     }
 
-    // reAssignActivity 
+    // reAssignActivity
     public static function reassignActivity() {
       require_once 'api/api.php';
       $id = self::get('id');
@@ -1461,14 +1347,14 @@ EOQ;
       // if not, kill it
 
       $query = <<<EOQ
-SELECT COUNT(id) 
+SELECT COUNT(id)
 FROM `civicrm_entity_tag`
 WHERE `entity_id` =  $id
 AND `tag_id` = $tagid
 EOQ;
       $check_tag = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_tag)) {
-        $result_tag = $row['COUNT(id)']; 
+        $result_tag = $row['COUNT(id)'];
       }
 
       if($result_tag != '1' ){
@@ -1478,14 +1364,14 @@ EOQ;
       }
 
       $query = <<<EOQ
-SELECT COUNT(id) 
-FROM `civicrm_activity_target` 
-WHERE `activity_id` = $id 
+SELECT COUNT(id)
+FROM `civicrm_activity_target`
+WHERE `activity_id` = $id
 AND `target_contact_id` = $contact
 EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
-      $check = $row['COUNT(id)']; 
+      $check = $row['COUNT(id)'];
       }
 
       if($check != '1'){
@@ -1495,7 +1381,7 @@ EOQ;
       }
 
         // want to update the activity_target, time to use sql
-        // get the the record id please 
+        // get the the record id please
         $tagid = self::getInboxPollingTagId();
         $query = <<<EOQ
 SELECT id
@@ -1507,7 +1393,7 @@ EOQ;
         $activity_id = mysql_query($query, self::db());
         if($row = mysql_fetch_assoc($activity_id)) {
             // the activity id
-            $row_id = $row['id']; 
+            $row_id = $row['id'];
             // change the contact
             $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
@@ -1518,7 +1404,7 @@ EOQ;
             // change the row
             $Updated_results = mysql_query($Update, self::db());
             while($row = mysql_fetch_assoc($Updated_results)) {
-                 $results[] = $row; 
+                 $results[] = $row;
             }
 
                         $Source_update = <<<EOQ
@@ -1530,7 +1416,7 @@ EOQ;
             // change the row
             $Source_results = mysql_query($Source_update, self::db());
             while($row = mysql_fetch_assoc($Source_results)) {
-                 $results[] = $row; 
+                 $results[] = $row;
             }
 
             $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
@@ -1544,7 +1430,6 @@ EOQ;
         CRM_Utils_System::civiExit();
     }
 
-    // TODO: use dan's tagging system 
     public static function searchTags() {
         require_once 'api/api.php';
         $name = self::get('name');
@@ -1557,7 +1442,7 @@ SELECT id, name
 FROM `civicrm_tag`
 WHERE `parent_id` ='296' && `name` LIKE '$name%'
 EOQ;
- 
+
         $result = mysql_query($query, self::db());
 
         // there are no results, add a new tag
@@ -1570,14 +1455,14 @@ EOQ;
           while($row = mysql_fetch_assoc($result)) {
               array_push( $output, array("name"=>$row['name'], "id"=>$row['id']));
           }
-          // if not result exactly matches out search, make it a new tag at the beginning 
+          // if not result exactly matches out search, make it a new tag at the beginning
           $matches = 0;
           foreach ($output as $key => $value) {
             if($value['name'] != $name ){
               $matches++;
             }
           }
-          if($matches == count($output)) $output = array_merge( array(array("name"=>$name, "id"=> $name.':::value')), $output); 
+          if($matches == count($output)) $output = array_merge( array(array("name"=>$name, "id"=> $name.':::value')), $output);
         }
 
         echo json_encode($output);
@@ -1585,7 +1470,6 @@ EOQ;
         CRM_Utils_System::civiExit();
     }
 
-    // TODO: use dan's tagging system 
     public static function addTags() {
         require_once 'api/api.php';
         $tag_ids = self::get('tags');
@@ -1627,7 +1511,7 @@ EOQ;
 
       self::setupImap();
 
-      $id =  self::get('id');      
+      $id =  self::get('id');
       $imap =  self::get('imap');
       $url =  self::get('url');
       $type =  self::get('type');
@@ -1678,7 +1562,7 @@ EOQ;
 
       // // Get userId
       $userId = $_redmine->getUserId('username');
-       $assigned_to_id = array('184' =>'184'); 
+       $assigned_to_id = array('184' =>'184');
       // // Add an Issue
       // // ($subject, $description, $project_id, $category_id, $assignmentUsernames, $due_date, $priority_id) {
       $addedIssueDetails = $_redmine->addIssue('API tests', 'body', '41', $assigned_to_id, '1', '', '1');
@@ -1776,7 +1660,7 @@ EOQ;
 
           $address = civicrm_api('address', 'create', $address_params);
         }
-        
+
 
         if ($debug){
           echo "<h1>Add address to Contact</h1>";
