@@ -325,7 +325,6 @@ function selectValue( val ) {
         var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input');
         jQuery.data(document.body, 'setInput', cjSetInput);
         jQuery.data(document.body, 'getPosition', cjSetInput.getSelection());
-        console.log(jQuery.data(document.body, 'setInput'));
         initFilter(id);
         cj("#token"+id).css({"width":"290px", "size":"8"});
         var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
