@@ -1701,11 +1701,11 @@ EOQ;
         require_once 'api/api.php';
 
         $debug = self::get('debug');
-        // testing url 
+        // testing url
 
-        $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? '' : self::get('first_name');
-        $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? '' : self::get('last_name');
-        $email  = (strtolower(self::get('email_address')) == 'email address')|| trim(self::get('email_address')) =='' ? '' : self::get('email_address');
+        $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
+        $last_name = (strtolower(self::get('last_name')) == 'last name'|| trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
+        $email  = (strtolower(self::get('email_address')) == 'email address')|| trim(self::get('email_address')) =='' ? NULL : self::get('email_address');
         $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? '' : self::get('phone');
         $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? '' : self::get('street_address');
         $street_address_2 = (strtolower(self::get('street_address_2')) == 'street address'|| trim(self::get('street_address_2')) =='') ? '' : self::get('street_address_2');
@@ -1725,12 +1725,13 @@ EOQ;
           var_dump($city);
           var_dump($dob);
         }
-  
-        if((!$first_name)|| (!$last_name) || (!$email))
-        {
+
+        if((isset($first_name))||(isset($last_name))||(isset($email))){
+          // echo "one set";
+        }else{
             $returnCode = array('code'      =>  'ERROR',
                                 'status'    =>  '1',
-                                'message'   =>  'Required: First Name, Last Name, and Email');
+                                'message'   =>  'Required: First Name or Last Name or Email');
             echo json_encode($returnCode);
             CRM_Utils_System::civiExit();
         }

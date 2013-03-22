@@ -386,7 +386,7 @@ cj(document).ready(function(){
 		var create_city = cj("#tab2 .city").val();
 		var create_dob = cj("#tab2 .dob").val();
 
-		if((!!create_first_name) && (!!create_last_name)){
+		if((create_first_name)||(create_last_name)||(create_email_address)){
 			cj.ajax({
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
@@ -436,7 +436,7 @@ cj(document).ready(function(){
 			});
 			return false;
 		}else{
-			alert("Please Enter a first & last name");
+			alert("Required: First Name or Last Name or Email");
 		};
 	});
 
@@ -1290,7 +1290,7 @@ function buildActivitiesList() {
 				messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
 				messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
-				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#" title="Tagging is not ready yet">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+				messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
 			}
 		});
