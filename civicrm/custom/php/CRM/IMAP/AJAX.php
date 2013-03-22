@@ -96,11 +96,79 @@ class CRM_IMAP_AJAX {
             %six', '', $text);
     }
 
+    // http://www.electrictoolbox.com/function-extract-email-attachments-php-imap/
+    //http://www.electrictoolbox.com/php-imap-message-body-attachments/
+    public static function flattenParts($messageParts, $flattenedParts = array(), $prefix = '', $index = 1, $fullPrefix = true) {
+      // if(isset($structure->parts)) $flattenedParts = self::flattenParts($structure->parts);else $flattenedParts['1'] = $structure;
+      foreach($messageParts as $part) {
+        $flattenedParts[$prefix.$index] = $part;
+        if(isset($part->parts)) {
+          if($part->type == 2) {
+            $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix.$index.'.', 0, false);
+          }
+          elseif($fullPrefix) {
+            $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix.$index.'.');
+          }
+          else {
+            $flattenedParts = flattenParts($part->parts, $flattenedParts, $prefix);
+          }
+          unset($flattenedParts[$prefix.$index]->parts);
+        }
+        $index++;
+      }
+
+      return $flattenedParts;
+
+    }
+
+    public static function getPart($connection, $messageNumber, $partNumber, $encoding) {
+
+      $data = imap_fetchbody($connection, $messageNumber, $partNumber);
+      switch($encoding) {
+        case 0: return $data; // 7BIT
+        case 1: return $data; // 8BIT
+        case 2: return $data; // BINARY
+        case 3: return base64_decode($data); // BASE64
+        case 4: return quoted_printable_decode($data); // QUOTED_PRINTABLE
+        case 5: return $data; // OTHER
+      }
+
+
+    }
+
+    public static function getFilenameFromPart($part) {
+
+      $filename = '';
+
+      if($part->ifdparameters) {
+        foreach($part->dparameters as $object) {
+          // var_dump($object);
+          $text = iconv($charset, 'UTF-8', $text);
+          $input = str_replace($encoded, $text, $input);
+          if(strtolower($object->attribute) == 'filename') {
+            $filename = quoted_printable_decode($object->value);
+          }
+        }
+      }
+
+      if(!$filename && $part->ifparameters) {
+        foreach($part->parameters as $object) {
+          if(strtolower($object->attribute) == 'name') {
+            $filename = $object->value;
+          }
+        }
+      }
+
+      return $filename;
+
+    }
+
+
     /* unifiedMessageInfo()
-     * Parameters: imap = object of inbox, id = messageid. imap_id = imap mailbox 
+     * Parameters: imap = object of inbox, id = messageid. imap_id = imap mailbox
      * Returns: An Object message details to map to the output.
      * This function grabs a single messages and cleans it for output.
-     */   
+     */
     public static function unifiedMessageInfo($imap,$id,$imap_id) {
 
         $debug = self::get('debug');
@@ -163,18 +231,69 @@ class CRM_IMAP_AJAX {
             // print_r($tempDetails);
             // exit();
 
-            // grab attachments
-            $attachmentCount = 0;
-            $attachmentHeader = $email->attachments;
-            foreach ($attachmentHeader as $key => $value) {
-                $name = quoted_printable_decode($key);
-                //mb_convert_encoding
-                $name = preg_replace("/(\?utf-8\?Q\?)/i", "", $name);
-                $name =  preg_replace('/[^A-Za-z0-9.\s\s+]/', ' ', $name);
-                $attachmentArray[$attachmentCount] = array('name' => $name,'content' => $value);
-                $attachmentCount++;
+            $messageid = $email->msgno;
+            $structure = imap_fetchstructure($imap->conn(), $messageid);
+            if ($debug){
+              echo "<h1>Attachemts</h1>";
+              var_dump($messageid);
+              var_dump($structure->parts);
             }
-            $attachmentArray['overview'] = array('total'=>$attachmentCount); 
+            // $flattenedParts = self::flattenParts($structure->parts);
+            // var_dump($flattenedParts);
+            // exit();
+            // foreach($structure->parts as $partNumber => $part) {
+            //   echo "$part->type \n";
+            //   switch($part->type) {
+
+            //     case 0:
+            //       // the HTML or plain text part of the email
+            //       $message = getPart($connection, $messageNumber, $partNumber, $part->encoding);
+            //       // now do something with the message, e.g. render it
+            //     break;
+            //     case 1:
+            //       // multi-part headers, can ignore
+            //     break;
+            //     case 2:
+            //       // attached message headers, can ignore
+            //     break;
+
+            //     case 3: // application
+            //     case 4: // audio
+            //     case 5: // image
+            //     var_dump($part);
+            //       $filename = self::getFilenameFromPart($part);
+            //       $filename2 = utf8_decode(imap_utf8($filename));
+            //       $filename3 = imap_mime_header_decode($filename);
+            //       $filename4 =  iconv_mime_decode($filename, 0, "ISO-8859-1");
+            //       for ($i=0; $i<count($filename3); $i++) {
+            //           echo "Charset: {$filename4[$i]->charset}\n";
+            //           echo "Text: {$filename4[$i]->text}\n\n";
+            //       }
+            //       var_dump($filename2);
+            //       $attachmentArray[]  = array(
+            //       'type' => $part->type,
+            //       'subtype' => $part->subtype,
+            //       'filename' => $filename.$filename2.$filename3.$filename4,
+            //       'inline' => false,
+            //     );
+
+            //     case 6: // video
+            //     case 7: // other
+            //       $filename = self::getFilenameFromPart($part);
+            //       if($filename) {
+            //          // it's an attachment
+            //         $attachment = self::getPart($connection, $messageNumber, $partNumber, $part->encoding);
+            //         // now do something with the attachment, e.g. save it somewhere
+            //       }
+            //       else {
+            //         // don't know what it is
+            //       }
+            //     break;
+
+            //   }
+
+            // }
+
 
             // here we grab the details from the message;
             preg_match("/(Subject:|subject:)([^\r\n]*)/i", $tempDetails, $subjects);
@@ -302,7 +421,6 @@ class CRM_IMAP_AJAX {
         WHERE `status` = 0
         LIMIT 0 , 100000";
 
-
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
         $UnprocessedOutput = array();
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
@@ -333,9 +451,15 @@ class CRM_IMAP_AJAX {
             while($row = mysql_fetch_assoc($result)) {
               $matches[] = $row;
             }
-            $returnMessage['Unprocessed'][$message_id]['matches'] = count($matches);
-
-
+            $returnMessage['Unprocessed'][$message_id]['matches_count'] = count($matches);
+            // attachments
+            $attachments= array();
+            $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
+            $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
+            while($row = mysql_fetch_assoc($AttachmentResult)) {
+              $attachments[$row['id']] = array('filename'=>$row['filename'],'size'=>$row['size'],'ext'=>$row['ext'] );
+            }
+            $returnMessage['Unprocessed'][$message_id]['attachments']=$attachments;
         }
 
         $ProcessedQuery = " SELECT count(id)
@@ -466,8 +590,8 @@ class CRM_IMAP_AJAX {
                                'fromEmail' =>  $output['forwarded']['origin_email'],
                                // 'forwardedDate' =>  $output['forwarded']['date_short'],
                                'subject'    =>  mb_convert_encoding($output['forwarded']['subject'], 'UTF-8'),
-                               'attachmentfilename'  => $output['attachments'][0]['name'],
-                               'attachmentname'  =>  $output['attachments'][0]['name'],
+                               'attachmentfilename'  => $output['attachments'][0]['name'].','.$output['attachments'][1]['name'].','.$output['attachments'][2]['name'].','.$output['attachments'][3]['name'].','.$output['attachments'][4]['name'],
+                               'attachmentname'  =>  $output['attachments'][0]['name'].','.$output['attachments'][1]['name'].','.$output['attachments'][2]['name'].','.$output['attachments'][3]['name'].','.$output['attachments'][4]['name'],
                                'attachment'  => $output['attachments']['overview']['total'],
                                'status' =>$output['header']['status'],
                                'email_user' => self::$imap_accounts[$imap_id]['user'],

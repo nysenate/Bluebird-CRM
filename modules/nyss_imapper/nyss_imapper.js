@@ -1045,10 +1045,10 @@ function buildMessageList() {
 				messagesHtml += '<tr id="'+value.message_id+'_'+value.imap_id+'" data-key="'+value.key+'" data-id="'+value.message_id+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.message_id+'"  data-id="'+value.imap_id+'"/></td>';
 
 				// build a match count bubble
-				countWarn = (value.matches == 1) ? 'warn' :  '';
-				countMessage = (value.matches == 1) ? 'This address should have matched automatically' : 'This email address matches '+value.matches+' records in bluebird';
-				countStatus = (value.matches == 0) ? 'empty' :  'multi';
- 				countIcon = '<span class="matchbubble marginL5 '+countWarn+' '+countStatus+'" title="'+countMessage+'">'+value.matches+'</span></td>';
+				countWarn = (value.matches_count == 1) ? 'warn' :  '';
+				countMessage = (value.matches_count == 1) ? 'This address should have matched automatically' : 'This email address matches '+value.matches_count+' records in bluebird';
+				countStatus = (value.matches_count == 0) ? 'empty' :  'multi';
+ 				countIcon = '<span class="matchbubble marginL5 '+countWarn+' '+countStatus+'" title="'+countMessage+'">'+value.matches_count+'</span></td>';
 
 
  				// build the name box
