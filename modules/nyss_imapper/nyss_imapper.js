@@ -1072,11 +1072,21 @@ function buildMessageList() {
 				}
 
 				// dealing with attachments
-				if( value.attachmentfilename ||  value.attachmentname ||  value.attachment){
-					if(value.attachmentname ){var name = value.attachmentname}else{var name = value.attachmentfilename};
-					icon = '<div class="ui-icon inform-icon attachment" title="Currently attachments are not allowed" ></div><div class="ui-icon ui-icon-link attachment" title="'+name+'">'+value.attachment+'</div>'
-				}
+ 				if(value.attachments){
+	 				 	cj.each(value.attachments, function(key, attachment) {
+	 				 		console.log(key);
+	 						var attachmentcount = 0;
+	 				 			cj.each(attachment, function(key, attachment_sub) {
+			 				 		console.log(attachment_sub);
+			 				 		attachmentcount++;
+	 				 			});
 
+
+						// attachmentcount = value.attachments;
+						console.log(attachmentcount);
+						icon = '<div class="ui-icon ui-icon-link attachment" title="'+attachmentcount+' Attachments" ></div>'
+					});
+ 				}
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
 
 				messagesHtml += '<td class="date"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';

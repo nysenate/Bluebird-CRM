@@ -457,7 +457,7 @@ class CRM_IMAP_AJAX {
             $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
             $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
             while($row = mysql_fetch_assoc($AttachmentResult)) {
-              $attachments[$row['id']] = array('filename'=>$row['filename'],'size'=>$row['size'],'ext'=>$row['ext'] );
+              $attachments[$message_id][] = array('filename'=>$row['filename'],'size'=>$row['size'],'ext'=>$row['ext'] );
             }
             $returnMessage['Unprocessed'][$message_id]['attachments']=$attachments;
         }
