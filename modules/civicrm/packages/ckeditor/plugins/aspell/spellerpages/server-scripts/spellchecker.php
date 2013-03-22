@@ -9,6 +9,10 @@ $aspell_prog	= 'aspell';										// by FredCK (for Linux)
 $lang			= 'en_US';
 $aspell_opts	= "-a --lang=$lang --encoding=utf-8 -H --rem-sgml-check=alt";		// by FredCK
 
+//NYSS 6419
+$aspellDir = getcwd();
+$aspell_opts .= " --extra-dicts={$aspellDir}/../../.aspell.en.pws";
+
 //$tempfiledir	= "./";
 $tempfiledir = '/tmp/';
 
