@@ -37,8 +37,7 @@
 					<li><a href="#tab1">Find Contact</a></li>
 					<li><a href="#tab2">Add Contact</a></li>
 				</ul>
-				<input type="hidden" class="hidden" id="email_id" name="email_id">
-				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
+				<input type="hidden" class="hidden" id="id" name="id">
 				<div id="tab1">
 					<label for="first_name">
 						<span class="label_def">First Name: </span>

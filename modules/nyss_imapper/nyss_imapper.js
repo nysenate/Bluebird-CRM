@@ -196,8 +196,7 @@ cj(document).ready(function(){
 
 	// delete confirm & processing both pages
 	cj(".delete").live('click', function() {
-		var messageId = cj(this).parent().parent().attr('data-id');
-		var imapId = cj(this).parent().parent().attr('data-imap_id');
+		var messageId = cj(this).parent().parent().attr('id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		var row = cj(this).parent().parent();
 
@@ -218,7 +217,7 @@ cj(document).ready(function(){
 					if(cj("#Activities").length){
 						DeleteActivity(messageId);
 					}else{
-						DeleteMessage(messageId,imapId);
+						DeleteMessage(messageId);
 					}
 				},
 				Cancel: function() {
@@ -243,7 +242,7 @@ cj(document).ready(function(){
 
 		cj('#imapper-messages-list input:checked').each(function() {
  			delete_ids.push(cj(this).attr('name'));
-			delete_secondary.push(cj(this).attr('data-id'));
+			delete_secondary.push(cj(this).attr('id'));
 			rows.push(cj(this).parent().parent().attr('id')); // not awesome but ok
 		});
 		if(!rows.length){
@@ -321,8 +320,7 @@ cj(document).ready(function(){
 
 	// assign a message to a contact Unmatched page
 	assign.click(function() {
-		var messageId = cj('#email_id').val();
-		var imapId = cj('#imap_id').val();
+		var messageId = cj('#id').val();
 		var contactRadios = cj('input[name=contact_id]');
 		var contactIds = '';
 
@@ -338,7 +336,6 @@ cj(document).ready(function(){
 				url: '/civicrm/imap/ajax/assignMessage',
 				data: {
 					messageId: messageId,
-					imapId: imapId,
 					contactId: contactIds
 				},
 				success: function(data, status) {
@@ -347,7 +344,7 @@ cj(document).ready(function(){
 						alert('Could Not Assign message : '+data.message);
 					}else{
 						// cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-						removeRow(messageId+'_'+imapId);
+						removeRow(messageId);
 						cj("#find-match-popup").dialog('close');
 						helpMessage(data.message);
 						checkForMatch(data.key,contactIds);
@@ -362,8 +359,7 @@ cj(document).ready(function(){
 
 	// create a new contact unmatched page
 	create.click(function() {
-		var create_messageId = cj('#email_id').val();
-		var create_imap_id = cj('#imap_id').val();
+		var create_messageId = cj('#id').val();
 		var create_first_name = cj("#tab2 .first_name").val();
 		var create_last_name = cj("#tab2 .last_name").val();
 		var create_email_address = cj("#tab2 .email_address").val();
@@ -379,7 +375,6 @@ cj(document).ready(function(){
 				url: '/civicrm/imap/ajax/createNewContact',
 				data: {
 					messageId: create_messageId,
-					imap_id: create_imap_id,
 					first_name: create_first_name,
 					last_name: create_last_name,
 					email_address: create_email_address,
@@ -400,19 +395,18 @@ cj(document).ready(function(){
 							url: '/civicrm/imap/ajax/assignMessage',
 							data: {
 								messageId: create_messageId,
-								imapId: create_imap_id,
 								contactId: contactData.contact
 							},
 							success: function(data, status) {
-								contactData = cj.parseJSON(data);
-								if (contactData.code == 'ERROR' || contactData.code == '' || contactData == null ){
-									alert('Could Not Assign Message : '+contactData.message);
+								assign = cj.parseJSON(data);
+								if (assign.code == 'ERROR' || assign.code == '' || assign == null ){
+									alert('Could Not Assign Message : '+assign.message);
 									return false;
 								}else{
 									cj("#find-match-popup").dialog('close');
-									removeRow(create_messageId+'_'+create_imap_id);
+									removeRow(create_messageId);
 									helpMessage('Contact created and '+contactData.message);
-									checkForMatch(contactData.key,contactData.contact);
+									checkForMatch(assign.key,contactData.contact);
 								}
 							},
 							error: function(){
@@ -432,7 +426,7 @@ cj(document).ready(function(){
 	cj(".find_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
 
-		var messageId = cj(this).parent().parent().attr('data-id');
+		var messageId = cj(this).parent().parent().attr('id');
 		var imapId = cj(this).parent().parent().attr('data-imap_id');
 		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
 		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
@@ -440,61 +434,40 @@ cj(document).ready(function(){
 		cj('#imapper-contacts-list').html('');
 		cj.ajax({
 			url: '/civicrm/imap/ajax/getMessageDetails',
-			data: {id: messageId,
-				   imapId: imapId },
+			data: {id: messageId },
 			success: function(data,status) {
-				messages = cj.parseJSON(data);
+				message = cj.parseJSON(data);
 				cj("#loading-popup").dialog('close');
-				if(messages.code == 'ERROR'){
-					if(messages.clear =='true')  removeRow(messageId+'_'+imapId);
-					alert('Unable to load Message : '+ messages.message);
+				if(message.code == 'ERROR'){
+					if(message.clear =='true')  removeRow(messageId);
+					alert('Unable to load Message : '+ message.message);
 				}else{
 					var icon ='';
-					if( messages.attachmentfilename ||  messages.attachmentname ||  messages.attachment){
-						if(messages.attachmentname ){var name = messages.attachmentname}else{var name = messages.attachmentfilename};
+					if( message.attachmentfilename ||  message.attachmentname ||  message.attachment){
+						if(message.attachmentname ){var name = message.attachmentname}else{var name = message.attachmentfilename};
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+name+'"></div>'
 					}
-					cj('#message_left_header').addClass(messages.email_user);
-					cj('#message_left_email').addClass(messages.email_user);
-
 					cj('#message_left_header').html('');
 					cj('#message_left_header').append("<span class='popup_def'>From: </span>");
-					if(messages.fromName) cj('#message_left_header').append(shortenString(messages.fromName,50));
-					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(messages.fromEmail)+"</span>");
+					if(message.sender_name) cj('#message_left_header').append(shortenString(message.sender_name,50));
+					if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
 
-					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+messages.forwarder_date_long+"<br/>");
+					cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
 
-					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header').append("<span class='popup_def'>"+messages.status+" from: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.forwardedEmail+"</span> "+ messages.date_short+ "<br/>");
+					if ((message.forwarder != message.sender_email)){
+						cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+					}else{
+						cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
 					}
-					// add some debug info to the message body on toggle
-					cj('#message_left_header').append("<span class='popup_def'> a</span><a class='fileBug'>Report Bug</a><br/>");
-
-					// if(messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-					// 	var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>UnMatched Message Header ("+messages.status+"):</i><br/><strong>Forwarder: </strong>"+messages.forwardedFull+"<br/><strong>Subject: </strong>"+messages.header_subject+"<br/><strong>Date: </strong>"+messages.date_long+"<br/><strong>Id: </strong>"+messages.uid+"<br/><strong>ImapId: </strong>"+messages.imapId+"<br/><strong>Format: </strong>"+messages.format+"<br/><strong>Mailbox: </strong>"+messages.email_user+"<br/><strong>Attachment Count: </strong>"+messages.attachment+"<br/>";
-					// 	if(messages.status !== 'direct'){
-					// 		debugHTML +="<br/><i>Parsed email body (origin):</i><br/><strong>Subject: </strong>"+messages.subject+"<br/><strong>Fristname: </strong>"+firstName+"<br/><strong>Lastname: </strong>"+lastName+"<br/><strong>Email: </strong>"+messages.fromEmail+"<br/><strong>Address lookup: </strong>"+messages.origin_lookup+"<br/><strong>Date: </strong>"+messages.forwarder_date_long+"";
-
-					// 	}
-					// 	debugHTML +="<span class='search_info'></span></div></div>";
-					// 	cj('#message_left_header').append(debugHTML);
-
-					// 	// we can create redmine issues with message details and assign to stefan from a url!
-					// 	submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
-					// 	bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
-					// 	cj('.debug_remove').append(bugHTML);
-					// }
-
-					cj('#message_left_email').html(messages.details);
+					cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+					cj('#message_left_email').html(message.body);
 					cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
-					cj('#email_id').val(messageId);
-					cj('#imap_id').val(imapId);
-					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(messages.subject,100) });
+					cj('#id').val(messageId);
+					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
 					cj("#find-match-popup").dialog('open');
 					cj("#tabs").tabs();
-					cj('.email_address').val(messages.fromEmail);
-
-					if(messages.fromEmail) cj('#filter').click();
+					cj('.email_address').val(message.sender_email);
+					if(message.sender_email) cj('#filter').click();
 					cj('.first_name').val(firstName);
 					cj('.last_name').val(lastName);
 				}
@@ -553,12 +526,13 @@ cj(document).ready(function(){
 	/// remove activity from the activities screen, but don't delete it Matched
 	cj(".clear_activity").live('click', function() {
 		cj("#loading-popup").dialog('open');
-		var activityId = cj(this).parent().parent().attr('data-id');
+		// var activityId = cj(this).parent().parent().attr('data-id');
+		var Id = cj(this).parent().parent().attr('id');
 
 		cj( "#clear-confirm" ).dialog({
 			buttons: {
 				"Clear": function() {
-					ClearActivity(activityId);
+					ClearActivity(Id);
 				},
 				Cancel: function() {
 					cj("#clear-confirm").dialog('close');
@@ -575,7 +549,7 @@ cj(document).ready(function(){
 	cj(".edit_match").live('click', function() {
 		cj("#loading-popup").dialog('open');
 
-		var activityId = cj(this).parent().parent().attr('data-id');
+		var activityId = cj(this).parent().parent().attr('id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
 		var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
@@ -585,7 +559,7 @@ cj(document).ready(function(){
 		var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
 
 
-	if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
+		if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
 		if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
 		if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
 		if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
@@ -598,45 +572,34 @@ cj(document).ready(function(){
 			url: '/civicrm/imap/ajax/getActivityDetails',
 			data: {id: activityId, contact: contactId },
 			success: function(data,status) {
-				messages = cj.parseJSON(data);
-				if (messages.code == 'ERROR'){
-					alert('Could not load message Details: '+messages.message);
+				message = cj.parseJSON(data);
+				if (message.code == 'ERROR'){
+					alert('Could not load message Details: '+message.message);
 					cj("#loading-popup").dialog('close');
-					if(messages.clear =='true')   removeRow(activityId);
+					if(message.clear =='true')   removeRow(activityId);
 				}else{
 					cj('#message_left_header').html('');
-					if(messages.fromName) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  ");
-					if(messages.fromEmail) cj('#message_left_header').append("<span class='emailbubble '>"+ messages.fromEmail+"</span>");
-	 		 		cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70) +"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
-			 		cj('.email_address').val(messages.fromEmail);
+					if(message.sender_name) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+message.sender_name +"  ");
+					if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble '>"+ message.sender_email+"</span>");
+	 		 		cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
+			 		cj('.email_address').val(message.fromEmail);
 
-					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble marginL5'>"+ messages.fromEmail+"</span><br/>");
+					if ((message.forwarder != message.sender_email)){
+						cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+					}else{
+						cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
 					}
 					// if we are on crmdev or crmtest show a debug window
-					cj('#message_left_header').addClass(messages.email_user);
-					cj('#message_left_email').addClass(messages.email_user);
-					cj('#message_left_header').append("<span class='popup_def'> a</span><a class='fileBug'>Report Bug</a><br/>");
-					// if( messages.email_user == 'crmdev' || messages.email_user == 'crmtest' ){
-					// 		var match_type = (messages.match_type == 0) ? "Manually matched by user" : "Process Mailbox Script " ;
-					// 		var debugHTML ="<span class='popup_def'>Dev & Test only</span><div class='debug_on'>Show Debug info</div><div class='debug_info'><div class='debug_remove'><i>Matched Message Info:</i><br/><strong>Match Type: </strong>"+match_type+" ("+messages.match_type+")<br/><strong>Activty id: </strong>"+messages.uid+"<br/><strong>Assigned by: </strong>"+messages.forwardedName+"<br/><strong>Assigned To: </strong>"+messages.fromId+"<br/><strong>Created from message Id: </strong>"+messages.original_id+"<br/>";
-					// 		debugHTML +="<span class='search_info'></span></div></div>";
-					// 		cj('#message_left_header').append(debugHTML);
-					// 	Dev &	// we can create redmine issues with message details and assign to stefan from a url !
-					// 		submitHTML = cj('.debug_remove').html().replace(/'|"/ig,"%22").replace(/(<i>[*]<\/i>)/ig,"").replace(/(<br>)/ig,"%0d").replace(/(<([^>]+)>)/ig,"");
-					// 		bugHTML ="<div class='debug_sumit'><a href='http://dev.nysenate.gov/projects/bluebird/issues/new?issue[description]="+submitHTML+"&issue[category_id]=40&issue[assigned_to_id]=184' target='blank'> Create Redmine issue from this message</a></div><hr/>";
-					// 		cj('.debug_remove').append(bugHTML);
+					cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
 
-					// 	}
-
-					cj('#message_left_email').html(messages.details);
+					cj('#message_left_email').html(message.body);
 					cj('#email_id').val(activityId);
 					cj('#imap_id').val(contactId);
 					cj("#loading-popup").dialog('close');
-					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(messages.subject,100)  });
+					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
 					cj("#find-match-popup").dialog('open');
 					cj("#tabs").tabs();
-					cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/> 					"+'<a href="/civicrm/contact/view?reset=1&cid='+messages.contactId+'" title="'+messages.fromName+'">'+shortenString(messages.fromName,35)+'</a>'+" <br/><i>&lt;"+ messages.fromEmail+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
+					cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/> 					"+'<a href="/civicrm/contact/view?reset=1&cid='+message.contactId+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
 				}
 			},
 			error: function(){
@@ -650,7 +613,7 @@ cj(document).ready(function(){
 	cj(".add_tag").live('click', function(){
 		cj("#loading-popup").dialog('open');
 
-		var activityId = cj(this).parent().parent().attr('data-id');
+		var activityId = cj(this).parent().parent().attr('id');
 		var contactId = cj(this).parent().parent().attr('data-contact_id');
 		cj('#message_left_tag').html('').removeClass('tag_over_ride');
 		cj('#message_left_header_tag').html('');
@@ -709,13 +672,15 @@ cj(document).ready(function(){
 							cj('#activity_tag_ids').val(result);
 						}
 					});
-					cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+					cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
 					cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
-					if ((messages.forwardedEmail != '')){
-						cj('#message_left_header_tag').append("<span class='popup_def'>Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+					if ((messages.forwarder != messages.sender_email)){
+						cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ messages.forwarder+"</span> @"+ messages.updated_long+ "<br/>");
+					}else{
+						cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
 					}
-					cj('#message_left_email_tag').html(messages.details);
+					cj('#message_left_email_tag').html(messages.body);
 					cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
 					cj( "#tagging-popup" ).dialog({
 						buttons: {
@@ -1020,7 +985,7 @@ function buildMessageList() {
 			var icon ='';
 
 				// wrap the row
-				messagesHtml += '<tr id="'+value.message_id+'_'+value.imap_id+'" data-key="'+value.key+'" data-id="'+value.message_id+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.message_id+'"  data-id="'+value.imap_id+'"/></td>';
+				messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
 
 				// build a match count bubble
 				countWarn = (value.matches_count == 1) ? 'warn' :  '';
@@ -1066,7 +1031,6 @@ function buildMessageList() {
 					});
  				}
 				messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
-
 				messagesHtml += '<td class="date"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
 				// hidden column to sort by
@@ -1100,8 +1064,7 @@ function buildMessageList() {
 function DeleteMessage(id,imapid){
 	cj.ajax({
 		url: '/civicrm/imap/ajax/deleteMessage',
-		data: {id: id,
-		imapId: imapid },
+		data: {id: id },
 		async:false,
 		success: function(data,status) {
 			deleted = cj.parseJSON(data);
@@ -1259,7 +1222,7 @@ function buildActivitiesList() {
 		// console.log(messages);
 		cj.each(messages.successes, function(key, value) {
 			if(value.date_short != null){
-				messagesHtml += '<tr id="'+value.activity_id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.activity_id+'" data-id="'+value.matched_to+'"/></td>';
+				messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
 				if( value.fromName != ''){
 					messagesHtml += '<td class="name" data-fromdob="'+value.fromdob +'" data-fromphone="'+value.fromphone +'" data-fromstreet="'+value.fromstreet +'" data-fromcity="'+value.fromcity +'"data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
@@ -1392,9 +1355,7 @@ function checkForMatch(key,contactIds){
 
 	cj('.imapper-message-box').each(function(i, item) {
 		check = cj(this).data('key');
-		var id = cj(this).attr('id');
-		var messageId = cj(this).attr('data-id');
-		var imapId = cj(this).attr('data-imap_id');
+		var messageId = cj(this).attr('id');
 		if (key == check) {
 			if($('.matchbubble.empty',this).length){
 				cj.ajax({
@@ -1402,12 +1363,17 @@ function checkForMatch(key,contactIds){
 					async:false,
 					data: {
 						messageId: messageId,
-						imapId: imapId,
 						contactId: contactIds
 					},
 					success: function(data,status) {
-							removeRow(id);
+						assign = cj.parseJSON(data);
+						if(assign.code == 'ERROR'){
+							helpMessage('Other Records not Matched');
+						}else{
+							removeRow(messageId);
 							helpMessage('Other Records Automatically Matched');
+						}
+							
 					}
 				});
 			}

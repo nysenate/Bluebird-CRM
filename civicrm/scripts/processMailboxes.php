@@ -702,6 +702,11 @@ function civiProcessEmail($mbox, $email, $customHandler)
       echo "[INFO]    CREATED e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
 
+      // loop throught the attachments and assign to activity
+
+      // foreach ($variable as $key => $value) {
+      //   $filename = CRM_Utils_File::makeFileName($filename);
+      // }
 
       $query = "SELECT * FROM civicrm_entity_tag
                 WHERE entity_table='civicrm_activity'
