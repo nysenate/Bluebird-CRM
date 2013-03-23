@@ -123,7 +123,6 @@ cj(document).ready(function(){
 	// BOTH MATCHED & UNMATCHED
 	// file a bug
 	cj(".fileBug").live('click', function() {
-		return false;
 		cj.each(jQuery.browser, function(i, val) {
 			if(cj.browser.msie){
 				browsertype = "IE";
@@ -135,41 +134,20 @@ cj(document).ready(function(){
 				browsertype = "Mozilla";
 			}
 		});
-
 		browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
 		id = cj('#email_id').val();
-		imap = cj('#imap_id').val();
-
-		if(cj("#Activities").length){
-			type ='Activity';
-		}else if(cj("#Unmatched").length){
-			type ='Message';
-		}
- 		url = document.location.href;
-
-
 		cj.ajax({
 			url: '/civicrm/imap/ajax/fileBug',
 			data: {
 				browser: browser,
 				id: id,
-				imap: imap,
-				type: type,
-				url: url
 			},
 			success: function(data,status) {
 				if(data != null || data != ''){
-					contacts = cj.parseJSON(data);
-					if(contacts.code == 'ERROR'){
-						cj('#imapper-contacts-list').html(contacts.message);
-					}else{
-						cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
-						buildContactList();
-					}
+					helpMessage('Report Filed.');
 				}
 			}
 		});
-
 		return false;
 	});
 
