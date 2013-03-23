@@ -217,7 +217,6 @@ class CRM_Core_Action {
       return NULL;
     }
 
-
     if ($op && $objectName && $objectId) {
       CRM_Utils_Hook::links($op, $objectName, $objectId, $links, $mask);
     }
@@ -300,7 +299,7 @@ class CRM_Core_Action {
       //NYSS 5942
       $mainLinksLength = array_sum(array_map('strlen',array_map('strip_tags',array_slice($url, 0, 2))));
       if (count($extraLinks) > 1 ||
-        ($mainLinksLength > 10 && count($url) > 1) ) {
+        ($mainLinksLength > 10 && count($url) > 1 && strpos($url[0], 'contact/view/case') === FALSE) ) {
         if ( $mainLinksLength > 10 ) {
           $mainLinks = array_slice($url, 0, 1);
           $extraLinks = array_splice($urlOrig, 1);
