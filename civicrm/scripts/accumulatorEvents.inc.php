@@ -1,4 +1,5 @@
-<?
+<?php
+
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 define('DEFAULT_LOG_LEVEL', 'TRACE');
@@ -212,4 +213,3 @@ function test_orphaned_events($orphans, $optList)
         die(); 
     }
 }
-?>
