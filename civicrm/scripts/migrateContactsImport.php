@@ -449,6 +449,11 @@ class CRM_migrateContactsImport {
         $params['custom_44'] = $details['custom']['activity_category_44'];
       }
 
+      //make sure priority is set
+      if ( empty($params['priority_id']) ) {
+        $params['priority_id'] = 2;
+      }
+
       //clean params array
       $params = self::_cleanArray($params);
 
@@ -1050,6 +1055,39 @@ class CRM_migrateContactsImport {
     //random bad data fix
     if ( $contact['email_greeting_id'] == 9 ) {
       $contact['email_greeting_id'] = 6;
+    }
+
+    //trap errors and set to custom
+    require_once 'api/v3/Contact.php';
+    $error = _civicrm_api3_greeting_format_params( $contact );
+    if ( civicrm_api3_error( $error ) ) {
+      //determine which type errored
+      $type = '';
+      if ( strpos($error['error_message'], 'email') !== FALSE ) {
+        $type = 'email_greeting';
+      }
+      elseif ( strpos($error['error_message'], 'postal') !== FALSE ) {
+        $type = 'postal_greeting';
+      }
+      elseif ( strpos($error['error_message'], 'addressee') !== FALSE ) {
+        $type = 'addressee';
+      }
+      else {
+        return;
+      }
+
+      $contact[$type.'_id'] = 4;
+      if ( empty($contact[$type.'_custom']) ) {
+        $custVal = (!empty($contact[$type.'_display'])) ? $contact[$type.'_display'] : 'Dear Friend';
+        $contact[$type.'_custom'] = $custVal;
+      }
+      //bbscript_log("trace", "greeting format check", $error);
+      //bbscript_log("trace", "greeting format contact", $contact);
+
+      bbscript_log("info", "fixing {$type} for contact {$contact['external_identifier']}");
+
+      //call this function again so we can iterate through each type in case of multiple errors
+      self::_checkGreeting($contact);
     }
   }//_checkGreeting
 
