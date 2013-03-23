@@ -1630,78 +1630,58 @@ EOQ;
 
     public static function fileBug() {
       require_once 'api/api.php';
-      require_once 'CRM/Utils/IMAP.php';
       require_once 'CRM/Utils/Redmine.php';
-
-      self::setupImap();
-
-      $id =  self::get('id');
-      $imap =  self::get('imap');
-      $url =  self::get('url');
-      $type =  self::get('type');
-      $browser =  self::get('browser');
-
-      $instance = self::$imap_accounts[0]['user'];
+      // load from config
+      require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
+      $bbconfig = get_bluebird_instance_config();
+      $apiKey = $bbconfig['redmine.api.key'];
+      $imapAccounts = explode(',', $bbconfig['imap.accounts']);
+      // get session stuff 
       $session = CRM_Core_Session::singleton();
       $userId =  $session->get('userID');
       $ContactInfo = self::contactRaw($userId);
       $ContactName = $ContactInfo['values'][$userId]['display_name'];
+      $url = $_SERVER["SERVER_NAME"].":".$_SERVER["REQUEST_URI"];
+      // _Get vars 
+      $messageId =  self::get('id');
+      $browser =  self::get('browser');
 
-      // var_dump($id);
-      // var_dump($imap);
+      // var_dump($apiKey);
+      // var_dump($messageId);
+      // var_dump($imapAccounts);
       // var_dump($url);
       // var_dump($browser);
-      // var_dump($type);
-      // var_dump($instance);
       // var_dump($userId);
       // var_dump($ContactName);
-
-      if($type == "Activity"){
-        $body_raw = self::getActivityDetails($id,$imap,true);
-      }elseif($type == "Message"){
-        $body_raw = self::getMessageDetails($id,$imap,true);
+      
+      $debugQuery = " SELECT *
+      FROM `nyss_inbox_messages`
+      WHERE `id` = $messageId
+      LIMIT 1";
+      $debugResult = mysql_query($debugQuery, self::db());
+      $debugOutput = array();
+      while($row = mysql_fetch_assoc($debugResult)) { 
+        $debugOutput = $row;
       }
-      // build body with all the data
-      $body = '';
-      foreach ($body_raw as $key => $value) {
-        $body.= $key.' : '.$value."\n";
-      }
+      // var_dump($debugOutput);
+      $debugOutput ='test body';
 
-      // echo('<pre>'.$body.'</pre>');
+      $config['url'] = "http://dev.nysenate.gov/";
+      $config['apikey'] = $apiKey;
+      $_redmine = new redmine($config);
+      // $projects = $_redmine->getProjects();
+      // var_dump($projects);
 
       $project_id = 62; // blue bird project id
       $category_id = 40; // inbox polling 40
-      $assigned_to_id = 184; // me 184 // dean 14 // jason 22 // scott 29
-      $subject = "Automatic Issue created by ".$ContactName." in ".$instance;
-      $open_date = date("U");
+      $assignmentUsernames = 184; // me 184 // dean 14 // jason 22 // scott 29
+      $subject = "Problem with message #".$messageId;
 
-
-      $config['url'] = "http://dev.nysenate.gov/";
-      $config['apikey'] = '5c253defa3935717d9cd8a8c9ea9996efee3e8ed';
-      $_redmine = new redmine($config);
-
-      // // List all Projects
-      $projects = $_redmine->getProjects();
-      foreach($projects->project as $project) var_dump($project);
-
-      // // Get userId
-      $userId = $_redmine->getUserId('username');
-       $assigned_to_id = array('184' =>'184');
-      // // Add an Issue
-      // // ($subject, $description, $project_id, $category_id, $assignmentUsernames, $due_date, $priority_id) {
-      $addedIssueDetails = $_redmine->addIssue('API tests', 'body', '41', $assigned_to_id, '1', '', '1');
-      $addIssueID = (int)$addedIssueDetails->id;
-
-      var_dump($addIssueID);
-      // // Add an note to the issue
-      // $_redmine->addNoteToIssue($addIssueID, "this is a new message");
-
-      // // Close the issue
-      // $_redmine->setIssueStatus(true, $addIssueID);
-
-      // // Finnaly get the Link
-      print $_redmine->getTrackerItemLink($addIssueID);
-
+      // addIssue($subject, $description, $project_id, $category_id = 1, $assignmentUsernames = false, $due_date = false, $priority_id = 4) {
+      $addedIssueDetails = $_redmine->addIssue($subject, $debugOutput, $project_id, $category_id, $assignmentUsernames);
+      // var_dump($addedIssueDetails);
+      // $addIssueID = (int)$addedIssueDetails->id;
+      // var_dump($addIssueID);       
 
       CRM_Utils_System::civiExit();
     }
