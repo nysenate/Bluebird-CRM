@@ -94,12 +94,13 @@ class CRM_IMAP_AJAX {
           // usefully when setting status for other unmatched messages
           $returnMessage['key'] = $row['sender_email'];
           // find matches
-          $sender_email = $row['sender_email'];
+          $senderEmail = $row['sender_email'];
+          $rowId = $row['id'];
 
           $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
           LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
           WHERE contact.is_deleted=0
-          AND email.email LIKE '$sender_email'
+          AND email.email LIKE '$senderEmail'
           GROUP BY contact.id
           ORDER BY contact.id ASC, email.is_primary DESC";
           $matches = array();
@@ -110,7 +111,7 @@ class CRM_IMAP_AJAX {
           $returnMessage['matches_count'] = count($matches);
           // attachments
           $attachments= array();
-          $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
+          $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $rowId";
           $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
           while($row = mysql_fetch_assoc($AttachmentResult)) {
             $attachments[] = array('filename'=>$row['filename'],'size'=>$row['size'],'ext'=>$row['ext'] );
@@ -128,8 +129,9 @@ class CRM_IMAP_AJAX {
         if(!is_array($returnMessage)){
           $returnMessage = array('code' =>  'ERROR',
               'message'   => 'This Message no longer exists', 'clear'=>'true');
+        }else{
+          return $returnMessage;
         }
-        return $returnMessage;
     }
 
     // properly encode bytes to larger numbers
@@ -452,6 +454,40 @@ class CRM_IMAP_AJAX {
         $date = $output['email_date'];
         $subject = $output['subject'];
         $body = $output['body'];
+
+        $attachments =$output['attachments'];
+        // attachments 
+        if ( ! empty( $attachments ) ) {
+          require_once 'CRM/Utils/File.php';
+          $date   =  date( 'Ymdhis' );
+          $config = CRM_Core_Config::singleton( );
+          $filestore = $config->uploadDir.'inbox/';
+          if (!is_dir($filestore)) {
+            mkdir($filestore, 0755, true);
+          }
+          for ( $i = 0; $i < count( $attachments ); $i++ ) {
+              $attachNum = $i + 1;
+              $fileName = $config->uploadDir.'inbox/'.$attachments[$i]['filename'];
+              var_dump($fileName);
+
+              $newName = CRM_Utils_File::makeFileName( $fileName );
+              var_dump($newName);
+              $file = $config->uploadDir . $newName;
+              var_dump($file);
+
+              // move file to the civicrm upload directory
+              rename( $fileName, $file );
+ 
+          }
+        }
+
+        // Insert File 
+        // mimeType, uri, orgin date 
+        // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( 'image/png', 'Screen_Shot_2013_03_10_at_10_19_05_AM_44d96b0dc132693400e3100e7cc68c8a.png', CURTIME());
+
+        // Link Activity to file 
+        // table, activity id, file_id
+        // INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity', '11', '1');
 
         if ($debug){
           var_dump($messageUid);

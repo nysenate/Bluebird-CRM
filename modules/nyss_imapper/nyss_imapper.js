@@ -1216,6 +1216,7 @@ function pushtag(clear){
 			}
 		});
 	}
+
 };
 
 // matched messages screen

@@ -307,8 +307,12 @@ function checkImapAccount($conn, $params)
 function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
     //where to write file attachments to:
-    $filestore = '/home/stefan/Bluebird-CRM-data/skelos/civicrm/custom/';
-
+    $config = CRM_Core_Config::singleton( );
+    $filestore = $config->uploadDir.'inbox/';
+    if (!is_dir($filestore)) {
+      mkdir($filestore, 0755, true);
+    }
+    
     //fetch part
     $part=imap_fetchbody($mbox, $msgid, $global_i);
     //if type is not text
@@ -619,11 +623,43 @@ function civiProcessEmail($mbox, $email, $customHandler)
     }
 
     foreach ($allowed as $key => $attachment) {
+      require_once 'CRM/Utils/File.php';
+      $date   =  date( 'Ymdhis' );
+      $config = CRM_Core_Config::singleton( );
       $filename = $attachment['filename'];
+      $fileFull = $config->uploadDir.'inbox/'.$filename;
       $size = $attachment['size'];
       $ext = $attachment['extension'];
+      $finfo = finfo_open(FILEINFO_MIME_TYPE); 
+      $mime = finfo_file($finfo, $filename);
+      finfo_close($finfo);
+
 
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
+      // echo $insertAttachments."\n";
+      $insertMessage = mysql_query($insertAttachments, $dbconn);
+
+      // return mime type ala mimetype extension
+
+        
+
+      $newName = CRM_Utils_File::makeFileName( $fileName );
+      // var_dump($newName);
+      $file = $config->uploadDir . $newName;
+      // var_dump($file);
+
+      // move file to the civicrm upload directory
+      rename( $fileName, $file );
+
+      // $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
+      // echo $insertAttachments."\n";
+      // $insertMessage = mysql_query($insertAttachments, $dbconn);
+
+      // Insert File 
+      // mimeType, uri, orgin date 
+      // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());
+
+      $insertAttachments = "INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());";
       // echo $insertAttachments."\n";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
