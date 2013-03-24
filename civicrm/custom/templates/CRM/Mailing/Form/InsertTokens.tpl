@@ -257,9 +257,9 @@ function selectValue( val ) {
         if ( element.id == 'token3' ) {
            ( isMailing ) ? text_message = "subject" : text_message = "msg_subject"; 
         }          
-        
-        cj( "#"+ text_message ).insertText( token, getPosition.start, true ); 
-
+        cj( "#"+ text_message ).insertText( token, getPosition.start, true );
+        getPosition.start = getPosition.start + token.length;
+        jQuery.data( document.body, 'getPosition', getPosition );
         if ( isMailing ) { 
              verify();
         }
