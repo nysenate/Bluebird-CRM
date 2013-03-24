@@ -693,13 +693,11 @@ cj(document).ready(function(){
 						buttons: {
 							"Tag": function() {
 								pushtag();
-								cj("#tagging-popup").dialog('close');
 								cj('.token-input-list-facebook').html('').remove();
 								cj('.token-input-dropdown-facebook').html('').remove();
 							},
 							"Tag and Clear": function() {
 								pushtag('clear');
-								cj("#tagging-popup").dialog('close');
 								cj('.token-input-list-facebook').html('').remove();
 								cj('.token-input-dropdown-facebook').html('').remove();
 							},
@@ -827,13 +825,11 @@ cj(document).ready(function(){
 			buttons: {
 				"Tag": function() {
 					pushtag();
-					cj("#tagging-popup").dialog('close');
 					cj('.token-input-list-facebook').html('').remove();
 					cj('.token-input-dropdown-facebook').html('').remove();
 				},
 				"Tag and Clear": function() {
 					pushtag('clear');
-					cj("#tagging-popup").dialog('close');
 					cj('.token-input-list-facebook').html('').remove();
 					cj('.token-input-dropdown-facebook').html('').remove();
 				},
@@ -1166,6 +1162,8 @@ function pushtag(clear){
 	if (activity_tag_ids =='' && contact_tag_ids == ''){
 		alert("please select a tag");
 		return false;
+	}else{
+		cj("#tagging-popup").dialog('close');
 	}
 
 	if(contact_tag_ids){
