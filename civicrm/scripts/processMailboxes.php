@@ -310,7 +310,8 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
     $config = CRM_Core_Config::singleton( );
     $filestore = $config->uploadDir.'inbox/';
     if (!is_dir($filestore)) {
-      mkdir($filestore, 0755, true);
+      mkdir($filestore);
+      chmod($filestore, 0777);
     }
     
     //fetch part
