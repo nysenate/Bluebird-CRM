@@ -193,7 +193,7 @@ uniquely sortable tabs for
 
 */
 .disabled a{ color: #999!important; text-decoration: line-through!important;}
-.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px;}
+.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px; cursor:pointer;cursor:hand}
 .shown_email{ margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 640px;}
 .email{ overflow-y: scroll;width: 620px; }
 .email pre { padding: 10px;}
