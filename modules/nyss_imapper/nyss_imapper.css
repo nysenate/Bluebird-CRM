@@ -103,7 +103,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 
 #message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px;line-height: 23px;width: 640px; }
 .message_left_header_tags{  padding:10px 0 ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
-#message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:340px; overflow:auto;  }
+#message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:320px; overflow:auto;  }
 pre{  white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
  white-space: -pre-wrap;      /* Opera 4-6 */

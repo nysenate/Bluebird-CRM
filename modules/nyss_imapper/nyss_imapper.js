@@ -484,16 +484,24 @@ cj(document).ready(function(){
 
 	// reassign activity to contact on the matched page
 	reassign.click(function() {
-		var activityId = cj('#email_id').val();
-		var contact = cj('#imap_id').val();
+		var activityId = cj('#id').val();
 		// only grabs the 1st one
-		var contactRadios = cj('input[name=contact_id]').val();
+
+		var contactRadios = cj('input[name=contact_id]');
+		var contactIds = '';
+		cj.each(contactRadios, function(idx, val) {
+			if(cj(val).attr('checked')) {
+				if(contactIds != '')
+					contactIds = contactIds+',';
+				contactIds = contactIds + cj(val).val();
+			}
+		});
+
 		cj.ajax({
 			url: '/civicrm/imap/ajax/reassignActivity',
 			data: {
 				id: activityId,
-				contact: contact,
-				change: contactRadios
+				change: contactIds
 			},
 			success: function(data, status) {
 				var data = cj.parseJSON(data);
@@ -593,8 +601,7 @@ cj(document).ready(function(){
 					cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
 
 					cj('#message_left_email').html(message.body);
-					cj('#email_id').val(activityId);
-					cj('#imap_id').val(contactId);
+					cj('#id').val(activityId);
 					cj("#loading-popup").dialog('close');
 					cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
 					cj("#find-match-popup").dialog('open');
@@ -791,21 +798,23 @@ cj(document).ready(function(){
 				success: function(data,status) {
 
 					cj("#loading-popup").dialog('close');
-					messages = cj.parseJSON(data);
+					message = cj.parseJSON(data);
 
-					if(messages.code == 'ERROR'){
-						if(messages.clear =='true') removeRow(activityId);
-						alert('Unable to load Message : '+ messages.message);
+					if(message.code == 'ERROR'){
+						if(message.clear =='true') removeRow(activityId);
+						alert('Unable to load Message : '+ message.message);
 						return false;
 					}else{
 
-				 		cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+messages.fromName +"  <span class='emailbubble'>"+ messages.fromEmail+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
+				 		cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
 
-						if ((messages.forwardedEmail != '')){
-							cj('#header_'+activityId).append("<span class='popup_def' >Forwarded by: </span>"+messages.forwardedName+" <span class='emailbubble'>"+ messages.forwardedEmail+"</span><br/>");
+						if ((message.forwarder != message.sender_email)){
+							cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+						}else{
+							cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
 						}
 
-						cj('#email_'+activityId).html("<span class='info hidden_email_info' data-id='"+activityId+"'>Show Email</span><br/><span class='email'>"+messages.details+"</span>");
+						cj('#email_'+activityId).html("<span class='info hidden_email_info' data-id='"+activityId+"'>Show Email</span><br/><span class='email'>"+message.body+"</span>");
 
 					}
 				},
@@ -1238,10 +1247,10 @@ function buildActivitiesList() {
 				messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.fromEmail,13)+'</span>';
 
 				match_sort = 'ProcessError';
-				if(value.match_type){
-					var match_string = (value.match_type == 0) ? "Manually matched" : "Automatically Matched" ;
-					var match_short = (value.match_type == 0) ? "H" : "A" ;
-					match_sort = (value.match_type == 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+				if(value.matcher){
+					var match_string = (value.matcher != 1) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
+					var match_short = (value.matcher != 1) ? "M" : "A" ;
+					match_sort = (value.matcher != 1) ? "ManuallyMatched" : "AutomaticallyMatched" ;
 					messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
 				}
 					messagesHtml +='</td>';

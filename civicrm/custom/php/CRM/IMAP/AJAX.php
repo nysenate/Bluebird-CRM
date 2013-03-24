@@ -731,8 +731,9 @@ ORDER BY gc.contact_id ASC";
                 }
 
             }
-            foreach($activityIds as $activityId) {
-
+            foreach($activityIds as $id) {
+                $output = self::unifiedMessageInfo($id);
+                $activityId = $output['activity_id'];
                 if($activityId == 0) break;
                 //get data about tag
                 $data = self::activityRaw($activityId);
@@ -796,6 +797,9 @@ ORDER BY gc.contact_id ASC";
             $returnMessage['successes'][$message_id]['date_u'] = $date_u;
             $returnMessage['successes'][$message_id]['date_long'] = $date_long;
             $returnMessage['successes'][$message_id]['fromEmail'] = $row['sender_email'];
+            $matcher = self::contactRaw($row['matcher']);
+            $matcherName = $matcher['values'][$row['matcher']]['display_name'];
+            $returnMessage['successes'][$message_id]['matcher_name'] =  $matcherName;
 
             // getting contact details
             $contactId = $row['matched_to'];
@@ -826,10 +830,12 @@ ORDER BY gc.contact_id ASC";
     public static function getActivityDetails() {
       $id = self::get('id');
       $output = self::unifiedMessageInfo($id);
-      
+
       echo json_encode($output);
       CRM_Utils_System::civiExit();
     }
+
+
     // delete activit and enttity ref
     public static function deleteActivity() {
         require_once 'api/api.php';
@@ -843,11 +849,6 @@ ORDER BY gc.contact_id ASC";
         $error = false;
         $debug = self::get('debug');
 
-        if($debug){
-          $returnCode = array('code'=>'SUCCESS','id'=>$activity_id, 'message'=>'Activity Deleted');
-          echo json_encode($returnCode);
-        }
-
         // deleteing a activity
         $params = array(
             'id' => $activity_id,
@@ -858,23 +859,6 @@ ORDER BY gc.contact_id ASC";
         $deleteActivity = civicrm_api('activity','delete',$params );
 
         if($deleteActivity['is_error'] == 1){
-          $error = true;
-        }
-
-
-        // deleteing a entity is hard via api without entity id, time to use sql
-        $query = <<<EOQ
-DELETE FROM `civicrm_entity_tag`
-WHERE `entity_id` =  $activity_id
-AND `tag_id` = $tagid
-EOQ;
-        $result = mysql_query($query, self::db());
-        $results = array();
-        while($row = mysql_fetch_assoc($result)) {
-            $results[] = $row;
-        }
-
-        if(mysql_affected_rows() != 1){
           $error = true;
         }
 
@@ -897,44 +881,16 @@ EOQ;
     public static function untagActivity() {
         require_once 'api/api.php';
         $messageId = self::get('id');
-
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
-
         $output = self::unifiedMessageInfo($messageId);
         $activity_id = $output['activity_id'];
 
-        $tagid = self::getInboxPollingTagId();
-        $error = false;
-
-        // deleteing a entity is hard via api without entity id, time to use sql
-        $tagid = self::getInboxPollingTagId();
-         $debug = self::get('debug');
- 
-        $query = <<<EOQ
-DELETE FROM `civicrm_entity_tag`
-WHERE `entity_id` =  $activity_id
-AND `tag_id` = $tagid
-EOQ;
-        $result = mysql_query($query, self::db());
-        $results = array();
-        while($row = mysql_fetch_assoc($result)) {
-            $results[] = $row;
-        }
-
-        if(mysql_affected_rows() != 1){
-          $error = true;
-        }
-
-        if(!$error){
-          $UPDATEquery = "UPDATE `nyss_inbox_messages`
-          SET  `status`= 9, `matcher` = $userId
-          WHERE `id` =  {$messageId}";
-          $UPDATEresult = mysql_query($UPDATEquery, self::db());
-          $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
-        }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found','clear'=>'true');
-        }
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `status`= 9, `matcher` = $userId
+        WHERE `id` =  {$messageId}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
+        $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
 
         echo json_encode($returnCode);
         mysql_close(self::$db);
@@ -947,7 +903,11 @@ EOQ;
     public static function reassignActivity() {
       require_once 'api/api.php';
       $id = self::get('id');
-      $contact = self::get('contact');
+
+      $output = self::unifiedMessageInfo($id);
+      $contact = $output['matched_to'];
+      $activityId = $output['activity_id'];
+
       $change = self::get('change');
       $results = array();
       $changeData = self::contactRaw($change);
@@ -963,30 +923,13 @@ EOQ;
 
       $query = <<<EOQ
 SELECT COUNT(id)
-FROM `civicrm_entity_tag`
-WHERE `entity_id` =  $id
-AND `tag_id` = $tagid
-EOQ;
-      $check_tag = mysql_query($query, self::db());
-      if($row = mysql_fetch_assoc($check_tag)) {
-        $result_tag = $row['COUNT(id)'];
-      }
-
-      if($result_tag != '1' ){
-        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity was cleared, Please Reload','clear'=>'true');
-        echo json_encode($returnCode);
-        CRM_Utils_System::civiExit();
-      }
-
-      $query = <<<EOQ
-SELECT COUNT(id)
 FROM `civicrm_activity_target`
-WHERE `activity_id` = $id
+WHERE `activity_id` = $activityId
 AND `target_contact_id` = $contact
 EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
-      $check = $row['COUNT(id)'];
+        $check = $row['COUNT(id)'];
       }
 
       if($check != '1'){
@@ -994,55 +937,38 @@ EOQ;
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
       }
-
-        // want to update the activity_target, time to use sql
-        // get the the record id please
-        $tagid = self::getInboxPollingTagId();
-        $query = <<<EOQ
-SELECT id
-FROM `civicrm_activity_target`
-WHERE `activity_id` = $id
-AND `target_contact_id` = $contact
-EOQ;
-
-        $activity_id = mysql_query($query, self::db());
-        if($row = mysql_fetch_assoc($activity_id)) {
-            // the activity id
-            $row_id = $row['id'];
-            // change the contact
-            $Update = <<<EOQ
+      // change the contact
+      $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change
-WHERE `id` =  $row_id
+WHERE `id` =  $activityId
 EOQ;
 
-            // change the row
-            $Updated_results = mysql_query($Update, self::db());
-            while($row = mysql_fetch_assoc($Updated_results)) {
-                 $results[] = $row;
-            }
+      // change the row
+      $Updated_results = mysql_query($Update, self::db());
+      while($row = mysql_fetch_assoc($Updated_results)) {
+           $results[] = $row;
+      }
 
-                        $Source_update = <<<EOQ
+      $Source_update = <<<EOQ
 UPDATE `civicrm_activity`
 SET  `is_auto`= 0
-WHERE `id` =  $id
+WHERE `id` =  $activityId
 EOQ;
+      $Source_results = mysql_query($Source_update, self::db());
 
-            // change the row
-            $Source_results = mysql_query($Source_update, self::db());
-            while($row = mysql_fetch_assoc($Source_results)) {
-                 $results[] = $row;
-            }
+      $session = CRM_Core_Session::singleton();
+      $userId =  $session->get('userID');
+      $UPDATEquery = "UPDATE `nyss_inbox_messages`
+      SET  `matcher` = $userId,  `matched_to` = $change, `sender_name` = '$changeName',`sender_email` = '$email'
+      WHERE `id` =  {$id}";
+      $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
-            $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$row_id,'message'=>'Activity Reassigned to '.$changeName);
-        }else{
-            $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');
-
-        }
-
-        echo json_encode($returnCode);
-        mysql_close(self::$db);
-        CRM_Utils_System::civiExit();
+      $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
+    
+      echo json_encode($returnCode);
+      mysql_close(self::$db);
+      CRM_Utils_System::civiExit();
     }
 
     public static function searchTags() {
