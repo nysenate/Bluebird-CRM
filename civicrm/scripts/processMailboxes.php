@@ -273,22 +273,24 @@ function checkImapAccount($conn, $params)
       // retrieved msg, now store to Civi and if successful move to archive
       if (civiProcessEmail($conn, $email, null) == true) {
         //mark as read
-        imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
-        //move to folder if necessary
-        if ($params['archivemail'] == true) {
-          imap_mail_move($conn, $msg_num, $params['archivebox']);
-        }
+        // TODO
+        // imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
+        // //move to folder if necessary
+        // if ($params['archivemail'] == true) {
+        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
+        // }
       }
     }
     else {
        echo "[WARN]     Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
-      if (imap_delete($conn, $msg_num) === true) {
-        echo "[DEBUG] Message $msg_num has been deleted\n";
-      }
-      else {
-        echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
-      }
+      // TODO
+      // if (imap_delete($conn, $msg_num) === true) {
+      //   echo "[DEBUG] Message $msg_num has been deleted\n";
+      // }
+      // else {
+      //   echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
+      // }
     }
   }
 
@@ -313,7 +315,7 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
       mkdir($filestore);
       chmod($filestore, 0777);
     }
-    
+
     //fetch part
     $part=imap_fetchbody($mbox, $msgid, $global_i);
     //if type is not text
@@ -623,26 +625,32 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rowId=$row['id'];
     }
 
+    $config = CRM_Core_Config::singleton( );
+    $filestore = $config->uploadDir.'inbox/';
+    if (!is_dir($filestore)) {
+      mkdir($filestore);
+      chmod($filestore, 0777);
+    }
+
     foreach ($allowed as $key => $attachment) {
       require_once 'CRM/Utils/File.php';
       $date   =  date( 'Ymdhis' );
-      $config = CRM_Core_Config::singleton( );
       $filename = $attachment['filename'];
-      $fileFull = $config->uploadDir.'inbox/'.$filename;
+      $fileFull = $filestore.$filename;
       $size = $attachment['size'];
       $ext = $attachment['extension'];
-      $finfo = finfo_open(FILEINFO_MIME_TYPE); 
-      $mime = finfo_file($finfo, $filename);
+      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+      $mime = finfo_file($finfo, $fileFull);
       finfo_close($finfo);
 
 
-      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
+      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`, `file_full`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', '{$fileFull}',{$size}, '{$ext}');";
       // echo $insertAttachments."\n";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
       // return mime type ala mimetype extension
 
-        
+
 
       $newName = CRM_Utils_File::makeFileName( $fileName );
       // var_dump($newName);
@@ -650,19 +658,19 @@ function civiProcessEmail($mbox, $email, $customHandler)
       // var_dump($file);
 
       // move file to the civicrm upload directory
-      rename( $fileName, $file );
+      // rename( $fileFull, $file );
 
-      // $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
-      // echo $insertAttachments."\n";
-      // $insertMessage = mysql_query($insertAttachments, $dbconn);
-
-      // Insert File 
-      // mimeType, uri, orgin date 
-      // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());
-
-      $insertAttachments = "INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());";
+      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
       // echo $insertAttachments."\n";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
+
+      // Insert File
+      // mimeType, uri, orgin date
+      // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());
+
+      // $insertAttachments = "INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());";
+      // // echo $insertAttachments."\n";
+      // $insertMessage = mysql_query($insertAttachments, $dbconn);
 
     }
 
