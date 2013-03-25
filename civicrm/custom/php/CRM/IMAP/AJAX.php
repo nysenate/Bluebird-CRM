@@ -1133,9 +1133,13 @@ EOQ;
       while($row = mysql_fetch_assoc($debugResult)) { 
         $debugOutput = $row;
       }
-      // var_dump($debugOutput);
-      $debugOutput = $debugOutput."; browser:".$browser."; ContactInfo:".$ContactInfo."; ContactName:".$ContactName."; url:".$url;
+      $debugFormatted ='';
+      foreach ($debugOutput as $key => $value) {
+        $debugFormatted .=$key.": ".$value.";\n";
+      }
 
+      $debugFinal = $debugFormatted.";\n browser: ".$browser.";\n ContactName: ".$ContactName.";\n url: ".$url;
+      
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
       $_redmine = new redmine($config);
@@ -1148,7 +1152,7 @@ EOQ;
       $subject = "Problem with message #".$messageId;
 
       // addIssue($subject, $description, $project_id, $category_id = 1, $assignmentUsernames = false, $due_date = false, $priority_id = 4) {
-      $addedIssueDetails = $_redmine->addIssue($subject, $debugOutput, $project_id, $category_id, $assignmentUsernames);
+      $addedIssueDetails = $_redmine->addIssue($subject, $debugFinal, $project_id, $category_id, $assignmentUsernames);
       // var_dump($addedIssueDetails);
       // $addIssueID = (int)$addedIssueDetails->id;
       // var_dump($addIssueID);       

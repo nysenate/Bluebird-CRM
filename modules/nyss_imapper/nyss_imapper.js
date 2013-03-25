@@ -154,6 +154,7 @@ cj(document).ready(function(){
 				});
 				browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
 				id = cj('#id').val();
+				cj( this ).dialog( "close" );
 				cj.ajax({
 					url: '/civicrm/imap/ajax/fileBug',
 					data: {
@@ -166,7 +167,6 @@ cj(document).ready(function(){
 						}
 					}
 				});
-				cj( this ).dialog( "close" );
 			},
 			Cancel: function() {
 				cj( this ).dialog( "close" );
