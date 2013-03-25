@@ -1134,7 +1134,7 @@ EOQ;
         $debugOutput = $row;
       }
       // var_dump($debugOutput);
-      $debugOutput ='test body';
+      $debugOutput = $debugOutput."; browser:".$browser."; ContactInfo:".$ContactInfo."; ContactName:".$ContactName."; url:".$url;
 
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
