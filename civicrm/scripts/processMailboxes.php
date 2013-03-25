@@ -273,24 +273,23 @@ function checkImapAccount($conn, $params)
       // retrieved msg, now store to Civi and if successful move to archive
       if (civiProcessEmail($conn, $email, null) == true) {
         //mark as read
-        // TODO
-        // imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
-        // //move to folder if necessary
-        // if ($params['archivemail'] == true) {
-        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
-        // }
+
+        imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
+        //move to folder if necessary
+        if ($params['archivemail'] == true) {
+          imap_mail_move($conn, $msg_num, $params['archivebox']);
+        }
       }
     }
     else {
        echo "[WARN]     Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
-      // TODO
-      // if (imap_delete($conn, $msg_num) === true) {
-      //   echo "[DEBUG] Message $msg_num has been deleted\n";
-      // }
-      // else {
-      //   echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
-      // }
+      if (imap_delete($conn, $msg_num) === true) {
+        echo "[DEBUG] Message $msg_num has been deleted\n";
+      }
+      else {
+        echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
+      }
     }
   }
 
@@ -717,14 +716,14 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
 
 
-    echo "[INFO]    ADDING standard activity to target $contactID ({$fromEmail['email']}) source $userId \n";
+    echo "[INFO]    ADDING standard activity to target $contactID ({$fromEmail}) source $userId \n";
 
 
     $apiParams = array(
                 "source_contact_id" => $userId,
                 "subject" => $subject,
                 "details" =>  $body,
-                "activity_date_time" => $fwdDate['long'],
+                "activity_date_time" => $fwdDate,
                 "status_id" => $activityStatus,
                 "priority_id" => $activityPriority,
                 "activity_type_id" => $activityType,
@@ -739,7 +738,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
     if ($result['is_error']) {
       echo "[ERROR]   Could not save Activity\n";
       var_dump($result);
-      if ($fromEmail['email'] == '') {
+      if ($fromEmail == '') {
         echo "[ERROR]    Forwarding e-mail address not found\n";
       }
       return false;
