@@ -95,7 +95,9 @@
 	<div id="reloading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
-
+	<div id="fileBug-popup" title="We're here to help">
+		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
+	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="message_left_tag">
 			<div id="message_left_header_tag"> over

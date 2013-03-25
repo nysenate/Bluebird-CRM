@@ -120,36 +120,60 @@ cj(document).ready(function(){
 	});
 
 
+	cj( "#fileBug-popup" ).dialog({
+		modal: true,
+		width: 500,
+		autoOpen: false,
+		resizable: false,
+		draggable: false
+	});
+
 	// BOTH MATCHED & UNMATCHED
 	// file a bug
 	cj(".fileBug").live('click', function() {
-		cj.each(jQuery.browser, function(i, val) {
-			if(cj.browser.msie){
-				browsertype = "IE";
-			}else if(cj.browser.webkit){
-				browsertype = "Webkit";
-			}else if(cj.browser.opera){
-				browsertype = "Opera";
-			}else if(cj.browser.mozilla){
-				browsertype = "Mozilla";
-			}
-		});
-		browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
-		id = cj('#email_id').val();
-		cj.ajax({
-			url: '/civicrm/imap/ajax/fileBug',
-			data: {
-				browser: browser,
-				id: id,
-			},
-			success: function(data,status) {
-				if(data != null || data != ''){
-					helpMessage('Report Filed.');
-				}
-			}
-		});
-		return false;
+		cj("#fileBug-popup").dialog('open');
+
 	});
+
+	cj( "#fileBug-popup" ).dialog({
+		open:function () {
+			cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
+		},
+		buttons: {
+			"Report Problem": function() {
+				cj.each(jQuery.browser, function(i, val) {
+					if(cj.browser.msie){
+						browsertype = "IE";
+					}else if(cj.browser.webkit){
+						browsertype = "Webkit";
+					}else if(cj.browser.opera){
+						browsertype = "Opera";
+					}else if(cj.browser.mozilla){
+						browsertype = "Mozilla";
+					}
+				});
+				browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
+				id = cj('#id').val();
+				cj.ajax({
+					url: '/civicrm/imap/ajax/fileBug',
+					data: {
+						browser: browser,
+						id: id,
+					},
+					success: function(data,status) {
+						if(data != null || data != ''){
+							helpMessage('Report Filed.');
+						}
+					}
+				});
+				cj( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				cj( this ).dialog( "close" );
+			}
+		},
+	});
+
 
 	// search function in find_match and edit_match
 	filter.live('click', function() {
