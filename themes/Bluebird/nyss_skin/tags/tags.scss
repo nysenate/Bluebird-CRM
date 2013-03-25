@@ -1,8 +1,8 @@
 /*
 
 Tags CSS
-SassCommandWin: sass --watch themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
-SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
+SassCommandWin: sass --update themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
+SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
 
 
 */
@@ -11,6 +11,7 @@ SassCommand*nix: sass --watch themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bl
 $functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
 $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
 $levelClassSlug : "lv";
+$inputBoxWidth: 522px;
 
 /* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
 @mixin functionIcon($setIconLink) {
@@ -25,6 +26,7 @@ $levelClassSlug : "lv";
 @mixin convertTag {@include functionIcon($functionIconLink); background-position: -107px 0px;}
 @mixin printTag {@include functionIcon($defaultIconLink); background-position: -160px -96px;}
 @mixin closeButton {@include functionIcon($defaultIconLink); background-position: -97px -129px;}
+
 /*to put in bb css, not tagging.css*/
 #crm-container 
 {
@@ -33,6 +35,24 @@ $levelClassSlug : "lv";
 		height:auto;
 	}
 }
+
+/* view & edit contact page fixes */
+#mainTabContainer, #tagSelect, form#Contact .groupTagsKeywords {
+	.tag-section { 
+		width: $inputBoxWidth + 2px;
+		margin-left: auto;
+		margin-right: auto;
+		float:none;
+		.content {
+			margin-left:0px;
+		}
+	}
+	ul.token-input-list-facebook {
+		width:$inputBoxWidth;
+	}
+}
+#tagSelect 
+
 
 /*pagestructure*/
 .BBMessages
@@ -280,7 +300,7 @@ $levelClassSlug : "lv";
 } /*BBTree*/
 
 #BBTreeContainer, #BBDialog {
-	width:522px;
+	width:$inputBoxWidth;
 	position:relative;
 	margin: 0 auto;
 	overflow:hidden;
