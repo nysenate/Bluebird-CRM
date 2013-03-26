@@ -39,9 +39,7 @@
 					<li><a href="#tab1">Find Contact</a></li>
 				</ul>
 				<div id="tab1">
-					<input type="hidden" class="hidden" id="email_id" name="email_id">
-					<input type="hidden" class="hidden" id="imap_id" name="imap_id">
-						
+					<input type="hidden" class="hidden" id="id" name="id">
 					<label for="first_name">
 						<span class="label_def">First Name: </span>
 						<input type="text" placeholder="First Name" class="form-text first_name" name="first_name">
@@ -97,7 +95,9 @@
 	<div id="reloading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
-
+	<div id="fileBug-popup" title="We're here to help">
+		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
+	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="message_left_tag">
 			<div id="message_left_header_tag"> over
