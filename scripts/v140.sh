@@ -558,6 +558,9 @@ sqlNewTag="
 "
 $execSql -i $instance -c "sqlNewTag"
 
+## create inbox polling tables
+$execSql -i $instance -f sql/inbox_polling.sql
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
