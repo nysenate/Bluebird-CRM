@@ -23,7 +23,7 @@ cj(document).ready(function(){
 		getUnmatchedMessages();
 	}else if(cj("#Reports").length){
 		// getUnmatchedMessages();
-		console.log('reports');
+		// console.log('reports');
 	}
 	cj('#search_help').live('click', function() {
 		cj("#help-popup").dialog('open');
@@ -1046,16 +1046,16 @@ function buildMessageList() {
 				// dealing with attachments
  				if(value.attachments){
 	 				 	cj.each(value.attachments, function(key, attachment) {
-	 				 		console.log(key);
+	 				 		// console.log(key);
 	 						var attachmentcount = 0;
 	 				 			cj.each(attachment, function(key, attachment_sub) {
-			 				 		console.log(attachment_sub);
+			 				 		// console.log(attachment_sub);
 			 				 		attachmentcount++;
 	 				 			});
 
 
 						// attachmentcount = value.attachments;
-						console.log(attachmentcount);
+						// console.log(attachmentcount);
 						icon = '<div class="ui-icon ui-icon-link attachment" title="'+attachmentcount+' Attachments" ></div>'
 					});
  				}
@@ -1405,7 +1405,7 @@ function checkForMatch(key,contactIds){
 							removeRow(messageId);
 							helpMessage('Other Records Automatically Matched');
 						}
-							
+
 					}
 				});
 			}

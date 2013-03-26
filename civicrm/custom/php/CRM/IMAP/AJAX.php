@@ -81,7 +81,7 @@ class CRM_IMAP_AJAX {
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
 
           $returnMessage = $row;
-          // clean up dates 
+          // clean up dates
           $cleanDate = self::cleanDate($row['email_date']);
           $returnMessage['date_short'] = $cleanDate['short'];
           $returnMessage['date_u'] = $cleanDate['u'];
@@ -114,7 +114,7 @@ class CRM_IMAP_AJAX {
           $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $rowId";
           $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
           while($row = mysql_fetch_assoc($AttachmentResult)) {
-            $attachments[] = array('filename'=>$row['filename'],'size'=>$row['size'],'ext'=>$row['ext'] );
+            $attachments[] = array('fileName'=>$row['file_name'],'fileFull'=>$row['file_full'],'size'=>$row['size'],'ext'=>$row['ext'] );
           }
           $returnMessage['attachments']=$attachments;
 
@@ -195,7 +195,7 @@ class CRM_IMAP_AJAX {
      * specified connection ID, and retrieves the message based on UID
      */
     public static function getMessageDetails($id = null, $internal= null) {
- 
+
         if(is_int($id_passed)){
           $messageId = ($id_passed) ? $id_passed : self::get('id');
         }else{
@@ -213,7 +213,7 @@ class CRM_IMAP_AJAX {
           var_dump($email);
           var_dump($output);
         }
-       
+
         if($internal){
           return $output;
         }else{
@@ -308,7 +308,7 @@ class CRM_IMAP_AJAX {
           $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
         }
-        
+
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
     }
@@ -514,7 +514,7 @@ ORDER BY gc.contact_id ASC";
           echo "<h1>forwarder ID</h1>";
           var_dump($forwarderId);
         }
- 
+
         if ($debug){
           echo "<h1>Attach activity to</h1>";
           var_dump($senderEmail);
@@ -609,7 +609,7 @@ ORDER BY gc.contact_id ASC";
               echo json_encode($returnCode);
               CRM_Utils_System::civiExit();
             }else{
-               
+
                   $key =  $output['key'];
 
                   $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
@@ -620,68 +620,62 @@ ORDER BY gc.contact_id ASC";
                   WHERE `id` =  {$messageUid}";
                   $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
-                  // attachments 
+                  // attachments
                   if ( ! empty( $attachments ) ) {
-                    // require_once 'CRM/Utils/File.php';
-                    // $date   =  date( 'Ymdhis' );
-                    // $config = CRM_Core_Config::singleton( );
-                    // $filestore = $config->uploadDir.'inbox/';
-                    // if (!is_dir($filestore)) {
-                    //   mkdir($filestore);
-                    //   chmod($filestore, 0777);
-                    // }
 
                     for ( $i = 0; $i < count( $attachments ); $i++ ) {
-                        // process mailbox actions 
-                        // $attachNum = $i + 1;
-                        // $fileName = $config->uploadDir.'inbox/'.$attachments[$i]['filename'];
-                        // var_dump($fileName);
+                        // process mailbox actions
+                        $config = CRM_Core_Config::singleton( );
+                        $fileName = $attachments[$i]['fileName'];
+                        $fileFull = $attachments[$i]['fileFull'];
+                        var_dump($fileFull);
+                        var_dump($fileName);
 
-                        // $newName = CRM_Utils_File::makeFileName( $fileName );
-                        // var_dump($newName);
-                        // $file = $config->uploadDir . $newName;
-                        // var_dump($file);
+                        $newName = CRM_Utils_File::makeFileName( $fileName );
+                        var_dump($newName);
+                        $file = $config->uploadDir . $newName;
+                        var_dump($file);
 
-                        // // move file to the civicrm upload directory
-                        // rename( $fileName, $file );
+                        // move file to the civicrm upload directory
+                        rename( $fileFull, $file );
 
-                        // $finfo = finfo_open(FILEINFO_MIME_TYPE); 
-                        // $mime = finfo_file($finfo, $file);
-                        // finfo_close($finfo);
-                        // var_dump($mime);
-                        // // Insert File 
-                        // $UPDATEquery = "UPDATE `civicrm_file`
-                        // SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
-                        // WHERE `id` =  {$messageUid}";
-                        // // mimeType, uri, orgin date 
-                        // // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( 'image/png', 'Screen_Shot_2013_03_10_at_10_19_05_AM_44d96b0dc132693400e3100e7cc68c8a.png', CURTIME());
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mime = finfo_file($finfo, $file);
+                        finfo_close($finfo);
+                        var_dump($mime);
+
+                        // // mimeType, uri, orgin date -> return id
+                        $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
+                        $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
+                        var_dump($rowUpdated);
+
+                        $insertFileResult = mysql_query($insertFIleQuery, self::db());
+                        $rowUpdatedResult = mysql_query($rowUpdated, self::db());
+
+                        $insertFileOutput = array();
+                        while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                          $fileId = $row['id'];
+                        }
+                        var_dump($fileId);
 
 
-                        //table, activity id, file_id
-                        //INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity', '11', '1');
-
-                        // var_dump($oldActivityId);
-                        $fileUpdateQuery = "UPDATE `civicrm_entity_file`
-                        SET  `entity_id`= {$activity_id} 
-                        WHERE `entity_id` =  {$oldActivityId}";
-                        // var_dump($fileUpdateQuery);
-                        $fileUpdate = mysql_query($fileUpdateQuery, self::db());
-
+                        // //table, activity id, file_id
+                        $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
+                        var_dump($insertEntityQuery);
+                        $insertEntity = mysql_query($insertEntityQuery, self::db());
                     }
                   }
 
 
 
-                  // // Move the message to the archive folder!
-                  // $message_id =  $output['message_id'];
-                  // $imap_id =  $output['imap_id'];
-                  // $imap = new CRM_Utils_IMAP(self::$server,
-                  //                   self::$imap_accounts[$imap_id]['user'],
-                  //                   self::$imap_accounts[$imap_id]['pass']);
-                  // $imap->movemsg_uid($message_id, 'Archive');
-                  // imap_close($imap->conn());
-
-                 
+                  // Move the message to the archive folder!
+                  $message_id =  $output['message_id'];
+                  $imap_id =  $output['imap_id'];
+                  $imap = new CRM_Utils_IMAP(self::$server,
+                                    self::$imap_accounts[$imap_id]['user'],
+                                    self::$imap_accounts[$imap_id]['pass']);
+                  $imap->movemsg_uid($message_id, 'Archive');
+                  imap_close($imap->conn());
 
                   echo json_encode($returnCode);
                 // }
@@ -1018,7 +1012,7 @@ EOQ;
       $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
       $returnCode = array('code'=>'SUCCESS','id'=>$id,'contact_id'=>$change,'contact_type'=>$contactType,'first_name'=>$firstName,'last_name'=>$LastName,'display_name'=>$changeName,'email'=>$email,'activity_id'=>$id,'message'=>'Activity Reassigned to '.$changeName);
-    
+
       echo json_encode($returnCode);
       mysql_close(self::$db);
       CRM_Utils_System::civiExit();
@@ -1106,13 +1100,13 @@ EOQ;
       $bbconfig = get_bluebird_instance_config();
       $apiKey = $bbconfig['redmine.api.key'];
       $imapAccounts = explode(',', $bbconfig['imap.accounts']);
-      // get session stuff 
+      // get session stuff
       $session = CRM_Core_Session::singleton();
       $userId =  $session->get('userID');
       $ContactInfo = self::contactRaw($userId);
       $ContactName = $ContactInfo['values'][$userId]['display_name'];
       $url = $_SERVER["SERVER_NAME"].":".$_SERVER["REQUEST_URI"];
-      // _Get vars 
+      // _Get vars
       $messageId =  self::get('id');
       $browser =  self::get('browser');
 
@@ -1123,14 +1117,14 @@ EOQ;
       // var_dump($browser);
       // var_dump($userId);
       // var_dump($ContactName);
-      
+
       $debugQuery = " SELECT *
       FROM `nyss_inbox_messages`
       WHERE `id` = $messageId
       LIMIT 1";
       $debugResult = mysql_query($debugQuery, self::db());
       $debugOutput = array();
-      while($row = mysql_fetch_assoc($debugResult)) { 
+      while($row = mysql_fetch_assoc($debugResult)) {
         $debugOutput = $row;
       }
       $debugFormatted ='';
@@ -1139,7 +1133,7 @@ EOQ;
       }
 
       $debugFinal = $debugFormatted.";\n browser: ".$browser.";\n ContactName: ".$ContactName.";\n url: ".$url;
-      
+
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
       $_redmine = new redmine($config);
@@ -1155,7 +1149,7 @@ EOQ;
       $addedIssueDetails = $_redmine->addIssue($subject, $debugFinal, $project_id, $category_id, $assignmentUsernames);
       // var_dump($addedIssueDetails);
       // $addIssueID = (int)$addedIssueDetails->id;
-      // var_dump($addIssueID);       
+      // var_dump($addIssueID);
 
       CRM_Utils_System::civiExit();
     }
