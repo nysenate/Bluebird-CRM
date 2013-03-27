@@ -276,20 +276,20 @@ function checkImapAccount($conn, $params)
 
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         //move to folder if necessary
-        if ($params['archivemail'] == true) {
-          imap_mail_move($conn, $msg_num, $params['archivebox']);
-        }
+        // if ($params['archivemail'] == true) {
+        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
+        // }
       }
     }
     else {
        echo "[WARN]     Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
-      if (imap_delete($conn, $msg_num) === true) {
-        echo "[DEBUG] Message $msg_num has been deleted\n";
-      }
-      else {
-        echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
-      }
+      // if (imap_delete($conn, $msg_num) === true) {
+      //   echo "[DEBUG] Message $msg_num has been deleted\n";
+      // }
+      // else {
+      //   echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
+      // }
     }
   }
 
@@ -765,10 +765,13 @@ function civiProcessEmail($mbox, $email, $customHandler)
         if ($result) {
           echo "[DEBUG]   ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
 
-          $query = "UPDATE `nyss_inbox_messages`
+
+          $updateMessages = "UPDATE `nyss_inbox_messages`
                     SET  `status`= 1, `matcher` = 1, `matched_to` = {$contactID}, `activity_id` = $activityId
-                    WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
-          $updateMessage = mysql_query($query, $dbconn);
+                    WHERE `message_id` =  {$messageId} && `imap_id`= 0";
+          // var_dump($updateMessages);
+          $updateMessagesResult = mysql_query($updateMessages, $dbconn);
+
 
         }
         else {
