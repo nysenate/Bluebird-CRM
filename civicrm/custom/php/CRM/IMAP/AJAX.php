@@ -466,239 +466,242 @@ class CRM_IMAP_AJAX {
         $date = $output['email_date'];
         $subject = $output['subject'];
         $body = $output['body'];
-
-        $attachments = $output['attachments'];
-
-        if ($debug){
-          var_dump($messageUid);
-          echo "<h1>inputs</h1>";
-          var_dump($senderName);
-          var_dump($senderEmailAddress);
-          var_dump($date);
-          var_dump($subject);
-          var_dump($body);
-          var_dump($messageUid);
-          echo "<h1>Attachments</h1>";
-          var_dump($attachments);
-        }
-
-        // if this email has been moved / assigned already
-        if( $output['code'] == "ERROR"){
-          $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $output['message'] );
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-        }
-
-$query = "
-SELECT e.contact_id
-FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-WHERE g.title='Authorized Forwarders'
-  AND e.email='".$forwarder."'
-  AND g.id=gc.group_id
-  AND gc.status='Added'
-  AND gc.contact_id=e.contact_id
-ORDER BY gc.contact_id ASC";
-
-            $result = mysql_query($query, self::db());
-            $results = array();
-            while($row = mysql_fetch_assoc($result)) {
-                $results[] = $row;
-            }
-
-        if ($debug){
-          echo "<h1>Get forwarder Contact Record for {$forwarder}</h1>";
-          if (count($results) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
-          var_dump($results);
-        }
-
-        // error checking for forwarderId
-        if (!$results){
-          $forwarderId = 1; // bluebird admin
-        } else{
-          $forwarderId = $results[0]['contact_id'];
-        };
-
-        if ($debug){
-          echo "<h1>forwarder ID</h1>";
-          var_dump($forwarderId);
-        }
-
-        if ($debug){
-          echo "<h1>Attach activity to</h1>";
-          var_dump($senderEmail);
-        }
-
-        $contactIds = explode(',', $contactIds);
-        foreach($contactIds as $contactId) {
-
-            // Check to see if contact has the email address being assigend to it,
-            // if doesn't have email address, add it to contact
-            $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
-            $emailResult = mysql_query($emailQuery, self::db());
-            $emailResults = array();
-            while($row = mysql_fetch_assoc($emailResult)) {
-                $emailResults[] = $row;
-            }
-
-            if ($debug){
-                echo "<h1>Contact ".$contactId." has the following emails </h1>";
-                var_dump($emailResults);
-            }
-            $emailsCount = count($emailResults);
-
-            $matches = 0;
-            if ($debug){
-              echo "<h1>Contact Non matching results </h1>";
-            }
-            // if the records don't match, count it, an if the number is > 1 add the record
-            foreach($emailResults as $email) {
-                if(strtolower($email['email']) == strtolower($senderEmail)){
-                    if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
-                }else{
-                    $matches++;
-                    if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
-                }
-            }
-
-            // get contact info for return message
-            $ContactInfo = self::contactRaw($contactId);
-            $ContactName = $ContactInfo['values'][$contactId]['display_name'];
-            if ($debug){
-              echo "<h1>Contact Info</h1>";
-              var_dump($ContactInfo['values'][$contactId]);
-            }
-
-            // Prams to add email to user
-            $params = array(
-                'contact_id' => $contactId,
-                'email' => $senderEmail,
-                'version' => 3,
-            );
-            if(($emailsCount-$matches) == 0){
-                if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
-                $result = civicrm_api( 'email','create',$params );
-            }
-
-          // Submit the activity information and assign it to the right user
-          $params = array(
-              'activity_type_id' => 12,
-              'source_contact_id' => $forwarderId,
-              'assignee_contact_id' => $forwarderId,
-              'target_contact_id' => $contactId,
-              'subject' => $subject,
-              'is_auto' => 0, // we manually add it, right ?
-              'status_id' => 2,
-              'activity_date_time' => $date,
-              'details' => $body,
-              'version' => 3
-          );
-          $activity = civicrm_api('activity', 'create', $params);
+        $status = $output['status'];
+        if($status != 1){
+          $attachments = $output['attachments'];
 
           if ($debug){
-            echo "<h1>Activity Created ?</h1>";
-            var_dump($activity);
+            var_dump($messageUid);
+            echo "<h1>inputs</h1>";
+            var_dump($senderName);
+            var_dump($senderEmailAddress);
+            var_dump($date);
+            var_dump($subject);
+            var_dump($body);
+            var_dump($messageUid);
+            echo "<h1>Attachments</h1>";
+            var_dump($attachments);
           }
 
-          // if its an error or doesnt return we need errors
-          if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
+          // if this email has been moved / assigned already
+          if( $output['code'] == "ERROR"){
             $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $activity['error_message']);
-            echo json_encode($returnCode);
-            CRM_Utils_System::civiExit();
-          } else{
-
-            // Now we need to assign the tag to the activity
-            $tagid= self::getInboxPollingTagId();
-            $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
-
-            if($assignTag['code'] == "ERROR"){
-              var_dump($assignTag);
-              $returnCode = array('code'      =>  'ERROR',
-              'message'   =>  $assignTag['message']);
+                'message'   =>  $output['message'] );
               echo json_encode($returnCode);
               CRM_Utils_System::civiExit();
-            }else{
-              $key =  $output['key'];
-              $activity_id =$activity['id'];
+          }
 
-              $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
+  $query = "
+  SELECT e.contact_id
+  FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+  WHERE g.title='Authorized Forwarders'
+    AND e.email='".$forwarder."'
+    AND g.id=gc.group_id
+    AND gc.status='Added'
+    AND gc.contact_id=e.contact_id
+  ORDER BY gc.contact_id ASC";
 
-              $UPDATEquery = "UPDATE `nyss_inbox_messages`
-              SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
-              WHERE `id` =  {$messageUid}";
-              $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-              # $uploadDir
-              # $uploadInbox
-              // attachments // data.rootdir
-              var_dump($attachments);
-              var_dump(is_array($attachments[0]));
-
-              // exit();
-              if(isset($attachments[0])){
-                foreach ($attachments as $key => $attachment) {
-                  var_dump($attachment);
-
-                  $fileName = $attachment['fileName'];
-                  $fileFull = $attachment['fileFull'];
-                  var_dump($fileFull);
-                  var_dump($fileName);
-
-                  $newName = CRM_Utils_File::makeFileName( $fileName );
-                  var_dump($newName);
-                  $file = $uploadDir . $newName;
-                  var_dump($file);
-
-                  // move file to the civicrm upload directory
-                  rename( $fileFull, $file );
-
-                  $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                  $mime = finfo_file($finfo, $file);
-                  finfo_close($finfo);
-                  var_dump($mime);
-
-                  // // mimeType, uri, orgin date -> return id
-                  $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
-                  $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-                  var_dump($rowUpdated);
-
-                  $insertFileResult = mysql_query($insertFIleQuery, self::db());
-                  $rowUpdatedResult = mysql_query($rowUpdated, self::db());
-
-                  $insertFileOutput = array();
-                  while($row = mysql_fetch_assoc($rowUpdatedResult)) {
-                    $fileId = $row['id'];
-                  }
-                  var_dump($fileId);
-
-
-                  // //table, activity id, file_id
-                  $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                  var_dump($insertEntityQuery);
-                  $insertEntity = mysql_query($insertEntityQuery, self::db());
-                }
+              $result = mysql_query($query, self::db());
+              $results = array();
+              while($row = mysql_fetch_assoc($result)) {
+                  $results[] = $row;
               }
-              // exit();
 
+          if ($debug){
+            echo "<h1>Get forwarder Contact Record for {$forwarder}</h1>";
+            if (count($results) != 1 ) echo "<p>If there are no results, or multiple contacts we make bluebird admin the owner</p>";
+            var_dump($results);
+          }
 
-              // Move the message to the archive folder!
-              self::setupImap();
-              $imapMsgId =  $output['message_id'];
-              $imapAcctId =  $output['imap_id'];
-              $imap = new CRM_Utils_IMAP(self::$server,
-                                self::$imap_accounts[$imapAcctId]['user'],
-                                self::$imap_accounts[$imapAcctId]['pass']);
-              $status = $imap->movemsg_uid($imapMsgId, 'Archive');
-              imap_close($imap->conn());
+          // error checking for forwarderId
+          if (!$results){
+            $forwarderId = 1; // bluebird admin
+          } else{
+            $forwarderId = $results[0]['contact_id'];
+          };
 
-              echo json_encode($returnCode);
+          if ($debug){
+            echo "<h1>forwarder ID</h1>";
+            var_dump($forwarderId);
+          }
+
+          if ($debug){
+            echo "<h1>Attach activity to</h1>";
+            var_dump($senderEmail);
+          }
+
+          $contactIds = explode(',', $contactIds);
+          foreach($contactIds as $contactId) {
+
+              // Check to see if contact has the email address being assigend to it,
+              // if doesn't have email address, add it to contact
+              $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
+              $emailResult = mysql_query($emailQuery, self::db());
+              $emailResults = array();
+              while($row = mysql_fetch_assoc($emailResult)) {
+                  $emailResults[] = $row;
+              }
+
+              if ($debug){
+                  echo "<h1>Contact ".$contactId." has the following emails </h1>";
+                  var_dump($emailResults);
+              }
+              $emailsCount = count($emailResults);
+
+              $matches = 0;
+              if ($debug){
+                echo "<h1>Contact Non matching results </h1>";
+              }
+              // if the records don't match, count it, an if the number is > 1 add the record
+              foreach($emailResults as $email) {
+                  if(strtolower($email['email']) == strtolower($senderEmail)){
+                      if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                  }else{
+                      $matches++;
+                      if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                  }
+              }
+
+              // get contact info for return message
+              $ContactInfo = self::contactRaw($contactId);
+              $ContactName = $ContactInfo['values'][$contactId]['display_name'];
+              if ($debug){
+                echo "<h1>Contact Info</h1>";
+                var_dump($ContactInfo['values'][$contactId]);
+              }
+
+              // Prams to add email to user
+              $params = array(
+                  'contact_id' => $contactId,
+                  'email' => $senderEmail,
+                  'version' => 3,
+              );
+              if(($emailsCount-$matches) == 0){
+                  if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  $result = civicrm_api( 'email','create',$params );
+              }
+
+            // Submit the activity information and assign it to the right user
+            $params = array(
+                'activity_type_id' => 12,
+                'source_contact_id' => $forwarderId,
+                'assignee_contact_id' => $forwarderId,
+                'target_contact_id' => $contactId,
+                'subject' => $subject,
+                'is_auto' => 0, // we manually add it, right ?
+                'status_id' => 2,
+                'activity_date_time' => $date,
+                'details' => $body,
+                'version' => 3
+            );
+            $activity = civicrm_api('activity', 'create', $params);
+
+            if ($debug){
+              echo "<h1>Activity Created ?</h1>";
+              var_dump($activity);
             }
 
-            // add attachment to activity
+            // if its an error or doesnt return we need errors
+            if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
+              $returnCode = array('code'      =>  'ERROR',
+                'message'   =>  $activity['error_message']);
+              echo json_encode($returnCode);
+              CRM_Utils_System::civiExit();
+            } else{
+
+              // Now we need to assign the tag to the activity
+              $tagid= self::getInboxPollingTagId();
+              $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
+
+              if($assignTag['code'] == "ERROR"){
+                var_dump($assignTag);
+                $returnCode = array('code'      =>  'ERROR',
+                'message'   =>  $assignTag['message']);
+                echo json_encode($returnCode);
+                CRM_Utils_System::civiExit();
+              }else{
+                $key =  $output['key'];
+                $activity_id =$activity['id'];
+
+                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
+
+                $UPDATEquery = "UPDATE `nyss_inbox_messages`
+                SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
+                WHERE `id` =  {$messageUid}";
+                $UPDATEresult = mysql_query($UPDATEquery, self::db());
+
+                # $uploadDir
+                # $uploadInbox
+                // attachments // data.rootdir
+                var_dump($attachments);
+                var_dump(is_array($attachments[0]));
+
+                // exit();
+                if(isset($attachments[0])){
+                  foreach ($attachments as $key => $attachment) {
+                    $fileName = $attachment['fileName'];
+                    $fileFull = $attachment['fileFull'];
+                    if (file_exists($fileFull)){
+                      var_dump("Origin File Full : ". $fileFull);
+                      var_dump("Origin File NAME : ". $fileName);
+
+                      $newName = CRM_Utils_File::makeFileName( $fileName );
+                      $file = $uploadDir.'/'. $newName;
+                      var_dump("Final File Full : ". $file);
+
+                      // move file to the civicrm upload directory
+                      rename( $fileFull, $file );
+
+                      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                      $mime = finfo_file($finfo, $file);
+                      finfo_close($finfo);
+                      var_dump("Mime Type : ". $mime);
+
+                      // // mimeType, uri, orgin date -> return id
+                      $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
+                      $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
+                      var_dump($insertFIleQuery);
+                      var_dump($rowUpdated);
+
+                      $insertFileResult = mysql_query($insertFIleQuery, self::db());
+                      $rowUpdatedResult = mysql_query($rowUpdated, self::db());
+
+                      $insertFileOutput = array();
+                      while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                        $fileId = $row['id'];
+                      }
+                      var_dump("civicrm_file ID : ".$fileId);
+                      var_dump("Activity ID : ". $activity['id']);
+
+
+                      // //table, activity id, file_id
+                      $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
+                      var_dump($insertEntityQuery);
+                      $insertEntity = mysql_query($insertEntityQuery, self::db());
+                      echo "<hr/>";
+                    }
+                  }
+                }
+                // exit();
+
+
+                // Move the message to the archive folder!
+                self::setupImap();
+                $imapMsgId =  $output['message_id'];
+                $imapAcctId =  $output['imap_id'];
+                $imap = new CRM_Utils_IMAP(self::$server,
+                                  self::$imap_accounts[$imapAcctId]['user'],
+                                  self::$imap_accounts[$imapAcctId]['pass']);
+                $status = $imap->movemsg_uid($imapMsgId, 'Archive');
+                imap_close($imap->conn());
+
+                echo json_encode($returnCode);
+              }
+
+              // add attachment to activity
+            }
           }
         }
-
         CRM_Utils_System::civiExit();
     }
 
