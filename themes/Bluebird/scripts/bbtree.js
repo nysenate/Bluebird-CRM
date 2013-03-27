@@ -749,10 +749,13 @@ var BBTreeTag = {
 			BBTree.contactTagData = {};
 			BBTree.contactTagData['cid_' + holdID] = {};
 		}
-		if(BBLoadTaglist.length > 0) //if the template sends the taglist, get the tags
+		if(typeof BBLoadTaglist !== 'undefined') //if the template sends the taglist, get the tags
 		{
 			BBTree.contactTagData['cid_' + holdID] = BBLoadTaglist;
-			BBTreeTag.applyContactTags(holdID, holdLoc);
+			if(BBLoadTaglist != null)
+			{
+				BBTreeTag.applyContactTags(holdID, holdLoc);
+			}
 		}
 		else
 		{
