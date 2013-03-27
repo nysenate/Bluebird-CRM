@@ -432,14 +432,28 @@ class CRM_IMAP_AJAX {
      * the selected contact ID.
      */
     public static function assignMessage() {
-        require_once 'CRM/Utils/IMAP.php';
+        require_once 'api/api.php';
+        require_once 'CRM/Utils/File.php';
+        require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
+
         self::setupImap();
         $debug = self::get('debug');
-        $session = CRM_Core_Session::singleton();
-        $userId =  $session->get('userID');
-
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
+
+        $session = CRM_Core_Session::singleton();
+        $userId =  $session->get('userID');
+        $config = get_bluebird_instance_config();
+        // var_dump($config);
+
+
+        // directories for image upload
+        $uploadDir = $config['data.rootdir'].'/'.$config['data_dirname'].'/civicrm/upload';
+        $uploadInbox = $uploadDir.'/inbox';
+        // var_dump($uploadDir);
+        // var_dump($uploadInbox);
+
+
         if(!$messageUid || !$contactIds){
           $returnCode = array('code'      =>  'ERROR',
               'message'   =>  'Something went wrong here' );
@@ -456,7 +470,7 @@ class CRM_IMAP_AJAX {
         $subject = $output['subject'];
         $body = $output['body'];
 
-        $attachments =$output['attachments'];
+        $attachments = $output['attachments'];
 
         if ($debug){
           var_dump($messageUid);
@@ -470,8 +484,6 @@ class CRM_IMAP_AJAX {
           echo "<h1>Attachments</h1>";
           var_dump($attachments);
         }
-
-        require_once 'api/api.php';
 
         // if this email has been moved / assigned already
         if( $output['code'] == "ERROR"){
@@ -559,6 +571,7 @@ ORDER BY gc.contact_id ASC";
               echo "<h1>Contact Info</h1>";
               var_dump($ContactInfo['values'][$contactId]);
             }
+
             // Prams to add email to user
             $params = array(
                 'contact_id' => $contactId,
@@ -609,80 +622,91 @@ ORDER BY gc.contact_id ASC";
               echo json_encode($returnCode);
               CRM_Utils_System::civiExit();
             }else{
+              $key =  $output['key'];
+              $activity_id =$activity['id'];
 
-                  $key =  $output['key'];
+              $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
 
-                  $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
-                  $activity_id =$activity['id'];
+              $UPDATEquery = "UPDATE `nyss_inbox_messages`
+              SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
+              WHERE `id` =  {$messageUid}";
+              $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
-                  $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                  SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
-                  WHERE `id` =  {$messageUid}";
-                  $UPDATEresult = mysql_query($UPDATEquery, self::db());
+              # $uploadDir
+              # $uploadInbox
+              // attachments // data.rootdir
+              var_dump($attachments);
+              var_dump(is_array($attachments[0]));
 
-                  // attachments
-                  if ( ! empty( $attachments ) ) {
+              // exit();
+              if(is_array($attachments[0])){
+                foreach ($attachments as $key => $attachment) {
+                  var_dump($attachment);
 
-                    for ( $i = 0; $i < count( $attachments ); $i++ ) {
-                        // process mailbox actions
-                        $config = CRM_Core_Config::singleton( );
-                        $fileName = $attachments[$i]['fileName'];
-                        $fileFull = $attachments[$i]['fileFull'];
-                        var_dump($fileFull);
-                        var_dump($fileName);
+                  $fileName = $attachment['fileName'];
+                  $fileFull = $attachment['fileFull'];
+                  var_dump($fileFull);
+                  var_dump($fileName);
+                  exit();
 
-                        $newName = CRM_Utils_File::makeFileName( $fileName );
-                        var_dump($newName);
-                        $file = $config->uploadDir . $newName;
-                        var_dump($file);
+                  $newName = CRM_Utils_File::makeFileName( $fileName );
+                  var_dump($newName);
+                  $file = $uploadDir . $newName;
+                  var_dump($file);
 
-                        // move file to the civicrm upload directory
-                        rename( $fileFull, $file );
+                  // move file to the civicrm upload directory
+                  rename( $fileFull, $file );
 
-                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                        $mime = finfo_file($finfo, $file);
-                        finfo_close($finfo);
-                        var_dump($mime);
+                  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                  $mime = finfo_file($finfo, $file);
+                  finfo_close($finfo);
+                  var_dump($mime);
 
-                        // // mimeType, uri, orgin date -> return id
-                        $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
-                        $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-                        var_dump($rowUpdated);
+                  // // mimeType, uri, orgin date -> return id
+                  $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
+                  $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
+                  var_dump($rowUpdated);
 
-                        $insertFileResult = mysql_query($insertFIleQuery, self::db());
-                        $rowUpdatedResult = mysql_query($rowUpdated, self::db());
+                  $insertFileResult = mysql_query($insertFIleQuery, self::db());
+                  $rowUpdatedResult = mysql_query($rowUpdated, self::db());
 
-                        $insertFileOutput = array();
-                        while($row = mysql_fetch_assoc($rowUpdatedResult)) {
-                          $fileId = $row['id'];
-                        }
-                        var_dump($fileId);
-
-
-                        // //table, activity id, file_id
-                        $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                        var_dump($insertEntityQuery);
-                        $insertEntity = mysql_query($insertEntityQuery, self::db());
-                    }
+                  $insertFileOutput = array();
+                  while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                    $fileId = $row['id'];
                   }
+                  var_dump($fileId);
+                  exit();
 
 
+                  // //table, activity id, file_id
+                  $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
+                  var_dump($insertEntityQuery);
+                  $insertEntity = mysql_query($insertEntityQuery, self::db());
+                }
+              }
+              // exit();
 
-                  // Move the message to the archive folder!
-                  $message_id =  $output['message_id'];
-                  $imap_id =  $output['imap_id'];
-                  $imap = new CRM_Utils_IMAP(self::$server,
-                                    self::$imap_accounts[$imap_id]['user'],
-                                    self::$imap_accounts[$imap_id]['pass']);
-                  $imap->movemsg_uid($message_id, 'Archive');
-                  imap_close($imap->conn());
 
-                  echo json_encode($returnCode);
-                // }
+              // Move the message to the archive folder!
+              $imapMsgId =  $output['message_id'];
+              $imapAcctId =  $output['imap_id'];
+              var_dump($imapMsgId);
+              var_dump($imapAcctId);
+              $imap = new CRM_Utils_IMAP(self::$server,
+                                self::$imap_accounts[$imapAcctId]['user'],
+                                self::$imap_accounts[$imapAcctId]['pass']);
+              var_dump($imap);
+
+              // $status = $imap->movemsg_uid($imapMsgId, 'Archive');
+              var_dump($status);
+              exit();
+              imap_close($imap->conn());
+
+              echo json_encode($returnCode);
             }
 
             // add attachment to activity
-          };
+          }
         }
 
         CRM_Utils_System::civiExit();
