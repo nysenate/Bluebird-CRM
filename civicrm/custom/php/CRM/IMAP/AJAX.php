@@ -701,6 +701,9 @@ class CRM_IMAP_AJAX {
               // add attachment to activity
             }
           }
+        }else{
+          $returnCode = array('code'      =>  'ERROR', 'message'   =>  'Message is already matched' );
+          echo json_encode($returnCode);
         }
         CRM_Utils_System::civiExit();
     }
