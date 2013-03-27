@@ -1045,18 +1045,8 @@ function buildMessageList() {
 
         // dealing with attachments
         if(value.attachments){
-            cj.each(value.attachments, function(key, attachment) {
-              // console.log(key);
-              var attachmentcount = 0;
-                cj.each(attachment, function(key, attachment_sub) {
-                  // console.log(attachment_sub);
-                  attachmentcount++;
-                });
-
-
-            // attachmentcount = value.attachments;
-            // console.log(attachmentcount);
-            icon = '<div class="ui-icon ui-icon-link attachment" title="'+attachmentcount+' Attachments" ></div>'
+          cj.each(value.attachments, function(key, attachment) {
+            icon = '<div class="ui-icon ui-icon-link attachment" title="'+value.attachments.length+' Attachments" ></div>'
           });
         }
         messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
