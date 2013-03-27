@@ -433,9 +433,10 @@ class CRM_IMAP_AJAX {
     public static function assignMessage() {
         require_once 'api/api.php';
         require_once 'CRM/Utils/File.php';
+        require_once 'CRM/Utils/IMAP.php';
+
         require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
 
-        self::setupImap();
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
@@ -443,14 +444,11 @@ class CRM_IMAP_AJAX {
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
         $config = get_bluebird_instance_config();
-        // var_dump($config);
-
 
         // directories for image upload
         $uploadDir = $config['data.rootdir'].'/'.$config['data_dirname'].'/civicrm/upload';
         $uploadInbox = $uploadDir.'/inbox';
-        // var_dump($uploadDir);
-        // var_dump($uploadInbox);
+
 
 
         if(!$messageUid || !$contactIds){
@@ -638,7 +636,7 @@ ORDER BY gc.contact_id ASC";
               var_dump(is_array($attachments[0]));
 
               // exit();
-              if(is_array($attachments[0])){
+              if(isset($attachments[0])){
                 foreach ($attachments as $key => $attachment) {
                   var_dump($attachment);
 
@@ -646,7 +644,6 @@ ORDER BY gc.contact_id ASC";
                   $fileFull = $attachment['fileFull'];
                   var_dump($fileFull);
                   var_dump($fileName);
-                  exit();
 
                   $newName = CRM_Utils_File::makeFileName( $fileName );
                   var_dump($newName);
@@ -674,7 +671,6 @@ ORDER BY gc.contact_id ASC";
                     $fileId = $row['id'];
                   }
                   var_dump($fileId);
-                  exit();
 
 
                   // //table, activity id, file_id
@@ -687,18 +683,13 @@ ORDER BY gc.contact_id ASC";
 
 
               // Move the message to the archive folder!
+              self::setupImap();
               $imapMsgId =  $output['message_id'];
               $imapAcctId =  $output['imap_id'];
-              var_dump($imapMsgId);
-              var_dump($imapAcctId);
               $imap = new CRM_Utils_IMAP(self::$server,
                                 self::$imap_accounts[$imapAcctId]['user'],
                                 self::$imap_accounts[$imapAcctId]['pass']);
-              var_dump($imap);
-
-              // $status = $imap->movemsg_uid($imapMsgId, 'Archive');
-              var_dump($status);
-              exit();
+              $status = $imap->movemsg_uid($imapMsgId, 'Archive');
               imap_close($imap->conn());
 
               echo json_encode($returnCode);
