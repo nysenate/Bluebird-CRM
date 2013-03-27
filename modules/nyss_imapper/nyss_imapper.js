@@ -1046,7 +1046,7 @@ function buildMessageList() {
         // dealing with attachments
         if(value.attachments){
           cj.each(value.attachments, function(key, attachment) {
-            icon = '<div class="ui-icon ui-icon-link attachment" title="'+value.attachments.length+' Attachments" ></div>'
+            icon = '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>'
           });
         }
         messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
