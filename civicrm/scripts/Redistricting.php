@@ -23,13 +23,13 @@ define('OUTOFSTATE_NOTE', 'OUT-OF-STATE');
 
 // Parse the following user options
 require_once 'script_utils.php';
-$shortopts = "b:l:m:f:naoig:sct:pG";
-$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap", "outofstate", "instate", "usegeocoder=", "useshapefiles", "usecoordinates", "threads=", "purgenotes", "geocodeonly");
+$shortopts = "b:l:m:f:naoig:sct:pGN";
+$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap", "outofstate", "instate", "usegeocoder=", "useshapefiles", "usecoordinates", "threads=", "purgenotes", "geocodeonly", "nonotes");
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = '[--batch SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--startfrom ADDRESS_ID] [--dryrun] [--purgenotes] [--addressmap] [--outofstate] [--instate] [--threads COUNT] [--usegeocoder {geocoder|yahoo|google}] [--useshapefiles] [--usecoordinates] [--geocodeonly]';
+    $usage = '[--batch SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--startfrom ADDRESS_ID] [--dryrun] [--purgenotes] [--addressmap] [--outofstate] [--instate] [--threads COUNT] [--usegeocoder {geocoder|yahoo|google}] [--useshapefiles] [--usecoordinates] [--geocodeonly] [--nonotes]';
     error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
     exit(1);
 }
@@ -40,6 +40,7 @@ $BB_UPDATE_FLAGS = UPDATE_ALL;
 $opt_batch_size = get($optlist, 'batch', DEFAULT_BATCH_SIZE);
 $opt_dry_run = get($optlist, 'dryrun', false);
 $opt_geocode_only = get($optlist, 'geocodeonly', false);
+$opt_no_notes = get($optlist, 'nonotes', false);
 $opt_max = get($optlist, 'max', 0);
 $opt_startfrom = get($optlist, 'startfrom', 0);
 $opt_outofstate = get($optlist, 'outofstate', false);
@@ -66,6 +67,7 @@ bbscript_log("DEBUG", "Option: BATCH_SIZE=$opt_batch_size");
 bbscript_log("DEBUG", "Option: LOG_LEVEL=$BB_LOG_LEVEL");
 bbscript_log("DEBUG", "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
 bbscript_log("DEBUG", "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
+bbscript_log("DEBUG", "Option: NO_NOTES=".($opt_no_notes ? $opt_no_notes : "FALSE"));
 bbscript_log("DEBUG", "Option: SAGE_API=$sage_base");
 bbscript_log("DEBUG", "Option: SAGE_KEY=$sage_key");
 bbscript_log("DEBUG", "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
@@ -118,6 +120,10 @@ if ($opt_dry_run) {
 }
 else if ($opt_geocode_only) {
   $BB_UPDATE_FLAGS = UPDATE_GEOCODES;
+}
+
+if ($opt_no_notes) {
+  $BB_UPDATE_FLAGS &= ~UPDATE_NOTES;
 }
 
 if ($opt_purgenotes) {
