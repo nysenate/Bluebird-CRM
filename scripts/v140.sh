@@ -64,27 +64,9 @@ $execSql -i $instance -c "$dismods" --drupal -q
 echo "cleanup nyss_403 module..."
 $execSql -i $instance -c "DELETE FROM system WHERE name = 'NYSS_403';" --drupal -q
 
-## disable logging and run civicrm upgrade
-echo "disabling logging manually..."
-
-triggersql="
-SELECT trigger_name
-FROM information_schema.triggers
-WHERE trigger_schema = '$cdb'
-AND trigger_name LIKE 'civicrm_%';"
-triggers=`$execSql -c "$triggersql" -q`
-
-echo "removing triggers..."
-for trigger in $triggers; do
-  $execSql -i $instance -c "DROP TRIGGER IF EXISTS $trigger" -q
-done
-
-logging="
-UPDATE civicrm_domain
-   SET config_backend = REPLACE(config_backend, '\"logging\";i:1;', '\"logging\";i:0;')
-   WHERE id = 1;
-"
-$execSql -i $instance -c "$logging" -q
+## drop triggers and disable logging
+$script_dir/dropCiviTriggers.sh $instance
+php $app_rootdir/civicrm/scripts/disableLogging.php -S $instance
 
 ## cleanup msg workflow templates
 echo "cleanup msg workflow templates..."
@@ -556,7 +538,10 @@ sqlNewTag="
   SET is_active = 0
   WHERE name = 'New Tag';
 "
-$execSql -i $instance -c "sqlNewTag"
+$execSql -i $instance -c "$sqlNewTag"
+
+## create inbox polling tables
+$execSql -i $instance -f sql/inbox_polling.sql
 
 ### Cleanup ###
 

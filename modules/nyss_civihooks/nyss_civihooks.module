@@ -731,7 +731,7 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   //CRM_Core_Error::debug_var('navigationMenu params',$params);
-
+  //var_dump($params);
   //5260
   //first find parents
   $reportNavID = $manageNavID = '';
@@ -783,30 +783,61 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   );
  
   //5813 Inbox polling Menu Items 
-  $params[$manageNavID]['child'][$maxKey+3] = array (
+
+  $inboxNavID = $maxKey+3;
+  $params[$inboxNavID] = array (
     'attributes' => array (
-      'label'      => 'Unmatched Inbox Messages',
-      'name'       => 'Unmatched Inbox Messages',
-      'url'        => 'civicrm/imap/unmatched',
+      'label'      => 'Inbox',
+      'name'       => 'Inbox',
+      'url'        => NULL,
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
-      'separator'  => 2,
-      'parentID'   => $manageNavID,
-      'navID'      => $maxKey+3,
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => $inboxNavID,
       'active'     => 1
     ),
     'child' => array(),
   );
-  $params[$manageNavID]['child'][$maxKey+4] = array (
+ 
+  $params[$inboxNavID]['child'][$maxKey+4] = array (
     'attributes' => array (
-      'label'      => 'Matched Inbox Messages',
-      'name'       => 'Matched Inbox Messages',
+      'label'      => 'Unmatched Messages',
+      'name'       => 'Unmatched Messages',
+      'url'        => 'civicrm/imap/unmatched',
+      'permission' => 'administer inbox polling',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => $inboxNavID,
+      'navID'      => $maxKey+4,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
+  $params[$inboxNavID]['child'][$maxKey+5] = array (
+    'attributes' => array (
+      'label'      => 'Matched Messages',
+      'name'       => 'Matched Messages',
       'url'        => 'civicrm/imap/matched',
       'permission' => 'administer inbox polling',
       'operator'   => 'AND',
       'separator'  => 0,
-      'parentID'   => $manageNavID,
-      'navID'      => $maxKey+4,
+      'parentID'   => $inboxNavID,
+      'navID'      => $maxKey+5,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
+  $params[$inboxNavID]['child'][$maxKey+6] = array (
+    'attributes' => array (
+      'label'      => 'Reports',
+      'name'       => 'Reports',
+      'url'        => 'civicrm/imap/reports',
+      'permission' => 'administer inbox polling',
+      'operator'   => 'AND',
+      'separator'  => 2,
+      'parentID'   => $inboxNavID,
+      'navID'      => $maxKey+6,
       'active'     => 1
     ),
     'child' => array(),

@@ -251,15 +251,14 @@ function selectValue( val ) {
 
     function tokenReplText ( element )
     {
-        var el = jQuery.data( document.body, 'setInput' );
         var getPosition = jQuery.data( document.body, 'getPosition' );
         var token     = cj("#"+element.id).val( )[0];
         if ( element.id == 'token3' ) {
            ( isMailing ) ? text_message = "subject" : text_message = "msg_subject"; 
         }          
-        
-        cj( "#"+ text_message ).insertText( token, getPosition.start, true ); 
-
+        cj( "#"+ text_message ).ricsinsertText( token, getPosition.start, true );
+        getPosition.start = getPosition.start + token.length;
+        jQuery.data( document.body, 'getPosition', getPosition );
         if ( isMailing ) { 
              verify();
         }
@@ -322,9 +321,8 @@ function selectValue( val ) {
     
     function showToken(element, id ) {
         //creates a data item called getPosition that's attached to the body
-        var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input');
-        jQuery.data(document.body, 'setInput', cjSetInput);
-        jQuery.data(document.body, 'getPosition', cjSetInput.getSelection());
+        var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input').focus();
+        jQuery.data(document.body, 'getPosition', cjSetInput.ricsgetSelection());
         initFilter(id);
         cj("#token"+id).css({"width":"290px", "size":"8"});
         var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};

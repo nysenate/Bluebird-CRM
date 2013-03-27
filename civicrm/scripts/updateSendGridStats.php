@@ -1,6 +1,6 @@
 <?php
 
-
+require_once 'script_utils.php';
 require_once 'accumulatorEvents.inc.php';
 // Bootstrap the script from the command line
 $prog = basename(__FILE__);

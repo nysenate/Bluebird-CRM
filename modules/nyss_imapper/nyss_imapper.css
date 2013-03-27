@@ -84,7 +84,7 @@ td.name{ padding-left: 0px;margin-left: 0px;}
 .tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
 a.tag-selected { color: #fff!important; }
 a.tag-selected:hover { color: #fff!important; background-color: red; }
-.attachment{float:right;}
+.attachment{float:right !important;}
 /* page actions */
 .page_actions{ text-align: right; height: 30px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
 .multi_tag, .multi_clear, .multi_delete, .multi_delete{float:right; }
@@ -101,10 +101,9 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #message_left .debug_on,#message_left .debug_off {color: #336699!important; }
 .debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
-#message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
+#message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px;line-height: 23px;width: 640px; }
 .message_left_header_tags{  padding:10px 0 ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
-#message_left_header.crmdev,#message_left_header.crmtest{height: 110px;}
-#message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:340px; overflow:auto;  }
+#message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:320px; overflow:auto;  }
 pre{  white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
  white-space: -pre-wrap;      /* Opera 4-6 */
@@ -187,14 +186,17 @@ pre{  white-space: pre-wrap;       /* css-3 */
 #tagging-popup{ padding: 0; margin: 0;}
 
 tr.odd td.sorting_1 {background-color:#f1f1f1!important;}
+thead .sorting{ cursor:pointer;cursor:hand }
+thead .sorting:hover{ background-color:#f8f8f8!important;}
+thead .sorting_desc,thead .sorting_asc{ background-color:#f1f1f1!important;}
 
 #search_help{ float:right; font-size: 10px !important; margin: 2px 6px !important;}
-/* use the group that is allowed to forward to search for the contact 
-uniquely sortable tabs for 
+/* use the group that is allowed to forward to search for the contact
+uniquely sortable tabs for
 
 */
 .disabled a{ color: #999!important; text-decoration: line-through!important;}
-.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px;}
+.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px; cursor:pointer;cursor:hand}
 .shown_email{ margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 640px;}
 .email{ overflow-y: scroll;width: 620px; }
 .email pre { padding: 10px;}

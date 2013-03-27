@@ -1,6 +1,6 @@
-<div class="crm-content-block imapperbox " id="Unmatched">
+<div class="crm-content-block imapperbox " id="Reports">
 	<div class='full'>
-	<h1>Unmatched Messages <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
+	<h1>Inbox Reports<small id='total_results'><span id="total_number">Loading</span> results</small></h1>
 	</div>
 	<div id='top'></div>
 	<div class='full'>
@@ -37,7 +37,8 @@
 					<li><a href="#tab1">Find Contact</a></li>
 					<li><a href="#tab2">Add Contact</a></li>
 				</ul>
-				<input type="hidden" class="hidden" id="id" name="id">
+				<input type="hidden" class="hidden" id="email_id" name="email_id">
+				<input type="hidden" class="hidden" id="imap_id" name="imap_id">
 				<div id="tab1">
 					<label for="first_name">
 						<span class="label_def">First Name: </span>
@@ -136,8 +137,4 @@
 	<div id="matchCheck-popup" title="Checking Other Emails">
 		<p> Currently Checking for other emails that match this address.</p>
 	</div>
-	<div id="fileBug-popup" title="We're here to help">
-		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
-	</div>
-
 </div>
