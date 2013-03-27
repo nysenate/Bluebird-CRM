@@ -5,8 +5,7 @@ require_once 'CRM/Core/DAO.php';
 
 class CRM_IMAP_AJAX {
     private static $db = null;
-
-    private static $server = "{webmail.senate.state.ny.us/imap/notls}";
+    private static $server = "{webmail.senate.state.ny.us/imap/ssl/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
 
