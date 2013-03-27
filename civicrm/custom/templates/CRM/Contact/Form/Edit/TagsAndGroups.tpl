@@ -25,8 +25,10 @@
 *}
 {literal}
 <script>
+//put these in the start instance in the refactor
 var BBCID = {/literal}{if isset($entityID) }{$entityID}{else}0{/if}{literal};
 var BBActionConst = {/literal}{$action}{literal};
+var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
 </script>
 {/literal}
 {literal}

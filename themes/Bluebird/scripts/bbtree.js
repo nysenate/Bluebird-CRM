@@ -749,25 +749,33 @@ var BBTreeTag = {
 			BBTree.contactTagData = {};
 			BBTree.contactTagData['cid_' + holdID] = {};
 		}
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/get',
-			data: {
-				entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
-				entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
-				call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri
-			},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1 ) {
-					BBTree.reportAction(['gct', 0, callTree.currentSettings.callSettings.ajaxSettings.entity_id, data.message]);
+		if(BBLoadTaglist.length > 0) //if the template sends the taglist, get the tags
+		{
+			BBTree.contactTagData['cid_' + holdID] = BBLoadTaglist;
+			BBTreeTag.applyContactTags(holdID, holdLoc);
+		}
+		else
+		{
+			cj.ajax({
+				url: '/civicrm/ajax/entity_tag/get',
+				data: {
+					entity_type: callTree.currentSettings.callSettings.ajaxSettings.entity_type,
+					entity_id: callTree.currentSettings.callSettings.ajaxSettings.entity_id,
+					call_uri: callTree.currentSettings.callSettings.ajaxSettings.call_uri
+				},
+				dataType: 'json',
+				success: function(data, status, XMLHttpRequest) {
+					if(data.code != 1 ) {
+						BBTree.reportAction(['gct', 0, callTree.currentSettings.callSettings.ajaxSettings.entity_id, data.message]);
+					}
+					else{
+						BBTree.reportAction(['gct',, callTree.currentSettings.callSettings.ajaxSettings.entity_id, data.message]);
+						BBTree.contactTagData['cid_'+ holdID] = data.message;
+						BBTreeTag.applyContactTags(holdID, holdLoc);
+					}
 				}
-				else{
-					BBTree.reportAction(['gct',, callTree.currentSettings.callSettings.ajaxSettings.entity_id, data.message]);
-					BBTree.contactTagData['cid_'+ holdID] = data.message;
-					BBTreeTag.applyContactTags(holdID, holdLoc);
-				}
-			}
-		});
+			});
+		}
 	},
 	applyContactTags: function(holdID, holdLoc)
 	{
