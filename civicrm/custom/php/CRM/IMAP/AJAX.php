@@ -446,7 +446,7 @@ class CRM_IMAP_AJAX {
         $config = get_bluebird_instance_config();
 
         // directories for image upload
-        $uploadDir = $config['data.rootdir'].$config['servername'].'/civicrm/upload/';
+        $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
         $uploadInbox = $uploadDir.'inbox/';
 
 

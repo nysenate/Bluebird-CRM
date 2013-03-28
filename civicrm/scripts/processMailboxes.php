@@ -312,7 +312,7 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
     $config = get_bluebird_instance_config();
 
     // directories for image upload
-    $uploadDir = $config['data.rootdir'].$config['servername'].'/civicrm/upload/';
+    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
     $uploadInbox = $uploadDir.'inbox/';
     if (!is_dir($uploadInbox)) {
       mkdir($uploadInbox);
@@ -632,7 +632,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
     $config = get_bluebird_instance_config();
 
     // directories for image upload
-    $uploadDir = $config['data.rootdir'].$config['servername'].'/civicrm/upload/';
+    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
     $uploadInbox = $uploadDir.'inbox/';
     if (!is_dir($uploadInbox)) {
       mkdir($uploadInbox);
