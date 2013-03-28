@@ -648,17 +648,10 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
 
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
-      echo $insertAttachments."\n";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
-      // return mime type ala mimetype extension
-
-
-
       $newName = CRM_Utils_File::makeFileName( $fileName );
-      // var_dump($newName);
       $file = $config->uploadDir . $newName;
-      // var_dump($file);
 
       // move file to the civicrm upload directory
       // rename( $fileFull, $file );
