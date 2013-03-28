@@ -512,7 +512,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     delete_batch_notes($db, $addr_lo_id, $addr_hi_id);
   }
   else {
-    bbscript_log("INFO", "UPDATE_NOTES disabled - No notes were removed");
+    bbscript_log("INFO", "UPDATE_NOTES disabled - No notes were removed and none will be added");
   }
 
   // Iterate over all batch results and update Bluebird tables accordingly.
@@ -576,9 +576,6 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
         insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec,
                            $subj_abbrevs, $note_updates);
-      }
-      else {
-        bbscript_log("TRACE", "UPDATE_NOTES disabled - No note for id=$address_id was created");
       }
       break;
 
