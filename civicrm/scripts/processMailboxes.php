@@ -309,10 +309,14 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
     //where to write file attachments to:
     $config = CRM_Core_Config::singleton( );
-    $filestore = $config->uploadDir.'inbox/';
-    if (!is_dir($filestore)) {
-      mkdir($filestore);
-      chmod($filestore, 0777);
+    $config = get_bluebird_instance_config();
+
+    // directories for image upload
+    $uploadDir = $config['data.rootdir'].$config['servername'].'/civicrm/upload/';
+    $uploadInbox = $uploadDir.'inbox/';
+    if (!is_dir($uploadInbox)) {
+      mkdir($uploadInbox);
+      chmod($uploadInbox, 0777);
     }
 
     //fetch part
@@ -418,7 +422,7 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
                 }
             }
              if($allowed){
-                $fp = fopen($filestore.$filename, "w+");
+                $fp = fopen($uploadInbox.$filename, "w+");
                 fwrite($fp, $part);
                 fclose($fp);
             }
@@ -652,6 +656,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
       $newName = CRM_Utils_File::makeFileName( $fileName );
       $file = $config->uploadDir . $newName;
+      // var_dump($file);
 
       // move file to the civicrm upload directory
       // rename( $fileFull, $file );
