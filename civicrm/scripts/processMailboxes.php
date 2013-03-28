@@ -624,7 +624,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rowId=$row['id'];
     }
 
-    $session = CRM_Core_Config::singleton( );
+    $config = CRM_Core_Config::singleton( );
     $config = get_bluebird_instance_config();
 
     // directories for image upload
@@ -639,7 +639,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
       require_once 'CRM/Utils/File.php';
       $date   =  date( 'Ymdhis' );
       $filename = $attachment['filename'];
-      $fileFull = $filestore.$filename;
+      $fileFull = $uploadInbox.$filename;
       $size = $attachment['size'];
       $ext = $attachment['extension'];
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -647,8 +647,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
       finfo_close($finfo);
 
 
-      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`, `file_full`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', '{$fileFull}',{$size}, '{$ext}');";
-      // echo $insertAttachments."\n";
+      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
+      echo $insertAttachments."\n";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
       // return mime type ala mimetype extension
@@ -662,10 +662,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
       // move file to the civicrm upload directory
       // rename( $fileFull, $file );
-
-      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
-      // echo $insertAttachments."\n";
-      $insertMessage = mysql_query($insertAttachments, $dbconn);
 
       // Insert File
       // mimeType, uri, orgin date

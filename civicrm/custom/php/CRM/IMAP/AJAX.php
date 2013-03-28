@@ -642,9 +642,10 @@ class CRM_IMAP_AJAX {
                   foreach ($attachments as $key => $attachment) {
                     $fileName = $attachment['fileName'];
                     $fileFull = $attachment['fileFull'];
+                    var_dump("Origin File Full : ". $fileFull);
+                    var_dump("Origin File NAME : ". $fileName);
                     if (file_exists($fileFull)){
-                      var_dump("Origin File Full : ". $fileFull);
-                      var_dump("Origin File NAME : ". $fileName);
+
 
                       $newName = CRM_Utils_File::makeFileName( $fileName );
                       $file = $uploadDir.'/'. $newName;
@@ -680,6 +681,8 @@ class CRM_IMAP_AJAX {
                       var_dump($insertEntityQuery);
                       $insertEntity = mysql_query($insertEntityQuery, self::db());
                       echo "<hr/>";
+                    }else{
+                      echo "File Exists";
                     }
                   }
                 }
