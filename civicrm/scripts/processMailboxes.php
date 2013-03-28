@@ -624,11 +624,15 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rowId=$row['id'];
     }
 
-    $config = CRM_Core_Config::singleton( );
-    $filestore = $config->uploadDir.'inbox/';
-    if (!is_dir($filestore)) {
-      mkdir($filestore);
-      chmod($filestore, 0777);
+    $session = CRM_Core_Config::singleton( );
+    $config = get_bluebird_instance_config();
+
+    // directories for image upload
+    $uploadDir = $config['data.rootdir'].$config['servername'].'/civicrm/upload/';
+    $uploadInbox = $uploadDir.'inbox/';
+    if (!is_dir($uploadInbox)) {
+      mkdir($uploadInbox);
+      chmod($uploadInbox, 0777);
     }
 
     foreach ($allowed as $key => $attachment) {
