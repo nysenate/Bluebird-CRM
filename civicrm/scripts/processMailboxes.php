@@ -276,20 +276,20 @@ function checkImapAccount($conn, $params)
 
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         //move to folder if necessary
-        if ($params['archivemail'] == true) {
-          imap_mail_move($conn, $msg_num, $params['archivebox']);
-        }
+        // if ($params['archivemail'] == true) {
+        //   imap_mail_move($conn, $msg_num, $params['archivebox']);
+        // }
       }
     }
     else {
        echo "[WARN]     Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_senders[$sender] = true;
-      if (imap_delete($conn, $msg_num) === true) {
-        echo "[DEBUG] Message $msg_num has been deleted\n";
-      }
-      else {
-        echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
-      }
+      // if (imap_delete($conn, $msg_num) === true) {
+      //   echo "[DEBUG] Message $msg_num has been deleted\n";
+      // }
+      // else {
+      //   echo "[WARN]     Unable to delete message $msg_num from mailbox\n";
+      // }
     }
   }
 
@@ -309,10 +309,14 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
     //where to write file attachments to:
     $config = CRM_Core_Config::singleton( );
-    $filestore = $config->uploadDir.'inbox/';
-    if (!is_dir($filestore)) {
-      mkdir($filestore);
-      chmod($filestore, 0777);
+    $config = get_bluebird_instance_config();
+
+    // directories for image upload
+    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+    $uploadInbox = $uploadDir.'inbox/';
+    if (!is_dir($uploadInbox)) {
+      mkdir($uploadInbox);
+      chmod($uploadInbox, 0777);
     }
 
     //fetch part
@@ -418,7 +422,7 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
                 }
             }
              if($allowed){
-                $fp = fopen($filestore.$filename, "w+");
+                $fp = fopen($uploadInbox.$filename, "w+");
                 fwrite($fp, $part);
                 fclose($fp);
             }
@@ -625,17 +629,21 @@ function civiProcessEmail($mbox, $email, $customHandler)
     }
 
     $config = CRM_Core_Config::singleton( );
-    $filestore = $config->uploadDir.'inbox/';
-    if (!is_dir($filestore)) {
-      mkdir($filestore);
-      chmod($filestore, 0777);
+    $config = get_bluebird_instance_config();
+
+    // directories for image upload
+    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+    $uploadInbox = $uploadDir.'inbox/';
+    if (!is_dir($uploadInbox)) {
+      mkdir($uploadInbox);
+      chmod($uploadInbox, 0777);
     }
 
     foreach ($allowed as $key => $attachment) {
       require_once 'CRM/Utils/File.php';
       $date   =  date( 'Ymdhis' );
       $filename = $attachment['filename'];
-      $fileFull = $filestore.$filename;
+      $fileFull = $uploadInbox.$filename;
       $size = $attachment['size'];
       $ext = $attachment['extension'];
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -643,25 +651,15 @@ function civiProcessEmail($mbox, $email, $customHandler)
       finfo_close($finfo);
 
 
-      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`, `file_full`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', '{$fileFull}',{$size}, '{$ext}');";
-      // echo $insertAttachments."\n";
+      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
-      // return mime type ala mimetype extension
-
-
-
       $newName = CRM_Utils_File::makeFileName( $fileName );
-      // var_dump($newName);
       $file = $config->uploadDir . $newName;
       // var_dump($file);
 
       // move file to the civicrm upload directory
       // rename( $fileFull, $file );
-
-      $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `filename`, `size`, `ext`) VALUES ({$rowId}, '{$filename}', {$size}, '{$ext}');";
-      // echo $insertAttachments."\n";
-      $insertMessage = mysql_query($insertAttachments, $dbconn);
 
       // Insert File
       // mimeType, uri, orgin date
@@ -765,10 +763,13 @@ function civiProcessEmail($mbox, $email, $customHandler)
         if ($result) {
           echo "[DEBUG]   ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
 
-          $query = "UPDATE `nyss_inbox_messages`
+
+          $updateMessages = "UPDATE `nyss_inbox_messages`
                     SET  `status`= 1, `matcher` = 1, `matched_to` = {$contactID}, `activity_id` = $activityId
-                    WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
-          $updateMessage = mysql_query($query, $dbconn);
+                    WHERE `message_id` =  {$messageId} && `imap_id`= 0";
+          // var_dump($updateMessages);
+          $updateMessagesResult = mysql_query($updateMessages, $dbconn);
+
 
         }
         else {

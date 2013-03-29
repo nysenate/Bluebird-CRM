@@ -84,7 +84,7 @@ td.name{ padding-left: 0px;margin-left: 0px;}
 .tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
 a.tag-selected { color: #fff!important; }
 a.tag-selected:hover { color: #fff!important; background-color: red; }
-.attachment{float:right;}
+.attachment{float:right !important;}
 /* page actions */
 .page_actions{ text-align: right; height: 30px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
 .multi_tag, .multi_clear, .multi_delete, .multi_delete{float:right; }
@@ -191,8 +191,8 @@ thead .sorting:hover{ background-color:#f8f8f8!important;}
 thead .sorting_desc,thead .sorting_asc{ background-color:#f1f1f1!important;}
 
 #search_help{ float:right; font-size: 10px !important; margin: 2px 6px !important;}
-/* use the group that is allowed to forward to search for the contact 
-uniquely sortable tabs for 
+/* use the group that is allowed to forward to search for the contact
+uniquely sortable tabs for
 
 */
 .disabled a{ color: #999!important; text-decoration: line-through!important;}
