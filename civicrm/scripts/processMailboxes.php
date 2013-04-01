@@ -309,11 +309,9 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
     //where to write file attachments to:
     $config = CRM_Core_Config::singleton( );
-    $config = get_bluebird_instance_config();
-
-    // directories for image upload
-    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+    $uploadDir = $config->customFileUploadDir;
     $uploadInbox = $uploadDir.'inbox/';
+
     if (!is_dir($uploadInbox)) {
       mkdir($uploadInbox);
       chmod($uploadInbox, 0777);
@@ -427,10 +425,9 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
                 fclose($fp);
             }
             // var_dump(array('filename'=>$filename,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason));
-            $count = count($partsarray['attachments']);
-            $partsarray['attachments'][$count] = array('filename'=>$filename,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason);
-
-        }
+            // $count = count($partsarray['attachments']);
+            $partsarray['attachments'][] = array('filename'=>$filename,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason);
+         }
     //end if type!=0
     }
 
@@ -506,7 +503,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   //fetch structure of message
   $s = imap_fetchstructure($mbox, $msgid);
-
   //see if there are any parts
   if (count($s->parts) > 0){
       foreach ($s->parts as $partno=>$partarr) {
@@ -519,7 +515,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
   else {
       //get body of message
       $text=imap_body($mbox, $msgid);
-      var_dump($text);
       //decode if quoted-printable
       if ($s->encoding == 3) {
           $text = base64_decode($text);
@@ -536,9 +531,11 @@ function civiProcessEmail($mbox, $email, $customHandler)
       }
       $partsarray['not multipart'][text] = array('type'=>$s->subtype, 'string'=>$text);
   }
+
   // fetch the headers
   $header = imap_rfc822_parse_headers(imap_fetchheader($mbox, $msgid));
 
+  // TODO: delete ?
   $notes = $partsarray['not multipart']['html']['string'];
   if ($notes == "") {
       if($partsarray['1']){
@@ -548,11 +545,18 @@ function civiProcessEmail($mbox, $email, $customHandler)
       }else if($partsarray['1.2']){
           $notes = $partsarray['1.2']['text']['string'];
       }
-
   }
-  // var_dump($notes);
-  // print_r($partsarray);
-  $parsedBody = $Parse->unifiedMessageInfo($notes);
+
+  // check for plain / html body text
+  $messagebody  = imap_fetchbody($mbox, $msgid, 1.1);
+  if($messagebody == ''){
+      $messagebody  = imap_fetchbody($mbox, $msgid, 1.2);
+  }
+  if($messagebody == ''){
+    $messagebody  = imap_fetchbody($mbox, $msgid, 1);
+  }
+  $parsedBody = $Parse->unifiedMessageInfo($messagebody);
+
   // var_dump($parsedBody);
   $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
   $fwdName = $parsedBody['fwd_headers']['fwd_email'];
@@ -569,19 +573,15 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $fromName = $email->fromName;
   $subject = $email->subject;
   $date = $email->date;
-  $body = $parsedBody['body'];
+
   if($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']){
     $fwdEmail = $fromEmail;
     $fwdName = $fromName;
     $fwdSubject = $subject;
     $fwdDate = $date;
+    $fwdbody = $messagebody;
     $fwdLookup = 'Headers';
   }
-
-
-
-  // var_dump($partsarray);
-  // print_r($partsarray);
 
   $allowedSize = 0;
   $blockedSize = 0;
@@ -619,6 +619,15 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $SearchQuery = "select * from nyss_inbox_messages where `message_id` = {$messageId} && `imap_id` = {$imapId}";
   $SearchForExisting = mysql_query($SearchQuery, $dbconn);
 
+  //where to write file attachments to:
+  require_once 'CRM/Utils/File.php';
+  $config = CRM_Core_Config::singleton( );
+  $uploadDir = $config->customFileUploadDir;
+  $uploadInbox = $uploadDir.'inbox/';
+  if (!is_dir($uploadInbox)) {
+    mkdir($uploadInbox);
+    chmod($uploadInbox, 0777);
+  }
   if (mysql_num_rows($SearchForExisting) == 0) {
     $insertMessage = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `format`, `debug`, `updated_date`, `email_date`) VALUES ('{$messageId}', '{$imapId}', '{$fwdName}', '{$fwdEmail}', '{$fwdSubject}', '{$fwdbody}', '{$fromEmail}', '0', '{$fwdFormat}', '$debug', CURRENT_TIMESTAMP, '{$fwdDate}');";
 
@@ -628,19 +637,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rowId=$row['id'];
     }
 
-    $config = CRM_Core_Config::singleton( );
-    $config = get_bluebird_instance_config();
-
-    // directories for image upload
-    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
-    $uploadInbox = $uploadDir.'inbox/';
-    if (!is_dir($uploadInbox)) {
-      mkdir($uploadInbox);
-      chmod($uploadInbox, 0777);
-    }
-
     foreach ($allowed as $key => $attachment) {
-      require_once 'CRM/Utils/File.php';
       $date   =  date( 'Ymdhis' );
       $filename = $attachment['filename'];
       $fileFull = $uploadInbox.$filename;
@@ -654,20 +651,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
-      $newName = CRM_Utils_File::makeFileName( $fileName );
-      $file = $config->uploadDir . $newName;
-      // var_dump($file);
 
-      // move file to the civicrm upload directory
-      // rename( $fileFull, $file );
-
-      // Insert File
-      // mimeType, uri, orgin date
-      // INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());
-
-      // $insertAttachments = "INSERT INTO `civicrm_file` (`mime_type`, `uri`, `upload_date`) VALUES ( '$mime', '$newName', CURTIME());";
-      // // echo $insertAttachments."\n";
-      // $insertMessage = mysql_query($insertAttachments, $dbconn);
 
     }
 
@@ -675,7 +659,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
   // Use the e-mail from the body of the message (or header if direct) to find traget contact
   $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $fwdEmail, );
   $contact = civicrm_api('contact', 'get', $params);
-  echo "[INFO]    FINDING match for the target email ".$fwdEmail." in Civi\n";
+  echo "[INFO]    FINDING match for a contact with email ".$fwdEmail." in Civi\n";
 
   // if there is more then one target for the message leave if for the user to deal with
   if ($contact['count'] != 1 ){
@@ -744,11 +728,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
       echo "[INFO]    CREATED e-mail activity id=".$result['id']." for contact id=".$contactID."\n";
       $activityId = $result['id'];
 
-      // loop throught the attachments and assign to activity
-
-      // foreach ($variable as $key => $value) {
-      //   $filename = CRM_Utils_File::makeFileName($filename);
-      // }
 
       $query = "SELECT * FROM civicrm_entity_tag
                 WHERE entity_table='civicrm_activity'
@@ -763,13 +742,41 @@ function civiProcessEmail($mbox, $email, $customHandler)
         if ($result) {
           echo "[DEBUG]   ADDED Tag id=$inboxPollingTagId to Activity id=$activityId\n";
 
-
           $updateMessages = "UPDATE `nyss_inbox_messages`
                     SET  `status`= 1, `matcher` = 1, `matched_to` = {$contactID}, `activity_id` = $activityId
                     WHERE `message_id` =  {$messageId} && `imap_id`= 0";
-          // var_dump($updateMessages);
           $updateMessagesResult = mysql_query($updateMessages, $dbconn);
 
+          foreach ($allowed as $key => $attachment) {
+
+            $fileName = $attachment['filename'];
+            $fileFull = $uploadInbox.$fileName;
+            $date   =  date( 'Ymdhis' );
+            if (file_exists($fileFull)){
+              $newName = CRM_Utils_File::makeFileName( $fileName );
+              $file = $uploadDir. $newName;
+              // move file to the civicrm customUpload directory
+              rename( $fileFull, $file );
+
+              $finfo = finfo_open(FILEINFO_MIME_TYPE);
+              $mime = finfo_file($finfo, $file);
+              finfo_close($finfo);
+
+               $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$date}');";
+              $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
+              $insertFileResult = mysql_query($insertFIleQuery, $dbconn);
+              $rowUpdatedResult = mysql_query($rowUpdated, $dbconn);
+
+              $insertFileOutput = array();
+              while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+                $fileId = $row['id'];
+              }
+              $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activityId}', '{$fileId}');";
+              $insertEntity = mysql_query($insertEntityQuery, $dbconn);
+             }else{
+              // echo "File Exists";
+            }
+          }
 
         }
         else {

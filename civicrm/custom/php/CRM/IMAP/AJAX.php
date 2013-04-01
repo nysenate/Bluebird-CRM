@@ -190,34 +190,38 @@ class CRM_IMAP_AJAX {
     /* getMessageDetails()
      * Parameters: None.
      * Returns: None.
-     * This function sets up a connection to the IMAP server with the
-     * specified connection ID, and retrieves the message based on UID
+     * This function grabs the unassigned message from the bd,
+     * returns an error if the message is nolonger unassigned
      */
-    public static function getMessageDetails($id = null, $internal= null) {
-
-        if(is_int($id_passed)){
-          $messageId = ($id_passed) ? $id_passed : self::get('id');
-        }else{
-          $messageId = self::get('id');
-        }
-
-        $debug = self::get('debug');
-
+    public static function getMessageDetails() {
+        $messageId = self::get('id');
         $output = self::unifiedMessageInfo($messageId);
-
-        if($debug){
-          echo "<h1>Message inputs</h1>";
-          var_dump($messageId);
-          var_dump($imap_id);
-          var_dump($email);
-          var_dump($output);
-        }
-
-        if($internal){
-          return $output;
+        $status = $output['status'];
+        if($status != ''){
+           switch ($status) {
+            case '0':
+              echo json_encode($output);
+              break;
+            case '1':
+              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message is already Assigned','clear'=>'true');
+              echo json_encode($returnCode);
+              break;
+            case '7':
+              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
+              echo json_encode($returnCode);
+              break;
+            case '8':
+            case '9':
+              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
+              echo json_encode($returnCode);
+              break;
+          }
         }else{
-          echo json_encode($output);
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found','clear'=>'true');
+          echo json_encode($returnCode);
         }
+
+
         CRM_Utils_System::civiExit();
     }
 
@@ -435,18 +439,16 @@ class CRM_IMAP_AJAX {
         require_once 'CRM/Utils/File.php';
         require_once 'CRM/Utils/IMAP.php';
 
-        require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
-
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
 
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
-        $config = get_bluebird_instance_config();
 
-        // directories for image upload
-        $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+        //where to write file attachments to:
+        $config = CRM_Core_Config::singleton( );
+        $uploadDir = $config->customFileUploadDir;
         $uploadInbox = $uploadDir.'inbox/';
 
 
@@ -634,22 +636,22 @@ class CRM_IMAP_AJAX {
                 # $uploadDir
                 # $uploadInbox
                 // attachments // data.rootdir
-                var_dump($attachments);
-                var_dump(is_array($attachments[0]));
+                // var_dump($attachments);
+                // var_dump(is_array($attachments[0]));
 
                 // exit();
                 if(isset($attachments[0])){
                   foreach ($attachments as $key => $attachment) {
                     $fileName = $attachment['fileName'];
                     $fileFull = $attachment['fileFull'];
-                    var_dump("Origin File Full : ". $fileFull);
-                    var_dump("Origin File NAME : ". $fileName);
+                    // var_dump("Origin File Full : ". $fileFull);
+                    // var_dump("Origin File NAME : ". $fileName);
                     if (file_exists($fileFull)){
 
 
                       $newName = CRM_Utils_File::makeFileName( $fileName );
-                      $file = $uploadDir.'/'. $newName;
-                      var_dump("Final File Full : ". $file);
+                      $file = $uploadDir. $newName;
+                      // var_dump("Final File Full : ". $file);
 
                       // move file to the civicrm upload directory
                       rename( $fileFull, $file );
@@ -657,13 +659,13 @@ class CRM_IMAP_AJAX {
                       $finfo = finfo_open(FILEINFO_MIME_TYPE);
                       $mime = finfo_file($finfo, $file);
                       finfo_close($finfo);
-                      var_dump("Mime Type : ". $mime);
+                      // var_dump("Mime Type : ". $mime);
 
                       // // mimeType, uri, orgin date -> return id
                       $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
                       $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-                      var_dump($insertFIleQuery);
-                      var_dump($rowUpdated);
+                      // var_dump($insertFIleQuery);
+                      // var_dump($rowUpdated);
 
                       $insertFileResult = mysql_query($insertFIleQuery, self::db());
                       $rowUpdatedResult = mysql_query($rowUpdated, self::db());
@@ -672,17 +674,17 @@ class CRM_IMAP_AJAX {
                       while($row = mysql_fetch_assoc($rowUpdatedResult)) {
                         $fileId = $row['id'];
                       }
-                      var_dump("civicrm_file ID : ".$fileId);
-                      var_dump("Activity ID : ". $activity['id']);
+                      // var_dump("civicrm_file ID : ".$fileId);
+                      // var_dump("Activity ID : ". $activity['id']);
 
 
                       // //table, activity id, file_id
                       $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                      var_dump($insertEntityQuery);
+                      // var_dump($insertEntityQuery);
                       $insertEntity = mysql_query($insertEntityQuery, self::db());
-                      echo "<hr/>";
+                      // echo "<hr/>";
                     }else{
-                      echo "File Exists";
+                      // echo "File Exists";
                     }
                   }
                 }
@@ -883,7 +885,14 @@ class CRM_IMAP_AJAX {
             $returnMessage['successes'][$message_id]['fromphone'] = $contact_info['values'][$contactId]['phone'];
             $returnMessage['successes'][$message_id]['fromstreet'] = $contact_info['values'][$contactId]['street_address'];
             $returnMessage['successes'][$message_id]['fromcity'] = $contact_info['values'][$contactId]['city'];
-
+            // attachments
+            $attachments= array();
+            $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
+            $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
+            while($row = mysql_fetch_assoc($AttachmentResult)) {
+              $attachments[] = array('fileName'=>$row['file_name'],'fileFull'=>$row['file_full'],'size'=>$row['size'],'ext'=>$row['ext'] );
+            }
+            $returnMessage['successes'][$message_id]['attachments']=$attachments;
         }
 
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
@@ -901,8 +910,27 @@ class CRM_IMAP_AJAX {
     public static function getActivityDetails() {
       $id = self::get('id');
       $output = self::unifiedMessageInfo($id);
-
-      echo json_encode($output);
+      if(!$output){
+        $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
+      }else{
+        $status = $output['status'];
+        if($status != ''){
+           switch ($status) {
+            case '1':
+              echo json_encode($output);
+              break;
+            case '7':
+              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
+              echo json_encode($returnCode);
+              break;
+            case '8':
+            case '9':
+              $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
+              echo json_encode($returnCode);
+              break;
+          }
+       }
+      }
       CRM_Utils_System::civiExit();
     }
 
@@ -955,16 +983,34 @@ class CRM_IMAP_AJAX {
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
         $output = self::unifiedMessageInfo($messageId);
-        $activity_id = $output['activity_id'];
-
-        $UPDATEquery = "UPDATE `nyss_inbox_messages`
-        SET  `status`= 9, `matcher` = $userId
-        WHERE `id` =  {$messageId}";
-        $UPDATEresult = mysql_query($UPDATEquery, self::db());
-        $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
-
-        echo json_encode($returnCode);
-        mysql_close(self::$db);
+        if(!$output){
+          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found');#,'clear'=>'true');
+        }else{
+          $status = $output['status'];
+          if($status != ''){
+             switch ($status) {
+              case '1':
+                $activity_id = $output['activity_id'];
+                $UPDATEquery = "UPDATE `nyss_inbox_messages`
+                SET  `status`= 7, `matcher` = $userId
+                WHERE `id` =  {$messageId}";
+                $UPDATEresult = mysql_query($UPDATEquery, self::db());
+                $returnCode = array('code'=>'SUCCESS','id'=>$messageId, 'message'=>'Activity Cleared');
+                echo json_encode($returnCode);
+                mysql_close(self::$db);
+                break;
+              case '7':
+                $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been cleared from inbox','clear'=>'true');
+                echo json_encode($returnCode);
+                break;
+              case '8':
+              case '9':
+                $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message has been deleted','clear'=>'true');
+                echo json_encode($returnCode);
+                break;
+            }
+         }
+        }
 
         CRM_Utils_System::civiExit();
 
