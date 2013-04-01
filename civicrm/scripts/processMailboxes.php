@@ -309,11 +309,9 @@ function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
     //where to write file attachments to:
     $config = CRM_Core_Config::singleton( );
-    $config = get_bluebird_instance_config();
-
-    // directories for image upload
-    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+    $uploadDir = $config->customFileUploadDir;
     $uploadInbox = $uploadDir.'inbox/';
+
     if (!is_dir($uploadInbox)) {
       mkdir($uploadInbox);
       chmod($uploadInbox, 0777);
@@ -628,12 +626,11 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rowId=$row['id'];
     }
 
+    //where to write file attachments to:
     $config = CRM_Core_Config::singleton( );
-    $config = get_bluebird_instance_config();
-
-    // directories for image upload
-    $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+    $uploadDir = $config->customFileUploadDir;
     $uploadInbox = $uploadDir.'inbox/';
+
     if (!is_dir($uploadInbox)) {
       mkdir($uploadInbox);
       chmod($uploadInbox, 0777);
@@ -654,8 +651,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
 
-      $newName = CRM_Utils_File::makeFileName( $fileName );
-      $file = $config->uploadDir . $newName;
+      // $newName = CRM_Utils_File::makeFileName( $fileName );
+      // $file = $config->uploadDir . $newName;
       // var_dump($file);
 
       // move file to the civicrm upload directory

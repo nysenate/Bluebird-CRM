@@ -443,10 +443,10 @@ class CRM_IMAP_AJAX {
 
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
-        $config = get_bluebird_instance_config();
 
-        // directories for image upload
-        $uploadDir = $config['data.rootdir'].'/'.$config['servername'].'/civicrm/upload/';
+        //where to write file attachments to:
+        $config = CRM_Core_Config::singleton( );
+        $uploadDir = $config->customFileUploadDir;
         $uploadInbox = $uploadDir.'inbox/';
 
 
