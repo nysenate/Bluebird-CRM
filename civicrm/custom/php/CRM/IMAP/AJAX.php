@@ -648,7 +648,7 @@ class CRM_IMAP_AJAX {
 
 
                       $newName = CRM_Utils_File::makeFileName( $fileName );
-                      $file = $uploadDir.'/'. $newName;
+                      $file = $uploadDir. $newName;
                       var_dump("Final File Full : ". $file);
 
                       // move file to the civicrm upload directory
