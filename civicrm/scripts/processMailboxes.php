@@ -558,7 +558,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
   }
   $parsedBody = $Parse->unifiedMessageInfo($messagebody);
 
-  var_dump($parsedBody);
+  // var_dump($parsedBody);
   $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
   $fwdName = $parsedBody['fwd_headers']['fwd_email'];
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
