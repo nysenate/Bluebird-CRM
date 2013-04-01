@@ -197,7 +197,7 @@ class CRM_IMAP_AJAX {
         $messageId = self::get('id');
         $output = self::unifiedMessageInfo($messageId);
         $status = $output['status'];
-        if($status !=''){
+        if($status != ''){
            switch ($status) {
             case '0':
               echo json_encode($output);
@@ -885,7 +885,14 @@ class CRM_IMAP_AJAX {
             $returnMessage['successes'][$message_id]['fromphone'] = $contact_info['values'][$contactId]['phone'];
             $returnMessage['successes'][$message_id]['fromstreet'] = $contact_info['values'][$contactId]['street_address'];
             $returnMessage['successes'][$message_id]['fromcity'] = $contact_info['values'][$contactId]['city'];
-
+            // attachments
+            $attachments= array();
+            $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
+            $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
+            while($row = mysql_fetch_assoc($AttachmentResult)) {
+              $attachments[] = array('fileName'=>$row['file_name'],'fileFull'=>$row['file_full'],'size'=>$row['size'],'ext'=>$row['ext'] );
+            }
+            $returnMessage['successes'][$message_id]['attachments']=$attachments;
         }
 
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
@@ -907,7 +914,7 @@ class CRM_IMAP_AJAX {
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
       }else{
         $status = $output['status'];
-        if($status !=''){
+        if($status != ''){
            switch ($status) {
             case '1':
               echo json_encode($output);
@@ -980,8 +987,7 @@ class CRM_IMAP_AJAX {
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found');#,'clear'=>'true');
         }else{
           $status = $output['status'];
-          if($status !=''){
-
+          if($status != ''){
              switch ($status) {
               case '1':
                 $activity_id = $output['activity_id'];
@@ -1005,7 +1011,9 @@ class CRM_IMAP_AJAX {
             }
          }
         }
+
         CRM_Utils_System::civiExit();
+
     }
 
     // reAssignActivity
