@@ -504,7 +504,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   //fetch structure of message
   $s = imap_fetchstructure($mbox, $msgid);
-
   //see if there are any parts
   if (count($s->parts) > 0){
       foreach ($s->parts as $partno=>$partarr) {
@@ -517,7 +516,6 @@ function civiProcessEmail($mbox, $email, $customHandler)
   else {
       //get body of message
       $text=imap_body($mbox, $msgid);
-      var_dump($text);
       //decode if quoted-printable
       if ($s->encoding == 3) {
           $text = base64_decode($text);
@@ -534,9 +532,11 @@ function civiProcessEmail($mbox, $email, $customHandler)
       }
       $partsarray['not multipart'][text] = array('type'=>$s->subtype, 'string'=>$text);
   }
+
   // fetch the headers
   $header = imap_rfc822_parse_headers(imap_fetchheader($mbox, $msgid));
 
+  // TODO: delete ?
   $notes = $partsarray['not multipart']['html']['string'];
   if ($notes == "") {
       if($partsarray['1']){
@@ -546,12 +546,19 @@ function civiProcessEmail($mbox, $email, $customHandler)
       }else if($partsarray['1.2']){
           $notes = $partsarray['1.2']['text']['string'];
       }
-
   }
-  // var_dump($notes);
-  // print_r($partsarray);
-  $parsedBody = $Parse->unifiedMessageInfo($notes);
-  // var_dump($parsedBody);
+
+  // check for plain / html body text
+  $messagebody  = imap_fetchbody($mbox, $msgid, 1.1);
+  if($messagebody == ''){
+      $messagebody  = imap_fetchbody($mbox, $msgid, 1.2);
+  }
+  if($messagebody == ''){
+    $messagebody  = imap_fetchbody($mbox, $msgid, 1);
+  }
+  $parsedBody = $Parse->unifiedMessageInfo($messagebody);
+
+  var_dump($parsedBody);
   $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
   $fwdName = $parsedBody['fwd_headers']['fwd_email'];
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
@@ -567,12 +574,13 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $fromName = $email->fromName;
   $subject = $email->subject;
   $date = $email->date;
-  $body = $parsedBody['body'];
+
   if($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']){
     $fwdEmail = $fromEmail;
     $fwdName = $fromName;
     $fwdSubject = $subject;
     $fwdDate = $date;
+    $fwdbody = $messagebody;
     $fwdLookup = 'Headers';
   }
 

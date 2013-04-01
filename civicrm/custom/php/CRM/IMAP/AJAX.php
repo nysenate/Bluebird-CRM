@@ -197,7 +197,7 @@ class CRM_IMAP_AJAX {
         $messageId = self::get('id');
         $output = self::unifiedMessageInfo($messageId);
         $status = $output['status'];
-        if($status){
+        if($status !=''){
            switch ($status) {
             case '0':
               echo json_encode($output);
@@ -907,7 +907,7 @@ class CRM_IMAP_AJAX {
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
       }else{
         $status = $output['status'];
-        if($status){
+        if($status !=''){
            switch ($status) {
             case '1':
               echo json_encode($output);
@@ -980,7 +980,8 @@ class CRM_IMAP_AJAX {
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Message not found');#,'clear'=>'true');
         }else{
           $status = $output['status'];
-          if($status){
+          if($status !=''){
+
              switch ($status) {
               case '1':
                 $activity_id = $output['activity_id'];
