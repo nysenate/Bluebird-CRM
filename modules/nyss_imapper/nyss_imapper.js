@@ -484,7 +484,10 @@ cj(document).ready(function(){
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
           cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-          cj('#message_left_email').html(message.body);
+          cj('#message_left_email').html(message.body+"<hr/>");
+          cj.each(message.attachments, function(key, value) {
+           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+          });
           cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
           cj('#id').val(messageId);
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
@@ -624,7 +627,12 @@ cj(document).ready(function(){
           // if we are on crmdev or crmtest show a debug window
           cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
 
-          cj('#message_left_email').html(message.body);
+          cj('#message_left_email').html(message.body+"<hr/>");
+
+          cj.each(message.attachments, function(key, value) {
+           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+          });
+
           cj('#id').val(activityId);
           cj("#loading-popup").dialog('close');
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
@@ -711,7 +719,11 @@ cj(document).ready(function(){
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
-          cj('#message_left_email_tag').html(messages.body);
+          cj('#message_left_email_tag').html(messages.body+"<hr/>");
+          cj.each(messages.attachments, function(key, value) {
+           cj('#message_left_email_tag').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+          });
+
           cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
           cj( "#tagging-popup" ).dialog({
             buttons: {
@@ -1266,8 +1278,12 @@ function buildActivitiesList() {
           match_sort = (value.matcher != 1) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
-          messagesHtml +='</td>';
-        messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +'</td>';
+        messagesHtml +='</td>';
+        messagesHtml += '<td class="subject">'+shortenString(value.subject,40);
+        if(value.attachments.length > 0){
+          messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+        }
+        messagesHtml +='</td>';
         messagesHtml += '<td class="date"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
         messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 

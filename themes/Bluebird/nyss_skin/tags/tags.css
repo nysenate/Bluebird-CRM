@@ -14,6 +14,62 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   clear: both;
   height: auto; }
 
+.BBMessages {
+  overflow: visible;
+  height: auto;
+  background-color: #daf2ff;
+  color: #002a41;
+  border-style: solid;
+  border-color: #a7e0ff;
+  border-bottom-width: 1px;
+  padding: 5px;
+  display: none; }
+  .BBMessages .title {
+    margin: 5px 0;
+    font-weight: bold;
+    font-size: 18px; }
+  .BBMessages .seeMore {
+    cursor: pointer;
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: underline; }
+  .BBMessages .moreHidden {
+    display: none;
+    word-wrap: break-word; }
+  .BBMessages span {
+    font-weight: bold; }
+  .BBMessages.static {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+    width: 495px; }
+  .BBMessages.BBError {
+    background-color: #f8512f;
+    color: black;
+    border-style: solid;
+    border-color: #ec2e08;
+    border-bottom-width: 1px; }
+  .BBMessages.BBWarning {
+    background-color: #edf2a0;
+    color: black;
+    border-style: solid;
+    border-color: #e4ec73;
+    border-bottom-width: 1px; }
+  .BBMessages.BBSuccess {
+    background-color: #b0d730;
+    color: black;
+    border-style: solid;
+    border-color: #90b222;
+    border-bottom-width: 1px; }
+  .BBMessages .closeMessage {
+    background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
+    cursor: pointer;
+    background-position: -97px -129px;
+    height: 16px;
+    width: 16px;
+    float: right; }
+
 /* view & edit contact page fixes */
 #mainTabContainer .tag-section, #tagSelect .tag-section, form#Contact .groupTagsKeywords .tag-section {
   width: 524px;
@@ -25,72 +81,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 #mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook, form#Contact .groupTagsKeywords ul.token-input-list-facebook {
   width: 522px; }
 
-#tagSelect
-.BBMessages {
-  overflow: visible;
-  height: auto;
-  background-color: #daf2ff;
-  color: #002a41;
-  border-style: solid;
-  border-color: #a7e0ff;
-  border-bottom-width: 1px;
-  padding: 5px;
-  display: none; }
-  #tagSelect
-  .BBMessages .title {
-    margin: 5px 0;
-    font-weight: bold;
-    font-size: 18px; }
-  #tagSelect
-  .BBMessages .seeMore {
-    cursor: pointer;
-    font-weight: bold;
-    font-style: italic;
-    text-decoration: underline; }
-  #tagSelect
-  .BBMessages .moreHidden {
-    display: none;
-    word-wrap: break-word; }
-  #tagSelect
-  .BBMessages span {
-    font-weight: bold; }
-  #tagSelect
-  .BBMessages.static {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 1;
-    width: 495px; }
-  #tagSelect
-  .BBMessages.BBError {
-    background-color: #f8512f;
-    color: black;
-    border-style: solid;
-    border-color: #ec2e08;
-    border-bottom-width: 1px; }
-  #tagSelect
-  .BBMessages.BBWarning {
-    background-color: #edf2a0;
-    color: black;
-    border-style: solid;
-    border-color: #e4ec73;
-    border-bottom-width: 1px; }
-  #tagSelect
-  .BBMessages.BBSuccess {
-    background-color: #b0d730;
-    color: black;
-    border-style: solid;
-    border-color: #90b222;
-    border-bottom-width: 1px; }
-  #tagSelect
-  .BBMessages .closeMessage {
-    background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") !important;
-    cursor: pointer;
-    background-position: -97px -129px;
-    height: 16px;
-    width: 16px;
-    float: right; }
-
+/*pagestructure*/
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
   width: 520px;
   overflow-x: hidden;

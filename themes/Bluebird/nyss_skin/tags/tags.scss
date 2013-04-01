@@ -35,6 +35,7 @@ $inputBoxWidth: 522px;
 		height:auto;
 	}
 }
+@import "bbmessages";
 
 /* view & edit contact page fixes */
 #mainTabContainer, #tagSelect, form#Contact .groupTagsKeywords {
@@ -51,86 +52,10 @@ $inputBoxWidth: 522px;
 		width:$inputBoxWidth;
 	}
 }
-#tagSelect 
 
 
 /*pagestructure*/
-.BBMessages
-{
-	$successColor: #B0D730;
-	$standardColor: #DAF2FF;
-	$errorColor: #EC2E08;
-	$warningColor:#EDF2A0;
-	overflow:visible;
-	height:auto;
-	background-color: $standardColor;
-	color: darken($standardColor, 80%);
-	border: {
-		style: solid;
-		color: darken($standardColor,10%);
-		bottom-width: 1px;
-	}
-	.title {
-		margin:5px 0;
-		font-weight: bold;
-		font-size:18px;
-	}
-	.seeMore {
-		cursor:pointer;
-		font-weight:bold;
-		font-style:italic;
-		text-decoration: underline;
-	}
-	.moreHidden {
-		display:none;
-		word-wrap:break-word;
-	}
-	span {
-		font-weight:bold;
-	}
-	padding:5px;
-	display:none;
-	&.static {
-		position:absolute;
-		top:0px;
-		left:0px;
-		z-index: 1;
-		width:495px;
-	}
-	&.BBError {
-		background-color: lighten($errorColor, 10%);
-		color: darken($errorColor, 80%);
-		border: {
-			style: solid;
-			color: $errorColor;
-			bottom-width: 1px;
-		}
-	}
-	&.BBWarning {
-		background-color: $warningColor;
-		color: darken($warningColor, 80%);
-		border: {
-			style: solid;
-			color: darken($warningColor,10%);
-			bottom-width: 1px;
-		}
-	}
-	&.BBSuccess {
-		background-color: $successColor;
-		color: darken($successColor, 80%);
-		border: {
-			style: solid;
-			color: darken($successColor,10%);
-			bottom-width: 1px;
-		}
-	}
-	.closeMessage {
-		@include closeButton;
-		height:16px;
-		width:16px;
-		float:right;
-	}
-}
+
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree{
 	width:520px;
 	overflow-x:hidden;
@@ -347,58 +272,6 @@ $inputBoxWidth: 522px;
 	}
 
 }
-/* legend */
-#crm-container .crm-tagLegend {
-	td div {
-		height:16px;
-		width:16px;
-		float:left;
-		margin-right:5px;
-	}
-	td.addTag div {@include functionIcon($functionIconLink); @include addTag;}
-	td.removeTag div {@include functionIcon($functionIconLink); @include removeTag;}
-	td.moveTag div {@include functionIcon($functionIconLink); @include moveTag;}
-	td.updateTag div {@include functionIcon($functionIconLink); @include updateTag;}
-	td.mergeTag div {@include functionIcon($functionIconLink); @include mergeTag;}
-	td.convertTag div {@include functionIcon($functionIconLink); @include convertTag;}
-	td.printTag div {@include functionIcon($defaultIconLink); @include printTag;}
-	th {border: 0px;}
-	* {border:0px;}
-	table
-	{
-		width: 380px;
-		float:right;
-		margin-bottom:-10px;
-	}
-}
-/* print tags */
-@media print, screen {
-	body.popup 
-	{
-		.BBTree, .BBTree * {
-			visibility:visible;
-		}
-		.BBTree 
-		{
-			position:absolute;
-			left:0;
-			top:0;
-			div.treeButton 
-			{
-				background-position: -64px -15px;
-			}
-			@for $i from 0 through 10
-			{
-		  		dl.#{$levelClassSlug}-#{$i}
-		  		{
-		  			display:block !important;
-		  		}
-		  	}
-		  	dt:hover
-		  	{
-		  		background-color:transparent;
-		  		.fCB{ display:none;}
-		  	}
-		}
-	}
-}
+
+@import "bbtreelegend";
+@import "printtree";

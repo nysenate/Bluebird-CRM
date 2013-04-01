@@ -322,7 +322,10 @@ function selectValue( val ) {
     function showToken(element, id ) {
         //creates a data item called getPosition that's attached to the body
         var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input').focus();
-        jQuery.data(document.body, 'getPosition', cjSetInput.ricsgetSelection());
+        if(cjSetInput.length)//if the array has a value, get the selection of it.
+        {
+            jQuery.data(document.body, 'getPosition', cjSetInput.ricsgetSelection());
+        }
         initFilter(id);
         cj("#token"+id).css({"width":"290px", "size":"8"});
         var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
