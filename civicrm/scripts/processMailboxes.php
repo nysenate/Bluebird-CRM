@@ -842,24 +842,24 @@ function getInboxPollingTagId()
 
 function sendDenialEmail($site, $email)
 {
-  // require_once 'CRM/Utils/Mail.php';
-  // $subj = INVALID_EMAIL_SUBJECT." [$site]";
-  // $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
-  // $mailParams = array('from'    => INVALID_EMAIL_FROM,
-  //                     'toEmail' => $email,
-  //                     'subject' => $subj,
-  //                     'html'    => str_replace("\n", '<br/>', $text),
-  //                     'text'    => $text
-  //                    );
+  require_once 'CRM/Utils/Mail.php';
+  $subj = INVALID_EMAIL_SUBJECT." [$site]";
+  $text = "CRM Instance: $site\n\n".INVALID_EMAIL_TEXT;
+  $mailParams = array('from'    => INVALID_EMAIL_FROM,
+                      'toEmail' => $email,
+                      'subject' => $subj,
+                      'html'    => str_replace("\n", '<br/>', $text),
+                      'text'    => $text
+                     );
 
-  // $rc = CRM_Utils_Mail::send($mailParams);
-  // if ($rc == true) {
-  //   echo "[INFO] Denial e-mail has been sent to $email\n";
-  // }
-  // else {
-  //   echo "[WARN] Unable to send a denial e-mail to $email\n";
-  // }
-  // return $rc;
+  $rc = CRM_Utils_Mail::send($mailParams);
+  if ($rc == true) {
+    echo "[INFO] Denial e-mail has been sent to $email\n";
+  }
+  else {
+    echo "[WARN] Unable to send a denial e-mail to $email\n";
+  }
+  return $rc;
 } // sendDenialEmail()
 
 ?>
