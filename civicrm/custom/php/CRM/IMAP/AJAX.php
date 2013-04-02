@@ -233,6 +233,8 @@ class CRM_IMAP_AJAX {
     public static function getMessageDetails() {
         $messageId = self::get('id');
         $output = self::unifiedMessageInfo($messageId);
+        $admin = CRM_Core_Permission::check('administer CiviCRM');
+        $output['filebug'] = $admin;
         $status = $output['status'];
         if($status != ''){
            switch ($status) {
@@ -951,6 +953,8 @@ class CRM_IMAP_AJAX {
       $changeData = self::contactRaw($output['matched_to']);
       $output['sender_name'] = $changeData['values'][$output['matched_to']]['display_name'];
       $output['sender_email'] = $changeData['values'][$output['matched_to']]['email'];
+      $admin = CRM_Core_Permission::check('administer CiviCRM');
+      $output['filebug'] = $admin;
       if(!$output){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity not found');#,'clear'=>'true');
       }else{
