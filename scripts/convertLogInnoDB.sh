@@ -33,7 +33,7 @@ sql="
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = '$ldb'
-  AND ( engine = 'MyISAM' OR table_name = 'log_civicrm_group' OR table_name = 'log_civicrm_dashboard_contact' );"
+  AND ( engine = 'MyISAM' OR ( engine = 'Archive' AND ( table_name = 'log_civicrm_group' OR table_name = 'log_civicrm_dashboard_contact' ) ) );"
 tbls=`$execSql -c "$sql" -q`
 
 sfx="_tmp"
