@@ -22,7 +22,7 @@ cj(document).ready(function(){
   }else if(cj("#Unmatched").length){
     getUnmatchedMessages();
   }else if(cj("#Reports").length){
-    // getUnmatchedMessages();
+    getReports();
     // console.log('reports');
   }
   cj('#search_help').live('click', function() {
@@ -429,8 +429,8 @@ cj(document).ready(function(){
                 }else{
                   cj("#find-match-popup").dialog('close');
                   removeRow(create_messageId);
-                  helpMessage('Contact created and '+contactData.message);
-                  checkForMatch(assign.key,contactData.contact);
+                  helpMessage('Contact created and '+assign.message);
+                  checkForMatch(assign.key,assign.contact);
                 }
               },
               error: function(){
@@ -971,7 +971,18 @@ function getMatchedMessages() {
     }
   });
 }
-
+function getReports() {
+  cj.ajax({
+    url: '/civicrm/imap/ajax/Reports',
+    success: function(data,status) {
+      reports = cj.parseJSON(data);
+      buildReports();
+    },
+    error: function(){
+      alert('unable to Load Messages');
+    }
+  });
+}
 // needed to format timestamps to allow sorting:
 // make a hidden data attribute with the non-readable date (date(U)) and sort on that
 cj.extend( cj.fn.dataTableExt.oSort, {
@@ -1091,6 +1102,16 @@ function buildMessageList() {
     cj('.Actions').removeClass('sorting');
 
   }
+}
+
+function buildReports() {
+	console.log(reports);
+  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">Not Quite Ready yet</td>');
+	console.log(reports.Unprocessed.length);
+	console.log(reports.Matched.length);
+	console.log(reports.Cleared.length);
+	console.log(reports.Errors.length);
+	console.log(reports.Deleted.length);
 }
 function DeleteMessage(id,imapid){
   cj.ajax({

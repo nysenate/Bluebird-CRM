@@ -647,11 +647,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $mime = finfo_file($finfo, $fileFull);
       finfo_close($finfo);
 
-
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}');";
       $insertMessage = mysql_query($insertAttachments, $dbconn);
-
-
 
     }
 
