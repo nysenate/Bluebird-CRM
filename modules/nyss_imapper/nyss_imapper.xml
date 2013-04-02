@@ -98,4 +98,9 @@
     <page_callback>CRM_IMAP_AJAX::fileBug</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+   <item>
+    <path>civicrm/imap/ajax/reports</path>
+    <page_callback>CRM_IMAP_AJAX::reports</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

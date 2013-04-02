@@ -1162,10 +1162,56 @@ EOQ;
       }
     }
 
+    public static function reports() {
+      $UnprocessedQuery = " SELECT *
+      FROM `nyss_inbox_messages`
+      LIMIT 0 , 100000";
+
+      $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
+      $Unprocessed = array();
+      $Matched = array();
+      $Cleared = array();
+      $Deleted = array();
+      $Errors = array();
+
+      while($row = mysql_fetch_assoc($UnprocessedResult)) {
+        $status = $row['status'];
+                switch ($status) {
+          case '0':
+            $Unprocessed[] = $row;
+            break;
+          case '1':
+            $Matched[] = $row;
+            break;
+          case '7':
+            $Cleared[] = $row;
+            break;
+          case '8':
+            $Errors[] = $row;
+            break;
+          case '9':
+            $Deleted[] = $row;
+            break;
+        }
+      }
+      $returnCode = array('code'      =>  'SUCCESS',
+                          'Unprocessed' =>  $Unprocessed,
+                          'Matched' =>  $Matched,
+                          'Cleared' =>  $Cleared,
+                          'Errors' =>  $Errors,
+                          'Deleted' =>  $Deleted
+                          );
+          echo json_encode($returnCode);
+      CRM_Utils_System::civiExit();
+    }
+
     public static function fileBug() {
       require_once 'api/api.php';
       require_once 'CRM/Utils/Redmine.php';
       // load from config
+      $config = CRM_Core_Config::singleton( );
+      var_dump($config);
+      exit();
       require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
       $bbconfig = get_bluebird_instance_config();
       $apiKey = $bbconfig['redmine.api.key'];
