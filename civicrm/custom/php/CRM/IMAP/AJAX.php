@@ -1234,6 +1234,7 @@ EOQ;
       FROM `nyss_inbox_messages`
       WHERE `id` = $messageId
       LIMIT 1";
+
       $debugResult = mysql_query($debugQuery, self::db());
       $debugOutput = array();
       while($row = mysql_fetch_assoc($debugResult)) {
@@ -1241,11 +1242,10 @@ EOQ;
       }
       $debugFormatted ='';
       foreach ($debugOutput as $key => $value) {
-        $debugFormatted .=$key.": ".$value.";\n";
+        $debugFormatted .= $key.": ".$value.";\n";
       }
-
-      $debugFinal = $debugFormatted.";\n browser: ".$browser.";\n ContactName: ".$ContactName.";\n url: ".$url;
-
+      // var_dump($debugFormatted);
+      $debugFinal = "Full message:\n".$debugFormatted."\n\nBrowser: ".$browser.";\nContactName: ".$ContactName.";\n url: ".$url;
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
       $_redmine = new redmine($config);

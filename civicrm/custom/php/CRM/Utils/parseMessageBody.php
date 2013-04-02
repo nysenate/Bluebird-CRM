@@ -18,8 +18,7 @@ class parseMessageBody {
     }
 
     // $tempbody was setup for finding matches
-    $body = preg_replace("/=20|=3D|=0D|=5F|=\\n|=\\r/i", "", $body);
-
+    $body = quoted_printable_decode($body);
     if($format =='plain'){
       $tempbody = preg_replace("/>|</i", "", $body);
     }else{
