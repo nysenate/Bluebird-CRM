@@ -556,7 +556,10 @@ cj(document).ready(function(){
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+
+          if ((message.filebug == true)){
+          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+          }
           cj('#message_left_email').html(message.body+"<hr/>");
           cj.each(message.attachments, function(key, value) {
            cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
@@ -698,8 +701,9 @@ cj(document).ready(function(){
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
           // if we are on crmdev or crmtest show a debug window
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-
+          if ((message.filebug == true)){
+          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+          }
           cj('#message_left_email').html(message.body+"<hr/>");
 
           cj.each(message.attachments, function(key, value) {
