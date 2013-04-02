@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_messages` (
   PRIMARY KEY (`id`),
   INDEX sender_index (`sender_email`),
   INDEX status (`status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `nyss_inbox_attachments` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -29,4 +29,4 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_attachments` (
   `ext` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`email_id`) REFERENCES emails(`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
