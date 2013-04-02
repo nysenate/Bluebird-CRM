@@ -323,7 +323,7 @@ var BBTree = {
 				}
 				else { //would LOVE to be able to get contact name here...
 					actionData.description += 'Tag '+obj.tagName+' failed to be updated';
-					if(data[3] == 'DB Error: already exists')
+					if(message[3] == 'DB Error: already exists')
 					{
 						actionData.description += ' because tag '+obj.tagName+' already exists';
 					}
@@ -366,7 +366,12 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added.';
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added';
+					if(message[3] == 'DB Error: already exists')
+					{
+						actionData.description += ' because tag <span>'+obj.tagName+'</span> already exists';
+					}
+					actionData.description += '.';
 				}	
 				break;
 			default: actionData.description	+= 'No defined message.';
