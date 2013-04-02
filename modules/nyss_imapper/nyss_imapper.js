@@ -729,13 +729,13 @@ cj(document).ready(function(){
             buttons: {
               "Tag": function() {
                 pushtag();
-                cj('.token-input-list-facebook').html('').remove();
-                cj('.token-input-dropdown-facebook').html('').remove();
+                cj('.token-input-list-facebook .token-input-token-facebook').remove();
+                cj('.token-input-dropdown-facebook').html('');
               },
               "Tag and Clear": function() {
                 pushtag('clear');
-                cj('.token-input-list-facebook').html('').remove();
-                cj('.token-input-dropdown-facebook').html('').remove();
+                cj('.token-input-list-facebook .token-input-token-facebook').remove();
+                cj('.token-input-dropdown-facebook').html('');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');

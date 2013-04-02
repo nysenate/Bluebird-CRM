@@ -17,13 +17,14 @@ class parseMessageBody {
       $format = 'plain';
     }
 
-    // $tempbody was setup for finding matches
     $body = quoted_printable_decode($body);
+    $body = preg_replace("/\\t/i", " ", $body);
+
     if($format =='plain'){
       $tempbody = preg_replace("/>|</i", "", $body);
     }else{
       $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $body);
-      $tempbody = preg_replace("/\\r|\\n/i", "\r\n<br>\n", $tempbody);
+      $tempbody = preg_replace("/\\r|\\n|\\t/i", "\r\n<br>\n", $tempbody);
     }
     $tempbody = self::strip_HTML_tags($tempbody);
 
