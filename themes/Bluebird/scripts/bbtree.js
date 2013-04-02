@@ -109,10 +109,10 @@ var BBTree = {
 			BBTree.removeIndicator(messageBox);
 		});
 		messageBox.append(BBTree.actionInfo.last.description);
-		if(code.more.length > 2)
-		{
-			messageBox.append('<div title="See More Information" class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
-		}
+		// if(code.more.length > 2)
+		// {
+		// 	messageBox.append('<div title="See More Information" class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
+		// }
 		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
 			if(cj(this).hasClass('open'))
 			{
@@ -377,10 +377,6 @@ var BBTree = {
 			default: actionData.description	+= 'No defined message.';
 		}
 		//giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
-		if(passes)
-		{
-			actionData.more = '';
-		}
 		BBTree.setLastAction(actionData);
 		BBTree.addIndicator(actionData);
 	}
