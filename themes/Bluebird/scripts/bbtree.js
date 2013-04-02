@@ -158,7 +158,7 @@ var BBTree = {
 	},
 	actionInfo: {
 		timeoutLength: {
-			success: 10000,
+			success: 4000,
 			warning: 30000,
 			error: 1000000,
 			notice: 2000
@@ -375,6 +375,11 @@ var BBTree = {
 				}	
 				break;
 			default: actionData.description	+= 'No defined message.';
+		}
+		//giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
+		if(passes)
+		{
+			actionData.more = '';
 		}
 		BBTree.setLastAction(actionData);
 		BBTree.addIndicator(actionData);
