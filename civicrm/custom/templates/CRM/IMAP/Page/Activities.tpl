@@ -22,8 +22,8 @@
 		</table>
 		<div class='page_actions'>
 			<input type="button" class="multi_tag" value="Add Tag" name="multi_tag">
-			<input type="button" class="multi_clear" value="Clear" name="multi_clear">
-			<input type="button" class="multi_delete" value="Delete" name="multi_delete">
+			<input type="button" class="multi_clear" value="Clear List" name="multi_clear">
+		  <!-- <input type="button" class="multi_delete" value="Delete" name="multi_delete"> -->
 		</div>
 	</div>
 	<div id="find-match-popup" title="Loading Data"  style="display:none;">
