@@ -1329,32 +1329,38 @@ var BBTreeModal = {
 					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
 					tagUpdate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
-					cj.ajax({
-						url: '/civicrm/ajax/tag/update',
-						data: {
-							name: tagUpdate.tagName,
-							description: tagUpdate.tagDescription,
-							id: tagUpdate.parentId,
-							is_reserved: tagUpdate.isReserved,
-							call_uri: window.location.href	
-						},
-						dataType: 'json',
-						success: function(data, status, XMLHttpRequest) {
-							if(data.code != 1)
-							{
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+					if(tagUpdate.tagName.length > 0)
+					{
+						cj.ajax({
+							url: '/civicrm/ajax/tag/update',
+							data: {
+								name: tagUpdate.tagName,
+								description: tagUpdate.tagDescription,
+								id: tagUpdate.parentId,
+								is_reserved: tagUpdate.isReserved,
+								call_uri: window.location.href	
+							},
+							dataType: 'json',
+							success: function(data, status, XMLHttpRequest) {
+								if(data.code != 1)
+								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+								}
+								else
+								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['updat',1,tagUpdate, data.message]);
+									BBTreeModal.updateTag.updateInline(data.message);
+								}
 							}
-							else
-							{
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-								BBTree.reportAction(['updat',1,tagUpdate, data.message]);
-								BBTreeModal.updateTag.updateInline(data.message);
-							}
-						}
-					});
+						});
+					} else {
+						alert("Tag must have a valid name.");
+						modalLoadingGif('remove');
+					}
 				}
 			},	
 			{
@@ -1518,31 +1524,37 @@ var BBTreeModal = {
 						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
-						cj.ajax({
-							url: '/civicrm/ajax/tag/create',
-							data: {
-								name: tagCreate.tagName,
-								description: tagCreate.tagDescription,
-								parent_id: tagCreate.parentId,
-								is_reserved: tagCreate.isReserved,
-								call_uri: window.location.href	
-							},
-							dataType: 'json',
-							success: function(data, status, XMLHttpRequest) {
-								if(data.code != 1)
-								{
-									BBTree.reportAction(['addt',0,tagCreate, data.message]);
-									modalLoadingGif('remove');
+						if(tagCreate.tagName.length > 0 )
+						{
+							cj.ajax({
+								url: '/civicrm/ajax/tag/create',
+								data: {
+									name: tagCreate.tagName,
+									description: tagCreate.tagDescription,
+									parent_id: tagCreate.parentId,
+									is_reserved: tagCreate.isReserved,
+									call_uri: window.location.href	
+								},
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									if(data.code != 1)
+									{
+										BBTree.reportAction(['addt',0,tagCreate, data.message]);
+										modalLoadingGif('remove');
+									}
+									else
+									{
+										BBTreeModal.addTag.createAddInline(tagCreate, data.message);
+										BBTree.reportAction(['addt',1,tagCreate, data.message]);
+									}
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
 								}
-								else
-								{
-									BBTreeModal.addTag.createAddInline(tagCreate, data.message);
-									BBTree.reportAction(['addt',1,tagCreate, data.message]);
-								}
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-							}
-						});
+							});
+						} else {
+							alert("Tag must have a valid name.");
+							modalLoadingGif('remove');
+						}
 					}
 				},
 				{
