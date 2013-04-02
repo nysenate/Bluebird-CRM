@@ -1210,10 +1210,6 @@ EOQ;
       require_once 'CRM/Utils/Redmine.php';
       // load from config
       $bbconfig = get_bluebird_instance_config();
-      echo '<pre>';print_r($bbconfig);echo '</pre>';
-      exit();
-      require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
-      $bbconfig = get_bluebird_instance_config();
       $apiKey = $bbconfig['redmine.api.key'];
       $imapAccounts = explode(',', $bbconfig['imap.accounts']);
       // get session stuff
