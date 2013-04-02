@@ -18,13 +18,15 @@ class parseMessageBody {
     }
 
     // $tempbody was setup for finding matches
+    $body = preg_replace("/=20|=3D|=0D/i", "", $body);
+
     if($format =='plain'){
       $tempbody = preg_replace("/>|</i", "", $body);
     }else{
       $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $body);
-      $tempbody = preg_replace("/\\r|\\n/i", "\r\n<br>\n", $body);
-      $tempbody = self::strip_HTML_tags($body);
+      $tempbody = preg_replace("/\\r|\\n/i", "\r\n<br>\n", $tempbody);
     }
+    $tempbody = self::strip_HTML_tags($tempbody);
 
     // searching message for tree of embedded headers
     $bodyArray = explode("\r\n", $tempbody);

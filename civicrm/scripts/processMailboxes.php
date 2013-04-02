@@ -555,6 +555,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
   if($messagebody == ''){
     $messagebody  = imap_fetchbody($mbox, $msgid, 1);
   }
+
   $parsedBody = $Parse->unifiedMessageInfo($messagebody);
 
   // var_dump($parsedBody);
