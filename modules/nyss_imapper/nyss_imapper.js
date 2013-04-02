@@ -973,7 +973,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/Reports',
+    url: '/civicrm/imap/ajax/reports',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
