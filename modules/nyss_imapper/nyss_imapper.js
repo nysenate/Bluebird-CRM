@@ -1422,7 +1422,6 @@ function shortenString(subject, length){
 // key = md5 ( shortened to 8 ) of user_email
 function checkForMatch(key,contactIds){
   cj("#matchCheck-popup").dialog('open');
-
   cj('.imapper-message-box').each(function(i, item) {
     check = cj(this).data('key');
     var messageId = cj(this).attr('id');
@@ -1438,7 +1437,7 @@ function checkForMatch(key,contactIds){
           success: function(data,status) {
             assign = cj.parseJSON(data);
             if(assign.code == 'ERROR'){
-              helpMessage('Other Records not Matched');
+              // helpMessage('Other Records not Matched');
             }else{
               removeRow(messageId);
               helpMessage('Other Records Automatically Matched');
