@@ -1602,7 +1602,7 @@ var BBTreeModal = {
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();
 			}
-			if(tdata.treeParent == 296)
+			if(tdata.treeParent == 296 || (tdata.parentId == 296 && typeof tdata.treeParent === 'undefined'))
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';
