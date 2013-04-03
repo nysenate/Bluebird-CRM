@@ -271,7 +271,7 @@ cj(document).ready(function(){
     });
     if(!rows.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select a Message');
+      alert('Use the checkbox to select one or more messages to delete');
       return false;
     }
 
@@ -776,7 +776,7 @@ cj(document).ready(function(){
 
     if(!activityIds.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select a Message');
+      alert('Use the checkbox to select one or more messages to tag');
       return false;
     }
     // render the multi message view
@@ -895,7 +895,7 @@ cj(document).ready(function(){
     });
     if(!delete_ids.length){
       cj("#loading-popup").dialog('close');
-      alert('Use the checkbox to select a Message');
+      alert('Use the checkbox to select one or more messages to clear');
       return false;
     }
     cj( "#clear-confirm" ).dialog({
