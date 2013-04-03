@@ -21,7 +21,7 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
+			<input type="button" class="multi_delete" id="" value="Delete Selected" name="delete">
 		</div>
 	</div>
 	<div id="find-match-popup" title="Loading Data" style="display:none;">
