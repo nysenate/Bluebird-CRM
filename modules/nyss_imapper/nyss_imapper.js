@@ -729,13 +729,13 @@ cj(document).ready(function(){
             buttons: {
               "Tag": function() {
                 pushtag();
-                cj('.token-input-list-facebook').html('').remove();
-                cj('.token-input-dropdown-facebook').html('').remove();
+                cj('.token-input-list-facebook .token-input-token-facebook').remove();
+                cj('.token-input-dropdown-facebook').html('');
               },
               "Tag and Clear": function() {
                 pushtag('clear');
-                cj('.token-input-list-facebook').html('').remove();
-                cj('.token-input-dropdown-facebook').html('').remove();
+                cj('.token-input-list-facebook .token-input-token-facebook').remove();
+                cj('.token-input-dropdown-facebook').html('');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -861,12 +861,12 @@ cj(document).ready(function(){
       buttons: {
         "Tag": function() {
           pushtag();
-          cj('.token-input-list-facebook').html('').remove();
+          cj('.token-input-list-facebook .token-input-token-facebook').remove();
           cj('.token-input-dropdown-facebook').html('').remove();
         },
         "Tag and Clear": function() {
           pushtag('clear');
-          cj('.token-input-list-facebook').html('').remove();
+          cj('.token-input-list-facebook .token-input-token-facebook').remove();
           cj('.token-input-dropdown-facebook').html('').remove();
         },
         Cancel: function() {
@@ -1309,7 +1309,8 @@ function buildActivitiesList() {
         messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
 
         messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
-        messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+        // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+        messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
     });
