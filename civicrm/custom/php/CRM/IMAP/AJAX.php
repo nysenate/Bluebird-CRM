@@ -627,7 +627,7 @@ class CRM_IMAP_AJAX {
                 $key =  $output['key'];
                 $activity_id =$activity['id'];
 
-                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
+                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
                 $UPDATEquery = "UPDATE `nyss_inbox_messages`
                 SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId

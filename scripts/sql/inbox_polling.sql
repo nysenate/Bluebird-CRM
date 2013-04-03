@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_messages` (
   `subject` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `body` text COLLATE utf8_unicode_ci NOT NULL,
   `forwarder` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `status` int(1) NOT NULL,
+  `status` int(2) NOT NULL,
   `matcher` int(10) NOT NULL,
   `matched_to` int(10) NOT NULL,
   `activity_id` int(10) NOT NULL,
@@ -25,8 +25,10 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_attachments` (
   `email_id` int(10) NOT NULL,
   `file_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `file_full` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `rejection` varchar(255) COLLATE utf8_unicode_ci,
+  `mime_type` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `size` int(8) NOT NULL,
   `ext` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`email_id`) REFERENCES emails(`id`)
+  FOREIGN KEY (`email_id`) REFERENCES nyss_inbox_messages(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
