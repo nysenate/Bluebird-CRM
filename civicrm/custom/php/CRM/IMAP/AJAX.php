@@ -321,12 +321,68 @@ class CRM_IMAP_AJAX {
      * Returns: None.
      * This function will grab the inputs from the GET variable and
      * do a search for contacts and return them as a JSON object.
-     * Only returns Records with Primary emails & addresse (so no dupes)
+     * Only returns Records with Primary emails & address (so no dupes)
      */
     public static function searchContacts() {
-        $start = microtime(true);
-        $s = self::get('s');
-        $debug = self::get('debug');
+      $start = microtime(true);
+      require_once 'CRM/Dedupe/Finder.php';
+
+      // verbose output for debug queries
+      $debug = self::get('debug');
+
+      // sanatize inputs
+      $first_name = trim(self::get('first_name')) =='' ? NULL : self::get('first_name');
+      $last_name = trim(self::get('last_name')) =='' ? NULL : self::get('last_name');
+      $email_address = trim(self::get('email_address')) =='' ? NULL : self::get('email_address');
+      $dob = trim(self::get('dob')) =='' ? NULL : self::get('dob');
+      $street_address = trim(self::get('street_address')) =='' ? NULL : self::get('street_address');
+      $city = trim(self::get('city')) =='' ? NULL : self::get('city');
+      $state = trim(self::get('state')) =='' ? NULL : self::get('state');
+      $phone = trim(self::get('phone')) =='' ? NULL : self::get('phone');
+
+      if ($debug){
+        echo "<h1>inputs</h1>";
+        var_dump($first_name);
+        var_dump($last_name);
+        var_dump($email_address);
+        var_dump($dob);
+        var_dump($street_address);
+        var_dump($city);
+        var_dump($state);
+        var_dump($phone);
+      }
+
+      $ContactParams = array();
+      if(isset($first_name)) $ContactParams['civicrm_contact']['first_name'] = $first_name;
+
+      if(isset($last_name)) $ContactParams['civicrm_contact']['last_name'] = $last_name;
+      if(isset($email_address)) $ContactParams['civicrm_email']['email'] = $email_address;
+      if(isset($dob)) $ContactParams['civicrm_contact']['street_address'] = $dob;
+      if(isset($street_address)) $ContactParams['civicrm_address']['street_address'] = $street_address;
+      if(isset($city)) $ContactParams['civicrm_address']['city'] = $city;
+      if(isset($state)) $ContactParams['civicrm_state_province']['id'] = $state;
+      if(isset($phone)) $ContactParams['civicrm_phone']['phone'] = $phone;
+
+      var_dump($ContactParams);
+      $IndividualIDs = CRM_Dedupe_Finder::dupesByParams($ContactParams, 'Individual', 'Fuzzy');
+      var_dump($IndividualIDs);
+      $OrganizationIDs = CRM_Dedupe_Finder::dupesByParams($ContactParams, 'Organization', 'Fuzzy');
+      var_dump($OrganizationIDs);
+
+      exit();
+
+        //
+
+        // dupesbyparams
+        // crmdedupefinder
+        // $dedupeParams['civicrm_address']['street_address'] == $value
+
+        // $ctype = individual / household / orginizations (fuzzy, strict, strict)
+        // $except = none
+        // $ruleGroupID = SELECT RULE ID WHERE RULE_NAME = 'FUZZY'
+
+
+
 
         $from = "FROM civicrm_contact contact\n";
         $where = "WHERE contact.is_deleted=0\n";
@@ -337,13 +393,7 @@ class CRM_IMAP_AJAX {
         $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
         $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
-        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name'  || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
-        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
 
-        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name'  || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
-        if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
-
-        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
         if($email_address) {
           // $from.="  JOIN  civicrm_email email ON (email.email = '$email_address')\n";
           $where.="  AND email.email LIKE '$email_address'\n";
@@ -357,9 +407,11 @@ class CRM_IMAP_AJAX {
         if($dob) $where.="  AND contact.birth_date = '$dob'\n";
 
         $state_id = self::get('state');
-        if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
+        if(self::get('street_address'))
+          $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
         if(self::get('city')) $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? NULL : self::get('city');
 
+        //
 
         if($street_address || $city){
           $order.=", address.is_primary DESC";
@@ -382,17 +434,7 @@ class CRM_IMAP_AJAX {
           $where.="  AND phone.phone LIKE '%$phone%'";
         }
 
-        if ($debug){
-          echo "<h1>inputs</h1>";
-          var_dump($first_name);
-          var_dump($last_name);
-          var_dump($email_address);
-          var_dump($dob);
-          var_dump($phone);
-          var_dump($street_address);
-          var_dump($city);
 
-        }
 
         if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
           $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
@@ -497,7 +539,7 @@ class CRM_IMAP_AJAX {
   $query = "
   SELECT e.contact_id
   FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-  WHERE g.title='Authorized Forwarders'
+  WHERE g.name='Authorized_Forwarders'
     AND e.email='".$forwarder."'
     AND g.id=gc.group_id
     AND gc.status='Added'
