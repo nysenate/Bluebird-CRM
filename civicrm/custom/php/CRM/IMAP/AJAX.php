@@ -256,8 +256,6 @@ class CRM_IMAP_AJAX {
 
     if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; };
 
-    $yearsago = floor((time() - strtotime($date_string_short))/86400);
-
     // check if the message is from last year
     if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
       $formatted = date("M d, Y", strtotime($date_string_short));
@@ -269,10 +267,18 @@ class CRM_IMAP_AJAX {
         $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
-    return array('date_debug'=>$date_string_short,
-              'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
-              'u'=>date("U", strtotime($date_string_short)),
-              'short'=>$formatted);
+    if($formatted == 'Nov 30, -0001' || $date_string_short == 'Nov 30, -0001' ){
+      return array('date_debug'=>$date_string_short,
+        'long'=> 'Couldn\'t find date in '.$date_string_short,
+        'u'=>date("U"),
+        'short'=>'No Date Found');
+    }else{
+      return array('date_debug'=>$date_string_short,
+        'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
+        'u'=>date("U", strtotime($date_string_short)),
+        'short'=>$formatted);
+    }
+
     }
 
     /* deleteMessage()
