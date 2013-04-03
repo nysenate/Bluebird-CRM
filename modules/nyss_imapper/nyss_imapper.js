@@ -527,6 +527,11 @@ cj(document).ready(function(){
       }
     });
 
+    if (contactIds =='' ){
+      alert("Please select a contact");
+      return false;
+    }else{
+
     cj.ajax({
       url: '/civicrm/imap/ajax/reassignActivity',
       data: {
@@ -544,7 +549,7 @@ cj(document).ready(function(){
           cj('#'+activityId+" .name").attr("data-firstname",data.first_name); // first_name
           cj('#'+activityId+" .name").attr("data-lastname",data.last_name); // last_name
           cj('#'+activityId+" .match").html("ManuallyMatched");
-          contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>';
+          contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
 
           helpMessage(data.message);
           // redraw the table
@@ -559,6 +564,7 @@ cj(document).ready(function(){
         alert('failure');
       }
     });
+    };
     return false;
   });
   /// remove activity from the activities screen, but don't delete it Matched
