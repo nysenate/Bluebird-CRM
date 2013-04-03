@@ -703,7 +703,7 @@ function searchForMatches()
     SELECT e.contact_id
     FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
     WHERE g.title='".AUTH_FORWARDERS_GROUP_NAME."'
-      AND e.email='".$fromEmail."'
+      AND e.email='".$forwarder."'
       AND g.id=gc.group_id
       AND gc.status='Added'
       AND gc.contact_id=e.contact_id
@@ -716,9 +716,9 @@ function searchForMatches()
           $results[] = $row;
       }
       if (count($results) != 1 ){
-        echo "[WARN]    Forwarder search ".$fromEmail." within 'Authorized Forwarders' resulted in ".count($results)." making bluebird admin the owner\n";
+        echo "[WARN]    Forwarder search ".$forwarder." within 'Authorized Forwarders' resulted in ".count($results)." making bluebird admin the owner\n";
       }else{
-        echo "[INFO]    Forwarder search ".$fromEmail." is authorized\n";
+        echo "[INFO]    Forwarder search ".$forwarder." is authorized\n";
       }
 
       // error checking for forwarderId
