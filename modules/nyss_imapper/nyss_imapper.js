@@ -524,6 +524,11 @@ cj(document).ready(function(){
       }
     });
 
+    if (contactIds =='' ){
+      alert("Please select a contact");
+      return false;
+    }else{
+
     cj.ajax({
       url: '/civicrm/imap/ajax/reassignActivity',
       data: {
@@ -541,7 +546,7 @@ cj(document).ready(function(){
           cj('#'+activityId+" .name").attr("data-firstname",data.first_name); // first_name
           cj('#'+activityId+" .name").attr("data-lastname",data.last_name); // last_name
           cj('#'+activityId+" .match").html("ManuallyMatched");
-          contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  H" title="This email was Manually matched">H</span>';
+          contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
 
           helpMessage(data.message);
           // redraw the table
@@ -556,6 +561,7 @@ cj(document).ready(function(){
         alert('failure');
       }
     });
+    };
     return false;
   });
   /// remove activity from the activities screen, but don't delete it Matched
@@ -638,7 +644,7 @@ cj(document).ready(function(){
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100)  });
           cj("#find-match-popup").dialog('open');
           cj("#tabs").tabs();
-          cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>           "+'<a href="/civicrm/contact/view?reset=1&cid='+message.contactId+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
+          cj('#imapper-contacts-list').html('').append("<strong>currently matched to : </strong><br/>           "+'<a href="/civicrm/contact/view?reset=1&cid='+message.matched_to+'" title="'+message.sender_name+'">'+shortenString(message.sender_name,35)+'</a>'+" <br/><i>&lt;"+ message.sender_email+"&gt;</i> <br/>"+ cj('.dob').val()+"<br/> "+ cj('.phone').val()+"<br/> "+  cj('.street_address').val()+"<br/> "+  cj('.city').val()+"<br/>");
         }
       },
       error: function(){
@@ -1412,7 +1418,6 @@ function shortenString(subject, length){
 // key = md5 ( shortened to 8 ) of user_email
 function checkForMatch(key,contactIds){
   cj("#matchCheck-popup").dialog('open');
-
   cj('.imapper-message-box').each(function(i, item) {
     check = cj(this).data('key');
     var messageId = cj(this).attr('id');
@@ -1428,7 +1433,7 @@ function checkForMatch(key,contactIds){
           success: function(data,status) {
             assign = cj.parseJSON(data);
             if(assign.code == 'ERROR'){
-              helpMessage('Other Records not Matched');
+              // helpMessage('Other Records not Matched');
             }else{
               removeRow(messageId);
               helpMessage('Other Records Automatically Matched');

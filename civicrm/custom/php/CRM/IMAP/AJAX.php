@@ -254,8 +254,6 @@ class CRM_IMAP_AJAX {
 
     if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; };
 
-    $yearsago = floor((time() - strtotime($date_string_short))/86400);
-
     // check if the message is from last year
     if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
       $formatted = date("M d, Y", strtotime($date_string_short));
@@ -267,10 +265,18 @@ class CRM_IMAP_AJAX {
         $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
-    return array('date_debug'=>$date_string_short,
-              'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
-              'u'=>date("U", strtotime($date_string_short)),
-              'short'=>$formatted);
+    if($formatted == 'Nov 30, -0001' || $date_string_short == 'Nov 30, -0001' ){
+      return array('date_debug'=>$date_string_short,
+        'long'=> 'Couldn\'t find date in '.$date_string_short,
+        'u'=>date("U"),
+        'short'=>'No Date Found');
+    }else{
+      return array('date_debug'=>$date_string_short,
+        'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
+        'u'=>date("U", strtotime($date_string_short)),
+        'short'=>$formatted);
+    }
+
     }
 
     /* deleteMessage()
@@ -316,7 +322,7 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
-    /* searchContacts
+/* searchContacts
      * Paramters: None.
      * Returns: None.
      * This function will grab the inputs from the GET variable and
@@ -428,6 +434,7 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+
     /* assignMessage()
      * Parameters: None.
      * Returns: None.
@@ -497,7 +504,7 @@ class CRM_IMAP_AJAX {
   $query = "
   SELECT e.contact_id
   FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-  WHERE g.title='Authorized Forwarders'
+  WHERE g.name='Authorized_Forwarders'
     AND e.email='".$forwarder."'
     AND g.id=gc.group_id
     AND gc.status='Added'
@@ -584,9 +591,12 @@ class CRM_IMAP_AJAX {
                   $result = civicrm_api( 'email','create',$params );
               }
 
+            $aActivityType = CRM_Core_PseudoConstant::activityType();
+            $activityType = array_search('Inbound Email', $aActivityType);
+
             // Submit the activity information and assign it to the right user
             $params = array(
-                'activity_type_id' => 12,
+                'activity_type_id' => $activityType,
                 'source_contact_id' => $forwarderId,
                 'assignee_contact_id' => $forwarderId,
                 'target_contact_id' => $contactId,
@@ -626,7 +636,7 @@ class CRM_IMAP_AJAX {
                 $key =  $output['key'];
                 $activity_id =$activity['id'];
 
-                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
+                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
                 $UPDATEquery = "UPDATE `nyss_inbox_messages`
                 SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
@@ -1020,6 +1030,7 @@ class CRM_IMAP_AJAX {
     public static function reassignActivity() {
       require_once 'api/api.php';
       $id = self::get('id');
+      $debug = self::get('debug');
 
       $output = self::unifiedMessageInfo($id);
       $contact = $output['matched_to'];
@@ -1035,6 +1046,20 @@ class CRM_IMAP_AJAX {
       $email = $changeData['values'][$change]['email'];
       $tagid = self::getInboxPollingTagId();
 
+      if ($debug){
+        echo "<h1>inputs</h1>";
+        var_dump($contact);
+        var_dump($activityId);
+        echo "<h1>Contact Info</h1>";
+        var_dump($change);
+        var_dump($changeName);
+        var_dump($firstName);
+        var_dump($LastName);
+        var_dump($contactType);
+        var_dump($email);
+        var_dump($tagid);
+      }
+
       // we need to check to see if the activity is still assigned to the same contact
       // if not, kill it
 
@@ -1048,7 +1073,6 @@ EOQ;
       if($row = mysql_fetch_assoc($check_result)) {
         $check = $row['COUNT(id)'];
       }
-
       if($check != '1'){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
@@ -1058,7 +1082,7 @@ EOQ;
       $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change
-WHERE `id` =  $activityId
+WHERE `activity_id` =  $activityId
 EOQ;
 
       // change the row

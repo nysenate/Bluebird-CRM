@@ -71,7 +71,7 @@
 
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"></div>
-					<input type="button" class="imapper-submit" id="reassign" value="Assign" name="reassign">
+					<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
 				</div>
 			</div>
 		</div>
@@ -95,7 +95,7 @@
 	<div id="reloading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
-	<div id="fileBug-popup" title="We're here to help">
+	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
 		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
 	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
