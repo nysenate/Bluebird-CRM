@@ -137,7 +137,9 @@
 		<p> Currently Checking for other emails that match this address.</p>
 	</div>
 	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
-		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
+		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
+		<p>Step #2. Please contact the support line at # </p>
+		<textarea name="description" id="description"></textarea>
 	</div>
 
 </div>

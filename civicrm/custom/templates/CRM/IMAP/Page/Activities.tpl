@@ -96,7 +96,9 @@
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/>  ReLoading messages.</p>
 	</div>
 	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
-		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
+		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
+		<p>Step #2. Please contact the support line at # </p>
+		<textarea name="description" id="description"></textarea>
 	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
 		<div id="message_left_tag">
