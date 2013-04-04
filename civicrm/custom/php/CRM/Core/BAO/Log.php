@@ -219,7 +219,8 @@ UPDATE civicrm_log
         log_conn_id int(11),
         log_action varchar(64),
         is_deleted tinyint(4),
-        display_name varchar(128) ) ENGINE=HEAP";
+        display_name varchar(128),
+        INDEX (id)) ENGINE = MEMORY";
     CRM_Core_DAO::executeQuery($sql);
 
     $logTables = $rptSummary->getVar('_logTables');
@@ -246,7 +247,7 @@ UPDATE civicrm_log
     }
 
     $sql = "
-      SELECT *
+      SELECT log_type, log_date, log_conn_id, log_action
       FROM civicrm_temp_logcount
       ORDER BY log_date DESC;
     ";
@@ -262,7 +263,7 @@ UPDATE civicrm_log
       );
     }
 
-    CRM_Logging_ReportSummary::_combineContactRows($logRows);
+    CRM_Logging_ReportSummary::_combineContactRows($logRows, TRUE);
     //CRM_Core_Error::debug_var('$logRows',$logRows);
     //CRM_Core_Error::debug_var('$counts',$counts);
 
