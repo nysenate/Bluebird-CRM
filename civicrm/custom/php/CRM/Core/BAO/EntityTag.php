@@ -407,7 +407,15 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     $usedFor = array_merge($tags["tagA_used_for"], $tags["tagB_used_for"]);
     $usedFor = implode(',', array_unique($usedFor));
     $tags["tagB_used_for"] = explode(",", $usedFor);
-
+    //NYSS 6512
+    //if a tag doesn't exist, throw error message
+    if(($tags['tagA'] == null) || ($tags['tagB'] == null))
+    {
+      $tags['status'] = FALSE;
+      $tags['message'] = 'Tag(s) do not exist';
+      return $tags;
+    }
+    
     //NYSS 6395
     // get all merge queries together
     $sqls = array(
