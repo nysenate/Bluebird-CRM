@@ -622,6 +622,9 @@ class CRM_IMAP_AJAX {
             $activityType = array_search('Inbound Email', $aActivityType);
             $activityStatus = array_search('Completed', $aActivityStatus);
 
+            $aActivityType = CRM_Core_PseudoConstant::activityType();
+            $activityType = array_search('Inbound Email', $aActivityType);
+
             // Submit the activity information and assign it to the right user
             $params = array(
                 'activity_type_id' => $activityType,
