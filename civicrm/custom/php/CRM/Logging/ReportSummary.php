@@ -311,7 +311,7 @@ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
 
   //NYSS
   static
-  function _combineContactRows(&$rows) {
+  function _combineContactRows(&$rows, $count = FALSE) {
     //if log_type in contact set, and log_date, conn_id same, combine
     $rowKeys = array();
     $logTypes = array(
@@ -325,7 +325,9 @@ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
     );
 
     //sort so that Insert is preserved when it exists
-    usort($rows, array('CRM_Utils_Sort', 'cmpName'));
+    if ( !$count ) {
+      usort($rows, array('CRM_Utils_Sort', 'cmpName'));
+    }
 
     foreach ( $rows as $k => $row ) {
       $keyDate = substr($row['log_civicrm_entity_log_date'], 0, strlen($row['log_civicrm_entity_log_date']) - 3);
