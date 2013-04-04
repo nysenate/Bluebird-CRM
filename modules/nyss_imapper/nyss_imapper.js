@@ -1302,9 +1302,9 @@ function buildActivitiesList() {
 
         match_sort = 'ProcessError';
         if(value.matcher){
-          var match_string = (value.matcher != 1) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
-          var match_short = (value.matcher != 1) ? "M" : "A" ;
-          match_sort = (value.matcher != 1) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher : "Automatically Matched" ;
+          var match_short = (value.matcher != 0) ? "M" : "A" ;
+          match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
         messagesHtml +='</td>';
