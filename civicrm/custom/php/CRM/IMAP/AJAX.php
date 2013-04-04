@@ -593,9 +593,12 @@ class CRM_IMAP_AJAX {
                   $result = civicrm_api( 'email','create',$params );
               }
 
+            $aActivityType = CRM_Core_PseudoConstant::activityType();
+            $activityType = array_search('Inbound Email', $aActivityType);
+
             // Submit the activity information and assign it to the right user
             $params = array(
-                'activity_type_id' => 12,
+                'activity_type_id' => $activityType,
                 'source_contact_id' => $forwarderId,
                 'assignee_contact_id' => $forwarderId,
                 'target_contact_id' => $contactId,
