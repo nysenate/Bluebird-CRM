@@ -694,14 +694,14 @@ class CRM_IMAP_AJAX {
 
 
                 // Move the message to the archive folder!
-                self::setupImap();
-                $imapMsgId =  $output['message_id'];
-                $imapAcctId =  $output['imap_id'];
-                $imap = new CRM_Utils_IMAP(self::$server,
-                                  self::$imap_accounts[$imapAcctId]['user'],
-                                  self::$imap_accounts[$imapAcctId]['pass']);
-                $status = $imap->movemsg_uid($imapMsgId, 'Archive');
-                imap_close($imap->conn());
+                // self::setupImap();
+                // $imapMsgId =  $output['message_id'];
+                // $imapAcctId =  $output['imap_id'];
+                // $imap = new CRM_Utils_IMAP(self::$server,
+                //                   self::$imap_accounts[$imapAcctId]['user'],
+                //                   self::$imap_accounts[$imapAcctId]['pass']);
+                // $status = $imap->movemsg_uid($imapMsgId, 'Archive');
+                // imap_close($imap->conn());
 
                 echo json_encode($returnCode);
               }
