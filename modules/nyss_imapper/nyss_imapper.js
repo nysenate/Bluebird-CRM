@@ -153,8 +153,8 @@ cj(document).ready(function(){
           }
         });
         var description = cj('#description').val();
-        browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
-        id = cj('#id').val();
+        var browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
+        var id = cj('#id').val();
         cj( this ).dialog( "close" );
         cj.ajax({
           url: '/civicrm/imap/ajax/fileBug',
