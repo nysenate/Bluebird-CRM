@@ -1038,6 +1038,7 @@ class CRM_IMAP_AJAX {
     public static function reassignActivity() {
       require_once 'api/api.php';
       $id = self::get('id');
+      $debug = self::get('debug');
 
       $output = self::unifiedMessageInfo($id);
       $contact = $output['matched_to'];
@@ -1053,6 +1054,20 @@ class CRM_IMAP_AJAX {
       $email = $changeData['values'][$change]['email'];
       $tagid = self::getInboxPollingTagId();
 
+      if ($debug){
+        echo "<h1>inputs</h1>";
+        var_dump($contact);
+        var_dump($activityId);
+        echo "<h1>Contact Info</h1>";
+        var_dump($change);
+        var_dump($changeName);
+        var_dump($firstName);
+        var_dump($LastName);
+        var_dump($contactType);
+        var_dump($email);
+        var_dump($tagid);
+      }
+
       // we need to check to see if the activity is still assigned to the same contact
       // if not, kill it
 
@@ -1066,7 +1081,6 @@ EOQ;
       if($row = mysql_fetch_assoc($check_result)) {
         $check = $row['COUNT(id)'];
       }
-
       if($check != '1'){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
         echo json_encode($returnCode);
@@ -1076,7 +1090,7 @@ EOQ;
       $Update = <<<EOQ
 UPDATE `civicrm_activity_target`
 SET  `target_contact_id`= $change
-WHERE `id` =  $activityId
+WHERE `activity_id` =  $activityId
 EOQ;
 
       // change the row
