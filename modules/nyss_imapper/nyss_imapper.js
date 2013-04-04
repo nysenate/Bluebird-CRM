@@ -173,7 +173,7 @@ cj(document).ready(function(){
       Cancel: function() {
         cj( this ).dialog( "close" );
       }
-    },
+    }
   });
 
 
@@ -209,7 +209,7 @@ cj(document).ready(function(){
               cj('#imapper-contacts-list').html(contacts.message);
             }else{
               cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
-              buildContactList();
+              buildContactList(0);
             }
           }
         }
@@ -249,7 +249,7 @@ cj(document).ready(function(){
         Cancel: function() {
           cj( this ).dialog( "close" );
         }
-      },
+      }
     });
     cj("#delete-confirm").dialog('open');
     return false;
@@ -1016,7 +1016,7 @@ function makeListSortable(){
     'aTargets': [ 1 ],
     "bPaginate": false,
     "bAutoWidth": false,
-    "bInfo": false,
+    "bInfo": false
   });
   cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
@@ -1333,41 +1333,37 @@ function buildActivitiesList() {
 }
 
 
-function buildContactList() {
+function buildContactList(loop) {
   var contactsHtml = '';
   html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
   if(contacts.length < 1){
     html += "(No Matches)";
-  }else if(contacts.length == 1){
-    html += "(Should have auto Matched)";
-  }else if(contacts.length > 1){
-    html += "(MultiMatch)";
   }
   cj('.search_info').html(html);
-  // cj.each(contacts, function(key, value) {
 
-    for (var i = 0; i < contacts.length; i++) {
-      // calculate the aprox age
-      if(contacts[i].birth_date){
-        var date = new Date();
-        var year  = date.getFullYear();
-        var birth_year = contacts[i].birth_date.substring(0,4);
-        var age = year - birth_year;
-      }
-      contactsHtml += '<div class="imapper-contact-box" data-id="'+contacts[i].id+'">';
-      contactsHtml += '<div class="imapper-address-select-box">';
-      contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+contacts[i].id+'" />';
-      contactsHtml += '</div>';
-      contactsHtml += '<div class="imapper-address-box">';
-      if(contacts[i].display_name){ contactsHtml += contacts[i].display_name + '<br/>'; };
-      if(contacts[i].birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+contacts[i].birth_date + '<br/>';}
-      if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
-      if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
-      if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
-      if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
-      contactsHtml += '</div></div>';
-      contactsHtml += '<div class="clear"></div>';
+  for (var i = loop; i < contacts.length && i < loop+100; i++) {
+    // calculate the aprox age
+    if(contacts[i].birth_date){
+      var date = new Date();
+      var year  = date.getFullYear();
+      var birth_year = contacts[i].birth_date.substring(0,4);
+      var age = year - birth_year;
     }
+    contactsHtml += '<div class="imapper-contact-box" data-id="'+contacts[i].id+'">';
+    contactsHtml += '<div class="imapper-address-select-box">';
+    contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+contacts[i].id+'" />';
+    contactsHtml += '</div>';
+    contactsHtml += '<div class="imapper-address-box">';
+    if(contacts[i].display_name){ contactsHtml += contacts[i].display_name + '<br/>'; };
+    if(contacts[i].birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+contacts[i].birth_date + '<br/>';}
+    if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
+    if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
+    if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
+    if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
+    contactsHtml += '</div></div>';
+    contactsHtml += '<div class="clear"></div>';
+  }
+  contactsHtml += '<span class="seeMore" onclick="buildContactList('+(loop+100)+');">see more</span>';
 
   cj('#imapper-contacts-list').append(contactsHtml);
 
