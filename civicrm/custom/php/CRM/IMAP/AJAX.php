@@ -301,35 +301,24 @@ class CRM_IMAP_AJAX {
                                     self::$imap_accounts[$imap_id]['pass']);
 
         // Delete the message with the specified UID
-        $status = $imap->deletemsg_uid($message_id);
-        if($status == true){
-          $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
-          $UPDATEquery = "UPDATE `nyss_inbox_messages`
-          SET  `status`= 9, `matcher` = $userId
-          WHERE `id` =  {$id}";
-          $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-        }else{
-          $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Could not Delete Message');
-          $UPDATEquery = "UPDATE `nyss_inbox_messages`
-          SET  `status`= 8, `matcher` = $userId
-          WHERE `id` =  {$id}";
-          $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-        }
+        $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
+        $UPDATEquery = "UPDATE `nyss_inbox_messages`
+        SET  `status`= 9, `matcher` = $userId
+        WHERE `id` =  {$id}";
+        $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
         echo json_encode($returnCode);
         CRM_Utils_System::civiExit();
     }
 
-/* searchContacts
+    /* searchContacts
      * Paramters: None.
      * Returns: None.
      * This function will grab the inputs from the GET variable and
      * do a search for contacts and return them as a JSON object.
-     * Only returns Records with Primary emails & addresse (so no dupes)
+     * Only returns Records with Primary emails & address (so no dupes)
      */
-    public static function searchContacts() {
+     public static function searchContacts() {
         $start = microtime(true);
         $s = self::get('s');
         $debug = self::get('debug');
@@ -433,6 +422,7 @@ class CRM_IMAP_AJAX {
         mysql_close(self::$db);
         CRM_Utils_System::civiExit();
     }
+
 
 
     /* assignMessage()
@@ -1245,6 +1235,7 @@ EOQ;
       // _Get vars
       $messageId =  self::get('id');
       $browser =  self::get('browser');
+      $description =  self::get('description');
 
       // var_dump($apiKey);
       // var_dump($messageId);
@@ -1269,22 +1260,22 @@ EOQ;
         $debugFormatted .= $key.": ".$value.";\n";
       }
       // var_dump($debugFormatted);
-      $debugFinal = "Full message:\n".$debugFormatted."\n\nBrowser: ".$browser.";\nContactName: ".$ContactName.";\n url: ".$url;
+      $debugFinal = "Full message:\n".$debugFormatted."\n\nBrowser: ".$browser.";\nContactName: ".$ContactName.";\n url: ".$url."\n\nUser Submitted Description:\n".$description;
+
+
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
       $_redmine = new redmine($config);
-      // $projects = $_redmine->getProjects();
-      // var_dump($projects);
 
       $project_id = 62; // blue bird project id
       $category_id = 40; // inbox polling 40
       $assignmentUsernames = 184; // me 184 // dean 14 // jason 22 // scott 29
-      $subject = "Problem with message #".$messageId;
+      $subject = "Automated API: Problem with message #".$messageId;
 
-      // addIssue($subject, $description, $project_id, $category_id = 1, $assignmentUsernames = false, $due_date = false, $priority_id = 4) {
       $addedIssueDetails = $_redmine->addIssue($subject, $debugFinal, $project_id, $category_id, $assignmentUsernames);
       // var_dump($addedIssueDetails);
-      // $addIssueID = (int)$addedIssueDetails->id;
+      // var_dump($addedIssueDetails);
+      $addIssueID = (int)$addedIssueDetails->id;
       // var_dump($addIssueID);
 
       CRM_Utils_System::civiExit();

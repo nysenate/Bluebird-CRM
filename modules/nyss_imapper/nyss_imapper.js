@@ -152,6 +152,7 @@ cj(document).ready(function(){
             browsertype = "Mozilla";
           }
         });
+        var description = cj('#description').val();
         browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
         id = cj('#id').val();
         cj( this ).dialog( "close" );
@@ -160,6 +161,7 @@ cj(document).ready(function(){
           data: {
             browser: browser,
             id: id,
+            description: description
           },
           success: function(data,status) {
             if(data != null || data != ''){
@@ -1338,28 +1340,31 @@ function buildContactList() {
     html += "(MultiMatch)";
   }
   cj('.search_info').html(html);
-  cj.each(contacts, function(key, value) {
-    // calculate the aprox age
-    if(value.birth_date){
-      var date = new Date();
-      var year  = date.getFullYear();
-      var birth_year = value.birth_date.substring(0,4);
-      var age = year - birth_year;
+  // cj.each(contacts, function(key, value) {
+
+    for (var i = 0; i < contacts.length; i++) {
+      // calculate the aprox age
+      if(contacts[i].birth_date){
+        var date = new Date();
+        var year  = date.getFullYear();
+        var birth_year = contacts[i].birth_date.substring(0,4);
+        var age = year - birth_year;
+      }
+      contactsHtml += '<div class="imapper-contact-box" data-id="'+contacts[i].id+'">';
+      contactsHtml += '<div class="imapper-address-select-box">';
+      contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+contacts[i].id+'" />';
+      contactsHtml += '</div>';
+      contactsHtml += '<div class="imapper-address-box">';
+      if(contacts[i].display_name){ contactsHtml += contacts[i].display_name + '<br/>'; };
+      if(contacts[i].birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+contacts[i].birth_date + '<br/>';}
+      if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
+      if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
+      if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
+      if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
+      contactsHtml += '</div></div>';
+      contactsHtml += '<div class="clear"></div>';
     }
-    contactsHtml += '<div class="imapper-contact-box" data-id="'+value.id+'">';
-    contactsHtml += '<div class="imapper-address-select-box">';
-    contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.id+'" />';
-    contactsHtml += '</div>';
-    contactsHtml += '<div class="imapper-address-box">';
-    if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
-    if(value.birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br/>';}
-    if(value.email){ contactsHtml += value.email + '<br/>'; }
-    if(value.phone){ contactsHtml += value.phone + '<br/>'; }
-    if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
-    if(value.city){ contactsHtml += value.city + ', NY ' + value.postal_code + '<br/>'; }
-    contactsHtml += '</div></div>';
-    contactsHtml += '<div class="clear"></div>';
-  });
+
   cj('#imapper-contacts-list').append(contactsHtml);
 
 }
