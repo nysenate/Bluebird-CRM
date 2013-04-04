@@ -109,10 +109,10 @@ var BBTree = {
 			BBTree.removeIndicator(messageBox);
 		});
 		messageBox.append(BBTree.actionInfo.last.description);
-		if(code.more.length > 2)
-		{
-			messageBox.append('<div title="See More Information" class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
-		}
+		// if(code.more.length > 2)
+		// {
+		// 	messageBox.append('<div title="See More Information" class="seeMore item-'+ totLength +'">More</div><div class="moreHidden item-'+ totLength +'">'+code.more+'</div>');
+		// }
 		cj('.seeMore.item-'+ totLength, messageBox).click(function() {
 			if(cj(this).hasClass('open'))
 			{
@@ -158,7 +158,7 @@ var BBTree = {
 	},
 	actionInfo: {
 		timeoutLength: {
-			success: 10000,
+			success: 4000,
 			warning: 30000,
 			error: 1000000,
 			notice: 2000
@@ -323,7 +323,7 @@ var BBTree = {
 				}
 				else { //would LOVE to be able to get contact name here...
 					actionData.description += 'Tag '+obj.tagName+' failed to be updated';
-					if(data[3] == 'DB Error: already exists')
+					if(message[3] == 'DB Error: already exists')
 					{
 						actionData.description += ' because tag '+obj.tagName+' already exists';
 					}
@@ -366,11 +366,17 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added.';
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added';
+					if(message[3] == 'DB Error: already exists')
+					{
+						actionData.description += ' because tag <span>'+obj.tagName+'</span> already exists';
+					}
+					actionData.description += '.';
 				}	
 				break;
 			default: actionData.description	+= 'No defined message.';
 		}
+		//giving actionData.more a length of 0 will shut off the 'more' link, because it triggers w/lenght of 2
 		BBTree.setLastAction(actionData);
 		BBTree.addIndicator(actionData);
 	}
@@ -1319,32 +1325,38 @@ var BBTreeModal = {
 					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
 					tagUpdate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
-					cj.ajax({
-						url: '/civicrm/ajax/tag/update',
-						data: {
-							name: tagUpdate.tagName,
-							description: tagUpdate.tagDescription,
-							id: tagUpdate.parentId,
-							is_reserved: tagUpdate.isReserved,
-							call_uri: window.location.href	
-						},
-						dataType: 'json',
-						success: function(data, status, XMLHttpRequest) {
-							if(data.code != 1)
-							{
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-								BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+					if(tagUpdate.tagName.length > 0)
+					{
+						cj.ajax({
+							url: '/civicrm/ajax/tag/update',
+							data: {
+								name: tagUpdate.tagName,
+								description: tagUpdate.tagDescription,
+								id: tagUpdate.parentId,
+								is_reserved: tagUpdate.isReserved,
+								call_uri: window.location.href	
+							},
+							dataType: 'json',
+							success: function(data, status, XMLHttpRequest) {
+								if(data.code != 1)
+								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['updat',0,tagUpdate, data.message]);
+								}
+								else
+								{
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
+									BBTree.reportAction(['updat',1,tagUpdate, data.message]);
+									BBTreeModal.updateTag.updateInline(data.message);
+								}
 							}
-							else
-							{
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-								BBTree.reportAction(['updat',1,tagUpdate, data.message]);
-								BBTreeModal.updateTag.updateInline(data.message);
-							}
-						}
-					});
+						});
+					} else {
+						alert("Tag must have a valid name.");
+						modalLoadingGif('remove');
+					}
 				}
 			},	
 			{
@@ -1508,31 +1520,37 @@ var BBTreeModal = {
 						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
-						cj.ajax({
-							url: '/civicrm/ajax/tag/create',
-							data: {
-								name: tagCreate.tagName,
-								description: tagCreate.tagDescription,
-								parent_id: tagCreate.parentId,
-								is_reserved: tagCreate.isReserved,
-								call_uri: window.location.href	
-							},
-							dataType: 'json',
-							success: function(data, status, XMLHttpRequest) {
-								if(data.code != 1)
-								{
-									BBTree.reportAction(['addt',0,tagCreate, data.message]);
-									modalLoadingGif('remove');
+						if(tagCreate.tagName.length > 0 )
+						{
+							cj.ajax({
+								url: '/civicrm/ajax/tag/create',
+								data: {
+									name: tagCreate.tagName,
+									description: tagCreate.tagDescription,
+									parent_id: tagCreate.parentId,
+									is_reserved: tagCreate.isReserved,
+									call_uri: window.location.href	
+								},
+								dataType: 'json',
+								success: function(data, status, XMLHttpRequest) {
+									if(data.code != 1)
+									{
+										BBTree.reportAction(['addt',0,tagCreate, data.message]);
+										modalLoadingGif('remove');
+									}
+									else
+									{
+										BBTreeModal.addTag.createAddInline(tagCreate, data.message);
+										BBTree.reportAction(['addt',1,tagCreate, data.message]);
+									}
+									cj('#BBDialog').dialog('close');
+									cj('#BBDialog').dialog('destroy');
 								}
-								else
-								{
-									BBTreeModal.addTag.createAddInline(tagCreate, data.message);
-									BBTree.reportAction(['addt',1,tagCreate, data.message]);
-								}
-								cj('#BBDialog').dialog('close');
-								cj('#BBDialog').dialog('destroy');
-							}
-						});
+							});
+						} else {
+							alert("Tag must have a valid name.");
+							modalLoadingGif('remove');
+						}
 					}
 				},
 				{
@@ -1584,7 +1602,7 @@ var BBTreeModal = {
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();
 			}
-			if(tdata.treeParent == 296)
+			if(tdata.treeParent == 296 || (tdata.parentId == 296 && typeof tdata.treeParent === 'undefined'))
 			{
 				var tlvl = parseFloat(BBTreeModal.tlvl);
 				var toAddDT = '<dt class="lv-1 ';

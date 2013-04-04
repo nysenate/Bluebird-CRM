@@ -21,7 +21,7 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
+			<input type="button" class="multi_delete" id="" value="Delete Selected" name="delete">
 		</div>
 	</div>
 	<div id="find-match-popup" title="Loading Data" style="display:none;">
@@ -133,10 +133,10 @@
 	<div id="no_find_match" title="This Message was already matched" style="display:none;">
 		<p> We will automatically assign this message in the next 5 mins.</p>
 	</div>
-	<div id="matchCheck-popup" title="Checking Other Emails">
+	<div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
 		<p> Currently Checking for other emails that match this address.</p>
 	</div>
-	<div id="fileBug-popup" title="We're here to help">
+	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
 		<p>If you need help with this message, Please report a problem and the support staff will assist you.</p>
 	</div>
 

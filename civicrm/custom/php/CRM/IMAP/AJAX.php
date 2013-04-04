@@ -254,8 +254,6 @@ class CRM_IMAP_AJAX {
 
     if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; };
 
-    $yearsago = floor((time() - strtotime($date_string_short))/86400);
-
     // check if the message is from last year
     if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
       $formatted = date("M d, Y", strtotime($date_string_short));
@@ -267,10 +265,18 @@ class CRM_IMAP_AJAX {
         $formatted = date("M d h:i A", strtotime($date_string_short));
       }
     }
-    return array('date_debug'=>$date_string_short,
-              'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
-              'u'=>date("U", strtotime($date_string_short)),
-              'short'=>$formatted);
+    if($formatted == 'Nov 30, -0001' || $date_string_short == 'Nov 30, -0001' ){
+      return array('date_debug'=>$date_string_short,
+        'long'=> 'Couldn\'t find date in '.$date_string_short,
+        'u'=>date("U"),
+        'short'=>'No Date Found');
+    }else{
+      return array('date_debug'=>$date_string_short,
+        'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
+        'u'=>date("U", strtotime($date_string_short)),
+        'short'=>$formatted);
+    }
+
     }
 
     /* deleteMessage()
@@ -316,7 +322,7 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
-    /* searchContacts
+/* searchContacts
      * Paramters: None.
      * Returns: None.
      * This function will grab the inputs from the GET variable and
@@ -428,6 +434,7 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+
     /* assignMessage()
      * Parameters: None.
      * Returns: None.
@@ -497,7 +504,7 @@ class CRM_IMAP_AJAX {
   $query = "
   SELECT e.contact_id
   FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-  WHERE g.title='Authorized Forwarders'
+  WHERE g.name='Authorized_Forwarders'
     AND e.email='".$forwarder."'
     AND g.id=gc.group_id
     AND gc.status='Added'
@@ -626,7 +633,7 @@ class CRM_IMAP_AJAX {
                 $key =  $output['key'];
                 $activity_id =$activity['id'];
 
-                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key);
+                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
                 $UPDATEquery = "UPDATE `nyss_inbox_messages`
                 SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
@@ -1162,11 +1169,53 @@ EOQ;
       }
     }
 
+    public static function reports() {
+      $UnprocessedQuery = " SELECT *
+      FROM `nyss_inbox_messages`
+      LIMIT 0 , 100000";
+
+      $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
+      $Unprocessed = array();
+      $Matched = array();
+      $Cleared = array();
+      $Deleted = array();
+      $Errors = array();
+
+      while($row = mysql_fetch_assoc($UnprocessedResult)) {
+        $status = $row['status'];
+                switch ($status) {
+          case '0':
+            $Unprocessed[] = $row;
+            break;
+          case '1':
+            $Matched[] = $row;
+            break;
+          case '7':
+            $Cleared[] = $row;
+            break;
+          case '8':
+            $Errors[] = $row;
+            break;
+          case '9':
+            $Deleted[] = $row;
+            break;
+        }
+      }
+      $returnCode = array('code'      =>  'SUCCESS',
+                          'Unprocessed' =>  $Unprocessed,
+                          'Matched' =>  $Matched,
+                          'Cleared' =>  $Cleared,
+                          'Errors' =>  $Errors,
+                          'Deleted' =>  $Deleted
+                          );
+          echo json_encode($returnCode);
+      CRM_Utils_System::civiExit();
+    }
+
     public static function fileBug() {
       require_once 'api/api.php';
       require_once 'CRM/Utils/Redmine.php';
       // load from config
-      require_once dirname(__FILE__).'/../../../../../civicrm/scripts/bluebird_config.php';
       $bbconfig = get_bluebird_instance_config();
       $apiKey = $bbconfig['redmine.api.key'];
       $imapAccounts = explode(',', $bbconfig['imap.accounts']);
@@ -1192,6 +1241,7 @@ EOQ;
       FROM `nyss_inbox_messages`
       WHERE `id` = $messageId
       LIMIT 1";
+
       $debugResult = mysql_query($debugQuery, self::db());
       $debugOutput = array();
       while($row = mysql_fetch_assoc($debugResult)) {
@@ -1199,11 +1249,10 @@ EOQ;
       }
       $debugFormatted ='';
       foreach ($debugOutput as $key => $value) {
-        $debugFormatted .=$key.": ".$value.";\n";
+        $debugFormatted .= $key.": ".$value.";\n";
       }
-
-      $debugFinal = $debugFormatted.";\n browser: ".$browser.";\n ContactName: ".$ContactName.";\n url: ".$url;
-
+      // var_dump($debugFormatted);
+      $debugFinal = "Full message:\n".$debugFormatted."\n\nBrowser: ".$browser.";\nContactName: ".$ContactName.";\n url: ".$url;
       $config['url'] = "http://dev.nysenate.gov/";
       $config['apikey'] = $apiKey;
       $_redmine = new redmine($config);

@@ -17,14 +17,16 @@ class parseMessageBody {
       $format = 'plain';
     }
 
-    // $tempbody was setup for finding matches
+    $body = quoted_printable_decode($body);
+    $body = preg_replace("/\\t/i", " ", $body);
+
     if($format =='plain'){
       $tempbody = preg_replace("/>|</i", "", $body);
     }else{
       $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $body);
-      $tempbody = preg_replace("/\\r|\\n/i", "\r\n<br>\n", $body);
-      $tempbody = self::strip_HTML_tags($body);
+      $tempbody = preg_replace("/\\r|\\n|\\t/i", "\r\n<br>\n", $tempbody);
     }
+    $tempbody = self::strip_HTML_tags($tempbody);
 
     // searching message for tree of embedded headers
     $bodyArray = explode("\r\n", $tempbody);
@@ -34,38 +36,38 @@ class parseMessageBody {
       $line = trim($line);
       if($line != ''){
         $line = preg_replace("/mailto/i", "", $line); // this matched /to/
+        $line = preg_replace("/Reply To|reply to|Replyto/i", "", $line); // this matched /to/
+
         if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)){
           $header = strtolower($matches[1]);
           $value = trim($matches[2]);
-          $parseDate= date("Y-m-d H:i:s", strtotime($value));
+
+          $dateValue = preg_replace("/ at |,/i", "", $value); // Remove errors caused by at
+          $parseDate= date("Y-m-d H:i:s", strtotime($dateValue));
+
           switch ($header) {
             case 'subject':
-                $m[$count]['Subject'] = trim($value);
+                $m['Subject'][] = trim($value);
               break;
             case 'from':
                 $parseEmail= self::cleanEmail($value);
-                $m[$count]['From'] = $parseEmail;
+                $m['From'][] = $parseEmail;
               break;
             case 'to':
               // $m[$count]['To'] = $value;
             break;
             case 'sent':
             case 'date':
-                $m[$count]['Date'] = $parseDate;
+                $m['Date'][] = $parseDate;
               break;
             case 'cc':
-                $m[$count]['Cc'] = trim($value);
+                $m['Cc'][] = trim($value);
               break;
             case 'bcc':
-                $m[$count]['Bcc'] = trim($value);
+                $m['Bcc'][] = trim($value);
               break;
             default:
               break;
-          }
-        }else{
-          // only count up if past value was a match, and this isn't
-          if(is_array($m[$count])){
-            $count++;
           }
         }
       }
@@ -90,22 +92,21 @@ class parseMessageBody {
     //   }
     // }
 
-    $fwdDate = $m[0]['Date'];
-    $fwdSubject = $m[0]['Subject'];
-    $fwdName = $m[0]['From']['name'];
-    $fwdEmail = $m[0]['From']['email'];
-    $fwdEmailLookup = $m[0]['From']['lookupType'];
+    $fwdDate = $m['Date'][0];
+    $fwdSubject = $m['Subject'][0];
+    $fwdName = $m['From'][0]['name'];
+    $fwdEmail = $m['From'][0]['email'];
+    $fwdEmailLookup = $m['From'][0]['lookupType'];
     $fwdSubject = trim(preg_replace("/(\(|\))/i", "", $fwdSubject));
-
 
     // contains info about the forwarded message in the email body
     $forwarded = array(
-        'fwd_date' => $fwdDate,
-        'fwd_subject' => $fwdSubject,
-        'fwd_name' => $fwdName,
-        'fwd_email' => $fwdEmail,
-        'fwd_lookup' => $fwdEmailLookup,
-        'fwd_mentions' =>$mentions,
+        'fwd_date' => mysql_real_escape_string($fwdDate),
+        'fwd_subject' => mysql_real_escape_string($fwdSubject),
+        'fwd_name' => mysql_real_escape_string($fwdName),
+        'fwd_email' => mysql_real_escape_string($fwdEmail),
+        'fwd_lookup' => mysql_real_escape_string($fwdEmailLookup),
+        'fwd_mentions' =>mysql_real_escape_string($mentions),
     );
 
 
@@ -154,6 +155,8 @@ class parseMessageBody {
 
     // if o= is appended to the end of the email address remove it
     $string = preg_replace('/\/senate@senate/i', '/senate', $string);
+    $string = preg_replace('/\/CENTER\/senate/i', '/senate', $string);
+
     $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
     $string = preg_replace('/"|\'/i', '', $string);
     $string = preg_replace('/\[|\]/i', '', $string);

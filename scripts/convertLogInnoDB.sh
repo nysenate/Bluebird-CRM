@@ -8,6 +8,7 @@
 # Author: Brian Shaughnessy
 # Organization: New York State Senate
 # Date: 2013-04-01
+# Revised: 2013-04-02
 #
 
 prog=`basename $0`
@@ -24,21 +25,15 @@ instance="$1"
 
 . $script_dir/defaults.sh
 
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
-civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
-cdb="$civi_db_prefix$db_basename"
 ldb="$log_db_prefix$db_basename"
 
 sql="
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = '$ldb'
-  AND ( engine = 'MyISAM' OR table_name = 'log_civicrm_group' OR table_name = 'log_civicrm_dashboard_contact' );"
+  AND ( engine = 'MyISAM' OR ( engine = 'Archive' AND ( table_name = 'log_civicrm_group' OR table_name = 'log_civicrm_dashboard_contact' ) ) );"
 tbls=`$execSql -c "$sql" -q`
 
 sfx="_tmp"
