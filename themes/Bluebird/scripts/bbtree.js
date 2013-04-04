@@ -294,7 +294,10 @@ var BBTree = {
 					actionData.description += 'Tag <span>'+tagname+'</span> has been merged successfully into <span>'+tagdest+'</span>.';
 				}
 				else { 
-					actionData.description += 'Tag <span>'+tagname+'</span> failed to be merged successfully into <span>'+tagdest+'</span>.';
+					actionData.description += 'Tag <span>'+tagname+'</span> failed to be merged successfully into <span>'+tagdest+'</span>';
+					(message[4] == 'Tag(s) do not exist') 
+						? actionData.description += ' because target no longer exists. <span style="text-decoration:underline; cursor:pointer;" onClick="document.location.reload(true)">Refresh Page Now</span>'
+						: actionData.description += '.';
 					actionData.more += message[4];
 				}	
 				break;
