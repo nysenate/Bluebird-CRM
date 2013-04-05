@@ -1419,7 +1419,7 @@ function shortenString(subject, length){
     var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
     return safe_subject;
     }else{
-      return subject;
+      return '<span>'+subject+'</span>';
     }
   }else{
     return "N/A";
