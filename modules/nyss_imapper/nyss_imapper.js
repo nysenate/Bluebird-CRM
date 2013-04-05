@@ -929,7 +929,7 @@ cj(document).ready(function(){
   // paginated contact search
   cj(".seeMore").live('click', function() {
     var position = cj(this).attr('id');
-    var update = parseInt(position,10)+100;
+    var update = parseInt(position,10)+200;
     console.log(update);
     buildContactList(update);
     cj(this).remove();
@@ -1344,7 +1344,7 @@ function buildContactList(loop) {
   }
   cj('.search_info').html(html);
 
-  for (var i = loop; i < contacts.length && i < loop+100; i++) {
+  for (var i = loop; i < contacts.length && i < loop+200; i++) {
     // calculate the aprox age
     if(contacts[i].birth_date){
       var date = new Date();
@@ -1366,9 +1366,9 @@ function buildContactList(loop) {
     contactsHtml += '</div></div>';
     contactsHtml += '<div class="clear"></div>';
   }
- // contactsHtml += '<span class="seeMore" onclick="buildContactList('+(loop+100)+');">see more</span>';
-  contactsHtml += '<span class="seeMore" id="'+loop+'">see more</span>';
-
+  if (contacts.length > loop+200){
+    contactsHtml += '<span class="seeMore" id="'+loop+'">see more</span>';
+  };
   cj('#imapper-contacts-list').append(contactsHtml);
 
 }
