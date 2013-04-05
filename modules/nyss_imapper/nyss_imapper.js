@@ -926,6 +926,14 @@ cj(document).ready(function(){
     cj( "#clear-confirm" ).dialog('open');
     return false;
   });
+  // paginated contact search
+  cj(".seeMore").live('click', function() {
+    var position = cj(this).attr('id');
+    var update = parseInt(position,10)+100;
+    console.log(update);
+    buildContactList(update);
+    cj(this).remove();
+  });
 
 });
 
@@ -1328,7 +1336,6 @@ function buildActivitiesList() {
   }
 }
 
-
 function buildContactList(loop) {
   var contactsHtml = '';
   html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
@@ -1359,7 +1366,8 @@ function buildContactList(loop) {
     contactsHtml += '</div></div>';
     contactsHtml += '<div class="clear"></div>';
   }
-  contactsHtml += '<span class="seeMore" onclick="buildContactList('+(loop+100)+');">see more</span>';
+ // contactsHtml += '<span class="seeMore" onclick="buildContactList('+(loop+100)+');">see more</span>';
+  contactsHtml += '<span class="seeMore" id="'+loop+'">see more</span>';
 
   cj('#imapper-contacts-list').append(contactsHtml);
 
