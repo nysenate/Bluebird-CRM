@@ -43,10 +43,11 @@
 
 // Error Message Library:
 
-var BBTree = {
-//puts everyting in the BBTree namespace.
+var BBTree = function() {
 
-treeSetting: {
+
+//data structures
+var treeSetting = {
   //each particular tree instance will have it's own 'setting'
   defaultSetting: {
     //page CSS defaults
@@ -92,13 +93,8 @@ treeSetting: {
       }
     }
   }
-},
-//BBTree.currentTree
-//sets the hard information for the current tree
-//the autocomplete list
-//the raw json data, split by tree id, 291, 296, 292
-//and the html
-currentTree: {
+}
+var currentTree = {
   autocomplete: {
     //acTagID[0] = 'tag name'
   },
@@ -110,51 +106,44 @@ currentTree: {
     //291 : '<html>data</html>'
 
   }
-},
-startInstance: function() {
-  this.treeData.getRawJSON();
-  
-},
-configMethods: {
+}
+
+var configMethods = {
   createNew: function() {
 
   },
-  getCallSettings: function() {
-    return BBTree.treeSetting.defaultSetting.call;
-  },
-  getDataSettings: function(instance) {
+  getCallSettings: function(obj,instance) {
     instance = ((typeof instance !== 'undefined') ? instance : 'defaultSetting');
-    return BBTree.treeSetting[instance].data;
+    obj['callSettings'] = {};
+    cj.extend(obj['callSettings'], treeSetting[instance].call);
+    return true;
+  },
+  getDataSettings: function(obj,instance) {
+    instance = ((typeof instance !== 'undefined') ? instance : 'defaultSetting');
+    obj['dataSettings'] = {};
+    cj.extend(obj.dataSettings, treeSetting[instance].data);
+    return true;
+  },
+  removeSettings: function(obj,type,instance) {
+    instance = ((typeof instance !== 'undefined') ? instance : 'defaultSetting');
+    obj[type] = {};
+    return true;
   }
-},
-treeData: {
+
+}
+
+var treeData = {
+  //data
   tagLvl: 0,
   treeTop: null,
   output: '',
-  clearDisplayObj: function() {
-    this.tagLvl = 0;
-    this.treeTop = null;
-    this.output = '';
-    return true;
-  },
-  getCallSettings: function() {
-    this['callSettings'] = {};
-    cj.extend(this.callSettings, BBTree.configMethods.getCallSettings());
-    return true;
-  },
-  getDataSettings: function(instance) {
-    this['dataSettings'] = {};
-    cj.extend(this.dataSettings, BBTree.configMethods.getDataSettings(instance));
-    return true;
-  },
-  removeSettings: function(type) {
-    this[type] = {};
-    return true;
-  },
+
   //pulls just the bare bone tree stucture
   getRawJSON: function(){
     //get: call object
-    this.getCallSettings();
+    configMethods.getCallSettings(this);
+    configMethods.getDataSettings(this);
+    
     cj.ajax({
       url: this.callSettings.ajaxUrl,
       data: {
@@ -165,57 +154,97 @@ treeData: {
       dataType: 'json',
       success: function(data, status, XMLHttpRequest) {
         //starts the parsing methods
-        BBTree.treeData.parseRawJSON(data.message);
+        treeData.parseRawJSON(data.message);
       } 
     });
   },//getRawJSON
   parseRawJSON: function(data) {
-    //get: data object
-    this.getDataSettings();
-    var dataSettings = this.dataSettings;
     //add new data properties
     var rawJSON = {}; 
     var parsedHTML = {};
+    var that = this;
 
     //parse each allowed data type set
     cj.each(data, function(i,tID){
-      if(cj.inArray(parseFloat(tID.id), dataSettings.pullSets)>-1) 
+      if(cj.inArray(parseFloat(tID.id), treeData.dataSettings.pullSets)>-1) 
       {
         rawJSON[tID.id] = {'name':tID.name, 'children':tID.children};
-        cj.extend(BBTree.currentTree.rawData, rawJSON);
-        BBTree.treeData.writeTreeInit(tID);
+        cj.extend(currentTree.rawData, rawJSON);
+        that.writeTreeInit(tID.id);
         //callTree.defaultSettings.displaySettings.currentTree = tID.id;
-        //callTree.parseTreeAjax(tID, displayObj);
-        
+        that.parseTreeAjax(tID);
       }
     });
   }, //parseRawJSON()
-  writeTreeInit: function(tID){
+  writeTreeInit: function(treeToParseID){
+    treeData.clearDisplayObj();
     this.tagLvl = 0;
-    this.treeTop = tID.id;
-    var tagLabel = BBTree.BBTagLabel.set(tID.id);
-    //writes the identifying tag label
-    this.output += '<dl class="lv-'+this.tagLvl+'" id="'+ tagLabel.addDD+'"">';
-    this.output += '<dt class="lv-'+this.tagLvl+' issueCode-'+tID.id;
+    this.treeTop = treeToParseID;
+    var treeName = currentTree.rawData[treeToParseID].name;
+    var treeChildren = currentTree.rawData[treeToParseID].children;
+    var treeLabel = BBTagLabel.set(treeToParseID);
 
-    // if(cj.inArray(parseFloat(tID.id), callTree.currentSettings.displaySettings.pullSets)>-1) //only writes the 
-    // {
-    //   if(callTree.currentSettings.callSettings.ajaxSettings.entity_id != 0)
-    //   {
-    //     displayObj.output += isItemMarked(tID.is_checked,'checked');
-    //   }
-    //   displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
-    // }
-    this.output += '" id="'+tagLabel.add+'" data-description="'+tID.description+'" ';
-    this.output += 'data-parent="'+tID.id+'" data-tagid="'+tID.id+'">';
-    // displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
-    // displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
-    // displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
-    // displayObj.tLvl++; //start the tree at lv-1
-    // return displayObj;
-  } //writeTreeInit()
-}, // obj treeData
-//redesigning what tags look like & do
+    //writes the identifying tag label
+    this.output += '<dl class="lv-'+this.tagLvl+'" id="'+ treeLabel.addDD+'"">';
+      this.output += '<dt class="lv-'+this.tagLvl+' issueCode-'+this.treeTop;
+      this.output += '" id="'+treeLabel.add+'"" ';
+      this.output += '" data-tagid="'+this.treeTop+'">';
+        this.output += '<div class="tag"><span class="name">'+treeName+'</span></div>'; // <!-- /tag name -->
+      this.output += '</dt>'; // <!-- /.dt -->
+      //if there's children, open up a new tag holder.
+      if(treeChildren.length > 0 ) {
+        this.output += '<dl class="lv-'+this.tagLvl+' '+treeLabel+'" id=""';
+        this.tagLvl++; //start the tree at lv-1
+      } else {
+        //throw error of no children to display.
+      }
+  }, //writeTreeInit()
+  parseTreeAjax: function(tID){
+    console.log(currentTree.rawData[this.treeTop].children);
+    var treeData = this.parseJsonInsides(currentTree.rawData[this.treeTop]);
+    currentTree.html[tID.id] = {'name':tID.name, 'data':treeData};
+    console.log(currentTree.html);
+  },
+  parseJsonInsides: function(tID){
+    var that = this;
+    cj.each(tID.children, function(i, cID){//runs all first level
+      that.writeTagLabel(cID, tID.id);
+      if(cID.children.length > 0)
+      {
+        callTree.writeJsonTag(cID);
+      }
+    });
+    return true;
+  },
+  writeJsonTag: function(tID){//in second level & beyond
+    var that = this;
+    this.openChildJsonTag(tID, displayObj);
+    cj.each(tID.children, function(i, cID){
+      that.writeTagLabel(cID, tID.id);
+      if(cID.children.length > 0)
+      {
+        that.writeJsonTag(cID);
+      }
+    });
+    this.closeChildJsonTag(tID);
+  },
+  writeTagLabel: function(cID, parentTag){
+    if(typeof parentTag === 'undefined')
+    {
+      parentTag = this.treeTop;
+    }
+    var tagLabel = BBTagLabel.set(cID.id);
+    this.output += '<dt class="lv-'+this.tagLvl+' ';
+      this.output += isItemMarked(cID.is_reserved,'isReserved')+'" ';
+      this.output += 'id="'+tagLabel.add+'" data-description="'+cID.description+'" ';
+      this.output += 'tLvl="'+this.tagLvl+'" data-tagid="'+cID.id+'" ';
+      this.output += 'data-parentid="'+parentTag+' data-tagname="'+cID.name+'">';
+      this.output += '<div class="ddControl '+ isItemChildless(cID.children.length) + '"></div>';
+      this.output += '<div class="tag"><span class="name">'+cID.name+'</span></div>';
+      this.output += this.addEntityCount(cID.entity_count);
+      this.output += this.addControlBox(tagLabel, this.treeTop, isItemMarked(cID.is_checked,'checked'));
+    this.output += '</dt>'; // <!-- /dt -->
+    //redesigning what tags look like & do
 // <dl class="lv-1" id="tagDropdown_1717">
 //   <dt class="lv-2 " id="tagLabel_1723" data-description="null" data-tagid="1723" data-parentid="1717" data-tagname="ababa">
 //     <div class="ddControl treeButton"></div>
@@ -233,8 +262,92 @@ treeData: {
 //   </dt>
 // </dl>
 
-//returns array of possible tagLabels
-BBTagLabel: {
+    //'/*+isItemChildless(cID.children.length)+*/
+  },
+  writeTagContainer: function(tID){
+    var tagLabel = addTagLabel(tID.id);
+    this.output += '<dl class="lv-'+this.tagLvl+'" id="'+tagLabel.add+'">';
+  },
+  openChildJsonTag: function(tID){
+    this.writeTagContainer(tID);
+    this.tagLvl++;
+  },
+  closeChildJsonTag: function(tID){
+    this.tagLvl--;
+    this.output += '</dl>';
+  },
+  //helpers
+  clearDisplayObj: function(treeID) {
+    cj.extend(this.treeDef, {tagLvl: 0,treeTop: null,output: ''});
+    return true;
+  },
+  isItemChildless: function(childLength) {
+    return (childLength > 0) ? 'treeButton' :  '' ;
+  },
+  //add Entity Span
+  addEntityCount: function(count) {
+    (this.callSettings.ajaxSettings.entity_counts != 0) ? 
+      var add = '<span class="entityCount">('+count+')</span>' :
+      var add = '<span class="entityCount" style="display:none">Unknown</span>';
+    return add;
+  },
+  //adds Control Box
+  addControlBox: function(tagLabel,isChecked) { //should break this up 
+    var floatControlBox;
+    if(callTree.currentSettings.displaySettings.buttonType == 'edit')
+    {
+      floatControlBox = '<span class="fCB">';
+      floatControlBox += '<ul>';
+      if(291 == treeTop)
+      {
+        floatControlBox += '<li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="removeTag" title="Remove Tag" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="moveTag" title="Move Tag" do="move" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="updateTag" title="Update Tag" do="update" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="mergeTag" title="Merge Tag" do="merge" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+      }
+      if(296 == treeTop)
+      {
+        floatControlBox += '<li class="removeTag" title="Remove Keyword" do="remove" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="updateTag" title="Update Keyword" do="update"  onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="mergeTag" title="Merge Keyword" do="mergeKW" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+        floatControlBox += '<li class="convertTag" title="Convert Keyword" do="convert" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li>';
+      }
+      floatControlBox += '</span>';
+      
+    }
+    if(callTree.currentSettings.displaySettings.buttonType == 'tagging')
+    {
+      var displayChecked = '';
+      floatControlBox = '<span class="fCB">';
+      floatControlBox += '<ul>';
+      floatControlBox += '<li>';
+      if(isChecked == ' checked'){
+        //NOTE: HAVE TO HAVE name="tag[###]" in order for edit tags to work
+        floatControlBox += '<input type="checkbox" name="tag['+removeTagLabel(tagLabel)+']" class="checkbox checked"  checked onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
+      } else {
+        floatControlBox += '<input type="checkbox" name="tag['+removeTagLabel(tagLabel)+']" class="checkbox" onclick="BBTreeTag.checkRemoveAdd(this, \''+tagLabel+'\')"></input></li></ul>';
+      }
+      floatControlBox += '</span>';
+      if(tagLabel != 'tagLabel_291' && tagLabel != 'tagLabel_296')
+      {
+        return(floatControlBox);
+      } else { 
+        return ''; 
+      }
+    }
+    if((tagLabel == 'tagLabel_291' || tagLabel == 'tagLabel_296') && callTree.currentSettings.displaySettings.buttonType != 'modal')
+    {
+      return '<span class="fCB" ><ul><li class="printTag"  onClick="printTags()"> </li><li class="addTag" title="Add New Tag" do="add" onclick="BBTreeModal.makeModal(this,\''+ tagLabel +'\')"></li></ul></span>'; 
+    } 
+    else 
+    { 
+      return(floatControlBox); 
+    }
+  }
+}
+
+var BBTagLabel = {
   add: function(tagID) {
     return 'tagLabel_' + tagID;
   },
@@ -249,59 +362,51 @@ BBTagLabel: {
   },
   set: function(tagID) {
     var tagLabel = {
-      add: BBTree.BBTagLabel.add(tagID),
-      remove: BBTree.BBTagLabel.remove(tagID),
-      addDD: BBTree.BBTagLabel.addDD(tagID),
-      removeDD: BBTree.BBTagLabel.removeDD(tagID)
+      add: BBTagLabel.add(tagID),
+      remove: BBTagLabel.remove(tagID),
+      addDD: BBTagLabel.addDD(tagID),
+      removeDD: BBTagLabel.removeDD(tagID)
     }
     return tagLabel;
   }
 }
 
 
-
-} //close BBTree
-
-
-// var log = {
-//   tagAction: {
-//     0 : {
-//       action: 'add',
-//       contact: null,
-//       tagId: '1799',
-//       attributes: '',
-//       time: '',
-//       error: false
-//     },
-//     1 : {
-//       action: 'remove',
-//       contact: null,
-//       tagId: '1799',
-//       attributes: '',
-//       time: '',
-//       error: false
-//     },
-//     2 : {
-//       action: 'tag',
-//       contact: 87307,
-//       tagId: '1799',
-//       attributes: null,
-//       time: '',
-//       error: false
-//     },
-//     3 : {
-//       action: 'untag',
-//       contact: 87307,
-//       tagId: '1799',
-//       attributes: null,
-//       time: '',
-//       error: false
-//     }
-//   }
-// }
+//public functions
+return {
+  startInstance: function(){
+    treeData.getRawJSON();
+  }
+}
 
 
 
+
+
+}();
+//marks item as checked or reserved
+function isItemMarked(value, type)
+{
+  if(value == true)
+  {
+    return(type);
+  }
+  else {
+    return '';
+  }
+}
+//if has children, return either arrow or nothing
+function isItemChildless(childLength)
+{
+  if(childLength > 0)
+  {
+    return('treeButton');
+  }
+  else
+  {
+    return '';
+  }
+}
 
 
 
