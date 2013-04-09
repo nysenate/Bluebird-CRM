@@ -220,7 +220,8 @@ CREATE TEMPORARY TABLE
     $this->limit();
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
-ORDER BY entity_log_civireport.log_date DESC {$this->_limit}";
+ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC, log_civicrm_entity_log_action ASC
+{$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
     //NYSS 6111 - hackish temporary solution; see Jira 11798
     $sql = str_replace('entity_log_civireport.id as log_civicrm_entity_altered_contact_id',
@@ -323,11 +324,6 @@ WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
       'log_civicrm_value_attachments_5',
       'log_civicrm_value_contact_details_8',
     );
-
-    //sort so that Insert is preserved when it exists
-    if ( !$count ) {
-      usort($rows, array('CRM_Utils_Sort', 'cmpName'));
-    }
 
     foreach ( $rows as $k => $row ) {
       $keyDate = substr($row['log_civicrm_entity_log_date'], 0, strlen($row['log_civicrm_entity_log_date']) - 3);
