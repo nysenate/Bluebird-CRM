@@ -7,6 +7,9 @@ CKEDITOR.editorConfig = function( config ) {
 	// Define changes to default configuration here.
 	// For the complete reference:
 	// http://docs.ckeditor.com/#!/api/CKEDITOR.config
+
+  //NYSS set skin
+  config.skin = 'moonocolor';
     
   // disable auto spell check
   config.scayt_autoStartup = false;
@@ -47,7 +50,7 @@ CKEDITOR.editorConfig = function( config ) {
 
   // Remove some buttons, provided by the standard plugins, which we don't
   // need to have in the Standard(s) toolbar.
-  config.removeButtons = 'Underline,Subscript,Superscript,Anchor,Table,Styles,Format,Symbols,Strike,About';
+  config.removeButtons = 'Subscript,Superscript,Anchor,Table,Styles,Format,Symbols,Strike,About';
 
   //NYSS old config retained for reference
   /*config.toolbar_Full =
