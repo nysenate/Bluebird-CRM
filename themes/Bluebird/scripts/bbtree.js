@@ -294,7 +294,10 @@ var BBTree = {
 					actionData.description += 'Tag <span>'+tagname+'</span> has been merged successfully into <span>'+tagdest+'</span>.';
 				}
 				else { 
-					actionData.description += 'Tag <span>'+tagname+'</span> failed to be merged successfully into <span>'+tagdest+'</span>.';
+					actionData.description += 'Tag <span>'+tagname+'</span> failed to be merged successfully into <span>'+tagdest+'</span>';
+					(message[4] == 'Tag(s) do not exist') 
+						? actionData.description += ' because target no longer exists. <span style="text-decoration:underline; cursor:pointer;" onClick="document.location.reload(true)">Refresh Page Now</span>'
+						: actionData.description += '.';
 					actionData.more += message[4];
 				}	
 				break;
@@ -1610,7 +1613,13 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="1" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span><span class="fCB">'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
+				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="1"';
+				toAddDT += 'tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'">';
+				toAddDT += '<div class="ddControl"></div>';
+				toAddDT += '<div class="tag"><span class="name">'+data.name+'</span></div>';
+				toAddDT += '<span class="entityCount" style="display:none">Unknown</span>';
+				toAddDT += addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree );
+				toAddDT += '</dt>';
 				cj('dl.tagLabel_296').prepend(toAddDT);
 				callTree.slideDownTree();
 				BBTreeEdit.setTagInfo();

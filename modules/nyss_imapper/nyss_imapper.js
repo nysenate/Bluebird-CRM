@@ -152,14 +152,16 @@ cj(document).ready(function(){
             browsertype = "Mozilla";
           }
         });
-        browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
-        id = cj('#id').val();
+        var description = cj('#description').val();
+        var browser =  browsertype+" v."+(parseInt(cj.browser.version, 10) );
+        var id = cj('#id').val();
         cj( this ).dialog( "close" );
         cj.ajax({
           url: '/civicrm/imap/ajax/fileBug',
           data: {
             browser: browser,
             id: id,
+            description: description
           },
           success: function(data,status) {
             if(data != null || data != ''){
@@ -171,7 +173,7 @@ cj(document).ready(function(){
       Cancel: function() {
         cj( this ).dialog( "close" );
       }
-    },
+    }
   });
 
 
@@ -207,7 +209,7 @@ cj(document).ready(function(){
               cj('#imapper-contacts-list').html(contacts.message);
             }else{
               cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
-              buildContactList();
+              buildContactList(0);
             }
           }
         }
@@ -247,7 +249,7 @@ cj(document).ready(function(){
         Cancel: function() {
           cj( this ).dialog( "close" );
         }
-      },
+      }
     });
     cj("#delete-confirm").dialog('open');
     return false;
@@ -924,6 +926,14 @@ cj(document).ready(function(){
     cj( "#clear-confirm" ).dialog('open');
     return false;
   });
+  // paginated contact search
+  cj(".seeMore").live('click', function() {
+    var position = cj(this).attr('id');
+    var update = parseInt(position,10)+200;
+    console.log(update);
+    buildContactList(update);
+    cj(this).remove();
+  });
 
 });
 
@@ -1010,7 +1020,7 @@ function makeListSortable(){
     'aTargets': [ 1 ],
     "bPaginate": false,
     "bAutoWidth": false,
-    "bInfo": false,
+    "bInfo": false
   });
   cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
@@ -1300,9 +1310,9 @@ function buildActivitiesList() {
 
         match_sort = 'ProcessError';
         if(value.matcher){
-          var match_string = (value.matcher != 1) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
-          var match_short = (value.matcher != 1) ? "M" : "A" ;
-          match_sort = (value.matcher != 1) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher : "Automatically Matched" ;
+          var match_short = (value.matcher != 0) ? "M" : "A" ;
+          match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
         messagesHtml +='</td>';
@@ -1326,40 +1336,39 @@ function buildActivitiesList() {
   }
 }
 
-
-function buildContactList() {
+function buildContactList(loop) {
   var contactsHtml = '';
   html = "<br/><br/><i>Contact Search results:</i><br/><strong>Number of matches: </strong>"+contacts.length+' ';
   if(contacts.length < 1){
     html += "(No Matches)";
-  }else if(contacts.length == 1){
-    html += "(Should have auto Matched)";
-  }else if(contacts.length > 1){
-    html += "(MultiMatch)";
   }
   cj('.search_info').html(html);
-  cj.each(contacts, function(key, value) {
+
+  for (var i = loop; i < contacts.length && i < loop+200; i++) {
     // calculate the aprox age
-    if(value.birth_date){
+    if(contacts[i].birth_date){
       var date = new Date();
       var year  = date.getFullYear();
-      var birth_year = value.birth_date.substring(0,4);
+      var birth_year = contacts[i].birth_date.substring(0,4);
       var age = year - birth_year;
     }
-    contactsHtml += '<div class="imapper-contact-box" data-id="'+value.id+'">';
+    contactsHtml += '<div class="imapper-contact-box" data-id="'+contacts[i].id+'">';
     contactsHtml += '<div class="imapper-address-select-box">';
-    contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+value.id+'" />';
+    contactsHtml += '<input type="checkbox" class="imapper-contact-select-button" name="contact_id" value="'+contacts[i].id+'" />';
     contactsHtml += '</div>';
     contactsHtml += '<div class="imapper-address-box">';
-    if(value.display_name){ contactsHtml += value.display_name + '<br/>'; };
-    if(value.birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+value.birth_date + '<br/>';}
-    if(value.email){ contactsHtml += value.email + '<br/>'; }
-    if(value.phone){ contactsHtml += value.phone + '<br/>'; }
-    if(value.street_address){ contactsHtml += value.street_address + '<br/>'; }
-    if(value.city){ contactsHtml += value.city + ', NY ' + value.postal_code + '<br/>'; }
+    if(contacts[i].display_name){ contactsHtml += contacts[i].display_name + '<br/>'; };
+    if(contacts[i].birth_date){ contactsHtml += '<strong>'+age+'</strong> - '+contacts[i].birth_date + '<br/>';}
+    if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
+    if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
+    if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
+    if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
     contactsHtml += '</div></div>';
     contactsHtml += '<div class="clear"></div>';
-  });
+  }
+  if (contacts.length > loop+200){
+    contactsHtml += '<span class="seeMore" id="'+loop+'">see more</span>';
+  };
   cj('#imapper-contacts-list').append(contactsHtml);
 
 }
@@ -1406,7 +1415,7 @@ function shortenString(subject, length){
     var safe_subject = '<span title="'+subject+'">'+subject.substring(0,length)+"...</span>";
     return safe_subject;
     }else{
-      return subject;
+      return '<span>'+subject+'</span>';
     }
   }else{
     return "N/A";
