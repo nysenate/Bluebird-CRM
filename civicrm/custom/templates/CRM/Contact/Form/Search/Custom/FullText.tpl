@@ -49,7 +49,7 @@
 {/if}
 
 {assign var=table value=$form.table.value.0}
-{assign var=text  value=$form.text.value}
+{*assign var=text  value=$form.text.value*}{*NYSS 6562 we handle via $_GET above*}
 {if !empty($summary.Contact) }
 <div class="section">
     {* Search request has returned 1 or more matching rows. Display results. *}
