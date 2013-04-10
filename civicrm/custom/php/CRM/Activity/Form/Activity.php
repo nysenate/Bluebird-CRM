@@ -681,6 +681,12 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     $this->assign('suppressForm', FALSE);
 
     $activityTypes = $this->_fields['followup_activity_type_id']['attributes']; //NYSS 4921
+
+    //NYSS 6567 if inbound email, add to select list
+    if ( $this->_activityTypeName == 'Inbound Email' ) {
+      $activityTypes[$this->_activityTypeId] = $this->_activityTypeName;
+    }
+
     asort($activityTypes);
     $element =& $this->add('select', 'activity_type_id', ts('Activity Type'),
       $activityTypes, //NYSS 4921
@@ -692,7 +698,11 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     //freeze for update mode.
     if ( $this->_action & CRM_Core_Action::UPDATE ) {
-      //$element->freeze( ); //NYSS 3153
+      //NYSS 3153 allow modification
+      //NYSS 6567 if inbound email, freeze
+      if ( $this->_activityTypeName == 'Inbound Email' ) {
+        $element->freeze( );
+      }
     }
 
     foreach ($this->_fields as $field => $values) {

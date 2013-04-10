@@ -43,10 +43,12 @@
 </div>
 </div>
 <div class="crm-block crm-content-block">
-{include file="CRM/common/jsortable.tpl"}
-{if $rowsEmpty}
-    {include file="CRM/Contact/Form/Search/Custom/EmptyResults.tpl"}
-{/if}
+  {include file="CRM/common/jsortable.tpl"}
+  {include file="CRM/common/pager.tpl" location="top"}
+
+  {if $rowsEmpty}
+      {include file="CRM/Contact/Form/Search/Custom/EmptyResults.tpl"}
+  {/if}
 
 {assign var=table value=$form.table.value.0}
 {*assign var=text  value=$form.text.value*}{*NYSS 6562 we handle via $_GET above*}
@@ -300,4 +302,5 @@
     {* END Actions/Results section *}
 </div>
 {/if}
+  {include file="CRM/common/pager.tpl" location="bottom"}
 </div>
