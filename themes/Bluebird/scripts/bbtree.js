@@ -9,8 +9,13 @@
 
 //alias/pathing object
 var BBTree = {
+<<<<<<< HEAD
 	startInstance: function(config)
 	{
+=======
+	startInstance: function(config, entity_counts)
+	{	
+>>>>>>> fixes #6205 settings for entity counts
 		//Check remote timestamp first
 		//then check cookie timestamp	
 		//if cookies found skip getAjaxData
@@ -18,8 +23,12 @@ var BBTree = {
 
 		//set settings, 
 		//BBTree.startInstance({displaySettings:{pullSets: [291,296], buttonType: 'edit'}}); 
+<<<<<<< HEAD
 		console.log(cj.fn.jquery)
 		callTree.setCurrentSettings(config);
+=======
+		callTree.setCurrentSettings(config, entity_counts);
+>>>>>>> fixes #6205 settings for entity counts
 		BBTreeModal.makeModalInit();
 		//have to use a queue with ajax data because you do A, and once A is done, then do B.
     cj({})
@@ -425,7 +434,7 @@ var callTree =  {
 			//which correlate to each version that's on the page.
 		}
 	},
-	setCurrentSettings: function(config){
+	setCurrentSettings: function(config, entity_counts){
 		callTree['currentSettings'] = {};
 		cj.extend(true,callTree.currentSettings, callTree.defaultSettings); //gives fresh copy to work off of.
 		if(config)
@@ -437,6 +446,10 @@ var callTree =  {
 	     	});
 	  }
 	  cj.extend(true, callTree.defaultSettings.displaySettings, callTree.pulledConfig); //sets the inital settings
+	  if(entity_counts){
+	  	
+	  	callTree.currentSettings.callSettings.ajaxSettings.entity_counts = entity_counts; //sets entity_counts before it's run
+	  }
 	},
 	treeSetupPage: function(instance, settings, contact){ 
 		//BBTree.initContainer('one', {pullSets: [291,296], buttonType: 'tagging',tabLocation: 'crm-tagTabHeader'}, {cid: 216352});
@@ -1703,7 +1716,7 @@ function addEntityCount(count)
 {
 	if(callTree.currentSettings.callSettings.ajaxSettings.entity_counts != 0)
 	{
-		var add = '<span class="entityCount">('+count+')</span>';
+		var add = '<span class="entityCount" style="display:none">('+count+')</span>';
 		return add;
 	}
 	else{
