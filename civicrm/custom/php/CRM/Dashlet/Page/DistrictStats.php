@@ -55,7 +55,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		//contact counts by type
 		$allContacts  = 0;
 		$contactTypes = array();
-		$sql_contacts = "SELECT contact_type, COUNT( id ) AS ct_count
+		$sql_contacts = "SELECT contact_type, COUNT(*) AS ct_count
 						 FROM civicrm_contact
 						 WHERE is_deleted != 1
 						 GROUP BY contact_type;";
@@ -67,14 +67,14 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$contactTypes['All Contacts'] = $allContacts;
 
 		//trashed contacts
-		$sql_trashed = "SELECT COUNT( id ) AS trashed_count
+		$sql_trashed = "SELECT COUNT(*) AS trashed_count
 						 FROM civicrm_contact
 						 WHERE is_deleted = 1;";
 		$trashed = CRM_Core_DAO::singleValueQuery( $sql_trashed );
 		$contactTypes['Trashed Contacts'] = $trashed;
 		
 		//deceased contacts
-		$sql_trashed = "SELECT COUNT( id ) AS deceased_count
+		$sql_trashed = "SELECT COUNT(*) AS deceased_count
 						FROM civicrm_contact
 						WHERE is_deleted != 1 AND is_deceased = 1;";
 		$contactTypes['Deceased Contacts'] = CRM_Core_DAO::singleValueQuery( $sql_trashed );
@@ -82,7 +82,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$this->assign('contactTypes', $contactTypes);
 		
 		//get gender counts
-		$sql_genders = "SELECT gender_id, COUNT( id ) AS gender_count
+		$sql_genders = "SELECT gender_id, COUNT(*) AS gender_count
 						FROM civicrm_contact
 						WHERE is_deleted != 1
 						GROUP BY gender_id;";
@@ -96,17 +96,19 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$emailCounts = array();
 		
 		//get contacts with emails
-		$sql_emails = "SELECT COUNT( c.id ) AS email_count
-					   FROM civicrm_contact c
-					     JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
-					   WHERE is_deleted != 1;";
+		$sql_emails = "
+		  SELECT COUNT( c.id ) AS email_count
+			FROM civicrm_contact c
+			  JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+			WHERE is_deleted != 1;";
 		$emailsPri = CRM_Core_DAO::singleValueQuery( $sql_emails );
 		
 		//contacts with bulk, non-primary emails
-		$sql_emailsBulk = "SELECT COUNT( c.id ) AS emailBulk_count
-					       FROM civicrm_contact c
-					         JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary != 1 AND ce.is_bulkmail = 1 )
-					       WHERE is_deleted != 1;";
+		$sql_emailsBulk = "
+		  SELECT COUNT( c.id ) AS emailBulk_count
+			FROM civicrm_contact c
+			  JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary != 1 AND ce.is_bulkmail = 1 )
+			WHERE is_deleted != 1;";
 		$emailsBulk = CRM_Core_DAO::singleValueQuery( $sql_emailsBulk );
 		
 		$emailCounts['Primary-Only Emails'] = $emailsPri - $emailsBulk;

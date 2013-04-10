@@ -278,7 +278,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     //exit;
 
     //final count
-    $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM tmpExport$rnd;");
+    $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM tmpExport$rnd;");
 
     //get rid of helper table
     $sql = "DROP TABLE tmpExport$rnd;";
@@ -533,7 +533,7 @@ function excludeGroupContacts( $tbl, $groups ) {
 
 function _checkEmail($cid) {
   $sql = "
-    SELECT CASE WHEN count(id) > 0 THEN 0 ELSE 1 END
+    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
     FROM civicrm_email
     WHERE contact_id = $cid
       AND email IS NOT NULL
@@ -545,7 +545,7 @@ function _checkEmail($cid) {
 
 function _checkNotes($cid) {
   $sql = "
-    SELECT CASE WHEN count(id) > 0 THEN 0 ELSE 1 END
+    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
     FROM civicrm_note
     WHERE entity_id = $cid
       AND entity_table = 'civicrm_contact'
