@@ -216,7 +216,7 @@ var BBTree = {
 				actionData.name += ' - Add Tag';
 				if(passes)
 				{
-					actionData.description += '<span>'+message[2] + '</span> has been added to this entity.';
+					actionData.description += '<span>'+message[2] + '</span> was added to this entity.';
 				}
 				else {
 					actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
@@ -226,7 +226,7 @@ var BBTree = {
 				actionData.name += ' - Add Tag';
 				if(passes)
 				{
-					actionData.description += '<span>'+ message[2] + '</span> has been removed from this entity.';
+					actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
 				}
 				else {
 					actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
@@ -236,10 +236,10 @@ var BBTree = {
 				actionData.name += ' - Get All Tags';
 				if(passes)
 				{
-					actionData.description += 'Keywords and Issue Codes have been loaded successfully.';
+					actionData.description += 'Keywords and Issue Codes were loaded successfully.';
 				}
 				else {
-					actionData.description += 'Keywords and Issue Codes have been loaded unsuccessfully. Will attempt to reload again.';
+					actionData.description += 'Keywords and Issue Codes were unable to be loaded. Will attempt to reload again.';
 					//if you load 3 times and it fails, throw a different message. 
 					actionData.reload = true;
 				}
@@ -248,10 +248,10 @@ var BBTree = {
 				actionData.name += ' - Retrieve Contact Tags';
 				if(passes)
 				{
-					actionData.description += 'Contact tags for <span>'+message[2]+'</span> have been loaded successfully.';
+					actionData.description += 'Contact tags for <span>'+message[2]+'</span> were loaded successfully.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Contact tags for <span>'+message[2]+'</span> have been loaded unsuccessfully.';
+					actionData.description += 'Contact tags for <span>'+message[2]+'</span> were unable to be loaded.';
 					//if you load 3 times and it fails, throw a different message. 
 				}
 				break;
@@ -263,10 +263,17 @@ var BBTree = {
 				actionData.name += ' - Convert Keyword to Issue Code';
 				if(passes)
 				{
-					actionData.description += 'Keyword <span>'+tagname+'</span> has been converted into an Issue Code under <span>'+tagdest+'</span>.';
+					actionData.description += 'Keyword <span>'+tagname+'</span> was converted into an Issue Code under <span>'+tagdest+'</span>.';
 				}
 				else { 
-					actionData.description += 'Keyword <span>'+tagname+'</span> failed to be converted into an Issue Code under <span>'+tagdest+'</span>.';
+					actionData.description += 'Keyword <span>'+tagname+'</span> was unable to be converted';
+					if(message[4] == 'DB Error: already exists')
+					{
+						actionData.description += ' because Issue Code <span>'+tagname+'</span> already exists';
+					} else {
+						actionData.description += ' to an Issue Code under <span>'+tagdest+'</span>';
+					}
+					actionData.description += '.';
 					actionData.more += message[4];
 				}	
 				break;
@@ -277,10 +284,10 @@ var BBTree = {
 				actionData.name += ' - Move Tag';
 				if(passes)
 				{
-					actionData.description += 'Tag <span>'+tagname+'</span> has been moved successfully under <span>'+tagdest+'</span>.';
+					actionData.description += 'Tag <span>'+tagname+'</span> was moved under <span>'+tagdest+'</span>.';
 				}
 				else { 
-					actionData.description += 'Tag <span>'+tagname+'</span> failed to be moved successfully under <span>'+tagdest+'</span>.';
+					actionData.description += 'Tag <span>'+tagname+'</span> was unable to be moved under <span>'+tagdest+'</span>.';
 					actionData.more += message[4];
 				}	
 				break;
@@ -291,12 +298,12 @@ var BBTree = {
 				actionData.name += ' - Merge Tag';
 				if(passes)
 				{
-					actionData.description += 'Tag <span>'+tagname+'</span> has been merged successfully into <span>'+tagdest+'</span>.';
+					actionData.description += 'Tag <span>'+tagname+'</span> was merged into <span>'+tagdest+'</span>.';
 				}
 				else { 
-					actionData.description += 'Tag <span>'+tagname+'</span> failed to be merged successfully into <span>'+tagdest+'</span>';
+					actionData.description += 'Tag <span>'+tagname+'</span> was unable to be merged';
 					(message[4] == 'Tag(s) do not exist') 
-						? actionData.description += ' because target no longer exists. <span style="text-decoration:underline; cursor:pointer;" onClick="document.location.reload(true)">Refresh Page Now</span>'
+						? actionData.description += ' because target no longer exists. <span style="text-decoration:underline; cursor:pointer;" onClick="document.location.reload(true)">Click here to clear the error</span>'
 						: actionData.description += '.';
 					actionData.more += message[4];
 				}	
@@ -308,7 +315,7 @@ var BBTree = {
 				if(passes)
 				{
 					
-					actionData.description += 'Tag <span>'+obj.prevName+'</span> has been updated successfully. ';
+					actionData.description += 'Tag <span>'+obj.prevName+'</span> was updated. ';
 					if(obj.tagName != null || obj.prevName != obj.tagName)
 					{
 						actionData.description += 'It\'s new name is <span>'+obj.tagName+'</span>. ';
@@ -325,12 +332,13 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag '+obj.tagName+' failed to be updated';
 					if(message[3] == 'DB Error: already exists')
 					{
-						actionData.description += ' because tag '+obj.tagName+' already exists';
+						actionData.description += 'Tag <span>'+obj.tagName+'</span> already exists';
+					} else {
+						actionData.description += 'Tag <span>'+obj.tagName+'</span> was unable to be updated';
 					}
-					actionData.description += ' .';
+					actionData.description += '.';
 				}	
 				break;
 			case 'removt':
@@ -339,10 +347,10 @@ var BBTree = {
 				actionData.name += ' - Remove Tag';
 				if(passes)
 				{
-					actionData.description += 'Tag <span>'+message[2]+'</span> has been removed under <span>'+parentTagName+'</span>.';
+					actionData.description += 'Tag <span>'+message[2]+'</span> was removed under <span>'+parentTagName+'</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag <span>'+message[2]+'</span> failed to be removed.';
+					actionData.description += 'Tag <span>'+message[2]+'</span> was unable to be removed.';
 					actionData.more += message[4];
 				}	
 				break;
@@ -352,7 +360,7 @@ var BBTree = {
 				actionData.name += ' - Add Tags';
 				if(passes)
 				{
-					actionData.description += 'Tag <span>'+obj.tagName+'</span> has been added successfully under <span>'+parentTagName+'</span>. ';
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> was added successfully under <span>'+parentTagName+'</span>. ';
 					if(obj.tagName != null)
 					{
 						actionData.description += 'It\'s name is <span>'+obj.tagName+'</span>. ';
@@ -369,7 +377,7 @@ var BBTree = {
 					actionData.description += 'reserved</span>.';
 				}
 				else { //would LOVE to be able to get contact name here...
-					actionData.description += 'Tag <span>'+obj.tagName+'</span> failed to be added';
+					actionData.description += 'Tag <span>'+obj.tagName+'</span> was unable to be added';
 					if(message[3] == 'DB Error: already exists')
 					{
 						actionData.description += ' because tag <span>'+obj.tagName+'</span> already exists';
