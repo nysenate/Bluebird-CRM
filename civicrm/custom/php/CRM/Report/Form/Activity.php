@@ -611,6 +611,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
       $onHoverAct = ts('View Activity Record');
     }
     foreach ($rows as $rowNum => $row) {
+      //CRM_Core_Error::debug('row',$row);
 
       if (array_key_exists('civicrm_contact_contact_source', $row)) {
         if ($value = $row['civicrm_activity_source_contact_id']) {
@@ -758,6 +759,29 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         break;
       }
     }
+  }
+
+  //NYSS 6564 reorder columns
+  function formatDisplay(&$rows) {
+    //CRM_Core_Error::debug('$this->_columnHeaders', $this->_columnHeaders);
+
+    $fOrder = array(
+      'civicrm_contact_contact_target' => '',
+      'civicrm_activity_activity_subject' => '',
+      'civicrm_contact_contact_source' => '',
+      'civicrm_activity_activity_date_time' => '',
+    );
+    foreach ( $this->_columnHeaders as $f => $v ) {
+      if ( array_key_exists($f, $fOrder) ) {
+        $fOrder[$f] = $v;
+        unset($this->_columnHeaders[$f]);
+      }
+      else {
+        unset($fOrder[$f]);
+      }
+    }
+    $this->_columnHeaders = array_merge($fOrder, $this->_columnHeaders);
+    parent::formatDisplay($rows);
   }
 
   /* //NYSS 5740
