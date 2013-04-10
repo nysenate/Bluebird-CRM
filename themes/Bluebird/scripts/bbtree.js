@@ -447,7 +447,7 @@ var callTree =  {
 	  }
 	  cj.extend(true, callTree.defaultSettings.displaySettings, callTree.pulledConfig); //sets the inital settings
 	  if(entity_counts){
-	  	
+	  	callTree.defaultSettings.callSettings.ajaxSettings.entity_counts = entity_counts;
 	  	callTree.currentSettings.callSettings.ajaxSettings.entity_counts = entity_counts; //sets entity_counts before it's run
 	  }
 	},
