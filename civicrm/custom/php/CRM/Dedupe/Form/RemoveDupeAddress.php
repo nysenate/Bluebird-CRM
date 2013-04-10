@@ -51,14 +51,15 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
    */
   function preProcess()
   {
-    $sql = "SELECT count(id)
-            FROM ( 
-              SELECT id
-              FROM civicrm_address
-              GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
-                       supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
-              HAVING count(id) > 1 
-            ) as dupes";
+    $sql = "
+      SELECT count(*)
+      FROM (
+        SELECT id
+        FROM civicrm_address
+        GROUP BY contact_id, location_type_id, street_address, supplemental_address_1,
+          supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
+        HAVING count(*) > 1
+        ) as dupes";
     $dupeCount = CRM_Core_DAO::singleValueQuery($sql);
     if ( !$dupeCount ) {
       $url = CRM_Utils_System::url( 'civicrm','reset=1' );
