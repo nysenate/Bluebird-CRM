@@ -858,7 +858,7 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
       return $this->_foundRows[$this->_table];
     }
     else {
-      return CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM {$this->_tableName}");
+      return CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM {$this->_tableName}");
     }
   }
 

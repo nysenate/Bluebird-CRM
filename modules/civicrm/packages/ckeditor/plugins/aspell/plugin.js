@@ -26,7 +26,15 @@ CKEDITOR.plugins.add('aspell', {
 		aspellCSS.setAttribute( 'rel', 'stylesheet');
 		aspellCSS.setAttribute('type', 'text/css');
 		aspellCSS.setAttribute('href', this.path+'aspell.css');
-		document.getElementsByTagName("head")[0].appendChild(aspellCSS);
+
+    //NYSS 5353 attempt to fix IE issue
+    if ( window.attachEvent ) {
+      var headTag = document.getElementsByTagName('head')[0];
+      headTag.parentNode.insertBefore(aspellCSS, headTag);
+    }
+    else {
+      document.getElementsByTagName("head")[0].appendChild(aspellCSS);
+    }
 		delete aspellCSS;
 	},
 	requires: ['toolbar']

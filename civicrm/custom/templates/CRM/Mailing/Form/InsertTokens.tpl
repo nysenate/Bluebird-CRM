@@ -363,7 +363,7 @@ function selectValue( val ) {
 
     cj(function() {
         if ( !cj().find('div.crm-error').text() ) {
-          cj(window).load(function () {           
+          cj(window).load(function () {
             setSignature();
           });
         }
@@ -378,7 +378,6 @@ function selectValue( val ) {
             var dataUrl = {/literal}"{crmURL p='civicrm/ajax/signature' h=0 }"{literal};
             cj.post( dataUrl, {emailID: emailID}, function( data ) {
                 var editor     = {/literal}"{$editor}"{literal};
-                
                 if ( data.signature_text ) {
                     // get existing text & html and append signatue
                     var textMessage =  cj("#"+ text_message).val( ) + '\n\n--\n' + data.signature_text;
@@ -389,12 +388,19 @@ function selectValue( val ) {
                 
                 if ( data.signature_html ) {
                     var htmlMessage =  cj("#"+ html_message).val( ) + '<br/><br/>--<br/>' + data.signature_html;
-
                     // set wysiwg editor
                     if ( editor == "ckeditor" ) {
-                        oEditor = CKEDITOR.instances[html_message];
-                        var htmlMessage = oEditor.getData( ) + '<br/><br/>--' + data.signature_html;
-                        oEditor.setData( htmlMessage  );
+                      //NYSS 6583 hackish solution for IE
+                      oEditor = CKEDITOR.instances[html_message];
+                      var oldData = oEditor.getData();
+                      var htmlMessage = oEditor.getData( ) + '<br/><br/>--' + data.signature_html;
+                      oEditor.setData( htmlMessage, function(){
+                        var newData = oEditor.getData();
+                        if ( oldData == '&nbsp;' ) {
+                          oEditor = CKEDITOR.instances[html_message];
+                          oEditor.setData( '<br/><br/>--' + data.signature_html );
+                        }
+                      });
                     } else if ( editor == "tinymce" ) {
                         tinyMCE.execInstanceCommand('html_message',"mceInsertContent",false, htmlMessage );
                     }  else if ( editor == "drupalwysiwyg" ) {
