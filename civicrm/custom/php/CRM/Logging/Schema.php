@@ -47,7 +47,8 @@ class CRM_Logging_Schema {
 
   /**
    * Populate $this->tables and $this->logs with current db state.
-   */ function __construct() {
+   */
+  function __construct() {
     $dao = new CRM_Contact_DAO_Contact();
     $civiDBName = $dao->_database;
 
@@ -69,6 +70,9 @@ AND    TABLE_NAME LIKE 'civicrm_%'
     $this->tables = preg_grep('/^civicrm_task_action_temp_/', $this->tables, PREG_GREP_INVERT);
     $this->tables = preg_grep('/^civicrm_export_temp_/', $this->tables, PREG_GREP_INVERT);
     $this->tables = preg_grep('/^civicrm_queue_/', $this->tables, PREG_GREP_INVERT);
+    //NYSS 6560 add other tables to exclusion list
+    $this->tables = preg_grep('/^civicrm_mailing_event_/', $this->tables, PREG_GREP_INVERT);
+    $this->tables = preg_grep('/^civicrm_menu/', $this->tables, PREG_GREP_INVERT);
 
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
     $this->db = $dsn['database'];

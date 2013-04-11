@@ -71,7 +71,7 @@
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.civicrm-validate.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js"></script>
 
-{*<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery-fieldselection.js"></script>*}{*NYSS*}
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery-fieldselection.js"></script>{*NYSS*}
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.jeditable.mini.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.mustache.js"></script>
