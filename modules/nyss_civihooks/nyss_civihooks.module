@@ -781,8 +781,8 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     ),
     'child' => array(),
   );
- 
-  //5813 Inbox polling Menu Items 
+
+  //5813 Inbox polling Menu Items
 
   $inboxNavID = $maxKey+3;
   $params[$inboxNavID] = array (
@@ -799,7 +799,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     ),
     'child' => array(),
   );
- 
+
   $params[$inboxNavID]['child'][$maxKey+4] = array (
     'attributes' => array (
       'label'      => 'Unmatched Messages',
@@ -828,20 +828,21 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     ),
     'child' => array(),
   );
-  $params[$inboxNavID]['child'][$maxKey+6] = array (
-    'attributes' => array (
-      'label'      => 'Reports',
-      'name'       => 'Reports',
-      'url'        => 'civicrm/imap/reports',
-      'permission' => 'administer inbox polling',
-      'operator'   => 'AND',
-      'separator'  => 2,
-      'parentID'   => $inboxNavID,
-      'navID'      => $maxKey+6,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
+  // temp removal NYSS #6595
+  // $params[$inboxNavID]['child'][$maxKey+6] = array (
+  //   'attributes' => array (
+  //     'label'      => 'Reports',
+  //     'name'       => 'Reports',
+  //     'url'        => 'civicrm/imap/reports',
+  //     'permission' => 'administer inbox polling',
+  //     'operator'   => 'AND',
+  //     'separator'  => 2,
+  //     'parentID'   => $inboxNavID,
+  //     'navID'      => $maxKey+6,
+  //     'active'     => 1
+  //   ),
+  //   'child' => array(),
+  // );
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
