@@ -72,12 +72,17 @@ cj(document).ready(function(){
   // add a find match popup
   cj( "#find-match-popup" ).dialog({
     modal: true,
-    height: 510,
+    height: 580,
     width: 960, // in ie the popup was overflowing
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
-    draggable: false
+    draggable: false,
+    buttons: {
+      Cancel: function() {
+        cj( this ).dialog( "close" );
+      }
+    }
   });
 
   // add a loading icon popup
@@ -210,6 +215,7 @@ cj(document).ready(function(){
             }else{
               cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
               buildContactList(0);
+              cj("#reassign").show();
             }
           }
         }
@@ -568,6 +574,7 @@ cj(document).ready(function(){
     });
     };
     return false;
+    cj("#reassign").hide();
   });
   /// remove activity from the activities screen, but don't delete it Matched
   cj(".clear_activity").live('click', function() {
@@ -594,6 +601,7 @@ cj(document).ready(function(){
   // Edit a match allready assigned to an Activity Matched Screen
   cj(".edit_match").live('click', function() {
     cj("#loading-popup").dialog('open');
+    cj("#reassign").hide();
 
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
