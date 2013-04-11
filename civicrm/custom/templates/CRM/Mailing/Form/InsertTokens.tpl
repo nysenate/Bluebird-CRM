@@ -251,17 +251,16 @@ function selectValue( val ) {
 
     function tokenReplText ( element )
     {
-        var getPosition = jQuery.data( document.body, 'getPosition' );
-        var token     = cj("#"+element.id).val( )[0];
-        if ( element.id == 'token3' ) {
-           ( isMailing ) ? text_message = "subject" : text_message = "msg_subject"; 
-        }          
-        cj( "#"+ text_message ).ricsinsertText( token, getPosition.start, true );
-        getPosition.start = getPosition.start + token.length;
-        jQuery.data( document.body, 'getPosition', getPosition );
-        if ( isMailing ) { 
-             verify();
-        }
+      var token     = cj("#"+element.id).val( )[0];
+      if ( element.id == 'token3' ) {
+        ( isMailing ) ? text_message = "subject" : text_message = "msg_subject";
+      }
+
+      cj( "#"+ text_message ).replaceSelection( token );
+
+      if ( isMailing ) {
+        verify();
+      }
     }
 
     function tokenReplHtml ( )
