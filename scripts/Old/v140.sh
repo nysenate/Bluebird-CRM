@@ -629,6 +629,26 @@ WHERE name = 'Emails Received, Last 7 Days';
 "
 $execSql -i $instance -c "$sql"
 
+## 6560 remove logging tables no longer to be used
+sql="
+  DROP TABLE IF EXISTS log_civicrm_action_log;
+  DROP TABLE IF EXISTS log_civicrm_log;
+  DROP TABLE IF EXISTS log_civicrm_membership_log;
+  DROP TABLE IF EXISTS log_civicrm_menu;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_bounce;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_confirm;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_delivered;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_forward;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_opened;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_queue;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_reply;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_sendgrid_delivered;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_subscribe;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_trackable_url_open;
+  DROP TABLE IF EXISTS log_civicrm_mailing_event_unsubscribe;
+"
+$execSql -i $instance -c "$sql" --log
+
 ##TODO review roles/perms updates
 
 ### Cleanup ###
