@@ -319,13 +319,13 @@ cj(document).ready(function(){
   // dirty toggles
   // toggle hidden email info in multi_tag popup
   cj(".hidden_email_info").live('click', function(){
-    id = cj(this).data('id');
+    var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
     cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
   });
 
   cj(".shown_email_info").live('click', function(){
-    id = cj(this).data('id');
+    var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
     cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
   });
