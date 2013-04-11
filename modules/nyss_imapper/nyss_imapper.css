@@ -64,7 +64,7 @@
 .name .icon{margin-left:0px;}
 td.name{ padding-left: 0px;margin-left: 0px;}
 .forwarder,.Forwarder{ overflow: hidden;width: 100px;}
-.date{width: 95px !important; overflow: hidden; display: block; height: 32px;}
+.date{width: 120px !important; overflow: hidden; display: block; height: 32px;}
 .date span{float: left; margin: 8px 0;}
 .checkbox_switch{ margin-left: 10px;}
 .actions{ width:110px !important;  overflow: hidden; display: block; height: 32px ; float: left;}
