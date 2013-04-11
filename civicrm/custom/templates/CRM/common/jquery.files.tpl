@@ -69,7 +69,7 @@ packages/jquery/plugins/jquery.validate.js
 packages/jquery/plugins/jquery.civicrm-validate.js
 packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js
 
-{*packages/jquery/plugins/jquery-fieldselection.js*}{*NYSS*}
+packages/jquery/plugins/jquery-fieldselection.js{*NYSS*}
 
 packages/jquery/plugins/jquery.jeditable.mini.js
 packages/jquery/plugins/jquery.mustache.js
