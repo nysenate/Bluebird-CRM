@@ -72,12 +72,17 @@ cj(document).ready(function(){
   // add a find match popup
   cj( "#find-match-popup" ).dialog({
     modal: true,
-    height: 510,
+    height: 580,
     width: 960, // in ie the popup was overflowing
     autoOpen: false,
     resizable: false,
     title: 'Loading Data',
-    draggable: false
+    draggable: false,
+    buttons: {
+      Cancel: function() {
+        cj( this ).dialog( "close" );
+      }
+    }
   });
 
   // add a loading icon popup
@@ -132,7 +137,7 @@ cj(document).ready(function(){
   // file a bug
   cj(".fileBug").live('click', function() {
     cj("#fileBug-popup").dialog('open');
-
+    cj('#description').val('');
   });
 
   cj( "#fileBug-popup" ).dialog({
@@ -210,6 +215,7 @@ cj(document).ready(function(){
             }else{
               cj('.contacts-list').html('').append("<strong>"+(contacts.length )+' Found</strong>');
               buildContactList(0);
+              cj("#reassign").show();
             }
           }
         }
@@ -319,13 +325,13 @@ cj(document).ready(function(){
   // dirty toggles
   // toggle hidden email info in multi_tag popup
   cj(".hidden_email_info").live('click', function(){
-    id = cj(this).data('id');
+    var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('hidden_email_info').addClass('shown_email_info').html('Hide Email');
     cj("#email_"+id).removeClass('hidden_email').addClass('shown_email');
   });
 
   cj(".shown_email_info").live('click', function(){
-    id = cj(this).data('id');
+    var id = cj(this).data('id');
     cj("#email_"+id+" .info").removeClass('shown_email_info').addClass('hidden_email_info').html('Show Email');
     cj("#email_"+id).removeClass('shown_email').addClass('hidden_email');
   });
@@ -565,6 +571,7 @@ cj(document).ready(function(){
     });
     };
     return false;
+    cj("#reassign").hide();
   });
   /// remove activity from the activities screen, but don't delete it Matched
   cj(".clear_activity").live('click', function() {
@@ -591,6 +598,7 @@ cj(document).ready(function(){
   // Edit a match allready assigned to an Activity Matched Screen
   cj(".edit_match").live('click', function() {
     cj("#loading-popup").dialog('open');
+    cj("#reassign").hide();
 
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
