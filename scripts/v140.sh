@@ -543,6 +543,19 @@ $execSql -i $instance -c "$sqlNewTag"
 ## create inbox polling tables
 $execSql -i $instance -f sql/inbox_polling.sql
 
+## 6564 update emails received report
+sql="
+UPDATE civicrm_report_instance
+SET title = 'Matched Inbound Emails, Last 7 Days',description = 'Emails retrieved from inbox polling over the last 7 days.',permission = 'access CiviReport',form_values = 'a:50:{s:6:\"fields\";a:4:{s:14:\"contact_source\";s:1:\"1\";s:14:\"contact_target\";s:1:\"1\";s:16:\"activity_subject\";s:1:\"1\";s:18:\"activity_date_time\";s:1:\"1\";}s:17:\"contact_source_op\";s:3:\"has\";s:20:\"contact_source_value\";s:0:\"\";s:19:\"contact_assignee_op\";s:3:\"has\";s:22:\"contact_assignee_value\";s:0:\"\";s:17:\"contact_target_op\";s:3:\"has\";s:20:\"contact_target_value\";s:0:\"\";s:15:\"current_user_op\";s:2:\"eq\";s:18:\"current_user_value\";s:1:\"0\";s:27:\"activity_date_time_relative\";s:11:\"ending.week\";s:23:\"activity_date_time_from\";s:0:\"\";s:21:\"activity_date_time_to\";s:0:\"\";s:19:\"activity_subject_op\";s:3:\"has\";s:22:\"activity_subject_value\";s:0:\"\";s:19:\"activity_type_id_op\";s:2:\"in\";s:22:\"activity_type_id_value\";a:1:{i:0;s:2:\"12\";}s:12:\"status_id_op\";s:2:\"in\";s:15:\"status_id_value\";a:0:{}s:17:\"street_number_min\";s:0:\"\";s:17:\"street_number_max\";s:0:\"\";s:16:\"street_number_op\";s:3:\"lte\";s:19:\"street_number_value\";s:0:\"\";s:14:\"street_name_op\";s:3:\"has\";s:17:\"street_name_value\";s:0:\"\";s:15:\"postal_code_min\";s:0:\"\";s:15:\"postal_code_max\";s:0:\"\";s:14:\"postal_code_op\";s:3:\"lte\";s:17:\"postal_code_value\";s:0:\"\";s:7:\"city_op\";s:3:\"has\";s:10:\"city_value\";s:0:\"\";s:20:\"state_province_id_op\";s:2:\"in\";s:23:\"state_province_id_value\";a:0:{}s:8:\"tagid_op\";s:2:\"in\";s:11:\"tagid_value\";a:0:{}s:6:\"gid_op\";s:2:\"in\";s:9:\"gid_value\";a:0:{}s:12:\"custom_43_op\";s:2:\"in\";s:15:\"custom_43_value\";a:0:{}s:12:\"custom_44_op\";s:2:\"in\";s:15:\"custom_44_value\";a:0:{}s:9:\"order_bys\";a:1:{i:1;a:2:{s:6:\"column\";s:18:\"activity_date_time\";s:5:\"order\";s:4:\"DESC\";}}s:11:\"description\";s:57:\"Emails retrieved from inbox polling over the last 7 days.\";s:13:\"email_subject\";s:0:\"\";s:8:\"email_to\";s:0:\"\";s:8:\"email_cc\";s:0:\"\";s:14:\"addToDashboard\";s:1:\"1\";s:11:\"is_reserved\";s:1:\"1\";s:10:\"permission\";s:17:\"access CiviReport\";s:6:\"groups\";s:0:\"\";s:9:\"domain_id\";i:1;}',is_reserved = 1
+WHERE title = 'Emails Received, Last 7 Days';
+UPDATE civicrm_navigation
+SET label = 'Matched Inbound Emails, Last 7 Days', name = 'Matched Inbound Emails, Last 7 Days'
+WHERE name = 'Emails Received, Last 7 Days';
+"
+$execSql -i $instance -c "$sql"
+
+##TODO review roles/perms updates
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
