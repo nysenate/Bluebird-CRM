@@ -85,6 +85,7 @@ $imap_mailbox = DEFAULT_IMAP_MAILBOX;
 $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
+$version_number = 0.03; // helpful in debug to check parsing version
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
@@ -562,7 +563,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
     $fwdLookup = 'Headers';
   }
   // debug info for mysql
-  $debug = "Msg: ".$msgid."; MessageID: ".$messageId.";Action: ".$messageAction.";bodyFormat: ".$fwdFormat.";fwdLookup: ".$fwdLookup.";fwdEmail: ".$fwdEmail.";fwdName: ".$fwdName.";fwdSubject: ".$fwdSubject.";fwdDate: ".$fwdDate.";FromEmail: ".$fromEmail.";FromName: ".$fromName.";Subject: ".$subject.";Date: ".$date;
+  $debug = "Msg: ".$msgid."; MessageID: ".$messageId.";Action: ".$messageAction.";bodyFormat: ".$fwdFormat.";fwdLookup: ".$fwdLookup.";fwdEmail: ".$fwdEmail.";fwdName: ".$fwdName.";fwdSubject: ".$fwdSubject.";fwdDate: ".$fwdDate.";FromEmail: ".$fromEmail.";FromName: ".$fromName.";Subject: ".$subject.";Date: ".$date."; Version #: ".$version_number;
 
   // start db connection
   $nyss_conn = new CRM_Core_DAO();

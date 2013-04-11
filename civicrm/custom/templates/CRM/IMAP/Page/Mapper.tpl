@@ -10,7 +10,7 @@
 				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th>
 				    <th class='Name'>Sender’s Info</th>
  				    <th class='Subject'>Subject</th>
-				    <th class='Date'>Date Sent</th>
+				    <th class='Date'>Date Forwarded</th>
 				    <th class='Match_type hidden'>Match Type</th>
 				    <th class='Forwarded'>Forwarded By</th>
 				   	<th class='Actions'>Actions</th>
@@ -122,7 +122,7 @@
 		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Unmatched Messages?">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed permanently. Are you sure?</p>
 	</div>
 	<div id="loading-popup" title="please wait">
 		<p> Loading message details.</p>

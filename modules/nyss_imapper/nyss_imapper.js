@@ -484,7 +484,7 @@ cj(document).ready(function(){
           if(message.sender_name) cj('#message_left_header').append(shortenString(message.sender_name,50));
           if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
 
-          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
+          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
 
           if ((message.forwarder != message.sender_email)){
             cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
@@ -592,7 +592,7 @@ cj(document).ready(function(){
         }
       }
     });
-    cj("#clear-confirm").dialog({ title:  "Clear Message from Matched Messages?"});
+    cj("#clear-confirm").dialog({ title:  "Remove Message From List?"});
     cj("#loading-popup").dialog('close');
     cj("#clear-confirm").dialog('open');
     return false;
@@ -635,7 +635,7 @@ cj(document).ready(function(){
           cj('#message_left_header').html('');
           if(message.sender_name) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+message.sender_name +"  ");
           if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble '>"+ message.sender_email+"</span>");
-          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
+          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
           cj('.email_address').val(message.fromEmail);
 
           if ((message.forwarder != message.sender_email)){
@@ -731,7 +731,7 @@ cj(document).ready(function(){
               cj('#activity_tag_ids').val(result);
             }
           });
-          cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+          cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date Forwarded: </span>"+messages.date_long+"<br/>");
           cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
           if ((messages.forwarder != messages.sender_email)){
@@ -860,7 +860,7 @@ cj(document).ready(function(){
             return false;
           }else{
 
-            cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
+            cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
 
             if ((message.forwarder != message.sender_email)){
               cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
@@ -933,7 +933,7 @@ cj(document).ready(function(){
         }
       }
     });
-    cj("#clear-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
+    cj("#clear-confirm").dialog({ title:  "Remove "+delete_ids.length+" Messages From List?"});
     cj("#loading-popup").dialog('close');
     cj( "#clear-confirm" ).dialog('open');
     return false;
