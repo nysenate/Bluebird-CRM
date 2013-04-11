@@ -647,9 +647,16 @@ sql="
   DROP TABLE IF EXISTS log_civicrm_mailing_event_trackable_url_open;
   DROP TABLE IF EXISTS log_civicrm_mailing_event_unsubscribe;
 "
-$execSql -i $instance -c "$sql" --log
+$execSql -i $instance -c "$sql" --log -q
 
-##TODO review roles/perms updates
+## roles/perms updates
+sql="
+  INSERT INTO role (rid, name)
+  VALUES (19, 'Manage Inbox Polling');
+  INSERT INTO role_permission (rid, permission, module)
+  VALUES (19, 'administer inbox polling', 'nyss_civihooks');
+"
+$execSql -i $instance "$sql" --drupal -q
 
 ### Cleanup ###
 
