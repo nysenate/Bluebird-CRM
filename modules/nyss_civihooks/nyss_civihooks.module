@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 function nyss_civihooks_menu() {
 
