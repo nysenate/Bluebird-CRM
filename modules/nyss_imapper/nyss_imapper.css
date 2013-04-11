@@ -86,7 +86,6 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .attachment{float:right !important;}
 /* page actions */
 .page_actions{ text-align: right; height: 30px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
-/*.multi_tag, .multi_clear, .multi_delete, .multi_delete{float:right; }*/
 /* data table */
 .dataTables_length{width: 125px !important;float: left !important;}
 #sortable_results_info{display: none !important;}
