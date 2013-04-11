@@ -266,7 +266,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function entity_tag_create() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
+        if($stop['code'] == false || $stop['view_only'] == true){ 
             echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
             CRM_Utils_System::civiExit();
         }
@@ -311,7 +311,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
     static function entity_tag_delete() {
         $stop = self::check_user_level('true');
-        if($stop['code'] == false){ 
+        if($stop['code'] == false || $stop['view_only'] == true){ 
             echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
             CRM_Utils_System::civiExit();
         }
@@ -383,6 +383,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                     $role = true;
                 }else{ // else -> check permissions to edit
                     $role = CRM_Core_Permission::check('edit all contacts');
+                    if( $role == false ) {
+                        $role = CRM_Core_Permission::check('view all contacts');
+                        $view_only = true;
+                    }
                 }
                 break;
             default:
@@ -393,6 +397,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level"; 
         $output = array(
             "code"=>$role,
+            "view_only"=>$view_only,
             "userId"=>$userid,
             "message"=> $message, 
             'build_time'=>(microtime(TRUE)-$start),
