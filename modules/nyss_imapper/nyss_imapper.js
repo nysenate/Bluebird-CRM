@@ -137,7 +137,7 @@ cj(document).ready(function(){
   // file a bug
   cj(".fileBug").live('click', function() {
     cj("#fileBug-popup").dialog('open');
-    cj('#description').html('');
+    cj('#description').val('');
   });
 
   cj( "#fileBug-popup" ).dialog({
