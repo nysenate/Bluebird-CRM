@@ -219,7 +219,12 @@ var BBTree = {
 					actionData.description += '<span>'+message[2] + '</span> was added to this entity.';
 				}
 				else {
-					actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
+					if( message[4] == 'WARNING: Bad user level.' )
+					{
+						actionData.description += 'You do not have the required permissions to add tags to this record.';
+					} else {
+						actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
+					}
 				}
 				break;
 			case 'crar': //["crar", 1, "123d", null] 
@@ -229,7 +234,12 @@ var BBTree = {
 					actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
 				}
 				else {
-					actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
+					if( message[4] == 'WARNING: Bad user level.' )
+					{
+						actionData.description += 'You do not have the required permissions to remove tags from this record.';
+					} else {
+						actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
+					}
 				}
 				break;
 			case 'cta':
@@ -835,6 +845,7 @@ var BBTreeTag = {
 					success: function(data, status, XMLHttpRequest) {
 						if(data.code != 1) {
 							BBTree.reportAction(['craa', 0, v.find('.name').text(),,data.message]);
+							BBTreeTag.removeTagCheck(tagLabel);
 						}
 						else {
 							BBTree.reportAction(['craa', 1, v.find('.name').text(),,]);
@@ -842,14 +853,7 @@ var BBTreeTag = {
 					}
 				});
 			}
-			cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
-			cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
-			//if you're viewing the page, not using the 'add' method
-			if(BBActionConst == 16)
-			{
-				updateViewContactPage(tagLabel);
-			}
-			BBTreeTag.tagInheritanceFlag(tagLabel, 'add');	
+			BBTreeTag.addTagCheck(tagLabel);
 		} else {
 			if(!callTree.currentSettings.displaySettings.onSave)
 			{
@@ -865,6 +869,7 @@ var BBTreeTag = {
 					success: function(data, status, XMLHttpRequest) {
 						if(data.code != 1) {
 							BBTree.reportAction(['crar', 0, v.find('.name').text(),,data.message]);
+							BBTreeTag.addTagCheck(tagLabel);
 						}
 						else{
 							BBTree.reportAction(['crar', 1, v.find('.name').text(),,]);
@@ -873,13 +878,28 @@ var BBTreeTag = {
 					}
 				});
 			}
-			cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
-			BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
-			//if you're viewing the page, not using the 'add' method
-			if(BBActionConst == 16)
-			{
-				updateViewContactPage(tagLabel, 'remove');
-			}
+			BBTreeTag.removeTagCheck(tagLabel);
+		}
+	},
+	addTagCheck: function(tagLabel)
+	{
+		cj(BBTree.treeLoc+' dt#'+tagLabel).addClass('checked');
+		cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', true);
+		//if you're viewing the page, not using the 'add' method
+		if(BBActionConst == 16)
+		{
+			updateViewContactPage(tagLabel);
+		}
+		BBTreeTag.tagInheritanceFlag(tagLabel, 'add');
+	},
+	removeTagCheck: function(tagLabel)
+	{
+		cj(BBTree.treeLoc+' dt#'+tagLabel+' input').attr('checked', false);
+		BBTreeTag.tagInheritanceFlag(tagLabel, 'remove');
+		//if you're viewing the page, not using the 'add' method
+		if(BBActionConst == 16)
+		{
+			updateViewContactPage(tagLabel, 'remove');
 		}
 	},
 	tagInheritanceFlag: function(tagLabel, toggle) //adds or removes inheritance toggle: add/remove/clear
@@ -1803,7 +1823,9 @@ function updateViewContactPage(tagLabel, remove)
 		else
 		{
 			headList = tagLiteralName;
-			cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+			if(cj('.contactTagsList.help').length == 0){
+				cj('#TagGroups #dialog').append('<div class="contactTagsList help"><strong>Issue Codes: </strong><span>' + headList + '</span></div>');
+			}
 		}
 		cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 	}
