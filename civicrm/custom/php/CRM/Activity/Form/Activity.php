@@ -908,6 +908,13 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     }
 
     $this->addFormRule(array('CRM_Activity_Form_Activity', 'formRule'), $this);
+
+    //NYSS 6602
+    if ( CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'activity_assignee_notification' )
+    ) {
+      $this->assign('activityAssigneeNotification', true);
+    }
   }
 
   /**
