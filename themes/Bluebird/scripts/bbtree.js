@@ -221,8 +221,7 @@ var BBTree = {
 				else {
 					if( message[4] == 'WARNING: Bad user level.' )
 					{
-						actionData.description += 'You do not have the required permissions to add ';
-						actionData.description += '<span>'+message[2]+'</span> to this entity.';
+						actionData.description += 'You do not have the required permissions to add tags to this record.';
 					} else {
 						actionData.description += '<span>'+message[2] + '</span> was unable to be added to this entity.';
 					}
@@ -237,8 +236,7 @@ var BBTree = {
 				else {
 					if( message[4] == 'WARNING: Bad user level.' )
 					{
-						actionData.description += 'You do not have the required permissions to remove ';
-						actionData.description += '<span>'+message[2]+'</span> from this entity.';
+						actionData.description += 'You do not have the required permissions to remove tags from this record.';
 					} else {
 						actionData.description += '<span>'+message[2] + '</span> was unable to be removed from this entity.';
 					}
