@@ -670,7 +670,7 @@ function searchForMatches()
     $message_id = $row['message_id'];
     $imap_id = $row['imap_id'];
     $body = $row['body'];
-    $email_date = $row['email_date'];
+    $email_date = $row['updated_date'];
     $subject = $row['subject'];
     echo "- - - - - - - - - - - - - - - - - - \n";
 
