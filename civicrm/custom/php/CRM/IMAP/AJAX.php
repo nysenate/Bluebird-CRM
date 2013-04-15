@@ -81,7 +81,7 @@ class CRM_IMAP_AJAX {
 
           $returnMessage = $row;
           // clean up dates
-          $cleanDate = self::cleanDate($row['email_date']);
+          $cleanDate = self::cleanDate($row['updated_date']);
           $returnMessage['date_short'] = $cleanDate['short'];
           $returnMessage['date_u'] = $cleanDate['u'];
           $returnMessage['date_long'] = $cleanDate['long'];
@@ -463,7 +463,7 @@ class CRM_IMAP_AJAX {
         $senderEmail = $output['sender_email'];
         $senderName = $output['sender_name'];
         $forwarder = $output['forwarder'];
-        $date = $output['email_date'];
+        $date = $output['updated_date'];
         $subject = $output['subject'];
         $body = $output['body'];
         $status = $output['status'];
@@ -662,7 +662,7 @@ class CRM_IMAP_AJAX {
                       // var_dump("Mime Type : ". $mime);
 
                       // // mimeType, uri, orgin date -> return id
-                      $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['email_date']}');";
+                      $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
                       $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
                       // var_dump($insertFIleQuery);
                       // var_dump($rowUpdated);
@@ -862,7 +862,7 @@ class CRM_IMAP_AJAX {
             $UnprocessedOutput = $row;
             $message_id = $row['id'];
             $returnMessage['successes'][$message_id] = $UnprocessedOutput;
-            $cleanDate = self::cleanDate($row['email_date']);
+            $cleanDate = self::cleanDate($row['updated_date']);
             $date_short = $cleanDate['short'];
             $date_long =  $cleanDate['long'];
             $date_u =  $cleanDate['u'];
