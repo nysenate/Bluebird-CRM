@@ -157,7 +157,7 @@
                 <td class="label">{ts}Assigned To{/ts}</td>
                 <td>{$form.assignee_contact_id.html}
                    {edit}<span class="description">{ts}You can optionally assign this activity to someone. Assigned activities will appear in their Activities listing at CiviCRM Home.{/ts}
-                           {if $config->activityAssigneeNotification}
+                           {if $activityAssigneeNotification}{*NYSS 6602*}
                                <br />{ts}A copy of this activity will be emailed to each Assignee.{/ts}
                            {/if}
                          </span>
