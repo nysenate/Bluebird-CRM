@@ -228,7 +228,7 @@ var BBTree = {
 				}
 				break;
 			case 'crar': //["crar", 1, "123d", null] 
-				actionData.name += ' - Add Tag';
+				actionData.name += ' - Remove Tag';
 				if(passes)
 				{
 					actionData.description += '<span>'+ message[2] + '</span> was removed from this entity.';
