@@ -630,8 +630,10 @@ cj(document).ready(function(){
           if(message.clear =='true')   removeRow(activityId);
         }else{
           cj('#message_left_header').html('');
-          if(message.sender_name) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+message.sender_name +"  ");
-          if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble '>"+ message.sender_email+"</span>");
+
+          if(message.sender_name || message.sender_email) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>");
+          if(message.sender_name) cj('#message_left_header').append(message.sender_name +"  ");
+          if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble'>"+ message.sender_email+"</span>");
           cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
           cj('.email_address').val(message.fromEmail);
 
@@ -1303,18 +1305,18 @@ function buildActivitiesList() {
       if(value.date_short != null){
         messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
-        if( value.fromName != ''){
-          messagesHtml += '<td class="name" data-fromdob="'+value.fromdob +'" data-fromphone="'+value.fromphone +'" data-fromstreet="'+value.fromstreet +'" data-fromcity="'+value.fromcity +'"data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+        if( value.contactType != ''){
+          messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-          messagesHtml += '<td class="name">N/A ';
+          messagesHtml += '<td class="name">';
         }
 
-        messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.fromEmail,13)+'</span>';
+        messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
 
         match_sort = 'ProcessError';
         if(value.matcher){
