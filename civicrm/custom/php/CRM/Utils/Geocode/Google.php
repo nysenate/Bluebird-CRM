@@ -46,7 +46,7 @@ class CRM_Utils_Geocode_Google {
      * @var string
      * @static
      */
-    static protected $_server = 'maps.google.com';
+  static protected $_server = 'maps.googleapis.com';//NYSS
 
     /**
      * uri of service
@@ -54,7 +54,7 @@ class CRM_Utils_Geocode_Google {
      * @var string
      * @static
      */
-    static protected $_uri = '/maps/geo?q=';
+  static protected $_uri = '/maps/api/geocode/xml?sensor=false&address=';//NYSS
     
     /**
      * function that takes an address object and gets the latitude / longitude for this
@@ -77,7 +77,7 @@ class CRM_Utils_Geocode_Google {
         
         // CRM-1439: Google (sometimes?) returns data in ISO-8859-1
         // hence we use oe to ensure we get utf-8
-        $arg = "&oe=utf8&output=xml&key=" . urlencode( $config->geoAPIKey ); //NYSS
+        $arg = "&oe=utf8&output=xml"; //NYSS
         
         $add = '';
 
@@ -119,8 +119,8 @@ class CRM_Utils_Geocode_Google {
             $add .= '+' . urlencode( str_replace('', '+', $values['country']) );
         }
         
-        $query = 'http://' . self::$_server . self::$_uri . $add . $arg;
-        
+        $query = 'http://' . self::$_server . self::$_uri . $add . $arg;//NYSS
+
         require_once 'HTTP/Request.php';
         $request = new HTTP_Request( $query );
         $request->sendRequest( );
@@ -133,19 +133,26 @@ class CRM_Utils_Geocode_Google {
             CRM_Core_Error::debug_var( 'Geocoding failed.  Message from Google:', $string );
             return false;
         }
+    //NYSS 6605
+    if (isset($xml->status)) {
+      if ($xml->status == 'OK' &&
+        is_a($xml->result->geometry->location,
+          'SimpleXMLElement'
+        )
+      ) {
+        $ret = $xml->result->geometry->location->children();
 
-
-        $ret = array( );
-        $val = array( );
-        if ( is_a($xml->Response->Placemark->Point, 'SimpleXMLElement') ) {
-            $ret = $xml->Response->Placemark->Point->children();             
-            $val = explode(',', (string)$ret[0]);
-            if ( $val[0] && $val[1] ) {
-                $values['geo_code_1'] = $val[1];
-                $values['geo_code_2'] = $val[0];
-                return true;
+        if ($ret->lat && $ret->lng) {
+          $values['geo_code_1'] = (float)$ret->lat;
+          $values['geo_code_2'] = (float)$ret->lng;
+          return TRUE;
             }
         }
+      elseif ($xml->status == 'OVER_QUERY_LIMIT') {
+        CRM_Core_Error::fatal('Geocoding failed. Message from Google: ' . $xml->status);
+      }
+    }
+
         // reset the geo code values if we did not get any good values
         $values['geo_code_1'] = $values['geo_code_2'] = 'null';
         return false;
