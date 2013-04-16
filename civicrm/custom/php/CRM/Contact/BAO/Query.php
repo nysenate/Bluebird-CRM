@@ -3161,21 +3161,22 @@ WHERE  id IN ( $groupIDs )
 
     function modifiedDates( $values )
     {
+      //NYSS 6610 fix end date
         $this->_useDistinct = true;
         foreach ( array_keys( $this->_params ) as $id ) {  
             if( $this->_params[$id][0] == 'log_date') {
                 if( $this->_params[$id][2] == 1 ) {
-                    $changeDate = 'added_log_date';
-                    $values[0]  = 'added_'.$values[0];
+                   // $changeDate = 'added_log_date';
+                   // $values[0]  = 'added_'.$values[0];
                     $fieldTitle = 'Added Date';
                 } else if( $this->_params[$id][2] == 2 ){
-                    $changeDate = 'modified_log_date';
-                    $values[0]  = 'modified_'.$values[0];
+                   // $changeDate = 'modified_log_date';
+                   // $values[0]  = 'modified_'.$values[0];
                     $fieldTitle = 'Modified Date';
                 }
             }
         }
-        
+        $changeDate = 'log_date';
         $this->dateQueryBuilder( $values,
                                  'civicrm_log', $changeDate, 'modified_date', $fieldTitle );
     }
