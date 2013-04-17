@@ -523,16 +523,22 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $uploadInbox = $uploadDir.'inbox/';
 
   $bodyStart = microtime(true);
-   // check for plain / html body text
-  $messagebody  = imap_fetchbody($mbox, $msgid, 1.1);
-  if($messagebody == ''){
-      $messagebody  = imap_fetchbody($mbox, $msgid, 1.2);
-  }
-  if($messagebody == ''){
-    $messagebody  = imap_fetchbody($mbox, $msgid, 1);
-  }
-  $parsedBody = $Parse->unifiedMessageInfo($messagebody);
 
+  //  check for plain / html body text
+  $s = imap_fetchstructure($mbox, $msgid);
+  // print_r($s);
+  if (!property_exists($s, 'parts') || !$s->parts){ // simple
+    $RawBody[$s->subtype]['encoding'] = $s->encoding;
+    $RawBody[$s->subtype]['body'] = imap_fetchbody($mbox,$msgid,0);
+  }else { // multipart: cycle through each part
+    foreach ($s->parts as $partno0=>$p){
+      $RawBody[$p->subtype]['encoding'] = $s->encoding;
+      $RawBody[$p->subtype]['body'] = imap_fetchbody($mbox,$msgid,$partno0+1);
+    }
+  }
+
+  $parsedBody = $Parse->unifiedMessageInfo($RawBody);
+  var_dump($parsedBody);
   if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
     echo "[WARN]    Parse problem : LDAP LOOKUP FAILURE \n";
   }

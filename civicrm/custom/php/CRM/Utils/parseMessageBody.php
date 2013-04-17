@@ -7,26 +7,51 @@ class parseMessageBody {
   * Parameters: $body, the body text of an email (html or plaintex)
   * Returns: An Object of the headers in message in tree format
   */
-  public static function unifiedMessageInfo($body) {
+  public static function unifiedMessageInfo($origin) {
     $uniStart = microtime(true);
-    $origin = $body;
 
-    // check for html
-    if($body != self::strip_HTML_tags($body)){
-      $format = 'html';
-    }else{
+    // var_dump($origin);
+
+    if(isset($origin['PLAIN']['body'])){
+      $start = $origin['PLAIN']['body'];
       $format = 'plain';
+      $encoding = $origin['PLAIN']['encoding'];
+    }elseif(isset($origin['HTML']['body'])){
+      $start = $origin['HTML']['body'];
+      $format = 'html';
+      $encoding = $origin['HTML']['encoding'];
     }
 
-    $body = quoted_printable_decode($body);
-    $body = substr($body, 0, 1600);
-    $body = preg_replace("/\\t/i", " ", $body);
-    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $body);
-    $body = preg_replace('/BR/i', 'br', $body);
-    $body = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $body);
-    $body = self::strip_HTML_tags($body);
-    $body = preg_replace('/#####---/', "\r\n", $body);
-    $bodyArray = explode("\r\n", $body);
+    if ($encoding == 0){
+        if (base64_decode($start, true)) {
+          $start = imap_base64($start);
+        }else{
+          $start = $start;
+        }
+    }elseif ($encoding == 1){
+        $start = imap_8bit($start);
+    }elseif ($encoding == 2){
+        $start = imap_binary($start);
+    }elseif ($encoding == 3){
+         if (base64_decode($start, true)) {
+          $start = imap_base64($start);
+        }else{
+          $start = $start;
+        }
+    }elseif ($encoding == 4){
+        $start = imap_qprint($start);
+    }elseif ($encoding == 5){
+        $start = $start;
+    }
+
+    $HeaderCheck = substr($start, 0, 1600);
+    $HeaderCheck = preg_replace("/\\t/i", " ", $HeaderCheck);
+    $HeaderCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $HeaderCheck);
+    $HeaderCheck = preg_replace('/BR/i', 'br', $HeaderCheck);
+    $HeaderCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
+    $HeaderCheck = self::strip_HTML_tags($HeaderCheck);
+    $HeaderCheck = preg_replace('/#####---/', "\r\n", $HeaderCheck);
+    $bodyArray = explode("\r\n", $HeaderCheck);
 
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
     $count = 0; // count of embedded message headers
@@ -113,7 +138,7 @@ class parseMessageBody {
     // $body is perserved as much as possible for viewing
 
     // // use a placeholder to mark linebreaks / br tags
-    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $body);
+    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
     $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
     $body = self::strip_HTML_tags($body);
     // $body = preg_replace('/> /i', '', $body);
@@ -133,17 +158,11 @@ class parseMessageBody {
     $body = preg_replace('/( ){2,}/', " ", $body);
     $body = preg_replace('/=<br\/>\\r\\n/', "", $body); // weird line breaks removed
 
-
     // // final cleanup
-    // $body = mb_convert_encoding($body, 'ISO-8859-1');
-    // $body = stripslashes($body);
-    // $body = filter_var($body, FILTER_SANITIZE_SPECIAL_CHARS);
-    // // $body = filter_var($body, FILTER_UNSAFE_RAW, FILTER_FLAG_ENCODE_AMP);
-    // // $body = filter_var($body, FILTER_SANITIZE_MAGIC_QUOTES);
     $body = addslashes($body);
 
-    // $body = mysqli_real_escape_string($body);
-    // var_dump()
+    if(is_null($body)) $body = "No Message Content Found";
+
     if($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL){
       $status =  'direct';
     }else{

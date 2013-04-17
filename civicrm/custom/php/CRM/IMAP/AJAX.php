@@ -687,37 +687,16 @@ class CRM_IMAP_AJAX {
                       while($row = mysql_fetch_assoc($rowUpdatedResult)) {
                         $fileId = $row['id'];
                       }
-                      // var_dump("civicrm_file ID : ".$fileId);
-                      // var_dump("Activity ID : ". $activity['id']);
 
-
-                      // //table, activity id, file_id
                       $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activity['id']}', '{$fileId}');";
-                      // var_dump($insertEntityQuery);
                       $insertEntity = mysql_query($insertEntityQuery, self::db());
-                      // echo "<hr/>";
                     }else{
                       // echo "File Exists";
                     }
                   }
                 }
-                // exit();
-
-
-                // Move the message to the archive folder!
-                // self::setupImap();
-                // $imapMsgId =  $output['message_id'];
-                // $imapAcctId =  $output['imap_id'];
-                // $imap = new CRM_Utils_IMAP(self::$server,
-                //                   self::$imap_accounts[$imapAcctId]['user'],
-                //                   self::$imap_accounts[$imapAcctId]['pass']);
-                // $status = $imap->movemsg_uid($imapMsgId, 'Archive');
-                // imap_close($imap->conn());
-
                 echo json_encode($returnCode);
               }
-
-              // add attachment to activity
             }
           }
         }else{
