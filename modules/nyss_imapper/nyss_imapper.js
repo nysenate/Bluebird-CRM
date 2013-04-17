@@ -605,20 +605,20 @@ cj(document).ready(function(){
 
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
-    var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
-    var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
-    var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
-    var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
-    var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
-    var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
+    // var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+    // var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+    // var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
+    // var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
+    // var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
+    // var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
 
 
-    if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
-    if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
-    if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
-    if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
-    if(fromstreet && fromstreet !='null'){  cj('.street_address').val(fromstreet);}else{ cj('.street_address').val('');}
-    if(fromcity && fromcity !='null'){  cj('.city').val(fromcity);}else{ cj('.city').val('');}
+    // if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
+    // if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
+    // if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
+    // if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
+    // if(fromstreet && fromstreet !='null'){  cj('.street_address').val(fromstreet);}else{ cj('.street_address').val('');}
+    // if(fromcity && fromcity !='null'){  cj('.city').val(fromcity);}else{ cj('.city').val('');}
 
     cj('#imapper-contacts-list').html('');
 
@@ -1324,7 +1324,7 @@ function buildActivitiesList() {
 
         match_sort = 'ProcessError';
         if(value.matcher){
-          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher : "Automatically Matched" ;
+          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
           var match_short = (value.matcher != 0) ? "M" : "A" ;
           match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';

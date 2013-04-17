@@ -9,6 +9,7 @@ class parseMessageBody {
   */
   public static function unifiedMessageInfo($body) {
     $uniStart = microtime(true);
+    $origin = $body;
 
     // check for html
     if($body != self::strip_HTML_tags($body)){
@@ -18,23 +19,21 @@ class parseMessageBody {
     }
 
     $body = quoted_printable_decode($body);
+    $body = substr($body, 0, 1600);
     $body = preg_replace("/\\t/i", " ", $body);
+    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $body);
+    $body = preg_replace('/BR/i', 'br', $body);
+    $body = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $body);
+    $body = self::strip_HTML_tags($body);
+    $body = preg_replace('/#####---/', "\r\n", $body);
+    $bodyArray = explode("\r\n", $body);
 
-    if($format =='plain'){
-      $tempbody = preg_replace("/>|</i", "", $body);
-    }else{
-      $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $body);
-      $tempbody = preg_replace("/\\r|\\n|\\t/i", "\r\n<br>\n", $tempbody);
-    }
-    $tempbody = self::strip_HTML_tags($tempbody);
-
-    // searching message for tree of embedded headers
-    $bodyArray = explode("\r\n", $tempbody);
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
     $count = 0; // count of embedded message headers
     foreach ($bodyArray as $key => $line) {
       $line = trim($line);
       if($line != ''){
+
         $line = preg_replace("/mailto/i", "", $line); // this matched /to/
         $line = preg_replace("/Reply To|reply to|Replyto/i", "", $line); // this matched /to/
 
@@ -112,27 +111,38 @@ class parseMessageBody {
 
     // custom body parsing for mysql entry,
     // $body is perserved as much as possible for viewing
-    $body = self::strip_HTML_tags($body);
 
-    // use a placeholder to mark linebreaks / br tags
+    // // use a placeholder to mark linebreaks / br tags
     $body = preg_replace('/\r\n|\r|\n/i', '#####---', $body);
-    $body = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $body);
-
-    $body = preg_replace('/> /i', '', $body);
+    $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
+    $body = self::strip_HTML_tags($body);
+    // $body = preg_replace('/> /i', '', $body);
     $body = preg_replace('/ <|>/i', ' ', $body);
-    $body = preg_replace('/#####---/i', '<br/>', $body);
-    // find more then 3 br tags in a row
-    $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
 
-    // maybe im a type nerd, but proper quotes are important
+
+    $body = preg_replace('/#####---/i', '<br/>', $body);
+    // // find more then 3 br tags in a row
+    $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
+    $body = preg_replace('/(<br[^>]*>\s*){1,}/', "<br/>\r\n", $body);
+
+    // // maybe im a type nerd, but proper quotes are important
     $body = preg_replace('/\'/', '&#8217;', $body);
     $body = preg_replace('/ "/', ' &#8220;', $body);
     $body = preg_replace('/" |"$/', '&#8221; ', $body);
     $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
+    $body = preg_replace('/( ){2,}/', " ", $body);
+    $body = preg_replace('/=<br\/>\\r\\n/', "", $body); // weird line breaks removed
 
-    // final cleanup
-    $body = mysql_real_escape_string($body);
-    $body = mb_convert_encoding($body, 'ISO-8859-1');
+
+    // // final cleanup
+    // $body = mb_convert_encoding($body, 'ISO-8859-1');
+    // $body = stripslashes($body);
+    // $body = filter_var($body, FILTER_SANITIZE_SPECIAL_CHARS);
+    // // $body = filter_var($body, FILTER_UNSAFE_RAW, FILTER_FLAG_ENCODE_AMP);
+    // // $body = filter_var($body, FILTER_SANITIZE_MAGIC_QUOTES);
+    $body = addslashes($body);
+
+    // $body = mysqli_real_escape_string($body);
     // var_dump()
     if($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL){
       $status =  'direct';
@@ -156,6 +166,10 @@ class parseMessageBody {
     // if o= is appended to the end of the email address remove it
     $string = preg_replace('/\/senate@senate/i', '/senate', $string);
     $string = preg_replace('/\/CENTER\/senate/i', '/senate', $string);
+
+    // CN=Jason Biernacki/OU=STS11thFloor/O=senate
+    // CN=Personnel Mail/O=senate
+    $string = preg_replace('/CN=|O=|OU=/i', '', $string);
 
     $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
     $string = preg_replace('/"|\'/i', '', $string);
