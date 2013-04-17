@@ -868,7 +868,7 @@ class CRM_IMAP_AJAX {
         // WHERE `status` = 1
         // LIMIT 0 , 100000";
        $UnprocessedQuery = " SELECT
-        nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,
+        nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.matcher,
         nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size,
         civicrm_contact.display_name
         FROM `nyss_inbox_messages`
@@ -905,6 +905,7 @@ class CRM_IMAP_AJAX {
 
 
             $returnMessage['successes'][$message_id]['subject'] = $row['subject'];
+            $returnMessage['successes'][$message_id]['matcher'] =  $row['matcher'];
 
             if(!$row['display_name']){
               $returnMessage['successes'][$message_id]['matcher_name'] =  'Automatically Matched';
@@ -1109,6 +1110,10 @@ EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
         $check = $row['COUNT(id)'];
+      }
+      if ($debug){
+        echo "<h1>check</h1>";
+        var_dump($check);
       }
       if($check != '1'){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');

@@ -531,10 +531,28 @@ function civiProcessEmail($mbox, $email, $customHandler)
   if($messagebody == ''){
     $messagebody  = imap_fetchbody($mbox, $msgid, 1);
   }
-
-  // $messagebody  = imap_qprint(imap_body($mbox, $msgid));
   $parsedBody = $Parse->unifiedMessageInfo($messagebody);
-  // print_r($parsedBody);
+
+  if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
+    echo "[WARN]    Parse problem : LDAP LOOKUP FAILURE \n";
+  }
+
+  if($parsedBody['message_action'] == "direct"){
+    echo "[DEBUG]   Message was sent directly to inbox \n";
+
+    // double check to make sure if was directly sent
+    // this message format isn't ideal, it includes message info that is gross looking.
+    $messagebody_alt  = imap_qprint(imap_body($mbox, $msgid));
+    $parsedBody_alt = $Parse->unifiedMessageInfo($messagebody_alt);
+
+    if($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded"){
+      $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
+      if($headerCheck[0] != NULL){
+        echo "[WARN]    Parse problem : Header difference found \n";
+      }
+    }
+  }
+
   $bodyEnd = microtime(true);
   echo "[DEBUG]   Body Download Time: ".($bodyEnd-$bodyStart)."\n";
 
