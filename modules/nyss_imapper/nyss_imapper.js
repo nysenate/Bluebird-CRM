@@ -1143,7 +1143,6 @@ function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
     data: {id: id },
-    async:false,
     success: function(data,status) {
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
@@ -1194,7 +1193,6 @@ function DeleteActivity(value){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteActivity',
     data: {id: value},
-    async:false,
     success: function(data,status) {
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
