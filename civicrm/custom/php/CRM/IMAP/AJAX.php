@@ -197,7 +197,7 @@ class CRM_IMAP_AJAX {
             $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
             LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
             WHERE contact.is_deleted=0
-            AND email.email LIKE '".$row['forwarder']."'
+            AND email.email LIKE '".$row['sender_email']."'
             GROUP BY contact.id
             ORDER BY contact.id ASC, email.is_primary DESC";
             $matches = array();
