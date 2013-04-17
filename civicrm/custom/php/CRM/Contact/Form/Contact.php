@@ -722,13 +722,16 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
      */
     public function buildQuickForm( ) 
     {
-        //NYSS 5504 (Enhancement)
+      //NYSS 5504 (Enhancement); only cache when we have an existing contact
+      if ( $this->_contactId ) {
         require_once('CRM/Utils/Cache.php');
         $cache = CRM_Utils_Cache::singleton();
         $cacheKeyElements = "CRM_Contact_Form_Contact_elements_{$this->_contactId}";
         $cacheKeyTagValues = "CRM_Contact_Form_Contact_tagValues_{$this->_contactId}";
         $cacheElements = $cache->get($cacheKeyElements);
         $cacheTagValues = $cache->get($cacheKeyTagValues);
+        //CRM_Core_Error::debug_var('$cacheKeyElements', $cacheKeyElements);
+        //CRM_Core_Error::debug_var('$cacheElements', $cacheElements);
 
         // We're on the edit or save page, and it's not via ajax (_get['block'])
         if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
@@ -774,6 +777,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
             //}
             return;
         }
+      }//NYSS
 
         //load form for child blocks
         if ( $this->_addBlockName ) {
@@ -865,8 +869,11 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                                  array ( 'type'       => 'cancel',
                                          'name'      => ts('Cancel') ) ) );
 
+      //NYSS
+      if ( $this->_contactId ) {
         $cache->set($cacheKeyElements, serialize($this->_elements));
         $cache->set($cacheKeyTagValues, serialize($this->_entityTagValues));
+      }
     }
     
     /**
