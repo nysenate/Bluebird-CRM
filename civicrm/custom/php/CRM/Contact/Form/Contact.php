@@ -680,57 +680,53 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
    */
   public function buildQuickForm() {
 
-    //NYSS 5504 (Enhancement)
-    require_once('CRM/Utils/Cache.php');
-    $cache = CRM_Utils_Cache::singleton();
-    $cacheKeyElements = "CRM_Contact_Form_Contact_elements_{$this->_contactId}";
-    $cacheKeyTagValues = "CRM_Contact_Form_Contact_tagValues_{$this->_contactId}";
-    $cacheElements = $cache->get($cacheKeyElements);
-    $cacheTagValues = $cache->get($cacheKeyTagValues);
+    //NYSS 5504 (Enhancement); limit to when a contact exists
+    if ( $this->_contactId ) {
+      require_once('CRM/Utils/Cache.php');
+      $cache = CRM_Utils_Cache::singleton();
+      $cacheKeyElements = "CRM_Contact_Form_Contact_elements_{$this->_contactId}";
+      $cacheKeyTagValues = "CRM_Contact_Form_Contact_tagValues_{$this->_contactId}";
+      $cacheElements = $cache->get($cacheKeyElements);
+      $cacheTagValues = $cache->get($cacheKeyTagValues);
 
-    // We're on the edit or save page, and it's not via ajax (_get['block'])
-    if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
-      // Load the classes for all of the QuickForm element types or else
-      // we'll get PHP Incomplete Class objects.
-      require_once('HTML/QuickForm.php');
-      foreach($GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] as $elements) {
-        require_once($elements[0]);
-      }
-      // Load the elements and tag values out of cache and assign them
-      $cacheElements = unserialize($cacheElements);
-      $this->_elements = $cacheElements;
-      if($cacheTagValues) {
-        $cacheTagValues = unserialize($cacheTagValues);
-        $this->_entityTagValues = $cacheTagValues;
-      }
-
-      // if(empty($_POST)) means we're on the edit page, not the save page
-      // so we need to build the form elements instead of just submitting it
-
-      if ( $this->_addBlockName ) {
-        require_once( str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_addBlockName ) . '.php');
-        //if(empty($_POST)) {
-          eval( 'CRM_Contact_Form_Edit_' . $this->_addBlockName . '::buildQuickForm( $this );' );
-        //}
-      }
-      require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_contactType) . '.php');
-      foreach( $this->_editOptions as $name => $label ) {
-        if ( $name == 'Address' ) {
-          $this->_blocks['Address'] = $this->_editOptions['Address'];
-          continue;
+      // We're on the edit or save page, and it's not via ajax (_get['block'])
+      if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
+        // Load the classes for all of the QuickForm element types or else
+        // we'll get PHP Incomplete Class objects.
+        require_once('HTML/QuickForm.php');
+        foreach($GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] as $elements) {
+          require_once($elements[0]);
         }
-        require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $name ) . '.php');
-        //if(empty($_POST)) {
-          eval( 'CRM_Contact_Form_Edit_' . $name . '::buildQuickForm( $this );' );
-        //}
-      }
+        // Load the elements and tag values out of cache and assign them
+        $cacheElements = unserialize($cacheElements);
+        $this->_elements = $cacheElements;
+        if($cacheTagValues) {
+          $cacheTagValues = unserialize($cacheTagValues);
+          $this->_entityTagValues = $cacheTagValues;
+        }
 
-      // If it's a form (not a submission) then build the location quick form.
-      //if(empty($_POST)) {
-        // build location blocks.
+        // if(empty($_POST)) means we're on the edit page, not the save page
+        // so we need to build the form elements instead of just submitting it
+
+        if ( $this->_addBlockName ) {
+          require_once( str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_addBlockName ) . '.php');
+          eval( 'CRM_Contact_Form_Edit_' . $this->_addBlockName . '::buildQuickForm( $this );' );
+        }
+        require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_contactType) . '.php');
+        foreach( $this->_editOptions as $name => $label ) {
+          if ( $name == 'Address' ) {
+            $this->_blocks['Address'] = $this->_editOptions['Address'];
+            continue;
+          }
+          require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $name ) . '.php');
+          eval( 'CRM_Contact_Form_Edit_' . $name . '::buildQuickForm( $this );' );
+        }
+
+        // If it's a form (not a submission) then build the location quick form.
         CRM_Contact_Form_Location::buildQuickForm( $this );
-      //}
-      return;
+
+        return;
+      }
     }
 
     //load form for child blocks
@@ -843,6 +839,12 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     $this->assign('oldSubtypes', json_encode($this->_oldSubtypes));
 
     $this->addButtons($buttons);
+
+    //NYSS 6608
+    if ( $this->_contactId ) {
+      $cache->set($cacheKeyElements, serialize($this->_elements));
+      $cache->set($cacheKeyTagValues, serialize($this->_entityTagValues));
+    }
   }
 
   /**
