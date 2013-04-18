@@ -85,7 +85,7 @@ $imap_mailbox = DEFAULT_IMAP_MAILBOX;
 $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
-$version_number = 0.03; // helpful in debug to check parsing version
+$version_number = 0.04; // helpful in debug to check parsing version
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
