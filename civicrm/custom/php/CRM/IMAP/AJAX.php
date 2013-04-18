@@ -152,27 +152,64 @@ class CRM_IMAP_AJAX {
         $debug = self::get('debug');
         $start = microtime(true);
 
-        $UnprocessedQuery = " SELECT *
+       $UnprocessedQuery = " SELECT
+        nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,
+        nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size
         FROM `nyss_inbox_messages`
-        WHERE `status` = 0
-        LIMIT 0 , 100000";
+        LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
+        WHERE `status` = 0 LIMIT 0 , 100000";
+
+        // echo $UnprocessedQuery;
 
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
         $UnprocessedOutput = array();
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
-            $messageId = $row['id'];
-            $returnMessage['Unprocessed'][] = self::unifiedMessageInfo($messageId);
+            // var_dump($row);
+            // exit();
+            $UnprocessedOutput = $row;
+            $message_id = $row['id'];
+            // $returnMessage['successes'][$message_id] = $UnprocessedOutput;
+            $returnMessage['Unprocessed'][$message_id]['id'] = $message_id;
+            $returnMessage['Unprocessed'][$message_id]['message_id'] = $row['message_id'];
+            $returnMessage['Unprocessed'][$message_id]['imap_id'] = $row['imap_id'];
+            $returnMessage['Unprocessed'][$message_id]['sender_name'] = $row['sender_name'];
+            $returnMessage['Unprocessed'][$message_id]['sender_email'] = $row['sender_email'];
+            $returnMessage['Unprocessed'][$message_id]['subject'] = $row['subject'];
+            // $returnMessage['successes'][$message_id]['body'] = $row['body'];
+            $returnMessage['Unprocessed'][$message_id]['forwarder'] = $row['forwarder'];
+
+
+            $cleanDate = self::cleanDate($row['updated_date']);
+            $returnMessage['Unprocessed'][$message_id]['date_short'] = $cleanDate['short'];
+            $returnMessage['Unprocessed'][$message_id]['date_u'] = $cleanDate['u'];
+            $returnMessage['Unprocessed'][$message_id]['date_long'] = $cleanDate['long'];
+            $returnMessage['Unprocessed'][$message_id]['key'] = $row['sender_email'];
+
+
+            if($row['file_name']){
+              $returnMessage['Unprocessed'][$message_id]['attachments'][] =  array('fileName'=>$row['file_name'],'size'=>$row['size'],'rejection'=>$row['rejection'] );
+            }else{
+              $returnMessage['Unprocessed'][$message_id]['attachments'] ='';
+            }
+
+
+            // get matched_to info
+            $Query="SELECT  contact.id,  email.email FROM civicrm_contact contact
+            LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
+            WHERE contact.is_deleted=0
+            AND email.email LIKE '".$row['sender_email']."'
+            GROUP BY contact.id
+            ORDER BY contact.id ASC, email.is_primary DESC";
+            $matches = array();
+            $result = mysql_query($Query, self::db());
+            while($row = mysql_fetch_assoc($result)) {
+              $matches[] = $row;
+            }
+            $returnMessage['Unprocessed'][$message_id]['matches_count'] = count($matches);
+
+
         }
-
-        $ProcessedQuery = " SELECT count(id)
-        FROM `nyss_inbox_messages`
-        WHERE `status` = 1";
-
-        $ProcessedResult = mysql_query($ProcessedQuery, self::db());
-        while($row = mysql_fetch_assoc($ProcessedResult)) {
-            $returnMessage['stats']['overview']['Processed'] = $row['count(id)'];
-        }
-
+        mysql_close(self::$db);
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
         $returnMessage['stats']['overview']['Unprocessed'] = count($returnMessage['Unprocessed']);
          $returnMessage['stats']['overview']['total'] =  count($ids);
@@ -227,55 +264,29 @@ class CRM_IMAP_AJAX {
 
 
     /* cleanDate
-     * Parameters: $date_string: The date string from the from the forwarded message
-     * Returns: The 'm-d-y h:i A' formatted date date .
-     * This function will format many types of incoming dates
+     * Parameters: $date: A date
+     * Returns: 3 date formats
      */
-    public static function cleanDate($date_string){
-    $matches = array();
-    // search for the word date
-    $count = preg_match("/(Date:|date:)\s*([^\r\n]*)/i", $date_string, $matches);
-    $date ='';
-    // in some emails line breaks don't exist, so parse the string after Date:
-    if($count == 1){
-      foreach(preg_split('/ /', $matches[2]) as $token) {
-        $check = strtolower($token);
-        $date .= $check." ";
-        if($check == 'am'||$check == 'pm'||$check == 'subject:'||$check == 'from:'||$check == 'to:'){
-          break;
+    public static function cleanDate($date){
+      $strtotime = strtotime($date);
+
+      if(date('Ymd') == date('Ymd', $strtotime)){ $today = true; };
+
+      // check if the message is from last year
+      if ( (date("Y", $strtotime) - date("Y")) < 0 ){
+        $formatted = date("M d, Y", $strtotime);
+      }else{
+        // if the message is from this year, see if the message is from today
+        if ($today){
+          $formatted = 'Today '.date("h:i A", $strtotime);
+        }else{
+          $formatted = date("M d h:i A", $strtotime);
         }
       }
-    }
-
-    $date_string_short = ($count == 1 ) ? $date  : $date_string;
-
-    // somestrs email clients think its fun to add stuff to the date, remove it here.
-    $date_string_short = preg_replace("/ (at) /i", "", $date_string_short);
-
-    if(date('Ymd') == date('Ymd', strtotime($date_string_short))){ $today = true; };
-
-    // check if the message is from last year
-    if ( (date("Y", strtotime($date_string_short)) - date("Y")) < 0 ){
-      $formatted = date("M d, Y", strtotime($date_string_short));
-    }else{
-      // if the message is from this year, see if the message is from today
-      if ($today){
-        $formatted = 'Today '.date("h:i A", strtotime($date_string_short));
-      }else{
-        $formatted = date("M d h:i A", strtotime($date_string_short));
-      }
-    }
-    if($formatted == 'Nov 30, -0001' || $date_string_short == 'Nov 30, -0001' ){
-      return array('date_debug'=>$date_string_short,
-        'long'=> 'Couldn\'t find date in '.$date_string_short,
-        'u'=>date("U"),
-        'short'=>'No Date Found');
-    }else{
-      return array('date_debug'=>$date_string_short,
-        'long'=> date("M d, Y h:i A", strtotime($date_string_short)),
-        'u'=>date("U", strtotime($date_string_short)),
+      return array(
+        'long'=> date("M d, Y h:i A", $strtotime),
+        'u'=>date("U", $strtotime),
         'short'=>$formatted);
-    }
 
     }
 
@@ -850,50 +861,87 @@ class CRM_IMAP_AJAX {
         $debug = self::get('debug');
 
 
-        $UnprocessedQuery = " SELECT *
-        FROM `nyss_inbox_messages`
-        WHERE `status` = 1
-        LIMIT 0 , 100000";
+        // $UnprocessedQuery = " SELECT id,updated_date,matched_to,sender_email
+        // FROM `nyss_inbox_messages`
+        // LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
 
+        // WHERE `status` = 1
+        // LIMIT 0 , 100000";
+       $UnprocessedQuery = " SELECT
+        nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.matcher,
+        nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size,
+        civicrm_contact.display_name
+        FROM `nyss_inbox_messages`
+        LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
+        LEFT JOIN civicrm_contact ON (nyss_inbox_messages.matcher = civicrm_contact.id)
+        WHERE `status` = 1 LIMIT 0 , 100000";
+
+        // echo $UnprocessedQuery;
 
         $UnprocessedResult = mysql_query($UnprocessedQuery, self::db());
         $UnprocessedOutput = array();
         while($row = mysql_fetch_assoc($UnprocessedResult)) {
+            // var_dump($row);
+            // exit();
             $UnprocessedOutput = $row;
             $message_id = $row['id'];
-            $returnMessage['successes'][$message_id] = $UnprocessedOutput;
-            $cleanDate = self::cleanDate($row['updated_date']);
-            $date_short = $cleanDate['short'];
-            $date_long =  $cleanDate['long'];
-            $date_u =  $cleanDate['u'];
-            $returnMessage['successes'][$message_id]['date_short'] = $date_short;
-            $returnMessage['successes'][$message_id]['date_u'] = $date_u;
-            $returnMessage['successes'][$message_id]['date_long'] = $date_long;
-            $returnMessage['successes'][$message_id]['fromEmail'] = $row['sender_email'];
-            $matcher = self::contactRaw($row['matcher']);
-            $matcherName = $matcher['values'][$row['matcher']]['display_name'];
-            $returnMessage['successes'][$message_id]['matcher_name'] =  $matcherName;
+            // $returnMessage['successes'][$message_id] = $UnprocessedOutput;
+            $returnMessage['successes'][$message_id]['activity_id'] = $row['activity_id'];
+            $returnMessage['successes'][$message_id]['id'] = $message_id;
 
-            // getting contact details
-            $contactId = $row['matched_to'];
-            $contact_info = self::contactRaw($contactId);
-            $returnMessage['successes'][$message_id]['contactType'] = $contact_info['values'][$contactId]['contact_type'];
-            $returnMessage['successes'][$message_id]['firstName'] = $contact_info['values'][$contactId]['first_name'];
-            $returnMessage['successes'][$message_id]['lastName'] = $contact_info['values'][$contactId]['last_name'];
-            $returnMessage['successes'][$message_id]['fromName'] = $contact_info['values'][$contactId]['display_name'];
-            $returnMessage['successes'][$message_id]['fromdob'] = $contact_info['values'][$contactId]['birth_date'];
-            $returnMessage['successes'][$message_id]['fromphone'] = $contact_info['values'][$contactId]['phone'];
-            $returnMessage['successes'][$message_id]['fromstreet'] = $contact_info['values'][$contactId]['street_address'];
-            $returnMessage['successes'][$message_id]['fromcity'] = $contact_info['values'][$contactId]['city'];
-            // attachments
-            $attachments= array();
-            $AttachmentsQuery ="SELECT * FROM nyss_inbox_attachments WHERE `email_id` = $message_id";
-            $AttachmentResult = mysql_query($AttachmentsQuery, self::db());
-            while($row = mysql_fetch_assoc($AttachmentResult)) {
-              $attachments[] = array('fileName'=>$row['file_name'],'fileFull'=>$row['file_full'],'size'=>$row['size'],'ext'=>$row['ext'] );
+            $cleanDate = self::cleanDate($row['updated_date']);
+
+            $returnMessage['successes'][$message_id]['date_short'] = $cleanDate['short'];
+            $returnMessage['successes'][$message_id]['date_u'] = $cleanDate['u'];
+            $returnMessage['successes'][$message_id]['date_long'] = $cleanDate['long'];
+            $returnMessage['successes'][$message_id]['sender_email'] = $row['sender_email'];
+            $returnMessage['successes'][$message_id]['forwarder'] = $row['forwarder'];
+
+            if($row['sender_name']){
+              $returnMessage['successes'][$message_id]['sender_name'] = $row['sender_name'];
+            }else{
+              $returnMessage['successes'][$message_id]['sender_name'] = '';
             }
-            $returnMessage['successes'][$message_id]['attachments']=$attachments;
+
+
+            $returnMessage['successes'][$message_id]['subject'] = $row['subject'];
+            $returnMessage['successes'][$message_id]['matcher'] =  $row['matcher'];
+
+            if(!$row['display_name']){
+              $returnMessage['successes'][$message_id]['matcher_name'] =  'Automatically Matched';
+            }else{
+              $returnMessage['successes'][$message_id]['matcher_name'] =  $row['display_name'];
+            }
+
+            if($row['file_name']){
+              $returnMessage['successes'][$message_id]['attachments'][] =  array('fileName'=>$row['file_name'],'size'=>$row['size'],'rejection'=>$row['rejection'] );
+            }else{
+              $returnMessage['successes'][$message_id]['attachments'] ='';
+            }
+
+            // get matched_to info
+            $returnMessage['successes'][$message_id]['matched_to'] = $row['matched_to'];
+            $MatchedToQuery = " SELECT contact_type,first_name,last_name,display_name
+            FROM `civicrm_contact`
+            WHERE `id` = ".$row['matched_to']." LIMIT 1";
+
+            $MatchedToResult = mysql_query($MatchedToQuery, self::db());
+            $MatchedToOutput = array();
+
+            while($row = mysql_fetch_assoc($MatchedToResult)) {
+              $returnMessage['successes'][$message_id]['contactType'] = $row['contact_type'];
+              $returnMessage['successes'][$message_id]['firstName'] = $row['first_name'];
+              $returnMessage['successes'][$message_id]['lastName'] = $row['last_name'];
+              $returnMessage['successes'][$message_id]['fromName'] = $row['display_name'];
+            }
+            // exit();
+
+
+
+
+
         }
+        mysql_close(self::$db);
 
         $returnMessage['stats']['overview']['successes'] = count($returnMessage['successes']);
         $returnMessage['stats']['overview']['errors'] =   count($errors);
@@ -1062,6 +1110,10 @@ EOQ;
       $check_result = mysql_query($query, self::db());
       if($row = mysql_fetch_assoc($check_result)) {
         $check = $row['COUNT(id)'];
+      }
+      if ($debug){
+        echo "<h1>check</h1>";
+        var_dump($check);
       }
       if($check != '1'){
         $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Activity is not assigned to this Contact, Please Reload','clear'=>'true');
