@@ -195,22 +195,6 @@ class CRM_Contact_BAO_Individual extends CRM_Contact_DAO_Contact
                 }
             }
             
-            // make sure we have values for all the name fields.
-            $formatted  = $params;
-            $nameParams = array( 'first_name'        => $firstName,
-                                 'middle_name'       => $middleName,
-                                 'last_name'         => $lastName, 
-                                 'individual_suffix' => $suffix,
-                                 'individual_prefix' => $prefix,
-                                 'prefix_id'         => $prefix_id,
-                                 'suffix_id'         => $suffix_id );
-            // make sure we have all the name fields.
-            foreach ( $nameParams as $name => $value ) {
-                if ( !CRM_Utils_Array::value( $name, $formatted ) && $value ) {
-                    $formatted[$name] = $value;
-                }
-            }
-
             $tokens = array( );
             CRM_Utils_Hook::tokens( $tokens );
             $tokenFields = array( );
