@@ -526,17 +526,21 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   //  check for plain / html body text
   $s = imap_fetchstructure($mbox, $msgid);
+  # github.com/hobsonlane/ships_log/blob/61aca0a32fae0da4262587a2a6bdd8bd26b71d6c/_random_stuff_/decode_textfile.php
   // print_r($s);
-  if (!property_exists($s, 'parts') || !$s->parts){ // simple
-    $RawBody[$s->subtype]['encoding'] = $s->encoding;
-    $RawBody[$s->subtype]['body'] = imap_fetchbody($mbox,$msgid,0);
-  }else { // multipart: cycle through each part
-    foreach ($s->parts as $partno0=>$p){
-      $RawBody[$p->subtype]['encoding'] = $s->encoding;
-      $RawBody[$p->subtype]['body'] = imap_fetchbody($mbox,$msgid,$partno0+1);
-    }
-  }
+  $attachments = array();
+  if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
+    var_dump($mbox,$msgid,$s,0,$htmlmsg,$plainmsg,$charset,$attachments); // no part-number, so pass 0
+    $RawBody[$s->subtype] = array('encoding' => $s->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $s->lines." : ".$s->encoding." : 0" );
 
+  }else{ // multipart: iterate through each part
+      foreach ($s->parts as $partno0=>$p){
+        $RawBody[$p->subtype] = array('encoding' => $p->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $p->lines." : ".$p->encoding." : ".($partno0+1) );
+      }
+  }
+  // print_r($RawBody);
+
+  // exit();
   $parsedBody = $Parse->unifiedMessageInfo($RawBody);
   var_dump($parsedBody);
   if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
@@ -564,7 +568,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   // formatting headers
   $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
-  $fwdName = $parsedBody['fwd_headers']['fwd_email'];
+  $fwdName = $parsedBody['fwd_headers']['fwd_name'];
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
   $fwdSubject = $parsedBody['fwd_headers']['fwd_subject'];
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
