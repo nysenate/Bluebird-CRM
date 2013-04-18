@@ -22,26 +22,22 @@ class parseMessageBody {
       $encoding = $origin['HTML']['encoding'];
     }
 
-    if ($encoding == 0){
-        if (base64_decode($start, true)) {
-          $start = imap_base64($start);
-        }else{
-          $start = $start;
-        }
-    }elseif ($encoding == 1){
-        $start = imap_8bit($start);
-    }elseif ($encoding == 2){
-        $start = imap_binary($start);
-    }elseif ($encoding == 3){
-         if (base64_decode($start, true)) {
-          $start = imap_base64($start);
-        }else{
-          $start = $start;
-        }
-    }elseif ($encoding == 4){
-        $start = imap_qprint($start);
-    }elseif ($encoding == 5){
-        $start = $start;
+    if($encoding == 0) {
+      //$start = imap_7bit($start);
+    } elseif($encoding == 1) {
+      $start = imap_8bit($start);
+      $start = quoted_printable_decode($start);
+    } elseif($encoding == 2) {
+      $start = imap_binary($start);
+      $start = imap_base64($start);
+    } elseif($encoding == 3) {
+      $start = imap_base64($start);
+    } elseif($encoding == 4) {
+      $start = quoted_printable_decode($start);
+    }
+
+    if(strtolower($charset) == "iso-8859-1") {
+      $start = imap_utf8($start);
     }
 
     $HeaderCheck = substr($start, 0, 1600);
@@ -137,26 +133,26 @@ class parseMessageBody {
     // custom body parsing for mysql entry,
     // $body is perserved as much as possible for viewing
 
-    // // use a placeholder to mark linebreaks / br tags
+    // // // use a placeholder to mark linebreaks / br tags
     $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
+    $body = preg_replace('/\t/i', ' ', $body);
+
     $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
     $body = self::strip_HTML_tags($body);
-    // $body = preg_replace('/> /i', '', $body);
-    $body = preg_replace('/ <|>/i', ' ', $body);
-
-
+    $body = preg_replace('/<|>/i', ' ', $body);
     $body = preg_replace('/#####---/i', '<br/>', $body);
-    // // find more then 3 br tags in a row
+
+    // find more then 3 br tags in a row
     $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
     $body = preg_replace('/(<br[^>]*>\s*){1,}/', "<br/>\r\n", $body);
 
-    // // maybe im a type nerd, but proper quotes are important
+    // maybe im a type nerd, but proper quotes are important
     $body = preg_replace('/\'/', '&#8217;', $body);
     $body = preg_replace('/ "/', ' &#8220;', $body);
     $body = preg_replace('/" |"$/', '&#8221; ', $body);
     $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
     $body = preg_replace('/( ){2,}/', " ", $body);
-    $body = preg_replace('/=<br\/>\\r\\n/', "", $body); // weird line breaks removed
+    // $body = preg_replace('/=<br\/>\\r\\n/', "", $body); // weird line breaks removed
 
     // // final cleanup
     $body = addslashes($body);
