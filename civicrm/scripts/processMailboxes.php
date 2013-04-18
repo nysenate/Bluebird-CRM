@@ -526,11 +526,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   //  check for plain / html body text
   $s = imap_fetchstructure($mbox, $msgid);
-  # github.com/hobsonlane/ships_log/blob/61aca0a32fae0da4262587a2a6bdd8bd26b71d6c/_random_stuff_/decode_textfile.php
-  // print_r($s);
-  $attachments = array();
+
   if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
-    var_dump($mbox,$msgid,$s,0,$htmlmsg,$plainmsg,$charset,$attachments); // no part-number, so pass 0
     $RawBody[$s->subtype] = array('encoding' => $s->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $s->lines." : ".$s->encoding." : 0" );
 
   }else{ // multipart: iterate through each part
@@ -538,11 +535,9 @@ function civiProcessEmail($mbox, $email, $customHandler)
         $RawBody[$p->subtype] = array('encoding' => $p->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $p->lines." : ".$p->encoding." : ".($partno0+1) );
       }
   }
-  // print_r($RawBody);
 
-  // exit();
   $parsedBody = $Parse->unifiedMessageInfo($RawBody);
-  var_dump($parsedBody);
+
   if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
     echo "[WARN]    Parse problem : LDAP LOOKUP FAILURE \n";
   }
@@ -552,8 +547,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
     // double check to make sure if was directly sent
     // this message format isn't ideal, it includes message info that is gross looking.
-    $messagebody_alt  = imap_qprint(imap_body($mbox, $msgid));
-    $parsedBody_alt = $Parse->unifiedMessageInfo($messagebody_alt);
+    $RawBody_alt['HTML'] = array('encoding' => 0, 'body' => imap_qprint(imap_body($mbox, $msgid)));
+    $parsedBody_alt = $Parse->unifiedMessageInfo($RawBody_alt);
 
     if($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded"){
       $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
