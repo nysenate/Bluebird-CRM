@@ -276,30 +276,30 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     $form->setDefaults( $defaults );
   }
 
-    //set NY as default for state field in proximity search
-    if ( $formName == 'CRM_Contact_Form_Search_Custom' &&
-         $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity' ) {
+  //set NY as default for state field in proximity search
+  if ( $formName == 'CRM_Contact_Form_Search_Custom' &&
+       $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity' ) {
 
-      $defaults['state_province_id'] = 1031;
-      $form->setDefaults( $defaults );
-    }
+    $defaults['state_province_id'] = 1031;
+    $form->setDefaults( $defaults );
+  }
 
-    //5154
-    if ( $formName == 'CRM_Contact_Form_Search_Custom' ) {
-      $bC = drupal_get_breadcrumb( );
-      foreach (  $bC as $k => $v ) {
-        if ( strpos($v, 'Custom Searches') !== false ) {
-          unset($bC[$k]);
-        }
+  //5154
+  if ( $formName == 'CRM_Contact_Form_Search_Custom' ) {
+    $bC = drupal_get_breadcrumb( );
+    foreach (  $bC as $k => $v ) {
+      if ( strpos($v, 'Custom Searches') !== false ) {
+        unset($bC[$k]);
       }
-      drupal_set_breadcrumb( $bC );
     }
+    drupal_set_breadcrumb( $bC );
+  }
 
-    //set bounce reason default on, bounce report
-    if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
-      $defaults['fields[bounce_reason]'] = 1;
-      $form->setDefaults( $defaults );
-    }
+  //set bounce reason default on, bounce report
+  if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
+    $defaults['fields[bounce_reason]'] = 1;
+    $form->setDefaults( $defaults );
+  }
 
   //3674 add limit submit js to all submit buttons
   if ( isset( $form->_elementIndex['buttons'] ) ) {
@@ -461,6 +461,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
 function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
   //CRM_Core_Error::debug_var('form',$form);
+  //CRM_Core_Error::debug_var('formName',$formName);
 
   if ( $formName == 'CRM_Contact_Form_Contact' ) {
     //CRM_Core_Error::debug_var('form',$form);
