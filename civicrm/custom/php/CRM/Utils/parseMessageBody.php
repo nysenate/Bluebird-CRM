@@ -7,34 +7,52 @@ class parseMessageBody {
   * Parameters: $body, the body text of an email (html or plaintex)
   * Returns: An Object of the headers in message in tree format
   */
-  public static function unifiedMessageInfo($body) {
+  public static function unifiedMessageInfo($origin) {
     $uniStart = microtime(true);
-
-    // check for html
-    if($body != self::strip_HTML_tags($body)){
-      $format = 'html';
-    }else{
+    // prefer html, because its not broken into lines
+    if(isset($origin['HTML']['body'])){
+      $start = $origin['HTML']['body'];
       $format = 'plain';
+      $encoding = $origin['HTML']['encoding'];
+    }elseif(isset($origin['PLAIN']['body'])){
+      $start = $origin['PLAIN']['body'];
+      $format = 'html';
+      $encoding = $origin['PLAIN']['encoding'];
     }
 
-    $body = quoted_printable_decode($body);
-    $body = preg_replace("/\\t/i", " ", $body);
 
-    if($format =='plain'){
-      $tempbody = preg_replace("/>|</i", "", $body);
-    }else{
-      $tempbody = preg_replace("/<br>/i", "\r\n<br>\n", $body);
-      $tempbody = preg_replace("/\\r|\\n|\\t/i", "\r\n<br>\n", $tempbody);
+    if($encoding == 0) {
+      //$start = imap_7bit($start);
+    } elseif($encoding == 1) {
+      $start = imap_8bit($start);
+      $start = quoted_printable_decode($start);
+    } elseif($encoding == 2) {
+      $start = imap_binary($start);
+      $start = imap_base64($start);
+    } elseif($encoding == 3) {
+      $start = imap_base64($start);
+    } elseif($encoding == 4) {
+      $start = quoted_printable_decode($start);
     }
-    $tempbody = self::strip_HTML_tags($tempbody);
 
-    // searching message for tree of embedded headers
-    $bodyArray = explode("\r\n", $tempbody);
+
+
+
+    $HeaderCheck = substr($start, 0, 1600);
+    $HeaderCheck = preg_replace("/\\t/i", " ", $HeaderCheck);
+    $HeaderCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $HeaderCheck);
+    $HeaderCheck = preg_replace('/BR/i', 'br', $HeaderCheck);
+    $HeaderCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
+    $HeaderCheck = self::strip_HTML_tags($HeaderCheck);
+    $HeaderCheck = preg_replace('/#####---/', "\r\n", $HeaderCheck);
+    $bodyArray = explode("\r\n", $HeaderCheck);
+
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
     $count = 0; // count of embedded message headers
     foreach ($bodyArray as $key => $line) {
       $line = trim($line);
       if($line != ''){
+
         $line = preg_replace("/mailto/i", "", $line); // this matched /to/
         $line = preg_replace("/Reply To|reply to|Replyto/i", "", $line); // this matched /to/
 
@@ -111,29 +129,39 @@ class parseMessageBody {
 
 
     // custom body parsing for mysql entry,
-    // $body is perserved as much as possible for viewing
-    $body = self::strip_HTML_tags($body);
 
     // use a placeholder to mark linebreaks / br tags
-    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $body);
-    $body = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $body);
+    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
+    $body = preg_replace('/\t/i', ' ', $body);
+    $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
 
-    $body = preg_replace('/> /i', '', $body);
-    $body = preg_replace('/ <|>/i', ' ', $body);
+    // strip out html / problematic tags for render
+    $body = self::strip_HTML_tags($body);
+    $body = preg_replace('/<|>/i', ' ', $body);
+
+    // add br's back
     $body = preg_replace('/#####---/i', '<br/>', $body);
+
     // find more then 3 br tags in a row
     $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
 
-    // maybe im a type nerd, but proper quotes are important
+    // if there are 2 br tags within 80 charachters, remove.
+
+    $body = preg_replace('/(<br[^>]*>\s*){1,}/', "<br/>\r\n", $body);
+
+    // maybe im a type nerd, but proper quotes are important, and safe
     $body = preg_replace('/\'/', '&#8217;', $body);
     $body = preg_replace('/ "/', ' &#8220;', $body);
     $body = preg_replace('/" |"$/', '&#8221; ', $body);
     $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
+    // replace big whitespace blocks
+    $body = preg_replace('/( ){2,}/', " ", $body);
 
     // final cleanup
-    $body = mysql_real_escape_string($body);
-    $body = mb_convert_encoding($body, 'ISO-8859-1');
-    // var_dump()
+    $body = addslashes($body);
+
+    if(is_null($body)) $body = "No Message Content Found";
+
     if($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL){
       $status =  'direct';
     }else{
@@ -156,6 +184,10 @@ class parseMessageBody {
     // if o= is appended to the end of the email address remove it
     $string = preg_replace('/\/senate@senate/i', '/senate', $string);
     $string = preg_replace('/\/CENTER\/senate/i', '/senate', $string);
+
+    // CN=Jason Biernacki/OU=STS11thFloor/O=senate
+    // CN=Personnel Mail/O=senate
+    $string = preg_replace('/CN=|O=|OU=/i', '', $string);
 
     $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
     $string = preg_replace('/"|\'/i', '', $string);

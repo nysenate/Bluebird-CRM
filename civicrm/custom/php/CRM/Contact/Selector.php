@@ -196,6 +196,16 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // rectify params to what proximity search expects if there is a value for prox_distance
     // CRM-7021
     if (!empty($this->_params)) {
+      //NYSS 6605 set country default when using prox search
+      if ( !empty($formValues['prox_distance']) ) {
+        $this->_params[] = array(
+          'country',
+          '=',
+          '1228',
+          0,
+          0,
+        );
+      }
       CRM_Contact_BAO_ProximityQuery::fixInputParams($this->_params);
     }
 

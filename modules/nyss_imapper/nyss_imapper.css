@@ -64,7 +64,7 @@
 .name .icon{margin-left:0px;}
 td.name{ padding-left: 0px;margin-left: 0px;}
 .forwarder,.Forwarder{ overflow: hidden;width: 100px;}
-.date{width: 95px !important; overflow: hidden; display: block; height: 32px;}
+.date{width: 120px !important; overflow: hidden; display: block; height: 32px;}
 .date span{float: left; margin: 8px 0;}
 .checkbox_switch{ margin-left: 10px;}
 .actions{ width:110px !important;  overflow: hidden; display: block; height: 32px ; float: left;}
@@ -100,7 +100,10 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 .debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
 #message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px;line-height: 23px;width: 640px; }
-.message_left_header_tags{  padding:10px 0 ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 90px;line-height: 23px;width: 640px; }
+#message_left_header_tag{
+    height: 70px;
+}
+.message_left_header_tags{  padding:10px 0 ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 70px;line-height: 23px;width: 640px; }
 #message_left_email,#message_left_email_tag{ padding:10px ;width:640px; height:320px; overflow:auto;  }
 pre{  white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
@@ -174,7 +177,7 @@ pre{  white-space: pre-wrap;       /* css-3 */
     float: left;
     margin: 0 10px 0 0;
     text-align: right;
-    width: 110px;}
+    width: 125px;}
 
 .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}

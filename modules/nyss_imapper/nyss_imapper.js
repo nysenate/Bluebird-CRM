@@ -484,10 +484,10 @@ cj(document).ready(function(){
           if(message.sender_name) cj('#message_left_header').append(shortenString(message.sender_name,50));
           if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble marginL5'>"+shortenString(message.sender_email)+"</span>");
 
-          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
+          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+" "+ icon+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
 
           if ((message.forwarder != message.sender_email)){
-            cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+            cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_long+ "<br/>");
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
@@ -589,7 +589,7 @@ cj(document).ready(function(){
         }
       }
     });
-    cj("#clear-confirm").dialog({ title:  "Clear Message from Matched Messages?"});
+    cj("#clear-confirm").dialog({ title:  "Remove Message From List?"});
     cj("#loading-popup").dialog('close');
     cj("#clear-confirm").dialog('open');
     return false;
@@ -602,20 +602,20 @@ cj(document).ready(function(){
 
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
-    var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
-    var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
-    var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
-    var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
-    var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
-    var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
+    // var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
+    // var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+    // var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
+    // var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
+    // var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
+    // var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
 
 
-    if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
-    if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
-    if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
-    if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
-    if(fromstreet && fromstreet !='null'){  cj('.street_address').val(fromstreet);}else{ cj('.street_address').val('');}
-    if(fromcity && fromcity !='null'){  cj('.city').val(fromcity);}else{ cj('.city').val('');}
+    // if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
+    // if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
+    // if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
+    // if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
+    // if(fromstreet && fromstreet !='null'){  cj('.street_address').val(fromstreet);}else{ cj('.street_address').val('');}
+    // if(fromcity && fromcity !='null'){  cj('.city').val(fromcity);}else{ cj('.city').val('');}
 
     cj('#imapper-contacts-list').html('');
 
@@ -630,13 +630,15 @@ cj(document).ready(function(){
           if(message.clear =='true')   removeRow(activityId);
         }else{
           cj('#message_left_header').html('');
-          if(message.sender_name) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>"+message.sender_name +"  ");
-          if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble '>"+ message.sender_email+"</span>");
-          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/>");
+
+          if(message.sender_name || message.sender_email) cj('#message_left_header').html('').append("<span class='popup_def'>From: </span>");
+          if(message.sender_name) cj('#message_left_header').append(message.sender_name +"  ");
+          if(message.sender_email) cj('#message_left_header').append("<span class='emailbubble'>"+ message.sender_email+"</span>");
+          cj('#message_left_header').append("<br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70) +"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/>");
           cj('.email_address').val(message.fromEmail);
 
           if ((message.forwarder != message.sender_email)){
-            cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
+            cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @ "+ message.updated_long+ "<br/>");
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
@@ -727,7 +729,7 @@ cj(document).ready(function(){
               cj('#activity_tag_ids').val(result);
             }
           });
-          cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date: </span>"+messages.date_long+"<br/>");
+          cj('#message_left_header_tag').html('').append("<span class='popup_def'>From: </span>"+messages.sender_name +"  <span class='emailbubble'>"+ messages.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(messages.subject,70)+"<br/><span class='popup_def'>Date Forwarded: </span>"+messages.date_long+"<br/>");
           cj('#message_left_header_tag').append("<input class='hidden' type='hidden' id='activityId' value='"+activityId+"'><input class='hidden' type='hidden' id='contactId' value='"+contactId+"'>");
 
           if ((messages.forwarder != messages.sender_email)){
@@ -856,7 +858,7 @@ cj(document).ready(function(){
             return false;
           }else{
 
-            cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+"<br/><span class='popup_def'>Date: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
+            cj('#message_left_tag').append("<div id='header_"+activityId+"' data-id='"+activityId+"' class='message_left_header_tags'><span class='popup_def'>From: </span>"+message.sender_name +"  <span class='emailbubble'>"+ message.sender_email+"</span><br/><span class='popup_def'>Subject: </span>"+shortenString(message.subject,70)+"<br/><span class='popup_def'>Date Forwarded: </span>"+message.date_long+"<br/></div><div id='email_"+activityId+"' class='hidden_email' data-id='"+activityId+"'></div>");
 
             if ((message.forwarder != message.sender_email)){
               cj('#message_left_header').append("<span class='popup_def'>Forwarded by: </span><span class='emailbubble'>"+ message.forwarder+"</span> @"+ message.updated_long+ "<br/>");
@@ -929,7 +931,7 @@ cj(document).ready(function(){
         }
       }
     });
-    cj("#clear-confirm").dialog({ title:  "Clear "+delete_ids.length+" Messages ?"});
+    cj("#clear-confirm").dialog({ title:  "Remove "+delete_ids.length+" Messages From List?"});
     cj("#loading-popup").dialog('close');
     cj( "#clear-confirm" ).dialog('open');
     return false;
@@ -1141,7 +1143,6 @@ function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
     data: {id: id },
-    async:false,
     success: function(data,status) {
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
@@ -1192,7 +1193,6 @@ function DeleteActivity(value){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteActivity',
     data: {id: value},
-    async:false,
     success: function(data,status) {
       deleted = cj.parseJSON(data);
       if(deleted.code == 'ERROR' || deleted.code == '' || deleted.code == null){
@@ -1303,22 +1303,22 @@ function buildActivitiesList() {
       if(value.date_short != null){
         messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
-        if( value.fromName != ''){
-          messagesHtml += '<td class="name" data-fromdob="'+value.fromdob +'" data-fromphone="'+value.fromphone +'" data-fromstreet="'+value.fromstreet +'" data-fromcity="'+value.fromcity +'"data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+        if( value.contactType != ''){
+          messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-          messagesHtml += '<td class="name">N/A ';
+          messagesHtml += '<td class="name">';
         }
 
-        messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.fromEmail,13)+'</span>';
+        messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
 
         match_sort = 'ProcessError';
         if(value.matcher){
-          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher : "Automatically Matched" ;
+          var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
           var match_short = (value.matcher != 0) ? "M" : "A" ;
           match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';

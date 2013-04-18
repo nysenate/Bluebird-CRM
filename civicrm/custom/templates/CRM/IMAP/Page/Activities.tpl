@@ -10,7 +10,7 @@
 				<th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
 				<th class='Name'>Sender’s Info</th>
 				<th class='Subject'>Subject</th>
-				<th class='Date'>Date Sent</th>
+				<th class='Date'>Date Forwarded</th>
 				<th class='Match_type hidden'>Match Type</th>
 				<th class='Forwarded'>Forwarded By</th>
 				<th class='Actions'>Actions</th>
@@ -84,10 +84,10 @@
 		</ul>
 	</div>
 	<div id="delete-confirm" title="Delete Message from Matched Messages?" style="display:none;">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be removed permanently. Are you sure?</p>
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed permanently. Are you sure?</p>
 	</div>
-	<div id="clear-confirm" title="Clear Message from Matched Messages?" style="display:none;">
-		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be cleared from this screen but will not be deleted. Are you sure?</p>
+	<div id="clear-confirm" title="Remove Message from From List?" style="display:none;">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Selected messages will be removed from this list. They will remain matched to the assigned Sender, and will not be deleted from Bluebird. Proceed?</p>
 	</div>
 	<div id="loading-popup" title="please wait" style="display:none;">
 		<p> <img src="/sites/default/themes/Bluebird/nyss_skin/images/header-search-active.gif"/> Loading message details.</p>

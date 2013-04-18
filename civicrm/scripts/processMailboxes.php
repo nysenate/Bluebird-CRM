@@ -85,6 +85,7 @@ $imap_mailbox = DEFAULT_IMAP_MAILBOX;
 $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
 $imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
 $imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
+$version_number = 0.04; // helpful in debug to check parsing version
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
@@ -522,24 +523,47 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $uploadInbox = $uploadDir.'inbox/';
 
   $bodyStart = microtime(true);
-   // check for plain / html body text
-  $messagebody  = imap_fetchbody($mbox, $msgid, 1.1);
-  if($messagebody == ''){
-      $messagebody  = imap_fetchbody($mbox, $msgid, 1.2);
-  }
-  if($messagebody == ''){
-    $messagebody  = imap_fetchbody($mbox, $msgid, 1);
+
+  //  check for plain / html body text
+  $s = imap_fetchstructure($mbox, $msgid);
+
+  if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
+    $RawBody[$s->subtype] = array('encoding' => $s->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $s->lines." : ".$s->encoding." : 0" );
+
+  }else{ // multipart: iterate through each part
+      foreach ($s->parts as $partno0=>$p){
+        $RawBody[$p->subtype] = array('encoding' => $p->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $p->lines." : ".$p->encoding." : ".($partno0+1) );
+      }
   }
 
-  // $messagebody  = imap_qprint(imap_body($mbox, $msgid));
-  $parsedBody = $Parse->unifiedMessageInfo($messagebody);
-  // print_r($parsedBody);
+  $parsedBody = $Parse->unifiedMessageInfo($RawBody);
+
+  if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
+    echo "[WARN]    Parse problem : LDAP LOOKUP FAILURE \n";
+  }
+
+  if($parsedBody['message_action'] == "direct"){
+    echo "[DEBUG]   Message was sent directly to inbox \n";
+
+    // double check to make sure if was directly sent
+    // this message format isn't ideal, it includes message info that is gross looking.
+    $RawBody_alt['HTML'] = array('encoding' => 0, 'body' => imap_qprint(imap_body($mbox, $msgid)));
+    $parsedBody_alt = $Parse->unifiedMessageInfo($RawBody_alt);
+
+    if($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded"){
+      $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
+      if($headerCheck[0] != NULL){
+        echo "[WARN]    Parse problem : Header difference found \n";
+      }
+    }
+  }
+
   $bodyEnd = microtime(true);
   echo "[DEBUG]   Body Download Time: ".($bodyEnd-$bodyStart)."\n";
 
   // formatting headers
   $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
-  $fwdName = $parsedBody['fwd_headers']['fwd_email'];
+  $fwdName = $parsedBody['fwd_headers']['fwd_name'];
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
   $fwdSubject = $parsedBody['fwd_headers']['fwd_subject'];
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
@@ -562,7 +586,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
     $fwdLookup = 'Headers';
   }
   // debug info for mysql
-  $debug = "Msg: ".$msgid."; MessageID: ".$messageId.";Action: ".$messageAction.";bodyFormat: ".$fwdFormat.";fwdLookup: ".$fwdLookup.";fwdEmail: ".$fwdEmail.";fwdName: ".$fwdName.";fwdSubject: ".$fwdSubject.";fwdDate: ".$fwdDate.";FromEmail: ".$fromEmail.";FromName: ".$fromName.";Subject: ".$subject.";Date: ".$date;
+  $debug = "Msg: ".$msgid."; MessageID: ".$messageId.";Action: ".$messageAction.";bodyFormat: ".$fwdFormat.";fwdLookup: ".$fwdLookup.";fwdEmail: ".$fwdEmail.";fwdName: ".$fwdName.";fwdSubject: ".$fwdSubject.";fwdDate: ".$fwdDate.";FromEmail: ".$fromEmail.";FromName: ".$fromName.";Subject: ".$subject.";Date: ".$date."; Version #: ".$version_number;
 
   // start db connection
   $nyss_conn = new CRM_Core_DAO();
@@ -669,7 +693,7 @@ function searchForMatches()
     $message_id = $row['message_id'];
     $imap_id = $row['imap_id'];
     $body = $row['body'];
-    $email_date = $row['email_date'];
+    $email_date = $row['updated_date'];
     $subject = $row['subject'];
     echo "- - - - - - - - - - - - - - - - - - \n";
 
