@@ -677,8 +677,6 @@ class CRM_IMAP_AJAX {
                       // // mimeType, uri, orgin date -> return id
                       $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$mime}', '{$newName}','{$output['updated_date']}');";
                       $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-                      // var_dump($insertFIleQuery);
-                      // var_dump($rowUpdated);
 
                       $insertFileResult = mysql_query($insertFIleQuery, self::db());
                       $rowUpdatedResult = mysql_query($rowUpdated, self::db());

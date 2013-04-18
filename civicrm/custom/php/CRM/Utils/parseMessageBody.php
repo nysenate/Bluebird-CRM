@@ -9,18 +9,17 @@ class parseMessageBody {
   */
   public static function unifiedMessageInfo($origin) {
     $uniStart = microtime(true);
-
-    // var_dump($origin);
-
-    if(isset($origin['PLAIN']['body'])){
-      $start = $origin['PLAIN']['body'];
-      $format = 'plain';
-      $encoding = $origin['PLAIN']['encoding'];
-    }elseif(isset($origin['HTML']['body'])){
+    // prefer html, because its not broken into lines
+    if(isset($origin['HTML']['body'])){
       $start = $origin['HTML']['body'];
-      $format = 'html';
+      $format = 'plain';
       $encoding = $origin['HTML']['encoding'];
+    }elseif(isset($origin['PLAIN']['body'])){
+      $start = $origin['PLAIN']['body'];
+      $format = 'html';
+      $encoding = $origin['PLAIN']['encoding'];
     }
+
 
     if($encoding == 0) {
       //$start = imap_7bit($start);
@@ -36,9 +35,8 @@ class parseMessageBody {
       $start = quoted_printable_decode($start);
     }
 
-    if(strtolower($charset) == "iso-8859-1") {
-      $start = imap_utf8($start);
-    }
+
+
 
     $HeaderCheck = substr($start, 0, 1600);
     $HeaderCheck = preg_replace("/\\t/i", " ", $HeaderCheck);
@@ -131,30 +129,35 @@ class parseMessageBody {
 
 
     // custom body parsing for mysql entry,
-    // $body is perserved as much as possible for viewing
 
-    // // // use a placeholder to mark linebreaks / br tags
+    // use a placeholder to mark linebreaks / br tags
     $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
     $body = preg_replace('/\t/i', ' ', $body);
-
     $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
+
+    // strip out html / problematic tags for render
     $body = self::strip_HTML_tags($body);
     $body = preg_replace('/<|>/i', ' ', $body);
+
+    // add br's back
     $body = preg_replace('/#####---/i', '<br/>', $body);
 
     // find more then 3 br tags in a row
     $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
+
+    // if there are 2 br tags within 80 charachters, remove.
+
     $body = preg_replace('/(<br[^>]*>\s*){1,}/', "<br/>\r\n", $body);
 
-    // maybe im a type nerd, but proper quotes are important
+    // maybe im a type nerd, but proper quotes are important, and safe
     $body = preg_replace('/\'/', '&#8217;', $body);
     $body = preg_replace('/ "/', ' &#8220;', $body);
     $body = preg_replace('/" |"$/', '&#8221; ', $body);
     $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
+    // replace big whitespace blocks
     $body = preg_replace('/( ){2,}/', " ", $body);
-    // $body = preg_replace('/=<br\/>\\r\\n/', "", $body); // weird line breaks removed
 
-    // // final cleanup
+    // final cleanup
     $body = addslashes($body);
 
     if(is_null($body)) $body = "No Message Content Found";
