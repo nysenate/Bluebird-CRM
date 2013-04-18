@@ -164,7 +164,23 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
         ) t
       ORDER BY sort_name";
   }
-  return $query;
+  elseif ( $context == 'navigation' ) {
+    $query = "
+      SELECT DISTINCT(cc.id) as id, CONCAT_WS(' :: ', sort_name, email, city) as data, sort_name, email, city
+      FROM civicrm_contact cc
+      LEFT JOIN civicrm_email eml
+        ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )
+      LEFT JOIN civicrm_address sts
+        ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
+      WHERE ( sort_name LIKE '{$name}%' )
+        AND cc.is_deleted = 0
+      LIMIT 0, 10
+    ";
+  }
+
+  //CRM_Core_Error::debug_var('$query',$query);
+  //CRM_Core_Error::debug_var('$name',$name);
+  //CRM_Core_Error::debug_var('$context',$context);
 }
 
 function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
