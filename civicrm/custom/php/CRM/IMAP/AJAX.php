@@ -1378,6 +1378,16 @@ EOQ;
           var_dump($contact);
         }
 
+        // add the phone number
+        if($phone && $contact['id']){
+          $phoneParams = array(
+            'contact_id' => $contact['id'],
+            'phone' => $phone,
+            'version' => 3,
+          );
+          $phone = civicrm_api( 'phone','create',$phoneParams );
+        }
+
         if(($street_address || $street_address_2 || $city || $postal_code) && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
           $address_params = array(
