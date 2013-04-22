@@ -1378,7 +1378,7 @@ EOQ;
           var_dump($contact);
         }
 
-        if($street_address && $contact['id']){
+        if(($street_address || $street_address_2 || $city || $postal_code) && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
           $address_params = array(
               'contact_id' => $contact['id'],
