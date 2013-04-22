@@ -463,6 +463,9 @@ cj(document).ready(function(){
     var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
     var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
 
+    cj("#tabs :input[type='text']").val("");
+
+
     cj('#imapper-contacts-list').html('');
     cj.ajax({
       url: '/civicrm/imap/ajax/getMessageDetails',
