@@ -478,6 +478,8 @@ class CRM_IMAP_AJAX {
         $subject = $output['subject'];
         $body = $output['body'];
         $status = $output['status'];
+        $key = $output['sender_email'];
+
         if($status != 1){
           $attachments = $output['attachments'];
 
@@ -492,6 +494,8 @@ class CRM_IMAP_AJAX {
             var_dump($messageUid);
             echo "<h1>Attachments</h1>";
             var_dump($attachments);
+            echo "<h1>Key</h1>";
+            var_dump($key);
           }
 
           // if this email has been moved / assigned already

@@ -1413,7 +1413,7 @@ function helpMessage(message){
   // fade out and remove after 60 seconds
   setTimeout(function(){
     cj("."+messageclass).fadeOut(1000, function(){
-      $(this).remove();
+      cj(this).remove();
     });
   }, 60000);
 }
@@ -1442,7 +1442,7 @@ function checkForMatch(key,contactIds){
     check = cj(this).data('key');
     var messageId = cj(this).attr('id');
     if (key == check) {
-      if($('.matchbubble.empty',this).length){
+      if (cj('.matchbubble.empty',this).length){
         cj.ajax({
           url: '/civicrm/imap/ajax/assignMessage',
           async:false,
@@ -1451,14 +1451,15 @@ function checkForMatch(key,contactIds){
             contactId: contactIds
           },
           success: function(data,status) {
-            assign = cj.parseJSON(data);
-            if(assign.code == 'ERROR'){
-              // helpMessage('Other Records not Matched');
-            }else{
-              removeRow(messageId);
-              helpMessage('Other Records Automatically Matched');
+            if(data != null || data != ''){
+              var assign = cj.parseJSON(data);
+              if(assign.code == 'ERROR'){
+                // helpMessage('Other Records not Matched');
+              }else{
+                removeRow(messageId);
+                helpMessage('Other Records Automatically Matched');
+              }
             }
-
           }
         });
       }
