@@ -1146,6 +1146,7 @@ function buildReports() {
 function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
+    async:false,
     data: {id: id },
     success: function(data,status) {
       deleted = cj.parseJSON(data);

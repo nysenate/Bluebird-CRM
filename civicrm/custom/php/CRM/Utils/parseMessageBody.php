@@ -43,7 +43,8 @@ class parseMessageBody {
     $HeaderCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $HeaderCheck);
     $HeaderCheck = preg_replace('/BR/i', 'br', $HeaderCheck);
     $HeaderCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
-    $HeaderCheck = self::strip_HTML_tags($HeaderCheck);
+    $HeaderCheck = preg_replace('/(<div[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
+    $HeaderCheck = self::stripTagsForHeader($HeaderCheck);
     $HeaderCheck = preg_replace('/#####---/', "\r\n", $HeaderCheck);
     $bodyArray = explode("\r\n", $HeaderCheck);
 
@@ -129,38 +130,18 @@ class parseMessageBody {
 
 
     // custom body parsing for mysql entry,
-    // use a placeholder to mark linebreaks / br tags
-    $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
-    $body = preg_replace('/\t/i', ' ', $body);
-    $body = preg_replace('/(<br[^>]*>\s*){1,}|(<BR[^>]*>\s*){1,}/', '#####---', $body);
-
-    // strip out html / problematic tags for render
-    $body = self::strip_HTML_tags($body);
-    $body = preg_replace('/<|>/i', ' ', $body);
-
-    // add br's back
-    $body = preg_replace('/#####---/i', '<br/>', $body);
-
-    // find more then 3 br tags in a row
-    $body = preg_replace('/(<br[^>]*>\s*){3,}/', "<br/>", $body);
-
-    // if there are 2 br tags within 80 charachters, remove.
-
-    $body = preg_replace('/(<br[^>]*>\s*){1,}/', "<br/>\r\n", $body);
-
-    // maybe im a type nerd, but proper quotes are important, and safe
-    $body = preg_replace('/\'/', '&#8217;', $body);
-    $body = preg_replace('/ "/', ' &#8220;', $body);
-    $body = preg_replace('/" |"$/', '&#8221; ', $body);
-    $body = preg_replace('/"\\n|"\\r/', '&#8221;<br/>', $body);
-    // replace big whitespace blocks
-    $body = preg_replace('/( ){2,}/', " ", $body);
+    $body = ($start);
+    // strip out non-ascii charachters
+    $body = nl2br($body);
+    $body = preg_replace('/[^(\x20-\x7F)]*/','', $body);
+    $body = preg_replace('/<([\w.]+@[\w.]+)>/i','$1', $body);
 
     // final cleanup
-    $body = htmlspecialchars($body, ENT_QUOTES);
+    $body = self::stripBodyTags($body);
+    $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
     $body = addslashes($body);
 
-    if(is_null($body)) $body = "No Message Content Found";
+    if(trim($body) == '') $body = "No Message Content Found";
 
     if($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL){
       $status =  'direct';
@@ -228,15 +209,49 @@ class parseMessageBody {
     }
   }
 
-  // Strips HTML 4.01 start and end tags. Preserves contents.
-  // modified to not strip br tags
-  public static function strip_HTML_tags($text){
+  // modified to not strip tags needed to display html message
+  public static function stripBodyTags($text){
         return preg_replace('%
             # Match an opening or closing HTML 4.01 tag.
             </?                  # Tag opening "<" delimiter.
             (?:                  # Group for HTML 4.01 tags.
               ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
-              BLOCKQUOTE|BODY|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
+              BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
+              COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
+              FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
+              ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+              NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+              SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
+              TEXTAREA|TITLE|TT|U|UL|VAR
+            )\b                  # End group of tag name alternative.
+            (?:                  # Non-capture group for optional attribute(s).
+              \s+                # Attributes must be separated by whitespace.
+              [\w\-.:]+          # Attribute name is required for attr=value pair.
+              (?:                # Non-capture group for optional attribute value.
+                \s*=\s*          # Name and value separated by "=" and optional ws.
+                (?:              # Non-capture group for attrib value alternatives.
+                  "[^"]*"        # Double quoted string.
+                | \'[^\']*\'     # Single quoted string.
+                | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
+                )                # End of attribute value alternatives.
+              )?                 # Attribute value is optional.
+            )*                   # Allow zero or more attribute=value pairs
+            \s*                  # Whitespace is allowed before closing delimiter.
+            /?                   # Tag may be empty (with self-closing "/>" sequence.
+            >                    # Opening tag closing ">" delimiter.
+            | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
+            | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
+            %six', '', $text);
+    }
+
+    // header doesn't need any of these, so blow them away.
+    public static function stripTagsForHeader($text){
+        return preg_replace('%
+            # Match an opening or closing HTML 4.01 tag.
+            </?                  # Tag opening "<" delimiter.
+            (?:                  # Group for HTML 4.01 tags.
+              ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+              BLOCKQUOTE|BODY|BR|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
               COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
               FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
               ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
@@ -263,7 +278,6 @@ class parseMessageBody {
             | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
             %six', '', $text);
     }
-
 
 
 }
