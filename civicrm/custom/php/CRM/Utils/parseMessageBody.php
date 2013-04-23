@@ -129,7 +129,6 @@ class parseMessageBody {
 
 
     // custom body parsing for mysql entry,
-
     // use a placeholder to mark linebreaks / br tags
     $body = preg_replace('/\r\n|\r|\n/i', '#####---', $start);
     $body = preg_replace('/\t/i', ' ', $body);
@@ -158,6 +157,7 @@ class parseMessageBody {
     $body = preg_replace('/( ){2,}/', " ", $body);
 
     // final cleanup
+    $body = htmlspecialchars($body, ENT_QUOTES);
     $body = addslashes($body);
 
     if(is_null($body)) $body = "No Message Content Found";
