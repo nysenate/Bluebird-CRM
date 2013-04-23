@@ -375,11 +375,12 @@ cj(document).ready(function(){
           if (data.code == 'ERROR'){
             alert('Could Not Assign message : '+data.message);
           }else{
-            // cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-            removeRow(messageId);
+            cj.each(data.success, function(key, value) {
+              removeRow(messageId);
+              helpMessage(value.message);
+              checkForMatch(value.key,contactIds);
+            });
             cj("#find-match-popup").dialog('close');
-            helpMessage(data.message);
-            checkForMatch(data.key,contactIds);
           }
         }
       });
