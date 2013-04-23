@@ -479,6 +479,8 @@ class CRM_IMAP_AJAX {
         $body = $output['body'];
         $status = $output['status'];
         $key = $output['sender_email'];
+        $messageId =$output['message_id'];
+        $imapId =$output['imap_id'];
 
         if($status != 1){
           $attachments = $output['attachments'];
@@ -546,8 +548,8 @@ class CRM_IMAP_AJAX {
           }
 
           $contactIds = explode(',', $contactIds);
+          $ContactCount = 0;
           foreach($contactIds as $contactId) {
-
               // Check to see if contact has the email address being assigend to it,
               // if doesn't have email address, add it to contact
               $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
@@ -638,19 +640,23 @@ class CRM_IMAP_AJAX {
                 echo json_encode($returnCode);
                 CRM_Utils_System::civiExit();
               }else{
-                $key =  $output['key'];
                 $activity_id =$activity['id'];
-
                 $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
-                $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
-                WHERE `id` =  {$messageUid}";
-                $UPDATEresult = mysql_query($UPDATEquery, self::db());
+                // if this is not the first contact, add a new row to the table
+                if($ContactCount > 0){
+                  $debug= 'Added on assignment to #'.$ContactCount;
+                  $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$fwdDate}','{$activity_id}','{$contactId}','{$userId}');";
+                }else{
+                  $UPDATEquery = "UPDATE `nyss_inbox_messages`
+                  SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
+                  WHERE `id` =  {$messageUid}";
+                }
+                $ContactCount++;
 
-                # $uploadDir
-                # $uploadInbox
-                // attachments // data.rootdir
+
+                // var_dump($UPDATEquery);
+                $UPDATEresult = mysql_query($UPDATEquery, self::db());
                 // var_dump($attachments);
                 // var_dump(is_array($attachments[0]));
 
