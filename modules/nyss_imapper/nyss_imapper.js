@@ -375,11 +375,12 @@ cj(document).ready(function(){
           if (data.code == 'ERROR'){
             alert('Could Not Assign message : '+data.message);
           }else{
-            // cj(".imapper-message-box[data-id='"+messageId+"']").remove();
-            removeRow(messageId);
+            cj.each(data.assigned, function(key, value) {
+              removeRow(messageId);
+              helpMessage(value.message);
+              checkForMatch(value.key,contactIds);
+            });
             cj("#find-match-popup").dialog('close');
-            helpMessage(data.message);
-            checkForMatch(data.key,contactIds);
           }
         }
       });
@@ -435,10 +436,12 @@ cj(document).ready(function(){
                   alert('Could Not Assign Message : '+assign.message);
                   return false;
                 }else{
+                  cj.each(assign.assigned, function(key, value) {
+                    removeRow(create_messageId);
+                    helpMessage('Contact created and '+value.message);
+                    checkForMatch(value.key,contactData.contact);
+                  });
                   cj("#find-match-popup").dialog('close');
-                  removeRow(create_messageId);
-                  helpMessage('Contact created and '+assign.message);
-                  checkForMatch(assign.key,assign.contact);
                 }
               },
               error: function(){
@@ -462,6 +465,9 @@ cj(document).ready(function(){
     var imapId = cj(this).parent().parent().attr('data-imap_id');
     var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
     var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
+
+    cj("#tabs :input[type='text']").val("");
+
 
     cj('#imapper-contacts-list').html('');
     cj.ajax({
@@ -1142,6 +1148,7 @@ function buildReports() {
 function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
+    async:false,
     data: {id: id },
     success: function(data,status) {
       deleted = cj.parseJSON(data);
@@ -1410,7 +1417,7 @@ function helpMessage(message){
   // fade out and remove after 60 seconds
   setTimeout(function(){
     cj("."+messageclass).fadeOut(1000, function(){
-      $(this).remove();
+      cj(this).remove();
     });
   }, 60000);
 }
@@ -1439,7 +1446,7 @@ function checkForMatch(key,contactIds){
     check = cj(this).data('key');
     var messageId = cj(this).attr('id');
     if (key == check) {
-      if($('.matchbubble.empty',this).length){
+      if (cj('.matchbubble.empty',this).length){
         cj.ajax({
           url: '/civicrm/imap/ajax/assignMessage',
           async:false,
@@ -1448,14 +1455,15 @@ function checkForMatch(key,contactIds){
             contactId: contactIds
           },
           success: function(data,status) {
-            assign = cj.parseJSON(data);
-            if(assign.code == 'ERROR'){
-              // helpMessage('Other Records not Matched');
-            }else{
-              removeRow(messageId);
-              helpMessage('Other Records Automatically Matched');
+            if(data != null || data != ''){
+              var assign = cj.parseJSON(data);
+              if(assign.code == 'ERROR'){
+                // helpMessage('Other Records not Matched');
+              }else{
+                removeRow(messageId);
+                helpMessage('Other Records Automatically Matched');
+              }
             }
-
           }
         });
       }
@@ -1484,7 +1492,7 @@ function removeRow(id){
     oTable.fnDeleteRow(row_index);
     updateTotalCount();
   }else{
-    alert('could not delete row');
+    // alert('could not delete row');
   }
 }
 

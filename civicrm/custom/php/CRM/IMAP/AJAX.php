@@ -478,6 +478,10 @@ class CRM_IMAP_AJAX {
         $subject = $output['subject'];
         $body = $output['body'];
         $status = $output['status'];
+        $key = $output['sender_email'];
+        $messageId =$output['message_id'];
+        $imapId =$output['imap_id'];
+
         if($status != 1){
           $attachments = $output['attachments'];
 
@@ -492,6 +496,8 @@ class CRM_IMAP_AJAX {
             var_dump($messageUid);
             echo "<h1>Attachments</h1>";
             var_dump($attachments);
+            echo "<h1>Key</h1>";
+            var_dump($key);
           }
 
           // if this email has been moved / assigned already
@@ -542,8 +548,8 @@ class CRM_IMAP_AJAX {
           }
 
           $contactIds = explode(',', $contactIds);
+          $ContactCount = 0;
           foreach($contactIds as $contactId) {
-
               // Check to see if contact has the email address being assigend to it,
               // if doesn't have email address, add it to contact
               $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
@@ -553,33 +559,33 @@ class CRM_IMAP_AJAX {
                   $emailResults[] = $row;
               }
 
-              if ($debug){
-                  echo "<h1>Contact ".$contactId." has the following emails </h1>";
-                  var_dump($emailResults);
-              }
+              // if ($debug){
+              //     echo "<h1>Contact ".$contactId." has the following emails </h1>";
+              //     var_dump($emailResults);
+              // }
               $emailsCount = count($emailResults);
 
               $matches = 0;
-              if ($debug){
-                echo "<h1>Contact Non matching results </h1>";
-              }
+              // if ($debug){
+              //   echo "<h1>Contact Non matching results </h1>";
+              // }
               // if the records don't match, count it, an if the number is > 1 add the record
               foreach($emailResults as $email) {
                   if(strtolower($email['email']) == strtolower($senderEmail)){
-                      if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                      // if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
                   }else{
                       $matches++;
-                      if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                      // if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
                   }
               }
 
               // get contact info for return message
               $ContactInfo = self::contactRaw($contactId);
               $ContactName = $ContactInfo['values'][$contactId]['display_name'];
-              if ($debug){
-                echo "<h1>Contact Info</h1>";
-                var_dump($ContactInfo['values'][$contactId]);
-              }
+              // if ($debug){
+              //   echo "<h1>Contact Info</h1>";
+              //   var_dump($ContactInfo['values'][$contactId]);
+              // }
 
               // Prams to add email to user
               $params = array(
@@ -588,7 +594,7 @@ class CRM_IMAP_AJAX {
                   'version' => 3,
               );
               if(($emailsCount-$matches) == 0){
-                  if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  // if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
                   $result = civicrm_api( 'email','create',$params );
               }
 
@@ -610,10 +616,10 @@ class CRM_IMAP_AJAX {
             );
             $activity = civicrm_api('activity', 'create', $params);
 
-            if ($debug){
-              echo "<h1>Activity Created ?</h1>";
-              var_dump($activity);
-            }
+            // if ($debug){
+            //   echo "<h1>Activity Created ?</h1>";
+            //   var_dump($activity);
+            // }
 
             // if its an error or doesnt return we need errors
             if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
@@ -628,25 +634,30 @@ class CRM_IMAP_AJAX {
               $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
 
               if($assignTag['code'] == "ERROR"){
-                var_dump($assignTag);
+                // var_dump($assignTag);
                 $returnCode = array('code'      =>  'ERROR',
                 'message'   =>  $assignTag['message']);
                 echo json_encode($returnCode);
                 CRM_Utils_System::civiExit();
               }else{
-                $key =  $output['key'];
                 $activity_id =$activity['id'];
+                $returnCode['code'] = 'SUCCESS';
+                $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
-                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
+                // if this is not the first contact, add a new row to the table
+                if($ContactCount > 0){
+                  $debug= 'Added on assignment to #'.$ContactCount;
+                  $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$fwdDate}','{$activity_id}','{$contactId}','{$userId}');";
+                }else{
+                  $UPDATEquery = "UPDATE `nyss_inbox_messages`
+                  SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
+                  WHERE `id` =  {$messageUid}";
+                }
+                $ContactCount++;
 
-                $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
-                WHERE `id` =  {$messageUid}";
+
+                // var_dump($UPDATEquery);
                 $UPDATEresult = mysql_query($UPDATEquery, self::db());
-
-                # $uploadDir
-                # $uploadInbox
-                // attachments // data.rootdir
                 // var_dump($attachments);
                 // var_dump(is_array($attachments[0]));
 
@@ -691,10 +702,10 @@ class CRM_IMAP_AJAX {
                     }
                   }
                 }
-                echo json_encode($returnCode);
               }
             }
           }
+        echo json_encode($returnCode);
         }else{
           $returnCode = array('code'      =>  'ERROR', 'message'   =>  'Message is already matched' );
           echo json_encode($returnCode);
@@ -1370,7 +1381,17 @@ EOQ;
           var_dump($contact);
         }
 
-        if($street_address && $contact['id']){
+        // add the phone number
+        if($phone && $contact['id']){
+          $phoneParams = array(
+            'contact_id' => $contact['id'],
+            'phone' => $phone,
+            'version' => 3,
+          );
+          $phone = civicrm_api( 'phone','create',$phoneParams );
+        }
+
+        if(($street_address || $street_address_2 || $city || $postal_code) && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
           $address_params = array(
               'contact_id' => $contact['id'],
