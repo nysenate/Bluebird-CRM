@@ -561,33 +561,33 @@ class CRM_IMAP_AJAX {
                   $emailResults[] = $row;
               }
 
-              if ($debug){
-                  echo "<h1>Contact ".$contactId." has the following emails </h1>";
-                  var_dump($emailResults);
-              }
+              // if ($debug){
+              //     echo "<h1>Contact ".$contactId." has the following emails </h1>";
+              //     var_dump($emailResults);
+              // }
               $emailsCount = count($emailResults);
 
               $matches = 0;
-              if ($debug){
-                echo "<h1>Contact Non matching results </h1>";
-              }
+              // if ($debug){
+              //   echo "<h1>Contact Non matching results </h1>";
+              // }
               // if the records don't match, count it, an if the number is > 1 add the record
               foreach($emailResults as $email) {
                   if(strtolower($email['email']) == strtolower($senderEmail)){
-                      if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                      // if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
                   }else{
                       $matches++;
-                      if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                      // if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
                   }
               }
 
               // get contact info for return message
               $ContactInfo = self::contactRaw($contactId);
               $ContactName = $ContactInfo['values'][$contactId]['display_name'];
-              if ($debug){
-                echo "<h1>Contact Info</h1>";
-                var_dump($ContactInfo['values'][$contactId]);
-              }
+              // if ($debug){
+              //   echo "<h1>Contact Info</h1>";
+              //   var_dump($ContactInfo['values'][$contactId]);
+              // }
 
               // Prams to add email to user
               $params = array(
@@ -596,7 +596,7 @@ class CRM_IMAP_AJAX {
                   'version' => 3,
               );
               if(($emailsCount-$matches) == 0){
-                  if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  // if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
                   $result = civicrm_api( 'email','create',$params );
               }
 
@@ -618,10 +618,10 @@ class CRM_IMAP_AJAX {
             );
             $activity = civicrm_api('activity', 'create', $params);
 
-            if ($debug){
-              echo "<h1>Activity Created ?</h1>";
-              var_dump($activity);
-            }
+            // if ($debug){
+            //   echo "<h1>Activity Created ?</h1>";
+            //   var_dump($activity);
+            // }
 
             // if its an error or doesnt return we need errors
             if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
@@ -636,14 +636,14 @@ class CRM_IMAP_AJAX {
               $assignTag = self::assignTag($activity['id'], 0, $tagid, "quiet");
 
               if($assignTag['code'] == "ERROR"){
-                var_dump($assignTag);
+                // var_dump($assignTag);
                 $returnCode = array('code'      =>  'ERROR',
                 'message'   =>  $assignTag['message']);
                 echo json_encode($returnCode);
                 CRM_Utils_System::civiExit();
               }else{
                 $activity_id =$activity['id'];
-                $returnCode = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
+                $returnCode['success'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
                 // if this is not the first contact, add a new row to the table
                 if($ContactCount > 0){
@@ -703,10 +703,10 @@ class CRM_IMAP_AJAX {
                     }
                   }
                 }
-                echo json_encode($returnCode);
               }
             }
           }
+        echo json_encode($returnCode);
         }else{
           $returnCode = array('code'      =>  'ERROR', 'message'   =>  'Message is already matched' );
           echo json_encode($returnCode);
