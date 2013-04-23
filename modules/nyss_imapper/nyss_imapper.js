@@ -375,7 +375,7 @@ cj(document).ready(function(){
           if (data.code == 'ERROR'){
             alert('Could Not Assign message : '+data.message);
           }else{
-            cj.each(data.success, function(key, value) {
+            cj.each(data.assigned, function(key, value) {
               removeRow(messageId);
               helpMessage(value.message);
               checkForMatch(value.key,contactIds);
@@ -1494,7 +1494,7 @@ function removeRow(id){
     oTable.fnDeleteRow(row_index);
     updateTotalCount();
   }else{
-    alert('could not delete row');
+    // alert('could not delete row');
   }
 }
 
