@@ -436,10 +436,12 @@ cj(document).ready(function(){
                   alert('Could Not Assign Message : '+assign.message);
                   return false;
                 }else{
+                  cj.each(assign.assigned, function(key, value) {
+                    removeRow(create_messageId);
+                    helpMessage('Contact created and '+value.message);
+                    checkForMatch(value.key,contactData.contact);
+                  });
                   cj("#find-match-popup").dialog('close');
-                  removeRow(create_messageId);
-                  helpMessage('Contact created and '+assign.message);
-                  checkForMatch(assign.key,assign.contact);
                 }
               },
               error: function(){

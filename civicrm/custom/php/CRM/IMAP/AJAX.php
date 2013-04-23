@@ -643,7 +643,7 @@ class CRM_IMAP_AJAX {
                 CRM_Utils_System::civiExit();
               }else{
                 $activity_id =$activity['id'];
-                $returnCode = $arrayName = array('code' =>'SUCCESS');
+                $returnCode['code'] = 'SUCCESS';
                 $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
 
                 // if this is not the first contact, add a new row to the table
