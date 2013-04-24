@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-23
 # Revised: 2012-04-18
+# Revised: 2013-04-24 - added --skip-log-dbs option
 #
 # Note: When backing up to a non-local directory, SSH is used to make the
 #       connection.  The account under which this script is running should
@@ -28,7 +29,12 @@ app_rootdir=`$readConfig --global app.rootdir`
 data_rootdir=`$readConfig --global data.rootdir`
 import_rootdir=`$readConfig --global import.rootdir`
 no_dbdump=0
-dry_run_opt=
+dry_run=0
+skip_log_dbs=0
+
+usage() {
+  echo "Usage: $prog [-h backup-host] [-d backup-dir] [-n|--dry-run] [--local] [--no-dbdump] [--skip-log-dbs]" >&2
+}
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -36,8 +42,9 @@ while [ $# -gt 0 ]; do
     -h|--host) shift; backup_host="$1" ;;
     --local) backup_host="" ;;
     --no-dbdump) no_dbdump=1 ;;
-    -n|--dry-run) dry_run_opt="-n" ;;
-    *) echo "Usage: $prog [-h backup-host] [-d backup-dir] [-n] [--local] [--no-dbdump]" >&2 ; exit 1 ;;
+    -n|--dry-run) dry_run=1 ;;
+    --skip-log*) skip_log_dbs=1 ;;
+    *) usage; exit 1 ;;
   esac
   shift
 done
@@ -75,7 +82,8 @@ db_backup_dir="$backup_dir/database_dumps"
 code_backup_dir="$backup_dir/application"
 data_backup_dir="$backup_dir/data"
 other_backup_dir="$backup_dir/other"
-rsync_opts="$default_rsync_opts $dry_run_opt"
+rsync_opts="$default_rsync_opts"
+[ $dry_run -eq 1 ] && rsync_opts="$rsync_opts -n"
 
 if [ "$backup_host" ]; then
   ssh $backup_host "mkdir -p '$db_backup_dir' '$code_backup_dir' '$data_backup_dir' '$other_backup_dir'"
@@ -86,19 +94,24 @@ fi
 
 if [ $no_dbdump -eq 0 ]; then
   echo "Calculating databases to be backed up"
-  dbs=`$execSql -c "show databases" | egrep "^($db_civicrm_prefix|$db_drupal_prefix|$db_log_prefix)"`
+  db_pattern="$db_civicrm_prefix|$db_drupal_prefix"
+  [ $skip_log_dbs -eq 0 ] && db_pattern="$db_pattern|$db_log_prefix"
+    
+  dbs=`$execSql -c "show databases" | egrep "^($db_pattern)"`
   echo "Databases to be dumped: " $dbs
 
-  echo "Dumping databases"
-  for dbname in $dbs; do
-    echo "Backing up $dbname"
-    if [ "$backup_host" ]; then
-      $execSql --dump $dbname | ssh $backup_host "cat > $db_backup_dir/$dbname.sql"
-    else
-      $execSql --dump $dbname > $db_backup_dir/$dbname.sql
-    fi
-    [ $? -eq 0 ] && echo "OK" || echo "Failed"
-  done
+  if [ $dry_run -eq 0 ]; then
+    echo "Dumping databases"
+    for dbname in $dbs; do
+      echo "Backing up $dbname"
+      if [ "$backup_host" ]; then
+        $execSql --dump $dbname | ssh $backup_host "cat > $db_backup_dir/$dbname.sql"
+      else
+        $execSql --dump $dbname > $db_backup_dir/$dbname.sql
+      fi
+      [ $? -eq 0 ] && echo "OK" || echo "Failed"
+    done
+  fi
 fi
 
 echo "Backing up /etc"
