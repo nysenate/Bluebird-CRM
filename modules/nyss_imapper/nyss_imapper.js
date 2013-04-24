@@ -611,20 +611,7 @@ cj(document).ready(function(){
 
     var activityId = cj(this).parent().parent().attr('id');
     var contactId = cj(this).parent().parent().attr('data-contact_id');
-    // var firstName = cj(this).parent().parent().children('.name').attr('data-firstName');
-    // var lastName = cj(this).parent().parent().children('.name').attr('data-lastName');
-    // var fromdob = cj(this).parent().parent().children('.name').attr('data-fromdob');
-    // var fromphone = cj(this).parent().parent().children('.name').attr('data-fromphone');
-    // var fromstreet = cj(this).parent().parent().children('.name').attr('data-fromstreet');
-    // var fromcity = cj(this).parent().parent().children('.name').attr('data-fromcity');
-
-
-    // if(firstName && firstName !='null'){ cj('.first_name').val(firstName);}else{ cj('.first_name').val('');}
-    // if(lastName && lastName !='null'){  cj('.last_name').val(lastName);}else{ cj('.last_name').val('');}
-    // if(fromdob && fromdob !='null'){  cj('.dob').val(fromdob);}else{ cj('.dob').val('');}
-    // if(fromphone && fromphone !='null'){  cj('.phone').val(fromphone);}else{ cj('.phone').val('');}
-    // if(fromstreet && fromstreet !='null'){  cj('.street_address').val(fromstreet);}else{ cj('.street_address').val('');}
-    // if(fromcity && fromcity !='null'){  cj('.city').val(fromcity);}else{ cj('.city').val('');}
+    cj("#tabs :input[type='text']").val("");
 
     cj('#imapper-contacts-list').html('');
 
