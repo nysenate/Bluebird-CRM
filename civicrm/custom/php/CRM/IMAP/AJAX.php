@@ -472,17 +472,18 @@ class CRM_IMAP_AJAX {
         }
 
         $output = self::unifiedMessageInfo($messageUid);
-        $oldActivityId =  $output['activity_id'];
-        $senderEmail = $output['sender_email'];
-        $senderName = $output['sender_name'];
-        $forwarder = $output['forwarder'];
-        $date = $output['updated_date'];
-        $subject = $output['subject'];
-        $body = $output['body'];
-        $status = $output['status'];
-        $key = $output['sender_email'];
-        $messageId =$output['message_id'];
-        $imapId =$output['imap_id'];
+        $oldActivityId =  mysql_real_escape_string($output['activity_id']);
+        $senderEmail = mysql_real_escape_string($output['sender_email']);
+        $senderName = mysql_real_escape_string($output['sender_name']);
+        $forwarder = mysql_real_escape_string($output['forwarder']);
+        $date = mysql_real_escape_string($output['updated_date']);
+        $FWDdate = mysql_real_escape_string($output['email_date']);
+        $subject = mysql_real_escape_string($output['subject']);
+        $body = mysql_real_escape_string($output['body']);
+        $status = mysql_real_escape_string($output['status']);
+        $key = mysql_real_escape_string($output['sender_email']);
+        $messageId = mysql_real_escape_string($output['message_id']);
+        $imapId = mysql_real_escape_string($output['imap_id']);
 
         if($status != 1){
           $attachments = $output['attachments'];
@@ -649,7 +650,7 @@ class CRM_IMAP_AJAX {
                 // if this is not the first contact, add a new row to the table
                 if($ContactCount > 0){
                   $debug= 'Added on assignment to #'.$ContactCount;
-                  $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$fwdDate}','{$activity_id}','{$contactId}','{$userId}');";
+                  $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
                 }else{
                   $UPDATEquery = "UPDATE `nyss_inbox_messages`
                   SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
