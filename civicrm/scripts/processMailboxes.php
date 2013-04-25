@@ -711,7 +711,7 @@ function searchForMatches()
       // mark it to show up on unmatched screen
       $updateMessages = "UPDATE `nyss_inbox_messages`
         SET  `status`= 0
-        WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
+        WHERE `id` =  {$message_row_id}";
       $updateMessagesResult = mysql_query($updateMessages, $dbconn);
       $Success = false;
 
@@ -783,7 +783,7 @@ function searchForMatches()
         $activityId = $ActivityResult['id'];
         $updateMessages = "UPDATE `nyss_inbox_messages`
         SET  `status`= 1, `matcher` = 0,  `matched_to` = $contactID,`activity_id` = {$ActivityResult['id']}
-        WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
+        WHERE `id` =  {$message_row_id}";
         $updateMessagesResult = mysql_query($updateMessages, $dbconn);
 
         $AttachmentsQuery = "select * from nyss_inbox_attachments where `email_id` = {$message_row_id}";
