@@ -129,7 +129,7 @@ $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $aActivityType = CRM_Core_PseudoConstant::activityType();
 
 $activityPriority = array_search('Normal', $aActivityPriority);
-$activityStatus = array_search('Not Required', $aActivityStatus);
+$activityStatus = array_search('Completed', $aActivityStatus);
 $activityType = array_search('Inbound Email', $aActivityType);
 
 $inboxPollingTagId = getInboxPollingTagId();
