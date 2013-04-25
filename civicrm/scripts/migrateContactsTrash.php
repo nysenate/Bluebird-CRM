@@ -173,6 +173,9 @@ class CRM_migrateContactsTrash {
     //process orgs and remove from trash list if various criteria met
     self::_trashOrgs($trashedIDs, $source, $trashopt, $employers);
 
+    //6649 remove any contacts with a userID
+    self::_excludeUsers($trashedIDs);
+
     //bbscript_log("trace", '$trashedIDs', $trashedIDs);
     self::_tagContacts($trashedIDs, $dest, $optDry);
 
@@ -419,6 +422,26 @@ class CRM_migrateContactsTrash {
     }
     //bbscript_log("trace", '_trashOrgs $trashedIDs after relationships', $trashedIDs['Organization']);
   }//_trashOrgs
+
+  /*
+   * cycle through and remove any contacts that have a user account
+   */
+  function _excludeUsers(&$trashedIDs) {
+    //get contacts with user accounts from uf_match
+    $cids = array();
+    $sql = "
+      SELECT contact_id
+      FROM civicrm_uf_match
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ( $dao->fetch() ) {
+      $cids[] = $dao->contact_id;
+    }
+
+    foreach ( $trashedIDs as $type => $ids ) {
+      $trashedIDs[$type] = array_diff($ids, $cids);
+    }
+  }//_excludeUsers
 
   //tag all contacts to be trashed
   function _tagContacts($trashedIDs, $dest, $optDry) {
