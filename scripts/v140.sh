@@ -391,7 +391,8 @@ UPDATE civicrm_setting
 SET value = 's:29:"12345101316171819";'
 WHERE name = 'advanced_search_options';
 "
-$execSql -i $instance -c "$sql" -q
+## 6659 retain changelog panel
+#$execSql -i $instance -c "$sql" -q
 
 ## 5914 changelog report permission
 changeRpt="
