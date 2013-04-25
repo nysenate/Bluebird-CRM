@@ -497,7 +497,10 @@ cj(document).ready(function(){
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+
+          if ((message.filebug == true)){
+          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+          }
           cj('#message_left_email').html(message.body+"<hr/>");
           cj.each(message.attachments, function(key, value) {
            cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
@@ -507,10 +510,13 @@ cj(document).ready(function(){
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
           cj("#find-match-popup").dialog('open');
           cj("#tabs").tabs();
+          cj('#tabs').tabs({ selected: 0 });
           cj('.email_address').val(message.sender_email);
           if(message.sender_email) cj('#filter').click();
           cj('.first_name').val(firstName);
           cj('.last_name').val(lastName);
+
+
         }
       },
       error: function(){
@@ -636,8 +642,9 @@ cj(document).ready(function(){
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
           // if we are on crmdev or crmtest show a debug window
-          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-
+          if ((message.filebug == true)){
+          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+          }
           cj('#message_left_email').html(message.body+"<hr/>");
 
           cj.each(message.attachments, function(key, value) {

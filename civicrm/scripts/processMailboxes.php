@@ -5,7 +5,7 @@
 // Author: Ken Zalewski & Stefan Crain
 // Organization: New York State Senate
 // Date: 2011-03-22
-// Revised: 2013-3-21
+// Revised: 2013-04-25
 //
 
 // Mailbox settings common to all CRM instances
@@ -129,7 +129,7 @@ $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $aActivityType = CRM_Core_PseudoConstant::activityType();
 
 $activityPriority = array_search('Normal', $aActivityPriority);
-$activityStatus = array_search('Not Required', $aActivityStatus);
+$activityStatus = array_search('Completed', $aActivityStatus);
 $activityType = array_search('Inbound Email', $aActivityType);
 
 $inboxPollingTagId = getInboxPollingTagId();
@@ -324,163 +324,172 @@ function checkImapAccount($conn, $params)
   return true;
 } // checkImapAccount()
 
-function parsepart($mbox,$msgid,$p, $global_i,$partsarray){
 
-    //where to write file attachments to:
-    $config = CRM_Core_Config::singleton( );
-    $uploadDir = $config->customFileUploadDir;
-    $uploadInbox = $uploadDir.'inbox/';
 
-    if (!is_dir($uploadInbox)) {
-      mkdir($uploadInbox);
-      chmod($uploadInbox, 0777);
+function parsepart($mbox, $msgid, $p, $global_i, $partsarray)
+{
+  //where to write file attachments to:
+  $config = CRM_Core_Config::singleton( );
+  $uploadDir = $config->customFileUploadDir;
+  $uploadInbox = $uploadDir.'inbox/';
+
+  if (!is_dir($uploadInbox)) {
+   mkdir($uploadInbox);
+   chmod($uploadInbox, 0777);
+  }
+
+  //fetch part
+  $part = imap_fetchbody($mbox, $msgid, $global_i);
+  //if type is not text
+  if ($p->type != 0) {
+    //DECODE PART
+    //decode if base64
+    if ($p->encoding == 3) {
+      $part=base64_decode($part);
+    }
+    //decode if quoted printable
+    if ($p->encoding == 4) {
+      $part=quoted_printable_decode($part);
+    }
+    //no need to decode binary or 8bit!
+
+    //get filename of attachment if present
+    $filename = '';
+    // if there are any dparameters present in this part
+    if (count($p->dparameters) > 0) {
+      foreach ($p->dparameters as $dparam) {
+        if ((strtoupper($dparam->attribute) == 'NAME') ||(strtoupper($dparam->attribute) == 'FILENAME')) {
+          $filename = $dparam->value;
+        }
+      }
     }
 
-    //fetch part
-    $part=imap_fetchbody($mbox, $msgid, $global_i);
-    //if type is not text
-    if ($p->type != 0){
-        //DECODE PART
-        //decode if base64
-        if ($p->encoding == 3) {
-            $part=base64_decode($part);
+    //if no filename found
+    if ($filename == '') {
+      // if there are any parameters present in this part
+      if (count($p->parameters) > 0) {
+        foreach ($p->parameters as $param) {
+          $attr = strtoupper($param->attribute);
+          if ($attr == 'NAME' || $attr == 'FILENAME') {
+            $filename = $param->value;
+          }
         }
-        //decode if quoted printable
-        if ($p->encoding == 4) {
-            $part=quoted_printable_decode($part);
-        }
-        //no need to decode binary or 8bit!
-
-        //get filename of attachment if present
-        $filename = '';
-        // if there are any dparameters present in this part
-        if (count($p->dparameters) > 0){
-            foreach ($p->dparameters as $dparam){
-                if ((strtoupper($dparam->attribute) == 'NAME') ||(strtoupper($dparam->attribute) == 'FILENAME')) {
-                    $filename = $dparam->value;
-                }
-            }
-        }
-        //if no filename found
-        if ($filename == ''){
-            // if there are any parameters present in this part
-            if (count($p->parameters) > 0){
-                foreach ($p->parameters as $param){
-                    if ((strtoupper($param->attribute) == 'NAME') ||(strtoupper($param->attribute) == 'FILENAME')) {
-                        $filename = $param->value;
-                    }
-                }
-            }
-        }
-        //write to disk and set partsarray variable
-        if ($filename != ''){
-            $tempfilename = imap_mime_header_decode($filename);
-            for ($i = 0; $i < count($tempfilename); $i++) {
-                $filename =  $tempfilename[$i]->text;
-            }
-            // $partsarray['attachments']['count']=$attachmentCount+1;
-            $attachmentCount ++;
-            $fileSize = strlen($part);
-            $fileExt = substr(strrchr($filename,'.'),1);
-
-            switch ($p->type) {
-                case '0':
-                    // message body
-                    $allowed = false;
-                    $rejected_reason = "File type [".$fileExt."] not allowed,";
-
-                break;
-                case '1':
-                    // multi-part headers
-                    $allowed = false;
-                    $rejected_reason = "File type [".$fileExt."] not allowed,";
-                break;
-                case '2':
-                    // attached message headers
-                    $allowed = false;
-                    $rejected_reason = "File type [".$fileExt."] not allowed,";
-                break;
-                case '3':
-                    // Application ( pdf, exe, doc, etc)
-
-                    if($fileExt == 'pdf'||$fileExt == 'txt'||$fileExt == 'text'||$fileExt == 'rtf'||$fileExt == 'odt'||$fileExt == 'doc'||$fileExt == 'ppt'||$fileExt == 'csv'||$fileExt == 'doc'||$fileExt == 'docx'||$fileExt == 'xls'){
-                        $allowed = true;
-                    }else{
-                        $allowed = false;
-                        $rejected_reason = "File type [".$fileExt."] not allowed,";
-                    }
-                break;
-                case '4':
-                    // Audo
-                    $allowed = true;
-                break;
-                case '5':
-                    // Image
-                    $allowed = true;
-                break;
-                case '6':
-                    // Video
-                    $allowed = true;
-                break;
-                case '7':
-                    // Other
-                    $allowed = false;
-                    $rejected_reason = "File type [".$fileExt."] not allowed,";
-                break;
-
-            }
-            // echo $p->type;
-            $newName = CRM_Utils_File::makeFileName($filename);
-
-            if($allowed){
-              if($fileSize > 2097152){
-                $allowed = false;
-                $rejected_reason .= " File is larger than 2mb";
-              }
-            }
-            if($allowed){
-              $fp = fopen($uploadInbox.$newName, "w+");
-              fwrite($fp, $part);
-              fclose($fp);
-            }
-            // var_dump(array('filename'=>$filename,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason));
-            // $count = count($partsarray['attachments']);
-            $partsarray['attachments'][] = array('filename'=>$filename,'civifilename'=>$newName,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason);
-         }
-    //end if type!=0
+      }
     }
 
-    //if part is text
-    else if($p->type == 0) {
-        //decode text
-        //if QUOTED-PRINTABLE
-        if ($p->encoding == 4) {
-            $part = quoted_printable_decode($part);
-        }
-        //if base 64
-        if ($p->encoding == 3) {
-            $part = base64_decode($part);
-        }
+    //write to disk and set partsarray variable
+    if ($filename != '') {
+      $tempfilename = imap_mime_header_decode($filename);
+      for ($i = 0; $i < count($tempfilename); $i++) {
+        $filename = $tempfilename[$i]->text;
+      }
+      // $partsarray['attachments']['count'] = $attachmentCount+1;
+      $attachmentCount++;
+      $fileSize = strlen($part);
+      $fileExt = substr(strrchr($filename, '.'), 1);
 
-        //OPTIONAL PROCESSING e.g. nl2br for plain text
-        //if plain text
-        if (strtoupper($p->subtype) == 'PLAIN')1;
-        //if HTML
-        else if (strtoupper($p->subtype) == 'HTML')1;
-        $partsarray[$global_i][text] = array('type'=>$p->subtype, 'string'=>$part);
+      switch ($p->type) {
+        case '0':
+          // message body
+          $allowed = false;
+          $rejected_reason = "File type [".$fileExt."] not allowed,";
+
+        break;
+        case '1':
+          // multi-part headers
+          $allowed = false;
+          $rejected_reason = "File type [".$fileExt."] not allowed,";
+        break;
+        case '2':
+          // attached message headers
+          $allowed = false;
+          $rejected_reason = "File type [".$fileExt."] not allowed,";
+        break;
+        case '3':
+          // Application (pdf, exe, doc, etc)
+          if ($fileExt == 'pdf'|| $fileExt == 'txt'|| $fileExt == 'text'|| $fileExt == 'rtf'|| $fileExt == 'odt'|| $fileExt == 'doc'|| $fileExt == 'ppt'|| $fileExt == 'csv'|| $fileExt == 'doc'|| $fileExt == 'docx'|| $fileExt == 'xls') {
+            $allowed = true;
+          }
+          else {
+            $allowed = false;
+            $rejected_reason = "File type [".$fileExt."] not allowed,";
+          }
+        break;
+        case '4':
+          // Audio
+          $allowed = true;
+        break;
+        case '5':
+          // Image
+          $allowed = true;
+        break;
+        case '6':
+          // Video
+          $allowed = true;
+        break;
+        case '7':
+          // Other
+          $allowed = false;
+          $rejected_reason = "File type [".$fileExt."] not allowed,";
+        break;
+
+      }
+
+      // echo $p->type;
+      $newName = CRM_Utils_File::makeFileName($filename);
+
+      if ($allowed) {
+       if ($fileSize > 2097152) {
+        $allowed = false;
+        $rejected_reason .= " File is larger than 2mb";
+       }
+      }
+
+      if ($allowed) {
+       $fp = fopen($uploadInbox.$newName, "w+");
+       fwrite($fp, $part);
+       fclose($fp);
+      }
+
+      // var_dump(array('filename'=>$filename,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason));
+      // $count = count($partsarray['attachments']);
+      $partsarray['attachments'][] = array('filename'=>$filename,'civifilename'=>$newName,'extension'=>$fileExt,'size'=>$fileSize,'allowed'=>$allowed,'rejected_reason'=>$rejected_reason);
+     }
+  //end if type!=0
+  }
+  //if part is text
+  else if ($p->type == 0) {
+    //decode text
+    //if QUOTED-PRINTABLE
+    if ($p->encoding == 4) {
+      $part = quoted_printable_decode($part);
+    }
+    //if base 64
+    if ($p->encoding == 3) {
+      $part = base64_decode($part);
     }
 
-    //if subparts... recurse into function and parse them too!
-    if (count($p->parts) > 0){
-        foreach ($p->parts as $pno=>$parr){
-            parsepart($mbox, $msgid,$parr, ($global_i . '.' . ($pno+1)),$partsarray);
-        }
+    //OPTIONAL PROCESSING e.g. nl2br for plain text
+    //if plain text
+    if (strtoupper($p->subtype) == 'PLAIN')1;
+    //if HTML
+    else if (strtoupper($p->subtype) == 'HTML')1;
+    $partsarray[$global_i][text] = array('type'=>$p->subtype, 'string'=>$part);
+  }
+
+  //if subparts... recurse into function and parse them too!
+  if (count($p->parts) > 0) {
+    foreach ($p->parts as $pno=>$parr) {
+      parsepart($mbox, $msgid,$parr, ($global_i . '.' . ($pno+1)),$partsarray);
     }
+  }
   return $partsarray;
+} // parsepart()
 
-}
 
-function retrieveMessage($mbox, $msgid){
+
+function retrieveMessage($mbox, $msgid)
+{
   // fetch info
   $headerStart = microtime(true);
   $header = imap_rfc822_parse_headers(imap_fetchheader($mbox, $msgid));
@@ -497,28 +506,28 @@ function retrieveMessage($mbox, $msgid){
   $headerEnd = microtime(true);
   echo "[DEBUG]   Fetch Header Time: ".($headerEnd-$headerStart)."\n";
   return $email;
-
 } // retrieveMessage()
+
 
 
 // civiProcessEmail
 // Creates an activity from parsed email parts
 // Detects email type (html|plain)
 // Parses message body in search of target_contact & orgional subject
-// Looks for the source_contact and if not found uses bluebird admin as a stand in
+// Looks for the source_contact and if not found uses Bluebird Admin
 // Returns true/false to move the email to archive or not
 function civiProcessEmail($mbox, $email, $customHandler)
 {
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId,$imap_user;
 
-  $Parse = New parseMessageBody();
+  $Parse = new parseMessageBody();
   $msgid = $email->msgid;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = true;
 
   //where to write file attachments to:
   require_once 'CRM/Utils/File.php';
-  $config = CRM_Core_Config::singleton( );
+  $config = CRM_Core_Config::singleton();
   $uploadDir = $config->customFileUploadDir;
   $uploadInbox = $uploadDir.'inbox/';
 
@@ -530,19 +539,20 @@ function civiProcessEmail($mbox, $email, $customHandler)
   if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
     $RawBody[$s->subtype] = array('encoding' => $s->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $s->lines." : ".$s->encoding." : 0" );
 
-  }else{ // multipart: iterate through each part
-      foreach ($s->parts as $partno0=>$p){
-        $RawBody[$p->subtype] = array('encoding' => $p->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $p->lines." : ".$p->encoding." : ".($partno0+1) );
-      }
+  }
+  else { // multipart: iterate through each part
+    foreach ($s->parts as $partno0=>$p) {
+      $RawBody[$p->subtype] = array('encoding' => $p->encoding, 'body'=> imap_fetchbody($mbox,$msgid,$partno0+1), 'debug'=> $p->lines." : ".$p->encoding." : ".($partno0+1) );
+    }
   }
 
   $parsedBody = $Parse->unifiedMessageInfo($RawBody);
 
-  if($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE"){
+  if ($parsedBody['fwd_headers']['fwd_lookup'] == "LDAP FAILURE") {
     echo "[WARN]    Parse problem : LDAP LOOKUP FAILURE \n";
   }
 
-  if($parsedBody['message_action'] == "direct"){
+  if ($parsedBody['message_action'] == "direct") {
     echo "[DEBUG]   Message was sent directly to inbox \n";
 
     // double check to make sure if was directly sent
@@ -550,9 +560,9 @@ function civiProcessEmail($mbox, $email, $customHandler)
     $RawBody_alt['HTML'] = array('encoding' => 0, 'body' => imap_qprint(imap_body($mbox, $msgid)));
     $parsedBody_alt = $Parse->unifiedMessageInfo($RawBody_alt);
 
-    if($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded"){
+    if ($parsedBody['message_action'] == "forwarded" || $parsedBody_alt['message_action'] == "forwarded") {
       $headerCheck = array_diff($parsedBody['fwd_headers'], $parsedBody_alt['fwd_headers']);
-      if($headerCheck[0] != NULL){
+      if ($headerCheck[0] != NULL) {
         echo "[WARN]    Parse problem : Header difference found \n";
       }
     }
@@ -577,7 +587,8 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $fromName = mysql_real_escape_string($email->fromName);
   $subject = mysql_real_escape_string($email->subject);
   $date = mysql_real_escape_string($email->date);
-  if($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']){
+
+  if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
     $fwdName = $fromName;
     $fwdSubject = $subject;
@@ -585,6 +596,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
     $fwdbody = mysql_real_escape_string($messagebody);
     $fwdLookup = 'Headers';
   }
+
   // debug info for mysql
   $debug = "Msg: ".$msgid."; MessageID: ".$messageId.";Action: ".$messageAction.";bodyFormat: ".$fwdFormat.";fwdLookup: ".$fwdLookup.";fwdEmail: ".$fwdEmail.";fwdName: ".$fwdName.";fwdSubject: ".$fwdSubject.";fwdDate: ".$fwdDate.";FromEmail: ".$fromEmail.";FromName: ".$fromName.";Subject: ".$subject.";Date: ".$date."; V#: ".$version_number;
 
@@ -593,17 +605,18 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $nyss_conn = $nyss_conn->getDatabaseConnection();
   $dbconn = $nyss_conn->connection;
 
-  $MessageInsert = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `format`, `debug`, `updated_date`, `email_date`) VALUES ('{$messageId}', '{$imapId}', '{$fwdName}', '{$fwdEmail}', '{$fwdSubject}', '{$fwdbody}', '{$fromEmail}', '99', '{$fwdFormat}', '$debug', CURRENT_TIMESTAMP, '{$fwdDate}');";
+  $MessageInsert = "INSERT INTO nyss_inbox_messages (message_id, imap_id, sender_name, sender_email, subject, body, forwarder, status, format, debug, updated_date, email_date) VALUES ('{$messageId}', '{$imapId}', '{$fwdName}', '{$fwdEmail}', '{$fwdSubject}', '{$fwdbody}', '{$fromEmail}', '99', '{$fwdFormat}', '$debug', CURRENT_TIMESTAMP, '{$fwdDate}');";
 
   $MessageResults = mysql_query($MessageInsert, $dbconn);
 
-  $SearchQuery = "select * from nyss_inbox_messages where `message_id` = {$messageId} && `imap_id` = {$imapId}";
+  $SearchQuery = "select * from nyss_inbox_messages where message_id = {$messageId} and imap_id = {$imapId}";
   $SearchForExisting = mysql_query($SearchQuery, $dbconn);
-  while($row = mysql_fetch_assoc($SearchForExisting)){
-    $rowId=$row['id'];
+  while ($row = mysql_fetch_assoc($SearchForExisting)) {
+    $rowId = $row['id'];
   }
+
   echo "[DEBUG]   Inserted Rows: ".mysql_num_rows($SearchForExisting)."\n";
-  if(mysql_num_rows($SearchForExisting) < 1){
+  if (mysql_num_rows($SearchForExisting) < 1) {
     echo "[WARN]    Problem inserting Message, Debug info:\n";
     print_r($messagebody);
     echo $MessageInsert."\n";
@@ -623,9 +636,9 @@ function civiProcessEmail($mbox, $email, $customHandler)
     }
   }
 
-  if($partsarray['attachments']){
+  if ($partsarray['attachments']) {
     foreach ($partsarray['attachments'] as $key => $value) {
-      $date   =  date( 'Ymdhis' );
+      $date = date('Ymdhis');
       $filename = mysql_real_escape_string($value['filename']);
       $size = mysql_real_escape_string($value['size']);
       $ext = mysql_real_escape_string($value['extension']);
@@ -633,12 +646,12 @@ function civiProcessEmail($mbox, $email, $customHandler)
       $rejection = mysql_real_escape_string($value['rejected_reason']);
       $fileFull = '';
 
-      if($allowed == 1){
+      if ($allowed == 1) {
         $fileFull = $uploadInbox.$value['civifilename'];
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $fileFull);
         finfo_close($finfo);
-       }
+      }
 
       $insertAttachments = "INSERT INTO `nyss_inbox_attachments` (`email_id`, `file_name`,`file_full`, `size`, `mime_type`, `ext`,`rejection`) VALUES ({$rowId},'{$filename}','{$fileFull}',{$size},'{$mime}','{$ext}','{$rejection}');";
       // var_dump($insertAttachments);
@@ -649,11 +662,12 @@ function civiProcessEmail($mbox, $email, $customHandler)
   $AttachmentsEnd = microtime(true);
   echo "[DEBUG]   Attachments Download Time: ".($AttachmentsEnd-$AttachmentsStart)."\n";
 
-  $SearchQuery = "select * from nyss_inbox_attachments where `email_id` = {$rowId}";
+  $SearchQuery = "select * from nyss_inbox_attachments where email_id = {$rowId}";
   $SearchForExisting = mysql_query($SearchQuery, $dbconn);
 
-  if(mysql_num_rows($SearchForExisting) > 0)
+  if (mysql_num_rows($SearchForExisting) > 0) {
     echo "[DEBUG]   Inserted Attachments: ".mysql_num_rows($SearchForExisting)."\n";
+  }
 
   return $bSuccess;
 } // civiProcessEmail()
@@ -662,7 +676,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
 // searchForMatches
 // Creates an activity from parsed email parts
 // Detects email type (html|plain)
-// Looks for the source_contact and if not found uses bluebird admin as a stand in
+// Looks for the source_contact and if not found uses Bluebird Admin
 // Returns true/false to move the email to archive or not
 function searchForMatches()
 {
@@ -711,7 +725,7 @@ function searchForMatches()
       // mark it to show up on unmatched screen
       $updateMessages = "UPDATE `nyss_inbox_messages`
         SET  `status`= 0
-        WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
+        WHERE `id` =  {$message_row_id}";
       $updateMessagesResult = mysql_query($updateMessages, $dbconn);
       $Success = false;
 
@@ -783,7 +797,7 @@ function searchForMatches()
         $activityId = $ActivityResult['id'];
         $updateMessages = "UPDATE `nyss_inbox_messages`
         SET  `status`= 1, `matcher` = 0,  `matched_to` = $contactID,`activity_id` = {$ActivityResult['id']}
-        WHERE `message_id` =  {$message_id} && `imap_id`= {$imap_id}";
+        WHERE `id` =  {$message_row_id}";
         $updateMessagesResult = mysql_query($updateMessages, $dbconn);
 
         $AttachmentsQuery = "select * from nyss_inbox_attachments where `email_id` = {$message_row_id}";
