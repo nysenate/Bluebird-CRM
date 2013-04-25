@@ -510,10 +510,13 @@ cj(document).ready(function(){
           cj("#find-match-popup").dialog({ title:  "Reading: "+shortenString(message.subject,100) });
           cj("#find-match-popup").dialog('open');
           cj("#tabs").tabs();
+          cj('#tabs').tabs({ selected: 0 });
           cj('.email_address').val(message.sender_email);
           if(message.sender_email) cj('#filter').click();
           cj('.first_name').val(firstName);
           cj('.last_name').val(lastName);
+
+
         }
       },
       error: function(){
