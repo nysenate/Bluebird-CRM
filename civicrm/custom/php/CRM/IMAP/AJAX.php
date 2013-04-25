@@ -553,56 +553,14 @@ class CRM_IMAP_AJAX {
           $contactIds = explode(',', $contactIds);
           $ContactCount = 0;
           foreach($contactIds as $contactId) {
-              // Check to see if contact has the email address being assigend to it,
-              // if doesn't have email address, add it to contact
-              $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
-              $emailResult = mysql_query($emailQuery, self::db());
-              $emailResults = array();
-              while($row = mysql_fetch_assoc($emailResult)) {
-                  $emailResults[] = $row;
-              }
 
-              // if ($debug){
-              //     echo "<h1>Contact ".$contactId." has the following emails </h1>";
-              //     var_dump($emailResults);
-              // }
-              $emailsCount = count($emailResults);
-
-              $matches = 0;
-              // if ($debug){
-              //   echo "<h1>Contact Non matching results </h1>";
-              // }
-              // if the records don't match, count it, an if the number is > 1 add the record
-              foreach($emailResults as $email) {
-                  if(strtolower($email['email']) == strtolower($senderEmail)){
-                      // if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
-                  }else{
-                      $matches++;
-                      // if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
-                  }
-              }
-
-              // get contact info for return message
-              $ContactInfo = self::contactRaw($contactId);
-              $ContactName = $ContactInfo['values'][$contactId]['display_name'];
-              // if ($debug){
-              //   echo "<h1>Contact Info</h1>";
-              //   var_dump($ContactInfo['values'][$contactId]);
-              // }
-
-              // Prams to add email to user
-              $params = array(
-                  'contact_id' => $contactId,
-                  'email' => $senderEmail,
-                  'version' => 3,
-              );
-              if(($emailsCount-$matches) == 0){
-                  // if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
-                  $result = civicrm_api( 'email','create',$params );
-              }
+            // get contact info for return message
+            $ContactInfo = self::contactRaw($contactId);
+            $ContactName = $ContactInfo['values'][$contactId]['display_name'];
 
             $aActivityType = CRM_Core_PseudoConstant::activityType();
             $activityType = array_search('Inbound Email', $aActivityType);
+            $activityStatus = array_search('Not Required', $aActivityStatus);
 
             // Submit the activity information and assign it to the right user
             $params = array(
@@ -612,7 +570,7 @@ class CRM_IMAP_AJAX {
                 'target_contact_id' => $contactId,
                 'subject' => $subject,
                 'is_auto' => 0, // we manually add it, right ?
-                'status_id' => 2,
+                'status_id' => $activityStatus,
                 'activity_date_time' => $date,
                 'details' => $body,
                 'version' => 3
@@ -658,8 +616,6 @@ class CRM_IMAP_AJAX {
                 }
                 $ContactCount++;
 
-
-                // var_dump($UPDATEquery);
                 $UPDATEresult = mysql_query($UPDATEquery, self::db());
                 // var_dump($attachments);
                 // var_dump(is_array($attachments[0]));
