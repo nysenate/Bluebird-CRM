@@ -652,7 +652,7 @@ $execSql -i $instance -c "$sql" --log -q
 ## roles/perms updates
 sql="
   INSERT INTO role (rid, name)
-  VALUES (19, 'Manage Inbox Polling');
+  VALUES (19, 'Manage Bluebird Inbox');
   INSERT INTO role_permission (rid, permission, module)
   VALUES (19, 'administer inbox polling', 'nyss_civihooks');
 "
