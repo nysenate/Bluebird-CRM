@@ -18,6 +18,7 @@
   cj('input#_qf_Advanced_refresh').after(rfb);
 
   //5647 default open address block
+  cj('#location').trigger('click');
   cj('.crm-location-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
 </script>
 {/literal}
