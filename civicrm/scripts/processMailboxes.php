@@ -512,7 +512,7 @@ function retrieveMessage($mbox, $msgid)
 // civiProcessEmail
 // Creates an activity from parsed email parts
 // Detects email type (html|plain)
-// Parses message body in search of target_contact & orgional subject
+// Parses message body in search of target_contact & original subject
 // Looks for the source_contact and if not found uses Bluebird Admin
 // Returns true/false to move the email to archive or not
 function civiProcessEmail($mbox, $email, $customHandler)
@@ -712,7 +712,7 @@ function searchForMatches()
     // find target contact
     $params = array('version'=>3, 'activity'=>'get', 'email'=>$sender_email);
     $contact = civicrm_api('contact', 'get', $params);
-    echo "[INFO]    Looking for the orgional Sender ($sender_email) in Civi\n";
+    echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
 
     // If there is more than one target for the message, leave it for the
     // user to deal with.
