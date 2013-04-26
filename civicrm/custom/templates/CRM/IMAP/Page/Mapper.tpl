@@ -135,7 +135,7 @@
 		<p> We will automatically assign this message in the next 5 mins.</p>
 	</div>
 	<div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
-		<p> Currently Checking for other emails that match this address.</p>
+		<p> Currently Checking for other emails that match <span class="this_address">this address</span>.</p>
 	</div>
 	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
 		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
@@ -143,7 +143,7 @@
 		<textarea rows="4" name="description" id="description"></textarea>
 	</div>
 	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
-		<p>We Found the following email-address, Do you want to add it to the contact's records?</p>
+		<p>We found the following email address. Do you want to add it to the contact's records? (You can also edit this email if needed)</p>
 		<input type="text" class="add_email"  id="add_email" name="add_email">
 		<input type="hidden" class="hidden" id="contacts" name="contacts">
 		<input type="hidden" class="hidden" id="id" name="id">

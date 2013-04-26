@@ -118,7 +118,7 @@ cj(document).ready(function(){
 
   cj( "#matchCheck-popup" ).dialog({
     modal: true,
-    width: 200,
+    width: 400,
     autoOpen: false,
     resizable: false,
     draggable: false
@@ -160,9 +160,11 @@ cj(document).ready(function(){
           }
         });
         cj( this ).dialog( "close" );
+        cj('#assign').click();
       },
       No: function() {
         cj( this ).dialog( "close" );
+        cj('#assign').click();
       }
     }
   });
@@ -396,7 +398,6 @@ cj(document).ready(function(){
     if(contactIds !='' ){
       cj("#AdditionalEmail-popup").dialog('open');
       cj('#AdditionalEmail-popup #contacts').val(contactIds);
-      cj('#assign').click();
       cj("#find-match-popup").dialog('close');
     }else{
       alert("Please Choose a contact");
@@ -494,7 +495,7 @@ cj(document).ready(function(){
                     removeRow(create_messageId);
                     helpMessage('Contact created and '+value.message);
                     if(create_email_address.length > 0){
-                      checkForMatch(value.key,contactData.contact);
+                      checkForMatch(create_email_address,contactData.contact);
                     }
                   });
                   cj("#find-match-popup").dialog('close');
@@ -992,7 +993,6 @@ cj(document).ready(function(){
   cj(".seeMore").live('click', function() {
     var position = cj(this).attr('id');
     var update = parseInt(position,10)+200;
-    console.log(update);
     buildContactList(update);
     cj(this).remove();
   });
@@ -1183,13 +1183,12 @@ function buildMessageList() {
 }
 
 function buildReports() {
-	console.log(reports);
   cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">Not Quite Ready yet</td>');
-	console.log(reports.Unprocessed.length);
-	console.log(reports.Matched.length);
-	console.log(reports.Cleared.length);
-	console.log(reports.Errors.length);
-	console.log(reports.Deleted.length);
+	// console.log(reports.Unprocessed.length);
+	// console.log(reports.Matched.length);
+	// console.log(reports.Cleared.length);
+	// console.log(reports.Errors.length);
+	// console.log(reports.Deleted.length);
 }
 function DeleteMessage(id,imapid){
   cj.ajax({
@@ -1488,8 +1487,10 @@ function shortenString(subject, length){
 // key = md5 ( shortened to 8 ) of user_email
 function checkForMatch(key,contactIds){
   cj("#matchCheck-popup").dialog('open');
+  // console.log('checking',key,contactIds);
+  cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
-    check = cj(this).data('key');
+    var check = cj(this).data('key');
     var messageId = cj(this).attr('id');
     if (key == check) {
       if (cj('.matchbubble.empty',this).length){
@@ -1515,7 +1516,8 @@ function checkForMatch(key,contactIds){
       }
     };
   });
-  cj("#matchCheck-popup").dialog('close');
+  cj("#matchCheck-popup").dialog( "close" );
+
 }
 
 // updates the count at the top of the page
