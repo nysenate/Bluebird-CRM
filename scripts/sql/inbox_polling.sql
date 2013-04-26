@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_attachments` (
   `email_id` int(10) NOT NULL,
   `file_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `file_full` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `rejection` varchar(255) COLLATE utf8_unicode_ci,
+  `rejection` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `mime_type` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `size` int(8) NOT NULL,
   `ext` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
