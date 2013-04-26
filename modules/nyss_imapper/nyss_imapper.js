@@ -133,6 +133,42 @@ cj(document).ready(function(){
     draggable: false
   });
 
+
+  cj( "#AdditionalEmail-popup" ).dialog({
+    modal: true,
+    width: 500,
+    autoOpen: false,
+    resizable: false,
+    draggable: false
+  });
+
+  cj( "#AdditionalEmail-popup" ).dialog({
+    open:function () {
+      cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
+    },
+    buttons: {
+      "Add Email": function() {
+        var id = cj('#id').val();
+        cj.ajax({
+          url: '/civicrm/imap/ajax/addEmail',
+          data: {
+            browser: browser,
+            id: id,
+            description: description
+          },
+          success: function(data,status) {
+            if(data != null || data != ''){
+              helpMessage('Email Added.');
+            }
+          }
+        });
+        cj( this ).dialog( "close" );
+      },
+      Cancel: function() {
+        cj( this ).dialog( "close" );
+      }
+    }
+  });
   // BOTH MATCHED & UNMATCHED
   // file a bug
   cj(".fileBug").live('click', function() {

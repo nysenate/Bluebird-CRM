@@ -141,5 +141,10 @@
 		<p>Step #2. Please contact the support line at # </p>
 		<textarea rows="4" name="description" id="description"></textarea>
 	</div>
-
+	<div id="AdditionalEmails-popup" title="Checking Other Emails"  style="display:none;">
+		<p>We Found the following email-address, Do you want to add it to this record?</p>
+		<input type="text" class="add_email" name="add_email">
+		<input type="hidden" class="hidden" id="contacts" name="contacts">
+		<input type="hidden" class="hidden" id="id" name="id">
+	</div>
 </div>

@@ -92,7 +92,11 @@
     <page_callback>CRM_IMAP_AJAX::addTags</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
-
+  <item>
+    <path>civicrm/imap/ajax/addEmail</path>
+    <page_callback>CRM_IMAP_AJAX::addEmail</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
   <item>
     <path>civicrm/imap/ajax/fileBug</path>
     <page_callback>CRM_IMAP_AJAX::fileBug</page_callback>
