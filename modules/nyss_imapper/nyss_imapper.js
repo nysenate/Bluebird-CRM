@@ -475,7 +475,9 @@ cj(document).ready(function(){
                   cj.each(assign.assigned, function(key, value) {
                     removeRow(create_messageId);
                     helpMessage('Contact created and '+value.message);
-                    checkForMatch(value.key,contactData.contact);
+                    if(create_email_address != '' || create_email_address != null){
+                      checkForMatch(value.key,contactData.contact);
+                    }
                   });
                   cj("#find-match-popup").dialog('close');
                 }
