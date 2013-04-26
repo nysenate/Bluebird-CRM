@@ -62,7 +62,7 @@ require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
 require_once 'api/api.php';
 require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/parseMessageBody.php';
+require_once 'CRM/Utils/MessageBodyParser.php';
 
 
 /* More than one IMAP account can be checked per CRM instance.
@@ -154,9 +154,17 @@ if (empty($imap_accounts)) {
 $authForwarders = getAuthorizedForwarders();
 if ($imap_validsenders) {
   // If imap.validsenders was specified in the config file, then add those
-  // e-mail addresses to the list of authorized forwarders.
+  // e-mail addresses to the list of authorized forwarders.  The contact ID
+  // for each of these "config file" forwarders will be 1 (Bluebird Admin).
   $validSenders = explode(',', $imap_validsenders);
-  $authForwarders = array_merge($authForwarders, $validSenders);
+  foreach ($validSenders as $validSender) {
+    if ($validSender && isset($authForwarders[$validSender])) {
+      echo "[INFO]    Valid sender [$validSender] already in the auth forwarders list\n";
+    }
+    else {
+      $authForwarders[$validSender] = 1;
+    }
+  }
 }
 
 // Iterate over all IMAP accounts associated with the current CRM instance.
@@ -191,13 +199,16 @@ exit(0);
 /*
  * getAuthorizedForwarders()
  * Parameters: None.
- * Returns: Array of e-mail addresses that can forward messages to the inbox.
+ * Returns: Array of contact IDs, indexed by e-mail address, that can forward
+ *          messages to the inbox.
+ * Note: If more than one contact in the Authorized Forwarders group shares
+ *       the same e-mail address, the contact with the lowest ID is stored.
  */
 function getAuthorizedForwarders()
 {
   $res = array();
   $query = "
-    SELECT e.email
+    SELECT e.email, e.contact_id
     FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
     WHERE g.name='".AUTH_FORWARDERS_GROUP_NAME."'
       AND g.id=gc.group_id
@@ -208,7 +219,14 @@ function getAuthorizedForwarders()
   $dao = CRM_Core_DAO::executeQuery($query);
 
   while ($dao->fetch()) {
-    $res[] = $dao->email;
+    $email = strtolower($dao->email);
+    $cid = $dao->contact_id;
+    if (isset($res[$dao->email])) {
+      echo "[WARN]    More than one contact in '".AUTH_FORWARDERS_GROUP_NAME."' group has e-mail address [$email]; ignoring cid=$cid\n";
+    }
+    else {
+      $res[$email] = $cid;
+    }
   }
 
   return $res;
@@ -237,7 +255,7 @@ function processMailboxCommand($cmd, $params)
     $rc = deleteArchiveBox($imap_conn, $params);
   }
   else {
-    echo "[ERROR] Invalid command [$cmd], params=".print_r($params, true)."\n";
+    echo "[ERROR]  Invalid command [$cmd], params=".print_r($params, true)."\n";
     $rc = false;
   }
 
@@ -281,10 +299,10 @@ function checkImapAccount($conn, $params)
     $sender = strtolower($email->fromEmail);
 
     // check whether or not the forwarder/sender is valid
-    if (in_array($sender, $params['validsenders'])) {
+    if (array_key_exists($sender, $params['validsenders'])) {
       echo "[DEBUG]   Sender $sender is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
-      if (civiProcessEmail($conn, $email, null) == true) {
+      if (civiProcessEmail($conn, $email) == true) {
         //mark as read
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         // move to folder if necessary
@@ -305,7 +323,6 @@ function checkImapAccount($conn, $params)
     }
   }
 
-
   $invalid_sender_count = count($invalid_senders);
   if ($invalid_sender_count > 0) {
     echo "[INFO]    Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
@@ -316,7 +333,7 @@ function checkImapAccount($conn, $params)
 
   echo "[INFO]    Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
 
-  echo "[INFO]    Searching For matches on unMatched Records\n";
+  echo "[INFO]    Searching for matches on unMatched records\n";
   searchForMatches();
 
   return true;
@@ -509,16 +526,16 @@ function retrieveMessage($mbox, $msgid)
 
 
 // civiProcessEmail
-// Creates an activity from parsed email parts
-// Detects email type (html|plain)
-// Parses message body in search of target_contact & original subject
-// Looks for the source_contact and if not found uses Bluebird Admin
-// Returns true/false to move the email to archive or not
-function civiProcessEmail($mbox, $email, $customHandler)
+// Creates an activity from parsed email parts.
+// Detects email type (html|plain).
+// Parses message body in search of target_contact & original subject.
+// Looks for the source_contact and if not found uses Bluebird Admin.
+// Returns true/false to move the email to archive or not.
+function civiProcessEmail($mbox, $email)
 {
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId,$imap_user;
 
-  $Parse = new parseMessageBody();
+  $Parse = new MessageBodyParser();
   $msgid = $email->msgid;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = true;
@@ -531,7 +548,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   $bodyStart = microtime(true);
 
-  //  check for plain / html body text
+  // check for plain/html body text
   $s = imap_fetchstructure($mbox, $msgid);
 
   if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
@@ -671,11 +688,12 @@ function civiProcessEmail($mbox, $email, $customHandler)
 } // civiProcessEmail()
 
 
+
 // searchForMatches
-// Creates an activity from parsed email parts
-// Detects email type (html|plain)
-// Looks for the source_contact and if not found uses Bluebird Admin
-// Returns true/false to move the email to archive or not
+// Creates an activity from parsed email parts.
+// Detects email type (html|plain).
+// Looks for the source_contact and if not found uses Bluebird Admin.
+// Returns true/false to move the email to archive or not.
 function searchForMatches()
 {
   global $activityPriority, $activityType, $activityStatus;
