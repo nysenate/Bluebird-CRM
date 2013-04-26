@@ -445,7 +445,8 @@ class CRM_IMAP_AJAX {
         require_once 'CRM/Utils/IMAP.php';
 
         $contactIds = self::get('contacts');
-        $senderEmail = self::get('add_email');
+        $senderEmail = self::get('email');
+        $debug = self::get('debug');
 
         $contactIds = explode(',', $contactIds);
         $ContactCount = 0;
@@ -458,23 +459,23 @@ class CRM_IMAP_AJAX {
               while($row = mysql_fetch_assoc($emailResult)) {
                   $emailResults[] = $row;
               }
-              // if ($debug){
-              //     echo "<h1>Contact ".$contactId." has the following emails </h1>";
-              //     var_dump($emailResults);
-              // }
+              if ($debug){
+                  echo "<h1>Contact ".$contactId." has the following emails </h1>";
+                  var_dump($emailResults);
+              }
               $emailsCount = count($emailResults);
 
               $matches = 0;
-              // if ($debug){
-              //   echo "<h1>Contact Non matching results </h1>";
-              // }
+              if ($debug){
+                echo "<h1>Contact Non matching results </h1>";
+              }
               // if the records don't match, count it, an if the number is > 1 add the record
               foreach($emailResults as $email) {
                   if(strtolower($email['email']) == strtolower($senderEmail)){
-                      // if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                      if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
                   }else{
                       $matches++;
-                      // if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                      if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
                   }
               }
                // Prams to add email to user
@@ -484,11 +485,16 @@ class CRM_IMAP_AJAX {
                   'version' => 3,
               );
               if(($emailsCount-$matches) == 0){
-                  // if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
                   $result = civicrm_api( 'email','create',$params );
               }
 
         }
+        $returnCode = array('code' => 'SUCCESS', 'message' => 'Email was added');
+        echo json_encode($returnCode);
+
+        CRM_Utils_System::civiExit();
+
     }
 
 
