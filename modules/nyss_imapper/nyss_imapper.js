@@ -144,7 +144,7 @@ cj(document).ready(function(){
       cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
     },
     buttons: {
-      "Add Email": function() {
+      "Yes": function() {
         var add_email = cj('#add_email').val();
         var contacts = cj('#contacts').val();
         cj.ajax({
@@ -161,7 +161,7 @@ cj(document).ready(function(){
         });
         cj( this ).dialog( "close" );
       },
-      Cancel: function() {
+      No: function() {
         cj( this ).dialog( "close" );
       }
     }
@@ -1084,7 +1084,7 @@ function makeListSortable(){
     "bAutoWidth": false,
     "bInfo": false
   });
-  cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
+  // cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
 }
 
