@@ -436,6 +436,63 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+    /* addEmail()
+     * Parameters: None.
+     * Returns: None.
+     * Takes message information and saves it as an activity and assigns it to
+     * the selected contact ID.
+     */
+    public static function addEmail() {
+        require_once 'api/api.php';
+        require_once 'CRM/Utils/File.php';
+        require_once 'CRM/Utils/IMAP.php';
+
+        $contactIds = self::get('contacts');
+        $senderEmail = self::get('add_email');
+
+        $contactIds = explode(',', $contactIds);
+        $ContactCount = 0;
+        foreach($contactIds as $contactId) {
+              // Check to see if contact has the email address being assigend to it,
+              // if doesn't have email address, add it to contact
+              $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
+              $emailResult = mysql_query($emailQuery, self::db());
+              $emailResults = array();
+              while($row = mysql_fetch_assoc($emailResult)) {
+                  $emailResults[] = $row;
+              }
+              // if ($debug){
+              //     echo "<h1>Contact ".$contactId." has the following emails </h1>";
+              //     var_dump($emailResults);
+              // }
+              $emailsCount = count($emailResults);
+
+              $matches = 0;
+              // if ($debug){
+              //   echo "<h1>Contact Non matching results </h1>";
+              // }
+              // if the records don't match, count it, an if the number is > 1 add the record
+              foreach($emailResults as $email) {
+                  if(strtolower($email['email']) == strtolower($senderEmail)){
+                      // if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                  }else{
+                      $matches++;
+                      // if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                  }
+              }
+               // Prams to add email to user
+              $params = array(
+                  'contact_id' => $contactId,
+                  'email' => $senderEmail,
+                  'version' => 3,
+              );
+              if(($emailsCount-$matches) == 0){
+                  // if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  $result = civicrm_api( 'email','create',$params );
+              } 
+  
+        }
+    }
 
 
     /* assignMessage()
