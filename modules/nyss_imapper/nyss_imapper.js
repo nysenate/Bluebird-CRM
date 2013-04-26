@@ -139,22 +139,19 @@ cj(document).ready(function(){
     width: 500,
     autoOpen: false,
     resizable: false,
-    draggable: false
-  });
-
-  cj( "#AdditionalEmail-popup" ).dialog({
+    draggable: false,
     open:function () {
       cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
     },
     buttons: {
       "Add Email": function() {
-        var id = cj('#id').val();
+        var add_email = cj('#add_email').val();
+        var contacts = cj('#contacts').val();
         cj.ajax({
           url: '/civicrm/imap/ajax/addEmail',
           data: {
-            browser: browser,
-            id: id,
-            description: description
+            email: add_email,
+            contacts: contacts
           },
           success: function(data,status) {
             if(data != null || data != ''){
@@ -385,6 +382,27 @@ cj(document).ready(function(){
   });
 
 // UNMATCHED
+  // assign a message to a contact Unmatched page
+  cj('#preAssign').click(function() {
+    var contactRadios = cj('input[name=contact_id]');
+    var contactIds = '';
+    cj.each(contactRadios, function(idx, val) {
+      if(cj(val).attr('checked')) {
+        if(contactIds != '')
+          contactIds = contactIds+',';
+        contactIds = contactIds + cj(val).val();
+      }
+    });
+    if(contactIds !='' ){
+      cj("#AdditionalEmail-popup").dialog('open');
+      cj('#AdditionalEmail-popup #contacts').val(contactIds);
+      cj('#assign').click();
+      cj("#find-match-popup").dialog('close');
+    }else{
+      alert("Please Choose a contact");
+    };
+
+  });
 
   // assign a message to a contact Unmatched page
   assign.click(function() {
@@ -550,8 +568,8 @@ cj(document).ready(function(){
           if(message.sender_email) cj('#filter').click();
           cj('.first_name').val(firstName);
           cj('.last_name').val(lastName);
-
-
+          cj('#AdditionalEmail-popup #add_email').val('');
+          cj('#AdditionalEmail-popup #add_email').val(message.sender_email);
         }
       },
       error: function(){

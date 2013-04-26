@@ -69,7 +69,8 @@
 					</label>
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
-					<input type="button" class="imapper-submit" id="assign" value="Assign" name="Assign">
+					<input type="button" class="imapper-submit" id="preAssign" value="Assign" name="Assign">
+					<input type="button" class="hidden" id="assign" value="Assign" name="Assign">
 				</div>
 				<div id="tab2">
 						<label for="first_name">
@@ -141,9 +142,9 @@
 		<p>Step #2. Please contact the support line at # </p>
 		<textarea rows="4" name="description" id="description"></textarea>
 	</div>
-	<div id="AdditionalEmails-popup" title="Checking Other Emails"  style="display:none;">
-		<p>We Found the following email-address, Do you want to add it to this record?</p>
-		<input type="text" class="add_email" name="add_email">
+	<div id="AdditionalEmail-popup" title="Email Address Found"  style="display:none;">
+		<p>We Found the following email-address, Do you want to add it to the contact's records?</p>
+		<input type="text" class="add_email"  id="add_email" name="add_email">
 		<input type="hidden" class="hidden" id="contacts" name="contacts">
 		<input type="hidden" class="hidden" id="id" name="id">
 	</div>
