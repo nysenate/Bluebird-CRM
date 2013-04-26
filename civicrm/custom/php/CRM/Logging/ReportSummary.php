@@ -169,20 +169,44 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $this->beginPostProcess();
     $rows = array();
     // temp table to hold all altered contact-ids
+    //NYSS 6667 support variant columns HACK; see also CRM-12431
+    $params = $this->getVar('_params');
+    $fCols = array(
+      'altered_contact' => 'varchar(128),',
+      'log_action' => 'varchar(64),',
+      'log_job_id' => 'varchar(128),',
+      'display_name' => 'varchar(128)',
+    );
+    //CRM_Core_Error::debug_var('fields',$params['fields']);
+    foreach ( $fCols as $f => $def ) {
+      if ( array_key_exists($f, $params['fields']) ) {
+        $fCols[$f] = "{$f} {$def}";
+        if ( $f == 'display_name' ) {
+          $fCols[$f] = ", {$fCols[$f]}";
+        }
+      }
+      else {
+        $fCols[$f] = '';
+      }
+    }
+    //CRM_Core_Error::debug_var('$fCols',$fCols);
+
     //NYSS 5719 TODO - field order was modified (log_action); review in next version of core
     CRM_Core_DAO::executeQuery('DROP TABLE IF EXISTS civicrm_temp_civireport_logsummary');
     $sql = "
-CREATE TEMPORARY TABLE
-       civicrm_temp_civireport_logsummary ( id int(10),
-                                            log_type varchar(64),
-                                            log_user_id int(10),
-                                            log_date timestamp,
-                                            altered_contact varchar(128),
-                                            altered_contact_id int(10),
-                                            log_conn_id int(11),
-                                            log_action varchar(64),
-                                            is_deleted tinyint(4),
-                                            display_name varchar(128) ) ENGINE=HEAP";
+CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
+  id int(10),
+  log_type varchar(64),
+  log_user_id int(10),
+  log_date timestamp,
+  {$fCols['altered_contact']}
+  altered_contact_id int(10),
+  log_conn_id int(11),
+  {$fCols['log_action']}
+  {$fCols['log_job_id']}
+  is_deleted tinyint(4)
+  {$fCols['display_name']}
+) ENGINE=HEAP";
     CRM_Core_DAO::executeQuery($sql);
 
     $logDateClause = $this->dateClause('log_date',
@@ -218,9 +242,15 @@ CREATE TEMPORARY TABLE
     }
 
     $this->limit();
+    //NYSS hack log_action order by
+    $logActionOrderBy = '';
+    if ( isset($params['fields']['log_action']) ) {
+      $logActionOrderBy = ', log_civicrm_entity_log_action ASC';
+    }
+
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
-ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC, log_civicrm_entity_log_action ASC
+ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
 {$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
     //NYSS 6111 - hackish temporary solution; see Jira 11798

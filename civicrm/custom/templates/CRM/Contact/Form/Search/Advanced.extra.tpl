@@ -16,5 +16,8 @@
   //6383 repeat reset form button
   var rfb = cj('div.reset-advanced-search').clone();
   cj('input#_qf_Advanced_refresh').after(rfb);
+
+  //5647 default open address block
+  cj('.crm-location-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
 </script>
 {/literal}
