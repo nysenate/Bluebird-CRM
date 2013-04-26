@@ -159,11 +159,11 @@ cj(document).ready(function(){
             }
           }
         });
-        cj( this ).dialog( "close" );
         cj('#assign').click();
+
       },
       No: function() {
-        cj( this ).dialog( "close" );
+        cj('#add_email').val('');
         cj('#assign').click();
       }
     }
@@ -410,6 +410,8 @@ cj(document).ready(function(){
     var messageId = cj('#id').val();
     var contactRadios = cj('input[name=contact_id]');
     var contactIds = '';
+    var add_email = cj('#add_email').val();
+    cj("#AdditionalEmail-popup").dialog( "close" );
 
     cj.each(contactRadios, function(idx, val) {
       if(cj(val).attr('checked')) {
@@ -433,7 +435,7 @@ cj(document).ready(function(){
             cj.each(data.assigned, function(key, value) {
               removeRow(messageId);
               helpMessage(value.message);
-              checkForMatch(value.key,contactIds);
+              checkForMatch(add_email,contactIds);
             });
             cj("#find-match-popup").dialog('close');
           }
