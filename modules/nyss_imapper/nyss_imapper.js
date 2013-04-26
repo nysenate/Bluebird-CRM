@@ -121,15 +121,7 @@ cj(document).ready(function(){
     width: 400,
     autoOpen: false,
     resizable: false,
-    draggable: false,
-    buttons: {
-      "Yes": function() {
-        matchChecker();
-      },
-      "No": function() {
-        cj( this ).dialog( "close" );
-      }
-    }
+    draggable: false
   });
 
 
@@ -1493,16 +1485,10 @@ function shortenString(subject, length){
 // Look for empty rows that match the KEY of a matched row
 // Remove them from the view so the user doesn't re-add / create duplicates
 // key = md5 ( shortened to 8 ) of user_email
-// function checkForMatch(key,contactIds){
-//   cj(".this_address").html(key);
-//   cj("#key").val(key);
-//   cj("#contactIds").val(contactIds);
-//   cj("#matchCheck-popup").dialog('open');
-// }
-
 function checkForMatch(key,contactIds){
-  var key = cj('#key').val();
-  var contactIds = cj('#contactIds').val();
+  cj("#matchCheck-popup").dialog('open');
+  // console.log('checking',key,contactIds);
+  cj(".this_address").html(key);
   cj('.imapper-message-box').each(function(i, item) {
     var check = cj(this).data('key');
     var messageId = cj(this).attr('id');

@@ -135,10 +135,7 @@
 		<p> We will automatically assign this message in the next 5 mins.</p>
 	</div>
 	<div id="matchCheck-popup" title="Checking Other Emails"  style="display:none;">
-		<p> Do you want to Check for other emails that match <span class="this_address">this address</span>?</p>
-		<input type="hidden" class="hidden" id="key" name="key">
-		<input type="hidden" class="hidden" id="contactIds" name="contactIds">
-
+		<p> Currently Checking for other emails that match <span class="this_address">this address</span>.</p>
 	</div>
 	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
 		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
