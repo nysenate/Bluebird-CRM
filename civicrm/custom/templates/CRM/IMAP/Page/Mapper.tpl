@@ -142,7 +142,7 @@
 		<p>Step #2. Please contact the support line at # </p>
 		<textarea rows="4" name="description" id="description"></textarea>
 	</div>
-	<div id="AdditionalEmail-popup" title="Email Address Found"  style="display:none;">
+	<div id="AdditionalEmail-popup" title="Add email address to contact?"  style="display:none;">
 		<p>We Found the following email-address, Do you want to add it to the contact's records?</p>
 		<input type="text" class="add_email"  id="add_email" name="add_email">
 		<input type="hidden" class="hidden" id="contacts" name="contacts">
