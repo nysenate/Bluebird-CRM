@@ -1,89 +1,90 @@
 <?php
-// A class Needed for the processMailboxes.php script,
+// A class needed for the processMailboxes.php script.
 //
-class parseMessageBody {
-
+class MessageBodyParser
+{
   /* unifiedMessageInfo()
-  * Parameters: $body, the body text of an email (html or plaintex)
-  * Returns: An Object of the headers in message in tree format
+  * Parameters: $origin, the body text of an email (HTML or PlainText)
+  * Returns: An object of the headers in message in tree format
   */
-  public static function unifiedMessageInfo($origin) {
+  public static function unifiedMessageInfo($origin)
+  {
     $uniStart = microtime(true);
     // prefer html, because its not broken into lines
-    if(isset($origin['HTML']['body'])){
+    if (isset($origin['HTML']['body'])) {
       $start = $origin['HTML']['body'];
       $format = 'plain';
       $encoding = $origin['HTML']['encoding'];
-    }elseif(isset($origin['PLAIN']['body'])){
+    }
+    elseif (isset($origin['PLAIN']['body'])) {
       $start = $origin['PLAIN']['body'];
       $format = 'html';
       $encoding = $origin['PLAIN']['encoding'];
     }
 
-
-    if($encoding == 0) {
+    if ($encoding == 0) {
       //$start = imap_7bit($start);
-    } elseif($encoding == 1) {
+    }
+    elseif ($encoding == 1) {
       $start = imap_8bit($start);
       $start = quoted_printable_decode($start);
-    } elseif($encoding == 2) {
+    }
+    elseif ($encoding == 2) {
       $start = imap_binary($start);
       $start = imap_base64($start);
-    } elseif($encoding == 3) {
+    }
+    elseif ($encoding == 3) {
       $start = imap_base64($start);
-    } elseif($encoding == 4) {
+    }
+    elseif($encoding == 4) {
       $start = quoted_printable_decode($start);
     }
 
-
-
-
-    $HeaderCheck = substr($start, 0, 1600);
-    $HeaderCheck = preg_replace("/\\t/i", " ", $HeaderCheck);
-    $HeaderCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $HeaderCheck);
-    $HeaderCheck = preg_replace('/BR/i', 'br', $HeaderCheck);
-    $HeaderCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
-    $HeaderCheck = preg_replace('/(<div[^>]*>\s*){1,}/', '#####---', $HeaderCheck);
-    $HeaderCheck = self::stripTagsForHeader($HeaderCheck);
-    $HeaderCheck = preg_replace('/#####---/', "\r\n", $HeaderCheck);
-    $bodyArray = explode("\r\n", $HeaderCheck);
+    $headerCheck = substr($start, 0, 1600);
+    $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
+    $headerCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $headerCheck);
+    $headerCheck = preg_replace('/BR/i', 'br', $headerCheck);
+    $headerCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $headerCheck);
+    $headerCheck = preg_replace('/(<div[^>]*>\s*){1,}/', '#####---', $headerCheck);
+    $headerCheck = self::stripTagsForHeader($headerCheck);
+    $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
+    $bodyArray = explode("\r\n", $headerCheck);
 
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
     $count = 0; // count of embedded message headers
     foreach ($bodyArray as $key => $line) {
       $line = trim($line);
-      if($line != ''){
+      if ($line != '') {
+        $line = preg_replace('/mailto/i', '', $line); // this matched /to/
+        $line = preg_replace('/Reply To|reply to|Replyto/i', '', $line); // this matched /to/
 
-        $line = preg_replace("/mailto/i", "", $line); // this matched /to/
-        $line = preg_replace("/Reply To|reply to|Replyto/i", "", $line); // this matched /to/
-
-        if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)){
+        if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
           $header = strtolower($matches[1]);
           $value = trim($matches[2]);
-
-          $dateValue = preg_replace("/ at |,/i", "", $value); // Remove errors caused by at
+          // Remove errors caused by "at"
+          $dateValue = preg_replace("/ at |,/i", "", $value);
           $parseDate= date("Y-m-d H:i:s", strtotime($dateValue));
 
           switch ($header) {
             case 'subject':
-                $m['Subject'][] = trim($value);
+              $m['Subject'][] = trim($value);
               break;
             case 'from':
-                $parseEmail= self::cleanEmail($value);
-                $m['From'][] = $parseEmail;
+              $parseEmail = self::cleanEmail($value);
+              $m['From'][] = $parseEmail;
               break;
             case 'to':
               // $m[$count]['To'] = $value;
-            break;
+              break;
             case 'sent':
             case 'date':
-                $m['Date'][] = $parseDate;
+              $m['Date'][] = $parseDate;
               break;
             case 'cc':
-                $m['Cc'][] = trim($value);
+              $m['Cc'][] = trim($value);
               break;
             case 'bcc':
-                $m['Bcc'][] = trim($value);
+              $m['Bcc'][] = trim($value);
               break;
             default:
               break;
@@ -102,10 +103,11 @@ class parseMessageBody {
     // $mentionsCount = array();
     // // look for a previous mention, add them up.
     // foreach ($matches[0] as $key => $value) {
-    //   if(trim($value) != ''){
-    //     if($mentions[$value]){
-    //       $mentions[$value] = $mentions[$value]+1;
-    //     }else{
+    //   if (trim($value) != '') {
+    //     if ($mentions[$value]) {
+    //       $mentions[$value] = $mentions[$value] + 1;
+    //     }
+    //     else {
     //       $mentions[$value] = 1;
     //     }
     //   }
@@ -128,7 +130,6 @@ class parseMessageBody {
         'fwd_mentions' =>mysql_real_escape_string($mentions),
     );
 
-
     // custom body parsing for mysql entry,
     $body = ($start);
     // strip out non-ascii charachters
@@ -141,24 +142,31 @@ class parseMessageBody {
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
     $body = addslashes($body);
 
-    if(trim($body) == '') $body = "No Message Content Found";
+    if (trim($body) == '') {
+      $body = "No Message Content Found";
+    }
 
-    if($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL){
+    if ($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL) {
       $status =  'direct';
-    }else{
+    }
+    else {
       $status ='forwarded';
       $output['fwd_headers'] = $forwarded;
     }
+
     $uniEnd = microtime(true);
     $output['message_action'] = $status;
     $output['format'] = $format;
     $output['time'] = $uniEnd-$uniStart;
     $output['body'] = $body;
     return $output;
-  }
+  } // unifiedMessageInfo()
+
+
 
   // Parse and find LDAP & standard format emails
-  public static function cleanEmail ($string) {
+  public static function cleanEmail($string)
+  {
     // we have to parse out ldap stuff because sometimes addresses are
     // embedded and, see NYSS #5748 for more details
 
@@ -169,116 +177,119 @@ class parseMessageBody {
     // CN=Jason Biernacki/OU=STS11thFloor/O=senate
     // CN=Personnel Mail/O=senate
     $string = preg_replace('/CN=|O=|OU=/i', '', $string);
-
     $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
     $string = preg_replace('/"|\'/i', '', $string);
     $string = preg_replace('/\[|\]/i', '', $string);
 
-    // ldap addresses have slashes, so we do an internal lookup
+    // LDAP addresses have slashes, so we do an internal lookup
     $internal = preg_match("/\/senate/i", $string, $matches);
 
-    if($internal == 1){
+    if ($internal == 1) {
       $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
-        $retrieve = array("sn","givenname", "mail");
-        $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
-        $info = ldap_get_entries($ldapcon, $search);
-      if($info[0]){
+      $retrieve = array("sn", "givenname", "mail");
+      $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
+      $info = ldap_get_entries($ldapcon, $search);
+      if ($info[0]) {
         $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
         $return = array('lookupType'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
         return $return;
-      }else{
-        $return = array('lookupType'=>'LDAP FAILURE','name'=>'LDAP lookup Failed','email'=>'LDAP lookup Failed on string '.$string);
+      }
+      else {
+        $return = array('lookupType'=>'LDAP FAILURE', 'name'=>'LDAP lookup failed', 'email'=>"LDAP lookup failed on string $string");
         return $return;
       }
-
-    }else{
+    }
+    else {
       // clean out any anything that wouldn't be a name or email, html or plain-text
       $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
       $string = preg_replace('/<|>|"|\'/i', '', $string);
-      foreach(preg_split('/ /', $string) as $token) {
-        $name .=$token." ";
-          $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
-          if ($email !== false) {
-              $emails[] = $email;
-              break; // only want one match
-          }
+      foreach (preg_split('/ /', $string) as $token) {
+        $name .= $token." ";
+        $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
+        if ($email !== false) {
+          $emails[] = $email;
+          break; // only want one match
+        }
       }
       $name = trim(str_replace($emails[0], '', $name));
-      $return = array('lookupType'=>'inline','name'=>$name,'email'=>$emails[0]);
-      return $return;
+      $res = array('lookupType'=>'inline', 'name'=>$name, 'email'=>$emails[0]);
+      return $res;
     }
-  }
+  } // cleanEmail()
+
+
 
   // modified to not strip tags needed to display html message
-  public static function stripBodyTags($text){
-        return preg_replace('%
-            # Match an opening or closing HTML 4.01 tag.
-            </?                  # Tag opening "<" delimiter.
-            (?:                  # Group for HTML 4.01 tags.
-              ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
-              BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
-              COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
-              FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
-              ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
-              NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
-              SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
-              TEXTAREA|TITLE|TT|U|UL|VAR
-            )\b                  # End group of tag name alternative.
-            (?:                  # Non-capture group for optional attribute(s).
-              \s+                # Attributes must be separated by whitespace.
-              [\w\-.:]+          # Attribute name is required for attr=value pair.
-              (?:                # Non-capture group for optional attribute value.
-                \s*=\s*          # Name and value separated by "=" and optional ws.
-                (?:              # Non-capture group for attrib value alternatives.
-                  "[^"]*"        # Double quoted string.
-                | \'[^\']*\'     # Single quoted string.
-                | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
-                )                # End of attribute value alternatives.
-              )?                 # Attribute value is optional.
-            )*                   # Allow zero or more attribute=value pairs
-            \s*                  # Whitespace is allowed before closing delimiter.
-            /?                   # Tag may be empty (with self-closing "/>" sequence.
-            >                    # Opening tag closing ">" delimiter.
-            | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
-            | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
-            %six', '', $text);
-    }
-
-    // header doesn't need any of these, so blow them away.
-    public static function stripTagsForHeader($text){
-        return preg_replace('%
-            # Match an opening or closing HTML 4.01 tag.
-            </?                  # Tag opening "<" delimiter.
-            (?:                  # Group for HTML 4.01 tags.
-              ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
-              BLOCKQUOTE|BODY|BR|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
-              COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
-              FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
-              ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
-              NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
-              SCRIPT|SELECT|SMALL|SPAN|STRIKE|STRONG|STYLE|SUB|SUP|S|
-              TABLE|TD|TBODY|TEXTAREA|TFOOT|TH|THEAD|TITLE|TR|TT|U|UL|VAR
-            )\b                  # End group of tag name alternative.
-            (?:                  # Non-capture group for optional attribute(s).
-              \s+                # Attributes must be separated by whitespace.
-              [\w\-.:]+          # Attribute name is required for attr=value pair.
-              (?:                # Non-capture group for optional attribute value.
-                \s*=\s*          # Name and value separated by "=" and optional ws.
-                (?:              # Non-capture group for attrib value alternatives.
-                  "[^"]*"        # Double quoted string.
-                | \'[^\']*\'     # Single quoted string.
-                | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
-                )                # End of attribute value alternatives.
-              )?                 # Attribute value is optional.
-            )*                   # Allow zero or more attribute=value pairs
-            \s*                  # Whitespace is allowed before closing delimiter.
-            /?                   # Tag may be empty (with self-closing "/>" sequence.
-            >                    # Opening tag closing ">" delimiter.
-            | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
-            | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
-            %six', '', $text);
-    }
+  public static function stripBodyTags($text)
+  {
+    return preg_replace('%
+        # Match an opening or closing HTML 4.01 tag.
+        </?                  # Tag opening "<" delimiter.
+        (?:                  # Group for HTML 4.01 tags.
+          ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+          BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
+          COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
+          FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
+          ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+          NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+          SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
+          TEXTAREA|TITLE|TT|U|UL|VAR
+        )\b                  # End group of tag name alternative.
+        (?:                  # Non-capture group for optional attribute(s).
+          \s+                # Attributes must be separated by whitespace.
+          [\w\-.:]+          # Attribute name is required for attr=value pair.
+          (?:                # Non-capture group for optional attribute value.
+            \s*=\s*          # Name and value separated by "=" and optional ws.
+            (?:              # Non-capture group for attrib value alternatives.
+              "[^"]*"        # Double quoted string.
+            | \'[^\']*\'     # Single quoted string.
+            | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
+            )                # End of attribute value alternatives.
+          )?                 # Attribute value is optional.
+        )*                   # Allow zero or more attribute=value pairs
+        \s*                  # Whitespace is allowed before closing delimiter.
+        /?                   # Tag may be empty (with self-closing "/>" sequence
+        >                    # Opening tag closing ">" delimiter.
+        | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
+        | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
+        %six', '', $text);
+  } // stripBodyTags()
 
 
+
+  // header doesn't need any of these, so blow them away.
+  public static function stripTagsForHeader($text)
+  {
+    return preg_replace('%
+        # Match an opening or closing HTML 4.01 tag.
+        </?                  # Tag opening "<" delimiter.
+        (?:                  # Group for HTML 4.01 tags.
+          ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+          BLOCKQUOTE|BODY|BR|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
+          COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
+          FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
+          ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+          NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+          SCRIPT|SELECT|SMALL|SPAN|STRIKE|STRONG|STYLE|SUB|SUP|S|
+          TABLE|TD|TBODY|TEXTAREA|TFOOT|TH|THEAD|TITLE|TR|TT|U|UL|VAR
+        )\b                  # End group of tag name alternative.
+        (?:                  # Non-capture group for optional attribute(s).
+          \s+                # Attributes must be separated by whitespace.
+          [\w\-.:]+          # Attribute name is required for attr=value pair.
+          (?:                # Non-capture group for optional attribute value.
+            \s*=\s*          # Name and value separated by "=" and optional ws.
+            (?:              # Non-capture group for attrib value alternatives.
+              "[^"]*"        # Double quoted string.
+            | \'[^\']*\'     # Single quoted string.
+            | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
+            )                # End of attribute value alternatives.
+          )?                 # Attribute value is optional.
+        )*                   # Allow zero or more attribute=value pairs
+        \s*                  # Whitespace is allowed before closing delimiter.
+        /?                   # Tag may be empty (with self-closing "/>" sequence
+        >                    # Opening tag closing ">" delimiter.
+        | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
+        | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
+        %six', '', $text);
+  } // stripTagsForHeader()
 }
-
