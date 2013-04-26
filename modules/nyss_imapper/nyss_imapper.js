@@ -1084,7 +1084,7 @@ function makeListSortable(){
     "bAutoWidth": false,
     "bInfo": false
   });
-  cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
+  // cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
 }
 
