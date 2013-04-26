@@ -5,7 +5,7 @@
 // Author: Ken Zalewski & Stefan Crain
 // Organization: New York State Senate
 // Date: 2011-03-22
-// Revised: 2013-04-25
+// Revised: 2013-04-26
 //
 
 // Mailbox settings common to all CRM instances
@@ -62,7 +62,7 @@ require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
 require_once 'api/api.php';
 require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/parseMessageBody.php';
+require_once 'CRM/Utils/MessageBodyParser.php';
 
 
 /* More than one IMAP account can be checked per CRM instance.
@@ -154,9 +154,17 @@ if (empty($imap_accounts)) {
 $authForwarders = getAuthorizedForwarders();
 if ($imap_validsenders) {
   // If imap.validsenders was specified in the config file, then add those
-  // e-mail addresses to the list of authorized forwarders.
+  // e-mail addresses to the list of authorized forwarders.  The contact ID
+  // for each of these "config file" forwarders will be 1 (Bluebird Admin).
   $validSenders = explode(',', $imap_validsenders);
-  $authForwarders = array_merge($authForwarders, $validSenders);
+  foreach ($validSenders as $validSender) {
+    if ($validSender && isset($authForwarders[$validSender])) {
+      echo "[INFO]    Valid sender [$validSender] already in the auth forwarders list\n";
+    }
+    else {
+      $authForwarders[$validSender] = 1;
+    }
+  }
 }
 
 // Iterate over all IMAP accounts associated with the current CRM instance.
@@ -191,24 +199,34 @@ exit(0);
 /*
  * getAuthorizedForwarders()
  * Parameters: None.
- * Returns: Array of e-mail addresses that can forward messages to the inbox.
+ * Returns: Array of contact IDs, indexed by e-mail address, that can forward
+ *          messages to the inbox.
+ * Note: If more than one contact in the Authorized Forwarders group shares
+ *       the same e-mail address, the contact with the lowest ID is stored.
  */
 function getAuthorizedForwarders()
 {
   $res = array();
   $query = "
-SELECT e.email
-FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-WHERE g.name='".AUTH_FORWARDERS_GROUP_NAME."'
-  AND g.id=gc.group_id
-  AND gc.status='Added'
-  AND gc.contact_id=e.contact_id
-ORDER BY gc.contact_id ASC";
+    SELECT e.email, e.contact_id
+    FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+    WHERE g.name='".AUTH_FORWARDERS_GROUP_NAME."'
+      AND g.id=gc.group_id
+      AND gc.status='Added'
+      AND gc.contact_id=e.contact_id
+    ORDER BY gc.contact_id ASC";
 
   $dao = CRM_Core_DAO::executeQuery($query);
 
   while ($dao->fetch()) {
-    $res[] = $dao->email;
+    $email = strtolower($dao->email);
+    $cid = $dao->contact_id;
+    if (isset($res[$dao->email])) {
+      echo "[WARN]    More than one contact in '".AUTH_FORWARDERS_GROUP_NAME."' group has e-mail address [$email]; ignoring cid=$cid\n";
+    }
+    else {
+      $res[$email] = $cid;
+    }
   }
 
   return $res;
@@ -237,7 +255,7 @@ function processMailboxCommand($cmd, $params)
     $rc = deleteArchiveBox($imap_conn, $params);
   }
   else {
-    echo "[ERROR] Invalid command [$cmd], params=".print_r($params, true)."\n";
+    echo "[ERROR]  Invalid command [$cmd], params=".print_r($params, true)."\n";
     $rc = false;
   }
 
@@ -281,13 +299,11 @@ function checkImapAccount($conn, $params)
     $sender = strtolower($email->fromEmail);
 
     // check whether or not the forwarder/sender is valid
-    // if (in_array('crain@nysenate.gov', $params['validsenders'])) {
-    if (in_array($sender, $params['validsenders'])) {
+    if (array_key_exists($sender, $params['validsenders'])) {
       echo "[DEBUG]   Sender $sender is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
-      if (civiProcessEmail($conn, $email, null) == true) {
+      if (civiProcessEmail($conn, $email) == true) {
         //mark as read
-
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         // move to folder if necessary
         if ($params['archivemail'] == true) {
@@ -307,7 +323,6 @@ function checkImapAccount($conn, $params)
     }
   }
 
-
   $invalid_sender_count = count($invalid_senders);
   if ($invalid_sender_count > 0) {
     echo "[INFO]    Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
@@ -318,7 +333,7 @@ function checkImapAccount($conn, $params)
 
   echo "[INFO]    Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";
 
-  echo "[INFO]    Searching For matches on unMatched Records\n";
+  echo "[INFO]    Searching for matches on unMatched records\n";
   searchForMatches();
 
   return true;
@@ -511,16 +526,16 @@ function retrieveMessage($mbox, $msgid)
 
 
 // civiProcessEmail
-// Creates an activity from parsed email parts
-// Detects email type (html|plain)
-// Parses message body in search of target_contact & orgional subject
-// Looks for the source_contact and if not found uses Bluebird Admin
-// Returns true/false to move the email to archive or not
-function civiProcessEmail($mbox, $email, $customHandler)
+// Creates an activity from parsed email parts.
+// Detects email type (html|plain).
+// Parses message body in search of target_contact & original subject.
+// Looks for the source_contact and if not found uses Bluebird Admin.
+// Returns true/false to move the email to archive or not.
+function civiProcessEmail($mbox, $email)
 {
   global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId,$imap_user;
 
-  $Parse = new parseMessageBody();
+  $Parse = new MessageBodyParser();
   $msgid = $email->msgid;
   $session =& CRM_Core_Session::singleton();
   $bSuccess = true;
@@ -533,7 +548,7 @@ function civiProcessEmail($mbox, $email, $customHandler)
 
   $bodyStart = microtime(true);
 
-  //  check for plain / html body text
+  // check for plain/html body text
   $s = imap_fetchstructure($mbox, $msgid);
 
   if ( (!isset($s->parts)) || (!$s->parts) ){ // not multipart
@@ -673,34 +688,31 @@ function civiProcessEmail($mbox, $email, $customHandler)
 } // civiProcessEmail()
 
 
+
 // searchForMatches
-// Creates an activity from parsed email parts
-// Detects email type (html|plain)
-// Looks for the source_contact and if not found uses Bluebird Admin
-// Returns true/false to move the email to archive or not
+// Creates an activity from parsed email parts.
+// Detects email type (html|plain).
+// Looks for the source_contact and if not found uses Bluebird Admin.
+// Returns true/false to move the email to archive or not.
 function searchForMatches()
 {
-  global $activityPriority, $activityType, $activityStatus, $inboxPollingTagId,$imap_user;
+  global $activityPriority, $activityType, $activityStatus;
+  global $inboxPollingTagId, $imap_user;
 
   // start db connection
   $nyss_conn = new CRM_Core_DAO();
   $nyss_conn = $nyss_conn->getDatabaseConnection();
   $dbconn = $nyss_conn->connection;
-  $config = CRM_Core_Config::singleton( );
+  $config = CRM_Core_Config::singleton();
   $uploadInbox = $config->customFileUploadDir.'inbox/';
   $uploadDir = $config->customFileUploadDir;
 
   // Check the items we have yet to match (unmatched - 0, and unprocessed - 99)
-  $UnprocessedQuery = " SELECT *
-  FROM `nyss_inbox_messages`
-  WHERE `status` = 99 OR `status` = 0";
-
-
-  $UnprocessedResult = mysql_query($UnprocessedQuery, $dbconn);
-  $UnprocessedOutput = array();
-  echo "[DEBUG]   Unprocessed Records: ".mysql_num_rows($UnprocessedResult)."\n";
-  while($row = mysql_fetch_assoc($UnprocessedResult)) {
-    // print_r($row);
+  $q = "SELECT * FROM nyss_inbox_messages WHERE status=99 OR status=0";
+  $unprocResult = mysql_query($q, $dbconn);
+  $unprocOutput = array();
+  echo "[DEBUG]   Unprocessed Records: ".mysql_num_rows($unprocResult)."\n";
+  while ($row = mysql_fetch_assoc($unprocResult)) {
     $message_row_id = $row['id'];
     $forwarder = $row['forwarder'];
     $sender_email = $row['sender_email'];
@@ -711,64 +723,63 @@ function searchForMatches()
     $subject = $row['subject'];
     echo "- - - - - - - - - - - - - - - - - - \n";
 
-    echo "[DEBUG]   Processing Record ID: ".$row['id']."\n";
+    echo "[DEBUG]   Processing Record ID: $message_row_id\n";
 
-    // Use the e-mail from the body of the message (or header if direct) to find traget contact
-    $params = array('version'   =>  3, 'activity'  =>  'get', 'email' => $sender_email, );
+    // Use the e-mail from the body of the message (or header if direct) to
+    // find target contact
+    $params = array('version'=>3, 'activity'=>'get', 'email'=>$sender_email);
     $contact = civicrm_api('contact', 'get', $params);
-    echo "[INFO]    Looking for the orgional Sender (".$sender_email.") in Civi\n";
-
-    // if there is more then one target for the message leave if for the user to deal with
-    if ($contact['count'] != 1 ){
-      error_log("[DEBUG]   Orgional Sender  ".$sender_email." Matches [".$contact['count']."] Records in this instance . Leaving for manual addition.");
-
+    echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
+    // If there is more than one target for the message, leave it for the
+    // user to deal with.
+    if ($contact['count'] != 1) {
+      error_log("[DEBUG]   Original sender $sender_email matches [".$contact['count']."] records in this instance. Leaving for manual addition.");
       // mark it to show up on unmatched screen
-      $updateMessages = "UPDATE `nyss_inbox_messages`
-        SET  `status`= 0
-        WHERE `id` =  {$message_row_id}";
+      $updateMessages = "UPDATE nyss_inbox_messages SET status=0 WHERE id=$message_row_id";
       $updateMessagesResult = mysql_query($updateMessages, $dbconn);
-      $Success = false;
-
-    }else{
-      $contactID = $contact['id'];
-      $Success = true;
-      echo "[INFO]    Orgional Sender ".$sender_email." had a direct match.\n";
+      $bSuccess = false;
     }
-    if ($Success) {
+    else {
+      $contactID = $contact['id'];
+      $bSuccess = true;
+      echo "[INFO]    Original sender $sender_email had a direct match.\n";
+    }
 
+    if ($bSuccess) {
       // Let's find the userID for the source of the activity
-      $ForwarderSearch = "
-    SELECT e.contact_id
-    FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
-    WHERE g.title='".AUTH_FORWARDERS_GROUP_NAME."'
-      AND e.email='".$forwarder."'
-      AND g.id=gc.group_id
-      AND gc.status='Added'
-      AND gc.contact_id=e.contact_id
-    ORDER BY gc.contact_id ASC";
-    // echo($ForwarderSearch);
+      $forwarderSearch = "
+        SELECT e.contact_id
+        FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+        WHERE g.title='".AUTH_FORWARDERS_GROUP_NAME."'
+          AND e.email='".$forwarder."'
+          AND g.id=gc.group_id
+          AND gc.status='Added'
+          AND gc.contact_id=e.contact_id
+        ORDER BY gc.contact_id ASC";
 
-      $ForwarderResult = mysql_query($ForwarderSearch, $dbconn);
+      $forwarderResult = mysql_query($forwarderSearch, $dbconn);
       $results = array();
-      while($row = mysql_fetch_assoc($ForwarderResult)) {
-          $results[] = $row;
+      while ($row = mysql_fetch_assoc($forwarderResult)) {
+        $results[] = $row;
       }
-      if (count($results) != 1 ){
-        echo "[WARN]    Forwarder search ".$forwarder." within 'Authorized Forwarders' resulted in ".count($results)." making bluebird admin the owner\n";
-      }else{
+
+      if (count($results) != 1) {
+        echo "[WARN]    Forwarder search for [$forwarder] within '".AUTH_FORWARDERS_GROUP_NAME."' resulted in ".count($results)." making Bluebird Admin the owner\n";
+      }
+      else {
         echo "[INFO]    Forwarder search ".$forwarder." is authorized\n";
       }
 
       // error checking for forwarderId
-      if (!$results){
+      if (!$results) {
         $forwarderId = 1; // bluebird admin
-      } else{
+      }
+      else {
         $forwarderId = $results[0]['contact_id'];
       };
 
-
-      // create the activitiy
-      $ActivityParams = array(
+      // create the activity
+      $activityParams = array(
                   "source_contact_id" => $forwarderId,
                   "subject" => $subject,
                   "details" =>  $body,
@@ -783,57 +794,56 @@ function searchForMatches()
                   "version" => 3
       );
       // print_r($ActivityParams);
-      $ActivityResult = civicrm_api('activity', 'create', $ActivityParams);
+      $activityResult = civicrm_api('activity', 'create', $activityParams);
 
-      if ($ActivityResult['is_error']) {
+      if ($activityResult['is_error']) {
         echo "[ERROR]   Could not save Activity\n";
         var_dump($ActivityResult);
         if ($fromEmail == '') {
           echo "[ERROR]    Forwarding e-mail address not found\n";
         }
         return false;
-      }else {
-        echo "[INFO]    CREATED e-mail activity id=".$ActivityResult['id']." for contact id=".$contactID."\n";
-        $activityId = $ActivityResult['id'];
-        $updateMessages = "UPDATE `nyss_inbox_messages`
-        SET  `status`= 1, `matcher` = 0,  `matched_to` = $contactID,`activity_id` = {$ActivityResult['id']}
-        WHERE `id` =  {$message_row_id}";
+      }
+      else {
+        $activityId = $activityResult['id'];
+        echo "[INFO]    CREATED e-mail activity id=$activityId for contact id=$contactID\n";
+        $updateMessages = "
+          UPDATE nyss_inbox_messages
+          SET status=1, matcher=0, matched_to=$contactID, activity_id=$activityId
+          WHERE id=$message_row_id";
         $updateMessagesResult = mysql_query($updateMessages, $dbconn);
 
-        $AttachmentsQuery = "select * from nyss_inbox_attachments where `email_id` = {$message_row_id}";
-        $AttachmentsResult = mysql_query($AttachmentsQuery, $dbconn);
-        while($row = mysql_fetch_assoc($AttachmentsResult)) {
-          if (isset($row['rejection']) && ($row['rejection']=='') && file_exists($row['file_full'])){
+        $attachmentsQuery = "select * from nyss_inbox_attachments where email_id=$message_row_id";
+        $attachmentsResult = mysql_query($attachmentsQuery, $dbconn);
 
-            echo "[INFO]    Adding attachment ".$row['file_full']." to id=".$ActivityResult['id']."\n";
-            $date   =  date( "Y-m-d H:i:s" );
-            $newName = CRM_Utils_File::makeFileName( $row['file_name'] );
-            $file = $uploadDir. $newName;
+        while ($row = mysql_fetch_assoc($attachmentsResult)) {
+          if (isset($row['rejection']) && $row['rejection'] == ''
+              && file_exists($row['file_full'])) {
+            echo "[INFO]    Adding attachment ".$row['file_full']." to id=$activityId\n";
+            $date = date("Y-m-d H:i:s");
+            $newName = CRM_Utils_File::makeFileName($row['file_name']);
+            $file = $uploadDir.$newName;
             // move file to the civicrm customUpload directory
-            rename( $row['file_full'], $file );
+            rename($row['file_full'], $file);
 
-            $insertFIleQuery = "INSERT INTO `civicrm_file` (`mime_type`, `uri`,`upload_date`) VALUES ( '{$row['mime_type']}', '{$newName}','{$date}');";
-            // echo $insertFIleQuery."\n";
-            $rowUpdated = "SELECT id FROM civicrm_file WHERE uri = '{$newName}';";
-            $insertFileResult = mysql_query($insertFIleQuery, $dbconn);
+            $insertFileQuery = "INSERT INTO civicrm_file (mime_type, uri, upload_date) VALUES ('{$row['mime_type']}', '$newName', '$date');";
+            $rowUpdated = "SELECT id FROM civicrm_file WHERE uri='{$newName}';";
+            $insertFileResult = mysql_query($insertFileQuery, $dbconn);
             $rowUpdatedResult = mysql_query($rowUpdated, $dbconn);
             $insertFileOutput = array();
 
-            while($row = mysql_fetch_assoc($rowUpdatedResult)) {
+            while ($row = mysql_fetch_assoc($rowUpdatedResult)) {
               $fileId = $row['id'];
             }
-            $insertEntityQuery = "INSERT INTO `civicrm_entity_file` (`entity_table`, `entity_id`, `file_id`) VALUES ('civicrm_activity','{$activityId}', '{$fileId}');";
+            $insertEntityQuery = "INSERT INTO civicrm_entity_file (entity_table, entity_id, file_id) VALUES ('civicrm_activity','$activityId', '$fileId');";
             // echo $insertEntityQuery."\n";
             $insertEntity = mysql_query($insertEntityQuery, $dbconn);
-
           }
         }
       }
-
     } // success
   } // while
   echo "[DEBUG]   Finished Processing Unmatched messages\n";
-
 } // searchForMatches()
 
 
@@ -855,6 +865,7 @@ function deleteArchiveBox($conn, $params)
   echo "[INFO]    Deleting archive mailbox: $crm_archivebox\n";
   return imap_deletemailbox($conn, $crm_archivebox);
 } // deleteArchiveBox()
+
 
 
 function getInboxPollingTagId()
@@ -888,7 +899,8 @@ function getInboxPollingTagId()
   else {
     return null;
   }
-}
+} // getInboxPollingTagId()
+
 
 
 function sendDenialEmail($site, $email)

@@ -133,6 +133,39 @@ cj(document).ready(function(){
     draggable: false
   });
 
+
+  cj( "#AdditionalEmail-popup" ).dialog({
+    modal: true,
+    width: 500,
+    autoOpen: false,
+    resizable: false,
+    draggable: false,
+    open:function () {
+      cj(this).closest(".ui-dialog").find(".ui-button:first").addClass("primary_button");
+    },
+    buttons: {
+      "Add Email": function() {
+        var add_email = cj('#add_email').val();
+        var contacts = cj('#contacts').val();
+        cj.ajax({
+          url: '/civicrm/imap/ajax/addEmail',
+          data: {
+            email: add_email,
+            contacts: contacts
+          },
+          success: function(data,status) {
+            if(data != null || data != ''){
+              helpMessage('Email Added.');
+            }
+          }
+        });
+        cj( this ).dialog( "close" );
+      },
+      Cancel: function() {
+        cj( this ).dialog( "close" );
+      }
+    }
+  });
   // BOTH MATCHED & UNMATCHED
   // file a bug
   cj(".fileBug").live('click', function() {
@@ -349,6 +382,27 @@ cj(document).ready(function(){
   });
 
 // UNMATCHED
+  // assign a message to a contact Unmatched page
+  cj('#preAssign').click(function() {
+    var contactRadios = cj('input[name=contact_id]');
+    var contactIds = '';
+    cj.each(contactRadios, function(idx, val) {
+      if(cj(val).attr('checked')) {
+        if(contactIds != '')
+          contactIds = contactIds+',';
+        contactIds = contactIds + cj(val).val();
+      }
+    });
+    if(contactIds !='' ){
+      cj("#AdditionalEmail-popup").dialog('open');
+      cj('#AdditionalEmail-popup #contacts').val(contactIds);
+      cj('#assign').click();
+      cj("#find-match-popup").dialog('close');
+    }else{
+      alert("Please Choose a contact");
+    };
+
+  });
 
   // assign a message to a contact Unmatched page
   assign.click(function() {
@@ -439,7 +493,9 @@ cj(document).ready(function(){
                   cj.each(assign.assigned, function(key, value) {
                     removeRow(create_messageId);
                     helpMessage('Contact created and '+value.message);
-                    checkForMatch(value.key,contactData.contact);
+                    if(create_email_address.length > 0){
+                      checkForMatch(value.key,contactData.contact);
+                    }
                   });
                   cj("#find-match-popup").dialog('close');
                 }
@@ -497,10 +553,7 @@ cj(document).ready(function(){
           }else{
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
-
-          if ((message.filebug == true)){
-          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-          }
+          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
           cj('#message_left_email').html(message.body+"<hr/>");
           cj.each(message.attachments, function(key, value) {
            cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
@@ -515,8 +568,8 @@ cj(document).ready(function(){
           if(message.sender_email) cj('#filter').click();
           cj('.first_name').val(firstName);
           cj('.last_name').val(lastName);
-
-
+          cj('#AdditionalEmail-popup #add_email').val('');
+          cj('#AdditionalEmail-popup #add_email').val(message.sender_email);
         }
       },
       error: function(){
@@ -642,9 +695,8 @@ cj(document).ready(function(){
             cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span>No forwarded content found<br/>");
           }
           // if we are on crmdev or crmtest show a debug window
-          if ((message.filebug == true)){
-          	cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
-          }
+          cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
+
           cj('#message_left_email').html(message.body+"<hr/>");
 
           cj.each(message.attachments, function(key, value) {

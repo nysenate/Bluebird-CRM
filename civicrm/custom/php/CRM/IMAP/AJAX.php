@@ -205,6 +205,7 @@ class CRM_IMAP_AJAX {
             while($row = mysql_fetch_assoc($result)) {
               $matches[] = $row;
             }
+            // var_dump($matches);
             $returnMessage['Unprocessed'][$message_id]['matches_count'] = count($matches);
 
 
@@ -309,10 +310,6 @@ class CRM_IMAP_AJAX {
         $session = CRM_Core_Session::singleton();
         $userId =  $session->get('userID');
 
-        $imap = new CRM_Utils_IMAP(self::$server,
-                                    self::$imap_accounts[$imap_id]['user'],
-                                    self::$imap_accounts[$imap_id]['pass']);
-
         // Delete the message with the specified UID
         $returnCode = array('code'=>'SUCCESS','status'=> '0','message'=>'Message Deleted');
         $UPDATEquery = "UPDATE `nyss_inbox_messages`
@@ -340,29 +337,29 @@ class CRM_IMAP_AJAX {
         $where = "WHERE contact.is_deleted=0\n";
         $order = "ORDER BY contact.id ASC";
 
-        $from.="  LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)\n";
-        $from.="  LEFT JOIN civicrm_address address ON (contact.id = address.contact_id)\n";
-        $from.="  LEFT JOIN  civicrm_phone phone ON (contact.id = phone.contact_id)\n";
-        $from.="  LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
+        $from.=" LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)\n";
+        $from.=" LEFT JOIN civicrm_address address ON (contact.id = address.contact_id)\n";
+        $from.=" LEFT JOIN civicrm_phone phone ON (contact.id = phone.contact_id)\n";
+        $from.=" LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
-        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name'  || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
-        if($first_name) $where .="  AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
+        if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
+        if($first_name) $where .=" AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
 
-        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name'  || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
-        if($last_name) $where .="  AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
+        if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name' || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
+        if($last_name) $where .=" AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
 
-        if(self::get('email_address')) $email_address  = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
+        if(self::get('email_address')) $email_address = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
         if($email_address) {
-          // $from.="  JOIN  civicrm_email email ON (email.email = '$email_address')\n";
-          $where.="  AND email.email LIKE '$email_address'\n";
+          // $from.=" JOIN civicrm_email email ON (email.email = '$email_address')\n";
+          $where.=" AND email.email LIKE '$email_address'\n";
           $order.=", email.is_primary DESC";
         }
 
-        if(self::get('dob')) $dob  = (self::get('dob') == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
+        if(self::get('dob')) $dob = (self::get('dob') == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? NULL : date('Y-m-d', strtotime(self::get('dob')));
         // block epoch date
-        if ($dob == '1969-12-31') $dob  = NULL ;
+        if ($dob == '1969-12-31') $dob = NULL ;
         // convert dob to standard format
-        if($dob) $where.="  AND contact.birth_date = '$dob'\n";
+        if($dob) $where.=" AND contact.birth_date = '$dob'\n";
 
         $state_id = self::get('state');
         if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
@@ -372,22 +369,22 @@ class CRM_IMAP_AJAX {
         if($street_address || $city){
           $order.=", address.is_primary DESC";
           if($street_address) {
-            $where.="  AND address.street_address LIKE '$street_address'\n";
+            $where.=" AND address.street_address LIKE '$street_address'\n";
           }
           if ($city) {
-            $where.="  AND address.city LIKE '$city'\n";
+            $where.=" AND address.city LIKE '$city'\n";
           }
         }
         // if address info, search in state
         if($street_address || $city) {
-          $where.="  AND state.id='$state_id'\n";
+          $where.=" AND state.id='$state_id'\n";
         }else{
-          $where.="  AND (state.id='$state_id' OR state.id IS NULL)\n";
+          $where.=" AND (state.id='$state_id' OR state.id IS NULL)\n";
         }
 
         if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? NULL : self::get('phone');
         if ($phone) {
-          $where.="  AND phone.phone LIKE '%$phone%'";
+          $where.=" AND phone.phone LIKE '%$phone%'";
         }
 
         if ($debug){
@@ -403,7 +400,7 @@ class CRM_IMAP_AJAX {
         }
 
         if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
-          $query = "SELECT  contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+          $query = "SELECT contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
         }else{
           // do nothing if no query
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Please Enter a query.');
@@ -436,6 +433,69 @@ class CRM_IMAP_AJAX {
         CRM_Utils_System::civiExit();
     }
 
+    /* addEmail()
+     * Parameters: None.
+     * Returns: None.
+     * Takes message information and saves it as an activity and assigns it to
+     * the selected contact ID.
+     */
+    public static function addEmail() {
+        require_once 'api/api.php';
+        require_once 'CRM/Utils/File.php';
+        require_once 'CRM/Utils/IMAP.php';
+
+        $contactIds = self::get('contacts');
+        $senderEmail = self::get('email');
+        $debug = self::get('debug');
+
+        $contactIds = explode(',', $contactIds);
+        $ContactCount = 0;
+        foreach($contactIds as $contactId) {
+              // Check to see if contact has the email address being assigend to it,
+              // if doesn't have email address, add it to contact
+              $emailQuery = "SELECT email.email FROM civicrm_email email WHERE email.contact_id = $contactId";
+              $emailResult = mysql_query($emailQuery, self::db());
+              $emailResults = array();
+              while($row = mysql_fetch_assoc($emailResult)) {
+                  $emailResults[] = $row;
+              }
+              if ($debug){
+                  echo "<h1>Contact ".$contactId." has the following emails </h1>";
+                  var_dump($emailResults);
+              }
+              $emailsCount = count($emailResults);
+
+              $matches = 0;
+              if ($debug){
+                echo "<h1>Contact Non matching results </h1>";
+              }
+              // if the records don't match, count it, an if the number is > 1 add the record
+              foreach($emailResults as $email) {
+                  if(strtolower($email['email']) == strtolower($senderEmail)){
+                      if ($debug) echo "<p>".$email['email'] ." == ".strtolower($senderEmail)."</p>";
+                  }else{
+                      $matches++;
+                      if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
+                  }
+              }
+               // Prams to add email to user
+              $params = array(
+                  'contact_id' => $contactId,
+                  'email' => $senderEmail,
+                  'version' => 3,
+              );
+              if(($emailsCount-$matches) == 0){
+                  if ($debug) echo "<p> added ".$senderEmail."</p><hr/>";
+                  $result = civicrm_api( 'email','create',$params );
+              }
+
+        }
+        $returnCode = array('code' => 'SUCCESS', 'message' => 'Email was added');
+        echo json_encode($returnCode);
+
+        CRM_Utils_System::civiExit();
+
+    }
 
 
     /* assignMessage()
@@ -448,7 +508,7 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
         require_once 'CRM/Utils/File.php';
         require_once 'CRM/Utils/IMAP.php';
-
+        $debug = false;
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
         $contactIds = self::get('contactId');
@@ -566,7 +626,6 @@ class CRM_IMAP_AJAX {
             $params = array(
                 'activity_type_id' => $activityType,
                 'source_contact_id' => $forwarderId,
-                'assignee_contact_id' => $forwarderId,
                 'target_contact_id' => $contactId,
                 'subject' => $subject,
                 'is_auto' => 0, // we manually add it, right ?
@@ -1303,15 +1362,15 @@ EOQ;
 
         if ($debug){
           echo "<h1>inputs</h1>";
-          var_dump($first_name);
-          var_dump($last_name);
-          var_dump($email);
-          var_dump($phone);
-          var_dump($street_address);
-          var_dump($street_address_2);
-          var_dump($postal_code);
-          var_dump($city);
-          var_dump($dob);
+          var_dump("first_name: ".$first_name);
+          var_dump("last_name: ".$last_name);
+          var_dump("email: ".$email);
+          var_dump("phone: ".$phone);
+          var_dump("street_address: ".$street_address);
+          var_dump("street_address_2: ".$street_address_2);
+          var_dump("postal_code: ".$postal_code);
+          var_dump("city: ".$city);
+          var_dump("dob: ".$dob);
         }
 
         if((isset($first_name))||(isset($last_name))||(isset($email))){
@@ -1383,6 +1442,8 @@ EOQ;
           echo "Response <br/><pre>";
           print_r($address);
         }
+
+
 
         if(($contact['is_error'] == 1) || (!empty($address) && ($address['is_error'] == 1))){
           $returnCode = array('code'      =>  'ERROR',
