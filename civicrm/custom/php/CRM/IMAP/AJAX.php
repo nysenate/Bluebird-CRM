@@ -662,7 +662,7 @@ class CRM_IMAP_AJAX {
               }else{
                 $activity_id =$activity['id'];
                 $returnCode['code'] = 'SUCCESS';
-                $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName." ".$senderEmail,'key'=>$key,'contact'=>$contactId);
+                $returnCode['assigned'][] = array('code' =>'SUCCESS','message'=> "Message Assigned to ".$ContactName,'key'=>$key,'contact'=>$contactId);
 
                 // if this is not the first contact, add a new row to the table
                 if($ContactCount > 0){
