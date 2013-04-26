@@ -286,7 +286,6 @@ function checkImapAccount($conn, $params)
       // retrieved msg, now store to Civi and if successful move to archive
       if (civiProcessEmail($conn, $email, null) == true) {
         //mark as read
-
         imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
         // move to folder if necessary
         if ($params['archivemail'] == true) {
@@ -713,7 +712,6 @@ function searchForMatches()
     $params = array('version'=>3, 'activity'=>'get', 'email'=>$sender_email);
     $contact = civicrm_api('contact', 'get', $params);
     echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
-
     // If there is more than one target for the message, leave it for the
     // user to deal with.
     if ($contact['count'] != 1) {
