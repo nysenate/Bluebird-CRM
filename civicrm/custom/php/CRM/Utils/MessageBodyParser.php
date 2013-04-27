@@ -1,6 +1,19 @@
 <?php
-// A class needed for the processMailboxes.php script.
-//
+
+define('BODY_TAGS_TO_SKIP', '
+        ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+        BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
+        COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
+        FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
+        ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
+        NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
+        SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
+        TEXTAREA|TITLE|TT|U|UL|VAR');
+
+define('HEAD_TAGS_TO_SKIP', BODY_TAGS_TO_SKIP.'|
+        BR|B|DIV|HR|IMG|SPAN|TABLE|TD|TBODY|TFOOT|TH|THEAD|TR');
+
+
 class MessageBodyParser
 {
   /* unifiedMessageInfo()
@@ -13,12 +26,12 @@ class MessageBodyParser
     // prefer html, because its not broken into lines
     if (isset($origin['HTML']['body'])) {
       $start = $origin['HTML']['body'];
-      $format = 'plain';
+      $format = 'html';
       $encoding = $origin['HTML']['encoding'];
     }
     elseif (isset($origin['PLAIN']['body'])) {
       $start = $origin['PLAIN']['body'];
-      $format = 'html';
+      $format = 'plain';
       $encoding = $origin['PLAIN']['encoding'];
     }
 
@@ -26,17 +39,15 @@ class MessageBodyParser
       //$start = imap_7bit($start);
     }
     elseif ($encoding == 1) {
-      $start = imap_8bit($start);
-      $start = quoted_printable_decode($start);
+      $start = quoted_printable_decode(imap_8bit($start));
     }
     elseif ($encoding == 2) {
-      $start = imap_binary($start);
-      $start = imap_base64($start);
+      $start = imap_base64(imap_binary($start));
     }
     elseif ($encoding == 3) {
       $start = imap_base64($start);
     }
-    elseif($encoding == 4) {
+    elseif ($encoding == 4) {
       $start = quoted_printable_decode($start);
     }
 
@@ -52,6 +63,7 @@ class MessageBodyParser
 
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
     $count = 0; // count of embedded message headers
+
     foreach ($bodyArray as $key => $line) {
       $line = trim($line);
       if ($line != '') {
@@ -61,13 +73,10 @@ class MessageBodyParser
         if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
           $header = strtolower($matches[1]);
           $value = trim($matches[2]);
-          // Remove errors caused by "at"
-          $dateValue = preg_replace("/ at |,/i", "", $value);
-          $parseDate= date("Y-m-d H:i:s", strtotime($dateValue));
 
           switch ($header) {
             case 'subject':
-              $m['Subject'][] = trim($value);
+              $m['Subject'][] = $value;
               break;
             case 'from':
               $parseEmail = self::cleanEmail($value);
@@ -76,15 +85,17 @@ class MessageBodyParser
             case 'to':
               // $m[$count]['To'] = $value;
               break;
-            case 'sent':
-            case 'date':
+            case 'sent': case 'date':
+              // Remove errors caused by "at"
+              $dateValue = preg_replace("/ at |,/i", "", $value);
+              $parseDate = date("Y-m-d H:i:s", strtotime($dateValue));
               $m['Date'][] = $parseDate;
               break;
             case 'cc':
-              $m['Cc'][] = trim($value);
+              $m['Cc'][] = $value;
               break;
             case 'bcc':
-              $m['Bcc'][] = trim($value);
+              $m['Bcc'][] = $value;
               break;
             default:
               break;
@@ -131,7 +142,7 @@ class MessageBodyParser
     );
 
     // custom body parsing for mysql entry,
-    $body = ($start);
+    $body = $start;
     // strip out non-ascii charachters
     $body = nl2br($body);
     $body = preg_replace('/[^(\x20-\x7F)]*/','', $body);
@@ -219,21 +230,13 @@ class MessageBodyParser
 
 
 
-  // modified to not strip tags needed to display html message
-  public static function stripBodyTags($text)
+  public static function stripTags($text, $tagNames)
   {
     return preg_replace('%
         # Match an opening or closing HTML 4.01 tag.
         </?                  # Tag opening "<" delimiter.
         (?:                  # Group for HTML 4.01 tags.
-          ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
-          BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
-          COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
-          FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
-          ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
-          NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
-          SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
-          TEXTAREA|TITLE|TT|U|UL|VAR
+        '.$tagNames.'
         )\b                  # End group of tag name alternative.
         (?:                  # Non-capture group for optional attribute(s).
           \s+                # Attributes must be separated by whitespace.
@@ -253,6 +256,14 @@ class MessageBodyParser
         | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
         | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
         %six', '', $text);
+  } // stripTags()
+
+
+
+  // modified to not strip tags needed to display html message
+  public static function stripBodyTags($text)
+  {
+    return stripTags($text, BODY_TAGS_TO_SKIP);
   } // stripBodyTags()
 
 
@@ -260,36 +271,6 @@ class MessageBodyParser
   // header doesn't need any of these, so blow them away.
   public static function stripTagsForHeader($text)
   {
-    return preg_replace('%
-        # Match an opening or closing HTML 4.01 tag.
-        </?                  # Tag opening "<" delimiter.
-        (?:                  # Group for HTML 4.01 tags.
-          ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
-          BLOCKQUOTE|BODY|BR|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
-          COLGROUP|DD|DEL|DFN|DIR|DIV|DL|DT|EM|FIELDSET|FONT|FORM|
-          FRAME|FRAMESET|H\d|HEAD|HR|HTML|IFRAME|IMG|INPUT|INS|
-          ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
-          NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
-          SCRIPT|SELECT|SMALL|SPAN|STRIKE|STRONG|STYLE|SUB|SUP|S|
-          TABLE|TD|TBODY|TEXTAREA|TFOOT|TH|THEAD|TITLE|TR|TT|U|UL|VAR
-        )\b                  # End group of tag name alternative.
-        (?:                  # Non-capture group for optional attribute(s).
-          \s+                # Attributes must be separated by whitespace.
-          [\w\-.:]+          # Attribute name is required for attr=value pair.
-          (?:                # Non-capture group for optional attribute value.
-            \s*=\s*          # Name and value separated by "=" and optional ws.
-            (?:              # Non-capture group for attrib value alternatives.
-              "[^"]*"        # Double quoted string.
-            | \'[^\']*\'     # Single quoted string.
-            | [\w\-.:]+      # Non-quoted attrib value can be A-Z0-9-._:
-            )                # End of attribute value alternatives.
-          )?                 # Attribute value is optional.
-        )*                   # Allow zero or more attribute=value pairs
-        \s*                  # Whitespace is allowed before closing delimiter.
-        /?                   # Tag may be empty (with self-closing "/>" sequence
-        >                    # Opening tag closing ">" delimiter.
-        | <!--.*?-->         # Or a (non-SGML compliant) HTML comment.
-        | <!DOCTYPE[^>]*>    # Or a DOCTYPE.
-        %six', '', $text);
+    return stripTags($text, HEAD_TAGS_TO_SKIP);
   } // stripTagsForHeader()
 }
