@@ -22,7 +22,8 @@ class MessageBodyParser
   */
   public static function unifiedMessageInfo($origin)
   {
-    $uniStart = microtime(true);
+    $timeStart = microtime(true);
+
     // prefer html, because its not broken into lines
     if (isset($origin['HTML']['body'])) {
       $start = $origin['HTML']['body'];
@@ -53,22 +54,20 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 1600);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $headerCheck = preg_replace('/\r\n|\r|\n/i', '#####---', $headerCheck);
-    $headerCheck = preg_replace('/BR/i', 'br', $headerCheck);
-    $headerCheck = preg_replace('/(<br[^>]*>\s*){1,}/', '#####---', $headerCheck);
-    $headerCheck = preg_replace('/(<div[^>]*>\s*){1,}/', '#####---', $headerCheck);
+    $patterns = array('/\r\n|\r|\n/i', '/(<(br|div)[^>]*>\s*)+/i');
+    $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
+
     $bodyArray = explode("\r\n", $headerCheck);
 
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
-    $count = 0; // count of embedded message headers
 
     foreach ($bodyArray as $key => $line) {
       $line = trim($line);
       if ($line != '') {
-        $line = preg_replace('/mailto/i', '', $line); // this matched /to/
-        $line = preg_replace('/Reply To|reply to|Replyto/i', '', $line); // this matched /to/
+        // Remove "mailto" and "replyto" (or "reply-to" or "reply to")
+        $line = preg_replace('/(mail|reply)[- ]?to/i', '', $line);
 
         if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
           $header = strtolower($matches[1]);
@@ -79,15 +78,15 @@ class MessageBodyParser
               $m['Subject'][] = $value;
               break;
             case 'from':
-              $parseEmail = self::cleanEmail($value);
+              $parseEmail = self::parseFromHeader($value);
               $m['From'][] = $parseEmail;
               break;
             case 'to':
-              // $m[$count]['To'] = $value;
+              $m['To'][] = $value;
               break;
             case 'sent': case 'date':
-              // Remove errors caused by "at"
-              $dateValue = preg_replace("/ at |,/i", "", $value);
+              // Remove errors caused by "at" or ","
+              $dateValue = preg_replace('/ at |,/i', '', $value);
               $parseDate = date("Y-m-d H:i:s", strtotime($dateValue));
               $m['Date'][] = $parseDate;
               break;
@@ -125,11 +124,12 @@ class MessageBodyParser
     // }
 
     $fwdDate = $m['Date'][0];
-    $fwdSubject = $m['Subject'][0];
     $fwdName = $m['From'][0]['name'];
     $fwdEmail = $m['From'][0]['email'];
     $fwdEmailLookup = $m['From'][0]['lookupType'];
-    $fwdSubject = trim(preg_replace("/(\(|\))/i", "", $fwdSubject));
+    $fwdSubject = $m['Subject'][0];
+    // Remove all parentheses from the subject
+    $fwdSubject = trim(preg_replace('/[()]/i", '', $fwdSubject));
 
     // contains info about the forwarded message in the email body
     $forwarded = array(
@@ -138,15 +138,14 @@ class MessageBodyParser
         'fwd_name' => mysql_real_escape_string($fwdName),
         'fwd_email' => mysql_real_escape_string($fwdEmail),
         'fwd_lookup' => mysql_real_escape_string($fwdEmailLookup),
-        'fwd_mentions' =>mysql_real_escape_string($mentions),
     );
 
     // custom body parsing for mysql entry,
     $body = $start;
-    // strip out non-ascii charachters
+    // strip out non-ascii characters
     $body = nl2br($body);
-    $body = preg_replace('/[^(\x20-\x7F)]*/','', $body);
-    $body = preg_replace('/<([\w.]+@[\w.]+)>/i','$1', $body);
+    $body = preg_replace('/[^(\x20-\x7F)]*/', '', $body);
+    $body = preg_replace('/<([\w.]+@[\w.]+)>/i', '$1', $body);
 
     // final cleanup
     $body = self::stripBodyTags($body);
@@ -157,57 +156,58 @@ class MessageBodyParser
       $body = "No Message Content Found";
     }
 
-    if ($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == NULL) {
-      $status =  'direct';
+    if ($forwarded['fwd_email'] == '' || $forwarded['fwd_email'] == null) {
+      $status = 'direct';
     }
     else {
-      $status ='forwarded';
-      $output['fwd_headers'] = $forwarded;
+      $status = 'forwarded';
+      $res['fwd_headers'] = $forwarded;
     }
 
-    $uniEnd = microtime(true);
-    $output['message_action'] = $status;
-    $output['format'] = $format;
-    $output['time'] = $uniEnd-$uniStart;
-    $output['body'] = $body;
-    return $output;
+    $timeEnd = microtime(true);
+
+    $res['message_action'] = $status;
+    $res['format'] = $format;
+    $res['time'] = $timeEnd - $timeStart;
+    $res['body'] = $body;
+    return $res;
   } // unifiedMessageInfo()
 
 
 
   // Parse and find LDAP & standard format emails
-  public static function cleanEmail($string)
+  public static function parseFromHeader($str)
   {
-    // we have to parse out ldap stuff because sometimes addresses are
-    // embedded and, see NYSS #5748 for more details
+    // Parse LDAP info because sometimes addresses are embedded.
+    // See NYSS #5748 for more details.
 
     // if o= is appended to the end of the email address remove it
-    $string = preg_replace('/\/senate@senate/i', '/senate', $string);
-    $string = preg_replace('/\/CENTER\/senate/i', '/senate', $string);
+    $patterns = array('#/senate@senate#i', '#/CENTER/senate#i');
+    $str = preg_replace($patterns, '/senate', $str);
 
     // CN=Jason Biernacki/OU=STS11thFloor/O=senate
     // CN=Personnel Mail/O=senate
-    $string = preg_replace('/CN=|O=|OU=/i', '', $string);
-    $string = preg_replace('/mailto|\(|\)|:/i', '', $string);
-    $string = preg_replace('/"|\'/i', '', $string);
-    $string = preg_replace('/\[|\]/i', '', $string);
+    $str = preg_replace('/CN=|O=|OU=/i', '', $str);
+    $str = preg_replace('/mailto|\(|\)|:/i', '', $str);
+    $str = preg_replace('/"|\'/i', '', $str);
+    $str = preg_replace('/\[|\]/i', '', $str);
 
-    // LDAP addresses have slashes, so we do an internal lookup
-    $internal = preg_match("/\/senate/i", $string, $matches);
+    $internal = strpos($str, '/senate');
 
-    if ($internal == 1) {
+    if ($internal !== false) {
+      // LDAP addresses have slashes, so we do an internal lookup
       $ldapcon = ldap_connect("ldap://webmail.senate.state.ny.us", 389);
-      $retrieve = array("sn", "givenname", "mail");
-      $search = ldap_search($ldapcon, "o=senate", "(displayname=$string)", $retrieve);
+      $retrieve = array('sn', 'givenname', 'mail');
+      $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
       $info = ldap_get_entries($ldapcon, $search);
       if ($info[0]) {
         $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
-        $return = array('lookupType'=>'LDAP','name'=>$name,'email'=>$info[0]['mail'][0]);
-        return $return;
+        $res = array('lookupType'=>'LDAP', 'name'=>$name, 'email'=>$info[0]['mail'][0]);
+        return $res;
       }
       else {
-        $return = array('lookupType'=>'LDAP FAILURE', 'name'=>'LDAP lookup failed', 'email'=>"LDAP lookup failed on string $string");
-        return $return;
+        $res = array('lookupType'=>'LDAP FAILURE', 'name'=>'LDAP lookup failed', 'email'=>"LDAP lookup failed on string $string");
+        return $res;
       }
     }
     else {
@@ -226,7 +226,7 @@ class MessageBodyParser
       $res = array('lookupType'=>'inline', 'name'=>$name, 'email'=>$emails[0]);
       return $res;
     }
-  } // cleanEmail()
+  } // parseFromHeader()
 
 
 
