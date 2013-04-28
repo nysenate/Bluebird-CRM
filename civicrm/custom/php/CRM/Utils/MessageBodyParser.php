@@ -206,15 +206,15 @@ class MessageBodyParser
         return $res;
       }
       else {
-        $res = array('lookupType'=>'LDAP FAILURE', 'name'=>'LDAP lookup failed', 'email'=>"LDAP lookup failed on string $string");
+        $res = array('lookupType'=>'LDAP FAILURE', 'name'=>'LDAP lookup failed', 'email'=>"LDAP lookup failed on string $str");
         return $res;
       }
     }
     else {
       // clean out any anything that wouldn't be a name or email, html or plain-text
-      $string = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $string);
-      $string = preg_replace('/<|>|"|\'/i', '', $string);
-      foreach (preg_split('/ /', $string) as $token) {
+      $str = preg_replace('/&lt;|&gt;|&quot;|&amp;/i', '', $str);
+      $str = preg_replace('/<|>|"|\'/i', '', $str);
+      foreach (preg_split('/ /', $str) as $token) {
         $name .= $token." ";
         $email = filter_var(filter_var($token, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
         if ($email !== false) {
