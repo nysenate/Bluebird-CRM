@@ -693,7 +693,7 @@ function searchForMatches($db, $params)
 
     // No matches, or more than one match, marks message as UNMATCHED.
     if ($contact['count'] != 1) {
-      echo "[DEBUG]   Original sender $sender_email matches [".$contact['count']."] records in this instance; leaving for manual addition";
+      echo "[DEBUG]   Original sender $sender_email matches [".$contact['count']."] records in this instance; leaving for manual addition\n";
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
       $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
