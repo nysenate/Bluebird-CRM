@@ -315,18 +315,18 @@ function checkImapAccount($mbox, $params)
   $dbconn = $nyss_conn->connection;
 
   $msg_count = imap_num_msg($mbox);
-  $invalid_senders = array();
+  $invalid_fwders = array();
   echo "[INFO]    Number of messages: $msg_count\n";
 
   for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
     echo "- - - - - - - - - - - - - - - - - - \n";
     echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
-    $sender = strtolower($msgMetaData->fromEmail);
+    $fwder = strtolower($msgMetaData->fromEmail);
 
-    // check whether or not the forwarder/sender is valid
-    if (array_key_exists($sender, $params['authForwarders'])) {
-      echo "[DEBUG]   Sender $sender is allowed to send to this mailbox\n";
+    // check whether or not the forwarder is valid
+    if (array_key_exists($fwder, $params['authForwarders'])) {
+      echo "[DEBUG]   Forwarder [$fwder] is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
         //mark as read
@@ -338,8 +338,8 @@ function checkImapAccount($mbox, $params)
       }
     }
     else {
-       echo "[WARN]    Sender $sender is not allowed to forward/send messages to this CRM; deleting message\n";
-      $invalid_senders[$sender] = true;
+       echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
+      $invalid_fwders[$fwder] = true;
       if (imap_delete($mbox, $msg_num) === true) {
         echo "[DEBUG]   Message $msg_num has been deleted\n";
       }
@@ -349,11 +349,11 @@ function checkImapAccount($mbox, $params)
     }
   }
 
-  $invalid_sender_count = count($invalid_senders);
-  if ($invalid_sender_count > 0) {
-    echo "[INFO]    Sending denial e-mails to $invalid_sender_count e-mail address(es)\n";
-    foreach ($invalid_senders as $invalid_sender => $dummy) {
-      sendDenialEmail($params['site'], $invalid_sender);
+  $invalid_fwder_count = count($invalid_fwders);
+  if ($invalid_fwder_count > 0) {
+    echo "[INFO]    Sending denial e-mails to $invalid_fwder_count e-mail address(es)\n";
+    foreach ($invalid_fwders as $invalid_fwder => $dummy) {
+      sendDenialEmail($params['site'], $invalid_fwder);
     }
   }
 
