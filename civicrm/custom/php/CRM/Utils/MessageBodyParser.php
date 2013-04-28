@@ -263,7 +263,7 @@ class MessageBodyParser
   // modified to not strip tags needed to display html message
   public static function stripBodyTags($text)
   {
-    return stripTags($text, BODY_TAGS_TO_SKIP);
+    return self::stripTags($text, BODY_TAGS_TO_SKIP);
   } // stripBodyTags()
 
 
@@ -271,6 +271,6 @@ class MessageBodyParser
   // header doesn't need any of these, so blow them away.
   public static function stripTagsForHeader($text)
   {
-    return stripTags($text, HEAD_TAGS_TO_SKIP);
+    return self::stripTags($text, HEAD_TAGS_TO_SKIP);
   } // stripTagsForHeader()
 }
