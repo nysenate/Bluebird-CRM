@@ -227,11 +227,14 @@ function getAuthorizedForwarders()
   $res = array();
   $q = "
     SELECT e.email, e.contact_id
-    FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e
+    FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e,
+         civicrm_contact c
     WHERE g.name='".AUTH_FORWARDERS_GROUP_NAME."'
       AND g.id=gc.group_id
       AND gc.status='Added'
       AND gc.contact_id=e.contact_id
+      AND e.contact_id = c.id
+      AND c.is_deleted = 0
     ORDER BY gc.contact_id ASC";
 
   $dao = CRM_Core_DAO::executeQuery($q);
@@ -239,8 +242,8 @@ function getAuthorizedForwarders()
   while ($dao->fetch()) {
     $email = strtolower($dao->email);
     $cid = $dao->contact_id;
-    if (isset($res[$dao->email])) {
-      echo "[WARN]    More than one contact in '".AUTH_FORWARDERS_GROUP_NAME."' group has e-mail address [$email]; ignoring cid=$cid\n";
+    if (isset($res[$email]) && $res[$email] != $cid) {
+      echo "[WARN]    '".AUTH_FORWARDERS_GROUP_NAME."' group already has e-mail address [$email] (cid={$res[$email]}); ignoring cid=$cid\n";
     }
     else {
       $res[$email] = $cid;
