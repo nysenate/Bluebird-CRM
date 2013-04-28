@@ -129,7 +129,7 @@ class MessageBodyParser
     $fwdEmailLookup = $m['From'][0]['lookupType'];
     $fwdSubject = $m['Subject'][0];
     // Remove all parentheses from the subject
-    $fwdSubject = trim(preg_replace('/[()]/i", '', $fwdSubject));
+    $fwdSubject = trim(preg_replace('/[()]/i', '', $fwdSubject));
 
     // contains info about the forwarded message in the email body
     $forwarded = array(
