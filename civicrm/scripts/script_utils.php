@@ -233,6 +233,18 @@ function bbscript_log($message_level, $message, $var = null){
   }
 } // bbscript_log()
 
+function bbscript_log_inline($message_level, $message){
+  global $BB_LOG_LEVEL, $LOG_LEVELS;
+  $log_level = strtoupper($message_level);
+  list($log_num, $color) = $LOG_LEVELS[$log_level];
+  if($log_num >= $BB_LOG_LEVEL) {
+    $timestamp = date('G:i:s');
+    $log_level = $color.$log_level."\33[0m";
+    // Extra large padding to account for color strings!
+    echo sprintf("[%s] %-20s %s\r",$timestamp, "[$log_level]", $message);
+  }
+} // bbscript_log()
+
 function bb_mysql_query($query, $db, $exit_on_fail = false)
 {
   $result = mysql_query($query, $db);
