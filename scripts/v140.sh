@@ -584,6 +584,13 @@ sql="
 "
 $execSql -i $instance "$sql" --drupal -q
 
+## 6677 add new bounce regex for AOL
+sql="
+  INSERT INTO civicrm_mailing_bounce_pattern ( bounce_type_id, pattern )
+  VALUES ( 5, 'recipient address rejected' );
+"
+$execSql -i $instance -c "$sql"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
