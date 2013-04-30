@@ -2,9 +2,14 @@
   "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" version="XHTML+RDFa 1.0" dir="ltr">
 <head>
-  <script src="http://bluebird/misc/jquery.js?v=1.4.4"  type="text/javascript"></script>
+
+<script type="text/javascript" src="/misc/jquery.js?v=1.4.4"></script>
+<script type="text/javascript" src="/misc/jquery.once.js?v=1.2"></script>
+<script type="text/javascript" src="/misc/drupal.js?mka9pb"></script>
+<script type="text/javascript" src="/sites/all/modules/civicrm/drupal/../packages/jquery/jquery.min.js?mka9pb"></script>
+<script type="text/javascript" src="/sites/all/modules/civicrm/drupal/../packages/jquery/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js?mka9pb"></script>
   <script>var cj = jQuery.noConflict(true);</script>
-  <script src="/sites/default/themes/Bluebird/scripts/bbtree2.js" type="text/javascript"></script>
+  <script src="/sites/default/themes/Bluebird/scripts/tree/bbtree3.js" type="text/javascript"></script>
 
   <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
   
@@ -12,7 +17,14 @@
 <body>
   Tag Testing Ground
   <script>
-    BBTree.startInstance();
+    var jsTreePageSettings = {
+      dataSettings: {
+        pullSets: [291,292,296],
+        defaultTree: 291,
+        contact: 0
+      }
+    }
+    var instance = jstree.startInstance(jsTreePageSettings);
   </script>
   <script>
     //BBTree.initContainer();

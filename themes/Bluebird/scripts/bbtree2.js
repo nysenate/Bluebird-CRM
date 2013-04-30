@@ -61,7 +61,7 @@ var treeSetting = {
     //sets data for what sets to pull
     data: {
       //Set [one], or [other] to show only one, use [291,296] for both (when you want to show KW & IC)
-      pullSets: [291, 296, 292], 
+      pullSets: [291, 296, 292],
       //IssueCodes = 291, KW = 296. Sets default tree to show first.
       defaultTree: 291,
       //contact is set to 0 and SHOULD appear on most contact inits
