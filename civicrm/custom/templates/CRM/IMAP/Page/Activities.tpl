@@ -97,7 +97,7 @@
 	</div>
 	<div id="fileBug-popup" title="We're here to help"  style="display:none;">
 		<p>Step #1. Please explain your problem in the text box and click "Report Problem".</p>
-		<p>Step #2. Please contact the support line at # </p>
+		<p>Step #2. Please contact the support line at x2011</p>
 		<textarea rows="4" name="description" id="description"></textarea>
 	</div>
 	<div id="tagging-popup" title="Tagging" style="display:none;">
