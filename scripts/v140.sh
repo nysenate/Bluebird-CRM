@@ -381,7 +381,21 @@ $execSql -i $instance -c "$safe" -q
 ## add inbox polling perm to admin/officeadmin/officemgr roles
 sql="
 INSERT INTO role_permission (rid, permission)
-VALUES (4 ,'administer inbox polling'), (9 ,'administer inbox polling'), (10 ,'administer inbox polling'), (3 ,'administer inbox polling');
+VALUES (4 ,'administer inbox polling'),
+  (9 ,'administer inbox polling'),
+  (10 ,'administer inbox polling'),
+  (3 ,'administer inbox polling');
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
+## 6685 add case perm (admin, super, office admin, office mgr, staff
+sql="
+INSERT IGNORE INTO role_permission (rid, permission)
+VALUES (4 ,'add cases'),
+  (9 ,'add cases'),
+  (10 ,'add cases'),
+  (3 ,'add cases'),
+  (11 ,'add cases');
 "
 $execSql -i $instance -c "$sql" --drupal -q
 
