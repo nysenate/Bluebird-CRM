@@ -99,7 +99,7 @@ a.tag-selected:hover { color: #fff!important; background-color: red; }
 #message_left .debug_on,#message_left .debug_off {color: #336699!important; }
 .debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
-#message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px;line-height: 23px;width: 640px; }
+#message_left_header,#message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px;line-height: 23px;width: 640px; overflow: hidden;}
 #message_left_header_tag{
     height: 70px;
 }
