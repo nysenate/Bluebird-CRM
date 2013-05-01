@@ -1368,7 +1368,7 @@ function buildActivitiesList() {
           messagesHtml += '<td class="name">';
         }
 
-        messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+        // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
 
         match_sort = 'ProcessError';
         if(value.matcher){
