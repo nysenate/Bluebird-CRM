@@ -38,7 +38,7 @@ function nyss_ioimport_form() {
 
   $form = array();
 
-  $form['#attributes'] = array('enctype' => "multipart/form-data");
+  //$form['#attributes'] = array('enctype' => "multipart/form-data");
 
   //Import and Main Processing
   $form['processing'] = array (
@@ -193,8 +193,8 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
   if ( !empty($form_state['values']['servercsv']) ) {
 
     $form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
-    $form_state['values']['csv']['file']->filepath = '/data/importData/'.$form_state['values']['servercsv'];
-    if ( !file_exists($form_state['values']['csv']['file']->filepath ) ) {
+    $form_state['values']['csv']['file']->uri = '/data/importData/'.$form_state['values']['servercsv'];
+    if ( !file_exists($form_state['values']['csv']['file']->uri ) ) {
       form_set_error('servercsv', 'No file by that name was found.');
     }
   }
@@ -254,7 +254,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
 
-  $filename = $form_state['values']['csv']['file']->filepath;
+  $filename = $form_state['values']['csv']['file']->uri;
   if ( empty($filename) ) {
     nyss_out('status',"unable to find filename.",TRUE);
   }
