@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,38 +28,31 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Controller.php';
-
 class CRM_Import_Controller extends CRM_Core_Controller {
 
-    /**
-     * class constructor
-     */
-    function __construct( $title = null, $action = CRM_Core_Action::NONE, $modal = true ) {
-        parent::__construct( $title, $modal );
+  /**
+   * class constructor
+   */
+  function __construct($title = NULL, $action = CRM_Core_Action::NONE, $modal = TRUE) {
+    parent::__construct($title, $modal);
 
-        // lets get around the time limit issue if possible, CRM-2113
-        if ( ! ini_get( 'safe_mode' ) ) {
-            set_time_limit( 0 );
-        }
-        
-        require_once 'CRM/Import/StateMachine.php';
-        $this->_stateMachine = new CRM_Import_StateMachine( $this, $action );
-
-        // create and instantiate the pages
-        $this->addPages( $this->_stateMachine, $action );
-
-        // add all the actions
-        $config = CRM_Core_Config::singleton( );
-        $this->addActions( $config->uploadDir, array( 'uploadFile' ) );
-
+    // lets get around the time limit issue if possible, CRM-2113
+    if (!ini_get('safe_mode')) {
+      set_time_limit(0);
     }
 
-}
+    $this->_stateMachine = new CRM_Import_StateMachine($this, $action);
 
+    // create and instantiate the pages
+    $this->addPages($this->_stateMachine, $action);
+
+    // add all the actions
+    $config = CRM_Core_Config::singleton();
+    $this->addActions($config->uploadDir, array('uploadFile'));
+  }
+}
 

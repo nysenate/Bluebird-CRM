@@ -145,6 +145,17 @@
     <page_callback>CRM_Tag_AJAX::entity_tag_delete</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/ajax/entity_tag/checkUserLevel</path>
+    <page_callback>CRM_Tag_AJAX::check_user_level</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ajax/entity_tag/get</path>
+    <page_callback>CRM_Tag_AJAX::get_entity_tag</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <!-- /Tagging Interface -->
   
   <!--4887-->
   <item>
@@ -174,8 +185,16 @@
     <access_arguments>export print production files</access_arguments>
   </item>
   <item>
-     <path>civicrm/ajax/changelog</path>
-     <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/changelog</path>
+    <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--3331-->
+  <item>
+    <path>civicrm/file/delete</path>
+    <title>Delete file</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
   </item>
 </menu>

@@ -1,0 +1,215 @@
+<?php
+function nyss_contact_civicrm_buildForm( $formName, &$form ) {
+  if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
+    //CRM_Core_Error::debug_var('form',$form);
+
+    $defaults = array();
+    $contactID = $form->_contactId;
+    $form->assign('cid', $contactID);
+
+    //employer
+    $employerDataURL = CRM_Utils_System::url('civicrm/ajax/rest',
+      'className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&employee_id='.$contactID,
+      FALSE, NULL, FALSE);
+    $form->assign('employerDataURL',$employerDataURL );
+    $form->addElement('text', 'current_employer', ts('Current Employer'), '' );
+    $form->addElement('hidden', 'current_employer_id', '', array( 'id' => 'current_employer_id') );
+    $currentEmployer = CRM_Contact_BAO_Relationship::getCurrentEmployer( array( $contactID ) );
+    $defaults['current_employer_id'] = CRM_Utils_Array::value( 'org_id', $currentEmployer[$contactID] );
+    $defaults['current_employer'] = CRM_Utils_Array::value( 'org_name', $currentEmployer[$contactID] );
+    $form->assign('currentEmployer', CRM_Utils_Array::value( 'org_id', $currentEmployer[$contactID] ));
+
+    //job title
+    $attributes['common']['size'] = 30;
+    $form->addElement('text', 'job_title', ts('Job title'), $attributes['common'], 'size="30"');
+
+    //religion
+    $form->addElement('text', 'custom_63', ts('Religion'), $attributes['common'], 'size="30"');
+    $religion = civicrm_api('contact', 'getvalue', array(
+      'version' => 3,
+      'id' => $contactID,
+      'return' => 'custom_63',
+    ));
+    $defaults['custom_63'] = $religion;
+
+    //gender other
+    /*$form->addElement('text', 'custom_45', ts('Other Gender'), $attributes['common'], 'size="30"');
+    $genderother = civicrm_api('contact', 'getvalue', array(
+      'version' => 3,
+      'id' => $contactID,
+      'return' => 'custom_45',
+    ));
+    $defaults['custom_45'] = $genderother;*/
+
+    $form->setDefaults($defaults);
+  }
+
+  if ( $formName == 'CRM_Contact_Form_Inline_CommunicationPreferences' ) {
+    $defaults = array();
+    $contactID = $form->_contactId;
+    $form->assign('cid', $contactID);
+
+    //5784 add privacy option note
+    $form->addElement('textarea',
+      'custom_64',
+      ts('Privacy Option Notes'),
+      array(
+        'cols' => '40',
+        'rows' => '3',
+        'id'=>'custom_64',
+        'style' => 'width: 225px;'
+      )
+    );
+    $privacyNote = civicrm_api('contact', 'getvalue', array(
+      'version' => 3,
+      'id' => $contactID,
+      'return' => 'custom_64',
+    ));
+    $defaults['custom_64'] = $privacyNote;
+
+    $form->setDefaults($defaults);
+  }
+
+  //address edits
+  if ( $formName == 'CRM_Contact_Form_Contact' ||
+    $formName == 'CRM_Contact_Form_Inline_Address' ) {
+
+    //set US/New York as defaults
+    //we could potentially have as many as 6 addresses, so set for all
+    $i = 1;
+    while ( $i <= 6 ) {
+      if ( empty( $form->_defaultValues['address'][$i]['country_id'] ) )
+        $defaults['address'][$i]['country_id'] = 1228;
+      if ( empty( $form->_defaultValues['address'][$i]['state_province_id'] ) )
+        $defaults['address'][$i]['state_province_id'] = 1031;
+      $i++;
+    }
+    $form->setDefaults( $defaults );
+  }
+
+  //contact form edits
+  if ( $formName == 'CRM_Contact_Form_Contact' ) {
+
+    //3527 add js action to deceased field
+    if ( isset( $form->_elementIndex['is_deceased'] ) ) {
+      $deceased =& $form->getElement( 'is_deceased' );
+      $js = "showDeceasedDate();processDeceased();";
+      $deceased->_attributes['onclick'] = $js;
+    } //end deceased
+
+    //3530 tweak js to place cursor at end of http in website field (IE8)
+    if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
+      $website =& $form->getElement( 'website[1][url]' );
+      $js = "if(!this.value) {
+                 this.value='http://';
+                 if (this.createTextRange) {
+                   var FieldRange = this.createTextRange();
+                   FieldRange.moveStart('character', this.value.length);
+                   FieldRange.collapse();
+                   FieldRange.select();
+                 }
+               } else { return false; }";
+      $website->_attributes['onfocus'] = $js;
+    }
+
+    //NYSS 4407 remove bulk email from privacy list as it is a separate element
+    if ( isset( $form->_elementIndex['privacy'] ) ) {
+      $privacy =& $form->getElement( 'privacy' );
+      foreach ( $privacy->_elements as $key=>$option ) {
+        if ( $option->_attributes['name'] == 'is_opt_out' ) {
+          unset($privacy->_elements[$key]);
+        }
+      }
+    }
+  }
+}//buildForm
+
+function nyss_contact_civicrm_pageRun( &$page ) {
+  $pagename = $page->getVar( '_name' );
+
+  if ( $pagename == 'CRM_Contact_Page_Inline_Demographics' ) {
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
+
+    //get/set employer/job title/religion
+    $params = array(
+      'version' => 3,
+      'id' => $contactId,
+      'return.current_employer' => 1,
+      'return.current_employer_id' => 1,
+      'return.job_title' => 1,
+      'return.custom_63' => 1,
+    );
+    $inDemo = civicrm_api('contact', 'getsingle', $params);
+    $page->assign('inDemo', $inDemo);
+    //CRM_Core_Error::debug('inContact',$inContact);
+  }
+
+  if ( $pagename == 'CRM_Contact_Page_Inline_CommunicationPreferences' ) {
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
+
+    //get/set privacy note
+    $params = array(
+      'version' => 3,
+      'id' => $contactId,
+      'return.custom_64' => 1,
+    );
+    $inCommPref = civicrm_api('contact', 'getsingle', $params);
+    $page->assign('inCommPref', $inCommPref);
+  }
+}//pageRun
+
+function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+  //CRM_Core_Error::debug_var('formName',$formName);
+  //CRM_Core_Error::debug_var('fields',$fields);
+  //CRM_Core_Error::debug_var('files',$files);
+
+  if ( $formName == 'CRM_Contact_Form_Inline_CustomData' ||
+       $formName == 'CRM_Contact_Form_Contact' ) {
+    //5776
+    foreach ( $files as $field => $details ) {
+      if ( $details['size'] > 2100000 ) { //2MB
+        $errors[$field] = 'Attached files must be less than 2MB in size.';
+      }
+    }
+  }
+}
+
+function nyss_contact_civicrm_postProcess( $formName, &$form ) {
+  //CRM_Core_Error::debug_var('$formName',$formName);
+  if ( $formName == 'CRM_Contact_Form_Inline_Demographics' ) {
+    $vals = $form->_submitValues;
+    //CRM_Core_Error::debug_var('$vals',$vals);
+
+    //religion
+    if ( isset($vals['custom_63']) ) {
+      civicrm_api('contact', 'create', array(
+        'version' => 3,
+        'id' => $vals['cid'],
+        'custom_63' => $vals['custom_63'],
+      ));
+    }
+
+    //gender other
+    /*if ( isset($vals['custom_45']) ) {
+      civicrm_api('contact', 'create', array(
+        'version' => 3,
+        'id' => $vals['cid'],
+        'custom_45' => $vals['custom_45'],
+      ));
+    }*/
+  }
+
+  if ( $formName == 'CRM_Contact_Form_Inline_CommunicationPreferences' ) {
+    $vals = $form->_submitValues;
+    //CRM_Core_Error::debug_var('$vals',$vals);
+
+    //privacy note
+    if ( isset($vals['custom_64']) ) {
+      civicrm_api('contact', 'create', array(
+        'version' => 3,
+        'id' => $vals['cid'],
+        'custom_64' => $vals['custom_64'],
+      ));
+    }
+  }
+}

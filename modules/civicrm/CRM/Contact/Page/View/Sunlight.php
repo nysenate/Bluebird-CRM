@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,50 +28,44 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Contact/Page/View.php';
-
 class CRM_Contact_Page_View_Sunlight extends CRM_Contact_Page_View {
 
-   /**
-     * This function is called when action is browse
-     * 
-     * return null
-     * @access public
-     */
-    function browse( ) {
-        // get the primary city, state and zip for the contact
-        require_once 'CRM/Contact/BAO/Contact.php';
-        $ids = array( $this->_contactId );
-        $locations = CRM_Contact_BAO_Contact_Location::getMapInfo( $ids );
-        
-        require_once 'CRM/Utils/Sunlight.php';
-        $rows =& CRM_Utils_Sunlight::getInfo( $locations[0]['city'],
-                                              $locations[0]['state'],
-                                              $locations[0]['postal_code'] );
-        $this->assign( 'rowCount', count( $rows ) );
-        $this->assign_by_ref( 'rows', $rows );
-    }
+  /**
+   * This function is called when action is browse
+   *
+   * return null
+   * @access public
+   */
+  function browse() {
+    // get the primary city, state and zip for the contact
+    $ids = array($this->_contactId);
+    $locations = CRM_Contact_BAO_Contact_Location::getMapInfo($ids);
 
-   /**
-     * This function is the main function that is called when the page loads,
-     * it decides the which action has to be taken for the page.
-     * 
-     * return null
-     * @access public
-     */
-    function run( ) {
-        $this->preProcess( );
+    $rows = &CRM_Utils_Sunlight::getInfo($locations[0]['city'],
+      $locations[0]['state'],
+      $locations[0]['postal_code']
+    );
+    $this->assign('rowCount', count($rows));
+    $this->assign_by_ref('rows', $rows);
+  }
 
-        $this->browse( );
+  /**
+   * This function is the main function that is called when the page loads,
+   * it decides the which action has to be taken for the page.
+   *
+   * return null
+   * @access public
+   */
+  function run() {
+    $this->preProcess();
 
-        return parent::run( );
-    }
+    $this->browse();
 
+    return parent::run();
+  }
 }
-
 

@@ -1,6 +1,6 @@
 <?php
 
-//namespace Knp\Snappy;
+namespace Knp\Snappy;
 
 /**
  * Use this class to transform a html/a url to a pdf
@@ -10,7 +10,7 @@
  * @author  Matthieu Bontemps <matthieu.bontemps@knplabs.com>
  * @author  Antoine Hérault <antoine.herault@knplabs.com>
  */
-class Knp_Snappy_Pdf extends Knp_Snappy_AbstractGenerator
+class Pdf extends AbstractGenerator
 {
     /**
      * {@inheritDoc}

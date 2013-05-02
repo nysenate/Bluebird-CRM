@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,55 +28,50 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/StateMachine.php';
 
 /**
  * State machine for managing different states of the Import process.
  *
  */
-class CRM_Contribute_StateMachine_ContributionPage extends CRM_Core_StateMachine 
-{
-    /**
-     * class constructor
-     *
-     * @param object  CRM_Contribute_Controller_ContributionPage
-     * @param int     $action
-     *
-     * @return object CRM_Contribute_StateMachine_ContributionPage
-     */
-    function __construct( $controller, $action = CRM_Core_Action::NONE ) 
-    {
-        parent::__construct( $controller, $action );
-        
-        $session = CRM_Core_Session::singleton();
-        $session->set('singleForm', false);
+class CRM_Contribute_StateMachine_ContributionPage extends CRM_Core_StateMachine {
 
-        $config = CRM_Core_Config::singleton( );
-        
-        $this->_pages = array(
-                              'CRM_Contribute_Form_ContributionPage_Settings' => null,
-                              'CRM_Contribute_Form_ContributionPage_Amount'   => null,
-                              'CRM_Member_Form_MembershipBlock'               => null,
-                              'CRM_Contribute_Form_ContributionPage_ThankYou' => null,
-                              'CRM_Friend_Form_Contribute'                    => null,
-                              'CRM_Contribute_Form_ContributionPage_Custom'   => null,
-                              'CRM_Contribute_Form_ContributionPage_Premium'  => null,
-                              'CRM_Contribute_Form_ContributionPage_Widget'   => null,
-                              'CRM_Contribute_Form_ContributionPage_PCP'      => null
-                              );
-        
-        if ( !in_array("CiviMember", $config->enableComponents ) ) {
-            unset( $this->_pages['CRM_Member_Form_MembershipBlock'] );
-        }
-        
-        $this->addSequentialPages( $this->_pages, $action );
+  /**
+   * class constructor
+   *
+   * @param object  CRM_Contribute_Controller_ContributionPage
+   * @param int     $action
+   *
+   * @return object CRM_Contribute_StateMachine_ContributionPage
+   */
+  function __construct($controller, $action = CRM_Core_Action::NONE) {
+    parent::__construct($controller, $action);
+
+    $session = CRM_Core_Session::singleton();
+    $session->set('singleForm', FALSE);
+
+    $config = CRM_Core_Config::singleton();
+
+    $this->_pages = array(
+      'CRM_Contribute_Form_ContributionPage_Settings' => NULL,
+      'CRM_Contribute_Form_ContributionPage_Amount' => NULL,
+      'CRM_Member_Form_MembershipBlock' => NULL,
+      'CRM_Contribute_Form_ContributionPage_ThankYou' => NULL,
+      'CRM_Friend_Form_Contribute' => NULL,
+      'CRM_PCP_Form_Contribute' => NULL,
+      'CRM_Contribute_Form_ContributionPage_Custom' => NULL,
+      'CRM_Contribute_Form_ContributionPage_Premium' => NULL,
+      'CRM_Contribute_Form_ContributionPage_Widget' => NULL,
+    );
+
+    if (!in_array("CiviMember", $config->enableComponents)) {
+      unset($this->_pages['CRM_Member_Form_MembershipBlock']);
     }
 
+    $this->addSequentialPages($this->_pages, $action);
+  }
 }
-
 

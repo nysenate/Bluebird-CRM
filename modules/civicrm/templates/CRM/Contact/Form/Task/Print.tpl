@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,11 +38,21 @@
   {/foreach}
 {else}
     <td>{ts}Name{/ts}</td>
-    <td>{ts}Address{/ts}</td>
-    <td>{ts}City{/ts}</td>
-    <td>{ts}State{/ts}</td>
-    <td>{ts}Postal{/ts}</td>
-    <td>{ts}Country{/ts}</td>
+    {if !empty($columnHeaders.street_address)}
+      <td>{ts}Address{/ts}</td>
+    {/if}
+    {if !empty($columnHeaders.city)} 
+      <td>{ts}City{/ts}</td>
+    {/if}
+    {if !empty($columnHeaders.state_province)}
+      <td>{ts}State{/ts}</td>
+    {/if}
+    {if !empty($columnHeaders.postal_code)}
+      <td>{ts}Postal{/ts}</td>
+    {/if}
+    {if !empty($columnHeaders.country)}
+      <td>{ts}Country{/ts}</td>
+    {/if}
     <td>{ts}Email{/ts}</td>
     <td>{ts}Phone{/ts}</td>
 {/if}
@@ -59,11 +69,21 @@
 
 {else}
         <td>{$row.sort_name}</td>
-        <td>{$row.street_address}</td>
-        <td>{$row.city}</td>
-        <td>{$row.state_province}</td>
-        <td>{$row.postal_code}</td>
-        <td>{$row.country}</td>
+        {if !empty($columnHeaders.street_address)}
+          <td>{$row.street_address}</td>
+        {/if}
+        {if !empty($columnHeaders.city)}
+          <td>{$row.city}</td>
+        {/if}
+        {if !empty($columnHeaders.state_province)}
+          <td>{$row.state_province}</td>
+        {/if}
+	{if !empty($columnHeaders.postal_code)}
+          <td>{$row.postal_code}</td>
+        {/if}
+	{if !empty($columnHeaders.country)}
+          <td>{$row.country}</td>
+        {/if}
         <td>{$row.email}</td>
         <td>{$row.phone}</td>
 {/if}

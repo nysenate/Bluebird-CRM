@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,77 +28,71 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Grant/Form/Task.php';
 
 /**
  * This class provides the functionality to delete a group of
  * participations. This class provides functionality for the actual
  * deletion.
  */
-class CRM_Grant_Form_Task_Delete extends CRM_Grant_Form_Task 
-{
-    /**
-     * Are we operating in "single mode", i.e. deleting one
-     * specific participation?
-     *
-     * @var boolean
-     */
-    protected $_single = false;
+class CRM_Grant_Form_Task_Delete extends CRM_Grant_Form_Task {
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        parent::preProcess( );
+  /**
+   * Are we operating in "single mode", i.e. deleting one
+   * specific participation?
+   *
+   * @var boolean
+   */
+  protected $_single = FALSE;
 
-        //check permission for delete.
-        if ( !CRM_Core_Permission::checkActionPermission( 'CiviGrant', CRM_Core_Action::DELETE ) ) {
-            CRM_Core_Error::fatal( ts( 'You do not have permission to access this page' ) );  
-        }
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    parent::preProcess();
+
+    //check permission for delete.
+    if (!CRM_Core_Permission::checkActionPermission('CiviGrant', CRM_Core_Action::DELETE)) {
+      CRM_Core_Error::fatal(ts('You do not have permission to access this page'));
+    }
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    $this->addDefaultButtons(ts('Delete Grants'), 'done');
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    $deletedGrants = 0;
+    foreach ($this->_grantIds as $grantId) {
+      if (CRM_Grant_BAO_Grant::del($grantId)) {
+        $deletedGrants++;
+      }
     }
 
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( ) 
-    {
-        $this->addDefaultButtons( ts( 'Delete Grants' ), 'done' );
-    }
-
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( ) 
-    {
-        $deletedGrants = 0;
-        require_once 'CRM/Grant/BAO/Grant.php';
-        foreach ( $this->_grantIds as $grantId ) {
-            if ( CRM_Grant_BAO_Grant::del( $grantId ) ) {
-                $deletedGrants++;
-            }
-        }
-
-        $status = array(
-                        ts( 'Deleted Grant(s): %1',        array( 1 => $deletedGrants ) ),
-                        ts( 'Total Selected Grant(s): %1', array( 1 => count($this->_grantIds ) ) ),
-                        );
-        CRM_Core_Session::setStatus( $status );
-    }
+    $status = array(
+      ts('Deleted Grant(s): %1', array(1 => $deletedGrants)),
+      ts('Total Selected Grant(s): %1', array(1 => count($this->_grantIds))),
+    );
+    CRM_Core_Session::setStatus($status);
+  }
 }
-
 

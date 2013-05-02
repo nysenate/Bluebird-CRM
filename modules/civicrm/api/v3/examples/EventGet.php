@@ -49,7 +49,8 @@ function event_get_expectedresult(){
           'is_multiple_registrations' => 0,
           'allow_same_participant_emails' => 0,
           'is_template' => 0,
-          'created_date' => '2011-07-11 19:49:43',
+          'created_date' => '2012-05-11 22:55:10',
+          'is_share' => '1',
         ),
     ),
 );
@@ -62,11 +63,14 @@ function event_get_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* event_get 
+* 
+* testGetEventByEventTitle and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/EventTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

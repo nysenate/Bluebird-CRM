@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,86 +28,85 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Admin/Form.php';
-
 /**
  * This class generates form components for Mapping
- * 
+ *
  */
-class CRM_Admin_Form_Mapping extends CRM_Admin_Form
-{
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function preProcess() {
-        parent::preProcess();
-        $mapping = new CRM_Core_DAO_Mapping(); 
-        $mapping->id = $this->_id;
-        $mapping->find(true);
-        $this->assign('mappingName', $mapping->name);
-    }
-    
-    public function buildQuickForm( ) 
-    {
-        parent::buildQuickForm( );
-        if ( $this->_action == CRM_Core_Action::DELETE ) {
-            return;
-        } else {
-            $this->applyFilter('__ALL__', 'trim');
+class CRM_Admin_Form_Mapping extends CRM_Admin_Form {
 
-            $this->add('text', 'name' , ts('Name')       ,
-                              CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Mapping', 'name' ),true );
-            $this->addRule( 'name', ts('Name already exists in Database.'), 'objectExists', array( 'CRM_Core_DAO_Mapping', $this->_id ) );
-            
-            $this->addElement('text', 'description', ts('Description'), 
-                              CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Mapping', 'description' ) );
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function preProcess() {
+    parent::preProcess();
+    $mapping = new CRM_Core_DAO_Mapping();
+    $mapping->id = $this->_id;
+    $mapping->find(TRUE);
+    $this->assign('mappingName', $mapping->name);
+  }
 
-            require_once 'CRM/Core/PseudoConstant.php';
-            $mappingType = $this->addElement('select', 'mapping_type_id', ts('Mapping Type'), CRM_Core_PseudoConstant::mappingTypes( ));
-            
-            if ( $this->_action == CRM_Core_Action::UPDATE ) {
-                $mappingType->freeze();
-            }
-        }
+  public function buildQuickForm() {
+    parent::buildQuickForm();
+    if ($this->_action == CRM_Core_Action::DELETE) {
+      return;
     }
+    else {
+      $this->applyFilter('__ALL__', 'trim');
 
-    function setDefaultValues()
-    {
-        $defaults = parent::setDefaultValues();
-        return $defaults;
+      $this->add('text', 'name', ts('Name'),
+        CRM_Core_DAO::getAttribute('CRM_Core_DAO_Mapping', 'name'), TRUE
+      );
+      $this->addRule('name', ts('Name already exists in Database.'), 'objectExists', array('CRM_Core_DAO_Mapping', $this->_id));
+
+      $this->addElement('text', 'description', ts('Description'),
+        CRM_Core_DAO::getAttribute('CRM_Core_DAO_Mapping', 'description')
+      );
+
+      $mappingType = $this->addElement('select', 'mapping_type_id', ts('Mapping Type'), CRM_Core_PseudoConstant::mappingTypes());
+
+      if ($this->_action == CRM_Core_Action::UPDATE) {
+        $mappingType->freeze();
+      }
     }
-    
-    /**
-     * Function to process the form
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() 
-    {
-        // store the submitted values in an array
-        $params = $this->exportValues();
-        
-        if ( $this->_action == CRM_Core_Action::DELETE ) {
-            if ( $this->_id ) {
-                CRM_Core_BAO_Mapping::del( $this->_id );
-            }
-        } else {
-            if ( $this->_id ) {
-                $params['id'] = $this->_id;
-            }
-            
-            CRM_Core_BAO_Mapping::add( $params );
-        }        
-    }//end of function
+  }
+
+  function setDefaultValues() {
+    $defaults = parent::setDefaultValues();
+    return $defaults;
+  }
+
+  /**
+   * Function to process the form
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    // store the submitted values in an array
+    $params = $this->exportValues();
+
+    if ($this->_action == CRM_Core_Action::DELETE) {
+      if ($this->_id) {
+        CRM_Core_BAO_Mapping::del($this->_id);
+      }
+    }
+    else {
+      if ($this->_id) {
+        $params['id'] = $this->_id;
+      }
+
+      CRM_Core_BAO_Mapping::add($params);
+    }
+  }
+  //end of function
 }
-
 

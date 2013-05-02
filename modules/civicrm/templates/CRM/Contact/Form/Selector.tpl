@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,8 +26,9 @@
 {include file="CRM/common/pager.tpl" location="top"}
 
 {include file="CRM/common/pagerAToZ.tpl"}
+<a href="#" onclick=" return toggleContactSelection( 'resetSel', 'civicrm search {$qfKey}', 'reset' );">{ts}Reset all selections{/ts}</a>
 
-<table summary="{ts}Search results listings.{/ts}" class="selector">
+<table summary="{ts}Search results listings.{/ts}" class="selector row-highlight">
   <thead class="sticky">
     <tr>
       <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
@@ -63,9 +64,9 @@
               {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{$row.sort_name}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name}</a></td>
             {foreach from=$row item=value key=key} 
-               {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
+               {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
                 <td>
                 {if $key EQ "household_income_total" }
                     {$value|crmMoney}
@@ -93,13 +94,23 @@
                 {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>	
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
-              <td><span title="{$row.street_address}">{$row.street_address|mb_truncate:22:"...":true}</span></td>
-              <td>{$row.city}</td>
-              <td>{$row.state_province}</td>
-              <td>{$row.postal_code}</td>
-              <td>{$row.country}</td>
+              {if !empty($columnHeaders.street_address)}
+	        <td><span title="{$row.street_address}">{$row.street_address|mb_truncate:22:"...":true}</span></td>
+	      {/if}
+	      {if !empty($columnHeaders.city)}
+                <td>{$row.city}</td>
+	      {/if}
+	      {if !empty($columnHeaders.state_province)}
+                <td>{$row.state_province}</td>
+              {/if}
+              {if !empty($columnHeaders.postal_code)}
+                <td>{$row.postal_code}</td>
+              {/if}
+	      {if !empty($columnHeaders.country)}
+                <td>{$row.country}</td>
+              {/if}
               <td>
                 {if $row.email}
                     <span
@@ -142,9 +153,11 @@
  {literal}
 cj(document).ready( function() {
 var url         = "{/literal}{crmURL p='civicrm/contact/view/changeaction' q='reset=1&action=add&cid=changeid&context=changeaction' h=0}{literal}";
-var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=activity&reset=1&cid=changeid' h=0}{literal}";
-var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q='atype=3&action=add&reset=1&cid=changeid' h=0}{literal}";
-var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q='reset=1&cid=changeid' h=0}{literal}";
+var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q="action=browse&selectedChild=activity&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
+var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q="atype=3&action=add&reset=1&cid=changeid&context=`$context`" h=0}{literal}";
+var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q="reset=1&cid=changeid&key=`$qfKey`&context=`$context`" h=0}{literal}";
+var tagUrl  = "{/literal}{crmURL p='civicrm/contact/view' q="selectedChild=tag&reset=1&cid=changeid&key=`$qfKey`" h=0}{literal}";
+
 // Show menu when contact row is right clicked
 cj(".selector tr").contextMenu({
       menu: 'contactMenu'
@@ -153,6 +166,8 @@ cj(".selector tr").contextMenu({
         switch (action) {
           case 'activity':
           case 'email':
+            var qfKey = "{/literal}{$qfKey}{literal}";
+            emailUrl = emailUrl+'&key='+qfKey;
             eval( 'locationUrl = '+action+'Url;');
             break;
           case 'add':
@@ -160,16 +175,36 @@ cj(".selector tr").contextMenu({
           case 'view':
             locationUrl = contactUrl.replace( /changeaction/g, action );
             break;
+          case 'tag':
+            locationUrl = tagUrl;
+            break;
           default:
             locationUrl = url.replace( /changeaction/g, action );
             break;
         }
         eval( 'locationUrl = locationUrl.replace( /changeid/, contactId );');
-        var destination = "{/literal}{crmURL q='force=1' h=0}{literal}";
-        window.location = locationUrl + '&civicrmDestination=' + encodeURIComponent(destination);
+        // we do not need civicrmDestination for edit and view links (edit goes to view and then search results breadcrumb is available)
+        if ( action == 'add' || action == 'view') {
+            window.location = locationUrl;            
+        } else {
+            var destination = "{/literal}{crmURL q="qfKey=`$qfKey`" h=0}{literal}";
+            window.location = locationUrl + '&civicrmDestination=' + encodeURIComponent(destination);            
+        }
    });
+  {/literal}
+  {foreach from=$selectedContactIds item=selectedContactId}{literal}
+   	cj("#mark_x_{/literal}{$selectedContactId}{literal}").attr('checked', 'checked');
+  {/literal} 
+  {/foreach}
+    
+  {foreach from=$unselectedContactIds item=unselectedContactId}{literal}
+        cj("#mark_x_{/literal}{$unselectedContactId}{literal}").removeAttr('checked');{/literal}
+  {/foreach}
 
-    cj('.selector').crmrowhighlighter( );
+  {literal}
+    var formName = "{/literal}{$form.formName}{literal}";	
+    on_load_init_checkboxes(formName);
+    toggleTaskAction( false );
 });
 
 cj('ul#contactMenu').mouseup( function(e){ 
@@ -177,6 +212,60 @@ cj('ul#contactMenu').mouseup( function(e){
     //when right or middle button clicked fire default right click popup
    }
 });
+
+function countSelections( ){
+  var Url =  "{/literal}{crmURL p='civicrm/ajax/markSelection' h=0}{literal}";	
+  var key =  'civicrm search {/literal}{$qfKey}{literal}';
+  var arg =  "qfKey="+key+"&action=countSelection";
+  var count = 0;
+  cj.ajax({
+      "url":   Url,
+      "type": "POST", 
+      "data":  arg,
+      "async"    : false,
+      "dataType": 'json',
+      "success": function(data){
+           count  =  data.getCount;
+      }
+    });
+
+   return count;
+}
+
+function toggleContactSelection( name, qfKey, selection ){
+  var Url  = "{/literal}{crmURL p='civicrm/ajax/markSelection' h=0}{literal}";	
+      	  
+  if ( selection == 'multiple' ) {
+     var rowArr = new Array( );
+     {/literal}{foreach from=$rows item=row  key=keyVal}
+		 {literal}rowArr[{/literal}{$keyVal}{literal}] = '{/literal}{$row.checkbox}{literal}';
+     {/literal}{/foreach}{literal}
+     var elements = rowArr.join('-');      
+
+     if ( cj('#' + name).is(':checked') ){
+            cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' } );
+     } else {
+    	   cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+     }
+  } else if ( selection == 'single' ) {	 
+     if ( cj('#' + name).is(':checked') ){
+     	   cj.post( Url, { name: name , qfKey: qfKey } );
+     } else {
+      	   cj.post( Url, { name: name , qfKey: qfKey , state: 'unchecked' } );
+     }
+  } else if ( name == 'resetSel' && selection == 'reset' ) {
+
+     cj.post( Url, {  qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+     {/literal}
+     {foreach from=$rows item=row}{literal}
+             cj("#{/literal}{$row.checkbox}{literal}").removeAttr('checked');{/literal}
+     {/foreach}
+     {literal}
+     cj("#toggleSelect").removeAttr('checked');
+     var formName = "{/literal}{$form.formName}{literal}";	
+     on_load_init_checkboxes(formName);
+  }
+}
 {/literal}
 </script>
 {include file="CRM/common/pager.tpl" location="bottom"}

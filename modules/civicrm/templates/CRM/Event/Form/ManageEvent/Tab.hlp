@@ -26,7 +26,7 @@
 {htxt id="id-configure-events"}
 <table class="report"> 
 <tr>
-    <td class="nowrap"><a href="{crmURL p='civicrm/event/manage/eventInfo' q="reset=1&action=update&id=`$eventId`"}" id="idEventInformationandSettings">&raquo; {ts}Info &amp; Settings{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/event/manage/settings' q="reset=1&action=update&id=`$eventId`"}" id="idEventInformationandSettings">&raquo; {ts}Info &amp; Settings{/ts}</a></td>
     <td>{ts}Set event title, type (conference, performance etc.), description, start and end dates, maximum number of participants, and activate the event. Enable the public participant listing feature.{/ts}</td>
 </tr>
 <tr>
@@ -50,14 +50,14 @@
     <tr>
     {if $participantListingURL}
         <td class="nowrap"><a href="{$participantListingURL}" id="idParticipantListing">&raquo; {ts}Participant Listing{/ts}</a></td>
-        {if $config->userFramework EQ 'Drupal'}
+        {if $config->userSystem->is_drupal}
           <td>{ts 1=$participantListingURL}The following URL will display a list of registered participants for this event to users whose role includes "view event participants" permission: <a href="%1">%1</a>{/ts}</td>
         {else}
           <td>{ts 1=$participantListingURL}The following URL will display a list of registered participants for this event: <a href="%1">%1</a>{/ts}</td>
         {/if}
     {else}
         <td class="nowrap">&raquo; {ts}Participant Listing{/ts}</td>
-        <td>{ts}Participant Listing is not enabled for this event. You can enable it from{/ts} <a href="{crmURL p='civicrm/event/manage/eventInfo' q="reset=1&action=update&id=`$eventId`"}">{ts}Event Information and Settings{/ts}</a>.
+        <td>{ts}Participant Listing is not enabled for this event. You can enable it from{/ts} <a href="{crmURL p='civicrm/event/manage/settings' q="reset=1&action=update&id=`$eventId`"}">{ts}Event Information and Settings{/ts}</a>.
     {/if}
     </tr>
 

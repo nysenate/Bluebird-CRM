@@ -10,13 +10,17 @@
         <author>CiviCRM LLC</author>
         <authorEmail>info@civicrm.org</authorEmail>
         <authorUrl>civicrm.org</authorUrl>
-        <version>3.2</version>
+        <version>3.4</version>
         <description>CiviCRM Contribution Pages</description>
-        <params addpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
-	  		<param name="task" type="hidden" default="civicrm/contribute/transact" label="Choose CiviCRM task" />
-	  		<param name="id" type="civicontribpages" label="Select Contribution Page" description="Configured CiviCRM Contribution Pages" />
-	  		<param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
-        </params>
+       	<config> 
+	  <fields name="params" addfieldpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements"> 
+	    <fieldset name="basic"> 
+	      <field name="task" type="hidden" default="civicrm/contribute/transact" label="Choose CiviCRM task" />
+              <field name="id" type="civicontribpages" label="Select Contribution Page" description="Configured CiviCRM Contribution Pages" />
+	      <field name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+	    </fieldset> 
+	  </fields> 
+	</config>
     </state>
  </metadata>
   

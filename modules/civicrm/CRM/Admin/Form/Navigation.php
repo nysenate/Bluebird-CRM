@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,138 +28,139 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Admin/Form.php';
-
 /**
  * This class generates form components for Navigation
- * 
+ *
  */
-class CRM_Admin_Form_Navigation extends CRM_Admin_Form
-{
-    /**
-     * The parent id of the navigation menu
-     */
-    protected $_currentParentID = null;
+class CRM_Admin_Form_Navigation extends CRM_Admin_Form {
 
-    /**
-     * Default values
-     */
-     protected $_defaults = array( );
-     
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        parent::buildQuickForm( );
-       
-        if ($this->_action & CRM_Core_Action::DELETE ) { 
-            return;
-        }
-        
-        if ( isset( $this->_id ) ) {
-            $params = array( 'id' => $this->_id );
-            CRM_Core_BAO_Navigation::retrieve( $params, $this->_defaults );
-        }       
-        
-        $this->applyFilter('__ALL__', 'trim');
-        $this->add('text',
-                   'label',
-                   ts('Title'),
-                   CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Navigation', 'label' ),
-                   true );
+  /**
+   * The parent id of the navigation menu
+   */
+  protected $_currentParentID = NULL;
 
-        $this->add('text', 'url', ts('Url'), CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Navigation', 'url' ) );
-        require_once 'CRM/Core/Permission.php';
-        $permissions = CRM_Core_Permission::basicPermissions( true );
-        $include =& $this->addElement('advmultiselect', 'permission', 
-                                      ts('Permission') . ' ', $permissions,
-                                      array('size' => 5, 
-                                            'style' => 'width:150px',
-                                            'class' => 'advmultiselect')
-                                      );
-        
-        $include->setButtonAttributes('add', array('value' => ts('Add >>')));
-        $include->setButtonAttributes('remove', array('value' => ts('<< Remove')));     
-        
-        $operators = array( 'AND' => 'AND', 'OR' => 'OR' );
-        $this->add('select', 'permission_operator', ts( 'Operator'), $operators ); 
+  /**
+   * Default values
+   */
+  protected $_defaults = array();
 
-        $this->add('checkbox', 'has_separator', ts('Separator?'));
-        $active = $this->add('checkbox', 'is_active', ts('Enabled?'));
-        
-        if ( CRM_Utils_Array::value('name', $this->_defaults) == 'Home' ) {
-            $active->freeze( );
-        } else {
-            $parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    parent::buildQuickForm();
 
-            if ( isset( $this->_id ) ) {
-                unset( $parentMenu[$this->_id] );
-            }
-
-            // also unset home.
-            $homeMenuId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Navigation', 'Home', 'id', 'name' ); 
-            unset( $parentMenu[ $homeMenuId ] );    
-
-            $parent = $this->add( 'select', 'parent_id', ts( 'Parent' ), array( '' => ts('-- select --') ) + $parentMenu );            
-        }
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      return;
     }
-    
-    public function setDefaultValues() {
-        $defaults = $this->_defaults;
-        if ( isset( $this->_id ) ) {
-            if ( CRM_Utils_Array::value( 'permission', $this->_defaults ) ) { 
-                foreach ( explode( ',' , $this->_defaults['permission'] ) as $value ){ 
-                    $components[$value] = $value;
-                }
-                $defaults['permission'] = $components;
-            }
-            //Take parent id in object variable to calculate the menu
-            //weight if menu parent id changed
-            $this->_currentParentID = CRM_Utils_Array::value( 'parent_id', $this->_defaults );
-        } else {
-            $defaults['permission'] = "access CiviCRM";
-        }
-        
-        // its ok if there is no element called is_active
-        $defaults['is_active'] = ( $this->_id ) ? $this->_defaults['is_active'] : 1;
-        
-        return $defaults;
-    }
-       
-    /**
-     * Function to process the form
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() {
-        // get the submitted form values.  
-        $params = $this->controller->exportValues( $this->_name );            
-        
-        if ( isset( $this->_id ) ) {
-            $params['id'] = $this->_id;
-            $params['current_parent_id'] = $this->_currentParentID;
-        }
-        
-        $navigation = CRM_Core_BAO_Navigation::add( $params );
-        
-        // also reset navigation
-        require_once 'CRM/Core/BAO/Navigation.php';
-        CRM_Core_BAO_Navigation::resetNavigation( );
-        
-        CRM_Core_Session::setStatus( ts('Menu \'%1\' has been saved.',
-                                        array( 1 => $navigation->label )) );
-    } //end of function
 
+    if (isset($this->_id)) {
+      $params = array('id' => $this->_id);
+      CRM_Core_BAO_Navigation::retrieve($params, $this->_defaults);
+    }
+
+    $this->applyFilter('__ALL__', 'trim');
+    $this->add('text',
+      'label',
+      ts('Title'),
+      CRM_Core_DAO::getAttribute('CRM_Core_DAO_Navigation', 'label'),
+      TRUE
+    );
+
+    $this->add('text', 'url', ts('Url'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Navigation', 'url'));
+    $permissions = CRM_Core_Permission::basicPermissions(TRUE);
+    $include = &$this->addElement('advmultiselect', 'permission',
+      ts('Permission') . ' ', $permissions,
+      array(
+        'size' => 5,
+        'style' => 'width:auto',
+        'class' => 'advmultiselect',
+      )
+    );
+
+    $include->setButtonAttributes('add', array('value' => ts('Add >>')));
+    $include->setButtonAttributes('remove', array('value' => ts('<< Remove')));
+
+    $operators = array('AND' => 'AND', 'OR' => 'OR');
+    $this->add('select', 'permission_operator', ts('Operator'), $operators);
+
+    $this->add('checkbox', 'has_separator', ts('Separator?'));
+    $active = $this->add('checkbox', 'is_active', ts('Enabled?'));
+
+    if (CRM_Utils_Array::value('name', $this->_defaults) == 'Home') {
+      $active->freeze();
+    }
+    else {
+      $parentMenu = CRM_Core_BAO_Navigation::getNavigationList();
+
+      if (isset($this->_id)) {
+        unset($parentMenu[$this->_id]);
+      }
+
+      // also unset home.
+      $homeMenuId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Navigation', 'Home', 'id', 'name');
+      unset($parentMenu[$homeMenuId]);
+
+      $parent = $this->add('select', 'parent_id', ts('Parent'), array('' => ts('-- select --')) + $parentMenu);
+    }
+  }
+
+  public function setDefaultValues() {
+    $defaults = $this->_defaults;
+    if (isset($this->_id)) {
+      if (CRM_Utils_Array::value('permission', $this->_defaults)) {
+        foreach (explode(',', $this->_defaults['permission']) as $value) {
+          $components[$value] = $value;
+        }
+        $defaults['permission'] = $components;
+      }
+      //Take parent id in object variable to calculate the menu
+      //weight if menu parent id changed
+      $this->_currentParentID = CRM_Utils_Array::value('parent_id', $this->_defaults);
+    }
+    else {
+      $defaults['permission'] = "access CiviCRM";
+    }
+
+    // its ok if there is no element called is_active
+    $defaults['is_active'] = ($this->_id) ? $this->_defaults['is_active'] : 1;
+
+    return $defaults;
+  }
+
+  /**
+   * Function to process the form
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    // get the submitted form values.
+    $params = $this->controller->exportValues($this->_name);
+
+    if (isset($this->_id)) {
+      $params['id'] = $this->_id;
+      $params['current_parent_id'] = $this->_currentParentID;
+    }
+
+    $navigation = CRM_Core_BAO_Navigation::add($params);
+
+    // also reset navigation
+    CRM_Core_BAO_Navigation::resetNavigation();
+
+    CRM_Core_Session::setStatus(ts('Menu \'%1\' has been saved.',
+        array(1 => $navigation->label)
+      ));
+  }
+  //end of function
 }
-
 

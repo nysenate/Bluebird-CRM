@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,25 +29,20 @@
     {ts}Update field values for each contribution as needed. Click <strong>Update Contributions</strong> below to save all your changes. To set a field to the same value for ALL rows, enter that value for the first contribution and then click the <strong>Copy icon</strong> (next to the column title).{/ts}
 </div>
     <legend>{$profileTitle}</legend>
-         <table>
+    <table class="crm-copy-fields">
 	  <thead class="sticky">
             <tr class="columnheader">
              {foreach from=$readOnlyFields item=fTitle key=fName}
-	        <th>{$fTitle}</th>
-	     {/foreach}
+	            <th>{$fTitle}</th>
+            {/foreach}
 
              {foreach from=$fields item=field key=fieldName}
-                {if strpos( $field.name, '_date' ) !== false ||
-                    (substr( $field.name, 0, 7 ) == 'custom_' && $field.data_type == 'Date')}
-                  <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValuesDate('{$field.name}')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{$field.title}</th>
-                {else}
-                  <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValues('{$field.name}')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{$field.title}</th>
-                 {/if}
+                <td><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" fname="{$field.name}" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{$field.title}</td>
              {/foreach}
             </tr>
           </thead>
             {foreach from=$componentIds item=cid}
-             <tr class="{cycle values="odd-row,even-row"}">
+             <tr class="{cycle values="odd-row,even-row"}" entity_id="{$cid}">
 	      {foreach from=$readOnlyFields item=fTitle key=fName}
 	         <td>{$contactDetails.$cid.$fName}</td>
 	      {/foreach}

@@ -23,29 +23,6 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{htxt id='map-key'}
-<p>{ts 1='<a href="http://www.google.com/apis/maps/signup.html" target="_blank">http://www.google.com/apis/maps/signup.html</a>'}<strong>For GOOGLE mapping</strong> - request an API key for your site at %1{/ts}</p>
-<p>{ts}When prompted for 'My Web Site URL' - enter the base URL for your site followed by the path '/civicrm'. Your API Key will be generated and displayed on the next page.{/ts}</p>
-
-<p>
-{ts 1='http://www.example.com/'}EXAMPLE: if your Drupal site url is %1 you would enter{/ts}
-<div class="font-italic description">
- &nbsp; http://www.example.com/civicrm/
-</div>
-</p>
-
-<p>{ts 1='<a href="http://api.search.yahoo.com/webservices/register_application" target="_blank">http://api.search.yahoo.com/webservices/register_application</a>'}<strong>For YAHOO mapping</strong> - request an Application ID for your site at %1{/ts}</p>
-{/htxt}
-{htxt id='map-key2'}
-<p>{ts 1='<a href="http://www.google.com/apis/maps/signup.html" target="_blank">http://www.google.com/apis/maps/signup.html</a>'}<strong>For GOOGLE mapping</strong> - request an API key for your site at %1{/ts}</p>
-<p>{ts 1='/civicrm'}When prompted for 'My Web Site URL' - enter the base URL for your site followed by the path '%1'. Your API Key will be generated and displayed on the next page.{/ts}</p>
-
-<p>
-{ts 1='http://www.example.com/'}EXAMPLE: if your Drupal site url is %1 you would enter{/ts}
-<div class="font-italic description">
- &nbsp; http://www.example.com/civicrm/
-</div>
-</p>
-
-<p>{ts 1='<a href="http://api.search.yahoo.com/webservices/register_application" target="_blank">http://api.search.yahoo.com/webservices/register_application</a>'}<strong>For YAHOO mapping</strong> - request an Application ID for your site at %1{/ts}</p>
+{htxt id='map-intro-id'}
+<p>{ts}Accuracy and coverage, as well as terms of service for both geocoding and mapping may vary by provider and location. Some providers may offer or require paid subscriptions depending on volume of requests and type of organization using the service. You should investigate each provider and select the best option for your requirements and usage patterns.{/ts}</p>
 {/htxt}

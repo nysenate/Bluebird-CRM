@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,20 +23,19 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* 
+{*
  * If you MODIFY this file, please make sure you also modify jquery.files.tpl.
- * Cannot get rid of this since we use it for joomla, standalone, print
- * html profile etc
+ * Cannot get rid of this since we use it for print html, standalone profile etc
  *}
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery.js"></script>
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery-ui-1.8.11/js/jquery-ui-1.8.11.custom.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/jquery-ui-1.8.11/css/smoothness/jquery-ui-1.8.11.custom.css");</style>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/jquery-ui-1.8.16/css/smoothness/jquery-ui-1.8.16.custom.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.autocomplete.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/jquery.autocomplete.css");</style>
 
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jsTree.v.1.0rc2/jquery.jstree.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/jsTree.v.1.0rc2/themes/default/jstree.css");</style>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jstree/jquery.jstree.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/jstree/themes/default/style.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.menu.pack.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/menu.css");</style>
@@ -46,12 +45,6 @@
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.contextMenu.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.tableHeader.js"></script>
 
-{if $defaultWysiwygEditor eq 1}
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
-    <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
-{elseif $defaultWysiwygEditor eq 2}
-    <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
-{/if}
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.textarearesizer.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.form.js"></script>
@@ -64,8 +57,11 @@
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.toolTip.js"></script>
 
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.6/media/js/jquery.dataTables.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.6/media/css/demo_table_jui.css");</style>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables/media/css/demo_table_jui.css");</style>
+
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.dashboard.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/dashboard.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.FormNavigate.js"></script>
 
@@ -75,19 +71,22 @@
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery-fieldselection.js"></script>
 
-<script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.jeditable.mini.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.mustache.js"></script>
 
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.blockUI.js"></script>
+
+<script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}js/Common.js"></script>
+
+<script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmeditable.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmasmselect.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmtooltip.js"></script>
-<script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmrowhighlighter.js"></script>
-
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.dashboard.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/dashboard.css");</style>
 
 {* CRM-6819: localize datepicker *}
 {if $l10nURL}
   <script type="text/javascript" src="{$l10nURL}"></script>
 {/if}
 
-<script type="text/javascript">var cj = jQuery.noConflict(); $ = cj;</script>
+<script type="text/javascript">var cj = jQuery.noConflict();</script>

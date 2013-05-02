@@ -27,10 +27,10 @@ function tag_create_expectedresult(){
   'is_error' => 0,
   'version' => 3,
   'count' => 1,
-  'id' => 7,
+  'id' => 8,
   'values' => array( 
-      '7' => array( 
-          'id' => 7,
+      '8' => array( 
+          'id' => 8,
           'name' => 'New Tag3',
           'description' => 'This is description for New Tag 02',
           'parent_id' => '',
@@ -39,7 +39,7 @@ function tag_create_expectedresult(){
           'is_tagset' => '',
           'used_for' => 'civicrm_contact',
           'created_id' => '',
-          'created_date' => '20110711195209',
+          'created_date' => '20120511225729',
         ),
     ),
 );
@@ -52,11 +52,14 @@ function tag_create_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* tag_create 
+* 
+* testCreate and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/TagTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

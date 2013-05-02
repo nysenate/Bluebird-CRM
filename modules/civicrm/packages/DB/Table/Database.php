@@ -635,7 +635,7 @@ class DB_Table_Database extends DB_Table_Base
             $code = DB_TABLE_DATABASE_ERR_DB_OBJECT ;
             $text = $GLOBALS['_DB_TABLE_DATABASE']['error'][$code]
                   . ' DB_Table_Database';
-            $this->error =& PEAR::throwError($text, $code);
+            $this->error = PEAR::throwError($text, $code);
             return;
         }
         $this->db  =& $db;

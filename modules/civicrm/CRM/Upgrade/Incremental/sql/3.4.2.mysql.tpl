@@ -109,4 +109,4 @@ VALUES
 -- CRM-8133, add entries for assignee contact for activities of type Membership Renewal Reminder
 SELECT @option_value_membership_reminder := value FROM civicrm_option_value v, civicrm_option_group g WHERE v.option_group_id = g.id AND g.name = 'activity_type' AND v.name = 'Membership Renewal Reminder';
 
-INSERT INTO civicrm_activity_assignment ( activity_id, assignee_contact_id ) SELECT ca.id, ca.source_contact_id FROM civicrm_activity ca LEFT JOIN civicrm_activity_assignment cas ON ( cas.activity_id = ca.id ) WHERE ca.activity_type_id = @option_value_membership_reminder AND cas.id IS NULL;
+INSERT INTO civicrm_activity_assignment ( activity_id, assignee_contact_id ) SELECT ca.id, ca.source_contact_id FROM civicrm_activity ca LEFT JOIN civicrm_activity_assignment cas ON ( cas.activity_id = ca.id ) WHERE ca.activity_type_id = @option_value_membership_reminder AND cas.id IS NULL AND ca.source_contact_id IS NOT NULL;

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,13 +32,19 @@
 /**
  * Content Management System (CMS) Host:
  *
- * CiviCRM can be hosted in either Drupal or Joomla.
+ * CiviCRM can be hosted in either Drupal 6 or 7, Joomla or WordPress.
  *
- * Settings for Drupal 6.x:
+ * Settings for Drupal 7.x:
  *      define( 'CIVICRM_UF'        , 'Drupal' );
  *
- * Settings for Joomla 1.5.x:
+ * Settings for Drupal 6.x:
+ *      define( 'CIVICRM_UF'        , 'Drupal6' );
+ *
+ * Settings for Joomla 1.7.x - 2.5.x:
  *      define( 'CIVICRM_UF'        , 'Joomla' );
+ *
+ * Settings for WordPress 3.3.x:
+ *      define( 'CIVICRM_UF'        , 'WordPress' );
  *
  * You may have issues with images in CiviCRM. If this is the case, be sure
  * to update the CiviCRM Resource URL field (in Administer CRM: Global
@@ -114,6 +120,14 @@ define('CIVICRM_LOGGING_DSN', CIVICRM_DSN);
  * the CIVICRM_TEMPLATE_COMPILEDIR would be:
  *      define( 'CIVICRM_TEMPLATE_COMPILEDIR', '/var/www/htdocs/joomla/media/civicrm/templates_c/' );
  *
+ * EXAMPLE - WordPress Installations:
+ * If the path to the WordPress home directory is /var/www/htdocs/wordpress
+ * the $civicrm_root setting would be:
+ *      $civicrm_root = '/var/www/htdocs/wordpress/wp-content/plugins/civicrm/civicrm/';
+ *
+ * the CIVICRM_TEMPLATE_COMPILEDIR would be:
+ *      define( 'CIVICRM_TEMPLATE_COMPILEDIR', '/var/www/htdocs/wordpress/wp-content/plugins/files/civicrm/templates_c/' );
+ *
  */
 
 global $civicrm_root;
@@ -162,45 +176,11 @@ define( 'CIVICRM_SITE_KEY', '%%siteKey%%' );
 define( 'CIVICRM_IDS_ENABLE', 1);
 
 /**
- * Multi org / Multi site settings:
+ * Enable this constant, if you want to send your email through the smarty
+ * templating engine(allows you to do conditional and more complex logic)
  *
  */
-// define( 'CIVICRM_MULTISITE'           , null );
-// define( 'CIVICRM_UNIQ_EMAIL_PER_SITE' , null );
-define( 'CIVICRM_DOMAIN_ID'      , 1 );
-define( 'CIVICRM_DOMAIN_GROUP_ID', null );
-define( 'CIVICRM_DOMAIN_ORG_ID'  , null );
-
-define( 'CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
-
-/**
- * Setting to disable email notifications to activity assignees
- *
- */
- define( 'CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
-
-/**
- * Setting to disable ajax check if similar contacts exist when creating a new contact
- *
- */
- define( 'CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 1 );
-
-/**
- * Setting to disable or enable profile double optin.
- * This is enable by default and functions only if Civimail is enabled.
- */
- define( 'CIVICRM_PROFILE_DOUBLE_OPTIN', 1 );
-
-/**
- * Setting to disable or enable profile double optini for add to group in profile
- * This is disabled by default and functions only if Civimail is enabled.
- */
- define( 'CIVICRM_PROFILE_ADD_TO_GROUP_DOUBLE_OPTIN', 0 );
-
-/**
- * If set, makes CiviMail default to tracking replies (i.e., using VERP-ed Reply-To:)
- */
-define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
+define( 'CIVICRM_MAIL_SMARTY', 0 );
 
 /**
  * This setting logs all emails to a file. Useful for debugging any mail (or civimail) issues.
@@ -208,29 +188,21 @@ define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
  */
 // define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log' );
 
-/**
- * For use with CiviCampaign Petitions
- * If set, contacts that are created when signing a petition are tagged with the
- * defined tag name (default below is 'Unconfirmed')
- */
-define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
+define( 'CIVICRM_DOMAIN_ID'      , 1 );
 
 /**
- * Defines the group name containing all contacts that have signed a CiviCampaign petition.
- * Do not unset - required for email verification. Group will be created if it does not exist.
+ * For Wordpress users if your public pages are using a different template than the home page
+ * you should set the name of the template with the below constant
+ * This will be moved to a DB setting in 4.3, check CRM-10682
  */
-define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
-
-/**
- * Enables or disables workflow support for CiviMail. Also requires
- * Drupal AND rules module being enabled
- */
-define('CIVICRM_CIVIMAIL_WORKFLOW', 0 );
+// define( 'CIVICRM_UF_WP_BASEPAGE', 'YOUR TEMPLATE NAME HERE');
 
 /**
  * Settings to enable external caching using a Memcache server.  This is an
- * advanced features, and you should read and understand the documentation
- * before you turn it on.
+ * advanced feature, and you should read and understand the documentation
+ * before you turn it on. We cannot store these settings in the DB since the
+ * config could potentially also be cached and we need to avoid an infinite
+ * recursion scenario.
  *
  * @see http://civicrm.org/node/126
  */
@@ -277,11 +249,16 @@ define( 'CIVICRM_MEMCACHE_TIMEOUT', 3600 );
 define( 'CIVICRM_MEMCACHE_PREFIX', '' );
 
 /**
- * Enable this constant, if you want to send your email through the smarty
- * templating engine(allows you to do conditional and more complex logic)
- *
+ * If you have multilingual site and you are using the "inherit CMS language"
+ * configuration option, but wish to, for example, use fr_CA instead of the
+ * default fr_FR (for French), set one or more of the constants below to an
+ * appropriate regional value.
  */
-define( 'CIVICRM_MAIL_SMARTY', 0 );
+// define('CIVICRM_LANGUAGE_MAPPING_FR', 'fr_CA');
+// define('CIVICRM_LANGUAGE_MAPPING_EN', 'en_CA');
+// define('CIVICRM_LANGUAGE_MAPPING_ES', 'es_MX');
+// define('CIVICRM_LANGUAGE_MAPPING_PT', 'pt_BR');
+// define('CIVICRM_LANGUAGE_MAPPING_ZH', 'zh_TW');
 
 /**
  *
@@ -289,11 +266,14 @@ define( 'CIVICRM_MAIL_SMARTY', 0 );
  *
  */
 
-$include_path = '.'        . PATH_SEPARATOR .
+$include_path = '.'           . PATH_SEPARATOR .
                 $civicrm_root . PATH_SEPARATOR .
                 $civicrm_root . DIRECTORY_SEPARATOR . 'packages' . PATH_SEPARATOR .
                 get_include_path( );
-set_include_path( $include_path );
+if ( set_include_path( $include_path ) === false ) {
+   echo "Could not set the include path<p>";
+   exit( );
+}
 
 if ( function_exists( 'variable_get' ) && variable_get('clean_url', '0') != '0' ) {
     define( 'CIVICRM_CLEANURL', 1 );
@@ -313,6 +293,9 @@ switch ($memLimitUnit) {
     case 'm': $memLimit *= 1024;
     case 'k': $memLimit *= 1024;
 }
-if ($memLimit >= 0 and $memLimit < 67108864) {
-    ini_set('memory_limit', '64M');
+if ($memLimit >= 0 and $memLimit < 134217728) {
+    ini_set('memory_limit', '128M');
 }
+
+require_once 'CRM/Core/ClassLoader.php';
+CRM_Core_ClassLoader::singleton()->register();

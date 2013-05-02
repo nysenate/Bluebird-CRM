@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout">
         <tr class="crm-group-form-block-title">
-	    <td class="label">{$form.title.label}</td>
+	    <td class="label">{$form.title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_group' field='title' id=$group.id}{/if}</td>
             <td>{$form.title.html|crmReplace:class:huge}
                 {if $group.saved_search_id}&nbsp;({ts}Smart Group{/ts}){/if}
             </td>
@@ -50,16 +50,23 @@
         </tr>
 
 	{if $form.group_type}
-	    <tr class="crm-group-form-block-group_type">
-		<td class="label">{$form.group_type.label}</td>
-		<td>{$form.group_type.html} {help id="id-group-type" file="CRM/Group/Page/Group.hlp"}</td>
-	    </tr>
+    <tr class="crm-group-form-block-group_type">
+			<td class="label">{$form.group_type.label}</td>
+			<td>{$form.group_type.html} {help id="id-group-type" file="CRM/Group/Page/Group.hlp"}</td>
+    </tr>
 	{/if}
     
-        <tr class="crm-group-form-block-visibility">
-	    <td class="label">{$form.visibility.label}</td>
-	    <td>{$form.visibility.html|crmReplace:class:huge} {help id="id-group-visibility" file="CRM/Group/Page/Group.hlp"}</td>
+	<tr class="crm-group-form-block-visibility">
+		<td class="label">{$form.visibility.label}</td>
+	  <td>{$form.visibility.html|crmReplace:class:huge} {help id="id-group-visibility" file="CRM/Group/Page/Group.hlp"}</td>
 	</tr>
+
+  <tr class="crm-group-form-block-isReserved">
+    <td class="report-label">{$form.is_reserved.label}</td>
+    <td>{$form.is_reserved.html}
+      <span class="description">{ts}If reserved, only users with 'administer reserved groups' permission can disable, delete, or change settings for this group. The reserved flag does NOT affect users ability to add or remove contacts from a group.{/ts}</span>
+    </td>
+  </tr>
 	
 	<tr>
 	    <td colspan=2>{include file="CRM/Custom/Form/CustomData.tpl"}</td>
@@ -111,7 +118,7 @@
 		{if $group.mapping_id}
 		    <a href="{crmURL p="civicrm/contact/search/builder" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
 		{elseif $group.search_custom_id}
-            <a href="{crmURL p="civicrm/contact/search/custom" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
+        <a href="{crmURL p="civicrm/contact/search/custom" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
         {else} 
 		    <a href="{crmURL p="civicrm/contact/search/advanced" q="reset=1&force=1&ssID=`$group.saved_search_id`&panel=1"}">&raquo; {ts}Edit Smart Group Criteria{/ts}</a>
 		{/if}
@@ -156,6 +163,13 @@ cj('#organization').autocomplete( dataUrl, {
                                                        htmlDiv = data[0].replace( /::/gi, ' ');
                                                        cj('div#organization_address').html(htmlDiv);
 						      });
+//NYSS 5359 UI mods
+cj('input[type=checkbox][name="group_type[1]"]').remove();
+cj('label[for="group_type_1"]').remove();
+var acg = cj('tr.crm-group-form-block-group_type td[class!="label"]').html().replace(/&nbsp;/g,'');
+cj('tr.crm-group-form-block-group_type td[class!="label"]').html(acg);
+cj('tr.crm-group-form-block-visibility').hide();
+cj('tr.crm-group-form-block-description span.description').hide();
 </script>
 {/literal}
 </div>

@@ -1,10 +1,9 @@
 <?php
-
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -29,117 +28,115 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-
 /**
  * Page for displaying Parent Information Section tabs
  */
-class CRM_Admin_Page_Persistent extends CRM_Core_Page 
-{
-    /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
-    private static $_stringActionLinks;
-    private static $_customizeActionLinks;
+class CRM_Admin_Page_Persistent extends CRM_Core_Page {
 
-    /**
-     * Get action Links
-     *
-     * @return array (reference) of action links
-     */
-    function &stringActionLinks()
-        {
-            // check if variable _actionsLinks is populated
-            if (!isset(self::$_stringActionLinks)) {
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
+  private static $_stringActionLinks;
+  private static $_customizeActionLinks;
 
-                self::$_stringActionLinks = array(
-                                                  CRM_Core_Action::UPDATE  => array(
-                                                                                    'name'  => ts('Edit'),
-                                                                                    'url'   => 'civicrm/admin/tplstrings/add',
-                                                                                    'qs'    => 'reset=1&action=update&id=%%id%%',
-                                                                                    'title' => ts('Configure') 
-                                                                                    ),
-                                                  );
-            }
-            return self::$_stringActionLinks;
-        }
-    
-    function &customizeActionLinks()
-        {
-            // check if variable _actionsLinks is populated
-            if (!isset(self::$_customizeActionLinks)) {
-                
-                self::$_customizeActionLinks = array(
-                                                     CRM_Core_Action::UPDATE  => array(
-                                                                                       'name'  => ts('Edit'),
-                                                                                       'url'   => 'civicrm/admin/tplstrings/add',
-                                                                                       'qs'    => 'reset=1&action=update&id=%%id%%&config=1',
-                                                                                       'title' => ts('Configure') 
-                                                                                       ),
-                                            );
-            }
-            return self::$_customizeActionLinks;
-        }   
-    
-    /**
-     * Run the basic page (run essentially starts execution for that page).
-     *
-     * @return void
-     */
-    function run() {
-        CRM_Utils_System::setTitle( ts('DB Template Strings') );
-        $this->browse();
-        parent::run();
+  /**
+   * Get action Links
+   *
+   * @return array (reference) of action links
+   */ function &stringActionLinks() {
+    // check if variable _actionsLinks is populated
+    if (!isset(self::$_stringActionLinks)) {
+
+      self::$_stringActionLinks = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/admin/tplstrings/add',
+          'qs' => 'reset=1&action=update&id=%%id%%',
+          'title' => ts('Configure'),
+        ),
+      );
     }
-    
-    /**
-     * Browse all options
-     *  
-     * 
-     * @return void
-     * @access public
-     * @static
-     */
-    function browse() {
-        $permission = false;
-        $this->assign( 'editClass', false );
-        if( CRM_Core_Permission::check( 'access CiviCRM' ) ) {
-            $this->assign( 'editClass', true );
-            $permission = true;
-        }
-        
-        require_once "CRM/Core/DAO/Persistent.php"; 
-        $daoResult = new CRM_Core_DAO_Persistent();
-        $daoResult->find();
-        $schoolValues = array();
-        while ( $daoResult->fetch() ) {
-            $values[$daoResult->id] = array( );
-            CRM_Core_DAO::storeValues( $daoResult, $values[$daoResult->id]);
-            if ( $daoResult->is_config == 1 ) {
-                $values[$daoResult->id]['action']      = CRM_Core_Action::formLink( self::customizeActionLinks(),
-                                                                                    NULL, 
-                                                                                    array('id' =>$daoResult->id ) );
-                $values[$daoResult->id]['data']       = implode( ',', unserialize( $daoResult->data ) );
-                $configCustomization[$daoResult->id]  = $values[$daoResult->id];
-            }
-            if ( $daoResult->is_config == 0 ) {
-                $values[$daoResult->id]['action']     = CRM_Core_Action::formLink( self::stringActionLinks(),
-                                                                                   NULL, 
-                                                                                   array('id' =>$daoResult->id ) );
-                $configStrings[$daoResult->id]       = $values[$daoResult->id];
-            }
-            
-        }
-        $rows = array( 'configTemplates'     => $configStrings,
-                       'customizeTemplates'  => $configCustomization );
-        $this->assign('rows', $rows);
+    return self::$_stringActionLinks;
+  }
+
+  function &customizeActionLinks() {
+    // check if variable _actionsLinks is populated
+    if (!isset(self::$_customizeActionLinks)) {
+
+      self::$_customizeActionLinks = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/admin/tplstrings/add',
+          'qs' => 'reset=1&action=update&id=%%id%%&config=1',
+          'title' => ts('Configure'),
+        ),
+      );
     }
+    return self::$_customizeActionLinks;
+  }
+
+  /**
+   * Run the basic page (run essentially starts execution for that page).
+   *
+   * @return void
+   */
+  function run() {
+    CRM_Utils_System::setTitle(ts('DB Template Strings'));
+    $this->browse();
+    return parent::run();
+  }
+
+  /**
+   * Browse all options
+   *
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function browse() {
+    $permission = FALSE;
+    $this->assign('editClass', FALSE);
+    if (CRM_Core_Permission::check('access CiviCRM')) {
+      $this->assign('editClass', TRUE);
+      $permission = TRUE;
+    }
+
+    $daoResult = new CRM_Core_DAO_Persistent();
+    $daoResult->find();
+    $schoolValues = array();
+    while ($daoResult->fetch()) {
+      $values[$daoResult->id] = array();
+      CRM_Core_DAO::storeValues($daoResult, $values[$daoResult->id]);
+      if ($daoResult->is_config == 1) {
+        $values[$daoResult->id]['action'] = CRM_Core_Action::formLink(self::customizeActionLinks(),
+          NULL,
+          array('id' => $daoResult->id)
+        );
+        $values[$daoResult->id]['data'] = implode(',', unserialize($daoResult->data));
+        $configCustomization[$daoResult->id] = $values[$daoResult->id];
+      }
+      if ($daoResult->is_config == 0) {
+        $values[$daoResult->id]['action'] = CRM_Core_Action::formLink(self::stringActionLinks(),
+          NULL,
+          array('id' => $daoResult->id)
+        );
+        $configStrings[$daoResult->id] = $values[$daoResult->id];
+      }
+    }
+    $rows = array(
+      'configTemplates' => $configStrings,
+      'customizeTemplates' => $configCustomization,
+    );
+    $this->assign('rows', $rows);
+  }
 }
+

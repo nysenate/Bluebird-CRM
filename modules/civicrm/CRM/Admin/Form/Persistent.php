@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,74 +28,75 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
 
 /**
  * customize the output to meet our specific requirements
  */
 class CRM_Admin_Form_Persistent extends CRM_Core_Form {
-    
-    public  function preProcess( ) {  
-        $this->_indexID  = CRM_Utils_Request::retrieve( 'id', 'Integer', $this, false );
-        $this->_config   = CRM_Utils_Request::retrieve( 'config', 'Integer', $this, 0 );
-        $this->_action   = CRM_Utils_Request::retrieve( 'action', 'String', $this, false );
 
-        $session =& CRM_Core_Session::singleton();
-        $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/tplstrings', 'reset=1' ) );
-        CRM_Utils_System::setTitle( ts('DB Template Strings') );
-        parent::preProcess(); 
-    } 
-    
-    public  function setDefaultValues(  ) {
-        require_once 'CRM/Core/BAO/Persistent.php';
-        $defaults = array( );
-        
-        if ( $this->_indexID && ( $this->_action & ( CRM_Core_Action::UPDATE ) ) ) {
-            $params = array('id'=> $this->_indexID);
-            CRM_Core_BAO_Persistent::retrieve($params,$defaults);
-            if ( CRM_Utils_Array::value('is_config', $defaults) == 1 ) {
-                $defaults['data'] = implode(',', $defaults['data']); 
-            }
-        }
-        return $defaults;
+  public function preProcess() {
+    $this->_indexID = CRM_Utils_Request::retrieve('id', 'Integer', $this, FALSE);
+    $this->_config  = CRM_Utils_Request::retrieve('config', 'Integer', $this, 0);
+    $this->_action  = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE);
+
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url('civicrm/admin/tplstrings', 'reset=1'));
+    CRM_Utils_System::setTitle(ts('DB Template Strings'));
+    parent::preProcess();
+  }
+
+  public function setDefaultValues() {
+    $defaults = array();
+
+    if ($this->_indexID && ($this->_action & (CRM_Core_Action::UPDATE))) {
+      $params = array('id' => $this->_indexID);
+      CRM_Core_BAO_Persistent::retrieve($params, $defaults);
+      if (CRM_Utils_Array::value('is_config', $defaults) == 1) {
+        $defaults['data'] = implode(',', $defaults['data']);
+      }
     }
-    
-    public function buildQuickForm( ) {
-        $this->add( 'text', 'context', ts( 'Context:' ), null, true );
-        $this->add( 'text', 'name', ts( 'Name:' ), null, true );
-        $this->add( 'textarea', 'data', ts( 'Data:' ), array('rows'=> 4,'cols' => 50 ), true );
-        $this->addButtons( array(
-                                 array ( 'type'       => 'submit',
-                                         'name'       => ts('Save'),
-                                         'isDefault'  => true   ),
-                                 array ( 'type'       => 'cancel',
-                                         'name'       => ts('Cancel') ),
-                                 )
-                           );    
+    return $defaults;
+  }
+
+  public function buildQuickForm() {
+    $this->add('text', 'context', ts('Context:'), NULL, TRUE);
+    $this->add('text', 'name', ts('Name:'), NULL, TRUE);
+    $this->add('textarea', 'data', ts('Data:'), array('rows' => 4, 'cols' => 50), TRUE);
+    $this->addButtons(array(
+        array(
+          'type' => 'submit',
+          'name' => ts('Save'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
+
+  public function postProcess() {
+    $params = $ids = array();
+    $params = $this->controller->exportValues($this->_name);
+
+    $params['is_config'] = $this->_config;
+
+    if ($this->_action & CRM_Core_Action::ADD) {
+      $statusMsg = ts('DB Template has been added successfully.');
     }
-    
-    public  function postProcess() { 
-        require_once "CRM/Core/BAO/Persistent.php";
-        $params = $ids = array( );
-        $params = $this->controller->exportValues( $this->_name );
-
-        $params['is_config'] = $this->_config;
-
-        if ( $this->_action & CRM_Core_Action::ADD ) {
-            $statusMsg = ts('DB Template has been added successfully.');
-        }
-        if ( $this->_action & CRM_Core_Action::UPDATE ) {
-            $ids['persistent'] = $this->_indexID;
-            $statusMsg = ts('DB Template has been updated successfully.');
-        }
-        CRM_Core_BAO_Persistent::add($params, $ids);
-
-        CRM_Core_Session::setStatus( $statusMsg );	        
-        CRM_Utils_System::redirect( CRM_Utils_System::url('civicrm/admin/tplstrings', "reset=1") );
+    if ($this->_action & CRM_Core_Action::UPDATE) {
+      $ids['persistent'] = $this->_indexID;
+      $statusMsg = ts('DB Template has been updated successfully.');
     }
+    CRM_Core_BAO_Persistent::add($params, $ids);
+
+    CRM_Core_Session::setStatus($statusMsg);
+    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/tplstrings', "reset=1"));
+  }
 }
+

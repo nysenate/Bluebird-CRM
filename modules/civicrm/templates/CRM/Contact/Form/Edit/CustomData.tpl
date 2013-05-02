@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,22 +29,23 @@
 {foreach from=$groupTree item=cd_edit key=group_id}    
 	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display}crm-accordion-closed{else}crm-accordion-open{/if}">
 		<div class="crm-accordion-header">
-			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div> 
-			{$cd_edit.title}
+			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div>
+
+        <a href="#" class="whiteanchor">{$cd_edit.title}</a>
 			</div><!-- /.crm-accordion-header -->
 			
 			<div id="customData{$group_id}" class="crm-accordion-body">
 				{include file="CRM/Custom/Form/CustomData.tpl" formEdit=true}
 			</div>
-		<script type="text/javascript">
-			{if $cd_edit.collapse_display eq 0 }
-				var eleSpan          = "span#custom{$group_id}";
-				var eleDiv           = "div#customData{$group_id}";
-				showTab[{$group_id}] = {literal}{"spanShow":eleSpan,"divShow":eleDiv}{/literal};
-			{else}
-				showTab[{$group_id}] = {literal}{"spanShow":""}{/literal};
-			{/if}
-		</script>
+      <script type="text/javascript">
+        {if $cd_edit.collapse_display eq 0 }
+          var eleSpan          = "span#custom{$group_id}";
+          var eleDiv           = "div#customData{$group_id}";
+          showTab[{$group_id}] = {literal}{"spanShow":eleSpan,"divShow":eleDiv}{/literal};
+        {else}
+          showTab[{$group_id}] = {literal}{"spanShow":""}{/literal};
+        {/if}
+      </script>
 	</div>
 {/foreach}
 

@@ -1,8 +1,7 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
 * Copyright (C) 2010 Tech To The People
 * Licensed to CiviCRM under the Academic Free License version 3.0.
@@ -32,149 +32,153 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Event/BAO/Event.php';
-require_once 'CRM/Utils/PDF/Label.php';
-
 /**
  * This class print the name badges for the participants
  * It isn't supposed to be called directly, but is the parent class of the classes in CRM/Event/Badges/XXX.php
- * 
+ *
  */
 class CRM_Event_Badge {
-    
-     function __construct() {
-        $this->style=array('width' => 0.1, 'cap' => 'round', 'join' => 'round', 'dash' => '2,2', 'color' => array(0, 0, 200));
-        $this->format = '5160';
-        $this->imgExtension = 'png';
-        $this->imgRes = 300;
-        $this->event = null;
-        $this->setDebug(false); 
-     }
-     
-     function setDebug($debug=true) {
-       if (!$debug){
-         $this->debug=false; 
-         $this->border = 0;
-       } else {
-         $this->debug=true; 
-         $this->border = "LTRB";
-       }
-     }
-     /**
-      * function to create the labels (pdf)
-      * It assumes the participants are from the same event
-      *
-      * @param   array    $participants
-      * @return  null      
-      * @access  public
-      */
-    public function run ( &$participants )
-    {
-        $participant = reset ($participants); //fetch the 1st participant, and take her event to retrieve its attributes
-        $eventID = $participant['event_id'];
-        $this->event= self::retrieveEvent ($eventID);
-        //call function to create labels
-        self::createLabels($participants);
-        CRM_Utils_System::civiExit( 1 );
-    }
-    
-   protected function retrieveEvent($eventID) {
-       require_once 'CRM/Event/BAO/Event.php';
-       $bao = new CRM_Event_BAO_Event ();
-       if ($bao->get('id',$eventID)) {
-          return $bao;
-       }
-       return null;
-   }
-
-  function getImageFileName ($eventID,$img=false) {
-    global $civicrm_root;
-    $path = "CRM/Event/Badge";
-    if ($img == false) {
-      return false;
-    }
-    if ($img == true)  {
-      $img = get_class($this).".".$this->imgExtension ;
-    }
-
-    require_once 'CRM/Core/Config.php';
-    $config = CRM_Core_Config::singleton( );
-    $imgFile = $config->customTemplateDir."/$path/$eventID/$img"; 
-    if (file_exists($imgFile)) return $imgFile;
-    $imgFile = $config->customTemplateDir."/$path/$img"; 
-    if (file_exists($imgFile)) return $imgFile;
-
-    $imgFile = "$civicrm_root/templates/$path/$eventID/$img"; 
-    if (file_exists($imgFile)) return $imgFile;
-    $imgFile = "$civicrm_root/templates/$path/$img";
-    if (!file_exists($imgFile) && !$this->debug) return false;
-     
-    return $imgFile; // not sure it exists, but at least will display a meaniful fatal error in debug mode
+  function __construct() {
+    $this->style        = array('width' => 0.1, 'cap' => 'round', 'join' => 'round', 'dash' => '2,2', 'color' => array(0, 0, 200));
+    $this->format       = '5160';
+    $this->imgExtension = 'png';
+    $this->imgRes       = 300;
+    $this->event        = NULL;
+    $this->setDebug(FALSE);
   }
 
-  function printBackground ($img=false) {
+  function setDebug($debug = TRUE) {
+    if (!$debug) {
+      $this->debug = FALSE;
+      $this->border = 0;
+    }
+    else {
+      $this->debug = TRUE;
+      $this->border = "LTRB";
+    }
+  }
+
+  /**
+   * function to create the labels (pdf)
+   * It assumes the participants are from the same event
+   *
+   * @param   array    $participants
+   *
+   * @return  null
+   * @access  public
+   */
+  public function run(&$participants) {
+    // fetch the 1st participant, and take her event to retrieve its attributes
+    $participant = reset($participants);
+    $eventID     = $participant['event_id'];
+    $this->event = self::retrieveEvent($eventID);
+    //call function to create labels
+    self::createLabels($participants);
+    CRM_Utils_System::civiExit(1);
+  }
+
+  protected function retrieveEvent($eventID) {
+    $bao = new CRM_Event_BAO_Event();
+    if ($bao->get('id', $eventID)) {
+      return $bao;
+    }
+    return NULL;
+  }
+
+  function getImageFileName($eventID, $img = FALSE) {
+    global $civicrm_root;
+    $path = "CRM/Event/Badge";
+    if ($img == FALSE) {
+      return FALSE;
+    }
+    if ($img == TRUE) {
+      $img = get_class($this) . "." . $this->imgExtension;
+    }
+
+    $config = CRM_Core_Config::singleton();
+    $imgFile = $config->customTemplateDir . "/$path/$eventID/$img";
+    if (file_exists($imgFile)) {
+      return $imgFile;
+    }
+    $imgFile = $config->customTemplateDir . "/$path/$img";
+    if (file_exists($imgFile)) {
+      return $imgFile;
+    }
+
+    $imgFile = "$civicrm_root/templates/$path/$eventID/$img";
+    if (file_exists($imgFile)) {
+      return $imgFile;
+    }
+    $imgFile = "$civicrm_root/templates/$path/$img";
+    if (!file_exists($imgFile) && !$this->debug) {
+      return FALSE;
+    }
+
+    // not sure it exists, but at least will display a meaniful fatal error in debug mode
+    return $imgFile;
+  }
+
+  function printBackground($img = FALSE) {
     $x = $this->pdf->GetAbsX();
     $y = $this->pdf->GetY();
     if ($this->debug) {
-      $this->pdf->Rect( $x, $y, $this->pdf->width, $this->pdf->height, 'D', array ('all'=>array('width' => 1, 'cap' => 'round', 'join' => 'round', 'dash' => '2,10', 'color' => array(255, 0, 0))));
+      $this->pdf->Rect($x, $y, $this->pdf->width, $this->pdf->height, 'D', array('all' => array('width' => 1, 'cap' => 'round', 'join' => 'round', 'dash' => '2,10', 'color' => array(255, 0, 0))));
     }
-    $img = $this->getImageFileName($this->event->id,$img);
+    $img = $this->getImageFileName($this->event->id, $img);
     if ($img) {
-     $imgsize = getimagesize($img);
-     $f = $this->imgRes / 25.4;//mm
-     $w= $imgsize[0] / $f;
-     $h= $imgsize[1] / $f;
-      $this->pdf->Image($img,  $this->pdf->GetAbsX(), $this->pdf->GetY(), $w,$h, strtoupper($this->imgExtension), '', '', false, 72, '', false, false, $this->debug, false, false, false);
+      $imgsize = getimagesize($img);
+      // mm
+      $f = $this->imgRes / 25.4;
+      $w = $imgsize[0] / $f;
+      $h = $imgsize[1] / $f;
+      $this->pdf->Image($img, $this->pdf->GetAbsX(), $this->pdf->GetY(), $w, $h, strtoupper($this->imgExtension), '', '', FALSE, 72, '', FALSE, FALSE, $this->debug, FALSE, FALSE, FALSE);
     }
-    $this->pdf->SetXY($x,$y);
+    $this->pdf->SetXY($x, $y);
   }
 
-   /**
-   * this is supposed to be overrided 
+  /**
+   * this is supposed to be overrided
    **/
-   public function generateLabel($participant) {
-     $txt = "{$this->event['title']}
-{$participant['first_name']} {$participant['last_name']}
+  public function generateLabel($participant) {
+    $txt = "{$this->event['title']}
+{$participant['display_name']}
 {$participant['current_employer']}";
 
-     $this->pdf->MultiCell ($this->pdf->width, $this->pdf->lineHeight, $txt);
-   }
+    $this->pdf->MultiCell($this->pdf->width, $this->pdf->lineHeight, $txt);
+  }
 
-   function pdfExtraFormat() {
-   }
+  function pdfExtraFormat() {}
 
-     /**
-      * function to create labels (pdf)
-      *
-      * @param   array    $contactRows   assciated array of contact data
-      * @param   string   $format   format in which labels needs to be printed
-      *
-      * @return  null      
-      * @access  public
-      */
-    function createLabels( &$participants )
-    {
-        require_once 'CRM/Utils/String.php';
-        
-        $this->pdf = new CRM_Utils_PDF_Label( $this->format, 'mm' );
-        $this->pdfExtraFormat();
-        $this->pdf->Open();
-        $this->pdf->setPrintHeader( false );
-	 $this->pdf->setPrintFooter( false );
-        $this->pdf->AddPage();
-        $this->pdf->AddFont( 'DejaVu Sans', '', 'DejaVuSans.php' );
-        $this->pdf->SetFont( 'DejaVu Sans' );
-        $this->pdf->SetGenerator( $this, "generateLabel" );
-       
-        foreach ( $participants as $participant ) {
-          $this->pdf->AddPdfLabel( $participant );
-        }
-        $this->pdf->Output( $this->event->title.'.pdf', 'D' );
+  /**
+   * function to create labels (pdf)
+   *
+   * @param   array    $contactRows   assciated array of contact data
+   * @param   string   $format   format in which labels needs to be printed
+   *
+   * @return  null
+   * @access  public
+   */
+  function createLabels(&$participants) {
+
+    $this->pdf = new CRM_Utils_PDF_Label($this->format, 'mm');
+    $this->pdfExtraFormat();
+    $this->pdf->Open();
+    $this->pdf->setPrintHeader(FALSE);
+    $this->pdf->setPrintFooter(FALSE);
+    $this->pdf->AddPage();
+    $this->pdf->AddFont('DejaVu Sans', '', 'DejaVuSans.php');
+    $this->pdf->SetFont('DejaVu Sans');
+    $this->pdf->SetGenerator($this, "generateLabel");
+
+    foreach ($participants as $participant) {
+      $this->pdf->AddPdfLabel($participant);
     }
-    
+    $this->pdf->Output($this->event->title . '.pdf', 'D');
+  }
 }
+

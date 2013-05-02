@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
     <div class="messages status">
         <div class="icon inform-icon"></div>&nbsp;
         {ts 1=$newVersion 2=$localVersion}A newer version of CiviCRM is available: %1 (this site is currently running %2).{/ts}
-        {ts 1='http://civicrm.org/' 2='http://civicrm.org/download/'}Read about the new version on <a href='%1'>our website</a> and <a href='%2'>download it here</a>.{/ts}
+        {ts 1='http://civicrm.org/' 2='http://civicrm.org/go/download/'}Read about the new version on <a href='%1'>our website</a> and <a href='%2'>download it here</a>.{/ts}
         <div class="messages status">
           <table>
 	    <tr><td class="tasklist">
@@ -69,11 +69,11 @@
     </tr>
     </table>
  </div>
- 
+
  <div id="id_{$groupName}">
     <fieldset><legend><strong>{$group.hide}{$group.title}</strong></legend>
         <table class="form-layout">
-                
+
         {foreach from=$group.fields item=panelItem  key=panelName name=groupLoop}
             <tr class="{cycle values="odd-row,even-row" name=$groupName}">
                 <td style="vertical-align: top; width:24px;">
@@ -87,7 +87,7 @@
                 </td>
             </tr>
         {/foreach}
-        
+
         </table>
     </fieldset>
   </div>

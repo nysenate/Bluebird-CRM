@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -52,7 +52,7 @@
         <tr id="row_{$row.id}" class="crm-labelFormat {cycle values="odd-row,even-row"} {$row.class}">
             <td class="crm-labelFormat-name">{$row.label}</td>
             <td class="crm-labelFormat-description">{$row.grouping}</td>
-            <td class="crm-labelFormat-is_default">{if $row.is_default eq 1}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
+            <td class="crm-labelFormat-is_default">{if $row.is_default eq 1}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
             <td class="crm-labelFormat-is_reserved">{if $row.is_reserved eq 1}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}&nbsp;</td>
 	        <td class="crm-labelFormat-order nowrap">{$row.order}</td>
 	        <td class="order hiddenElement">{$row.weight}</td>

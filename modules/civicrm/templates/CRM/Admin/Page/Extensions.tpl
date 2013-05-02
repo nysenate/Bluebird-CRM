@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,15 +24,15 @@
  +--------------------------------------------------------------------+
 *}
 
-{if $action eq 1 or $action eq 2 or $action eq 8}
+{if $action eq 1 or $action eq 2 or $action eq 8 or $action eq 32 or $action eq 64}
    {include file="CRM/Admin/Form/Extensions.tpl"}
 {else}
-    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&civicrmDestination=/civicrm/admin/extensions?reset=1"}{/capture}
+    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&civicrmDestination=$destination"}{/capture}
     {if !$extEnabled }
       <div class="crm-content-block crm-block">
         <div class="messages status">
              <div class="icon inform-icon"></div>
-             {ts 1=$adminURL}Your extensions directory is not set or is not writable. Click <a href='%1'>here</a> to set the extension directory.{/ts}
+             {ts 1=$adminURL}Your extensions directory is not set or is not writable. Click <a href='%1'>here</a> to set the extensions directory.{/ts}
         </div>
       </div>
     {else} {* extEnabled *}
@@ -42,9 +42,14 @@
           </div>
       {/if}
 
+      {if $extDbUpgrades}
+        <div class="messages warning">
+          <p>{ts 1=$extDbUpgradeUrl}Your extensions require database updates. Please <a href="%1">execute the updates</a>.{/ts}
+        </div>
+      {/if}
+
       <div class="messages help">
-        <p>{ts 1=$adminURL}CiviCRM extensions allow you to install additional features for your site. They can provide new functionality in three areas: Custom Searches, Report Templates and Payment Processors. In order to install an extension, you need to upload it manually to your <a href="%1">Extensions Directory</a>, reload this page and click Install. Once installed, extensions become available under the Custom Searches, Report Templates or Payment Processor Types administrative screens.{/ts}</p>
-        <strong>{ts 1="http://forum.civicrm.org"}Please note that extensions are in a testing period during the 3.3 release cycle. Get in touch with the CiviCRM core team on the <a href="%1">community forum</a> if you've developed an extension which you want to share with the community.{/ts}</strong>
+        <p>{ts 1=$adminURL 2=$config->userFramework 3="http://civicrm.org/extensions"}CiviCRM extensions allow you to install additional features for your site. This page will automatically list the available "native" extensions from the <a href="%3" target="_blank">CiviCRM.org extensions directory</a> which are compatible with this version of CiviCRM. If you install Custom Searches, Reports or Payment Processor extensions - these will automatically be available on the corresponding menus and screens. You may also want to check the <a href="%3" target="_blank">extensions directory</a> for native %2 modules that may be useful for you (CMS-specific modules are not listed here).{/ts}</p>
       </div>
 
       {include file="CRM/common/enableDisable.tpl"}
@@ -66,7 +71,7 @@
             </thead>
             <tbody>
               {foreach from=$extensionRows item=row}
-              <tr id="row_{$row.id}" class="crm-extensions crm-extensions_{$row.id}{if NOT $row.is_active} disabled{/if}{if $row.upgradable} extension-upgradable{elseif $row.status eq 'installed'} extension-installed{/if}">
+              <tr id="row_{$row.id}" class="crm-extensions crm-extensions_{$row.id}{if NOT $row.is_active} disabled{/if}{if $row.status eq 'missing'} extension-missing{/if}{if $row.upgradable} extension-upgradable{elseif $row.status eq 'installed'} extension-installed{/if}">
                 <td class="crm-extensions-label">
                     <a class="collapsed" href="#"></a>&nbsp;<strong>{$row.label}</strong><br/>({$row.key})
                 </td>
@@ -91,7 +96,7 @@
       {else}
         <div class="messages status">
              <div class="icon inform-icon"></div>
-            {ts}You have no locally available extensions and didn't download any information about publically available extensions from our server. Please click "Refresh" to update information about available extensions.{/ts}
+            {ts}There are no local or publicly available extensions to display. Please click "Refresh" to update information about available extensions.{/ts}
         </div>    
       {/if}
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 <div class="crm-accordion-wrapper crm-commPrefs-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
-	{$title} 
+        <a href="#" class="whiteanchor">{$title}</a>
   </div><!-- /.crm-accordion-header -->
 <div id="commPrefs" class="crm-accordion-body">
     <table class="form-layout-compressed" >

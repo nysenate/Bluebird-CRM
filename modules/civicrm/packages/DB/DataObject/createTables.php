@@ -39,12 +39,12 @@ if (!@$_SERVER['argv'][1]) {
 
 $config = parse_ini_file($_SERVER['argv'][1], true);
 foreach($config as $class=>$values) {
-    $options = &PEAR::getStaticProperty($class,'options');
+    $options = PEAR::getStaticProperty($class,'options');
     $options = $values;
 }
 
 
-$options = &PEAR::getStaticProperty('DB_DataObject','options');
+$options = PEAR::getStaticProperty('DB_DataObject','options');
 if (empty($options)) {
     PEAR::raiseError("\nERROR: could not read ini file\n\n", null, PEAR_ERROR_DIE);
     exit;

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,325 +28,480 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-
 /**
  * WordPress specific stuff goes here
  */
-class CRM_Utils_System_WordPress {
+class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
+  function __construct() {
+    $this->is_drupal = FALSE;
+  }
 
-    /**
-     * sets the title of the page
-     *
-     * @param string $title
-     * @paqram string $pageTitle
-     *
-     * @return void
-     * @access public
-     */
-    function setTitle( $title, $pageTitle = null ) {
-        if ( !$pageTitle ) {
-            $pageTitle = $title;
-        }
-        if ( civicrm_wp_in_civicrm( ) ) {
-            global $civicrm_wp_title;
-            $civicrm_wp_title = $pageTitle;
-        }
+  /**
+   * sets the title of the page
+   *
+   * @param string $title
+   * @paqram string $pageTitle
+   *
+   * @return void
+   * @access public
+   */
+  function setTitle($title, $pageTitle = NULL) {
+    if (!$pageTitle) {
+      $pageTitle = $title;
     }
-    
-    /**
-     * Append an additional breadcrumb tag to the existing breadcrumb
-     *
-     * @param string $title
-     * @param string $url   
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function appendBreadCrumb( $breadCrumbs ) {
-        $breadCrumb = drupal_get_breadcrumb( );
+    if (civicrm_wp_in_civicrm()) {
+      global $civicrm_wp_title;
+      $civicrm_wp_title = $pageTitle;
+      $template = CRM_Core_Smarty::singleton();
+      $template->assign('pageTitle', $pageTitle);
+    }
+  }
 
-        if ( is_array( $breadCrumbs ) ) {
-            foreach ( $breadCrumbs as $crumbs ) {
-                if ( stripos($crumbs['url'], 'id%%') ) {
-                    $args = array( 'cid', 'mid' );
-                    foreach ( $args as $a ) {
-                        $val  = CRM_Utils_Request::retrieve( $a, 'Positive', CRM_Core_DAO::$_nullObject,
-                                                             false, null, $_GET );
-                        if ( $val ) {
-                            $crumbs['url'] = str_ireplace( "%%{$a}%%", $val, $crumbs['url'] );
-                        }
-                    }
-                }
-                $breadCrumb[]  = "<a href=\"{$crumbs['url']}\">{$crumbs['title']}</a>";
+  /**
+   * Append an additional breadcrumb tag to the existing breadcrumb
+   *
+   * @param string $title
+   * @param string $url
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function appendBreadCrumb($breadCrumbs) {
+    $breadCrumb = wp_get_breadcrumb();
+
+    if (is_array($breadCrumbs)) {
+      foreach ($breadCrumbs as $crumbs) {
+        if (stripos($crumbs['url'], 'id%%')) {
+          $args = array('cid', 'mid');
+          foreach ($args as $a) {
+            $val = CRM_Utils_Request::retrieve($a, 'Positive', CRM_Core_DAO::$_nullObject,
+              FALSE, NULL, $_GET
+            );
+            if ($val) {
+              $crumbs['url'] = str_ireplace("%%{$a}%%", $val, $crumbs['url']);
             }
+          }
         }
-        drupal_set_breadcrumb( $breadCrumb );
+        $breadCrumb[] = "<a href=\"{$crumbs['url']}\">{$crumbs['title']}</a>";
+      }
     }
 
-    /**
-     * Reset an additional breadcrumb tag to the existing breadcrumb
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function resetBreadCrumb( ) {
-        $bc = array( );
-        drupal_set_breadcrumb( $bc );
+    $template = CRM_Core_Smarty::singleton();
+    $template->assign_by_ref('breadcrumb', $breadCrumb);
+    wp_set_breadcrumb($breadCrumb);
+  }
+
+  /**
+   * Reset an additional breadcrumb tag to the existing breadcrumb
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function resetBreadCrumb() {
+    $bc = array();
+    wp_set_breadcrumb($bc);
+  }
+
+  /**
+   * Append a string to the head of the html file
+   *
+   * @param string $head the new string to be appended
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function addHTMLHead($head) {
+    static $registered = FALSE;
+    if (!$registered) {
+      // front-end view
+      add_action('wp_head', array(__CLASS__, '_showHTMLHead'));
+      // back-end views
+      add_action('admin_head', array(__CLASS__, '_showHTMLHead'));
+    }
+    CRM_Core_Region::instance('wp_head')->add(array(
+      'markup' => $head,
+    ));
+  }
+
+  static function _showHTMLHead() {
+    $region = CRM_Core_Region::instance('wp_head', FALSE);
+    if ($region) {
+      echo $region->render('');
+    }
+  }
+
+  /**
+   * rewrite various system urls to https
+   *
+   * @param null
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function mapConfigToSSL() {
+    global $base_url;
+    $base_url = str_replace('http://', 'https://', $base_url);
+  }
+
+  /**
+   * figure out the post url for the form
+   *
+   * @param mix $action the default action if one is pre-specified
+   *
+   * @return string the url to post the form
+   * @access public
+   * @static
+   */
+  function postURL($action) {
+    if (!empty($action)) {
+      return $action;
     }
 
-    /**
-     * Append a string to the head of the html file
-     *
-     * @param string $head the new string to be appended
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function addHTMLHead( $head ) {
-      drupal_set_html_head( $head );
-    }
+    return $this->url($_GET['q'], NULL, TRUE, NULL, FALSE);
+  }
 
-    /** 
-     * rewrite various system urls to https 
-     *  
-     * @param null 
-     *
-     * @return void 
-     * @access public  
-     * @static  
-     */  
-    static function mapConfigToSSL( ) {
-        global $base_url;
-        $base_url = str_replace( 'http://', 'https://', $base_url );
-    }
+  /**
+   * Generate an internal CiviCRM URL (copied from DRUPAL/includes/common.inc#url)
+   *
+   * @param $path     string   The path being linked to, such as "civicrm/add"
+   * @param $query    string   A query string to append to the link.
+   * @param $absolute boolean  Whether to force the output to be an absolute link (beginning with http:).
+   *                           Useful for links that will be displayed outside the site, such as in an
+   *                           RSS feed.
+   * @param $fragment string   A fragment identifier (named anchor) to append to the link.
+   * @param $htmlize  boolean  whether to convert to html eqivalant
+   * @param $frontend boolean  a gross joomla hack
+   *
+   * @return string            an HTML string containing a link to the given path.
+   * @access public
+   *
+   */
+  function url(
+    $path = NULL,
+    $query = NULL,
+    $absolute = FALSE,
+    $fragment = NULL,
+    $htmlize = TRUE,
+    $frontend = FALSE
+  ) {
+    $config    = CRM_Core_Config::singleton();
+    $script    = '';
+    $separator = $htmlize ? '&amp;' : '&';
+    $pageID    = '';
 
-    /**
-     * figure out the post url for the form
-     *
-     * @param mix $action the default action if one is pre-specified
-     *
-     * @return string the url to post the form
-     * @access public
-     * @static
-     */
-    static function postURL( $action ) {
-        if ( ! empty( $action ) ) {
-            return $action;
+    $path = CRM_Utils_String::stripPathChars($path);
+
+    //this means wp function we are trying to use is not available,
+    //so load bootStrap
+    if (!function_exists('get_option')) {
+      $this->loadBootStrap();
+    }
+    $permlinkStructure = get_option('permalink_structure');
+    if ($config->userFrameworkFrontend) {
+      if ($permlinkStructure != '') {
+        global $post;
+        $script = get_permalink($post->ID);
+      }
+
+      // when shortcode is inlcuded in page
+      // also make sure we have valid query object
+      global $wp_query;
+      if ( method_exists( $wp_query, 'get' ) ) {
+        if (get_query_var('page_id')) {
+          $pageID = "{$separator}page_id=" . get_query_var('page_id');
         }
-
-        return self::url( $_GET['q'], null, true, null, false );
-    }
-
-    /**
-     * Generate an internal CiviCRM URL (copied from DRUPAL/includes/common.inc#url)
-     *
-     * @param $path     string   The path being linked to, such as "civicrm/add"
-     * @param $query    string   A query string to append to the link.
-     * @param $absolute boolean  Whether to force the output to be an absolute link (beginning with http:).
-     *                           Useful for links that will be displayed outside the site, such as in an
-     *                           RSS feed.
-     * @param $fragment string   A fragment identifier (named anchor) to append to the link.
-     * @param $htmlize  boolean  whether to convert to html eqivalant
-     * @param $frontend boolean  a gross joomla hack
-     *
-     * @return string            an HTML string containing a link to the given path.
-     * @access public
-     *
-     */
-    function url($path = null, $query = null, $absolute = false,
-                 $fragment = null, $htmlize = true,
-                 $frontend = false ) {
-        $config = CRM_Core_Config::singleton( );
-        $script =  'index.php';
-
-        require_once 'CRM/Utils/String.php';
-        $path = CRM_Utils_String::stripPathChars( $path );
-
-        if (isset($fragment)) {
-            $fragment = '#'. $fragment;
+        elseif (get_query_var('p')) {
+          // when shortcode is inserted in post
+          $pageID = "{$separator}p=" . get_query_var('p');
         }
+      }
+    }
 
-        if ( ! isset( $config->useFrameworkRelativeBase ) ) {
-            $base = parse_url( $config->userFrameworkBaseURL );
-            $config->useFrameworkRelativeBase = $base['path'];
+    if (isset($fragment)) {
+      $fragment = '#' . $fragment;
+    }
+
+    if (!isset($config->useFrameworkRelativeBase)) {
+      $base = parse_url($config->userFrameworkBaseURL);
+      $config->useFrameworkRelativeBase = $base['path'];
+    }
+
+    $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
+
+    if (is_admin() && !$frontend) {
+      $base .= 'wp-admin/admin.php';
+    }
+    elseif (defined('CIVICRM_UF_WP_BASEPAGE')) {
+      $base .= CIVICRM_UF_WP_BASEPAGE;
+    }
+
+    if (isset($path)) {
+      if (isset($query)) {
+        if ($permlinkStructure != '' && ($pageID || $script != '')) {
+          return $script . '?page=CiviCRM&q=' . $path . $pageID . $separator . $query . $fragment;
         }
-        $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
-        $base = 'http://wp/wp-admin/admin.php';
-        $script = '';
-        $separator = $htmlize ? '&amp;' : '&';
-
-        if (! $config->cleanURL ) {
-            if ( isset( $path ) ) {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?page=CiviCRM&q=' . $path . $separator . $query . $fragment;
-                } else {
-                    return $base . $script .'?page=CiviCRM&q=' . $path . $fragment;
-                }
-            } else {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?'. $query . $fragment;
-                } else {
-                    return $base . $fragment;
-                }
-            }
-        } else {
-            if ( isset( $path ) ) {
-                if ( isset( $query ) ) {
-                    return $base . $path .'?'. $query . $fragment;
-                } else {
-                    return $base . $path . $fragment;
-                }
-            } else {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?'. $query . $fragment;
-                } else {
-                    return $base . $fragment;
-                }
-            }
+        else {
+          return $base . '?page=CiviCRM&q=' . $path . $pageID . $separator . $query . $fragment;
         }
-    }
-
-    /**
-     * Authenticate the user against the drupal db
-     *
-     * @param string $name     the user name
-     * @param string $password the password for the above user name
-     *
-     * @return mixed false if no auth
-     *               array( contactID, ufID, unique string ) if success
-     * @access public
-     * @static
-     */
-    static function authenticate( $name, $password ) {
-        require_once 'DB.php';
-
-        $config = CRM_Core_Config::singleton( );
-        
-        $dbDrupal = DB::connect( $config->userFrameworkDSN );
-        if ( DB::isError( $dbDrupal ) ) {
-            CRM_Core_Error::fatal( "Cannot connect to drupal db via $config->userFrameworkDSN, " . $dbDrupal->getMessage( ) ); 
-        }                                                      
-
-        $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
-        $password  = md5( $password );
-        $name      = $dbDrupal->escapeSimple( $strtolower( $name ) );
-        $sql = 'SELECT u.* FROM ' . $config->userFrameworkUsersTableName .
-            " u WHERE LOWER(u.name) = '$name' AND u.pass = '$password' AND u.status = 1";
-        $query = $dbDrupal->query( $sql );
-
-        $user = null;
-        // need to change this to make sure we matched only one row
-        require_once 'CRM/Core/BAO/UFMatch.php';
-        while ( $row = $query->fetchRow( DB_FETCHMODE_ASSOC ) ) { 
-            CRM_Core_BAO_UFMatch::synchronizeUFMatch( $user, $row['uid'], $row['mail'], 'Drupal' );
-            $contactID = CRM_Core_BAO_UFMatch::getContactId( $row['uid'] );
-            if ( ! $contactID ) {
-                return false;
-            }
-            return array( $contactID, $row['uid'], mt_rand() );
+      }
+      else {
+        if ($permlinkStructure != '' && ($pageID || $script != '')) {
+          return $script . '?page=CiviCRM&q=' . $path . $pageID . $fragment;
         }
-        return false;
-    }
-
-    /**   
-     * Set a message in the UF to display to a user 
-     *   
-     * @param string $message the message to set 
-     *   
-     * @access public   
-     * @static   
-     */   
-    static function setMessage( $message ) {
-    }
-
-    static function permissionDenied( ) {
-    }
-
-    static function logout( ) {
-    }
-
-    static function updateCategories( ) {
-    }
-
-    /**
-     * Get the locale set in the hosting CMS
-     * @return string  with the locale or null for none
-     */
-    static function getUFLocale()
-    {
-        return null;
-    }
-
-    /**
-     * load drupal bootstrap
-     *
-     * @param $name string  optional username for login
-     * @param $pass string  optional password for login
-     */
-    static function loadBootStrap($name = null, $pass = null)
-    {
-    }
-    
-    static function cmsRootPath( ) 
-    {
-        $cmsRoot  = $valid = null;
-        $pathVars = explode( '/', str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ) );
-        
-        //might be windows installation.
-        $firstVar = array_shift( $pathVars );
-        if ( $firstVar ) $cmsRoot = $firstVar;
-        
-        //start w/ csm dir search.
-        foreach ( $pathVars as $var ) {
-            $cmsRoot .= "/$var";
-            $cmsIncludePath = "$cmsRoot/wp-includes";
-            //stop as we found bootstrap.
-            if ( @opendir( $cmsIncludePath ) && 
-                 file_exists( "$cmsIncludePath/version.php" ) ) { 
-                $valid = true;
-                break;
-            }
+        else {
+          return $base . '?page=CiviCRM&q=' . $path . $pageID . $fragment;
         }
-        
-        return ( $valid ) ? $cmsRoot : null; 
+      }
     }
-    
-    /**
-     * check is user logged in.
-     *
-     * @return boolean true/false.
-     */
-    public static function isUserLoggedIn( ) {
-        $isloggedIn = false;
-        if ( function_exists( 'user_is_logged_in' ) ) {
-            $isloggedIn = user_is_logged_in( );
+    else {
+      if (isset($query)) {
+        if ($permlinkStructure != '' && ($pageID || $script != '')) {
+          return $script . '?' . $query . $pageID . $fragment;
         }
-        
-        return $isloggedIn;
-    }
-    
-    /**
-     * Get currently logged in user uf id.
-     *
-     * @return int $userID logged in user uf id.
-     */
-    public static function getLoggedInUfID( ) {
-        $ufID = null;
-        if ( function_exists( 'user_is_logged_in' ) && 
-             user_is_logged_in( ) && 
-             function_exists( 'user_uid_optional_to_arg' ) ) {
-            $ufID = user_uid_optional_to_arg( array( ) );
+        else {
+          return $base . $script . '?' . $query . $pageID . $fragment;
         }
-        
-        return $ufID;
+      }
+      else {
+        return $base . $fragment;
+      }
     }
-    
+  }
+
+  /**
+   * Authenticate the user against the wordpress db
+   *
+   * @param string $name     the user name
+   * @param string $password the password for the above user name
+   *
+   * @return mixed false if no auth
+   *               array(
+      contactID, ufID, unique string ) if success
+   * @access public
+   * @static
+   */
+  function authenticate($name, $password, $loadCMSBootstrap = FALSE, $realPath = NULL) {
+    $config = CRM_Core_Config::singleton();
+
+    if ($loadCMSBootstrap) {
+      self::loadBootstrap($name, $password);
+    }
+
+    $user = wp_authenticate($name, $password);
+    if (is_a($user, 'WP_Error')) {
+      return FALSE;
+    }
+
+    // need to change this to make sure we matched only one row
+
+    CRM_Core_BAO_UFMatch::synchronizeUFMatch($user->data, $user->data->ID, $user->data->user_email, 'WordPress');
+    $contactID = CRM_Core_BAO_UFMatch::getContactId($user->data->ID);
+    if (!$contactID) {
+      return FALSE;
+    }
+    return array($contactID, $user->data->ID, mt_rand());
+  }
+
+  /**
+   * Set a message in the UF to display to a user
+   *
+   * @param string $message the message to set
+   *
+   * @access public
+   * @static
+   */
+  function setMessage($message) {
+  }
+
+  function loadUser( $user ) {
+    return true;
+  }
+
+  function permissionDenied() {
+    CRM_Core_Error::fatal(ts('You do not have permission to access this page'));
+  }
+
+  function logout() {
+    // destroy session
+    if (session_id()) {
+      session_destroy();
+    }
+    wp_logout();
+    wp_redirect(wp_login_url());
+  }
+
+  function updateCategories() {}
+
+  /**
+   * Get the locale set in the hosting CMS
+   *
+   * @return string  with the locale or null for none
+   */
+  function getUFLocale() {
+    return NULL;
+  }
+
+  /**
+   * load wordpress bootstrap
+   *
+   * @param $name string  optional username for login
+   * @param $pass string  optional password for login
+   */
+  function loadBootStrap($name = NULL, $pass = NULL) {
+    global $wp, $wp_rewrite, $wp_the_query, $wp_query, $wpdb;
+
+    $cmsRootPath = $this->cmsRootPath();
+    if (!$cmsRootPath) {
+      CRM_Core_Error::fatal("Could not find the install directory for WordPress");
+    }
+
+    require_once ($cmsRootPath . DIRECTORY_SEPARATOR . 'wp-load.php');
+    return true;
+  }
+
+  function cmsRootPath() {
+    $cmsRoot = $valid = NULL;
+    $pathVars = explode('/', str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']));
+
+    //might be windows installation.
+    $firstVar = array_shift($pathVars);
+    if ($firstVar) {
+      $cmsRoot = $firstVar;
+    }
+
+    //start w/ csm dir search.
+    foreach ($pathVars as $var) {
+      $cmsRoot .= "/$var";
+      $cmsIncludePath = "$cmsRoot/wp-includes";
+      //stop as we found bootstrap.
+      if (@opendir($cmsIncludePath) &&
+        file_exists("$cmsIncludePath/version.php")
+      ) {
+        $valid = TRUE;
+        break;
+      }
+    }
+
+    return ($valid) ? $cmsRoot : NULL;
+  }
+
+  function createUser(&$params, $mail) {
+    $user_data = array(
+      'ID' => '',
+      'user_pass' => $params['cms_pass'],
+      'user_login' => $params['cms_name'],
+      'user_email' => $params[$mail],
+      'nickname' => $params['cms_name'],
+      'role' => get_option('default_role'),
+    );
+    if (isset($params['contactID'])) {
+      $contactType = CRM_Contact_BAO_Contact::getContactType($params['contactID']);
+      if ($contactType == 'Individual') {
+        $user_data['first_name'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+          $params['contactID'], 'first_name'
+        );
+        $user_data['last_name'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+          $params['contactID'], 'last_name'
+        );
+      }
+    }
+
+    $uid = wp_insert_user($user_data);
+
+    $creds = array();
+    $creds['user_login'] = $params['cms_name'];
+    $creds['user_password'] = $params['cms_pass'];
+    $creds['remember'] = TRUE;
+    $user = wp_signon($creds, FALSE);
+
+    wp_new_user_notification($uid, $user_data['user_pass']);
+    return $uid;
+  }
+
+  /*
+   * Change user name in host CMS
+   *
+   * @param integer $ufID User ID in CMS
+   * @param string $ufName User name
+   */
+  function updateCMSName($ufID, $ufName) {
+    // CRM-10620
+    if (function_exists('wp_update_user')) {
+      $ufID   = CRM_Utils_Type::escape($ufID, 'Integer');
+      $ufName = CRM_Utils_Type::escape($ufName, 'String');
+
+      $values = array ('ID' => $ufID, 'user_email' => $ufName);
+      if( $ufID ) {
+        wp_update_user( $values ) ;
+      }
+    }
+  }
+
+  function checkUserNameEmailExists(&$params, &$errors, $emailName = 'email') {
+    $config = CRM_Core_Config::singleton();
+
+    $dao   = new CRM_Core_DAO();
+    $name  = $dao->escape(CRM_Utils_Array::value('name', $params));
+    $email = $dao->escape(CRM_Utils_Array::value('mail', $params));
+
+    if (CRM_Utils_Array::value('name', $params)) {
+      if (!validate_username($params['name'])) {
+        $errors['cms_name'] = ts("Your username contains invalid characters");
+      }
+      elseif (username_exists(sanitize_user($params['name']))) {
+        $errors['cms_name'] = ts('The username %1 is already taken. Please select another username.', array(1 => $params['name']));
+      }
+    }
+
+    if (CRM_Utils_Array::value('mail', $params)) {
+      if (!is_email($params['mail'])) {
+        $errors[$emailName] = "Your email is invaid";
+      }
+      elseif (email_exists($params['mail'])) {
+        $errors[$emailName] = ts('This email %1 is already registered. Please select another email.',
+          array(1 => $params['mail'])
+        );
+      }
+    }
+  }
+
+  /**
+   * check is user logged in.
+   *
+   * @return boolean true/false.
+   */
+  public function isUserLoggedIn() {
+    $isloggedIn = FALSE;
+    if (function_exists('is_user_logged_in')) {
+      $isloggedIn = is_user_logged_in();
+    }
+
+    return $isloggedIn;
+  }
+
+  /**
+   * Get currently logged in user uf id.
+   *
+   * @return int $userID logged in user uf id.
+   */
+  public function getLoggedInUfID() {
+    $ufID = NULL;
+    if (function_exists('is_user_logged_in') &&
+      is_user_logged_in()
+    ) {
+      global $current_user;
+      $ufID = $current_user->ID;
+    }
+    return $ufID;
+  }
 }
+

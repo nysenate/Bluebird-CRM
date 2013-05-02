@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
  * Copyright (C) 2009 James Rakich
  * Licensed to CiviCRM under the Academic Free License version 3.0.
@@ -38,6 +39,7 @@
  * Field handler to provide simple renderer that allows linking to various pages involving the participant.
  */
 class civicrm_handler_field_link_participant extends views_handler_field {
+
   /**
    * Constructor to provide additional field to add.
    */
@@ -56,10 +58,9 @@ class civicrm_handler_field_link_participant extends views_handler_field {
     $options = parent::option_definition();
     $options['link_to_civicrm_participant'] = array('default' => 'view');
     $options['custom_link'] = array('default' => '');
-    $options['link_text'] = array('default' => '');
+    $options['link_text'] = array('default' => 'View Participant');
     return $options;
   }
-
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -67,86 +68,84 @@ class civicrm_handler_field_link_participant extends views_handler_field {
       '#type' => 'select',
       '#title' => t('Choose where to link this field'),
       '#options' => array(
-         'view' => t('Link to View Participant'),
-         'edit' => t('Link to Edit Participant'),
-         'delete' => t('Link to Delete Participant'),
-         'custom' => t('Link to a Custom Node'),
-         ),
+        'view' => t('Link to View Participant'),
+        'edit' => t('Link to Edit Participant'),
+        'delete' => t('Link to Delete Participant'),
+        'custom' => t('Link to a Custom Node'),
+      ),
       '#default_value' => !empty($this->options['link_to_civicrm_participant']),
     );
-    
-    $form['custom_link'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Custom Link to a Drupal Node'),
-       '#description' => t('Link to a Drupal Node or View, from the base path. The Participant ID will be appended to the end of the link.'),
-       '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
-       '#dependency' => array('link_to_civicrm_participant' => array('custom')),
-     );
-     
-     $form['link_text'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Links Text'),
-       '#description' => t('The text that will display in the field with the link.'),
-       '#default_value' => isset($this->options['link_text']) ? $this->options['link_text'] : '',
-     );
 
+    $form['custom_link'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Custom Link to a Drupal Node'),
+      '#description' => t('Link to a Drupal Node or View, from the base path. The Participant ID will be appended to the end of the link.'),
+      '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
+      '#dependency' => array('link_to_civicrm_participant' => array('custom')),
+    );
+
+    $form['link_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Links Text'),
+      '#description' => t('The text that will display in the field with the link.'),
+      '#default_value' => isset($this->options['link_text']) ? $this->options['link_text'] : '',
+    );
   }
 
-
   function render_link($data, $values) {
-    
+
     $link_text = $this->options['link_text'];
     $link_choice = $this->options['link_to_civicrm_participant'];
-    
+
     if ($link_choice == 'custom') {
-       $custom_link = $this->options['custom_link'];
-     }
+      $custom_link = $this->options['custom_link'];
+    }
 
 
     switch ($link_choice) {
-      
-    // LINKING TO PARTICIPANT VIEW PAGE
+
+      // LINKING TO PARTICIPANT VIEW PAGE
+
       case 'view':
-           if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/participant',
-                                            "reset=1&id={$values->id}&cid={$values->civicrm_participant_contact_id}&action=view&context=search&selectedChild=event" );
-           }
+        if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/participant',
+            "reset=1&id={$values->id}&cid={$values->civicrm_participant_contact_id}&action=view&context=search&selectedChild=event"
+          );
+        }
 
-    // LINKING TO PARTICIPANT EDIT PAGE
+        // LINKING TO PARTICIPANT EDIT PAGE
       case 'edit':
-           if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/participant',
-                                            "reset=1&action=update&id={$values->id}&cid={$values->civicrm_participant_contact_id}&context=search" );
-           }
+        if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/participant',
+            "reset=1&action=update&id={$values->id}&cid={$values->civicrm_participant_contact_id}&context=search"
+          );
+        }
 
-    // LINKING TO PARTICIPANT DELETE PAGE
+        // LINKING TO PARTICIPANT DELETE PAGE
       case 'delete':
-           if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/participant',
-                                            "reset=1&action=delete&id={$values->id}&cid={$values->civicrm_participant_contact_id}&context=search" );
-           }
-           
-    // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
+        if (user_access('edit event participants') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/participant',
+            "reset=1&action=delete&id={$values->id}&cid={$values->civicrm_participant_contact_id}&context=search"
+          );
+        }
+
+        // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
       case 'custom':
-           if ($custom_link !== NULL && $custom_link !== '' && $link_text !== NULL && $link_text !== '') {
-           return l($link_text, $custom_link . "{$values->id}" );
-           }
-    
-    // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE TEXT
+        if ($custom_link !== NULL && $custom_link !== '' && $link_text !== NULL && $link_text !== '') {
+          return l($link_text, $custom_link . "{$values->id}");
+        }
+
+        // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE TEXT
       default:
-              return $link_text;
-
-
-
+        return $link_text;
     }
   }
-  
-
 
   function render($values) {
     return $this->render_link(check_plain($values->{$this->field_alias}), $values);
   }
 }
+

@@ -12,7 +12,7 @@
   </item>
   <item>
      <path>civicrm/member/add</path>
-     <title>New Member</title>
+     <title>New Membership</title>
      <page_callback>CRM_Member_Page_Tab</page_callback>
      <path_arguments>action=add</path_arguments>
      <access_arguments>access CiviMember</access_arguments>
@@ -37,6 +37,15 @@
      <weight>380</weight>
   </item>
   <item>
+     <path>civicrm/admin/setting/preferences/member</path>
+     <title>CiviMember Component Settings</title>
+     <page_callback>CRM_Admin_Form_Preferences_Member</page_callback>
+     <desc>Configure global CiviMember behaviors.</desc>
+     <access_arguments>access CiviMember,administer CiviCRM</access_arguments>
+     <adminGroup>CiviMember</adminGroup>
+     <weight>390</weight>
+  </item>
+  <item>
      <path>civicrm/contact/view/membership</path>
      <path_arguments>force=1,cid=%%cid%%</path_arguments>
      <title>Memberships</title>
@@ -52,7 +61,7 @@
   </item>
   <item>
      <path>civicrm/member/search</path>
-     <title>Find Members</title>
+     <title>Find Memberships</title>
      <page_callback>CRM_Member_Controller_Search</page_callback>
      <access_arguments>access CiviMember</access_arguments>
      <page_type>1</page_type>

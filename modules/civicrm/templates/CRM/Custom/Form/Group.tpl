@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -91,7 +91,7 @@ showHideStyle( );
 var  isGroupEmpty = "{/literal}{$isGroupEmpty}{literal}";
 
 if ( isGroupEmpty ) {
-     showRange();
+     showRange( true );
 }	
 
 function showHideStyle()
@@ -132,14 +132,16 @@ function showHideStyle()
     }
 }
 
-function showRange()
+function showRange( onFormLoad )
 {
     if( cj("#is_multiple :checked").length ) {
         cj("tr#multiple").show();
         cj("select#style option[value='Tab']").attr("selected", "selected");
     } else { 
         cj("tr#multiple").hide();
-        cj("select#style option[value='Inline']").attr("selected", "selected");
+        if ( !onFormLoad ) {
+            cj("select#style option[value='Inline']").attr("selected", "selected");
+        }
     } 
 }
 
@@ -152,6 +154,24 @@ if ( subtypes ) {
      } else {
           subtypes.style.display = 'inline';
      }
+}
+
+function warnDataLoss( )
+{
+   var submittedSubtypes = cj('#extends\\[1\\]').val();
+   var defaultSubtypes   = {/literal}{$defaultSubtypes}{literal};
+
+   var warning = false;
+   cj.each(defaultSubtypes, function(index, subtype) {
+      if ( cj.inArray(subtype, submittedSubtypes) < 0 ) {
+         warning = true;
+      }
+   });
+
+   if ( warning ) {
+      return confirm( 'One or more subtypes has been un-selected from the list. Any custom data associated with un-selected subtype would be removed. Click OK to proceed.' );
+   }
+   return true;
 }
 </script>
 {/literal}

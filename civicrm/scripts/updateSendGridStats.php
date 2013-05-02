@@ -1,7 +1,7 @@
 <?php
 
 require_once 'script_utils.php';
-
+require_once 'accumulatorEvents.inc.php';
 // Bootstrap the script from the command line
 $prog = basename(__FILE__);
 $shortOpts   = 'm:l:acosdrbnfp';
@@ -18,24 +18,6 @@ require_once 'CRM/Core/Config.php';
 require_once 'CRM/Core/DAO.php';
 $config = CRM_Core_Config::singleton();
 $bbconfig = get_bluebird_instance_config();
-
-// Store the run parameters in a map for easy looping and clean DRY code.
-// Key is the table name of the event in the accumulator
-// Value is the function accepting ($events, $optList, $bbconfig) where
-// events is an array of at least one array of event parameters
-// To disable an event from processing, just change the value. This should be
-// configurable in the future in one of a few different ways.
-$event_map = array(
-    'bounce' => 'process_bounce_events',
-    'click' => 'process_click_events',
-    'deferred' => 'process_deferred_events',
-    'delivered' => 'process_delivered_events',
-    'dropped' => 'process_dropped_events',
-    'open' => 'process_open_events',
-    'processed' => 'process_processed_events',
-    'spamreport' => 'process_spamreport_events',
-    'unsubscribe' => 'process_unsubscribe_events'
-);
 
 // Allow filtering of the events to be processed on the commandline
 if (!array_get('all', $optList, FALSE)) {
@@ -67,7 +49,7 @@ global $messages;
 $messages = array();
 
 // process all th event_types one by one
-log_("[NOTICE] Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.");
+log_("Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.", 'INFO' );
 $total_events = 0;
 $total_events_processed = 0;
 foreach ($event_map as $event_type => $callback) {
@@ -83,7 +65,7 @@ foreach ($event_map as $event_type => $callback) {
 
     $event_count = mysql_num_rows($result);
     $total_events += $event_count;
-    log_("[NOTICE]   Processing ".$event_count." {$event_type} events.");
+    log_("Processing ".$event_count." {$event_type} events.", 'INFO');
 
     $batch = array();
     $errors = array();
@@ -92,7 +74,7 @@ foreach ($event_map as $event_type => $callback) {
         if( $row = mysql_fetch_assoc($result) ) {
             if (! $queue = get_queue_event($row)) {
                 // Log this as a failure! TODO: Mark as failure for archival as well.
-                log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
+                log_("Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}",'ERROR');
                 $errors[$row['event_id']] = array($row, array());
                 continue;
             }
@@ -118,17 +100,17 @@ foreach ($event_map as $event_type => $callback) {
             $failed += $errors;
 
             if (!empty($failed) && count($failed)) {
-                log_("[ERROR]      ".count($failed)." events failed processing.");
+                log_(count($failed)." events failed processing.", 'ERROR');
                 archive_events($failed, "FAILED", $optList, $bbconfig);
             }
 
             if (count($archived)) {
-                log_("[NOTICE]      ".count($archived)." events were archived.");
+                log_(count($archived)." events were archived.", "INFO");
                 archive_events($archived, "ARCHIVED", $optList, $bbconfig);
             }
 
             if (count($skipped)) {
-                log_("[NOTICE]      ".count($skipped)." events were skipped.");
+                log_(count($skipped)." events were skipped.", 'INFO');
                 archive_events($skipped, "SKIPPED", $optList, $bbconfig);
             }
 
@@ -139,39 +121,10 @@ foreach ($event_map as $event_type => $callback) {
 
     }
 }
-log_("[NOTICE] Processed $total_events events.");
+log_("Processed $total_events events.", 'INFO');
 
 $result = exec_query("SELECT * FROM incoming WHERE IFNULL(servername, '')=''", $conn);
-$count = mysql_num_rows($result);
-if ($count != 0) {
-    $orphans = array();
-    while($row = mysql_fetch_assoc($result)) {
-        $orphans[$row['event_id']] = array($row,array());
-    }
-    archive_events($orphans,'FAILED', $optList, $bbconfig);
-    log_("[NOTICE] Processed $count orphaned events (no servername).");
-}
-
-function archive_events($events, $result, $optList, $bbconfig) {
-    global $instance_id, $messages, $conn;
-    $archive = array();
-    $instance_id = "returnInstance('{$bbconfig['install_class']}','{$bbconfig['servername']}','{$bbconfig['shortname']}')";
-    foreach ($events as $event_id => $pair) {
-        list($event, $queue_event) = array_values($pair);
-        $mailing_id = $event['mailing_id'];
-        $category = mysql_real_escape_string($event['category'], $conn);
-        $message_id = "returnMessage($instance_id, $mailing_id, '$category')";
-        $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '{$result}', '{$event['email']}', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
-    }
-
-    // Do the transaction
-    exec_query("BEGIN", $conn);
-    exec_query("DELETE FROM incoming WHERE event_id IN (".implode(',',array_keys($events)).");", $conn);
-    exec_query("INSERT INTO archive
-                    (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
-                VALUES ".implode(',',$archive), $conn);
-    exec_query("COMMIT", $conn);
-}
+archive_orphaned_events($result, 'no servername');
 
 function process_delivered_events($events, $opts, $bbcfg) {
     /* Requires the following table to be created....
@@ -215,7 +168,7 @@ function process_open_events($events, $opts, $bbcfg) {
         }
         else {
             $errors[$event_id] = $pair;
-            log_("[ERROR]      Failed to process open event id '$event_id'");
+            log_("Failed to process open event id '$event_id'", 'ERROR');
         }
     }
     return array($successes, array(), $errors);
@@ -272,7 +225,7 @@ function process_bounce_events($events, $opts, $bbcfg) {
             $successes[$event_id] = $pair;
         else {
             $errors[$event_id] = $pair;
-            log_("[ERROR]      Failed to process bounce event id '$event_id'");
+            log_("Failed to process bounce event id '$event_id'", 'ERROR');
         }
     }
     return array($successes, array(), $errors);
@@ -296,7 +249,7 @@ function process_unsubscribe_events($events, $opts, $bbcfg) {
             $successes[$event_id] = $pair;
         else {
             $errors[$event_id] = $pair;
-            log_("[ERROR]      Failed to process unsubscribe/spamreport event id $event_id");
+            log_("Failed to process unsubscribe/spamreport event id $event_id", 'ERROR');
         }
     }
     return array($successes, array(), $errors);
@@ -350,7 +303,7 @@ function process_dropped_events($events, $opts, $bbcfg) {
                 break;
             default:
                 $errors[$event_id] = $event;
-                log_("[ERROR]      Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
+                log_("Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}",'ERROR');
         }
     }
 
@@ -372,52 +325,5 @@ function get_queue_event($event) {
 }
 
 
-function get_accumulator_connection($bbcfg) {
-    $host = array_get('accumulator.db.host', $bbcfg);
-    $port = array_get('accumulator.db.port', $bbcfg);
-    $name = array_get('accumulator.db.name', $bbcfg);
-    $user = array_get('accumulator.db.user', $bbcfg);
-    $pass = array_get('accumulator.db.pass', $bbcfg);
-
-    if (!$host || !$name || !$user || !$pass) {
-        log_("[ERROR] Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required");
-        exit(1);
-    }
-
-    $full_host = ($port) ? $host.':'.$port : $host;
-
-    $conn = mysql_connect($full_host, $user, $pass);
-    if ($conn === FALSE) {
-        log_("[ERROR] Could not connect to mysql://$user:$pass@$full_host: ".mysql_error());
-        exit(1);
-    }
-
-    if (!mysql_select_db($name, $conn)) {
-        log_("[ERROR] Could not use '$name': ".mysql_error($conn));
-        exit(1);
-    }
-
-    return $conn;
-}
-
-
-/* Maybe these should get thown into the script_utils file at some point. */
-function array_get($key, $source, $default='') {
-    return isset($source[$key]) ? $source[$key] : $default;
-}
-
-
-function exec_query($sql, $conn) {
-    if (($result = mysql_query($sql, $conn)) === FALSE) {
-        log_("[ERROR] Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
-        exit(1);
-    }
-    return $result;
-}
-
-
-function log_($message) {
-    echo date('Y-m-d H:i:s')." $message\n";
-}
 
 ?>

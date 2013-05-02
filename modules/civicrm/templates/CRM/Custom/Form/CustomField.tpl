@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,7 +58,7 @@
                             {/if}
                         {/foreach}
                         {if $element.html_type eq 'Radio'}
-                            <td><span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span></td>
+                            <td><span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}Clear{/ts} {$form.$element_name.label|@strip_tags} </a>)</span></td>
                         {/if}
                     </tr>
                 </table>
@@ -76,7 +76,7 @@
                 {/if}
                 
                 {if $element.html_type eq 'Radio'}
-                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span> 
+                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;" >{ts}Clear{/ts}{$form.$element_name.label|@strip_tags}</a>)</span>
                 {elseif $element.data_type eq 'File'}
                     {if $element.element_value.data}
                         <span class="html-adjust"><br />
@@ -93,7 +93,11 @@
                         </span>  
                     {/if} 
                 {elseif $element.html_type eq 'Autocomplete-Select'}
+                  {if $element.data_type eq 'ContactReference'}
+                    {include file="CRM/Custom/Form/ContactReference.tpl"}
+                  {else}
                     {include file="CRM/Custom/Form/AutoComplete.tpl"}
+                  {/if}
                 {/if}
             </td>
         </tr>

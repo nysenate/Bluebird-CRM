@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,33 +28,34 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+function run() {
+  session_start();
 
-function run( ) {
-    session_start( );
+  if (!array_key_exists('file', $_GET) ||
+    empty($_GET['file'])
+  ) {
+    echo "Please send an input file to import<p>";
+    exit();
+  }
 
-    if ( ! array_key_exists( 'file', $_GET ) ||
-         empty( $_GET['file'] ) ) {
-        echo "Please send an input file to import<p>";
-        exit( );
-    }
+  require_once '../../civicrm.config.php';
+  require_once 'CRM/Core/Config.php';
+  $config = CRM_Core_Config::singleton();
 
-    require_once '../../civicrm.config.php';
-    require_once 'CRM/Core/Config.php'; 
-    $config = CRM_Core_Config::singleton( );
+  // this does not return on failure
+  CRM_Utils_System::authenticateScript(TRUE);
 
-    // this does not return on failure
-    CRM_Utils_System::authenticateScript( true );
+  require_once 'CRM/Utils/Migrate/Import.php';
+  $import = new CRM_Utils_Migrate_Import();
 
-    require_once 'CRM/Utils/Migrate/Import.php';
-    $import = new CRM_Utils_Migrate_Import( );
+  $import->run($_GET['file']);
 
-    $import->run( $_GET['file'] );
-
-    echo "Import Done!";
+  echo "Import Done!";
 }
 
-run( );
+run();
+

@@ -32,7 +32,12 @@
 {/htxt}
 
 {htxt id="id-participant-count"}
-{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event. For example, if this price field is for a table at a fundraiser which seats eight people, you would set Participant Count to 8.{/ts}
+    <p>{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event. For example, if this price field is for a table at a fundraiser which seats eight people, you would set Participant Count to 8.{/ts}</p>
+    <p>{ts}If you do not want this option to increment the participant count for the event you can still restrict how many times this particular option can be chosen.  Leave this field empty and enter a value in the adjacent Max Participants box.  For example, if you leave this empty and set the adjacent Max Participant = 20, only 20 registrants can choose this option before it becomes unavailable to online registrants.{/ts}</p>
+{/htxt}
+
+{htxt id="id-participant-max"}
+    {ts}If you want to limit the number of participants who can chose this option, enter that number here. This limit is separate from the maximum number of participants allowed to register for the event (you can set that number from Configure Event > Info and Settings). {/ts}
 {/htxt}
 
 {htxt id="id-visibility"}

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                               |
+ | CiviCRM version 4.2                                               |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,148 +28,137 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page/Basic.php';
-require_once 'CRM/Event/BAO/Event.php';
-
 /**
  * Page for displaying list of event templates.
  */
-class CRM_Admin_Page_EventTemplate extends CRM_Core_Page_Basic 
-{
-    /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
-    static $_links = null;
-    
-    /**
-     * Get BAO Name
-     *
-     * @return string Classname of BAO.
-     */
-    function getBAOName( ) 
-    {
-        return 'CRM_Event_BAO_Event';
-    }
-    
-    /**
-     * Get action Links
-     *
-     * @return array (reference) of action links
-     */
-    function &links( )
-    {
-        if ( ! ( self::$_links ) ) {
-            // helper variable for nicer formatting
-            self::$_links = array(
-                                  CRM_Core_Action::UPDATE  => array(
-                                                                    'name'  => ts('Edit'),
-                                                                    'url'   => 'civicrm/event/manage/eventInfo',
-                                                                    'qs'    => 'action=update&id=%%id%%&reset=1',
-                                                                    'title' => ts('Edit Event Template') 
-                                                                    ),
-                                  CRM_Core_Action::DELETE  => array(
-                                                                    'name'  => ts('Delete'),
-                                                                    'url'   => 'civicrm/event/manage',
-                                                                    'qs'    => 'action=delete&id=%%id%%',
-                                                                    'title' => ts('Delete Event Template') 
-                                                                    )
-                                  );
-        }
-        
-        return self::$_links;
-    }
-    
-    /**
-     * Browse all event templates.
-     * 
-     * @return void
-     * @access public
-     * @static
-     */
-    function browse( )
-    {
-        //get all event templates.
-        $allEventTemplates = array( );
-        
-        require_once 'CRM/Event/DAO/Event.php';
-        $eventTemplate = new CRM_Event_DAO_Event( );
-        
-        require_once 'CRM/Event/PseudoConstant.php';
-        $eventTypes          = CRM_Event_PseudoConstant::eventType( );
-        $participantRoles    = CRM_Event_PseudoConstant::participantRole( );
-        $participantListings = CRM_Event_PseudoConstant::participantListing( );
-        
-        //find all event templates.
-        $eventTemplate->is_template = true;
-        $eventTemplate->find( );
-        while ( $eventTemplate->fetch( ) ) {
-            CRM_Core_DAO::storeValues( $eventTemplate, $allEventTemplates[$eventTemplate->id]);
-            
-            //get listing types.
-            if ( $eventTemplate->participant_listing_id ) {
-                $allEventTemplates[$eventTemplate->id]['participant_listing'] = 
-                    $participantListings[$eventTemplate->participant_listing_id];
-            }
-            
-            //get participant role
-            if ( $eventTemplate->default_role_id ) {
-                $allEventTemplates[$eventTemplate->id]['participant_role'] = $participantRoles[$eventTemplate->default_role_id];
-            }
-            
-            //get event type.
-            $allEventTemplates[$eventTemplate->id]['event_type'] = $eventTypes[$eventTemplate->event_type_id];
-            
-            //form all action links
-            $action = array_sum( array_keys( $this->links( ) ) );
-            
-            //add action links.
-            $allEventTemplates[$eventTemplate->id]['action'] = CRM_Core_Action::formLink( self::links( ), $action, 
-                                                                                          array('id' => $eventTemplate->id ) );
-        }
-        $this->assign('rows', $allEventTemplates );
+class CRM_Admin_Page_EventTemplate extends CRM_Core_Page_Basic {
 
-        $session = CRM_Core_Session::singleton();
-        $session->pushUserContext( CRM_Utils_System::url( CRM_Utils_System::currentPath( ), 
-                                                          'reset=1&action=browse' ) );
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
+  static $_links = NULL;
+
+  /**
+   * Get BAO Name
+   *
+   * @return string Classname of BAO.
+   */
+  function getBAOName() {
+    return 'CRM_Event_BAO_Event';
+  }
+
+  /**
+   * Get action Links
+   *
+   * @return array (reference) of action links
+   */
+  function &links() {
+    if (!(self::$_links)) {
+      // helper variable for nicer formatting
+      self::$_links = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/event/manage/settings',
+          'qs' => 'action=update&id=%%id%%&reset=1',
+          'title' => ts('Edit Event Template'),
+        ),
+        CRM_Core_Action::DELETE => array(
+          'name' => ts('Delete'),
+          'url' => 'civicrm/event/manage',
+          'qs' => 'action=delete&id=%%id%%',
+          'title' => ts('Delete Event Template'),
+        ),
+      );
     }
-    
-    /**
-     * Get name of edit form
-     *
-     * @return string Classname of edit form.
-     */
-    function editForm( ) 
-    {
-        return 'CRM_Admin_Form_EventTemplate';
+
+    return self::$_links;
+  }
+
+  /**
+   * Browse all event templates.
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function browse() {
+    //get all event templates.
+    $allEventTemplates = array();
+
+    $eventTemplate = new CRM_Event_DAO_Event();
+
+    $eventTypes          = CRM_Event_PseudoConstant::eventType();
+    $participantRoles    = CRM_Event_PseudoConstant::participantRole();
+    $participantListings = CRM_Event_PseudoConstant::participantListing();
+
+    //find all event templates.
+    $eventTemplate->is_template = TRUE;
+    $eventTemplate->find();
+    while ($eventTemplate->fetch()) {
+      CRM_Core_DAO::storeValues($eventTemplate, $allEventTemplates[$eventTemplate->id]);
+
+      //get listing types.
+      if ($eventTemplate->participant_listing_id) {
+        $allEventTemplates[$eventTemplate->id]['participant_listing'] = $participantListings[$eventTemplate->participant_listing_id];
+      }
+
+      //get participant role
+      if ($eventTemplate->default_role_id) {
+        $allEventTemplates[$eventTemplate->id]['participant_role'] = $participantRoles[$eventTemplate->default_role_id];
+      }
+
+      //get event type.
+      $allEventTemplates[$eventTemplate->id]['event_type'] = $eventTypes[$eventTemplate->event_type_id];
+
+      //form all action links
+      $action = array_sum(array_keys($this->links()));
+
+      //add action links.
+      $allEventTemplates[$eventTemplate->id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
+        array('id' => $eventTemplate->id)
+      );
     }
-    
-    /**
-     * Get edit form name
-     *
-     * @return string name of this page.
-     */
-    function editName( ) 
-    {
-        return 'Event Templates';
-    }
-    
-    /**
-     * Get user context.
-     *
-     * @return string user context.
-     */
-    function userContext($mode = null) 
-    {
-        return 'civicrm/admin/eventTemplate';
-    }
+    $this->assign('rows', $allEventTemplates);
+
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url(CRM_Utils_System::currentPath(),
+        'reset=1&action=browse'
+      ));
+  }
+
+  /**
+   * Get name of edit form
+   *
+   * @return string Classname of edit form.
+   */
+  function editForm() {
+    return 'CRM_Admin_Form_EventTemplate';
+  }
+
+  /**
+   * Get edit form name
+   *
+   * @return string name of this page.
+   */
+  function editName() {
+    return 'Event Templates';
+  }
+
+  /**
+   * Get user context.
+   *
+   * @return string user context.
+   */
+  function userContext($mode = NULL) {
+    return 'civicrm/admin/eventTemplate';
+  }
 }
-
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@
                 {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
             </td>
             <td>
-                {if $form.component_mode}  
+                {if $form.component_mode}
                     {$form.component_mode.label} {help id="id-display-results"}
                     <br />
                     {$form.component_mode.html}
@@ -47,7 +47,14 @@
                     &nbsp;
                 {/if}
             </td>
-            <td class="label"><div class="crm-submit-buttons" style="margin-top:1em;">{$form.buttons.html}</div></td>       
+            <td class="labels" rowspan="2">
+                <div class="crm-submit-buttons">
+                    {include file="CRM/common/formButtons.tpl" location="top" buttonStyle="width:80px; text-align:center;"}
+                </div>
+                <div class="crm-submit-buttons reset-advanced-search">
+                    <a href="{crmURL p='civicrm/contact/search/advanced' q='reset=1'}" id="resetAdvancedSearch" class="button" style="width:70px; text-align:center;"><span>{ts}Reset Form{/ts}</span></a>
+                </div>
+            </td>
         </tr>
 		<tr>
 {if $form.contact_type}
@@ -89,9 +96,14 @@
 {else}
             <td>&nbsp;</td>
 {/if}
-
+            <td>{$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}</td>
+            <td>
+                {if $form.deleted_contacts}{$form.deleted_contacts.html} {$form.deleted_contacts.label}{else}&nbsp;{/if}
+            </td>
+    </tr>
+    <tr>
 {if $form.contact_tags}
-            <td><label>{ts}Tag(s){/ts}</label>
+            <td><label>{ts}Select Tag(s){/ts}</label>
                 {$form.contact_tags.html}
                 {literal}
                 <script type="text/javascript">
@@ -106,33 +118,43 @@
 
 
                 </script>
-                {/literal}   
+                {/literal}
             </td>
 {else}
             <td>&nbsp;</td>
 {/if}
-            <td colspan="2">{$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}</td>
-	    </tr>
+            <td colspan="4">{$form.tag_search.label}  {help id="id-all-tags"}<br />{$form.tag_search.html|crmReplace:class:huge}</td>
+        </tr>
         <tr>
-            <td>
-            {if $form.uf_user}
-                {$form.uf_user.label} {$form.uf_user.html} <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('uf_user', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
-                <div class="description font-italic">
-                    {ts 1=$config->userFramework}Does the contact have a %1 Account?{/ts}
-                </div>
-            {else}
-                &nbsp;
-            {/if}
-            </td>
-            <td>
-                {$form.preferred_language.label}<br />
-                {$form.preferred_language.html|crmReplace:class:medium}
-            </td> 
+            <td colspan="5">{include file="CRM/common/Tag.tpl"}</td>
         </tr>
         <tr>
             <td colspan="2">
-                {$form.privacy.label}<br />
-                {$form.privacy.html} {help id="id-privacy"}
+                <table class="form-layout-compressed">
+                <tr>
+                    <td colspan="2">
+                        {$form.privacy_toggle.html} {help id="id-privacy"}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {$form.privacy_options.html}
+                    </td>
+                    <td>
+                        {$form.privacy_operator.html}
+                    </td>
+                </tr>
+                </table>
+                {literal}
+                  <script type="text/javascript">
+                    cj("select#privacy_options").crmasmSelect({
+                     addItemTarget: 'bottom',
+                     animate: false,
+                     highlight: true,
+                     sortable: true,
+                    });
+                  </script>
+                {/literal}
             </td>
             <td colspan="3">
                 {$form.preferred_communication_method.label}<br />
@@ -147,12 +169,32 @@
                 {$form.contact_source.html|crmReplace:class:medium}
             </td>
             <td>
+                {if $form.uf_user}
+                    {$form.uf_user.label} {$form.uf_user.html} <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('uf_user', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
+                    <div class="description font-italic">
+                        {ts 1=$config->userFramework}Does the contact have a %1 Account?{/ts}
+                    </div>
+                {else}
+                    &nbsp;
+                {/if}
+            </td>
+            <td>
                 {$form.job_title.label}<br />
                 {$form.job_title.html|crmReplace:class:medium}
             </td>
+        </tr>
+        <tr>
+             <td>
+                 {$form.id.label}<br />
+                 {$form.id.html|crmReplace:class:medium}
+             </td>
+             <td>
+                 {$form.external_identifier.label}<br />
+                 {$form.external_identifier.html|crmReplace:class:medium}
+             </td>
             <td colspan="3">
-                {if $form.deleted_contacts}<br />{$form.deleted_contacts.html} {$form.deleted_contacts.label}{else}&nbsp;{/if}
+                {$form.preferred_language.label}<br />
+                {$form.preferred_language.html|crmReplace:class:medium}
             </td>
         </tr>
-        <tr><td colspan="5">{include file="CRM/common/Tag.tpl"}</td></tr>
     </table>

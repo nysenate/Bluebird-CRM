@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
  * Heavily based on anonymous code contribution. No claim.
  *
@@ -34,6 +35,7 @@
  * Field handler to provide simple renderer that allows linking to an Event Page or it's Management Page.
  */
 class civicrm_handler_field_event_link extends views_handler_field {
+
   /**
    * Constructor to provide additional field to add.
    */
@@ -58,25 +60,23 @@ class civicrm_handler_field_event_link extends views_handler_field {
       '#type' => 'select',
       '#title' => t('Choose where to link this field'),
       '#options' => array(
-         'none' => t('Don\'t Link this Field'),
-         'page' => t('Link to Event Page'),
-         'registration' => t('Link to Event Registration'),
-         'config' => t('Link to Event Configuration'),
-         'participants' => t('Link to Event Participants'),
-         'custom' => t('Link to a Custom Node'),
-         ),
-
+        'none' => t('Don\'t Link this Field'),
+        'page' => t('Link to Event Page'),
+        'registration' => t('Link to Event Registration'),
+        'config' => t('Link to Event Configuration'),
+        'participants' => t('Link to Event Participants'),
+        'custom' => t('Link to a Custom Node'),
+      ),
       '#default_value' => !empty($this->options['link_to_civicrm_event']),
     );
-    
-    $form['custom_link'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Custom Link to a Drupal Node'),
-       '#description' => t('Link to a Drupal Node or View, from the base path. The Event ID will be appended to the end of the link.'),
-       '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
-       '#dependency' => array('link_to_civicrm_event' => array('custom')),
-     );
 
+    $form['custom_link'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Custom Link to a Drupal Node'),
+      '#description' => t('Link to a Drupal Node or View, from the base path. The Event ID will be appended to the end of the link.'),
+      '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
+      '#dependency' => array('link_to_civicrm_event' => array('custom')),
+    );
   }
 
   /**
@@ -85,60 +85,74 @@ class civicrm_handler_field_event_link extends views_handler_field {
    * Data should be made XSS safe prior to calling this function.
    */
   function render_link($data, $values) {
-    
+
     $link_choice = $this->options['link_to_civicrm_event'];
-    
+
+    $custom_link = NULL;
     if ($link_choice == 'custom') {
-       $custom_link = $this->options['custom_link'];
-     }
+      $custom_link = $this->options['custom_link'];
+    }
 
 
     switch ($link_choice) {
-      
-    // LINKING TO EVENT PAGE (PUBLICLY ACCESSIBLE)
+
+      // LINKING TO EVENT PAGE (PUBLICLY ACCESSIBLE)
+
       case 'page':
-           if (user_access('view event info') && $data !== NULL && $data !== '') {
-           return civicrm_views_href( $data,
-                                            'civicrm/event/info',
-                                            "reset=1&id={$values->{$this->aliases['id']}}" );
-           }
+        if (user_access('view event info') && $data !== NULL && $data !== '') {
+          return civicrm_views_href($data,
+            'civicrm/event/info',
+            "reset=1&id={$values->{$this->aliases['id']}}"
+          );
+        }
 
-    // LINKING TO EVENT REGISTRATION PAGE
+        // LINKING TO EVENT REGISTRATION PAGE
       case 'registration':
-           if (user_access('register for events') && $data !== NULL && $data !== '') {
-           return civicrm_views_href( $data,
-                                            'civicrm/event/register',
-                                            "reset=1&id={$values->{$this->aliases['id']}}" );
-           }
+        if (user_access('register for events') && $data !== NULL && $data !== '') {
+	     require_once 'CRM/Core/Config.php';
+          $config = CRM_Core_Config::singleton();
+          if ($enable_cart =
+            CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::EVENT_PREFERENCES_NAME, 'enable_cart')) {
+            require_once 'CRM/Event/Cart/BAO/EventInCart.php';
+            //TODO don't call for every row
+            $link = CRM_Event_Cart_BAO_EventInCart::get_registration_link($values->{$this->aliases['id']});
+            return civicrm_views_href($link['label'], $link['path'], $link['query']);
+          }
+          else {
+            return civicrm_views_href($data,
+              'civicrm/event/register',
+              "reset=1&id={$values->{$this->aliases['id']}}"
+            );
+          }
+        }
 
-    // LINKING TO EVENT CONFIG PAGE
+        // LINKING TO EVENT CONFIG PAGE
       case 'config':
-           if (user_access('access CiviEvent') && $data !== NULL && $data !== '') {
-           return civicrm_views_href( $data,
-                                            'civicrm/event/manage',
-                                            "action=update&id={$values->{$this->aliases['id']}}&reset=1" );
-           }
+        if (user_access('access CiviEvent') && $data !== NULL && $data !== '') {
+          return civicrm_views_href($data,
+            'civicrm/event/manage/eventInfo',
+            "action=update&id={$values->{$this->aliases['id']}}&reset=1"
+          );
+        }
 
-    // LINKING TO EVENT PARTICIPANTS LIST
+        // LINKING TO EVENT PARTICIPANTS LIST
       case 'participants':
-           if (user_access('access CiviEvent') && $data !== NULL && $data !== '') {
-           return civicrm_views_href( $data,
-                                            'civicrm/event/search',
-                                            "reset=1&force=1&event={$values->{$this->aliases['id']}}" );
-           }
-           
-    // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
+        if (user_access('access CiviEvent') && $data !== NULL && $data !== '') {
+          return civicrm_views_href($data,
+            'civicrm/event/search',
+            "reset=1&force=1&event={$values->{$this->aliases['id']}}"
+          );
+        }
+
+        // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
       case 'custom':
-           if ($custom_link !== NULL && $custom_link !== '' && $data !== NULL && $data !== '') {
-           return l($data, $custom_link . "{$values->{$this->aliases['id']}}", array('html' => TRUE));
-           }
-    
-    // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE DATA
+        if ($custom_link !== NULL && $custom_link !== '' && $data !== NULL && $data !== '') {
+          return l($data, $custom_link . "{$values->{$this->aliases['id']}}", array('html' => TRUE));
+        }
+
+        // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE DATA
       default:
-              return $data;
-
-
-
+        return $data;
     }
   }
 
@@ -146,3 +160,4 @@ class civicrm_handler_field_event_link extends views_handler_field {
     return $this->render_link(check_plain($values->{$this->field_alias}), $values);
   }
 }
+

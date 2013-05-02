@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,12 @@
 </div>
 
 {if $success}
+  <div id="thankyou_text" class="crm-section thankyou_text-section">
+  {if $thankyou_text}
+    {$thankyou_text}
+  {else}
     <p><div class="bold">{ts}Thank you for signing the petition.{/ts}</div></p>
-    {include file="CRM/Campaign/Page/Petition/SocialNetwork.tpl"}
+  {/if}
+  </div>
+  {include file="CRM/Campaign/Page/Petition/SocialNetwork.tpl"}
 {/if}

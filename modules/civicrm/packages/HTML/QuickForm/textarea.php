@@ -82,7 +82,7 @@ class HTML_QuickForm_textarea extends HTML_QuickForm_element
      */
     function setName($name)
     {
-        $this->_attributes['name']=$name;
+        $this->updateAttributes(array('name'=>$name));
     } //end func setName
     
     // }}}

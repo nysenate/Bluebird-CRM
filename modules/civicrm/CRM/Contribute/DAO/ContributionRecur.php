@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
     static $_links = null;
     /**
      * static instance to hold the values that can
-     * be imported / apu
+     * be imported
      *
      * @var array
      * @static
@@ -66,7 +66,7 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
     static $_import = null;
     /**
      * static instance to hold the values that can
-     * be exported / apu
+     * be exported
      *
      * @var array
      * @static
@@ -217,6 +217,30 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      */
     public $payment_processor_id;
     /**
+     * FK to Contribution Type
+     *
+     * @var int unsigned
+     */
+    public $contribution_type_id;
+    /**
+     * FK to Payment Instrument
+     *
+     * @var int unsigned
+     */
+    public $payment_instrument_id;
+    /**
+     * The campaign for which this contribution has been triggered.
+     *
+     * @var int unsigned
+     */
+    public $campaign_id;
+    /**
+     * if true, receipt is automatically emailed to contact on each successful payment
+     *
+     * @var boolean
+     */
+    public $is_email_receipt;
+    /**
      * class constructor
      *
      * @access public
@@ -224,6 +248,7 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      */
     function __construct()
     {
+        $this->__table = 'civicrm_contribution_recur';
         parent::__construct();
     }
     /**
@@ -232,12 +257,14 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &links()
+    function links()
     {
         if (!(self::$_links)) {
             self::$_links = array(
                 'contact_id' => 'civicrm_contact:id',
                 'payment_processor_id' => 'civicrm_payment_processor:id',
+                'contribution_type_id' => 'civicrm_contribution_type:id',
+                'campaign_id' => 'civicrm_campaign:id',
             );
         }
         return self::$_links;
@@ -248,7 +275,7 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &fields()
+    static function &fields()
     {
         if (!(self::$_fields)) {
             self::$_fields = array(
@@ -396,6 +423,37 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'FKClassName' => 'CRM_Core_DAO_PaymentProcessor',
                 ) ,
+                'contribution_type_id' => array(
+                    'name' => 'contribution_type_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Contribution Type') ,
+                    'export' => false,
+                    'where' => 'civicrm_contribution_recur.contribution_type_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'FKClassName' => 'CRM_Contribute_DAO_ContributionType',
+                ) ,
+                'payment_instrument_id' => array(
+                    'name' => 'payment_instrument_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Payment Instrument') ,
+                ) ,
+                'contribution_campaign_id' => array(
+                    'name' => 'campaign_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Campaign ID') ,
+                    'import' => true,
+                    'where' => 'civicrm_contribution_recur.campaign_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                    'FKClassName' => 'CRM_Campaign_DAO_Campaign',
+                ) ,
+                'is_email_receipt' => array(
+                    'name' => 'is_email_receipt',
+                    'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'default' => '',
+                ) ,
             );
         }
         return self::$_fields;
@@ -404,9 +462,10 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      * returns the names of this table
      *
      * @access public
+     * @static
      * @return string
      */
-    function getTableName()
+    static function getTableName()
     {
         return self::$_tableName;
     }
@@ -425,12 +484,13 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &import($prefix = false)
+    static function &import($prefix = false)
     {
         if (!(self::$_import)) {
             self::$_import = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('import', $field)) {
                     if ($prefix) {
@@ -448,12 +508,13 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &export($prefix = false)
+    static function &export($prefix = false)
     {
         if (!(self::$_export)) {
             self::$_export = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('export', $field)) {
                     if ($prefix) {

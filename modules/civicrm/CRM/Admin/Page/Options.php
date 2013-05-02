@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,242 +28,241 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page/Basic.php';
-
 /**
  * Page for displaying list of Gender
  */
-class CRM_Admin_Page_Options extends CRM_Core_Page_Basic 
-{
-    /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
-    static $_links = null;
+class CRM_Admin_Page_Options extends CRM_Core_Page_Basic {
 
-    /**
-     * The option group name
-     *
-     * @var array
-     * @static
-     */
-    static $_gName = null;
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
+  static $_links = NULL;
 
-    /**
-     * The option group name in display format (capitalized, without underscores...etc)
-     *
-     * @var array
-     * @static
-     */
-    static $_GName = null;
+  /**
+   * The option group name
+   *
+   * @var array
+   * @static
+   */
+  static $_gName = NULL;
 
-    /**
-     * The option group id
-     *
-     * @var array
-     * @static
-     */
-    static $_gId = null;
+  /**
+   * The option group name in display format (capitalized, without underscores...etc)
+   *
+   * @var array
+   * @static
+   */
+  static $_GName = NULL;
 
-    /**
-     * Obtains the group name from url and sets the title.
-     *
-     * @return void
-     * @access public
-     *
-     */
-    function preProcess( )
-    {
-        if ( ! self::$_gName ) {
-            self::$_gName = CRM_Utils_Request::retrieve('group','String', CRM_Core_DAO::$_nullObject,false,null,'GET');
-        }
-        if (self::$_gName) {
-            $this->set( 'gName', self::$_gName );
-        } else {
-            self::$_gName = $this->get( 'gName' );
-        }
-        if ( self::$_gName ) {
-            self::$_gId   = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionGroup', self::$_gName, 'id', 'name');
-        } else {
-            CRM_Core_Error::fatal( );
-        }
+  /**
+   * The option group id
+   *
+   * @var array
+   * @static
+   */
+  static $_gId = NULL;
 
-        self::$_GName = ucwords(str_replace('_', ' ', self::$_gName));
-
-        $this->assign('gName', self::$_gName);
-        $this->assign('GName', self::$_GName);
-
-        if ( self::$_gName == 'acl_role' ) {
-            CRM_Utils_System::setTitle(ts('Manage ACL Roles'));
-            // set breadcrumb to append to admin/access
-            $breadCrumb = array( array('title' => ts('Access Control'),
-                                       'url'   => CRM_Utils_System::url( 'civicrm/admin/access', 
-                                                                         'reset=1' )) );
-            CRM_Utils_System::appendBreadCrumb( $breadCrumb ); 
-        } else {
-            CRM_Utils_System::setTitle(ts("%1 Options", array(1 => self::$_GName)));
-        }
-        if ( in_array( self::$_gName, array('from_email_address', 'email_greeting', 'postal_greeting', 'addressee', 'case_status', 'encounter_medium') ) ) {
-            $this->assign( 'showIsDefault', true );
-        }
-        if ( self::$_gName == 'participant_status' ) {
-            $this->assign( 'showCounted', true );
-            $this->assign( 'showVisibility', true );
-        }
-
-        if ( self::$_gName == 'participant_role' ) {
-            $this->assign( 'showCounted', true );
-        }
-        require_once 'CRM/Core/Config.php';
-        $config = CRM_Core_Config::singleton( );
-        if ( in_array("CiviCase", $config->enableComponents) && self::$_gName == 'activity_type' ) {
-            $this->assign( 'showComponent', true );
-        }
-            
+  /**
+   * Obtains the group name from url and sets the title.
+   *
+   * @return void
+   * @access public
+   *
+   */
+  function preProcess() {
+    if (!self::$_gName) {
+      self::$_gName = CRM_Utils_Request::retrieve('group', 'String', CRM_Core_DAO::$_nullObject, FALSE, NULL, 'GET');
+    }
+    if (self::$_gName) {
+      $this->set('gName', self::$_gName);
+    }
+    else {
+      self::$_gName = $this->get('gName');
+    }
+    if (self::$_gName) {
+      self::$_gId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', self::$_gName, 'id', 'name');
+    }
+    else {
+      CRM_Core_Error::fatal();
     }
 
-    /**
-     * Get BAO Name
-     *
-     * @return string Classname of BAO.
-     */
-    function getBAOName() 
-    {
-        return 'CRM_Core_BAO_OptionValue';
+    self::$_GName = ucwords(str_replace('_', ' ', self::$_gName));
+
+    $this->assign('gName', self::$_gName);
+    $this->assign('GName', self::$_GName);
+
+    if (self::$_gName == 'acl_role') {
+      CRM_Utils_System::setTitle(ts('Manage ACL Roles'));
+      // set breadcrumb to append to admin/access
+      $breadCrumb = array(array('title' => ts('Access Control'),
+          'url' => CRM_Utils_System::url('civicrm/admin/access',
+            'reset=1'
+          ),
+        ));
+      CRM_Utils_System::appendBreadCrumb($breadCrumb);
+    }
+    else {
+      CRM_Utils_System::setTitle(ts("%1 Options", array(1 => self::$_GName)));
+    }
+    if (in_array(self::$_gName,
+        array(
+          'from_email_address', 'email_greeting',
+          'postal_greeting', 'addressee',
+          'case_status', 'encounter_medium',
+          'case_type',
+        )
+      )) {
+      $this->assign('showIsDefault', TRUE);
+    }
+    if (self::$_gName == 'participant_status') {
+      $this->assign('showCounted', TRUE);
+      $this->assign('showVisibility', TRUE);
     }
 
-    /**
-     * Get action Links
-     *
-     * @return array (reference) of action links
-     */
-    function &links()
-    {
-        if (!(self::$_links)) {
-            self::$_links = array(
-                                  CRM_Core_Action::UPDATE  => array(
-                                                                    'name'  => ts('Edit'),
-                                                                    'url'   => 'civicrm/admin/options/' . self::$_gName,
-                                                                    'qs'    => 'group=' . self::$_gName . '&action=update&id=%%id%%&reset=1',
-                                                                    'title' => ts('Edit %1', array(1 => self::$_gName))
-                                                                    ),
-                                  CRM_Core_Action::DISABLE => array(
-                                                                    'name'  => ts('Disable'),
-                                                                    'extra' => 'onclick = "enableDisable( %%id%%,\''. 'CRM_Core_BAO_OptionValue' . '\',\'' . 'enable-disable' . '\' );"',
-                                                                    'ref'   => 'disable-action',
-                                                                    'title' => ts('Disable %1', array(1 => self::$_gName))
-                                                                    ),
-                                  CRM_Core_Action::ENABLE  => array(
-                                                                    'name'  => ts('Enable'),
-                                                                    'extra' => 'onclick = "enableDisable( %%id%%,\''. 'CRM_Core_BAO_OptionValue' . '\',\'' . 'disable-enable' . '\' );"',
-                                                                    'ref'   => 'enable-action',
-                                                                    'title' => ts('Enable %1', array(1 => self::$_gName))
-                                                                    ),
-                                  CRM_Core_Action::DELETE  => array(
-                                                                    'name'  => ts('Delete'),
-                                                                    'url'   => 'civicrm/admin/options/' . self::$_gName,
-                                                                    'qs'    => 'group=' . self::$_gName . '&action=delete&id=%%id%%',
-                                                                    'title' => ts('Delete %1 Type', array(1 => self::$_gName) ),
-                                                                    ),
-                                  );
-            
-            if ( self::$_gName == 'custom_search' ) {
-                $runLink = array( CRM_Core_Action::FOLLOWUP => array(
-                                                                     'name'  => ts('Run'),
-                                                                     'url'   => 'civicrm/contact/search/custom',
-                                                                     'qs'    => 'reset=1&csid=%%value%%',
-                                                                     'title' => ts('Run %1', array(1 => self::$_gName) ),
-                                                                     ) );
-                self::$_links = $runLink + self::$_links;
-            }
-        }
-        return self::$_links;
+    if (self::$_gName == 'participant_role') {
+      $this->assign('showCounted', TRUE);
     }
+    $config = CRM_Core_Config::singleton();
+    if (self::$_gName == 'activity_type') {
+      $this->assign('showComponent', TRUE);
+    }
+  }
 
-    /**
-     * Run the basic page (run essentially starts execution for that page).
-     *
-     * @return void
-     */
-    function run()
-    {
-        $this->preProcess();
-        parent::run();
-    }
-    
-    /**
-     * Browse all options
-     *  
-     * 
-     * @return void
-     * @access public
-     * @static
-     */
-    function browse()
-    {
-        require_once 'CRM/Core/OptionValue.php';
-        
-        $groupParams = array( 'name' => self::$_gName );
-        $optionValue = CRM_Core_OptionValue::getRows($groupParams, $this->links(), 'component_id,weight');
-        $gName = self::$_gName;
-        $returnURL = CRM_Utils_System::url( "civicrm/admin/options/$gName",
-                                            "reset=1&group=$gName" );
-        $filter    = "option_group_id = " . self::$_gId;
-        require_once 'CRM/Utils/Weight.php';
-        CRM_Utils_Weight::addOrder( $optionValue, 'CRM_Core_DAO_OptionValue',
-                                    'id', $returnURL, $filter );
-        $this->assign('rows', $optionValue);
-    }
-    
-    /**
-     * Get name of edit form
-     *
-     * @return string Classname of edit form.
-     */
-    function editForm() 
-    {
-        return 'CRM_Admin_Form_Options';
-    }
-    
-    /**
-     * Get edit form name
-     *
-     * @return string name of this page.
-     */
-    function editName() 
-    {
-        return self::$_GName;
-    }
-    
-    /**
-     * Get user context.
-     *
-     * @return string user context.
-     */
-    function userContext($mode = null) 
-    {
-        return 'civicrm/admin/options/'.self::$_gName;
-    }
+  /**
+   * Get BAO Name
+   *
+   * @return string Classname of BAO.
+   */
+  function getBAOName() {
+    return 'CRM_Core_BAO_OptionValue';
+  }
 
-    /**
-     * function to get userContext params
-     *
-     * @param int $mode mode that we are in
-     *
-     * @return string
-     * @access public
-     */
-    function userContextParams( $mode = null ) {
-        return 'group=' . self::$_gName . '&reset=1&action=browse';
-    }
+  /**
+   * Get action Links
+   *
+   * @return array (reference) of action links
+   */
+  function &links() {
+    if (!(self::$_links)) {
+      self::$_links = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/admin/options/' . self::$_gName,
+          'qs' => 'group=' . self::$_gName . '&action=update&id=%%id%%&reset=1',
+          'title' => ts('Edit %1', array(1 => self::$_gName)),
+        ),
+        CRM_Core_Action::DISABLE => array(
+          'name' => ts('Disable'),
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_OptionValue' . '\',\'' . 'enable-disable' . '\' );"',
+          'ref' => 'disable-action',
+          'title' => ts('Disable %1', array(1 => self::$_gName)),
+        ),
+        CRM_Core_Action::ENABLE => array(
+          'name' => ts('Enable'),
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_OptionValue' . '\',\'' . 'disable-enable' . '\' );"',
+          'ref' => 'enable-action',
+          'title' => ts('Enable %1', array(1 => self::$_gName)),
+        ),
+        CRM_Core_Action::DELETE => array(
+          'name' => ts('Delete'),
+          'url' => 'civicrm/admin/options/' . self::$_gName,
+          'qs' => 'group=' . self::$_gName . '&action=delete&id=%%id%%',
+          'title' => ts('Delete %1 Type', array(1 => self::$_gName)),
+        ),
+      );
 
+      if (self::$_gName == 'custom_search') {
+        $runLink = array(
+          CRM_Core_Action::FOLLOWUP => array(
+            'name' => ts('Run'),
+            'url' => 'civicrm/contact/search/custom',
+            'qs' => 'reset=1&csid=%%value%%',
+            'title' => ts('Run %1', array(1 => self::$_gName)),
+          ));
+        self::$_links = $runLink + self::$_links;
+      }
+    }
+    return self::$_links;
+  }
+
+  /**
+   * Run the basic page (run essentially starts execution for that page).
+   *
+   * @return void
+   */
+  function run() {
+    $this->preProcess();
+    return parent::run();
+  }
+
+  /**
+   * Browse all options
+   *
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  function browse() {
+
+    $groupParams = array('name' => self::$_gName);
+    $optionValue = CRM_Core_OptionValue::getRows($groupParams, $this->links(), 'component_id,weight');
+    $gName       = self::$_gName;
+    $returnURL   = CRM_Utils_System::url("civicrm/admin/options/$gName",
+      "reset=1&group=$gName"
+    );
+    $filter = "option_group_id = " . self::$_gId;
+    CRM_Utils_Weight::addOrder($optionValue, 'CRM_Core_DAO_OptionValue',
+      'id', $returnURL, $filter
+    );
+    $this->assign('rows', $optionValue);
+  }
+
+  /**
+   * Get name of edit form
+   *
+   * @return string Classname of edit form.
+   */
+  function editForm() {
+    return 'CRM_Admin_Form_Options';
+  }
+
+  /**
+   * Get edit form name
+   *
+   * @return string name of this page.
+   */
+  function editName() {
+    return self::$_GName;
+  }
+
+  /**
+   * Get user context.
+   *
+   * @return string user context.
+   */
+  function userContext($mode = NULL) {
+    return 'civicrm/admin/options/' . self::$_gName;
+  }
+
+  /**
+   * function to get userContext params
+   *
+   * @param int $mode mode that we are in
+   *
+   * @return string
+   * @access public
+   */
+  function userContextParams($mode = NULL) {
+    return 'group=' . self::$_gName . '&reset=1&action=browse';
+  }
 }
-
 

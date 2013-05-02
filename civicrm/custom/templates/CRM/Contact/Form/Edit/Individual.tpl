@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,47 +26,43 @@
 {* tpl for building Individual related fields *}
 <script type="text/javascript">
 var cid=parseFloat("{$contactId}");//parseInt is octal by default
-var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='fnName=civicrm/contact/search&json=1&contact_type=Individual&return[display_name]&return[sort_name]=1&return[email]=1&rowCount=50' h=0}";
+var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='entity=contact&action=get&json=1&contact_type=Individual&return=display_name,sort_name,email&rowCount=50' h=0}";
 var viewIndividual = "{crmURL p='civicrm/contact/view' q='reset=1&cid=' h=0}";
 var editIndividual = "{crmURL p='civicrm/contact/add' q='reset=1&action=update&cid=' h=0}";
 var checkSimilar =  {$checkSimilar};
 {literal}
 
   cj(function( ) {
-     if (cj('#contact_sub_type *').length ==1) {//if they aren't any subtype we don't offer the option
+     if (cj('#contact_sub_type *').length == 0) {//if they aren't any subtype we don't offer the option
         cj('#contact_sub_type').parent().hide();
      }
 
      if (!isNaN(cid) || ! checkSimilar)
-       return;//no dupe check if this is a modif or if checkSimilar is disabled (CIVICRM_CONTACT_AJAX_CHECK_SIMILAR in civicrm_setting)
+       return;//no dupe check if this is a modif or if checkSimilar is disabled (contact_ajax_check_similar in civicrm_setting table)
 
 	     cj('#last_name').blur(function () {
          cj('#lastname_msg').remove();
              if (this.value =='') return;
 	     cj.getJSON(contactIndividual,{sort_name:cj('#last_name').val()},
          function(data){
-           if (data.is_error== 0) {
+           if (data.is_error == 1 || data.count == 0) {
              return;
            }
-           var msg="<tr id='lastname_msg'><td colspan='5'><div class='messages status'><div class='icon inform-icon'></div>";
-
-           if (data.length ==1) {
+           var msg="<div id='lastname_msg' class='messages status'><div class='icon inform-icon'></div>";
+           if ( data.count == 1 ) {
              msg = msg + "{/literal}{ts}There is a contact with a similar last name. If the person you were trying to add is listed below, click on their name to view or edit their record{/ts}{literal}";  
            } else {
-             // ideally, should use a merge with data.length
-             msg = msg + "{/literal}{ts}There are contacts with a similar last name. If the person you were trying to add is listed below, click on their name to view or edit their record{/ts}{literal}";
+             msg = msg + "{/literal}{ts}There are "+ data.length +" contacts with a similar last name({/ts}<a href='#' onclick='cj(\"#lastname_msg\").remove();cj(\"#current_employer\").focus();'>{ts}Click here{/ts}</a> {ts}to Skip and move to next form field). If the person you were trying to add is listed below, click on their name to view or edit their record{/ts}{literal}";
            }
            msg = msg+ '<table class="matching-contacts-actions">';
-           cj.each(data, function(i,contact){
-	   if ( contact.contact_id ) {
+           cj.each(data.values, function(i,contact){
 	     if ( !(contact.email) ) {
 	       contact.email = '';
 	     }
-             msg = msg + '<tr><td><a href="'+viewIndividual+contact.contact_id+'">'+ contact.display_name +'</a></td><td>'+contact.email+'</td><td class="action-items"><a class="action-item action-item-first" href="'+viewIndividual+contact.contact_id+'">{/literal}{ts}View{/ts}{literal}</a><a class="action-item" href="'+editIndividual+contact.contact_id+'">{/literal}{ts}Edit{/ts}{literal}</a></td></tr>';
-	   }
+             msg = msg + '<tr><td><a href="'+viewIndividual+contact.id+'" target="_blank">'+ contact.display_name +'</a></td><td>'+contact.email+'</td><td class="action-items"><a class="action-item action-item-first" href="'+viewIndividual+contact.contact_id+'">{/literal}{ts}View{/ts}{literal}</a><a class="action-item" href="'+editIndividual+contact.contact_id+'">{/literal}{ts}Edit{/ts}{literal}</a></td></tr>';
            });
            msg = msg+ '</table>';
-           cj('#last_name').parent().parent().after(msg+'</div><td></tr>');
+           cj('#last_name').closest('table').after(msg+'</div>');
            cj('#lastname_msg a').click(function(){global_formNavigate =true; return true;});// No confirmation dialog on click
          });
 	    });
@@ -74,15 +70,15 @@ var checkSimilar =  {$checkSimilar};
 </script>
 {/literal}
 
-{assign var=formtextbig value='form-text big'}
+{assign var=formtextbig value='form-text big'}{*NYSS*}
 <table class="form-layout-compressed individual-contact-details">
   <tr>
-    <td>
         {if $form.prefix_id}
+    <td>
         	{$form.prefix_id.label}<br/>
             {$form.prefix_id.html}
+            </td>    
         {/if}
-    </td>
         <td>
             {$form.first_name.label}<br /> 
 	    {$form.first_name.html}
@@ -95,14 +91,15 @@ var checkSimilar =  {$checkSimilar};
             {$form.last_name.label}<br />
             {$form.last_name.html}
         </td>
+	{if $form.suffix_id}
     <td>
-		{if $form.suffix_id}
         	{$form.suffix_id.label}<br/>
         	{$form.suffix_id.html}
+            </td>
         {/if}
-	</td>
     <td>&nbsp;</td>
   </tr>
+    
   <tr>
 	<td>
 		{$form.nick_name.label}<br />
@@ -131,12 +128,12 @@ var checkSimilar =  {$checkSimilar};
 		{$contactId}
     </td>
   </tr>
-    
 </table>
 {literal}
 <script type="text/javascript">
 var dataUrl        = "{/literal}{$employerDataURL}{literal}";
 var newContactText = "{/literal}({ts}new contact record{/ts}){literal}";
+cj('#current_employer').attr("title","Current employer auto complete");
 cj('#current_employer').autocomplete( dataUrl, { 
                                       width        : 250, 
                                       selectFirst  : false,

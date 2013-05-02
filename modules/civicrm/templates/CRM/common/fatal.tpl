@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* error.tpl: Display page for fatal errors. Provides complete HTML doc.*}
-{if $config->userFramework != 'Joomla'}
+{if $config->userFramework != 'Joomla' and $config->userFramework != 'WordPress'}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 
@@ -34,7 +34,6 @@
   <base href="{$config->resourceBase}" />
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/civicrm.css);</style>
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/extras.css);</style>
-  <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
 </head>
 <body>
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
@@ -42,19 +41,18 @@
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/civicrm.css);</style>
   <style type="text/css" media="screen">@import url({$config->resourceBase}css/extras.css);</style>
-  <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
 {/if}
 <div class="messages status">  <div class="icon red-icon alert-icon"></div>
- <span class="status-fatal">{ts}Sorry. A non-recoverable error has occurred.{/ts}</span>
+ <span class="status-fatal">{ts}Sorry but we are not able to provide this at the moment.{/ts}</span>
     <div class="crm-section crm-error-message">{$message}</div>
     {if $error.message && $message != $error.message}
         <hr style="solid 1px" />
         <div class="crm-section crm-error-message">{$error.message}</div>
     {/if}
-    {if $code OR $mysql_code OR $errorDetails}
-        <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block">
+    {if ($code OR $mysql_code OR $errorDetails) AND $config->debug}
+        <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block" onclick="toggle(this);";>
          <div class="crm-accordion-header">
-          <div class="icon crm-accordion-pointer"></div> 
+          <div class="icon crm-accordion-pointer"></div>
         	{ts}Error Details{/ts}
          </div><!-- /.crm-accordion-header -->
          <div class="crm-accordion-body">
@@ -74,13 +72,18 @@
 </div>
 </div> {* end crm-container div *}
 {literal}
-<script type="text/javascript">
-cj(function() {
-   cj().crmaccordions(); 
-});
+<script language="JavaScript">
+function toggle( element ) {
+    var className = element.className;
+    if ( className  == 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block') {
+        element.className = 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-open crm-fatal-error-details-block';
+    } else {
+        element.className = 'crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block';
+    }
+}
 </script>
 {/literal}
-{if $config->userFramework != 'Joomla'}
+{if $config->userFramework != 'Joomla' and $config->userFramework != 'WordPress'}
 </body>
 </html>
 {/if}

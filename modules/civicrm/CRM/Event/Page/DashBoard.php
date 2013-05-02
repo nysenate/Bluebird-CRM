@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,70 +28,66 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-
 /**
  * This is page is for Event Dashboard
  */
-class CRM_Event_Page_DashBoard extends CRM_Core_Page 
-{
-    /** 
-     * Heart of the viewing process. The runner gets all the meta data for 
-     * the contact and calls the appropriate type of page to view. 
-     * 
-     * @return void 
-     * @access public 
-     * 
-     */ 
-    function preProcess( ) 
-    {
-        CRM_Utils_System::setTitle( ts('CiviEvent') );
+class CRM_Event_Page_DashBoard extends CRM_Core_Page {
 
-        require_once 'CRM/Event/BAO/Event.php';
-        $eventSummary = CRM_Event_BAO_Event::getEventSummary( );
+  /**
+   * Heart of the viewing process. The runner gets all the meta data for
+   * the contact and calls the appropriate type of page to view.
+   *
+   * @return void
+   * @access public
+   *
+   */
+  function preProcess() {
+    CRM_Utils_System::setTitle(ts('CiviEvent'));
 
-        $actionColumn = false;
-        if ( ! empty( $eventSummary ) &&
-             isset($eventSummary['events']) &&
-             is_array( $eventSummary['events'] ) ) {
-            foreach ( $eventSummary['events'] as $e ) {
-                if ( isset( $e['isMap'] ) || isset( $e['configure'] ) ) {
-                    $actionColumn = true;
-                    break;
-                }
-            }
+    $eventSummary = CRM_Event_BAO_Event::getEventSummary();
+
+    $actionColumn = FALSE;
+    if (!empty($eventSummary) &&
+      isset($eventSummary['events']) &&
+      is_array($eventSummary['events'])
+    ) {
+      foreach ($eventSummary['events'] as $e) {
+        if (isset($e['isMap']) || isset($e['configure'])) {
+          $actionColumn = TRUE;
+          break;
         }
+      }
+    }
 
-        $this->assign( 'actionColumn', $actionColumn );
-        $this->assign( 'eventSummary', $eventSummary );
-    }
-    
-    /** 
-     * This function is the main function that is called when the page loads, 
-     * it decides the which action has to be taken for the page. 
-     *                                                          
-     * return null        
-     * @access public 
-     */                                                          
-    function run( ) 
-    {
-        $this->preProcess( );
-        
-        $controller = new CRM_Core_Controller_Simple( 'CRM_Event_Form_Search', ts('events'), null );
-        $controller->setEmbedded( true ); 
-        $controller->reset( ); 
-        $controller->set( 'limit', 10 );
-        $controller->set( 'force', 1 );
-        $controller->set( 'context', 'dashboard' ); 
-        $controller->process( ); 
-        $controller->run( ); 
-        
-        return parent::run( );
-    }
+    $this->assign('actionColumn', $actionColumn);
+    $this->assign('eventSummary', $eventSummary);
+  }
+
+  /**
+   * This function is the main function that is called when the page loads,
+   * it decides the which action has to be taken for the page.
+   *
+   * return null
+   * @access public
+   */
+  function run() {
+    $this->preProcess();
+
+    $controller = new CRM_Core_Controller_Simple('CRM_Event_Form_Search', ts('events'), NULL);
+    $controller->setEmbedded(TRUE);
+    $controller->reset();
+    $controller->set('limit', 10);
+    $controller->set('force', 1);
+    $controller->set('context', 'dashboard');
+    $controller->process();
+    $controller->run();
+
+    return parent::run();
+  }
 }
 

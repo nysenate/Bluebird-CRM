@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,62 +29,58 @@
  * Redefine the submit action.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/QuickForm/Action.php';
-
 class CRM_Core_QuickForm_Action_Submit extends CRM_Core_QuickForm_Action {
 
-    /**
-     * class constructor
-     *
-     * @param object $stateMachine reference to state machine object
-     *
-     * @return object
-     * @access public
-     */
-    function __construct( &$stateMachine ) {
-        parent::__construct( $stateMachine );
+  /**
+   * class constructor
+   *
+   * @param object $stateMachine reference to state machine object
+   *
+   * @return object
+   * @access public
+   */
+  function __construct(&$stateMachine) {
+    parent::__construct($stateMachine);
+  }
+
+  /**
+   * Processes the request.
+   *
+   * @param  object    $page       CRM_Core_Form the current form-page
+   * @param  string    $actionName Current action name, as one Action object can serve multiple actions
+   *
+   * @return void
+   * @access public
+   */
+  function perform(&$page, $actionName) {
+    $page->isFormBuilt() or $page->buildForm();
+
+    $pageName = $page->getAttribute('name');
+    $data = &$page->controller->container();
+    $data['values'][$pageName] = $page->exportValues();
+    $data['valid'][$pageName] = $page->validate();
+
+    // Modal form and page is invalid: don't go further
+    if ($page->controller->isModal() && !$data['valid'][$pageName]) {
+      return $page->handle('display');
     }
 
-    /**
-     * Processes the request. 
-     *
-     * @param  object    $page       CRM_Core_Form the current form-page
-     * @param  string    $actionName Current action name, as one Action object can serve multiple actions
-     *
-     * @return void
-     * @access public
-     */
-    function perform(&$page, $actionName) {
-        $page->isFormBuilt() or $page->buildForm();
+    // the page is valid, process it before we jump to the next state
+    $page->mainProcess();
 
-        $pageName =  $page->getAttribute('name');
-        $data     =& $page->controller->container();
-        $data['values'][$pageName] = $page->exportValues();
-        $data['valid'][$pageName]  = $page->validate();
-
-        // Modal form and page is invalid: don't go further
-        if ($page->controller->isModal() && !$data['valid'][$pageName]) {
-            return $page->handle('display');
-        }
-
-        // the page is valid, process it before we jump to the next state
-        $page->mainProcess( );
-        
-        // check if destination is set, if so goto destination
-        $destination = $this->_stateMachine->getDestination( );
-        if ( $destination ) {
-            $destination = urldecode( $destination );
-            CRM_Utils_System::redirect( $destination );
-        } else {
-            return $page->handle('display');
-        }
+    // check if destination is set, if so goto destination
+    $destination = $this->_stateMachine->getDestination();
+    if ($destination) {
+      $destination = urldecode($destination);
+      CRM_Utils_System::redirect($destination);
     }
-
+    else {
+      return $page->handle('display');
+    }
+  }
 }
-
 

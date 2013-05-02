@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,88 +25,87 @@
  +--------------------------------------------------------------------+
 */
 
-require_once 'CRM/Core/Component/Info.php';
-
 /**
- * This class introduces component to the system and provides all the 
+ * This class introduces component to the system and provides all the
  * information about it. It needs to extend CRM_Core_Component_Info
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Case_Info extends CRM_Core_Component_Info
-{
+class CRM_Case_Info extends CRM_Core_Component_Info {
 
 
-    // docs inherited from interface
-    protected $keyword = 'case';
+  // docs inherited from interface
+  protected $keyword = 'case';
 
-    // docs inherited from interface
-    public function getInfo()
-    {
-        return  array( 'name'	              => 'CiviCase',
-                       'translatedName'       => ts('CiviCase'),
-                       'title'                => ts('CiviCase Engine'),
-                       'search'               => 1,
-                       'showActivitiesInCore' => 0 
-                       );
-    }
+  // docs inherited from interface
+  public function getInfo() {
+    return array(
+      'name' => 'CiviCase',
+      'translatedName' => ts('CiviCase'),
+      'title' => ts('CiviCase Engine'),
+      'search' => 1,
+      'showActivitiesInCore' => 0,
+    );
+  }
 
-    // docs inherited from interface
-    public function getPermissions()
-    {
-        return array( 'delete in CiviCase',
-                      'administer CiviCase', 
-                      'access my cases and activities',
-                      'access all cases and activities' );
-    }
-    
-    // docs inherited from interface
-    public function getUserDashboardElement()
-    {
-        return array( );
-    }
+  // docs inherited from interface
+  public function getPermissions() {
+    return array(
+      'delete in CiviCase',
+      'administer CiviCase',
+      'access my cases and activities',
+      'access all cases and activities',
+      'add cases',
+    );
+  }
 
-    // docs inherited from interface
-    public function registerTab()
-    {
-        return array( 'title'   => ts( 'Cases' ),
-                      'url'     => 'case',
-                      'weight'  => 50 );
-    }
+  // docs inherited from interface
+  public function getUserDashboardElement() {
+    return array();
+  }
 
-    // docs inherited from interface
-    public function registerAdvancedSearchPane()
-    {
-        return array( 'title'   => ts( 'Cases' ),
-                      'weight'  => 50 );
-    }
+  // docs inherited from interface
+  public function registerTab() {
+    return array('title' => ts('Cases'),
+      'url' => 'case',
+      'weight' => 50,
+    );
+  }
 
-    // docs inherited from interface    
-    public function getActivityTypes()
-    {
-        return null;
+  // docs inherited from interface
+  public function registerAdvancedSearchPane() {
+    return array('title' => ts('Cases'),
+      'weight' => 50,
+    );
+  }
+
+  // docs inherited from interface
+  public function getActivityTypes() {
+    return NULL;
+  }
+
+  // add shortcut to Create New
+  public function creatNewShortcut(&$shortCuts) {
+    if (CRM_Core_Permission::check('access all cases and activities') ||
+      CRM_Core_Permission::check('add cases')
+    ) {
+      $atype = CRM_Core_OptionGroup::getValue('activity_type',
+        'Open Case',
+        'name'
+      );
+      if ($atype) {
+        $shortCuts = array_merge($shortCuts, array(
+          array('path' => 'civicrm/case/add',
+              'query' => "reset=1&action=add&atype=$atype&context=standalone",
+              'ref' => 'new-case',
+              'title' => ts('Case'),
+            )));
+      }
     }
-    
-    // add shortcut to Create New
-    public function creatNewShortcut( &$shortCuts ) {
-        if ( CRM_Core_Permission::check('access all cases and activities') &&
-             CRM_Core_Permission::check('add contacts') ) {
-            require_once 'CRM/Core/OptionGroup.php';
-            $atype = CRM_Core_OptionGroup::getValue('activity_type', 
-                                                    'Open Case', 
-                                                    'name' );
-            if ( $atype ) {
-                $shortCuts = 
-                    array_merge($shortCuts, array( array( 'path'  => 'civicrm/case/add',
-                                                          'query' => "reset=1&action=add&atype=$atype&context=standalone",
-                                                          'ref'   => 'new-case',
-                                                          'title' => ts('Case') ) ) );
-            }
-        }        
-    }
+  }
 }
 

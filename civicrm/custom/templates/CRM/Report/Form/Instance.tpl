@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -78,12 +78,17 @@
             <td class="report-label" width="20%">{$form.permission.label} {*help id="id-report_perms" file="CRM/Report/Form/Settings.hlp"*}{*NYSS 5098*}</td>
             <td>{$form.permission.html|crmReplace:class:huge}</td>
         </tr>
-        {*NYSS 3439*}
         <tr class="crm-report-instanceForm-form-block-role">
             <td class="report-label" width="20%">{$form.grouprole.label}</td>
             <td>{$form.grouprole.html|crmReplace:class:huge}</td>
         </tr>
     {/if}
+    <tr class="crm-report-instanceForm-form-block-isReserved">
+	    <td class="report-label">{$form.is_reserved.label} {help id="id-is_reserved" file="CRM/Report/Form/Settings.hlp"}</td>
+      <td>{$form.is_reserved.html}
+        <span class="description">{ts}If reserved, only users with 'administer reserved reports' permission can modify this report instance.{/ts}</span>
+      </td>
+    </tr>
     <tr class="crm-report-instanceForm-form-block-addToDashboard">
 	    <td class="report-label">{$form.addToDashboard.label} {help id="id-dash_avail" file="CRM/Report/Form/Settings.hlp"}</td>
         <td>{$form.addToDashboard.html}

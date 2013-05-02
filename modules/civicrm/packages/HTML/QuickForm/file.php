@@ -88,7 +88,7 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
      */
     function setSize($size)
     {
-        $this->_attributes['size']=$size;
+        $this->updateAttributes(array('size' => $size));
     } //end func setSize
     
     // }}}
@@ -177,7 +177,7 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
                     return PEAR::raiseError('Cannot add a file upload field to a GET method form');
                 }
                 $this->_value = $this->_findValue();
-                $caller->_attributes['enctype']='multipart/form-data';
+                $caller->updateAttributes(array('enctype' => 'multipart/form-data'));
                 $caller->setMaxFileSize();
                 break;
             case 'addElement':

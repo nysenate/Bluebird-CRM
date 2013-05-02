@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension method="upgrade" version="2.5" type="plugin" group="quickicon">
+	<name>CiviCRM QuickIcon</name>
+	<author>CiviCRM, LLC</author>
+	<creationDate>April 2012</creationDate>
+	<copyright>Copyright (C) 2005 - 2012 CiviCRM. All rights reserved.</copyright>
+	<license>GNU Affero General Public License version 2 or later</license>
+	<authorEmail>info@civicrm.org</authorEmail>
+	<authorUrl>www.civicrm.org</authorUrl>
+	<version>2.5.0</version>
+	<description>Displays link to CiviCRM in main icon Control Panel</description>
+	<files>
+		<filename plugin="civicrmicon">civicrmicon.php</filename>
+		<filename>index.html</filename>
+	</files>
+</extension>

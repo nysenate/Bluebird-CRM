@@ -1,10 +1,12 @@
 <?php
+// $Id: ActivityContact.php 40968 2012-06-12 14:28:16Z kurund $
+
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,11 +34,11 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Activity
  *
- * @copyright CiviCRM LLC (c) 2004-2011
- * @version $Id: ActivityContact.php 32998 2011-03-14 22:00:35Z kurund $
+ * @copyright CiviCRM LLC (c) 2004-2012
+ * @version $Id: ActivityContact.php 40968 2012-06-12 14:28:16Z kurund $
  *
  */
- 
+
 /**
  * Files required for this package
  */
@@ -53,59 +55,63 @@ require_once 'CRM/Activity/BAO/Activity.php';
  * @access public
 
  */
-function civicrm_activity_contact_get( $params ) {
-  _civicrm_initialize( );
-  
-  $contactId = CRM_Utils_Array::value( 'contact_id', $params ); 
-  if ( empty( $contactId ) ) {
-      return civicrm_create_error( ts ( "Required parameter not found" ) );
+function civicrm_activity_contact_get($params) {
+  _civicrm_initialize();
+
+  $contactId = CRM_Utils_Array::value('contact_id', $params);
+  if (empty($contactId)) {
+    return civicrm_create_error(ts("Required parameter not found"));
   }
-  
+
   //check if $contactId is valid
-  if ( !is_numeric( $contactId ) || !preg_match( '/^\d+$/', $contactId ) ) {
-      return civicrm_create_error( ts ( "Invalid contact Id" ) );
+  if (!is_numeric($contactId) || !preg_match('/^\d+$/', $contactId)) {
+    return civicrm_create_error(ts("Invalid contact Id"));
   }
-  
-  $activities =  & _civicrm_activities_get( $contactId );
-     
-  //show success for empty $activities array 
-  if ( empty( $activities ) ) { 
-      return civicrm_create_success( ts( "0 activity record matching input params" ) );
+
+  $activities = &_civicrm_activities_get($contactId);
+
+  //show success for empty $activities array
+  if (empty($activities)) {
+    return civicrm_create_success(ts("0 activity record matching input params"));
   }
-   
-  if ( $activities ) {
-      return civicrm_create_success( $activities );
-  } else {
-      return civicrm_create_error( ts( 'Invalid Data' ) );
+
+  if ($activities) {
+    return civicrm_create_success($activities);
+  }
+  else {
+    return civicrm_create_error(ts('Invalid Data'));
   }
 }
 
 /**
  * Retrieve a set of Activities specific to given contact Id.
+ *
  * @param int $contactID.
  *
  * @return array (reference)  array of activities.
  * @access public
- 
+
  */
-function &_civicrm_activities_get( $contactID, $type = 'all' ) 
-{
-    $activities = CRM_Activity_BAO_Activity::getContactActivity( $contactID );
-    
-    //get the custom data.
-    if ( is_array( $activities ) && !empty( $activities ) ) {
-        require_once 'api/v2/Activity.php';
-        foreach ( $activities as $activityId => $values ) {
-            $customParams =  array( 'activity_id'      => $activityId,
-                                    'activity_type_id' => CRM_Utils_Array::value( 'activity_type_id', $values ) );
-            
-            $customData = civicrm_activity_custom_get( $customParams );
-            
-            if ( is_array( $customData ) && !empty( $customData ) ) {
-                $activities[$activityId] = array_merge( $activities[$activityId], $customData );
-            }
-        }
+function &_civicrm_activities_get($contactID, $type = 'all') {
+  $activities = CRM_Activity_BAO_Activity::getContactActivity($contactID);
+
+  //get the custom data.
+  if (is_array($activities) && !empty($activities)) {
+    require_once 'api/v2/Activity.php';
+    foreach ($activities as $activityId => $values) {
+      $customParams = array(
+        'activity_id' => $activityId,
+        'activity_type_id' => CRM_Utils_Array::value('activity_type_id', $values),
+      );
+
+      $customData = civicrm_activity_custom_get($customParams);
+
+      if (is_array($customData) && !empty($customData)) {
+        $activities[$activityId] = array_merge($activities[$activityId], $customData);
+      }
     }
-    
-    return $activities;
+  }
+
+  return $activities;
 }
+

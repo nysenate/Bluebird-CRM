@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,8 +27,8 @@
 <style>
 .hit {ldelim}padding-left:10px;{rdelim}
 .tree li {ldelim}padding-left:10px;{rdelim}
-#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
+#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
+#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
 #Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
 </style>
 <script type="text/javascript">
@@ -48,16 +48,12 @@ function initTagTree() {
     //unobsctructive elements are there to provide the function to those not having javascript, no need for the others
     cj(".unobstructive").hide();
 
-    //load js tree.
-    cj("#tagtree").jstree({"plugins" : ["themes", "html_data"]});
-
     cj("#tagtree ul input:checked").each (function(){
         cj(this).parents("li").children(".jstree-icon").addClass('highlighted');
     });
-
+    
     cj("#tagtree input").change(function(){
         tagid = this.id.replace("check_", "");
-
         //get current tags from Summary and convert to array
         var tagLabels = cj.trim( cj("#tags").text( ) );
         if ( tagLabels ) {
@@ -93,7 +89,10 @@ function initTagTree() {
         cj("#tags").html( tagLabels );
         ( tagLabels ) ? cj("#tagLink,#tags").show( ) : cj("#tagLink,#tags").hide( );
     });
-    
+ 
+    //load js tree.
+    cj("#tagtree").jstree({"plugins" : ["themes", "html_data"]});
+   
     {/literal}
     {if $permission neq 'edit'}
     {literal}
@@ -172,8 +171,8 @@ function initTagTree() {
        <div class="form-item unobstructive">{$form.buttons.html}</div>
        </fieldset>
     {/if}
-
-    {include file="CRM/common/Tag.tpl"}
+    <br />
+    {include file="CRM/common/Tag.tpl" context="contactTab"}
 </div>
 
 {if $action eq 1 or $action eq 2 }

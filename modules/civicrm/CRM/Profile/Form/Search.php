@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,116 +28,112 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Profile/Form.php';
-
 /**
  * This class generates form components generic to all the contact types.
- * 
+ *
  * It delegates the work to lower level subclasses and integrates the changes
  * back in. It also uses a lot of functionality with the CRM API's, so any change
  * made here could potentially affect the API etc. Be careful, be aware, use unit tests.
  *
  */
-class CRM_Profile_Form_Search extends CRM_Profile_Form
-{
-    /** 
-     * pre processing work done here. 
-     * 
-     * @param  
-     * @return void 
-     * 
-     * @access public 
-     * 
-     */ 
-    function preProcess() 
-    { 
-        $this->_mode = CRM_Profile_Form::MODE_SEARCH; 
-        parent::preProcess( );
-    } 
-    
-    /** 
-     * Set the default form values 
-     * 
-     * @access protected 
-     * @return array the default array reference 
-     */ 
-    function &setDefaultValues() {
-        $defaults = array(); 
-        // note we intentionally overwrite value since we use it as defaults
-        // and its all pass by value
-        // we need to figure out the type, so we can either set an array element
-        // or a scalar -- FIX ME sometime please
-        foreach ( $_GET as $key => $value ) {
-            if ( substr( $key, 0, 7 ) == 'custom_' || $key == "preferred_communication_method" ) {
-                if ( strpos( $value, CRM_Core_DAO::VALUE_SEPARATOR ) !== false ) {
-                    $v = explode( CRM_Core_DAO::VALUE_SEPARATOR, $value );
-                    $value = array();
-                    foreach ( $v as $item ) {
-                        if( $item ) {
-                            $value[$item] = $item;
-                        }
-                    }
-                }
-            } else if ( $key == 'group' || $key == 'tag' ) {
-                $v = explode( ',', $value );
-                $value = array( ); 
-                foreach ( $v as $item ) { 
-                    $value[$item] = 1; 
-                } 
-            } else if ( in_array( $key, array('birth_date', 'deceased_date')) ) {
-                list( $value ) = CRM_Utils_Date::setDateDefaults($value);
+class CRM_Profile_Form_Search extends CRM_Profile_Form {
+
+  /**
+   * pre processing work done here.
+   *
+   * @param
+   *
+   * @return void
+   *
+   * @access public
+   *
+   */
+  function preProcess() {
+    $this->_mode = CRM_Profile_Form::MODE_SEARCH;
+    parent::preProcess();
+  }
+
+  /**
+   * Set the default form values
+   *
+   * @access protected
+   *
+   * @return array the default array reference
+   */
+  function &setDefaultValues() {
+    $defaults = array();
+    // note we intentionally overwrite value since we use it as defaults
+    // and its all pass by value
+    // we need to figure out the type, so we can either set an array element
+    // or a scalar -- FIX ME sometime please
+    foreach ($_GET as $key => $value) {
+      if (substr($key, 0, 7) == 'custom_' || $key == "preferred_communication_method") {
+        if (strpos($value, CRM_Core_DAO::VALUE_SEPARATOR) !== FALSE) {
+          $v = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+          $value = array();
+          foreach ($v as $item) {
+            if ($item) {
+              $value[$item] = $item;
             }
-            
-            $defaults[$key] = $value;
-        } 
-        return $defaults;
-    }
-
-    /**
-     * Function to actually build the form
-     *
-     * @return void
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        // Is proximity search enabled for this profile?
-        require_once 'CRM/Core/DAO.php';
-        $proxSearch = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup',
-                                                  $this->get( 'gid' ),
-                                                  'is_proximity_search', 'id');
-        if ( $proxSearch ) {
-            require_once 'CRM/Contact/Form/Task/ProximityCommon.php';
-            CRM_Contact_Form_Task_ProximityCommon::buildQuickForm( $this, $proxSearch );
+          }
         }
+      }
+      elseif ($key == 'group' || $key == 'tag') {
+        $v = explode(',', $value);
+        $value = array();
+        foreach ($v as $item) {
+          $value[$item] = 1;
+        }
+      }
+      elseif (in_array($key, array(
+        'birth_date', 'deceased_date'))) {
+        list($value) = CRM_Utils_Date::setDateDefaults($value);
+      }
 
-        $this->addButtons(array( 
-                                array ('type'      => 'refresh', 
-                                       'name'      => ts('Search'), 
-                                       'isDefault' => true ), 
-                                ) );
+      $defaults[$key] = $value;
+    }
+    return $defaults;
+  }
 
-        parent::buildQuickForm( );
-
-     }
-
-       
-    /**
-     *
-     *
-     * @access public
-     * @return void
-     */
-    public function postProcess() 
-    {
+  /**
+   * Function to actually build the form
+   *
+   * @return void
+   * @access public
+   */
+  public function buildQuickForm() {
+    // Is proximity search enabled for this profile?
+    $proxSearch = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup',
+      $this->get('gid'),
+      'is_proximity_search', 'id'
+    );
+    if ($proxSearch) {
+      CRM_Contact_Form_Task_ProximityCommon::buildQuickForm($this, $proxSearch);
     }
 
-}
+    $this->addButtons(array(
+        array(
+          'type' => 'refresh',
+          'name' => ts('Search'),
+          'isDefault' => TRUE,
+        ),
+      ));
 
+    parent::buildQuickForm();
+  }
+
+  /**
+   *
+   *
+   * @access public
+   *
+   * @return void
+   */
+  public function postProcess() {}
+}
 

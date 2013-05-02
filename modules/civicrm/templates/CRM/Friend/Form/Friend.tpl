@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -90,18 +90,18 @@
 	   </td>
         </tr>
         <tr class="crm-friend-manage-form-block-thankyou_title">
-           <td class="label">{$form.thankyou_title.label} 
+           <td class="label">{$form.tf_thankyou_title.label} 
 	       {if $action == 2}
-	       	   {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_tell_friend' field='thankyou_title' id=$id}{/if}</td>
-	   <td>{$form.thankyou_title.html}</td>
+	       	   {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_tell_friend' field='tf_thankyou_title' id=$id}{/if}</td>
+	   <td>{$form.tf_thankyou_title.html}</td>
         </tr>
         <tr class="crm-friend-manage-form-block-thankyou_text">
-	   <td class="label">{$form.thankyou_text.label} 
+	   <td class="label">{$form.tf_thankyou_text.label} 
 	       {if $action == 2}
-	       	   {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_tell_friend' field='thankyou_text' id=$id}
+	       	   {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_tell_friend' field='tf_thankyou_text' id=$id}
 	       {/if}
 	   </td>
-	   <td>{$form.thankyou_text.html}<br />
+	   <td>{$form.tf_thankyou_text.html}<br />
                <span class="description">{ts 1=$enduser}Your message thanking the %1 for helping to spread the word. You may include HTML tags to add formatting or links.{/ts}
 	       </span>
 	   </td>

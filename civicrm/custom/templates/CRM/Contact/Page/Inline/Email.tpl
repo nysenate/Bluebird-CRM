@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,22 +29,21 @@
     {if $permission EQ 'edit'}
     {if $email}
      <div class="crm-config-option">
-      <a id="edit-email" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
-        <span class="batch-edit"></span>{ts}add/edit{/ts}
+        <a id="edit-email" class="hiddenElement crm-link-action" title="{ts}click to add or edit email addresses{/ts}">
+          <span class="batch-edit"></span>{ts}add or edit email{/ts}
       </a>
      </div>
     {else}
       <div>
-        <a id="edit-email" class="crm-link-action" title="{ts}click to add / edit{/ts}">
-          <span class="batch-edit"></span>{ts}add/edit email{/ts}
+          <a id="edit-email" class="crm-link-action empty-email" title="{ts}click to add email address{/ts}">
+            <span class="batch-edit"></span>{ts}add email{/ts}
         </a>
       </div>
     {/if}
     {/if}
- 
   {foreach from=$email key="blockId" item=item}
     {if $item.email}
-      <div class="crm-label">{$item.location_type} {ts}Email{/ts}</div>
+      <div class="crm-label">{$item.location_type}&nbsp;{ts}Email{/ts}</div>
       <div class="crm-content crm-contact_email"> <!-- start of content -->
         {*NYSS 4717*}
         <span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
@@ -71,14 +70,14 @@
           <strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
         <strong>{ts}Signature Text{/ts}</strong><br />{$item.signature_text|nl2br}</div>
       </div> <!-- end of content -->
-      <div class="crm-clear"></div>
     {/if}
   {/foreach}
-  </div> <!-- end of main !-->
+  </div> <!-- end of main -->
 </div>
 
 {literal}
 <script type="text/javascript">
+
 {/literal}{if $permission EQ 'edit'}{literal}
 cj(function(){
     cj('#email-block').mouseenter( function() {
@@ -86,27 +85,27 @@ cj(function(){
       cj('#edit-email').show();
     }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
-      {/literal}{if $email}{literal}
-        if ( cj('#edit-email').text().trim() == 'add/edit' ) {
+      if ( !cj('#edit-email').hasClass('empty-email') ) { 
           cj('#edit-email').hide();
         }
-      {/literal}{/if}{literal}
     });
 
     cj('#edit-email').click( function() {
         var dataUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1&cid='}{$contactId}"{literal};
-        var response = cj.ajax({
-                        type: "POST",
+
+        addCiviOverlay('.crm-summary-email-block');
+        cj.ajax({ 
                         data: { 'class_name':'CRM_Contact_Form_Inline_Email' },
                         url: dataUrl,
                         async: false
-                    }).responseText;
-
+        }).done( function(response) {
         cj( '#email-block' ).html( response );
+    });
+
+        removeCiviOverlay('.crm-summary-email-block');
     });
 });
 {/literal}{/if}{literal}
-
 function showHideSignature( blockId ) {
   cj("#Email_Block_" + blockId + "_signature").show( );   
 

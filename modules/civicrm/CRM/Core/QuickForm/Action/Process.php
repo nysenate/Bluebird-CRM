@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,41 +29,38 @@
  * Redefine the process action.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/QuickForm/Action.php';
-
 class CRM_Core_QuickForm_Action_Process extends CRM_Core_QuickForm_Action {
 
-    /**
-     * class constructor
-     *
-     * @param object $stateMachine reference to state machine object
-     *
-     * @return object
-     * @access public
-     */
-    function __construct( &$stateMachine ) {
-        parent::__construct( $stateMachine );
-    }
+  /**
+   * class constructor
+   *
+   * @param object $stateMachine reference to state machine object
+   *
+   * @return object
+   * @access public
+   */
+  function __construct(&$stateMachine) {
+    parent::__construct($stateMachine);
+  }
 
-    /**
-     * Processes the request. 
-     *
-     * @param  object    $page       CRM_Core_Form the current form-page
-     * @param  string    $actionName Current action name, as one Action object can serve multiple actions
-     *
-     * @return void
-     * @access public
-     */
-    function perform(&$page, $actionName) {
-        $this->_stateMachine->reset( );
-        $this->popUserContext( );
+  /**
+   * Processes the request.
+   *
+   * @param  object    $page       CRM_Core_Form the current form-page
+   * @param  string    $actionName Current action name, as one Action object can serve multiple actions
+   *
+   * @return void
+   * @access public
+   */
+  function perform(&$page, $actionName) {
+    if ($this->_stateMachine->shouldReset()) {
+      $this->_stateMachine->reset();
     }
-
+    $this->popUserContext();
+  }
 }
-
 

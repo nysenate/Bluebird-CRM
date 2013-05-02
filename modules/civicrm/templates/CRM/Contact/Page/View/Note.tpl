@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -127,16 +127,15 @@
             elRow.removeClass('view-comments');
         } else {
             var getUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0}"{literal};
-            cj.get(getUrl, { fnName: 'civicrm/note/tree_get', json: 1, id: noteId }, showComments, 'json' );
+            cj.post(getUrl, { fnName: 'civicrm/note/tree_get', json: 1, id: noteId, sequential: 1 }, showComments, 'json' );
         }
 
     }
 
     function showComments (response) {
-
         var urlTemplate = '{/literal}{crmURL p='civicrm/contact/view' q="reset=1&cid=" h=0 }{literal}'
-        if (response[0] && response[0].entity_id) {
-            var noteId = response[0].entity_id
+        if (response['values'][0] && response['values'][0].entity_id) {
+            var noteId = response['values'][0].entity_id
             var row = cj('tr#cnote_'+ noteId);
 
             row.addClass('view-comments');
@@ -154,25 +153,25 @@
             } else {
                 commentRows['cnote_'+ noteId] = {}; 
             }
-            for (i in response) {
-                if ( response[i].id ) {
+            for (i in response['values']) {
+                if ( response['values'][i].id ) {
                     if ( commentRows['cnote_'+ noteId] &&
-                        commentRows['cnote_'+ noteId][response[i].id] ) {
+                        commentRows['cnote_'+ noteId][response['values'][i].id] ) {
                         continue;
                     }
-                    str = '<tr id="cnote_'+ response[i].id +'" class="'+ rowClassOddEven +' note-comment_'+ noteId +'">'
+                    str = '<tr id="cnote_'+ response['values'][i].id +'" class="'+ rowClassOddEven +' note-comment_'+ noteId +'">'
                         + '<td></td>'
                         + '<td style="padding-left: 2em">'
-                        + response[i].note
+                        + response['values'][i].note
                         + '</td><td>'
-                        + response[i].subject
+                        + response['values'][i].subject
                         + '</td><td>'
-                        + response[i].modified_date
+                        + response['values'][i].modified_date
                         + '</td><td>'
-                        + '<a href="'+ urlTemplate + response[i].createdById +'">'+ response[i].createdBy +'</a>'
-                        + '</td><td>'+ commentAction.replace(/{cid}/g, response[i].createdById).replace(/{id}/g, response[i].id) +'</td></tr>'
+                        + '<a href="'+ urlTemplate + response['values'][i].createdById +'">'+ response['values'][i].createdBy +'</a>'
+                        + '</td><td>'+ commentAction.replace(/{cid}/g, response['values'][i].createdById).replace(/{id}/g, response['values'][i].id) +'</td></tr>'
 
-                    commentRows['cnote_'+ noteId][response[i].id] = str;
+                    commentRows['cnote_'+ noteId][response['values'][i].id] = str;
                 }
             }
             drawCommentRows('cnote_'+ noteId);
@@ -237,13 +236,13 @@
             <td class="crm-note-comment">
                 {if $note.comment_count}
                     <span id="{$note.id}_show" style="display:block" class="icon_comments_show">
-                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Show comments for this note.{/ts}"><span class="ui-icon dark-icon ui-icon-triangle-1-e"></span>
+                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Show comments for this note.{/ts}"><span class="ui-icon dark-icon ui-icon-triangle-1-e"></span></a>
                     </span>
                     <span id="{$note.id}_hide" style="display:none" class="icon_comments_hide">
-                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Hide comments for this note.{/ts}"><span class="ui-icon dark-icon ui-icon-triangle-1-s"></span>
+                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Hide comments for this note.{/ts}"><span class="ui-icon dark-icon ui-icon-triangle-1-s"></span></a>
                     </span>
                 {else}
-                    <span class="ui-icon light-icon ui-icon-triangle-1-e" id="{$note.id}_hide" style="display:none"></span>
+                    <span class="ui-icon ui-icon-triangle-1-e" id="{$note.id}_hide" style="display:none"></span>
                 {/if}
             </td>
             <td class="crm-note-note">

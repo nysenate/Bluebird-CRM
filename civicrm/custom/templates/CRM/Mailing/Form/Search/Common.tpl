@@ -22,16 +22,8 @@
   </td>
 </tr>
 <tr>
-  <td>
-    {$form.mailing_date_low.label} 
-    <br />
-    {include file="CRM/common/jcalendar.tpl" elementName=mailing_date_low}
-  </td>
-  <td>
-    {$form.mailing_date_high.label}
-    <br />
-    {include file="CRM/common/jcalendar.tpl" elementName=mailing_date_high}
-  </td>
+	<tr><td><label>{ts}Mailing Date{/ts}</label></td></tr>
+	{include file="CRM/Core/DateRange.tpl" fieldName="mailing_date" from='_low' to='_high'}
 </tr>
 <tr>
   <td>
@@ -61,7 +53,6 @@
     <span class="crm-clear-link">(<a href="javascript:unselectRadio('mailing_reply_status','{$form.formName}')">{ts}clear{/ts}</a>)</span>
   </td>
 </tr>
-{*NYSS 4718*}
 <tr>
   <td>
     <table>

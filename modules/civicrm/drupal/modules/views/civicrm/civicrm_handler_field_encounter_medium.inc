@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
  * Heavily based on anonymous code contribution. No claim.
  *
@@ -30,25 +31,26 @@
  *
  */
 class civicrm_handler_field_encounter_medium extends views_handler_field {
-    static $_encounter_medium;
-
-    function construct( ) {
-        if ( ! self::$_encounter_medium ) {
-            if ( ! civicrm_initialize( ) ) {
-                return;
-            }
-            require_once 'CRM/Core/OptionGroup.php';
-            self::$_encounter_medium = CRM_Core_OptionGroup::values( 'encounter_medium', false );
-        }
+  static $_encounter_medium;
+  function construct() {
+    parent::construct();
+    if (!self::$_encounter_medium) {
+      if (!civicrm_initialize()) {
+        return;
+      }
+      require_once 'CRM/Core/OptionGroup.php';
+      self::$_encounter_medium = CRM_Core_OptionGroup::values('encounter_medium', FALSE);
     }
+  }
 
-    function render( $values ) {
-        $sid = $values->{$this->field_alias};
-        if ( empty( $sid ) ||
-             (int ) $sid <= 0 ) {
-            return null;
-        }
-        return self::$_encounter_medium[$values->{$this->field_alias}];
+  function render($values) {
+    $sid = $values->{$this->field_alias};
+    if (empty($sid) ||
+      (int ) $sid <= 0
+    ) {
+      return NULL;
     }
+    return self::$_encounter_medium[$values->{$this->field_alias}];
+  }
 }
 

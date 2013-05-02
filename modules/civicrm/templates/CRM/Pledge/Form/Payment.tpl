@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
             <td>{include file="CRM/common/jcalendar.tpl" elementName=scheduled_date}
             <span class="description">{ts}Scheduled Date for Pledge payment.{/ts}</span></td></tr>
         </td></tr>
-	<tr><td class="label">{$form.scheduled_amount.label}</td><td class="form-layout">{$form.scheduled_amount.html}
+	<tr><td class="label">{$form.scheduled_amount.label}</td><td class="form-layout">{$form.currency.html}&nbsp;{$form.scheduled_amount.html}
 	    {if !$pledgePayment}{ts}<a href="#" onclick="adjustPayment();">adjust scheduled amount</a>{help id="adjust-payment-amount"}{/ts}{/if}
 	    </td>
 	</tr>

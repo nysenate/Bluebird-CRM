@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
     <tr>
 	<td>{ts}Email{/ts}
 	    &nbsp;&nbsp;<a id='addEmail' href="#" title={ts}Add{/ts} onClick="buildAdditionalBlocks( 'Email', '{$className}');return false;">{ts}add{/ts}</a>
-	</td> 
+	</td>
 	{if $className eq 'CRM_Contact_Form_Contact'}
 	    <td>{ts}On Hold?{/ts} {help id="id-onhold" file="CRM/Contact/Form/Contact.hlp"}</td>
 	    <td>{ts}Bulk Mailings?{/ts} {help id="id-bulkmail" file="CRM/Contact/Form/Contact.hlp"}</td>
@@ -39,15 +39,15 @@
 	{/if}
     </tr>
 {/if}
- 
+
 <tr id="Email_Block_{$blockId}">
     <td style="width: 50%;">{$form.email.$blockId.email.html|crmReplace:class:twenty}&nbsp;{$form.email.$blockId.location_type_id.html}
     <div class="clear"></div>
 {if $className eq 'CRM_Contact_Form_Contact'}
 <div class="crm-accordion-wrapper crm-accordion-email-signature crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-{ts}Signature{/ts} 
+  <div class="icon crm-accordion-pointer"></div>
+{ts}Signature{/ts}
   </div><!-- /.crm-accordion-header -->
   <div id="signatureBlock{$blockId}" class="crm-accordion-body">
             {$form.email.$blockId.signature_html.label}<br />{$form.email.$blockId.signature_html.html}<br />
@@ -58,7 +58,11 @@
 {/if}
     </td>
     <td align="center">{$form.email.$blockId.on_hold.html}</td>
-    <td align="center" id="Email-Bulkmail-html">{$form.email.$blockId.is_bulkmail.html}</td>
+    {if $multipleBulk}
+      <td align="center" id="Email-Bulkmail-html">{$form.email.$blockId.is_bulkmail.html}</td>
+    {else}
+      <td align="center" id="Email-Bulkmail-html">{$form.email.$blockId.is_bulkmail.1.html}</td>
+    {/if}
     <td align="center" id="Email-Primary-html" {if $blockId eq 1}class="hiddenElement"{/if}>{$form.email.$blockId.is_primary.1.html}</td>
     {if $blockId gt 1}
 	<td><a href="#" title="{ts}Delete Email Block{/ts}" onClick="removeBlock( 'Email', '{$blockId}' ); return false;">{ts}delete{/ts}</a></td>

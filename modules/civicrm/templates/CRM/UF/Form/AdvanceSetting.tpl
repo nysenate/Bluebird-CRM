@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -69,13 +69,11 @@
             <td>{$form.add_captcha.html} {$form.add_captcha.label} {help id='id-add_captcha' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
         
-        {if ($config->userFramework == 'Drupal') OR ($config->userFramework == 'Joomla') }
-            {* Create CMS user only available for Drupal/Joomla installs. *}
         <tr class="crm-uf-advancesetting-form-block-is_cms_user">
                 <td class="label">{$form.is_cms_user.label}</td>
                 <td>{$form.is_cms_user.html} {help id='id-is_cms_user' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>		
-        {/if}
+
         <tr class="crm-uf-advancesetting-form-block-is_update_dupe">
             <td class="label">{$form.is_update_dupe.label}</td>
             <td>{$form.is_update_dupe.html} {help id='id-is_update_dupe' file="CRM/UF/Form/Group.hlp"}</td>
@@ -100,5 +98,6 @@
             <td>{$form.is_uf_link.html} {$form.is_uf_link.label} {help id='id-is_uf_link' file="CRM/UF/Form/Group.hlp"}</td>
         </tr>
     </table>
+    </div><!-- / .crm-block -->
   </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->

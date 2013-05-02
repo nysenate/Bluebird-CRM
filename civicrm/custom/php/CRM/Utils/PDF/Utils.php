@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,14 +28,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-
 class CRM_Utils_PDF_Utils {
 
+  //NYSS
   // use a 4MiB chunk size
   const CHUNK_SIZE = 4194304;
   // No need to strip extra whitespace from the HTML, since the incoming
@@ -45,37 +43,36 @@ class CRM_Utils_PDF_Utils {
   const HTML_STRIP_SPACE = false;
 
 
-  static function html2pdf( &$text, $fileName = 'civicrm.pdf', $output = false, $pdfFormat = null )
-  {
-    if ( is_array( $text ) ) {
-      $pages =& $text;
-    } else {
-      $pages = array( $text );
+  static function html2pdf(&$text, $fileName = 'civicrm.pdf', $output = FALSE, $pdfFormat = NULL) {
+    if (is_array($text)) {
+      $pages = &$text;
     }
-
+    else {
+      $pages = array($text);
+    }
     // Get PDF Page Format
-    require_once "CRM/Core/BAO/PdfFormat.php";
     $format = CRM_Core_BAO_PdfFormat::getDefaultValues();
-    if ( is_array( $pdfFormat ) ) {
+    if (is_array($pdfFormat)) {
       // PDF Page Format parameters passed in
-      $format = array_merge( $format, $pdfFormat );
-    } else {
-      // PDF Page Format ID passed in
-      $format = CRM_Core_BAO_PdfFormat::getById( $pdfFormat );
+      $format = array_merge($format, $pdfFormat);
     }
-    require_once 'CRM/Core/BAO/PaperSize.php';
-    $paperSize = CRM_Core_BAO_PaperSize::getByName( $format['paper_size'] );
-    $paper_width = self::convertMetric( $paperSize['width'], $paperSize['metric'], 'pt' );
-    $paper_height = self::convertMetric( $paperSize['height'], $paperSize['metric'], 'pt' );
-    $paper_size = array(0, 0, $paper_width, $paper_height);// dompdf requires dimensions in points
-    $orientation = CRM_Core_BAO_PdfFormat::getValue( 'orientation', $format );
-    $metric = CRM_Core_BAO_PdfFormat::getValue( 'metric', $format );
-    $t = CRM_Core_BAO_PdfFormat::getValue( 'margin_top', $format );
-    $r = CRM_Core_BAO_PdfFormat::getValue( 'margin_right', $format );
-    $b = CRM_Core_BAO_PdfFormat::getValue( 'margin_bottom', $format );
-    $l = CRM_Core_BAO_PdfFormat::getValue( 'margin_left', $format );
+    else {
+      // PDF Page Format ID passed in
+      $format = CRM_Core_BAO_PdfFormat::getById($pdfFormat);
+    }
+    $paperSize    = CRM_Core_BAO_PaperSize::getByName($format['paper_size']);
+    $paper_width  = self::convertMetric($paperSize['width'], $paperSize['metric'], 'pt');
+    $paper_height = self::convertMetric($paperSize['height'], $paperSize['metric'], 'pt');
+    // dompdf requires dimensions in points
+    $paper_size  = array(0, 0, $paper_width, $paper_height);
+    $orientation = CRM_Core_BAO_PdfFormat::getValue('orientation', $format);
+    $metric      = CRM_Core_BAO_PdfFormat::getValue('metric', $format);
+    $t           = CRM_Core_BAO_PdfFormat::getValue('margin_top', $format);
+    $r           = CRM_Core_BAO_PdfFormat::getValue('margin_right', $format);
+    $b           = CRM_Core_BAO_PdfFormat::getValue('margin_bottom', $format);
+    $l           = CRM_Core_BAO_PdfFormat::getValue('margin_left', $format);
 
-    $config = CRM_Core_Config::singleton(); 
+    $config = CRM_Core_Config::singleton();
 
     $html_tmpfile = sys_get_temp_dir().DIRECTORY_SEPARATOR.uniqid('bbreport-', true).'.html';
 
@@ -138,19 +135,19 @@ class CRM_Utils_PDF_Utils {
     return $rc;
   }
 
-
   static function _html2pdf_dompdf( $paper_size, $orientation, $html_infile, $output, $filename ) {
     require_once 'packages/dompdf/dompdf_config.inc.php';
     spl_autoload_register('DOMPDF_autoload');
     $dompdf = new DOMPDF();
-    $dompdf->set_paper ($paper_size, $orientation);
+    $dompdf->set_paper($paper_size, $orientation);
     $dompdf->load_html_file($html_infile);
     $dompdf->render();
 
-    if ( $output ) {
+    if ($output) {
       return $dompdf->output();
-    } else {
-      $dompdf->stream( $filename );
+    }
+    else {
+      $dompdf->stream($fileName);
     }
   }
 
@@ -178,7 +175,8 @@ class CRM_Utils_PDF_Utils {
     }
 
     //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
-    $snappy = new Knp_Snappy_Pdf($wkhtmltopdfPath);
+    // kz - Snappy is now using PHP namespaces
+    $snappy = new \Knp\Snappy\Pdf($wkhtmltopdfPath);
     $snappy->setOption( "page-width", $paper_size[2]."pt" );
     $snappy->setOption( "page-height", $paper_size[3]."pt" );
     $snappy->setOption( "orientation", $orientation );
@@ -193,137 +191,181 @@ class CRM_Utils_PDF_Utils {
     }
     else {
       header('Content-Type: application/pdf');
-      header('Content-Disposition: attachment; filename="'.$filename.'"');
+      header('Content-Disposition: attachment; filename="' . $fileName . '"');
       echo $pdf;
     }
   }
-  
 
   /*
-   * function to convert value from one metric to another
-   */
-  static function convertMetric( $value, $from, $to, $precision = null ) {
-    switch( $from . $to ) {
-      case 'incm': $value *= 2.54;    break;
-      case 'inmm': $value *= 25.4;    break;
-      case 'inpt': $value *= 72;    break;
-      case 'cmin': $value /= 2.54;    break;
-      case 'cmmm': $value *= 10;    break;
-      case 'cmpt': $value *= 72 / 2.54; break;
-      case 'mmin': $value /= 25.4;    break;
-      case 'mmcm': $value /= 10;    break;
-      case 'mmpt': $value *= 72 / 25.4; break;
-      case 'ptin': $value /= 72;    break;
-      case 'ptcm': $value *= 2.54 / 72; break;
-      case 'ptmm': $value *= 25.4 / 72; break;
+     * function to convert value from one metric to another
+     */
+
+  static function convertMetric($value, $from, $to, $precision = NULL) {
+    switch ($from . $to) {
+      case 'incm':
+        $value *= 2.54;
+        break;
+
+      case 'inmm':
+        $value *= 25.4;
+        break;
+
+      case 'inpt':
+        $value *= 72;
+        break;
+
+      case 'cmin':
+        $value /= 2.54;
+        break;
+
+      case 'cmmm':
+        $value *= 10;
+        break;
+
+      case 'cmpt':
+        $value *= 72 / 2.54;
+        break;
+
+      case 'mmin':
+        $value /= 25.4;
+        break;
+
+      case 'mmcm':
+        $value /= 10;
+        break;
+
+      case 'mmpt':
+        $value *= 72 / 25.4;
+        break;
+
+      case 'ptin':
+        $value /= 72;
+        break;
+
+      case 'ptcm':
+        $value *= 2.54 / 72;
+        break;
+
+      case 'ptmm':
+        $value *= 25.4 / 72;
+        break;
     }
-    if ( ! is_null( $precision ) ) {
-      $value = round( $value, $precision );
+    if (!is_null($precision)) {
+      $value = round($value, $precision);
     }
     return $value;
   }
 
-  static function &pdflib( $fileName,
-               $searchPath,
-               &$values,
-               $numPages = 1,
-               $echo  = true,
-               $output  = 'College_Match_App',
-               $creator = 'CiviCRM',
-               $author  = 'http://www.civicrm.org/',
-               $title   = '2006 College Match Scholarship Application' ) {
+  static function &pdflib($fileName,
+    $searchPath,
+    &$values,
+    $numPages = 1,
+    $echo     = TRUE,
+    $output   = 'College_Match_App',
+    $creator  = 'CiviCRM',
+    $author   = 'http://www.civicrm.org/',
+    $title    = '2006 College Match Scholarship Application'
+  ) {
     try {
-      $pdf = new PDFlib( );
-      $pdf->set_parameter( "compatibility", "1.6");
-      $pdf->set_parameter( "licensefile", "/home/paras/bin/license/pdflib.txt");
+      $pdf = new PDFlib();
+      $pdf->set_parameter("compatibility", "1.6");
+      $pdf->set_parameter("licensefile", "/home/paras/bin/license/pdflib.txt");
 
-      if ( $pdf->begin_document( '', '' ) == 0 ) {
-        CRM_Core_Error::statusBounce( "PDFlib Error: " . $pdf->get_errmsg( ) );
+      if ($pdf->begin_document('', '') == 0) {
+        CRM_Core_Error::statusBounce("PDFlib Error: " . $pdf->get_errmsg());
       }
 
-      $config = CRM_Core_Config::singleton( );
-      $pdf->set_parameter( 'resourcefile', $config->templateDir . '/Quest/pdf/pdflib.upr' );
-      $pdf->set_parameter( 'textformat', 'utf8' );
+      $config = CRM_Core_Config::singleton();
+      $pdf->set_parameter('resourcefile', $config->templateDir . '/Quest/pdf/pdflib.upr');
+      $pdf->set_parameter('textformat', 'utf8');
 
       /* Set the search path for fonts and PDF files */
-      $pdf->set_parameter( 'SearchPath', $searchPath );
+
+      $pdf->set_parameter('SearchPath', $searchPath);
 
       /* This line is required to avoid problems on Japanese systems */
-      $pdf->set_parameter( 'hypertextencoding', 'winansi' );
 
-      $pdf->set_info( 'Creator', $creator );
-      $pdf->set_info( 'Author' , $author  );
-      $pdf->set_info( 'Title'  , $title   );
+      $pdf->set_parameter('hypertextencoding', 'winansi');
 
-      $blockContainer = $pdf->open_pdi( $fileName, '', 0 );
-      if ( $blockContainer == 0 ) {
-        CRM_Core_Error::statusBounce( 'PDFlib Error: ' . $pdf->get_errmsg( ) );
+      $pdf->set_info('Creator', $creator);
+      $pdf->set_info('Author', $author);
+      $pdf->set_info('Title', $title);
+
+      $blockContainer = $pdf->open_pdi($fileName, '', 0);
+      if ($blockContainer == 0) {
+        CRM_Core_Error::statusBounce('PDFlib Error: ' . $pdf->get_errmsg());
       }
 
-      for ( $i = 1; $i  <= $numPages; $i++ ) {
-        $page = $pdf->open_pdi_page( $blockContainer, $i, '' );
-        if ( $page == 0 ) {
-          CRM_Core_Error::statusBounce( 'PDFlib Error: ' . $pdf->get_errmsg( ) );
+      for ($i = 1; $i <= $numPages; $i++) {
+        $page = $pdf->open_pdi_page($blockContainer, $i, '');
+        if ($page == 0) {
+          CRM_Core_Error::statusBounce('PDFlib Error: ' . $pdf->get_errmsg());
         }
-        
-        $pdf->begin_page_ext( 20, 20, '' ); /* dummy page size */
-        
-        /* This will adjust the page size to the block container's size. */
-        $pdf->fit_pdi_page( $page, 0, 0, 'adjustpage' );
 
-       
-        $status = array( );
+        /* dummy page size */
+        $pdf->begin_page_ext(20, 20, '');
+
+        /* This will adjust the page size to the block container's size. */
+
+        $pdf->fit_pdi_page($page, 0, 0, 'adjustpage');
+
+
+        $status = array();
         /* Fill all text blocks with dynamic data */
-        foreach ( $values as $key => $value ) {
-          if ( is_array( $value ) ) {
+
+        foreach ($values as $key => $value) {
+          if (is_array($value)) {
             continue;
           }
 
           // pdflib does like the forward slash character, hence convert
-          $value = str_replace( '/', '_', $value );
+          $value = str_replace('/', '_', $value);
 
-          $res = $pdf->fill_textblock( $page,
-                         $key,
-                         $value,
-                         'embedding encoding=winansi' );
+          $res = $pdf->fill_textblock($page,
+            $key,
+            $value,
+            'embedding encoding=winansi'
+          );
+
           /**
-          if ( $res == 0 ) {
-            CRM_Core_Error::debug( "$key, $value: $res", $pdf->get_errmsg( ) );
-          } else {
-            CRM_Core_Error::debug( "SUCCESS: $key, $value", null );
-          }
-          **/
+           if ( $res == 0 ) {
+           CRM_Core_Error::debug( "$key, $value: $res", $pdf->get_errmsg( ) );
+           } else {
+           CRM_Core_Error::debug( "SUCCESS: $key, $value", null );
+           }
+           **/
         }
-        
-        $pdf->end_page_ext( '' );
-        $pdf->close_pdi_page( $page );
+
+        $pdf->end_page_ext('');
+        $pdf->close_pdi_page($page);
       }
 
-      $pdf->end_document( '' );
-      $pdf->close_pdi( $blockContainer );
+      $pdf->end_document('');
+      $pdf->close_pdi($blockContainer);
 
       $buf = $pdf->get_buffer();
       $len = strlen($buf);
 
-      if ( $echo ) {
+      if ($echo) {
         header('Content-type: application/pdf');
         header("Content-Length: $len");
         header("Content-Disposition: inline; filename={$output}.pdf");
         echo $buf;
-        CRM_Utils_System::civiExit( ); 
-      } else {
+        CRM_Utils_System::civiExit();
+      }
+      else {
         return $buf;
       }
     }
-    catch ( PDFlibException $excp ) {
-      CRM_Core_Error::statusBounce( 'PDFlib Error: Exception' .
-                      "[" . $excp->get_errnum( ) . "] " . $excp->get_apiname( ) . ": " .
-                      $excp->get_errmsg( ) );
+    catch(PDFlibException$excp) {
+      CRM_Core_Error::statusBounce('PDFlib Error: Exception' .
+        "[" . $excp->get_errnum() . "] " . $excp->get_apiname() . ": " .
+        $excp->get_errmsg()
+      );
     }
-    catch (Exception $excp) {
-      CRM_Core_Error::statusBounce( "PDFlib Error: " . $excp->get_errmsg( ) );
+    catch(Exception$excp) {
+      CRM_Core_Error::statusBounce("PDFlib Error: " . $excp->get_errmsg());
     }
   }
 }
-
 

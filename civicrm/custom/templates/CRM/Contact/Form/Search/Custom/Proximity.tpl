@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,6 +43,7 @@
            <tr><td class="label">{$form.country_id.label}</td><td>{$form.country_id.html}</td></tr>
            <tr><td class="label" style="white-space: nowrap;">{$form.state_province_id.label}</td><td>{$form.state_province_id.html}</td></tr>
            <tr><td class="label">AND ...</td><td></td></tr>
+{*NYSS*}
            <tr><td class="label">{$form.contact_type.label}</td><td>{$form.contact_type.html}</td></tr>
            <tr><td class="label">{$form.group.label}</td><td>{$form.group.html}</td></tr>
            <tr><td class="label">{$form.tag.label}</td><td>{$form.tag.html}</td></tr>

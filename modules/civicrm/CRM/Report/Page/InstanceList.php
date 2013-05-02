@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,34 +30,33 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-require_once 'CRM/Report/Utils/Report.php';
-
 /**
  * Page for invoking report instances
  */
-class CRM_Report_Page_InstanceList extends CRM_Core_Page 
-{
-   /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
-    static $_links = null;
+class CRM_Report_Page_InstanceList extends CRM_Core_Page {
 
-    public static function &info( $ovID = null, &$title = null) {
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
+  static $_links = NULL;
 
-        $report = '';
-        if ( $ovID ) {
-            $report = " AND v.id = {$ovID} ";
-        }
-        $sql = "
+  static $_exceptions = array( 'logging/contact/detail' );
+
+  public static function &info($ovID = NULL, &$title = NULL) {
+
+    $report = '';
+    if ($ovID) {
+      $report = " AND v.id = {$ovID} ";
+    }
+    $sql = "
         SELECT inst.id, inst.title, inst.report_id, inst.description, v.label, 
                ifnull( SUBSTRING(comp.name, 5), 'Contact' ) as compName
           FROM civicrm_option_group g
@@ -69,62 +69,74 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page
                  ON v.component_id = comp.id
             
          WHERE v.is_active = 1 {$report}
+                AND inst.domain_id = %1
+          ORDER BY  v.weight";
 
-         ORDER BY v.weight
-        ";
-        $dao  = CRM_Core_DAO::executeQuery( $sql );
-        $config = CRM_Core_Config::singleton( );
-        $rows = array();
-        $url  = 'civicrm/report/instance';
-        while ( $dao->fetch( ) ) {
-            $enabled = in_array( "Civi{$dao->compName}", $config->enableComponents );
-            if ( $dao->compName == 'Contact') {
-                $enabled = true;
-            } 
-            //filter report listings by permissions
-            if ( !( $enabled && CRM_Report_Utils_Report::isInstancePermissioned( $dao->id ) ) ) {
-                continue;
-            }  
+    $dao = CRM_Core_DAO::executeQuery($sql, array(
+        1 => array(CRM_Core_Config::domainID(), 'Integer'),
+      ));
 
-            if ( trim( $dao->title ) ) {
-                if ( $ovID ) {
-                    $title = ts("Report(s) created from the template: %1", array( 1 => $dao->label ) );
-                }
-                $rows[$dao->compName][$dao->id]['title']       = $dao->title;               
-                $rows[$dao->compName][$dao->id]['label']       = $dao->label;
-                $rows[$dao->compName][$dao->id]['description'] = $dao->description;               
-                $rows[$dao->compName][$dao->id]['url']         = CRM_Utils_System::url( "{$url}/{$dao->id}", "reset=1");
-                if ( CRM_Core_Permission::check( 'administer Reports' ) ) {
-                    $rows[$dao->compName][$dao->id]['deleteUrl'] = 
-                        CRM_Utils_System::url( "{$url}/{$dao->id}", 'action=delete&reset=1');
-                }
-            }
+
+    $config = CRM_Core_Config::singleton();
+    $rows   = array();
+    $url    = 'civicrm/report/instance';
+    while ($dao->fetch()) {
+      if (in_array($dao->report_id, self::$_exceptions)) {
+        continue;
+      }
+
+      $enabled = in_array("Civi{$dao->compName}", $config->enableComponents);
+      if ($dao->compName == 'Contact') {
+        $enabled = TRUE;
+      }
+      //filter report listings by permissions
+      if (!($enabled && CRM_Report_Utils_Report::isInstancePermissioned($dao->id))) {
+        continue;
+      }
+      //filter report listing by group/role
+      if (!($enabled && CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($dao->id))) {
+        continue;
+      }
+
+      if (trim($dao->title)) {
+        if ($ovID) {
+          $title = ts("Report(s) created from the template: %1", array(1 => $dao->label));
         }
-        return $rows;
+        $rows[$dao->compName][$dao->id]['title'] = $dao->title;
+        $rows[$dao->compName][$dao->id]['label'] = $dao->label;
+        $rows[$dao->compName][$dao->id]['description'] = $dao->description;
+        $rows[$dao->compName][$dao->id]['url'] = CRM_Utils_System::url("{$url}/{$dao->id}", "reset=1");
+        if (CRM_Core_Permission::check('administer Reports')) {
+          $rows[$dao->compName][$dao->id]['deleteUrl'] = CRM_Utils_System::url("{$url}/{$dao->id}", 'action=delete&reset=1');
+        }
+      }
     }
+    return $rows;
+  }
 
-    /**
-     * run this page (figure out the action needed and perform it).
-     *
-     * @return void
-     */
-    function run() {
-        //option value ID of the Report
-        $ovID = $title = null;
-        $ovID = CRM_Utils_Request::retrieve( 'ovid', 'Positive', $this );
-        $rows =& self::info( $ovID, $title );
-        
-        $this->assign('list', $rows);
-        if ( $ovID ) {
-            $reportUrl  = CRM_Utils_System::url('civicrm/report/list', "reset=1");
-            $this->assign( 'reportUrl', $reportUrl );
-            $this->assign( 'title', $title);
-        }
-        // assign link to template list for users with appropriate permissions
-        if ( CRM_Core_Permission::check ( 'administer Reports' ) ) {
-            $templateUrl  = CRM_Utils_System::url('civicrm/report/template/list', "reset=1");
-            $this->assign( 'templateUrl', $templateUrl );
-        }
-        return parent::run();
+  /**
+   * run this page (figure out the action needed and perform it).
+   *
+   * @return void
+   */
+  function run() {
+    //option value ID of the Report
+    $ovID = $title = NULL;
+    $ovID = CRM_Utils_Request::retrieve('ovid', 'Positive', $this);
+    $rows = self::info($ovID, $title);
+
+    $this->assign('list', $rows);
+    if ($ovID) {
+      $reportUrl = CRM_Utils_System::url('civicrm/report/list', "reset=1");
+      $this->assign('reportUrl', $reportUrl);
+      $this->assign('title', $title);
     }
+    // assign link to template list for users with appropriate permissions
+    if (CRM_Core_Permission::check('administer Reports')) {
+      $templateUrl = CRM_Utils_System::url('civicrm/report/template/list', "reset=1");
+      $this->assign('templateUrl', $templateUrl);
+    }
+    return parent::run();
+  }
 }
+

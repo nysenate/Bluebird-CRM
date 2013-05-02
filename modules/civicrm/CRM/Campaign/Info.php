@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,100 +25,94 @@
  +--------------------------------------------------------------------+
 */
 
-require_once 'CRM/Core/Component/Info.php';
-
 /**
- * This class introduces component to the system and provides all the 
+ * This class introduces component to the system and provides all the
  * information about it. It needs to extend CRM_Core_Component_Info
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Campaign_Info extends CRM_Core_Component_Info
-{
+class CRM_Campaign_Info extends CRM_Core_Component_Info {
 
-    // docs inherited from interface
-    protected $keyword = 'campaign';
+  // docs inherited from interface
+  protected $keyword = 'campaign';
 
-    // docs inherited from interface
-    public function getInfo()
-    {
-        return array( 'name'                 => 'CiviCampaign',
-                      'translatedName'       => ts('CiviCampaign'),
-                      'title'                => 'CiviCRM Campaign Engine',
-                      'search'               => 1,
-                      'showActivitiesInCore' => 1 
-                      );
+  // docs inherited from interface
+  public function getInfo() {
+    return array(
+      'name' => 'CiviCampaign',
+      'translatedName' => ts('CiviCampaign'),
+      'title' => 'CiviCRM Campaign Engine',
+      'search' => 1,
+      'showActivitiesInCore' => 1,
+    );
+  }
+
+
+  // docs inherited from interface
+  public function getPermissions() {
+    return array(
+      'administer CiviCampaign',
+      'manage campaign',
+      'reserve campaign contacts',
+      'release campaign contacts',
+      'interview campaign contacts',
+      'gotv campaign contacts',
+      'sign CiviCRM Petition',
+    );
+  }
+
+
+  // docs inherited from interface
+  public function getUserDashboardElement() {
+    // no dashboard element for this component
+    return NULL;
+  }
+
+  public function getUserDashboardObject() {
+    // no dashboard element for this component
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function registerTab() {
+    // this component doesn't use contact record tabs
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function registerAdvancedSearchPane() {
+    // this component doesn't use advanced search
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function getActivityTypes() {
+    return NULL;
+  }
+
+  // add shortcut to Create New
+  public function creatNewShortcut(&$shortCuts) {
+    if (CRM_Core_Permission::check('manage campaign') ||
+      CRM_Core_Permission::check('administer CiviCampaign')
+    ) {
+      $shortCuts = array_merge($shortCuts, array(
+        array('path' => 'civicrm/campaign/add',
+            'query' => "reset=1&action=add",
+            'ref' => 'new-campaign',
+            'title' => ts('Campaign'),
+          ),
+          array(
+            'path' => 'civicrm/survey/add',
+            'query' => "reset=1&action=add",
+            'ref' => 'new-survey',
+            'title' => ts('Survey'),
+          ),
+        ));
     }
-
-
-    // docs inherited from interface
-    public function getPermissions()
-    {
-        return array( 'administer CiviCampaign',
-                      'manage campaign',
-                      'reserve campaign contacts',
-                      'release campaign contacts',
-                      'interview campaign contacts',
-                      'gotv campaign contacts',
-                      'sign CiviCRM Petition'
-                      );
-    }
-
-
-    // docs inherited from interface
-    public function getUserDashboardElement()
-    {
-        // no dashboard element for this component
-        return null;
-    }
-
-    public function getUserDashboardObject( )
-    {
-        // no dashboard element for this component
-        return null;
-    }
-    
-    // docs inherited from interface  
-    public function registerTab()
-    {
-        // this component doesn't use contact record tabs
-        return null;
-    }
-    
-    // docs inherited from interface  
-    public function registerAdvancedSearchPane()
-    {
-        // this component doesn't use advanced search
-        return null;
-    }    
-    
-    // docs inherited from interface    
-    public function getActivityTypes()
-    {
-        return null;
-    }
-
-    // add shortcut to Create New
-    public function creatNewShortcut( &$shortCuts ) {
-        require_once 'CRM/Core/Permission.php';
-        if ( CRM_Core_Permission::check('manage campaign') ||
-             CRM_Core_Permission::check('administer CiviCampaign') ) {
-            $shortCuts = 
-                array_merge($shortCuts, array( array( 'path'  => 'civicrm/campaign/add',
-                                                      'query' => "reset=1&action=add",
-                                                      'ref'   => 'new-campaign',
-                                                      'title' => ts('Campaign') ),
-                                               array( 'path'  => 'civicrm/survey/add',
-                                                      'query' => "reset=1&action=add",
-                                                      'ref'   => 'new-survey',
-                                                      'title' => ts('Survey') )
-                                               ));
-        }
-
-    }
-    
+  }
 }
+

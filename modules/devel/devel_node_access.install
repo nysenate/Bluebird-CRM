@@ -1,15 +1,13 @@
 <?php
 
 /**
- * @file
- * This module gives developers feedback as to what their
- * node_access table contains, and which nodes are protected or
- * visible to the public.
+ * Implements hook_uninstall().
  */
-
-function devel_node_access_install() {
-}
-
 function devel_node_access_uninstall() {
   variable_del('devel_node_access_debug_mode');
+
+  if (!module_exists('devel') && ($devel_menu = menu_load('devel'))) {
+    // Delete the development menu.
+    menu_delete($devel_menu);
+  }
 }

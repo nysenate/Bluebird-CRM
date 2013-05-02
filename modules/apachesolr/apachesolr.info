@@ -1,13 +1,31 @@
 name = Apache Solr framework
 description = Framework for searching with Solr
-dependencies[] = search
-package = Apache Solr
-core = "6.x"
-php = 5.1.4
+package = Search Toolkit
+core = 7.x
+configure = admin/config/search/apachesolr/settings
 
-; Information added by drupal.org packaging script on 2011-05-25
-version = "6.x-1.5"
-core = "6.x"
+files[] = apachesolr.install
+files[] = apachesolr.module
+files[] = apachesolr.admin.inc
+files[] = apachesolr.index.inc
+files[] = apachesolr.interface.inc
+files[] = Drupal_Apache_Solr_Service.php
+files[] = Apache_Solr_Document.php
+files[] = Solr_Base_Query.php
+files[] = plugins/facetapi/adapter.inc
+files[] = plugins/facetapi/query_type_date.inc
+files[] = plugins/facetapi/query_type_term.inc
+files[] = plugins/facetapi/query_type_numeric_range.inc
+files[] = tests/Dummy_Solr.php
+files[] = tests/apachesolr_base.test
+files[] = tests/solr_index_and_search.test
+files[] = tests/solr_base_query.test
+files[] = tests/solr_base_subquery.test
+files[] = tests/solr_document.test
+
+; Information added by drupal.org packaging script on 2012-06-21
+version = "7.x-1.0-rc2"
+core = "7.x"
 project = "apachesolr"
-datestamp = "1306336914"
+datestamp = "1340280372"
 

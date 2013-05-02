@@ -18,7 +18,7 @@ drupal_script_init();
 
 require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
+//CRM_Core_Error::debug('config',$config);
 
 echo "Rebuilding triggers...\n";
 CRM_Core_DAO::triggerRebuild( );
-

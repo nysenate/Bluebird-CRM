@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
     static $_links = null;
     /**
      * static instance to hold the values that can
-     * be imported / apu
+     * be imported
      *
      * @var array
      * @static
@@ -66,7 +66,7 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
     static $_import = null;
     /**
      * static instance to hold the values that can
-     * be exported / apu
+     * be exported
      *
      * @var array
      * @static
@@ -166,6 +166,7 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      */
     function __construct()
     {
+        $this->__table = 'civicrm_membership_block';
         parent::__construct();
     }
     /**
@@ -174,7 +175,7 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &links()
+    function links()
     {
         if (!(self::$_links)) {
             self::$_links = array(
@@ -190,7 +191,7 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &fields()
+    static function &fields()
     {
         if (!(self::$_fields)) {
             self::$_fields = array(
@@ -279,12 +280,12 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      * returns the names of this table
      *
      * @access public
+     * @static
      * @return string
      */
-    function getTableName()
+    static function getTableName()
     {
-        global $dbLocale;
-        return self::$_tableName . $dbLocale;
+        return CRM_Core_DAO::getLocaleTableName(self::$_tableName);
     }
     /**
      * returns if this table needs to be logged
@@ -301,12 +302,13 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &import($prefix = false)
+    static function &import($prefix = false)
     {
         if (!(self::$_import)) {
             self::$_import = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('import', $field)) {
                     if ($prefix) {
@@ -324,12 +326,13 @@ class CRM_Member_DAO_MembershipBlock extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &export($prefix = false)
+    static function &export($prefix = false)
     {
         if (!(self::$_export)) {
             self::$_export = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('export', $field)) {
                     if ($prefix) {

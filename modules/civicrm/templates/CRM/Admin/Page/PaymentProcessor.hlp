@@ -24,8 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 {htxt id='proc-type'}
-{capture assign=docLink}{docURL page="CiviContribute Payment Processor Configuration" text="configuration procedures for each Payment Processor"}{/capture}
-{ts 1=$docLink}Review the %1 first. If you're not sure which processor to use - we recommend reviewing terms, limitations and coverage areas on each processor's website before proceeding. If your preferred processor is not in the list, consider partnering with a developer and contributing a plugin.{/ts}
+{capture assign=bookLink}{docURL page="user/contributions/payment-processors" text="payment processor overview"}{/capture}
+{capture assign=wikiLink}{docURL page="Payment Processors" text="configuration procedures for each Payment Processor" resource="wiki"}{/capture}
+{ts 1=$bookLink 2=$wikiLink}Review the %1 and %2 first. If you're not sure which processor to use - we recommend reviewing terms, limitations and coverage areas on each processor's website before proceeding. If your preferred processor is not in the list, consider partnering with a developer and contributing a plugin.{/ts}
 {/htxt}
 
 {htxt id='AuthNet_AIM-live-user-name'}

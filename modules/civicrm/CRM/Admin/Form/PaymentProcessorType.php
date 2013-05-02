@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,189 +28,216 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id: PaymentProcessorType.php 9702 2007-05-29 23:57:16Z lobo $
  *
  */
 
-require_once 'CRM/Admin/Form.php';
-
 /**
  * This class generates form components for Location Type
- * 
+ *
  */
-class CRM_Admin_Form_PaymentProcessorType extends CRM_Admin_Form
-{
-    protected $_id     = null;
+class CRM_Admin_Form_PaymentProcessorType extends CRM_Admin_Form {
+  protected $_id = NULL;
 
-    protected $_fields = null;
+  protected $_fields = NULL; function preProcess() {
+    parent::preProcess();
 
-    function preProcess( ) {
-        parent::preProcess( );
+    $this->_fields = array(
+      array(
+        'name' => 'name',
+        'label' => ts('Name'),
+        'required' => TRUE,
+      ),
+      array(
+        'name' => 'title',
+        'label' => ts('Title'),
+        'required' => TRUE,
+      ),
+      array(
+        'name' => 'billing_mode',
+        'label' => ts('Billing Mode'),
+        'required' => TRUE,
+        'rule' => 'positiveInteger',
+        'msg' => ts('Enter a positive integer'),
+      ),
+      array(
+        'name' => 'description',
+        'label' => ts('Description'),
+      ),
+      array(
+        'name' => 'user_name_label',
+        'label' => ts('User Name Label'),
+      ),
+      array(
+        'name' => 'password_label',
+        'label' => ts('Password Label'),
+      ),
+      array(
+        'name' => 'signature_label',
+        'label' => ts('Signature Label'),
+      ),
+      array(
+        'name' => 'subject_label',
+        'label' => ts('Subject Label'),
+      ),
+      array(
+        'name' => 'class_name',
+        'label' => ts('PHP class name'),
+        'required' => TRUE,
+      ),
+      array(
+        'name' => 'url_site_default',
+        'label' => ts('Live Site URL'),
+        'required' => TRUE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_api_default',
+        'label' => ts('Live API URL'),
+        'required' => FALSE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_recur_default',
+        'label' => ts('Live Recurring Payments URL'),
+        'required' => TRUE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_button_default',
+        'label' => ts('Live Button URL'),
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_site_test_default',
+        'label' => ts('Test Site URL'),
+        'required' => TRUE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_api_test_default',
+        'label' => ts('Test API URL'),
+        'required' => FALSE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_recur_test_default',
+        'label' => ts('Test Recurring Payments URL'),
+        'required' => TRUE,
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+      array(
+        'name' => 'url_button_test_default',
+        'label' => ts('Test Button URL'),
+        'rule' => 'url',
+        'msg' => ts('Enter a valid URL'),
+      ),
+    );
+  }
 
-        $this->_fields = array(
-                               array( 'name'     => 'name',
-                                      'label'    => ts( 'Name' ),
-                                      'required' => true ),
-                               array( 'name'     => 'title',
-                                      'label'    => ts( 'Title' ),
-                                      'required' => true ),
-                               array( 'name'     => 'billing_mode',
-                                      'label'    => ts( 'Billing Mode' ),
-                                      'required' => true,
-                                      'rule'     => 'positiveInteger',
-                                      'msg'      => ts( 'Enter a positive integer' ) ),
-                               array( 'name'     => 'description',
-                                      'label'    => ts( 'Description' ) ),
-                               array( 'name'     => 'user_name_label',
-                                      'label'    => ts( 'User Name Label' ) ),
-                               array( 'name'     => 'password_label',
-                                      'label'    => ts( 'Password Label' ) ),
-                               array( 'name'     => 'signature_label',
-                                      'label'    => ts( 'Signature Label' ) ),
-                               array( 'name'     => 'subject_label',
-                                      'label'    => ts( 'Subject Label' ) ),
-                               array( 'name'     => 'class_name',
-                                      'label'    => ts( 'PHP class name' ),
-                                      'required' => true ),
-                               array( 'name'     => 'url_site_default',
-                                      'label'    => ts( 'Live Site URL' ),
-                                      'required' => true,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_api_default',
-                                      'label'    => ts( 'Live API URL' ),
-                                      'required' => false,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_recur_default',
-                                      'label'    => ts( 'Live Recurring Payments URL' ),
-                                      'required' => true,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_button_default',
-                                      'label'    => ts( 'Live Button URL' ),
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_site_test_default',
-                                      'label'    => ts( 'Test Site URL' ),
-                                      'required' => true,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_api_test_default',
-                                      'label'    => ts( 'Test API URL' ),
-                                      'required' => false,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_recur_test_default',
-                                      'label'    => ts( 'Test Recurring Payments URL' ),
-                                      'required' => true,
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               array( 'name'     => 'url_button_test_default',
-                                      'label'    => ts( 'Test Button URL' ),
-                                      'rule'     => 'url',
-                                      'msg'      => ts( 'Enter a valid URL' ) ),
-                               );
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm($check = FALSE) {
+    parent::buildQuickForm();
+
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      return;
     }
 
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( $check = false ) 
-    {
-        parent::buildQuickForm( );
-        
-        if ( $this->_action & CRM_Core_Action::DELETE ) { 
-            return;
-        }
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_PaymentProcessorType');
 
-        $attributes = CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_PaymentProcessorType' );
-
-        foreach ( $this->_fields as $field ) {
-            $required = CRM_Utils_Array::value( 'required', $field, false );
-            $this->add( 'text', $field['name'],
-                        $field['label'], $attributes['name'], $required );
-            if ( CRM_Utils_Array::value( 'rule', $field ) ) {
-                $this->addRule( $field['name']         , $field['msg'], $field['rule'] );
-            }
-        }
-
-        // is this processor active ?
-        $this->add('checkbox', 'is_active' , ts('Is this Payment Processor Type active?') );
-        $this->add('checkbox', 'is_default', ts('Is this Payment Processor Type the default?') );
-        $this->add('checkbox', 'is_recur'  , ts('Does this Payment Processor Type support recurring donations?') );
+    foreach ($this->_fields as $field) {
+      $required = CRM_Utils_Array::value('required', $field, FALSE);
+      $this->add('text', $field['name'],
+        $field['label'], $attributes['name'], $required
+      );
+      if (CRM_Utils_Array::value('rule', $field)) {
+        $this->addRule($field['name'], $field['msg'], $field['rule']);
+      }
     }
 
-    function setDefaultValues( ) {
-        $defaults = array( );
+    // is this processor active ?
+    $this->add('checkbox', 'is_active', ts('Is this Payment Processor Type active?'));
+    $this->add('checkbox', 'is_default', ts('Is this Payment Processor Type the default?'));
+    $this->add('checkbox', 'is_recur', ts('Does this Payment Processor Type support recurring donations?'));
+  }
 
-        if ( ! $this->_id ) {
-            $defaults['is_active'] = $defaults['is_default'] = 1;
-            $defaults['user_name_label'] = ts( 'User Name' );
-            $defaults['password_label']  = ts( 'Password' );
-            $defaults['signature_label'] = ts( 'Signature' );
-            $defaults['subject_label']   = ts( 'Subject' );
-            return $defaults;
-        }
+  function setDefaultValues() {
+    $defaults = array();
 
-        $dao = new CRM_Core_DAO_PaymentProcessorType( );
-        $dao->id        = $this->_id;
-
-        if ( ! $dao->find( true ) ) {
-            return $defaults;
-        }
-
-        CRM_Core_DAO::storeValues( $dao, $defaults );
-        
-        return $defaults;
+    if (!$this->_id) {
+      $defaults['is_active'] = $defaults['is_default'] = 1;
+      $defaults['user_name_label'] = ts('User Name');
+      $defaults['password_label'] = ts('Password');
+      $defaults['signature_label'] = ts('Signature');
+      $defaults['subject_label'] = ts('Subject');
+      return $defaults;
     }
 
-    /**
-     * Function to process the form
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() 
-    {
-        CRM_Utils_System::flushCache( 'CRM_Core_DAO_PaymentProcessorType' );
+    $dao = new CRM_Core_DAO_PaymentProcessorType();
+    $dao->id = $this->_id;
 
-        if ( $this->_action & CRM_Core_Action::DELETE ) {
-            CRM_Core_BAO_PaymentProcessorType::del( $this->_id );
-            return;
-        }
-        
-        $values = $this->controller->exportValues( $this->_name );        
+    if (!$dao->find(TRUE)) {
+      return $defaults;
+    }
 
-        if ( CRM_Utils_Array::value( 'is_default', $values ) ) {
-            $query = "
+    CRM_Core_DAO::storeValues($dao, $defaults);
+
+    return $defaults;
+  }
+
+  /**
+   * Function to process the form
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    CRM_Utils_System::flushCache('CRM_Core_DAO_PaymentProcessorType');
+
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      CRM_Core_BAO_PaymentProcessorType::del($this->_id);
+      return;
+    }
+
+    $values = $this->controller->exportValues($this->_name);
+
+    if (CRM_Utils_Array::value('is_default', $values)) {
+      $query = "
 UPDATE civicrm_payment_processor SET is_default = 0";
-            CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
-        }
-
-        $dao = new CRM_Core_DAO_PaymentProcessorType( );
-
-        $dao->id         = $this->_id;
-        $dao->is_default = CRM_Utils_Array::value( 'is_default', $values, 0 );
-        $dao->is_active  = CRM_Utils_Array::value( 'is_active' , $values, 0 );
-        $dao->is_recur   = CRM_Utils_Array::value( 'is_recur'  , $values, 0 );
-
-        $dao->name         = $values['name'];
-        $dao->description  = $values['description'];
-        
-        foreach ( $this->_fields as $field ) {
-            $dao->{$field['name']} = trim( $values[$field['name']] );
-            if ( empty( $dao->{$field['name']} ) ) {
-                $dao->{$field['name']} = 'null';
-            }
-        }
-        $dao->save( );
+      CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
     }
 
-}
+    $dao = new CRM_Core_DAO_PaymentProcessorType();
 
+    $dao->id         = $this->_id;
+    $dao->is_default = CRM_Utils_Array::value('is_default', $values, 0);
+    $dao->is_active  = CRM_Utils_Array::value('is_active', $values, 0);
+    $dao->is_recur   = CRM_Utils_Array::value('is_recur', $values, 0);
+
+    $dao->name = $values['name'];
+    $dao->description = $values['description'];
+
+    foreach ($this->_fields as $field) {
+      $dao->{$field['name']} = trim($values[$field['name']]);
+      if (empty($dao->{$field['name']})) {
+        $dao->{$field['name']} = 'null';
+      }
+    }
+    $dao->save();
+  }
+}
 

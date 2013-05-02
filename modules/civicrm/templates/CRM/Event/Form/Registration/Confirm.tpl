@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,7 +40,7 @@
         </div>
     {else}
         <div id="help">
-        {ts}Please verify the information below. Click <strong>Go Back</strong> if you need to make changes.{/ts}
+        {ts}Please verify the information below. Click the <strong>Go Back</strong> button below if you need to make changes.{/ts}
         {if $contributeMode EQ 'notify' and !$is_pay_later and ! $isAmountzero }
             {if $paymentProcessor.payment_processor_type EQ 'Google_Checkout'}
                 {ts 1=$paymentProcessor.processorName}Click the <strong>%1</strong> button to checkout to Google, where you will select your payment method and complete the registration.{/ts}
@@ -55,6 +55,10 @@
             <div class="bold">{$pay_later_receipt}</div>
         {/if}
     {/if}
+
+    <div id="crm-submit-buttons" class="crm-submit-buttons">
+	    {include file="CRM/common/formButtons.tpl" location="top"}
+    </div>
 
     {if $event.confirm_text}
         <div id="intro_text" class="crm-section event_confirm_text-section">
@@ -71,6 +75,32 @@
         </div>
     </div>
     
+    {if $pcpBlock}
+    <div class="crm-group pcp_display-group">
+        <div class="header-dark">
+           {ts}Contribution Honor Roll{/ts}
+        </div>
+        <div class="display-block">
+            {if $pcp_display_in_roll}
+                {ts}List my contribution{/ts}
+                {if $pcp_is_anonymous}
+                    <strong>{ts}anonymously{/ts}.</strong>
+                {else}
+            {ts}under the name{/ts}: <strong>{$pcp_roll_nickname}</strong><br/>
+                    {if $pcp_personal_note}
+                        {ts}With the personal note{/ts}: <strong>{$pcp_personal_note}</strong>
+                    {else}
+                     <strong>{ts}With no personal note{/ts}</strong>
+                     {/if}
+                {/if}
+            {else}
+                {ts}Don't list my contribution in the honor roll.{/ts}
+            {/if}
+            <br />
+        </div>
+    </div>
+    {/if}
+    
     {if $paidEvent} 
         <div class="crm-group event_fees-group">
             <div class="header-dark">
@@ -78,9 +108,9 @@
             </div>
             {if $lineItem}
                 {include file="CRM/Price/Page/LineItem.tpl" context="Event"}
-            {elseif $amount || $amount == 0}
+            {elseif $amounts || $amount == 0}
 			    <div class="crm-section no-label amount-item-section">
-                    {foreach from= $amount item=amount key=level}  
+                    {foreach from= $amounts item=amount key=level}  
     					<div class="content">
     					    {$amount.amount|crmMoney}&nbsp;&nbsp;{$amount.label}
     					</div>
@@ -102,16 +132,6 @@
         </div>
     {/if}
 	
-    <div class="crm-group registered_email-group">
-        <div class="header-dark">
-        	{ts}Registered Email{/ts}
-        </div>
-        <div class="crm-section no-label registered_email-section">
-            <div class="content">{$email}</div>
-		    <div class="clear"></div>
-		</div>
-    </div>
-    
     {if $event.participant_role neq 'Attendee' and $defaultRole}
         <div class="crm-group participant_role-group">
             <div class="header-dark">
@@ -144,10 +164,10 @@
         {foreach from=$addParticipantProfile item=participant key=participantNo}
             <div class="crm-group participant_info-group">
                 <div class="header-dark">
-                    {ts 1=$participantNo+1}Participant Information - Participant %1{/ts}	
+                    {ts 1=$participantNo+1}Participant %1{/ts}	
                 </div>
                 {if $participant.additionalCustomPre}
-                    <fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPreGroupTitle}</div>
+                    <fieldset class="label-left no-border"><div class="bold crm-additional-profile-view-title">{$participant.additionalCustomPreGroupTitle}</div>
                         {foreach from=$participant.additionalCustomPre item=value key=field}
                             <div class="crm-section {$field}-section">
                                 <div class="label">{$field}</div>
@@ -159,8 +179,8 @@
                 {/if}
 
                 {if $participant.additionalCustomPost}
-		{foreach from=$participant.additionalCustomPost item=value key=field}
-                 <fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPostGroupTitle.$field.groupTitle}</div>
+		            {foreach from=$participant.additionalCustomPost item=value key=field}
+                        <fieldset class="label-left no-border"><div class="bold crm-additional-profile-view-title">{$participant.additionalCustomPostGroupTitle.$field.groupTitle}</div>
                         {foreach from=$participant.additionalCustomPost.$field item=value key=field}
                             <div class="crm-section {$field}-section">
                                 <div class="label">{$field}</div>
@@ -168,9 +188,8 @@
                                 <div class="clear"></div>
                             </div>
                         {/foreach}		 
-		{/foreach}		
-
-                    </fieldset>
+                        </fieldset>
+		            {/foreach}
                 {/if}
             </div>
         <div class="spacer"></div>
@@ -210,7 +229,7 @@
     {if $contributeMode NEQ 'notify'} {* In 'notify mode, contributor is taken to processor payment forms next *}
     <div class="messages status section continue_message-section">
         <p>
-        {ts}Your registration will not be submitted until you click the <strong>Continue</strong> button. Please click the button one time only.{/ts}
+        {ts}Your registration will not be submitted until you click the <strong>Continue</strong> button. Please click the button one time only. If you need to change any details, click the Go Back button below to return to the previous screen.{/ts}
         </p>
     </div>
     {/if}    

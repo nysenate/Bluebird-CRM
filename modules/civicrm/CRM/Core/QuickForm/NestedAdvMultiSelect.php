@@ -1,8 +1,7 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright U.S. PIRG Education Fund (c) 2007                        |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -36,22 +35,21 @@
  */
 
 require_once 'HTML/QuickForm/advmultiselect.php';
-
 class CRM_Core_QuickForm_NestedAdvMultiSelect extends HTML_QuickForm_advmultiselect {
-    
-    function load( &$options, $param1 = null, $param2 = null,
-        $param3 = null, $param4 = null ) {
-        switch ( true ) {
-            case ( $options instanceof Iterator ):
-                $arr = array( );
-                foreach ( $options as $key => $val ) {
-                    $arr[$key] = $val;
-                }
-                return $this->loadArray( $arr, $param1 );
-                break;
-            default:
-                return parent::load( $options, $param1, $param2, $param3, $param4 );
+  function load(&$options, $param1 = NULL, $param2 = NULL,
+    $param3 = NULL, $param4 = NULL
+  ) {
+    switch (TRUE) {
+      case ($options instanceof Iterator):
+        $arr = array();
+        foreach ($options as $key => $val) {
+          $arr[$key] = $val;
         }
+        return $this->loadArray($arr, $param1);
+
+      default:
+        return parent::load($options, $param1, $param2, $param3, $param4);
     }
+  }
 }
 

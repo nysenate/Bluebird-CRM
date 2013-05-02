@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,58 +28,53 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-
 /**
  * This is page is for Grant Dashboard
  */
-class CRM_Grant_Page_DashBoard extends CRM_Core_Page 
-{
-    /** 
-     * Heart of the viewing process. The runner gets all the meta data for 
-     * the contact and calls the appropriate type of page to view. 
-     * 
-     * @return void 
-     * @access public 
-     * 
-     */ 
-    function preProcess( ) 
-    {
-        $admin = CRM_Core_Permission::check( 'administer CiviCRM' );
+class CRM_Grant_Page_DashBoard extends CRM_Core_Page {
 
-        require_once 'CRM/Grant/BAO/Grant.php';
-        $grantSummary = CRM_Grant_BAO_Grant::getGrantSummary( $admin );
-        
-        $this->assign( 'grantAdmin'  , $admin );
-        $this->assign( 'grantSummary' , $grantSummary);
-    }
-    
-    /** 
-     * This function is the main function that is called when the page loads, 
-     * it decides the which action has to be taken for the page. 
-     *                                                          
-     * return null        
-     * @access public 
-     */                                                          
-    function run( ) 
-    {
-        $this->preProcess( );
-        
-        $controller = new CRM_Core_Controller_Simple( 'CRM_Grant_Form_Search', ts('grants'), null );
-        $controller->setEmbedded( true ); 
-        $controller->reset( );
-        $controller->set( 'limit', 10 );
-        $controller->set( 'force', 1 );
-        $controller->set( 'context', 'dashboard' ); 
-        $controller->process( ); 
-        $controller->run( ); 
-        
-        return parent::run( );
-    }
+  /**
+   * Heart of the viewing process. The runner gets all the meta data for
+   * the contact and calls the appropriate type of page to view.
+   *
+   * @return void
+   * @access public
+   *
+   */
+  function preProcess() {
+    $admin = CRM_Core_Permission::check('administer CiviCRM');
+
+    $grantSummary = CRM_Grant_BAO_Grant::getGrantSummary($admin);
+
+    $this->assign('grantAdmin', $admin);
+    $this->assign('grantSummary', $grantSummary);
+  }
+
+  /**
+   * This function is the main function that is called when the page loads,
+   * it decides the which action has to be taken for the page.
+   *
+   * return null
+   * @access public
+   */
+  function run() {
+    $this->preProcess();
+
+    $controller = new CRM_Core_Controller_Simple('CRM_Grant_Form_Search', ts('grants'), NULL);
+    $controller->setEmbedded(TRUE);
+    $controller->reset();
+    $controller->set('limit', 10);
+    $controller->set('force', 1);
+    $controller->set('context', 'dashboard');
+    $controller->process();
+    $controller->run();
+
+    return parent::run();
+  }
 }
 

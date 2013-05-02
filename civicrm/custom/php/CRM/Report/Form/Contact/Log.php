@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,21 +30,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 
-    protected $_summary      = null;
+    protected $_summary      = NULL;
 	protected $_addressField = false; //NYSS
     
     function __construct( ) {		
 
-    	$this->activityTypes = CRM_Core_PseudoConstant::activityType(true, true);
+    $this->activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, TRUE);
         asort($this->activityTypes);
     	
         $this->_columns = 
@@ -101,7 +99,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                           ),
                           
                   'civicrm_activity' => 
-                   array( 'dao'       => 'CRM_Activity_DAO_Activity',
+      array(
+        'dao' => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
                           array( 'id'  => array('title'      => ts( 'Activity ID' ),
                                                 'no_display' => true,
@@ -113,12 +112,12 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                  'activity_type_id'  => array('title'    => ts( 'Activity Type' ),
                                                 			  /*'required' => true,*/
                                                ),
-                                 'source_contact_id'  => array('no_display' => true,
-                                                			   'required'   => true,
+          'source_contact_id' => array(
+            'no_display' => TRUE,
+            'required' => TRUE,
                                                ),
                               ),
                           ),
-
                    'civicrm_log' => 
                    array( 'dao'    => 'CRM_Core_DAO_Log',
                           'fields'    =>
@@ -254,24 +253,6 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 			{$this->_aliases['civicrm_log']}.modified_date DESC ";
     }
 	
-    /*function groupBy( ) {
-        $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact_touched']}.id, {$this->_aliases['civicrm_log']}.id ";
-    }*/
-	
-    /*function postProcess( ) {
-
-        $this->beginPostProcess( );
-
-        $sql  = $this->buildQuery( true );
-CRM_Core_Error::debug('sql', $sql); exit();
-        $rows = $graphRows = array();
-        $this->buildRows ( $sql, $rows );
-        
-        $this->formatDisplay( $rows );
-        $this->doTemplateAssignment( $rows );
-        $this->endPostProcess( $rows );	
-    }*/
-	
 	//NYSS alter the way count is generated
 	function statistics( &$rows ) {
         
@@ -312,69 +293,16 @@ CRM_Core_Error::debug('sql', $sql); exit();
                                                         'value' => $rowCount );
         }
     }
-	
-	//NYSS add group by so our counts are contact touched specific
-/*	function limit( $rowCount = self::ROW_COUNT_LIMIT ) {
-        require_once 'CRM/Utils/Pager.php';
-        // lets do the pager if in html mode
-        $this->_limit = null;
-		//CRM_Core_Error::debug($this);
-        if ( $this->_outputMode == 'html' || $this->_outputMode == 'group'  ) {
-            $this->_select = str_ireplace( 'SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ', $this->_select );
-			//$this->_groupBy = 'GROUP BY contact_touched_civireport.id'; //NYSS
-			
-            $pageId = CRM_Utils_Request::retrieve( 'crmPID', 'Integer', CRM_Core_DAO::$_nullObject );
-           
-            if ( !$pageId && !empty($_POST) ) {
-                if ( isset($_POST['PagerBottomButton']) && isset($_POST['crmPID_B']) ) {
-                    $pageId = max( (int) @$_POST['crmPID_B'], 1 );
-                } elseif(  isset($_POST['PagerTopButton']) && isset($_POST['crmPID']) ) {
-                    $pageId = max( (int) @$_POST['crmPID'], 1 );
-                }   
-                unset( $_POST['crmPID_B'] , $_POST['crmPID'] );
-            } 
-            
-            $pageId = $pageId ? $pageId : 1;
-            $this->set( CRM_Utils_Pager::PAGE_ID, $pageId );
-            $offset = ( $pageId - 1 ) * $rowCount;
-
-            $this->_limit  = " LIMIT $offset, " . $rowCount;
-        }
-    }*/
-/*	function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
-        //CRM_Core_Error::debug($this);
-		//$this->_select = str_ireplace( 'SELECT SQL_CALC_FOUND_ROWS', 'SELECT', $this->_select );
-		$this->_select = 'SELECT count(contact_touched_civireport.id)';
-		$this->_groupBy = 'GROUP BY contact_touched_civireport.id';
-		$query = $this->_select.' '.$this->_from.' '.$this->_where.' '.$this->_groupBy;
-		echo $query;
-		
-		if ( $this->_limit && ($this->_limit != '') ) {
-            require_once 'CRM/Utils/Pager.php';
-            $sql    = "SELECT FOUND_ROWS();";
-            $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $query );
-            $params = array( 'total'        => $this->_rowsFound,
-                             'rowCount'     => $rowCount,
-                             'status'       => ts( 'Records %%StatusMessage%%' ),
-                             'buttonBottom' => 'PagerBottomButton',
-                             'buttonTop'    => 'PagerTopButton',
-                             'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
-
-            $pager = new CRM_Utils_Pager( $params );
-            $this->assign_by_ref( 'pager', $pager );
-        }
-    }*/
-	//NYSS end
     
     function alterDisplay( &$rows ) {
         
 		//NYSS 3653 remove pdf button
-		$elements =& $this->_elements;
+		/*$elements =& $this->_elements;
 		foreach ( $elements as $key=>$element ) {
 			if ( $element->_attributes['name'] == '_qf_Log_submit_pdf' ) {
 				unset($elements[$key]);
 			}
-		}
+		}*/
 		
 		// custom code to alter rows
         $entryFound = false;
@@ -385,10 +313,6 @@ CRM_Core_Error::debug('sql', $sql); exit();
 			//NYSS 3504 don't repeat contact details if its same as the previous row
 			$rows[$rowNum]['hideTouched' ] = 0;
 			if ( $this->_outputMode != 'csv' ) {
-				//CRM_Core_Error::debug('row', $row);
-				//CRM_Core_Error::debug('cid', $cid);
-				//CRM_Core_Error::debug('prev_cid', $prev_cid);
-				//CRM_Core_Error::debug('display_flag', $display_flag);
                 if ( array_key_exists('civicrm_contact_touched_id', $row ) && !empty($row['civicrm_contact_touched_id']) ) {
                     if ( $cid = $row['civicrm_contact_touched_id'] ) {
                         if ( $rowNum == 0 ) {

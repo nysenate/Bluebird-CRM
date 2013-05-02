@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,11 +28,16 @@
     {if !$paymentProcessor}
         {capture assign=ppUrl}{crmURL p='civicrm/admin/paymentProcessor' q="reset=1"}{/capture}
         <div class="status message">
-                {ts 1=$ppUrl}No Payment Processor has been configured / enabled for your site. If this is a <strong>paid event</strong> AND you want users to be able to <strong>register and pay online</strong>, you will need to <a href='%1'>configure a Payment Processor</a> first. Then return to this screen and assign the processor to this event.{/ts} {docURL page="CiviContribute Payment Processor Configuration"}
+                {ts 1=$ppUrl}No Payment Processor has been configured / enabled for your site. If this is a <strong>paid event</strong> AND you want users to be able to <strong>register and pay online</strong>, you will need to <a href='%1'>configure a Payment Processor</a> first. Then return to this screen and assign the processor to this event.{/ts} {docURL page="user/contributions/payment-processors"}
                 <p>{ts}NOTE: Alternatively, you can enable the <strong>Pay Later</strong> option below without setting up a payment processor. All users will then be asked to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts}</p>
         </div>
     {/if}
 <div class="crm-block crm-form-block crm-event-manage-fee-form-block">
+{if $isQuick}
+    <div id="popupContainer">
+    {ts}Once you switch to using a Price Set, you won't be able to switch back to your existing settings below except by re-entering them. Are you sure you want to switch to a Price Set?{/ts}
+    </div>
+{/if}
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
@@ -57,20 +62,50 @@
 	        </td>
              </tr>
         </table>
-      {if $paymentProcessor}
+        {if $paymentProcessor}
          <table id="paymentProcessor" class="form-layout">
-             <tr class="crm-event-manage-fee-form-block-payment_processor_id">            
-                <td class="label">{$form.payment_processor_id.label}</td>
-	            <td>{$form.payment_processor_id.html}</td>
+             <tr class="crm-event-manage-fee-form-block-payment_processor">            
+                <td class="label">{$form.payment_processor.label}</td>
+	            <td>{$form.payment_processor.html}</td>
              </tr>
 	         <tr>
                 <td class="">&nbsp;</td>
                 <td class="description">
                  {ts}If this is a paid event and you want users to be able to register and pay online, select a payment processor to use.{/ts}
-                 {ts}NOTE: Alternatively, you can enable the <strong>Pay Later</strong> feature below without setting up a payment processor. All users will then be asked to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts} {docURL page="CiviContribute Payment Processor Configuration"}<td>
+                 {ts}NOTE: Alternatively, you can enable the <strong>Pay Later</strong> feature below without setting up a payment processor. All users will then be asked to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts} {docURL page="user/contributions/payment-processors"}<td>
              </tr>
-        </table>
+         </table>
         {/if}
+
+        <table id="payLater" class="form-layout">
+            <tr class="crm-event-manage-fee-form-block-is_pay_later">
+               <td class="extra-long-fourty label">{$form.is_pay_later.html}</td>
+               <td>{$form.is_pay_later.label}<br />
+                  <span class="description">{ts}Check this box if you want to give users the option to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts}</span>
+              </td>
+            </tr>
+        </table>
+
+        <table id="payLaterOptions" class="form-layout">
+            <tr class="crm-event-manage-fee-form-block-pay_later_text">
+               <td class="label">{$form.pay_later_text.label}<span class="marker"> *</span> </td>
+               <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='pay_later_text' id=$id}{/if}{$form.pay_later_text.html|crmReplace:class:big}
+               </td>
+            </tr>
+            <tr>
+               <td>&nbsp;</td>
+               <td class="description">{ts}Text displayed next to the checkbox for the 'pay later' option on the contribution form.{/ts}</td>
+            </tr>
+            <tr class="crm-event-manage-fee-form-block-pay_later_receipt">
+               <td class="label">{$form.pay_later_receipt.label}<span class="marker"> *</span> </td>
+               <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='pay_later_receipt' id=$id}{/if}{$form.pay_later_receipt.html|crmReplace:class:big}
+               </td>
+            </tr>
+                <td>&nbsp;</td>
+                <td class="description">{ts}Instructions added to Confirmation and Thank-you pages when the user selects the 'pay later' option (e.g. 'Mail your check to ... within 3 business days.').{/ts}
+                </td>
+            </tr>
+        </table>
            
         <table id="contributionType" class="form-layout">
             <tr class="crm-event-manage-fee-form-block-contribution_type_id">
@@ -90,39 +125,10 @@
             </tr>
             <tr>
                <td>&nbsp;</td>
-               <td class="description">{ts}This label is displayed with the list of event fees.{/ts}
+               <td class="description">{ts}This label is displayed with the list of event fees. When using a Price Set, this label is the title for the section containing the price fields.{/ts}
                </td>
             </tr>
-         </table>
-      <table id="payLater" class="form-layout">
-          <tr class="crm-event-manage-fee-form-block-is_pay_later">
-             <td class="extra-long-fourty label">{$form.is_pay_later.html}</td>
-             <td>{$form.is_pay_later.label}<br />
-                <span class="description">{ts}Check this box if you want to give users the option to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts}</span>
-            </td>
-          </tr>
-      </table>
-
-      <table id="payLaterOptions" class="form-layout">
-          <tr class="crm-event-manage-fee-form-block-pay_later_text">
-             <td class="label">{$form.pay_later_text.label}<span class="marker"> *</span> </td>
-             <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='pay_later_text' id=$id}{/if}{$form.pay_later_text.html|crmReplace:class:big}
-             </td>
-          </tr>
-          <tr>
-             <td>&nbsp;</td>
-             <td class="description">{ts}Text displayed next to the checkbox for the 'pay later' option on the contribution form.{/ts}</td>
-          </tr>
-          <tr class="crm-event-manage-fee-form-block-pay_later_receipt">
-             <td class="label">{$form.pay_later_receipt.label}<span class="marker"> *</span> </td>
-             <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='pay_later_receipt' id=$id}{/if}{$form.pay_later_receipt.html|crmReplace:class:big}
-             </td>
-          </tr>
-              <td>&nbsp;</td>
-              <td class="description">{ts}Instructions added to Confirmation and Thank-you pages when the user selects the 'pay later' option (e.g. 'Mail your check to ... within 3 business days.').{/ts}
-              </td>
-          </tr>
-      </table>
+        </table>
 
       <table id="priceSet" class="form-layout">
             <tr class="crm-event-manage-fee-form-block-price_set_id">
@@ -143,9 +149,10 @@
      
         <div id="map-field" >
         <fieldset id="map-field"><legend>{ts}Regular Fees{/ts}</legend>
-        {ts}Use the table below to enter descriptive labels and amounts for up to ten event fee levels. These will be presented as a list of radio button options. Both the label and dollar amount will be displayed. You can also configure one or more sets of discounted fees by checking "Discounts by Signup Date" below.{/ts}
+        {ts}Use the table below to enter descriptive labels and amounts for up to ten event fee levels. These will be presented as a list of radio button options. Both the label and dollar amount will be displayed. You can also configure one or more sets of discounted fees by checking "Discounts by Signup Date" below.{/ts}<br />
+	{if $isQuick}{ts}Click <a id = 'quickconfig' href='#'>here</a> if you want to configure the Regular Fees below as part of a Price Set, with the added flexibility and complexity that entails.{/ts}{/if}
         <table id="map-field-table">
-        <tr class="columnheader"><td scope="column">{ts}Fee Label{/ts}</td><td scope="column">{ts}Amount{/ts}</td><td scope="column">{ts}Default?{/ts}</td></tr>
+        <tr class="columnheader"><td scope="column">{ts}Fee Label{/ts}</td><td scope="column">{ts}Amount{/ts}</td><td scope="column">{ts}Default?{/ts}<br /><span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('default', 'Fee'); return false;" >unselect</a>)</span></td></tr>
         {section name=loop start=1 loop=11}
            {assign var=idx value=$smarty.section.loop.index}
            <tr><td class="even-row crm-event-manage-fee-form-block-label_{$idx}">{$form.label.$idx.html}</td><td class="crm-event-manage-fee-form-block-value_{$idx}">{$form.value.$idx.html|crmMoney}</td><td class="even-row crm-event-manage-fee-form-block-default_{$idx}">{$form.default.$idx.html}</td></tr>
@@ -238,7 +245,6 @@
 </div>
 
 {include file="CRM/common/showHide.tpl"}
-
 <script type="text/javascript">
     var showRows   = new Array({$showBlocks});
     var hideBlocks = new Array({$hideBlocks});
@@ -271,7 +277,7 @@
     
     function warnDiscountDel( ) {
         if ( ! document.getElementsByName('is_discount')[0].checked ) {
-            alert('{/literal}{ts escape="js"}If you uncheck "Discounts by Signup Date" and Save this form, any existing discount sets will be deleted.{/ts} {ts}This action cannot be undone.{/ts} {ts}If this is NOT what you want to do, you can check "Discounts by Signup Date" again.{/ts}{literal}');
+            alert('{/literal}{ts escape="js"}If you uncheck "Discounts by Signup Date" and Save this form, any existing discount sets will be deleted.{/ts} {ts escape="js"}This action cannot be undone.{/ts} {ts escape="js"}If this is NOT what you want to do, you can check "Discounts by Signup Date" again.{/ts}{literal}');
         }
     }
     
@@ -350,4 +356,45 @@
 
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
-
+{if $isQuick}
+{literal}
+<script type="text/javascript">
+cj( document ).ready( function( ) {    
+    cj("#popupContainer").hide();
+});
+cj("#quickconfig").click(function(){
+cj("#popupContainer").dialog({
+	title: "Selected Price Set",
+	width:400,
+	height:220,
+	modal: true,
+	overlay: {
+            	   opacity: 0.5,
+             	   background: "black"
+        },
+        buttons: { 
+                   "Ok": function() { 
+		    var dataUrl  = {/literal}'{crmURL p="civicrm/ajax/rest" h=0 q="className=CRM_Core_Page_AJAX&fnName=setIsQuickConfig&context=civicrm_event&id=$eventId" }';
+		    var redirectUrl = '{crmURL p="civicrm/admin/price/field" h=0 q="reset=1&action=browse&sid=" }';
+		    {literal}
+		   cj.ajax({
+			url: dataUrl,
+			async: false,
+			global: false,
+			success: function ( result ) {
+			  if (result) {
+			    window.location= redirectUrl+eval(result);
+			  }
+			}	
+		   });
+                   },
+		   "Close": function() { 
+                     cj(this).dialog("close");
+                   }
+	}	
+});
+return false;
+});
+</script>
+{/literal}
+{/if}

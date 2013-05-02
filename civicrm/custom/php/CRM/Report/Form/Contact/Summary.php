@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,284 +30,311 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Report/Form.php';
-
 class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 
-    protected $_summary      = null;
+  protected $_summary = NULL;
 
-    protected $_emailField   = false;
-    
-    protected $_phoneField   = false;
-    
-    protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
+  protected $_emailField = FALSE;
+
+  protected $_phoneField = FALSE;
+
+  protected $_customGroupExtends = array(
+    'Contact', 'Individual', 'Household', 'Organization');
     
     function __construct( ) {
-        $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
-        $this->_columns = 
-            array( 'civicrm_contact' =>
-                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
-                          'fields'    =>
-                          array( 'sort_name' => 
-                                 array( 'title'     => ts( 'Contact Name' ),
-                                        'required'  => true,
-                                        'no_repeat' => true ),
+    $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
+    $this->_columns = array(
+      'civicrm_contact' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Contact',
+        'fields' =>
+        array(
+          'sort_name' =>
+          array('title' => ts('Contact Name'),
+            'required' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+          'id' =>
+          array(
+            'no_display' => TRUE,
+            'required' => TRUE,
+          ),
+        ),
+        'filters' =>
+        array(
+          'sort_name' =>
+          array('title' => ts('Contact Name')),
+          'source' =>
+          array('title' => ts('Contact Source'),
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
+          'id' =>
+          array('title' => ts('Contact ID'),
+            'no_display' => TRUE,
+          ),
+        ),
+        'grouping' => 'contact-fields',
+        'order_bys' =>
+        array(
+          'sort_name' =>
+          //NYSS 4236 alter defaults
+          array( 'title' => ts('Contact Name'), 
+            'default' => '1',
+            'default_weight' => '0',
+            'default_is_section' => 0,
+            'default_order' => 'ASC'
+          ),
+        ),
+      ),
+      'civicrm_email' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Email',
+        'fields' =>
+        array(
+          'email' =>
+          array('title' => ts('Email'),
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'contact-fields',
+        /*'order_bys'  =>
+        array(
+          'email' =>
+          array('title' => ts('Email'),
+          ),
+        ),*/
+      ),
+      'civicrm_address' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Address',
+        'grouping' => 'contact-fields',
+        'fields' =>
+        array(
+          'street_address' =>
+          array('default' => TRUE),
+          'city' =>
+          array('default' => TRUE),
+          'postal_code' => NULL,
+          'state_province_id' =>
+          array('title' => ts('State/Province'),
+          ),
+        ),
+        'filters' =>
+        array(
+          /*'country_id' =>
+          array('title' => ts('Country'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_PseudoConstant::country(),
+          ),*/ 
+          'state_province_id' =>
+          array('title' => ts('State / Province'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_PseudoConstant::stateProvince(),
+          ),
+        ),
+        'order_bys' =>
+        array('state_province_id' => array('title' => 'State/Province'),
+          'city' => array('title' => 'City'),
+          'postal_code' => array('title' => 'Postal Code'),
+          //NYSS
+          'street_address' => array( 'title' => 'Street Address'),
+        ),
+      ),
+      /*'civicrm_country' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Country',
+        'fields' =>
+        array(
+          'name' =>
+          array('title' => 'Country', 'default' => TRUE),
+        ),
+        'order_bys' =>
+        array(
+          'name' =>
+          array('title' => 'Country'),
+        ),
+        'grouping' => 'contact-fields',
+      ),*/
+      'civicrm_phone' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
+        'fields' =>
+        array('phone' => NULL),
+        'grouping' => 'contact-fields',
+      ),
+      'civicrm_group' =>
+      array(
+        'dao' => 'CRM_Contact_DAO_Group',
+        'alias' => 'cgroup',
+        'filters' =>
+        array(
+          'gid' =>
+          array(
+            'name' => 'group_id',
+            'title' => ts('Group'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'group' => TRUE,
+            'options' => CRM_Core_PseudoConstant::group(),
+          ),
+        ),
+      ),
+    );
 
-                                 'id'           => 
-                                 array( 'no_display'=> true,
-                                        'required'  => true, ), ),
-                          'filters'   =>             
-                          array( 'sort_name'    => 
-                                 array( 'title'      => ts( 'Contact Name' )  ),
-                                 'source'       => 
-                                 array( 'title'      => ts( 'Contact Source' ),
-                                        'type'       => CRM_Utils_Type::T_STRING ),
-                                 'id'           => 
-                                 array( 'title'      => ts( 'Contact ID' ),
-                                        'no_display' => true ), ),
-                          'grouping'  => 'contact-fields',
-                          'order_bys'  =>
-                          array( 'sort_name' =>
-                                 //NYSS 4236 alter defaults
-								 array( 'title' => ts( 'Contact Name'), 
-								        'default' => '1', 
-										'default_weight' => '0', 
-										'default_is_section' => 0, 
-										'default_order' => 'ASC'
-                                      )
-                          ),
-                          ),
-                   'civicrm_email'   =>
-                   array( 'dao'       => 'CRM_Core_DAO_Email',
-                          'fields'    =>
-                          array( 'email' => 
-                                 array( 'title'      => ts( 'Email' ),
-                                        'no_repeat'  => true 
-                                        ),
-                                 ),
-                          'grouping'  => 'contact-fields', 
-                          /*'order_bys'  =>
-                          array( 'email' =>
-                                 array( 'title' => ts( 'Email' ),
-                                      )
-                          ),*/
-                          ),
-                   
-                   'civicrm_address' =>
-                   array( 'dao'       => 'CRM_Core_DAO_Address',
-                          'grouping'  => 'contact-fields',
-                          'fields'    =>
-                          array( 'street_address'    => 
-                                 array( 'default' => true ),
-                                 'city'              => 
-                                 array( 'default' => true ),
-                                 'postal_code'       => null,
-                                 'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
-                                 ),
-                          'filters'   =>             
-                          array( /*'country_id' => 
-                                 array( 'title'   => ts( 'Country' ),
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'options' => CRM_Core_PseudoConstant::country( ),
-                                        ),*/ 
-                                 'state_province_id' =>  
-                                 array( 'title'   => ts( 'State / Province' ), 
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'options' => CRM_Core_PseudoConstant::stateProvince( ), ), 
-                                 ),
-                          'order_bys'   =>
-                          array( 'state_province_id' => array( 'title' => 'State/Province'),
-                                 'city' => array( 'title' => 'City'),
-                                 'postal_code' => array( 'title' => 'Postal Code'),
-                                 'street_address' => array( 'title' => 'Street Address'),
-                                 ),
-                           ),
-                  /*'civicrm_country' =>
-                  array( 'dao'      => 'CRM_Core_DAO_Country',
-                         'fields'   =>
-                          array( 'name' =>
-                                 array( 'title' => 'Country', 'default' => true),
-                          ),
-                         'order_bys'   =>
-                          array( 'name' =>
-                                 array( 'title' => 'Country'),
-                          ),
-                          'grouping' => 'contact-fields',
-                          ),*/
-                   'civicrm_phone' => 
-                   array( 'dao'       => 'CRM_Core_DAO_Phone',
-                          'fields'    =>
-                          array( 'phone'  => null),
-                          'grouping'  => 'contact-fields',
-                          ),
+    $this->_tagFilter = TRUE;
+    parent::__construct();
+  }
 
-                   'civicrm_group' => 
-                   array( 'dao'    => 'CRM_Contact_DAO_Group',
-                          'alias'  => 'cgroup',
-                          'filters' =>             
-                          array( 'gid' => 
-                                 array( 'name'    => 'group_id',
-                                        'title'   => ts( 'Group' ),
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'group'   => true,
-                                        'options' => CRM_Core_PseudoConstant::group( ) 
-                                        ), 
-                                 ), 
-                          ),
-                   );
+  function preProcess() {
+    parent::preProcess();
+  }
+  
+  //NYSS 5057 - remove some of the custom field order bys
+  function buildForm( ) {
 
-        $this->_tagFilter = true;
-        parent::__construct( );
+    parent::buildForm( );
+    
+    $elements   = $this->_elementIndex;
+    $orderByEle = $elements['order_bys[1][column]'];
+    $orderBys   =& $this->_elements[$orderByEle];  
+      
+    $removeOrderBys = array( 'custom_64', //privacy options note
+                             'custom_25', //DOS
+                             'custom_26', //EIN
+                             'custom_58', //Ethnicity
+                             'custom_62', //Other Ethnicity
+                             'custom_16', //Professional Accreditation
+                 );
+    foreach ( $orderBys->_options as $k => $fld ) {
+      if ( in_array( $fld['attr']['value'], $removeOrderBys ) ) {
+        unset( $orderBys->_options[$k] );
+      }
     }
     
-    function preProcess( ) {
-        parent::preProcess( );
-    }
-	
-	//NYSS 5057 - remove some of the custom field order bys
-	function buildForm( ) {
-
-		parent::buildForm( );
-		
-		$elements   = $this->_elementIndex;
-		$orderByEle = $elements['order_bys[1][column]'];
-		$orderBys   =& $this->_elements[$orderByEle];	
-			
-		$removeOrderBys = array( 'custom_64', //privacy options note
-		                         'custom_25', //DOS
-		                         'custom_26', //EIN
-		                         'custom_58', //Ethnicity
-		                         'custom_62', //Other Ethnicity
-		                         'custom_16', //Professional Accreditation
-								 );
-		foreach ( $orderBys->_options as $k => $fld ) {
-			if ( in_array( $fld['attr']['value'], $removeOrderBys ) ) {
-				unset( $orderBys->_options[$k] );
-			}
-		}
-		
-		//CRM_Core_Error::debug_var('orderBys',$orderBys);
-	}
+    //CRM_Core_Error::debug_var('orderBys',$orderBys);
+  }
     
-    function select( ) {
-        $select = array( );
-        $this->_columnHeaders = array( );
-        foreach ( $this->_columns as $tableName => $table ) {
-            if ( array_key_exists('fields', $table) ) {
-                foreach ( $table['fields'] as $fieldName => $field ) {
-                    if ( CRM_Utils_Array::value( 'required', $field ) ||
-                         CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
-                        if ( $tableName == 'civicrm_email' ) {
-                            $this->_emailField = true;
-                        } else if ( $tableName == 'civicrm_phone' ) {
-                            $this->_phoneField = true;
-                        } else if ( $tableName == 'civicrm_country' ) {
-                            $this->_countryField = true;
-                        }
-
-                        $alias = "{$tableName}_{$fieldName}";
-                        $select[] = "{$field['dbAlias']} as {$alias}";
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
-                        $this->_selectAliases[] = $alias;
-                    }
-                }
+  function select() {
+    $select = array();
+    $this->_columnHeaders = array();
+    foreach ($this->_columns as $tableName => $table) {
+      if (array_key_exists('fields', $table)) {
+        foreach ($table['fields'] as $fieldName => $field) {
+          if (CRM_Utils_Array::value('required', $field) ||
+            CRM_Utils_Array::value($fieldName, $this->_params['fields'])
+          ) {
+            if ($tableName == 'civicrm_email') {
+              $this->_emailField = TRUE;
             }
+            elseif ($tableName == 'civicrm_phone') {
+              $this->_phoneField = TRUE;
+            }
+            elseif ($tableName == 'civicrm_country') {
+              $this->_countryField = TRUE;
+            }
+
+            $alias = "{$tableName}_{$fieldName}";
+            $select[] = "{$field['dbAlias']} as {$alias}";
+            $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
+            $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+            $this->_selectAliases[] = $alias;
+          }
         }
-
-        $this->_select = "SELECT " . implode( ', ', $select ) . " ";
+      }
     }
 
-    static function formRule( $fields, $files, $self ) {  
-        $errors = $grouping = array( );
-        return $errors;
-    }
+    $this->_select = "SELECT " . implode(', ', $select) . " ";
+  }
 
-    function from( ) {
-        $this->_from = "
+  static
+  function formRule($fields, $files, $self) {
+    $errors = $grouping = array();
+    return $errors;
+  }
+
+  function from() {
+    $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
             LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
                       {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
-        
-        if ( $this->isTableSelected('civicrm_email') ) {
-            $this->_from .= "
+
+    if ($this->isTableSelected('civicrm_email')) {
+      $this->_from .= "
             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1) ";
-        }
+    }
 
-        if ( $this->_phoneField ) {
-            $this->_from .= "
+    if ($this->_phoneField) {
+      $this->_from .= "
             LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
-        }   
+    }
 
-        if ($this->isTableSelected('civicrm_country')) {
-            $this->_from .= "
+    if ($this->isTableSelected('civicrm_country')) {
+      $this->_from .= "
             LEFT JOIN civicrm_country {$this->_aliases['civicrm_country']}
                    ON {$this->_aliases['civicrm_address']}.country_id = {$this->_aliases['civicrm_country']}.id AND
                       {$this->_aliases['civicrm_address']}.is_primary = 1 ";
     }
-    }
-    
-    
-    function postProcess( ) {
+  }
 
-        $this->beginPostProcess( );
+  function postProcess() {
 
-        // get the acl clauses built before we assemble the query
-        $this->buildACLClause( $this->_aliases['civicrm_contact'] );
+    $this->beginPostProcess();
 
-        $sql  = $this->buildQuery( true );
-             
-        $rows = $graphRows = array();
-        $this->buildRows ( $sql, $rows );
-        
-        $this->formatDisplay( $rows );
-        $this->doTemplateAssignment( $rows );
-        $this->endPostProcess( $rows );	
-    }
+    // get the acl clauses built before we assemble the query
+    $this->buildACLClause($this->_aliases['civicrm_contact']);
 
-    function alterDisplay( &$rows ) {
-        // custom code to alter rows
-        $entryFound = false;
-        foreach ( $rows as $rowNum => $row ) {
-            // make count columns point to detail report
-            // convert sort name to links
-            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
-                 array_key_exists('civicrm_contact_id', $row) ) {
-                //NYSS - LCD #2059
-				/*$url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
-                                              'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-                                              $this->_absoluteUrl, $this->_id );*/
-                $url = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$row['civicrm_contact_id'] );
-				//NYSS end
-                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Constituent Detail Report for this contact.");
-                $entryFound = true;
-            }
+    $sql = $this->buildQuery(TRUE);
 
-            if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
-                if ( $value = $row['civicrm_address_state_province_id'] ) {
-                    $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );
-                }
-                $entryFound = true;
-            }
+    $rows = $graphRows = array();
+    $this->buildRows($sql, $rows);
 
+    $this->formatDisplay($rows);
+    $this->doTemplateAssignment($rows);
+    $this->endPostProcess($rows);
+  }
 
-            // skip looking further in rows, if first row itself doesn't 
-            // have the column we need
-            if ( !$entryFound ) {
-                break;
-            }
+  function alterDisplay(&$rows) {
+    // custom code to alter rows
+    $entryFound = FALSE;
+    foreach ($rows as $rowNum => $row) {
+      // make count columns point to detail report
+      // convert sort name to links
+      if (array_key_exists('civicrm_contact_sort_name', $row) &&
+        array_key_exists('civicrm_contact_id', $row)
+      ) {
+        //NYSS - LCD #2059
+        /*$url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
+          'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
+          $this->_absoluteUrl, $this->_id );*/
+        $url = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$row['civicrm_contact_id'] );
+        //NYSS end
+        $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
+        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Constituent Detail Report for this contact.");
+        $entryFound = TRUE;
+      }
+
+      if (array_key_exists('civicrm_address_state_province_id', $row)) {
+        if ($value = $row['civicrm_address_state_province_id']) {
+          $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince($value, FALSE);
         }
+        $entryFound = TRUE;
+      }
+
+
+      // skip looking further in rows, if first row itself doesn't
+      // have the column we need
+      if (!$entryFound) {
+        break;
+      }
     }
+  }
 }
+

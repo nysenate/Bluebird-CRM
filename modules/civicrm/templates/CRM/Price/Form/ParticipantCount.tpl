@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,6 +30,7 @@
     var isAdditionalParticipants = false;
     var pPartiCount = 0;
     var pPartiRef   = Array( );
+    var optionSep   = '|';
         	
     cj(document).ready( function( ) {
       pricesetParticipantCount( );

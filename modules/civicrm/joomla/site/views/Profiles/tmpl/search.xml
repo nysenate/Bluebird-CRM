@@ -14,12 +14,15 @@
         <version>3.2</version>
 		<name>Profile Search Layout</name>
         <description>CiviCRM Profile Search Form</description>
-        
-		<params addpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
-            <param name="task" type="hidden" default="civicrm/profile" label="" />
-	    	<param name="gid" type="civiprofiles" label="Select Profile" description="Configured CiviCRM Profile" />
-            <param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
-		</params>
+        <config>
+	  <fields name="params" addfieldpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
+            <fieldset name="basic"> 
+              <field name="task" type="hidden" default="civicrm/profile" label="" />
+	      <field name="gid" type="civiprofiles" label="Select Profile" description="Configured CiviCRM Profile" />
+              <field name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+	    </fieldset> 
+          </fields>
+        </config>
     
 	</state>
 </metadata>

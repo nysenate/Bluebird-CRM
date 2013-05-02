@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,41 +30,36 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Report_BAO_Instance extends CRM_Report_DAO_Instance {
 
-require_once 'CRM/Report/DAO/Instance.php';
+  /**
+   * Delete the instance of the Report
+   *
+   * @return $results no of deleted Instance  on success, false otherwise
+   * @access public
+   *
+   */
+  function delete($id) {
+    $dao = new CRM_Report_DAO_Instance();
+    $dao->id = $id;
+    return $dao->delete();
+  }
 
-class CRM_Report_BAO_Instance extends CRM_Report_DAO_Instance
-{
+  static
+  function retrieve($params, &$defaults) {
+    $instance = new CRM_Report_DAO_Instance();
+    $instance->copyValues($params);
 
-    /**                                                           
-     * Delete the instance of the Report
-     * 
-     * @return $results no of deleted Instance  on success, false otherwise
-     * @access public 
-     *  
-     */ 
-
-    function delete( $id )
-    {
-        $dao     = new CRM_Report_DAO_Instance( );
-        $dao->id = $id;
-        return $dao->delete( );
+    if ($instance->find(TRUE)) {
+      CRM_Core_DAO::storeValues($instance, $defaults);
+      $instance->free();
+      return $instance;
     }
-
-    static function retrieve( $params, &$defaults ) 
-    {
-        $instance = new CRM_Report_DAO_Instance( );
-        $instance->copyValues( $params );
-
-        if ( $instance->find( true ) ) {
-            CRM_Core_DAO::storeValues( $instance, $defaults );
-            $instance->free( );
-            return $instance;
-        }
-        return null;
-    }
+    return NULL;
+  }
 }
+

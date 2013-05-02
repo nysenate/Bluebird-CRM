@@ -93,24 +93,24 @@
 
 				/* exploder */
 				(document.selection && function() {
+                    // get the current cursor position
+                    // currently IE 8 does not support methods to get cursor start position
+                    // replace below code with the equivalent once method is available 
+                    //var startPosition = e.value.length;
+                    //var endPosition = startPosition + text.length;
+
                     //NYSS 3524 & NYSS 4073
-		    // get the current cursor position
-                    // really, really, really inefficient way to move variables around, but because of my unfamiliarity
-                    // on how to store variables in CCRM, this is the work to be done.
-                    // it takes data from insert token
                     var gSPi = cj('#gSP').text();
                     var gEPi = cj('#gEP').text();
-                   
-                    
+		    
                     // set the value
+                    //e.value = e.value.substr(0, startPosition) + text + e.value.substr( endPosition, e.value.length);
                     e.value = e.value.substr(0, gSPi) + text + e.value.substr( gEPi, e.value.length);
-                    //move the focus to correct position, end of inserted token
-		    //NYSS 3524
-                   
-
+                    
+                    // move the focus to correct position, end of inserted token 
 					e.focus();
                     var range = e.createTextRange(); 
-                    range.move( "character", gEPi ); 
+                    range.move( "character", gEPi );//NYSS
                     range.select(); 
 					return this;
 				}) ||

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -39,58 +38,58 @@
  * a small set of static methods
  *
  */
-class CRM_Contact_Form_Edit_Household 
-{
-    /**
-     * This function provides the HTML form elements that are specific to the Individual Contact Type
-     *
-     * @access public
-     * @return None
-     */
-    public function buildQuickForm( &$form, $action = null ) 
-    {
-        $attributes = CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact');
-        
-        $form->applyFilter('__ALL__','trim');  
-      
-        // household_name
-        $form->add('text', 'household_name', ts('Household Name'), $attributes['household_name']);
-        
-        // nick_name
-        $form->addElement('text', 'nick_name', ts('Nick Name'), $attributes['nick_name'] );
-        $form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value( 'source', $attributes ) );
-        $form->add('text', 'external_identifier', ts('External Id'), $attributes['external_identifier'], false);
-        $form->addRule( 'external_identifier',
-                        ts('External ID already exists in Database.'), 
-                        'objectExists', 
-                        array( 'CRM_Contact_DAO_Contact', $form->_contactId, 'external_identifier' ) );
-        
+class CRM_Contact_Form_Edit_Household {
+
+  /**
+   * This function provides the HTML form elements that are specific to the Individual Contact Type
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function buildQuickForm(&$form, $action = NULL) {
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact');
+
+    $form->applyFilter('__ALL__', 'trim');
+
+    // household_name
+    $form->add('text', 'household_name', ts('Household Name'), $attributes['household_name']);
+
+    // nick_name
+    $form->addElement('text', 'nick_name', ts('Nick Name'), $attributes['nick_name']);
+    $form->addElement('text', 'contact_source', ts('Source'), CRM_Utils_Array::value('source', $attributes));
+    $form->add('text', 'external_identifier', ts('External Id'), $attributes['external_identifier'], FALSE);
+    $form->addRule('external_identifier',
+      ts('External ID already exists in Database.'),
+      'objectExists',
+      array('CRM_Contact_DAO_Contact', $form->_contactId, 'external_identifier')
+    );
+  }
+
+  /**
+   * add rule for household
+   *
+   * @params array $fields array of form values
+   *
+   * @return $error
+   * @static
+   * @public
+   */
+  static
+  function formRule($fields, $files, $contactID = NULL) {
+    $errors = array();
+
+    $primaryID = CRM_Contact_Form_Contact::formRule($fields, $errors, $contactID);
+
+    // make sure that household name is set
+    if (!CRM_Utils_Array::value('household_name', $fields)) {
+      $errors['household_name'] = 'Household Name should be set.';
     }
-    
-    /**
-     * add rule for household
-     *
-     * @params array $fields array of form values
-     *
-     * @return $error 
-     * @static
-     * @public
-     */
-    static function formRule( $fields, $files, $contactID = null ) 
-    {
-        $errors = array( );
-        
-        $primaryID = CRM_Contact_Form_Contact::formRule( $fields, $errors, $contactID );
-        
-        // make sure that household name is set
-        if (! CRM_Utils_Array::value( 'household_name', $fields ) ) {
-            $errors['household_name'] = 'Household Name should be set.';
-        }
-        
-        //check for duplicate - dedupe rules
-        CRM_Contact_Form_Contact::checkDuplicateContacts( $fields, $errors, $contactID, 'Household' );
-        
-        return empty( $errors ) ? true : $errors;
-    }
-    
+
+    //check for duplicate - dedupe rules
+    CRM_Contact_Form_Contact::checkDuplicateContacts($fields, $errors, $contactID, 'Household');
+
+    return empty($errors) ? TRUE : $errors;
+  }
 }
+

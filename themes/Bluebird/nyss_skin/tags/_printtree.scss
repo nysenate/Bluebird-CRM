@@ -1,0 +1,31 @@
+/* print tags */
+@media print, screen {
+  body.popup 
+  {
+    .BBTree, .BBTree * {
+      visibility:visible;
+    }
+    .BBTree 
+    {
+      position:absolute;
+      left:0;
+      top:0;
+      div.treeButton 
+      {
+        background-position: -64px -15px;
+      }
+      @for $i from 0 through 10
+      {
+          dl.#{$levelClassSlug}-#{$i}
+          {
+            display:block !important;
+          }
+        }
+        dt:hover
+        {
+          background-color:transparent;
+          .fCB{ display:none;}
+        }
+    }
+  }
+}

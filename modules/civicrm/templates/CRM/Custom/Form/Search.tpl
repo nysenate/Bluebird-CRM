@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -103,7 +103,11 @@
             {if $element.html_type eq 'Radio'}
                 &nbsp; <a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;">{ts}unselect{/ts}</a>
             {elseif $element.html_type eq 'Autocomplete-Select'}
-                {include file="CRM/Custom/Form/AutoComplete.tpl"}
+                {if $element.data_type eq 'ContactReference'}
+                    {include file="CRM/Custom/Form/ContactReference.tpl"}
+                {else}
+                    {include file="CRM/Custom/Form/AutoComplete.tpl"}
+                {/if}
             {/if}
             </td>
           </tr>

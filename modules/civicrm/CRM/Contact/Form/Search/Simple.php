@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,60 +36,63 @@
 /**
  * Files required
  */
-
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/Session.php';
-
 class CRM_Contact_Form_Search_Simple extends CRM_Core_Form {
-    protected $_params;
+  protected $_params;
 
-    public function preProcess( ) {
-        $this->assign( 'rows', $this->get( 'rows' ) );
+  public function preProcess() {
+    $this->assign('rows', $this->get('rows'));
 
-        $this->_params = $this->controller->exportValues( $this->_name );
+    $this->_params = $this->controller->exportValues($this->_name);
+  }
+
+  public function buildQuickForm() {
+    $config = CRM_Core_Config::singleton();
+
+    $this->add('select',
+      'country_id',
+      ts('Country'),
+      array('' => ts('- select -')) + CRM_Core_PseudoConstant::country()
+    );
+
+    $countryID = isset($_POST['country_id']) ? $_POST['country_id'] : NULL;
+    if (!$countryID) {
+      $countryID = isset($this->_params['country_id']) ? $this->_params['country_id'] : NULL;
+    }
+    if ($countryID) {
+      $this->add('select',
+        'state_province_id',
+        ts('State'),
+        array('' => ts('- select a state -')) + CRM_Core_PseudoConstant::stateProvinceForCountry($countryID)
+      );
+    }
+    else {
+      $this->add('select',
+        'state_province_id',
+        ts('State'),
+        array('' => ts('- select a country first -'))
+      );
     }
 
-    public function buildQuickForm( ) { 
-        $config   = CRM_Core_Config::singleton( );
-        
-        $this->add('select',
-                   'country_id',
-                   ts('Country'), 
-                   array('' => ts('- select -')) + CRM_Core_PseudoConstant::country( ) );
+    $stateCountryURL = CRM_Utils_System::url('civicrm/ajax/jqState');
+    $this->assign('stateCountryURL', $stateCountryURL);
+    $this->addButtons(array(
+        array(
+          'type' => 'refresh',
+          'name' => ts('Search'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
 
-        $countryID = isset( $_POST['country_id'] ) ? $_POST['country_id'] : null;
-        if ( ! $countryID ) {
-            $countryID = isset( $this->_params['country_id'] ) ? $this->_params['country_id'] : null;
-        }
-        if ( $countryID ) {
-            $this->add('select',
-                       'state_province_id',
-                       ts('State'), 
-                       array('' => ts('- select a state -')) + CRM_Core_PseudoConstant::stateProvinceForCountry( $countryID ) );
-        } else {
-            $this->add('select',
-                       'state_province_id',
-                       ts('State'), 
-                       array('' => ts('- select a country first -')) );
-        }
-
-        $stateCountryURL = CRM_Utils_System::url( 'civicrm/ajax/jqState' );
-        $this->assign( 'stateCountryURL', $stateCountryURL );
-        $this->addButtons( array(
-                                 array ( 'type'      => 'refresh',
-                                         'name'      => ts('Search'),
-                                         'isDefault' => true   ),
-                                 array ( 'type'      => 'cancel',
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
-    }
-
-    public function postProcess( ) {
-        $this->_params = $this->controller->exportValues( $this->_name );
-        CRM_Core_Error::debug( $this->_params );
-        CRM_Utils_System::civiExit( );
-    }
+  public function postProcess() {
+    $this->_params = $this->controller->exportValues($this->_name);
+    CRM_Core_Error::debug($this->_params);
+    CRM_Utils_System::civiExit();
+  }
 }
-
 

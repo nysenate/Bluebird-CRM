@@ -1,7 +1,9 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright Tech To The People (c) 2010                              |
  +--------------------------------------------------------------------+
@@ -48,39 +50,42 @@ require_once 'CRM/Campaign/BAO/Petition.php';
  * @static void
  * @access public
  */
-function &civicrm_survey_respondant_get( &$params ) {
-    _civicrm_initialize( );
+function &civicrm_survey_respondant_get(&$params) {
+  _civicrm_initialize();
 
-    if ( empty( $params ) ) {
-        return civicrm_create_error( ts( 'No input parameters present' ) );
-    }
+  if (empty($params)) {
+    return civicrm_create_error(ts('No input parameters present'));
+  }
 
-    if ( ! is_array( $params ) ) {
-        return civicrm_create_error( ts( 'Input parameters is not an array' ) );
-    }
-   
-    if ( !array_key_exists ( 'survey_id', $params ) ) {
-       return ( civicrm_create_error( 'survey_id mandatory' ) );
-    }
+  if (!is_array($params)) {
+    return civicrm_create_error(ts('Input parameters is not an array'));
+  }
 
-    if (array_key_exists ( 'status_id', $params ) ) {
-      $status_id=$params['status_id'];
-    } else {
-      $status_id=null;
-    }
-    
-    $petition = new CRM_Campaign_BAO_Petition();
-    $signatures = $petition->getPetitionSignature($params['survey_id'],$status_id);
-    return ($signatures);
+  if (!array_key_exists('survey_id', $params)) {
+    return (civicrm_create_error('survey_id mandatory'));
+  }
+
+  if (array_key_exists('status_id', $params)) {
+    $status_id = $params['status_id'];
+  }
+  else {
+    $status_id = NULL;
+  }
+
+  $petition = new CRM_Campaign_BAO_Petition();
+  $signatures = $petition->getPetitionSignature($params['survey_id'], $status_id);
+  return ($signatures);
 }
 
-function &civicrm_survey_respondant_count( &$params ) {
-    _civicrm_initialize( );
-    $petition = new CRM_Campaign_BAO_Petition();
-    if (array_key_exists ('groupby',$params) && $params['groupby'] == 'country' ) {
-      $signaturesCount = $petition->getPetitionSignatureTotalbyCountry($params['survey_id']);
-    } else {
-      $signaturesCount = $petition->getPetitionSignatureTotal($params['survey_id']);
-    }
-    return ($signaturesCount);
+function &civicrm_survey_respondant_count(&$params) {
+  _civicrm_initialize();
+  $petition = new CRM_Campaign_BAO_Petition();
+  if (array_key_exists('groupby', $params) && $params['groupby'] == 'country') {
+    $signaturesCount = $petition->getPetitionSignatureTotalbyCountry($params['survey_id']);
+  }
+  else {
+    $signaturesCount = $petition->getPetitionSignatureTotal($params['survey_id']);
+  }
+  return ($signaturesCount);
 }
+

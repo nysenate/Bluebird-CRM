@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,8 @@
 	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display || $group_id eq 5}crm-accordion-closed{else}crm-accordion-open{/if}">
 		<div class="crm-accordion-header">
 			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div> 
-			{$cd_edit.title}
+
+        <a href="#" class="whiteanchor">{$cd_edit.title}</a>
 			</div><!-- /.crm-accordion-header -->
 			
 			<div id="customData{$group_id}" class="crm-accordion-body">
@@ -47,7 +48,15 @@
 			{/if}
 		</script>
 	</div>
-{/if}
+  {if $cd_edit.name eq 'Attachments'}
+    {literal}
+    <script type="text/javascript">
+      //5396 hackish solution to prevent msg from appearing in top panel
+      cj('#customData5 .messages.help').removeClass('messages').addClass('messages-block');
+    </script>
+    {/literal}
+  {/if}
+{/if}{*NYSS*}
 {/foreach}
 
 {include file="CRM/common/customData.tpl"}

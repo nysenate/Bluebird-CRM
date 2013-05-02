@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,84 +28,81 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Upgrade/Form.php';
-
 class CRM_Upgrade_TwoTwo_Form_Step4 extends CRM_Upgrade_Form {
-    
-    function verifyPreDBState( &$errorMessage ) {
-        $errorMessage = ts('Pre-condition failed for upgrade step %1.', array(1 => '4'));
-        
-        if ( CRM_Core_DAO::checkTableExists( 'civicrm_event_page' ) ) {
-            return false;
-        }
-        
-        // check fields which MUST be present if a proper 2.2 db
-        if ( ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'intro_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'footer_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_title' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_footer_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'is_email_confirm' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_email_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_from_name' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'confirm_from_email' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'cc_confirm' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'bcc_confirm' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'default_fee_id' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'default_discount_id' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'thankyou_title' ) || 
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'thankyou_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'thankyou_footer_text' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'is_pay_later' ) ||
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'pay_later_text' ) || 
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'pay_later_receipt' ) ||  
-             ! CRM_Core_DAO::checkFieldExists( 'civicrm_event', 'is_multiple_registrations' ) ) {
-            // db looks to have stuck somewhere between 2.1 & 2.2
-            $errorMessage .= ' Few important fields were found missing in some of the tables.';
-            return false;
-        }
-        if ( $this->checkVersion( '2.1.103' ) ) {
-            $this->setVersion( '2.2' );
-        } else {
-            return false;
-        } 
-        
-        // update config defaults
-        require_once "CRM/Core/DAO/Domain.php";
-        $domain = new CRM_Core_DAO_Domain();
-        $domain->selectAdd( );
-        $domain->selectAdd( 'config_backend' );
-        $domain->find(true);
-        if ($domain->config_backend) {
-            $defaults   = unserialize($domain->config_backend);
-            // reset components
-            $defaults['enableComponents']   = 
-                array( 'CiviContribute','CiviPledge','CiviMember','CiviEvent', 'CiviMail' );
-            $defaults['enableComponentIDs'] = array( 1, 6, 2, 3, 4 );
-            $defaults['moneyvalueformat']   = '%!i';
-            $defaults['fieldSeparator']     = ',';
-            $defaults['fatalErrorTemplate'] = 'CRM/common/fatal.tpl';
-            // serialise settings 
-            CRM_Core_BAO_Setting::add($defaults);            
-        }
-        
-        return $this->checkVersion( '2.2' );
+  function verifyPreDBState(&$errorMessage) {
+    $errorMessage = ts('Pre-condition failed for upgrade step %1.', array(1 => '4'));
+
+    if (CRM_Core_DAO::checkTableExists('civicrm_event_page')) {
+      return FALSE;
     }
-    
-    function buildQuickForm( ) {
+
+    // check fields which MUST be present if a proper 2.2 db
+    if (!CRM_Core_DAO::checkFieldExists('civicrm_event', 'intro_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'footer_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_title') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_footer_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'is_email_confirm') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_email_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_from_name') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'confirm_from_email') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'cc_confirm') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'bcc_confirm') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'default_fee_id') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'default_discount_id') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'thankyou_title') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'thankyou_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'thankyou_footer_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'is_pay_later') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'pay_later_text') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'pay_later_receipt') ||
+      !CRM_Core_DAO::checkFieldExists('civicrm_event', 'is_multiple_registrations')
+    ) {
+      // db looks to have stuck somewhere between 2.1 & 2.2
+      $errorMessage .= ' Few important fields were found missing in some of the tables.';
+      return FALSE;
     }
-    
-    function getTitle( ) {
-        return ts( 'Database Upgrade to v2.2 Completed' );
+    if ($this->checkVersion('2.1.103')) {
+      $this->setVersion('2.2');
     }
-    
-    function getTemplateMessage( ) {
-        $upgradeDoc = CRM_Utils_System::docURL2( 'Installation and Upgrades', true, 'Documentation online' );
-        return '<p><strong>' . ts('Your CiviCRM database has been successfully upgraded to v2.2.') . '</strong></p><p>' . ts('Please be sure to follow the remaining steps in the upgrade instructions specific to your version of CiviCRM: %1.', array( 1 => $upgradeDoc )) . '</p><p>' . ts('Thank you for using CiviCRM.') . '</p>';
+    else {
+      return FALSE;
     }
+
+    // update config defaults
+    $domain = new CRM_Core_DAO_Domain();
+    $domain->selectAdd();
+    $domain->selectAdd('config_backend');
+    $domain->find(TRUE);
+    if ($domain->config_backend) {
+      $defaults = unserialize($domain->config_backend);
+      // reset components
+      $defaults['enableComponents'] = array('CiviContribute', 'CiviPledge', 'CiviMember', 'CiviEvent', 'CiviMail');
+      $defaults['enableComponentIDs'] = array(1, 6, 2, 3, 4);
+      $defaults['moneyvalueformat'] = '%!i';
+      $defaults['fieldSeparator'] = ',';
+      $defaults['fatalErrorTemplate'] = 'CRM/common/fatal.tpl';
+      // serialise settings
+      CRM_Core_BAO_ConfigSetting::add($defaults);
+    }
+
+    return $this->checkVersion('2.2');
+  }
+
+  function buildQuickForm() {}
+
+  function getTitle() {
+    return ts('Database Upgrade to v2.2 Completed');
+  }
+
+  function getTemplateMessage() {
+    $upgradeDoc = CRM_Utils_System::docURL2('Installation and Upgrades', TRUE, NULL, NULL, NULL, "wiki");
+    return '<p><strong>' . ts('Your CiviCRM database has been successfully upgraded to v2.2.') . '</strong></p><p>' . ts('Please be sure to follow the remaining steps in the upgrade instructions specific to your version of CiviCRM: %1.', array(
+      1 => $upgradeDoc)) . '</p><p>' . ts('Thank you for using CiviCRM.') . '</p>';
+  }
 }
+

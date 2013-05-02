@@ -2,5 +2,5 @@ name = NYSS CiviCRM dedupe module
 description = Contains various hooks for NYSS deduping
 dependencies[] = civicrm
 package = CiviCRM
-core = 6.x
-version = 3.3
+core = 7.x
+version = 4.2

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,130 +28,122 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Contribute/Form/ContributionPage.php';
-require_once 'CRM/Contribute/PseudoConstant.php';
-
 /**
  * form to process actions on Premiums
  */
-class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_ContributionPage 
-{
-    /**
-     * This function sets the default values for the form. Note that in edit/view mode
-     * the default values are retrieved from the database
-     *
-     * @access public
-     * @return void
-     */
-    function setDefaultValues()
-    {
-        $defaults = array();
-        if ( isset($this->_id ) ) {
-            $title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage', $this->_id, 'title' );
-            CRM_Utils_System::setTitle(ts('Premiums (%1)', array(1 => $title)));
-            $dao = new CRM_Contribute_DAO_Premium();
-            $dao->entity_table = 'civicrm_contribution_page';
-            $dao->entity_id = $this->_id; 
-            $dao->find(true);
-            CRM_Core_DAO::storeValues( $dao,$defaults );
-        } 
-        return $defaults;
+class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_ContributionPage {
+
+  /**
+   * This function sets the default values for the form. Note that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function setDefaultValues() {
+    $defaults = array();
+    if (isset($this->_id)) {
+      $title = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $this->_id, 'title');
+      CRM_Utils_System::setTitle(ts('Premiums (%1)', array(1 => $title)));
+      $dao               = new CRM_Contribute_DAO_Premium();
+      $dao->entity_table = 'civicrm_contribution_page';
+      $dao->entity_id    = $this->_id;
+      $dao->find(TRUE);
+      CRM_Core_DAO::storeValues($dao, $defaults);
     }
-    
+    return $defaults;
+  }
 
-    /**
-     * Function to actually build the form
-     *
-     * @return void
-     * @access public
-     */
-    public function buildQuickForm()
-    { 
-        $this->addElement('checkbox', 'premiums_active', ts('Premiums Section Enabled?'), null, array( 'onclick' => "premiumBlock(this);" ) );
-        
-        $this->addElement('text', 'premiums_intro_title', ts('Title'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_intro_title'));
-        
-        $this->add('textarea', 'premiums_intro_text', ts('Introductory Message'), 'rows=5, cols=50');
+  /**
+   * Function to actually build the form
+   *
+   * @return void
+   * @access public
+   */
+  public function buildQuickForm() {
+    $this->addElement('checkbox', 'premiums_active', ts('Premiums Section Enabled?'), NULL, array('onclick' => "premiumBlock(this);"));
 
-        $this->add('text','premiums_contact_email', ts('Contact Email') . ' ', CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_email')); 
-        
-        $this->addRule('premiums_contact_email', ts('Please enter a valid email address for Contact Email') . ' ','email');
-        
-        $this->add('text','premiums_contact_phone', ts('Contact Phone'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_phone'));
-        
-        $this->addRule('premiums_contact_phone', ts('Please enter a valid phone number.'), 'phone');
+    $this->addElement('text', 'premiums_intro_title', ts('Title'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_intro_title'));
 
-        $this->addElement('checkbox', 'premiums_display_min_contribution', ts('Display Minimum Contribution Amount?') );
-     
-        $showForm = true;
-  
-        if ( $this->_single ) {
-            if ( $this->_id ) {
-                $daoPremium = new CRM_Contribute_DAO_Premium( );
-                $daoPremium->entity_id       = $this->_id;
-                $daoPremium->entity_table    = 'civicrm_contribution_page';
-                $daoPremium->premiums_active = 1;
-                if ( $daoPremium->find( true ) ) {
-                    $showForm = false;
-                }
-            }
+    $this->add('textarea', 'premiums_intro_text', ts('Introductory Message'), 'rows=5, cols=50');
+
+    $this->add('text', 'premiums_contact_email', ts('Contact Email') . ' ', CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_email'));
+
+    $this->addRule('premiums_contact_email', ts('Please enter a valid email address for Contact Email') . ' ', 'email');
+
+    $this->add('text', 'premiums_contact_phone', ts('Contact Phone'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_phone'));
+
+    $this->addRule('premiums_contact_phone', ts('Please enter a valid phone number.'), 'phone');
+
+    $this->addElement('checkbox', 'premiums_display_min_contribution', ts('Display Minimum Contribution Amount?'));
+
+    $showForm = TRUE;
+
+    if ($this->_single) {
+      if ($this->_id) {
+        $daoPremium = new CRM_Contribute_DAO_Premium();
+        $daoPremium->entity_id = $this->_id;
+        $daoPremium->entity_table = 'civicrm_contribution_page';
+        $daoPremium->premiums_active = 1;
+        if ($daoPremium->find(TRUE)) {
+          $showForm = FALSE;
         }
-        $this->assign( 'showForm', $showForm );
-        
-        parent::buildQuickForm( );
+      }
+    }
+    $this->assign('showForm', $showForm);
 
-        require_once 'CRM/Contribute/Page/Premium.php';
-        $premiumPage = new CRM_Contribute_Page_Premium( );
-        $premiumPage->browse( );
+    parent::buildQuickForm();
+
+    $premiumPage = new CRM_Contribute_Page_Premium();
+    $premiumPage->browse();
+  }
+
+  /**
+   * Process the form
+   *
+   * @return void
+   * @access public
+   */
+  public function postProcess() {
+    // get the submitted form values.
+    $params = $this->controller->exportValues($this->_name);
+
+    // we do this in case the user has hit the forward/back button
+
+    $dao               = new CRM_Contribute_DAO_Premium();
+    $dao->entity_table = 'civicrm_contribution_page';
+    $dao->entity_id    = $this->_id;
+    $dao->find(TRUE);
+    $premiumID = $dao->id;
+    if ($premiumID) {
+      $params['id'] = $premiumID;
     }
 
-    /**
-     * Process the form
-     *
-     * @return void
-     * @access public
-     */
-    public function postProcess()
-    {
-        // get the submitted form values.
-        $params = $this->controller->exportValues( $this->_name );
+    $params['premiums_active'] = CRM_Utils_Array::value('premiums_active', $params, FALSE);
+    $params['premiums_display_min_contribution'] = CRM_Utils_Array::value('premiums_display_min_contribution', $params, FALSE);
+    $params['entity_table'] = 'civicrm_contribution_page';
+    $params['entity_id'] = $this->_id;
 
-        // we do this in case the user has hit the forward/back button
+    $dao = new CRM_Contribute_DAO_Premium();
+    $dao->copyValues($params);
+    $dao->save();
+    parent::endPostProcess();
+  }
 
-        $dao = new CRM_Contribute_DAO_Premium();
-        $dao->entity_table = 'civicrm_contribution_page';
-        $dao->entity_id = $this->_id; 
-        $dao->find(true);
-        $premiumID = $dao->id;
-        if ( $premiumID ) {
-            $params['id'] = $premiumID;
-        }
-
-        $params['premiums_active']                   =  CRM_Utils_Array::value( 'premiums_active', $params, false );
-        $params['premiums_display_min_contribution'] =  CRM_Utils_Array::value( 'premiums_display_min_contribution', $params, false );
-        $params['entity_table']                      = 'civicrm_contribution_page';
-        $params['entity_id']                         =  $this->_id;
-       
-        $dao = new CRM_Contribute_DAO_Premium();
-        $dao->copyValues($params);
-        $dao->save();
-        parent::endPostProcess( );
-    }
-
-    /** 
-     * Return a descriptive name for the page, used in wizard header 
-     * 
-     * @return string 
-     * @access public 
-     */ 
-    public function getTitle( )
-    {
-        return ts( 'Premiums' );
-    }
+  /**
+   * Return a descriptive name for the page, used in wizard header
+   *
+   * @return string
+   * @access public
+   */
+  public function getTitle() {
+    return ts('Premiums');
+  }
 }
 

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,38 +28,34 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page/Basic.php';
-
 /**
  * Page for displaying list of message templates
  */
-class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic 
-{
-    /**
-     * The action links that we need to display for the browse screen
-     *
-     * @var array
-     * @static
-     */
-    static $_links = null;
+class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
 
-    // ids of templates which diverted from the default ones and can be reverted
-    protected $_revertible = array();
+  /**
+   * The action links that we need to display for the browse screen
+   *
+   * @var array
+   * @static
+   */
+  static $_links = NULL;
 
-    // set to the id that we’re reverting at the given moment (if we are)
-    protected $_revertedId;
+  // ids of templates which diverted from the default ones and can be reverted
+  protected $_revertible = array();
 
-    function __construct($title = null, $mode = null) {
-        parent::__construct($title, $mode);
+  // set to the id that we’re reverting at the given moment (if we are)
+  protected $_revertedId; function __construct($title = NULL, $mode = NULL) {
+    parent::__construct($title, $mode);
 
-        // fetch the ids of templates which diverted from defaults and can be reverted –
-        // these templates have the same workflow_id as the defaults; defaults are reserved
-        $sql = '
+    // fetch the ids of templates which diverted from defaults and can be reverted –
+    // these templates have the same workflow_id as the defaults; defaults are reserved
+    $sql = '
             SELECT diverted.id, orig.id orig_id
             FROM civicrm_msg_template diverted JOIN civicrm_msg_template orig ON (
                 diverted.workflow_id = orig.workflow_id AND
@@ -71,206 +66,204 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic
                 )
             )
         ';
-        $dao =& CRM_Core_DAO::executeQuery($sql);
-        while ($dao->fetch()) {
-            $this->_revertible[$dao->id] = $dao->orig_id;
-        }
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $this->_revertible[$dao->id] = $dao->orig_id;
+    }
+  }
+
+  /**
+   * Get BAO Name
+   *
+   * @return string Classname of BAO.
+   */
+  function getBAOName() {
+    return 'CRM_Core_BAO_MessageTemplates';
+  }
+
+  /**
+   * Get action Links
+   *
+   * @return array (reference) of action links
+   */
+  function &links() {
+    if (!(self::$_links)) {
+      $confirm = ts('Are you sure you want to revert this template to the default for this workflow? You will lose any customizations you have made.', array('escape' => 'js')) . '\n\n' . ts('We recommend that you save a copy of the your customized Text and HTML message content to a text file before reverting so you can combine your changes with the system default messages as needed.', array('escape' => 'js'));
+      self::$_links = array(
+        CRM_Core_Action::UPDATE => array(
+          'name' => ts('Edit'),
+          'url' => 'civicrm/admin/messageTemplates/add',
+          'qs' => 'action=update&id=%%id%%&reset=1',
+          'title' => ts('Edit this message template'),
+        ),
+        CRM_Core_Action::DISABLE => array(
+          'name' => ts('Disable'),
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'enable-disable' . '\' );"',
+          'ref' => 'disable-action',
+          'title' => ts('Disable this message template'),
+        ),
+        CRM_Core_Action::ENABLE => array(
+          'name' => ts('Enable'),
+          'extra' => 'onclick = "enableDisable( %%id%%,\'' . 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'disable-enable' . '\' );"',
+          'ref' => 'enable-action',
+          'title' => ts('Enable this message template'),
+        ),
+        CRM_Core_Action::DELETE => array(
+          'name' => ts('Delete'),
+          'url' => 'civicrm/admin/messageTemplates',
+          'qs' => 'action=delete&id=%%id%%',
+          'title' => ts('Delete this message template'),
+        ),
+        CRM_Core_Action::REVERT => array(
+          'name' => ts('Revert to Default'),
+          'extra' => "onclick = 'return confirm(\"$confirm\");'",
+          'url' => 'civicrm/admin/messageTemplates',
+          'qs' => 'action=revert&id=%%id%%&selectedChild=workflow',
+          'title' => ts('Revert this workflow message template to the system default'),
+        ),
+        CRM_Core_Action::VIEW => array(
+          'name' => ts('View Default'),
+          'url' => 'civicrm/admin/messageTemplates',
+          'qs' => 'action=view&id=%%orig_id%%&reset=1',
+          'title' => ts('View the system default for this workflow message template'),
+        ),
+      );
+    }
+    return self::$_links;
+  }
+
+  function action(&$object, $action, &$values, &$links, $permission, $forceAction = FALSE) {
+    if ($object->workflow_id) {
+      // do not expose action link for reverting to default if the template did not diverge or we just reverted it now
+      if (!in_array($object->id, array_keys($this->_revertible)) or
+        ($this->_action & CRM_Core_Action::REVERT and $object->id == $this->_revertedId)
+      ) {
+        $action &= ~CRM_Core_Action::REVERT;
+        $action &= ~CRM_Core_Action::VIEW;
+      }
+
+      // default workflow templates shouldn’t be deletable
+      // workflow templates shouldn’t have disable/enable actions (at least for CiviCRM 3.1)
+      if ($object->workflow_id) {
+        $action &= ~CRM_Core_Action::DISABLE;
+        $action &= ~CRM_Core_Action::DELETE;
+      }
+
+      // rebuild the action links HTML, as we need to handle %%orig_id%% for revertible templates
+      $values['action'] = CRM_Core_Action::formLink($links, $action, array(
+        'id' => $object->id,
+          'orig_id' => CRM_Utils_Array::value($object->id, $this->_revertible),
+        ));
+    }
+    else {
+      $action &= ~CRM_Core_Action::REVERT;
+      $action &= ~CRM_Core_Action::VIEW;
+      parent::action($object, $action, $values, $links, $permission);
+    }
+  }
+
+  function run($args = NULL, $pageArgs = NULL, $sort = NULL) {
+    // handle the revert action and offload the rest to parent
+    if (CRM_Utils_Request::retrieve('action', 'String', $this) & CRM_Core_Action::REVERT) {
+
+      $id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+      if (!$this->checkPermission($id, NULL)) {
+        CRM_Core_Error::fatal(ts('You do not have permission to revert this template.'));
+      }
+
+      $this->_revertedId = $id;
+
+      CRM_Core_BAO_MessageTemplates::revert($id);
     }
 
-    /**
-     * Get BAO Name
-     *
-     * @return string Classname of BAO.
-     */
-    function getBAOName() 
-    {
-        return 'CRM_Core_BAO_MessageTemplates';
+    $this->assign('selectedChild', CRM_Utils_Request::retrieve('selectedChild', 'String', $this));
+
+    return parent::run($args, $pageArgs, $sort);
+  }
+
+  /**
+   * Get name of edit form
+   *
+   * @return string Classname of edit form.
+   */
+  function editForm() {
+    return 'CRM_Admin_Form_MessageTemplates';
+  }
+
+  /**
+   * Get edit form name
+   *
+   * @return string name of this page.
+   */
+  function editName() {
+    return ts('Message Template');
+  }
+
+  /**
+   * Get user context.
+   *
+   * @return string user context.
+   */
+  function userContext($mode = NULL) {
+    return 'civicrm/admin/messageTemplates';
+  }
+
+  /**
+   * browse all entities.
+   *
+   * @param int $action
+   *
+   * @return void
+   * @access public
+   */
+  function browse() {
+    $action = func_num_args() ? func_get_arg(0) : NULL;
+    if ($this->_action & CRM_Core_Action::ADD) {
+      return;
+    }
+    $links = $this->links();
+    if ($action == NULL) {
+      if (!empty($links)) {
+        $action = array_sum(array_keys($links));
+      }
     }
 
-    /**
-     * Get action Links
-     *
-     * @return array (reference) of action links
-     */
-    function &links()
-    {
-        if (!(self::$_links)) {
-            $confirm = ts('Are you sure you want to revert this template to the default for this workflow? You will lose any customizations you have made.', array('escape' => 'js')) . '\n\n' . ts('We recommend that you save a copy of the your customized Text and HTML message content to a text file before reverting so you can combine your changes with the system default messages as needed.', array('escape' => 'js'));
-            self::$_links = array(
-                                  CRM_Core_Action::UPDATE  => array(
-                                                                    'name'  => ts('Edit'),
-                                                                    'url'   => 'civicrm/admin/messageTemplates/add',
-                                                                    'qs'    => 'action=update&id=%%id%%&reset=1',
-                                                                    'title' => ts('Edit this message template') 
-                                                                   ),
-                                  CRM_Core_Action::DISABLE => array(
-                                                                    'name'  => ts('Disable'),
-                                                                    'extra' => 'onclick = "enableDisable( %%id%%,\''. 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'enable-disable' . '\' );"',
-                                                                    'ref'   => 'disable-action',
-                                                                    'title' => ts('Disable this message template'),
-                                                                    ),
-                                  CRM_Core_Action::ENABLE  => array(
-                                                                    'name'  => ts('Enable'),
-                                                                    'extra' => 'onclick = "enableDisable( %%id%%,\''. 'CRM_Core_BAO_MessageTemplates' . '\',\'' . 'disable-enable' . '\' );"',
-                                                                    'ref'   => 'enable-action',
-                                                                    'title' => ts('Enable this message template'),
-                                                                    ),
-                                  CRM_Core_Action::DELETE  => array(
-                                                                    'name'  => ts('Delete'),
-                                                                    'url'   => 'civicrm/admin/messageTemplates',
-                                                                    'qs'    => 'action=delete&id=%%id%%',
-                                                                    'title' => ts('Delete this message template') 
-                                                                    ),
-                                  CRM_Core_Action::REVERT  => array(
-                                                                    'name'  => ts('Revert to Default'),
-                                                                    'extra' => "onclick = 'return confirm(\"$confirm\");'",
-                                                                    'url'   => 'civicrm/admin/messageTemplates',
-                                                                    'qs'    => 'action=revert&id=%%id%%&selectedChild=workflow',
-                                                                    'title' => ts('Revert this workflow message template to the system default'),
-                                                                    ),
-                                  CRM_Core_Action::VIEW    => array(
-                                                                    'name'  => ts('View Default'),
-                                                                    'url'   => 'civicrm/admin/messageTemplates',
-                                                                    'qs'    => 'action=view&id=%%orig_id%%&reset=1',
-                                                                    'title' => ts('View the system default for this workflow message template'),
-                                                                   ),
-                                  );
-        }
-        return self::$_links;
+    if ($action & CRM_Core_Action::DISABLE) {
+      $action -= CRM_Core_Action::DISABLE;
     }
 
-    function action(&$object, $action, &$values, &$links, $permission)
-    {
-        if ( $object->workflow_id ) {
-            // do not expose action link for reverting to default if the template did not diverge or we just reverted it now
-            if (!in_array($object->id, array_keys($this->_revertible)) or
-                ( $this->_action & CRM_Core_Action::REVERT and $object->id == $this->_revertedId ) ) {
-                $action &= ~CRM_Core_Action::REVERT;
-                $action &= ~CRM_Core_Action::VIEW;
-            }
-
-            // default workflow templates shouldn’t be deletable
-            // workflow templates shouldn’t have disable/enable actions (at least for CiviCRM 3.1)
-            if ($object->workflow_id) {
-                $action &= ~CRM_Core_Action::DISABLE;
-                $action &= ~CRM_Core_Action::DELETE;
-            }
-
-            // rebuild the action links HTML, as we need to handle %%orig_id%% for revertible templates
-            $values['action'] = CRM_Core_Action::formLink($links, $action, array( 'id'      => $object->id, 
-                                                                                  'orig_id' => CRM_Utils_Array::value( $object->id, $this->_revertible ) 
-                                                                                ));
-        } else {
-            $action &= ~CRM_Core_Action::REVERT;
-            $action &= ~CRM_Core_Action::VIEW;
-            parent::action($object, $action, $values, $links, $permission);  
-        }
+    if ($action & CRM_Core_Action::ENABLE) {
+      $action -= CRM_Core_Action::ENABLE;
     }
 
-    function run($args = null, $pageArgs = null, $sort = null)
-    {
-        // handle the revert action and offload the rest to parent
-        if (CRM_Utils_Request::retrieve('action', 'String', $this) & CRM_Core_Action::REVERT) {
+    $messageTemplate = new CRM_Core_BAO_MessageTemplates();
+    $messageTemplate->orderBy('msg_title' . ' asc');
 
-            $id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
-            if (!$this->checkPermission($id, null)) {
-                CRM_Core_Error::fatal(ts('You do not have permission to revert this template.'));
-            }
+    $userTemplates = array();
+    $workflowTemplates = array();
 
-            $this->_revertedId = $id;
+    // find all objects
+    $messageTemplate->find();
+    while ($messageTemplate->fetch()) {
+      $values[$messageTemplate->id] = array();
+      CRM_Core_DAO::storeValues($messageTemplate, $values[$messageTemplate->id]);
+      // populate action links
+      $this->action($messageTemplate, $action, $values[$messageTemplate->id], $links, CRM_Core_Permission::EDIT);
 
-            require_once 'CRM/Core/BAO/MessageTemplates.php';
-            CRM_Core_BAO_MessageTemplates::revert($id);
-        }
-
-        $this->assign('selectedChild', CRM_Utils_Request::retrieve('selectedChild', 'String', $this));
-
-        return parent::run($args, $pageArgs, $sort);
+      if (!$messageTemplate->workflow_id) {
+        $userTemplates[$messageTemplate->id] = $values[$messageTemplate->id];
+      }
+      elseif (!$messageTemplate->is_reserved) {
+        $workflowTemplates[$messageTemplate->id] = $values[$messageTemplate->id];
+      }
     }
 
-    /**
-     * Get name of edit form
-     *
-     * @return string Classname of edit form.
-     */
-    function editForm() 
-    {
-        return 'CRM_Admin_Form_MessageTemplates';
-    }
-    
-    /**
-     * Get edit form name
-     *
-     * @return string name of this page.
-     */
-    function editName() 
-    {
-        return ts('Message Template');
-    }
-    
-    /**
-     * Get user context.
-     *
-     * @return string user context.
-     */
-    function userContext($mode = null) 
-    {
-        return 'civicrm/admin/messageTemplates';
-    }
-    
-    /**
-     * browse all entities.
-     *
-     * @param int $action
-     *
-     * @return void
-     * @access public
-     */
-    function browse( $action = null, $sort ) {
-        if( $this->_action & CRM_Core_Action::ADD) {
-            return;
-        }
-        $links = $this->links();
-        if ($action == null) {
-            if ( ! empty( $links ) ) {
-                $action = array_sum(array_keys($links));
-            }
-        }
-        
-        if ( $action & CRM_Core_Action::DISABLE ) {
-            $action -= CRM_Core_Action::DISABLE;
-        }
-        
-        if ( $action & CRM_Core_Action::ENABLE ) {
-            $action -= CRM_Core_Action::ENABLE;
-        }
-        
-        $messageTemplate = new CRM_Core_BAO_MessageTemplates( );
-        $messageTemplate->orderBy ( 'msg_title' . ' asc' );
-        
-        $userTemplates     = array( );
-        $workflowTemplates = array( );
-        
-        // find all objects
-        $messageTemplate->find();
-        while ($messageTemplate->fetch()) {
-            $values[$messageTemplate->id] = array( );
-            CRM_Core_DAO::storeValues( $messageTemplate, $values[$messageTemplate->id]);
-            // populate action links
-            $this->action( $messageTemplate, $action, $values[$messageTemplate->id], $links, CRM_Core_Permission::EDIT );
-            
-            if ( !$messageTemplate->workflow_id ) {
-                $userTemplates[$messageTemplate->id]     = $values[$messageTemplate->id];
-            } elseif( !$messageTemplate->is_reserved ) {
-                $workflowTemplates[$messageTemplate->id] = $values[$messageTemplate->id];
-            }
-        }
-        
-        $rows = array( 'userTemplates'     => $userTemplates,
-                       'workflowTemplates' => $workflowTemplates );
+    $rows = array(
+      'userTemplates' => $userTemplates,
+      'workflowTemplates' => $workflowTemplates,
+    );
 
-        $this->assign( 'rows', $rows );
-    }
+    $this->assign('rows', $rows);
+  }
 }
-
 

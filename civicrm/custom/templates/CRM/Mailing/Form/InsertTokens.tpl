@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,6 +35,11 @@ var isMailing    = false;
     {literal}
     text_message = "msg_text";
     html_message = "msg_html";
+    {/literal}
+{elseif $form.formName eq 'Address'}
+    {literal}
+    text_message = "mailing_format";
+    isMailing = false;
     {/literal}
 {else}
     {literal}
@@ -140,7 +145,7 @@ function selectValue( val ) {
             oEditor = CKEDITOR.instances[html_message];
             oEditor.setData( html_body );
         } else if ( editor == "tinymce" ) {
-            cj('#'+ html_message).tinymce().execCommand('mceSetContent',false, html_body);
+            tinyMCE.execInstanceCommand('html_message',"mceInsertContent",false, html_body );
         } else if ( editor == "joomlaeditor" ) { 
             cj("#"+ html_message).val( html_body );
             tinyMCE.execCommand('mceSetContent',false, html_body);           
@@ -212,14 +217,14 @@ function selectValue( val ) {
 	if ( isMailing ) { 
  	  cj('div.html').hover( 
 	  function( ) {
-	     if ( cj('#'+ html_message).tinymce() ) {
-	     cj('#'+ html_message).tinymce().onKeyUp.add(function() {
+	     if ( tinyMCE.get(html_message) ) {
+	     tinyMCE.get(html_message).onKeyUp.add(function() {
  	        verify( );
   	     });
 	     }
           },
 	  function( ) {
-	     if ( cj('#'+ html_message).tinymce() ) {
+	     if ( tinyMCE.get(html_message) ) {
 	       if ( tinyMCE.get(html_message).getContent() ) {
                  verify( );
                } 
@@ -246,18 +251,16 @@ function selectValue( val ) {
 
     function tokenReplText ( element )
     {
-        var token     = cj("#"+element.id).val( )[0];
-        if ( element.id == 'token3' ) {
-           ( isMailing ) ? text_message = "subject" : text_message = "msg_subject"; 
-        }else {
-           ( isMailing ) ? text_message = "text_message" : text_message = "msg_text";
-        }          
-        
-        cj( "#"+ text_message ).replaceSelection( token ); 
+      var token     = cj("#"+element.id).val( )[0];
+      if ( element.id == 'token3' ) {
+        ( isMailing ) ? text_message = "subject" : text_message = "msg_subject";
+      }
 
-        if ( isMailing ) { 
-             verify();
-        }
+      cj( "#"+ text_message ).replaceSelection( token );
+
+      if ( isMailing ) {
+        verify();
+      }
     }
 
     function tokenReplHtml ( )
@@ -265,7 +268,7 @@ function selectValue( val ) {
         var token2     = cj("#token2").val( )[0];
         var editor     = {/literal}"{$editor}"{literal};
         if ( editor == "tinymce" ) {
-            cj('#'+ html_message).tinymce().execCommand('mceInsertContent',false, token2);
+            tinyMCE.execInstanceCommand('html_message',"mceInsertContent",false, token2 );
         } else if ( editor == "joomlaeditor" ) { 
             tinyMCE.execCommand('mceInsertContent',false, token2);
             var msg       = document.getElementById(html_message).value;
@@ -279,8 +282,6 @@ function selectValue( val ) {
         } else if ( editor == "ckeditor" ) {
             oEditor = CKEDITOR.instances[html_message];
             oEditor.insertHtml(token2.toString() );
-        } else if ( editor == "drupalwysiwyg" ) {
-            Drupal.wysiwyg.instances[html_message].insert(token2.toString());
         } else {
             cj( "#"+ html_message ).replaceSelection( token2 );
         }
@@ -292,9 +293,6 @@ function selectValue( val ) {
 
     cj(function() {
         cj('.accordion .head').addClass( "ui-accordion-header ui-helper-reset ui-state-default ui-corner-all ");
-
-        // restructuring css as per jQuery tab width
-        cj('.ui-state-default, .ui-widget-content .ui-state-default').css( 'width', '95%' );
         cj('.resizable-textarea textarea').css( 'width', '99%' );
         cj('.grippie').css( 'margin-right', '3px');
         cj('.accordion .head').hover( function() { cj(this).addClass( "ui-state-hover");
@@ -320,25 +318,12 @@ function selectValue( val ) {
 
     {/literal}{include file="CRM/common/Filter.tpl"}{literal}
     
-    var getStartPosition = 0;
-    var getEndPosition = 0;
-    
     function showToken(element, id ) {
-   
-        //NYSS 4073 field selection in IE8 for tokens (text area && subject only)
-        if ( element == 'Text' ) { //NYSS 4245 limit alterations to text box only
-            var getStartPosition = cj('#text_message.form-textarea').focus().getSelection().start;
-            var getEndPosition = cj('#text_message.form-textarea').focus().getSelection().end;
-            $('.positionplace').remove();
-            $('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
-            $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
-        }
-        if ( element == 'Subject' ) { //NYSS 4245 limit alterations to text box only
-	        var getStartPosition = cj('input#subject').focus().getSelection().start;
-	        var getEndPosition = cj('input#subject').focus().getSelection().end;
-	        $('.positionplace').remove();
-	        $('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
-	        $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
+        //creates a data item called getPosition that's attached to the body
+        var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input').focus();
+        if(cjSetInput.length)//if the array has a value, get the selection of it.
+        {
+            jQuery.data(document.body, 'getPosition', cjSetInput.ricsgetSelection());
         }
         initFilter(id);
         cj("#token"+id).css({"width":"290px", "size":"8"});
@@ -377,7 +362,7 @@ function selectValue( val ) {
 
     cj(function() {
         if ( !cj().find('div.crm-error').text() ) {
-          cj(window).load(function () {           
+          cj(window).load(function () {
             setSignature();
           });
         }
@@ -392,7 +377,6 @@ function selectValue( val ) {
             var dataUrl = {/literal}"{crmURL p='civicrm/ajax/signature' h=0 }"{literal};
             cj.post( dataUrl, {emailID: emailID}, function( data ) {
                 var editor     = {/literal}"{$editor}"{literal};
-                
                 if ( data.signature_text ) {
                     // get existing text & html and append signatue
                     var textMessage =  cj("#"+ text_message).val( ) + '\n\n--\n' + data.signature_text;
@@ -403,14 +387,21 @@ function selectValue( val ) {
                 
                 if ( data.signature_html ) {
                     var htmlMessage =  cj("#"+ html_message).val( ) + '<br/><br/>--<br/>' + data.signature_html;
-
                     // set wysiwg editor
                     if ( editor == "ckeditor" ) {
-                        oEditor = CKEDITOR.instances[html_message];
-                        var htmlMessage = oEditor.getData( ) + '<br/><br/>--' + data.signature_html;
-                        oEditor.setData( htmlMessage  );
+                      //NYSS 6583 hackish solution for IE
+                      oEditor = CKEDITOR.instances[html_message];
+                      var oldData = oEditor.getData();
+                      var htmlMessage = oEditor.getData( ) + '<br/><br/>--' + data.signature_html;
+                      oEditor.setData( htmlMessage, function(){
+                        var newData = oEditor.getData();
+                        if ( oldData == '&nbsp;' ) {
+                          oEditor = CKEDITOR.instances[html_message];
+                          oEditor.setData( '<br/><br/>--' + data.signature_html );
+                        }
+                      });
                     } else if ( editor == "tinymce" ) {
-                        cj('#'+ html_message).tinymce().execCommand('mceSetContent',false, htmlMessage );
+                        tinyMCE.execInstanceCommand('html_message',"mceInsertContent",false, htmlMessage );
                     }  else if ( editor == "drupalwysiwyg" ) {
                         Drupal.wysiwyg.instances[html_message].insert(htmlMessage);
                     } else {	

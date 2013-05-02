@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,6 +58,13 @@
                       </a>
                    </li>
                  {/if}
+                 {if !empty($userAddUrl)}
+                   <li class="crm-contact-user-record">
+                      <a href="{$userAddUrl}" class="user-record " title="{ts}Create User Record{/ts}">
+                         <span><div class="icon user-record-icon"></div>{ts}Create User Record{/ts}</span>
+                      </a>
+                   </li>
+              {/if}
 			  </ul>
 			  </div>
 			  <div class="crm-contact_actions-list">

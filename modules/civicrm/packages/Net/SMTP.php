@@ -118,7 +118,7 @@ class Net_SMTP
      * @var int
      * @access private
      */
-    var $_timeout = 300; //NYSS
+    var $_timeout = 300;//NYSS
 
     /**
      * The most recent server response code.
@@ -371,7 +371,7 @@ class Net_SMTP
         }
 
         // CRM-8744
-        $errorMessage = 'Invalid response code received from SMTP (outbound mail) server while attempting to send email.  This is often caused by a misconfiguration in the CiviCRM Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP).';
+        $errorMessage = 'Invalid response code received from SMTP server while sending email.  This is often caused by a misconfiguration in Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP).';
         return PEAR::raiseError($errorMessage,
                                 $this->_code, PEAR_ERROR_RETURN);
     }
@@ -731,7 +731,7 @@ class Net_SMTP
         }
 
         $challenge = base64_decode($this->_arguments[0]);
-        $digest = &Auth_SASL::factory('digestmd5');
+        $digest = Auth_SASL::factory('digestmd5');
         $auth_str = base64_encode($digest->getResponse($uid, $pwd, $challenge,
                                                        $this->host, "smtp",
                                                        $authz));
@@ -783,7 +783,7 @@ class Net_SMTP
         }
 
         $challenge = base64_decode($this->_arguments[0]);
-        $cram = &Auth_SASL::factory('crammd5');
+        $cram = Auth_SASL::factory('crammd5');
         $auth_str = base64_encode($cram->getResponse($uid, $pwd, $challenge));
 
         if (PEAR::isError($error = $this->_put($auth_str))) {

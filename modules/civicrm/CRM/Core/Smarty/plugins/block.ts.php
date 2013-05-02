@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,11 +31,11 @@
  * @package CRM
  * @author Piotr Szotkowski <shot@caltha.pl>
  * @author Michal Mach <mover@artnet.org>
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  */
 
-/** 
+/**
  * Smarty block function providing gettext support
  *
  * See CRM_Core_I18n class documentation for details.
@@ -47,9 +46,7 @@
  *
  * @return string  the string, translated by gettext
  */
-function smarty_block_ts($params, $text, &$smarty)
-{
-    return ts($text, $params);
+function smarty_block_ts($params, $text, &$smarty) {
+  return ts($text, $params);
 }
-
 

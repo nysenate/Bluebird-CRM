@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -42,22 +41,20 @@
  * @return string human readable date format | invalid date message
  * @access public
  */
-function smarty_modifier_crmDate($dateString, $dateFormat = null, $onlyTime = false )
-{
-    if ($dateString) {
-        // this check needs to be type sensitive
-        // CRM-3689, CRM-2441
-        if ( $dateFormat === 0 ) {
-            $dateFormat = null;
-        }
-        if ( $onlyTime ) {
-            $config = CRM_Core_Config::singleton( );
-            $dateFormat  = $config->dateformatTime;
-        }
-
-        return CRM_Utils_Date::customFormat( $dateString, $dateFormat );
+function smarty_modifier_crmDate($dateString, $dateFormat = NULL, $onlyTime = FALSE) {
+  if ($dateString) {
+    // this check needs to be type sensitive
+    // CRM-3689, CRM-2441
+    if ($dateFormat === 0) {
+      $dateFormat = NULL;
     }
-    return '';
-}
+    if ($onlyTime) {
+      $config = CRM_Core_Config::singleton();
+      $dateFormat = $config->dateformatTime;
+    }
 
+    return CRM_Utils_Date::customFormat($dateString, $dateFormat);
+  }
+  return '';
+}
 

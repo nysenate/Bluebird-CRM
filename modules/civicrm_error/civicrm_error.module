@@ -1,0 +1,193 @@
+<?php
+
+/**
+ * Implements hook_civicrm_config().
+ */
+function civicrm_error_civicrm_config(&$config) {
+  // override the error handler
+  $config =& CRM_Core_Config::singleton( );
+  $config->fatalErrorHandler = 'civicrm_error_handler';
+}
+
+/**
+ * Implements hook_menu().
+ */
+function civicrm_error_menu() {
+  $items = array();
+
+  $items['admin/reports/civicrm_error'] = array(
+    'title'             => 'CiviCRM Error Handler',
+    'description'       => 'Email critical CiviCRM errors.',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('civicrm_error_settings'),
+    'access arguments'  => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+/**
+ *  Custom error function
+ *  Set CiviCRM » Administer CiviCRM » Global Settings » Debugging » Fatal Error Handler
+ *  To use this function
+ */
+function civicrm_error_handler($vars) {
+  $site = variable_get('site_name', 'drupal');
+
+  //NYSS get our instance name and append to site
+  $bbcfg = get_bluebird_instance_config();
+  $site .= ": {$bbcfg['servername']}";
+
+  // generate output
+  $output = t('There was a CiviCRM error at !site.', array('!site' => $site)) . "\n";
+  $output .= t('Date: !date', array('!date' => date('c'))) . "\n";
+
+  // error details
+  if (function_exists('error_get_last')) {
+    $output .= "\n***ERROR***\n";
+    $output .= print_r(error_get_last(), TRUE);
+  }
+
+  $output .= print_r($vars, TRUE);
+
+  // user info
+  global $user;
+  $output .= "\n***USER***\n";
+  $output .= _civicrm_error_parse_array($user);
+
+  // $_SERVER
+  global $_SERVER;
+  $output .= "\n***SERVER***\n";
+  $output .= _civicrm_error_parse_array($_SERVER);
+
+  // backtrace
+  $backtrace = debug_backtrace();
+  $output .= "\n***BACKTRACE***\n";
+  foreach ($backtrace as $call) {
+    $output .= "**next call**\n";
+    $output .= _civicrm_error_parse_array($call);
+  }
+
+  // send email
+  $len = variable_get('civicrm_error_subject_length', 25);
+
+  if ($len) {
+    $subject = t('CiviCRM error at !site (!error)', array('!site' => $site, '!error' => substr($vars['message'], 0, $len)));
+  }
+  else {
+    $subject = t('CiviCRM error at !site', array('!site' => $site));
+  }
+
+  $to = variable_get('civicrm_error_to', variable_get("site_mail", ini_get("sendmail_from")));
+
+  $destinations = explode(',', $to);
+
+  foreach ($destinations as $dest) {
+    $dest = trim($dest);
+    civicrm_error_send_mail($dest, $subject, $output);
+  }
+}
+
+/**
+ * Send the e-mail using drupal_mail()
+ */
+function civicrm_error_send_mail($to, $subject, $output) {
+  // c.f. http://api.drupal.org/api/drupal/includes!mail.inc/function/drupal_mail/7
+  $module = 'civicrm_error';
+  $key = 'stderr';
+  $language = language_default();
+  $params = array();
+  $from = variable_get("site_mail", ini_get("sendmail_from"));
+  $send = FALSE;
+
+  $message = drupal_mail($module, $key, $to, $language, $params, $from, $send);
+
+  $message['subject'] = $subject;
+  $message['body'] = array($output);
+
+  // Retrieve the responsible implementation for this message.
+  $system = drupal_mail_system($module, $key);
+
+  // Format the message body.
+  $message = $system->format($message);
+
+  // Send e-mail.
+  $message['result'] = $system->mail($message);
+
+  //NYSS if the mail was unsuccessful, attempt via civicrm
+  if ( $message['result'] !== TRUE ) {
+    _send_mail_civicrm($message, $output);
+  }
+}
+
+/*
+ * NYSS send the email using civicrm email
+ */
+function _send_mail_civicrm($message, $output){
+
+  //set some array elements
+  unset($message['headers']);
+  $message['toName'] = 'CiviCRM Admin';
+  $message['toEmail'] = $message['to'];
+  $message['text'] = $output;
+  $message['html'] = '<pre>'.$output.'</pre>';
+  $message['Content-Transfer-Encoding'] = 'Quoted-Printable';
+  //CRM_Core_Error::debug_var('message body',$message['body']);
+
+  CRM_Utils_Mail::send($message);
+}
+
+/**
+ *  Helper function to return a pretty print of the given array
+ */
+function _civicrm_error_parse_array($array) {
+  $output = '';
+
+  foreach((array)$array as $key => $value) {
+    if (is_array($value) || is_object($value)) {
+      $value = print_r($value, TRUE);
+    }
+    $key = str_pad($key .':', 20, ' ');
+    $output .= $key . (string)_civicrm_error_check_length($value) ." \n";
+  }
+  return $output ."\n";
+}
+
+/**
+ *  Helper function to add elipses and return spaces if null
+ */
+function _civicrm_error_check_length($item) {
+  if (is_null($item)) {
+    return ' ';
+  }
+  if (strlen($item) > 2000) {
+    $item = substr($item, 0, 2000) .'...';
+  }
+  return $item;
+}
+
+/**
+ * Settings page
+ */
+function civicrm_error_settings() {
+  $form['civicrm_error_to'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email'),
+    '#maxlength' => 255,
+    '#default_value' => variable_get('civicrm_error_to', variable_get("site_mail", ini_get("sendmail_from"))),
+    '#description' => t("Select an email address to send all CiviCRM errors to. You can enter multiple addresses by separating them with a comma. Ex: foo@example.org, bar@example.org."),
+    '#required' => TRUE,
+  );
+
+  $form['civicrm_error_subject_length'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Error length in subject'),
+    '#maxlength' => 255,
+    '#default_value' => variable_get('civicrm_error_subject_length', 25),
+    '#description' => t("Length of the error message included in the message subject. To disable, enter 0."),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+

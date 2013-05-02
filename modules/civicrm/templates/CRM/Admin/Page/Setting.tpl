@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=docLink}{docURL page="Global Settings" text="Administration Documentation"}{/capture}
+{capture assign=docLink}{docURL page="user/initial-set-up/customizing-the-user-interface" text="Administration Documentation"}{/capture}
 <div id="help">
     {ts 1=$docLink}Use the links below to configure or modify the global settings for CiviCRM for this site. Refer to the %1 for details on settings and options.{/ts}
 </div>

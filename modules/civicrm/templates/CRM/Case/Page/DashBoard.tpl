@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,20 +32,23 @@
 
 {capture assign=newCaseURL}{crmURL p="civicrm/contact/view/case" q="action=add&context=standalone&reset=1"}{/capture}
 
-<div class="crm-submit-buttons">
+<div class="crm-submit-buttons crm-case-dashboard-buttons">
     {if $newClient and $allowToAddNewCase}	
 	    <a href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
     {/if}
+    <a class="button" name="find_my_cases" href="{crmURL p="civicrm/case/search" q="reset=1&case_owner=2&force=1"}"><span>{ts}Find My Cases{/ts}</span></a>
+
     <div class="crm-case-dashboard-switch-view-buttons">
         {if $myCases}
             {* check for access all cases and activities *}
             {if call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities')}
-                <a class="button" href="{crmURL p="civicrm/case" q="reset=1&all=1"}"><span>{ts}All Cases with Upcoming Activities{/ts}</span></a>
+                <div><input name="allupcoming" type="radio" class="radio" onClick='window.location.replace("{crmURL p="civicrm/case" q="reset=1&all=1"}")' value="1"><span>{ts}All Cases with Upcoming Activities{/ts}</span></input></div>
+                <div><input name="allupcoming" checked type="radio" class="radio" onClick='window.location.replace("{crmURL p="civicrm/case" q="reset=1&all=0"}")' value="0"><span>{ts}My Cases with Upcoming Activities{/ts}</span></input></div>
             {/if}
         {else}
-            <a class="button" href="{crmURL p="civicrm/case" q="reset=1&all=0"}"><span>{ts}My Cases with Upcoming Activities{/ts}</span></a>
+                <div><input name="allupcoming" checked type="radio" class="radio" onClick='window.location.replace("{crmURL p="civicrm/case" q="reset=1&all=1"}")' value="1"><span>{ts}All Cases with Upcoming Activities{/ts}</span></input></div>
+                <div><input name="allupcoming" type="radio" class="radio" onClick='window.location.replace("{crmURL p="civicrm/case" q="reset=1&all=0"}")' value="0"><span>{ts}My Cases with Upcoming Activities{/ts}</span></input></div>
         {/if}
-        <a class="button" href="{crmURL p="civicrm/case/search" q="reset=1&case_owner=1&force=1"}"><span>{ts}My Cases{/ts}</span></a>
     </div>
 </div>
 
@@ -71,7 +74,7 @@
     {assign var="caseStatus" value=$header.status}
     <td class="label">
     {if $row.$caseStatus}
-    <a href="{$row.$caseStatus.url}">{$row.$caseStatus.count}</a>
+    <a class="crm-case-summary-drilldown" href="{$row.$caseStatus.url}">{$row.$caseStatus.count}</a>
     {else}
      0
     {/if}

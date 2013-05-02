@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,21 +28,20 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php'; //NYSS
 
 /**
  * form helper class for an Email object
  */
 class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
+
   /**
    * contact id of the contact that is been viewed
    */
-  private $_contactId;
+  public $_contactId;
     
   /**
    * email addresses of the contact that is been viewed
@@ -59,21 +57,62 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
    * call preprocess
    */
   public function preProcess() {
-    //NYSS accommodate the absence of autoload
-    require_once 'CRM/Core/BAO/Email.php';
-    require_once 'CRM/Utils/Request.php';
-    require_once 'CRM/Core/BAO/Block.php';
-
     //get all the existing email addresses
-    $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true, null, $_REQUEST );
+    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE, NULL, $_REQUEST);
 
     $this->assign( 'contactId', $this->_contactId );
     $email = new CRM_Core_BAO_Email( );
     $email->contact_id = $this->_contactId;
-    $this->_emails = CRM_Core_BAO_Block::retrieveBlock( $email, null );
+
+    $this->_emails = CRM_Core_BAO_Block::retrieveBlock($email, NULL);
   }
 
+  /**
+   * build the form elements for an email object
+   *
+   * @return void
+   * @access public
+   */
+  public function buildQuickForm( ) {
+    $totalBlocks    = $this->_blockCount;
+    $actualBlockCount = 1;
+    if ( count( $this->_emails ) > 1 ) {
+      $actualBlockCount = $totalBlocks = count( $this->_emails );
+      if ( $totalBlocks < $this->_blockCount ) {
+        $additionalBlocks = $this->_blockCount - $totalBlocks;
+        $totalBlocks      += $additionalBlocks;
+      }
+      else {
+        $actualBlockCount++;
+        $totalBlocks++;
+      }
+    }
 
+    $this->assign('actualBlockCount', $actualBlockCount);
+    $this->assign('totalBlocks',    $totalBlocks);
+    
+    $this->applyFilter('__ALL__','trim');
+
+    for ( $blockId = 1; $blockId < $totalBlocks; $blockId++ ) {
+      CRM_Contact_Form_Edit_Email::buildQuickForm($this, $blockId, TRUE);
+    }
+
+    $buttons = array( 
+      array( 
+        'type'      => 'upload',
+        'name'      => ts('Save'),
+        'isDefault' => TRUE,
+      ),
+      array( 
+        'type' => 'cancel',
+        'name' => ts('Cancel'),
+      ),
+    );
+
+    $this->addButtons(  $buttons );
+
+    $this->addFormRule( array( 'CRM_Contact_Form_Inline_Email', 'formRule' ) );
+  }
 
   /**
    * global validation rules for the form
@@ -86,8 +125,6 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
    * @access public
    */
   static function formRule( $fields, $errors ) {
-
-    require_once 'CRM/Contact/Form/Contact.php';
     $hasData = $hasPrimary = $errors = array( );
     if ( CRM_Utils_Array::value( 'email', $fields ) && is_array( $fields['email'] ) ) {
       foreach ( $fields['email'] as $instance => $blockValues ) {
@@ -150,53 +187,17 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
   }
 
   /**
-   * build the form elements for an email object
-   *
-   * @return void
-   * @access public
+   * Override default cancel action
    */
-  public function buildQuickForm( ) {
-    require_once 'CRM/Contact/Form/Edit/Email.php'; //NYSS
-
-    $totalBlocks    = $this->_blockCount;
-    $actualBlockCount = 1;
-    if ( count( $this->_emails ) > 1 ) {
-      $actualBlockCount = $totalBlocks = count( $this->_emails );
-      if ( $totalBlocks < $this->_blockCount ) {
-        $additionalBlocks = $this->_blockCount - $totalBlocks;
-        $totalBlocks      += $additionalBlocks;
-      }
-      else {
-        $actualBlockCount++;
-        $totalBlocks++;
-      }
-    }
-
-    $this->assign('actualBlockCount', $actualBlockCount);
-    $this->assign('totalBlocks',    $totalBlocks);
-    
-    $this->applyFilter('__ALL__','trim');
-
-    for ( $blockId = 1; $blockId < $totalBlocks; $blockId++ ) {
-      CRM_Contact_Form_Edit_Email::buildQuickForm( $this, $blockId, true );
-    }
-
-    $buttons = array( 
-      array( 
-        'type'      => 'upload',
-        'name'      => ts('Save'),
-        'isDefault' => true),
-      array( 
-        'type'      => 'refresh',
-        'name'      => ts('Cancel') ) );
-
-    $this->addButtons(  $buttons );
-
-    $this->addFormRule( array( 'CRM_Contact_Form_Inline_Email', 'formRule' ), $this );//NYSS
+  function cancelAction() {
+    $response = array('status' => 'cancel');
+    echo json_encode($response);
+    CRM_Utils_System::civiExit();
   }
 
   /**
    * set defaults for the form
+   *
    * @return void
    * @access public
    */
@@ -207,45 +208,41 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
         $defaults['email'][$id] = $value;
       }
     }
+    else {
+      // get the default location type
+      $locationType = CRM_Core_BAO_LocationType::getDefault();
+      $defaults['email'][1]['location_type_id'] = $locationType->id;
+    }
+
     return $defaults;
   }
 
   /**
    * process the form 
+   *
    * @return void
    * @access public
    */
   public function postProcess() {
     $params = $this->exportValues(  );
     
-    if ( CRM_Utils_Array::value( '_qf_Email_refresh', $params ) ) {
-      $response = array( 'status' => 'cancel' );
-    }
-    else {
       // need to process / save emails
-      
       $params['contact_id']         = $this->_contactId;
-      $params['updateBlankLocInfo'] = true;
+    $params['updateBlankLocInfo'] = TRUE;
       
       // save email changes
       CRM_Core_BAO_Block::create( 'email', $params );
 
+    // make entry in log table
+    CRM_Core_BAO_Log::register( $this->_contactId,
+      'civicrm_contact',
+      $this->_contactId
+    );
+
       $response = array( 'status' => 'save' );
-
-      //NYSS hit contact object so we can access changelog
-      require_once 'CRM/Contact/DAO/Contact.php';
-      $contact = new CRM_Contact_DAO_Contact( );
-      $contact->id = $this->_contactId;
-      $contact->find(true);
-      //make sure dates doesn't get reset
-      $contact->birth_date    = CRM_Utils_Date::isoToMysql($contact->birth_date); 
-      $contact->deceased_date = CRM_Utils_Date::isoToMysql($contact->deceased_date);
-      $contact->save();
-    }
-
+    $this->postProcessHook();
     echo json_encode( $response );
     CRM_Utils_System::civiExit( );    
   }
-
-
 }
+

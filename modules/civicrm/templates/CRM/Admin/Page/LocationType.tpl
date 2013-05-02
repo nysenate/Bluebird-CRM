@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,6 +41,7 @@
     <thead>
     <tr>
         <th id="sortable">{ts}Name{/ts}</th>
+        <th>{ts}Display Name{/ts}</th>
         <th>{ts}vCard{/ts}</th>
         <th id="nosort">{ts}Description{/ts}</th>
         <th>{ts}Enabled?{/ts}</th>
@@ -51,10 +52,11 @@
     {foreach from=$rows item=row}
     <tr id="row_{$row.id}"class="{cycle values="odd-row,even-row"} {$row.class} crm-locationType {if NOT $row.is_active} disabled{/if}">
         <td class="crm-locationType-name">{$row.name}</td>	
+        <td class="crm-locationType-display_name">{$row.display_name}</td>	
         <td class="crm-locationType-vcard_name">{$row.vcard_name}</td>	
       	<td class="crm-locationType-description">{$row.description}</td>
         <td id="row_{$row.id}_status" class="crm-locationType-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-      	<td class="crm-locationType-is_default" >{if $row.is_default eq 1}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
+      	<td class="crm-locationType-is_default" >{if $row.is_default eq 1}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
         <td>{$row.action|replace:'xx':$row.id}</td>
     </tr>
     {/foreach}

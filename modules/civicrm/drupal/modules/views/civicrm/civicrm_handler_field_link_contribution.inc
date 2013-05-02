@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,6 +22,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /*
  * Copyright (C) 2009 James Rakich
  * Licensed to CiviCRM under the Academic Free License version 3.0.
@@ -38,6 +39,7 @@
  * Field handler to provide simple renderer that allows linking to various pages involving the contribution.
  */
 class civicrm_handler_field_link_contribution extends views_handler_field {
+
   /**
    * Constructor to provide additional field to add.
    */
@@ -51,7 +53,7 @@ class civicrm_handler_field_link_contribution extends views_handler_field {
     $options = parent::option_definition();
     $options['link_to_civicrm_contribution'] = array('default' => 'view');
     $options['custom_link'] = array('default' => '');
-    $options['link_text'] = array('default' => '');
+    $options['link_text'] = array('default' => 'View Contribution');
     return $options;
   }
 
@@ -61,83 +63,82 @@ class civicrm_handler_field_link_contribution extends views_handler_field {
       '#type' => 'select',
       '#title' => t('Choose where to link this field'),
       '#options' => array(
-         'view' => t('Link to View Contribution'),
-         'edit' => t('Link to Edit Contribution'),
-         'delete' => t('Link to Delete Contribution'),
-         'custom' => t('Link to a Custom Node'),
-         ),
+        'view' => t('Link to View Contribution'),
+        'edit' => t('Link to Edit Contribution'),
+        'delete' => t('Link to Delete Contribution'),
+        'custom' => t('Link to a Custom Node'),
+      ),
       '#default_value' => !empty($this->options['link_to_civicrm_contribution']),
     );
-    
-    $form['custom_link'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Custom Link to a Drupal Node'),
-       '#description' => t('Link to a Drupal Node or View, from the base path. The Contribution ID will be appended to the end of the link.'),
-       '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
-       '#dependency' => array('link_to_civicrm_contribution' => array('custom')),
-     );
-     
-     $form['link_text'] = array(
-       '#type' => 'textfield',
-       '#title' => t('Links Text'),
-       '#description' => t('The text that will display in the field with the link.'),
-       '#default_value' => isset($this->options['link_text']) ? $this->options['link_text'] : '',
-     );
 
+    $form['custom_link'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Custom Link to a Drupal Node'),
+      '#description' => t('Link to a Drupal Node or View, from the base path. The Contribution ID will be appended to the end of the link.'),
+      '#default_value' => isset($this->options['custom_link']) ? $this->options['custom_link'] : '',
+      '#dependency' => array('link_to_civicrm_contribution' => array('custom')),
+    );
+
+    $form['link_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Links Text'),
+      '#description' => t('The text that will display in the field with the link.'),
+      '#default_value' => isset($this->options['link_text']) ? $this->options['link_text'] : '',
+    );
   }
 
-
   function render_link($data, $values) {
-    
+
     $link_text = $this->options['link_text'];
     $link_choice = $this->options['link_to_civicrm_contribution'];
-    
+
     if ($link_choice == 'custom') {
-       $custom_link = $this->options['custom_link'];
-     }
+      $custom_link = $this->options['custom_link'];
+    }
 
 
     switch ($link_choice) {
-      
-    // LINKING TO CONTRIBUTION VIEW PAGE
+
+      // LINKING TO CONTRIBUTION VIEW PAGE
+
       case 'view':
-           if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/contribution',
-                                            "reset=1&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&action=view&context=search&selectedChild=contribute" );
-           }
+        if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/contribution',
+            "reset=1&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&action=view&context=search&selectedChild=contribute"
+          );
+        }
 
-    // LINKING TO CONTRIBUTION EDIT PAGE
+        // LINKING TO CONTRIBUTION EDIT PAGE
       case 'edit':
-           if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/contribution',
-                                            "reset=1&action=update&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&context=search" );
-           }
+        if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/contribution',
+            "reset=1&action=update&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&context=search"
+          );
+        }
 
-    // LINKING TO CONTRIBUTION DELETE PAGE
+        // LINKING TO CONTRIBUTION DELETE PAGE
       case 'delete':
-           if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
-           return civicrm_views_href( $link_text,
-                                            'civicrm/contact/view/contribution',
-                                            "reset=1&action=delete&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&context=search" );
-           }
-           
-    // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
+        if (user_access('edit contributions') && $link_text !== NULL && $link_text !== '') {
+          return civicrm_views_href($link_text,
+            'civicrm/contact/view/contribution',
+            "reset=1&action=delete&id={$values->id}&cid={$values->civicrm_contribution_contact_id}&context=search"
+          );
+        }
+
+        // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
       case 'custom':
-           if ($custom_link !== NULL && $custom_link !== '' && $link_text !== NULL && $link_text !== '') {
-           return l($link_text, $custom_link . "{$values->id}" );
-           }
-    
-    // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE TEXT
+        if ($custom_link !== NULL && $custom_link !== '' && $link_text !== NULL && $link_text !== '') {
+          return l($link_text, $custom_link . "{$values->id}");
+        }
+
+        // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE TEXT
       default:
-              return $link_text;
-
-
-
+        return $link_text;
     }
   }
-  
+
   function query() {
     $this->ensure_my_table();
     $this->add_additional_fields();
@@ -147,3 +148,4 @@ class civicrm_handler_field_link_contribution extends views_handler_field {
     return $this->render_link(check_plain($values->{$this->field_alias}), $values);
   }
 }
+

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,155 +28,152 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Profile/Form.php';
-require_once 'CRM/Activity/Form/Task.php';
 
 /**
  * This class provides the functionality for batch profile update for Activity
  */
 class CRM_Activity_Form_Task_PickProfile extends CRM_Activity_Form_Task {
 
-    /**
-     * the title of the group
-     *
-     * @var string
-     */
-    protected $_title;
+  /**
+   * the title of the group
+   *
+   * @var string
+   */
+  protected $_title;
 
-    /**
-     * maximum Activities that should be allowed to update
-     *
-     */
-    protected $_maxActivities = 100;
+  /**
+   * maximum Activities that should be allowed to update
+   *
+   */
+  protected $_maxActivities = 100;
 
+  /**
+   * variable to store redirect path
+   *
+   */
+  protected $_userContext;
 
-    /**
-     * variable to store redirect path
-     *
-     */
-    protected $_userContext;
-
-
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {   
-        /*
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    /*
          * initialize the task and row fields
          */
-        parent::preProcess( );
-        $session = CRM_Core_Session::singleton( );
-        $this->_userContext = $session->readUserContext( );
-       
-        CRM_Utils_System::setTitle( ts( 'Batch Profile Update for Activities' ) );
-    
-        $validate = false;
-        //validations
-        if ( count( $this->_activityHolderIds ) >$this->_maxActivities ) {
-            CRM_Core_Session::setStatus( "The maximum number of Activities you can select for Batch Update is {$this->_maxActivities}. You have selected ". count($this->_activityHolderIds ). ". Please select fewer Activities from your search results and try again." );
-            $validate = true;
-        }
-        
-        if ($validate) { // than redirect
-            CRM_Utils_System::redirect( $this->_userContext );
-        }
-    }
-  
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( ) 
-    {
-        require_once "CRM/Core/BAO/UFGroup.php";
-        $types = array( 'Activity' );
-        $profiles = CRM_Core_BAO_UFGroup::getProfiles( $types, true );
-        
-        $activityTypeIds = array_flip( CRM_Core_PseudoConstant::activityType( true, false, false, 'name' ) );
-        $nonEditableActivityTypeIds =  array (                                         
-                                              $activityTypeIds['Email'],
-                                              $activityTypeIds['Bulk Email'],
-                                              $activityTypeIds['Contribution'],
-                                              $activityTypeIds['Inbound Email'],
-                                              $activityTypeIds['Pledge Reminder'],
-                                              $activityTypeIds['Membership Signup'], 
-                                              $activityTypeIds['Membership Renewal'],
-                                              $activityTypeIds['Event Registration'],
-                                              $activityTypeIds['Pledge Acknowledgment']
-                                             );
-        
-        foreach ( $this->_activityHolderIds as $activityId ) {
-            $typeId = CRM_Core_DAO::getFieldValue( "CRM_Activity_DAO_Activity", $activityId, 'activity_type_id' );
-            if ( in_array ( $typeId, $nonEditableActivityTypeIds ) ) {
-                $notEditable = true;
-                break;
-            }
-        }
-        
-        if ( empty( $profiles ) ) {
-            CRM_Core_Session::setStatus( "You will need to create a Profile containing the {$types[0]} fields you want to edit before you can use Batch Update via Profile. Navigate to Administer Civicrm >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information." );
-            CRM_Utils_System::redirect( $this->_userContext );
-        } else if ( $notEditable ) {
-            CRM_Core_Session::setStatus( "Some of the selected activities are not editable." );
-            CRM_Utils_System::redirect( $this->_userContext );
-        }
-        
-        $ufGroupElement = $this->add( 'select', 'uf_group_id', ts('Select Profile' ), 
-                                      array( '' => ts( '- select profile -') ) + $profiles, true );
-        $this->addDefaultButtons( ts( 'Continue >>' ) );
-    }
-    
-    /**
-     * Add local and global form rules
-     *
-     * @access protected
-     * @return void
-     */
-    function addRules( ) 
-    {
-        $this->addFormRule( array( 'CRM_Activity_Form_Task_PickProfile', 'formRule' ) );
-    }
-    
-    /**
-     * global validation rules for the form
-     *
-     * @param array $fields posted values of the form
-     *
-     * @return array list of errors to be posted back to the form
-     * @static
-     * @access public
-     */
-    static function formRule( $fields ) 
-    {
-        return true;
-    }    
 
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess() 
-    {
-        $params = $this->exportValues( );
-        
-        $this->set( 'ufGroupId', $params['uf_group_id'] );
-        
-	// also reset the batch page so it gets new values from the db
-	$this->controller->resetPage( 'Batch' );
-       
-    }//end of function
+    parent::preProcess();
+    $session = CRM_Core_Session::singleton();
+    $this->_userContext = $session->readUserContext();
+
+    CRM_Utils_System::setTitle(ts('Batch Profile Update for Activities'));
+
+    $validate = FALSE;
+    //validations
+    if (count($this->_activityHolderIds) > $this->_maxActivities) {
+      CRM_Core_Session::setStatus("The maximum number of Activities you can select for Batch Update is {$this->_maxActivities}. You have selected " . count($this->_activityHolderIds) . ". Please select fewer Activities from your search results and try again.");
+      $validate = TRUE;
+    }
+
+    // than redirect
+    if ($validate) {
+      CRM_Utils_System::redirect($this->_userContext);
+    }
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    $types = array('Activity');
+    $profiles = CRM_Core_BAO_UFGroup::getProfiles($types, TRUE);
+
+    $activityTypeIds = array_flip(CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name'));
+    $nonEditableActivityTypeIds = array(
+      $activityTypeIds['Email'],
+      $activityTypeIds['Bulk Email'],
+      $activityTypeIds['Contribution'],
+      $activityTypeIds['Inbound Email'],
+      $activityTypeIds['Pledge Reminder'],
+      $activityTypeIds['Membership Signup'],
+      $activityTypeIds['Membership Renewal'],
+      $activityTypeIds['Event Registration'],
+      $activityTypeIds['Pledge Acknowledgment'],
+    );
+    $notEditable = FALSE;
+    foreach ($this->_activityHolderIds as $activityId) {
+      $typeId = CRM_Core_DAO::getFieldValue("CRM_Activity_DAO_Activity", $activityId, 'activity_type_id');
+      if (in_array($typeId, $nonEditableActivityTypeIds)) {
+        $notEditable = TRUE;
+        break;
+      }
+    }
+
+    if (empty($profiles)) {
+      CRM_Core_Session::setStatus("You will need to create a Profile containing the {$types[0]} fields you want to edit before you can use Batch Update via Profile. Navigate to Administer CiviCRM >> CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.");
+      CRM_Utils_System::redirect($this->_userContext);
+    }
+    elseif ($notEditable) {
+      CRM_Core_Session::setStatus("Some of the selected activities are not editable.");
+      CRM_Utils_System::redirect($this->_userContext);
+    }
+
+    $ufGroupElement = $this->add('select', 'uf_group_id', ts('Select Profile'),
+      array(
+        '' => ts('- select profile -')) + $profiles, TRUE
+    );
+    $this->addDefaultButtons(ts('Continue >>'));
+  }
+
+  /**
+   * Add local and global form rules
+   *
+   * @access protected
+   *
+   * @return void
+   */
+  function addRules() {
+    $this->addFormRule(array('CRM_Activity_Form_Task_PickProfile', 'formRule'));
+  }
+
+  /**
+   * global validation rules for the form
+   *
+   * @param array $fields posted values of the form
+   *
+   * @return array list of errors to be posted back to the form
+   * @static
+   * @access public
+   */
+  static
+  function formRule($fields) {
+    return TRUE;
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    $params = $this->exportValues();
+
+    $this->set('ufGroupId', $params['uf_group_id']);
+
+    // also reset the batch page so it gets new values from the db
+    $this->controller->resetPage('Batch');
+  }
+  //end of function
 }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -120,7 +120,11 @@
                {if ( $field.html_type eq 'Radio' or  $n eq 'gender') and $form.formName eq 'Preview'}
                        <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$n}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
                {elseif $field.html_type eq 'Autocomplete-Select'}
-                       {include file="CRM/Custom/Form/AutoComplete.tpl" element_name = $n }
+                   {if $field.data_type eq 'ContactReference'}
+                       {include file="CRM/Custom/Form/ContactReference.tpl" element_name = $n}
+                   {else}
+                       {include file="CRM/Custom/Form/AutoComplete.tpl" element_name = $n}
+                   {/if}
                 {/if}
             {/if}
 	   {/if}

@@ -1,7 +1,7 @@
 <?php
-  /*
+/*
    +--------------------------------------------------------------------+
-   | CiviCRM version 3.4                                                |
+   | CiviCRM version 4.2                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -23,36 +23,47 @@
    +--------------------------------------------------------------------+
   */
 
-  // Retrieve list of CiviCRM contribution page PCP'S
-  // Active
 
-  // Check to ensure this file is included in Joomla!
-defined('_JEXEC') or die( 'Restricted access' );
+// Retrieve list of CiviCRM contribution page PCP'S
+// Active
 
-class JElementCiviPCPs extends JElement {
-	/**
-	 * Element name
-	 *
-	 * @access	protected
-	 * @var		string
-	 */
-	var	$_name = 'CiviPCPs';
-	
-	function fetchElement( $name, $value, &$node, $control_name )	{
-		// Initiate CiviCRM
-		require_once JPATH_ROOT.'/'.'administrator/components/com_civicrm/civicrm.settings.php';
-		require_once 'CRM/Core/Config.php';
-		$config =& CRM_Core_Config::singleton( );
-        
-		// Get list of all profiles and assign to options array
-		$options = array();
-		
-        $query = 'SELECT id, title FROM civicrm_pcp WHERE is_active = 1 AND status_id = 2 ORDER BY title';
-        $dao = CRM_Core_DAO::executeQuery( $query );
-        while ( $dao->fetch( ) ) {
-            $options[] = JHTML::_( 'select.option', $dao->id, $dao->title ); 
-        }
-		return JHTML::_( 'select.genericlist', $options, 'params[id]', null, 'value', 'text', $value );
-	}
+// Check to ensure this file is included in Joomla!
+defined('_JEXEC') or die('Restricted access');
+class JFormFieldCiviPCPs extends JFormField {
+
+  /**
+   * Element name
+   *
+   * @access	protected
+   * @var		string
+   */
+  var $type = 'CiviPCPs';
+
+  protected function getInput() {
+
+    $value = $this->value;
+    $name = $this->name;
+
+    // Initiate CiviCRM
+    define('CIVICRM_SETTINGS_PATH', JPATH_ROOT . '/' . 'administrator/components/com_civicrm/civicrm.settings.php');
+    require_once CIVICRM_SETTINGS_PATH;
+
+    require_once 'CRM/Core/ClassLoader.php';
+    CRM_Core_ClassLoader::singleton()->register();
+
+    require_once 'CRM/Core/Config.php';
+    $config = CRM_Core_Config::singleton();
+
+    // Get list of all profiles and assign to options array
+    $options = array();
+
+    $query = 'SELECT id, title FROM civicrm_pcp WHERE is_active = 1 AND status_id = 2 ORDER BY title';
+    $dao = CRM_Core_DAO::executeQuery($query);
+    while ($dao->fetch()) {
+      $options[] = JHTML::_('select.option', $dao->id, $dao->title);
+    }
+    return JHTML::_('select.genericlist', $options, $name, NULL, 'value', 'text', $value);
+  }
 }
-?>
+
+

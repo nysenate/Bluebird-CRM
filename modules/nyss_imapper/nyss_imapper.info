@@ -1,0 +1,6 @@
+name = NYSS IMapper module
+description = Implements an interface for mapping emails to contacts for IMAP routing
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2

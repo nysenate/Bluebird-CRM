@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,103 +28,108 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Admin_Form_ParticipantStatus extends CRM_Admin_Form {
+  public function buildQuickForm() {
+    parent::buildQuickForm();
 
-require_once 'CRM/Admin/Form.php';
-require_once 'CRM/Event/BAO/ParticipantStatusType.php';
+    if ($this->_action & CRM_Core_Action::DELETE) {
 
-class CRM_Admin_Form_ParticipantStatus extends CRM_Admin_Form
-{
-    public function buildQuickForm()
-    {
-        parent::buildQuickForm();
+      return;
 
-        if ($this->_action & CRM_Core_Action::DELETE) return;
-
-        $this->applyFilter('__ALL__', 'trim');
-
-        $attributes = CRM_Core_DAO::getAttribute('CRM_Event_DAO_ParticipantStatusType');
-
-        $this->add('text', 'name',  ts('Name'), null,  true);
-
-        $this->add('text', 'label', ts('Label'), $attributes['label'], true);
-
-        $classes = array();
-        foreach (array('Positive', 'Pending', 'Waiting', 'Negative') as $class) {
-            $classes[$class] = CRM_Event_DAO_ParticipantStatusType::tsEnum('class', $class);
-        }
-        $this->add('select', 'class', ts('Class'), $classes, true);
-
-        $this->add('checkbox', 'is_active',  ts('Active?'));
-        $this->add('checkbox', 'is_counted', ts('Counted?'));
-
-        $this->add('text', 'weight',  ts('Weight'),  $attributes['weight'], true);
-
-        require_once 'CRM/Core/PseudoConstant.php';
-        $this->add('select', 'visibility_id', ts('Visibility'), CRM_Core_PseudoConstant::visibility(), true);
     }
 
-    function setDefaultValues()
-    {
-        $defaults = parent::setDefaultValues();
-        if (!CRM_Utils_Array::value('weight', $defaults)) {
-            require_once 'CRM/Utils/Weight.php';
-            $defaults['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Event_DAO_ParticipantStatusType');
-        }
-        $this->_isReserved = CRM_Utils_Array::value('is_reserved', $defaults);
-        if ($this->_isReserved) $this->freeze(array('name', 'class', 'is_active'));
-        return $defaults;
+    $this->applyFilter('__ALL__', 'trim');
+
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Event_DAO_ParticipantStatusType');
+
+    $this->add('text', 'name', ts('Name'), NULL, TRUE);
+
+    $this->add('text', 'label', ts('Label'), $attributes['label'], TRUE);
+
+    $classes = array();
+    foreach (array(
+      'Positive', 'Pending', 'Waiting', 'Negative') as $class) {
+      $classes[$class] = CRM_Event_DAO_ParticipantStatusType::tsEnum('class', $class);
+    }
+    $this->add('select', 'class', ts('Class'), $classes, TRUE);
+
+    $this->add('checkbox', 'is_active', ts('Active?'));
+    $this->add('checkbox', 'is_counted', ts('Counted?'));
+
+    $this->add('text', 'weight', ts('Weight'), $attributes['weight'], TRUE);
+
+    $this->add('select', 'visibility_id', ts('Visibility'), CRM_Core_PseudoConstant::visibility(), TRUE);
+  }
+
+  function setDefaultValues() {
+    $defaults = parent::setDefaultValues();
+    if (!CRM_Utils_Array::value('weight', $defaults)) {
+      $defaults['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Event_DAO_ParticipantStatusType');
+    }
+    $this->_isReserved = CRM_Utils_Array::value('is_reserved', $defaults);
+    if ($this->_isReserved) {
+      $this->freeze(array('name', 'class', 'is_active'));
+    }
+    return $defaults;
+  }
+
+  function postProcess() {
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      if (CRM_Event_BAO_ParticipantStatusType::deleteParticipantStatusType($this->_id)) {
+        CRM_Core_Session::setStatus(ts('Selected participant status has been deleted.'));
+      }
+      else {
+        CRM_Core_Session::setStatus(ts('Selected participant status has <strong>NOT</strong> been deleted; there are still participants with this status.'));
+      }
+      return;
     }
 
-    function postProcess()
-    {
-        if ($this->_action & CRM_Core_Action::DELETE) {
-            if (CRM_Event_BAO_ParticipantStatusType::deleteParticipantStatusType($this->_id)) {
-                CRM_Core_Session::setStatus(ts('Selected participant status has been deleted.'));
-            } else {
-                CRM_Core_Session::setStatus(ts('Selected participant status has <strong>NOT</strong> been deleted; there are still participants with this status.'));
-            }
-            return;
-        }
+    $formValues = $this->controller->exportValues($this->_name);
 
-        $formValues = $this->controller->exportValues($this->_name);
+    $params = array(
+      'name' => CRM_Utils_Array::value('name', $formValues),
+      'label' => CRM_Utils_Array::value('label', $formValues),
+      'class' => CRM_Utils_Array::value('class', $formValues),
+      'is_active' => CRM_Utils_Array::value('is_active', $formValues, FALSE),
+      'is_counted' => CRM_Utils_Array::value('is_counted', $formValues, FALSE),
+      'weight' => CRM_Utils_Array::value('weight', $formValues),
+      'visibility_id' => CRM_Utils_Array::value('visibility_id', $formValues),
+    );
 
-        $params = array(
-            'name'          => CRM_Utils_Array::value('name',          $formValues),
-            'label'         => CRM_Utils_Array::value('label',         $formValues),
-            'class'         => CRM_Utils_Array::value('class',         $formValues),
-            'is_active'     => CRM_Utils_Array::value('is_active',     $formValues, false),
-            'is_counted'    => CRM_Utils_Array::value('is_counted',    $formValues, false),
-            'weight'        => CRM_Utils_Array::value('weight',        $formValues),
-            'visibility_id' => CRM_Utils_Array::value('visibility_id', $formValues),
-        );
+    // make sure a malicious POST does not change these on reserved statuses
+    if ($this->_isReserved)unset($params['name'], $params['class'], $params['is_active']);
 
-        // make sure a malicious POST does not change these on reserved statuses
-        if ($this->_isReserved) unset($params['name'], $params['class'], $params['is_active']);
+    if ($this->_action & CRM_Core_Action::UPDATE) {
 
-        if ($this->_action & CRM_Core_Action::UPDATE) $params['id'] = $this->_id;
+      $params['id'] = $this->_id;
 
-        require_once 'CRM/Utils/Weight.php';
-        if ($this->_id) {
-            $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_ParticipantStatusType', $this->_id, 'weight', 'id');
-        } else {
-            $oldWeight = 0;
-        }
-        $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Event_DAO_ParticipantStatusType', $oldWeight, $params['weight']);
-
-        $participantStatus = CRM_Event_BAO_ParticipantStatusType::create($params);
-
-        if ($participantStatus->id) {
-            if ($this->_action & CRM_Core_Action::UPDATE) {
-                CRM_Core_Session::setStatus(ts('The Participant Status has been updated.'));
-            } else {
-                CRM_Core_Session::setStatus(ts('The new Participant Status has been saved.'));
-            }
-        } else {
-            CRM_Core_Session::setStatus(ts('The changes have not been saved.'));
-        }
     }
+
+    if ($this->_id) {
+      $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_ParticipantStatusType', $this->_id, 'weight', 'id');
+    }
+    else {
+      $oldWeight = 0;
+    }
+    $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Event_DAO_ParticipantStatusType', $oldWeight, $params['weight']);
+
+    $participantStatus = CRM_Event_BAO_ParticipantStatusType::create($params);
+
+    if ($participantStatus->id) {
+      if ($this->_action & CRM_Core_Action::UPDATE) {
+        CRM_Core_Session::setStatus(ts('The Participant Status has been updated.'));
+      }
+      else {
+        CRM_Core_Session::setStatus(ts('The new Participant Status has been saved.'));
+      }
+    }
+    else {
+      CRM_Core_Session::setStatus(ts('The changes have not been saved.'));
+    }
+  }
 }
+

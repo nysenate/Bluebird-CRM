@@ -3,7 +3,7 @@
 
 
 /*
- /*This demonstrates use of the 'getCount' action 
+ /*This demonstrates use of the 'getCount' action
     /*  This param causes the count of the only function to be returned as an integer
  */
 function contact_get_example(){

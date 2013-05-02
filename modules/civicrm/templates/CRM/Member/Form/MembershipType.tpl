@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -139,7 +139,7 @@
                      {if $authorize}
                         <td>{$form.auto_renew.html}</td>
                      {else}
-                        <td>{ts}You will need to select and configure a supported payment processor (currently Authorize.Net, PayPal Pro, or PayPal Website Standard) in order to offer automatically renewing memberships.{/ts} {docURL page="CiviContribute Payment Processor Configuration"}</td>
+                        <td>{ts}You will need to select and configure a supported payment processor (currently Authorize.Net, PayPal Pro, or PayPal Website Standard) in order to offer automatically renewing memberships.{/ts} {docURL page="user/contributions/payment-processors"}</td>
                      {/if}
              </tr>
              <tr class="crm-membership-type-form-block-duration_unit_interval">        
@@ -168,8 +168,14 @@
              </tr>
              <tr class="crm-membership-type-form-block-relationship_type_id"> 	
                  <td class="label">{$form.relationship_type_id.label}</td>
-                 <td>{$form.relationship_type_id.html}<br />
-                     <span class="description">{ts}Memberships can be automatically granted to related contacts by selecting a Relationship Type.{/ts} {help id="rel-type"}</span>
+                 <td>
+                    {if !$membershipRecordsExists}
+                        {$form.relationship_type_id.html}
+                    <br />
+                    {else}
+                        {$form.relationship_type_id.html}<div class="status message">{ts}You cannot modify relationship type because there are membership records associated with this membership type.{/ts}</div>
+                    {/if}
+                    <span class="description">{ts}Memberships can be automatically granted to related contacts by selecting a Relationship Type.{/ts} {help id="rel-type"}</span>
                  </td>
              </tr>
              <tr class="crm-membership-type-form-block-visibility">
@@ -189,9 +195,14 @@
          </table>
         <div class="spacer"></div>
         <fieldset><legend>{ts}Renewal Reminders{/ts}</legend>
-        <div class="description">
-            {ts}If you would like Membership Renewal Reminder emails sent to members automatically, you need to create a reminder message template and you need to configure and periodically run a 'cron' job on your server.{/ts} {docURL page="Membership Types"}
-        </div>
+				<div class="messages status status-warning">
+					{capture assign=reminderLink}{crmURL p='civicrm/admin/scheduleReminders' q='reset=1'}{/capture}
+					<div class="icon alert-icon"></div>&nbsp;
+					{ts 1=$reminderLink}WARNING: Membership renewal reminders should now be configured using the <a href="%1">Schedule Reminders</a> feature, which supports multiple renewal reminders. The reminders configured on this form will no longer function as of the 4.3 release.{/ts} {docURL page="user/email/scheduled-reminders"}
+					{if $form.renewal_reminder_day.value}
+						<p>{ts}You can use your existing renewal reminder message template(s) with the Schedule Reminders feature. Then disable this reminder by un-selecting the Renewal Reminder Message templates on this form. This will prevent duplicate reminders being sent.{/ts}
+					{/if}
+				</div>
         {if !$hasMsgTemplates}
             {capture assign=msgTemplate}{crmURL p='civicrm/admin/messageTemplates' q="action=add&reset=1"}{/capture}
             <div class="status message">

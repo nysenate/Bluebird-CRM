@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,64 +30,60 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-require_once 'CRM/Report/Utils/Report.php';
-
 /**
  * Page for invoking report templates
  */
-class CRM_Report_Page_Report extends CRM_Core_Page 
-{
+class CRM_Report_Page_Report extends CRM_Core_Page {
 
-    /**
-     * run this page (figure out the action needed and perform it).
-     *
-     * @return void
-     */
-    function run() {
-        if ( !CRM_Core_Permission::check ( 'administer Reports' ) ) {
-            return CRM_Utils_System::redirect( CRM_Utils_System::url('civicrm/report/list', "reset=1") );
-        }
-        
-        $optionVal    = CRM_Report_Utils_Report::getValueFromUrl( );
-
-
-
-        require_once 'CRM/Core/OptionGroup.php';
-        $templateInfo = CRM_Core_OptionGroup::getRowValues( 'report_template', "{$optionVal}", 'value',
-                                                            'String', false );
-
-        $extKey = strpos($templateInfo['name'], '.');
-
-        $reportClass = null;
-
-        if( $extKey !== FALSE ) {
-            require_once( 'CRM/Core/Extensions.php' );
-            $ext = new CRM_Core_Extensions();
-            $reportClass = $ext->keyToClass( $templateInfo['name'], 'report' );
-            $templateInfo['name'] = $reportClass;
-        }
-
-        if ( strstr(CRM_Utils_Array::value( 'name', $templateInfo ), '_Form') || ! is_null( $reportClass ) ) {
-            CRM_Utils_System::setTitle( $templateInfo['label'] . ' - Template' );
-            $this->assign( 'reportTitle', $templateInfo['label'] );
-
-            $session = CRM_Core_Session::singleton( );
-            $session->set( 'reportDescription', $templateInfo['description'] );
-
-            $wrapper = new CRM_Utils_Wrapper( );
-            
-            return $wrapper->run( $templateInfo['name'], null, null );
-        }
-
-        if ( $optionVal ) {
-            CRM_Core_Session::setStatus( ts( 'Could not find the report template. Make sure the report template is registered and / or url is correct.' ) );
-        }
-        return CRM_Utils_System::redirect( CRM_Utils_System::url('civicrm/report/list', "reset=1") );
+  /**
+   * run this page (figure out the action needed and perform it).
+   *
+   * @return void
+   */
+  function run() {
+    if (!CRM_Core_Permission::check('administer Reports')) {
+      return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/report/list', "reset=1"));
     }
+
+    $optionVal = CRM_Report_Utils_Report::getValueFromUrl();
+
+
+
+    $templateInfo = CRM_Core_OptionGroup::getRowValues('report_template', "{$optionVal}", 'value',
+      'String', FALSE
+    );
+
+    $extKey = strpos($templateInfo['name'], '.');
+
+    $reportClass = NULL;
+
+    if ($extKey !== FALSE) {
+      $ext = new CRM_Core_Extensions();
+      $reportClass = $ext->keyToClass($templateInfo['name'], 'report');
+      $templateInfo['name'] = $reportClass;
+    }
+
+    if (strstr(CRM_Utils_Array::value('name', $templateInfo), '_Form') || !is_null($reportClass)) {
+      CRM_Utils_System::setTitle($templateInfo['label'] . ' - Template');
+      $this->assign('reportTitle', $templateInfo['label']);
+
+      $session = CRM_Core_Session::singleton();
+      $session->set('reportDescription', $templateInfo['description']);
+
+      $wrapper = new CRM_Utils_Wrapper();
+
+      return $wrapper->run($templateInfo['name'], NULL, NULL);
+    }
+
+    if ($optionVal) {
+      CRM_Core_Session::setStatus(ts('Could not find the report template. Make sure the report template is registered and / or url is correct.'));
+    }
+    return CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/report/list', "reset=1"));
+  }
 }
+

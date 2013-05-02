@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,34 +24,49 @@
  +--------------------------------------------------------------------+
 *}
 {if $config->stateCountryMap}
-<script language="JavaScript" type="text/javascript">
+<script language="javaScript" type="text/javascript">
 {foreach from=$config->stateCountryMap item=stateCountryMap}
-{if $stateCountryMap.country && $stateCountryMap.state_province}
-{literal}
-cj(function()
-{
-{/literal}
-        countryID       = "#{$stateCountryMap.country}"
-	    stateProvinceID = "#{$stateCountryMap.state_province}"
-        callbackURL     = "{crmURL p='civicrm/ajax/jqState' h=0}"
-{literal}
-	cj(countryID).chainSelect(stateProvinceID, callbackURL, null );
-});
-{/literal}
-{/if}
-{if $stateCountryMap.state_province && $stateCountryMap.county}
-{literal}
-cj(function()
-{
-{/literal}
-	    stateProvinceID = "#{$stateCountryMap.state_province}"
-        countyID       = "#{$stateCountryMap.county}"
-        callbackURL     = "{crmURL p='civicrm/ajax/jqCounty' h=0}"
-{literal}
-	cj(stateProvinceID).chainSelect(countyID, callbackURL, null );
-});
-{/literal}
-{/if}
+  {if $stateCountryMap.country && $stateCountryMap.state_province}
+    {literal}
+    cj(function() {
+        countryID       = {/literal}"{$stateCountryMap.country}"{literal}
+        // sometimes we name != id, hence if element does not exists
+        // fetch the id
+        if ( cj( '#' + countryID ).length == 0 ) {
+          countryID = cj( 'select[name="' + countryID + '"]' ).prop('id');
+        }
+
+        stateProvinceID = {/literal}"{$stateCountryMap.state_province}"{literal}
+        if ( cj( '#' + stateProvinceID ).length == 0 ) {
+          stateProvinceID = cj( 'select[name="' + stateProvinceID + '"]' ).prop('id');
+        }
+
+        callbackURL     = {/literal}"{crmURL p='civicrm/ajax/jqState' h=0}"{literal}
+
+        cj( '#' + countryID ).chainSelect( '#' + stateProvinceID, callbackURL, null );
+    });
+    {/literal}
+  {/if}
+  
+  {if $stateCountryMap.state_province && $stateCountryMap.county}
+    {literal}
+    cj(function() {
+        stateProvinceID = {/literal}"{$stateCountryMap.state_province}"{literal}
+        if ( cj( '#' + stateProvinceID ).length == 0 ) {
+          stateProvinceID = cj( 'select[name="' + stateProvinceID + '"]' ).prop('id');
+        }
+
+        countyID       = {/literal}"{$stateCountryMap.county}"{literal}
+        if ( cj( '#' + countyID ).length == 0 ) {
+          countyID = cj( 'select[name="' + countyID + '"]' ).prop('id');
+        }
+
+        callbackURL     = {/literal}"{crmURL p='civicrm/ajax/jqCounty' h=0}"{literal}
+        
+        cj( '#' + stateProvinceID ).chainSelect( '#' + countyID, callbackURL, null );
+    });
+    {/literal}
+  {/if}
 {/foreach}
 </script>
 {/if}

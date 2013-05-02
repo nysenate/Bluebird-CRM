@@ -1,7 +1,7 @@
-<?php 
+<?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,10 +23,12 @@
  +--------------------------------------------------------------------+
 */
 
-defined('_JEXEC') or die('Restricted access'); 
 
-require_once( JApplicationHelper::getPath( 'toolbar_html' ) );
+defined('_JEXEC') or die('Restricted access');
 
-TOOLBAR_civicrm::_DEFAULT( );   
+require_once (JApplicationHelper::getPath('toolbar_html'));
 
-?>
+TOOLBAR_civicrm::_DEFAULT();
+
+
+

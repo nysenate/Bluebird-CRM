@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,32 +27,29 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Activity/Form/Task.php';
 
 /**
  * This class provides the functionality to save a search
  * Saved Searches are used for saving frequently used queries
  */
-class CRM_Activity_Form_Task_SearchTaskHookSample extends CRM_Activity_Form_Task 
-{
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        parent::preProcess( );
-        $rows = array( );
-        // display name and activity details of all selected contacts
-        $activityIDs = implode( ',', $this->_activityHolderIds );      
-        $query = "
+class CRM_Activity_Form_Task_SearchTaskHookSample extends CRM_Activity_Form_Task {
+
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */
+  function preProcess() {
+    parent::preProcess();
+    $rows = array();
+    // display name and activity details of all selected contacts
+    $activityIDs = implode(',', $this->_activityHolderIds);
+    $query = "
     SELECT at.subject      as subject,
            ov.label        as activity_type,
            at.activity_date_time as activity_date,  
@@ -63,34 +59,37 @@ INNER JOIN civicrm_contact ct ON ( at.source_contact_id = ct.id )
  LEFT JOIN civicrm_option_group og ON ( og.name = 'activity_type' )
  LEFT JOIN civicrm_option_value ov ON (at.activity_type_id = ov.value AND og.id = ov.option_group_id )   
      WHERE at.id IN ( $activityIDs )";
-        
-        $dao = CRM_Core_DAO::executeQuery( $query,
-                                           CRM_Core_DAO::$_nullArray );
-        
-        while ( $dao->fetch( ) ) {
-            $rows[]= array(
-                           'subject'       => $dao->subject,
-                           'activity_type' => $dao->activity_type,
-                           'activity_date' => $dao->activity_date,
-                           'display_name'  => $dao->display_name
-                           );
-        }
-        $this->assign( 'rows', $rows );
+
+    $dao = CRM_Core_DAO::executeQuery($query,
+      CRM_Core_DAO::$_nullArray
+    );
+
+    while ($dao->fetch()) {
+      $rows[] = array(
+        'subject' => $dao->subject,
+        'activity_type' => $dao->activity_type,
+        'activity_date' => $dao->activity_date,
+        'display_name' => $dao->display_name,
+      );
     }
-    
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        $this->addButtons( array(
-                                 array ( 'type'      => 'done',
-                                         'name'      => ts('Done'),
-                                         'isDefault' => true ),
-                                 )
-                           );
-    }
+    $this->assign('rows', $rows);
+  }
+
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    $this->addButtons(array(
+        array(
+          'type' => 'done',
+          'name' => ts('Done'),
+          'isDefault' => TRUE,
+        ),
+      )
+    );
+  }
 }
+

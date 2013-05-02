@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,11 +35,15 @@
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
+
+{* include overlay js *}
+{include file="CRM/common/overlay.tpl"}
+
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
+  <div class="icon crm-accordion-pointer"></div>
 	{ts}Contact Details{/ts}
-	
+
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="contactDetails">
     <div id="contactDetails">
@@ -62,7 +66,7 @@
               {if $contactId}
 				<td><label for="internal_identifier">{ts}Internal Id{/ts}</label><br />{$contactId}</td>
 			  {/if}
-            </tr>            
+            </tr>
         </table>
 	   <table class="image_URL-section form-layout-compressed">
 	    <tr>
@@ -90,8 +94,11 @@
    </div>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
-<div id='customData'></div>  
+<script type="text/javascript">var showTab = Array( );</script>
     {foreach from = $editOptions item = "title" key="name"}
+        {if $name eq 'CustomData' }
+            <div id='customData'></div>
+        {/if}
         {include file="CRM/Contact/Form/Edit/$name.tpl"}
     {/foreach}
 <div class="crm-submit-buttons">
@@ -105,8 +112,8 @@ var action = "{/literal}{$action}{literal}";
 var removeCustomData = true;
 showTab[0] = {"spanShow":"span#contact","divShow":"div#contactDetails"};
 cj(function( ) {
-    cj().crmaccordions( ); 
-	cj(showTab).each( function(){ 
+    cj().crmaccordions( );
+	cj(showTab).each( function(){
         if( this.spanShow ) {
             cj(this.spanShow).removeClass( ).addClass('crm-accordion-open');
             cj(this.divShow).show( );
@@ -115,7 +122,7 @@ cj(function( ) {
 
 	cj('.crm-accordion-body').each( function() {
 		//remove tab which doesn't have any element
-		if ( ! cj.trim( cj(this).text() ) ) { 
+		if ( ! cj.trim( cj(this).text() ) ) {
 			ele     = cj(this);
 			prevEle = cj(this).prev();
 			cj( ele ).remove();
@@ -131,7 +138,7 @@ cj(function( ) {
 });
 
 cj('a#expand').click( function( ){
-    if( cj(this).attr('href') == '#expand') {   
+    if( cj(this).attr('href') == '#expand') {
         var message     = {/literal}"{ts}Collapse all tabs{/ts}"{literal};
         cj(this).attr('href', '#collapse');
         cj('.crm-accordion-closed').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
@@ -145,13 +152,13 @@ cj('a#expand').click( function( ){
 });
 
 function showHideSignature( blockId ) {
-    cj('#Email_Signature_' + blockId ).toggle( );   
+    cj('#Email_Signature_' + blockId ).toggle( );
 }
 
 function highlightTabs( ) {
     if ( action == 2 ) {
 	//highlight the tab having data inside.
-	cj('.crm-accordion-body :input').each( function() { 
+	cj('.crm-accordion-body :input').each( function() {
 		var element = cj(this).closest(".crm-accordion-body").attr("id");
 		if (element) {
 		eval('var ' + element + ' = "";');
@@ -159,29 +166,29 @@ function highlightTabs( ) {
 		case 'checkbox':
 		case 'radio':
 		  if( cj(this).is(':checked') ) {
-		    eval( element + ' = true;'); 
+		    eval( element + ' = true;');
 		  }
 		  break;
-		  
+
 		case 'text':
 		case 'textarea':
 		  if( cj(this).val() ) {
 		    eval( element + ' = true;');
 		  }
 		  break;
-		  
+
 		case 'select-one':
 		case 'select-multiple':
 		  if( cj('select option:selected' ) && cj(this).val() ) {
 		    eval( element + ' = true;');
 		  }
-		  break;		
-		  
+		  break;
+
 		case 'file':
 		  if( cj(this).next().html() ) eval( element + ' = true;');
 		  break;
   		}
-		if( eval( element + ';') ) { 
+		if( eval( element + ';') ) {
 		  cj(this).closest(".crm-accordion-wrapper").addClass('crm-accordion-hasContent');
 		}
 	     }
@@ -194,12 +201,47 @@ function removeDefaultCustomFields( ) {
      if (removeCustomData) {
 	 cj(".crm-accordion-wrapper").children().each( function() {
 	    var eleId = cj(this).attr("id");
-	    if ( eleId.substr(0,10) == "customData" ) { cj(this).parent("div").remove(); }
+	    if ( eleId && eleId.substr(0,10) == "customData" ) { cj(this).parent("div").remove(); }
 	 });
 	 removeCustomData = false;
      }
+
+     var values = cj("#contact_sub_type").val();
+     var contactType = {/literal}"{$contactType}"{literal};
+     if ( values )  {
+        buildCustomData(contactType, values);
+     }
+     else{
+        buildCustomData(contactType);
+     }
 }
- 
+
+function warnSubtypeDataLoss( )
+{
+   var submittedSubtypes = cj('#contact_sub_type').val();
+   var defaultSubtypes   = {/literal}{$oldSubtypes}{literal};
+
+   var warning = false;
+   cj.each(defaultSubtypes, function(index, subtype) {
+      if ( cj.inArray(subtype, submittedSubtypes) < 0 ) {
+         warning = true;
+      }
+   });
+
+   if ( warning ) {
+      return confirm( 'One or more contact subtypes have been de-selected from the list for this contact. Any custom data associated with de-selected subtype will be removed. Click OK to proceed, or Cancel to review your changes before saving.' );
+   }
+   return true;
+}
+
+cj("select#contact_sub_type").crmasmSelect({
+  addItemTarget: 'bottom',
+  animate: false,
+  highlight: true,
+  respectParents: true
+});
+
+
 </script>
 {/literal}
 

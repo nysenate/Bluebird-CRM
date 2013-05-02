@@ -6,26 +6,34 @@
 #selector a {margin-right:10px;}
 .required {font-weight:bold;}
 .helpmsg {background:yellow;}
+#explorer label {display:inline;}
+
 {/literal}
 </style>
 <script>
 resourceBase = '{$config->resourceBase}';
-if (!jQuery) {ldelim}  
+if (!jQuery) {ldelim}
    var head= document.getElementsByTagName('head')[0];
    var script= document.createElement('script');
    script.type= 'text/javascript';
-   script.src= resourceBase + 'js/packages/jquery/jquery.js';
+   script.src= resourceBase + '/packages/jquery/jquery.min.js';
    head.appendChild(script);
-{rdelim} 
-restURL = '{crmURL p="civicrm/ajax/rest"}';
+{rdelim}
+
+var restURL = '{crmURL p="civicrm/ajax/rest"}';
+restURL = restURL.replace("&amp;","&"); // needed for J! fix CRM-10270
+
 if (restURL.indexOf('?') == -1 )
   restURL = restURL + '?';
-else 
+else
   restURL = restURL + '&';
 {literal}
+if (typeof $ == "undefined") {
+  $ = cj;
+}
 
 function toggleField (name,label,type) {
-  h = '<div><label>'+label+'</label><input name='+name+ ' id="'+name+ ' /></div>';
+  var h = '<div><label>'+label+'</label><input name='+name+ ' id="'+name+ '" /></div>';
   if ( $('#extra #'+ name).length > 0) {
     $('#extra #'+ name).parent().remove();
   }
@@ -34,22 +42,25 @@ function toggleField (name,label,type) {
 }
 
 function buildForm (entity, action) {
-  id = entity+ '_id';
-  h = '<label>'+id+'</label><input id="'+id+ '" size="3" maxlength="20" />';
+  var id = entity+ '_id';
+  var h = '<label>'+id+'</label><input id="'+id+ '" size="3" maxlength="20" />';
   if (action == 'delete') {
     $('#extra').html(h);
     return;
   }
 
-  $().crmAPI (entity,'getFields',{version : 3}
+  cj().crmAPI (entity,'getFields',{version : 3}
              ,{ success:function (data){
                   h='<i>Available fields (click on it to add it to the query):</i>';
-                  $.each(data.values, function(key, value) { 
+                  $.each(data.values, function(key, value) {
                     name =value.name;
-                    if (name == 'id') 
+                    if (name == 'id')
                       name = entity+'_id';
                     if (value.title == undefined) {
-                      value.title = value.name;
+                      if (value.name == undefined)
+                        value.title = value.label;
+                      else
+                        value.title = value.name;
                     }
                     if (value.required == true) {
                       required = " required";
@@ -66,12 +77,16 @@ function buildForm (entity, action) {
 }
 
 function generateQuery () {
-    var version = $('#version').val();
+    var version = 3;
+
     var entity = $('#entity').val();
     var action = $('#action').val();
     var debug = "";
     if ($('#debug').attr('checked'))
       debug= "debug=1&";
+    var sequential = "";
+    if ($('#sequential').attr('checked'))
+      sequential= "sequential=1&";
     var json = "";
     if ($('#json').attr('checked'))
       json= "json=1&";
@@ -89,35 +104,37 @@ function generateQuery () {
         extra = extra + "&" +this.id +"="+val;
       }
     });
-    query = restURL+json+debug+'version='+version+'&entity='+entity+'&action='+action+extra;
+    query = restURL+json+sequential+debug+'&entity='+entity+'&action='+action+extra;
     $('#query').val (query);
     if (action == 'delete' && $('#selector a').length == 0) {
-      buildForm (entity, action); 
-      return; 
+      buildForm (entity, action);
+      return;
     }
     if ( action =='create' && $('#selector a').length == 0) {
-      buildForm (entity, action); 
-      return; 
+      buildForm (entity, action);
+      return;
     }
     runQuery (query);
 }
 
 function runQuery(query) {
-    var vars = [], hash,smarty = '',php = " array (",json = "{", link ="";
+    var vars = [], hash,smarty = '',php = " array (version => \'3\',",json = "{  ", link ="";
     window.location.hash = query;
     $('#result').html('<i>Loading...</i>');
-    $.get(query,function(data) {
+    $.post(query,function(data) {
       $('#result').text(data);
     },'text');
     link="<a href='"+query+"' title='open in a new tab' target='_blank'>ajax query</a>&nbsp;";
-    var RESTquery = resourceBase +"/extern/rest.php?"+ query.substring(restURL.length,query.length) + "&user={youruser}&pwd={password}&key={yourkey}";
+    var RESTquery = resourceBase +"/extern/rest.php?"+ query.substring(restURL.length,query.length) + "&key={yoursitekey}&api_key={yourkey}";
     $("#link").html(link+"|<a href='"+RESTquery+"' title='open in a new tab' target='_blank'>REST query</a>.");
 
     var hashes = query.slice(query.indexOf('?') + 1).split('&');
     for(var i = 0; i < hashes.length; i++) {
-       
+
         hash = hashes[i].split('=');
+
         switch (hash[0]) {
+           case 'version':
            case 'debug':
            case 'json':
              break;
@@ -128,6 +145,8 @@ function runQuery(query) {
              var entity= hash[1];
              break;
            default:
+             if (typeof hash[1] == 'undefined')
+               break;
              smarty = smarty+ hash[0] + '="'+hash[1]+ '" ';
              php = php+"'"+ hash[0] +"' =>'"+hash[1]+ "', ";
              json = json+"'"+ hash[0] +"' :'"+hash[1]+ "', ";
@@ -136,7 +155,7 @@ function runQuery(query) {
     json = json.slice (0,-2) + '}';
     php = php.slice (0,-2) + ')';
     $('#php').html('$results=civicrm_api("'+entity+'","'+action+"\",\n  "+php+');');
-    $('#jQuery').html ("$().crmAPI ('"+entity+"','"+action+"',"+json+"}<br>&nbsp;&nbsp;,{ success:function (data){&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$.each(data, function(key, value) {// do something  });<br> &nbsp;&nbsp;&nbsp;&nbsp;}<br> });");
+    $('#jQuery').html ("cj().crmAPI ('"+entity+"','"+action+"',"+json+"<br>&nbsp;&nbsp;,{ success:function (data){&nbsp;&nbsp;&nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cj.each(data, function(key, value) {// do something  });<br> &nbsp;&nbsp;&nbsp;&nbsp;}<br> });");
 
     if (action == "get") {//using smarty only make sense for get action
       $('#smarty').html('{crmAPI var="'+entity+'S" entity="'+entity+'" action="'+action+'" '+smarty+'}<br>{foreach from=$'+entity+'S.values item='+entity+'}<br/>  &lt;li&gt;{$'+entity+'.example}&lt;/li&gt;<br>{/foreach}');
@@ -157,8 +176,8 @@ cj(function ($) {
   }
   $('#entity').change (function() { $("#selector").empty();generateQuery();  });
   $('#action').change (function() { $("#selector").empty();generateQuery();  });
-  $('#version').change (function() { generateQuery();  });
   $('#debug').change (function() { generateQuery();  });
+  $('#sequential').change (function() { generateQuery();  });
   $('#json').change (function() { generateQuery();  });
   $('#explorer').submit(function() {runQuery($('#query').val()); return false; });
 
@@ -170,11 +189,6 @@ cj(function ($) {
 </script>
 <body>
 <form id="explorer">
-<label>version</label>
-<select id="version">
-  <option value="3" selected="selected">3</option>
-  <option value="2">2</option>
-</select>
 <label>entity</label>
 <select id="entity">
   <option value="" selected="selected">Choose...</option>
@@ -190,6 +204,7 @@ cj(function ($) {
   <option value="create">create</option>
   <option value="delete">delete</option>
   <option value="getfields">getfields</option>
+  <option value="getactions">getactions</option>
   <option value="getcount">getcount</option>
   <option value="getsingle">getsingle</option>
   <option value="getvalue">getvalue</option>
@@ -197,6 +212,9 @@ cj(function ($) {
 </select>
 <label>debug</label>
 <input type="checkbox" id="debug" checked="checked">
+<input type="hidden" id="version" name="version" value="3" title="sequential is a more compact format, that is nicer and general and easier to use for json and smarty.">
+<label>sequential</label>
+<input type="checkbox" id="sequential" checked="checked">
 <label>json</label>
 <input type="checkbox" id="json" checked="checked">
 <br>
@@ -215,7 +233,7 @@ cj(function ($) {
 You can choose an entity and an action (eg Tag Get to retrieve a list of the tags)
 Or your can directly modify the url in the field above and press enter.
 
-When you use the create method, it displays the list of existing fields for this entity. 
+When you use the create method, it displays the list of existing fields for this entity.
 click on the name of the fields you want to populate, fill the value(s) and press enter
 
 The result of the ajax calls are displayed in this grey area.

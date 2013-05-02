@@ -23,6 +23,10 @@ if ($bbconfig == null) {
   die("Unable to properly bootstrap the CiviCRM module.\n");
 }
 
+if ( $bbconfig['install_class'] == 'dev' ) {
+  //define('CIVICRM_DEBUG_LOG_QUERY', TRUE);
+}
+
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
@@ -42,7 +46,7 @@ define('CIVICRM_DOMAIN_GROUP_ID', null);
 define('CIVICRM_DOMAIN_ORG_ID', null);
 define('CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
 
-define('CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
+//define('CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
 define('CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 0 );
 define('CIVICRM_PROFILE_DOUBLE_OPTIN', 1 );
 define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
@@ -137,3 +141,6 @@ switch ($memLimitUnit) {
 if ($memLimit >= 0 and $memLimit < 67108864) {
     ini_set('memory_limit', '1000M');
 }
+
+require_once 'CRM/Core/ClassLoader.php';
+CRM_Core_ClassLoader::singleton()->register();

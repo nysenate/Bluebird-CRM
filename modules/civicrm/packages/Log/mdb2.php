@@ -143,7 +143,7 @@ class Log_mdb2 extends Log
             $this->_existingConnection = true;
             $this->_opened = true;
         } elseif (isset($conf['singleton'])) {
-            $this->_db = &MDB2::singleton($conf['singleton'], $this->_options);
+            $this->_db = MDB2::singleton($conf['singleton'], $this->_options);
             $this->_existingConnection = true;
             $this->_opened = true;
         } else {
@@ -162,7 +162,7 @@ class Log_mdb2 extends Log
     {
         if (!$this->_opened) {
             /* Use the DSN and options to create a database connection. */
-            $this->_db = &MDB2::connect($this->_dsn, $this->_options);
+            $this->_db = MDB2::connect($this->_dsn, $this->_options);
             if (PEAR::isError($this->_db)) {
                 return false;
             }

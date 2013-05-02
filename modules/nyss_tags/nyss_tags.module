@@ -1,93 +1,41 @@
 <?php 
-function nyss_tags_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
-
-	//Log when a tag is added/removed from a contact
-	if ( $objectName == 'EntityTag' ) {
-	
-		require_once 'CRM/Core/BAO/Log.php';
-		require_once 'api/v2/Tag.php';
-		
-		$session = & CRM_Core_Session::singleton();
-        $cid = $session->get('userID');
-		
-		//CRM_Core_Error::debug($objectId);
-		//CRM_Core_Error::debug($objectRef); exit();
-		
-		if ( is_array( $objectRef ) ) {
-			$contacts = array();
-			$contacts = $objectRef[0];
-			$entity_table = $objectRef[1];
-		}
-			
-		$params = array( 'id' => $objectId );
-		$tag =& civicrm_tag_get($params);
-		//CRM_Core_Error::debug('t', $tag); exit();
-	
-		if ( $op == 'create' ) {
-		
-			foreach ( $contacts as $contact ) {
-				$logMessage = 'Added tag: '.stripslashes($tag['name']).' ('.$objectId.')';
-        		$logParams = array( 'entity_table'  => $entity_table,
-            	               		'entity_id'     => $contact,
-            	               		'modified_id'   => $cid,
-            	               		'modified_date' => date('YmdHis'),
-            	               		'data'          => $logMessage
-            	               		);
-        		CRM_Core_BAO_Log::add( $logParams );
-			}
-		
-		} elseif ( $op == 'delete' ) {
-			
-			foreach ( $contacts as $contact ) {
-				$logMessage = 'Removed tag: '.stripslashes($tag['name']).' ('.$objectId.')';
-        		$logParams = array( 'entity_table'  => $entity_table,
-            	               		'entity_id'     => $contact,
-            	               		'modified_id'   => $cid,
-            	               		'modified_date' => date('YmdHis'),
-            	               		'data'          => $logMessage
-            	               		);
-        		CRM_Core_BAO_Log::add( $logParams );
-			}	
-		}
-	}
-}
-
 function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
 
-	//insert civicrm_log record for every contact, case or activity affected by a tag merge.
-    if ( $type == 'sqls' && 
-         in_array('civicrm_tag', $tables) &&  
-         $_GET['q'] == 'civicrm/ajax/mergeTags' ) {
-        $session = CRM_Core_Session::singleton( );
-        $userID  = $session->get( 'userID' );
+  //insert civicrm_log record for every contact, case or activity affected by a tag merge.
+  if ( $type == 'sqls' &&
+       in_array('civicrm_tag', $tables) &&
+       $_GET['q'] == 'civicrm/ajax/mergeTags' ) {
+    $session = CRM_Core_Session::singleton( );
+    $userID  = $session->get( 'userID' );
 
-        $sql = "
+    $sql = "
 INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
 SELECT et.entity_table, et.entity_id, CONCAT('Merged tag: ', tag.name, ' (', tag.id, ' with ', {$toId}, ')'), {$userID}, NOW() 
 FROM   civicrm_entity_tag et 
 INNER JOIN civicrm_tag tag ON et.tag_id = tag.id
 WHERE tag_id = %2";
-        array_unshift( $sqls, $sql );
-    }
+    array_unshift( $sqls, $sql );
+  }
 } //merge
 
 function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
 
-    if ( $formName == 'CRM_Admin_Form_Tag' ) {
-
-        if ( isset($fields['name']) && isset($fields['parent_id']) ) {
-            $tagName = mysql_real_escape_string($fields['name']);
-            $sql = "SELECT id
-                    FROM civicrm_tag
-                    WHERE name = '{$tagName}'
-                      AND parent_id = {$fields['parent_id']};";
-            if ( CRM_Core_DAO::singleValueQuery($sql) ) {
-                $form->setElementError('name', ts('Name already exists in the database with the same parent tag.'));
-            } else {
-                $form->setElementError('name', null);
-            }
-        }
-        //CRM_Core_Error::debug_var('fields',$fields);
-        //CRM_Core_Error::debug_var('form',$form);
+  if ( $formName == 'CRM_Admin_Form_Tag' ) {
+    if ( isset($fields['name']) && isset($fields['parent_id']) ) {
+      $tagName = mysql_real_escape_string($fields['name']);
+      $sql = "
+        SELECT id
+        FROM civicrm_tag
+        WHERE name = '{$tagName}'
+          AND parent_id = {$fields['parent_id']};
+      ";
+      if ( CRM_Core_DAO::singleValueQuery($sql) ) {
+        $form->setElementError('name', ts('Name already exists in the database with the same parent tag.'));
+      } else {
+        $form->setElementError('name', null);
+      }
     }
+    //CRM_Core_Error::debug_var('fields',$fields);
+    //CRM_Core_Error::debug_var('form',$form);
+  }
 } //validate

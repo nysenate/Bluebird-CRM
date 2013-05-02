@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,19 +24,19 @@
  +--------------------------------------------------------------------+
 *}
 {* Search Builder *}
+{capture assign=docLink}{docURL page="user/the-user-interface/searching" text="Search documentation in the User Guide"}{/capture}
 <div class="messages help" id="help">
-{capture assign=docLink}{docURL page="Search Builder" text="Search Builder Documentation"}{/capture}
 <strong>{ts 1=$docLink}IMPORTANT: Search Builder requires you to use specific formats for your search values. Review the %1 before building your first search.{/ts}</strong> {help id='builder-intro'}
 </div>
 
 <div class="crm-form-block crm-search-form-block">
 <div class="crm-accordion-wrapper crm-search_builder-accordion {if $rows and !$showSearchForm}crm-accordion-closed{else}crm-accordion-open{/if}">
  <div class="crm-accordion-header crm-master-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
+  <div class="icon crm-accordion-pointer"></div>
         {ts}Edit Search Criteria{/ts}
 </div><!-- /.crm-accordion-header -->
 <div class="crm-accordion-body">
-<div id = "searchForm">	
+<div id = "searchForm">
 {* Table for adding search criteria. *}
 {include file="CRM/Contact/Form/Search/table.tpl"}
 
@@ -58,7 +58,7 @@
 
 {if $rows}
 	<div class="crm-results-block">
-       {* This section handles form elements for action task select and submit *}         
+       {* This section handles form elements for action task select and submit *}
        <div class="crm-search-tasks">
        {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
        </div>
@@ -85,7 +85,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmaccordions();
 });
 </script>
 {/literal}

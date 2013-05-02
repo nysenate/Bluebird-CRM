@@ -31,7 +31,7 @@
     {ts}You can import records from a <strong>comma-separated-values format (CSV)</strong> file, or using a <strong>SQL query</strong>. See "Choose Data Source" help below for more information.{/ts}
     </p>
 <!--    <p>
-    {ts}After importing contacts, you may also want to import <strong>contributions, membership info and/or event participation</strong> data for these contacts. If so, first make sure that the corresponding CiviCRM component is enabled from Administer CiviCRM &raquo; Global Settings &raquo; Enable Components. Enable CiviContribute, CiviMember, and/or CiviEvent. Then navigate to the Import option found in each component's menu (e.g. CiviContribute &raquo; Import Contributions).{/ts}
+    {ts}After importing contacts, you may also want to import <strong>contributions, membership info and/or event participation</strong> data for these contacts. If so, first make sure that the corresponding CiviCRM component is enabled from Administer CiviCRM &raquo; System Settings &raquo; Enable CiviCRM Components. Enable CiviContribute, CiviMember, and/or CiviEvent. Then navigate to the Import option found in each component's menu (e.g. CiviContribute &raquo; Import Contributions).{/ts}
     </p>-->
 {/htxt}
 
@@ -74,6 +74,7 @@
       <tr><td><strong>{ts}SQL Query{/ts}</strong></td></tr>
       <tr><td>{ts}A direct SQL query in the form of a SELECT query. For example:{/ts}</td></tr>
       <tr><td><code>SELECT first_name, last_name, email FROM somedatabase.sometable</code><td></tr>
+      <tr><td>{ts}This query can be against a different database, but that database has to be on the same database server and the CiviCRM database user has to have the SELECT privilege (and any other privileges required to execute the query).{/ts}</td></tr>
     </table>
   </p>
 {/htxt}

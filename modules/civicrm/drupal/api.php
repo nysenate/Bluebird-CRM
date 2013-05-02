@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,161 +28,162 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-
-  /**
-   * Create a Drupal user and return Drupal ID
-   * @param       email   email address of new user
-   * @return      res     Drupal ID for new user or FALSE if error
-   */
-function civicrm_drupal_create_user ( $email, $rid = null ) {
-
-    $email = trim( $email );
-
-    if ( empty( $email ) ) {
-        return FALSE;
-    }
-
-    // If user already exists, return Drupal id
-    $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail = '%s'", $email));
-    if ( $uid ) {
-        return $uid;
-    }
-
-    // escape email to prevent sql injection
-    $dao = new CRM_Core_DAO( );
-    $email             = $dao->escape( $email );
-
-    // Default values for new user
-    $params            = array();
-    $params['uid']     = db_next_id('{users}_uid'); 
-    $params['name']    = $email;
-    $params['pass']    = md5( uniqid( rand( ), true ) );
-    $params['mail']    = $email;
-    $params['mode']    = 0;
-    $params['access']  = 0;
-    $params['status']  = 0;	// don't allow user to login until verified
-    $params['init']    = $email;
-    $params['created'] = time();
-
-    $db_fields = '(';
-    $db_values = '(';
-    foreach ($params as $key => $value) {
-        $db_fields .= "$key,";
-        $db_values .= "'$value',";
-    }
-    $db_fields = rtrim($db_fields, ",");
-    $db_values = rtrim($db_values, ",");
-
-    $db_fields .= ')';
-    $db_values .= ')';
-
-    $q = "INSERT INTO {users} $db_fields VALUES $db_values";
-    db_query($q);
-
-    if ( $rid ) {
-        // Delete any previous roles entry before adding the role id
-        db_query('DELETE FROM {users_roles} WHERE uid = %d', $params['uid']);
-        db_query('INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)', $params['uid'], $rid);
-    }
-
-    return $params['uid'];
+/**
+ * Utilties for Drupal 7 compatibility
+ */
+function _civicrm_get_user_table_name() {
+  if (function_exists('db_select')) {
+    //docs say 'user', but not the schema in alpha 3.
+    $user_tab = 'users';
+  }
+  else {
+    $user_tab = 'users';
+  }
 }
 
-function civicrm_modify_role_id( $op, $uid, $rid, $roleName = null ) {
-    $a = func_get_args( );
-    if ( $roleName ) {
-        $rid = civicrm_drupal_role_id( $roleName );
-        if ( ! $rid ) {
-            return;
-        }
-    }
+/**
+ * Create a Drupal user and return Drupal ID
+ *
+ * @param       email   email address of new user
+ *
+ * @return      res     Drupal ID for new user or FALSE if error
+ */
+function civicrm_drupal_create_user($email, $rid = NULL) {
 
-    if ( $op == 'insert' ) {
-        // check if this combination is already there
-        $roles_result = db_query('SELECT rid FROM {users_roles} WHERE uid = %d AND rid = %d', $uid, $rid );
-        if ( ! db_fetch_object( $roles_result ) ) {
-            // insert only if not present
-            db_query('INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)', $uid, $rid );
-        }
-    } else if ( $op == 'delete' ) {
-        db_query('DELETE FROM {users_roles} WHERE uid = %d AND rid = %d', $uid, $rid );
-    }
+  $email = trim($email);
+
+  if (empty($email)) {
+    return FALSE;
+  }
+
+  $user_tab = _civicrm_get_user_table_name();
+
+  // If user already exists, return Drupal id
+  $uid = db_result(db_query("SELECT uid FROM {$user_tab} WHERE mail = '%s'", $email));
+  if ($uid) {
+    return $uid;
+  }
+
+  // escape email to prevent sql injection
+  $dao = new CRM_Core_DAO();
+  $email = $dao->escape($email);
+
+  // Default values for new user
+  $params = array();
+  //WARNING -- this is likely *wrong* since it will crash Drupal 6.
+  //calling conventions for Drupal 7 are different, as well.
+  //$params['uid']     = db_next_id('{users}_uid');
+
+  $params['name']   = $email;
+  $params['pass']   = md5(uniqid(rand(), TRUE));
+  $params['mail']   = $email;
+  $params['mode']   = 0;
+  $params['access'] = 0;
+  // don't allow user to login until verified
+  $params['status']  = 0;
+  $params['init']    = $email;
+  $params['created'] = time();
+
+  $db_fields = '(';
+  $db_values = '(';
+  foreach ($params as $key => $value) {
+    $db_fields .= "$key,";
+    $db_values .= "'$value',";
+  }
+  $db_fields = rtrim($db_fields, ",");
+  $db_values = rtrim($db_values, ",");
+
+  $db_fields .= ')';
+  $db_values .= ')';
+
+  $q = "INSERT INTO {$user_tab} $db_fields VALUES $db_values";
+  db_query($q);
+
+  if ($rid) {
+    // Delete any previous roles entry before adding the role id
+    //NOTE: weirdly, D7 schema from alpha 3 allows the following:
+    db_query('DELETE FROM {users_roles} WHERE uid = %d', $params['uid']);
+    db_query('INSERT INTO {users_roles} (uid, rid) VALUES (%d, %d)', $params['uid'], $rid);
+  }
+
+  return $params['uid'];
 }
 
 /**
  * Get the role id for a given name
  *
  * @param string $name name of the role
- * 
+ *
  * @return int the role id
  * @static
  */
-function civicrm_drupal_role_id( $name ) {
-    $roleIDs = user_roles( );
-    $roleNames = array_flip( $roleIDs );
-    return array_key_exists( $name, $roleNames ) ? $roleNames[$name] : null;
+function civicrm_drupal_role_id($name) {
+  $roleIDs = user_roles();
+  $roleNames = array_flip($roleIDs);
+  return array_key_exists($name, $roleNames) ? $roleNames[$name] : NULL;
 }
 
 /**
  * Check status of Drupal user
+ *
  * @param       id      Drupal ID of user
+ *
  * @return      status  Status of user
  */
-function civicrm_drupal_is_user_verified ($id) {
-    if ( ! $id ) {
-        return false;
-    }
+function civicrm_drupal_is_user_verified($id) {
+  if (!$id) {
+    return FALSE;
+  }
 
-    $params = array();
-    $params['uid'] = $id;
+  $params = array();
+  $params['uid'] = $id;
 
-    $user = user_load($params);
+  $user = user_load($params);
 
-    if (! $user->uid) {
-        return false;
-    }
+  if (!$user->uid) {
+    return FALSE;
+  }
 
-    return $user->status;
+  return $user->status;
 }
 
 /**
  * Verify user and update user's status
+ *
  * @param       params  User fields, includes email
  */
-function civicrm_drupal_user_update_and_redirect ($params) {
-    global $user;
+function civicrm_drupal_user_update_and_redirect($params) {
+  global $user;
 
-    if (! ($params['email'] && $params['drupalID'] && $params['password'])) {
-        return false;
-    }
+  if (!($params['email'] && $params['drupalID'] && $params['password'])) {
+    return FALSE;
+  }
 
-    $user_fields['uid']  = $params['drupalID'];
-    $user_fields['mail'] = $params['email'];
-    $user = user_load($user_fields);
+  $user_fields['uid']  = $params['drupalID'];
+  $user_fields['mail'] = $params['email'];
+  $user                = user_load($user_fields);
 
-    if (! $user->uid) {
-        return false;
-    }
+  if (!$user->uid) {
+    return FALSE;
+  }
 
-    $update = array();
-    $update['status'] = 1;
-    $update['pass']   = $params['password'];
+  $update           = array();
+  $update['status'] = 1;
+  $update['pass']   = $params['password'];
 
-    $user = user_save($user, $update);
+  $user = user_save($user, $update);
 
-    // Login the user
-    $edit = array();
-    user_module_invoke('login', $edit, $user);
+  // Login the user
+  $edit = array();
+  user_module_invoke('login', $edit, $user);
 
-    // redirect user to locker
-    drupal_goto('locker');
-
-} //end func civicrm_drupal_user_update_and_redirect
-
-
+  // redirect user to locker
+  drupal_goto('locker');
+}
+//end func civicrm_drupal_user_update_and_redirect
 
