@@ -33,11 +33,11 @@
         <li>{ts}Add your field(s) this custom field group.{/ts}</li>
         <li>{ts}Create a profile (e.g. 'Contribution Information').{/ts}</li>
         <li>{ts}Add your custom field(s) to this profile as profile fields.{/ts}</li>
-        <li>{ts}Return to this screen (<strong>Administer CiviCRM &raquo; Manage Contribution Page &raquo; Configure &raquo; Custom Elements</strong>) and select your profile.{/ts}</li>
+        <li>{ts}Return to this screen (<strong>Administer CiviCRM &raquo; CiviContribute &raquo; Manage Contribution Pages &raquo; Configure &raquo; Include Profiles</strong>) and select your profile.{/ts}</li>
         </ol>
 
-        {capture assign=docLinkCustom}{docURL page="Custom Data Fields & Custom Data Groups Admin" text="custom fields"}{/capture}
-        {capture assign=docLinkProfile}{docURL page="Profiles Admin" text="profiles"}{/capture}
+        {capture assign=docLinkCustom}{docURL page="user/organising-your-data/custom-fields" text="custom fields"}{/capture}
+        {capture assign=docLinkProfile}{docURL page="user/the-user-interface/profiles" text="profiles"}{/capture}
         {ts 1=$docLinkCustom 2=$docLinkProfile}Refer to the online documentation for more details on creating %1 and %2.{/ts}
 </p>
 {/htxt}        

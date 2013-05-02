@@ -32,9 +32,10 @@ function profile_apply_expectedresult(){
   $expectedResult = array( 
   'is_error' => 0,
   'version' => 3,
-  'count' => 9,
+  'count' => 10,
   'values' => array( 
       'contact_type' => 'Individual',
+      'contact_sub_type' => '',
       'contact_id' => 1,
       'profile_id' => 25,
       'version' => 3,
@@ -74,11 +75,14 @@ function profile_apply_expectedresult(){
 
 /*
 * This example has been generated from the API test suite. The test that created it is called
-* profile_apply 
+* 
+* testProfileApply and can be found in 
+* http://svn.civicrm.org/civicrm/branches/v3.4/tests/phpunit/CiviTest/api/v3/ProfileTest.php
+* 
 * You can see the outcome of the API tests at 
 * http://tests.dev.civicrm.org/trunk/results-api_v3
 * and review the wiki at
-* http://wiki.civicrm.org/confluence/display/CRMDOC40/CiviCRM+Public+APIs
+* http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs
 * Read more about testing here
 * http://wiki.civicrm.org/confluence/display/CRM/Testing
 */

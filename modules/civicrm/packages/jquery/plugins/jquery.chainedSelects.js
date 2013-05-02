@@ -56,7 +56,7 @@ jQuery.fn.chainSelect = function( target, url, settings )
 				$(target).get(0).add(new Option(data[i].name, data[i].value), document.all ? i : null);
 			    }
 			} else {
-				$(target).get(0).add(new Option('- select a country -', 0), document.all ? i : null);
+				$(target).get(0).add(new Option('- select a country -', ''), document.all ? i : null);
 			}
 
 			if (settings.defaultValue != null)

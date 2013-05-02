@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {if !$printOnly} {* NO print section starts *}
-<div {if !$criteriaForm}style="display: none;"{/if}> {* criteria section starts *}
+{if $criteriaForm}
+<div> {* criteria section starts *}
 <div class="crm-accordion-wrapper crm-report_criteria-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
@@ -37,6 +38,7 @@
   </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->       
 </div> {* criteria section ends *}
+{/if}
 
 {if $instanceForm OR $instanceFormError} {* settings section starts *}
 <div class="crm-accordion-wrapper crm-report_setting-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
@@ -49,8 +51,12 @@
                 <div id="instanceForm">
                     {include file="CRM/Report/Form/Instance.tpl"}
                     {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
+                    {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}
                         <div class="crm-submit-buttons">
                             {$form.$save.html}
+                            {if $mode neq 'template' && $form.$next}
+                                {$form.$next.html}
+                            {/if}
                         </div>
                 </div>
         </div>
@@ -59,6 +65,9 @@
 {if $updateReportButton}
 <div id='update-button' class="crm-submit-buttons">
    {$form.$save.html}
+   {if $mode neq 'template' && $form.$next}
+       {$form.$next.html}
+   {/if}
 </div>
 {/if}
 {/if} {* settings section ends *}

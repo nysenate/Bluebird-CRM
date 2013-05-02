@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +28,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
 #require_once 'CRM/Import/Parser/Contact.php';
 
 /**
@@ -42,38 +40,39 @@ require_once 'CRM/Core/Form.php';
  * useful.
  */
 abstract class CRM_Import_DataSource {
-    
-    /**
-     * Provides information about the data source
-     *
-     * @return array collection of info about this data source 
-     *                   
-     * @access public
-     *
-     */
-    abstract public function getInfo();
-    
-    /** 
-     * Function to set variables up before form is built
-     * 
-     * @access public 
-     */
-    abstract public function preProcess( &$form );
-    
-    /**
-     * This is function is called by the form object to get the DataSource's
-     * form snippet. It should add all fields necesarry to get the data
-     * uploaded to the temporary table in the DB.
-     *
-     * @return None (operates directly on form argument)
-     * @access public
-     */
-    abstract public function buildQuickForm( &$form );
-    
-    /** 
-     * Function to process the form 
-     * 
-     * @access public 
-     */
-    abstract public function postProcess( &$params, &$db );
+
+  /**
+   * Provides information about the data source
+   *
+   * @return array collection of info about this data source
+   *
+   * @access public
+   *
+   */
+  abstract public function getInfo();
+
+  /**
+   * Function to set variables up before form is built
+   *
+   * @access public
+   */
+  abstract public function preProcess(&$form);
+
+  /**
+   * This is function is called by the form object to get the DataSource's
+   * form snippet. It should add all fields necesarry to get the data
+   * uploaded to the temporary table in the DB.
+   *
+   * @return None (operates directly on form argument)
+   * @access public
+   */
+  abstract public function buildQuickForm(&$form);
+
+  /**
+   * Function to process the form
+   *
+   * @access public
+   */
+  abstract public function postProcess(&$params, &$db, &$form);
 }
+

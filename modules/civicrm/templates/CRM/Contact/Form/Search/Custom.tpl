@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -68,7 +68,7 @@
 	<div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
         {* This section handles form elements for action task select and submit *}
-       <div class="crm-search-tasks">        
+       <div class="crm-search-tasks">
         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
 		</div>
         {* This section displays the rows along and includes the paging controls *}
@@ -80,7 +80,7 @@
         {if $atoZ}
             {include file="CRM/common/pagerAToZ.tpl"}
         {/if}
-        
+
         {strip}
         <table class="selector" summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
@@ -121,7 +121,7 @@
 
         <script type="text/javascript">
         {* this function is called to change the color of selected row(s) *}
-        var fname = "{$form.formName}";	
+        var fname = "{$form.formName}";
         on_load_init_checkboxes(fname);
         </script>
 
@@ -140,7 +140,46 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmaccordions();
 });
+
+function toggleContactSelection( name, qfKey, selection ){
+  var Url  = "{/literal}{crmURL p='civicrm/ajax/markSelection' h=0}{literal}";
+
+  if ( selection == 'multiple' ) {
+    var rowArr = new Array( );
+    {/literal}{foreach from=$rows item=row  key=keyVal}
+      {literal}rowArr[{/literal}{$keyVal}{literal}] = '{/literal}{$row.checkbox}{literal}';
+    {/literal}{/foreach}{literal}
+    var elements = rowArr.join('-');
+
+    if ( cj('#' + name).is(':checked') ){
+      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' } );
+    }
+    else {
+      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+    }
+  }
+  else if ( selection == 'single' ) {
+    if ( cj('#' + name).is(':checked') ){
+      cj.post( Url, { name: name , qfKey: qfKey } );
+    }
+    else {
+      cj.post( Url, { name: name , qfKey: qfKey , state: 'unchecked' } );
+    }
+  }
+  else if ( name == 'resetSel' && selection == 'reset' ) {
+    cj.post( Url, {  qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+    {/literal}
+    {foreach from=$rows item=row}{literal}
+      cj("#{/literal}{$row.checkbox}{literal}").removeAttr('checked');{/literal}
+    {/foreach}
+    {literal}
+    cj("#toggleSelect").removeAttr('checked');
+    var formName = "{/literal}{$form.formName}{literal}";
+    on_load_init_checkboxes(formName);
+  }
+}
 </script>
+
 {/literal}

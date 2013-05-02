@@ -1,12 +1,13 @@
 <?php
-# bluebird_config.php - Initial configuration for Drupal and CiviCRM settings
-#
-# Project: BluebirdCRM
-# Author: Ken Zalewski
-# Organization: New York State Senate
-# Date: 2010-09-10
-# Revised: 2012-03-05
-#
+/*
+** bluebird_config.php - Initial configuration for Drupal and CiviCRM settings
+**
+** Project: BluebirdCRM
+** Author: Ken Zalewski
+** Organization: New York State Senate
+** Date: 2010-09-10
+** Revised: 2012-03-05
+*/
 
 define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
 define('DEFAULT_CONFIG_FILENAME', 'bluebird.cfg');

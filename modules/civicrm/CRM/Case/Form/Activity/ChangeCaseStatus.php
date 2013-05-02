@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,135 +28,143 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once "CRM/Core/Form.php";
-
 /**
  * This class generates form components for OpenCase Activity
- * 
+ *
  */
-class CRM_Case_Form_Activity_ChangeCaseStatus
-{
+class CRM_Case_Form_Activity_ChangeCaseStatus {
 
-    static function preProcess( &$form ) 
-    { 
-        if ( !isset($form->_caseId) ) {
-            CRM_Core_Error::fatal(ts('Case Id not found.'));
-        } 
+  static
+  function preProcess(&$form) {
+    if (!isset($form->_caseId)) {
+      CRM_Core_Error::fatal(ts('Case Id not found.'));
     }
+  }
 
-    /**
-     * This function sets the default values for the form. For edit/view mode
-     * the default values are retrieved from the database
-     * 
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( &$form ) 
-    {
-        $defaults = array();
-        // Retrieve current case status
-        $defaults['case_status_id'] = $form->_defaultCaseStatus;
-        return $defaults;
+  /**
+   * This function sets the default values for the form. For edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues(&$form) {
+    $defaults = array();
+    // Retrieve current case status
+    $defaults['case_status_id'] = $form->_defaultCaseStatus;
+
+    return $defaults;
+  }
+
+  static
+  function buildQuickForm(&$form) {
+    $form->removeElement('status_id');
+    $form->removeElement('priority_id');
+
+    $form->_caseStatus = CRM_Case_PseudoConstant::caseStatus();
+    $form->_defaultCaseStatus = CRM_Core_DAO::getFieldValue('CRM_Case_DAO_Case', $form->_caseId, 'status_id');
+
+    if (!array_key_exists($form->_defaultCaseStatus, $form->_caseStatus)) {
+      $form->_caseStatus[$form->_defaultCaseStatus] = CRM_Core_OptionGroup::getLabel('case_status',
+        $form->_defaultCaseStatus,
+        FALSE
+      );
     }
+    $form->add('select', 'case_status_id', ts('Case Status'),
+      $form->_caseStatus, TRUE
+    );
+  }
 
-    static function buildQuickForm( &$form ) 
-    { 
-        require_once 'CRM/Case/PseudoConstant.php';
-        $form->_caseStatus        = CRM_Case_PseudoConstant::caseStatus( );
-        $form->_defaultCaseStatus = CRM_Core_DAO::getFieldValue( 'CRM_Case_DAO_Case', $form->_caseId, 'status_id' );
+  /**
+   * global validation rules for the form
+   *
+   * @param array $values posted values of the form
+   *
+   * @return array list of errors to be posted back to the form
+   * @static
+   * @access public
+   */
+  static
+  function formRule($values, $files, $form) {
+    return TRUE;
+  }
 
-        if ( !array_key_exists( $form->_defaultCaseStatus, $form->_caseStatus ) ) {
-            $form->_caseStatus[$form->_defaultCaseStatus] = CRM_Core_OptionGroup::getLabel( 'case_status', 
-                                                                                            $form->_defaultCaseStatus, 
-                                                                                            false );
+  /**
+   * Function to process the form
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function beginPostProcess(&$form, &$params) {
+    $params['id'] = CRM_Utils_Array::value('case_id', $params);
+  }
+
+  /**
+   * Function to process the form
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function endPostProcess(&$form, &$params, $activity) {
+    $groupingValues = CRM_Core_OptionGroup::values('case_status', FALSE, TRUE, FALSE, NULL, 'value');
+
+    // Set case end_date if we're closing the case. Clear end_date if we're (re)opening it.
+    if (CRM_Utils_Array::value($params['case_status_id'], $groupingValues) == 'Closed'
+      && CRM_Utils_Array::value('activity_date_time', $params)
+    ) {
+      $params['end_date'] = $params['activity_date_time'];
+
+      // End case-specific relationships (roles)
+      foreach ($params['target_contact_id'] as $cid) {
+        $rels = CRM_Case_BAO_Case::getCaseRoles($cid, $params['case_id']);
+        // FIXME: Is there an existing function to close a relationship?
+        $query = 'UPDATE civicrm_relationship SET end_date=%2 WHERE id=%1';
+        foreach ($rels as $relId => $relData) {
+          $relParams = array(1 => array($relId, 'Integer'),
+            2 => array($params['end_date'], 'Timestamp'),
+          );
+          CRM_Core_DAO::executeQuery($query, $relParams);
         }
-        $form->add('select', 'case_status_id',  ts( 'Case Status' ),  
-                    $form->_caseStatus , true  );
+      }
     }
+    elseif (CRM_Utils_Array::value($params['case_status_id'], $groupingValues) == 'Opened') {
+      $params['end_date'] = "null";
 
-    /**
-     * global validation rules for the form
-     *
-     * @param array $values posted values of the form
-     *
-     * @return array list of errors to be posted back to the form
-     * @static
-     * @access public
-     */
-    static function formRule( $values, $files, $form ) 
-    {
-        return true;
-    }
-
-    /**
-     * Function to process the form
-     *
-     * @access public
-     * @return None
-     */
-    public function beginPostProcess( &$form, &$params ) 
-    {
-        $params['id'] = $params['case_id'];
-    }
-
-    /**
-     * Function to process the form
-     *
-     * @access public
-     * @return None
-     */
-    public function endPostProcess( &$form, &$params, $activity ) 
-    {
-        $groupingValues = CRM_Core_OptionGroup::values( 'case_status', false, true, false, null, 'value' );
-              
-        // Set case end_date if we're closing the case. Clear end_date if we're (re)opening it.
-        if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Closed' 
-             && CRM_Utils_Array::value( 'activity_date_time', $params ) ) {
-            $params['end_date'] = $params['activity_date_time'];
-            
-            // End case-specific relationships (roles)
-            foreach( $params['target_contact_id'] as $cid ) {
-                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
-                // FIXME: Is there an existing function to close a relationship?
-                $query = 'UPDATE civicrm_relationship SET end_date=%2 WHERE id=%1';
-                foreach ( $rels as $relId => $relData ) {
-                    $relParams = array( 1 => array( $relId, 'Integer' ),
-                                        2 => array( $params['end_date'], 'Timestamp' ),
-                                      );
-                    CRM_Core_DAO::executeQuery( $query, $relParams );
-                }
-            }
-            
-        } else if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Opened' ) {
-            $params['end_date'] = "null";
-            
-           // Reopen case-specific relationships (roles)
-            foreach( $params['target_contact_id'] as $cid ) {
-                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
-                // FIXME: Is there an existing function?
-                $query = 'UPDATE civicrm_relationship SET end_date=NULL WHERE id=%1';
-                foreach ( $rels as $relId => $relData ) {
-                    $relParams = array( 1 => array( $relId, 'Integer' ),
-                                      );
-                    CRM_Core_DAO::executeQuery( $query, $relParams );
-                }
-            }
+      // Reopen case-specific relationships (roles)
+      foreach ($params['target_contact_id'] as $cid) {
+        $rels = CRM_Case_BAO_Case::getCaseRoles($cid, $params['case_id']);
+        // FIXME: Is there an existing function?
+        $query = 'UPDATE civicrm_relationship SET end_date=NULL WHERE id=%1';
+        foreach ($rels as $relId => $relData) {
+          $relParams = array(1 => array($relId, 'Integer'),
+          );
+          CRM_Core_DAO::executeQuery($query, $relParams);
         }
-
-        if ($activity->subject == 'null'){
-            $activity->subject = ts('Case status changed from %1 to %2', array(1 => CRM_Utils_Array::value( $form->_defaults['case_status_id'], $form->_caseStatus ),
-                                                                               2 => CRM_Utils_Array::value( $params['case_status_id'], $form->_caseStatus )
-                                                                               )
-                                   );
-            $activity->save();            
-        }
-                
-        // FIXME: does this do anything ?
-        $params['statusMsg'] = ts('Case Status changed successfully.');
+      }
     }
+    $params['status_id'] = CRM_Core_OptionGroup::getValue('activity_status', 'Completed', 'name');
+    $activity->status_id = $params['status_id'];
+    $params['priority_id'] = CRM_Core_OptionGroup::getValue('priority', 'Normal', 'name');
+    $activity->priority_id = $params['priority_id'];
+
+    if ($activity->subject == 'null') {
+      $activity->subject = ts('Case status changed from %1 to %2', array(1 => CRM_Utils_Array::value($form->_defaults['case_status_id'], $form->_caseStatus),
+          2 => CRM_Utils_Array::value($params['case_status_id'], $form->_caseStatus),
+        )
+      );
+      $activity->save();
+    }
+
+    // FIXME: does this do anything ?
+    $params['statusMsg'] = ts('Case Status changed successfully.');
+  }
 }
+

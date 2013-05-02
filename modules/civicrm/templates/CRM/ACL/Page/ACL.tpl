@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {capture assign=erURL}{crmURL p='civicrm/acl/entityrole' q='reset=1'}{/capture}
 {capture assign=rolesURL}{crmURL p='civicrm/admin/options/acl_role' q='group=acl_role&reset=1'}{/capture}
-{capture assign=docLink}{docURL page='Access Control' text='Access Control Documentation'}{/capture}
+{capture assign=docLink}{docURL page='user/initial-set-up/access-control' text='Access Control Documentation'}{/capture}
 
 
 {if $action eq 1 or $action eq 2 or $action eq 8}
@@ -42,9 +42,9 @@
 <div class="">
 <div id="ltype">
     {strip}
-	{* handle enable/disable actions*}
- 	{include file="CRM/common/enableDisable.tpl"}
-    {include file="CRM/common/jsortable.tpl"}   
+  {* handle enable/disable actions*}
+   {include file="CRM/common/enableDisable.tpl"}
+    {include file="CRM/common/jsortable.tpl"}
         <table id="options" class="display">
         <thead>
         <tr class="columnheader">
@@ -59,14 +59,14 @@
         </thead>
         <tbody>
         {foreach from=$rows item=row key=aclID}
-	    <tr id="row_{$aclID}"class="{cycle values="odd-row,even-row"} {$row.class} crm-acl {if NOT $row.is_active} disabled{/if}">
-	        <td class="crm-acl-entity">{$row.entity}</td>	
-	        <td class="crm-acl-operation" >{$row.operation}</td>	
-	        <td class="crm-acl-object_name">{$row.object_name}</td>	
-	        <td class="crm-acl-object" >{$row.object}</td>	
-	        <td class="crm-acl-name">{$row.name}</td>	
-	        <td class="crm-acl-is_active" id="row_{$aclID}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-	        <td>{$row.action|replace:'xx':$aclID}</td>
+      <tr id="row_{$aclID}"class="{cycle values="odd-row,even-row"} {$row.class} crm-acl {if NOT $row.is_active} disabled{/if}">
+          <td class="crm-acl-entity">{$row.entity}</td>
+          <td class="crm-acl-operation" >{$row.operation}</td>
+          <td class="crm-acl-object_name">{$row.object_name}</td>
+          <td class="crm-acl-object" >{$row.object}</td>
+          <td class="crm-acl-name">{$row.name}</td>
+          <td class="crm-acl-is_active" id="row_{$aclID}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+          <td>{$row.action|replace:'xx':$aclID}</td>
         </tr>
         {/foreach}
         </tbody>
@@ -74,8 +74,8 @@
         {/strip}
 
         {if $action ne 1 and $action ne 2}
-	    <div class="action-link">
-    	<a href="{crmURL q="action=add&reset=1"}" id="newACL" class="button"><span><div class="icon add-icon"></div>{ts}Add ACL{/ts}</span></a>
+      <div class="action-link">
+      <a href="{crmURL q="action=add&reset=1"}" id="newACL" class="button"><span><div class="icon add-icon"></div>{ts}Add ACL{/ts}</span></a>
         </div>
         {/if}
 </div>
@@ -84,6 +84,6 @@
         <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
         {capture assign=crmURL}{crmURL q="action=add&reset=1"}{/capture}
         {ts 1=$crmURL}There are no ACLs entered. You can <a href='%1'>add one</a>.{/ts}
-    </div>    
+    </div>
 {/if}
 </div>

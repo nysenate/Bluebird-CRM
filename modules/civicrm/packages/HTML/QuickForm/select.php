@@ -151,7 +151,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
      */
     function setName($name)
     {
-        $this->_attributes['name']=$name;
+        $this->updateAttributes(array('name' => $name));
     } //end func setName
     
     // }}}
@@ -232,7 +232,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
      */
     function setSize($size)
     {
-        $this->_attributes['size']=$size;
+        $this->updateAttributes(array('size' => $size));
     } //end func setSize
     
     // }}}
@@ -264,9 +264,9 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     function setMultiple($multiple)
     {
         if ($multiple) {
-            $this->_attributes['multiple']='multiple';
+            $this->updateAttributes(array('multiple' => 'multiple'));
         } else {
-            unset($this->_attributes['multiple']);
+            $this->removeAttribute('multiple');
         }
     } //end func setMultiple
     
@@ -403,7 +403,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     {
         if (is_string($conn)) {
             require_once('DB.php');
-            $dbConn = &DB::connect($conn, true);
+            $dbConn = DB::connect($conn, true);
             if (DB::isError($dbConn)) {
                 return $dbConn;
             }
@@ -501,6 +501,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
                 $strHtml .= $tabs . "\t<option" . $this->_getAttrString($option['attr']) . '>' .
                             $option['text'] . "</option>\n";
             }
+
             return $strHtml . $tabs . '</select>';
         }
     } //end func toHtml
@@ -603,12 +604,15 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     function onQuickFormEvent($event, $arg, &$caller)
     {
         if ('updateValue' == $event) {
-            $value = $this->_findValue($caller->_csValues);
+            $value = $this->_findValue($caller->_constantValues);
+            if (null === $value) {
+                $value = $this->_findValue($caller->_submitValues);
                 // Fix for bug #4465 & #5269
                 // XXX: should we push this to element::onQuickFormEvent()?
                 if (null === $value && (!$caller->isSubmitted() || !$this->getMultiple())) {
                     $value = $this->_findValue($caller->_defaultValues);
                 }
+            }
             if (null !== $value) {
                 $this->setValue($value);
             }

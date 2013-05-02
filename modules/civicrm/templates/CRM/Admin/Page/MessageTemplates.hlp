@@ -23,8 +23,8 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=tokenDocLink}{docURL page="Mail-merge Tokens for Contact Data"}{/capture}
-{capture assign=memberTypesDocLink}{docURL page="Membership Types"}{/capture}
+{capture assign=tokenDocLink}{docURL page="user/common-workflows/tokens-and-mail-merge"}{/capture}
+{capture assign=memberTypesDocLink}{docURL page="user/membership/setup"}{/capture}
 
 {htxt id="id-intro"}
 <p>

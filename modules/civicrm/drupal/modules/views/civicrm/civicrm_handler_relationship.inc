@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Views' relationship handlers.
@@ -33,44 +34,45 @@
  *   the relationship.
  */
 class civicrm_handler_relationship extends views_handler_relationship {
-    static  $_relationshipType; 
-    /**
-     * Init handler to let relationships live on tables other than
-     * the table they operate on.
-     */
-    function init(&$view, &$options) {
-      parent::init($view, $options);
-    }
-    
-   function construct( ) {
-      if ( ! civicrm_initialize( ) ) {
-          return;
-      }
-      require_once 'CRM/Core/PseudoConstant.php';
-      $relationshipType_array = CRM_Core_PseudoConstant::relationshipType( 'name' );
-                  
-      // relationshipType() returns information about relations as array with fields
-      // 'name_a_b', 'name_b_a', 'contact_type_a' and 'contact_type_b'.
-      $options = array( 0=>'Any' );
-      foreach ($relationshipType_array as $id => $value_array ) {
-          if ($this->definition['real field'] == 'contact_id_b') { 
-              $options[$id] = $value_array['name_b_a'];
-          }
-          else {
-              $options[$id] = $value_array['name_a_b']; 
-          }
-      }
+  static $_relationshipType;
 
-      self::$_relationshipType = $options;
+  /**
+   * Init handler to let relationships live on tables other than
+   * the table they operate on.
+   */
+  function init(&$view, &$options) {
+    parent::init($view, $options);
+  }
 
+  function construct() {
+    parent::construct();
+    if (!civicrm_initialize()) {
+      return;
     }
+    require_once 'CRM/Core/PseudoConstant.php';
+    $relationshipType_array = CRM_Core_PseudoConstant::relationshipType('name');
+
+    // relationshipType() returns information about relations as array with fields
+    // 'name_a_b', 'name_b_a', 'contact_type_a' and 'contact_type_b'.
+    $options = array(0 => 'Any');
+    foreach ($relationshipType_array as $id => $value_array) {
+      if ($this->definition['real field'] == 'contact_id_b') {
+        $options[$id] = $value_array['name_b_a'];
+      }
+      else {
+        $options[$id] = $value_array['name_a_b'];
+      }
+    }
+
+    self::$_relationshipType = $options;
+  }
 
   /**
    * Get this field's label.
    */
   function label() {
     if (!isset($this->options['label'])) {
-      return $this->ui_name();
+      return '';
     }
     return $this->options['label'];
   }
@@ -88,21 +90,21 @@ class civicrm_handler_relationship extends views_handler_relationship {
    * should have.
    */
   function options_form(&$form, &$form_state) {
-      parent::options_form($form, $form_state);
+    parent::options_form($form, $form_state);
     $form['label'] = array(
-                          '#type' => 'textfield',
-                          '#title' => t('Identifier'),
-                          '#default_value' => isset($this->options['label']) ? $this->options['label'] : $this->definition['label'],
-                          '#description' => t('Edit the administrative label displayed when referencing this relationship form filters, etc.'),
+      '#type' => 'textfield',
+      '#title' => t('Identifier'),
+      '#default_value' => isset($this->options['label']) ? $this->options['label'] : $this->definition['label'],
+      '#description' => t('Edit the administrative label displayed when referencing this relationship form filters, etc.'),
     );
-      
+
     $form['relationship_type'] = array(
-                                  '#type' => 'select',
-                                  '#title' => 'Choose a specific relationship type',
-                                  '#options' => self::$_relationshipType,
-                                  '#description' => t('Use this drop down to limit this relatioship to a specific type of CiviCRM relationship'),
-                                  '#default_value' =>  $this->options['relationship_type'],
-                                  );
+      '#type' => 'select',
+      '#title' => 'Choose a specific relationship type',
+      '#options' => self::$_relationshipType,
+      '#description' => t('Use this drop down to limit this relatioship to a specific type of CiviCRM relationship'),
+      '#default_value' => $this->options['relationship_type'],
+    );
   }
 
   /**
@@ -111,8 +113,8 @@ class civicrm_handler_relationship extends views_handler_relationship {
   function query() {
 
     // Figure out what base table this relationship brings to the party.
-    $table_data = views_fetch_data($this->definition['base']);
-    $base_field = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];
+    $table_data        = views_fetch_data($this->definition['base']);
+    $base_field        = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];
     $this->table_alias = $this->query->add_table($this->table, $this->relationship);
 
     // Make sure the join to civicrm_contact form the civicrm_relationship table
@@ -123,10 +125,10 @@ class civicrm_handler_relationship extends views_handler_relationship {
     }
 
     $def = $this->definition;
-    
-    $leftField = $this->definition['base'] == 'civicrm_relationship' ? $this->field : $this->definition['other_field'];
-    $def['table'] = $this->definition['base'];
-    $def['field'] = $this->definition['field'];
+
+    $leftField         = $this->definition['base'] == 'civicrm_relationship' ? $this->field : $this->definition['other_field'];
+    $def['table']      = $this->definition['base'];
+    $def['field']      = $this->definition['field'];
     $def['left_table'] = $this->table_alias;
     $def['left_field'] = $leftField;
     if (!empty($this->options['required'])) {
@@ -139,21 +141,21 @@ class civicrm_handler_relationship extends views_handler_relationship {
     else {
       $join = new views_join();
     }
-    
+
     $join->definition = $def;
     $join->construct();
     $join->adjusted = TRUE;
-    
+
     // Add a join condition to the on clause to narrow down the relationship type shown
-    if ( isset($this->options['relationship_type']) && $this->options['relationship_type'] ) {
-        $extraTable = !empty($def['left_table']) ? $def['left_table'] : $this->table;
-        $extra[] = array(
-                        'value' => $this->options['relationship_type'],
-                        'numeric' => TRUE,
-                        'table' => $extraTable,
-                        'field' =>  'relationship_type_id',
-                        'operator' => '=',
-                        );
+    if (isset($this->options['relationship_type']) && $this->options['relationship_type']) {
+      $extraTable = !empty($def['left_table']) ? $def['left_table'] : $this->table;
+      $extra[] = array(
+        'value' => $this->options['relationship_type'],
+        'numeric' => TRUE,
+        'table' => $extraTable,
+        'field' => 'relationship_type_id',
+        'operator' => '=',
+      );
       $join->extra = $extra;
     }
 
@@ -163,3 +165,4 @@ class civicrm_handler_relationship extends views_handler_relationship {
     $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);
   }
 }
+

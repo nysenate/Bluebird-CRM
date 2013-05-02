@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -52,7 +52,7 @@
     {counter start=0 skip=1 print=false}
     {foreach from=$rows item=row}
         {cycle values="odd-row,even-row" assign=rowClass}
-        <tr id='rowid{$row.pledge_id}' class='{$rowClass} {if $row.pledge_status_name eq 'Overdue' } disabled{/if}'>
+        <tr id='rowid{$row.pledge_id}' class='{$rowClass} {if $row.pledge_status_name eq 'Overdue' } status-overdue{/if}'>
             {if $context eq 'Search' }       
                 {assign var=cbName value=$row.checkbox}
                 <td>{$form.$cbName.html}</td> 
@@ -76,13 +76,13 @@
             {if ! $single }	
                 <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a></td>
             {/if}
-            <td class="right">{$row.pledge_amount|crmMoney}</td>
-            <td class="right">{$row.pledge_total_paid|crmMoney}</td>
-            <td class="right">{$row.pledge_amount-$row.pledge_total_paid|crmMoney}</td>
+            <td class="right">{$row.pledge_amount|crmMoney:$row.pledge_currency}</td>
+            <td class="right">{$row.pledge_total_paid|crmMoney:$row.pledge_currency}</td>
+            <td class="right">{$row.pledge_amount-$row.pledge_total_paid|crmMoney:$row.pledge_currency}</td>
             <td>{$row.pledge_contribution_type}</td>
             <td>{$row.pledge_create_date|truncate:10:''|crmDate}</td>
             <td>{$row.pledge_next_pay_date|truncate:10:''|crmDate}</td>
-            <td class="right">{$row.pledge_next_pay_amount|crmMoney}</td>
+            <td class="right">{$row.pledge_next_pay_amount|crmMoney:$row.pledge_currency}</td>
             <td>{$row.pledge_status}</td>	
             <td>{$row.action|replace:'xx':$row.pledge_id}</td>
         </tr>

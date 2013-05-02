@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -71,7 +71,7 @@
     <table class="form-layout">
         <tr class="crm-price-field-form-block-label">
            <td class="label">{$form.label.label}</td>
-           <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='label' id=$id}{/if}{$form.label.html}
+           <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='label' id=$fid}{/if}{$form.label.html}
            </td>
         </tr>
         <tr class="crm-price-field-form-block-html_type">
@@ -150,7 +150,7 @@
 
            <tr class="crm-price-field-form-block-help_post">
               <td class="label">{$form.help_post.label}</td>
-              <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='help_post' id=$id}{/if}{$form.help_post.html|crmReplace:class:huge}&nbsp;
+              <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='help_post' id=$fid}{/if}{$form.help_post.html|crmReplace:class:huge}&nbsp;
                   {if $action neq 4}
                     <div class="description">{ts}Explanatory text displayed to users for this field.{/ts}</div>
                   {/if}
@@ -215,7 +215,7 @@
 {* Give link to view/edit choice options if in edit mode and html_type is one of the multiple choice types *}
 {if $action eq 2 AND ($form.data_type.value.1.0 eq 'CheckBox' OR $form.data_type.value.1.0 eq 'Radio' OR $form.data_type.value.1.0 eq 'Select') }
     <div class="action-link">
-        <a href="{crmURL p="civicrm/admin/event/field/option" q="reset=1&action=browse&fid=`$id`"}" class="button"><span>{ts}Multiple Choice Options{/ts}</span></a>
+        <a href="{crmURL p="civicrm/admin/event/field/option" q="reset=1&action=browse&fid=`$fid`"}" class="button"><span>{ts}Multiple Choice Options{/ts}</span></a>
     </div>
 {/if}
 

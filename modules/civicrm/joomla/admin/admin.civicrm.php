@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,66 +23,67 @@
  +--------------------------------------------------------------------+
 */
 
+
 // Check to ensure this file is included in Joomla!
-defined('_JEXEC') or die('No direct access allowed'); 
+defined('_JEXEC') or die('No direct access allowed');
 
 // check for php version and ensure its greater than 5.
 // do a fatal exit if
-if ( (int ) substr( PHP_VERSION, 0, 1 ) < 5 ) {
-    echo "CiviCRM requires PHP Version 5.2 or greater. You are running PHP Version " . PHP_VERSION . "<p>";
-    exit( );
+if ((int ) substr(PHP_VERSION, 0, 1) < 5) {
+  echo "CiviCRM requires PHP Version 5.2 or greater. You are running PHP Version " . PHP_VERSION . "<p>";
+  exit();
 }
 
-include_once 'civicrm.settings.php';
+define('CIVICRM_SETTINGS_PATH', dirname(__FILE__) . DIRECTORY_SEPARATOR . 'civicrm.settings.php');
+include_once CIVICRM_SETTINGS_PATH;
 
-require_once 'PEAR.php';
+civicrm_invoke();
 
-require_once 'CRM/Core/Config.php';
-require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Core/Error.php';
-require_once 'CRM/Core/Invoke.php';
+function civicrm_init() {
+  require_once 'CRM/Core/ClassLoader.php';
+  CRM_Core_ClassLoader::singleton()->register();
 
-civicrm_invoke( );
+  require_once 'PEAR.php';
 
-function civicrm_init( ) {
-    $config = CRM_Core_Config::singleton();
+  $config = CRM_Core_Config::singleton();
 }
 
-function plugin_init( ) {
-    //invoke plugins.
-    JPluginHelper::importPlugin( 'civicrm' );
-    $app =& JFactory::getApplication( );
-    $app->triggerEvent( 'onCiviLoad' ); 
+function plugin_init() {
+  //invoke plugins.
+  JPluginHelper::importPlugin('civicrm');
+  $app = JFactory::getApplication();
+  $app->triggerEvent('onCiviLoad');
 }
 
-function civicrm_invoke( ) {
-    civicrm_init( );
+function civicrm_invoke() {
+  civicrm_init();
 
-    plugin_init( );
+  plugin_init();
 
-    $user = JFactory::getUser( );
+  $user = JFactory::getUser();
 
-    /* bypass synchronize if running upgrade 
-     * to avoid any serious non-recoverable error 
-     * which might hinder the upgrade process. 
+  /* bypass synchronize if running upgrade
+     * to avoid any serious non-recoverable error
+     * which might hinder the upgrade process.
      */
-    require_once 'CRM/Utils/Array.php';
-    if ( CRM_Utils_Array::value( 'task', $_REQUEST ) != 'civicrm/upgrade' ) {
-        require_once 'CRM/Core/BAO/UFMatch.php';
-        CRM_Core_BAO_UFMatch::synchronize( $user, false, 'Joomla', 'Individual', true );
-    }
 
-    require_once 'CRM/Utils/System/Joomla.php';
-    CRM_Utils_System_Joomla::addHTMLHead( null, true );
+  require_once 'CRM/Utils/Array.php';
+  if (CRM_Utils_Array::value('task', $_REQUEST) != 'civicrm/upgrade') {
+    require_once 'CRM/Core/BAO/UFMatch.php';
+    CRM_Core_BAO_UFMatch::synchronize($user, FALSE, 'Joomla', 'Individual', TRUE);
+  }
 
-    if ( isset( $_GET['task'] ) ) { 
-        $args = explode( '/', trim( $_GET['task'] ) );
-    } else {
-        $_GET['task'] = 'civicrm/dashboard';
-        $_GET['reset'] = 1;
-        $args = array( 'civicrm', 'dashboard' );
-    }
-    CRM_Core_Invoke::invoke( $args );
+  require_once 'CRM/Utils/System/Joomla.php';
+  CRM_Utils_System_Joomla::addHTMLHead(NULL, TRUE);
+
+  if (isset($_GET['task'])) {
+    $args = explode('/', trim($_GET['task']));
+  }
+  else {
+    $_GET['task']  = 'civicrm/dashboard';
+    $_GET['reset'] = 1;
+    $args          = array('civicrm', 'dashboard');
+  }
+  CRM_Core_Invoke::invoke($args);
 }
-
 

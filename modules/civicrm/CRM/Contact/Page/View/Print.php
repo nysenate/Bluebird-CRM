@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Contact/Page/View/Summary.php';
 
 /**
  * Main page for viewing contact.
@@ -42,45 +39,41 @@ require_once 'CRM/Contact/Page/View/Summary.php';
  */
 class CRM_Contact_Page_View_Print extends CRM_Contact_Page_View_Summary {
 
-    /**
-     * Heart of the viewing process. The runner gets all the meta data for
-     * the contact and calls the appropriate type of page to view.
-     *
-     * @return void
-     * @access public
-     *
-     */
-    function run( )
-    {
-        $this->_print = CRM_Core_Smarty::PRINT_PAGE;
+  /**
+   * Heart of the viewing process. The runner gets all the meta data for
+   * the contact and calls the appropriate type of page to view.
+   *
+   * @return void
+   * @access public
+   *
+   */
+  function run() {
+    $this->_print = CRM_Core_Smarty::PRINT_PAGE;
 
-        $this->preProcess( );
+    $this->preProcess();
 
-        $this->view( );
+    $this->view();
 
-        return parent::run( );
-    }
+    return parent::run();
+  }
 
+  /**
+   * View summary details of a contact
+   *
+   * @return void
+   * @access public
+   */
+  function view() {
+    $params   = array();
+    $defaults = array();
+    $ids      = array();
 
-    /**
-     * View summary details of a contact
-     *
-     * @return void
-     * @access public
-     */
-    function view( ) {
-        $params   = array( );
-        $defaults = array( );
-        $ids      = array( );
+    $params['id'] = $params['contact_id'] = $this->_contactId;
+    $contact = CRM_Contact_BAO_Contact::retrieve($params, $defaults, $ids);
 
-        $params['id'] = $params['contact_id'] = $this->_contactId;
-        $contact = CRM_Contact_BAO_Contact::retrieve( $params, $defaults, $ids );
+    $this->assign('pageTitle', $contact->sort_name);
 
-        $this->assign( 'pageTitle', $contact->sort_name);
-
-        return parent::view();
-    }
-
+    return parent::view();
+  }
 }
-
 

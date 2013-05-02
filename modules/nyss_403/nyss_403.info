@@ -1,0 +1,7 @@
+; $Id$
+name = NYSS 403
+description = Creates Custom 403 page, and then adds that as default 403 url
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,11 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
 
 /**
  * Manage simple Tree data structure
@@ -42,7 +40,7 @@
  *                             'a'
  *                              |
  *    --------------------------------------------------------------
- *    |                 |                 |              |         |  
+ *    |                 |                 |              |         |
  *   'b'               'c'               'd'            'e'       'f'
  *    |                 |         /-----/ |                        |
  *  -------------     ---------  /     --------     ------------------------
@@ -69,184 +67,179 @@
  *
  *
  * Internally all nodes are an array with the following keys
- *      'name' - string 
+ *      'name' - string
  *      'children' - array
  *      'data' - array
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id: $
  *
  */
-
 class CRM_Utils_Tree {
 
-    /**
-     * Store the tree information as a string or array
-     * @var string|array
-     */
-    private $tree;
+  /**
+   * Store the tree information as a string or array
+   * @var string|array
+   */
+  private $tree;
 
+  /**
+   * Constructor for the tree.
+   *
+   * @param string $root
+   *
+   * @return CRM_Utils_Tree
 
-    /**
-     * Constructor for the tree.
-     *
-     * @param string $root 
-     * @return CRM_Utils_Tree
+   * @access public
+   *
+   */
+  public function __construct($nodeName) {
+    // create the root node
+    $rootNode = &$this->createNode($nodeName);
 
-     * @access public
-     *
-     */
-    public function __construct($nodeName)
-    {
-        // create the root node
-        $rootNode =& $this->createNode($nodeName);
+    // add the root node to the tree
+    $this->tree['rootNode'] = &$rootNode;
+  }
 
-        // add the root node to the tree
-        $this->tree['rootNode'] =& $rootNode;
+  /**
+   * Find a node that matches the given string
+   *
+   * @param string      $name       name of the node we are searching for.
+   * @param array (ref) $parentNode which parent node should we search in ?
+   *
+   * @return array(
+     ref) | false node if found else false
+   *
+   * @access public
+   */
+  //public function &findNode(&$parentNode, $name)
+  public function &findNode($name, &$parentNode) {
+    // if no parent node specified, please start from root node
+    if (!$parentNode) {
+      $parentNode = &$this->tree['rootNode'];
     }
 
-    /**
-     * Find a node that matches the given string
-     *
-     * @param string      $name       name of the node we are searching for.
-     * @param array (ref) $parentNode which parent node should we search in ?
-     *
-     * @return array(ref) | false node if found else false
-     *
-     * @access public
-     */
-    //public function &findNode(&$parentNode, $name)
-    public function &findNode($name, &$parentNode)
-    {
-        // if no parent node specified, please start from root node
-        if(!$parentNode) {
-            $parentNode =& $this->tree['rootNode'];
-        }
-
-        // first check the nodename of subtree itself
-        if ($parentNode['name'] == $name) {
-            return $parentNode;
-        }
-
-        $falseRet = false;
-        // no children ? return false
-        if ($this->isLeafNode($node)) {
-            return $falseRet;
-        }
-
-        // search children of the subtree
-        foreach ($parentNode['children'] as $key => $childNode) {
-            $cNode =& $parentNode['children'][$key];
-            if ($node =& $this->findNode($name, $cNode)) {
-                return $node;
-            }
-        }
-
-        // name does not match subtree or any of the children, negative result
-        return $falseRet;
+    // first check the nodename of subtree itself
+    if ($parentNode['name'] == $name) {
+      return $parentNode;
     }
 
-    /**
-     * Function to check if node is a leaf node.
-     * Currently leaf nodes are strings and non-leaf nodes are arrays
-     *
-     * @param array(ref) $node node which needs to checked
-     * @return boolean
-     *
-     * @access public
-     */
-    public function isLeafNode(&$node)
-    {
-        return (count($node['children']) ? true : false);
+    $falseRet = FALSE;
+    // no children ? return false
+    if ($this->isLeafNode($node)) {
+      return $falseRet;
     }
 
-
-    /**
-     * Create a node
-     *
-     * @param string $name 
-     * @return array (ref)
-     *
-     * @access public
-     */
-    public function &createNode($name)
-    {
-        $node['name'] = $name;
-        $node['children'] = array();
-        $node['data'] = array();
-        
+    // search children of the subtree
+    foreach ($parentNode['children'] as $key => $childNode) {
+      $cNode = &$parentNode['children'][$key];
+      if ($node = &$this->findNode($name, $cNode)) {
         return $node;
+      }
     }
 
+    // name does not match subtree or any of the children, negative result
+    return $falseRet;
+  }
 
-    /**
-     * Add node
-     *
-     * @param string $parentName - name of the parent ?
-     * @param array  (ref)       - node to be added
-     * @return none
-     *
-     * @access public
-     */
-    public function addNode($parentName, &$node)
-    {
-        $temp = '';
-        $parentNode =& $this->findNode($parentName,$temp);
-     
-        $parentNode['children'][] =& $node;
-    }
+  /**
+   * Function to check if node is a leaf node.
+   * Currently leaf nodes are strings and non-leaf nodes are arrays
+   *
+   * @param array(
+     ref) $node node which needs to checked
+   *
+   * @return boolean
+   *
+   * @access public
+   */
+  public function isLeafNode(&$node) {
+    return (count($node['children']) ? TRUE : FALSE);
+  }
 
-    /**
-     * Add Data
-     *
-     * @param string $parentName - name of the parent ?
-     * @param mixed              - data to be added
-     * @param string             - key to be used (optional)
-     * @return none
-     *
-     * @access public
-     */
-    public function addData($parentName, $childName, $data)
-    {
-        $temp = '';
-        if ($parentNode =& $this->findNode($parentName, $temp)) {
-            foreach ($parentNode['children'] as $key => $childNode ) {
-                $cNode =& $parentNode['children'][$key];
-                if ($cNode =& $this->findNode($childName, $parentNode) ) {
-                    $cNode['data']['fKey'] =& $data;
-                }
-            }
+  /**
+   * Create a node
+   *
+   * @param string $name
+   *
+   * @return array (ref)
+   *
+   * @access public
+   */
+  public function &createNode($name) {
+    $node['name']     = $name;
+    $node['children'] = array();
+    $node['data']     = array();
+
+    return $node;
+  }
+
+  /**
+   * Add node
+   *
+   * @param string $parentName - name of the parent ?
+   * @param array  (ref)       - node to be added
+   *
+   * @return none
+   *
+   * @access public
+   */
+  public function addNode($parentName, &$node) {
+    $temp = '';
+    $parentNode = &$this->findNode($parentName, $temp);
+
+    $parentNode['children'][] = &$node;
+  }
+
+  /**
+   * Add Data
+   *
+   * @param string $parentName - name of the parent ?
+   * @param mixed              - data to be added
+   * @param string             - key to be used (optional)
+   *
+   * @return none
+   *
+   * @access public
+   */
+  public function addData($parentName, $childName, $data) {
+    $temp = '';
+    if ($parentNode = &$this->findNode($parentName, $temp)) {
+      foreach ($parentNode['children'] as $key => $childNode) {
+        $cNode = &$parentNode['children'][$key];
+        if ($cNode = &$this->findNode($childName, $parentNode)) {
+          $cNode['data']['fKey'] = &$data;
         }
+      }
     }
+  }
 
-    /**
-     * Get Tree
-     *
-     * @param none
-     * @return tree
-     *
-     * @access public
-     */
-    public function getTree()
-    {
-        return $this->tree;
-    }
+  /**
+   * Get Tree
+   *
+   * @param none
+   *
+   * @return tree
+   *
+   * @access public
+   */
+  public function getTree() {
+    return $this->tree;
+  }
 
-
-    /**
-     * print the tree
-     *
-     * @param none
-     * @return none
-     *
-     * @access public
-     */
-    public function display()
-    {
-        print_r($this->tree);
-    }
+  /**
+   * print the tree
+   *
+   * @param none
+   *
+   * @return none
+   *
+   * @access public
+   */
+  public function display() {
+    print_r($this->tree);
+  }
 }
-
 

@@ -1,0 +1,17 @@
+<?php
+// $Id$
+/**
+ * @file nyss_403.module
+ * Creates Custom 403 page, and then adds that as default 403 url
+ */
+
+/**
+ * Implementation of hook_update().
+ */
+function nyss_403_update($node) {
+
+
+
+}
+
+

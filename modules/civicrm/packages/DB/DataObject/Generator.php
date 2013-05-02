@@ -95,7 +95,7 @@ class DB_DataObject_Generator extends DB_DataObject
      */
     function start()
     {
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         $db_driver = empty($options['db_driver']) ? 'DB' : $options['db_driver'];
 
         $databases = array();
@@ -173,7 +173,7 @@ class DB_DataObject_Generator extends DB_DataObject
     function _createTableList()
     {
         $this->_connect();
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
 
         $__DB= &$GLOBALS['_DB_DATAOBJECT']['CONNECTIONS'][$this->_database_dsn_md5];
 
@@ -319,7 +319,7 @@ class DB_DataObject_Generator extends DB_DataObject
             return;
         }
 
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
 
 
         //$this->_newConfig = new Config('IniFile');
@@ -714,7 +714,7 @@ class DB_DataObject_Generator extends DB_DataObject
     
     function getClassNameFromTableName($table)
     {
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         $class_prefix  = empty($options['class_prefix']) ? '' : $options['class_prefix'];
         return  $class_prefix.preg_replace('/[^A-Z0-9]/i','_',ucfirst(trim($this->table)));
     }
@@ -730,7 +730,7 @@ class DB_DataObject_Generator extends DB_DataObject
     
     function getFileNameFromTableName($table)
     {
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         $base = $options['class_location'];
         if (strpos($base,'%s') !== false) {
             $base = dirname($base);
@@ -773,7 +773,7 @@ class DB_DataObject_Generator extends DB_DataObject
     function generateClasses()
     {
         //echo "Generating Class files:        \n";
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
        
         
         if ($extends = @$options['extends']) {
@@ -868,7 +868,7 @@ class DB_DataObject_Generator extends DB_DataObject
         
         $p =  str_repeat(' ',$padding) ;
         
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         
         
         $var = (substr(phpversion(),0,1) > 4) ? 'public' : 'var';
@@ -1019,7 +1019,7 @@ class DB_DataObject_Generator extends DB_DataObject
             unless use set generator_class_rewrite to ANY or a name*/
 
         $class_rewrite = 'DB_DataObject';
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         if (empty($options['generator_class_rewrite']) || !($class_rewrite = $options['generator_class_rewrite'])) {
             $class_rewrite = 'DB_DataObject';
         }
@@ -1139,7 +1139,7 @@ class DB_DataObject_Generator extends DB_DataObject
         }
         
         
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         $class_prefix  = empty($options['class_prefix']) ? '' : $options['class_prefix'];
         
         if ($extends = @$options['extends']) {
@@ -1256,7 +1256,7 @@ class DB_DataObject_Generator extends DB_DataObject
     function _generateGetters($input) 
     {
 
-        $options = &PEAR::getStaticProperty('DB_DataObject','options');
+        $options = PEAR::getStaticProperty('DB_DataObject','options');
         $getters = '';
 
         // only generate if option is set to true

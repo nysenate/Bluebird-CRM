@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -110,12 +110,8 @@
                         <td>{$recurRows.$id.recur_status}</td>
                         <td>{if $recurRows.$id.completed}<a href="{$recurRows.$id.link}">{$recurRows.$id.completed}/{$recurRows.$id.installments}</a>
                             {else}0/{$recurRows.$id.installments} {/if}</td>
-                        <td>{$recurRows.$id.create_date|crmDate}</td>
-                        {if $recurRows.$id.cancelSubscriptionUrl && ($recurRows.$id.contribution_status_id eq 5 || $recurRows.$id.contribution_status_id eq 2 ) }
-                            <td><a href="{$recurRows.$id.cancelSubscriptionUrl}">{ts}Change Recurring Contribution{/ts}</a></td>
-                        {else}
-                            <td></td>
-                        {/if}
+                       <td>{$recurRows.$id.create_date|crmDate}</td>
+                       <td>{$recurRows.$id.action|replace:'xx':$recurRows.id}</td>
                     </tr>
                 {/foreach}
             </table>    

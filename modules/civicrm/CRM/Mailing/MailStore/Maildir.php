@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,88 +28,98 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
 require_once 'ezc/Base/src/ezc_bootstrap.php';
 require_once 'ezc/autoload/mail_autoload.php';
-require_once 'CRM/Mailing/MailStore.php';
+class CRM_Mailing_MailStore_Maildir extends CRM_Mailing_MailStore {
 
-class CRM_Mailing_MailStore_Maildir extends CRM_Mailing_MailStore
-{
-    /**
-     * Connect to the supplied dir and make sure the two mail dirs exist
-     *
-     * @param string $dir  dir to operate upon
-     * @return void
-     */
-    function __construct($dir)
-    {
-        $this->_dir = $dir;
+  /**
+   * Connect to the supplied dir and make sure the two mail dirs exist
+   *
+   * @param string $dir  dir to operate upon
+   *
+   * @return void
+   */
+  function __construct($dir) {
+    $this->_dir = $dir;
 
-        $this->_ignored   = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.ignored',   date('Y'), date('m'), date('d'))));
-        $this->_processed = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.processed', date('Y'), date('m'), date('d'))));
-    }
+    $this->_ignored = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.ignored', date('Y'), date('m'), date('d'))));
+    $this->_processed = $this->maildir(implode(DIRECTORY_SEPARATOR, array('CiviMail.processed', date('Y'), date('m'), date('d'))));
+  }
 
-    /**
-     * Return the next X messages from the mail store
-     * FIXME: in CiviCRM 2.2 this always returns all the emails
-     *
-     * @param int $count  number of messages to fetch FIXME: ignored in CiviCRM 2.2 (assumed to be 0, i.e., fetch all)
-     * @return array      array of ezcMail objects
-     */
-    function fetchNext($count = 0)
-    {
-        $mails = array();
-        $parser = new ezcMailParser;
-        //set property text attachment as file CRM-5408
-        $parser->options->parseTextAttachmentsAsFiles = true;
-        
-        foreach (array('cur', 'new') as $subdir) {
-            $dir = $this->_dir . DIRECTORY_SEPARATOR . $subdir;
-            foreach (scandir($dir) as $file) {
-                if ($file == '.' or $file == '..') continue;
-                $path = $dir . DIRECTORY_SEPARATOR . $file;
+  /**
+   * Return the next X messages from the mail store
+   * FIXME: in CiviCRM 2.2 this always returns all the emails
+   *
+   * @param int $count  number of messages to fetch FIXME: ignored in CiviCRM 2.2 (assumed to be 0, i.e., fetch all)
+   *
+   * @return array      array of ezcMail objects
+   */
+  function fetchNext($count = 0) {
+    $mails = array();
+    $parser = new ezcMailParser;
+    //set property text attachment as file CRM-5408
+    $parser->options->parseTextAttachmentsAsFiles = TRUE;
 
-                if ($this->_debug) print "retrieving message $path\n";
-
-                $set = new ezcMailFileSet(array($path));
-                $single = $parser->parseMail($set);
-                $mails[$path] = $single[0];
-            }
+    foreach (array(
+      'cur', 'new') as $subdir) {
+      $dir = $this->_dir . DIRECTORY_SEPARATOR . $subdir;
+      foreach (scandir($dir) as $file) {
+        if ($file == '.' or $file == '..') {
+          continue;
         }
-        return $mails;
-    }
+        $path = $dir . DIRECTORY_SEPARATOR . $file;
 
-    /**
-     * Fetch the specified message to the local ignore folder
-     *
-     * @param integer $file  file location of the message to fetch
-     * @return void
-     */
-    function markIgnored($file)
-    {
-        if ($this->_debug) print "moving $file to ignored folder\n";
-        $target = $this->_ignored . DIRECTORY_SEPARATOR . basename($file);
-        if (!rename($file, $target)) {
-            throw new Exception("Could not rename $file to $target");
-        }
-    }
+        if ($this->_debug) {
 
-    /**
-     * Fetch the specified message to the local processed folder
-     *
-     * @param integer $file  file location of the message to fetch
-     * @return void
-     */
-    function markProcessed($file)
-    {
-        if ($this->_debug) print "moving $file to processed folder\n";
-        $target = $this->_processed . DIRECTORY_SEPARATOR . basename($file);
-        if (!rename($file, $target)) {
-            throw new Exception("Could not rename $file to $target");
+          print "retrieving message $path\n";
+
         }
+
+        $set          = new ezcMailFileSet(array($path));
+        $single       = $parser->parseMail($set);
+        $mails[$path] = $single[0];
+      }
     }
+    return $mails;
+  }
+
+  /**
+   * Fetch the specified message to the local ignore folder
+   *
+   * @param integer $file  file location of the message to fetch
+   *
+   * @return void
+   */
+  function markIgnored($file) {
+    if ($this->_debug) {
+      print "moving $file to ignored folder\n";
+    }
+    $target = $this->_ignored . DIRECTORY_SEPARATOR . basename($file);
+    if (!rename($file, $target)) {
+      throw new Exception("Could not rename $file to $target");
+    }
+  }
+
+  /**
+   * Fetch the specified message to the local processed folder
+   *
+   * @param integer $file  file location of the message to fetch
+   *
+   * @return void
+   */
+  function markProcessed($file) {
+    if ($this->_debug) {
+      print "moving $file to processed folder\n";
+    }
+    $target = $this->_processed . DIRECTORY_SEPARATOR . basename($file);
+    if (!rename($file, $target)) {
+      throw new Exception("Could not rename $file to $target");
+    }
+  }
 }
+

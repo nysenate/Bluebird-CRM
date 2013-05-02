@@ -1,0 +1,393 @@
+<?php
+
+/**
+ * @file
+ * Test Administer Users by Role.
+ */
+
+class AdministerUsersByRoleTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'administerusersbyrole',
+      'description' => 'Ensure that Administer Users by Role functions properly.',
+      'group' => 'Administer Users by Role',
+    );
+  }
+
+  private $roles = array();
+  private $users = array();
+
+  private function createUserWithRole($userName, $roleNames) {
+    $roleIDs = array();
+    foreach ($roleNames as $roleName) {
+      $roleIDs[$this->roles[$roleName]] = $this->roles[$roleName];
+    }
+    $userInfo = array(
+      'name' => $userName,
+      'mail' => "$userName@example.com",
+      'pass' => 'cheese',
+      'roles' => $roleIDs,
+      'status' => 1,
+    );
+    $this->users[$userName] = user_save(NULL, $userInfo);
+    $this->users[$userName]->pass_raw = 'cheese';
+    $this->assertTrue($this->users[$userName]->uid > 0, "Unable to create user $userName.");
+  }
+
+  private function createRolesAndUsers($roleName, $allowEditorToCancel) {
+    // create basic role
+    $this->roles[$roleName] = $this->drupalCreateRole(array('access content'), $roleName);
+    $this->createUserWithRole($roleName, array($roleName));
+
+    // clear permissions cache, so we can use the 'edit users with ...' permission for this role
+    $this->checkPermissions(array(), TRUE);
+    // create role to edit above role
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      _administerusersbyrole_build_perm_string($roleName, 'edit', FALSE),
+    );
+    if ($allowEditorToCancel) {
+      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'cancel', FALSE);
+    }
+    $this->roles["{$roleName}_editor"] = $this->drupalCreateRole($perms, "{$roleName}_editor");
+    $this->createUserWithRole("{$roleName}_editor", array("{$roleName}_editor"));
+  }
+
+  public function setUp() {
+    parent::setUp(
+      'administerusersbyrole'
+    );
+
+    // make sure our immediate dependencies are enabled, since parent::setUp() doesn't check this for us
+    $this->assertTrue(module_exists('administerusersbyrole'), "administerusersbyrole.module isn't installed");
+
+    $this->createUserWithRole('noroles', array());
+
+    $this->createRolesAndUsers('alpha', FALSE);
+
+    // 'alpha and other' editor
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      _administerusersbyrole_build_perm_string('alpha', 'edit', TRUE),
+    );
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['alpha_o_ed'] = $this->drupalCreateRole($perms, 'alpha_o_ed');
+    $this->createUserWithRole('alpha_o_ed', array('alpha_o_ed'));
+
+    // 'alpha and other' deletor
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      _administerusersbyrole_build_perm_string('alpha', 'cancel', TRUE),
+    );
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['alpha_o_del'] = $this->drupalCreateRole($perms, 'alpha_o_del');
+    $this->createUserWithRole('alpha_o_del', array('alpha_o_del'));
+
+    $this->createRolesAndUsers('beta', TRUE);
+
+    // 'beta and other' editor
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      _administerusersbyrole_build_perm_string('beta', 'edit', TRUE),
+    );
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['beta_o_ed'] = $this->drupalCreateRole($perms, 'beta_o_ed');
+    $this->createUserWithRole('beta_o_ed', array('beta_o_ed'));
+
+    $this->createUserWithRole('alphabeta', array('alpha', 'beta'));
+
+    // all_editor
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      'edit users with no custom roles',
+    );
+    foreach ($this->roles as $roleName => $roleID) {
+      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'edit', FALSE);
+    }
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['all_editor'] = $this->drupalCreateRole($perms, 'all_editor');
+    $this->createUserWithRole('all_editor', array('all_editor'));
+
+    // all_deletor
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      'cancel users with no custom roles',
+    );
+    foreach ($this->roles as $roleName => $roleID) {
+      $perms[] = _administerusersbyrole_build_perm_string($roleName, 'cancel', FALSE);
+    }
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['all_deletor'] = $this->drupalCreateRole($perms, 'all_deletor');
+    $this->createUserWithRole('all_deletor', array('all_deletor'));
+
+    // creator
+    $perms = array(
+      'access administration pages',
+      'access content',
+      'administer users',
+      'create users',
+    );
+    $this->checkPermissions(array(), TRUE);
+    $this->roles['creator'] = $this->drupalCreateRole($perms, 'creator');
+    $this->createUserWithRole('creator', array('creator'));
+  }
+
+  public function testPermissions() {
+    $expectations = array(
+      // When I'm logged in as...
+      'nobody' => array(
+        // ...I can perform these actions on this other user...
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'noroles' => array(
+        'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alpha' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alpha_editor' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_editor' => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alpha_o_ed' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alpha_o_del' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => TRUE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => TRUE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'beta' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'beta_editor' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => TRUE,  'cancel' => TRUE),
+        'beta_editor'  => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'beta_o_ed' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'alphabeta' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'all_editor' => array(
+        'noroles'      => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha'        => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_editor' => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => TRUE,  'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta'         => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_editor'  => array('edit' => TRUE,  'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'alphabeta'    => array('edit' => TRUE,  'cancel' => FALSE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => TRUE,  'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'all_deletor' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => TRUE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => TRUE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => TRUE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => TRUE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => TRUE),
+        'beta'         => array('edit' => FALSE, 'cancel' => TRUE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => TRUE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => TRUE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => TRUE),
+        'creator'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => TRUE),
+        'all_deletor'  => array('edit' => TRUE,  'cancel' => FALSE),
+        'create users' => FALSE,
+      ),
+      'creator' => array(
+        'noroles'      => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha'        => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_editor' => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_ed'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'alpha_o_del'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta'         => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_editor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'beta_o_ed'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'alphabeta'    => array('edit' => FALSE, 'cancel' => FALSE),
+        'creator'      => array('edit' => TRUE,  'cancel' => FALSE),
+        'all_editor'   => array('edit' => FALSE, 'cancel' => FALSE),
+        'all_deletor'  => array('edit' => FALSE, 'cancel' => FALSE),
+        'create users' => TRUE,
+      ),
+    );
+
+    foreach ($expectations as $loginUsername => $editUsernames) {
+      if ($loginUsername !== 'nobody') {
+        $this->drupalLogin($this->users[$loginUsername]);
+      }
+
+      foreach ($editUsernames as $k => $v) {
+        if ($k === 'create users') {
+          $this->drupalGet("admin/people/create");
+          $expectedResult = $v;
+          if ($expectedResult) {
+            $this->assertRaw('This web page allows administrators to register new users.', "My expectation is that $loginUsername should be able to create users, but it can't.");
+          }
+          else {
+            $this->assertRaw('You are not authorized to access this page.', "My expectation is that $loginUsername shouldn't be able to create users, but it can.");
+          }
+        }
+        else {
+          $editUsername = $k;
+          $operations = $v;
+          $editUid = $this->users[$editUsername]->uid;
+          foreach ($operations as $operation => $expectedResult) {
+            $this->drupalGet("user/$editUid/$operation");
+            if ($expectedResult) {
+              if ($operation === 'edit') {
+                $this->assertRaw("All e-mails from the system will be sent to this address.", "My expectation is that $loginUsername should be able to $operation $editUsername, but it can't.");
+              }
+              elseif ($operation === 'cancel') {
+                $this->assertRaw("Are you sure you want to cancel the account <em class=\"placeholder\">$editUsername</em>?", "My expectation is that $loginUsername should be able to $operation $editUsername, but it can't.");
+              }
+            }
+            else {
+              $this->assertTrue(
+                strstr($this->drupalGetContent(), "You do not have permission to $operation <em class=\"placeholder\">$editUsername</em>.")
+                || strstr($this->drupalGetContent(), 'You are not authorized to access this page.'),
+                "My expectation is that $loginUsername shouldn't be able to $operation $editUsername, but it can.");
+            }
+          }
+        }
+      }
+
+      if ($loginUsername !== 'nobody') {
+        $this->drupalLogout();
+      }
+    }
+  }
+}

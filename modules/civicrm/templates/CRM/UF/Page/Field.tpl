@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -50,27 +50,29 @@
             <thead>
             <tr>
                 <th>{ts}Field Name{/ts}</th>
+                {if in_array("Profile",$otherModules) or in_array("Search Profile",$otherModules) }
                 <th>{ts}Visibility{/ts}</th>
                 <th>{ts}Searchable?{/ts}</th>
                 <th>{ts}In Selector?{/ts}</th>
-                <th id="order" class="sortable">{ts}Order{/ts}</th>
-                <th>{ts}Active{/ts}</th>	
+                {/if}
+                <th id="order" class="sortable">{ts}Order{/ts}</th>	
                 <th>{ts}Required{/ts}</th>	
                 <th>{ts}View Only{/ts}</th>	
                 <th>{ts}Reserved{/ts}</th>
                 <th></th>
-		<th class="hiddenElement"></th>
+		            <th class="hiddenElement"></th>
             </tr>
             </thead>
             {foreach from=$ufField item=row}
-            <tr id="row_{$row.id}"class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-                <td>{$row.label}<br/>({$row.field_type})</td>
+            <tr id="UFField-{$row.id}"class="crm-entity {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+                <td><span class="crmf-label crm-editable">{$row.label}</span>({$row.field_type})</td>
+                {if in_array("Profile",$otherModules) or in_array("Search Profile",$otherModules) }
                 <td>{$row.visibility_display}</td>
-                <td>{if $row.is_searchable   eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-                <td>{if $row.in_selector     eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+                <td class="crmf-is_searchable">{if $row.is_searchable   eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+                <td class="crmf-in_selector">{if $row.in_selector     eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+                {/if}
                 <td class="nowrap">{$row.order}</td>
-                <td id="row_{$row.id}_status">{if $row.is_active eq 1}       {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-                <td>{if $row.is_required     eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+                <td class="crmf-is_required">{if $row.is_required     eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
                 <td>{if $row.is_view         eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
                 <td>{if $row.is_reserved     eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
                 <td>{$row.action|replace:'xx':$row.id}</td>
@@ -98,3 +100,6 @@
     {/if}
 </div>
 {/if}
+
+{include file="CRM/common/crmeditable.tpl"} 
+

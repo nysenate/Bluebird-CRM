@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,24 +26,27 @@
 <div class="crm-block crm-form-block crm-search-form-block">
 <table class="form-layout">
     <tr>
-        <td>{$form.mailing_name.label}<br />
-            {$form.mailing_name.html|crmReplace:class:big} {help id="id-mailing_name"}
+        <td>{$form.mailing_name.label} {help id="id-mailing_name"}<br />
+            {$form.mailing_name.html|crmReplace:class:big}
         </td>
-        <td class="nowrap">{$form.mailing_from.label}<br />
-            {include file="CRM/common/jcalendar.tpl" elementName=mailing_from}
+        {*NYSS*}
+        <td>{$form.mailing_subject.label}<br />
+          {$form.mailing_subject.html|crmReplace:class:big}
         </td>
-        <td class="nowrap">{$form.mailing_to.label}<br />
-            {include file="CRM/common/jcalendar.tpl" elementName=mailing_to}
-        </td> 
+    </tr>
+    <tr>
+        <td>
+	    <label>{ts}Mailing Date{/ts}</label>
+	</td>
+    </tr>
+    <tr>
+	{include file="CRM/Core/DateRange.tpl" fieldName="mailing" from='_from' to='_to'}
     </tr>
     <tr> 
-        <td colspan="1">{$form.mailing_subject.label}<br />
-            {$form.mailing_subject.html|crmReplace:class:big}
-            <br /><br />
-            {$form.sort_name.label}<br />
-            {$form.sort_name.html|crmReplace:class:big} {help id="id-create_sort_name"}
+        <td colspan="1">{$form.sort_name.label} {help id="id-create_sort_name"}<br />
+            {$form.sort_name.html|crmReplace:class:big}
         </td>
-        <td colspan="2"><label>{ts}Mailing Status{/ts}</label><br />
+        <td width="100%"><label>{ts}Mailing Status{/ts}</label><br />
         <div class="listing-box" style="width: auto; height: 60px">
             {foreach from=$form.mailing_status item="mailing_status_val"}
             <div class="{cycle values="odd-row,even-row"}">
@@ -53,11 +56,16 @@
         </div><br />
         </td>
     </tr>
-
+{*NYSS*}
+{*
+<tr>
+    <td>{$form.sms.label}<br/>{$form.sms.html}</td>
+</tr>
+*}
     {* campaign in mailing search *}
-    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+{*    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
     campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
-
+*}
     <tr>
         <td>{$form.buttons.html}</td><td colspan="2"></td>
     </tr>

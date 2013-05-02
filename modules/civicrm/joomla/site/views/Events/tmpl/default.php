@@ -1,7 +1,7 @@
 <?php // no direct access
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -84,7 +84,10 @@ defined('_JEXEC') or die('Restricted access'); ?>
               	        <td><?php if $location.1.name ?>
 				<span class="fn org">{$location.1.name}</span><br />{/if}
                  		<?php echo this->$location.1.address.display|nl2br ?>
-                		<?php if ( $event.is_map && $config->mapAPIKey && ( is_numeric($location.1.address.geo_code_1)  || ( $config->mapGeoCoding && $location.1.address.city AND $location.1.address.state_province ) ) ) ?>
+                		<?php if ( $event.is_map && 
+                                   $config->mapAPIKey && 
+                                   ( ( !empty($location.1.address.geo_code_1) AND is_numeric($location.1.address.geo_code_1) ) || 
+                                     ( $config->mapGeoCoding && !empty($location.1.address.city) AND !empty($location.1.address.state_province) ) ) ) ?>
                  		<br/><a href="<?php echo this->$mapURL ?>" title="JText::_('Map this Address')">JText::_('Map this Location')</a>
 					<?php endif; ?>
                  	</td>

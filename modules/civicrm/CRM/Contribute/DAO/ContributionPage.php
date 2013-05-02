@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
     static $_links = null;
     /**
      * static instance to hold the values that can
-     * be imported / apu
+     * be imported
      *
      * @var array
      * @static
@@ -66,7 +66,7 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
     static $_import = null;
     /**
      * static instance to hold the values that can
-     * be exported / apu
+     * be exported
      *
      * @var array
      * @static
@@ -105,11 +105,11 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      */
     public $contribution_type_id;
     /**
-     * Payment Processor for this contribution Page
+     * Payment Processors configured for this contribution Page
      *
-     * @var int unsigned
+     * @var string
      */
-    public $payment_processor_id;
+    public $payment_processor;
     /**
      * if true - processing logic must reject transaction at confirmation stage if pay method != credit card
      *
@@ -128,6 +128,12 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      * @var boolean
      */
     public $is_recur;
+    /**
+     * if false, the confirm page in contribution pages gets skipped
+     *
+     * @var boolean
+     */
+    public $is_confirm_enabled;
     /**
      * Supported recurring frequency units.
      *
@@ -327,6 +333,12 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      */
     public $campaign_id;
     /**
+     * Can people share the contribution page through social media?
+     *
+     * @var boolean
+     */
+    public $is_share;
+    /**
      * class constructor
      *
      * @access public
@@ -334,6 +346,7 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      */
     function __construct()
     {
+        $this->__table = 'civicrm_contribution_page';
         parent::__construct();
     }
     /**
@@ -342,12 +355,11 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &links()
+    function links()
     {
         if (!(self::$_links)) {
             self::$_links = array(
                 'contribution_type_id' => 'civicrm_contribution_type:id',
-                'payment_processor_id' => 'civicrm_payment_processor:id',
                 'created_id' => 'civicrm_contact:id',
                 'campaign_id' => 'civicrm_campaign:id',
             );
@@ -360,7 +372,7 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      * @access public
      * @return array
      */
-    function &fields()
+    static function &fields()
     {
         if (!(self::$_fields)) {
             self::$_fields = array(
@@ -389,10 +401,12 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
                     'required' => true,
                     'FKClassName' => 'CRM_Contribute_DAO_ContributionType',
                 ) ,
-                'payment_processor_id' => array(
-                    'name' => 'payment_processor_id',
-                    'type' => CRM_Utils_Type::T_INT,
-                    'FKClassName' => 'CRM_Core_DAO_PaymentProcessor',
+                'payment_processor' => array(
+                    'name' => 'payment_processor',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Payment Processor') ,
+                    'maxlength' => 128,
+                    'size' => CRM_Utils_Type::HUGE,
                 ) ,
                 'is_credit_card_only' => array(
                     'name' => 'is_credit_card_only',
@@ -406,6 +420,11 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
                 'is_recur' => array(
                     'name' => 'is_recur',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
+                ) ,
+                'is_confirm_enabled' => array(
+                    'name' => 'is_confirm_enabled',
+                    'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'default' => '',
                 ) ,
                 'recur_frequency_unit' => array(
                     'name' => 'recur_frequency_unit',
@@ -490,7 +509,6 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
                 'is_email_receipt' => array(
                     'name' => 'is_email_receipt',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
-                    'default' => '',
                 ) ,
                 'receipt_from_name' => array(
                     'name' => 'receipt_from_name',
@@ -594,6 +612,11 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'FKClassName' => 'CRM_Campaign_DAO_Campaign',
                 ) ,
+                'is_share' => array(
+                    'name' => 'is_share',
+                    'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'default' => '',
+                ) ,
             );
         }
         return self::$_fields;
@@ -602,12 +625,12 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      * returns the names of this table
      *
      * @access public
+     * @static
      * @return string
      */
-    function getTableName()
+    static function getTableName()
     {
-        global $dbLocale;
-        return self::$_tableName . $dbLocale;
+        return CRM_Core_DAO::getLocaleTableName(self::$_tableName);
     }
     /**
      * returns if this table needs to be logged
@@ -624,12 +647,13 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &import($prefix = false)
+    static function &import($prefix = false)
     {
         if (!(self::$_import)) {
             self::$_import = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('import', $field)) {
                     if ($prefix) {
@@ -647,12 +671,13 @@ class CRM_Contribute_DAO_ContributionPage extends CRM_Core_DAO
      *
      * @access public
      * return array
+     * @static
      */
-    function &export($prefix = false)
+    static function &export($prefix = false)
     {
         if (!(self::$_export)) {
             self::$_export = array();
-            $fields = & self::fields();
+            $fields = self::fields();
             foreach($fields as $name => $field) {
                 if (CRM_Utils_Array::value('export', $field)) {
                     if ($prefix) {

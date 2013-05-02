@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {capture assign=erURL}{crmURL p='civicrm/acl/entityrole' q='reset=1'}{/capture}
 {capture assign=rolesURL}{crmURL p='civicrm/admin/options' q='group=acl_role&reset=1'}{/capture}
-{capture assign=docLink}{docURL page='Access Control' text='Access Control Documentation'}{/capture}
+{capture assign=docLink}{docURL page='user/initial-set-up/access-control' text='Access Control Documentation'}{/capture}
 
 <div id="help">
     <p>{ts 1=$docLink}ACLs allow you control access to CiviCRM data. An ACL consists of an <strong>Operation</strong> (e.g. 'View' or 'Edit'), a <strong>set of data</strong> that the operation can be performed on (e.g. a group of contacts, a profile or a set of custom fields), and a <strong>Role</strong> that has permission to do this operation. Refer to the %1 for more info.{/ts}</p>
@@ -53,17 +53,17 @@
         </tr>
         {foreach from=$rows item=row}
         <tr class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-	        <td>{$row.entity}</td>	
-	        <td>{$row.object_table}</td>	
-	        <td>{$row.action}</td>
+          <td>{$row.entity}</td>
+          <td>{$row.object_table}</td>
+          <td>{$row.action}</td>
         </tr>
         {/foreach}
         </table>
         {/strip}
 
         {if $action ne 1 and $action ne 2}
-	    <div class="action-link">
-    	<a href="{crmURL q="action=add&reset=1"}" id="newACL"><div class="icon add-icon"></div>{ts}Add ACL{/ts}</a>
+      <div class="action-link">
+      <a href="{crmURL q="action=add&reset=1"}" id="newACL"><div class="icon add-icon"></div>{ts}Add ACL{/ts}</a>
         </div>
         {/if}
     </div>
@@ -75,6 +75,6 @@
         {capture assign=crmURL}{crmURL q="action=add&reset=1"}{/capture}
         <dd>{ts 1=$crmURL}There are no ACLs entered. You can <a href='%1'>add one</a>.{/ts}</dd>
         </dl>
-    </div>    
+    </div>
 {/if}
 </div>

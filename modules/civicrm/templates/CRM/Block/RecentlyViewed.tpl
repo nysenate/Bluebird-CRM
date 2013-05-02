@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Displays recently viewed objects (contacts and other objects like groups, notes, etc. *}
-<div id="recently-viewed">
+<div id="recently-viewed" class="left">
     <ul>
     {foreach from=$recentlyViewed item=item}
          <li class="crm-recently-viewed" ><a  href="{$item.url}" title="{$item.title}">
@@ -34,82 +34,21 @@
             <span class="icon crm-icon {$item.type}{if $item.subtype}-subtype{/if}-icon"></span>
          {/if}
          {if $item.isDeleted}<del>{/if}{$item.title|mb_truncate:25:"..":true}{if $item.isDeleted}</del>{/if}</a>
-         <ul class="crm-recentview-wrapper" style="display:none;">
-      
-         <li><a href='{$item.url}' class="crm-actions-view">{ts}View{/ts}</a>
-	       {if $item.edit_url}<a href='{$item.edit_url}' class="crm-actions-edit">{ts}Edit{/ts}</a>{/if}    
-		   {if $item.delete_url}<a href='{$item.delete_url}' class="crm-actions-delete">{ts}Delete{/ts}</a>{/if}
-	     </li>
-         </ul>
+         <div class="crm-recentview-wrapper">
+           <a href='{$item.url}' class="crm-actions-view">{ts}View{/ts}</a>
+           {if $item.edit_url}<a href='{$item.edit_url}' class="crm-actions-edit">{ts}Edit{/ts}</a>{/if}    
+           {if $item.delete_url}<a href='{$item.delete_url}' class="crm-actions-delete">{ts}Delete{/ts}</a>{/if}
+         </div>
          </li>
-	 
     {/foreach}
    </ul>
 </div>
 {literal}
 <script type="text/javascript">
-    cj( function( ) {
-       	cj('li.crm-recently-viewed')
-	.addClass('crm-processed')
-	.hover(
-		function(e)  {
-		    cj(this).addClass('crm-recentview-active');
-		
-		      var pos       = cj(this).parent().offset();
-		      var eleWidth  = cj(this).width( );
-		      var eleHeight = cj(this).height( );
-		    
-		      var addStyle  = 'display:block;';
-		      if ( eleWidth == 'undefined' ) {
-		      	 eleWidth   = 180;
-		      }
-		      if ( eleHeight == 'undefined' ) {
-		         eleHeight  = 24;    
-		      }
-		      		      
-		      var linkCount = cj('ul li',this).children().size();
-		      if ( linkCount ) {
-		      	addStyle += 'width:'+ ( linkCount*30) + 'px;'; 
-		      }		      
-
- 		      if ( pos.left >= 150 ) {
-		      	// hack for IE6 and IE7  
-		        if ( cj.browser.msie && ( cj.browser.version.substr( 0,1 ) == '7' ||  cj.browser.version.substr( 0,1 ) == '6' ) ) {
-			    gethtml =   '<ul class="crm-recentview-wrapper" style="display:none;">'+  cj(this).children('ul').html( ) +'</ul>' ;
-			    cj(this).children('ul').remove();			
-			    cj(this).prepend(gethtml );
-			    addStyle += 'margin-top:'+ (eleHeight+2) + 'px;';
-			} else {
-		      	    addStyle += 'margin-left:-'+ (linkCount*30+2) + 'px;';
-			    addStyle += 'margin-top:-'+ (eleHeight+2) + 'px;';
-			}
-		        if (cj(this).children('ul.crm-recentview-wrapper-right').length == '' ) {
-		            cj(this).children('ul').addClass('crm-recentview-wrapper-right');
-		        }
-		        cj(this).children('ul').attr('style', addStyle);
-		      } else {
-		        // hack for IE6 and IE7  
-			if ( cj.browser.msie && ( cj.browser.version.substr( 0,1 ) == '7' ||  cj.browser.version.substr( 0,1 ) == '6' ) ) {
-			    addStyle += 'margin-top:-3px;';
-			} else {   
-		            addStyle += 'margin-left:'+ (eleWidth-1) + 'px;';
-		      	    addStyle += 'margin-top:-'+ (eleHeight+2) + 'px;';
-			}   
-		        if (cj(this).children('ul.crm-recentview-wrapper-left').length == '' ) {
-		      	    cj(this).children('ul').addClass('crm-recentview-wrapper-left');
-		        }
-		        cj(this).children('ul').attr('style', addStyle);
-		      }	 
-		      
-		},
-		function(){
-		 cj(this).children('ul.crm-recentview-wrapper').attr('style','display:none' );
-		 cj(this).removeClass('crm-recentview-active');
-		}
-		)
-	.click(function() {return true;});	
-	
+    cj(function() {
+      if (cj('#recently-viewed').offset().left > 150) {
+        cj('#recently-viewed').removeClass('left').addClass('right');
+      }
     });
- 
-{/literal}
 </script>
+{/literal}

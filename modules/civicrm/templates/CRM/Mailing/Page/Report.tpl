@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,27 +28,50 @@
 {if $report.jobs.0.start_date}
   {strip}
   <table class="crm-info-panel">
-  <tr><td class="label"><a href="{$report.event_totals.links.queue}">{ts}Intended Recipients{/ts}</a></td><td>{$report.event_totals.queue}</td></tr>
-  <tr><td class="label"><a href="{$report.event_totals.links.delivered}">{ts}Successful Deliveries{/ts}</a></td><td>{$report.event_totals.delivered} ({$report.event_totals.delivered_rate|string_format:"%0.2f"}%)</td></tr>
+    <tr><td class="label"><a href="{$report.event_totals.links.queue}">{ts}Intended Recipients{/ts}</a></td>
+        <td>{$report.event_totals.queue}</td>
+        <td>{$report.event_totals.actionlinks.queue}</td></tr>
+    <tr><td class="label"><a href="{$report.event_totals.links.delivered}">{ts}Successful Deliveries{/ts}</a></td>
+        <td>{$report.event_totals.delivered} ({$report.event_totals.delivered_rate|string_format:"%0.2f"}%)</td>
+        <td>{$report.event_totals.actionlinks.delivered}</td></tr>
   {if $report.mailing.open_tracking}
-    <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Tracked Opens{/ts}</a></td><td>{$report.event_totals.opened}</td></tr>
+    <tr><td class="label"><a href="{$report.event_totals.links.opened}">{ts}Tracked Opens{/ts}</a></td>
+        <td>{$report.event_totals.opened}</td>
+        <td>{$report.event_totals.actionlinks.opened}</td></tr>
   {/if}
   {if $report.mailing.url_tracking}
-    <tr><td class="label"><a href="{$report.event_totals.links.clicks}">{ts}Click-throughs{/ts}</a></td><td>{$report.event_totals.url}</td></tr>
+    <tr><td class="label"><a href="{$report.event_totals.links.clicks}">{ts}Click-throughs{/ts}</a></td>
+        <td>{$report.event_totals.url}</td>
+        <td>{$report.event_totals.actionlinks.clicks}</td></tr>
   {/if}
-  <tr><td class="label"><a href="{$report.event_totals.links.forward}">{ts}Forwards{/ts}</a></td><td>{$report.event_totals.forward}</td></tr>
-  <tr><td class="label"><a href="{$report.event_totals.links.reply}">{ts}Replies{/ts}</a></td><td>{$report.event_totals.reply}</td></tr>
-  <tr><td class="label"><a href="{$report.event_totals.links.bounce}">{ts}Bounces{/ts}</a></td><td>{$report.event_totals.bounce} ({$report.event_totals.bounce_rate|string_format:"%0.2f"}%)</td></tr>
-  <tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Unsubscribe Requests{/ts}</a></td><td>{$report.event_totals.unsubscribe} ({$report.event_totals.unsubscribe_rate|string_format:"%0.2f"}%)</td></tr>
-  <tr><td class="label">{ts}Scheduled Date{/ts}</td><td>{$report.jobs.0.scheduled_date}</td></tr>
-  <tr><td class="label">{ts}Status{/ts}</td><td>{$report.jobs.0.status}</td></tr>
-  <tr><td class="label">{ts}Start Date{/ts}</td><td>{$report.jobs.0.start_date}</td></tr>
-  <tr><td class="label">{ts}End Date{/ts}</td><td>{$report.jobs.0.end_date}</td></tr>
+  <tr><td class="label"><a href="{$report.event_totals.links.forward}">{ts}Forwards{/ts}</a></td>
+      <td>{$report.event_totals.forward}</td>
+      <td>{$report.event_totals.actionlinks.forward}</td></tr>
+  <tr><td class="label"><a href="{$report.event_totals.links.reply}">{ts}Replies{/ts}</a></td>
+      <td>{$report.event_totals.reply}</td>
+      <td>{$report.event_totals.actionlinks.reply}</td></tr>
+  <tr><td class="label"><a href="{$report.event_totals.links.bounce}">{ts}Bounces{/ts}</a></td>
+      <td>{$report.event_totals.bounce} ({$report.event_totals.bounce_rate|string_format:"%0.2f"}%)</td>
+      <td>{$report.event_totals.actionlinks.bounce}</td></tr>
+  <tr><td class="label"><a href="{$report.event_totals.links.unsubscribe}">{ts}Unsubscribe Requests{/ts}</a></td>
+      <td>{$report.event_totals.unsubscribe} ({$report.event_totals.unsubscribe_rate|string_format:"%0.2f"}%)</td>
+      <td>{$report.event_totals.actionlinks.unsubscribe}</td></tr>
+  <tr><td class="label"><a href="{$report.event_totals.links.optout}">{ts}Opt-out Requests{/ts}</a></td>
+      <td>{$report.event_totals.optout} ({$report.event_totals.optout_rate|string_format:"%0.2f"}%)</td>
+      <td>{$report.event_totals.actionlinks.optout}</td></tr>
+  <tr><td class="label">{ts}Scheduled Date{/ts}</td>
+      <td colspan=2>{$report.jobs.0.scheduled_date}</td></tr>
+  <tr><td class="label">{ts}Status{/ts}</td>
+      <td colspan=2>{$report.jobs.0.status}</td></tr>
+  <tr><td class="label">{ts}Start Date{/ts}</td>
+      <td colspan=2>{$report.jobs.0.start_date}</td></tr>
+  <tr><td class="label">{ts}End Date{/ts}</td>
+      <td colspan=2>{$report.jobs.0.end_date}</td></tr>
   </table>
   {/strip}
 {else}
     <div class="messages status">
-        {ts}<strong>Delivery has not yet begun for this mailing.</strong> If the scheduled delivery date and time is past, ask the system administrator or technical support contact for your site to verify that the automated mailer task ('cron job') is running - and how frequently.{/ts} {docURL page="CiviMail Installation"}
+        {ts}<strong>Delivery has not yet begun for this mailing.</strong> If the scheduled delivery date and time is past, ask the system administrator or technical support contact for your site to verify that the automated mailer task ('cron job') is running - and how frequently.{/ts} {docURL page="user/initial-set-up/email-system-configuration"}
     </div>
 {/if}
 </fieldset>
@@ -187,7 +210,7 @@
 <tr><td class="label">{ts}Mailing Name{/ts}</td><td>{$report.mailing.name}</td></tr>
 <tr><td class="label">{ts}Subject{/ts}</td><td>{$report.mailing.subject}</td></tr>
 <tr><td class="label">{ts}From{/ts}</td><td>{$report.mailing.from_name} &lt;{$report.mailing.from_email}&gt;</td></tr>
-<tr><td class="label">{ts}Reply-to email{/ts}</td><td>&lt;{$report.mailing.replyto_email}&gt;</td></tr>
+<tr><td class="label">{ts}Reply-to email{/ts}</td><td>{$report.mailing.replyto_email|htmlentities}</td></tr>
 
 <tr><td class="label">{ts}Forward replies{/ts}</td><td>{if $report.mailing.forward_replies}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
 <tr><td class="label">{ts}Auto-respond to replies{/ts}</td><td>{if $report.mailing.auto_responder}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>

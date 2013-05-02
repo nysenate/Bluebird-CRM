@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,41 +36,55 @@
 /**
  * Date time utilties
  */
-class CRM_Utils_Time 
-{
-    static private $_time = null;
+class CRM_Utils_Time {
 
-    /**
-     * get the time
-     *
-     * @param string $returnFormat format in which date is to be retrieved
-     *
-     * @return date
-     *
-     * @static
-     */
-    static function getTime( $returnFormat = 'YmdHis' )
-    {
-        if ( ! isset( self::$_time ) ) {
-            self::$_time = date( 'YmdHis' );
-        }
-        return date( $returnFormat, strtotime(self::$_time) );
-    }
+  /**
+   * @var int, the seconds offset from the real world time
+   */
+  static private $_delta = 0;
 
-    /**
-     * set the given time
-     *
-     * @param string $newDateTime  a date formatted with strtotime
-     * @param string $returnFormat format in which date is to be retrieved
-     *
-     * @return date
-     *
-     * @static
-     */
-    static function setTime( $newDateTime, $returnFormat = 'YmdHis' )
-    {
-        self::$_time = date( 'YmdHis', $newDateTime );
+  /**
+   * get the time
+   *
+   * @param string $returnFormat format in which date is to be retrieved
+   *
+   * @return date
+   *
+   * @static
+   */
+  static function getTime($returnFormat = 'YmdHis') {
+    return date($returnFormat, self::getTimeRaw());
+  }
 
-        return self::getTime( $returnFormat );
-    }
+  /**
+   * Get the time
+   *
+   * @return int, seconds since epoch
+   */
+  static function getTimeRaw() {
+    return time() + self::$_delta;
+  }
+
+  /**
+   * set the given time
+   *
+   * @param string $newDateTime  a date formatted with strtotime
+   * @param string $returnFormat format in which date is to be retrieved
+   *
+   * @return date
+   *
+   * @static
+   */
+  static function setTime($newDateTime, $returnFormat = 'YmdHis') {
+    self::$_delta = strtotime($newDateTime) - time();
+    return self::getTime($returnFormat);
+  }
+
+  /**
+   * Remove any time overrides
+   */
+  static function resetTime() {
+    self::$_delta = 0;
+  }
 }
+

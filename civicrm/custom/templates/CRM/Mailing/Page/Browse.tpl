@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,9 +23,17 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{if $sms}
+  {assign var='newMassUrl' value='civicrm/sms/send'}
+  {assign var='qVal' value='&sms=1'}	
+{else}
+  {assign var='newMassUrl' value='civicrm/mailing/send'}
+  {assign var='qVal' value=''}
+{/if}
+
 {if $showLinks}
     <div class="action-link">
-    	<a accesskey="N" href="{crmURL p='civicrm/mailing/send' q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/><br/>
+    	<a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/><br/>
     </div>
 {/if}
 {include file="CRM/Mailing/Form/Search.tpl"}
@@ -89,20 +97,20 @@
     {include file="CRM/common/pager.tpl" location="bottom"}
     {if $showLinks}
     	<div class="action-link">
-            <a accesskey="N" href="{crmURL p='civicrm/mailing/send' q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/>
+            <a accesskey="N" href="{crmURL p=$newMassUrl q='reset=1'}" class="button"><span><div class="icon email-icon"></div>{ts}New Mailing{/ts}</span></a><br/>
     	</div>
     {/if}
 
 {* No mailings to list. Check isSearch flag to see if we're in a search or not. *}
 {elseif $isSearch eq 1}
     {if $archived}
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/archived' q="reset=1"}{/capture}
+        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/archived' q="reset=1"}{$qVal}{/capture}
         {assign var="browseType" value="Archived"}
     {elseif $unscheduled} 
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/unscheduled' q="scheduled=false&reset=1"}{/capture}
+        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/unscheduled' q="scheduled=false&reset=1"}{$qVal}{/capture}
         {assign var="browseType" value="Draft and Unscheduled"}
     {else}
-        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{/capture}
+        {capture assign=browseURL}{crmURL p='civicrm/mailing/browse/scheduled' q="scheduled=true&reset=1"}{$qVal}{/capture}
         {assign var="browseType" value="Scheduled and Sent"}
     {/if}
     <div class="status messages">
@@ -122,7 +130,7 @@
 
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp;
-            {capture assign=crmURL}{crmURL p='civicrm/mailing/send' q='reset=1'}{/capture}
+            {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
             {ts}There are no Unscheduled Mailings.{/ts}
 	    {if $showLinks}{ts 1=$crmURL} You can <a href='%1'>create and send one</a>.{/ts}{/if}
    </div>
@@ -130,14 +138,14 @@
 {elseif $archived}
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp
-            {capture assign=crmURL}{crmURL p='civicrm/mailing/browse/scheduled' q='scheduled=true&reset=1'}{/capture}
+            {capture assign=crmURL}{crmURL p='civicrm/mailing/browse/scheduled' q='scheduled=true&reset=1'}{$qVal}{/capture}
             {ts 1=$crmURL}There are no Archived Mailings. You can archive mailings from <a href='%1'>Scheduled or Sent Mailings</a>.{/ts}
    </div>
 {else}
     <div class="messages status">
             <div class="icon inform-icon"></div>&nbsp;
-            {capture assign=crmURL}{crmURL p='civicrm/mailing/send' q='reset=1'}{/capture}
-            {capture assign=archiveURL}{crmURL p='civicrm/mailing/browse/archived' q='reset=1'}{/capture}
+            {capture assign=crmURL}{crmURL p=$newMassUrl q='reset=1'}{/capture}
+            {capture assign=archiveURL}{crmURL p='civicrm/mailing/browse/archived' q='reset=1'}{$qVal}{/capture}
             {ts}There are no Scheduled or Sent Mailings.{/ts}
 	    {if $showLinks}{ts 1=$crmURL} You can <a href='%1'>create and send one</a>{/ts}{/if}{if $archiveLinks}{ts 1=$archiveURL} OR you can search the <a href='%1'>Archived Mailings</a>{/ts}{/if}.	    
    </div>

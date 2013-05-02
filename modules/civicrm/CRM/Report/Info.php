@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,79 +27,68 @@
  +--------------------------------------------------------------------+
 */
 
-require_once 'CRM/Core/Component/Info.php';
-
 /**
- * This class introduces component to the system and provides all the 
+ * This class introduces component to the system and provides all the
  * information about it. It needs to extend CRM_Core_Component_Info
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-class CRM_Report_Info extends CRM_Core_Component_Info
-{
+class CRM_Report_Info extends CRM_Core_Component_Info {
 
-    // docs inherited from interface
-    protected $keyword = 'report';
+  // docs inherited from interface
+  protected $keyword = 'report';
 
-    // docs inherited from interface
-    public function getInfo()
-    {
-        return array( 'name'                 => 'CiviReport',
-                      'translatedName'       => ts('CiviReport'),
-                      'title'                => 'CiviCRM Report Engine',
-                      'search'               => 0,
-                      'showActivitiesInCore' => 1 
-                      );
-    }
-
-
-    // docs inherited from interface
-    public function getPermissions()
-    {
-        return array( 'access CiviReport', 'access Report Criteria', 'administer Reports' );
-    }
+  // docs inherited from interface
+  public function getInfo() {
+    return array(
+      'name' => 'CiviReport',
+      'translatedName' => ts('CiviReport'),
+      'title' => 'CiviCRM Report Engine',
+      'search' => 0,
+      'showActivitiesInCore' => 1,
+    );
+  }
 
 
-    // docs inherited from interface
-    public function getUserDashboardElement()
-    {
-        // no dashboard element for this component
-        return null;
-    }
+  // docs inherited from interface
+  public function getPermissions() {
+    return array('access CiviReport', 'access Report Criteria', 'administer reserved reports', 'administer Reports');
+  }
 
-    public function getUserDashboardObject( )
-    {
-        // no dashboard element for this component
-        return null;
-    }
-    
-    // docs inherited from interface  
-    public function registerTab()
-    {
-        // this component doesn't use contact record tabs
-        return null;
-    }
-    
-    // docs inherited from interface  
-    public function registerAdvancedSearchPane()
-    {
-        // this component doesn't use advanced search
-        return null;
-    }    
-    
-    // docs inherited from interface    
-    public function getActivityTypes()
-    {
-        return null;
-    }
-    
-    // add shortcut to Create New
-    public function creatNewShortcut( &$shortCuts ) {
 
-    }
-    
+  // docs inherited from interface
+  public function getUserDashboardElement() {
+    // no dashboard element for this component
+    return NULL;
+  }
+
+  public function getUserDashboardObject() {
+    // no dashboard element for this component
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function registerTab() {
+    // this component doesn't use contact record tabs
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function registerAdvancedSearchPane() {
+    // this component doesn't use advanced search
+    return NULL;
+  }
+
+  // docs inherited from interface
+  public function getActivityTypes() {
+    return NULL;
+  }
+
+  // add shortcut to Create New
+  public function creatNewShortcut(&$shortCuts) {}
 }
+

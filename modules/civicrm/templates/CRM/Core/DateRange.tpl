@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,13 +25,13 @@
 *}
 {*this is included inside the table*}
 {assign var=relativeName   value=$fieldName|cat:"_relative"}
-<td >{$form.$relativeName.html}</td>
+<td>{$form.$relativeName.html}</td>
 <td>   
     <span id="absolute_{$relativeName}"> 
-        {assign var=fromName   value=$fieldName|cat:"_from"}
+        {assign var=fromName   value=$fieldName|cat:$from}
         {$form.$fromName.label}
         {include file="CRM/common/jcalendar.tpl" elementName=$fromName} 
-        {assign var=toName   value=$fieldName|cat:"_to"}
+        {assign var=toName   value=$fieldName|cat:$to}
         {$form.$toName.label}
         {include file="CRM/common/jcalendar.tpl" elementName=$toName} 
     </span>   

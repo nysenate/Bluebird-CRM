@@ -225,15 +225,15 @@
          }
 
          $.fn.extend({
-             getSelection: jQuerify(getSelection, false),
-             setSelection: jQuerify(setSelection, true),
-             collapseSelection: jQuerify(collapseSelection, true),
-             deleteSelectedText: jQuerify(deleteSelectedText, true),
-             deleteText: jQuerify(deleteText, true),
-             extractSelectedText: jQuerify(extractSelectedText, false),
-             insertText: jQuerify(insertText, true),
-             replaceSelectedText: jQuerify(replaceSelectedText, true),
-             surroundSelectedText: jQuerify(surroundSelectedText, true)
+            ricsgetSelection: jQuerify(getSelection, false),
+            ricssetSelection: jQuerify(setSelection, true),
+            ricscollapseSelection: jQuerify(collapseSelection, true),
+            ricsdeleteSelectedText: jQuerify(deleteSelectedText, true),
+            ricsdeleteText: jQuerify(deleteText, true),
+            ricsextractSelectedText: jQuerify(extractSelectedText, false),
+            ricsinsertText: jQuerify(insertText, true),
+            ricsreplaceSelectedText: jQuerify(replaceSelectedText, true),
+            ricssurroundSelectedText: jQuerify(surroundSelectedText, true)
          });
      });
 })(jQuery);

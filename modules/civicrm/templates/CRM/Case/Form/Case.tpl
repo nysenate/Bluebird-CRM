@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,6 +28,10 @@
          2. Each activity type file can include its case fields in its own template, so that they will be included during activity edit.
 *}
 <div class="crm-block crm-form-block crm-case-form-block">
+
+{if $cdType }
+   {include file="CRM/Custom/Form/CustomData.tpl"}
+{else}
 
 {if $action neq 8 && $action neq 32768}
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
@@ -123,13 +127,37 @@ cj("select[multiple]").crmasmSelect({
     </tr>
 {/if}
 
+<tr class="crm-case-form-block-custom_data">
+    <td colspan="2">
+        <div id="customData"></div>
+    </td>
+</tr>
+
 <tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='case'}</td></tr>	     
 
 </table>
 {/if}	
 
+{if $action eq 1}
+    {*include custom data js file*}
+    {include file="CRM/common/customData.tpl"}
+    {literal}
+      <script type="text/javascript">
+      cj(document).ready(function() {
+           var customDataSubType = cj('#case_type_id').val();
+           if ( customDataSubType ) {
+              buildCustomData( {/literal}'{$customDataType}'{literal}, customDataSubType );
+           } else {
+              buildCustomData( {/literal}'{$customDataType}'{literal} );
+           } 
+       });
+       </script>
+     {/literal}
+{/if}
+
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
+{/if}
 </div>

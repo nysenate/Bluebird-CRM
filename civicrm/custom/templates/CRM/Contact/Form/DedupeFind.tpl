@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,7 @@
      </tr>
      <tr>
         <td></td>
-        <td class="help">NEW: You can now run use contacts from previous imports as a dedupe group.</td>
+        <td class="help">You may now use contacts from previous imports as a dedupe group.</td>
      </tr>
      <tr>
         <td class="label">{$form.import_group_id.label}</td>

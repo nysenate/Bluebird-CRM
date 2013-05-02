@@ -536,7 +536,7 @@ class Validate
                 // it's an idn domain name.
                 $chars = count_chars($domain, 1);
                 if (!empty($chars) && max(array_keys($chars)) > 127) {
-                    $idna   =& Net_IDNA::singleton();
+                    $idna   = Net_IDNA::singleton();
                     $domain = $idna->encode($domain);
                 }
 

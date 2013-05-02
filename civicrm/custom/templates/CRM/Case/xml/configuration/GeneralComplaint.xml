@@ -8,10 +8,10 @@
       <name>Open Case</name>
       <max_instances>1</max_instances>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Follow up</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Change Case Type</name>
     </ActivityType>
     <ActivityType>
@@ -20,46 +20,50 @@
     <ActivityType>
       <name>Change Case Start Date</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
+      <name>Link Cases</name>
+    </ActivityType>
+
+    <ActivityType>
       <name>Supervisor Review</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Record SSN</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Phone Call</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Phone Call Received</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Letter Sent</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Letter Received</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Email</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Email Sent</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Email Received</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Fax Sent</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Fax Received</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>In Person</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Meeting</name>
     </ActivityType>
-	<ActivityType>
+    <ActivityType>
       <name>Other</name>
     </ActivityType>
   </ActivityTypes>
@@ -80,18 +84,18 @@
 
   <CaseRoles>
     <RelationshipType>
-        <name>Case Manager</name>
-        <creator>1</creator>
-		<manager>1</manager>
+      <name>Case Manager</name>
+      <creator>1</creator>
+      <manager>1</manager>
     </RelationshipType>
     <RelationshipType>
-        <name>Case Coordinator</name>
+      <name>Case Coordinator</name>
     </RelationshipType>
     <RelationshipType>
-        <name>Support Staff</name>
+      <name>Support Staff</name>
     </RelationshipType>
-	<RelationshipType>
-        <name>Non-District Staff</name>
+    <RelationshipType>
+      <name>Non-District Staff</name>
     </RelationshipType>
   </CaseRoles>
 

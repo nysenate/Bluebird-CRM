@@ -94,7 +94,7 @@ function nyss_ioimport_form() {
     '#type'          => 'checkbox',
     '#title'         => t('Dedupe on import.'),
     '#default_value' => 0,
-    '#description'   => t('When enabled, imported records will be compared and matched with existing contact records using the default individual strict rule. Records should have first name, middle name, last name, suffix, street address, and postal code, in order to effectively match.'),
+    '#description'   => t('When enabled, imported records will be compared and matched with existing contact records using the selected rule. Records should have first name, last name, suffix, street address, and postal code or email in order to effectively match.'),
   );
 
   $rules = CRM_Core_DAO::executeQuery("
@@ -112,8 +112,8 @@ function nyss_ioimport_form() {
     '#type'          => 'select',
     '#options'       => $dedupeoptions,
     '#title'         => t('Dedupe Rule'),
-    '#default_value' => 4,
-    '#description'   => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Level 1 rule.'),
+    '#default_value' => 1,
+    '#description'   => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Individual Strict rule.'),
   );
    
   //Data Handling Options
@@ -199,7 +199,7 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
     }
   }
   else {
-    $validators = array('file_validate_extensions' => array('csv'));
+    $validators = array('file_validate_extensions' => array('csv tab txt'));
     $file = file_save_upload('csv', $validators);
 
     if (!$file) {

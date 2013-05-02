@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 
 {*NYSS 3950*}
-<script src="{$config->resourceBase}../../../default/themes/rayCivicrm/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
+<script src="{$config->resourceBase}../../../default/themes/Bluebird/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
 
 <div class="crm-block crm-form-block crm-mailing-approve-form-block">
 
@@ -43,7 +43,8 @@
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">{*NYSS 3950*}
+{*NYSS 5885 default open*}
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
     <div class="crm-accordion-header">
         <div class="icon crm-accordion-pointer"></div> 
         {ts}Preview Mailing{/ts}
@@ -67,7 +68,7 @@
 <script type="text/javascript">
 cj(function() {
    cj().crmaccordions(); 
-   $('iframe').iframeAutoHeight({heightOffset: 20});
+   $('iframe').iframeAutoHeight({heightOffset: 20});//NYSS
 });
 </script>
 {/literal}

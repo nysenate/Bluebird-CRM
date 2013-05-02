@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -100,7 +100,7 @@
                     <tr class="{cycle values="odd-row,even-row"}">
                         <td>{$row.activity_type}</td>
                         <td>{$row.subject|mb_truncate:40}</td>
-                        <td>{$row.details}</td>
+                        <td>{$row.details|escape}</td>
                         <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a></td>
                         <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.target_contact_id`&context=fulltext&key=`$qfKey`"}" title="{ts}View contact details{/ts}">{$row.target_sort_name}</a></td>
                         <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.assignee_contact_id`&context=fulltext&key=`$qfKey`"}" title="{ts}View contact details{/ts}">{$row.assignee_sort_name}</a></td>
@@ -269,7 +269,7 @@
                 <tr>
                     <th id='link'>{ts}Member's Name{/ts}</th>
                     <th>{ts}Membership Type{/ts}</th>
-                    <th id="currency">{ts}Membership Fee{/ts}</th>      
+                    <th id="currency">{ts}Membership Fee{/ts}</th>
                     <th id="start_date">{ts}Membership Start Date{/ts}</th>
                     <th id="end_date">{ts}Membership End Date{/ts}</th>
                     <th>{ts}Source{/ts}</th>

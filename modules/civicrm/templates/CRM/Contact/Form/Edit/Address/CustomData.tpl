@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,30 +24,27 @@
  +--------------------------------------------------------------------+
 *}
 
-    {foreach from=$address_groupTree.$blockId item=cd_edit key=group_id}
-
+{foreach from=$address_groupTree.$blockId item=cd_edit key=group_id}
 <div id="{$cd_edit.name}_{$group_id}_{$blockId}" class="form-item">
-<div class="crm-accordion-wrapper crm-accordion-inner crm-{$cd_edit.name}_{$group_id}_{$blockId}-accordion {if $cd_edit.collapse_display eq 0 }crm-accordion-open{else}crm-accordion-closed{/if}">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-{$cd_edit.title}
+    <div class="crm-accordion-wrapper crm-{$cd_edit.name}_{$group_id}_{$blockId}-accordion {if $cd_edit.collapse_display eq 0 }crm-accordion-open{else}crm-accordion-closed{/if}">
+        <div class="crm-accordion-header">
+            <div class="icon crm-accordion-pointer"></div> 
+                {$cd_edit.title}
+        </div><!-- /.crm-accordion-header -->
+        <div class="crm-accordion-body">
+            {if $cd_edit.help_pre}
+                <div class="messages help">{$cd_edit.help_pre}</div>
+            {/if}
+            <table class="form-layout-compressed">
+                {foreach from=$cd_edit.fields item=element key=field_id}
+                    {include file="CRM/Contact/Form/Edit/Address/CustomField.tpl"}
+                {/foreach}
+            </table>
+            <div class="spacer"></div>
+            {if $cd_edit.help_post}<div class="messages help">{$cd_edit.help_post}</div>{/if}
+        </div><!-- /.crm-accordion-body -->
+    </div><!-- /.crm-accordion-wrapper -->
 
- </div><!-- /.crm-accordion-header -->
- <div class="crm-accordion-body">
-
-                {if $cd_edit.help_pre}
-                    <div class="messages help">{$cd_edit.help_pre}</div>
-                {/if}
-                <table class="form-layout-compressed">
-                    {foreach from=$cd_edit.fields item=element key=field_id}
-                        {include file="CRM/Contact/Form/Edit/Address/CustomField.tpl"}
-                    {/foreach}
-                </table>
-                <div class="spacer"></div>
-                {if $cd_edit.help_post}<div class="messages help">{$cd_edit.help_post}</div>{/if}
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
-
-        <div id="custom_group_{$group_id}_{$blockId}"></div>
+    <div id="custom_group_{$group_id}_{$blockId}"></div>
 </div>
-    {/foreach}
+{/foreach}

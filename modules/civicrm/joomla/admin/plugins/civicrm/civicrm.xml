@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension method="upgrade" version="1.6" type="plugin" group="user">
+	<name>CiviCRM User Management</name>
+	<author>CiviCRM, LLC</author>
+	<creationDate>January 2011</creationDate>
+	<copyright>Copyright (C) 2005 - 2011 CiviCRM. All rights reserved.</copyright>
+	<license>GNU Affero General Public License version 2 or later</license>
+	<authorEmail>info@civicrm.org</authorEmail>
+	<authorUrl>www.civicrm.org</authorUrl>
+	<version>1.0</version>
+	<description>Clear CiviCRM user navigation cache when ACL group membership altered. Remove Joomla user/CiviCRM contact mapping record when user is deleted.</description>
+	<files>
+		<filename plugin="civicrm">civicrm.php</filename>
+		<filename>index.html</filename>
+	</files>
+</extension>

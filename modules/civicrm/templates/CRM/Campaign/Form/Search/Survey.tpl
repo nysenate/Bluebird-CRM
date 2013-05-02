@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -195,36 +195,37 @@ function loadSurveyList( )
      noRecordFoundMsg += searchQill.join( '<span class="font-italic"> ...AND... </span></div><div class="qill">' );
      
      cj( '#surveys' ).dataTable({
-     	        "bFilter"    : false,
-		"bAutoWidth" : false,
-	    	"bProcessing": false,
-		"bLengthChange": false,
-                "aaSorting": [],
-		"aoColumns":[{sClass:'crm-survey-id                          hiddenElement' },
-		             {sClass:'crm-survey-title'                                     },
-			     {sClass:'crm-survey-campaign_id                 hiddenElement' },			     
-			     {sClass:'crm-survey-campaign'                                  },
-			     {sClass:'crm-survey-activity_type_id            hiddenElement' },
-			     {sClass:'crm-survey-activity_type'                             },
-			     {sClass:'crm-survey-release_frequency'                         },
-			     {sClass:'crm-survey-default_number_of_contacts'                },
-			     {sClass:'crm-survey-max_number_of_contacts'                    },
-			     {sClass:'crm-survey-is_default'                                },
-			     {sClass:'crm-survey-is_active                   hiddenElement' },
-			     {sClass:'crm-survey-isActive'                                  },
-			     {sClass:'crm-survey-result_id',                 bSortable:false},
-			     {sClass:'crm-survey-action',                    bSortable:false},
-			     {sClass:'crm-campaign-voterLinks',              bSortable:false}
+             "bFilter"    : false,
+             "bAutoWidth" : false,
+             "bProcessing": false,
+             "bLengthChange": false,
+             "aaSorting": [],
+             "aoColumns":[{sClass:'crm-survey-id                          hiddenElement' },
+                          {sClass:'crm-survey-title'                                     },
+                          {sClass:'crm-survey-campaign_id                 hiddenElement' },			     
+                          {sClass:'crm-survey-campaign'                                  },
+                          {sClass:'crm-survey-activity_type_id            hiddenElement' },
+                          {sClass:'crm-survey-activity_type'                             },
+                          {sClass:'crm-survey-release_frequency'                         },
+                          {sClass:'crm-survey-default_number_of_contacts'                },
+                          {sClass:'crm-survey-max_number_of_contacts'                    },
+                          {sClass:'crm-survey-is_default'                                },
+                          {sClass:'crm-survey-is_active                   hiddenElement' },
+                          {sClass:'crm-survey-isActive'                                  },
+                          {sClass:'crm-survey-result_id',                 bSortable:false},
+                          {sClass:'crm-survey-action',                    bSortable:false},
+                          {sClass:'crm-campaign-voterLinks',              bSortable:false}
 			     ],
-		"sPaginationType": "full_numbers",
-		"sDom"       : 'rt<"crm-datatable-pager-bottom"ip>',
-	   	"bServerSide": true,
-                "bJQueryUI": true,
-	   	"sAjaxSource": sourceUrl,
-		"oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
+		     "sPaginationType": "full_numbers",
+             "sDom"       : 'rt<"crm-datatable-pager-bottom"ip>',
+             "bServerSide": true,
+             "bJQueryUI": true,
+             "sAjaxSource": sourceUrl,
+             "asStripClasses" : [ "odd-row", "even-row" ],
+             "oLanguage":{"sEmptyTable"  : noRecordFoundMsg,
 		             "sZeroRecords" : noRecordFoundMsg },
-		"fnDrawCallback": function() { cj().crmtooltip(); },
-		"fnRowCallback": function( nRow, aData, iDisplayIndex ) { 
+             "fnDrawCallback": function() { cj().crmtooltip(); },
+             "fnRowCallback": function( nRow, aData, iDisplayIndex ) { 
 				 //insert the id for each row for enable/disable.
 				 var rowId = 'survey_row_' + aData[0];
 				 cj(nRow).attr( 'id', rowId );

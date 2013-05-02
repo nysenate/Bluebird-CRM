@@ -24,8 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {htxt id="builder-intro"}
-{capture assign=docLink}{docURL page="Search Builder" text="Search Builder Documentation"}{/capture}
-<p><strong>{ts 1=$docLink}IMPORTANT: Search Builder requires you to use specific formats for your search values. Review the %1 before building your first search...{/ts}</strong></p>
+<p><strong>{ts 1="http://book.civicrm.org/user/working-with-your-data/searching"}IMPORTANT: Search Builder requires you to use specific formats for your search values. Review the <a href="%1">Search documentation in the User Guide</a> before building your first search...{/ts}</strong></p>
 <p>{ts}Create your search by selecting the criteria (record type and field), the comparison operator, and entering the value you want to search for. You can define one or many criteria as a set: <em>Include contacts where... State IS Washington AND City IS Seattle AND Birth Date is later than (>) Jan 1, 1985</em>{/ts}</p>
 <p>{ts}You can also create additional sets of criteria: <em>Also include contacts where... State IS California AND City IS Los Angeles AND Birth Date is later than (>) Jan 1, 1985</em>{/ts}</p>
 {/htxt}

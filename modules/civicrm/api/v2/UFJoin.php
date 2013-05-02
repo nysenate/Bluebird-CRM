@@ -1,10 +1,12 @@
 <?php
+// $Id: UFJoin.php 40968 2012-06-12 14:28:16Z kurund $
+
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,16 +33,16 @@
  *
  * @package CiviCRM_APIv2
  * @subpackage API_UF
- * 
- * @copyright CiviCRM LLC (c) 2004-2011
- * @version $Id: UFJoin.php 32998 2011-03-14 22:00:35Z kurund $
+ *
+ * @copyright CiviCRM LLC (c) 2004-2012
+ * @version $Id: UFJoin.php 40968 2012-06-12 14:28:16Z kurund $
  *
  */
 
 /**
  * Files required for this package
  */
-require_once 'api/v2/utils.php'; 
+require_once 'api/v2/utils.php';
 
 require_once 'CRM/Core/BAO/UFJoin.php';
 
@@ -49,27 +51,26 @@ require_once 'CRM/Core/BAO/UFJoin.php';
  *
  * @param array $params assoc array of name/value pairs
  *
- * @return array CRM_Core_DAO_UFJoin Array 
+ * @return array CRM_Core_DAO_UFJoin Array
  * @access public
- * 
+ *
  */
-function civicrm_uf_join_add($params) 
-{
-    if ( ! is_array( $params ) ) {
-        return civicrm_create_error("params is not an array");
-    }
-    
-    if ( empty( $params ) ) {
-        return civicrm_create_error("params is an empty array");
-    }
-    
-    if ( ! isset( $params['uf_group_id'] ) ) {
-        return civicrm_create_error("uf_group_id is required field");
-    }
-    
-    $ufJoin = CRM_Core_BAO_UFJoin::create($params);
-    _civicrm_object_to_array( $ufJoin, $ufJoinArray);
-    return $ufJoinArray;
+function civicrm_uf_join_add($params) {
+  if (!is_array($params)) {
+    return civicrm_create_error("params is not an array");
+  }
+
+  if (empty($params)) {
+    return civicrm_create_error("params is an empty array");
+  }
+
+  if (!isset($params['uf_group_id'])) {
+    return civicrm_create_error("uf_group_id is required field");
+  }
+
+  $ufJoin = CRM_Core_BAO_UFJoin::create($params);
+  _civicrm_object_to_array($ufJoin, $ufJoinArray);
+  return $ufJoinArray;
 }
 
 /**
@@ -79,78 +80,75 @@ function civicrm_uf_join_add($params)
  *
  * @return array  updated CRM_Core_DAO_UFJoin Array
  * @access public
- * 
+ *
  */
-function civicrm_uf_join_edit($params) 
-{
-    if ( ! is_array( $params ) ) {
-        return civicrm_create_error("params is not an array");
-    }
-    
-    if ( empty( $params ) ) {
-        return civicrm_create_error("params is an empty array");
-    }
-    
-    if ( ! isset( $params['uf_group_id'] ) ) {
-        return civicrm_create_error("uf_group_id is required field");
-    }
+function civicrm_uf_join_edit($params) {
+  if (!is_array($params)) {
+    return civicrm_create_error("params is not an array");
+  }
 
-    $ufJoin = CRM_Core_BAO_UFJoin::create($params);
-    _civicrm_object_to_array( $ufJoin, $ufJoinArray);
-    return $ufJoinArray;
+  if (empty($params)) {
+    return civicrm_create_error("params is an empty array");
+  }
+
+  if (!isset($params['uf_group_id'])) {
+    return civicrm_create_error("uf_group_id is required field");
+  }
+
+  $ufJoin = CRM_Core_BAO_UFJoin::create($params);
+  _civicrm_object_to_array($ufJoin, $ufJoinArray);
+  return $ufJoinArray;
 }
 
 /**
  * Given an assoc list of params, finds if there is a record
  * for this set of params
  *
- * @param array $params (reference) an assoc array of name/value pairs 
- * 
+ * @param array $params (reference) an assoc array of name/value pairs
+ *
  * @return int or null
  * @access public
- * 
+ *
  */
+function civicrm_uf_join_id_find(&$params) {
+  if (!is_array($params) || empty($params)) {
+    return civicrm_create_error("$params is not valid array");
+  }
 
-function civicrm_uf_join_id_find(&$params) 
-{
-    if ( ! is_array($params) || empty($params)) {
-        return civicrm_create_error("$params is not valid array");
-    }
-    
-    if ( ! isset( $params['id'] ) && 
-         ( ! isset( $params['entity_table'] ) && 
-           ! isset( $params['entity_id']    ) && 
-           ! isset( $params['weight']       ) 
-           ) ) {
-        return civicrm_create_error("$param should have atleast entity_table or entiy_id or weight");
-    }
-    
-    return CRM_Core_BAO_UFJoin::findJoinEntryId($params);
+  if (!isset($params['id']) &&
+    (!isset($params['entity_table']) &&
+      !isset($params['entity_id']) &&
+      !isset($params['weight'])
+    )
+  ) {
+    return civicrm_create_error("$param should have atleast entity_table or entiy_id or weight");
+  }
+
+  return CRM_Core_BAO_UFJoin::findJoinEntryId($params);
 }
 
 /**
  * Given an assoc list of params, find if there is a record
  * for this set of params and return the group id
  *
- * @param array $params (reference) an assoc array of name/value pairs 
- * 
+ * @param array $params (reference) an assoc array of name/value pairs
+ *
  * @return int or null
  * @access public
- * 
+ *
  */
-function civicrm_uf_join_UFGroupId_find(&$params) 
-{
-    if ( ! is_array($params) || empty($params)) {
-        return civicrm_create_error("$params is not valid array");
-    }
-    
-    if (! isset( $params['entity_table'] ) && 
-        ! isset( $params['entity_id']    ) && 
-        ! isset( $params['weight']       ) 
-        ) {
-        return civicrm_create_error("$param should have atleast entity_table or entiy_id or weight");
-    }
-    
-    return CRM_Core_BAO_UFJoin::findUFGroupId($params);
+function civicrm_uf_join_UFGroupId_find(&$params) {
+  if (!is_array($params) || empty($params)) {
+    return civicrm_create_error("$params is not valid array");
+  }
+
+  if (!isset($params['entity_table']) &&
+    !isset($params['entity_id']) &&
+    !isset($params['weight'])
+  ) {
+    return civicrm_create_error("$param should have atleast entity_table or entiy_id or weight");
+  }
+
+  return CRM_Core_BAO_UFJoin::findUFGroupId($params);
 }
 

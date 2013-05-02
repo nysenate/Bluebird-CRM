@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,69 +36,70 @@
 /**
  * form helper class for an Demographics object
  */
-class CRM_Contact_Form_Edit_CustomData 
-{
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */    
-    static function preProcess( &$form ) 
-    {
-        $form->_type    = CRM_Utils_Request::retrieve( 'type',    'String', CRM_Core_DAO::$_nullObject );
-        $form->_subType = CRM_Utils_Request::retrieve( 'subType', 'String', CRM_Core_DAO::$_nullObject );
-        
-        //build the custom data as other blocks.
-        //$form->assign( "addBlock", false );
-        if ( $form->_type ) {
-            $form->_addBlockName = 'CustomData';
-            $form->assign( "addBlock",  true );
-            $form->assign( "blockName", $form->_addBlockName );
-        }
-        
-        CRM_Custom_Form_CustomData::preProcess( $form, null, $form->_subType, null, 
-                                                ( $form->_type ) ? $form->_type : $form->_contactType );
-        
-        //assign group tree after build.
-        $form->assign( 'groupTree', $form->_groupTree );
-    }
-    
-    /**
-     * build the form elements for CustomData object
-     *
-     * @param CRM_Core_Form $form       reference to the form object
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function buildQuickForm( &$form ) {
-        CRM_Custom_Form_Customdata::buildQuickForm( $form );
+class CRM_Contact_Form_Edit_CustomData {
 
-        //build custom data.
-        $contactSubType = null;
-        if ( CRM_Utils_Array::value( "hidden_custom", $_POST ) && 
-             CRM_Utils_Array::value( 'contact_sub_type', $_POST ) ) {
-            $contactSubType = $_POST['contact_sub_type'];
-        } else {
-            $contactSubType = CRM_Utils_Array::value( 'contact_sub_type', $form->_values );
-        }
-        $form->assign( 'contactType',    $form->_contactType );
-        $form->assign( 'contactSubType', $contactSubType );
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */
+  static function preProcess(&$form) {
+    $form->_type = CRM_Utils_Request::retrieve('type', 'String', CRM_Core_DAO::$_nullObject);
+    $form->_subType = CRM_Utils_Request::retrieve('subType', 'String', CRM_Core_DAO::$_nullObject);
+
+    //build the custom data as other blocks.
+    //$form->assign( "addBlock", false );
+    if ($form->_type) {
+      $form->_addBlockName = 'CustomData';
+      $form->assign("addBlock", TRUE);
+      $form->assign("blockName", $form->_addBlockName);
     }
-    
-    /**
-     * This function sets the default values for the form. Note that in edit/view mode
-     * the default values are retrieved from the database
-     * 
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( &$form, &$defaults ) {
-        $defaults += CRM_Custom_Form_Customdata::setDefaultValues( $form );
+
+    CRM_Custom_Form_CustomData::preProcess($form, NULL, $form->_subType, NULL,
+      ($form->_type) ? $form->_type : $form->_contactType
+    );
+
+    //assign group tree after build.
+    $form->assign('groupTree', $form->_groupTree);
+  }
+
+  /**
+   * build the form elements for CustomData object
+   *
+   * @param CRM_Core_Form $form       reference to the form object
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  static function buildQuickForm(&$form) {
+    CRM_Custom_Form_CustomData::buildQuickForm($form);
+
+    //build custom data.
+    $contactSubType = NULL;
+    if (CRM_Utils_Array::value("hidden_custom", $_POST) &&
+      CRM_Utils_Array::value('contact_sub_type', $_POST)
+    ) {
+      $contactSubType = $_POST['contact_sub_type'];
     }
+    else {
+      $contactSubType = CRM_Utils_Array::value('contact_sub_type', $form->_values);
+    }
+    $form->assign('contactType', $form->_contactType);
+    $form->assign('contactSubType', $contactSubType);
+  }
+
+  /**
+   * This function sets the default values for the form. Note that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues(&$form, &$defaults) {
+    $defaults += CRM_Custom_Form_CustomData::setDefaultValues($form);
+  }
 }
-
-
 

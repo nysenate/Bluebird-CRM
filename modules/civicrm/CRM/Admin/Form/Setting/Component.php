@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,100 +28,157 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Admin/Form/Setting.php';
-
 /**
- * This class generates form components for Component 
+ * This class generates form components for Component
  */
-class CRM_Admin_Form_Setting_Component extends  CRM_Admin_Form_Setting
-{
-    protected $_components;
+class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
+  protected $_components;
 
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) 
-    {
-        CRM_Utils_System::setTitle(ts('Settings - Enable Components'));
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    CRM_Utils_System::setTitle(ts('Settings - Enable Components'));
+    $components = $this->_getComponentSelectValues();
+    $include = &$this->addElement('advmultiselect', 'enableComponents',
+      ts('Components') . ' ', $components,
+      array(
+        'size' => 5,
+        'style' => 'width:150px',
+        'class' => 'advmultiselect',
+      )
+    );
 
-        $components = $this->_getComponentSelectValues( );        
-        $include =& $this->addElement('advmultiselect', 'enableComponents', 
-                                      ts('Components') . ' ', $components,
-                                      array('size' => 5, 
-                                            'style' => 'width:150px',
-                                            'class' => 'advmultiselect')
-                                      );
-        
-        $include->setButtonAttributes('add', array('value' => ts('Enable >>')));
-        $include->setButtonAttributes('remove', array('value' => ts('<< Disable')));     
-        
-        $this->addFormRule( array( 'CRM_Admin_Form_Setting_Component', 'formRule' ), $this );
+    $include->setButtonAttributes('add', array('value' => ts('Enable >>')));
+    $include->setButtonAttributes('remove', array('value' => ts('<< Disable')));
 
-        parent::buildQuickForm();
+    $this->addFormRule(array('CRM_Admin_Form_Setting_Component', 'formRule'), $this);
+
+    parent::buildQuickForm();
+  }
+
+  /**
+   * global form rule
+   *
+   * @param array $fields  the input form values
+   * @param array $files   the uploaded files if any
+   * @param array $options additional user data
+   *
+   * @return true if no errors, else array of errors
+   * @access public
+   * @static
+   */
+  static
+  function formRule($fields) {
+    $errors = array();
+
+    if (is_array($fields['enableComponents'])) {
+      if (in_array('CiviPledge', $fields['enableComponents']) &&
+        !in_array('CiviContribute', $fields['enableComponents'])
+      ) {
+        $errors['enableComponents'] = ts('You need to enable CiviContribute before enabling CiviPledge.');
+      }
+      if (in_array('CiviCase', $fields['enableComponents']) &&
+        !CRM_Core_DAO::checkTriggerViewPermission(TRUE, FALSE)
+      ) {
+        $errors['enableComponents'] = ts('CiviCase requires CREATE VIEW and DROP VIEW permissions for the database.');
+      }
     }
 
-    /**  
-     * global form rule  
-     *  
-     * @param array $fields  the input form values  
-     * @param array $files   the uploaded files if any  
-     * @param array $options additional user data  
-     *  
-     * @return true if no errors, else array of errors  
-     * @access public  
-     * @static  
-     */  
-    static function formRule( $fields ) 
-    {  
-        $errors = array( ); 
-        
-        if ( is_array( $fields['enableComponents'] ) ) {
-            if ( in_array( 'CiviPledge', $fields['enableComponents'] ) &&
-	     ! in_array( 'CiviContribute', $fields['enableComponents'] ) ) {
-                $errors['enableComponents'] = ts('You need to enable CiviContribute before enabling CiviPledge.');
-            }
+    return $errors;
+  }
+
+
+  private function _getComponentSelectValues() {
+    $ret = array();
+    $this->_components = CRM_Core_Component::getComponents();
+    foreach ($this->_components as $name => $object) {
+      $ret[$name] = $object->info['translatedName'];
+    }
+
+    return $ret;
+  }
+
+  public function postProcess() {
+    $params = $this->controller->exportValues($this->_name);
+
+    $params['enableComponentIDs'] = array();
+    foreach ($params['enableComponents'] as $name) {
+      $params['enableComponentIDs'][] = $this->_components[$name]->componentID;
+    }
+
+    // if CiviCase is being enabled,
+    // load the case related sample data
+    if (in_array('CiviCase', $params['enableComponents']) &&
+      !in_array('CiviCase', $this->_defaults['enableComponents'])
+    ) {
+      $config = CRM_Core_Config::singleton();
+      CRM_Admin_Form_Setting_Component::loadCaseSampleData($config->dsn, $config->sqlDir . 'case_sample.mysql');
+      CRM_Admin_Form_Setting_Component::loadCaseSampleData($config->dsn, $config->sqlDir . 'case_sample1.mysql');
+      if (!CRM_Case_BAO_Case::createCaseViews()) {
+        CRM_Core_Error::fatal('Could not create Case views.');
+      }
+    }
+    parent::commonProcess($params);
+
+    // reset navigation when components are enabled / disabled
+    CRM_Core_BAO_Navigation::resetNavigation();
+  }
+
+  public function loadCaseSampleData($dsn, $fileName, $lineMode = FALSE) {
+    global $crmPath;
+    require_once 'packages/DB.php';
+
+    $db = &DB::connect($dsn);
+    if (PEAR::isError($db)) {
+      die("Cannot open $dsn: " . $db->getMessage());
+    }
+
+    if (!$lineMode) {
+      $string = file_get_contents($fileName);
+
+      // change \r\n to fix windows issues
+      $string = str_replace("\r\n", "\n", $string);
+
+      //get rid of comments starting with # and --
+
+      $string = preg_replace("/^#[^\n]*$/m", "\n", $string);
+      $string = preg_replace("/^(--[^-]).*/m", "\n", $string);
+
+      $queries = preg_split('/;$/m', $string);
+      foreach ($queries as $query) {
+        $query = trim($query);
+        if (!empty($query)) {
+          $res = &$db->query($query);
+          if (PEAR::isError($res)) {
+            die("Cannot execute $query: " . $res->getMessage());
+          }
         }
-
-        return $errors;
+      }
     }
+    else {
+      $fd = fopen($fileName, "r");
+      while ($string = fgets($fd)) {
+        $string = preg_replace("/^#[^\n]*$/m", "\n", $string);
+        $string = preg_replace("/^(--[^-]).*/m", "\n", $string);
 
-
-    private function _getComponentSelectValues( ) 
-    {
-        $ret = array();
-        require_once 'CRM/Core/Component.php';
-        $this->_components = CRM_Core_Component::getComponents();
-        foreach( $this->_components as $name => $object ) {
-            $ret[$name] = $object->info['translatedName'];
+        $string = trim($string);
+        if (!empty($string)) {
+          $res = &$db->query($string);
+          if (PEAR::isError($res)) {
+            die("Cannot execute $string: " . $res->getMessage());
+          }
         }
-
-        return $ret;
+      }
     }
-
-    public function postProcess( ) {
-        $params = $this->controller->exportValues($this->_name);
-
-
-        $params['enableComponentIDs'] = array( );
-        foreach ( $params['enableComponents'] as $name ) {
-            $params['enableComponentIDs'][] = $this->_components[$name]->componentID;
-        }
-
-        parent::commonProcess( $params );
-        
-        // reset navigation when components are enabled / disabled
-        require_once 'CRM/Core/BAO/Navigation.php';
-        CRM_Core_BAO_Navigation::resetNavigation( );
-    }
-
+  }
 }
-
 

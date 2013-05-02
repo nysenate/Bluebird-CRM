@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,6 +34,14 @@
     </table>
 
     <table class="form-layout">
+        <tr class="crm-miscellaneous-form-block-checksumTimeout">
+            <td class="label">{$form.checksumTimeout.label}</td>
+            <td>{$form.checksumTimeout.html}<br />
+                <span class="description">{ts}The number of days before a personalized (hashed) link will expire.{/ts}</span></td>
+        </tr>
+    </table>
+
+    <table class="form-layout">
         <tr class="crm-miscellaneous-form-block-contactUndelete">
           <td class="label">{$form.contactUndelete.label}</td>
           <td>
@@ -57,6 +65,12 @@
             <td class="label">{$form.doNotAttachPDFReceipt.label}</td>
             <td>{$form.doNotAttachPDFReceipt.html}<br />
                 <p class="description">{ts}If enabled, CiviCRM sends PDF receipt as an attachment during event signup or online contribution.{/ts}</p>
+            </td>
+        </tr>
+        <tr class="crm-miscellaneous-form-block-wkhtmltopdfPath">
+            <td class="label">{$form.wkhtmltopdfPath.label}</td>
+            <td>{$form.wkhtmltopdfPath.html}<br />
+                <p class="description">{ts 1="http://code.google.com/p/wkhtmltopdf/"}<a href="%1">wkhtmltopdf is an alternative utility for generating PDF's</a> which may provide better performance especially if you are generating a large number of PDF letters or receipts. Your system administrator will need to download and install this utility, and enter the executable path here.{/ts}</p>
             </td>
         </tr>
         <tr class="crm-miscellaneous-form-block-versionCheck">

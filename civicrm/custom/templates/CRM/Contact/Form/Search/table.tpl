@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
        {assign var="x" value=$smarty.section.blocks.index}
        <div class="crm-search-block">
     <h3>{if $x eq 1}{ts}Include contacts where{/ts}{else}{ts}Also include contacts where (OR){/ts}{/if}</h3>
-	<table>
+	    <table>
         {section name=cols loop=$columnCount[$x]}
             {assign var="i" value=$smarty.section.cols.index}
             <tr>
@@ -38,6 +38,7 @@
                     {$form.mapper[$x][$i].html}
                     {$form.operator[$x][$i].html}
                     &nbsp;&nbsp;{$form.value[$x][$i].html}
+                    &nbsp;&nbsp;<a href="javascript:resetBuilderValues({$x},{$i});"><img title="reset the values for this row" src="{$config->resourceBase}i/close.png" class="action-icon" alt="{ts}reset this row{/ts}" /></a>
                     &nbsp;<strong>(AND)</strong>
                 </td>
             </tr>
@@ -54,3 +55,21 @@
     <div class="underline-effect">{$form.addBlock.html}</div> 
   {/strip}
  </div>
+
+<script type="text/javascript">
+{literal}
+  function resetBuilderValues(x, i) {
+    cj('#mapper_'   + x + '_' + i + '_0').val('');
+    cj('#mapper_'   + x + '_' + i + '_1').val('');
+    cj('#mapper_'   + x + '_' + i + '_2').val('');
+    cj('#mapper_'   + x + '_' + i + '_3').val('');
+    cj('#mapper_'   + x + '_' + i + '_4').val('');
+    cj('#operator_' + x + '_' + i).val('');
+    cj('#value_'    + x + '_' + i).val('');
+
+    if ( i !== 0 ) {
+      cj('#mapper_' + x + '_' + i + '_0').parents('tr').remove();
+    }
+  }
+{/literal}
+</script>

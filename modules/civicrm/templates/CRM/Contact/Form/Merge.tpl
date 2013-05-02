@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -68,13 +68,42 @@
                 {assign var=blockName value=$field|substr:14:$position-14}
 
                 {$form.location.$blockName.$blockId.locTypeId.html}&nbsp;
-                {if $blockName eq 'address'}
-                <span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite){else}(add){/if}</span>
-                {/if} 
-
-                {$form.location.$blockName.$blockId.operation.html}&nbsp;<br />
+                {if $blockName eq 'email' || $blockName eq 'phone' }
+		 <span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite){$form.location.$blockName.$blockId.operation.html}&nbsp;<br />{else}(add){/if}</span>
+		{literal}
+		<script type="text/javascript">
+		function mergeBlock(blockname, element, blockId) {
+      var allBlock = {/literal}{$mainLocBlock}{literal};
+      var block    = eval( "allBlock." + 'main_'+ blockname + element.value);
+      if(blockname == 'email' || blockname == 'phone'){
+        var label = '(overwrite)'+<span id="main_blockname_blockId_overwrite">{/literal}{$form.location.$blockName.$blockId.operation.html}{literal}<br /></span>;
+      }
+      else {
+        label = '(overwrite)<br />';
+      }
+ 	
+      if ( !block ) { 
+        block = '';
+        label   = '(add)';
+      }
+      cj( "#main_"+ blockname +"_" + blockId ).html( block );	
+      cj( "#main_"+ blockname +"_" + blockId +"_overwrite" ).html( label );
+		}
+		</script>
+		{/literal}
+		{else}
+		<span id="main_{$blockName}_{$blockId}_overwrite">{if $row.main}(overwrite)<br />{else}(add){/if}</span>
+                {/if}
+	
             {/if}
-            <span id="main_{$blockName}_{$blockId}">{$row.main}</span>
+            {*NYSS 5546*}
+            <span id="main_{$blockName}_{$blockId}">
+              {if !is_array($row.main)}
+                {$row.main}
+              {else}
+                {$row.main.fileName}
+              {/if}
+            </span>
         </td>
      </tr>
   {/foreach}
@@ -82,7 +111,7 @@
   {foreach from=$rel_tables item=params key=paramName}
     {if $paramName eq 'move_rel_table_users'}
       <tr class="{cycle values="even-row,odd-row"}">
-      <th>{ts}Move related...{/ts}</th><td>{if $otherUfId}<a href="{$params.other_url}">{$params.other_title}</a></td><td style='white-space: nowrap'>=={$form.$paramName.html}==&gt;{else}<td style='white-space: nowrap'></td>{/if}</td><td>{if $mainUfId}<a href="{$params.main_url}">{$params.main_title}</a>{/if}</td>
+      <th>{ts}Move related...{/ts}</th><td>{if $otherUfId}<a target="_blank" href="{$params.other_url}">{$otherUfName}</a></td><td style='white-space: nowrap'>=={$form.$paramName.html}==&gt;{else}<td style='white-space: nowrap'></td>{/if}</td><td>{if $mainUfId}<a target="_blank" href="{$params.main_url}">{$mainUfName}</a>{/if}</td>
     </tr>
     {else}
     <tr class="{cycle values="even-row,odd-row"}">
@@ -98,7 +127,9 @@
 <div class="message status">
     <p><strong>{ts}WARNING: The duplicate contact record WILL BE DELETED after the merge is complete.{/ts}</strong></p>
     {if $user}
-      <p><strong>{ts 1=$config->userFramework}There are %1 user accounts associated with both the original and duplicate contacts. If you continue with the merge, the user record associated with the duplicate contact will not be deleted, but will be un-linked from the associated contact record (which will be deleted). If that user logs in again, a new contact record will be created for them.{/ts}</strong></p>
+      <p><strong>{ts 1=$config->userFramework}There are %1 user accounts associated with both the original and duplicate contacts. Ensure that the Drupal User you want to retain is on the right - if necessary use the 'Flip between original and duplicate contacts.' option at top to swap the positions of the two records before doing the merge.
+The user record associated with the duplicate contact will not be deleted, but will be un-linked from the associated contact record (which will be deleted).
+You will need to manually delete that user (click on the link to open Drupal User account in new screen). You may need to give thought to how you handle any content or contents associated with that user.{/ts}</strong></p>
     {/if}
     {if $other_contact_subtype}
       <p><strong>The duplicate contact (the one that will be deleted) is a <em>{$other_contact_subtype}</em>. Any data related to this will be lost forever (there is no undo) if you complete the merge.</strong></p>
@@ -141,20 +172,6 @@ cj(document).ready(function(){
        }
     });
 });
-
-function mergeAddress( element, blockId ) {
-   var allAddress = {/literal}{$mainLocAddress}{literal};
-   var address    = eval( "allAddress." + 'main_' + element.value );
-   var label      = '(overwrite)';
-
-   if ( !address ) { 
-     address = '';
-     label   = '(add)';
-   }
-
-   cj( "#main_address_" + blockId ).html( address );	
-   cj( "#main_address_" + blockId +"_overwrite" ).html( label );
-}
 
 </script>
 {/literal}

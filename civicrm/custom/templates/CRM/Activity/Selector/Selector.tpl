@@ -122,34 +122,51 @@ function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
         "bJQueryUI": true,
         "sAjaxSource": sourceUrl,
         "iDisplayLength": 25,
-        "oLanguage": { "sZeroRecords":  ZeroRecordText },
+        "oLanguage": { "sZeroRecords":  ZeroRecordText,
+                       "sProcessing":   {/literal}"{ts escape='js'}Processing...{/ts}"{literal},
+                       "sLengthMenu":   {/literal}"{ts escape='js'}Show _MENU_ entries{/ts}"{literal},
+                       "sInfo":         {/literal}"{ts escape='js'}Showing _START_ to _END_ of _TOTAL_ entries{/ts}"{literal},
+                       "sInfoEmpty":    {/literal}"{ts escape='js'}Showing 0 to 0 of 0 entries{/ts}"{literal},
+                       "sInfoFiltered": {/literal}"{ts escape='js'}(filtered from _MAX_ total entries){/ts}"{literal},
+                       "sSearch":       {/literal}"{ts escape='js'}Search:{/ts}"{literal},
+                       "oPaginate": {
+                            "sFirst":    {/literal}"{ts escape='js'}First{/ts}"{literal},
+                            "sPrevious": {/literal}"{ts escape='js'}Previous{/ts}"{literal},
+                            "sNext":     {/literal}"{ts escape='js'}Next{/ts}"{literal},
+                            "sLast":     {/literal}"{ts escape='js'}Last{/ts}"{literal}
+                        }
+                    },
         "fnDrawCallback": function() { setSelectorClass{/literal}{$context}{literal}( context ); },
         "fnServerData": function ( sSource, aoData, fnCallback ) {
-            aoData.push( {name:'contact_id', value: {/literal}{$contactId}{literal}},
-                         {name:'admin',   value: {/literal}'{$admin}'{literal}}
+          aoData.push( {name:'contact_id', value: {/literal}{$contactId}{literal}},
+                       {name:'admin',   value: {/literal}'{$admin}'{literal}}
+          );
+          if ( filterSearch ) {
+            aoData.push(
+              {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()}
             );
-            if ( filterSearch ) {
-                aoData.push(	     
-                    {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()},
-                    //NYSS
-                    {name:'activity_type_exclude_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_exclude_filter_id').val()}
-                );                
-            }	
-            //NYSS 5088
             aoData.push(
-                    {name:'past_days', value: cj(' select#pastDays').val()}
-                );
-            //NYSS 5149
-            aoData.push(
-                    {name:'status_id', value: cj(' select#statusID').val()}
-                );
-            cj.ajax( {
-                "dataType": 'json', 
-                "type": "POST", 
-                "url": sSource, 
-                "data": aoData, 
-                "success": fnCallback
-            } ); 
+              //NYSS
+              {name:'activity_type_exclude_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_exclude_filter_id').val()}
+            );
+          }
+          //NYSS 5088
+          aoData.push(
+            {name:'past_days', value: cj(' select#pastDays').val()}
+          );
+          //NYSS 5149
+          aoData.push(
+            {name:'status_id', value: cj(' select#statusID').val()}
+          );
+          cj.ajax( {
+            "dataType": 'json',
+            "type": "POST",
+            "url": sSource,
+            "data": aoData,
+                "success": fnCallback,
+    // CRM-10244
+    "dataFilter": function(data, type) { return data.replace(/[\n\v\t]/g, " "); }
+          });
         }
     });
 }

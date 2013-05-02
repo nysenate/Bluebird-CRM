@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,76 +28,93 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Core/Form.php';
-
 class CRM_Mailing_Form_Search extends CRM_Core_Form {
+ 
+  public function preProcess() {
+    parent::preProcess();
+  }
 
-    public function preProcess( ) {
-        parent::preProcess( );
+  public function buildQuickForm() {
+    $parent = $this->controller->getParent();
+    $nameTextLabel = ($parent->_sms) ? ts('SMS Name') : ts('Mailing Name');
+
+    $this->add('text', 'mailing_name', $nameTextLabel,
+      CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'title')
+    );
+    //NYSS
+    $this->add( 'text', 'mailing_subject', ts( 'Mailing Subject' ),
+      CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'subject')
+    );
+                
+    CRM_Core_Form_Date::buildDateRange($this, 'mailing', 1, '_from', '_to', ts('From'), FALSE, FALSE);
+
+    $this->add('text', 'sort_name', ts('Created or Sent by'),
+      CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name')
+    );
+
+    CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch($this);
+
+    foreach (array(
+      'Scheduled', 'Complete', 'Running') as $status) {
+      $this->addElement('checkbox', "mailing_status[$status]", NULL, $status);
     }
 
-    public function buildQuickForm( ) {
-        $this->add( 'text', 'mailing_name', ts( 'Mailing Name' ),
-                    CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'title') );
-        //NYSS 4845
-        $this->add( 'text', 'mailing_subject', ts( 'Mailing Subject' ),
-                    CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'title') );
-                    
-        $this->addDate( 'mailing_from', ts('From'), false, array( 'formatType' => 'searchDate') );
-        $this->addDate( 'mailing_to', ts('To'), false, array( 'formatType' => 'searchDate') );
-        
-        $this->add( 'text', 'sort_name', ts( 'Created or Sent by' ), 
-                    CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name') );
-        
-        require_once 'CRM/Campaign/BAO/Campaign.php';
-        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $this );
-        
-        foreach ( array('Scheduled', 'Complete', 'Running') as $status ) {
-            $this->addElement( 'checkbox', "mailing_status[$status]", null, $status );
+    //$this->addElement('checkbox', "sms", 'Is SMS'); //NYSS
+
+    $this->addButtons(array(
+        array(
+          'type' => 'refresh',
+          'name' => ts('Search'),
+          'isDefault' => TRUE,
+        ),
+      ));
+  }
+
+  function setDefaultValues() {
+    $defaults = array();
+    foreach (array(
+      'Scheduled', 'Complete', 'Running') as $status) {
+      $defaults['mailing_status'][$status] = 1;
+    }
+
+    $parent = $this->controller->getParent();
+    if ($parent->_sms) {
+      $defaults['sms'] = 1;
+    }
+    return $defaults;
+  }
+
+  function postProcess() {
+    $params = $this->controller->exportValues($this->_name);
+
+    CRM_Contact_BAO_Query::fixDateValues($params["mailing_relative"], $params['mailing_from'], $params['mailing_to']);
+
+    $parent = $this->controller->getParent();
+    if (!empty($params)) {
+      //NYSS 4845
+      $fields = array('mailing_name', 'mailing_from', 'mailing_to', 'sort_name', 'campaign_id', 'mailing_status', 'mailing_subject', 'sms');
+      foreach ($fields as $field) {
+        if (isset($params[$field]) &&
+          !CRM_Utils_System::isNull($params[$field])
+        ) {
+          if (in_array($field, array(
+            'mailing_from', 'mailing_to')) && !$params["mailing_relative"]) {
+            $time = ($field == 'mailing_to') ? '235959' : NULL;
+            $parent->set($field, CRM_Utils_Date::processDate($params[$field], $time));
+          }
+          else {
+            $parent->set($field, $params[$field]);
+          }
         }
-
-        $this->addButtons(array( 
-                                array ('type'      => 'refresh', 
-                                       'name'      => ts('Search'), 
-                                       'isDefault' => true ), 
-                                ) ); 
-    }
-
-    function setDefaultValues( ) {
-        $defaults = array( );
-        foreach ( array('Scheduled', 'Complete', 'Running') as $status ) {
-            $defaults['mailing_status'][$status] = 1;
+        else {
+          $parent->set($field, NULL);
         }
-        return $defaults;
+      }
     }
-
-    function postProcess( ) {
-        $params = $this->controller->exportValues( $this->_name );
-
-        $parent = $this->controller->getParent( );
-        if ( ! empty( $params ) ) {
-            //NYSS 4845
-            $fields = array( 'mailing_name', 'mailing_subject', 'mailing_from', 'mailing_to', 'sort_name', 'campaign_id', 'mailing_status' );
-            foreach ( $fields as $field ) {
-                if ( isset( $params[$field] ) &&
-                     ! CRM_Utils_System::isNull( $params[$field] ) ) { 
-                    if ( in_array( $field, array( 'mailing_from', 'mailing_to' ) ) ) { 
-                        $time = ( $field == 'mailing_to' ) ? '235959' : null;
-                        $parent->set( $field, CRM_Utils_Date::processDate( $params[$field], $time ) );
-                    } else {
-                        $parent->set( $field, $params[$field] );
-                    }
-                } else {
-                    $parent->set( $field, null );
-                }
-            }
-        }
-    }
+  }
 }
-
 

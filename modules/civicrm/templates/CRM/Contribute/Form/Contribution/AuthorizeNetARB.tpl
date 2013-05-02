@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,47 @@
   </merchantAuthentication>
   <subscriptionId>{$subscriptionId}</subscriptionId>
 </ARBCancelSubscriptionRequest>
+{elseif $subscriptionType eq 'updateBilling'}
+<?xml version="1.0" encoding="utf-8"?>
+<ARBUpdateSubscriptionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
+  <merchantAuthentication>
+    <name>{$apiLogin}</name>
+    <transactionKey>{$paymentKey}</transactionKey>
+  </merchantAuthentication>
+  <subscriptionId>{$subscriptionId}</subscriptionId>
+  <subscription>
+    <payment>
+      <creditCard>
+        <cardNumber>{$cardNumber}</cardNumber>
+        <expirationDate>{$expirationDate}</expirationDate>
+      </creditCard>
+    </payment>
+    <billTo>
+      <firstName>{$billingFirstName}</firstName>
+      <lastName>{$billingLastName}</lastName>
+      <address>{$billingAddress}</address>
+      <city>{$billingCity}</city>
+      <state>{$billingState}</state>
+      <zip>{$billingZip}</zip>
+      <country>{$billingCountry}</country>
+    </billTo>
+  </subscription>
+</ARBUpdateSubscriptionRequest>
+{elseif $subscriptionType eq 'update'}
+<?xml version="1.0" encoding="utf-8"?>
+<ARBUpdateSubscriptionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
+  <merchantAuthentication>
+    <name>{$apiLogin}</name>
+    <transactionKey>{$paymentKey}</transactionKey>
+  </merchantAuthentication>
+<subscriptionId>{$subscriptionId}</subscriptionId>
+  <subscription>
+    <paymentSchedule>
+    <totalOccurrences>{$totalOccurrences}</totalOccurrences>
+    </paymentSchedule>
+    <amount>{$amount}</amount>
+   </subscription>
+</ARBUpdateSubscriptionRequest>
 {else}
 <?xml version="1.0" encoding="utf-8"?>
 <ARBCreateSubscriptionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
@@ -41,7 +82,7 @@
   </merchantAuthentication>
   <refId>{$refId}</refId>
   <subscription>
-    {if $name}<name>{$name}</name>{/if}
+    {if $name}<name>{$name|truncate:50}</name>{/if}
     <paymentSchedule>
       <interval>
         <length>{$intervalLength}</length>
@@ -60,6 +101,7 @@
    {if $invoiceNumber}
    <order>  
      <invoiceNumber>{$invoiceNumber}</invoiceNumber>
+     {if $name}<description>{$name}</description>{/if}
    </order>
    {/if}  
     <customer>

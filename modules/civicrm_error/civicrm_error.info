@@ -1,0 +1,12 @@
+name = CiviCRM Error Handler
+description = Custom error handling for CiviCRM.  Will email critical errors to you.
+package = "CiviCRM"
+core = "7.x"
+dependencies[] = civicrm
+
+; Information added by drupal.org packaging script on 2012-02-28
+version = "7.x-2.0-rc2"
+core = "7.x"
+project = "civicrm_error"
+datestamp = "1330454147"
+

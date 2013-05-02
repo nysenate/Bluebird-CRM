@@ -34,22 +34,21 @@
             hintText: hintText, 
             onAdd: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'select', item.id );
-				
-				//NYSS 2415 update count of tags in summary tab
+                
+                //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                    var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
-                    cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount++;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
             },
             onDelete: function ( item ) { 
                 processContactTags_{/literal}{$tagset.parentID}{literal}( 'delete', item.id );
-				
-				//NYSS 2415 update count of tags in summary tab
+                //update count of tags in summary tab
                 if ( cj( '.ui-tabs-nav #tab_tag a' ).length ) {
-                    var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-                    var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
-                    cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
+                    var tagCount = cj('.ui-tabs-nav #tab_tag a em').html();
+                    tagCount--;
+                    cj( '.ui-tabs-nav #tab_tag a em' ).html(tagCount);
                 }
             } 
          });
@@ -96,8 +95,18 @@
     {/if}
 {/if}
 </div>
-<div class="clear"></div> 
+<div class="clear"></div>
 </div>
+{if $action eq 16 || $action eq 2 || $action eq 1}
+    {if $tagset.parentID eq 296}
+        <div class="BBInit"></div>
+        {literal}
+        <script>
+            BBTree.initContainer('', {pullSets: [291]});
+        </script>
+        {/literal}
+    {/if}   
+{/if}  
 {/foreach}
 
 {elseif $tagsetType eq 'activity'}
@@ -277,3 +286,24 @@
 {/foreach}
 {/if}
 
+{literal}
+<script type="text/javascript">
+  //NYSS 3550
+  cj('input#token-input-contact_taglist_296').keydown(function(e){
+    //if it's too long and the key pressed isn't backspace or delete
+    if(cj(this).val().length > 63 && e.which !== 8 && e.which !== 46){
+      alert("Keywords may have a maximum length of 64 characters. \nPlease reduce the size of your tag before selecting and saving it.");
+      return false;
+    }
+  }).bind('paste', function(e){
+    var el = cj(this);
+    setTimeout(function() {
+      var txtLen = cj(el).val().length;
+      if(cj(el).val().length == 64 && e.which !== 8 && e.which !== 46){
+        alert("Keywords may have a maximum length of 64 characters. \nIf you have pasted tag text exceeding that size it has been truncated. \nPlease review the value and consider reducing the length.");
+        return false;
+      }
+    }, 100);
+  });
+</script>
+{/literal}

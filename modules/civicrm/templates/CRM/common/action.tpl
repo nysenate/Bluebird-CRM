@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,6 +28,9 @@
 cj('#crm-container')
     .live('click', function(event) {
         if (cj(event.target).is('.btn-slide')) {
+            var currentActive = cj('#crm-container .btn-slide-active');
+            currentActive.children().hide();
+            currentActive.removeClass('btn-slide-active');
             cj(event.target).children().show();
             cj(event.target).addClass('btn-slide-active');
         } else {

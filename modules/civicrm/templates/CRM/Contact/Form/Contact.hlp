@@ -48,11 +48,12 @@
 {/htxt}
 
 {htxt id="id-sharedAddress"}
-{ts}Check this option if you want to use a shared address for this contact. For example, you might want to share a "Work" address for an individual with the address of their employer. Or, you might want to share a household address with household members. You can select an existing contact to share an address with, or create a new contact and share that address.{/ts}
+<p>{ts}Check this option if you want to link this address to another contact's address. For example, you might want to link a person's "Work" address to their employer's address. Or, you might want to link their "Home" address to a Household record. Changes made to the linked address will automatically be applied to this address. For example, if you use an employer (organization) address for an individual's work address - any updates to the employer address will also be applied to the individual's work address.{/ts}</p>
+<p>{ts}You can use an address belonging to an existing contact or create a new contact by selecting the desired contact type from the select field. If you link an individual's address to an organization, an employee-employer relationship will be automatically created. If you link an individual's address to a household, a household member relationship is created.{/ts}</p>
 {/htxt}
 
 {htxt id="id-greeting"}
-{capture assign=docLink}{docURL page="Mail-merge Tokens for Contact Data"}{/capture}
+{capture assign=docLink}{docURL page="user/common-workflows/tokens-and-mail-merge"}{/capture}
 <p>{ts}Use the greeting/address options to determine how you would like the contact's salutation and name displayed for different communication methods. When you send an email or export a list of records to a .csv file for mail merging, the greeting and addressee fields will reflect your preferences.{/ts}</p>
 <p>{ts 1=$docLink}You may also create a customized greeting and use field tokens to insert fields of your choice. For more information on available tokens, see the online documentation %1.{/ts}</p>
 {/htxt}
@@ -79,4 +80,25 @@
 
 {htxt id="id-external-id"}
 <p>{ts}Use this field to store a unique identifier. This is generally used to link contacts with records in a related or legacy application. When migrating data from another system, import the unique contact identifier from the old system to this field. You can then use it to match imported contributions and other transactional data to the corresponding contact record.{/ts}</p>
+{/htxt}
+
+{htxt id="id-address-name"}
+<p>{ts}Enter a descriptive name for this address block such as "Summer Home", "School Address", etc.{/ts}
+{/htxt}
+
+{htxt id="id-postal-code-suffix"}
+<p>{ts}Enter optional 'add-on' code after the dash ('plus 4' code for U.S. addresses).{/ts}</p>
+{/htxt}
+
+{capture assign=docLink}{docURL page="user/initial-set-up/installation-and-basic-setup" text="(Refer to the Mapping and Geocoding section in the Installation and Basic Setup Chapter)"}{/capture}
+{htxt id="id-geo-code"}
+<p>{ts}Latitude and longitude may be automatically populated by enabling a Mapping Provider.{/ts} {$docLink}</p>
+{/htxt}
+
+{htxt id="id-street-address"}
+<p>{ts}Street number, street name, apartment/unit/suite - OR P.O. box.{/ts}</p>
+{/htxt}
+
+{htxt id="id-supplemental-address"}
+<p>{ts}Supplemental address info, e.g. c/o, department name, building name, etc.{/ts}</p>
 {/htxt}

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,45 +28,41 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Campaign/Form/Task.php';
 
 /**
  * Used for displaying results
  *
  *
  */
-class CRM_Campaign_Form_Task_Result extends CRM_Campaign_Form_Task 
-{
-    
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-    }
+class CRM_Campaign_Form_Task_Result extends CRM_Campaign_Form_Task {
 
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) {
-        $this->addButtons( array(
-                                 array ( 'type'      => 'done',
-                                         'name'      => ts('Done'),
-                                         'isDefault' => true   ),
-                                 )
-                           );
-    }
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */
+  function preProcess() {}
 
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    $this->addButtons(array(
+        array(
+          'type' => 'done',
+          'name' => ts('Done'),
+          'isDefault' => TRUE,
+        ),
+      )
+    );
+  }
 }
 

@@ -43,9 +43,11 @@ if (isset($_GET['cms'])) {
     }
 }
 
+spl_autoload_register('kcfinder_autoloader');
+
 
 // MAGIC AUTOLOAD CLASSES FUNCTION
-function __autoload($class) {
+function kcfinder_autoloader($class) {
     if ($class == "uploader")
         require "core/uploader.php";
     elseif ($class == "browser")

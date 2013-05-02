@@ -27,7 +27,7 @@
 <p>{ts}Select the "FROM" Email Address for this mailing from the dropdown list. Available email addresses are configurable by users with Administer CiviCRM permission. EXAMPLE: "Client Services" &lt;clientservices@example.org&gt;{/ts}</p>
 {if $isAdmin}
     {capture assign="fromConfig"}{crmURL p="civicrm/admin/options/from_email_address" q="group=from_email_address&reset=1"}{/capture}
-    <p>{ts 1=$fromConfig}Go to <a href='%1'>Administer CiviCRM &raquo; Configure &raquo; FROM Email Addresses</a> to add or edit email addresses. Make sure these email addresses are valid email accounts with your email service provider.{/ts}</p>
+    <p>{ts 1=$fromConfig}Go to <a href='%1'>Administer CiviCRM &raquo; Communications &raquo; FROM Email Addresses</a> to add or edit email addresses. Make sure these email addresses are valid email accounts with your email service provider.{/ts}</p>
 {else}
     {ts}Contact your site administrator if you need to use a "FROM" Email Address which is not in the dropdown list.{/ts}
 {/if}
@@ -40,7 +40,7 @@
 <p>{ts}If you create only an <strong>HTML</strong> version, CiviMail will automatically create a <strong>TEXT</strong> version for your recipients who have chosen NOT to receive HTML email.{/ts}</p>
 
 <h1>{ts}Required Elements{/ts}</h1>
-<p>{ts}CiviMail email messages must include an <strong>opt-out</strong> link ("Opt out via web page"), and the <strong>postal address</strong> of your organization. These elements help reduce the chances of your email being categorized as SPAM. They can be included in the main message body OR in a re-usable <strong>message footer</strong>. Refer to the online documentation for details on how to include required links and contact information as well as sample messages.{/ts} {docURL page="Sample CiviMail Messages"}</p>
+<p>{ts}CiviMail email messages must include an <strong>opt-out</strong> link ("Opt out via web page"), and the <strong>postal address</strong> of your organization. These elements help reduce the chances of your email being categorized as SPAM. They can be included in the main message body OR in a re-usable <strong>message footer</strong>. Refer to the online documentation for details on how to include required links and contact information as well as sample messages.{/ts} {docURL page="Sample CiviMail Messages" resource="wiki"}</p>
 {/htxt}
 
 {htxt id="upload-compose"}

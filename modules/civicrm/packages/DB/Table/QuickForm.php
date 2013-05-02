@@ -148,7 +148,7 @@ class DB_Table_QuickForm {
     function &getForm($cols, $arrayName = null, $args = array(),
         $clientValidate = null, $formFilters = null)
     {
-        $form =& DB_Table_QuickForm::createForm($args);
+        $form = DB_Table_QuickForm::createForm($args);
         DB_Table_QuickForm::addElements($form, $cols, $arrayName);
         DB_Table_QuickForm::addRules($form, $cols, $arrayName, $clientValidate);
         DB_Table_QuickForm::addFilters($form, $cols, $arrayName, $formFilters);
@@ -252,7 +252,7 @@ class DB_Table_QuickForm {
     
     function addElements(&$form, $cols, $arrayName = null)
     {
-        $elements =& DB_Table_QuickForm::getElements($cols, $arrayName);
+        $elements = DB_Table_QuickForm::getElements($cols, $arrayName);
         $cols_keys = array_keys($cols);
         foreach (array_keys($elements) as $k) {
         
@@ -341,7 +341,7 @@ class DB_Table_QuickForm {
             
             DB_Table_QuickForm::fixColDef($col, $elemname);
 
-            $elements[] =& DB_Table_QuickForm::getElement($col, $elemname);
+            $elements[] = DB_Table_QuickForm::getElement($col, $elemname);
         }
         
         return $elements;
@@ -741,7 +741,7 @@ class DB_Table_QuickForm {
             
             DB_Table_QuickForm::fixColDef($col, $elemname);
             
-            $group[] =& DB_Table_QuickForm::getElement($col, $elemname);
+            $group[] = DB_Table_QuickForm::getElement($col, $elemname);
         }
         
         return $group;
@@ -771,7 +771,7 @@ class DB_Table_QuickForm {
 
             DB_Table_QuickForm::fixColDef($elemDef, $name);
 
-            $element =& DB_Table_QuickForm::getElement($elemDef, $name);
+            $element = DB_Table_QuickForm::getElement($elemDef, $name);
 
             if (!is_object($element)) {
                 continue;

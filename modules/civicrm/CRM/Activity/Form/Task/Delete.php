@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +28,10 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Activity/Form/Task.php';
-require_once 'CRM/Activity/BAO/Activity.php';
 
 /**
  * This class provides the functionality to delete a group of
@@ -44,59 +40,55 @@ require_once 'CRM/Activity/BAO/Activity.php';
  */
 class CRM_Activity_Form_Task_Delete extends CRM_Activity_Form_Task {
 
-    /**
-     * Are we operating in "single mode", i.e. deleting one
-     * specific Activity?
-     *
-     * @var boolean
-     */
-    protected $_single = false;
+  /**
+   * Are we operating in "single mode", i.e. deleting one
+   * specific Activity?
+   *
+   * @var boolean
+   */
+  protected $_single = FALSE;
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        parent::preProcess( );
-    }
-    
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( )
-    {
-        $this->addDefaultButtons( ts( 'Delete Activites' ), 'done' );
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    parent::preProcess();
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    $this->addDefaultButtons(ts('Delete Activites'), 'done');
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    $deletedActivities = 0;
+    foreach ($this->_activityHolderIds as $activityId['id']) {
+      $moveToTrash = CRM_Case_BAO_Case::isCaseActivity($activityId['id']);
+      if (CRM_Activity_BAO_Activity::deleteActivity($activityId, $moveToTrash)) {
+        $deletedActivities++;
+      }
     }
 
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( ) 
-    {
-        $deletedActivities = 0;
-        foreach ( $this->_activityHolderIds as $activityId['id'] ) {
-            require_once 'CRM/Case/BAO/Case.php';
-            $moveToTrash = CRM_Case_BAO_Case::isCaseActivity( $activityId['id'] );
-            if ( CRM_Activity_BAO_Activity::deleteActivity( $activityId, $moveToTrash ) ) {
-                $deletedActivities++;
-            }
-        }
-        
-        $status = array(
-                        ts( 'Deleted Activities: %1', array( 1 => $deletedActivities ) ),
-                        ts( 'Total Selected Activities: %1', array( 1 => count( $this->_activityHolderIds ) ) ),
-                        );
-        CRM_Core_Session::setStatus( $status );
-    }
+    $status = array(
+      ts('Deleted Activities: %1', array(1 => $deletedActivities)),
+      ts('Total Selected Activities: %1', array(1 => count($this->_activityHolderIds))),
+    );
+    CRM_Core_Session::setStatus($status);
+  }
 }
-
 

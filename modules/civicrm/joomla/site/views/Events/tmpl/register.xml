@@ -13,12 +13,15 @@
         <version>3.2</version>
         <description>CiviCRM event registration. Only current/future, active, online events are available (next 25 upcoming events).</description>
 	<name>Standard Event Registration Layout</name>
-		
-        <params addpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
-			<param name="id" type="civieventsonline" label="Select Event" description="Configured CiviCRM Event" />
-	  		<param name="task" type="hidden" default="civicrm/event/register" label="" />
-	  		<param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
-	</params>
+	<config>	
+        <fields name="params" addfieldpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
+	   <fieldset name="basic">
+			<field name="id" type="civieventsonline" label="Select Event" description="Configured CiviCRM Event" />
+	  		<field name="task" type="hidden" default="civicrm/event/register" label="" />
+	  		<field name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+         </fieldset>
+       </fields>
+       </config> 
     </state>
  </metadata>
   

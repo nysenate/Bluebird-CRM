@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,167 +28,171 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Form.php';
-
 /**
  * This class generates form components generic to note
- * 
+ *
  * It delegates the work to lower level subclasses and integrates the changes
  * back in. It also uses a lot of functionality with the CRM API's, so any change
  * made here could potentially affect the API etc. Be careful, be aware, use unit tests.
  *
  */
-class CRM_Note_Form_Note extends CRM_Core_Form
-{
-    /**
-     * The table name, used when editing/creating a note
-     *
-     * @var string
-     */
-    protected $_entityTable;
+class CRM_Note_Form_Note extends CRM_Core_Form {
 
-    /**
-     * The table id, used when editing/creating a note
-     *
-     * @var int
-     */
-    protected $_entityId;
-    
-    /**
-     * The note id, used when editing the note
-     *
-     * @var int
-     */
-    protected $_id;
+  /**
+   * The table name, used when editing/creating a note
+   *
+   * @var string
+   */
+  protected $_entityTable;
 
-    /**
-     * The parent note id, used when adding a comment to a note
-     *
-     * @var int
-     */
-    protected $_parentId;
+  /**
+   * The table id, used when editing/creating a note
+   *
+   * @var int
+   */
+  protected $_entityId;
 
-    function preProcess( ) {
-        $this->_entityTable = $this->get( 'entityTable' );
-        $this->_entityId    = $this->get( 'entityId'   );
-        $this->_id          = $this->get( 'id'    );
-        $this->_parentId    = CRM_Utils_Array::value( 'parentId', $_GET, 0 );
-        if ( $this->_parentId ) {
-            $this->assign( 'parentId', $this->_parentId );
-        }
+  /**
+   * The note id, used when editing the note
+   *
+   * @var int
+   */
+  protected $_id;
 
-        if ( $this->_id && CRM_Core_BAO_Note::getNotePrivacyHidden( $this->_id ) ) {
-            CRM_Core_Error::statusBounce( ts( 'You do not have access to this note.' ) );
-        }
-
-		// set title to "Note - "+Contact Name    
-    	$displayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $this->_entityId, 'display_name' );
-    	$pageTitle = 'Note - '.$displayName;
-    	$this->assign( 'pageTitle', $pageTitle );
+  /**
+   * The parent note id, used when adding a comment to a note
+   *
+   * @var int
+   */
+  protected $_parentId; function preProcess() {
+    $this->_entityTable = $this->get('entityTable');
+    $this->_entityId    = $this->get('entityId');
+    $this->_id          = $this->get('id');
+    $this->_parentId    = CRM_Utils_Array::value('parentId', $_GET, 0);
+    if ($this->_parentId) {
+      $this->assign('parentId', $this->_parentId);
     }
 
-    /**
-     * This function sets the default values for the form. Note that in edit/view mode
-     * the default values are retrieved from the database
-     * 
-     * @access public
-     * @return None
-     */
-    function setDefaultValues( ) {
-        $defaults = array( );
-
-        if ( $this->_action & CRM_Core_Action::UPDATE ) {
-            if ( isset( $this->_id ) ) {
-                $params['id'] = $this->_id;
-                CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_Note', $params, $defaults );
-            }
-            if ( $defaults['entity_table'] == 'civicrm_note' ) {
-                $defaults['parent_id'] = $defaults['entity_id'];
-            }
-        } elseif ( $this->_action & CRM_Core_Action::ADD && $this->_parentId ) {
-            $defaults['parent_id'] = $this->_parentId;
-            $defaults['subject'] = 'Re: '. CRM_Core_BAO_Note::getNoteSubject( $this->_parentId );
-        }
-        return $defaults;
+    if ($this->_id && CRM_Core_BAO_Note::getNotePrivacyHidden($this->_id)) {
+      CRM_Core_Error::statusBounce(ts('You do not have access to this note.'));
     }
 
-    /**
-     * Function to actually build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) {
-       
-        if ($this->_action & CRM_Core_Action::DELETE ) { 
-            $this->addButtons( array(
-                                     array ( 'type'      => 'next',
-                                             'name'      => ts('Delete'),
-                                             'isDefault' => true   ),
-                                     array ( 'type'       => 'cancel',
-                                             'name'      => ts('Cancel') ),
-                                     )
-                               );
-            return;
-        }
+    // set title to "Note - "+Contact Name
+    $displayName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_entityId, 'display_name');
+    $pageTitle = 'Note - ' . $displayName;
+    $this->assign('pageTitle', $pageTitle);
+  }
 
-        $this->add('text', 'subject' , ts('Subject:') , array('size' => 20));
-        $this->add('textarea', 'note', ts('Note:'), CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Note', 'note' ),true );
-        $this->add('select', 'privacy', ts('Privacy:'), CRM_Core_OptionGroup::values('note_privacy') );
+  /**
+   * This function sets the default values for the form. Note that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   *
+   * @return None
+   */
+  function setDefaultValues() {
+    $defaults = array();
 
-        $this->add('hidden', 'parent_id');
-        
-        $this->addButtons( array(
-                                 array ( 'type'      => 'next',
-                                         'name'      => ts('Save'),
-                                         'isDefault' => true   ),
-                                 array ( 'type'       => 'cancel',
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
-        
+    if ($this->_action & CRM_Core_Action::UPDATE) {
+      if (isset($this->_id)) {
+        $params['id'] = $this->_id;
+        CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_Note', $params, $defaults);
+      }
+      if ($defaults['entity_table'] == 'civicrm_note') {
+        $defaults['parent_id'] = $defaults['entity_id'];
+      }
+    }
+    elseif ($this->_action & CRM_Core_Action::ADD && $this->_parentId) {
+      $defaults['parent_id'] = $this->_parentId;
+      $defaults['subject'] = 'Re: ' . CRM_Core_BAO_Note::getNoteSubject($this->_parentId);
+    }
+    return $defaults;
+  }
+
+  /**
+   * Function to actually build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      $this->addButtons(array(
+          array(
+            'type' => 'next',
+            'name' => ts('Delete'),
+            'isDefault' => TRUE,
+          ),
+          array(
+            'type' => 'cancel',
+            'name' => ts('Cancel'),
+          ),
+        )
+      );
+      return;
     }
 
-       
-    /**
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( )
-    {
-        // store the submitted values in an array
-        $params = $this->exportValues();
+    $this->add('text', 'subject', ts('Subject:'), array('size' => 20));
+    $this->add('textarea', 'note', ts('Note:'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Note', 'note'), TRUE);
+    $this->add('select', 'privacy', ts('Privacy:'), CRM_Core_OptionGroup::values('note_privacy'));
 
-        $session = CRM_Core_Session::singleton( );
-        $params['contact_id'  ] = $session->get( 'userID' );
+    $this->add('hidden', 'parent_id');
 
-        if ( $params['parent_id'] ) {
-            $params['entity_table'] = 'civicrm_note';
-            $params['entity_id'   ] = $params['parent_id'];
-        } else {
-            $params['entity_table'] = $this->_entityTable;
-            $params['entity_id'   ] = $this->_entityId;
-        }
-        
-        if ( $this->_action & CRM_Core_Action::DELETE ) {
-            CRM_Core_BAO_Note::del( $this->_id );
-            return;
-        } if ( $this->_action & CRM_Core_Action::UPDATE ) {
-            $params['id'] = $this->_id;
-        }
-        
-        $ids = array();
-        require_once 'CRM/Core/BAO/Note.php';
-        CRM_Core_BAO_Note::add( $params, $ids );
-        CRM_Core_Session::setStatus( ts('Your Note has been saved.') );
+    $this->addButtons(array(
+        array(
+          'type' => 'next',
+          'name' => ts('Save'),
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => 'cancel',
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
 
-    }//end of function
+  /**
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    // store the submitted values in an array
+    $params = $this->exportValues();
+
+    $session = CRM_Core_Session::singleton();
+    $params['contact_id'] = $session->get('userID');
+
+    if ($params['parent_id']) {
+      $params['entity_table'] = 'civicrm_note';
+      $params['entity_id'] = $params['parent_id'];
+    }
+    else {
+      $params['entity_table'] = $this->_entityTable;
+      $params['entity_id'] = $this->_entityId;
+    }
+
+    if ($this->_action & CRM_Core_Action::DELETE) {
+      CRM_Core_BAO_Note::del($this->_id);
+      return;
+    }
+    if ($this->_action & CRM_Core_Action::UPDATE) {
+      $params['id'] = $this->_id;
+    }
+
+    $ids = array();
+    CRM_Core_BAO_Note::add($params, $ids);
+    CRM_Core_Session::setStatus(ts('Your Note has been saved.'));
+  }
+  //end of function
 }
-
 

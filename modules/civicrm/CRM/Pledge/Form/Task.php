@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,136 +28,139 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/SelectValues.php';
-require_once 'CRM/Core/Form.php';
-
 /**
  * This class generates task actions for CiviEvent
- * 
+ *
  */
-class CRM_Pledge_Form_Task extends CRM_Core_Form
-{
-    /**
-     * the task being performed
-     *
-     * @var int
-     */
-    protected $_task;
+class CRM_Pledge_Form_Task extends CRM_Core_Form {
 
-    /**
-     * The additional clause that we restrict the search with
-     *
-     * @var string
-     */
-    protected $_componentClause = null;
+  /**
+   * the task being performed
+   *
+   * @var int
+   */
+  protected $_task;
 
-    /**
-     * The array that holds all the component ids
-     *
-     * @var array
-     */
-    protected $_componentIds;
+  /**
+   * The additional clause that we restrict the search with
+   *
+   * @var string
+   */
+  protected $_componentClause = NULL;
 
-    /**
-     * The array that holds all the pledge ids
-     *
-     * @var array
-     */
-    protected $_pledgeIds;
+  /**
+   * The array that holds all the component ids
+   *
+   * @var array
+   */
+  protected $_componentIds;
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @param
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        self::preProcessCommon( $this );
-    }
+  /**
+   * The array that holds all the pledge ids
+   *
+   * @var array
+   */
+  protected $_pledgeIds;
 
-    static function preProcessCommon( &$form, $useTable = false )
-    {
-        $form->_pledgeIds = array( );
-        
-        $values = $form->controller->exportValues( 'Search' );
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @param
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    self::preProcessCommon($this);
+  }
 
-        $form->_task = $values['task'];
-        $pledgeTasks = CRM_Pledge_Task::tasks();
-        $form->assign( 'taskName', $pledgeTasks[$form->_task] );
-        
-        $ids = array();
-        if ( $values['radio_ts'] == 'ts_sel' ) {
-            foreach ( $values as $name => $value ) {
-                if ( substr( $name, 0, CRM_Core_Form::CB_PREFIX_LEN ) == CRM_Core_Form::CB_PREFIX ) {
-                    $ids[] = substr( $name, CRM_Core_Form::CB_PREFIX_LEN );
-                }
-            }
-        } else {
-            $queryParams =  $form->get( 'queryParams' );
-            $query       = new CRM_Contact_BAO_Query( $queryParams, null, null, false, false, 
-                                                       CRM_Contact_BAO_Query::MODE_PLEDGE );
-            $query->_distinctComponentClause = " DISTINCT(civicrm_pledge.id)";
-            $result = $query->searchQuery(0, 0, null);
-            while ($result->fetch()) {
-                $ids[] = $result->pledge_id;
-            }
+  static
+  function preProcessCommon(&$form, $useTable = FALSE) {
+    $form->_pledgeIds = array();
+
+    $values = $form->controller->exportValues('Search');
+
+    $form->_task = $values['task'];
+    $pledgeTasks = CRM_Pledge_Task::tasks();
+    $form->assign('taskName', $pledgeTasks[$form->_task]);
+
+    $ids = array();
+    if ($values['radio_ts'] == 'ts_sel') {
+      foreach ($values as $name => $value) {
+        if (substr($name, 0, CRM_Core_Form::CB_PREFIX_LEN) == CRM_Core_Form::CB_PREFIX) {
+          $ids[] = substr($name, CRM_Core_Form::CB_PREFIX_LEN);
         }
-        
-        if ( ! empty( $ids ) ) {
-            $form->_componentClause =
-                ' civicrm_pledge.id IN ( ' .
-                implode( ',', $ids ) . ' ) ';
-            $form->assign( 'totalSelectedPledges', count( $ids ) );             
-        }
+      }
+    }
+    else {
+      $queryParams = $form->get('queryParams');
+      $query = new CRM_Contact_BAO_Query($queryParams, NULL, NULL, FALSE, FALSE,
+        CRM_Contact_BAO_Query::MODE_PLEDGE
+      );
+      $query->_distinctComponentClause = " civicrm_pledge.id";
+      $query->_groupByComponentClause = " GROUP BY civicrm_pledge.id ";
 
-        $form->_pledgeIds = $form->_componentIds = $ids;
-
-        //set the context for redirection for any task actions
-        $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String', $form );
-        require_once 'CRM/Utils/Rule.php';
-        $urlParams = 'force=1';
-        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
-        
-        $session = CRM_Core_Session::singleton( );
-        $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/pledge/search', $urlParams ) );
+      $result = $query->searchQuery(0, 0, NULL);
+      while ($result->fetch()) {
+        $ids[] = $result->pledge_id;
+      }
     }
 
-    /**
-     * Given the signer id, compute the contact id
-     * since its used for things like send email
-     */
-    public function setContactIDs( ) 
-    {
-        $this->_contactIds =& CRM_Core_DAO::getContactIDsFromComponent( $this->_pledgeIds,
-                                                                        'civicrm_pledge' );
+    if (!empty($ids)) {
+      $form->_componentClause = ' civicrm_pledge.id IN ( ' . implode(',', $ids) . ' ) ';
+      $form->assign('totalSelectedPledges', count($ids));
     }
 
-    /**
-     * simple shell that derived classes can call to add buttons to
-     * the form with a customized title for the main Submit
-     *
-     * @param string $title title of the main button
-     * @param string $type  button type for the form after processing
-     * @return void
-     * @access public
-     */
-    function addDefaultButtons( $title, $nextType = 'next', $backType = 'back' )
-    {
-        $this->addButtons( array(
-                                 array ( 'type'      => $nextType,
-                                         'name'      => $title,
-                                         'isDefault' => true   ),
-                                 array ( 'type'      => $backType,
-                                         'name'      => ts('Cancel') ),
-                                 )
-                           );
+    $form->_pledgeIds = $form->_componentIds = $ids;
+
+    //set the context for redirection for any task actions
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $form);
+    $urlParams = 'force=1';
+    if (CRM_Utils_Rule::qfKey($qfKey)) {
+      $urlParams .= "&qfKey=$qfKey";
     }
+
+    $session = CRM_Core_Session::singleton();
+    $session->replaceUserContext(CRM_Utils_System::url('civicrm/pledge/search', $urlParams));
+  }
+
+  /**
+   * Given the signer id, compute the contact id
+   * since its used for things like send email
+   */
+  public function setContactIDs() {
+    $this->_contactIds = &CRM_Core_DAO::getContactIDsFromComponent($this->_pledgeIds,
+      'civicrm_pledge'
+    );
+  }
+
+  /**
+   * simple shell that derived classes can call to add buttons to
+   * the form with a customized title for the main Submit
+   *
+   * @param string $title title of the main button
+   * @param string $type  button type for the form after processing
+   *
+   * @return void
+   * @access public
+   */
+  function addDefaultButtons($title, $nextType = 'next', $backType = 'back') {
+    $this->addButtons(array(
+        array(
+          'type' => $nextType,
+          'name' => $title,
+          'isDefault' => TRUE,
+        ),
+        array(
+          'type' => $backType,
+          'name' => ts('Cancel'),
+        ),
+      )
+    );
+  }
 }
 

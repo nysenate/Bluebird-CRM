@@ -1,10 +1,11 @@
 <?php
+// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,127 +30,126 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/ACL/DAO/Cache.php';
 
 /**
  *  Access Control Cache
  */
 class CRM_ACL_BAO_Cache extends CRM_ACL_DAO_Cache {
 
-    static $_cache = null;
+  static $_cache = NULL;
 
-    static function &build( $id ) {
-        if ( ! self::$_cache ) {
-            self::$_cache = array( );
-        }
-        
-        if ( array_key_exists( $id, self::$_cache ) ) {
-            return self::$_cache[$id];
-        }
-
-        // check if this entry exists in db
-        // if so retrieve and return
-        self::$_cache[$id] = self::retrieve( $id );
-        if ( self::$_cache[$id] ) {
-            return self::$_cache[$id];
-        }
-
-        require_once 'CRM/ACL/BAO/ACL.php';
-        self::$_cache[$id] = CRM_ACL_BAO_ACL::getAllByContact( $id );
-        self::store( $id, self::$_cache[$id] );
-        return self::$_cache[$id];
+  static
+  function &build($id) {
+    if (!self::$_cache) {
+      self::$_cache = array();
     }
 
-    static function retrieve( $id ) {
-        $query = "
+    if (array_key_exists($id, self::$_cache)) {
+      return self::$_cache[$id];
+    }
+
+    // check if this entry exists in db
+    // if so retrieve and return
+    self::$_cache[$id] = self::retrieve($id);
+    if (self::$_cache[$id]) {
+      return self::$_cache[$id];
+    }
+
+    self::$_cache[$id] = CRM_ACL_BAO_ACL::getAllByContact($id);
+    self::store($id, self::$_cache[$id]);
+    return self::$_cache[$id];
+  }
+
+  static
+  function retrieve($id) {
+    $query = "
 SELECT acl_id
   FROM civicrm_acl_cache
  WHERE contact_id = %1
 ";
-        $params = array( 1 => array( $id, 'Integer' ) );
+    $params = array(1 => array($id, 'Integer'));
 
-        if ( $id == 0 ) {
-            $query .= " OR contact_id IS NULL";
-        }
-
-        $dao =& CRM_Core_DAO::executeQuery( $query, $params );
-
-        $cache = array( );
-        while ( $dao->fetch( ) ) {
-            $cache[$dao->acl_id] = 1;
-        }
-        return $cache;
+    if ($id == 0) {
+      $query .= " OR contact_id IS NULL";
     }
 
-    static function store( $id, &$cache ) {
-        foreach ( $cache as $aclID => $data ) {
-            $dao = new CRM_ACL_DAO_Cache( );
-            if ( $id ) {
-                $dao->contact_id = $id;
-            }
-            $dao->acl_id     = $aclID;
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
 
-            $cache[$aclID] = 1;
+    $cache = array();
+    while ($dao->fetch()) {
+      $cache[$dao->acl_id] = 1;
+    }
+    return $cache;
+  }
 
-            $dao->save( );
-        }
+  static
+  function store($id, &$cache) {
+    foreach ($cache as $aclID => $data) {
+      $dao = new CRM_ACL_DAO_Cache();
+      if ($id) {
+        $dao->contact_id = $id;
+      }
+      $dao->acl_id = $aclID;
+
+      $cache[$aclID] = 1;
+
+      $dao->save();
+    }
+  }
+
+  static
+  function deleteEntry($id) {
+    if (self::$_cache &&
+      array_key_exists($id, self::$_cache)
+    ) {
+      unset(self::$_cache[$id]);
     }
 
-    static function deleteEntry( $id ) {
-        if ( self::$_cache &&
-             array_key_exists( $id, self::$_cache ) ) {
-            unset( self::$_cache[$id] );
-        }
-
-        $query = "
+    $query = "
 DELETE FROM civicrm_acl_cache
 WHERE contact_id = %1
 ";
-        $params = array( 1 => array( $id, 'Integer' ) );
-        $dao =& CRM_Core_DAO::executeQuery( $query, $params );
-    }
+    $params = array(1 => array($id, 'Integer'));
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
+  }
 
-    static function updateEntry( $id ) {
-        // rebuilds civicrm_acl_cache
-        self::deleteEntry( $id );
-        self::build( $id );
+  static
+  function updateEntry($id) {
+    // rebuilds civicrm_acl_cache
+    self::deleteEntry($id);
+    self::build($id);
 
-        // rebuilds civicrm_acl_contact_cache
-        require_once "CRM/Contact/BAO/Contact/Permission.php";
-        CRM_Contact_BAO_Contact_Permission::cache( $id, CRM_Core_Permission::VIEW, true );
-    }
+    // rebuilds civicrm_acl_contact_cache
+    CRM_Contact_BAO_Contact_Permission::cache($id, CRM_Core_Permission::VIEW, TRUE);
+  }
 
-    // deletes all the cache entries
-    static function resetCache( ) {
-        // reset any static caching
-        self::$_cache = null;
+  // deletes all the cache entries
+  static
+  function resetCache() {
+    // reset any static caching
+    self::$_cache = NULL;
 
-        // reset any db caching
-        $config  =& CRM_Core_Config::singleton( );
-        $smartGroupCacheTimeout = 
-            isset( $config->smartGroupCacheTimeout ) && 
-            is_numeric(  $config->smartGroupCacheTimeout ) ? $config->smartGroupCacheTimeout : 0;
+    // reset any db caching
+    $config = CRM_Core_Config::singleton();
+    $smartGroupCacheTimeout = isset($config->smartGroupCacheTimeout) && is_numeric($config->smartGroupCacheTimeout) ? $config->smartGroupCacheTimeout : 0;
 
-        //make sure to give original timezone settings again.
-        $originalTimezone = date_default_timezone_get( );
-        date_default_timezone_set('UTC');
-        $now = date( 'YmdHis' );
-        date_default_timezone_set( $originalTimezone );
-        
-        $query  = "
+    //make sure to give original timezone settings again.
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set('UTC');
+    $now = date('YmdHis');
+    date_default_timezone_set($originalTimezone);
+
+    $query = "
 DELETE FROM civicrm_acl_cache 
 WHERE  modified_date IS NULL OR (TIMESTAMPDIFF(MINUTE, modified_date, $now) >= $smartGroupCacheTimeout)
 ";
-        CRM_Core_DAO::singleValueQuery( $query );
+    CRM_Core_DAO::singleValueQuery($query);
 
-        CRM_Core_DAO::singleValueQuery( "TRUNCATE TABLE civicrm_acl_contact_cache" );
-    }
-
+    CRM_Core_DAO::singleValueQuery("TRUNCATE TABLE civicrm_acl_contact_cache");
+  }
 }
-
 

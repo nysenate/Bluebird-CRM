@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -81,7 +81,7 @@
     <div class="crm-block crm-form-block crm-relationship-form-block">
             {if $action eq 1}
                 <div class="description">
-                {ts}Select the relationship type. Then locate target contact(s) for this relationship by entering a complete or partial name and clicking 'Search'.{/ts}
+                    {ts}Select the relationship type. Then locate target contact(s) for this relationship by entering a partial name and selecting from the dropdown, or clicking 'Search'. If the target contact does not exist, you can create a new contact.{/ts}
                 </div>
             {/if}
             <table class="form-layout-compressed">
@@ -112,19 +112,20 @@
              </table>  
             {else} {* action = add *}
              </tr>
+             {include file="CRM/Contact/Form/NewContact.tpl" newContactCallback="afterCreateNew()"}
              <tr class="crm-relationship-form-block-rel_contact">
-               <td class="label">{$form.rel_contact.label}</td>
+               <td colspan="2">
                 {literal}
                   <script type="text/javascript">
                     var relType = 0;
                     cj( function( ) {
+                        enableDisableContactSelection( );
                         createRelation( );
                         var relationshipType = cj('#relationship_type_id'); 
-                        relationshipType.change( function() { 
+                        relationshipType.change( function() {
+                            enableDisableContactSelection( );
                             cj('#relationship-refresh-save').hide();
-			     cj('#saveButtons').hide();
-                            cj('#rel_contact').val('');
-                            cj("input[name='rel_contact_id']").val('');
+                            cj('#saveButtons').hide();
                             createRelation( );
                             changeCustomData( 'Relationship' );
                             setPermissionStatus( cj(this).val( ) ); 
@@ -132,29 +133,69 @@
                         setPermissionStatus( relationshipType.val( ) ); 
                     });
                     
+                    function enableDisableContactSelection( ) {
+                        var relationshipTypeValue = cj('#relationship_type_id').val();
+                        var contactAutocomplete   = cj('#contact_1');
+                        
+                        //always reset field so that correct data url is linked
+                        contactAutocomplete.unautocomplete( );
+                        
+                        if ( relationshipTypeValue ) {
+                            cj('#profiles_1').attr('disabled', false);
+                            contactAutocomplete.attr('disabled', false);
+                            contactAutocomplete.addClass('ac_input');
+                            buildCreateNewSelect( 'profiles_1', relationshipTypeValue );
+                        } else {
+                            cj('#profiles_1').attr('disabled', true);
+                            contactAutocomplete.removeClass('ac_input');
+                            contactAutocomplete.attr('disabled', true);
+                        }
+                    }
+
+                    function afterCreateNew() {
+                      var relType    = cj('#relationship_type_id').val( );
+                      var contactSelected = cj('#contact_1').val( );
+                      if ( relType && contactSelected ) {
+                        cj('#relationship-refresh-save').show( );
+                        buildRelationFields( relType );
+                      }
+                    }
+
                     function createRelation(  ) {
                         var relType    = cj('#relationship_type_id').val( );
-                        var relContact = cj('#rel_contact');
+                        var relContact = cj('#contact_1');
                         if ( relType ) {
-                             relContact.unbind( 'click' );
-                             cj("input[name='rel_contact_id']").val('');
                              var dataUrl = {/literal}'{crmURL p="civicrm/ajax/rest" h=0 q="className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=relationship&rel="}'{literal} + relType;
                              relContact.autocomplete( dataUrl, { width : 180, selectFirst : false, matchContains: true });
                              relContact.result(function( event, data ) {
-                               	cj("input[name='rel_contact_id']").val(data[1]);
+                                cj("input[name='contact_select_id[1]']").val(data[1]);
                                 cj('#relationship-refresh-save').show( );
                                 buildRelationFields( relType );
                              });
                         } else { 
                             relContact.unautocomplete( );
-                            cj("input[name='rel_contact_id']").val('');
-                            relContact.click( function() { alert( '{/literal}{ts}Please select a relationship type first.{/ts}{literal} ...' );});
                         }
-                    }       
+                    }
+                    
+                    function buildCreateNewSelect( selectID, relType ) {
+                        var elementID = '#' + selectID;
+                        cj( elementID ).html('');
+                        var postUrl = "{/literal}{crmURL p='civicrm/ajax/relationshipContactTypeList' h=0}{literal}";
+                        cj.post( postUrl, { relType: relType },
+                            function ( response ) {
+                                cj( elementID ).get(0).add(new Option('{/literal}{ts escape="js"}- create new contact -{/ts}{literal}', ''));
+                                response = eval( response );
+                                for (i = 0; i < response.length; i++) {
+                                    cj( elementID ).get(0).add(new Option(response[i].name, response[i].value), document.all ? i : null);
+                                }
+                            }
+                        );
+                    }
+           
 				  </script>
                 {/literal}
-                <td>{$form.rel_contact.html}</td>
-              </tr>
+               </td>
+             </tr>
               </table>
                 <div class="crm-submit-buttons">
                     <span id="relationship-refresh" class="crm-button crm-button-type-refresh crm-button_qf_Relationship_refresh">{$form._qf_Relationship_refresh.html}</span>
@@ -225,7 +266,7 @@
                         {include file="CRM/common/info.tpl"}
                     {/if}
                 {else} {* no valid matches for name + contact_type *}
-                        {capture assign=infoMessage}{ts}No matching results for{/ts} <ul><li>{ts 1=$form.rel_contact.value}Name like: %1{/ts}</li><li>{ts}Contact Type{/ts}: {$contact_type_display}</li></ul>{ts}Check your spelling, or try fewer letters for the target contact name.{/ts}{/capture}
+                        {capture assign=infoMessage}{ts}No matching results for{/ts} <ul><li>{ts 1=$form.contact_1.value}Name like: %1{/ts}</li><li>{ts}Contact Type{/ts}: {$contact_type_display}</li></ul>{ts}Check your spelling, or try fewer letters for the target contact name.{/ts}{/capture}
                         {include file="CRM/common/info.tpl"}                
                 {/if} {* end if searchCount *}
               {else}
@@ -323,7 +364,7 @@
             </div>{* end of save element div *}
         <div id="customData"></div>
         <div class="spacer"></div>
-        <div class="crm-submit-buttons" id="saveButtons"> {include file="CRM/common/formButtons.tpl" location="top"}</div> 
+        <div class="crm-submit-buttons" id="saveButtons"> {include file="CRM/common/formButtons.tpl" location="bottom"}</div> 
         {if $action EQ 1}
             <div class="crm-submit-buttons" id="saveDetails">
             <span class="crm-button crm-button-type-save crm-button_qf_Relationship_refresh_savedetails">{$form._qf_Relationship_refresh_savedetails.html}</span>
@@ -369,7 +410,7 @@ cj( function( ) {
 
     cj('.pagerDisplay tbody tr .contact_select input').live('click', function () {
         var valueSelected = cj(this).val();	  
-        if ( cj(this).attr('checked') == true ) {   
+        if ( cj(this).attr('checked') ) {
             contact_checked[valueSelected] =  valueSelected;
             countSelected++;
         } else if( contact_checked[valueSelected] ) {
@@ -390,10 +431,10 @@ cj( function( ) {
             if ( isRadio ) {
                 employer_checked = new Array();
             }
-            if ( cj(this).attr('checked') == true ) {
+            if ( cj(this).attr('checked') ) {
                 // add validation to match with selected contacts
                 if( !contact_checked[valueSelected] ) {
-                    alert('Current employer / Current employee should be among the selected contacts.');
+                    alert('{/literal}{ts escape="js"}Current employer / Current employee should be among the selected contacts.{/ts}{literal}');
                     cj(this).attr('checked',false); 
                 } else {
                     employer_checked[valueSelected] = valueSelected;
@@ -459,21 +500,23 @@ cj('#saveDetails').hide( );
 cj('#addCurrentEmployer').hide( );
 cj('#addCurrentEmployee').hide( );
 
-cj(document).ready(function(){
+cj( function() {
   if ( cj.browser.msie ) {
-       cj('#rel_contact').keyup( function(e) {
+       cj('#contact_1').keyup( function(e) {
          if( e.keyCode == 9 || e.keyCode == 13 ) {
-	     return false;
+            return false;
 	     }
-         cj("input[name='rel_contact_id']").val('');
+         cj("input[name='contact_select_id[1]']").val('');
          cj('#relationship-refresh').show( );
          cj('#relationship-refresh-save').hide( );
-    }); } else {
-         cj('#rel_contact').focus( function() {
-         cj("input[name='rel_contact_id']").val('');
-         cj('#relationship-refresh').show( );
-         cj('#relationship-refresh-save').hide( ); 
-}); }
+        }); 
+   } else {
+         cj('#contact_1').focus( function() {
+            cj("input[name='contact_select_id[1]']").val('');
+            cj('#relationship-refresh').show( );
+            cj('#relationship-refresh-save').hide( ); 
+         });
+   }
 });
 
 {/literal}{if $searchRows || $callAjax}{literal} 

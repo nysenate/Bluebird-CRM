@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,12 +53,28 @@
             {$form.customCSSURL.html|crmReplace:class:'huge40'} {help id='id-css_url'}
         </td>
     </tr>
+    <tr class="crm-url-form-block-extensionsURL">
+        <td class="label">
+            {$form.extensionsURL.label}
+        </td>
+        <td>
+            {$form.extensionsURL.html|crmReplace:class:'huge40'} {help id='id-extensions_url'}
+        </td>
+    </tr>
     <tr class="crm-url-form-block-enableSSL">
         <td class="label">
             {$form.enableSSL.label}
         </td>
         <td>
             {$form.enableSSL.html} {help id='id-enable_ssl'}
+        </td>
+    </tr>
+    <tr class="crm-url-form-block-verifySSL">
+        <td class="label">
+            {$form.verifySSL.label}
+        </td>
+        <td>
+            {$form.verifySSL.html} {help id='id-verify_ssl'}
         </td>
     </tr>
 </table>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,8 +34,26 @@
              {ts}To search by specific location types (e.g. Home, Work...), check one or more boxes above.{/ts}
            </div> 
         </td>
-        <td colspan="2">{$form.street_address.label}<br />
-            {$form.street_address.html|crmReplace:class:big}<br />
+        <td colspan="2">
+          <div id="streetAddress">
+            {$form.street_address.label}<br />
+            {$form.street_address.html|crmReplace:class:big}
+{if $parseStreetAddress}
+            <br /><a href="#" title="{ts}Use Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , 1 );return false;">{ts}Use Address Elements{/ts}</a>
+          </div>
+          <div id="addressElements" class=hiddenElement>
+            <table class="crm-block crm-form-block advanced-search-address-elements">
+	        <tr><td>{$form.street_number.label}<br />{$form.street_number.html}<br /><span class="description nowrap">{ts}or ODD / EVEN{/ts}</td>
+	            <td>{$form.street_name.label}<br />{$form.street_name.html}</td>
+	            <td>{$form.street_unit.label}<br />{$form.street_unit.html|crmReplace:class:four}</td>
+	        </tr>
+	        <tr>
+                <td colspan="3"><a href="#" title="{ts}Use Complete Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a></td>
+            </tr>
+            </table>
+          </div>
+{/if}
+            <br />
             {$form.city.label}<br />
             {$form.city.html}
   	</td>	   
@@ -76,7 +94,7 @@
 		    </tr>
 		    <tr>
 			<td colspan="2">{$form.county.label}<br />
-				{$form.county.html|crmReplace:class:big}&nbsp;
+				{$form.county.html|crmReplace:class:bigSelect}&nbsp;
 			</td>        
 			<td>{$form.country.label}<br />
 				{$form.country.html|crmReplace:class:big}&nbsp;
@@ -98,5 +116,44 @@
     {/if}
     </table>
 </div>
+
+{if $parseStreetAddress eq 1}
+{literal}
+<script type="text/javascript">
+function processAddressFields( name, loadData ) {
+    if ( name == 'addressElements' ) {
+        if ( loadData ) {
+		  cj( '#street_address' ).val( '' );
+	    }
+	     
+        showBlockName = 'addressElements';
+	    hideBlockName = 'streetAddress';
+	} else {
+        if ( loadData ) {
+             cj( '#street_name'   ).val( '' );   
+             cj( '#street_unit'   ).val( '' );
+             cj( '#street_number' ).val( '' );
+        }
+
+        showBlockName = 'streetAddress';
+        hideBlockName = 'addressElements';
+       }
+
+       show( showBlockName );
+       hide( hideBlockName );
+}
+
+cj(function( ) {
+  if (  cj('#street_name').val( ).length > 0 ||
+        cj('#street_unit').val( ).length > 0 ||
+        cj('#street_number').val( ).length > 0 ) {
+    processAddressFields( 'addressElements', 1 );
+  }
+}
+);
+
+</script>
+{/literal}
+{/if}
 
 

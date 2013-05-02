@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 <div class="crm-accordion-wrapper crm-commPrefs-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
-	{$title} 
+        <a href="#" class="whiteanchor">{$title}</a>
   </div><!-- /.crm-accordion-header -->
 <div id="commPrefs" class="crm-accordion-body">
     <table class="form-layout-compressed" >
@@ -130,21 +130,6 @@
 
 {literal}
 <script type="text/javascript">
-
-function showGreeting( element ) {
-    cj("#" + element ).show( );
-    cj("#" + element + '_display' ).hide( );
-    
-    // TO DO fix for custom greeting
-    var fldName = '#' + element + '_id';
-    if ( cj( fldName ).val( ) == 4 ) {
-        cj("#greetings1").show( );
-        cj("#greetings2").show( );
-        cj( fldName + "_html").show( );
-        cj( fldName + "_label").show( );
-    }
-}
-
 cj( function( ) {
     var fields = new Array( 'postal_greeting', 'addressee', 'email_greeting');
     for ( var i = 0; i < 3; i++ ) {
@@ -167,6 +152,20 @@ cj( function( ) {
 		}
     }          
 });
+
+function showGreeting( element ) {
+    cj("#" + element ).show( );
+    cj("#" + element + '_display' ).hide( );
+    
+    // TO DO fix for custom greeting
+    var fldName = '#' + element + '_id';
+    if ( cj( fldName ).val( ) == 4 ) {
+        cj("#greetings1").show( );
+        cj("#greetings2").show( );
+        cj( fldName + "_html").show( );
+        cj( fldName + "_label").show( );
+    }
+}
 
 </script>
 {/literal}

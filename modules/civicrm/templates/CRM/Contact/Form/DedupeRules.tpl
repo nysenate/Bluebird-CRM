@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,17 +30,17 @@
         {ts}Configure up to five fields to evaluate when searching for 'suspected' duplicate contact records.{/ts} {help id="id-rules"}
     </div>
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-  <table class="form-layout-compressed">
-     <tr class="crm-dedupe-rules-form-block-label">
-        <td class="label">{$form.name.label}</td>
+  <table class="form-layout">
+     <tr class="crm-dedupe-rules-form-block-title">
+        <td class="label">{$form.title.label}</td>
         <td>
-            {$form.name.html}
+            {$form.title.html}
             <div class="description">
-                {ts}Enter a unique descriptive name for this matching rule.{/ts}
+                {ts}Enter descriptive name for this matching rule.{/ts}
             </div>
         </td>
-     </tr>
-     <tr class="crm-dedupe-rules-form-block-level">
+    </tr>
+    <tr class="crm-dedupe-rules-form-block-level">
         <td class="label">{$form.level.label}</td>
         <td>{$form.level.html}</td>
      </tr>
@@ -48,22 +48,36 @@
         <td class="label">{$form.is_default.label}</td>
         <td>{$form.is_default.html}</td>
      </tr>
-  </table>
-  <table style="width: auto;">
-     <tr class="columnheader"><th>{ts}Field{/ts}</th><th>{ts}Length{/ts}</th><th>{ts}Weight{/ts}</th></tr>
-         {section name=count loop=5}
-         {capture assign=where}where_{$smarty.section.count.index}{/capture}
-         {capture assign=length}length_{$smarty.section.count.index}{/capture}
-         {capture assign=weight}weight_{$smarty.section.count.index}{/capture}
-     <tr class="{cycle values="odd-row,even-row"}">
-          <td>{$form.$where.html}</td>
-          <td>{$form.$length.html}</td>
-          <td>{$form.$weight.html}</td>
+     <tr class="crm-dedupe-rules-form-block-is_reserved">
+        <td class="label">{$form.is_reserved.label}</td>
+        <td>{$form.is_reserved.html}</td>
      </tr>
-    {/section}
-    <tr class="columnheader"><th colspan="2" style="text-align: right;">{$form.threshold.label}</th>
-        <td>{$form.threshold.html}</td>
+     <tr class="crm-dedupe-rules-form-block-fields">
+        <td></td>
+        <td>
+            <table class="form-layout-compressed">
+                {if $isReserved}
+                    <tr>
+                        <td><div class="status message">{ts}Note: You cannot edit fields for a reserved rule.{/ts}</div></td>
+                    </tr>
+                {/if}
+                <tr class="columnheader"><td>{ts}Field{/ts}</td><td>{ts}Length{/ts}</td><td>{ts}Weight{/ts}</td></tr>
+                {section name=count loop=5}
+                    {capture assign=where}where_{$smarty.section.count.index}{/capture}
+                    {capture assign=length}length_{$smarty.section.count.index}{/capture}
+                    {capture assign=weight}weight_{$smarty.section.count.index}{/capture}
+                    <tr class="{cycle values="odd-row,even-row"}">
+                        <td>{$form.$where.html}</td>
+                        <td>{$form.$length.html}</td>
+                        <td>{$form.$weight.html}</td>
+                    </tr>
+                {/section}
+                    <tr class="columnheader"><td colspan="2">{$form.threshold.label}</td>
+                        <td>{$form.threshold.html}</td>
+                    </tr>
+            </table>
+        </td>
     </tr>
- </table>
+  </table>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

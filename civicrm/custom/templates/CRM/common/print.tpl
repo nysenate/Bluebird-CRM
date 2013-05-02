@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +34,7 @@
   <style type="text/css" media="screen, print">@import url({$config->resourceBase}css/civicrm.css);</style>
   <style type="text/css" media="screen, print">@import url({$config->resourceBase}css/extras.css);</style>
   <style type="text/css" media="print">@import url({$config->resourceBase}css/print.css);</style>
-  <style type="text/css" media="screen, print">@import url(/sites/default/themes/rayCivicrm/css/rayCivicrm.css);</style>{*NYSS 4854*}
+  <style type="text/css" media="screen, print">@import url(/sites/default/themes/Bluebird/css/Bluebird.css);</style>{*NYSS 4854*}
   {*<style type="text/css">@import url({$config->resourceBase}css/skins/aqua/theme.css);</style>*}
   <script type="text/javascript" src="{$config->resourceBase}js/Common.js"></script>
 </head>
@@ -71,6 +71,7 @@
 
 {literal}
 <script type="text/javascript">
+//NYSS
 if ( cj('tr.columnheader th:last-child').html() == 'Actions' ) {
     cj('tr.columnheader th:last-child').remove();
     cj('tr.even-row td:last-child').remove();

@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.4                                                |
+| CiviCRM version 4.2                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2011                                |
+| Copyright CiviCRM LLC (c) 2004-2012                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -38,8 +38,11 @@ class CRM_Core_I18n_SchemaStructure
         static $result = null;
         if (!$result) {
             $result = array(
+                'civicrm_location_type' => array(
+                    'display_name' => "varchar(64)",
+                ) ,
                 'civicrm_option_group' => array(
-                    'label' => "varchar(255)",
+                    'title' => "varchar(255)",
                     'description' => "varchar(255)",
                 ) ,
                 'civicrm_contact_type' => array(
@@ -58,6 +61,10 @@ class CRM_Core_I18n_SchemaStructure
                 'civicrm_membership_status' => array(
                     'label' => "varchar(128)",
                 ) ,
+                'civicrm_survey' => array(
+                    'thankyou_title' => "varchar(255)",
+                    'thankyou_text' => "text",
+                ) ,
                 'civicrm_participant_status_type' => array(
                     'label' => "varchar(255)",
                 ) ,
@@ -74,7 +81,7 @@ class CRM_Core_I18n_SchemaStructure
                     'help_post' => "text",
                 ) ,
                 'civicrm_batch' => array(
-                    'label' => "varchar(64)",
+                    'title' => "varchar(64)",
                     'description' => "text",
                 ) ,
                 'civicrm_custom_group' => array(
@@ -93,6 +100,9 @@ class CRM_Core_I18n_SchemaStructure
                 'civicrm_option_value' => array(
                     'label' => "varchar(255)",
                     'description' => "text",
+                ) ,
+                'civicrm_group' => array(
+                    'title' => "varchar(64)",
                 ) ,
                 'civicrm_contribution_page' => array(
                     'title' => "varchar(255)",
@@ -138,6 +148,9 @@ class CRM_Core_I18n_SchemaStructure
                     'label' => "varchar(255)",
                     'description' => "text",
                 ) ,
+                'civicrm_pcp_block' => array(
+                    'link_text' => "varchar(255)",
+                ) ,
                 'civicrm_event' => array(
                     'title' => "varchar(255)",
                     'summary' => "text",
@@ -170,15 +183,6 @@ class CRM_Core_I18n_SchemaStructure
         static $result = null;
         if (!$result) {
             $result = array(
-                'civicrm_price_set' => array(
-                    'UI_title' => array(
-                        'name' => 'UI_title',
-                        'field' => array(
-                            'title',
-                        ) ,
-                        'unique' => 1,
-                    ) ,
-                ) ,
                 'civicrm_custom_group' => array(
                     'UI_title_extends' => array(
                         'name' => 'UI_title_extends',
@@ -195,6 +199,15 @@ class CRM_Core_I18n_SchemaStructure
                         'field' => array(
                             'label',
                             'custom_group_id',
+                        ) ,
+                        'unique' => 1,
+                    ) ,
+                ) ,
+                'civicrm_group' => array(
+                    'UI_title' => array(
+                        'name' => 'UI_title',
+                        'field' => array(
+                            'title',
                         ) ,
                         'unique' => 1,
                     ) ,

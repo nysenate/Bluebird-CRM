@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -75,8 +75,8 @@
 		<table class="inner-table">
 		   <tr>
 			<td>
-			     {$form.postal_code.label}<br />
-                             {$form.postal_code.html}
+			  {$form.postal_code.label}<br />
+        {$form.postal_code.html|crmReplace:size:72|crmReplace:maxlength:72|crmReplace:class:big}{*NYSS 5494*}
 			</td>
 			<td>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -147,3 +147,12 @@ cj(function( ) {
 </script>
 {/literal}
 {/if}
+
+{literal}
+<script type="text/javascript">
+  //NYSS
+  cj('#postal_code_low').css('width', '100px');
+  cj('#postal_code_high').css('width', '100px');
+  cj('#location_type_7').before('<br />');
+</script>
+{/literal}

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,75 +28,111 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Admin/Form/Setting.php';
-
 /**
  * This class generates form components for Miscellaneous
- * 
+ *
  */
-class CRM_Admin_Form_Setting_Miscellaneous extends  CRM_Admin_Form_Setting
-{
-    /**
-     * Function to build the form
-     *
-     * @return None
-     * @access public
-     */
-    public function buildQuickForm( ) {
-        CRM_Utils_System::setTitle(ts('Settings - Miscellaneous'));
+class CRM_Admin_Form_Setting_Miscellaneous extends CRM_Admin_Form_Setting {
 
-        $this->addYesNo('contactUndelete', ts('Contact Trash & Undelete'));
+  /**
+   * Function to build the form
+   *
+   * @return None
+   * @access public
+   */
+  public function buildQuickForm() {
+    CRM_Utils_System::setTitle(ts('Settings - Undelete, Logging and ReCAPTCHA'));
 
-        // also check if we can enable triggers
-        $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission( false );
+    $this->addYesNo('contactUndelete', ts('Contact Trash & Undelete'));
 
-        // FIXME: for now, disable logging for multilingual sites OR if triggers are not permittted
-        require_once 'CRM/Core/DAO/Domain.php';
-        $domain = new CRM_Core_DAO_Domain;
-        $domain->find(true);
-        $attribs = $domain->locales || ! $validTriggerPermission ? array('disabled' => 'disabled') : null;
+    // also check if we can enable triggers
+    $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission(FALSE);
 
-        $this->assign( 'validTriggerPermission', $validTriggerPermission );
-        $this->addYesNo('logging', ts('Logging'), null, null, $attribs);
+    // FIXME: for now, disable logging for multilingual sites OR if triggers are not permittted
+    $domain = new CRM_Core_DAO_Domain;
+    $domain->find(TRUE);
+    $attribs = $domain->locales || !$validTriggerPermission ? array(
+      'disabled' => 'disabled') : NULL;
 
-        $this->addYesNo( 'versionCheck', ts( 'Version Check & Statistics Reporting' ));
-        
-        $this->addYesNo( 'doNotAttachPDFReceipt', ts( 'Attach PDF copy to receipts' ) );
-        
-        $this->addElement('text', 'maxAttachments' , ts('Maximum Attachments'),
-                          array( 'size' => 2, 'maxlength' => 8 ) );
-        $this->addElement('text', 'maxFileSize' , ts('Maximum File Size'),
-                          array( 'size' => 2, 'maxlength' => 8 ) );
-        $this->addElement('text','recaptchaPublicKey' , ts('Public Key'),
-                          array( 'size' => 64, 'maxlength' => 64 ) );
-        $this->addElement('text','recaptchaPrivateKey', ts('Private Key'),
-                          array( 'size' => 64, 'maxlength' => 64 ) );
+    $this->assign('validTriggerPermission', $validTriggerPermission);
+    $this->addYesNo('logging', ts('Logging'), NULL, NULL, $attribs);
 
-        $this->addElement('text', 'dashboardCacheTimeout', ts('Dashboard cache timeout'),
-                          array( 'size' => 3, 'maxlength' => 5 ) );
-        $this->addElement('text','recaptchaOptions', ts('Recaptcha Options'),
-                          array( 'size' => 64, 'maxlength' => 64 ) );
+    $this->addYesNo('versionCheck', ts('Version Check & Statistics Reporting'));
 
-        $this->addRule('maxAttachments', ts('Value should be a positive number') , 'positiveInteger');
-        $this->addRule('maxFileSize', ts('Value should be a positive number') , 'positiveInteger');
-       
-        parent::buildQuickForm();    
+    $this->addYesNo('doNotAttachPDFReceipt', ts('Attach PDF copy to receipts'));
+
+    $this->addElement('text', 'wkhtmltopdfPath', ts('Path to wkhtmltopdf executable'),
+      array('size' => 64, 'maxlength' => 256)
+    );
+
+    $this->addElement('text', 'maxAttachments', ts('Maximum Attachments'),
+      array('size' => 2, 'maxlength' => 8)
+    );
+    $this->addElement('text', 'maxFileSize', ts('Maximum File Size'),
+      array('size' => 2, 'maxlength' => 8)
+    );
+    $this->addElement('text', 'recaptchaPublicKey', ts('Public Key'),
+      array('size' => 64, 'maxlength' => 64)
+    );
+    $this->addElement('text', 'recaptchaPrivateKey', ts('Private Key'),
+      array('size' => 64, 'maxlength' => 64)
+    );
+
+    $this->addElement('text', 'dashboardCacheTimeout', ts('Dashboard cache timeout'),
+      array('size' => 3, 'maxlength' => 5)
+    );
+    $this->addElement('text', 'checksumTimeout', ts('CheckSum Lifespan'),
+      array('size' => 2, 'maxlength' => 8)
+    );
+    $this->addElement('text', 'recaptchaOptions', ts('Recaptcha Options'),
+      array('size' => 64, 'maxlength' => 64)
+    );
+
+    $this->addRule('maxAttachments', ts('Value should be a positive number'), 'positiveInteger');
+    $this->addRule('maxFileSize', ts('Value should be a positive number'), 'positiveInteger');
+    $this->addRule('checksumTimeout', ts('Value should be a positive number'), 'positiveInteger');
+
+    parent::buildQuickForm();
+  }
+
+  function setDefaultValues() {
+    parent::setDefaultValues();
+
+    $this->_defaults['checksumTimeout'] = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+      'checksum_timeout',
+      NULL,
+      7
+    );
+    return $this->_defaults;
+  }
+
+  public function postProcess() {
+    // store the submitted values in an array
+    $params = $this->controller->exportValues($this->_name);
+
+
+    // get current logging status
+    $values = $this->exportValues();
+
+    parent::postProcess();
+
+    $config = CRM_Core_Config::singleton();
+    if ($config->logging != $values['logging']) {
+      $logging = new CRM_Logging_Schema;
+      if ($values['logging']) {
+        $config->logging = TRUE;
+        $logging->enableLogging();
+      }
+      else {
+        $config->logging = FALSE;
+        $logging->disableLogging();
+      }
     }
-
-    public function postProcess()
-    {
-        parent::postProcess();
-
-        // handle logging
-        // FIXME: do it only if the setting changed
-        require_once 'CRM/Logging/Schema.php';
-        $values = $this->exportValues();
-        $logging = new CRM_Logging_Schema;
-        $values['logging'] ? $logging->enableLogging() : $logging->disableLogging();
-    }
+  }
 }
+

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,63 +29,82 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+class CRM_Event_BAO_ParticipantPayment extends CRM_Event_DAO_ParticipantPayment {
 
-require_once 'CRM/Event/DAO/ParticipantPayment.php';
-
-class CRM_Event_BAO_ParticipantPayment extends CRM_Event_DAO_ParticipantPayment
-{
-  
-    static function &create(&$params, &$ids) 
-    { 
-        $paymentParticipant = new CRM_Event_BAO_ParticipantPayment(); 
-        $paymentParticipant->copyValues($params);
-        if ( isset( $ids['id'] ) ) {
-            $paymentParticipant->id = CRM_Utils_Array::value( 'id', $ids );
-        } else {
-            $paymentParticipant->find( true );
-        }
-        $paymentParticipant->save();
-
-        return $paymentParticipant;
+  /**
+   * Creates or updates a participant payment record
+   *
+   * @param $params array of values to initialize the record with
+   * @param $ids    array with one values of id for this participantPayment record (for update)
+   *
+   * @return object the partcipant payment record
+   * @static
+   */
+  static function &create(&$params, &$ids) {
+    if (isset($ids['id'])) {
+      CRM_Utils_Hook::pre('edit', 'ParticipantPayment', $ids['id'], $params);
+    }
+    else {
+      CRM_Utils_Hook::pre('create', 'ParticipantPayment', NULL, $params);
     }
 
-    
-    /**                          
-     * Delete the record that are associated with this Participation Payment
-     * 
-     * @param  array  $params   array in the format of $field => $value. 
-     * 
-     * @return boolean  true if deleted false otherwise
-     * @access public 
-     */ 
-    static function deleteParticipantPayment( $params ) 
-    {
-        require_once 'CRM/Event/DAO/ParticipantPayment.php';
-        $participantPayment = new CRM_Event_DAO_ParticipantPayment( );
-
-        $valid = false;
-        foreach ( $params as $field => $value ) {
-            if ( ! empty( $value ) ) {
-                $participantPayment->$field  = $value;
-                $valid = true;
-            }
-        }
-
-        if ( ! $valid ) {
-            CRM_Core_Error::fatal( );
-        }
-
-        if ( $participantPayment->find( true ) ) {
-            require_once 'CRM/Contribute/BAO/Contribution.php';
-            CRM_Contribute_BAO_Contribution::deleteContribution( $participantPayment->contribution_id );
-            $participantPayment->delete( ); 
-            return $participantPayment;
-        }
-        return false;
+    $participantPayment = new CRM_Event_BAO_ParticipantPayment();
+    $participantPayment->copyValues($params);
+    if (isset($ids['id'])) {
+      $participantPayment->id = CRM_Utils_Array::value('id', $ids);
     }
+    else {
+      $participantPayment->find(TRUE);
+    }
+    $participantPayment->save();
+
+    if (isset($ids['id'])) {
+      CRM_Utils_Hook::post('edit', 'ParticipantPayment', $ids['id'], $participantPayment);
+    }
+    else {
+      CRM_Utils_Hook::post('create', 'ParticipantPayment', NULL, $participantPayment);
+    }
+
+    return $participantPayment;
+  }
+
+  /**
+   * Delete the record that are associated with this ParticipantPayment
+   * Also deletes the associated contribution for this participant
+   *
+   * @param  array  $params   associative array whose values match the record to be deleted
+   *
+   * @return boolean  true if deleted false otherwise
+   * @static
+   * @access public
+   */
+  static function deleteParticipantPayment($params) {
+    $participantPayment = new CRM_Event_DAO_ParticipantPayment();
+
+    $valid = FALSE;
+    foreach ($params as $field => $value) {
+      if (!empty($value)) {
+        $participantPayment->$field = $value;
+        $valid = TRUE;
+      }
+    }
+
+    if (!$valid) {
+      CRM_Core_Error::fatal();
+    }
+
+    if ($participantPayment->find(TRUE)) {
+      CRM_Utils_Hook::pre('delete', 'ParticipantPayment', $participantPayment->id, $params);
+      CRM_Contribute_BAO_Contribution::deleteContribution($participantPayment->contribution_id);
+      $participantPayment->delete();
+      CRM_Utils_Hook::post('delete', 'ParticipantPayment', $participantPayment->id, $participantPayment);
+      return $participantPayment;
+    }
+    return FALSE;
+  }
 }
 

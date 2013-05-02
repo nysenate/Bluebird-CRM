@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,12 +58,20 @@
         	{$tag_val.html} 
         </div>
       {/foreach}
-    </div>
+    </div>{*NYSS*}
   </td>
 {/if}
 </tr>
 
 <tr><td colspan="3">{include file="CRM/common/Tag.tpl" tagsetType='case'}</td></tr>
+
+{if $caseGroupTree }
+<tr>
+    <td colspan="4">
+       {include file="CRM/Custom/Form/Search.tpl" groupTree=$caseGroupTree showHideLinks=false}
+    </td>
+</tr>
+{/if}
 
 {literal}
 <script type="text/javascript">

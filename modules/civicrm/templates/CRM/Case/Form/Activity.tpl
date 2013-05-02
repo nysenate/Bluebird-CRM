@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,10 +28,19 @@
 {if $cdType }
    {include file="CRM/Custom/Form/CustomData.tpl"}
 {else}
+<h3>{if $action eq 1 or $action eq 1024}
+        {ts 1=$activityTypeName}New %1{/ts}
+    {elseif $action eq 8}{ts 1=$activityTypeName}Delete %1{/ts}
+    {elseif $action eq 32768}{ts 1=$activityTypeName}Restore %1{/ts}
+    {else}{ts 1=$activityTypeName}Edit %1{/ts}{/if}
+</h3>
 <div class="crm-block crm-form-block crm-case-activity-form-block">
-    {if $action neq 8 and $action  neq 32768 }
 
-{* added onload javascript for source contact*}
+{if $action neq 8 and $action  neq 32768 }
+    {* Include form buttons on top for new and edit modes. *}
+    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+
+    {* added onload javascript for source contact*}
 {literal}
 <script type="text/javascript">
 var target_contact = assignee_contact = target_contact_id = '';
@@ -40,11 +49,11 @@ var target_contact = assignee_contact = target_contact_id = '';
 {if $target_contact}
     var target_contact = {$target_contact};
 {/if}
-    
+
 {if $assignee_contact}
     var assignee_contact = {$assignee_contact};
 {/if}
- 
+
 {literal}
 var target_contact_id = assignee_contact_id = null;
 //loop to set the value of cc and bcc if form rule.
@@ -66,18 +75,19 @@ if ( assignee_contact_id ) {
 
 cj(document).ready( function( ) {
 {/literal}
-{if $source_contact and $admin and $action neq 4} 
+{if $source_contact and $admin and $action neq 4}
 {literal} cj( '#source_contact_id' ).val( "{/literal}{$source_contact}{literal}");{/literal}
 {/if}
 
 {literal}
 
 var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
-var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
+var tokenDataUrl_target  = "{/literal}{$tokenUrl}&context=case_activity_target{literal}";
+var tokenDataUrl_assignee  = "{/literal}{$tokenUrl}&context=case_activity_assignee{literal}";
 
 var hintText = "{/literal}{ts}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
-cj( "#assignee_contact_id").tokenInput( tokenDataUrl, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
-cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
+cj( "#assignee_contact_id").tokenInput( tokenDataUrl_assignee, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
+cj( "#target_contact_id"  ).tokenInput( tokenDataUrl_target, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
 cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
 cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirst : false, matchContains:true
                             }).result( function(event, data, formatted) { cj( "#source_contact_qid" ).val( data[1] );
@@ -88,24 +98,15 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
 
     {/if}
 
-        <legend>
-           {if $action eq 8}
-              {ts}Delete{/ts}
-           {elseif $action eq 4}
-              {ts}View{/ts}
-           {elseif $action eq 32768}
-              {ts}Restore{/ts}
-           {/if}
-        </legend>
         {if $action eq 8 or $action eq 32768 }
-            <div class="messages status"> 
+            <div class="messages status">
               <div class="icon inform-icon"></div> &nbsp;
               {if $action eq 8}
                  {ts 1=$activityTypeName}Click Delete to move this &quot;%1&quot; activity to the Trash.{/ts}
               {else}
                  {ts 1=$activityTypeName}Click Restore to retrieve this &quot;%1&quot; activity from the Trash.{/ts}
-              {/if}  
-            </div><br /> 
+              {/if}
+            </div><br />
         {else}
         <table class="form-layout">
             {if $activityTypeDescription }
@@ -114,44 +115,44 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
            </tr>
             {/if}
            <tr id="with-clients" class="crm-case-activity-form-block-client_name">
-	       {if not $multiClient}
+         {if not $multiClient}
               <td class="label font-size12pt">{ts}Client{/ts}</td>
               <td class="view-value"><span class="font-size12pt">{$client_name|escape}&nbsp;&nbsp;&nbsp;&nbsp;</span>
-	       {else}
+         {else}
               <td class="label font-size12pt">{ts}Clients{/ts}</td>
               <td class="view-value">
-		        <span class="font-size12pt">
-		        {foreach from=$client_names item=client name=clients}
-		            {$client.display_name}{if not $smarty.foreach.clients.last}; &nbsp; {/if}
+            <span class="font-size12pt">
+            {foreach from=$client_names item=client name=clients}
+                {$client.display_name}{if not $smarty.foreach.clients.last}; &nbsp; {/if}
                 {/foreach}
                 </span>
-	       {/if}
+         {/if}
 
-	       {if $action eq 1 or $action eq 2}
-		    <br />
-		    <a href="#" onClick="buildTargetContact(1); return false;">
-		    <span id="with-other-contacts-link" class="add-remove-link hide-block">&raquo; 
-		    {ts}With other contact(s){/ts}</span>
-		    </a>
-	       {/if}
+         {if $action eq 1 or $action eq 2}
+        <br />
+        <a href="#" onClick="buildTargetContact(1); return false;">
+        <span id="with-other-contacts-link" class="add-remove-link hide-block">&raquo;
+        {ts}With other contact(s){/ts}</span>
+        </a>
+         {/if}
 
-	       </td>
+         </td>
            </tr>
 
-    	   {if $action eq 1 or $action eq 2}
+         {if $action eq 1 or $action eq 2}
            <tr class="crm-case-activity-form-block-target_contact_id hide-block" id="with-contacts-widget">
                 <td class="label font-size10pt">{ts}With Contact{/ts}</td>
                 <td>{$form.target_contact_id.html}
                    <a href="#" onClick="buildTargetContact(1); return false;">
-		           <span id="with-clients-link" class="add-remove-link">&raquo; 
-		            {if not $multiClient}{ts}With client{/ts}{else}{ts}With client(s){/ts}{/if}
+               <span id="with-clients-link" class="add-remove-link">&raquo;
+                {if not $multiClient}{ts}With client{/ts}{else}{ts}With client(s){/ts}{/if}
                    </span>
-		           </a>
-    		    </td>
-            	<td class="hide-block">{$form.hidden_target_contact.html}</td>
+               </a>
+            </td>
+              <td class="hide-block">{$form.hidden_target_contact.html}</td>
            </tr>
-    	   {/if}
-    	   
+         {/if}
+
            <tr class="crm-case-activity-form-block-activityTypeName">
               <td class="label">{ts}Activity Type{/ts}</td>
               <td class="view-value bold">{$activityTypeName|escape}</td>
@@ -162,7 +163,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
             </tr>
            <tr class="crm-case-activity-form-block-assignee_contact_id">
               <td class="label">{ts}Assigned To{/ts}</td>
-              <td>{$form.assignee_contact_id.html}                   
+              <td>{$form.assignee_contact_id.html}
                   {edit}<span class="description">
                         {ts}You can optionally assign this activity to someone.{/ts}
                         {if $config->activityAssigneeNotification}
@@ -177,15 +178,15 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
             {if $activityTypeFile}
                 {include file="CRM/Case/Form/Activity/$activityTypeFile.tpl"}
             {/if}
-	    {if $activityTypeFile neq 'ChangeCaseStartDate'}
+      {if $activityTypeFile neq 'ChangeCaseStartDate'}
             <tr class="crm-case-activity-form-block-subject">
               <td class="label">{$form.subject.label}</td><td class="view-value">{$form.subject.html|crmReplace:class:huge}</td>
             </tr>
-	    {/if}
+      {/if}
            <tr class="crm-case-activity-form-block-medium_id">
               <td class="label">{$form.medium_id.label}</td>
               <td class="view-value">{$form.medium_id.html}&nbsp;&nbsp;&nbsp;{$form.location.label} &nbsp;{$form.location.html|crmReplace:class:huge}</td>
-           </tr> 
+           </tr>
            <tr class="crm-case-activity-form-block-activity_date_time">
               <td class="label">{$form.activity_date_time.label}</td>
              {if $action eq 2 && $activityTypeFile eq 'OpenCase'}
@@ -219,7 +220,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
   <div class="icon crm-accordion-pointer"></div> {ts}Send a Copy{/ts}
    </div><!-- /.crm-accordion-header -->
  <div id="sendcopy" class="crm-accordion-body">
-                   
+
                     <div class="description">{ts}Email a complete copy of this activity record to other people involved with the case. Click the top left box to select all.{/ts}</div>
                    {strip}
                    <table>
@@ -248,18 +249,20 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
             {/if}
            <tr>
               <td colspan="2">
-              
+
 <div id="follow-up" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
+  <div class="icon crm-accordion-pointer"></div>
  {ts}Schedule Follow-up{/ts}
   </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
 
                     <table class="form-layout-compressed">
                         <tr class="crm-case-activity-form-block-followup_activity_type_id">
-			    <td class="label">{ts}Schedule Follow-up Activity{/ts}</td>
-                            <td>{$form.followup_activity_type_id.html}&nbsp;{$form.interval.label}&nbsp;{$form.interval.html}&nbsp;{$form.interval_unit.html}</td>
+                      <td class="label">{ts}Schedule Follow-up Activity{/ts}</td>
+                            <td>{$form.followup_activity_type_id.html}&nbsp;&nbsp;{ts}on{/ts}
+                                {include file="CRM/common/jcalendar.tpl" elementName=followup_date}
+                            </td>
                         </tr>
                         <tr class="crm-case-activity-form-block-followup_activity_subject">
                            <td class="label">{$form.followup_activity_subject.label}</td>
@@ -276,14 +279,19 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 {$form.duration.html}
                  <span class="description">{ts}Total time spent on this activity (in minutes).{/ts}
               </td>
-           </tr> 
+           </tr>
+    {* Suppress activity status and priority for changes to status, case type and start date. PostProc will force status to completed. *}
+    {if $activityTypeFile NEQ 'ChangeCaseStatus'
+        && $activityTypeFile NEQ 'ChangeCaseType'
+        && $activityTypeFile NEQ 'ChangeCaseStartDate'}
            <tr class="crm-case-activity-form-block-status_id">
               <td class="label">{$form.status_id.label}</td><td class="view-value">{$form.status_id.html}</td>
            </tr>
-	   <tr class="crm-case-activity-form-block-priority_id">
+         <tr class="crm-case-activity-form-block-priority_id">
               <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
            </tr>
-	   {if $form.tag.html}
+    {/if}
+  {if $form.tag.html}
              <tr class="crm-case-activity-form-block-tag">
                 <td class="label">{$form.tag.label}</td>
                 <td class="view-value"><div class="crm-select-container">{$form.tag.html}</div>
@@ -306,7 +314,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
              </table>
 
            {/if}
-     
+
      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
     {if $action eq 1 or $action eq 2}
@@ -326,67 +334,67 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
         {/literal}
     {/if}
 
-    {if $action neq 8 and $action neq 32768} 
+    {if $action neq 8 and $action neq 32768}
         <script type="text/javascript">
             {if $searchRows}
                 cj('sendcopy').toggleClass('crm-accordion-open');
-                cj('sendcopy').toggleClass('crm-accordion-closed');            
+                cj('sendcopy').toggleClass('crm-accordion-closed');
             {/if}
 
             cj('follow-up').toggleClass('crm-accordion-open');
-            cj('follow-up').toggleClass('crm-accordion-closed');  
+            cj('follow-up').toggleClass('crm-accordion-closed');
 
         </script>
     {/if}
-    
+
     {* include jscript to warn if unsaved form field changes *}
     {include file="CRM/common/formNavigate.tpl"}
 
     {literal}
-    <script type="text/javascript">   
+    <script type="text/javascript">
 
     {/literal}{if $action eq 2 or $action eq 1}{literal}
     cj(document).ready( function( ) {
-       var reset = {/literal}{if $targetContactValues}true{else}false{/if}{literal};	    
+       var reset = {/literal}{if $targetContactValues}true{else}false{/if}{literal};
        buildTargetContact( reset );
     });{/literal}
     {/if}{literal}
-    
-    function buildTargetContact( resetVal ) {
-	 var hideWidget  = showWidget = false;	
-    	 var value       = cj("#hidden_target_contact").attr( 'checked' );	      
-	 
-	 if ( resetVal ) {
-	     if ( value ) {
-	       hideWidget  = true;
-	       value       = false;
-	     } else {
-	       showWidget  = true;
-	       value       = true;
-	     }
-	 } else {
-            if ( value ) {
-	       showWidget = true;
-	     } else {
-	       hideWidget = true;
-	     }
-	 }
-	 
-	 if ( hideWidget ) {
-	    cj('#with-clients-link').hide( );
-	    cj('#with-contacts-widget').hide( );
-	    cj('#with-clients').show( );
-	    cj('#with-other-contacts-link').show( );
-  	 }
-	 if ( showWidget ) {
-	    cj('#with-contacts-widget').show( );
-	    cj('#with-clients-link').show( );
 
-	    cj('#with-other-contacts-link').hide( );
-	    cj('#with-clients').hide( );
-	 }
-	 cj("#hidden_target_contact").attr( 'checked', value );
-    }	
+    function buildTargetContact( resetVal ) {
+   var hideWidget  = showWidget = false;
+       var value       = cj("#hidden_target_contact").attr( 'checked' );
+
+   if ( resetVal ) {
+       if ( value ) {
+         hideWidget  = true;
+         value       = false;
+       } else {
+         showWidget  = true;
+         value       = true;
+       }
+   } else {
+            if ( value ) {
+         showWidget = true;
+       } else {
+         hideWidget = true;
+       }
+   }
+
+   if ( hideWidget ) {
+      cj('#with-clients-link').hide( );
+      cj('#with-contacts-widget').hide( );
+      cj('#with-clients').show( );
+      cj('#with-other-contacts-link').show( );
+     }
+   if ( showWidget ) {
+      cj('#with-contacts-widget').show( );
+      cj('#with-clients-link').show( );
+
+      cj('#with-other-contacts-link').hide( );
+      cj('#with-clients').hide( );
+   }
+   cj("#hidden_target_contact").attr( 'checked', value );
+    }
     </script>
     {/literal}
   </div>

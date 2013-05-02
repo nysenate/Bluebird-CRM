@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,12 +31,12 @@
     {include file="CRM/Custom/Form/Preview.tpl"}
 {else}
     {if $customField}
-    
+
     <div id="field_page">
         {strip}
-	    {* handle enable/disable actions*}
-        {include file="CRM/common/enableDisable.tpl"} 
-        {include file="CRM/common/jsortable.tpl"} 
+      {* handle enable/disable actions*}
+        {include file="CRM/common/enableDisable.tpl"}
+        {include file="CRM/common/jsortable.tpl"}
          <table id="options" class="display">
          <thead>
          <tr>
@@ -48,19 +48,19 @@
             <th>{ts}Searchable?{/ts}</th>
             <th>{ts}Enabled?{/ts}</th>
             <th></th>
-	    <th class="hiddenElement"></th>
+      <th class="hiddenElement"></th>
         </tr>
         </thead>
         <tbody>
         {foreach from=$customField item=row}
-        <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {if NOT $row.is_active} disabled{/if}">
-            <td>{$row.label}</td>
+        <tr id="CustomField-{$row.id}" class="crm-entity {cycle values="odd-row,even-row"} {if NOT $row.is_active} disabled{/if}">
+            <td><span class="crm-editable crmf-label">{$row.label}</span></td>
             <td>{$row.data_type}</td>
             <td>{$row.html_type}</td>
             <td class="nowrap">{$row.order}</td>
             <td>{if $row.is_required eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
             <td>{if $row.is_searchable eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-    	    <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+            <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
             <td>{$row.action|replace:'xx':$row.id}</td>
             <td class="order hiddenElement">{$row.weight}</td>
         </tr>
@@ -68,7 +68,7 @@
         </tbody>
         </table>
         {/strip}
-        
+
         <div class="action-link">
             <a href="{crmURL p='civicrm/admin/custom/group/field/add' q="reset=1&action=add&gid=$gid"}" id="newCustomField" class="button"><span><div class="icon add-icon"></div>{ts}Add Custom Field{/ts}</span></a>
         </div>
@@ -84,3 +84,6 @@
         {/if}
     {/if}
 {/if}
+
+{include file="CRM/common/crmeditable.tpl"}
+

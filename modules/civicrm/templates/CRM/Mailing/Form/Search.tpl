@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,18 +29,20 @@
         <td>{$form.mailing_name.label}<br />
             {$form.mailing_name.html|crmReplace:class:big} {help id="id-mailing_name"}
         </td>
-        <td class="nowrap">{$form.mailing_from.label}<br />
-            {include file="CRM/common/jcalendar.tpl" elementName=mailing_from}
-        </td>
-        <td class="nowrap">{$form.mailing_to.label}<br />
-            {include file="CRM/common/jcalendar.tpl" elementName=mailing_to}
-        </td> 
     </tr>
-    <tr> 
+    <tr>
+        <td>
+	    <label>{if $sms eq 1}{ts}SMS Date{/ts}{else}{ts}Mailing Date{/ts}{/if}</label>
+	</td>
+    </tr>
+    <tr>
+	{include file="CRM/Core/DateRange.tpl" fieldName="mailing" from='_from' to='_to'}
+    </tr>
+    <tr>
         <td colspan="1">{$form.sort_name.label}<br />
             {$form.sort_name.html|crmReplace:class:big} {help id="id-create_sort_name"}
         </td>
-        <td colspan="2"><label>{ts}Mailing Status{/ts}</label><br />
+        <td width="100%"><label>{if $sms eq 1}{ts}SMS Status{/ts}{else}{ts}Mailing Status{/ts}{/if}</label><br />
         <div class="listing-box" style="width: auto; height: 60px">
             {foreach from=$form.mailing_status item="mailing_status_val"}
             <div class="{cycle values="odd-row,even-row"}">
@@ -52,7 +54,7 @@
     </tr>
 
     {* campaign in mailing search *}
-    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
     campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
 
     <tr>

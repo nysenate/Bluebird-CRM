@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -145,5 +145,44 @@
 cj(function() {
    cj().crmaccordions(); 
 });
+
+//NYSS
+function toggleContactSelection( name, qfKey, selection ){
+  var Url  = "{/literal}{crmURL p='civicrm/ajax/markSelection' h=0}{literal}";
+
+  if ( selection == 'multiple' ) {
+    var rowArr = new Array( );
+    {/literal}{foreach from=$rows item=row  key=keyVal}
+      {literal}rowArr[{/literal}{$keyVal}{literal}] = '{/literal}{$row.checkbox}{literal}';
+    {/literal}{/foreach}{literal}
+    var elements = rowArr.join('-');
+
+    if ( cj('#' + name).is(':checked') ){
+      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' } );
+    }
+    else {
+      cj.post( Url, { name: elements , qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+    }
+  }
+  else if ( selection == 'single' ) {
+    if ( cj('#' + name).is(':checked') ){
+      cj.post( Url, { name: name , qfKey: qfKey } );
+    }
+    else {
+      cj.post( Url, { name: name , qfKey: qfKey , state: 'unchecked' } );
+    }
+  }
+  else if ( name == 'resetSel' && selection == 'reset' ) {
+    cj.post( Url, {  qfKey: qfKey , variableType: 'multiple' , action: 'unselect' } );
+    {/literal}
+    {foreach from=$rows item=row}{literal}
+      cj("#{/literal}{$row.checkbox}{literal}").removeAttr('checked');{/literal}
+    {/foreach}
+    {literal}
+    cj("#toggleSelect").removeAttr('checked');
+    var formName = "{/literal}{$form.formName}{literal}";
+    on_load_init_checkboxes(formName);
+  }
+}
 </script>
 {/literal}

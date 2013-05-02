@@ -69,7 +69,7 @@
      <weight>430</weight>
   </item>
   <item>
-     <path>civicrm/admin/contribute/thankYou</path>
+     <path>civicrm/admin/contribute/thankyou</path>
      <title>Thank-you and Receipting</title>
      <page_callback>CRM_Contribute_Form_ContributionPage_ThankYou</page_callback>
      <weight>430</weight>
@@ -79,12 +79,6 @@
      <title>Tell a Friend</title>
      <page_callback>CRM_Friend_Form_Contribute</page_callback>
      <weight>440</weight>
-  </item>
-  <item>
-     <path>civicrm/admin/contribute/pcp</path>
-     <title>Personal Campaign Page Settings</title>
-     <page_callback>CRM_Contribute_Form_ContributionPage_PCP</page_callback>
-     <weight>450</weight>
   </item>
   <item>
      <path>civicrm/admin/contribute/widget</path>
@@ -109,15 +103,6 @@
      <title>New Contribution Page</title>
      <page_callback>CRM_Contribute_Controller_ContributionPage</page_callback>
      <path_arguments>action=add</path_arguments>
-  </item>
-  <item>
-     <path>civicrm/admin/pcp</path>
-     <title>Personal Campaign Pages</title>
-     <page_callback>CRM_Contribute_Page_PCP</page_callback>
-     <desc>View and manage existing personal campaign pages.</desc>
-     <adminGroup>CiviContribute</adminGroup>
-     <icon>admin/small/contribution_types.png</icon>
-     <weight>362</weight>
   </item>
   <item>
      <path>civicrm/admin/contribute/managePremiums</path>
@@ -164,6 +149,11 @@
      <weight>1</weight>
   </item>
   <item>
+     <path>civicrm/contact/view/contributionrecur</path>
+     <title>Recurring Contributions</title>
+     <page_callback>CRM_Contribute_Page_ContributionRecur</page_callback>
+  </item>
+  <item>
      <path>civicrm/contact/view/contribution/additionalinfo</path>
      <title>Additional Info</title>
      <page_callback>CRM_Contribute_Form_AdditionalInfo</page_callback>
@@ -193,39 +183,11 @@
      <weight>530</weight>
   </item>
   <item>
-     <path>civicrm/contribute/pcp/manage</path>
-     <title>Personal Campaign Pages</title>
-     <page_callback>CRM_Contribute_Page_PCP</page_callback>
-     <access_arguments>administer CiviCRM,access CiviContribute</access_arguments>
-     <page_type>1</page_type>
-     <weight>540</weight>
-  </item>
-  <item>
      <path>civicrm/contribute/additionalinfo</path>
      <title>AdditionalInfo Form</title>
      <page_callback>CRM_Contribute_Form_AdditionalInfo</page_callback>
      <access_arguments>access CiviContribute</access_arguments>
      <weight>0</weight>
-  </item>
-  <item>
-     <path>civicrm/contribute/campaign</path>
-     <title>Setup a Personal Campaign Page - Account Information</title>
-     <page_callback>CRM_Contribute_Controller_PCP</page_callback>
-     <access_arguments>make online contributions</access_arguments>
-     <is_public>true</is_public>
-     <weight>0</weight>
-  </item>
-  <item>
-     <path>civicrm/contribute/pcp/info</path>
-     <page_callback>CRM_Contribute_Page_PCPInfo</page_callback>
-     <access_callback>1</access_callback>
-     <is_public>true</is_public>
-  </item>
-  <item>
-     <path>civicrm/contribute/pcp</path>
-     <page_callback>CRM_Contribute_Form_PCP_PCP</page_callback>
-     <access_callback>1</access_callback>
-     <is_public>true</is_public>
   </item>
   <item>
      <path>civicrm/ajax/permlocation</path>
@@ -239,12 +201,30 @@
   </item>
   <item>
      <path>civicrm/contribute/unsubscribe</path>
+     <title>Cancel Subscription</title>
      <page_callback>CRM_Contribute_Form_CancelSubscription</page_callback>
      <access_arguments>make online contributions</access_arguments>
   </item>  
   <item>
      <path>civicrm/contribute/onbehalf</path>
      <page_callback>CRM_Contribute_Form_Contribution_OnBehalfOf</page_callback>
+     <access_arguments>make online contributions</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/contribute/updatebilling</path>
+     <title>Update Billing Details</title>
+     <page_callback>CRM_Contribute_Form_UpdateBilling</page_callback>
+     <access_arguments>make online contributions</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/contribute/updaterecur</path>
+     <title>Update Subscription</title>
+     <page_callback>CRM_Contribute_Form_UpdateSubscription</page_callback>
+     <access_arguments>make online contributions</access_arguments>
+   </item>
+  <item>
+     <path>civicrm/contribute/subscriptionstatus</path>
+     <page_callback>CRM_Contribute_Page_SubscriptionStatus</page_callback>
      <access_arguments>make online contributions</access_arguments>
   </item>
 </menu>

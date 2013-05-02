@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.1                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,56 +28,57 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  *
  */
 
 /**
  * This class contains all the function that are called using AJAX (jQuery)
  */
-class CRM_Group_Page_AJAX
-{
-    static function getGroupList( ) 
-    {
-    
-        $sortMapper  = array( 0 => 'groups.title', 1 => 'groups.id', 2 => '', 
-                              3 => 'groups.group_type', 4 => 'groups.visibility' );
+class CRM_Group_Page_AJAX {
+  static
+  function getGroupList() {
+    $sortMapper = array(
+      0 => 'groups.title', 1 => 'groups.id', 2 => '',
+      3 => 'groups.group_type', 4 => 'groups.visibility',
+    );
 
-        $sEcho       = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
-        $offset      = isset($_REQUEST['iDisplayStart'])? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer'):0;
-        $rowCount    = isset($_REQUEST['iDisplayLength'])? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer'):25; 
-        $sort        = isset($_REQUEST['iSortCol_0'] )? CRM_Utils_Array::value( CRM_Utils_Type::escape($_REQUEST['iSortCol_0'],'Integer'), $sortMapper ): null;
-        $sortOrder   = isset($_REQUEST['sSortDir_0'] )? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String'):'asc';
+    $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
+    $offset    = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
+    $rowCount  = isset($_REQUEST['iDisplayLength']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer') : 25;
+    $sort      = isset($_REQUEST['iSortCol_0']) ? CRM_Utils_Array::value(CRM_Utils_Type::escape($_REQUEST['iSortCol_0'], 'Integer'), $sortMapper) : NULL;
+    $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
 
-        $params    = $_POST;
-        if ( $sort && $sortOrder ) {
-            $params['sortBy']  = $sort . ' '. $sortOrder;
-        }
-        
-        $params['page'] = ($offset/$rowCount) + 1;
-        $params['rp']   = $rowCount;
-
-        // get group list 
-        require_once 'CRM/Contact/BAO/Group.php';
-        $groups = CRM_Contact_BAO_Group::getGroupListSelector( $params );
-
-        require_once "CRM/Utils/JSON.php";
-        $iFilteredTotal = $iTotal =  $params['total'];
-        $selectorElements = array( 'group_name', 'group_id', 'group_description',
-                                   'group_type', 'visibility', 'org_info', 'links', 'class' );
-
-		if ( !CRM_Utils_Array::value( 'showOrgInfo', $params ) ) {
-            unset($selectorElements[5]); 
-        }
-
-        //NYSS 5259 convert line breaks to html
-        foreach ( $groups as &$group ) {
-            $group['group_description'] = str_replace("\r\n", "\n",  $group['group_description']);
-            $group['group_description'] = str_replace("\r",   "\n",  $group['group_description']);
-            $group['group_description'] = str_replace("\n",   "<br />", $group['group_description']);
-        }
-
-        echo CRM_Utils_JSON::encodeDataTableSelector( $groups, $sEcho, $iTotal, $iFilteredTotal, $selectorElements );
-        CRM_Utils_System::civiExit( );
+    $params = $_POST;
+    if ($sort && $sortOrder) {
+      $params['sortBy'] = $sort . ' ' . $sortOrder;
     }
+
+    $params['page'] = ($offset / $rowCount) + 1;
+    $params['rp'] = $rowCount;
+
+    // get group list
+    $groups = CRM_Contact_BAO_Group::getGroupListSelector($params);
+
+    $iFilteredTotal = $iTotal = $params['total'];
+    $selectorElements = array(
+      'group_name', 'group_id', 'group_description',
+      'group_type', 'visibility', 'org_info', 'links', 'class',
+    );
+
+    if (!CRM_Utils_Array::value('showOrgInfo', $params)) {
+      unset($selectorElements[5]);
+    }
+
+    //NYSS 5259 convert line breaks to html
+    foreach ( $groups as &$group ) {
+      $group['group_description'] = str_replace("\r\n", "\n",  $group['group_description']);
+      $group['group_description'] = str_replace("\r",   "\n",  $group['group_description']);
+      $group['group_description'] = str_replace("\n",   "<br />", $group['group_description']);
+    }
+
+    echo CRM_Utils_JSON::encodeDataTableSelector($groups, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
+    CRM_Utils_System::civiExit();
+  }
 }
+

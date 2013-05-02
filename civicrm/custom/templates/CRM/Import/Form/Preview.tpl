@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -169,7 +169,7 @@ function verify( ) {
 
       {* Existing Group *}
 
-<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion crm-accordion-closed">
+<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion {if $form.groups}crm-accordion-open{else}crm-accordion-closed{/if}">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div>
   {$form.groups.label}
@@ -187,7 +187,7 @@ function verify( ) {
 <div id="new-tag" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div>
-  {ts}Create a new keyword and assign it to imported records.{/ts}            
+  {ts}Create a new keyword and assign it to imported records.{/ts}{*NYSS*}            
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
   

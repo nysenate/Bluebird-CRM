@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -183,6 +183,9 @@ function _civicrm_api3_permissions($entity, $action, &$params)
             'get'    => array('access CiviCRM', 'access CiviPledge', 'access CiviContribute'),
             'update' => array('access CiviCRM', 'access CiviPledge', 'edit pledges', 'access CiviContribute', 'edit contributions'),
         ),
+        'system' => array(
+            'flush'  => array('administer CiviCRM'),
+        ),
         'website' => array(
             'create' => array('access CiviCRM', 'add contacts'),
             'delete' => array('access CiviCRM', 'delete contacts'),
@@ -192,7 +195,6 @@ function _civicrm_api3_permissions($entity, $action, &$params)
     );
 
     // let third parties modify the permissions
-    require_once 'CRM/Utils/Hook.php';
     CRM_Utils_Hook::alterAPIPermissions($entity, $action, $params, $permissions);
 
     return isset($permissions[$entity][$action]) ? $permissions[$entity][$action] : array('access CiviCRM');

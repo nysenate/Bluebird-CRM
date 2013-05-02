@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,25 +28,25 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
+function run() {
+  session_start();
 
-function run( ) {
-    session_start( );
+  require_once '../../civicrm.config.php';
+  require_once 'CRM/Core/Config.php';
+  $config = CRM_Core_Config::singleton();
 
-    require_once '../../civicrm.config.php';
-    require_once 'CRM/Core/Config.php'; 
-    $config = CRM_Core_Config::singleton( );
+  // this does not return on failure
+  CRM_Utils_System::authenticateScript(TRUE);
 
-    // this does not return on failure
-    CRM_Utils_System::authenticateScript( true );
+  require_once 'CRM/Utils/Migrate/Export.php';
+  $export = new CRM_Utils_Migrate_Export();
 
-    require_once 'CRM/Utils/Migrate/Export.php';
-    $export = new CRM_Utils_Migrate_Export( );
-
-    $export->run( );
+  $export->run();
 }
 
-run( );
+run();
+

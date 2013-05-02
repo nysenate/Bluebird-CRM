@@ -1,12 +1,15 @@
 name = Devel
 description = Various blocks, pages, and functions for developers.
 package = Development
-dependencies[] = menu
-core = 6.x
+core = 7.x
+configure = admin/config/development/devel
+tags[] = developer
+files[] = devel.test
+files[] = devel.mail.inc
 
-; Information added by drupal.org packaging script on 2011-07-22
-version = "6.x-1.26"
-core = "6.x"
+; Information added by drupal.org packaging script on 2012-06-05
+version = "7.x-1.3"
+core = "7.x"
 project = "devel"
-datestamp = "1311355315"
+datestamp = "1338940281"
 

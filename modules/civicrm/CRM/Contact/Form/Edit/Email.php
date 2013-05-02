@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,57 +36,84 @@
 /**
  * form helper class for an Email object
  */
-class CRM_Contact_Form_Edit_Email 
-{
-    /**
-     * build the form elements for an email object
-     *
-     * @param CRM_Core_Form $form       reference to the form object
-     * @param array         $location   the location object to store all the form elements in
-     * @param int           $locationId the locationId we are dealing with
-     * @param int           $count      the number of blocks to create
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function buildQuickForm( &$form, $addressBlockCount = null ) 
-    {        
-        // passing this via the session is AWFUL. we need to fix this
-        if ( ! $addressBlockCount ) {
-            $blockId = ( $form->get( 'Email_Block_Count' ) ) ? $form->get( 'Email_Block_Count' ) : 1;
-        } else {
-            $blockId = $addressBlockCount;
-        }
+class CRM_Contact_Form_Edit_Email {
 
-        $form->applyFilter('__ALL__','trim');
-
-        //Email box
-        $form->addElement('text',"email[$blockId][email]", ts('Email'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'));
-        $form->addRule( "email[$blockId][email]", ts('Email is not valid.'), 'email' );
-        if ( isset( $form->_contactType ) ) {
-            //Block type
-            $form->addElement('select', "email[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
-
-            //On-hold checkbox
-            $form->addElement('advcheckbox', "email[$blockId][on_hold]",null);
-
-            //Bulkmail checkbox
-            $js = array( 'id' => "Email_".$blockId."_IsBulkmail", 'onClick' => 'singleSelect( this.id );');
-            $form->addElement('advcheckbox', "email[$blockId][is_bulkmail]", null, '', $js);
-
-            //is_Primary radio
-            $js = array( 'id' => "Email_".$blockId."_IsPrimary", 'onClick' => 'singleSelect( this.id );');
-            $form->addElement( 'radio', "email[$blockId][is_primary]", '', '', '1', $js );
-            
-            if ( CRM_Utils_System::getClassName( $form ) == 'CRM_Contact_Form_Contact' ) {
-           
-                $form->add('textarea', "email[$blockId][signature_text]", ts('Signature (Text)'), 
-                           array( 'rows' => 2, 'cols' => 40 ) );
-                
-                $form->addWysiwyg( "email[$blockId][signature_html]", ts('Signature (HTML)'), 
-                                   array( 'rows' => 2, 'cols' => 40 ) );
-            }
-        }
+  /**
+   * build the form elements for an email object
+   *
+   * @param CRM_Core_Form $form              reference to the form object
+   * @param int           $addressBlockCount block number to build
+   * @param boolean       $blockEdit         is it block edit
+   *
+   * @return void
+   * @access public
+   * @static
+   */
+  static function buildQuickForm(&$form, $addressBlockCount = NULL, $blockEdit = FALSE) {
+    // passing this via the session is AWFUL. we need to fix this
+    if (!$addressBlockCount) {
+      $blockId = ($form->get('Email_Block_Count')) ? $form->get('Email_Block_Count') : 1;
     }
+    else {
+      $blockId = $addressBlockCount;
+    }
+
+    $form->applyFilter('__ALL__', 'trim');
+
+    //Email box
+    $form->addElement('text', "email[$blockId][email]", ts('Email'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'));
+    $form->addRule("email[$blockId][email]", ts('Email is not valid.'), 'email');
+    if (isset($form->_contactType) || $blockEdit) {
+      //Block type
+      $form->addElement('select', "email[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
+
+      $multipleBulk = CRM_Core_BAO_Email::isMultipleBulkMail();
+
+      //On-hold select
+      if ($multipleBulk) {
+        $holdOptions = array(0 => ts('- select -'),
+          1 => ts('On Hold Bounce'),
+          2 => ts('On Hold Opt Out'),
+        );
+        $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions);
+      }
+      else {
+        $form->addElement('advcheckbox', "email[$blockId][on_hold]", NULL);
+      }
+
+      //Bulkmail checkbox
+      $form->assign('multipleBulk', $multipleBulk);
+      if ($multipleBulk) {
+        $js = array('id' => "Email_" . $blockId . "_IsBulkmail");
+        $form->addElement('advcheckbox', "email[$blockId][is_bulkmail]", NULL, '', $js);
+      }
+      else {
+        $js = array('id' => "Email_" . $blockId . "_IsBulkmail");
+        if (!$blockEdit) {
+          $js['onClick'] = 'singleSelect( this.id );';
+        }
+        $form->addElement('radio', "email[$blockId][is_bulkmail]", '', '', '1', $js);
+      }
+
+      //is_Primary radio
+      $js = array('id' => "Email_" . $blockId . "_IsPrimary");
+      if (!$blockEdit) {
+        $js['onClick'] = 'singleSelect( this.id );';
+      }
+
+      $form->addElement('radio', "email[$blockId][is_primary]", '', '', '1', $js);
+
+      if (CRM_Utils_System::getClassName($form) == 'CRM_Contact_Form_Contact') {
+
+        $form->add('textarea', "email[$blockId][signature_text]", ts('Signature (Text)'),
+          array('rows' => 2, 'cols' => 40)
+        );
+
+        $form->addWysiwyg("email[$blockId][signature_html]", ts('Signature (HTML)'),
+          array('rows' => 2, 'cols' => 40)
+        );
+      }
+    }
+  }
 }
+

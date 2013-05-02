@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,30 +29,30 @@
  <div id="map-field">
     {strip}
     <table>
-    {if $loadedMapping} 
+    {if $loadedMapping}
         <tr class="columnheader-dark"><th colspan="4">{ts 1=$savedName}Saved Field Mapping: %1{/ts}</td></tr>
     {/if}
         <tr class="columnheader">
             {section name=rows loop=$rowDisplayCount}
-		   {if $skipColumnHeader }
+       {if $skipColumnHeader }
                    { if $smarty.section.rows.iteration == 1 }
                      <th>{ts}Column Headers{/ts}</th>
                    {else}
                      <th>{ts 1=$smarty.section.rows.iteration}Import Data (row %1){/ts}</th>
                    {/if}
-	        {else}
+          {else}
                   <th>{ts 1=$smarty.section.rows.iteration}Import Data (row %1){/ts}</th>
                 {/if}
             {/section}
-            
+
             <th>{ts}Matching CiviCRM Field{/ts}</th>
         </tr>
-        
+
         {*Loop on columns parsed from the import data rows*}
         {section name=cols loop=$columnCount}
             {assign var="i" value=$smarty.section.cols.index}
             <tr style="border-bottom: 1px solid #92B6EC;">
-                         
+
                 {section name=rows loop=$rowDisplayCount}
                     {assign var="j" value=$smarty.section.rows.index}
                     <td class="{if $skipColumnHeader AND $smarty.section.rows.iteration == 1}even-row labels{else}odd-row{/if}">{$dataValues[$j][$i]}</td>
@@ -70,51 +70,51 @@
 
             </tr>
         {/section}
-                
+
     </table>
-	{/strip}
+  {/strip}
 
     {if $wizard.currentStepName != 'Preview'}
     <div>
-    
-    	{if $loadedMapping} 
-        	<span>{$form.updateMapping.html} &nbsp;&nbsp; {$form.updateMapping.label}</span>
-    	{/if}
-    	<span>{$form.saveMapping.html} &nbsp;&nbsp; {$form.saveMapping.label}</span>
-    	<div id="saveDetails" class="form-item">
-    	    <table>
+
+      {if $loadedMapping}
+          <span>{$form.updateMapping.html} &nbsp;&nbsp; {$form.updateMapping.label}</span>
+      {/if}
+      <span>{$form.saveMapping.html} &nbsp;&nbsp; {$form.saveMapping.label}</span>
+      <div id="saveDetails" class="form-item">
+          <table>
                   <tr class="crm-activity_map_table-form-block-saveMappingName">
-    		     <td>{$form.saveMappingName.label}</td>
+             <td>{$form.saveMappingName.label}</td>
                      <td>{$form.saveMappingName.html}</td>
                   </tr>
                   <tr class="crm-activity_map_table-form-block-saveMappingDesc">
-    		     <td>{$form.saveMappingDesc.label}</td>
+             <td>{$form.saveMappingDesc.label}</td>
                      <td>{$form.saveMappingDesc.html}</td>
                  </tr>
-    	      </table>
-    	</div>
-    	<script type="text/javascript">
+            </table>
+      </div>
+      <script type="text/javascript">
              {if $mappingDetailsError }
-                show('saveDetails');    
+                show('saveDetails');
              {else}
-        	    hide('saveDetails');
+              hide('saveDetails');
              {/if}
-    
-    	     {literal}   
- 	         function showSaveDetails(chkbox) {
-        		 if (chkbox.checked) {
-        			document.getElementById("saveDetails").style.display = "block";
-        			document.getElementById("saveMappingName").disabled = false;
-        			document.getElementById("saveMappingDesc").disabled = false;
-        		 } else {
-        			document.getElementById("saveDetails").style.display = "none";
-        			document.getElementById("saveMappingName").disabled = true;
-        			document.getElementById("saveMappingDesc").disabled = true;
-        		 }
+
+           {literal}
+            function showSaveDetails(chkbox) {
+             if (chkbox.checked) {
+              document.getElementById("saveDetails").style.display = "block";
+              document.getElementById("saveMappingName").disabled = false;
+              document.getElementById("saveMappingDesc").disabled = false;
+             } else {
+              document.getElementById("saveDetails").style.display = "none";
+              document.getElementById("saveMappingName").disabled = true;
+              document.getElementById("saveMappingDesc").disabled = true;
+             }
              }
              {/literal}
-	     {include file="CRM/common/highLightImport.tpl"}	     
-	    </script>
+       {include file="CRM/common/highLightImport.tpl"}
+      </script>
     </div>
     {/if}
  </div>

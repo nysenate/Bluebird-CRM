@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="Custom Search">
+      <message>
+      </message>
+    </layout>
+    <state>
+        <name>CiviCRM</name>
+        <creationDate>07/07/2011</creationDate>
+        <copyright>(C) CiviCRM LLC</copyright>
+        <author>CiviCRM LLC</author>
+        <authorEmail>info@civicrm.org</authorEmail>
+        <authorUrl>civicrm.org</authorUrl>
+        <version>4.0</version>
+		<name>Custom Search</name>
+        <description>CiviCRM Custom Search</description>
+	<config>	
+        <fields name="params" addfieldpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
+	  <fieldset name="basic"> 
+        	<field name="task" type="hidden" default="civicrm/contact/search/custom" label="" />
+  	  	<field name="csid" type="civicustomsearch" label="Select Custom Search" description="Configured Custom Search" />
+        	<field name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+	  </fieldset> 	
+        </fields>
+        </config>
+	</state>
+</metadata>

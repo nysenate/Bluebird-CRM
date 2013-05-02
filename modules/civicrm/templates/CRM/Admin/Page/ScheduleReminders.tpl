@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -30,43 +30,14 @@
    {include file="CRM/Admin/Form/ScheduleReminders.tpl"}
 {else}
 {if $rows}
-<div id="reminder">
-        {strip}
-	{include file="CRM/common/enableDisable.tpl"} 
-        {include file="CRM/common/jsortable.tpl"}
-        <table id="scheduleReminders" class="display">
-        <thead>
-        <tr id="options" class="columnheader">
-            <th class="sortable">{ts}Title{/ts}</th>
-            <th >{ts}Reminder For{/ts}</th>
-            <th >{ts}When{/ts}</th>
-            <th >{ts}While{/ts}</th>
-            <th >{ts}Repeat{/ts}</th>
-            <th >{ts}Active?{/ts}</th>
-            <th class="hiddenElement"></th>
-            <th ></th>
-        </tr>
-        </thead>
-        {foreach from=$rows item=row}
-        <tr id="row_{$row.id}" class="crm-scheduleReminders {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-            <td class="crm-scheduleReminders-title">{$row.title}</td>
-            <td class="crm-scheduleReminders-value">{$row.entity} - {$row.value}</td>
-            <td class="crm-scheduleReminders-description">{$row.first_action_offset}&nbsp;{$row.first_action_unit}&nbsp;{$row.first_action_condition}&nbsp;{$row.entityDate}</td>
-            <td class="crm-scheduleReminders-title">{$row.status}</td>
-            <td class="crm-scheduleReminders-is_repeat">{if $row.is_repeat eq 1}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}&nbsp;</td>
-	    <td id="row_{$row.id}_status" class="crm-scheduleReminders-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-	    <td>{$row.action|replace:'xx':$row.id}</td>
-	    <td class="hiddenElement"></td>
-        </tr>
-        {/foreach}
-        </table>
-        {/strip}
+    <div id="reminder">
+      {include file="CRM/Admin/Page/Reminders.tpl"}
+      <div class="action-link">
+    	  <a href="{crmURL q="action=add&reset=1"}" id="newScheduleReminder" class="button"><span><div class="icon add-icon"></div>{ts}Add Reminder{/ts}</span></a>
+      </div>
 
-	    <div class="action-link">
-    	<a href="{crmURL q="action=add&reset=1"}" id="newScheduleReminder" class="button"><span><div class="icon add-icon"></div>{ts}Add Reminder{/ts}</span></a>
-        </div>
+    </div>
 
-</div>
 {else}
     <div class="messages status">
       <div class="icon inform-icon"></div>

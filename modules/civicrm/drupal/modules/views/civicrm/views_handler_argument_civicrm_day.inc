@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -22,18 +22,20 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+
 /**
  * Argument handler for a day (DD)
  */
 class views_handler_argument_civicrm_day extends views_handler_argument_date {
+
   /**
    * Constructor implementation
    */
   function construct() {
     parent::construct();
-    $this->format = 'j';
+    $this->format     = 'j';
     $this->arg_format = 'd';
-    $this->formula = views_date_sql_extract('DAY', "***table***.$this->real_field","datetime",'0');
+    $this->formula    = views_date_sql_extract('DAY', "***table***.$this->real_field", "datetime", '0');
   }
 
   /**
@@ -57,3 +59,4 @@ class views_handler_argument_civicrm_day extends views_handler_argument_date {
     return str_pad($data->{$this->base_alias}, 2, '0', STR_PAD_LEFT);
   }
 }
+

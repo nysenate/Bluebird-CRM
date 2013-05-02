@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,38 +28,33 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
-require_once 'CRM/Core/Page.php';
-require_once 'CRM/Campaign/BAO/Petition.php';
-
 /**
  * Page for displaying Petition Signatures
  */
-class CRM_Campaign_Page_Petition extends CRM_Core_Page 
-{
+class CRM_Campaign_Page_Petition extends CRM_Core_Page {
+  function browse() {
 
-    function browse( ) {
-        require_once 'CRM/Core/Permission.php';
+    //get the survey id
+    $surveyId = CRM_Utils_Request::retrieve('sid', 'Positive', $this);
 
-    	//get the survey id
-        $surveyId 	= CRM_Utils_Request::retrieve('sid', 'Positive', $this );
-        
-        $signatures = CRM_Campaign_BAO_Petition::getPetitionSignature( $surveyId );
+    $signatures = CRM_Campaign_BAO_Petition::getPetitionSignature($surveyId);
 
-        $this->assign('signatures', $signatures);      
-    }
+    $this->assign('signatures', $signatures);
+  }
 
-    function run( ) {
-        $action = CRM_Utils_Request::retrieve('action', 'String',
-                                              $this, false, 0 ); 
-        $this->assign('action', $action);
-        $this->browse();
+  function run() {
+    $action = CRM_Utils_Request::retrieve('action', 'String',
+      $this, FALSE, 0
+    );
+    $this->assign('action', $action);
+    $this->browse();
 
-        parent::run();
-    }
-
+    return parent::run();
+  }
 }
+

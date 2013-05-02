@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,6 +25,7 @@
 *}
 {include file="CRM/common/version.tpl" assign=version}
 {include file="CRM/common/bbversion.tpl" assign=bbversion}
+{include file="CRM/Block/RecentlyViewed.extra.tpl"}{*NYSS*}
 {include file="CRM/common/accesskeys.tpl"}
 {if isset($contactId) and $contactId} {* Display contact-related footer. *}
     <div class="footer" id="record-log">

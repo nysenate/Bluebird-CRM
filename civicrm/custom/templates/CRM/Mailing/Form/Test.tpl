@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 
 {*NYSS 3880*}
-<script src="{$config->resourceBase}../../../default/themes/rayCivicrm/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
+<script src="{$config->resourceBase}../../../default/themes/Bluebird/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
 
 <div class="crm-block crm-form-block crm-mailing-test-form-block">
 {include file="CRM/common/WizardHeader.tpl"}
@@ -75,7 +75,7 @@
 <script type="text/javascript">
 cj(function() {
    cj().crmaccordions();
-   $('iframe').iframeAutoHeight({heightOffset: 20}); 
+   $('iframe').iframeAutoHeight({heightOffset: 20}); //NYSS
 });
 </script>
 {/literal}

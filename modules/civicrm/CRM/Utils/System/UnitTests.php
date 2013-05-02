@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -37,115 +36,128 @@
 /**
  * Helper authentication class for unit tests
  */
-class CRM_Utils_System_UnitTests {
+class CRM_Utils_System_UnitTests extends CRM_Utils_System_Drupal {
+  function __construct() {
+    $this->is_drupal = FALSE;
+    $this->supports_form_extensions = False;
+  }
 
-    function setTitle( $title, $pageTitle = null ) {
-        return;
+  function setTitle($title, $pageTitle = NULL) {
+    return;
+  }
+
+  static
+  function authenticate($name, $password, $loadCMSBootstrap = FALSE, $realPath = NULL) {
+    $retVal = array(1, 1, 12345);
+    return $retVal;
+  }
+
+  function appendBreadCrumb($breadCrumbs) {
+    return;
+  }
+
+  function resetBreadCrumb() {
+    return;
+  }
+
+  function addHTMLHead($head) {
+    return;
+  }
+
+  function mapConfigToSSL() {
+    global $base_url;
+    $base_url = str_replace('http://', 'https://', $base_url);
+  }
+
+  function postURL($action) {
+    return;
+  }
+
+  function url($path = NULL, $query = NULL, $absolute = TRUE, $fragment = NULL, $htmlize = TRUE, $frontend = FALSE) {
+    $config = CRM_Core_Config::singleton();
+    static $script = 'index.php';
+
+    if (isset($fragment)) {
+      $fragment = '#' . $fragment;
     }
-    
-    static function authenticate( $name, $password ) {
-        $retVal = array( 1, 1, 12345 );
-        return $retVal;
+
+    if (!isset($config->useFrameworkRelativeBase)) {
+      $base = parse_url($config->userFrameworkBaseURL);
+      $config->useFrameworkRelativeBase = $base['path'];
     }
+    $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
 
-    static function appendBreadCrumb( $breadCrumbs ) {
-        return;
-    }
+    $separator = $htmlize ? '&amp;' : '&';
 
-    static function resetBreadCrumb( ) {
-        return;
-    }
-
-    static function addHTMLHead( $head ) {
-        return;
-    }
-
-    static function mapConfigToSSL( ) {
-        global $base_url;
-        $base_url = str_replace( 'http://', 'https://', $base_url );
-    }
-
-    static function postURL( $action ) {
-        return;
-    }
-
-    function url($path = null, $query = null, $absolute = true, $fragment = null, $htmlize = true ) {
-        $config        = CRM_Core_Config::singleton( );
-        static $script = 'index.php';
-
-        if (isset($fragment)) {
-            $fragment = '#'. $fragment;
+    if (!$config->cleanURL) {
+      if (isset($path)) {
+        if (isset($query)) {
+          return $base . $script . '?q=' . $path . $separator . $query . $fragment;
         }
-
-        if ( ! isset( $config->useFrameworkRelativeBase ) ) {
-            $base = parse_url( $config->userFrameworkBaseURL );
-            $config->useFrameworkRelativeBase = $base['path'];
+        else {
+          return $base . $script . '?q=' . $path . $fragment;
         }
-        $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
-
-        $separator = $htmlize ? '&amp;' : '&';
-
-        if (! $config->cleanURL ) {
-            if ( isset( $path ) ) {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?q=' . $path . $separator . $query . $fragment;
-                } else {
-                    return $base . $script .'?q=' . $path . $fragment;
-                }
-            } else {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?'. $query . $fragment;
-                } else {
-                    return $base . $fragment;
-                }
-            }
-        } else {
-            if ( isset( $path ) ) {
-                if ( isset( $query ) ) {
-                    return $base . $path .'?'. $query . $fragment;
-                } else {
-                    return $base . $path . $fragment;
-                }
-            } else {
-                if ( isset( $query ) ) {
-                    return $base . $script .'?'. $query . $fragment;
-                } else {
-                    return $base . $fragment;
-                }
-            }
+      }
+      else {
+        if (isset($query)) {
+          return $base . $script . '?' . $query . $fragment;
         }
+        else {
+          return $base . $fragment;
+        }
+      }
     }
+    else {
+      if (isset($path)) {
+        if (isset($query)) {
+          return $base . $path . '?' . $query . $fragment;
+        }
+        else {
+          return $base . $path . $fragment;
+        }
+      }
+      else {
+        if (isset($query)) {
+          return $base . $script . '?' . $query . $fragment;
+        }
+        else {
+          return $base . $fragment;
+        }
+      }
+    }
+  }
 
-    static function getUserID( $user ) {
-        //FIXME: look here a bit closer when testing UFMatch
-        require_once 'CRM/Core/BAO/UFMatch.php';
-      
-        // this puts the appropriate values in the session, so
-        // no need to return anything
-        CRM_Core_BAO_UFMatch::synchronize( $user, true, 'Standalone', 'Individual' );
-    }
+  function getUserID($user) {
+    //FIXME: look here a bit closer when testing UFMatch
 
-    static function getAllowedToLogin( $user ) {
-        return true;
-    }
+    // this puts the appropriate values in the session, so
+    // no need to return anything
+    CRM_Core_BAO_UFMatch::synchronize($user, TRUE, 'Standalone', 'Individual');
+  }
 
-    static function setMessage( $message ) {
-    	return;
-    }
+  function getAllowedToLogin($user) {
+    return TRUE;
+  }
 
-    static function permissionDenied( ) {
-        CRM_Core_Error::fatal( ts( 'You do not have permission to access this page' ) );
-    }
+  function setMessage($message) {
+    return;
+  }
 
-    static function logout( ) {
-        session_destroy();
-        header("Location:index.php");
-    }
+  function permissionDenied() {
+    CRM_Core_Error::fatal(ts('You do not have permission to access this page'));
+  }
 
-    static function getUFLocale()
-    {
-        return null;
-    }
+  function logout() {
+    session_destroy();
+    header("Location:index.php");
+  }
+
+  function getUFLocale() {
+    return NULL;
+  }
+
+  function getModules() {
+    return array();
+  }
 }
-
 

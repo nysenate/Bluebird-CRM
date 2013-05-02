@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,19 +29,16 @@
 /**
  *
  * @package CiviCRM_Hook
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id: $
  *
  */
-
-require_once 'CRM/Utils/Hook.php';
-
 class CRM_Utils_Hook_UnitTests extends CRM_Utils_Hook {
-
-    static function invoke( $numParams,
-                            &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
-                            $fnSuffix ) {
-        return;
-    }
-
+  function invoke($numParams,
+    &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
+    $fnSuffix
+  ) {
+    return;
+  }
 }
+

@@ -15,20 +15,18 @@ drupal_script_init();
 
 require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
-$config->logging = 1;
+$config->logging = TRUE;
 
-//set logging value in settings
-require_once "CRM/Core/BAO/Setting.php";
-$params = array('logging' => 1);
-CRM_Core_BAO_Setting::add($params);
-
-echo "Enable Logging...\n";
+echo "enable logging and rebuild triggers...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->enableLogging();
 
-//CRM_Core_Error::debug('logging',$logging);
-
-echo "Rebuild Triggers...\n";
-CRM_Core_DAO::triggerRebuild( );
-
+//set logging value in domain
+echo "setting logging flag in domain record...\n";
+$sql = "
+  UPDATE civicrm_domain
+  SET config_backend = REPLACE( config_backend, 'logging\';s:1:\'0', 'logging\';s:1:\'1' )
+  WHERE id = 1;
+";
+CRM_Core_DAO::executeQuery($sql);

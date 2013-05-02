@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,6 +32,7 @@
 	    <tr>
 		    <td>{$form.status_id.label}<br />{$form.status_id.html}</td>
 		    <td>{$form.contibution_page_id.label}<br />{$form.contibution_page_id.html}</td>
+        <td>{$form.event_id.label}<br />{$form.event_id.html}</td>
 	    </tr>
         </table>
         <div class="crm-submit-buttons">{$form.buttons.html}</div>

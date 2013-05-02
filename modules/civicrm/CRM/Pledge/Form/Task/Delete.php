@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,77 +28,70 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Pledge/Form/Task.php';
 
 /**
  * This class provides the functionality to delete a group of
  * participations. This class provides functionality for the actual
  * deletion.
  */
-class CRM_Pledge_Form_Task_Delete extends CRM_Pledge_Form_Task 
-{
-    /**
-     * Are we operating in "single mode", i.e. deleting one
-     * specific pledge?
-     *
-     * @var boolean
-     */
-    protected $_single = false;
+class CRM_Pledge_Form_Task_Delete extends CRM_Pledge_Form_Task {
 
-    /**
-     * build all the data structures needed to build the form
-     *
-     * @return void
-     * @access public
-     */
-    function preProcess( ) 
-    {
-        //check for delete
-        if ( !CRM_Core_Permission::checkActionPermission( 'CiviPledge', CRM_Core_Action::DELETE ) ) {
-            CRM_Core_Error::fatal( ts( 'You do not have permission to access this page' ) );  
-        }
-        parent::preProcess( );
+  /**
+   * Are we operating in "single mode", i.e. deleting one
+   * specific pledge?
+   *
+   * @var boolean
+   */
+  protected $_single = FALSE;
+
+  /**
+   * build all the data structures needed to build the form
+   *
+   * @return void
+   * @access public
+   */ function preProcess() {
+    //check for delete
+    if (!CRM_Core_Permission::checkActionPermission('CiviPledge', CRM_Core_Action::DELETE)) {
+      CRM_Core_Error::fatal(ts('You do not have permission to access this page'));
+    }
+    parent::preProcess();
+  }
+
+  /**
+   * Build the form
+   *
+   * @access public
+   *
+   * @return void
+   */
+  function buildQuickForm() {
+    $this->addDefaultButtons(ts('Delete Pledges'), 'done');
+  }
+
+  /**
+   * process the form after the input has been submitted and validated
+   *
+   * @access public
+   *
+   * @return None
+   */
+  public function postProcess() {
+    $deletedPledges = 0;
+    foreach ($this->_pledgeIds as $pledgeId) {
+      if (CRM_Pledge_BAO_Pledge::deletePledge($pledgeId)) {
+        $deletedPledges++;
+      }
     }
 
-    /**
-     * Build the form
-     *
-     * @access public
-     * @return void
-     */
-    function buildQuickForm( ) 
-    {
-        $this->addDefaultButtons( ts( 'Delete Pledges' ), 'done' );
-    }
-
-    /**
-     * process the form after the input has been submitted and validated
-     *
-     * @access public
-     * @return None
-     */
-    public function postProcess( ) 
-    {
-        $deletedPledges = 0;
-        require_once 'CRM/Pledge/BAO/Pledge.php';
-        foreach ( $this->_pledgeIds as $pledgeId ) {
-            if ( CRM_Pledge_BAO_Pledge::deletePledge( $pledgeId ) ) {
-                $deletedPledges++;
-            }
-        }
-
-        $status = array(
-                        ts( 'Deleted Pledge(s): %1',        array( 1 => $deletedPledges ) ),
-                        ts( 'Total Selected Pledge(s): %1', array( 1 => count($this->_pledgeIds ) ) ),
-                        );
-        CRM_Core_Session::setStatus( $status );
-
-    }
+    $status = array(
+      ts('Deleted Pledge(s): %1', array(1 => $deletedPledges)),
+      ts('Total Selected Pledge(s): %1', array(1 => count($this->_pledgeIds))),
+    );
+    CRM_Core_Session::setStatus($status);
+  }
 }
-
 

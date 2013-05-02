@@ -83,18 +83,18 @@ XML_Util                      1.2.1      BSD 3-cl.
 
 NON-PEAR
 ========
-AMFPHP         1.2.6      GPL 2       http://amfphp.org/
 PHP gettext    1.0.7      GPL 2+      http://savannah.nongnu.org/projects/php-gettext/
-PHPIDS         0.6.4      LGPL 3+     http://php-ids.org/
+PHPIDS         0.7        LGPL 3+     http://phpids.org/
 Smarty         2.6.26     LGPL 2.1+   http://smarty.php.net/                                        local changes
 Smarty Gettext 1.0b1      LGPL 2.1+   http://smarty.incutio.com/?page=SmartyGettext
 TCPDF          4.8.027    LGPL 2.1+   http://tecnick.com/public/code/cp_dpage.php?aiocp_dp=tcpdf    doc, examples, images and most of fonts removed
-dompdf         0.5.1      LGPL 2.1+   http://digitaljunkies.ca/dompdf/                              local changes
+dompdf         0.6.0.beta3 LGPL 2.1+  http://code.google.com/p/dompdf/                              local changes (removed tests and index.php)
 eZ Components  2009.1.2   BSD 3-cl.   http://ezcomponents.org/                                      local changes
 html2text      1.0.0      GPL 2+      http://chuggnutt.com/html2text.php                            local changes
 reCAPTCHA      1.10       X11         http://recaptcha.net/
-
-
+OpenFlashChart 2.0        LGPL        http://teethgrinder.co.uk/open-flash-chart-2/
+Snappy         ??         X11         https://github.com/knplabs/snappy
+CKEditor       4.0.1      GPL 3/LGPL 3/MPL 1.1
 
 payment processors for CiviCRM
 ==============================
@@ -107,7 +107,6 @@ eWAY             AGPL 3   by Dolphin Software
 
 Unknown status
 ==============
-CKEditor      GPL 3/LGPL 3/MPL 1.1
 Facebook      BSD 2-cl.
 Google        Apache 2/GPL 2+
 TinyMCE       LGPL 2.1

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -80,13 +80,18 @@
         <td>{$form.entity.html}</td>
     </tr>
 
-    <tr class="crm-scheduleReminder-form-block-description">
+    <tr class="crm-scheduleReminder-form-block-when">
         <td class="right">{$form.start_action_offset.label}</td>
-	<td colspan="3">{$form.start_action_offset.html}&nbsp;&nbsp;&nbsp;{$form.start_action_unit.html}&nbsp;&nbsp;&nbsp;
-			{$form.start_action_condition.html}&nbsp;&nbsp;&nbsp;{$form.start_action_date.html}
+	<td colspan="3">{include file="CRM/common/jcalendar.tpl" elementName=absolute_date} <strong>{ts}OR{/ts}</strong><br />  
 	</td>
     </tr>
-    <tr class="crm-scheduleReminder-form-block-is_repeat"><td class="label" width="20%">{$form.is_repeat.label}</td>
+
+   <tr id="relativeDate" class="crm-scheduleReminder-form-block-description">
+        <td class="right"></td>
+	<td colspan="3">{$form.start_action_offset.html}&nbsp;&nbsp;&nbsp;{$form.start_action_unit.html}&nbsp;&nbsp;&nbsp;{$form.start_action_condition.html}&nbsp;&nbsp;&nbsp;{$form.start_action_date.html}
+	</td>
+    </tr>
+    <tr id="relativeDateRepeat" class="crm-scheduleReminder-form-block-is_repeat"><td class="label" width="20%">{$form.is_repeat.label}</td>
         <td>{$form.is_repeat.html}&nbsp;&nbsp;<span class="description">{ts}Enable repetition.{/ts}</span></td>
     </tr>
     <tr id="repeatFields" class="crm-scheduleReminder-form-block-repeatFields"><td></td><td>
@@ -103,14 +108,18 @@
         </td>
     </tr>
     <tr class="crm-scheduleReminder-form-block-recipient">
-        <td class="right">{$form.recipient.label}</td><td colspan="3">{$form.recipient.html}</td>
+        <td id="recipientLabel" class="right">{$form.recipient.label}</td><td colspan="3">{$form.recipient.html}</td>
+    </tr>
+    <tr id="recipientList" class="crm-scheduleReminder-form-block-recipientListing">
+        <td class="right">{$form.recipient_listing.label}</td><td colspan="3">{$form.recipient_listing.html}</td>
     </tr>
     <tr id="recipientManual" class="crm-scheduleReminder-form-block-recipient_manual_id">
     	<td class="label">{$form.recipient_manual_id.label}</td>
         <td>{$form.recipient_manual_id.html}
-	    {edit}<span class="description">{ts}You can manually sent out the reminders to these recipients.{/ts}</span>{/edit}
+	    {edit}<span class="description">{ts}You can manually send out the reminders to these recipients.{/ts}</span>{/edit}
         </td>
     </tr>
+
     <tr id="recipientGroup" class="crm-scheduleReminder-form-block-recipient_group_id">
     	<td class="label">{$form.group_id.label}</td>
         <td>{$form.group_id.html}
@@ -169,15 +178,79 @@
     invert              = 0
 }
 
- {literal}
- <script type='text/javascript'>
-     cj(function() {
-         cj('#entity\\[0\\]').click( function( ) {
+{literal}
+<script type='text/javascript'>
+    var entityMapping = eval({/literal}{$entityMapping}{literal});
+    var recipientMapping = eval({/literal}{$recipientMapping}{literal});
+
+    cj('#absolute_date_display').change( function() {
+        if(cj('#absolute_date_display').val()) {
+            cj('#relativeDate').hide();
+            cj('#relativeDateRepeat').hide();
+            cj('#repeatFields').hide();
+        } else {
+            cj('#relativeDate').show();
+            cj('#relativeDateRepeat').show();
+        }
+    });
+    
+    cj('#absolute_date_display').parent( ).children('.crm-clear-link').children('a').click( function() {
+        cj('#relativeDate').show();
+        cj('#relativeDateRepeat').show();
+    });
+
+    cj(function() {
+        if (cj('#absolute_date_display').val()) {
+            cj('#relativeDate').hide();
+            cj('#relativeDateRepeat').hide();
+            cj('#repeatFields').hide();
+         }
+
+         cj('#entity\\[0\\]').change( function( ) {
               buildSelect("start_action_date");
 	      buildSelect("end_date");
 	      buildSelect1("recipient");
-         });    
+         }); 
      });
+
+    cj(function() {
+       if ( cj('#is_recipient_listing').val( ) ) {
+           cj('#recipientList').show();
+       } else {
+           cj('#recipientList').hide();
+       }
+       cj('#recipient').change( function( ) {
+           populateRecipient();
+       });
+     });
+
+     function populateRecipient( ) {
+     	  var recipient = cj("#recipient option:selected").val();    
+	  var entity = cj("#entity\\[0\\] option:selected").val();
+	  var postUrl = "{/literal}{crmURL p='civicrm/ajax/populateRecipient' h=0}{literal}";
+	  if(recipientMapping[recipient] == 'Participant Status' || recipientMapping[recipient] == 'Participant Role') {
+   	     var elementID = '#recipient_listing';
+             cj( elementID ).html('');
+	        cj.post(postUrl, {recipient: recipientMapping[recipient]},
+	    	    function ( response ) {
+  		    response = eval( response );
+  		    for (i = 0; i < response.length; i++) {
+                         cj( elementID ).get(0).add(new Option(response[i].name, response[i].value), document.all ? i : null);
+                    }
+		});
+	        cj("#recipientList").show();
+                cj('#is_recipient_listing').val(1);	     
+	  } else {
+	     cj("#recipientList").hide();
+	     cj('#is_recipient_listing').val('');
+	  }
+	  
+	  if (entityMapping[entity] == 'civicrm_activity') {
+	     cj("#recipientLabel").text("Recipient(s)");
+	  } else {
+ 	     cj("#recipientLabel").text("Additional Recipient(s)");
+	  }
+     }
      function buildSelect( selectID ) {
          var elementID = '#' +  selectID;
          cj( elementID ).html('');
@@ -200,12 +273,16 @@
 	 var mappingID = cj('#entity\\[0\\]').val();
          var postUrl1 = "{/literal}{crmURL p='civicrm/ajax/mapping1' h=0}{literal}";
 
+	 cj('#is_recipient_listing').val('');
          cj.post( postUrl1, { mappingID: mappingID},
-             function ( response ) {
-                 response = eval( response );
+             function ( result ) {
+                 var responseResult = cj.parseJSON(result);
+                 var response       = eval(responseResult.sel5);
+                 recipientMapping   = eval(responseResult.recipientMapping);
                  for (i = 0; i < response.length; i++) {
                      cj( elementID ).get(0).add(new Option(response[i].name, response[i].value), document.all ? i : null);
                  }
+		 populateRecipient();
              }
          );
      }

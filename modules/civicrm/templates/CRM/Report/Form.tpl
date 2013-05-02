@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{include file="CRM/common/crmeditable.tpl"}
 {* this div is being used to apply special css *}
     {if $section eq 1}
     <div class="crm-block crm-content-block crm-report-layoutGraph-form-block">
@@ -33,28 +34,35 @@
     <div class="crm-block crm-content-block crm-report-layoutTable-form-block">
         {*include the table layout*}
         {include file="CRM/Report/Form/Layout/Table.tpl"}
-	</div>
+  </div>
     {else}
+    {if $criteriaForm OR $instanceForm OR $instanceFormError}
     <div class="crm-block crm-form-block crm-report-field-form-block">
         {include file="CRM/Report/Form/Fields.tpl"}
     </div>
-    
+    {/if}
+
     <div class="crm-block crm-content-block crm-report-form-block">
         {*include actions*}
         {include file="CRM/Report/Form/Actions.tpl"}
 
         {*Statistics at the Top of the page*}
         {include file="CRM/Report/Form/Statistics.tpl" top=true}
-    
+
         {*include the graph*}
         {include file="CRM/Report/Form/Layout/Graph.tpl"}
-    
+
         {*include the table layout*}
-        {include file="CRM/Report/Form/Layout/Table.tpl"}    
-    	<br />
+        {include file="CRM/Report/Form/Layout/Table.tpl"}
+      <br />
         {*Statistics at the bottom of the page*}
-        {include file="CRM/Report/Form/Statistics.tpl" bottom=true}    
-    
+        {include file="CRM/Report/Form/Statistics.tpl" bottom=true}
+
         {include file="CRM/Report/Form/ErrorMessage.tpl"}
     </div>
+    {/if}
+    {if $outputMode == 'print'}
+      <script type="text/javascript">
+        window.print();
+      </script>
     {/if}

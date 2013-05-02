@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,14 +27,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
 
 /**
  * Implementation of hook_enable().
- *   
+ *
  */
 function civicrm_engage_enable() {
   civicrm_initialize();
@@ -46,7 +45,7 @@ function civicrm_engage_enable() {
 
 /**
  * Implementation of hook_install().
- *   
+ *
  */
 function civicrm_engage_install() {
   civicrm_initialize();
@@ -57,8 +56,8 @@ function civicrm_engage_install() {
 }
 
 /**
- * Create contact subtypes which are referenced in the 
- * xml file that is imported to boostrap the CiviCRM 
+ * Create contact subtypes which are referenced in the
+ * xml file that is imported to boostrap the CiviCRM
  * Campaign component. This function is indempotent, so
  * it's run on enable.
  */
@@ -69,44 +68,44 @@ function civicrm_engage_add_contact_subtypes() {
       'label' => 'Media Contact',
       'parent_id' => 1,
       'is_active' => 1,
-      'name' => 'Media_Contact'
-    ),                         
+      'name' => 'Media_Contact',
+    ),
     'Funder_Contact' => array(
       'label' => 'Funder Contact',
-      'parent_id' => 1,           
+      'parent_id' => 1,
       'is_active' => 1,
-      'name' => 'Funder_Contact'
-    ),                          
+      'name' => 'Funder_Contact',
+    ),
     'Elected_Official' => array(
       'label' => 'Elected Official',
-      'parent_id' => 1,             
+      'parent_id' => 1,
       'is_active' => 1,
-      'name' => 'Elected_Official'
-    ),                            
+      'name' => 'Elected_Official',
+    ),
     'Media_Outlet' => array(
       'label' => 'Media Outlet',
-      'parent_id' => 3,         
+      'parent_id' => 3,
       'is_active' => 1,
-      'name' => 'Media_Outlet'
-    ),                            
+      'name' => 'Media_Outlet',
+    ),
     'Foundation' => array(
       'label' => 'Foundation',
       'parent_id' => 3,
       'is_active' => 1,
-      'name' => 'Foundation'
+      'name' => 'Foundation',
     ),
   );
-  require_once("CRM/Contact/BAO/ContactType.php");
-  $existing_types = CRM_Contact_BAO_ContactType::subTypeInfo( );   
-  while(list($k) = each($existing_types)) {
-    if(array_key_exists($k,$create)) {
-      drupal_set_message(t("Not creating $k, already exists."));
+  require_once ("CRM/Contact/BAO/ContactType.php");
+  $existing_types = CRM_Contact_BAO_ContactType::subTypeInfo();
+  while (list($k) = each($existing_types)) {
+    if (array_key_exists($k, $create)) {
+      drupal_set_message(t("Not creating @type, already exists.", array("@type" => $k)));
       unset($create[$k]);
     }
   }
   $contact_type = new CRM_Contact_BAO_ContactType();
-  while(list($k,$v) = each($create)) {
-    drupal_set_message(t("Creating %c",array('%c' => $k)));
+  while (list($k, $v) = each($create)) {
+    drupal_set_message(t("Creating %c", array('%c' => $k)));
     $contact_type->add($v);
   }
 }
@@ -115,28 +114,39 @@ function civicrm_engage_add_contact_subtypes() {
  * Street parsing is required for walk lists because it needs to
  * sort by even/odd address numbers so, when canvassing a street
  * in which even addresses are on one side and odd on the other, you
- * can divide the task between two people with two different lists. 
+ * can divide the task between two people with two different lists.
  */
 function civcrm_engage_enable_street_address_parsing() {
-  include_once 'CRM/Core/BAO/Preferences.php';
-  $address_options = CRM_Core_BAO_Preferences::valueOptions( 'address_options', 
-    true, null, true );
+  include_once 'CRM/Core/BAO/Setting.php';
+  $address_options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'address_options',
+    TRUE, NULL, TRUE
+  );
   $address_options['street_address_parsing'] = 1;
-  CRM_Core_BAO_Preferences::setValue( 'address_options',$address_options);
+  CRM_Core_BAO_Setting::setValueOption(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'address_options',
+    $address_options
+  );
 }
 
 /**
  * Check Phone Number for auto complete. This setting doubles for batch
  * update, and when making a phone list in CiviCampaign you really need
- * to have the phone number included. 
+ * to have the phone number included.
  */
 function civcrm_engage_set_autocomplete_options() {
-  include_once 'CRM/Core/BAO/Preferences.php';
-  $contact_autocomplete_options = CRM_Core_BAO_Preferences::valueOptions( 
-    'contact_autocomplete_options', true, null, true );
+  include_once 'CRM/Core/BAO/Setting.php';
+  $contact_autocomplete_options = CRM_Core_BAO_Setting::valueOptions(
+    CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'contact_autocomplete_options',
+    TRUE, NULL, TRUE
+  );
   $contact_autocomplete_options['phone'] = 1;
-  CRM_Core_BAO_Preferences::setValue( 
-    'contact_autocomplete_options',$contact_autocomplete_options);
+  CRM_Core_BAO_Setting::setValueOption(
+    CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'contact_autocomplete_options',
+    $contact_autocomplete_options
+  );
 }
 
 function civicrm_engage_load_configuration() {
@@ -149,11 +159,23 @@ function civicrm_engage_load_configuration() {
   // instead... start with the drupal root
   $root = getcwd();
   // and then added the relative path to the module
-  $civi_engage_path = drupal_get_path('module','civicrm_engage');
+  $civi_engage_path = drupal_get_path('module', 'civicrm_engage');
   $xml_file = $root . '/' . $civi_engage_path . '/CustomGroupData.xml';
   require_once 'CRM/Utils/Migrate/Import.php';
-  $import = new CRM_Utils_Migrate_Import( );
+  $import = new CRM_Utils_Migrate_Import();
 
-  $import->run( $xml_file );
+  $import->run($xml_file);
+}
+
+/**
+ * Fix the Participant Role field in the Update Event Invite Responses 
+ **/
+function civicrm_engage_update_7001() {
+  civicrm_initialize();
+  $sql = "UPDATE civicrm_uf_field SET field_name = 'participant_role' WHERE ".
+    "field_name = 'participant_role_id' AND uf_group_id IN (SELECT id FROM ".
+    "civicrm_uf_group WHERE name = 'update_event_invite_responses') ";
+
+  CRM_Core_DAO::executeQuery($sql);
 
 }

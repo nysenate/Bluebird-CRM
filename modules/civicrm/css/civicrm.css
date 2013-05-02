@@ -6,7 +6,7 @@
     display: inline;
 }
 
-#crm-container .hiddenElement {
+#crm-container .hiddenElement, #crm-container-snippet .hiddenElement {
     display   	    : none;
 }
 
@@ -31,10 +31,15 @@ table.crm-table-group-summary {
     border-collapse: collapse;
     width: 100%;
 }
-    #crm-container table.criteria-group {
-        margin-bottom: .1em;
+
+#crm-container table.criteria-group {
+  margin-bottom: .1em;
 }
 
+#crm-container table.crm-address-element {
+  border: none;
+  margin-bottom: .25em;
+}
 
 #crm-container th, 
 #crm-container table.display thead th, 
@@ -120,6 +125,7 @@ table.crm-table-group-summary tbody {
 #crm-container .six {width: 6em;}
 #crm-container .eight {width: 8em;}
 #crm-container .twelve {width: 12em;}
+#crm-container .eighteen {width: 18em;}
 #crm-container .twenty {width: 20em;}
 #crm-container .medium {width: 12em;}
 #crm-container .big {width: 15em;}
@@ -258,6 +264,10 @@ div#crm-container {
     font-size: .9em;
 }
 
+/*
+** Ensures max-width is reset to css default for the images in the maps
+*/
+#Map img { max-width: none; }
 
 /*
 ** CRM form layout classes (from www.realworldstyle.com)
@@ -283,14 +293,18 @@ div.spacer,
     padding-left: 1px;
 }
 
-
-
 #crm-container .form-submit {
     margin: .25em 0.5em 0.25em 0;
 }
 
 #crm-container .form-submit-inline {
     margin: 0em 0.5em 0.25em 0em;
+}
+
+#crm-container div.contact_panel div.crm-inline-button {
+  padding-left: 6px;
+  padding-top:  6px;
+  margin-bottom: 28px;
 }
 
 #crm-container fieldset{
@@ -300,6 +314,10 @@ div.spacer,
     border:none;
     border-top: 1px solid #CFCEC3;
     
+}
+
+#crm-container fieldset.no-border {
+    border-top: none;
 }
 
 #crm-container fieldset legend {
@@ -585,6 +603,7 @@ div.spacer,
 
 #crm-container div.status {
     background-color:#FFFFCC;
+    background-image:none;
     border:1px solid #FFFF66;
     margin:0.5em 0px;
     padding:0.25em 0.5em;
@@ -694,6 +713,10 @@ div.spacer,
     margin-bottom: 4px;
 }
 
+#crm-container h3.nobackground {
+  background-color: transparent !important;
+}
+
 #crm-container .crm-form-block h3 {background-color: transparent;}
 
 #crm-container .col1 {
@@ -715,6 +738,11 @@ div.spacer,
 #crm-container ul.indented {
     padding-left: 3em;
 }
+#crm-container tr.subevent td.event-title,
+#crm-container tr.subevent td.event-info {
+    padding-left: 3em;
+}
+
 
 /*
 ** CSS for links from Drupal Blocks.
@@ -749,16 +777,20 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 /*
 ** Styles for formatting text
 */
-/* Inline form field 'post-help' */
-#crm-container .description {
+/* Inline form field 'post-help' and radio-button unselect */
+#crm-container .description,
+#crm-container .crm-clear-link {
     font-size: 0.9em;
+    font-weight: normal;
     white-space: normal;
     width: auto;
     color: #696969;
 }
 
-#crm-container .form-layout-compressed td.description {
-    padding: 0px 0px 5px 20px;
+#crm-container .form-layout-compressed td.description,
+#crm-container .form-layout td.description {
+    padding: 0 5px 5px 5px;
+    font-size: 1em;
 }
 
 /* Page and form-level 'help' */
@@ -1056,68 +1088,62 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 .block-civicrm div#recently-viewed ul {
     list-style-image: none;
     font-size: .9em;
-    /* overflow: hidden; */
     margin: 0px;
     padding: 0px;
 }
 
-.block-civicrm div#recently-viewed ul li {
+.block-civicrm div#recently-viewed li.crm-recently-viewed {
     margin: 1px;
     padding: 1px 1px 4px 3px;
     border: 1px solid #D7D7D0;
     background-color: #fff;
     white-space: nowrap;
     list-style-type:none;
-    -moz-border-radius: 4px; -webkit-border-radius: 4px;   -khtml-border-radius: 4px; border-radius:4px;
+    position: relative;
+    -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius:4px;
 }
 
-#crm-container #recently-viewed a,
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed:hover,
+.block-civicrm #recently-viewed .crm-recentview-wrapper {
+    background-color:#FFFFCC;
+    border:1px solid #FFFF66;
+    -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius:4px;
+}
+
 .block-civicrm div#recently-viewed a {
     font-weight: normal;
-    /*color: #6e6e6e;*/
     color: #4A88DF;
     text-decoration:none;
     font-size: .95em
 }
 
-.block-civicrm div#recently-viewed ul li.crm-recentview-active {
-    background-color:#FFFFCC;
-    border:1px solid #FFFF66;
-    -moz-border-radius: 4px; -webkit-border-radius: 4px;   -khtml-border-radius: 4px; border-radius:4px;
-}
-
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul {
+.block-civicrm #recently-viewed .crm-recentview-wrapper {
+    display:none;
     position:absolute;
-    z-index : 99;
-    background-color:#FFFFCC;
-    overflow:visible;
-    list-style-type:none;
-    margin:0px;
-}
-
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li {
-    font-size:1.1em;
-    background-color:#FFFFCC;
-    margin:0px;
-    border:1px solid #FFFF66;
+    z-index: 99;
+    width: 10em;
+    overflow:hidden;
+    top: 0px;
     text-align:center;
-    -moz-border-radius: 0px 4px 4px 4px; 
-    -webkit-border-radius: 0px 4px 4px 4px;   
-    -khtml-border-radius: 0px 4px 4px 4px; 
-    border-radius:0px 4px 4px 4px;
-    padding-top:1em;
+    padding-top: 1em;
 }
 
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li a:hover {
+.block-civicrm div#recently-viewed.left .crm-recentview-wrapper {
+    border-left: none;
+    right: -10em;
+}
+
+.block-civicrm div#recently-viewed.right .crm-recentview-wrapper {
+    border-right: none;
+    left: -10em;
+}
+
+.block-civicrm div#recently-viewed li.crm-recently-viewed:hover .crm-recentview-wrapper {
+    display:block;
+}
+
+.block-civicrm div#recently-viewed .crm-recentview-wrapper a:hover {
   color:#494949; 
-}
-
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul.crm-recentview-wrapper-left li {
-    border-left:none;
-}
-
-.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul.crm-recentview-wrapper-right li {
-    border-right:none;
 }
 
 /* alpha filter styles */
@@ -1373,7 +1399,6 @@ table.campaign td,
 }
 
 #crm-container .thermometer-pointer {
-    background:transparent url(images/thermometer-pointer.gif) no-repeat scroll 130px 3px;
     padding-left:45px; /* width of thermometer + a little actual padding */
     position:absolute;
     top:-10px; /* vertically center text on percentage raised */
@@ -1485,24 +1510,38 @@ table.campaign td,
 
 }
 
-#crm-container table.nestedActivitySelector tr.priority-urgent {         
+#crm-container table.nestedActivitySelector tr.priority-urgent,
+#crm-container table.nestedActivitySelector tr a.priority-urgent
+{         
     background-color: #FFDDDD;
 }
 
-#crm-container table.nestedActivitySelector tr.priority-low {
+#crm-container table.nestedActivitySelector tr.priority-low,
+#crm-container table.nestedActivitySelector tr a.priority-low
+{
     background-color: #DDFFDD;
 }
 
-#crm-container table.nestedActivitySelector tr.status-scheduled {
+#crm-container table.nestedActivitySelector tr.status-scheduled,
+#crm-container table.nestedActivitySelector tr a.status-scheduled
+{
     color: #006633;   
 }
 
-#crm-container table.nestedActivitySelector tr.status-completed {
+#crm-container table.nestedActivitySelector tr.status-completed,
+#crm-container table.nestedActivitySelector tr a.status-completed
+{
     color: #333333; 
 }
 
-#crm-container table.nestedActivitySelector tr.status-overdue {
+#crm-container table.nestedActivitySelector tr.status-overdue,
+#crm-container table.nestedActivitySelector tr a.status-overdue
+{
     color: #FF0000;
+}
+
+#crm-container table.nestedActivitySelector tr a.crm-activity-status {
+	cursor: pointer;
 }
 
 #crm-container table.nestedActivitySelector tr a {
@@ -1787,6 +1826,23 @@ div.grippie {
     display:block;
 }
 
+#crm-container .upper {   
+  text-transform: uppercase;
+}
+
+#crm-container table.caseSelector td.status-urgent {   
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#crm-container div.contact_panel div.crm-summary-block {
+    border: 2px dashed transparent;
+    background: none;
+}
+
+#crm-container div.contact_panel div.crm-inline-edit-hover {
+    border: 2px dashed lightgrey;
+}
 
 #crm-container div.contact_panel *, 
 #crm-container div#contactTopBar * {
@@ -1794,21 +1850,22 @@ div.grippie {
 }
 
 #crm-container div.contactCardLeft, #crm-container div#Top {
-    WIDTH   : 49%; 
-    DISPLAY : block; 
-    FLOAT   : left;
+  width   : 49%; 
+  display : block; 
+  float   : left;
+  clear   : both;
 }
 
 #crm-container div.contactCardRight {
-    WIDTH   : 49%; 
-    DISPLAY : block; 
-    FLOAT   : right;
+  width : 49%; 
+  display : block; 
+  float   : right;
 }
 
 #crm-container div#contactTopBar table,
 #crm-container div.contact_panel table {
-	margin-bottom: 4px;
-	}
+	margin-bottom: 0px;
+}
 
 #crm-container div#contactTopBar .label, 
 #crm-container div.contactCardLeft .label, 
@@ -1863,12 +1920,15 @@ div.grippie {
 }
 
 #crm-container div.contact_panel .crm-address-block {
+   /*
     border:1px solid #D7D7D0;
     margin-bottom:1em;
-    }
+    */
+    margin-bottom:6px;
+}
 #crm-container .crm-add-address-wrapper {
     height:25px;
-    }
+}
 
 #crm-container span.email-hold a:link, 
 #crm-container span.email-hold a:visited, 		
@@ -1877,6 +1937,55 @@ div.grippie {
     color: #ff6655 !important
 }
 
+#crm-container div.crm-clear {
+  clear:both;
+  margin-bottom: 1px;
+  background-color: #FAFAFA;
+}
+
+#crm-container div.crm-label {
+  background-color: #FAFAFA;
+  color: #7A7A60;
+  text-align: left;
+  width: 122px;
+  float:left;
+  padding: 4px 0px 5px 4px;
+  margin-right: 5px;
+  border-top: 1px solid #ffffff
+}
+
+#crm-container div.crm-content {
+  background-color: #F4F4ED;
+  padding: 4px 0px 5px 4px;
+  margin-bottom: 1px;
+  margin-left: 126px;
+  min-height: 17px;
+  border-top: 1px solid #ffffff
+}
+
+#crm-container div.crm-table2div-layout {
+  font-size: 11px;
+}
+
+#crm-container div.crm-config-option {
+  float: right;
+  padding-right: 10px;
+  padding-top: 5px;
+}
+
+#crm-container a.crm-link-action {
+  cursor: pointer;
+  cursor: hand;
+}
+
+#crm-container span.crm-custom-greeting {
+  font-size: 9px;
+}
+
+#crm-container div.contact_panel table.crm-inline-edit-form td,
+#crm-container div.contact_panel div.crm-inline-edit-form {
+  background-color: #E6E6DC;
+}
 
 #crm-container div.buttons {
     TEXT-ALIGN       : right;
@@ -1906,6 +2015,10 @@ div.grippie {
     float:left;
     padding:0px;
     margin:0 5px 0 0;
+}
+
+#crm-container div.crm-case-dashboard-buttons {
+    height: 33px;
 }
 
 #crm-container div.crm-case-dashboard-switch-view-buttons {
@@ -2078,6 +2191,11 @@ div.grippie {
     margin: 4px 0px 4px 2px;
 }
 
+#crm-container .register_link-top {
+    float: right;
+    margin-left: 8px;
+}
+
 .crm-clear-link {
     margin-left: .5em;
 }
@@ -2095,6 +2213,7 @@ div.grippie {
 }
 #crm-container .crm-button input  {
     background:none;
+    _background:#6C6C6C; /* IE6 only */
     border:medium none;
     color:#FFF;
     cursor:pointer;
@@ -2103,7 +2222,7 @@ div.grippie {
     margin:0 0 0 0px;
     padding:1px 8px 2px 4px;
 }
-#crm-container .crm-button-type-cancel {margin-left:20px;}
+#crm-container .crm-button-type-cancel, #crm-container .crm-button-type-back {margin-left:20px;}
 #crm-container .crm-button-type-cancel input { color:#E6E6DC!important; }
 
 #crm-container a.button,
@@ -2143,6 +2262,7 @@ div.grippie {
     padding:2px 4px;
     margin:0px;
     background: none;
+    _background:#6C6C6C; /* IE6 only */
     border:none;
 }
 
@@ -2315,8 +2435,7 @@ span.icon {
     color:#333;
 }
 
-.light-icon, .ui-widget-content .light-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_454545_256x240.png")}
-.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_888888_256x240.png")}
+.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-icons_222222_256x240.png")}
 .red-icon {background-image:url("../i/icons/jquery-ui-8A1F11.png")}
 
 .edit-icon { background-position: -66px -114px;}
@@ -2327,7 +2446,7 @@ span.icon {
 .delete-icon { background-position: -179px -99px;}
 .details-icon { background-position: -129px -112px;}
 .button:hover .delete-icon {
-    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_cd0a0a_256x240.png")!important;
+    background-image:url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-icons_cd0a0a_256x240.png")!important;
 }
 
 .restore-icon { background-position:0px -66px;background-image:url("../i/icons/jquery-ui-91CE00.png"); }
@@ -2351,6 +2470,7 @@ span.icon {
 .check-icon { background-position: -66px -146px; }
 .refresh-icon { background-position:-65px -81px; }
 .settings-icon { background-position:-178px -114px; }
+.search-icon { background-position:-161px -114px; }
 .email-icon { background-position:-81px -98px; }
 .preview-icon { background-position:-227px -129px; }
 .play-icon { background-position: -3px -161px; }
@@ -2419,7 +2539,7 @@ span.icon {
     background-image:url("../i/icons/jquery-ui-F5F6F1.png")
 }
 
-.crm-accordion-wrapper .crm-accordion-header-hover .crm-accordion-pointer {
+.crm-accordion-wrapper .crm-accordion-header:hover .crm-accordion-pointer {
     background-image:url("../i/icons/jquery-ui-FFFFFF.png");
     color: #FFF;
 }
@@ -2496,6 +2616,9 @@ span.icon {
 
 
 /* civicrm admin menu */
+#civicrm-menu {
+    height:27px;
+}
 
 #civicrm-menu .ac_input, #crm-container .ac_input {
     background:white url(../i/magnify.gif) no-repeat scroll right center;
@@ -2548,7 +2671,6 @@ span.icon {
 
 /* Pop-up help icon - eliminate forced line break */
 div.helpicon {
-    background  : transparent url(../i/quiz.png) no-repeat;
     display     : inline;
     cursor      : pointer;
     background-position:-128px -98px;
@@ -2564,20 +2686,6 @@ div.crm-accordion-header div.helpicon {
     background-image:url(../i/icons/jquery-ui-F5F6F1.png);
     float: right;
 }
-
-div.statusicon {
-    background  : transparent url(../i/quiz.png) no-repeat;
-    display     : inline-block;
-    cursor      : pointer;
-    background-position:-48px -144px;
-    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_222222_256x240.png");    
-    background-color:#CCC;
-    width:16px;
-    height:16px;
-    overflow:hidden;
-    text-indent: -10000px;
-}
-
 
 div#crm-toolTip {
     padding   : 10px;
@@ -2602,6 +2710,7 @@ div#crm-toolTip td {
 
 div#crm-toolTip a {
     color: #000;
+    text-decoration: underline;
 }
 div#crm-toolTip #hide-tooltip {
     float:right;
@@ -2683,6 +2792,10 @@ div#crm-toolTip #hide-tooltip {
     margin-right : 45px;
 }
 
+#crm-container ul.token-input-list-facebook, ul.token-input-list-facebook li.leaf, #crm-container ul li {
+  list-style-image:none;
+}
+
 /* "don't do this" icons */
 #crm-container div.contact_panel span.email-hold, 
 #crm-container div.contact_panel span.do-not-email, 
@@ -2706,8 +2819,8 @@ div#crm-toolTip #hide-tooltip {
     border: 0px none;
 } 
 
-/* Override Drupal .2em margin-bottom on forms for Dashboard elements (we don't want to give up that space) */
-div#civicrm-dashboard form {
+/* Override Drupal .2em margin-bottom on forms (we don't want to give up that space) */
+div#crm-container form {
     margin-bottom:0em;
 }
 
@@ -2742,7 +2855,7 @@ div#civicrm-dashboard form {
 .ui-widget-content .ui-state-focus, 
 .ui-widget-header .ui-state-focus { 
 border: 0px solid #70716b; 
-background: #484e4c url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x; 
+background: #484e4c url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x; 
 font-weight: normal; 
 color: #f5f6f1; 
 }
@@ -2882,6 +2995,9 @@ table.crm-info-panel .label  {
     #mainTabContainer li.disabled a:link {
         color: #999999 !important;
     }
+    #crm-container tr.crm-job{
+        text-decoration: none !important;
+    }
 
 #crm-container table.selector td {
     border-right:1px dotted #DDDDDD;
@@ -2903,13 +3019,13 @@ table.crm-info-panel td {
 #crm-container #customFields div.contact_panel td.label,
 table.crm-info-panel td.label {
     background-color: #fafafa;
-    width:100px;
+    width:120px;
     text-align: left;
     color: #7a7a60;
 }
-    table.crm-info-panel td.label {
-        width:150px;
-    }
+table.crm-info-panel td.label {
+    width:150px;
+}
 
 #crm-container .form-layout td.label, 
 #crm-container .form-layout-compressed td.label,
@@ -2969,8 +3085,13 @@ table.crm-info-panel td.label {
     color:#F5F6F1;
 }
 
-.crm-accordion-header-hover {
+.crm-accordion-header:hover {
     background-color:#484E4C;
+}
+
+.crm-master-accordion-header.crm-accordion-header:hover {
+    background-color:transparent;
+    color: white;
 }
 
 #contact-summary .crm-accordion-header {
@@ -2979,7 +3100,7 @@ table.crm-info-panel td.label {
 }
 
 #contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
-	background-image:url(../i/icons/jquery-ui-3e3e3e.png);
+	background-image:url(../i/icons/jquery-ui-3E3E3E.png);
 }		
 
 /* warning labels and messages */
@@ -2996,7 +3117,8 @@ del,
 #crm-container .status-overdue,
 #crm-container .status-fatal, 
 #crm-container .status-hold,
-#crm-container .status-past {
+#crm-container .status-past,
+#crm-container .status-warning {
     color:#E43D2B!important;
 }
 
@@ -3116,7 +3238,9 @@ div#crm-toolTip
 }
 
 /* Special styling for specific form buttons */
-#crm-container span.crm-button_qf_Main_upload input {
+#crm-container span.crm-button_qf_Main_upload input,
+#crm-container span.crm-button_qf_Confirm_next input,
+#crm-container span.crm-button_qf_Register_upload input {
     font-size: 1.2em;
 }
 
@@ -3140,11 +3264,14 @@ div#crm-toolTip
     background-color:#DDFFDD !important;
 }
 
-/* table row highlightng */
-#crm-container .crm-row-highlight {
-    background-color: #FFFFCC !important;
+.extension-missing {
+    color:#E43D2B !important;
 }
 
+/* table row highlightng */
+#crm-container table.row-highlight tr:hover {
+    background-color: #FFFFCC !important;
+}
 #crm-container .civicrm-drupal-wysiwyg .collapsed {
     background: transparent;
     padding-left: 0px;
@@ -3154,3 +3281,186 @@ div#crm-toolTip
     position: static;
     z-index: -100;
 }
+
+#crm-container .crm-socialnetwork {
+    margin-top: 1em;
+}
+
+#crm-container .crm-fb-tweet-buttons  {
+    width: 93%;
+}
+#crm-container div.finalconf-button       { float:right; padding:5px 0 0 0; }
+#crm-container div.finalconf-button input { margin:0; }
+#crm-container div.finalconf-intro        { padding-bottom:12px; font-style:italic; }
+#crm-container h4.finalconf-item          { border-top:1px solid #ccc; padding:8px 0 8px 10px; margin:0; }
+#crm-container div.finalconf-itemdesc     { font-style:italic; padding:6px 12px 6px 12px; color:#666; float:right; width:60%; }
+#crm-container h4.finalconf-btm           { border-bottom:1px solid #ccc; margin-bottom:20px; }
+
+
+/*Screen Reader Accessibility additions*/
+#crm-container a.whiteanchor{
+  color:white;
+}
+
+/* classes related to batch entry operation */
+#crm-container span.batch-edit {
+  padding: 2px 9px 2px 3px;
+  margin: 2px 2px 3px 2px;
+  cursor: pointer;
+  cursor: hand;
+  background-position: -66px -114px;
+  background-image:url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-icons_222222_256x240.png");
+}
+
+#crm-container span.batch-valid {
+  padding: 2px 9px 2px 3px;
+  margin: 2px 2px 3px 2px;
+  cursor: pointer;
+  cursor: hand;
+  background-position: -322px -143px;
+  background-image:url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-icons_222222_256x240.png");
+}
+
+#crm-container span.batch-invalid {
+  padding: 2px 9px 2px 3px;
+  margin: 2px 2px 3px 2px;
+  cursor: pointer;
+  cursor: hand;
+  background-position: -258px -143px;
+  background-image:url("../packages/jquery/jquery-ui-1.8.16/css/smoothness/images/ui-icons_222222_256x240.png");
+}
+
+#crm-container #Entry ul#errorList {
+  display: none;
+}
+
+#crm-container table.batch-totals {
+  border: 1px solid #7A7A60 !important;
+  margin-top: 10px !important;
+}
+
+/* grid div as table */
+#crm-container .crm-grid-table {
+  display: table;
+  border-collapse:collapse;
+  border: 1px solid #7A7A60;
+  background-color: #FFFFFF;
+  margin: 10px 3px 10px !important;
+}
+
+#crm-container #crm-batch-entry-table {
+  border-right: 2px solid #7A7A60 !important;
+}
+
+#crm-container .crm-grid-row,
+#crm-container .crm-grid-header {
+  display: table-row;
+}
+
+#crm-container .crm-grid-header {
+  white-space: nowrap;
+}
+
+#crm-container .crm-grid-cell {
+  display: table-cell;
+  border-right: 1px solid #EFEFEF;
+  padding: 2px;
+  vertical-align: top;
+}
+
+/* Responsive layout changes */
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed,
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed tbody,
+#crm-container .contact_basic_information-section.narrowform.xnarrowform table.form-layout-compressed tr {
+  display: block;
+  width: 100%;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed tr {
+  display: inline-block;
+  width: 49%;
+  vertical-align: top;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td {
+  display: block;
+  clear: left;
+  vertical-align: top;
+  margin-bottom: .5ex;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.matching-contacts-actions tr {
+  width:100%;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.matching-contacts-actions td {
+  display:table-cell;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td.hashelpicon {
+  position: relative;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td.hashelpicon label {
+  padding-bottom: 16px;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td .helpicon {
+  position: absolute;
+  bottom: -12px;
+  left: 2px;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td br {
+  display: none;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td label {
+  display: block;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 25%;
+  float: left;
+  padding-right: 1%;
+}
+
+#crm-container .contact_basic_information-section.narrowform table.form-layout-compressed td input {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 75%;
+}
+
+#crm-container #mainTabContainer.narrowpage #contactTopBar,
+#crm-container #mainTabContainer.narrowpage #contact-summary div.customFieldGroup,
+#crm-container #mainTabContainer.narrowpage #contact-summary div.contactCardLeft,
+#crm-container #mainTabContainer.narrowpage #contact-summary div.contactCardRight {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  float: none;
+  width: 100%;
+}
+
+/* in place edit  */
+#crm-container .crm-editable-enabled {display:block; padding-left: 2px; border: 2px dashed transparent; white-space: nowrap;}
+#crm-container .crm-editable-enabled:hover {display:block; padding-left: 2px; border: 2px dashed lightgrey;}
+
+  .crm-editable-placeholder {
+    background: url("../i/icons/jquery-ui-2786C2.png") -66px -114px no-repeat;
+    text-indent:-10000px;
+    display:block;
+    width:12px;
+  }
+  /*.crm-editable input {min-width:6em;} */
+
+  .crm-editable-saving {background:#FFFFCC!important;opacity:0.8;}
+  .crm-editable-error {background:red!important;opacity:0.8;}
+  .crm-editable-error input {background:red!important;opacity:0.8;}
+  h2.crm-editable-enabled input {min-height:1.4em;}
+
+/*crm-10345*/
+.field-action{word-wrap:normal;}
+
+.field-action span.btn-slide{padding-left:0px;padding-right:11px;}
+/*end crm-10345*/
+

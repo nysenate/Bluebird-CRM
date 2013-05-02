@@ -1,0 +1,43 @@
+*******************************
+CiviCRM Error Handler
+*******************************
+
+Sometimes CiviCRM can be real tough to debug.  Especially when you are getting
+fatal errors, but only by some users, and you can't recreate the problems.
+This utility will send you a detailed email when a civicrm fatal error occurs.
+
+Project page:
+http://drupal.org/project/civicrm_error
+
+Please report issues in the Drupal issue queue.
+
+*******************************
+Installation
+*******************************
+
+- Enable the module
+- The error handler is automatically changed when the module is active, so no need to
+  change the CiviCRM 'global configurations' (and if you disable the module, it is
+  automatically changed back, since it uses the hook_civicrm_config).
+- Choose an email address to send errors to at
+  admin/reports/civicrm_error
+
+Read more about debugging CiviCRM here:
+http://wiki.civicrm.org/confluence/display/CRMDOC41/Debugging
+
+*******************************
+Credits & contact
+*******************************
+
+Module written by Dave Hansen-Lange (dalin)
+http://drupal.org/user/18981
+
+Port to Drupal 7 by Mathieu Lutfy (bgm)
+http://drupal.org/user/89461
+
+This module is a community contributed module. It is not endorsed
+or maintained by the CiviCRM core team.
+
+If you appreciate this module, please consider contributing to CiviCRM:
+http://civicrm.org/contribute
+

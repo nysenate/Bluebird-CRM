@@ -1,7 +1,7 @@
 <?php
-  /*
+/*
    +--------------------------------------------------------------------+
-   | CiviCRM version 3.4                                                |
+   | CiviCRM version 4.2                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -28,51 +28,45 @@
    * @author Matt Chapman <Matt@NinjitsuWeb.com>
    */
 class civicrm_handler_filter_custom_option extends views_handler_filter_in_operator {
-    
-    function construct( ) {
-        parent::construct();
-        if ( ! civicrm_initialize( ) ) {
-            return;
-        }
+  function construct() {
+    parent::construct();
+    if (!civicrm_initialize()) {
+      return;
     }
-    
-    function get_value_options() {
-        if (!isset($this->value_options)) {
-            // extract the field id from the name
-            if ( preg_match( '/_(\d+)$/', $this->real_field, $match ) ) {
-                require_once 'CRM/Core/BAO/CustomOption.php';
-                $options = CRM_Core_BAO_CustomOption::getCustomOption( $match[1] );
-            }
-            if ( is_array( $options ) ) {
-                foreach ( $options as $id => $opt ) {
-                    $this->value_options[$opt['value']] = strip_tags( $opt['label'] );
-                }
-            }
+  }
+
+  function get_value_options() {
+    if (!isset($this->value_options)) {
+      // extract the field id from the name
+      if (preg_match('/_(\d+)$/', $this->real_field, $match)) {
+        require_once 'CRM/Core/BAO/CustomOption.php';
+        $options = CRM_Core_BAO_CustomOption::getCustomOption($match[1]);
+      }
+      if (is_array($options)) {
+        foreach ($options as $id => $opt) {
+          $this->value_options[$opt['value']] = strip_tags($opt['label']);
         }
+      }
     }
+  }
 
-
-    function op_simple() {
-        if (empty($this->value)) {
-            return;
-        }
-        
-        $this->ensure_my_table();
-        
-        $sep = CRM_Core_DAO::VALUE_SEPARATOR;
-        
-        // negated operator uses AND, positive uses OR
-        $op = ($this->operator == 'in') ? 'LIKE' : 'NOT LIKE';
-        $glue = ($this->operator == 'in') ? 'OR ' : 'AND ';
-        
-        foreach ($this->value as $value){
-            $clauses[] = "$this->table_alias.$this->real_field " . $op . " '%" . $sep . $value . $sep . "%' ";
-        }
-        
-        $clause = implode($glue, $clauses);
-        $this->query->add_where($this->options['group'], $clause);
+  function op_simple() {
+    if (empty($this->value)) {
+      return;
     }
 
+    $this->ensure_my_table();
+
+    $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+
+    // negated operator uses AND, positive uses OR
+    $op = ($this->operator == 'in') ? 'LIKE' : 'NOT LIKE';
+    $glue = ($this->operator == 'in') ? 'OR ' : 'AND ';
+    foreach ($this->value as $value) {
+      $clauses[] = "$this->table_alias.$this->real_field " . $op . " '%" . $sep . $value . $sep . "%' ";
+    }
+    $clause = implode($glue, $clauses);
+    $this->query->add_where_expression($this->options['group'], $clause);
+  }
 }
-
 

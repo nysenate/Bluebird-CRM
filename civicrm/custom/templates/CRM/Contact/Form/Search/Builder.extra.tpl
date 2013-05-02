@@ -1,3 +1,3 @@
 <script type="text/javascript">
-cj('#status').hide();
+  cj('#help').hide();
 </script>

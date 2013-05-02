@@ -1,9 +1,11 @@
 <?php
+// $Id$
+
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,67 +30,75 @@
 /**
  * File for the CiviCRM APIv3 membership contribution link functions
  *
- * @todo Probably needs renaming
- *
  * @package CiviCRM_APIv3
  * @subpackage API_Membership
- *
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @todo delete function doesn't exist
+ * @copyright CiviCRM LLC (c) 2004-2012
  * @version $Id: MembershipContributionLink.php 30171 2010-10-14 09:11:27Z mover $
  */
 
 /**
  * Include utility functions
  */
-require_once 'api/v3/utils.php';
+
 require_once 'CRM/Member/DAO/MembershipPayment.php';
+
 /**
  * Add or update a link between contribution and membership
  *
  * @param  array   $params           (reference ) input parameters
  *
  * @return array (reference )        membership_payment_id of created or updated record
- * @static void
+ * {@getfields MembershipPayment_create}
+ * @example MembershipPaymentCreate.php
  * @access public
  */
-function civicrm_api3_membership_payment_create( $params ) {
+function civicrm_api3_membership_payment_create($params) {
 
-    civicrm_api3_verify_mandatory($params,'CRM_Member_DAO_MembershipPayment',array('contribution_id','membership_id'));
-
-    require_once 'CRM/Core/Transaction.php';
-    $transaction = new CRM_Core_Transaction( );
+  require_once 'CRM/Core/Transaction.php';
+  $transaction = new CRM_Core_Transaction();
 
 
-    $mpDAO = new CRM_Member_DAO_MembershipPayment();
-    $mpDAO->copyValues($params);
-    $result = $mpDAO->save();
+  $mpDAO = new CRM_Member_DAO_MembershipPayment();
+  $mpDAO->copyValues($params);
+  $result = $mpDAO->save();
 
-    if ( is_a( $result, 'CRM_Core_Error') ) {
-      $transaction->rollback( );
-      return civicrm_api3_create_error( $result->_errors[0]['message'] );
-    }
+  if (is_a($result, 'CRM_Core_Error')) {
+    $transaction->rollback();
+    return civicrm_api3_create_error($result->_errors[0]['message']);
+  }
 
-    $transaction->commit( );
+  $transaction->commit();
 
-    _civicrm_api3_object_to_array($mpDAO, $mpArray[$mpDAO->id]);
+  _civicrm_api3_object_to_array($mpDAO, $mpArray[$mpDAO->id]);
 
-    return civicrm_api3_create_success($mpArray,$params);
-
+  return civicrm_api3_create_success($mpArray, $params);
+}
+/*
+ * Adjust Metadata for Create action
+ * 
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_membership_payment_create_spec(&$params) {
+  $params['membership_id']['api.required'] = 1;
+  $params['contribution_id']['api.required'] = 1;
 }
 
 /**
  * Retrieve one / all contribution(s) / membership(s) linked to a
  * membership / contrbution.
  *
- * @param  array   $params           (reference ) input parameters
- * @todo missing delete function
+ * @param  array   $params  input parameters
  *
- * @return array (reference )        array of properties, if error an array with an error id and error message
- * @static void
+ * @return array  array of properties, if error an array with an error id and error message
+ *  @example MembershipPaymentGet
+ * {@getfields MembershipPayment_get}
  * @access public
  */
-function &civicrm_api3_membership_payment_get( $params ) {
+function civicrm_api3_membership_payment_get($params) {
 
-    civicrm_api3_verify_mandatory($params);
-    return _civicrm_api3_basic_get('CRM_Member_DAO_MembershipPayment', $params);
+
+  return _civicrm_api3_basic_get('CRM_Member_DAO_MembershipPayment', $params);
 }
+

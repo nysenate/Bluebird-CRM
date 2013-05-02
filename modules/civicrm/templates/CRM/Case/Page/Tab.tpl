@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,7 +58,9 @@
     </div>
 
     {if $action eq 16 and $permission EQ 'edit' and 
-        call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities') and $allowToAddNewCase}
+        ( call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities') OR
+          call_user_func(array('CRM_Core_Permission','check'), 'add cases') ) AND
+        $allowToAddNewCase}
         <div class="action-link">
         <a accesskey="N" href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
         </div>
@@ -69,11 +71,7 @@
     {else}
        <div class="messages status">
           <div class="icon inform-icon"></div>
-                {ts}There are no case records for this contact.{/ts}
-                {if $permission EQ 'edit' and 
-		    call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities') and 
-		    $allowToAddNewCase}
-		    {ts 1=$newCaseURL}You can <a href='%1'>open one now</a>.{/ts}{/if}
+            {ts}There are no case records for this contact.{/ts}
           </div>
     {/if}
     </div>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,6 +31,7 @@
         <table>
         <tr class="columnheader">
             <th>{ts}Membership{/ts}</th>
+            <th>{ts}Member Since{/ts}</th>
             <th>{ts}Start Date{/ts}</th>
             <th>{ts}End Date{/ts}</th>
             <th>{ts}Status{/ts}</th>
@@ -39,6 +40,7 @@
         {foreach from=$activeMembers item=activeMember}
         <tr class="{cycle values="odd-row,even-row"} {$activeMember.class}">
 	        <td>{$activeMember.membership_type}</td>
+		<td>{$activeMember.join_date|crmDate}</td>
 	        <td>{$activeMember.start_date|crmDate}</td>
 	        <td>{$activeMember.end_date|crmDate}</td>
 	        <td>{$activeMember.status}</td>

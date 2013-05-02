@@ -159,7 +159,7 @@
     <div id="crm_cpid_{$cpageId}_comments" class="crm-comments"></div>
     <div id="crm_cpid_{$cpageId}_campaign" class="crm-campaign"></div>
     <div class="crm-contribute-button-wrapper" id="crm_cpid_{$cpageId}_button">
-        <a href='{crmURL p="civicrm/contribute/transact" q="reset=1&id=$cpageId" h=0 a=1}' class="crm-contribute-button"><span class="crm-contribute-button-inner" id="crm_cpid_{$cpageId}_btn_txt"></span></a>
+        <a href='{crmURL p="civicrm/contribute/transact" q="reset=1&id=$cpageId" h=0 a=1 fe=1}' class="crm-contribute-button"><span class="crm-contribute-button-inner" id="crm_cpid_{$cpageId}_btn_txt"></span></a>
     </div>
 </div>
 

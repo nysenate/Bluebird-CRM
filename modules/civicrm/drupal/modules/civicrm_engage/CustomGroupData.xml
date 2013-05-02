@@ -1221,162 +1221,147 @@ N - New</help_post>
 		<option_group_name>elected_staffer_role_options</option_group_name>
         <custom_group_name>Elected_Official_Info</custom_group_name>
     </CustomField>
-    <CustomField>
-        <label>Ward</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-        <weight>94</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-        <column_name>ward</column_name>
-        <custom_group_name>Voter_Info</custom_group_name>
-    </CustomField>
   </CustomFields>
   <OptionGroups>
     <OptionGroup>
       <name>activity_type</name>
+      <title>Activity Type</title>
       <description>Activity Type</description>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>event_type</name>
+      <title>Event Type</title>
       <description>Event Type</description>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>party_registration_options</name>
-      <label>Party Registration Options</label>
+      <title>Party Registration Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>county_name_options</name>
-      <label>County Name Options</label>
+      <title>County Name Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>voter_history_values</name>
-      <label>Voter History Values</label>
+      <title>Voter History Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>constituent_type_ind_values</name>
-      <label>Constituent Type Values</label>
+      <title>Constituent Type Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>staff_responsible_values</name>
-      <label>Staff Responsible Values</label>
+      <title>Staff Responsible Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>how_started_options</name>
-      <label>How Started Options</label>
+      <title>How Started Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>leadership_level_values</name>
-      <label>Leadership Level Values</label>
+      <title>Leadership Level Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>issue_areas_options</name>
-      <label>Issue Areas Options</label>
+      <title>Issue Areas Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>volunteer_interests_options</name>
-      <label>Volunteer Interests Options</label>
+      <title>Volunteer Interests Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>member_status_values</name>
-      <label>Member Status Values</label>
+      <title>Member Status Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>multiyear_grant_status</name>
-      <label>Multiyear Grant Status</label>
+      <title>Multiyear Grant Status</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>proposal_status_values</name>
-      <label>Proposal Status Values</label>
+      <title>Proposal Status Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>invitation_response_options</name>
-      <label>Invitation Response Options</label>
+      <title>Invitation Response Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>best_time_to_contact_options</name>
-      <label>Best time to Contact Options</label>
+      <title>Best time to Contact Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>communication_status_options</name>
-      <label>Communication Status Options</label>
+      <title>Communication Status Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>rating_values</name>
-      <label>Rating Values</label>
+      <title>Rating Values</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>ethnicity_options</name>
-      <label>Ethnicity Options</label>
+      <title>Ethnicity Options</title>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
       <name>secondary_language_options</name>
-      <label>Secondary Language Options</label>
+      <title>Secondary Language Options</title>
       <is_active>1</is_active>
     </OptionGroup>	
 	<OptionGroup>
         <name>media_type_org_options</name>
-        <label>Media Type - Org Options</label>
+        <title>Media Type - Org Options</title>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
         <name>beat_options</name>
-        <label>Beat Options</label>
+        <title>Beat Options</title>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
         <name>constituent_type_org_values</name>
-        <label>Constituent Type - Org Values</label>
+        <title>Constituent Type - Org Values</title>
         <is_active>1</is_active>
     </OptionGroup>
 	<OptionGroup>
         <name>elected_level_options</name>
-        <label>Elected Level Options</label>
+        <title>Elected Level Options</title>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
         <name>elected_staffer_role_options</name>
-        <label>Elected Staffer Role Options</label>
+        <title>Elected Staffer Role Options</title>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
         <name>survey_q1_response_options</name>
-        <label>Survey Q1 Response Options</label>
+        <title>Survey Q1 Response Options</title>
         <is_active>1</is_active>
     </OptionGroup>
 	<!-- must use civicrm_survey naming convention in option group name to appear in default options in CiviCRM -->
     <OptionGroup>
         <name>civicrm_survey_default_results_set_options</name>
-        <label>Survey Default Results Set Options</label>
-		<description>Default options for Results Set for Surveys</description>
+        <title>Survey Default Results Set Options</title>
+				<description>Default options for Results Set for Surveys</description>
         <is_active>1</is_active>
     </OptionGroup>  
   </OptionGroups>
@@ -3187,7 +3172,7 @@ N - New</help_post>
 		<profile_group_name>update_event_invite_responses</profile_group_name>
     </ProfileField>
 	<ProfileField>
-        <field_name>participant_role_id</field_name>
+        <field_name>participant_role</field_name>
         <is_active>1</is_active>
         <is_view>0</is_view>
         <is_required>0</is_required>

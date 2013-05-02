@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -46,7 +46,22 @@
 *}
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-   {include file="CRM/common/formButtons.tpl" location="top"}
+  {*NYSS 6340 move save matching button (and rename)*}
+  {if $isDuplicate}
+    <span class="crm-button crm-button_qf_Contact_upload_duplicate">
+      {$form._qf_Contact_upload_duplicate.html}
+    </span>
+    {include file="CRM/common/formButtons.tpl" location="top"}
+    {literal}
+    <script style="text/javascript">
+      //cj('span.crm-button crm-button_qf_Contact_upload_duplicate').insertBefore(cj('span.crm-button_qf_Contact_upload_view'));
+      cj('input#_qf_Contact_upload_duplicate').val('Save Contact Anyway');
+      cj('span.crm-button-type-upload').hide();
+    </script>
+    {/literal}
+  {else}
+    {include file="CRM/common/formButtons.tpl" location="top"}
+  {/if}
 </div>
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
@@ -62,12 +77,6 @@
         	<span class="crm-button crm-button_qf_Contact_refresh_dedupe">
         	    {$form._qf_Contact_refresh_dedupe.html}
         	</span>
-        	{if $isDuplicate}
-            &nbsp;&nbsp;
-            <span class="crm-button crm-button_qf_Contact_upload_duplicate">
-                {$form._qf_Contact_upload_duplicate.html}
-            </span>
-            {/if}
 			</td>
 		</tr>
         <tr>
@@ -302,40 +311,34 @@ function highlightTabs( ) {
 
 //NYSS 3527 - set comm preferences
 function processDeceased( ) {
-	if ( cj("#is_deceased").is(':checked') ) {
-		document.getElementById('privacy[do_not_phone]').checked  = true;
-		document.getElementById('privacy[do_not_phone]').setAttribute('onclick', 'return false');
-		document.getElementById('privacy[do_not_email]').checked  = true;
-		document.getElementById('privacy[do_not_email]').setAttribute('onclick', 'return false');
-		document.getElementById('privacy[do_not_mail]').checked   = true;
-		document.getElementById('privacy[do_not_mail]').setAttribute('onclick', 'return false');
-		document.getElementById('privacy[do_not_sms]').checked    = true;
-		document.getElementById('privacy[do_not_sms]').setAttribute('onclick', 'return false');
-		document.getElementById('is_opt_out').checked             = true;
-		document.getElementById('is_opt_out').setAttribute('onclick', 'return false');
-		
-		document.getElementById('preferred_communication_method[1]').checked = false;
-		document.getElementById('preferred_communication_method[1]').setAttribute('onclick', 'return false');
-		document.getElementById('preferred_communication_method[2]').checked  = false;
-		document.getElementById('preferred_communication_method[2]').setAttribute('onclick', 'return false');
-		document.getElementById('preferred_communication_method[3]').checked  = false;
-		document.getElementById('preferred_communication_method[3]').setAttribute('onclick', 'return false');
-		document.getElementById('preferred_communication_method[4]').checked  = false;
-		document.getElementById('preferred_communication_method[4]').setAttribute('onclick', 'return false');
-		document.getElementById('preferred_communication_method[5]').checked  = false;
-		document.getElementById('preferred_communication_method[5]').setAttribute('onclick', 'return false');
-    } else {
-		document.getElementById('privacy[do_not_phone]').removeAttribute('onclick');
-		document.getElementById('privacy[do_not_email]').removeAttribute('onclick');
-		document.getElementById('privacy[do_not_mail]').removeAttribute('onclick');
-		document.getElementById('privacy[do_not_sms]').removeAttribute('onclick');
-		document.getElementById('is_opt_out').removeAttribute('onclick');
-		document.getElementById('preferred_communication_method[1]').removeAttribute('onclick');
-		document.getElementById('preferred_communication_method[2]').removeAttribute('onclick');
-		document.getElementById('preferred_communication_method[3]').removeAttribute('onclick');
-		document.getElementById('preferred_communication_method[4]').removeAttribute('onclick');
-		document.getElementById('preferred_communication_method[5]').removeAttribute('onclick');
-    }
+  if ( cj("#is_deceased").is(':checked') ) {
+    cj('#privacy_do_not_phone').attr('checked', 'checked').attr('onclick', 'return false');
+    cj('#privacy_do_not_email').attr('checked', 'checked').attr('onclick', 'return false');
+    cj('#privacy_do_not_mail').attr('checked', 'checked').attr('onclick', 'return false');
+    cj('#privacy_do_not_sms').attr('checked', 'checked').attr('onclick', 'return false');
+    cj('#privacy_do_not_trade').attr('checked', 'checked').attr('onclick', 'return false');
+    cj('#is_opt_out').attr('checked', 'checked').attr('onclick', 'return false');
+
+    cj('#preferred_communication_method_1').removeAttr('checked').attr('onclick', 'return false');
+    cj('#preferred_communication_method_2').removeAttr('checked').attr('onclick', 'return false');
+    cj('#preferred_communication_method_3').removeAttr('checked').attr('onclick', 'return false');
+    cj('#preferred_communication_method_4').removeAttr('checked').attr('onclick', 'return false');
+    cj('#preferred_communication_method_5').removeAttr('checked').attr('onclick', 'return false');
+  }
+  else {
+    cj('#privacy_do_not_phone').removeAttr('onclick');
+    cj('#privacy_do_not_email').removeAttr('onclick');
+    cj('#privacy_do_not_mail').removeAttr('onclick');
+    cj('#privacy_do_not_sms').removeAttr('onclick');
+    cj('#privacy_do_not_trade').removeAttr('onclick');
+    cj('#is_opt_out').removeAttr('onclick');
+
+    cj('#preferred_communication_method_1').removeAttr('onclick');
+    cj('#preferred_communication_method_2').removeAttr('onclick');
+    cj('#preferred_communication_method_3').removeAttr('onclick');
+    cj('#preferred_communication_method_4').removeAttr('onclick');
+    cj('#preferred_communication_method_5').removeAttr('onclick');
+  }
 }
 processDeceased();
  

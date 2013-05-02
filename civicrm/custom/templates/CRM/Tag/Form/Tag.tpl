@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,98 +24,60 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing tags  *}
+{literal}
+<script>
+var BBCID = {/literal}{$entityID}{literal};
+var BBActionConst = {/literal}{$action}{literal};
+</script>
+{/literal}
+{literal}
+<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
+<script type="text/javascript">
+BBTree.startInstance({pullSets: [291], buttonType: 'tagging'}); 
+</script>
 <style>
-/*.hit {ldelim}padding-left:10px;{rdelim}*/ /*NYSS*/
-.tree li {ldelim}padding-left:10px;{rdelim}
-#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
-.jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
+#crm-tagListWrap {padding:10px; height:auto;}
 </style>
-
+{/literal}
 {*NYSS*}
 <div id="TagGroups" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
+    <div id="dialog">
     
+    </div>
     {*NYSS add list of Issue Codes*}
     {if $contactIssueCode_list}
-    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong><span>{$contactIssueCode_list}</span></div>
     	<div class="clear"></div>
     {/if}
-    
-    <div id="tagtree">
-      <ul class="tree">
+    <div id="crm-tagListWrap">
 
-        {foreach from=$tree item="node" key="id"}
-        <li id="tag_{$id}">
-            {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-            {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-            {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label> 
-            {if $node.children}
-            <ul>
-                {foreach from=$node.children item="subnode" key="subid"}
-                    <li id="tag_{$subid}">
-                        <input id="check_{$subid}" name="tagList[{$subid}]" type="checkbox" {if $tagged[$subid]}checked="checked"{/if}/>
-                        {if $subnode.children} <span class="hit"></span> {/if} <label for="check_{$subid}" id="tagLabel_{$subid}">{$subnode.name}</label> 
-                        {if $subnode.children}
-                        <ul>
-                            {foreach from=$subnode.children item="subsubnode" key="subsubid"}
-                                <li id="tag_{$subsubid}">
-                                    <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
-                                    <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
-                                    
-                                    {*NYSS Extend to level 4*}
-                                    {if $subsubnode.children}
-                        			<ul>
-                            			{foreach from=$subsubnode.children item="subsubsubnode" key="subsubsubid"}
-                                		<li id="tag_{$subsubsubid}">value
-                                    	<input id="check_{$subsubsubid}" name="tagList[{$subsubsubid}]" type="checkbox" {if $tagged[$subsubsubid]}checked="checked"{/if}/>
-                                    	<label for="check_{$subsubsubid}" id="tagLabel_{$subsubsubid}">{$subsubsubnode.name}</label>
-                                		</li>
-                            			{/foreach} 
-                        			</ul>
-                        			{/if}
-                                    {*NYSS end*}
-                                    
-                                </li>
-                            {/foreach} 
-                        </ul>
-                        {/if}
-                    </li>	 
-                {/foreach} 
+    {include file="CRM/common/Tag.tpl"}
+        {*NYSS add list of leg positions with descriptions*}
+        {if $legpositions}
+        <div class="clear_left"></div>
+        <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
+        	<ul>
+            {foreach from=$legpositions item="legposition"}
+            	{if $legposition.description && $legposition.description neq 'No description available.'}
+                	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+                {/if}
+            {/foreach}
             </ul>
-            {/if}
-        </li>	 
-        {/foreach} 
-      </ul>
+        </div>
+        {/if}
     </div>
 
     {* Show Edit Tags link if in View mode *}
     {if $permission EQ 'edit' AND $action eq 16}
         <!--</fieldset>-->
-        <div class="action-link unobstructive">
-          <a accesskey="N" href="{crmURL p='civicrm/contact/view/tag' q='action=update'}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Tags{/ts}</span></a>
-        </div>
     {else}
        <div class="form-item unobstructive">{$form.buttons.html}</div>
        <!--</fieldset>-->
     {/if}
+  
 
-    {include file="CRM/common/Tag.tpl"}
-    
-    {*NYSS add list of leg positions with descriptions*}
-    {if $legpositions}
-    <div class="clear_left"></div>
-    <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
-    	<ul>
-        {foreach from=$legpositions item="legposition"}
-        	{if $legposition.description && $legposition.description neq 'No description available.'}
-            	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
-            {/if}
-        {/foreach}
-        </ul>
-    </div>
-    {/if}
     
 </div>
 
@@ -127,76 +89,12 @@ options = {ldelim} ajaxURL:"{crmURL p='civicrm/ajax/rest' h=0}"
 entityID={$entityID};
 entityTable='{$entityTable}';
 {literal}
-function hideStatus( ) {
-    cj( '#restmsg' ).hide( );
+//5517
+if ( !cj('.tag-section').hasClass('crm-processed-input') ) {
+  cj('.tag-section .content').addClass('tagset-view-only');
 }
-cj(document).ready(function(){initTagTree()});
-
-function initTagTree() {
-    //unobsctructive elements are there to provide the function to those not having javascript, no need for the others
-    cj(".unobstructive").hide();
-
-    //load js tree.
-    cj("#tagtree").jstree({
-		core : { animation: 0 }, //NYSS disable animation for performance improvement
-		"plugins" : ["themes", "html_data"]
-	});
-
-    cj("#tagtree ul input:checked").each (function(){
-        cj(this).parents("li").children(".jstree-icon").addClass('highlighted');
-    });
-
-    cj("#tagtree input").change(function(){
-        tagid = this.id.replace("check_", "");
-
-        //get current tags from Summary and convert to array
-        var tagLabels = cj.trim( cj("#tags").text( ) );
-        if ( tagLabels ) {
-            var tagsArray = tagLabels.split(',');
-        } else{
-            var tagsArray = new Array();
-        }
-
-        //get current tag label
-        var currentTagLabel = cj("#tagLabel_" + tagid ).text( );
-        if (this.checked) {
-            //civiREST ('entity_tag','create',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},image);
-            cj().crmAPI ('entity_tag','create',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
-            // add check to tab label array
-            tagsArray.push( currentTagLabel );
-        } else {
-            cj().crmAPI ('entity_tag','delete',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
-            // build array of tag labels
-            tagsArray = cj.map(tagsArray, function (a) { 
-                 if ( cj.trim( a ) != currentTagLabel ) {
-                     return cj.trim( a );
-                 }
-             });
-        }
-		//showing count of tags in summary tab
-		//cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + cj("#tagtree input:checkbox:checked").length + '</em>');
-		//NYSS 2415
-        var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
-        var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
-        cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
-		
-        //update summary tab 
-        tagLabels = tagsArray.join(', ');
-        cj("#tags").html( tagLabels );
-        ( tagLabels ) ? cj("#tagLink,#tags").show( ) : cj("#tagLink,#tags").hide( );
-    });
-    
-    {/literal}
-    {if $permission neq 'edit'}
-    {literal}
-        cj("#tagtree input").attr('disabled', true);
-    {/literal}
-    {/if}
-    {literal}
-    
-};
-{/literal}
 </script>
+{/literal}
 
 {if $action eq 1 or $action eq 2 }
  <script type="text/javascript">
@@ -205,3 +103,6 @@ function initTagTree() {
     on_load_init_check(fname);
  </script>
 {/if}
+<script type="text/javascript">
+  //load_init_check(fname);
+</script>

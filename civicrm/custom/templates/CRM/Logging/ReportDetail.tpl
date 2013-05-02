@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,14 +36,22 @@
       </div>
     {/if}
     <p>{ts 1=$whom_url 2=$whom_name 3=$who_url 4=$who_name 5=$log_date}Change to <a href='%1'>%2</a> made by <a href='%3'>%4</a> on %5:{/ts}</p>
-    {include file="CRM/Report/Form/Layout/Table.tpl"}
+    {*include file="CRM/Report/Form/Layout/Table.tpl"*}
+    {*NYSS 5267*}
+    {if $layout eq 'overlay'}
+      {include file="CRM/Report/Form/Layout/Overlay.tpl"}
+    {else}
+      {include file="CRM/Report/Form/Layout/Table.tpl"}
+    {/if}
   {else}
     <div class='messages status'>
         <div class='icon inform-icon'></div>&nbsp; {ts}This report can not be displayed because there are no entries in the logging tables yet.{/ts}
     </div>
   {/if}
+  {if $layout neq 'overlay'}
   <div class="action-link">
       <a href="{$backURL}"   class="button"><span><div class="icon back-icon"></div>{ts}Back to Logging Summary{/ts}</span></a>
       {*<a href="{$revertURL}" class="button" onclick="return confirm('{$revertConfirm}');"><span><div class="icon delete-icon"></div>{ts}Revert These Changes{/ts}</span></a>*}
   </div>
+  {/if}
 </div>

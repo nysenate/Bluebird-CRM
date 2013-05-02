@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,22 +25,17 @@
  +--------------------------------------------------------------------+
 */
 
-
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
-
-require_once 'CRM/Mailing/Page/Common.php';
-
-class CRM_Mailing_Page_Unsubscribe extends CRM_Mailing_Page_Common
-{
-    function run() {
-        $this->_type = 'unsubscribe';
-        parent::run( );
-    }
+class CRM_Mailing_Page_Unsubscribe extends CRM_Mailing_Page_Common {
+  function run() {
+    $this->_type = 'unsubscribe';
+    return parent::run();
+  }
 }
 

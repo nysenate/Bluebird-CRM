@@ -1,7 +1,7 @@
 <?php
-  /*
+/*
    +--------------------------------------------------------------------+
-   | CiviCRM version 3.4                                                |
+   | CiviCRM version 4.2                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -23,38 +23,56 @@
    +--------------------------------------------------------------------+
   */
 
-  // Retrieve list of CiviCRM PCP's contribution pages
-  // Active
 
-  // Check to ensure this file is included in Joomla!
-defined('_JEXEC') or die( 'Restricted access' );
+// Retrieve list of CiviCRM PCP's contribution pages
+// Active
 
-class JElementCiviContribPagesPCP extends JElement {
-	/**
-	 * Element name
-	 *
-	 * @access	protected
-	 * @var		string
-	 */
-	var	$_name = 'CiviContribPagesPCP';
-	
-	function fetchElement( $name, $value, &$node, $control_name ) {
-		// Initiate CiviCRM
-		require_once JPATH_ROOT.'/'.'administrator/components/com_civicrm/civicrm.settings.php';
-		require_once 'CRM/Core/Config.php';
-		$config =& CRM_Core_Config::singleton( );
-        
-		// Get list of all ContribPagesPCP  and assign to options array
-		$options = array();
-		
-        $query = "SELECT cp.id, cp.title FROM civicrm_contribution_page cp, civicrm_pcp_block pcp" 
-            ." WHERE cp.is_active =1 AND pcp.is_active =1 AND pcp.entity_id = cp.id AND pcp.entity_table = 'civicrm_contribution_page'"
-            ." ORDER BY cp.title";
-        $dao = CRM_Core_DAO::executeQuery( $query );
-        while ( $dao->fetch( ) ) {
-            $options[] = JHTML::_( 'select.option', $dao->id, $dao->title ); 
-        }
-      	return JHTML::_( 'select.genericlist', $options, ''.$control_name.'['.$name.']', null, 'value', 'text', $value, $control_name.$name );
-	}
+// Check to ensure this file is included in Joomla!
+defined('_JEXEC') or die('Restricted access');
+class JFormFieldCiviContribPagesPCP extends JFormField {
+
+  /**
+   * Element name
+   *
+   * @access	protected
+   * @var		string
+   */
+  var $type = 'CiviContribPagesPCP';
+
+  protected function getInput() {
+
+    $value = $this->value;
+    $name = $this->name;
+
+    // Initiate CiviCRM
+    define('CIVICRM_SETTINGS_PATH', JPATH_ROOT . '/' . 'administrator/components/com_civicrm/civicrm.settings.php');
+    require_once CIVICRM_SETTINGS_PATH;
+
+    require_once 'CRM/Core/ClassLoader.php';
+    CRM_Core_ClassLoader::singleton()->register();
+
+    require_once 'CRM/Core/Config.php';
+    $config = CRM_Core_Config::singleton();
+
+    // Get list of all ContribPagesPCP  and assign to options array
+    $options = array();
+
+    $query = "SELECT cp.id, cp.title 
+		          FROM civicrm_contribution_page cp, civicrm_pcp_block pcp 
+		          WHERE cp.is_active = 1 
+				    AND pcp.is_active = 1 
+					AND pcp.entity_id = cp.id 
+				    AND pcp.entity_table = 'civicrm_contribution_page'
+				  ORDER BY cp.title;";
+
+    $dao = CRM_Core_DAO::executeQuery($query);
+    while ($dao->fetch()) {
+      $options[] = JHTML::_('select.option', $dao->id, $dao->title);
+    }
+
+    return JHTML::_('select.genericlist', $options, $name,
+      NULL, 'value', 'text', $value, $name
+    );
+  }
 }
-?>
+

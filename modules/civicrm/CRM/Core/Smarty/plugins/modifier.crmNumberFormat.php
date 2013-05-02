@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2011
+ * @copyright CiviCRM LLC (c) 2004-2012
  * $Id$
  *
  */
@@ -49,17 +48,19 @@
  * For alternate decimal point and thousands separator, delimit values with single quotes in the template.
  * EXAMPLE:   {$number|crmNumberFormat:2:',':' '} for French notation - 1234.56 becomes 1 234,56
  */
-function smarty_modifier_crmNumberFormat( $number, $decimals = null, $dec_point = null, $thousands_sep = null ) {
-    if ( is_numeric( $number ) ) {
-        // Both dec_point AND thousands_sep are required if one is specified (this is how number_format works)
-        if ( $dec_point && $thousands_sep ) {
-            return number_format( $number, $decimals, $dec_point, $thousands_sep);
-        } else {
-            return number_format( $number, $decimals );
-        }
-    } else {
-        return '';
+function smarty_modifier_crmNumberFormat($number, $decimals = NULL, $dec_point = NULL, $thousands_sep = NULL) {
+  if (is_numeric($number)) {
+    // Both dec_point AND thousands_sep are required if one is not specified
+    // then use the config defaults
+    if (!$dec_point || !$thousands_sep) {
+      $config        = CRM_Core_Config::singleton();
+      $dec_point     = $config->monetaryDecimalPoint;
+      $thousands_sep = $config->monetaryThousandSeparator;
     }
-}
 
+    return number_format($number, $decimals, $dec_point, $thousands_sep);
+  }
+
+  return '';
+}
 

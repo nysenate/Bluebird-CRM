@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2011                                |
+ | Copyright CiviCRM LLC (c) 2004-2012                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,7 +53,7 @@
     {/if}
 </div>
 
-<table id="voterRecords" class="display">
+<table id="voterRecords" class="display crm-copy-fields">
     <thead>
        <tr class="columnheader">
              {foreach from=$readOnlyFields item=fTitle key=fName}
@@ -62,20 +62,20 @@
 	    
 	     {* display headers for profile survey fields *}
 	     {if $surveyFields}
-	     {foreach from=$surveyFields item=field key=fieldName}
-                  <th>{if $field.data_type eq 'Date' } <img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValuesDate('{$field.name}')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" /> {else} <img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$fieldName}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValues('{$fieldName}')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{/if}{$field.title}</th>
-             {/foreach}
+	        {foreach from=$surveyFields item=field key=fieldName}
+                <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}" fname="{$field.name}" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{$field.title}</th>
+            {/foreach}
 	     {/if}
 
-	     <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=note}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValues('note')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{ts}Note{/ts}</th>
-	     <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=result}Click to copy %1 from row one to all rows.{/ts}" onclick="copyValues('result')" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{ts}Result{/ts}</th>
+	     <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=note}Click to copy %1 from row one to all rows.{/ts}" fname="note" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{ts}Note{/ts}</th>
+	     <th><img  src="{$config->resourceBase}i/copy.png" alt="{ts 1=result}Click to copy %1 from row one to all rows.{/ts}" fname="result" class="action-icon" title="{ts}Click here to copy the value in row one to ALL rows.{/ts}" />{ts}Result{/ts}</th>
 	     <th></th> 
        </tr>
     </thead>
 
     <tbody>
 	{foreach from=$componentIds item=voterId}
-	<tr id="row_{$voterId}" class="{cycle values="odd-row,even-row"}">
+	<tr id="row_{$voterId}" class="{cycle values="odd-row,even-row"}" entity_id="{$voterId}">
 	    {foreach from=$readOnlyFields item=fTitle key=fName}
 	       <td {if $fName neq 'contact_type'} class="name"{/if}>{$voterDetails.$voterId.$fName}</td>
 	    {/foreach}
