@@ -66,7 +66,14 @@ $execSql -i $instance -c "DELETE FROM system WHERE name = 'NYSS_403';" --drupal 
 
 ## drop triggers and disable logging
 $script_dir/dropCiviTriggers.sh $instance
-php $app_rootdir/civicrm/scripts/disableLogging.php -S $instance
+
+echo "disabling logging manually..."
+logging="
+UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, '\"logging\";i:1;', '\"logging\";i:0;')
+  WHERE id = 1;
+"
+$execSql -i $instance -c "$logging" -q
 
 ## cleanup msg workflow templates
 echo "cleanup msg workflow templates..."
