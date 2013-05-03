@@ -9,7 +9,7 @@
 <script type="text/javascript" src="/sites/all/modules/civicrm/drupal/../packages/jquery/jquery.min.js?mka9pb"></script>
 <script type="text/javascript" src="/sites/all/modules/civicrm/drupal/../packages/jquery/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js?mka9pb"></script>
   <script>var cj = jQuery.noConflict(true);</script>
-  <script src="/sites/default/themes/Bluebird/scripts/tree/bbtree3.js" type="text/javascript"></script>
+  <script src="/sites/default/themes/Bluebird/scripts/tree/app.js" type="text/javascript"></script>
 
   <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
   
@@ -19,16 +19,20 @@
   <script>
     var jsTreePageSettings = {
       dataSettings: {
-        // pullSets: [291,292,296],
-        pullSets: [291],
-        defaultTree: 291,
+        pullSets: [291,292,296],
+        // pullSets: [291],
         contact: 0
       }
     }
     var instance = jstree.startInstance(jsTreePageSettings);
   </script>
   <script>
+    // console.log(jstree);
+    var viewA = jstree.views.createNewView(instance);
     //BBTree.initContainer();
+  </script>
+  <script>
+    // var viewB = jstree.views.createNewView();
   </script>
 </body>
 </html>
