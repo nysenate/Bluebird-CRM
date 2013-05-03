@@ -568,7 +568,7 @@ sqlNewTag="
 $execSql -i $instance -c "$sqlNewTag" -q
 
 ## create inbox polling tables
-$execSql -i $instance -f $app_rootdir/scripts/sql/inbox_polling.sql
+$execSql -i $instance -f $app_rootdir/scripts/sql/inbox_polling.sql -q
 
 ## 6564 update emails received report
 sql="
@@ -608,7 +608,7 @@ sql="
   INSERT INTO role_permission (rid, permission, module)
   VALUES (19, 'administer inbox polling', 'nyss_civihooks');
 "
-$execSql -i $instance "$sql" --drupal -q
+$execSql -i $instance -c "$sql" --drupal -q
 
 ## 6677 add new bounce regex for AOL
 sql="
