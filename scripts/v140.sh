@@ -421,14 +421,14 @@ UPDATE civicrm_report_instance
 SET permission = 'access CiviCRM'
 WHERE report_id = 'logging/contact/detail' OR report_id = 'logging/contact/summary';
 "
-$execSql -i $instance -c "$changeRpt"
+$execSql -i $instance -c "$changeRpt" -q
 
 ## 5893
 authfwd="
 INSERT INTO civicrm_group (name, title, description, source, saved_search_id, is_active, visibility, group_type, cache_date, parents, children, is_hidden, is_reserved) VALUES
 ('Authorized_Forwarders', 'Authorized Forwarders', NULL, NULL, NULL, 1, 'User and User Admin Only', NULL, NULL, NULL, NULL, 0, 1);
 "
-$execSql -i $instance -c "$authfwd"
+$execSql -i $instance -c "$authfwd" -q
 
 ## 6053
 indivcat="
@@ -437,7 +437,7 @@ SELECT @w:=weight FROM civicrm_option_value WHERE name = 'District_Staff' AND op
 INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
 VALUES (@ic, 'Albany Staff', 'albany_staff', 'Albany_Staff', @w, 1);
 "
-$execSql -i $instance -c "$indivcat"
+$execSql -i $instance -c "$indivcat" -q
 
 ## 5993
 $drush $instance vset civicrm_error_to 'brian@lcdservices.biz,zalewski@nysenate.gov' -y
@@ -448,10 +448,10 @@ UPDATE civicrm_navigation
 SET url = 'admin/people'
 WHERE url = 'admin/user/user';
 "
-$execSql -i $instance -c "$mgusers"
+$execSql -i $instance -c "$mgusers" -q
 
 ## 6055
-adminadmin="
+sql="
 SELECT @role:=rid FROM role WHERE name = 'Administrator';
 INSERT INTO role_permission (rid, permission, module)
 VALUES
@@ -524,6 +524,7 @@ VALUES
   (@rid, 'cancel users with role Volunteer and other roles', 'administerusersbyrole')
 ON DUPLICATE KEY UPDATE module = 'administerusersbyrole';
 "
+$execSql -i $instance -c "$sql" --drupal -q
 
 ## 6001 set workflow rules
 rules="
@@ -541,7 +542,7 @@ INSERT INTO rules_dependencies (id, module) VALUES
 INSERT INTO rules_trigger (id, event) VALUES
 (1, 'mailing_approved'), (2, 'mailing_approved');
 "
-$execSql -i $instance -c "$rules" --drupal
+$execSql -i $instance -c "$rules" --drupal -q
 
 ## 6208
 sqlprefix="
@@ -552,7 +553,7 @@ UPDATE civicrm_option_value SET weight = weight + 1 WHERE option_group_id = @opt
 INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
 VALUES (@optgrp, 'Senator', @maxval+1, 'Senator', @wght, 1);
 "
-$execSql -i $instance -c "$sqlprefix"
+$execSql -i $instance -c "$sqlprefix" -q
 
 ## 5808 remove new tag menu item
 sqlNewTag="
@@ -560,10 +561,10 @@ sqlNewTag="
   SET is_active = 0
   WHERE name = 'New Tag';
 "
-$execSql -i $instance -c "$sqlNewTag"
+$execSql -i $instance -c "$sqlNewTag" -q
 
 ## create inbox polling tables
-$execSql -i $instance -f sql/inbox_polling.sql
+$execSql -i $instance -f $app_rootdir/scripts/sql/inbox_polling.sql
 
 ## 6564 update emails received report
 sql="
@@ -574,7 +575,7 @@ UPDATE civicrm_navigation
 SET label = 'Matched Inbound Emails, Last 7 Days', name = 'Matched Inbound Emails, Last 7 Days'
 WHERE name = 'Emails Received, Last 7 Days';
 "
-$execSql -i $instance -c "$sql"
+$execSql -i $instance -c "$sql" -q
 
 ## 6560 remove logging tables no longer to be used
 sql="
@@ -610,7 +611,7 @@ sql="
   INSERT INTO civicrm_mailing_bounce_pattern ( bounce_type_id, pattern )
   VALUES ( 5, 'recipient address rejected' );
 "
-$execSql -i $instance -c "$sql"
+$execSql -i $instance -c "$sql" -q
 
 ### Cleanup ###
 
