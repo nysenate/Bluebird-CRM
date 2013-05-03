@@ -270,6 +270,10 @@ $execSql -i $instance -c "$sql" --drupal -q
 sql="DELETE FROM system WHERE name IN ('ldapauth', 'ldapdata', 'ldapgroups');"
 $execSql -i $instance -c "$sql" --drupal -q
 
+## need to clear variables cache to force rebuild
+sql="DELETE FROM cache_bootstrap WHERE cid = 'variables';"
+$execSql -i $instance -c "$sql" --drupal -q
+
 ## misc adjustments
 echo "take care of miscelleneous adjustments..."
 attach="UPDATE civicrm_custom_group SET title = 'File Attachments' WHERE name = 'Attachments';"
