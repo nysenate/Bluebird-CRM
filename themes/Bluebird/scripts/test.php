@@ -19,7 +19,8 @@
   <script>
     var jsTreePageSettings = {
       dataSettings: {
-        pullSets: [291,292,296],
+        // pullSets: [291,292,296],
+        pullSets: [291],
         defaultTree: 291,
         contact: 0
       }

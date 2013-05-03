@@ -39,44 +39,65 @@ getTrees =
           'children':tID.children
 parseTree =
   init: (instance) ->
-    @tagLvl = 0
     #blank out html & autocomplete
-    cj.each _treeData.rawData, (i,tID)=>
-      if parseFloat(i) in instance.get('dataSettings').pullSets
+    #id & childID
+    cj.each _treeData.rawData, (id,cID) =>
+      if parseFloat(id) in instance.get('dataSettings').pullSets
         @output = ''
+        @tagLvl = 0
+        @setDataType(cID.name)
         @autocompleteID = []
         @autocompleteName = []
-        @treeTop = i
-        @writeOutputData(i,tID)
+        @treeTop = id
+        tagName = new BBTagLabel(id)
+        @addDLtop tagName,cID.name, true
+        @addDTtag tagName,cID.name
+        cj.each cID.children, (id, tID) =>
+          childTagName = new BBTagLabel(tID.id)
+          @addDLtop childTagName,tID.name
+          @writeOutputData tID 
+        @addDLbottom
+        console.log @output
         @writeAutocompleteData()
-
   isItemMarked: (value,type) ->
     if value true then type else ''
   isItemChildless: (childLength) ->
     if childLength > 0 then 'treeButton' else ''
-  writeOutputData: (i,tID) ->
-    # console.log(tID)
-    tagName = new BBTagLabel(i)
-    console.log(tID)
-    @output += @addDLtop(i,tagName,tID)
-    @output += @addDTtop(i,tagName,tID)
-    @output += @addTag(i,tagName,tID)
-    @output += @addDTbottom()
+  writeOutputData: (tID, parentTag) ->
+
+    tagName = new BBTagLabel(tID.id)
+    @addDTtag tagName,tID.name,parentTag
     if tID.children.length > 0
-      console.log('children', tID.children)
-    # @addAutocompleteEntry(i,tID)
-  addDLtop: (i,tagName,tID) ->
-    "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{tID.name}'>"
-  addDTtop: (i,tagName,tID) ->
-    "<dt class='lv-#{@tagLvl} issueCode-#{i}' id='#{tagName.add()}' data-tagid='#{@treeTop}' data-name='#{tID.name}'>"
-  addTag: (i,tagName,tID) ->
-    "<div class='tag'><span class='name'>#{tID.name}</span></div>"
-  addDTbottom: ->
-    "</dt>"
+      cj.each tID.children, (id, cID) =>
+        if !/lcd/i.test(cID.name)
+          childTagName = new BBTagLabel(cID.id)
+          @addDLtop childTagName,cID.name
+          @writeOutputData cID, tID.id
+          @addDLbottom
+      @addDLbottom() 
+    else
+      @addDLbottom()
+  addDLtop: (tagName,name,except) ->
+    if !except 
+      @tagLvl++
+    @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
+  addDTtag: (tagName,name,parentTag) ->
+    if !parentTag?
+      parentTag = @treeTop
+    @output += "<dt class='lv-#{@tagLvl} #{@tagType}-#{tagName.passThru()}' id='#{tagName.add()}' data-tagid='#{tagName.passThru()}' data-name='#{name}' data-parentid='#{parentTag}'>"
+    @output += "<div class='tag'><span class='name'>#{name}</span></div>"
+    @output += "</dt>"
   addDLbottom: ->
-    "</dl>"
-  addAutocompleteEntry: (i,tID) ->
-    @autocompleteID.push i
+    @tagLvl--
+    @output += "</dl>"
+  setDataType: (name) ->
+    switch name
+      when "Issue Code" then @tagType = "issueCode"
+      when "Positions" then @tagType = "position"
+      when "Keywords" then @tagType = "keyword"
+      else @tagType = "tag"
+  addAutocompleteEntry: (id,name) ->
+    @autocompleteID.push id
     @autocompleteName.push tID.name
   writeAutocompleteData: () ->
     _treeData.autocomplete[@treeTop] =
@@ -196,4 +217,5 @@ class BBTagLabel
   remove: -> @tagID.replace "tagLabel_", ""
   addDD: -> "tagDropdown_" + @tagID
   removeDD: -> @tagID.replace "tagDropdown_", ""
+  passThru: -> @tagID
     

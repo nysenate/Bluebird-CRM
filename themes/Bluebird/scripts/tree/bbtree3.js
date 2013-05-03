@@ -41,17 +41,28 @@
     init: function(instance) {
       var _this = this;
 
-      this.tagLvl = 0;
-      return cj.each(_treeData.rawData, function(i, tID) {
-        var _ref1;
+      return cj.each(_treeData.rawData, function(id, cID) {
+        var tagName, _ref1;
 
-        if (_ref1 = parseFloat(i), __indexOf.call(instance.get('dataSettings').pullSets, _ref1) >= 0) {
+        if (_ref1 = parseFloat(id), __indexOf.call(instance.get('dataSettings').pullSets, _ref1) >= 0) {
           _this.output = '';
+          _this.tagLvl = 0;
+          _this.setDataType(cID.name);
           _this.autocompleteID = [];
           _this.autocompleteName = [];
-          _this.treeTop = i;
-          _this.writeOutputData(i, tID);
-          return _this.writeAutocompleteData();
+          _this.treeTop = id;
+          tagName = new BBTagLabel(id);
+          _this.addDLtop(tagName, cID.name, true);
+          _this.addDTtag(tagName, cID.name);
+          cj.each(cID.children, function(id, tID) {
+            var childTagName;
+
+            childTagName = new BBTagLabel(tID.id);
+            _this.addDLtop(childTagName, tID.name);
+            return _this.writeOutputData(tID);
+          });
+          _this.addDLbottom;
+          return console.log(_this.output);
         }
       });
     },
@@ -69,36 +80,60 @@
         return '';
       }
     },
-    writeOutputData: function(i, tID) {
-      var tagName;
+    writeOutputData: function(tID, parentTag) {
+      var tagName,
+        _this = this;
 
-      tagName = new BBTagLabel(i);
-      console.log(tID);
-      this.output += this.addDLtop(i, tagName, tID);
-      this.output += this.addDTtop(i, tagName, tID);
-      this.output += this.addTag(i, tagName, tID);
-      this.output += this.addDTbottom();
+      tagName = new BBTagLabel(tID.id);
+      this.addDTtag(tagName, tID.name, parentTag);
       if (tID.children.length > 0) {
-        return console.log('children', tID.children);
+        cj.each(tID.children, function(id, cID) {
+          var childTagName;
+
+          if (!/lcd/i.test(cID.name)) {
+            childTagName = new BBTagLabel(cID.id);
+            _this.addDLtop(childTagName, cID.name);
+            _this.writeOutputData(cID, tID.id);
+            return _this.addDLbottom;
+          }
+        });
+        return this.addDLbottom();
+      } else {
+        return this.addDLbottom();
       }
     },
-    addDLtop: function(i, tagName, tID) {
-      return "<dl class='lv-" + this.tagLvl + "' id='" + (tagName.addDD()) + "' data-name='" + tID.name + "'>";
+    addDLtop: function(tagName, name, except) {
+      if (!except) {
+        this.tagLvl++;
+      }
+      return this.output += "<dl class='lv-" + this.tagLvl + "' id='" + (tagName.addDD()) + "' data-name='" + name + "'>";
     },
-    addDTtop: function(i, tagName, tID) {
-      return "<dt class='lv-" + this.tagLvl + " issueCode-" + i + "' id='" + (tagName.add()) + "' data-tagid='" + this.treeTop + "' data-name='" + tID.name + "'>";
-    },
-    addTag: function(i, tagName, tID) {
-      return "<div class='tag'><span class='name'>" + tID.name + "</span></div>";
-    },
-    addDTbottom: function() {
-      return "</dt>";
+    addDTtag: function(tagName, name, parentTag) {
+      if (parentTag == null) {
+        parentTag = this.treeTop;
+      }
+      this.output += "<dt class='lv-" + this.tagLvl + " " + this.tagType + "-" + (tagName.passThru()) + "' id='" + (tagName.add()) + "' data-tagid='" + (tagName.passThru()) + "' data-name='" + name + "' data-parentid='" + parentTag + "'>";
+      this.output += "<div class='tag'><span class='name'>" + name + "</span></div>";
+      return this.output += "</dt>";
     },
     addDLbottom: function() {
-      return "</dl>";
+      this.tagLvl--;
+      return this.output += "</dl>";
     },
-    addAutocompleteEntry: function(i, tID) {
-      this.autocompleteID.push(i);
+    setDataType: function(name) {
+      switch (name) {
+        case "Issue Code":
+          return this.tagType = "issueCode";
+        case "Positions":
+          return this.tagType = "position";
+        case "Keywords":
+          return this.tagType = "keyword";
+        default:
+          return this.tagType = "tag";
+      }
+    },
+    addAutocompleteEntry: function(id, name) {
+      this.autocompleteID.push(id);
       return this.autocompleteName.push(tID.name);
     },
     writeAutocompleteData: function() {
@@ -238,6 +273,10 @@
 
     BBTagLabel.prototype.removeDD = function() {
       return this.tagID.replace("tagDropdown_", "");
+    };
+
+    BBTagLabel.prototype.passThru = function() {
+      return this.tagID;
     };
 
     return BBTagLabel;

@@ -10,4 +10,4 @@
   #writeRemoveTag
   #writeConfirmDisplay
 
-  window.jstree['views'] ?=
+  #window.jstree['views'] ?=
