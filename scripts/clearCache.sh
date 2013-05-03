@@ -118,7 +118,6 @@ sql="
   TRUNCATE civicrm_group_contact_cache;
   TRUNCATE civicrm_menu;
   DROP TABLE IF EXISTS civicrm_task_action_temp;
-  UPDATE civicrm_preferences SET navigation=null;
   UPDATE civicrm_setting SET value = null WHERE name = 'navigation';
 "
 [ $clear_all -eq 1 ] && sql="TRUNCATE civicrm_log; $sql"
