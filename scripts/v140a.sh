@@ -38,6 +38,11 @@ civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix=
 cdb="$civi_db_prefix$db_basename"
 
 ## create site directories and symlink to data folder; set variable
+drupal_filesdir="$data_rootdir/$instance.$base_domain/drupal"
+sitedir="$webdir/sites/$instance.$base_domain"
+mkdir -p "$drupal_filesdir"
+mkdir -p "$sitedir"
+ln -s "$drupal_filesdir" "$sitedir/files"
 filesdir="sites/$instance.$base_domain/files"
 $drush $instance vset file_public_path $filesdir -y
 
