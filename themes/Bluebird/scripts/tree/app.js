@@ -299,21 +299,22 @@
 
   window.jstree.views = {
     createNewView: function(instance) {
-      var aView;
+      var newView;
 
-      return aView = new View(instance);
+      return newView = new View(instance);
     }
   };
 
   View = (function() {
     function View(instance) {
       this.instance = instance;
-      this.setUpdateInterval(1000);
+      this.writeContainers();
+      this.interval = this.setUpdateInterval(1000);
     }
 
     View.prototype.getData = function() {
-      if (this.instance.get('ready')) {
-        return this.killUpdateInterval();
+      if (this.instance.get('ready') === true) {
+        return this.killUpdateInterval(this.interval);
       }
     };
 
@@ -327,15 +328,13 @@
       return setInterval(callback, timeSet);
     };
 
-    View.prototype.killUpdateInterval = function() {
-      var callback,
-        _this = this;
+    View.prototype.killUpdateInterval = function(clearInt) {
+      return clearInterval(clearInt);
+    };
 
-      console.log('ttk');
-      callback = function() {
-        return _this.getData();
-      };
-      return clearInterval(callback);
+    View.prototype.writeContainers = function() {
+      this.pageElements = this.instance.get('pageElements');
+      return console.log(this.pageElements);
     };
 
     return View;
