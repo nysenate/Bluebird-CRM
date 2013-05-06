@@ -12,24 +12,25 @@
 
 window.jstree.views = 
   createNewView: (instance) ->
-    aView = new View(instance)
+    newView = new View(instance)
 
 
 class View
   constructor: (@instance) ->
-    @setUpdateInterval(1000)
-
-
+    # first, write all boxes
+    @writeContainers()
+    @interval = @setUpdateInterval(1000)
   getData: ->
-    # DOESNT UNBIND WTH
-    # console.log "get Data by Ajax"
-    # console.log @instance.get('ready')
-    if @instance.get('ready')
-      @killUpdateInterval()
+    if @instance.get('ready') is true
+      @killUpdateInterval(@interval)
+      # console.log @instance.get('ready')
+      # make view now
   setUpdateInterval: (timeSet) ->
     callback = => @getData()
     setInterval( callback, timeSet )
-  killUpdateInterval: () ->
-    console.log('ttk')
-    callback = => @getData()
-    clearInterval(callback)
+  killUpdateInterval: (clearInt) ->
+    clearInterval(clearInt)
+  writeContainers: () ->
+    @pageElements = @instance.get('pageElements')
+    console.log @pageElements
+  # writeTreeFromSource: () ->

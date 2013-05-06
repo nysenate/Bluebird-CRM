@@ -26,8 +26,10 @@
     }
     var instance = jstree.startInstance(jsTreePageSettings);
   </script>
+  <div class="jstreeinit"></div>
   <script>
     // console.log(jstree);
+    // must put instance in there, well instance + properties
     var viewA = jstree.views.createNewView(instance);
     //BBTree.initContainer();
   </script>
