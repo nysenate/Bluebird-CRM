@@ -755,12 +755,12 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   foreach ( $params as $navID => $navDetails ) {
     if ( $navDetails['attributes']['name'] == 'Reports' ) {
       $reportNavID = $navID;
-    } elseif ( $navDetails['attributes']['name'] == 'Manage' ) {
-      $manageNavID = $navID;
     }
-    //if both found, stop searching
-    if ( $reportNavID && $manageNavID ) {
-      break;
+    elseif ( $navDetails['attributes']['name'] == 'Mass Email' ) {
+      $emailNavID = $navID;
+    }
+    elseif ( $navDetails['attributes']['name'] == 'Manage' ) {
+      $manageNavID = $navID;
     }
   }
 
@@ -783,72 +783,20 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     'child' => array(),
   );
 
-  //5813 Inbox polling Menu Items
-  $inboxNavID = $maxKey+3;
-  $params[$inboxNavID] = array (
-    'attributes' => array (
-      'label'      => 'Inbox',
-      'name'       => 'Inbox',
-      'url'        => NULL,
-      'permission' => 'administer inbox polling',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => NULL,
-      'navID'      => $inboxNavID,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-
-  $params[$inboxNavID]['child'][$maxKey+4] = array (
-    'attributes' => array (
-      'label'      => 'Unmatched Messages',
-      'name'       => 'Unmatched Messages',
-      'url'        => 'civicrm/imap/unmatched',
-      'permission' => 'administer inbox polling',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => $inboxNavID,
-      'navID'      => $maxKey+4,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-  $params[$inboxNavID]['child'][$maxKey+5] = array (
-    'attributes' => array (
-      'label'      => 'Matched Messages',
-      'name'       => 'Matched Messages',
-      'url'        => 'civicrm/imap/matched',
-      'permission' => 'administer inbox polling',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => $inboxNavID,
-      'navID'      => $maxKey+5,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-  // temp removal NYSS #6595
-  // $params[$inboxNavID]['child'][$maxKey+6] = array (
-  //   'attributes' => array (
-  //     'label'      => 'Reports',
-  //     'name'       => 'Reports',
-  //     'url'        => 'civicrm/imap/reports',
-  //     'permission' => 'administer inbox polling',
-  //     'operator'   => 'AND',
-  //     'separator'  => 2,
-  //     'parentID'   => $inboxNavID,
-  //     'navID'      => $maxKey+6,
-  //     'active'     => 1
-  //   ),
-  //   'child' => array(),
-  // );
-
-  //build manage menu
-  if ( empty($manageNavID) ) {
-    $manageNavID = $maxKey+6;
+  //build Manage menu
+  if ( !empty($manageNavID) ) {
+    unset($params[$manageNavID]);
   }
-  $params[$manageNavID] = _buildManageMenu($manageNavID);
+  $params[1000] = _buildManageMenu(1000);
+
+  //build Mass Email menu
+  if ( !empty($emailNavID) ) {
+    unset($params[$emailNavID]);
+  }
+  $params[2000] = _buildEmailMenu(2000);
+
+  //build Inbox menu
+  $params[3000] = _buildInboxMenu(3000);
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -882,6 +830,10 @@ function _setDBVars() {
   }
 }
 
+/*
+ * given our "starting" ID, construct the manage menu items
+ * return the complete array to be added to the main navigation array
+ */
 function _buildManageMenu($manageID) {
   $manage = array(
     'attributes' => array(
@@ -914,7 +866,7 @@ function _buildManageMenu($manageID) {
         'attributes' => Array(
           'label' => 'Site Maintenance',
           'name' => 'Site Maintenance',
-          'url' => 'admin/settings/site-maintenance',
+          'url' => 'admin/config/development/maintenance',
           'permission' => 'access CiviCRM,administer site configuration',
           'operator' => 'AND',
           'separator' => 1,
@@ -1064,6 +1016,7 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
+      //5230 add duplicate address removal tool
       $manageID+13 => array(
         'attributes' => Array(
           'label' => 'Duplicate Address Removal',
@@ -1082,4 +1035,234 @@ function _buildManageMenu($manageID) {
   );
 
   return $manage;
+}//_buildManageMenu
+
+/*
+ * given our "starting" ID, construct the mass email menu items
+ * return the complete array to be added to the main navigation array
+ */
+function _buildEmailMenu($emailID) {
+  $email = array(
+    'attributes' => array(
+      'label'      => 'Mass Email',
+      'name'       => 'Mass Email',
+      'url'        => NULL,
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => $emailID,
+      'active'     => 1
+    ),
+    'child' => array(
+      $emailID+1 => array(
+        'attributes' => array(
+          'label' => 'New Mass Email',
+          'name' => 'New Mass Email',
+          'url' => 'civicrm/mailing/send&reset=1',
+          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+1,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+2 => array(
+        'attributes' => Array(
+          'label' => 'Draft and Unscheduled Emails',
+          'name' => 'Draft and Unscheduled Emails',
+          'url' => 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false',
+          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+2,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+3 => array(
+        'attributes' => Array(
+          'label' => 'Scheduled and Sent Emails',
+          'name' => 'Scheduled and Sent Emails',
+          'url' => 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true',
+          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+3,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+4 => array(
+        'attributes' => Array(
+          'label' => 'Find Mailings',
+          'name' => 'Find Mailings',
+          'url' => 'civicrm/mailing/browse&reset=1',
+          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+4,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+5 => array(
+        'attributes' => Array(
+          'label' => 'Archived Emails',
+          'name' => 'Archived Emails',
+          'url' => 'civicrm/mailing/browse/archived&reset=1',
+          'permission' => 'create mailings,schedule mailings,access CiviMail',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $emailID,
+          'navID' => $emailID+5,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+6 => array(
+        'attributes' => Array(
+          'label' => 'Mass Email Summary Report',
+          'name' => 'Mass Email Summary Report',
+          'url' => 'civicrm/report/instance/28&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+6,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+7 => array(
+        'attributes' => Array(
+          'label' => 'Mass Email Bounce Report',
+          'name' => 'Mass Email Bounce Report',
+          'url' => 'civicrm/report/instance/27&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+7,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+8 => array(
+        'attributes' => Array(
+          'label' => 'Mass Email Opened Report',
+          'name' => 'Mass Email Opened Report',
+          'url' => 'civicrm/report/instance/29&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+8,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+9 => array(
+        'attributes' => Array(
+          'label' => 'Mass Email Clickthrough Report',
+          'name' => 'Mass Email Clickthrough Report',
+          'url' => 'civicrm/report/instance/30&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+9,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $emailID+10 => array(
+        'attributes' => Array(
+          'label' => 'Mass Email Detail Report',
+          'name' => 'Mass Email Detail Report',
+          'url' => 'civicrm/report/instance/57&reset=1',
+          'permission' => 'access CiviReport',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+10,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  return $email;
+}//_buildManageMenu
+
+/*
+ * given our "starting" ID, construct the inbox menu items
+ * return the complete array to be added to the main navigation array
+ */
+function _buildInboxMenu($inboxNavID) {
+  $inbox = array(
+    'attributes' => array (
+      'label'      => 'Inbox',
+      'name'       => 'Inbox',
+      'url'        => NULL,
+      'permission' => 'administer inbox polling',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => $inboxNavID,
+      'active'     => 1
+    ),
+    'child' => array(
+      $inboxNavID+1 => array(
+        'attributes' => array (
+          'label'      => 'Unmatched Messages',
+          'name'       => 'Unmatched Messages',
+          'url'        => 'civicrm/imap/unmatched',
+          'permission' => 'administer inbox polling',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $inboxNavID,
+          'navID'      => $inboxNavID+1,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $inboxNavID+2 => array(
+        'attributes' => array (
+          'label'      => 'Matched Messages',
+          'name'       => 'Matched Messages',
+          'url'        => 'civicrm/imap/matched',
+          'permission' => 'administer inbox polling',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $inboxNavID,
+          'navID'      => $inboxNavID+2,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      /*$inboxNavID+3 => array(
+        'attributes' => array (
+          'label'      => 'Reports',
+          'name'       => 'Reports',
+          'url'        => 'civicrm/imap/reports',
+          'permission' => 'administer inbox polling',
+          'operator'   => 'AND',
+          'separator'  => 2,
+          'parentID'   => $inboxNavID,
+          'navID'      => $inboxNavID+3,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),*/
+    ),
+  );
+
+  return $inbox;
 }//_buildManageMenu
