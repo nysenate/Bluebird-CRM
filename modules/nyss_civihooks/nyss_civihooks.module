@@ -748,7 +748,7 @@ function nyss_civihooks_civicrm_validateForm( $formName, &$fields, &$files, &$fo
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   //CRM_Core_Error::debug_var('navigationMenu params',$params);
-  //var_dump($params);
+
   //5260
   //first find parents
   $reportNavID = $manageNavID = '';
@@ -783,24 +783,7 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
     'child' => array(),
   );
 
-  //5230 add duplicate address removal tool
-  $params[$manageNavID]['child'][$maxKey+2] = array (
-    'attributes' => array (
-      'label'      => 'Duplicate Address Removal',
-      'name'       => 'Duplicate Address Removal',
-      'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
-      'permission' => 'export print production files',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => $manageNavID,
-      'navID'      => $maxKey+2,
-      'active'     => 1
-    ),
-    'child' => array(),
-  );
-
   //5813 Inbox polling Menu Items
-
   $inboxNavID = $maxKey+3;
   $params[$inboxNavID] = array (
     'attributes' => array (
@@ -860,6 +843,13 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   //   ),
   //   'child' => array(),
   // );
+
+  //build manage menu
+  if ( empty($manageNavID) ) {
+    $manageNavID = $maxKey+6;
+  }
+  $params[$manageNavID] = _buildManageMenu($manageNavID);
+
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
@@ -891,3 +881,205 @@ function _setDBVars() {
     }
   }
 }
+
+function _buildManageMenu($manageID) {
+  $manage = array(
+    'attributes' => array(
+      'label'      => 'Manage',
+      'name'       => 'Manage',
+      'url'        => NULL,
+      'permission' => NULL,
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => $manageID,
+      'active'     => 1
+    ),
+    'child' => array(
+      $manageID+1 => array(
+        'attributes' => array(
+          'label' => 'BOE/3rd Party Import',
+          'name' => 'BOE Import',
+          'url' => 'importData',
+          'permission' => 'access CiviCRM,import print production',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+1,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+2 => array(
+        'attributes' => Array(
+          'label' => 'Site Maintenance',
+          'name' => 'Site Maintenance',
+          'url' => 'admin/settings/site-maintenance',
+          'permission' => 'access CiviCRM,administer site configuration',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $manageID,
+          'navID' => $manageID+2,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+3 => array(
+        'attributes' => Array(
+          'label' => 'Backup/Restore',
+          'name' => 'Backup/Restore',
+          'url' => 'backupdata',
+          'permission' => 'administer CiviCRM,export print production files',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $manageID,
+          'navID' => $manageID+3,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+4 => array(
+        'attributes' => Array(
+          'label' => 'Import Contacts',
+          'name' => 'Import Contacts',
+          'url' => 'civicrm/import/contact&reset=1',
+          'permission' => 'import contacts',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+4,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+5 => array(
+        'attributes' => Array(
+          'label' => 'Import Activities',
+          'name' => 'Import Activities',
+          'url' => 'civicrm/import/activity&reset=1',
+          'permission' => 'import contacts',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $manageID,
+          'navID' => $manageID+5,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+6 => array(
+        'attributes' => Array(
+          'label' => 'New Group',
+          'name' => 'New Group',
+          'url' => 'civicrm/group/add&reset=1',
+          'permission' => 'edit groups',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+6,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+7 => array(
+        'attributes' => Array(
+          'label' => 'Manage Groups',
+          'name' => 'Manage Groups',
+          'url' => 'civicrm/group&reset=1',
+          'permission' => 'edit groups',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+7,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+8 => array(
+        'attributes' => Array(
+          'label' => 'Manage Tags',
+          'name' => 'Manage Tags',
+          'url' => 'civicrm/admin/tag&reset=1',
+          'permission' => 'administer CiviCRM,administer district',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+8,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+9 => array(
+        'attributes' => Array(
+          'label' => 'Manage Users',
+          'name' => 'Manage Users',
+          'url' => 'admin/people',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+9,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+10 => array(
+        'attributes' => Array(
+          'label' => 'Merge Duplicate Contacts',
+          'name' => 'Merge Duplicate Contacts',
+          'url' => 'civicrm/contact/deduperules&reset=1',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 2,
+          'parentID' => $manageID,
+          'navID' => $manageID+10,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+11 => array(
+        'attributes' => Array(
+          'label' => 'Case Dashboard',
+          'name' => 'Case Dashboard',
+          'url' => 'civicrm/case?reset=1',
+          'permission' => 'access CiviCRM,access all cases and activities',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+11,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+12 => array(
+        'attributes' => Array(
+          'label' => 'Import/Export Mappings',
+          'name' => 'Import/Export Mappings',
+          'url' => 'civicrm/admin/mapping?reset=1',
+          'permission' => 'administer CiviCRM,administer district',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+12,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      $manageID+13 => array(
+        'attributes' => Array(
+          'label' => 'Duplicate Address Removal',
+          'name' => 'Duplicate Address Removal',
+          'url' => 'civicrm/dedupe/dupeaddress?reset=1',
+          'permission' => 'export print production files',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+13,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  return $manage;
+}//_buildManageMenu
