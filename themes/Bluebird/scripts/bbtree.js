@@ -565,7 +565,7 @@ var callTree =  {
 			}
 			displayObj.output += ' ' + isItemMarked(tID.is_reserved,'isReserved');
 		}
-		displayObj.output += '" id="'+tagLabel+'" description="'+tID.description+'" tLvl="'+displayObj.tLvl+'" parent="'+tID.id+'" tID="'+tID.id+'">';
+		displayObj.output += '" id="'+tagLabel+'" description=\''+tID.description+'\' tLvl="'+displayObj.tLvl+'" parent="'+tID.id+'" tID="'+tID.id+'">';
 		displayObj.output += '<div class="ddControl '+isItemChildless(tID.children.length)+'"></div><div class="tag"><span class="name">'+tID.name+'</span></div>';
 		displayObj.output += addControlBox(tagLabel, displayObj.treeTop, isItemMarked(tID.is_checked,'checked')) + '</dt>';
 		displayObj.output += '<dl class="lv-'+displayObj.tLvl+' '+tagLabel+'" id="" tLvl="'+displayObj.tLvl+'">';
@@ -603,7 +603,7 @@ var callTree =  {
 			parentTag = callTree.currentSettings.displaySettings.currentTree;
 		}
 		var tagLabel = addTagLabel(cID.id);
-		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description="'+cID.description+'" tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'" parent="'+parentTag+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag"><span class="name">'+cID.name+'</span></div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' '+isItemMarked(cID.is_reserved,'isReserved')+'" id="'+tagLabel+'" description=\''+cID.description+'\' tLvl="'+displayObj.tLvl+'" tid="'+cID.id+'" parent="'+parentTag+'"><div class="ddControl '+ isItemChildless(cID.children.length) + '"></div><div class="tag"><span class="name">'+cID.name+'</span></div>'+addEntityCount(cID.entity_count) + addControlBox(tagLabel, displayObj.treeTop, isItemMarked(cID.is_checked,'checked'))  + '</dt>';
 		//'/*+isItemChildless(cID.children.length)+*/
 	},
 	writeTagContainer: function(tID,displayObj){
@@ -1366,6 +1366,9 @@ var BBTreeModal = {
 					modalLoadingGif('add');
 					tagUpdate = new Object();
 					tagUpdate.prevName = BBTreeModal.taggedName;
+					// NYSS-#6708
+					// tagUpdate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
+					// tagUpdate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
 					tagUpdate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
 					tagUpdate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 					tagUpdate.parentId = removeTagLabel(BBTreeModal.taggedID);
@@ -1560,8 +1563,11 @@ var BBTreeModal = {
 						tagCreate = new Object();
 						tagCreate.tagDescription = '';
 						modalLoadingGif('add');
+						// NYSS-#6708
+						// tagCreate.tagName = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagName]').val());
 						tagCreate.tagName = cj('#BBDialog .modalInputs input:[name=tagName]').val();
 						tagCreate.treeParent = BBTreeModal.treeParent;
+						// tagCreate.tagDescription = checkForHTMLinModalField(cj('#BBDialog .modalInputs input:[name=tagDescription]').val());
 						tagCreate.tagDescription = cj('#BBDialog .modalInputs input:[name=tagDescription]').val();
 						tagCreate.parentId = removeTagLabel(BBTreeModal.taggedID);
 						tagCreate.isReserved = cj('#BBDialog .modalInputs input:checked[name=isReserved]').length;
@@ -1617,7 +1623,7 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
+				toAddDT += '" id="tagLabel_'+data.id+'" description=\''+data.description+'\' tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';	
 				cj('dl.'+BBTreeModal.taggedID).prepend(toAddDT);
 				BBTreeEdit.setTagInfo();
 			}
@@ -1634,7 +1640,7 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
+				toAddDT += '" id="tagLabel_'+data.id+'" description=\''+data.description+'\' tlvl="'+tlvl +'" tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'"><div class="ddControl"></div><div class="tag"><span class="name">'+data.name+'</span></div><span class="entityCount" style="display:none">Unknown</span>'+addControlBox(addTagLabel(data.id), callTree.currentSettings.displaySettings.currentTree )+'</dt>';
 				if(cj('dl#'+BBTreeModal.taggedID).length != 0)
 				{
 					cj('dl#'+BBTreeModal.taggedID).append(toAddDT);
@@ -1655,7 +1661,7 @@ var BBTreeModal = {
 				{
 					toAddDT += 'isReserved';
 				}
-				toAddDT += '" id="tagLabel_'+data.id+'" description="'+data.description+'" tlvl="1"';
+				toAddDT += '" id="tagLabel_'+data.id+'" description=\''+data.description+'\' tlvl="1"';
 				toAddDT += 'tid="'+data.id+'" parent="'+removeTagLabel(BBTreeModal.taggedID)+'">';
 				toAddDT += '<div class="ddControl"></div>';
 				toAddDT += '<div class="tag"><span class="name">'+data.name+'</span></div>';
@@ -1890,6 +1896,19 @@ function setTreeLoc()
 {
 	BBTree["treeLoc"] = {};
 	BBTree.treeLoc = '.'+callTree.currentSettings.displaySettings.currentInstance+ '.'+callTree.currentSettings.pageSettings.tagHolder+'.'+callTree.currentSettings.displaySettings.buttonType.toLowerCase();
+}
+function checkForHTMLinModalField(cjvalue)
+{
+	cachedval = cj(cjvalue);
+	if(cachedval.text() != "")
+	{
+		return cachedval.text();
+	}
+	return cjvalue;
+}
+function checkTagHTMLOutput(rawval)
+{
+
 }
 //remove at the end
 function returnTime(note)
