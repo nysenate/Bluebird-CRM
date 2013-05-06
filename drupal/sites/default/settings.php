@@ -20,14 +20,13 @@ require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 $conf['maintenance_theme'] = 'Bluebird';
 
 $bbconfig = get_bluebird_instance_config();
-//echo '<pre>';print_r($bbconfig);echo '</pre>';
 
 if ($bbconfig == null) {
   $GLOBALS['maintenance_message'] = "<br/>There is no such CRM instance:<br/><br/>".$_SERVER['HTTP_HOST'];
-  // The LANGUAGE bootstrap has not yet happened, so the $language global is
-  // not set.  Set it here in order to avoid warnings in the logs.
-  global $language;
-  $language = language_default();
+  require_once DRUPAL_ROOT.'/includes/cache.inc';
+  require_once DRUPAL_ROOT.'/includes/common.inc';
+  require_once DRUPAL_ROOT.'/includes/lock.inc';
+  require_once DRUPAL_ROOT.'/includes/menu.inc';
   drupal_maintenance_theme();
   drupal_site_offline();
   exit(1);
