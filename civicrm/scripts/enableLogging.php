@@ -34,3 +34,8 @@ CRM_Core_DAO::executeQuery('
   SET config_backend = REPLACE(config_backend, "logging\";s:1:\"0", "logging\";s:1:\"1")
   WHERE id = 1;
 ');
+CRM_Core_DAO::executeQuery('
+  UPDATE civicrm_domain
+  SET config_backend = REPLACE(config_backend, "logging\";i:0", "logging\";s:1:\"1")
+  WHERE id = 1;
+');
