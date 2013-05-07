@@ -46,6 +46,3 @@ sql="
     (4, 'edit users with role ManageBluebirdInbox and other roles', 'administerusersbyrole');
 "
 $execSql -i $instance -c "$sql" --drupal -q
-
-### Cleanup ###
-$script_dir/clearCache.sh $instance
