@@ -734,10 +734,14 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
           // hack to stop mailing job at run time, CRM-4246.
           // to avoid making too many DB calls for this rare case
           // lets do it when we snapshot
+          //NYSS backport fix for only first 10 getting sent
           $status = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Job',
             $this->id,
-            'status'
+            'status',
+            'id',
+            TRUE
           );
+
           if ($status != 'Running') {
             return FALSE;
           }
