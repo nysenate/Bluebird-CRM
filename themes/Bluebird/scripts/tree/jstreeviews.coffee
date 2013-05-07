@@ -33,4 +33,5 @@ class View
   writeContainers: () ->
     @pageElements = @instance.get('pageElements')
     console.log @pageElements
+    cj(".jstreeinit").add
   # writeTreeFromSource: () ->

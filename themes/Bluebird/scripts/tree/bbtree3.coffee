@@ -143,6 +143,8 @@ class instance
       pullSets: [291, 296, 292]
       #contact is set to 0 and SHOULD appear on most contact inits
       contact: 0
+      # activity_id
+      
     displaySettings =
       #IssueCodes = 291 KW = 296. Sets default tree to show first.
       defaultTree: 291
@@ -158,6 +160,7 @@ class instance
       showActive: true
     #ajax related settings
     callAjax =
+      # if it's an activity, entity_type is different
       #where to grab the tree
       url: '/civicrm/ajax/tag/tree'
       data:
