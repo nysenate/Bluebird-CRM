@@ -40,9 +40,41 @@ cdb="$civi_db_prefix$db_basename"
 ## allow admin/office admin to assign manage inbox role
 sql="
   INSERT IGNORE INTO role_permission (rid, permission, module) VALUES
-    (9, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
-    (9, 'edit users with role ManageBluebirdInbox and other roles', 'administerusersbyrole'),
+    (4, 'edit users with role SOS', 'administerusersbyrole'),
+    (4, 'edit users with role Staff', 'administerusersbyrole'),
+    (4, 'edit users with role DataEntry', 'administerusersbyrole'),
+    (4, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (4, 'edit users with role MailingViewer', 'administerusersbyrole'),
+    (4, 'edit users with role OfficeManager', 'administerusersbyrole'),
+    (4, 'edit users with role MailingCreator', 'administerusersbyrole'),
+    (4, 'edit users with role MailingApprover', 'administerusersbyrole'),
+    (4, 'edit users with role MailingScheduler', 'administerusersbyrole'),
     (4, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
-    (4, 'edit users with role ManageBluebirdInbox and other roles', 'administerusersbyrole');
+    (4, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
+    (9, 'edit users with role SOS', 'administerusersbyrole'),
+    (9, 'edit users with role Staff', 'administerusersbyrole'),
+    (9, 'edit users with role DataEntry', 'administerusersbyrole'),
+    (9, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (9, 'edit users with role MailingViewer', 'administerusersbyrole'),
+    (9, 'edit users with role OfficeManager', 'administerusersbyrole'),
+    (9, 'edit users with role MailingCreator', 'administerusersbyrole'),
+    (9, 'edit users with role MailingApprover', 'administerusersbyrole'),
+    (9, 'edit users with role MailingScheduler', 'administerusersbyrole'),
+    (9, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole');
 "
 $execSql -i $instance -c "$sql" --drupal -q
+
+sql="
+  DELETE FROM role_permission
+  WHERE module = ''
+    AND permission != 'use PHP for settings';
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
+## set role assign values
+sql="
+  UPDATE variable
+  SET value = 0x613a31373a7b693a383b733a313a2238223b693a353b733a313a2235223b693a31323b733a323a223132223b693a31363b733a323a223136223b693a31343b733a323a223134223b693a31353b733a323a223135223b693a31373b733a323a223137223b693a31393b733a323a223139223b693a393b733a313a2239223b693a31303b733a323a223130223b693a373b733a313a2237223b693a363b733a313a2236223b693a31313b733a323a223131223b693a31333b733a323a223133223b693a343b693a303b693a31383b693a303b693a333b693a303b7d
+  WHERE name = 'roleassign_roles';
+"
+$execSql -i $instance -c "$sql" --drupal
