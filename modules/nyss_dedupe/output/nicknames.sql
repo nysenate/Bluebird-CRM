@@ -9,16 +9,18 @@ DROP TABLE IF EXISTS fn_group_name;
 CREATE TABLE fn_group_name (
     fn_group_id  int,
     name         varchar(50),
-    INDEX(fn_group_id),
-    INDEX(name)
+    INDEX (fn_group_id),
+    INDEX (name),
+    UNIQUE KEY (fn_group_id, name)
 );
 
 DROP TABLE IF EXISTS  fn_group_contact;
 CREATE TABLE fn_group_contact (
     fn_group_id int,
     contact_id  int,
-    INDEX(fn_group_id),
-    INDEX(contact_id)
+    INDEX (fn_group_id),
+    INDEX (contact_id),
+    UNIQUE KEY (fn_group_id, contact_id)
 );
 INSERT INTO fn_group (given, new) VALUES ('trenton',0);
 SET @last_id:=LAST_INSERT_ID();
