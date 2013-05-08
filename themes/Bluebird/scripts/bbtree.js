@@ -9,13 +9,8 @@
 
 //alias/pathing object
 var BBTree = {
-<<<<<<< HEAD
 	startInstance: function(config)
 	{
-=======
-	startInstance: function(config, entity_counts)
-	{	
->>>>>>> fixes #6205 settings for entity counts
 		//Check remote timestamp first
 		//then check cookie timestamp	
 		//if cookies found skip getAjaxData
@@ -23,12 +18,8 @@ var BBTree = {
 
 		//set settings, 
 		//BBTree.startInstance({displaySettings:{pullSets: [291,296], buttonType: 'edit'}}); 
-<<<<<<< HEAD
 		console.log(cj.fn.jquery)
 		callTree.setCurrentSettings(config);
-=======
-		callTree.setCurrentSettings(config, entity_counts);
->>>>>>> fixes #6205 settings for entity counts
 		BBTreeModal.makeModalInit();
 		//have to use a queue with ajax data because you do A, and once A is done, then do B.
     cj({})
