@@ -241,6 +241,12 @@ UPDATE civicrm_log
         GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id
       ";
       $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
+      //NYSS 6713 temp hack to avoid duplicate log records for the same bulk email activity
+      if ( $entity == 'log_civicrm_activity_for_target' ) {
+        //$sql = str_replace("DAY_MICROSECOND", "DAY_HOUR", $sql);
+        $sql = str_replace("EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), ", "", $sql);
+        $sql = str_replace("entity_log_civireport.log_conn_id, ", "", $sql);
+      }
       $sql = "INSERT IGNORE INTO civicrm_temp_logcount {$sql}";
       //CRM_Core_Error::debug_var('sql',$sql);
       CRM_Core_DAO::executeQuery($sql);
