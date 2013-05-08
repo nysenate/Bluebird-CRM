@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# resetRolePerms.sh
+# resetRolePerms.sh - Reset all roles and permissions for a CRM instance
 #
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
-# Date: 2013-05-06
+# Date: 2013-05-07
 #
 
 prog=`basename $0`
@@ -28,14 +28,6 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
-log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
-civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
-cdb="$civi_db_prefix$db_basename"
 
 ## reset all role perms
 sql="
@@ -390,6 +382,7 @@ sql="
     (18, 'view all contacts', 'civicrm'),
     (19, 'administer inbox polling', 'nyss_civihooks');
 "
+
 $execSql -i $instance -c "$sql" --drupal -q
 
 ## set role weights to 0 to defer to alpha order
