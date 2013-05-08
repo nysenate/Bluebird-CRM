@@ -753,14 +753,21 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   //first find parents
   $reportNavID = $manageNavID = '';
   foreach ( $params as $navID => $navDetails ) {
-    if ( $navDetails['attributes']['name'] == 'Reports' ) {
-      $reportNavID = $navID;
-    }
-    elseif ( $navDetails['attributes']['name'] == 'Mass Email' ) {
-      $emailNavID = $navID;
-    }
-    elseif ( $navDetails['attributes']['name'] == 'Manage' ) {
-      $manageNavID = $navID;
+    switch ( $navDetails['attributes']['label'] ) {
+      case 'Home':
+        $homeNavID = $navID;
+        break;
+      case 'Custom Search':
+        $searchNavID = $navID;
+        break;
+      case 'Reports':
+        $reportNavID = $navID;
+        break;
+      case 'Administer':
+        $adminNavID = $navID;
+        break;
+      default:
+        unset($params[$navID]);
     }
   }
 
@@ -784,15 +791,9 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
   );
 
   //build Manage menu
-  if ( !empty($manageNavID) ) {
-    unset($params[$manageNavID]);
-  }
   $params[1000] = _buildManageMenu(1000);
 
   //build Mass Email menu
-  if ( !empty($emailNavID) ) {
-    unset($params[$emailNavID]);
-  }
   $params[2000] = _buildEmailMenu(2000);
 
   //build Inbox menu
