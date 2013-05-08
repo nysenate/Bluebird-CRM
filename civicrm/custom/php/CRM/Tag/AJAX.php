@@ -356,6 +356,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         $message = ($role == true ) ? 'SUCCESS' : "WARNING: Bad user level"; 
         $output = array(
             "code"=>$role,
+            "view_only"=>$view_only,
             "userId"=>$userid,
             "entity_table"=>$entity_table,
             "entity_id"=>$entity_id,
