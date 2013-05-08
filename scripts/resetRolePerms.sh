@@ -168,6 +168,7 @@ sql="
     (4, 'add contacts', 'civicrm'),
     (4, 'administer CiviCRM', 'civicrm'),
     (4, 'administer dedupe rules', 'civicrm'),
+    (4, 'administer district', 'nyss_civihooks'),
     (4, 'administer inbox polling', 'nyss_civihooks'),
     (4, 'administer Reports', 'civicrm'),
     (4, 'administer reserved groups', 'civicrm'),
@@ -183,6 +184,7 @@ sql="
     (4, 'delete in CiviMail', 'civicrm'),
     (4, 'edit all contacts', 'civicrm'),
     (4, 'edit groups', 'civicrm'),
+    (4, 'edit users with role ConferenceServices', 'administerusersbyrole'),
     (4, 'edit users with role DataEntry', 'administerusersbyrole'),
     (4, 'edit users with role MailingApprover', 'administerusersbyrole'),
     (4, 'edit users with role MailingCreator', 'administerusersbyrole'),
@@ -387,5 +389,12 @@ sql="
     (18, 'use text format 1', 'filter'),
     (18, 'view all contacts', 'civicrm'),
     (19, 'administer inbox polling', 'nyss_civihooks');
+"
+$execSql -i $instance -c "$sql" --drupal -q
+
+## set role weights to 0 to defer to alpha order
+sql="
+  UPDATE role
+  SET weight = 0;
 "
 $execSql -i $instance -c "$sql" --drupal -q
