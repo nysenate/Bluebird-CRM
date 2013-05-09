@@ -37,7 +37,7 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
 cdb="$civi_db_prefix$db_basename"
 
-## data cleanup related to 6698
+## 6698 data cleanup
 ## remove all bulk email activities
 echo "removing all bulk email activity records..."
 sql="
@@ -69,3 +69,8 @@ sql="
   WHERE log_civicrm_activity.id IS NULL;
 "
 $execSql -i $instance -c "$sql" --log -q
+
+## 6722 add quick search index
+echo "adding index for quick search..."
+sql="ALTER TABLE civicrm_contact ADD INDEX index_quick_search(is_deleted, sort_name, id);"
+$execSql -i $instance -c "$sql" -q
