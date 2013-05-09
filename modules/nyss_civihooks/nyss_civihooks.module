@@ -48,6 +48,16 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
   if ( $form_id == 'user_admin_account' ) {
     unset($form['options']['operation']['#options']['cancel']);
   }
+
+  //6740 make sure destination redirect includes query params
+  if ( $form_id == 'user_login_block' ) {
+    $urlBase = drupal_get_destination();
+    $urlQueryParams = drupal_get_query_parameters();
+    unset($urlQueryParams['destination']);
+    $urlQuery = drupal_http_build_query($urlQueryParams);
+    $urlBase['destination'] = $urlBase['destination'].'?'.$urlQuery;
+    $form['#action'] = url(current_path(), array('query' => $urlBase, 'external' => FALSE));
+  }
 }
 
 function nyss_civihooks_page_alter(&$page) {
