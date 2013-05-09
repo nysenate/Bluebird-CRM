@@ -919,20 +919,6 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
-      $manageID+6 => array(
-        'attributes' => Array(
-          'label' => 'New Group',
-          'name' => 'New Group',
-          'url' => 'civicrm/group/add&reset=1',
-          'permission' => 'edit groups',
-          'operator' => 'AND',
-          'separator' => 0,
-          'parentID' => $manageID,
-          'navID' => $manageID+6,
-          'active' => 1,
-        ),
-        'child' => array(),
-      ),
       $manageID+7 => array(
         'attributes' => Array(
           'label' => 'Manage Groups',
