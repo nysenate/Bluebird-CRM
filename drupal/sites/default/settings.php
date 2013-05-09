@@ -60,7 +60,7 @@ ini_set('magic_quotes_runtime',     0);
 ini_set('magic_quotes_sybase',      0);
 ini_set('session.cache_expire',     200000);
 ini_set('session.cache_limiter',    'none');
-ini_set('session.cookie_lifetime',  14400); //4hrs
+ini_set('session.cookie_lifetime',  0); //6741 rollback
 ini_set('session.gc_maxlifetime',   360000); //10hrs
 ini_set('session.gc_probability',   1);
 ini_set('session.gc_divisor',       100);
