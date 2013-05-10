@@ -130,7 +130,7 @@ class CRM_migrateContactsImport {
     $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
     $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
-    $statsTemp = array();
+    $statsTemp = $selfMerged = array();
 
     //process the import
     self::importAttachments($exportData);
