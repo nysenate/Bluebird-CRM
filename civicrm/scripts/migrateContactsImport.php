@@ -1060,7 +1060,7 @@ class CRM_migrateContactsImport {
     //trap errors and set to custom
     require_once 'api/v3/Contact.php';
     $error = _civicrm_api3_greeting_format_params( $contact );
-    if ( civicrm_api3_error( $error ) ) {
+    if ( civicrm_error( $error ) ) {
       //determine which type errored
       $type = '';
       if ( strpos($error['error_message'], 'email') !== FALSE ) {
