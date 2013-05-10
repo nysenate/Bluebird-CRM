@@ -8,6 +8,7 @@
 # Date: 2010-09-23
 # Revised: 2012-12-21 (End of the World Day - Will Bluebird survive?)
 # Revised: 2013-01-07 (The world continued)
+# Revised: 2013-05-10 (Implement --force pass-through option.)
 #
 
 prog=`basename $0`
@@ -18,7 +19,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -56,6 +57,7 @@ while [ $# -gt 0 ]; do
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
+    --force) force_arg="--force" ;;
     --log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) dbname="$1" ;;
@@ -91,7 +93,7 @@ fi
 [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass` || dbhost=$DEFAULT_DB_PASS
 
 common_args="-h $dbhost -u $dbuser -p$dbpass"
-mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg"
+mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
