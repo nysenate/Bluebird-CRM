@@ -474,7 +474,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
         while (!empty($values)) {
           $input = array_splice($values, 0, CRM_Core_DAO::BULK_INSERT_COUNT);
           $str   = implode(',', $input);
-          $sql   = "INSERT INTO civicrm_activity_target ( activity_id, target_contact_id ) VALUES $str;";
+          //NYSS we can ignore duplicate key errors here, so use IGNORE
+          $sql   = "INSERT IGNORE INTO civicrm_activity_target ( activity_id, target_contact_id ) VALUES $str;";
           CRM_Core_DAO::executeQuery($sql);
         }
       }
