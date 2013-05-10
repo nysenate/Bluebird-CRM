@@ -3,6 +3,35 @@
  * logging tables are ARCHIVE format, for which indexing is not available.
  */
 
+ALTER TABLE `log_civicrm_activity`
+    ADD INDEX `id` (`id` ASC),
+    ADD INDEX `source_contact_id` (`source_contact_id` ASC),
+    ADD INDEX `source_record_id` (`source_record_id` ASC),
+    ADD INDEX `activity_type_id` (`activity_type_id` ASC),
+    ADD INDEX `log_date` (`log_date` ASC),
+    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
+    ADD INDEX `log_user_id` (`log_user_id` ASC),
+    ADD INDEX `log_action` (`log_action` ASC),
+    ADD INDEX `log_job_id` (`log_job_id` ASC);
+
+ALTER TABLE `log_civicrm_activity_assignment`
+    ADD INDEX `activity_id` (`activity_id` ASC),
+    ADD INDEX `assignee_contact_id` (`assignee_contact_id` ASC),
+    ADD INDEX `log_date` (`log_date` ASC),
+    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
+    ADD INDEX `log_user_id` (`log_user_id` ASC),
+    ADD INDEX `log_action` (`log_action` ASC),
+    ADD INDEX `log_job_id` (`log_job_id` ASC);
+
+ALTER TABLE `log_civicrm_activity_target`
+    ADD INDEX `activity_id` (`activity_id` ASC),
+    ADD INDEX `target_contact_id` (`target_contact_id` ASC),
+    ADD INDEX `log_date` (`log_date` ASC),
+    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
+    ADD INDEX `log_user_id` (`log_user_id` ASC),
+    ADD INDEX `log_action` (`log_action` ASC),
+    ADD INDEX `log_job_id` (`log_job_id` ASC);
+
 ALTER TABLE `log_civicrm_address`
     ADD INDEX `id` (`id` ASC),
     ADD INDEX `contact_id` (`contact_id` ASC),
@@ -107,31 +136,3 @@ ALTER TABLE `log_civicrm_value_district_information_7`
     ADD INDEX `log_action` (`log_action` ASC),
     ADD INDEX `log_job_id` (`log_job_id` ASC);
 
-ALTER TABLE `log_civicrm_activity`
-    ADD INDEX `id` (`id` ASC),
-    ADD INDEX `source_contact_id` (`source_contact_id` ASC),
-    ADD INDEX `source_record_id` (`source_record_id` ASC),
-    ADD INDEX `activity_type_id` (`activity_type_id` ASC),
-    ADD INDEX `log_date` (`log_date` ASC),
-    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
-    ADD INDEX `log_user_id` (`log_user_id` ASC),
-    ADD INDEX `log_action` (`log_action` ASC),
-    ADD INDEX `log_job_id` (`log_job_id` ASC);
-
-ALTER TABLE `log_civicrm_activity_assignment`
-    ADD INDEX `activity_id` (`activity_id` ASC),
-    ADD INDEX `assignee_contact_id` (`assignee_contact_id` ASC),
-    ADD INDEX `log_date` (`log_date` ASC),
-    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
-    ADD INDEX `log_user_id` (`log_user_id` ASC),
-    ADD INDEX `log_action` (`log_action` ASC),
-    ADD INDEX `log_job_id` (`log_job_id` ASC);
-
-ALTER TABLE `log_civicrm_activity_target`
-    ADD INDEX `activity_id` (`activity_id` ASC),
-    ADD INDEX `target_contact_id` (`target_contact_id` ASC),
-    ADD INDEX `log_date` (`log_date` ASC),
-    ADD INDEX `log_conn_id` (`log_conn_id` ASC),
-    ADD INDEX `log_user_id` (`log_user_id` ASC),
-    ADD INDEX `log_action` (`log_action` ASC),
-    ADD INDEX `log_job_id` (`log_job_id` ASC);
