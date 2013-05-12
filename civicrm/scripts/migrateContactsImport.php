@@ -315,6 +315,28 @@ class CRM_migrateContactsImport {
       //clean the contact array
       $details['contact'] = self::_cleanArray($details['contact']);
 
+      //make sure required fields exist
+      switch ($details['contact']['contact_type']) {
+        case 'Individual':
+          if ( empty($details['contact']['first_name']) && empty($details['contact']['last_name']) ) {
+            $details['contact']['first_name'] = 'Contact';
+            $details['contact']['last_name'] = $details['contact']['external_identifier'];
+          }
+          break;
+        case 'Organization':
+          if ( empty($details['contact']['organization_name']) ) {
+            $details['contact']['organization_name'] = 'Organization '.$details['contact']['external_identifier'];
+          }
+          break;
+        case 'Household':
+          if ( empty($details['contact']['household_name']) ) {
+            $details['contact']['household_name'] = 'Household '.$details['contact']['external_identifier'];
+          }
+          break;
+        default:
+          $details['contact']['display_name'] = 'Unknown Contact';
+      }
+
       //import the contact via api
       $contact = self::_importAPI('contact', 'create', $details['contact']);
       //bbscript_log("trace", "importContacts _importAPI contact", $contact);
