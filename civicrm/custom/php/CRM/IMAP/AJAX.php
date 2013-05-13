@@ -668,12 +668,15 @@ class CRM_IMAP_AJAX {
                 if($ContactCount > 0){
                   $debug= 'Added on assignment to #'.$ContactCount;
                   $UPDATEquery = "INSERT INTO `nyss_inbox_messages` (`message_id`, `imap_id`, `sender_name`, `sender_email`, `subject`, `body`, `forwarder`, `status`, `debug`, `updated_date`, `email_date`,`activity_id`,`matched_to`,`matcher`) VALUES ('{$messageId}', '{$imapId}', '{$senderName}', '{$senderEmail}', '{$subject}', '{$body}', '{$forwarder}', '1', '$debug', '$date', '{$FWDdate}','{$activity_id}','{$contactId}','{$userId}');";
+
+
                 }else{
                   $UPDATEquery = "UPDATE `nyss_inbox_messages`
-                  SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId
+                  SET  `status`= 1, `matcher` = $userId, `activity_id` = $activity_id, `matched_to` = $contactId, `updated_date` = '$date'
                   WHERE `id` =  {$messageUid}";
                 }
                 $ContactCount++;
+
 
                 $UPDATEresult = mysql_query($UPDATEquery, self::db());
                 // var_dump($attachments);
@@ -1083,8 +1086,9 @@ class CRM_IMAP_AJAX {
       $debug = self::get('debug');
 
       $output = self::unifiedMessageInfo($id);
-      $contact = $output['matched_to'];
-      $activityId = $output['activity_id'];
+      $contact = mysql_real_escape_string($output['matched_to']);
+      $activityId = mysql_real_escape_string($output['activity_id']);
+      $date = mysql_real_escape_string($output['updated_date']);
 
       $change = self::get('change');
       $results = array();
@@ -1155,7 +1159,7 @@ EOQ;
       $session = CRM_Core_Session::singleton();
       $userId =  $session->get('userID');
       $UPDATEquery = "UPDATE `nyss_inbox_messages`
-      SET  `matcher` = $userId,  `matched_to` = $change, `sender_name` = '$changeName',`sender_email` = '$email'
+      SET  `matcher` = $userId,  `matched_to` = $change, `sender_name` = '$changeName',`sender_email` = '$email', `updated_date` = '$date'
       WHERE `id` =  {$id}";
       $UPDATEresult = mysql_query($UPDATEquery, self::db());
 
