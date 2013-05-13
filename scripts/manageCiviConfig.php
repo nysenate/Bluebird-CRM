@@ -196,11 +196,10 @@ function updateUrlPref($dbcon, $optname, $optval)
 
 function updateEmailMenu($dbcon)
 {
-  //enable CiviMail report menu items
-  $sql = "UPDATE civicrm_navigation SET is_active=1 ".
-         "WHERE parent_id=(".
-                  "SELECT id FROM civicrm_navigation ".
-                  "WHERE name='Mass Email');";
+  //enable CiviMail menu/report items
+
+  $sql = "SELECT @pid:=id FROM civicrm_navigation WHERE name='Mass Email'; ".
+         "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=@pid;";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
