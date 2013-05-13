@@ -33,7 +33,7 @@ function getSettings($dbcon, $group_name)
 {
   $settings = array();
   $sql = "SELECT name, value FROM civicrm_setting ".
-         "WHERE group_name = '$group_name';";
+         "WHERE group_name = '$group_name'";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -52,7 +52,7 @@ function getSettings($dbcon, $group_name)
 function getSetting($dbcon, $group_name, $name)
 {
   $sql = "SELECT value FROM civicrm_setting ".
-         "WHERE group_name = '$group_name' and name = '$name';";
+         "WHERE group_name = '$group_name' and name = '$name'";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -77,7 +77,7 @@ function getOptionValues($dbcon, $group_name)
   $sql = "SELECT name, value FROM civicrm_option_value ".
          "WHERE option_group_id IN ".
          "  ( SELECT id FROM civicrm_option_group ".
-         "    WHERE name='$group_name' );";
+         "    WHERE name='$group_name' )";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -96,7 +96,7 @@ function getOptionValues($dbcon, $group_name)
 
 function getConfigBackend($dbcon)
 {
-  $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id=1;";
+  $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id=1";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -155,7 +155,7 @@ function updateSetting($dbcon, $groupname, $optname, $optval)
 {
   $val = serialize($optval);
   $sql = "UPDATE civicrm_setting SET value='$val' ".
-         "WHERE name='$optname' AND group_name='$groupname';";
+         "WHERE name='$optname' AND group_name='$groupname'";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -170,7 +170,7 @@ function updateOptionValue($dbcon, $groupname, $optname, $optval)
   $sql = "UPDATE civicrm_option_value SET value='$optval' ".
          "WHERE name='$optname' AND option_group_id=( ".
          "   SELECT id FROM civicrm_option_group ".
-         "   WHERE name='$groupname' );";
+         "   WHERE name='$groupname' )";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -197,9 +197,12 @@ function updateUrlPref($dbcon, $optname, $optval)
 function updateEmailMenu($dbcon)
 {
   //enable CiviMail menu/report items
+  $sql = "SELECT id FROM civicrm_navigation WHERE name='Mass Email'";
+  $result = mysql_query($sql, $dbcon);
+  $row = mysql_fetch_assoc($result);
+  $pid = $row['id'];
 
-  $sql = "SELECT @pid:=id FROM civicrm_navigation WHERE name='Mass Email'; ".
-         "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=@pid;";
+  $sql = "UPDATE civicrm_navigation SET is_active=1 WHERE parent_id=$pid";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -227,7 +230,7 @@ function updateFromEmail($dbcon, $bbcfg)
   $sql = "UPDATE civicrm_option_value SET label='$from', name='$from' ".
          "WHERE option_group_id=(".
                   "SELECT id FROM civicrm_option_group ".
-                  "WHERE name='from_email_address');";
+                  "WHERE name='from_email_address')";
   if (!mysql_query($sql , $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -241,7 +244,7 @@ function updateFromEmail($dbcon, $bbcfg)
 
 function updateConfigBackend($dbcon, $bkend)
 {
-  $sql = "UPDATE civicrm_domain SET config_backend='".serialize($bkend)."';";
+  $sql = "UPDATE civicrm_domain SET config_backend='".serialize($bkend)."'";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -310,19 +313,20 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
 
 function nullifyCiviConfig($dbcon)
 {
-  $sql = "UPDATE civicrm_domain SET config_backend=NULL WHERE id=1; ".
-         "UPDATE civicrm_setting SET value=NULL ".
-         "WHERE group_name='Mailing Preferences' and name='mailing_backend'; ".
-         "UPDATE civicrm_setting SET value=NULL ".
-         "WHERE group_name='Directory Preferences' ".
-            "OR group_name='URL Preferences';";
+  $sql = "UPDATE civicrm_domain SET config_backend=NULL WHERE id=1";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
   }
-  else {
-    return true;
+
+  $sql = "UPDATE civicrm_setting SET value=NULL ".
+         "WHERE group_name='Mailing Preferences' and name='mailing_backend'";
+  if (!mysql_query($sql, $dbcon)) {
+    echo mysql_error($dbcon)."\n";
+    return false;
   }
+
+  return true;
 } // nullifyCiviConfig()
 
 
