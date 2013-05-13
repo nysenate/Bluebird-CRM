@@ -572,6 +572,10 @@ class CRM_migrateContactsImport {
             }
           }
 
+          //unset some values we don't need to migrate
+          unset($activity['parent_id']);
+          unset($activity['source_record_id']);
+
           //prevent error if subject is missing
           if ( empty($activity['subject']) ) {
             $activity['subject'] = '(none)';
