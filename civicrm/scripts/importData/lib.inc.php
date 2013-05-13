@@ -186,7 +186,7 @@ function runCmd($cmd, $description=null, $debug=false, &$aOut=null)
 
   if (RAYDEBUG || $debug) print($cmd);
 
-  exec($cmd,&$aOut);
+  exec($cmd, $aOut);
 
   //results
   if (RAYDEBUG | debug) {
