@@ -1,6 +1,6 @@
 <?php
 
-error_reporting(E_ALL && ~E_NOTICE);
+error_reporting(E_ALL & ~E_NOTICE);
 
 //no limit
 set_time_limit(0);
