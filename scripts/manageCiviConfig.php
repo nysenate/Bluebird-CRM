@@ -3,7 +3,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2010-11-23
-// Revised: 2012-03-21
+// Revised: 2013-05-12
 //
 
 require_once dirname(__FILE__).'/../civicrm/scripts/bluebird_config.php';
@@ -29,13 +29,55 @@ function getDatabaseConnection($bbcfg)
 
 
 
-function getOptionValues($dbcon, $name)
+function getSettings($dbcon, $group_name)
+{
+  $settings = array();
+  $sql = "SELECT name, value FROM civicrm_setting ".
+         "WHERE group_name = '$group_name';";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return null;
+  }
+
+  while (($row = mysql_fetch_assoc($result))) {
+    $settings[$row['name']] = unserialize($row['value']);
+  }
+  mysql_free_result($result);
+  return $settings;
+} // getSettings()
+
+
+
+function getSetting($dbcon, $group_name, $name)
+{
+  $sql = "SELECT value FROM civicrm_setting ".
+         "WHERE group_name = '$group_name' and name = '$name';";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return null;
+  }
+
+  $row = mysql_fetch_assoc($result);
+  mysql_free_result($result);
+  if ($row) {
+    return unserialize($row['value']);
+  }
+  else {
+    return null;
+  }
+} // getSetting()
+
+
+
+function getOptionValues($dbcon, $group_name)
 {
   $optValues = array();
   $sql = "SELECT name, value FROM civicrm_option_value ".
          "WHERE option_group_id IN ".
          "  ( SELECT id FROM civicrm_option_group ".
-         "    WHERE name='$name' );";
+         "    WHERE name='$group_name' );";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -46,14 +88,15 @@ function getOptionValues($dbcon, $name)
   while (($row = mysql_fetch_assoc($result))) {
     $optValues[$row['name']] = $row['value'];
   }
+  mysql_free_result($result);
   return $optValues;
 } // getOptionValues()
 
 
 
-function getConfigBackend($dbcon, $table='civicrm_domain', $field='config_backend')
+function getConfigBackend($dbcon)
 {
-  $sql = "SELECT id, $field FROM $table WHERE id=1;";
+  $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id=1;";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -62,8 +105,9 @@ function getConfigBackend($dbcon, $table='civicrm_domain', $field='config_backen
 
   //get the only row
   $row = mysql_fetch_assoc($result);
-  if ($row[$field]) {
-    return unserialize($row[$field]);
+  mysql_free_result($result);
+  if ($row['config_backend']) {
+    return unserialize($row['config_backend']);
   }
   else {
     return null;
@@ -76,9 +120,9 @@ function getCiviConfig($dbcon)
 {
   $civiConfig = array();
   $civiConfig['config_backend'] = getConfigBackend($dbcon, 'civicrm_domain', 'config_backend');
-  $civiConfig['mailing_backend'] = getConfigBackend($dbcon, 'civicrm_preferences', 'mailing_backend');
-  $civiConfig['dirprefs'] = getOptionValues($dbcon, 'directory_preferences');
-  $civiConfig['urlprefs'] = getOptionValues($dbcon, 'url_preferences');
+  $civiConfig['mailing_backend'] = getSetting($dbcon, 'Mailing Preferences', 'mailing_backend');
+  $civiConfig['dirprefs'] = getSettings($dbcon, 'Directory Preferences');
+  $civiConfig['urlprefs'] = getSettings($dbcon, 'URL Preferences');
   $civiConfig['from_name'] = getOptionValues($dbcon, 'from_email_address');
   return $civiConfig;
 } // getCiviConfig()
@@ -99,12 +143,25 @@ function listCiviConfig($civicfg)
         }
       }
       else {
-        echo "[$key] => ";
-        print_r($val);
+        echo "[$key] => ".print_r($val, true)."\n";
       }
     }
   }
 } // listCiviConfig()
+
+
+
+function updateSetting($dbcon, $groupname, $optname, $optval)
+{
+  $val = serialize($optval);
+  $sql = "UPDATE civicrm_setting SET value='$val' ".
+         "WHERE name='$optname' AND group_name='$groupname';";
+  if (!mysql_query($sql, $dbcon)) {
+    echo mysql_error($dbcon)."\n";
+    return false;
+  }
+  return true;
+} // updateSetting()
 
 
 
@@ -125,14 +182,14 @@ function updateOptionValue($dbcon, $groupname, $optname, $optval)
 
 function updateDirPref($dbcon, $optname, $optval)
 {
-  return updateOptionValue($dbcon, 'directory_preferences', $optname, $optval);
+  return updateSetting($dbcon, 'Directory Preferences', $optname, $optval);
 } // updateDirPref()
 
 
 
 function updateUrlPref($dbcon, $optname, $optval)
 {
-  return updateOptionValue($dbcon, 'url_preferences', $optname, $optval);
+  return updateSetting($dbcon, 'URL Preferences', $optname, $optval);
 } // updateUrlPref()
 
 
@@ -183,30 +240,22 @@ function updateFromEmail($dbcon, $bbcfg)
 
 
 
-function updateBackend($dbcon, $table='civicrm_domain',
-                       $field='config_backend', $backend)
+function updateConfigBackend($dbcon, $bkend)
 {
-  $sql = "UPDATE $table SET $field='".serialize($backend)."';";
+  $sql = "UPDATE civicrm_domain SET config_backend='".serialize($bkend)."';";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
   }
   return true;
-} // updateBackend()
-
-
-
-function updateConfigBackend($dbcon, $backend)
-{
-  return updateBackend($dbcon, 'civicrm_domain', 'config_backend', $backend);
 } // updateConfigBackend()
 
 
 
-function updateMailingBackend($dbcon, $backend)
+function updateMailingBackend($dbcon, $bknd)
 {
-  return updateBackend($dbcon, 'civicrm_preferences', 'mailing_backend', $backend);
-} // updateConfigBackend()
+  return updateSetting($dbcon, 'Mailing Preferences', 'mailing_backend', $bknd);
+} // updateMailingBackend()
 
 
 
@@ -262,12 +311,12 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
 
 function nullifyCiviConfig($dbcon)
 {
-  $sql = "UPDATE civicrm_domain SET config_backend=NULL; ".
-         "UPDATE civicrm_preferences SET mailing_backend=NULL WHERE id=1; ".
-         "UPDATE civicrm_option_value SET value=NULL ".
-         "WHERE option_group_id IN (".
-         "   SELECT id FROM civicrm_option_group ".
-         "   WHERE name='directory_preferences' OR name='url_preferences' );";
+  $sql = "UPDATE civicrm_domain SET config_backend=NULL WHERE id=1; ".
+         "UPDATE civicrm_setting SET value=NULL ".
+         "WHERE group_name='Mailing Preferences' and name='mailing_backend'; ".
+         "UPDATE civicrm_setting SET value=NULL ".
+         "WHERE group_name='Directory Preferences' ".
+            "OR group_name='URL Preferences';";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -306,7 +355,7 @@ else {
   $civiConfig = getCiviConfig($dbcon);
 
   if ($civiConfig === false) {
-    echo "$prog: Unable to get CiviCRM backend configuration.\n";
+    echo "$prog: Unable to get CiviCRM configuration.\n";
     $rc = 1;
   }
   else if (is_array($civiConfig)) {
