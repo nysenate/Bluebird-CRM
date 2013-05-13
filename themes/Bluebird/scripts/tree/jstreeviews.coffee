@@ -32,6 +32,8 @@ class View
     clearInterval(clearInt)
   writeContainers: () ->
     @pageElements = @instance.get('pageElements')
-    console.log @pageElements
-    cj(".jstreeinit").add
+    # console.log @pageElements
+    # find each jstreeinit
+    initInstances = cj(@pageElements.init)
+    # for
   # writeTreeFromSource: () ->

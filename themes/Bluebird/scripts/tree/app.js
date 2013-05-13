@@ -161,6 +161,7 @@
 
       properties = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       pageElements = {
+        init: '.JSTreeInit',
         wrapper: '.JSTreeContainer',
         tagHolder: '.JSTree',
         messageHandler: '.JSMessages',
@@ -333,8 +334,11 @@
     };
 
     View.prototype.writeContainers = function() {
+      var initInstances;
+
       this.pageElements = this.instance.get('pageElements');
-      return console.log(this.pageElements);
+      initInstances = cj(this.pageElements.init);
+      return console.log(initInstances);
     };
 
     return View;

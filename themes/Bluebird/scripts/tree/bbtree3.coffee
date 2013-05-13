@@ -129,6 +129,7 @@ class instance
   constructor: (properties...) ->
     #this is what makes the page-data tick.
     pageElements =
+      init: '.JSTreeInit'
       wrapper: '.JSTreeContainer'
       tagHolder: '.JSTree'
       messageHandler: '.JSMessages'
