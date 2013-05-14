@@ -321,17 +321,6 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
         elseif ($flag == -1) {
           CRM_Contact_BAO_GroupContact::removeContactsFromGroup($contactIds, $groupId);
         }
-
-        //NYSS
-        if (!$config->doNotResetCache) {
-          // Note: doNotResetCache flag is currently set by import contact process, since resetting and
-          // rebuilding cache could be expensive (for many contacts). We might come out with better
-          // approach in future.
-
-          // clear acl cache if any.
-          require_once 'CRM/ACL/BAO/Cache.php';
-          CRM_ACL_BAO_Cache::resetCache( );
-        }
       }
     }
 
