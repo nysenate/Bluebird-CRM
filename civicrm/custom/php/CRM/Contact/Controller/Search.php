@@ -76,7 +76,6 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
     // variables
     $config  = CRM_Core_Config::singleton();
     $qString = $_GET[$config->userFrameworkURLVar];
-    CRM_Core_Error::debug_var('qString',$qString);
     $args = "reset=1";
     $path = 'civicrm/contact/search/advanced';
     if (strpos($qString, 'basic') !== FALSE) {
