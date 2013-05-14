@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-30
 # Revised: 2010-09-30
+# Revised: 2013-05-14 - made HTTP auth optional (it is deprecated)
 #
 
 prog=`basename $0`
@@ -32,8 +33,13 @@ http_user=`$readConfig --ig $instance http.user` || http_user="$DEFAULT_HTTP_USE
 http_pass=`$readConfig --ig $instance http.pass` || http_pass="$DEFAULT_HTTP_PASS"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
+http_auth=
+if [ "$http_user" ]; then
+  http_auth="$http_user:$http_pass@"
+fi
+
 echo "Making an HTTP connection to instance [$instance]"
 set -x
-wget -O /dev/null http://$http_user:$http_pass@$instance.$base_domain;
+wget -O /dev/null http://$http_auth$instance.$base_domain;
 
 exit $?
