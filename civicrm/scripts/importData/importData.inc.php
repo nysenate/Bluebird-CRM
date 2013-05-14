@@ -187,7 +187,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   foreach ($bluebird_db_info as $name => $db_info) {
     $abbrev = $db_info['abbrev'];
     $fname = $importDir.'/'.$importSet.'-'.$abbrev.'.tsv';
-    unlink($fname);
     $fp = fopen($fname, 'w');
     if ($fp === false) {
       cLog(0, 'error', "Unable to open '$fname' for writing");
