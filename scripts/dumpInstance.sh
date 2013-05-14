@@ -8,6 +8,7 @@
 # Date: 2010-09-12
 # Revised: 2012-04-18
 # Revised: 2013-02-05 - changed temp dir to be within /data
+# Revised: 2013-05-14 - added ability to dump only one of the 3 databases
 #
 
 prog=`basename $0`
@@ -28,7 +29,7 @@ archive_file=
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--civicrm-file file] [--no-civicrm] [--drupal-file file] [--no-drupal] [--logdb-file file] [--no-logdb] [--tgz | --tbz2 | --zip] [--archive-file file] instanceName" >&2
+  echo "Usage: $prog [--civicrm-file file] [--civicrm-only] [--no-civicrm] [--drupal-file file] [--drupal-only] [--no-drupal] [--logdb-file file] [--logdb-only] [--no-logdb] [--tgz | --tbz2 | --zip] [--archive-file file] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -42,6 +43,9 @@ while [ $# -gt 0 ]; do
     -d|--drup*-file) shift; drup_file="$1" ;;
     -l|--log*-file) shift; log_file="$1" ;;
     -o|--arc*-file) shift; archive_file="$1" ;;
+    --civi*-only) no_drup=1; no_log=1 ;;
+    --drup*-only) no_civi=1; no_log=1 ;;
+    --log*-only) no_civi=1; no_drup=1 ;;
     --no-civi*) no_civi=1 ;;
     --no-drup*) no_drup=1 ;;
     --no-log*) no_log=1 ;;
@@ -56,6 +60,9 @@ done
 
 if ! $readConfig --instance $instance --quiet; then
   echo "$prog: Instance [$instance] not found in config" >&2
+  exit 1
+elif [ $no_civi -eq 1 -a $no_drup -eq 1 -a $no_log -eq 1 ]; then
+  echo "$prog: Invalid combination of options; must dump at least one db" >&2
   exit 1
 fi
 
