@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-15
 # Revised: 2011-12-20
+# Revised: 2013-05-14 - reorder drush commands; added more Drupal cache tables
 #
 
 prog=`basename $0`
@@ -128,24 +129,29 @@ sql="
 echo "Run Civi clear cache via drush to cover our bases"
 $drush $instance cache-clear civicrm
 
+echo "Running Drupal clear-cache for css/js compression clean"
+$drush $instance cc css-js
+
 echo "Clearing Drupal database caches"
 sql="
   TRUNCATE cache;
-  TRUNCATE cache_page;
-  TRUNCATE cache_form;
-  TRUNCATE cache_update;
-  TRUNCATE cache_menu;
+  TRUNCATE cache_apachesolr;
   TRUNCATE cache_block;
+  TRUNCATE cache_bootstrap;
+  TRUNCATE cache_field;
   TRUNCATE cache_filter;
+  TRUNCATE cache_form;
+  TRUNCATE cache_menu;
+  TRUNCATE cache_page;
+  TRUNCATE cache_path;
+  TRUNCATE cache_rules;
+  TRUNCATE cache_update;
   TRUNCATE sessions;
 "
 [ $clear_all -eq 1 ] && sql="truncate watchdog; $sql"
 ( set -x
   $execSql -i $instance -c "$sql" --drupal
 )
-
-echo "Running Drupal clear-cache for js/css compression clean"
-$drush $instance cc css-js
 
 echo "Clearing dashboard content"
 sql="UPDATE civicrm_dashboard_contact SET content=null;"
