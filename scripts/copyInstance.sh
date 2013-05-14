@@ -7,7 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-09-28
 # Revised: 2010-09-30
-# Revised: 2013-05-14 - adding logic to support logging database
+# Revised: 2013-05-14 - added logic to support logging database
 #
 
 prog=`basename $0`
@@ -25,7 +25,7 @@ usage() {
 
 die() {
   rc="$1"
-  rm -f $temp_civi_file $temp_drup_file
+  rm -f $temp_civi_file $temp_drup_file $temp_log_file
   exit $rc
 }
 
