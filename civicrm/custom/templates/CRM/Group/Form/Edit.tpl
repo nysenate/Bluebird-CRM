@@ -52,7 +52,7 @@
 	{if $form.group_type}
     <tr class="crm-group-form-block-group_type">
 			<td class="label">{$form.group_type.label}</td>
-			<td>{$form.group_type.html} {help id="id-group-type" file="CRM/Group/Page/Group.hlp"}</td>
+			<td>{$form.group_type.html} {*help id="id-group-type" file="CRM/Group/Page/Group.hlp"*}{*NYSS 6706*}</td>
     </tr>
 	{/if}
     
