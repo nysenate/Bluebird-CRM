@@ -188,6 +188,7 @@ sql="
     (4, 'edit users with role SOS', 'administerusersbyrole'),
     (4, 'edit users with role Staff', 'administerusersbyrole'),
     (4, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (4, 'edit users with no custom roles', 'administerusersbyrole'),
     (4, 'export print production files', 'nyss_civihooks'),
     (4, 'import contacts', 'civicrm'),
     (4, 'merge duplicate contacts', 'civicrm'),
