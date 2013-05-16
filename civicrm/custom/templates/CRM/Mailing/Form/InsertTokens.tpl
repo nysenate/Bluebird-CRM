@@ -252,11 +252,19 @@ function selectValue( val ) {
     function tokenReplText ( element )
     {
       var token     = cj("#"+element.id).val( )[0];
+      // nyss-4745 have to do something different for token3
+      // that nyss-6593 doesn't like all that much
       if ( element.id == 'token3' ) {
+        var getPosition = jQuery.data( document.body, 'getPosition' );
+        var token = cj("#"+element.id).val( )[0];
         ( isMailing ) ? text_message = "subject" : text_message = "msg_subject";
+        cj( "#"+ text_message ).ricsinsertText( token, getPosition.start, true );
+        getPosition.start = getPosition.start + token.length;
+        jQuery.data( document.body, 'getPosition', getPosition );
+      } else {
+          cj( "#"+ text_message ).replaceSelection( token );
       }
 
-      cj( "#"+ text_message ).replaceSelection( token );
 
       if ( isMailing ) {
         verify();
@@ -321,7 +329,7 @@ function selectValue( val ) {
     function showToken(element, id ) {
         //creates a data item called getPosition that's attached to the body
         var cjSetInput = cj("#"+element.toLowerCase()).parents('td').children('input').focus();
-        if(cjSetInput.length)//if the array has a value, get the selection of it.
+        if(cjSetInput.length > 0)//if the array has a value, get the selection of it.
         {
             jQuery.data(document.body, 'getPosition', cjSetInput.ricsgetSelection());
         }
