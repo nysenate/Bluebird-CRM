@@ -332,7 +332,15 @@ var BBTree = {
 					}
 					if(obj.description != null && obj.description != '' && obj.description != 'null')
 					{
-						actionData.description += 'It\'s new description is <span>'+obj.description+'</span>. ';
+						if(obj.description.match(/a href.*http.*/gi))
+						{
+							escapedDescription = obj.description;
+							escapedDescription = escapedDescription.replace(/</g,"&lt;");
+							escapedDescription = escapedDescription.replace(/>/g,"&gt;");
+							actionData.description += 'It\'s new description is <span>'+escapedDescription+'</span>. ';
+						} else {
+							actionData.description += 'It\'s new description is <span>'+obj.description+'</span>. ';
+						}
 					}
 					actionData.description += 'It is <span>';
 					if(obj.isReserved == 0)
@@ -340,6 +348,7 @@ var BBTree = {
 						actionData.description += 'not ';
 					}
 					actionData.description += 'reserved</span>.';
+					console.log(actionData.description);
 				}
 				else { //would LOVE to be able to get contact name here...
 					if(message[3] == 'DB Error: already exists')
@@ -377,7 +386,15 @@ var BBTree = {
 					}
 					if(obj.description != null && obj.description != '' && obj.description != 'null')
 					{
-						actionData.description += 'It\'s description is <span>'+obj.description+'</span>. ';
+						if(obj.description.match(/a href.*http.*/gi))
+						{
+							escapedDescription = obj.description;
+							escapedDescription = escapedDescription.replace(/</g,"&lt;");
+							escapedDescription = escapedDescription.replace(/>/g,"&gt;");
+							actionData.description += 'It\'s new description is <span>'+escapedDescription+'</span>. ';
+						} else {
+							actionData.description += 'It\'s description is <span>'+obj.description+'</span>. ';
+						}
 					}
 					actionData.description += 'It is <span>';
 					if(obj.isReserved == 0)
@@ -1122,7 +1139,11 @@ var BBTreeModal = {
 				addDialogText += '<div class="modalHeader">Update Tag <span class="parentName" id="'+this.taggedID+'">' + this.taggedName + '</span></div>';
 				addDialogText += '<div class="modalInputs">';
 				addDialogText += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+this.taggedName+'" /></div>';
-				addDialogText += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+this.taggedDescription+'" /></div>';
+				if(this.taggedDescription.match(/a href.*http.*/gi))
+				{
+					this.taggedDescription = this.taggedDescription.replace('/"/', '\"');
+				}
+				addDialogText += '<div><span>Description:</span ><input type=\'text\' name=\'tagDescription\' value=\''+this.taggedDescription+'\' /></div>';
 				addDialogText += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '
 				if(this.taggedReserved){addDialogText += "checked";}
 				addDialogText +='/></div>';
