@@ -94,7 +94,7 @@ function run()
         $transaction = new CRM_Core_Transaction();
       }
       echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
-      CRM_Contact_BAO_Contact::processGreetings($dao);
+      CRM_Contact_BAO_Contact::processGreetings($dao, TRUE);
       $cnt++;
     }
 
