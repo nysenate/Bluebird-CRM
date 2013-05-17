@@ -39,3 +39,10 @@ CRM_Core_DAO::executeQuery('
   SET config_backend = REPLACE(config_backend, "logging\";i:0", "logging\";s:1:\"1\"")
   WHERE id = 1;
 ');
+
+echo "setting logging report permissions...\n";
+CRM_Core_DAO::executeQuery("
+  UPDATE civicrm_report_instance
+  SET permissions = 'access CiviReport'
+  WHERE report_id LIKE 'logging/contact%';
+");
