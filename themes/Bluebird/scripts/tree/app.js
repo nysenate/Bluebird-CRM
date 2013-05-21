@@ -161,7 +161,10 @@
 
       properties = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       pageElements = {
+<<<<<<< HEAD
         init: '.JSTreeInit',
+=======
+>>>>>>> 99a55eedd50985cbfd444e6226baffea360278ce
         wrapper: '.JSTreeContainer',
         tagHolder: '.JSTree',
         messageHandler: '.JSMessages',
@@ -334,11 +337,16 @@
     };
 
     View.prototype.writeContainers = function() {
+<<<<<<< HEAD
       var initInstances;
 
       this.pageElements = this.instance.get('pageElements');
       initInstances = cj(this.pageElements.init);
       return console.log(initInstances);
+=======
+      this.pageElements = this.instance.get('pageElements');
+      return console.log(this.pageElements);
+>>>>>>> 99a55eedd50985cbfd444e6226baffea360278ce
     };
 
     return View;

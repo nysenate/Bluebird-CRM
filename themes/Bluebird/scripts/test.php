@@ -26,7 +26,11 @@
     }
     var instance = jstree.startInstance(jsTreePageSettings);
   </script>
+<<<<<<< HEAD
   <div class="JSTreeInit"></div>
+=======
+  <div class="jstreeinit"></div>
+>>>>>>> 99a55eedd50985cbfd444e6226baffea360278ce
   <script>
     // console.log(jstree);
     // must put instance in there, well instance + properties
