@@ -361,7 +361,6 @@ class CRM_IMAP_AJAX {
         // convert dob to standard format
         if($dob) $where.=" AND contact.birth_date = '$dob'\n";
 
-        $state_id = self::get('state');
         if(self::get('street_address')) $street_address = (strtolower(self::get('street_address')) == 'street address'|| trim(self::get('street_address')) =='') ? NULL : self::get('street_address');
         if(self::get('city')) $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? NULL : self::get('city');
 
@@ -375,12 +374,12 @@ class CRM_IMAP_AJAX {
             $where.=" AND address.city LIKE '$city'\n";
           }
         }
-        // if address info, search in state
-        if($street_address || $city) {
+
+
+        $state_id = self::get('state');
+        if($state_id && trim(self::get('state')) !='' ) {
           $where.=" AND state.id='$state_id'\n";
-        }else{
-          $where.=" AND (state.id='$state_id' OR state.id IS NULL)\n";
-        }
+        } 
 
         if(self::get('phone')) $phone = (strtolower(self::get('phone')) == 'phone number'|| trim(self::get('phone')) =='') ? NULL : self::get('phone');
         if ($phone) {
@@ -400,7 +399,7 @@ class CRM_IMAP_AJAX {
         }
 
         if($first_name || $last_name|| $email_address || $dob || $street_address || $city || $phone){
-          $query = "SELECT contact.id, contact.display_name, contact.contact_type, contact.birth_date, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
+          $query = "SELECT contact.id, contact.display_name, contact.contact_type, contact.birth_date, state.name, address.street_address, address.postal_code, address.city, phone.phone, email.email $from\n$where\nGROUP BY contact.id\n$order";
         }else{
           // do nothing if no query
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'Please Enter a query.');
@@ -408,17 +407,19 @@ class CRM_IMAP_AJAX {
           mysql_close(self::$db);
           CRM_Utils_System::civiExit();
         }
-        if ($debug){
-          echo "<h1>Query</h1><pre>";
-          print_r($query);
-          echo "</pre><h1>Results <small>(".count($results).")</small></h1><pre>";
-          print_r($results);
-        }
+
 
         $result = mysql_query($query, self::db());
         $results = array();
         while($row = mysql_fetch_assoc($result)) {
             $results[] = $row;
+        }
+        if ($debug){
+          echo "<h1>Query</h1><pre>";
+          print_r($query);
+          echo "</pre><h1>Results <small>(".count($results).")</small></h1>";
+          var_dump($results);
+          echo"<pre>";
         }
         if(count($results) > 0){
           $returnCode = $results;
@@ -426,7 +427,9 @@ class CRM_IMAP_AJAX {
           $returnCode = array('code'=>'ERROR','status'=> '1','message'=>'No Records Found');
         }
 
-        echo json_encode($returnCode);
+        if (!$debug){
+          echo json_encode($returnCode);
+        }
         $end = microtime(true);
         if(self::get('debug')) echo $end-$start;
         mysql_close(self::$db);
@@ -1363,18 +1366,31 @@ EOQ;
         $postal_code = (strtolower(self::get('postal_code')) == 'zip code'|| trim(self::get('postal_code')) =='') ? '' : self::get('postal_code');
         $city = (strtolower(self::get('city')) == 'city'|| trim(self::get('city')) =='') ? '' : self::get('city');
         $dob = (strtolower(self::get('dob')) == 'yyyy-mm-dd'|| trim(self::get('dob')) =='') ? '' : self::get('dob');
+        $state = (trim(self::get('state')) =='') ? '' : self::get('state');
 
         if ($debug){
           echo "<h1>inputs</h1>";
-          var_dump("first_name: ".$first_name);
-          var_dump("last_name: ".$last_name);
-          var_dump("email: ".$email);
-          var_dump("phone: ".$phone);
-          var_dump("street_address: ".$street_address);
-          var_dump("street_address_2: ".$street_address_2);
-          var_dump("postal_code: ".$postal_code);
-          var_dump("city: ".$city);
-          var_dump("dob: ".$dob);
+          echo"first_name: ";
+          var_dump($first_name);
+          echo"last_name: ";
+          var_dump($last_name);
+          echo"email: ";
+          var_dump($email);
+          echo"phone: ";
+          var_dump($phone);
+          echo"street_address: ";
+          var_dump($street_address);
+          echo"street_address_2: ";
+          var_dump($street_address_2);
+          echo"postal_code: ";
+          var_dump($postal_code);
+          echo"city: ";
+          var_dump($city);
+          echo"dob: ";
+          var_dump($dob);
+          echo"state: ";
+          var_dump($state);
+
         }
 
         if((isset($first_name))||(isset($last_name))||(isset($email))){
@@ -1419,7 +1435,7 @@ EOQ;
           $phone = civicrm_api( 'phone','create',$phoneParams );
         }
 
-        if(($street_address || $street_address_2 || $city || $postal_code) && $contact['id']){
+        if(($street_address || $street_address_2 || $city || $postal_code || $state ) && $contact['id']){
           //And then you attach the contact to the Address! which is at $contact['id']
           $address_params = array(
               'contact_id' => $contact['id'],
@@ -1428,7 +1444,7 @@ EOQ;
               'city' => $city,
               'postal_code' => $postal_code,
               'is_primary' => 1,
-              'state_province_id' => 1031,
+              'state_province_id' => $state,
               'country_id' => 1228,
               'location_type_id' => 1,
               'version' => 3,
@@ -1454,16 +1470,15 @@ EOQ;
                                 'status'    =>  '1',
                                 'message'   =>  'Error adding Contact or Address Details'
                                 );
-
-          CRM_Utils_System::civiExit();
         } else {
           $returnCode = array('code'      =>  'SUCCESS',
                                 'status'    =>  '0',
                                 'contact' => $contact['id']
                                 );
-          echo json_encode($returnCode);
-          CRM_Utils_System::civiExit();
         }
+        echo json_encode($returnCode);
+        CRM_Utils_System::civiExit();
+
     }
 
 }
