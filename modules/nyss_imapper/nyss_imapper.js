@@ -1079,11 +1079,11 @@ function makeListSortable(){
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
-    "bPaginate": false,
+    "iDisplayLength": 50,    
     "bAutoWidth": false,
-    "bInfo": false
+    "bInfo": false,
   });
-  // cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
+   cj('#sortable_results_paginate').html('<div class="paginated-menu">'+cj('#sortable_results_paginate').html()+'</div>');
   checks();
 }
 
