@@ -1083,7 +1083,6 @@ function makeListSortable(){
     "bAutoWidth": false,
     "bInfo": false,
   });
-   cj('#sortable_results_paginate').html('<div class="paginated-menu">'+cj('#sortable_results_paginate').html()+'</div>');
   checks();
 }
 
