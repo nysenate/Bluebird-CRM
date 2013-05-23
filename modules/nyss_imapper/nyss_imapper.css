@@ -53,7 +53,7 @@
 .delete_popup_class #ui-dialog-title-delete-confirm{ color: #fff; font-weight: bold;}
 
 
-.contacts-list{height:155px; overflow:auto; }
+.contacts-list{height:144px; overflow:auto; }
 .imapperbox .full{  margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
