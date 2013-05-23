@@ -228,12 +228,15 @@ cj(document).ready(function(){
     if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
     if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
     if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
+    if(cj('#tab1 .state').val() != ""){var state = cj('#tab1 .state').val();}
+/*    console.log(state);*/
+
     if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
       cj.ajax({
         url: '/civicrm/imap/ajax/searchContacts',
         async:false,
         data: {
-          state: '1031',
+          state: state,
           city: city,
           phone: phone,
           email_address: email_address,
@@ -459,6 +462,7 @@ cj(document).ready(function(){
     var create_zip = cj("#tab2 .zip").val();
     var create_city = cj("#tab2 .city").val();
     var create_dob = cj("#tab2 .dob").val();
+    var create_state = cj("#tab2 .state").val();
 
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
@@ -473,6 +477,7 @@ cj(document).ready(function(){
           street_address_2: create_street_address_2,
           postal_code: create_zip,
           city: create_city,
+          state: create_state,
           dob: create_dob
         },
         success: function(data, status) {
@@ -802,13 +807,9 @@ cj(document).ready(function(){
             buttons: {
               "Tag": function() {
                 pushtag();
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               "Tag and Clear": function() {
                 pushtag('clear');
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -934,13 +935,9 @@ cj(document).ready(function(){
       buttons: {
         "Tag": function() {
           pushtag();
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         "Tag and Clear": function() {
           pushtag('clear');
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         Cancel: function() {
           cj("#tagging-popup").dialog('close');
@@ -1082,11 +1079,10 @@ function makeListSortable(){
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
-    "bPaginate": false,
+    "iDisplayLength": 50,    
     "bAutoWidth": false,
-    "bInfo": false
+    "bInfo": false,
   });
-  // cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
 }
 
@@ -1289,6 +1285,10 @@ function pushtag(clear){
     return false;
   }else{
     cj("#tagging-popup").dialog('close');
+    cj('.token-input-list-facebook .token-input-token-facebook').remove();
+    cj('.token-input-dropdown-facebook').html('');
+    cj('.token-input-dropdown-facebook').html('').remove();
+
   }
 
   if(contact_tag_ids){
@@ -1424,7 +1424,7 @@ function buildContactList(loop) {
     if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
     if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
     if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
-    if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
+    if(contacts[i].city){ contactsHtml += contacts[i].city + ', ' + contacts[i].name +" "+ contacts[i].postal_code + '<br/>'; }
     contactsHtml += '</div></div>';
     contactsHtml += '<div class="clear"></div>';
   }
