@@ -807,13 +807,9 @@ cj(document).ready(function(){
             buttons: {
               "Tag": function() {
                 pushtag();
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               "Tag and Clear": function() {
                 pushtag('clear');
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -939,13 +935,9 @@ cj(document).ready(function(){
       buttons: {
         "Tag": function() {
           pushtag();
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         "Tag and Clear": function() {
           pushtag('clear');
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         Cancel: function() {
           cj("#tagging-popup").dialog('close');
@@ -1294,6 +1286,8 @@ function pushtag(clear){
     return false;
   }else{
     cj("#tagging-popup").dialog('close');
+    cj('.token-input-list-facebook .token-input-token-facebook').remove();
+    cj('.token-input-dropdown-facebook').html('');
   }
 
   if(contact_tag_ids){
