@@ -1288,6 +1288,8 @@ function pushtag(clear){
     cj("#tagging-popup").dialog('close');
     cj('.token-input-list-facebook .token-input-token-facebook').remove();
     cj('.token-input-dropdown-facebook').html('');
+    cj('.token-input-dropdown-facebook').html('').remove();
+
   }
 
   if(contact_tag_ids){
