@@ -68,8 +68,14 @@ td.name{ padding-left: 0px;margin-left: 0px;}
 .date span{float: left; margin: 8px 0;}
 .checkbox_switch{ margin-left: 10px;}
 
-.dataTables_paginate {width:100% !important;  float:left; }
-.paginated-menu{float:right;padding:4px 8px 4px 0; }
+.paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
+.paging_bootstrap ul {float:right;padding:4px 0px 4px 0; margin: 0; }
+.paging_bootstrap ul li { display:inline-block; float:left;}
+.paging_bootstrap ul li a{ padding:4px 8px; border: 1px solid #ccc; background: #e5e5e5;}
+.paging_bootstrap ul li.disabled a{ background: #f8f8f8;}
+.paging_bootstrap ul li.active a{ background: #dadada;}
+
+.dataTables_paginate{float:none; text-align: none;width: 100%; }
 
 .actions{ width:110px !important;  overflow: hidden; display: block; height: 32px ; float: left;}
 .actions span a{float: left; margin: 8px 1px 8px 0; padding: 2px 4px; border-radius: 3px;}
