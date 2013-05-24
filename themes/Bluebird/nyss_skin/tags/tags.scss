@@ -48,11 +48,20 @@ $inputBoxWidth: 522px;
 			margin-left:0px;
 		}
 	}
-	ul.token-input-list-facebook {
-		width:$inputBoxWidth;
+}
+div.token-input-dropdown-facebook {
+	width:300px;
+	margin-top:1px;
+}
+.BBTree-menu {
+	width:$inputBoxWidth - 4px;
+	ul.token-input-list-facebook, input#JSTree-ac {
+		width: 100%;
+		padding:0px;
+		margin:0px;
+		height:31px;
 	}
 }
-
 
 /*pagestructure*/
 
@@ -158,7 +167,7 @@ $inputBoxWidth: 522px;
     		{
     			margin:0 10px;
     		}
-    		@if $i > 0
+    		@if $i > 1
     		{
     			display:none;
     		}

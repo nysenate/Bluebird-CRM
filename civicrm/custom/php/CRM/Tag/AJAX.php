@@ -324,33 +324,36 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         self::$ROLE_ACCESS = min($array_of_roles);
         $role = self::check_user_against_role($role_name);
-
-        // check if the users are accessing their own page
-        $entity_id = 0;
-        if(array_key_exists('entity_id', $_GET))
+        
+        if($role == false)
         {
-            // checks entity_id (activity) to see if their user id belongs to the activity
-            $entity_id = $_GET['entity_id'];
-            $entity_table = CRM_Core_DAO::escapeString(self::_require('entity_table', $_GET, "`entity_table` parameter is required."));
-            if($entity_table == "civicrm_activity")
+            // check if the users are accessing their own page
+            $entity_id = 0;
+            if(array_key_exists('entity_id', $_GET))
             {
-                // checks the m2m table activity_target on activity_id
-                $dao = new CRM_Core_DAO();
-                $conn = $dao->getDatabaseConnection()->connection;
-                $result = mysql_query("
-                    SELECT target_contact_id from civicrm_activity_target
-                        WHERE activity_id = $entity_id", $conn);
-                $activity_contact_target = [];
-                while($row = mysql_fetch_assoc($result))
-                    array_push($activity_contact_target, $row["target_contact_id"]);
-            }
-            // grabs the current user id
-            $session = CRM_Core_Session::singleton();
-            $userid = $session->get('userID');
-            // 
-            if(!in_array($userid, $activity_contact_target))
-            {
-                $role = false;
+                // checks entity_id (activity) to see if their user id belongs to the activity
+                $entity_id = $_GET['entity_id'];
+                $entity_table = CRM_Core_DAO::escapeString(self::_require('entity_table', $_GET, "`entity_table` parameter is required."));
+                if($entity_table == "civicrm_activity")
+                {
+                    // checks the m2m table activity_target on activity_id
+                    $dao = new CRM_Core_DAO();
+                    $conn = $dao->getDatabaseConnection()->connection;
+                    $result = mysql_query("
+                        SELECT target_contact_id from civicrm_activity_target
+                            WHERE activity_id = $entity_id", $conn);
+                    $activity_contact_target = [];
+                    while($row = mysql_fetch_assoc($result))
+                        array_push($activity_contact_target, $row["target_contact_id"]);
+                }
+                // grabs the current user id
+                $session = CRM_Core_Session::singleton();
+                $userid = $session->get('userID');
+                // 
+                if(!in_array($userid, $activity_contact_target))
+                {
+                    $role = false;
+                }
             }
         }
         $message = ($role == true ) ? 'SUCCESS' : "WARNING: Bad user level"; 
@@ -362,7 +365,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             "message"=> $message
         );
 
-        if($return == 'true'){
+        if($role == true){
             return $output;
         }else{
             echo json_encode($output);

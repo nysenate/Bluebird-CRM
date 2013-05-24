@@ -78,8 +78,18 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   float: none; }
   #mainTabContainer .tag-section .content, #tagSelect .tag-section .content, form#Contact .groupTagsKeywords .tag-section .content {
     margin-left: 0px; }
-#mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook, form#Contact .groupTagsKeywords ul.token-input-list-facebook {
-  width: 522px; }
+
+div.token-input-dropdown-facebook {
+  width: 300px;
+  margin-top: 1px; }
+
+.BBTree-menu {
+  width: 518px; }
+  .BBTree-menu ul.token-input-list-facebook, .BBTree-menu input#JSTree-ac {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    height: 31px; }
 
 /*pagestructure*/
 .BBTree, #BBTreeContainer .BBTree, #BBDialog .BBTree {
@@ -188,8 +198,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
       font-weight: bold; }
   .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1, #BBDialog .BBTree dl.lv-1 {
     width: 475px;
-    margin-left: 10px;
-    display: none; }
+    margin-left: 10px; }
   .BBTree dl.lv-2, #BBTreeContainer .BBTree dl.lv-2, #BBDialog .BBTree dl.lv-2 {
     width: 465px;
     margin-left: 10px;

@@ -3,21 +3,39 @@
   # instance is the collection of data as specified in the init settings
   # should hypothetically only need 1 instance at a time per page
 tree =
-  startInstance: (properties) ->
-    initInstance = new instance(properties)
+  startInstance: (submittedProperties) ->
+    initInstance = new instance()
+    @setProp(submittedProperties, initInstance)
     request = cj.when(getTrees.getRawJSON(initInstance))
-    request.done((data) ->
+    request.done((data) =>
       getTrees.putRawJSON(data.message, initInstance)
       parseTree.init(initInstance)
-      initInstance.set('ready',true))
+      initInstance.set('ready',true)
+      @startBehavior(initInstance)
+      )
     initInstance
+  setProp: (properties..., instance) ->
+    for k, v of properties[0]
+      instance.set k,v
+  startBehavior: (instance) ->
+    treeBehavior.autoCompleteStart()
 
-window.jstree ?= tree   
+treeBehavior =
+  autoCompleteStart: () ->
+    # console.log cj("#JSTree-ac")
+    hintText = "Type in a partial or complete name of an tag or keyword.";
+    cj("#JSTree-ac").tagACInput(_treeData.autocomplete, {theme: 'facebook', hintText: hintText})
+    # { prePopulate: target_contact}
+    # tokenInput( tokenDataUrl_target, );
+    # cj("#JSTree-ac").tokenInput(_treeData.autocomplete)
+    # [{id: 3, name: "test"}, {id: 5, name: "awesome"}]
+  getEntityTags: () ->
+  tagActions: () ->
+
+
+window.jstree ?= tree
+window.CRM ?= {}
     
-  #creates a new treeDataRepository
-  #getTrees
-  #parseTree
-  #parseautocomplete
   #getContactTags
   #tagEntity
   #tagActions
@@ -42,20 +60,20 @@ parseTree =
         @output = ''
         @tagLvl = 0
         @setDataType(cID.name)
-        @autocompleteID = []
-        @autocompleteName = []
+        @autocompleteObj = []
         @treeTop = id
         tagName = new BBTagLabel(id)
         # write the top of the tree without adding a lvl++
         # because the first tag (tag header stays @ 0)
-        @addDLtop tagName,cID.name, true
-        @addDTtag tagName,cID.name
-        # loops through each child. 
+        # @addDLtop tagName,cID.name, true
+        # @addDTtag tagName,cID.name
+        # loops through each child.
+        @addTabName (cID.name)
         cj.each cID.children, (id, tID) =>
           childTagName = new BBTagLabel(tID.id)
           @addDLtop childTagName,tID.name
           @writeOutputData tID 
-        @addDLbottom()
+        # @addDLbottom()
         @writeData()
     console.log "Loaded Data"
   isItemMarked: (value,type) ->
@@ -77,6 +95,8 @@ parseTree =
       @addDLbottom() 
     else
       @addDLbottom()
+  addTabName: (name) ->
+    _treeData.treeNames.push(name)
   # helper functions for writing tag names
   addDLtop: (tagName,name,except) ->
     if !except 
@@ -101,42 +121,44 @@ parseTree =
       else @tagType = "tag"
   # creates autocomplete array
   addAutocompleteEntry: (id,name) ->
-    @autocompleteID.push id
-    @autocompleteName.push name
+    tempObj = 
+      "id": id
+      "name":name
+    @autocompleteObj.push tempObj
   # writes data to treeData
   writeData: () ->
-    _treeData.autocomplete[@treeTop] =
-      'name' : @autocompleteName
-      'id' : @autocompleteID
+    _treeData.autocomplete = _treeData.autocomplete.concat @autocompleteObj
     _treeData.html[@treeTop] = @output
 
 #/Get Trees
 #should be private
 _treeData =
-  autocomplete: {}
-    # acTagName[0] = tag name
-    # acTagID[0] = same key
-    # acTagName[10] = Energy
-    # acTagID[10] = 29
+  autocomplete: []
+    # json array of objects
+    # using tokenize autocomplete jquery
+    # [{"id":"856","name":"Issue Code ABC"},
+    # {"id":"1035","name":"Keyword"},
+    # {"id":"1048","name":"Dollhouse"},
+    # {"id":"1113","name":"Full House"}]
   rawData: {}
     # 291 :json_data 
   html: {}
     # 291 : <html>data</html>
+  treeNames: []
 
 #creates new instances
 class instance
   #sets the instance variables for that particular instance 
-  constructor: (properties...) ->
+  constructor: () ->
+    # if the definitions are an array, it's because they can have
+    # multiple values
     #this is what makes the page-data tick.
     pageElements =
-<<<<<<< HEAD
-      init: '.JSTreeInit'
-=======
->>>>>>> 99a55eedd50985cbfd444e6226baffea360278ce
-      wrapper: '.JSTreeContainer'
-      tagHolder: '.JSTree'
-      messageHandler: '.JSMessages'
-      tabLocation: '.JSTree-Tags'
+      init: 'JSTreeInit'
+      wrapper: 'JSTreeContainer'
+      tagHolder: ['JSTree']
+      messageHandler: ['JSMessages']
+      # tabLocation: ['JST']
       location: ''
     #interrupts ajax tag save process to not happen for edit type pages
     onSave = false
@@ -144,7 +166,8 @@ class instance
     ready = false
     dataSettings =
       #Set [one] or [other] to show only one use [291,296] for both (when you want to show KW & IC)
-      pullSets: [291, 296, 292]
+      pullSets: [291, 296]
+      # pullSets: [291, 296, 292]
       #contact is set to 0 and SHOULD appear on most contact inits
       contact: 0
       # activity_id
@@ -168,20 +191,12 @@ class instance
       #where to grab the tree
       url: '/civicrm/ajax/tag/tree'
       data:
-        entity_type: 'civicrm_contact'
+        entity_table: 'civicrm_contact'
         entity_id: 0
         call_uri: window.location.href
         entity_counts: 0
       dataType: 'json'
-    #set instance properties on init
-    for k, v of properties[0]
-      switch k
-        when "pageElements" then pageElements = v
-        when "onSave" then onSave = v
-        when "dataSettings" then dataSettings = v
-        when "displaySettings" then displaySettings = v
-        when "callAjax" then callAjax = v
-        when "ready" then ready = v
+    # getter/setter
     @get = (name) =>
       getRet = {}
       if 'pageElements' is name then cj.extend true,getRet,pageElements
@@ -192,31 +207,36 @@ class instance
       if 'ready' is name then return ready
       getRet
     @set = (name,obj)  =>
-      if 'pageElements' is name then cj.extend true,pageElements,obj
-      if 'onSave' is name then onSave = obj
-      if 'dataSettings' is name then cj.extend true,dataSettings,obj
-      if 'displaySettings' is name then cj.extend true,displaySettings,obj
-      if 'callAjax' is name then cj.extend true,callAjax,obj
-      if 'ready' is name then ready = obj
-  #getter 
+      if 'pageElements' is name 
+        obj = @checkForArray(pageElements, obj)
+        cj.extend true,pageElements,obj
+      if 'onSave' is name 
+        onSave = obj
+      if 'dataSettings' is name
+        obj = @checkForArray(dataSettings, obj) 
+        cj.extend true,dataSettings,obj
+      if 'displaySettings' is name 
+        obj = @checkForArray(displaySettings, obj) 
+        cj.extend true,displaySettings,obj
+      if 'callAjax' is name
+        obj = @checkForArray(callAjax, obj) 
+        cj.extend true,callAjax,obj
+      if 'ready' is name 
+        ready = obj
+  checkForArray: (propDefault, obj) ->
+    cj.each obj, (k, def) ->
+      # sort prop and obj
+      if cj.isArray(def) && cj.isArray(propDefault[k])
+        a = propDefault[k].sort()
+        b = def.sort()
+        for c, i in a 
+          if c isnt b[i] 
+            for ar in def
+              propDefault[k].push(ar)
+        obj[k] = propDefault[k]
 
-  # get: (name...) =>
-  #   getRet = {}
-  #   if 'pageElements' in name then cj.extend(true, getRet, {pageElements}) 
-  #   if 'dataSettings' in name then cj.extend(true, getRet, {dataSettings})
-  #   if 'displaySettings' in name then cj.extend(true, getRet, {displaySettings})
-  #   if 'callAjax' in name then cj.extend(true, getRet, {callAjax})
-  #   getRet
-
-  # #setter
-  # set: (obj)  =>
-    # if 'pageElements' is name then cj.extend(true, pageElements, obj)
-    # if 'dataSettings' is name then cj.extend(true, dataSettings, obj)
-    # if 'displaySettings' is name then cj.extend(true, displaySettings, obj)
-    # if 'callAjax' is name then cj.extend(true, callAjax, obj)
-    # cj.extend(@, obj)
 #helpers
-typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
+# typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
 
 #builds tagLabels
 class BBTagLabel
@@ -226,4 +246,3 @@ class BBTagLabel
   addDD: -> "tagDropdown_" + @tagID
   removeDD: -> @tagID.replace "tagDropdown_", ""
   passThru: -> @tagID
-    
