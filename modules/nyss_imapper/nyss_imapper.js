@@ -1169,13 +1169,12 @@ function makeListSortable(){
                   totals = cj("#total_number").html();
 
                   if((oPaging.iLength*(oPaging.iPage+1)) < 1 ){
-                    cj("#total_results").html('<span id="total_number">'+totals+'</span>');
+                    cj("#total_results").html('All Results 1 - <span id="total_number">'+totals+'</span>');
                   }else if ((oPaging.iLength*(oPaging.iPage+1)) < cj("#total_number").html()){
-                    viewing = (oPaging.iLength*(oPaging.iPage)+1)+" thru "+(oPaging.iLength*(oPaging.iPage+1));
+                    viewing = "Results "+(oPaging.iLength*(oPaging.iPage)+1)+" - "+(oPaging.iLength*(oPaging.iPage+1));
                     cj("#total_results").html(viewing+' of <span id="total_number">'+totals+'</span>');
                   }else{
-                    viewing = (oPaging.iLength*(oPaging.iPage)+1);
-                    cj("#total_results").html(viewing+' thru <span id="total_number">'+totals+'</span>');
+                     cj("#total_results").html("Results "+(oPaging.iLength*(oPaging.iPage)+1)+' - <span id="total_number">'+totals+'</span>');
                   }
 
 
