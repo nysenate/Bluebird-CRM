@@ -1165,7 +1165,7 @@ function makeListSortable(){
                   
                   // Pages
                   //console.log("Page "+(oPaging.iPage+1) +" Of "+oPaging.iTotalPages);
-                  console.log("Numbers "+(oPaging.iLength*(oPaging.iPage))+" THRU "+(oPaging.iLength*(oPaging.iPage+1)));
+                  //console.log("Numbers "+(oPaging.iLength*(oPaging.iPage))+" THRU "+(oPaging.iLength*(oPaging.iPage+1)));
                   totals = cj("#total_number").html();
 
                   if((oPaging.iLength*(oPaging.iPage+1)) < 1 ){
