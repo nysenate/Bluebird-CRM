@@ -53,7 +53,7 @@
 .delete_popup_class #ui-dialog-title-delete-confirm{ color: #fff; font-weight: bold;}
 
 
-.contacts-list{height:165px; overflow:auto; }
+.contacts-list{height:144px; overflow:auto; }
 .imapperbox .full{  margin-bottom: 10px;}
 .imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox .full h1 small{ color:#999; font-size: 20px;}
@@ -67,6 +67,16 @@ td.name{ padding-left: 0px;margin-left: 0px;}
 .date{width: 120px !important; overflow: hidden; display: block; height: 32px;}
 .date span{float: left; margin: 8px 0;}
 .checkbox_switch{ margin-left: 10px;}
+
+.paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
+.paging_bootstrap ul {float:right;padding:4px 0px 4px 0; margin: 0; }
+.paging_bootstrap ul li { display:inline-block; float:left;}
+.paging_bootstrap ul li a{ padding:4px 8px; border: 1px solid #ccc; background: #e5e5e5;}
+.paging_bootstrap ul li.disabled a{ background: #f8f8f8;}
+.paging_bootstrap ul li.active a{ background: #dadada;}
+
+.dataTables_paginate{float:none; text-align: none;width: 100%; }
+
 .actions{ width:110px !important;  overflow: hidden; display: block; height: 32px ; float: left;}
 .actions span a{float: left; margin: 8px 1px 8px 0; padding: 2px 4px; border-radius: 3px;}
 .actions a:hover{background: #fff; }
@@ -85,7 +95,7 @@ a.tag-selected { color: #fff!important; }
 a.tag-selected:hover { color: #fff!important; background-color: red; }
 .attachment{float:right !important;}
 /* page actions */
-.page_actions{ text-align: right; height: 30px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
+.page_actions{ text-align: right; height: 40px;border-top: 1px solid #ccc;padding:10px 0;margin: 10px 0}
 /* data table */
 .dataTables_length{width: 125px !important;float: left !important;}
 #sortable_results_info{display: none !important;}
@@ -171,6 +181,8 @@ pre{  white-space: pre-wrap;       /* css-3 */
 #message_right label{float: left;display: block;}
 .label_def{width: 110px;font-weight: bold;float: left;margin: 0.4em 0 0.02em;}
 #message_right label input {width: 130px;  }
+#message_right label select {width: 137px;  }
+
 #tagging #BBTreeContainer .BBTree, #BBDialog .BBTree{height: 200px;  width: 250px; float: left;}
 .loading_message{ margin: 0px auto; background: #fff; padding:5px; width: 200px}
 .popup_def{ color: #777777;

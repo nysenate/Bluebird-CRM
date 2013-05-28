@@ -68,7 +68,72 @@
 						<span class="label_def">City: </span>
 						<input type="text" placeholder="City" class="form-text city" name="city">
 					</label>
-
+					<label for="state">
+						<span class="label_def">State: </span>
+						<select class="form-select state" id="state" name="state">
+							<option value="">- select -</option>
+							<option value="1000">Alabama</option>
+							<option value="1001">Alaska</option>
+							<option value="1052">American Samoa</option>
+							<option value="1002">Arizona</option>
+							<option value="1003">Arkansas</option>
+							<option value="1060">Armed Forces Americas</option>
+							<option value="1059">Armed Forces Europe</option>
+							<option value="1061">Armed Forces Pacific</option>
+							<option value="1004">California</option>
+							<option value="1005">Colorado</option>
+							<option value="1006">Connecticut</option>
+							<option value="1007">Delaware</option>
+							<option value="1050">District of Columbia</option>
+							<option value="1008">Florida</option>
+							<option value="1009">Georgia</option>
+							<option value="1053">Guam</option>
+							<option value="1010">Hawaii</option>
+							<option value="1011">Idaho</option>
+							<option value="1012">Illinois</option>
+							<option value="1013">Indiana</option>
+							<option value="1014">Iowa</option>
+							<option value="1015">Kansas</option>
+							<option value="1016">Kentucky</option>
+							<option value="1017">Louisiana</option>
+							<option value="1018">Maine</option>
+							<option value="1019">Maryland</option>
+							<option value="1020">Massachusetts</option>
+							<option value="1021">Michigan</option>
+							<option value="1022">Minnesota</option>
+							<option value="1023">Mississippi</option>
+							<option value="1024">Missouri</option>
+							<option value="1025">Montana</option>
+							<option value="1026">Nebraska</option>
+							<option value="1027">Nevada</option>
+							<option value="1028">New Hampshire</option>
+							<option value="1029">New Jersey</option>
+							<option value="1030">New Mexico</option>
+							<option value="1031">New York</option>
+							<option value="1032">North Carolina</option>
+							<option value="1033">North Dakota</option>
+							<option value="1055">Northern Mariana Islands</option>
+							<option value="1034">Ohio</option>
+							<option value="1035">Oklahoma</option>
+							<option value="1036">Oregon</option>
+							<option value="1037">Pennsylvania</option>
+							<option value="1056">Puerto Rico</option>
+							<option value="1038">Rhode Island</option>
+							<option value="1039">South Carolina</option>
+							<option value="1040">South Dakota</option>
+							<option value="1041">Tennessee</option>
+							<option value="1042">Texas</option>
+							<option value="1058">United States Minor Outlying Islands</option>
+							<option value="1043">Utah</option>
+							<option value="1044">Vermont</option>
+							<option value="1057">Virgin Islands</option>
+							<option value="1045">Virginia</option>
+							<option value="1046">Washington</option>
+							<option value="1047">West Virginia</option>
+							<option value="1048">Wisconsin</option>
+							<option value="1049">Wyoming</option>
+						</select>
+					</label>
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"></div>
 					<input type="button" class="imapper-submit" id="reassign" value="Reassign" name="reassign">
