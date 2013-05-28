@@ -197,4 +197,15 @@
     <access_arguments>access CiviCRM</access_arguments>
     <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
   </item>
+
+  <!--6698-->
+  <item>
+    <path>civicrm/contact/view/mailing</path>
+    <page_callback>CRM_Mailing_Page_Tab</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/contactmailing</path>
+    <page_callback>CRM_Mailing_Page_AJAX::getContactMailings</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

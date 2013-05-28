@@ -2334,6 +2334,14 @@ AND       civicrm_openid.is_primary = 1";
         );
         return CRM_Activity_BAO_Activity::getActivitiesCount($input);
 
+      //NYSS 6698
+      case 'mailing':
+        $params = array(
+          'contact_id' => $contactId,
+          'admin' => FALSE,
+        );
+        return CRM_Mailing_BAO_Mailing::getContactMailingsCount($params);
+
       default:
         $custom = explode('_', $component);
         if ($custom['0'] = 'custom') {
