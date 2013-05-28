@@ -870,26 +870,42 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
     $job_date
   ) {
     static $activityTypeID = NULL;
+    static $writeActivity = NULL;//NYSS 6698
 
     if (!empty($deliveredParams)) {
       CRM_Mailing_Event_BAO_Delivered::bulkCreate($deliveredParams);
       $deliveredParams = array();
     }
 
-    $result = TRUE;
-    if (!empty($targetParams) &&
-      !empty($mailing->scheduled_id)
-    ) {
+    //NYSS 6698
+    if ($writeActivity === NULL) {
+      $writeActivity = CRM_Core_BAO_Setting::getItem(
+        CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+        'write_activity_record',
+        NULL,
+        TRUE
+      );
+    }
 
+    if (!$writeActivity) {
+      return TRUE;
+    }
+
+    $result = TRUE;
+    if (!empty($targetParams) && !empty($mailing->scheduled_id)) {
       if (!$activityTypeID) {
-        $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
-          'Bulk Email',
-          'name'
-        );
         if ($mailing->sms_provider_id) {
           $mailing->subject = $mailing->name;
           $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
             'Mass SMS',
+            'name'
+          );
+        }
+        //NYSS 6698
+        else {
+          $activityTypeID = CRM_Core_OptionGroup::getValue(
+            'activity_type',
+            'Bulk Email',
             'name'
           );
         }
