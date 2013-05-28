@@ -61,12 +61,15 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         array(
           'type'      => 'next',
           'name'      => ts('Generate PDF Report'),
-          'isDefault' => true
         ),
         array(
           'type'      => 'upload',
           'name'      => ts('Generate Print Report'),
-          'isDefault' => true
+          'isDefault' => TRUE
+        ),
+        array(
+          'type'      => 'submit',
+          'name'      => ts('Generate CSV'),
         ),
         array(
           'type'      => 'back',
@@ -123,7 +126,6 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
    * @return None
    */
   public function postProcess() {
-
     //CRM_Core_Error::debug_var('this', $this);
 
     require_once 'CRM/Utils/PDF/Utils.php';
@@ -133,7 +135,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
     $formParams = $this->controller->exportValues( $this->_name );
     //CRM_Core_Error::debug_var('formParams', $formParams);
 
-    $sqlParams = array();
+    $sqlParams = $rows = array();
     $sqlWhere  = 1;
     $startDate = $endDate = $alteredByFrom = '';
     if ( $formParams['jobID'] ) {
@@ -271,6 +273,31 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
           <td>{$cDetails['email']}&nbsp;</td>
           <td>{$tagList}&nbsp;</td>
         </tr>";
+
+      $rows[$dao->id] = array(
+        'id' => $dao->id,
+        'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
+        'first_name' => CRM_Utils_Array::value('last_name', $cDetails, ''),
+        'middle_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
+        'last_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
+        'street_address' => CRM_Utils_Array::value('street_address', $cDetails, ''),
+        'supplemental_address_1' => CRM_Utils_Array::value('supplemental_address_1', $cDetails, ''),
+        'city' => CRM_Utils_Array::value('city', $cDetails, ''),
+        'state_province' => CRM_Utils_Array::value('state_province', $cDetails, ''),
+        'postal_code' => CRM_Utils_Array::value('postal_code', $cDetails, ''),
+        'postal_code_suffix' => CRM_Utils_Array::value('postal_code_suffix', $cDetails, ''),
+        'birth_date' => CRM_Utils_Array::value('birth_date', $cDetails, ''),
+        'phone' => CRM_Utils_Array::value('phone', $cDetails, ''),
+        'email' => CRM_Utils_Array::value('email', $cDetails, ''),
+        'taglist' => stripslashes(iconv('UTF-8', 'Windows-1252', $tagList)),
+      );
+
+      //set col headers after the first row is constructed
+      if ( !isset($this->_columnHeaders) ) {
+        foreach ( $rows[$dao->id] as $hdr => $dontcare ) {
+          $this->_columnHeaders[$hdr] = array('title' => $hdr);
+        }
+      }
     }
 
     //add summary counts
@@ -285,13 +312,21 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
     //now generate pdf
     $actionName = $this->controller->getButtonName( );
-    if ( $actionName == '_qf_ProofingReport_next' ) { //PDF
+    //PDF
+    if ( $actionName == '_qf_ProofingReport_next' ) {
       CRM_Utils_PDF_Utils::html2pdf( $html,
-                                     'LogProofingReport.pdf',
-                                     false,
-                                     $formParams['pdf_format_id'] );
-    } elseif ( $actionName == '_qf_ProofingReport_upload' ) { //Print
+        'LogProofingReport.pdf',
+        FALSE,
+        $formParams['pdf_format_id']
+      );
+    }
+    //Print
+    elseif ( $actionName == '_qf_ProofingReport_upload' ) {
       echo $html;
+    }
+    //CSV
+    elseif ( $actionName == '_qf_ProofingReport_submit' ) {
+      CRM_Report_Utils_Report::export2csv($this, $rows);
     }
 
     CRM_Utils_System::civiExit( );

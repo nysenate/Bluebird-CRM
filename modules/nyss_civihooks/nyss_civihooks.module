@@ -1,16 +1,13 @@
 <?php
 
 function nyss_civihooks_menu() {
-
   $items = array();
-
   $items['nyss_getfile'] = array (
     'title' => t('NYSS Retrieve file'),
     'page callback' => 'nyss_civihooks_getfile',
     'access arguments' => array('export print production files'),
     'type' => MENU_SUGGESTED_ITEM,
   );
-
   return $items;
 }
 
@@ -336,6 +333,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
+      '_qf_ProofingReport_submit',
       '_qf_Label_next'
     );
     $btnExcludeValue = array(

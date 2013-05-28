@@ -1230,15 +1230,28 @@ class CRM_Contact_BAO_Query {
           $params[] = array('on_hold', '=', $formValues['email_on_hold']['on_hold'], 0, 0);
         }
       }
-      elseif (preg_match('/_date_relative$/', $id) || $id == 'event_relative') {
+      //NYSS 4855
+      elseif (preg_match('/_date_relative$/', $id) ||
+              $id == 'event_relative' ||
+              $id == 'case_from_relative' ||
+              $id == 'case_to_relative'
+              ) {
         if ($id == 'event_relative') {
           $fromRange = 'event_start_date_low';
           $toRange = 'event_end_date_high';
         }
+        else if ($id == 'case_from_relative') {
+          $fromRange = 'case_from_start_date_low';
+          $toRange = 'case_from_start_date_high';
+        }
+        else if ($id == 'case_to_relative') {
+          $fromRange = 'case_to_end_date_low';
+          $toRange = 'case_to_end_date_high';
+        }
         else {
           $dateComponent = explode('_date_relative', $id);
-          $fromRange     = "{$dateComponent[0]}_date_low";
-          $toRange       = "{$dateComponent[0]}_date_high";
+          $fromRange = "{$dateComponent[0]}_date_low";
+          $toRange = "{$dateComponent[0]}_date_high";
         }
 
         if (array_key_exists($fromRange, $formValues) && array_key_exists($toRange, $formValues)) {
