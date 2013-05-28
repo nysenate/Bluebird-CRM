@@ -684,7 +684,7 @@ function statsIssueCodes( $tmpTbl ) {
   $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
   $ic_stats = array();
   while ($dao->fetch()) {
-    $ic_stats[$dao->name] = $dao->ic_count;
+    $ic_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->ic_count;
   }
 
   return $ic_stats;
@@ -706,7 +706,7 @@ function statsKeywords( $tmpTbl ) {
   $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
   $key_stats = array();
   while ($dao->fetch()) {
-    $key_stats[stripslashes($dao->name)] = $dao->key_count;
+    $key_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->key_count;
   }
 
   return $key_stats;
