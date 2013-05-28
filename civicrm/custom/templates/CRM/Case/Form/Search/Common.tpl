@@ -26,8 +26,15 @@
 {if $notConfigured} {* Case types not present. Component is not configured for use. *}
     {include file="CRM/Case/Page/ConfigureError.tpl"}
 {else}
+{*NYSS 4855*}
+<tr>
+  <td><label>{ts}Case Start Date{/ts}</label></td>{include file="CRM/Core/DateRange.tpl" fieldName="case_from" from='_start_date_low' to='_start_date_high'}
+</tr>
+<tr>
+  <td><label>{ts}Case End Date{/ts}</label></td>{include file="CRM/Core/DateRange.tpl" fieldName="case_to" from='_end_date_low' to='_end_date_high'}
+</tr>
 <tr id='case_search_form'>
-  <td class="crm-case-common-form-block-case_type" width="25%"><label>{ts}Case Type{/ts}</label>
+  <td colspan="2" class="crm-case-common-form-block-case_type" width="25%"><label>{ts}Case Type{/ts}</label>
     <br />
       <div class="listing-box" style="width: auto; height: 120px">
        {foreach from=$form.case_type_id item="case_type_id_val"}
