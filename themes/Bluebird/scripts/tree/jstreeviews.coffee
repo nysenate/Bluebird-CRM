@@ -38,6 +38,7 @@ class View
     @cjInitHolderId.html "<div class='#{@addClassHolderString}'></div>"
     @addMenuToElement()
     @addTokenHolderToElement()
+    @addDataHolderToElement()
     @cjInitHolderId.removeClass(@initHolderId).attr("id", @addIdWrapperString)
   addMenuToElement: ()->
     menu = "
@@ -55,6 +56,9 @@ class View
       </div>
     "
     @cjInitHolderId.prepend(menu)
+  addDataHolderToElement: ()->
+    dataHolder = "<div id='JSTree-data' style='display:none'></div>"
+    @cjInitHolderId.append(dataHolder)
   addTokenHolderToElement: ()->
     tokenHolder = "
       <div class='#{@tokenHolder.tokenHolder}'>
@@ -119,18 +123,26 @@ class View
     @displaySettings = @instance.get 'displaySettings'
     @writeTabs()
     @cjInstanceSelector.html(_treeData.html[@displaySettings.defaultTree])
+    treeBehavior.autoCompleteStart(@instance)
   writeTabs: () ->
     output = ""
     for a in _treeData.treeNames
       b = a.replace(" ","-")
       b = b.toLowerCase()
       output += "<div class='tab-#{b}'>#{a}</div>"
-    # console.log @cjTagMenu
-
     @cjTagMenu.find(".tabs").html(output)
-
 # change data sets, not multipe implementations
 
+
+treeBehavior =
+  autoCompleteStart: (@instance) ->
+    cj("#JSTree-data").data("autocomplete" : @instance.getAutocomplete())
+    params =
+      jqDataReference: "#JSTree-data"
+      hintText: "Type in a partial or complete name of an tag or keyword."
+      theme: "JSTree"
+    cj("#JSTree-ac").tagACInput(params)
+  enableDropdowns: () ->
 
 
 ###

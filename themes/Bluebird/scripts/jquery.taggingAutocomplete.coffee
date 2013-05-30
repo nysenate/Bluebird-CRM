@@ -1,13 +1,28 @@
+###
+# Name:    jquery.taggingAutocomplete.js
+# By:      Dan Pozzie
+# Updated: 18/5/2013
+# Purpose: Hook JQuery UI Autocomplete for tagging usages in a
+#          coffeescript environment, while moving the token-input
+#          aspect from civicrm's core jquery.tokeninput.js. Instead
+#          of hooking and modifying it out a lot of additional
+#          functionality that isn't in tokeninput's scope, leverage
+#          jquery ui's AC to do the following:
+#          
+###
+
 (($, window, document) ->
   # Prepare your internal $this reference.
   $this = undefined
  
-  # Store your default settings in something "private".
-  # The simplest way to do so is to abide by the convention that anything
-  # named with a leading underscore is part of the private API (a well-known
-  # interface contract in the JavaScript community).
   _settings =
-    default: 'cool!'
+    # with dataReference pass #JSTree-data
+    # cj("#JSTree-data").data("autocomplete" : @instance.getAutocomplete())
+    jqDataReference: ""
+    hintText: "Type in a partial or complete name of an tag or keyword."
+    theme: "JSTree"
+    ajaxLocation: ""
+    textBoxLocation: "#JSTree-ac"
     
   # You *may* rely on internal, private objects:
   _flag = false
@@ -18,30 +33,12 @@
   methods =
     init: (options) ->
       $this = $(@)
-      # The settings object is available under its name: _settings. Let's
-      # expand it with any custom options the user provided.
       $.extend _settings, (options or {})
-      # Do anything that actually inits your plugin, if needed, right now!
-      # An important thing to keep in mind, is that jQuery plugins should be
-      # built so that one can apply them to more than one element, like so:
-      #
-      #  $('.matching-elements, #another-one').tagACInput()
-      #
-      # It means the $this object we populated using @ (this) is to be
-      # considered an array of selectors, and one must always perform
-      # computations while iterating over them:
-      #
-      #  $this.each (index, el) ->
-      #    # do something with el
-      #
+      _internals.enableAC()
       return $this
- 
-    doSomething: (what) ->
-      # Another public method that people can call and rely on to do "what".
-      return $this
- 
     # This method is often overlooked.
-    destroy: ->
+    kill: (note) ->
+      console.log "Killed with: #{note}"
       # Do anything to clean it up (nullify references, unbind events…).
       return $this
  
@@ -54,6 +51,22 @@
   # You can access the …settings, or other private methods using …internals.method,
   # as expected.
   _internals =
+    enableAC: () ->
+      dataSource = @turnDataLocation()
+
+      console.log "isArray?: #{cj.isArray(dataSource)}"
+      console.log dataSource
+      $("#{_settings.textBoxLocation}").autocomplete
+        source: dataSource
+    turnDataLocation: ()->
+      if _settings.jqDataReference?
+        cjDataSource = cj(_settings.jqDataReference).data("autocomplete")
+        return cjDataSource
+      else if _settings.ajaxLocation?
+        return _settings.ajaxLocation
+      else
+        methods.kill "No Data Location"
+
     # this toggles our "global" yet internal flag:
     toggleFlag: ->
       _flag = !_flag
@@ -66,10 +79,7 @@
     computeSomething: (state, flag) ->
       flag ? state : "No, that's not right."
  
-  # Here is another important part of a proper plugin implementation: the clean
-  # namespacing preventing from cluttering the $.fn namespace. This explains why
-  # we went the extra miles of providing a pair of public and private APIs.
-  # This is also the place where you specify the name of your plugin in your code.
+  # Namespacing
   $.fn.tagACInput = (method) ->
     if methods[method]
       methods[method].apply this, Array::slice.call(arguments, 1)

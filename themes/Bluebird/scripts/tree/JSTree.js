@@ -15,8 +15,7 @@
       request.done(function(data) {
         getTrees.putRawJSON(data.message, initInstance);
         parseTree.init(initInstance);
-        initInstance.set('ready', true);
-        return _this.startBehavior(initInstance);
+        return initInstance.set('ready', true);
       });
       return initInstance;
     },
@@ -31,22 +30,10 @@
         _results.push(instance.set(k, v));
       }
       return _results;
-    },
-    startBehavior: function(instance) {
-      return treeBehavior.autoCompleteStart();
     }
   };
 
   treeBehavior = {
-    autoCompleteStart: function() {
-      var hintText;
-
-      hintText = "Type in a partial or complete name of an tag or keyword.";
-      return cj("#JSTree-ac").tagACInput(_treeData.autocomplete, {
-        theme: 'facebook',
-        hintText: hintText
-      });
-    },
     getEntityTags: function() {},
     tagActions: function() {}
   };
@@ -175,8 +162,8 @@
       var tempObj;
 
       tempObj = {
-        "id": id,
-        "name": name
+        "label": name,
+        "value": id
       };
       return this.autocompleteObj.push(tempObj);
     },
@@ -276,6 +263,9 @@
         if ('ready' === name) {
           return ready = obj;
         }
+      };
+      this.getAutocomplete = function() {
+        return _treeData.autocomplete;
       };
     }
 
@@ -378,6 +368,7 @@
       this.cjInitHolderId.html("<div class='" + this.addClassHolderString + "'></div>");
       this.addMenuToElement();
       this.addTokenHolderToElement();
+      this.addDataHolderToElement();
       return this.cjInitHolderId.removeClass(this.initHolderId).attr("id", this.addIdWrapperString);
     };
 
@@ -386,6 +377,13 @@
 
       menu = "      <div class='" + this.menuName.menu + "'>       <div class='" + this.menuName.top + "'>        <div class='" + this.menuName.tabs + "'></div>        <div class='" + this.menuName.settings + "'></div>       </div>       <div class='" + this.menuName.bottom + "'>        <div class='" + this.menuName.autocomplete + "'>         <input type='text' id='JSTree-ac'>        </div>        <div class='" + this.menuName.settings + "'></div>       </div>      </div>    ";
       return this.cjInitHolderId.prepend(menu);
+    };
+
+    View.prototype.addDataHolderToElement = function() {
+      var dataHolder;
+
+      dataHolder = "<div id='JSTree-data' style='display:none'></div>";
+      return this.cjInitHolderId.append(dataHolder);
     };
 
     View.prototype.addTokenHolderToElement = function() {
@@ -468,7 +466,8 @@
       this.getCJQsaves();
       this.displaySettings = this.instance.get('displaySettings');
       this.writeTabs();
-      return this.cjInstanceSelector.html(_treeData.html[this.displaySettings.defaultTree]);
+      this.cjInstanceSelector.html(_treeData.html[this.displaySettings.defaultTree]);
+      return treeBehavior.autoCompleteStart(this.instance);
     };
 
     View.prototype.writeTabs = function() {
@@ -488,6 +487,24 @@
     return View;
 
   })();
+
+  treeBehavior = {
+    autoCompleteStart: function(instance) {
+      var params;
+
+      this.instance = instance;
+      cj("#JSTree-data").data({
+        "autocomplete": this.instance.getAutocomplete()
+      });
+      params = {
+        jqDataReference: "#JSTree-data",
+        hintText: "Type in a partial or complete name of an tag or keyword.",
+        theme: "JSTree"
+      };
+      return cj("#JSTree-ac").tagACInput(params);
+    },
+    enableDropdowns: function() {}
+  };
 
   /*
   neat

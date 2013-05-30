@@ -11,27 +11,20 @@ tree =
       getTrees.putRawJSON(data.message, initInstance)
       parseTree.init(initInstance)
       initInstance.set('ready',true)
-      @startBehavior(initInstance)
+      # @startBehavior(initInstance)
       )
     initInstance
   setProp: (properties..., instance) ->
     for k, v of properties[0]
       instance.set k,v
-  startBehavior: (instance) ->
-    treeBehavior.autoCompleteStart()
+  # startBehavior: (instance) ->
+    # treeBehavior.autoCompleteStart()
 
 treeBehavior =
-  autoCompleteStart: () ->
-    # console.log cj("#JSTree-ac")
-    hintText = "Type in a partial or complete name of an tag or keyword.";
-    cj("#JSTree-ac").tagACInput(_treeData.autocomplete, {theme: 'facebook', hintText: hintText})
-    # { prePopulate: target_contact}
-    # tokenInput( tokenDataUrl_target, );
-    # cj("#JSTree-ac").tokenInput(_treeData.autocomplete)
-    # [{id: 3, name: "test"}, {id: 5, name: "awesome"}]
   getEntityTags: () ->
-  tagActions: () ->
 
+  tagActions: () ->
+    # this should ONLY be the ajax db calls to add/remove/move
 
 window.jstree ?= tree
 window.CRM ?= {}
@@ -122,8 +115,8 @@ parseTree =
   # creates autocomplete array
   addAutocompleteEntry: (id,name) ->
     tempObj = 
-      "id": id
-      "name":name
+      "label": name
+      "value": id
     @autocompleteObj.push tempObj
   # writes data to treeData
   writeData: () ->
@@ -223,6 +216,8 @@ class instance
         cj.extend true,callAjax,obj
       if 'ready' is name 
         ready = obj
+    @getAutocomplete = =>
+      _treeData.autocomplete
   checkForArray: (propDefault, obj) ->
     cj.each obj, (k, def) ->
       # sort prop and obj
