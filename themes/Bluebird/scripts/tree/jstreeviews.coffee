@@ -142,6 +142,10 @@ treeBehavior =
       hintText: "Type in a partial or complete name of an tag or keyword."
       theme: "JSTree"
     cj("#JSTree-ac").tagACInput(params)
+    cj("#JSTree-ac").on "autocompleteresponse", (evt,ui) =>
+      console.log "anything"
+      console.log evt,ui
+    # cj( ".selector" ).on( "autocompleteselect", function( event, ui ) {} );
   enableDropdowns: () ->
 
 

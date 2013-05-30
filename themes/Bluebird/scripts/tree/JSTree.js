@@ -490,7 +490,8 @@
 
   treeBehavior = {
     autoCompleteStart: function(instance) {
-      var params;
+      var params,
+        _this = this;
 
       this.instance = instance;
       cj("#JSTree-data").data({
@@ -501,7 +502,11 @@
         hintText: "Type in a partial or complete name of an tag or keyword.",
         theme: "JSTree"
       };
-      return cj("#JSTree-ac").tagACInput(params);
+      cj("#JSTree-ac").tagACInput(params);
+      return cj("#JSTree-ac").on("autocompleteresponse", function(evt, ui) {
+        console.log("anything");
+        return console.log(evt, ui);
+      });
     },
     enableDropdowns: function() {}
   };

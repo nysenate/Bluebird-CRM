@@ -23,11 +23,18 @@
     theme: "JSTree"
     ajaxLocation: ""
     textBoxLocation: "#JSTree-ac"
+    menuElement: ".JSTree-me"
+    source: ""
+    minLength: 3
+    # disabled: true
+    delay: 100
     
   # You *may* rely on internal, private objects:
   _flag = false
-  _anotherState = null
- 
+  _cache = {} 
+  acSettings =
+    
+  
   # This is your public API (no leading underscore, see?)
   # All public methods must return $this so your plugin is chainable.
   methods =
@@ -52,25 +59,79 @@
   # as expected.
   _internals =
     enableAC: () ->
-      dataSource = @turnDataLocation()
+      @turnDataLocation()
+      @selectedItem = null
+      @element = $("#{_settings.textBoxLocation}")
+      @menuelement = $("#{_settings.menuElement}")
+      @checkValue()
+    checkValue: () ->
+      @element.on "keydown", (event) =>
+        @query = @element.val()
+        @checkKeycodes(event)
 
-      console.log "isArray?: #{cj.isArray(dataSource)}"
-      console.log dataSource
-      $("#{_settings.textBoxLocation}").autocomplete
-        source: dataSource
+
+    checkKeycodes: (event) ->
+      # switch event.keyCode
+      #   when keyCode.PAGE_UP
+      #     @._move "previousPage", event
+      #   when keyCode.PAGE_DOWN
+      #     @._move "nextPage", event
+      #   when keyCode.UP
+      #     @._keyEvent "previous", event
+      #   when keyCode.DOWN
+      #     @._keyEvent "next", event
+      #   when keyCode.ENTER || keyCode.NUMPAD_ENTER
+      #     if @menu.active
+      #       @suppressKeyPress = true
+      #     if !@.menu.active
+      #       return
+      #     @menu.select event
+      #   when keyCode.TAB
+      #     if !@.menu.active
+      #       return
+      #     @menu.select event
+      #   when keyCode.ESCAPE
+      #     @element.val @term
+      #     @close event
+      #   else
+      clearTimeout @searching
+      @searching = setTimeout ( =>
+        if @query != @element.val()
+          @search null,event
+
+      ), _settings.delay
+    search: (value,event) ->
+      if value? 
+        value = value 
+      else
+        value = @element.val()
+      console.log value, @element.val()
+      @term = @element.val();
+
+      if value.length < _settings.minLength
+        return event
+      # do search here
+      console.log "value: #{value.length}"
+      console.log "minLength: #{_settings.minLength}"
+
+
+    _search: (value) ->
+      @pending++
+      @source { term : value }
+
+
     turnDataLocation: ()->
       if _settings.jqDataReference?
-        cjDataSource = cj(_settings.jqDataReference).data("autocomplete")
-        return cjDataSource
-      else if _settings.ajaxLocation?
-        return _settings.ajaxLocation
+        _settings.source = cj(_settings.jqDataReference).data("autocomplete")
+      # else if _settings.ajaxLocation?
+        # return _settings.ajaxLocation
       else
         methods.kill "No Data Location"
 
     # this toggles our "global" yet internal flag:
     toggleFlag: ->
       _flag = !_flag
- 
+
     # This one does not alter anything: it requires parameters (to be documented)
     # and then it returns something based on those params. Use case (for instance):
     #

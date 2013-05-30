@@ -15,7 +15,7 @@
 
 (function() {
   (function($, window, document) {
-    var $this, methods, _anotherState, _flag, _internals, _settings;
+    var $this, acSettings, methods, _cache, _flag, _internals, _settings;
 
     $this = void 0;
     _settings = {
@@ -23,11 +23,15 @@
       hintText: "Type in a partial or complete name of an tag or keyword.",
       theme: "JSTree",
       ajaxLocation: "",
-      textBoxLocation: "#JSTree-ac"
+      textBoxLocation: "#JSTree-ac",
+      menuElement: ".JSTree-me",
+      source: "",
+      minLength: 3,
+      delay: 100
     };
     _flag = false;
-    _anotherState = null;
-    methods = {
+    _cache = {};
+    acSettings = methods = {
       init: function(options) {
         $this = $(this);
         $.extend(_settings, options || {});
@@ -41,23 +45,53 @@
     };
     _internals = {
       enableAC: function() {
-        var dataSource;
+        this.turnDataLocation();
+        this.selectedItem = null;
+        this.element = $("" + _settings.textBoxLocation);
+        this.menuelement = $("" + _settings.menuElement);
+        return this.checkValue();
+      },
+      checkValue: function() {
+        var _this = this;
 
-        dataSource = this.turnDataLocation();
-        console.log("isArray?: " + (cj.isArray(dataSource)));
-        console.log(dataSource);
-        return $("" + _settings.textBoxLocation).autocomplete({
-          source: dataSource
+        return this.element.on("keydown", function(event) {
+          _this.query = _this.element.val();
+          return _this.checkKeycodes(event);
+        });
+      },
+      checkKeycodes: function(event) {
+        var _this = this;
+
+        clearTimeout(this.searching);
+        return this.searching = setTimeout((function() {
+          if (_this.query !== _this.element.val()) {
+            return _this.search(null, event);
+          }
+        }), _settings.delay);
+      },
+      search: function(value, event) {
+        if (value != null) {
+          value = value;
+        } else {
+          value = this.element.val();
+        }
+        console.log(value, this.element.val());
+        this.term = this.element.val();
+        if (value.length < _settings.minLength) {
+          return event;
+        }
+        console.log("value: " + value.length);
+        return console.log("minLength: " + _settings.minLength);
+      },
+      _search: function(value) {
+        this.pending++;
+        return this.source({
+          term: value
         });
       },
       turnDataLocation: function() {
-        var cjDataSource;
-
         if (_settings.jqDataReference != null) {
-          cjDataSource = cj(_settings.jqDataReference).data("autocomplete");
-          return cjDataSource;
-        } else if (_settings.ajaxLocation != null) {
-          return _settings.ajaxLocation;
+          return _settings.source = cj(_settings.jqDataReference).data("autocomplete");
         } else {
           return methods.kill("No Data Location");
         }
