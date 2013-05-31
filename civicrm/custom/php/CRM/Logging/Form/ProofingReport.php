@@ -287,9 +287,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         'postal_code' => CRM_Utils_Array::value('postal_code', $cDetails, ''),
         'postal_code_suffix' => CRM_Utils_Array::value('postal_code_suffix', $cDetails, ''),
         'birth_date' => CRM_Utils_Array::value('birth_date', $cDetails, ''),
+        'gender' => CRM_Utils_Array::value('gender', $cDetails, ''),
         'phone' => CRM_Utils_Array::value('phone', $cDetails, ''),
         'email' => CRM_Utils_Array::value('email', $cDetails, ''),
         'taglist' => stripslashes(iconv('UTF-8', 'Windows-1252', $tagList)),
+        'when' => $dao->logDate,
       );
 
       //set col headers after the first row is constructed
