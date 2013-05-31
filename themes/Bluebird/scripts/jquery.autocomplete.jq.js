@@ -289,7 +289,7 @@ $.widget( "ui.autocomplete", {
       if ( index === requestIndex ) {
         that.__response( content );
       }
-
+ 
       that.pending--;
       if ( !that.pending ) {
         that.element.removeClass( "ui-autocomplete-loading" );

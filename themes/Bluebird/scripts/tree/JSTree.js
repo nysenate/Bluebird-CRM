@@ -162,8 +162,8 @@
       var tempObj;
 
       tempObj = {
-        "label": name,
-        "value": id
+        "name": name,
+        "id": id
       };
       return this.autocompleteObj.push(tempObj);
     },
@@ -490,7 +490,7 @@
 
   treeBehavior = {
     autoCompleteStart: function(instance) {
-      var params,
+      var params, searchmonger,
         _this = this;
 
       this.instance = instance;
@@ -502,10 +502,11 @@
         hintText: "Type in a partial or complete name of an tag or keyword.",
         theme: "JSTree"
       };
-      cj("#JSTree-ac").tagACInput(params);
-      return cj("#JSTree-ac").on("autocompleteresponse", function(evt, ui) {
-        console.log("anything");
-        return console.log(evt, ui);
+      searchmonger = cj("#JSTree-ac").tagACInput("init", params);
+      return cj("#JSTree-ac").on("keydown", function(event) {
+        return searchmonger.exec(event, function(terms) {
+          return console.log(terms);
+        });
       });
     },
     enableDropdowns: function() {}

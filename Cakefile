@@ -42,3 +42,6 @@ task 'sbuild', 'Build all files', ->
             fs.rename "#{path}/#{tempName}.js", "#{path}/#{outputName}.js" 
             # console.log stdout + stderr
             console.log "wrote #{path}/#{outputName}.js"
+            time = new Date()
+            currentTime = "#{time.getHours()}:#{time.getMinutes()}:#{time.getSeconds()}"
+            console.log(currentTime)

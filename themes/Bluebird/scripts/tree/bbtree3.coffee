@@ -115,8 +115,8 @@ parseTree =
   # creates autocomplete array
   addAutocompleteEntry: (id,name) ->
     tempObj = 
-      "label": name
-      "value": id
+      "name": name
+      "id": id
     @autocompleteObj.push tempObj
   # writes data to treeData
   writeData: () ->
