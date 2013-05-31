@@ -74,3 +74,18 @@ $execSql -i $instance -c "$sql" --log -q
 echo "adding index for quick search..."
 sql="ALTER TABLE civicrm_contact ADD INDEX index_quick_search(is_deleted, sort_name, id);"
 $execSql -i $instance -c "$sql" -q
+
+## 6698 insert contact view option
+sql="
+  SELECT @option_group_id_cvOpt := max(id) from civicrm_option_group where name = 'contact_view_options';
+  INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id)
+  VALUES (@option_group_id_cvOpt, 'Mailings', 14, 'CiviMail', NULL, 0, NULL, 14, NULL, 0, 0, 1, NULL);
+"
+$execSql -i $instance -c "$sql" -q
+
+sql="
+  UPDATE civicrm_setting
+  SET value = 's:19:\"1234561014\";'
+  WHERE name = 'contact_view_options';
+"
+$execSql -i $instance -c "$sql" -q
