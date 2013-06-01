@@ -68,4 +68,4 @@ while ($dao->fetch()) {
   }
 }
 
-echo 'finished updating schema.';
+echo "finished updating schema. \n\n";
