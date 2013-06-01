@@ -16,23 +16,10 @@ drupal_script_init();
 require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
 
-//manually drop several triggers in case we are moving dbs
-$dropList = array(
-  'civicrm_domain_after_update',
-  'civicrm_preferences_after_update',
-  'civicrm_preferences_date_after_update',
-  'civicrm_option_value_after_update',
-  'civicrm_option_value_after_insert',
-  'civicrm_uf_match_after_update',
-  'civicrm_uf_match_after_insert',
-  'civicrm_group_after_update',
-  'civicrm_group_after_insert',
-  'civicrm_menu_after_update',
-  'civicrm_menu_after_insert',
-);
-foreach ( $dropList as $triggerName ) {
-  CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
-}
+//drop civi triggers
+$bbconfig = get_bluebird_instance_config();
+$dropCiviTriggers = $bbconfig['app.rootdir'].'/scripts/dropCiviTriggers.sh '.$bbconfig['shortname'];
+shell_exec( $dropCiviTriggers );
 
 //set logging value in config and settings
 require_once "CRM/Core/BAO/Setting.php";
