@@ -213,3 +213,36 @@ function nyss_contact_civicrm_postProcess( $formName, &$form ) {
     }
   }
 }
+
+function nyss_contact_civicrm_tabs( &$tabs, $contactID ) {
+  //CRM_Core_Error::debug_var('tabs', $tabs);
+
+  //6698 reorder the tabs to insert mailings in a more appropriate order
+  $newTabs = array();
+  $weight = 10;
+
+  $order = array(
+    'activity',
+    'case',
+    'mailing',
+    'rel',
+    'group',
+    'note',
+    'tag',
+    'log',
+  );
+
+  foreach ( $order as $id ) {
+    foreach ( $tabs as $details ) {
+      if ( $details['id'] == $id ) {
+        $details['weight'] = $weight;
+        $newTabs[] = $details;
+
+        $weight += 10;
+      }
+    }
+  }
+
+  $tabs = $newTabs;
+  //CRM_Core_Error::debug_var('$newTabs', $newTabs);
+}
