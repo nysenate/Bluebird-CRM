@@ -1060,6 +1060,20 @@ function _buildManageMenu($manageID) {
  * return the complete array to be added to the main navigation array
  */
 function _buildEmailMenu($emailID) {
+  //6799 first retrieve mailing report IDs; prefer reserved, lower IDs
+  $rptIDs = array();
+  $sql = "
+    SELECT id, report_id
+    FROM civicrm_report_instance
+    WHERE report_id LIKE 'mailing/%'
+    ORDER BY is_reserved DESC, id DESC
+  ";
+  $rpts = CRM_Core_DAO::executeQuery($sql);
+  while ( $rpts->fetch() ) {
+    $type = str_replace(array('mailing/', 'Mailing/'), '', $rpts->report_id);
+    $rptIDs[$type] = $rpts->id;
+  }
+
   $email = array(
     'attributes' => array(
       'label'      => 'Mass Email',
@@ -1147,7 +1161,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Summary Report',
           'name' => 'Mass Email Summary Report',
-          'url' => 'civicrm/report/instance/28&reset=1',
+          'url' => "civicrm/report/instance/{$rptIDs['summary']}&reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,
@@ -1161,7 +1175,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Bounce Report',
           'name' => 'Mass Email Bounce Report',
-          'url' => 'civicrm/report/instance/27&reset=1',
+          'url' => "civicrm/report/instance/{$rptIDs['bounce']}&reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,
@@ -1175,7 +1189,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Opened Report',
           'name' => 'Mass Email Opened Report',
-          'url' => 'civicrm/report/instance/29&reset=1',
+          'url' => "civicrm/report/instance/{$rptIDs['opened']}&reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -1189,7 +1203,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Clickthrough Report',
           'name' => 'Mass Email Clickthrough Report',
-          'url' => 'civicrm/report/instance/30&reset=1',
+          'url' => "civicrm/report/instance/{$rptIDs['clicks']}&reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -1203,7 +1217,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => Array(
           'label' => 'Mass Email Detail Report',
           'name' => 'Mass Email Detail Report',
-          'url' => 'civicrm/report/instance/57&reset=1',
+          'url' => "civicrm/report/instance/{$rptIDs['detail']}&reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
