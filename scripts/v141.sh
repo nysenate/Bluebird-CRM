@@ -89,3 +89,11 @@ sql="
   WHERE name = 'contact_view_options';
 "
 $execSql -i $instance -c "$sql" -q
+
+## 6798 set logging report perms
+sql="
+  UPDATE civicrm_report_instance
+  SET permission = 'access CiviReport'
+  WHERE report_id LIKE 'logging/contact%'
+"
+$execSql -i $instance -c "$sql" -q

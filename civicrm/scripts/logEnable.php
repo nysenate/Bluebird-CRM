@@ -43,6 +43,6 @@ CRM_Core_DAO::executeQuery('
 echo "setting logging report permissions...\n";
 CRM_Core_DAO::executeQuery("
   UPDATE civicrm_report_instance
-  SET permissions = 'access CiviReport'
+  SET permission = 'access CiviReport'
   WHERE report_id LIKE 'logging/contact%';
 ");

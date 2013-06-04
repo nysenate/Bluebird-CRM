@@ -54,6 +54,16 @@
      <access_arguments>access CiviMail;access CiviReport</access_arguments>
      <weight>695</weight>
   </item>
+  <!--6765-->
+  <item>
+    <path>civicrm/mailing</path>
+    <title>CiviMail</title>
+    <page_callback>CRM_Mailing_Page_Browse</page_callback>
+    <access_arguments>access CiviMail;create mailings;approve mailings;schedule mailings</access_arguments>
+    <page_type>1</page_type>
+    <weight>600</weight>
+    <component>CiviMail</component>
+  </item>
   
   <!--JIRA 7734-->
   <item>
