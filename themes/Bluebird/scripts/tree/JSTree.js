@@ -106,13 +106,18 @@
       }
     },
     writeOutputData: function(tID, parentTag) {
-      var tagName,
+      var hasChild, tagName,
         _this = this;
 
       tagName = new BBTagLabel(tID.id);
       this.addAutocompleteEntry(tID.id, tID.name);
-      this.addDTtag(tagName, tID.name, parentTag);
       if (tID.children.length > 0) {
+        hasChild = true;
+      } else {
+        hasChild = false;
+      }
+      this.addDTtag(tagName, tID.name, parentTag, hasChild);
+      if (hasChild) {
         cj.each(tID.children, function(id, cID) {
           var childTagName;
 
@@ -134,12 +139,21 @@
       }
       return this.output += "<dl class='lv-" + this.tagLvl + "' id='" + (tagName.addDD()) + "' data-name='" + name + "'>";
     },
-    addDTtag: function(tagName, name, parentTag) {
+    addDTtag: function(tagName, name, parentTag, hasChild) {
+      var treeButton;
+
+      if (hasChild) {
+        treeButton = "treeButton";
+      } else {
+        treeButton = "";
+      }
       if (parentTag == null) {
         parentTag = this.treeTop;
       }
       this.output += "<dt class='lv-" + this.tagLvl + " " + this.tagType + "-" + (tagName.passThru()) + "' id='" + (tagName.add()) + "' data-tagid='" + (tagName.passThru()) + "' data-name='" + name + "' data-parentid='" + parentTag + "'>";
-      this.output += "<div class='tag'><span class='name'>" + name + "</span></div>";
+      this.output += "<div class='tag'>";
+      this.output += "<div class='ddControl " + treeButton + "'></div>";
+      this.output += "<span class='name'>" + name + "</span></div>";
       return this.output += "</dt>";
     },
     addDLbottom: function() {
@@ -163,7 +177,8 @@
 
       tempObj = {
         "name": name,
-        "id": id
+        "id": id,
+        "type": this.treeTop
       };
       return this.autocompleteObj.push(tempObj);
     },
@@ -204,7 +219,8 @@
         fullSize: true,
         autocomplete: true,
         print: true,
-        showActive: true
+        showActive: true,
+        showStubs: false
       };
       callAjax = {
         url: '/civicrm/ajax/tag/tree',
@@ -508,6 +524,10 @@
           return console.log(terms);
         });
       });
+    },
+    autoCompleteEnd: function(instance) {
+      this.instance = instance;
+      return cj("#JSTree-ac").off("keydown");
     },
     enableDropdowns: function() {}
   };

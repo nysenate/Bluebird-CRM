@@ -1,0 +1,111 @@
+/*vars*/
+  $textColor:#000;
+  /*icons*/
+  $functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
+  $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+  $levelClassSlug: "lv";
+  /*boxwidth*/
+  $inputBoxWidthFull: 522px;
+  $inputBoxWidthShort: 285px;
+  $inputBox: 0px;
+
+/*mixins*/
+
+
+/* page size */
+
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
+@mixin functionIcon($setIconLink) {
+  background-image: url('#{$setIconLink}') !important;
+  cursor: pointer;
+}
+@mixin addTag {
+  .addTag {
+    @include functionIcon($functionIconLink); background-position: 0;
+  }
+}
+@mixin removeTag {
+  .removeTag{
+    @include functionIcon($functionIconLink); background-position: -17px 0px;
+  }
+}
+@mixin moveTag {
+  .moveTag {
+    @include functionIcon($functionIconLink); background-position: -34px 0px;
+  }
+}
+@mixin updateTag {
+  .updateTag{
+    @include functionIcon($functionIconLink); background-position: -50px 0px;
+  }
+}
+@mixin mergeTag {
+  .mergeTag{
+    @include functionIcon($functionIconLink); background-position: -66px 0px;
+  }
+}
+@mixin convertTag {
+  .convertTag{
+    @include functionIcon($functionIconLink); background-position: -107px 0px;
+  }
+}
+@mixin printTag {
+  .printTag{
+    @include functionIcon($defaultIconLink); background-position: -160px -96px;
+  }
+}
+@mixin closeButton {
+  .closeButton{
+    @include functionIcon($defaultIconLink); background-position: -97px -129px;
+  }
+}
+@mixin editIssueCodeButtons {
+  @include addTag;
+  @include removeTag;
+  @include moveTag;
+  @include updateTag;
+  @include mergeTag;
+}
+@mixin editKeywordButtons {
+  @include addTag;
+  @include removeTag;
+  @include updateTag;
+  @include mergeTag;
+  @include convertTag;
+}
+
+@mixin iterator {
+  @for $i from 1 through 10 {
+    dl.#{$levelClassSlug}-#{$i}
+    {
+    
+      width: 100% - (2*$i);
+      @if $i != 0
+      {
+        margin-left: 2%;
+      }
+      @if $i > 1
+      {
+        // display:none;
+      }
+      
+    }
+    dt.#{$levelClassSlug}-#{$i}
+    {
+      @if $i == 0
+      {
+        width: 485px;
+        margin: 10px 10px 0;
+        .treeButton {
+          display:none;
+        }
+        .tag {
+          font-size: 14px;
+          font-weight:bold;
+        }
+      }
+    }
+  }
+}
+
+@import "extends";

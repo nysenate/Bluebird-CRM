@@ -1,0 +1,29 @@
+.BBTree-menu {
+  width:100%;
+  .BBTree-settings{
+    float:left;
+    width:10%;
+    height:20px;
+    background-color:#ccc;
+  }
+  .BBTree-top {
+    height:20px;
+    border-bottom:1px solid #ccc;
+  }
+  .BBTree-bottom {
+    @extend .BBTree-top;
+
+  }
+  .BBTree-autocomplete, .BBTree-tabs{
+    float:left;
+    width:90%;
+  }
+  input#JSTree-ac {
+    border-style:none;
+    width: 100%;
+    padding:0px;
+    padding-left:3px;
+    margin:0px;
+    height:20px;
+  }
+}

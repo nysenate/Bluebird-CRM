@@ -108,9 +108,9 @@
       Search.prototype.search = function(term) {
         var arrayToFill, cachedQuery, currentArray;
 
-        console.log(this.searchIndex);
         if (term.indexOf(this.source[this.searchIndex].term)) {
-          if (term.length < this.source[this.searchIndex].term.length) {
+          if (term.length <= this.source[this.searchIndex].term.length) {
+            console.log("isrebuilding");
             this.rebuildTag(this.searchIndex);
           }
         }
@@ -183,7 +183,6 @@
 
     })();
     return $.fn.tagACInput = function(method) {
-      console.log(method);
       if (methods[method]) {
         return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
       } else if (typeof method === "object" || !method) {

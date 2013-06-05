@@ -4,7 +4,7 @@ fspath = require 'path'
 
 pathFiles  = [
   {path: 'themes/Bluebird/scripts/tree', outputName: "JSTree"}
-  {path: 'themes/Bluebird/scripts', outputName: "jquery.taggingAutocomplete"}
+  {path: 'themes/Bluebird/scripts/jquery.taggingAutocomplete', outputName: "jquery.taggingAutocomplete"}
 ]
 
 task 'sbuild', 'Build all files', ->

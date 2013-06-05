@@ -34,7 +34,7 @@
 <!-- <script type="text/javascript" src="/sites/all/modules/civicrm/drupal/../packages/jquery/plugins/jquery.tokeninput.js"></script> -->
   <script>var cj = jQuery.noConflict(true);</script>
   <script src="/sites/default/themes/Bluebird/scripts/tree/JSTree.js" type="text/javascript"></script>
-  <script src="/sites/default/themes/Bluebird/scripts/jquery.taggingAutocomplete.js" type="text/javascript"></script>
+  <script src="/sites/default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js" type="text/javascript"></script>
 
 </head>
 <body>

@@ -1,6 +1,7 @@
 # Name:    jquery.taggingAutocomplete.js
 # By:      Dan Pozzie
 # Updated: 18/5/2013
+# Version: 0.1.0
 # Purpose: Hook JQuery UI Autocomplete for tagging usages in a
 #          coffeescript environment, while moving the token-input
 #          aspect from civicrm's core jquery.tokeninput.js. Instead
@@ -105,9 +106,9 @@
       return @search(value)
 
     search: (term) ->
-      console.log @searchIndex
       if term.indexOf(@source[@searchIndex].term)
-        if term.length < @source[@searchIndex].term.length
+        if term.length <= @source[@searchIndex].term.length
+          console.log "isrebuilding"
           @rebuildTag @searchIndex
           
       currentArray = @ifNullArray @source[@searchIndex].tags,@searchIndex
@@ -137,7 +138,6 @@
       return $.grep @source, (query) =>
         return term == query.term
     rebuildTag: (index) ->
-
       @source[index] = {}
       @source[index].tags = @source[0].tags
     # don't entirely know if these are necessary?
@@ -157,7 +157,6 @@
  
   # Namespacing
   $.fn.tagACInput = (method) ->
-    console.log method
     if methods[method]
       methods[method].apply this, Array::slice.call(arguments, 1)
     else if typeof method is "object" or not method

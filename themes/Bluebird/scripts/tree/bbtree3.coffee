@@ -78,8 +78,9 @@ parseTree =
     # and snakes its way out
     tagName = new BBTagLabel(tID.id)
     @addAutocompleteEntry tID.id, tID.name
-    @addDTtag tagName,tID.name,parentTag
-    if tID.children.length > 0
+    if tID.children.length > 0 then hasChild = true else hasChild = false
+    @addDTtag tagName,tID.name,parentTag,hasChild
+    if hasChild
       cj.each tID.children, (id, cID) =>
         # if !/lcd/i.test(cID.name)
         childTagName = new BBTagLabel(cID.id)
@@ -95,11 +96,16 @@ parseTree =
     if !except 
       @tagLvl++
     @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
-  addDTtag: (tagName,name,parentTag) ->
+  addDTtag: (tagName,name,parentTag,hasChild) ->
+    if hasChild then treeButton = "treeButton" else treeButton = ""
+    # console.log "#{name} #{hasChild} #{treeButton} "
     if !parentTag?
       parentTag = @treeTop
     @output += "<dt class='lv-#{@tagLvl} #{@tagType}-#{tagName.passThru()}' id='#{tagName.add()}' data-tagid='#{tagName.passThru()}' data-name='#{name}' data-parentid='#{parentTag}'>"
-    @output += "<div class='tag'><span class='name'>#{name}</span></div>"
+    @output += "<div class='tag'>"
+
+    @output += "<div class='ddControl #{treeButton}'></div>"
+    @output += "<span class='name'>#{name}</span></div>"
     @output += "</dt>"
   addDLbottom: ->
     @tagLvl--
@@ -117,6 +123,8 @@ parseTree =
     tempObj = 
       "name": name
       "id": id
+      "type": @treeTop
+      # don't know if type is necessary to filter out? probably a good idea though
     @autocompleteObj.push tempObj
   # writes data to treeData
   writeData: () ->
@@ -178,6 +186,8 @@ class instance
       print: true
       #show all active tags
       showActive: true
+      #shows stubs on stub items
+      showStubs: false
     #ajax related settings
     callAjax =
       # if it's an activity, entity_type is different

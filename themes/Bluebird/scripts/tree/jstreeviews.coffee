@@ -147,6 +147,8 @@ treeBehavior =
         console.log terms
         
       )
+  autoCompleteEnd: (@instance) ->
+    cj("#JSTree-ac").off "keydown"
 
   enableDropdowns: () ->
 

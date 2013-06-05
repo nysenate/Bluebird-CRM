@@ -1,0 +1,16 @@
+.tag {
+  padding: 0px;
+  height: 20px;
+  line-height:20px;
+  overflow-y:hidden;
+  .ddControl {
+    height:20px; width:20px; float:left; margin:0px;
+    &.treeButton{
+      background: url($defaultIconLink) no-repeat -32px -15px;
+      cursor:pointer;
+      &.open {
+        background-position: -64px -15px;
+      }
+    }
+  }
+}
