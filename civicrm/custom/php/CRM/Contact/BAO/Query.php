@@ -453,13 +453,19 @@ class CRM_Contact_BAO_Query {
       $this->buildParamsLookup();
     }
 
+    //NYSS 6801 force primary flag during export if no location vals set
+    $forcePrimary = FALSE;
+    if (!CRM_Utils_Array::value('location', $this->_returnProperties) ||
+      !is_array($this->_returnProperties['location'])) {
+      $forcePrimary = TRUE;
+    }
+
     $this->_whereTables = $this->_tables;
 
     $this->selectClause();
     $this->_whereClause = $this->whereClause();
-
-    $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode);
-    $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode);
+    $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
+    $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode, $forcePrimary);//NYSS
 
     $this->openedSearchPanes(TRUE);
   }
@@ -778,8 +784,8 @@ class CRM_Contact_BAO_Query {
     $processed     = array();
     $index         = 0;
 
-    // CRM_Core_Error::debug( 'd', $this->_fields );
-    // CRM_Core_Error::debug( 'r', $this->_returnProperties );
+    // CRM_Core_Error::debug_var( 'd', $this->_fields );
+    // CRM_Core_Error::debug_var( 'r', $this->_returnProperties );
     $addressCustomFields = CRM_Core_BAO_CustomField::getFieldsForImport('Address');
     $addressCustomFieldIds = array();
 
@@ -2136,8 +2142,9 @@ class CRM_Contact_BAO_Query {
    * @return string the from clause
    * @access public
    * @static
+   * //NYSS 6801 force primary option
    */
-  static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1) {
+  static function fromClause(&$tables, $inner = NULL, $right = NULL, $primaryLocation = TRUE, $mode = 1, $forcePrimary = FALSE) {
 
     $from = ' FROM civicrm_contact contact_a';
     if (empty($tables)) {
@@ -2253,7 +2260,13 @@ class CRM_Contact_BAO_Query {
 
         case 'civicrm_email':
           //NYSS 4575 search by all emails; add is_primary condition in where clause optionally
-          $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id) ";
+          //NYSS 6801 forcePrimary option on export
+          if ( $forcePrimary ) {
+            $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1) ";
+          }
+          else {
+            $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id) ";
+          }
           continue;
 
         case 'civicrm_im':
@@ -4010,8 +4023,8 @@ civicrm_relationship.start_date > {$today}
     $emailPresent = $emailPrimary = false;
     foreach ($this->_params as $values) {
       list($name, $op, $value, $_, $_) = $values;
-      if ( $name == 'email' && $value ) { $emailPresent = true; }
-      if ( $name == 'email_primary' && $value == 1 ) { $emailPrimary = true; }
+      if ( $name == 'email' && $value ) { $emailPresent = TRUE; }
+      if ( $name == 'email_primary' && $value == 1 ) { $emailPrimary = TRUE; }
     }
     if ( $emailPresent && $emailPrimary ) {
       if ( !$additionalWhereClause ) {
