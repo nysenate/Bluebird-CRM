@@ -155,9 +155,9 @@ treeBehavior =
     cj(".JSTree .treeButton").off "click" 
     cj(".JSTree .treeButton").on "click", ->
       tagLabel = cj(this).parent().parent()
-      console.log tagLabel.siblings("dl")
-      tagLabel.siblings("dl").slideToggle "200", =>
-        tagLabel.parent().toggleClass("open")
+      # console.log tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}")
+      tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}").slideToggle "200", =>
+        tagLabel.toggleClass("open")
 
 
 ###

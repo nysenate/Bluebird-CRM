@@ -532,9 +532,8 @@
           _this = this;
 
         tagLabel = cj(this).parent().parent();
-        console.log(tagLabel.siblings("dl"));
-        return tagLabel.siblings("dl").slideToggle("200", function() {
-          return tagLabel.parent().toggleClass("open");
+        return tagLabel.siblings("dl#tagDropdown_" + (tagLabel.data('tagid'))).slideToggle("200", function() {
+          return tagLabel.toggleClass("open");
         });
       });
     }
