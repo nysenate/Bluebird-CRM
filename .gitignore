@@ -25,3 +25,4 @@ scripts/test.sh
 local/*
 .sass-cache
 modules/nyss_LCD
+civicrm/scripts/lcd.php
