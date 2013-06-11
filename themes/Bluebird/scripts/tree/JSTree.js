@@ -79,13 +79,11 @@
           _this.treeTop = id;
           tagName = new BBTagLabel(id);
           _this.addTabName(cID.name);
+          _this.output += "<dl class='top-" + cID.id + "'>";
           cj.each(cID.children, function(id, tID) {
-            var childTagName;
-
-            childTagName = new BBTagLabel(tID.id);
-            _this.addDLtop(childTagName, tID.name);
             return _this.writeOutputData(tID);
           });
+          _this.output += "</dl>";
           return _this.writeData();
         }
       });
@@ -117,12 +115,9 @@
         hasChild = false;
       }
       this.addDTtag(tagName, tID.name, parentTag, hasChild);
+      this.addDLtop(tagName, tID.name);
       if (hasChild) {
         cj.each(tID.children, function(id, cID) {
-          var childTagName;
-
-          childTagName = new BBTagLabel(cID.id);
-          _this.addDLtop(childTagName, cID.name);
           return _this.writeOutputData(cID, tID.id);
         });
         return this.addDLbottom();
@@ -133,15 +128,15 @@
     addTabName: function(name) {
       return _treeData.treeNames.push(name);
     },
-    addDLtop: function(tagName, name, except) {
+    addDLtop: function(tagName, name) {
+      return this.output += "<dl class='lv-" + this.tagLvl + "' id='" + (tagName.addDD()) + "' data-name='" + name + "'>";
+    },
+    addDTtag: function(tagName, name, parentTag, hasChild, except) {
+      var treeButton;
+
       if (!except) {
         this.tagLvl++;
       }
-      return this.output += "<dl class='lv-" + this.tagLvl + "' id='" + (tagName.addDD()) + "' data-name='" + name + "'>";
-    },
-    addDTtag: function(tagName, name, parentTag, hasChild) {
-      var treeButton;
-
       if (hasChild) {
         treeButton = "treeButton";
       } else {
@@ -483,7 +478,8 @@
       this.displaySettings = this.instance.get('displaySettings');
       this.writeTabs();
       this.cjInstanceSelector.html(_treeData.html[this.displaySettings.defaultTree]);
-      return treeBehavior.autoCompleteStart(this.instance);
+      treeBehavior.autoCompleteStart(this.instance);
+      return treeBehavior.enableDropdowns();
     };
 
     View.prototype.writeTabs = function() {
@@ -529,7 +525,19 @@
       this.instance = instance;
       return cj("#JSTree-ac").off("keydown");
     },
-    enableDropdowns: function() {}
+    enableDropdowns: function() {
+      cj(".JSTree .treeButton").off("click");
+      return cj(".JSTree .treeButton").on("click", function() {
+        var tagLabel,
+          _this = this;
+
+        tagLabel = cj(this).parent().parent();
+        console.log(tagLabel.siblings("dl"));
+        return tagLabel.siblings("dl").slideToggle("200", function() {
+          return tagLabel.parent().toggleClass("open");
+        });
+      });
+    }
   };
 
   /*

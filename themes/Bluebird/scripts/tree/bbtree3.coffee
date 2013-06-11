@@ -62,11 +62,10 @@ parseTree =
         # @addDTtag tagName,cID.name
         # loops through each child.
         @addTabName (cID.name)
+        @output += "<dl class='top-#{cID.id}'>"
         cj.each cID.children, (id, tID) =>
-          childTagName = new BBTagLabel(tID.id)
-          @addDLtop childTagName,tID.name
           @writeOutputData tID 
-        # @addDLbottom()
+        @output += "</dl>"
         @writeData()
     console.log "Loaded Data"
   isItemMarked: (value,type) ->
@@ -80,11 +79,10 @@ parseTree =
     @addAutocompleteEntry tID.id, tID.name
     if tID.children.length > 0 then hasChild = true else hasChild = false
     @addDTtag tagName,tID.name,parentTag,hasChild
+    @addDLtop tagName,tID.name
     if hasChild
       cj.each tID.children, (id, cID) =>
         # if !/lcd/i.test(cID.name)
-        childTagName = new BBTagLabel(cID.id)
-        @addDLtop childTagName,cID.name
         @writeOutputData cID, tID.id
       @addDLbottom() 
     else
@@ -92,11 +90,11 @@ parseTree =
   addTabName: (name) ->
     _treeData.treeNames.push(name)
   # helper functions for writing tag names
-  addDLtop: (tagName,name,except) ->
+  addDLtop: (tagName,name) ->
+    @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
+  addDTtag: (tagName,name,parentTag,hasChild,except) ->
     if !except 
       @tagLvl++
-    @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
-  addDTtag: (tagName,name,parentTag,hasChild) ->
     if hasChild then treeButton = "treeButton" else treeButton = ""
     # console.log "#{name} #{hasChild} #{treeButton} "
     if !parentTag?

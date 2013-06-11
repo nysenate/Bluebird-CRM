@@ -124,6 +124,7 @@ class View
     @writeTabs()
     @cjInstanceSelector.html(_treeData.html[@displaySettings.defaultTree])
     treeBehavior.autoCompleteStart(@instance)
+    treeBehavior.enableDropdowns()
   writeTabs: () ->
     output = ""
     for a in _treeData.treeNames
@@ -151,6 +152,12 @@ treeBehavior =
     cj("#JSTree-ac").off "keydown"
 
   enableDropdowns: () ->
+    cj(".JSTree .treeButton").off "click" 
+    cj(".JSTree .treeButton").on "click", ->
+      tagLabel = cj(this).parent().parent()
+      console.log tagLabel.siblings("dl")
+      tagLabel.siblings("dl").slideToggle "200", =>
+        tagLabel.parent().toggleClass("open")
 
 
 ###
