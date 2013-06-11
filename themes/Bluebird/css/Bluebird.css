@@ -1710,3 +1710,12 @@ div#contact-summary div#contactTopBar {
 .crm-report-log_civicrm_entity_log_action .crm-tooltip-wrapper {
   min-width: 500px;
 }
+
+.dataTables_processing {
+  background-color: #B5EAAA;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
+  border-color: #8BB381;
+  color: #333;
+}
