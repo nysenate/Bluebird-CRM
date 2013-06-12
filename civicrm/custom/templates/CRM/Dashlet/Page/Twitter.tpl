@@ -61,7 +61,7 @@
 	};
 	
 	$(document).ready(function() {
-	$.getJSON("http://twitter.com/statuses/user_timeline.json?count=6&screen_name=NYSenate&callback=?",
+	$.getJSON("https://api.twitter.com/1.1/statuses/user_timeline.json?count=6&screen_name=NYSenate&callback=?",
 	function(data){
 	$.each(data, function(i,item){
 		$("#tweets").append('<div class="tweet">'+ crm_add_twitter_links(item.text) +'</div>');
