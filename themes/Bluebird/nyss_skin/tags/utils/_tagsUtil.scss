@@ -84,9 +84,9 @@
       {
         margin-left: 2%;
       }
-      @if $i > 1
+      @if $i > 0
       {
-        // display:none;
+        display:none;
       }
       
     }
