@@ -39,11 +39,12 @@ cdb="$civi_db_prefix$db_basename"
 
 ## 6698 data cleanup
 ## remove all bulk email activities
-echo "removing all bulk email activity records..."
+echo "removing all bulk email activity records and disabling activity type..."
 sql="
   SELECT @at:=id FROM civicrm_option_group WHERE name = 'activity_type';
   SELECT @be:=value FROM civicrm_option_value WHERE option_group_id = @at AND name = 'Bulk Email';
   DELETE FROM civicrm_activity WHERE activity_type_id = @be;
+  UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @at AND value = @be;
 "
 $execSql -i $instance -c "$sql" -q
 
