@@ -156,30 +156,18 @@ treeBehavior =
   enableDropdowns: () ->
     cj(".JSTree .treeButton").off "click" 
     cj(".JSTree .treeButton").on "click", ->
-      set = bbLocalStorage("tagViewSettings" , "something")
-      console.log "set #{set}"
       tagLabel = cj(this).parent().parent()
       tagid = tagLabel.data('tagid')
       # console.log tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}")
       tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
-        tagLabel.toggleClass "open"
         if tagLabel.is(".open")
-          _viewSettings["openTags"][tagid] = true
+          _viewSettings["openTags"][tagid] = false
         else
-          _viewSettings["openTags"][tagid] = null
-      received = bbLocalStorage("tagViewSettings")
-      console.dir "received", received
+          _viewSettings["openTags"][tagid] = true
+        tagLabel.toggleClass "open"
+        bbUtils.localStorage("tagViewSettings", _viewSettings["openTags"])
       
 
-# this would be good for a browser utility belt
-bbLocalStorage = (key, value)->
-  return false if !localStorage
-  if value?
-    localStorage[key] = value
-    return true
-  else
-    # isn't working here?
-    return localStorage[key]
 
 
 _viewSettings=
