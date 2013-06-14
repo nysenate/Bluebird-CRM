@@ -27,17 +27,13 @@
     minLength: 3
     # disabled: true
     delay: 100
+
   _jqcache =
     samplequery: ""
 
   _tags =
     input: "autocomplete-input"
 
-    
-  # You *may* rely on internal, private objects:
-  _flag = false
-  _cache = {} 
-    
   # public methods - must return $this for chaining
   methods =
     init: (options) ->
@@ -62,7 +58,7 @@
 
     turnDataLocation: ()->
       if _settings.jqDataReference?
-        _settings.source = cj(_settings.jqDataReference).data("autocomplete")
+        _settings.source = $(_settings.jqDataReference).data("autocomplete")
       # else if _settings.ajaxLocation?
         # return _settings.ajaxLocation
       else

@@ -28,6 +28,8 @@
  * We will unify the two files in a future release
  *}
 packages/jquery/jquery.min.js
+{*NYSS Bump*}
+packages/jquery/plugins/jquery.bbUtilsConflict.js
 packages/jquery/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js
 packages/jquery/jquery-ui-1.8.16/css/smoothness/jquery-ui-1.8.16.custom.css
 
