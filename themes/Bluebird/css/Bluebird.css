@@ -1719,3 +1719,6 @@ div#contact-summary div#contactTopBar {
   border-color: #8BB381;
   color: #333;
 }
+.dataTables_wrapper {
+  overflow: auto;
+}
