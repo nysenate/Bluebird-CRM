@@ -98,3 +98,23 @@ sql="
   WHERE report_id LIKE 'logging/contact%'
 "
 $execSql -i $instance -c "$sql" -q
+
+## 6833 make sure mailing component settings are set
+sql="
+  DELETE FROM civicrm_setting
+  WHERE group_name = 'Mailing Preferences'
+    AND name IN ( 'profile_double_optin', 'profile_add_to_group_double_optin', 'track_civimail_replies',
+      'civimail_workflow', 'civimail_server_wide_lock', 'civimail_multiple_bulk_emails', 'include_message_id',
+      'write_activity_record' );
+  INSERT INTO civicrm_setting (group_name, name, value, domain_id, is_domain, created_date, created_id)
+  VALUES
+    ('Mailing Preferences', 'profile_double_optin', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'profile_add_to_group_double_optin', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'track_civimail_replies', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_workflow', 'i:1;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_server_wide_lock', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_multiple_bulk_emails', 'i:1;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'include_message_id', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'write_activity_record', 'i:0;', 1, 1, NOW(), 1);
+"
+$execSql -i $instance -c "$sql" -q
