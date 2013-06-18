@@ -1328,7 +1328,8 @@ AND civicrm_contact.is_opt_out =0";
    * domain and mailing tokens
    *
    */
-  function tokenReplace(&$mailing) {
+  //NYSS 6698
+  public static function tokenReplace(&$mailing) {
     $domain = CRM_Core_BAO_Domain::getDomain();
 
     foreach (array(
@@ -2563,7 +2564,8 @@ SELECT  $mailing.id as mailing_id
    * @return $report array content/component.
    * @access public
    */
-  public function getMailingContent(&$report, &$form, $isSMS = FALSE) {
+  //NYSS 6698
+  public static function getMailingContent(&$report, &$form, $isSMS = FALSE) {
     $htmlHeader = $textHeader = NULL;
     $htmlFooter = $textFooter = NULL;
 
@@ -2771,6 +2773,114 @@ AND        m.id = %1
 ";
     $params = array( 1 => array( $mid, 'Integer' ) );
     return CRM_Core_DAO::singleValueQuery($sql, $params);
+  }
+
+  //NYSS 6698
+  /**
+   * This function is a wrapper for ajax activity selector
+   *
+   * @param  array   $params associated array for params record id.
+   *
+   * @return array   $contactActivities associated array of contact activities
+   * @access public
+   */
+  public static function getContactMailingSelector(&$params) {
+    // format the params
+    $params['offset']   = ($params['page'] - 1) * $params['rp'];
+    $params['rowCount'] = $params['rp'];
+    $params['sort']     = CRM_Utils_Array::value('sortBy', $params);
+    $params['caseId']   = NULL;
+    //$context            = CRM_Utils_Array::value('context', $params);//NYSS 6698
+
+    // get contact mailings
+    $mailings = CRM_Mailing_BAO_Mailing::getContactMailings($params);
+
+    // add total
+    $params['total'] = CRM_Mailing_BAO_Mailing::getContactMailingsCount($params);
+
+    //NYSS 6698
+    if ( !empty($mailings) ) {
+      $openCounts = CRM_Mailing_Event_BAO_Opened::getMailingTotalCount(array_keys($mailings));
+      $clickCounts = CRM_Mailing_Event_BAO_TrackableURLOpen::getMailingTotalCount(array_keys($mailings));
+      //CRM_Core_Error::debug_var('openCounts', $openCounts);
+    }
+
+    // format params and add links
+    $contactMailings = array();
+    foreach ($mailings as $mailingId => $values) {
+      $contactMailings[$mailingId]['subject'] = $values['subject'];
+      $contactMailings[$mailingId]['start_date'] = CRM_Utils_Date::customFormat($values['start_date']);
+      //NYSS 6698
+      $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
+        "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=delivered&context=mailing");
+
+      $contactMailings[$mailingId]['mailing_creator'] = CRM_Utils_System::href(
+        $values['creator_name'],
+        'civicrm/contact/view',
+        "reset=1&cid={$values['creator_id']}");
+
+      //NYSS 6698
+      $contactMailings[$mailingId]['openstats'] = "Opens: ".$openCounts[$values['mailing_id']].
+        "<br />Clicks: ".$clickCounts[$values['mailing_id']];
+
+      $actionLinks = array(
+        CRM_Core_Action::VIEW => array(
+          'name'  => ts('View'),
+          'url'   => 'civicrm/mailing/view',
+          'qs'    => "reset=1&id={$values['mailing_id']}",
+          'title' => ts('View Mailing'),
+          'class' => 'crm-mailing-view',
+        ),
+        CRM_Core_Action::BROWSE => array(
+          'name' => ts('Mailing Report'),
+          'url' => 'civicrm/mailing/report',
+          'qs' => "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&context=mailing",
+          'title' => ts('View Mailing Report'),
+        )
+      );
+
+      $contactMailings[$mailingId]['links'] = CRM_Core_Action::formLink($actionLinks);
+    }
+
+    return $contactMailings;
+  }
+
+  /**
+   * Function to retrieve contact mailing
+   *
+   * @param array $params associated array
+   *
+   * @return array of mailings for a contact
+   *
+   * @static
+   * @access public
+   */
+  static public function getContactMailings(&$params) {
+    $params['version'] = 3;
+    //NYSS 6698
+    $params['offset']  = ($params['page'] - 1) * $params['rp'];
+    $params['limit']   = $params['rp'];
+    $params['sort']    = CRM_Utils_Array::value('sortBy', $params);
+
+    $result = civicrm_api('MailingContact', 'get', $params);
+    return $result['values'];
+  }
+
+  /**
+   * Function to retrieve contact mailing count
+   *
+   * @param array $params associated array
+   *
+   * @return int count of mailings for a contact
+   *
+   * @static
+   * @access public
+   */
+  static public function getContactMailingsCount(&$params) {
+    $params['version'] = 3;
+    //NYSS 6698
+    $result = civicrm_api('MailingContact', 'getcount', $params);
+    return $result['values']['count'];
   }
 }
 

@@ -36,19 +36,6 @@
   cj('#inline-religion').appendTo(cj('#Demographics .crm-inline-edit-form .crm-clear'));
   cj('#Demographics span.crm-clear-link a').text('clear');
 
-  //expose other gender
-  /*cj('input[name=gender_id]').click(function(){
-    if (cj(this).val() == '4') {
-      cj('label[for=civicrm_gender_Other_4]').next('span.crm-clear-link').after(cj('#inline-other-gender').show());
-    }
-    else {
-      cj('#inline-other-gender').hide();
-    }
-  });
-  cj('label[for=civicrm_gender_Other_4]').next('span.crm-clear-link').click(function(){
-    cj('#inline-other-gender').hide();
-  });*/
-
   //hide gender
   cj('input#civicrm_gender_Female_1').parent('.crm-content').prev('.crm-label').hide();
   cj('input#civicrm_gender_Female_1').parent('.crm-content').hide();
@@ -97,6 +84,16 @@
 
   cj("input#current_employer").click( function( ) {
     cj("input#current_employer_id").val('');
+  });
+
+  //6803 alter comm pref when deceased
+  //when dem block is saved, IF is_deceased is checked, alter UI
+  cj('#_qf_Demographics_upload').click(function(){
+    if ( cj('#is_deceased').is(':checked') ) {
+      cj('div.crm-contact-privacy_values').html('Do not phone<br \>Do not email<br \>Do not postal mail<br \>Do not sms<br \>Undeliverable: Do not mail<br \>No Bulk Emails (User Opt Out)');
+      cj('div.crm-contact-preferred_communication_method_display').html('');
+      window.alert('Communication preferences have been updated to reflect the contact is deceased.');
+    }
   });
 
 </script>

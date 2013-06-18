@@ -54,6 +54,16 @@
      <access_arguments>access CiviMail;access CiviReport</access_arguments>
      <weight>695</weight>
   </item>
+  <!--6765-->
+  <item>
+    <path>civicrm/mailing</path>
+    <title>CiviMail</title>
+    <page_callback>CRM_Mailing_Page_Browse</page_callback>
+    <access_arguments>access CiviMail;create mailings;approve mailings;schedule mailings</access_arguments>
+    <page_type>1</page_type>
+    <weight>600</weight>
+    <component>CiviMail</component>
+  </item>
   
   <!--JIRA 7734-->
   <item>
@@ -196,5 +206,16 @@
     <title>Delete file</title>
     <access_arguments>access CiviCRM</access_arguments>
     <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
+  </item>
+
+  <!--6698-->
+  <item>
+    <path>civicrm/contact/view/mailing</path>
+    <page_callback>CRM_Mailing_Page_Tab</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/contactmailing</path>
+    <page_callback>CRM_Mailing_Page_AJAX::getContactMailings</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

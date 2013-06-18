@@ -761,8 +761,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $input['count'] = FALSE;
     list($sqlClause, $params) = self::getActivitySQLClause($input);
 
+    //NYSS 6720 remove DISTINCT clause; no longer necessary
     $query = "{$insertSQL}
-       SELECT DISTINCT tbl.*  from ( {$sqlClause} )
+       SELECT tbl.*  from ( {$sqlClause} )
 as tbl ";
 
     //filter case activities - CRM-5761
@@ -888,11 +889,9 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
       }
       else {
         $values[$activityID]['recipients'] = ts('(recipients)');
-        $values[$activityID]['mailingId'] = '';
+        $values[$activityID]['mailingId'] = false;//NYSS 6698
         if ($accessCiviMail && in_array($dao->source_record_id, $mailingIDs)) {
-          $values[$activityID]['mailingId'] = CRM_Utils_System::url('civicrm/mailing/report',
-            "mid={$dao->source_record_id}&reset=1&cid={$dao->source_contact_id}&context=activitySelector"
-          );
+          $values[$activityID]['mailingId'] = true;//NYSS 6698
         }
       }
 
@@ -988,9 +987,10 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
 
     //filter case activities - CRM-5761
     $components = self::activityComponents();
+    //NYSS 6720 remove DISTINCT as no longer necessary
     if (!in_array('CiviCase', $components)) {
       $query = "
-   SELECT   COUNT(DISTINCT(tbl.activity_id)) as count
+   SELECT   COUNT(tbl.activity_id) as count
      FROM   ( {$sqlClause} ) as tbl
 LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.activity_id )
     WHERE   civicrm_case_activity.id IS NULL";
@@ -1033,8 +1033,13 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
       $params = array(1 => array($input['contact_id'], 'Integer'));
     }
 
+    //NYSS 6720 get opt group, add to common clauses, and remove option_group join
+    $optGrp = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
+
     $commonClauses = array(
-      "civicrm_option_group.name = 'activity_type'",
+      //NYSS 6720
+      //"civicrm_option_group.name = 'activity_type'",
+      "civicrm_option_value.option_group_id = {$optGrp}",
       "civicrm_activity.is_deleted = 0",
       "civicrm_activity.is_current_revision =  1",
       "civicrm_activity.is_test = 0",
@@ -1106,6 +1111,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
       $includeCaseActivities = TRUE;
     }
 
+    //NYSS 6720 change UNION ALL to UNION throughout
 
     // build main activity table select clause
     $sourceSelect = '';
@@ -1130,20 +1136,20 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                       source_contact_id = sourceContact.id ';
     }
 
+    //NYSS 6720 remove option_group join
     $sourceClause = "
             SELECT civicrm_activity.id as activity_id
             {$sourceSelect}
             from civicrm_activity
             left join civicrm_option_value on
                 civicrm_activity.activity_type_id = civicrm_option_value.value
-            left join civicrm_option_group on
-                civicrm_option_group.id = civicrm_option_value.option_group_id
             {$sourceJoin}
             where
                     {$sourceWhere}
                 AND $commonClause
         ";
 
+    //NYSS 6720 remove option_group join
     // build target activity table select clause
     $targetAssigneeSelect = '';
 
@@ -1170,14 +1176,13 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 civicrm_activity.id = at.activity_id and {$targetWhere}
             left join civicrm_option_value on
                 civicrm_activity.activity_type_id = civicrm_option_value.value
-            left join civicrm_option_group on
-                civicrm_option_group.id = civicrm_option_value.option_group_id
             {$sourceJoin}
             where
                     {$targetWhere}
                 AND $commonClause
         ";
 
+    //NYSS 6720 remove option_group join
     // build assignee activity table select clause
     $assigneeClause = "
             SELECT civicrm_activity.id as activity_id
@@ -1187,8 +1192,6 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 civicrm_activity.id = aa.activity_id and {$assigneeWhere}
             left join civicrm_option_value on
                 civicrm_activity.activity_type_id = civicrm_option_value.value
-            left join civicrm_option_group on
-                civicrm_option_group.id = civicrm_option_value.option_group_id
             {$sourceJoin}
             where
                     {$assigneeWhere}
@@ -1216,8 +1219,9 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 civicrm_activity.campaign_id as campaign_id';
       }
 
+      //NYSS 6720 remove option_group join
       $caseClause = "
-                union all
+                UNION
 
                 SELECT civicrm_activity.id as activity_id
                 {$caseSelect}
@@ -1230,8 +1234,6 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                     civicrm_case_contact.case_id = civicrm_case.id and {$caseWhere}
                 left join civicrm_option_value on
                     civicrm_activity.activity_type_id = civicrm_option_value.value
-                left join civicrm_option_group on
-                    civicrm_option_group.id = civicrm_option_value.option_group_id
                 {$sourceJoin}
                 where
                         {$caseWhere}
@@ -1244,7 +1246,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
             ";
     }
 
-    $returnClause = " {$sourceClause}  union all {$targetClause} union all {$assigneeClause} {$caseClause} ";
+    $returnClause = " {$sourceClause} UNION {$targetClause} UNION {$assigneeClause} {$caseClause} ";
 
     return array($returnClause, $params);
   }
@@ -2518,7 +2520,8 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
         }
 
         if (isset($values['mailingId']) && !empty($values['mailingId'])) {
-          $contactActivities[$activityId]['target_contact'] = CRM_Utils_System::href($values['recipients'], 'civicrm/mailing/report', "mid={$values['source_record_id']}&reset=1&cid={$values['source_contact_id']}&context=activitySelector");
+          //NYSS 6698
+          $contactActivities[$activityId]['target_contact'] = CRM_Utils_System::href($values['recipients'], 'civicrm/mailing/report', "mid={$values['source_record_id']}&reset=1&cid={$params['contact_id']}&context=activitySelector");
         }
         elseif (CRM_Utils_Array::value('recipients', $values)) {
           $contactActivities[$activityId]['target_contact'] = $values['recipients'];

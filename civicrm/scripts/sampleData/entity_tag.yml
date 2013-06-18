@@ -1,0 +1,5532 @@
+-
+  entity_table: "civicrm_activity"
+  entity_id: 32
+  tag_id: 308
+-
+  entity_table: "civicrm_activity"
+  entity_id: 33
+  tag_id: 308
+-
+  entity_table: "civicrm_activity"
+  entity_id: 34
+  tag_id: 309
+-
+  entity_table: "civicrm_activity"
+  entity_id: 41
+  tag_id: 309
+-
+  entity_table: "civicrm_case"
+  entity_id: 2
+  tag_id: 310
+-
+  entity_table: "civicrm_contact"
+  entity_id: 4
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 4
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 5
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 5
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 6
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 6
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 7
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 7
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 8
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 8
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 9
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 9
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 11
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 11
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 11
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 11
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 11
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 12
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 12
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 12
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 12
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 12
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 13
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 13
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 20
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 21
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 21
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 27
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 27
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 28
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 28
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 29
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 29
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 30
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 30
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 35
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 35
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 38
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 38
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 39
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 39
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 40
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 40
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 41
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 41
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 42
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 42
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 45
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 45
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 46
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 46
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 47
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 47
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 48
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 48
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 49
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 49
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 50
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 50
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 51
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 51
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 60
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 60
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 61
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 61
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 62
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 62
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 63
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 63
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 64
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 64
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 65
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 65
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 66
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 66
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 67
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 67
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 68
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 68
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 69
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 69
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 70
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 70
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 71
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 71
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 72
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 72
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 73
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 73
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 74
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 74
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 75
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 75
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 76
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 76
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 77
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 77
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 78
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 78
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 79
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 79
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 80
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 80
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 81
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 81
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 82
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 82
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 83
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 83
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 84
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 84
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 85
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 85
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 86
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 86
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 89
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 89
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 90
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 90
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 91
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 91
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 92
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 92
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 93
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 93
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 94
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 94
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 95
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 95
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 96
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 96
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 97
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 97
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 98
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 98
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 99
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 99
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 102
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 102
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 103
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 103
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 104
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 104
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 105
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 105
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 108
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 108
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 109
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 109
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 110
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 110
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 111
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 111
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 112
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 112
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 113
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 113
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 114
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 114
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 116
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 116
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 117
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 117
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 118
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 118
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 119
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 119
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 120
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 120
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 121
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 121
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 122
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 122
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 123
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 123
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 124
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 124
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 125
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 125
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 126
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 126
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 127
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 127
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 128
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 128
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 129
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 129
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 130
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 130
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 131
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 131
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 132
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 132
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 133
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 133
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 135
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 135
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 135
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 135
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 135
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 136
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 136
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 137
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 137
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 139
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 139
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 139
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 140
+  tag_id: 19
+-
+  entity_table: "civicrm_contact"
+  entity_id: 141
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 141
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 142
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 142
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 143
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 143
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 144
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 144
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 145
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 145
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 146
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 146
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 147
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 147
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 148
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 148
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 149
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 149
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 150
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 150
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 151
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 151
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 152
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 152
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 157
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 157
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 158
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 158
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 159
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 159
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 160
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 160
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 161
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 161
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 162
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 162
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 163
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 163
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 164
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 164
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 165
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 165
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 166
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 166
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 169
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 169
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 172
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 172
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 173
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 173
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 174
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 174
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 175
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 175
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 176
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 176
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 177
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 177
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 178
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 178
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 179
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 179
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 180
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 180
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 181
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 181
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 182
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 182
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 183
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 183
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 184
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 184
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 185
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 185
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 186
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 186
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 187
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 187
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 188
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 188
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 189
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 189
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 190
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 190
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 191
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 191
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 192
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 192
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 193
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 193
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 194
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 194
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 195
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 195
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 196
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 196
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 197
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 197
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 199
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 199
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 201
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 201
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 202
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 202
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 203
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 203
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 204
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 204
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 205
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 205
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 206
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 206
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 207
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 207
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 208
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 208
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 209
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 209
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 210
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 210
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 211
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 211
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 212
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 212
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 213
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 213
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 214
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 214
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 215
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 215
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 216
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 216
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 217
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 217
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 218
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 218
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 219
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 219
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 220
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 220
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 221
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 221
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 222
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 222
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 223
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 223
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 225
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 225
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 225
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 225
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 225
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 226
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 226
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 226
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 226
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 226
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 229
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 229
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 230
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 230
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 231
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 231
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 232
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 232
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 233
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 233
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 234
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 234
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 235
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 235
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 236
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 236
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 236
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 236
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 237
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 237
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 238
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 238
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 239
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 239
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 240
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 241
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 241
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 242
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 242
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 243
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 243
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 244
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 244
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 245
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 245
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 246
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 246
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 247
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 247
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 248
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 248
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 249
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 249
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 250
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 250
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 251
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 251
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 252
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 252
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 253
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 253
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 254
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 254
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 255
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 255
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 256
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 256
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 257
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 257
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 258
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 258
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 259
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 259
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 260
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 260
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 261
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 261
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 262
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 262
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 263
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 263
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 264
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 264
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 265
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 265
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 266
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 266
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 267
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 267
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 270
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 270
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 271
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 271
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 272
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 272
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 275
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 275
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 276
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 276
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 276
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 276
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 276
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 277
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 277
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 277
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 277
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 277
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 278
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 281
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 281
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 282
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 282
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 283
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 283
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 284
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 284
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 285
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 285
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 286
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 286
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 287
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 287
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 290
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 290
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 291
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 291
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 293
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 293
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 293
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 293
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 293
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 301
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 354
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 354
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 355
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 355
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 356
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 356
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 357
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 357
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 358
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 358
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 360
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 360
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 361
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 361
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 362
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 362
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 366
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 367
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 367
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 368
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 368
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 371
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 371
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 372
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 372
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 377
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 377
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 378
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 378
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 379
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 379
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 380
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 380
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 381
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 381
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 382
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 382
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 384
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 384
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 387
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 387
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 388
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 388
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 392
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 392
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 393
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 393
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 394
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 394
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 395
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 395
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 395
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 395
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 395
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 397
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 397
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 398
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 398
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 401
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 401
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 402
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 402
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 403
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 403
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 404
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 404
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 405
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 405
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 406
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 406
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 407
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 407
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 408
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 408
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 409
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 409
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 410
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 410
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 411
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 411
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 412
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 412
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 413
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 413
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 416
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 416
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 417
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 417
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 418
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 418
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 418
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 418
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 418
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 419
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 419
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 419
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 419
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 419
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 420
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 420
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 421
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 421
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 424
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 424
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 589
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 589
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 590
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 590
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 661
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 661
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 662
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 662
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 663
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 663
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 664
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 664
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 665
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 665
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 666
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 666
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 667
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 667
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 668
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 668
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 669
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 669
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 670
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 670
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 671
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 671
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 672
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 672
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 673
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 673
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 674
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 674
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 675
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 675
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 676
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 678
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 678
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 679
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 679
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 684
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 684
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 685
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 685
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 686
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 686
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 899
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 899
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 900
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 900
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 901
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 901
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 906
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 936
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 936
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 994
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1035
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1073
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1073
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1073
+  tag_id: 22
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1080
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1080
+  tag_id: 22
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1081
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1081
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1081
+  tag_id: 22
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1177
+  tag_id: 35
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1177
+  tag_id: 40
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1330
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1330
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1386
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1386
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1387
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1387
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1388
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1388
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1389
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1389
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1391
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1391
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1392
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1392
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1393
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1393
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1394
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1394
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1395
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1395
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1396
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1396
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1398
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1398
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1399
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1399
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1400
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1400
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1401
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1401
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1404
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1404
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1405
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1405
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1406
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1406
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1407
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1407
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1408
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1408
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1409
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1409
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1411
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1411
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1412
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1412
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1413
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1413
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1414
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1414
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1415
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1415
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1416
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1416
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1417
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1417
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1418
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1418
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1419
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1419
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1420
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1420
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1421
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1421
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1422
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1422
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1423
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1423
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1426
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1426
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1427
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1427
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1428
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1428
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1429
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1429
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1430
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1430
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1431
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1431
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1432
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1432
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1433
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1433
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1435
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1435
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1436
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1436
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1437
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1437
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1438
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1438
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1439
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1439
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1443
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1443
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1444
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1444
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1445
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1445
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1446
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1446
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1447
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1447
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1448
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1449
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1449
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1449
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1449
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1449
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1450
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1451
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1451
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1452
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1452
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1453
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1453
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1454
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1454
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1455
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1455
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1456
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1456
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1457
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1457
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1459
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1459
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1460
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1460
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1461
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1461
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1462
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1462
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1463
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1463
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1464
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1464
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1465
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1465
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1466
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1466
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1467
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1467
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1468
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1468
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1469
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1469
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1470
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1470
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1471
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1471
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1472
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1472
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1473
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1473
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1474
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1474
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1475
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1475
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1476
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1476
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1477
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1477
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1478
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1478
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1479
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1479
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1480
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1480
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1483
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1483
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1484
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1484
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1485
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1485
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1486
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1486
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1487
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1487
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1488
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1488
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1489
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1489
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1490
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1490
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1491
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1491
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1492
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1493
+  tag_id: 25
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1495
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1495
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1496
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1496
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1497
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1497
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1498
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1498
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1501
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1501
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1502
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1503
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1503
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1503
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1503
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1503
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1505
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1505
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1506
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1506
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1508
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1508
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1509
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1509
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1510
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1510
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1511
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1511
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1512
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1512
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1513
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1513
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1514
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1514
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1515
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1515
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1516
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1516
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1517
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1517
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1518
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1518
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1519
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1519
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1519
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1519
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1519
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1520
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1520
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1520
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1520
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1520
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1521
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1521
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1522
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1522
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1525
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1525
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1536
+  tag_id: 10
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1537
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1628
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1628
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1629
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1629
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1630
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1630
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1630
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1630
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1630
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1631
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1631
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1631
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1631
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1631
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1642
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1642
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1643
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1643
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1644
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1644
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1645
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1645
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1646
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1646
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1647
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1647
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1648
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1648
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1649
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1649
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1650
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1650
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1653
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1653
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1654
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1654
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1656
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1656
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1657
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1657
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1658
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1658
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1659
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1659
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1660
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1660
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1661
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1661
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1662
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1662
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1663
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1663
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1664
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1664
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1665
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1665
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1666
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1666
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1670
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1670
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1674
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1702
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1702
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1703
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1703
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1709
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1709
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1710
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1710
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1711
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1711
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1712
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1712
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1740
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1994
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 1994
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2096
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2096
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2097
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2097
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2098
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2098
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2099
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2099
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2100
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2100
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2101
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2101
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2102
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2102
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2103
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2103
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2104
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2104
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2105
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2105
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2106
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2106
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2107
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2107
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2108
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2108
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2136
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2163
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2182
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2187
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2187
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2218
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2289
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2407
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2407
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2410
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2410
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2411
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2411
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2412
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2412
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2413
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2413
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2414
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2414
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2415
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2415
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2417
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2417
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2417
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2417
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2417
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2418
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2418
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2419
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2419
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2420
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2420
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2422
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2422
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2423
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2423
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2424
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2424
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2425
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2425
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2426
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2426
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2427
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2427
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2428
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2428
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2430
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2430
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2431
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2431
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2432
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2432
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2433
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2433
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2434
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2434
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2435
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2435
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2436
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2436
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2437
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2437
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2438
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2438
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2439
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2439
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2440
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2440
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2441
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2441
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2442
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2442
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2443
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2443
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2444
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2444
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2445
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2445
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2446
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2446
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2447
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2447
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2450
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2450
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2451
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2451
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2452
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2452
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2453
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2453
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2454
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2454
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2455
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2455
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2456
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2456
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2457
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2458
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2458
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2459
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2459
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2460
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2460
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2461
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2461
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2462
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2462
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2463
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2463
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2464
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2464
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2469
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2469
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2470
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2470
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 2915
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3130
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3130
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 207
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3131
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3421
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3421
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3422
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3422
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3425
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3425
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3426
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3426
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3427
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3427
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3428
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3428
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3429
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3429
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3430
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3430
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3433
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3433
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3434
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3434
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3435
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3435
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3439
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3439
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3440
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3440
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3441
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3441
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3443
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3443
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3444
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3444
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3445
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3445
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3448
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3448
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3449
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3450
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3450
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3451
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3453
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3454
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3454
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3455
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3455
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3456
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3456
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3459
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3459
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3460
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3460
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3461
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3461
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3462
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3462
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3463
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3463
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3464
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3464
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3465
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3465
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3466
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3466
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3467
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3467
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3468
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3468
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3469
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3469
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3470
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3470
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3471
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3471
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3472
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3472
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3473
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3473
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3474
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3474
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3475
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3475
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3476
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3476
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3477
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3477
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3478
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3478
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3479
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3479
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3480
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3480
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3481
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3481
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3482
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3482
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3483
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3483
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3484
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3484
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3485
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3485
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3486
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3486
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3487
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3487
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3488
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3488
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3489
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3489
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3490
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3490
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3491
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3491
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3492
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3492
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3493
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3493
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3494
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3494
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3495
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3495
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3496
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3496
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3497
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3497
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3498
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3498
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3499
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3499
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3500
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3500
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3501
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3501
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3502
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3502
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3503
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3503
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3504
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3504
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3505
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3505
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3506
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3506
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3507
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3507
+  tag_id: 298
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3508
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3509
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3510
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3511
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3512
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3513
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 6
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 8
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 10
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 12
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 14
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 16
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 17
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 19
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 20
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 21
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 22
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 23
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 24
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 25
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 26
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 27
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 28
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 29
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 30
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 31
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 32
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 33
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 34
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 35
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 37
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 38
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 40
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 216
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 272
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3521
+  tag_id: 299
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 16
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 23
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 30
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 40
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3529
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3530
+  tag_id: 15
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3530
+  tag_id: 16
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3530
+  tag_id: 300
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3531
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3531
+  tag_id: 18
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3532
+  tag_id: 11
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3591
+  tag_id: 304
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3592
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3592
+  tag_id: 301
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3593
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3593
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 5
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 216
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 302
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 305
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3594
+  tag_id: 306
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3596
+  tag_id: 7
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3596
+  tag_id: 10
+-
+  entity_table: "civicrm_contact"
+  entity_id: 3596
+  tag_id: 15

@@ -39,11 +39,12 @@ cdb="$civi_db_prefix$db_basename"
 
 ## 6698 data cleanup
 ## remove all bulk email activities
-echo "removing all bulk email activity records..."
+echo "removing all bulk email activity records and disabling activity type..."
 sql="
   SELECT @at:=id FROM civicrm_option_group WHERE name = 'activity_type';
   SELECT @be:=value FROM civicrm_option_value WHERE option_group_id = @at AND name = 'Bulk Email';
   DELETE FROM civicrm_activity WHERE activity_type_id = @be;
+  UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @at AND value = @be;
 "
 $execSql -i $instance -c "$sql" -q
 
@@ -73,4 +74,47 @@ $execSql -i $instance -c "$sql" --log -q
 ## 6722 add quick search index
 echo "adding index for quick search..."
 sql="ALTER TABLE civicrm_contact ADD INDEX index_quick_search(is_deleted, sort_name, id);"
+$execSql -i $instance -c "$sql" -q
+
+## 6698 insert contact view option
+sql="
+  SELECT @option_group_id_cvOpt := max(id) from civicrm_option_group where name = 'contact_view_options';
+  INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id)
+  VALUES (@option_group_id_cvOpt, 'Mailings', 14, 'CiviMail', NULL, 0, NULL, 14, NULL, 0, 0, 1, NULL);
+"
+$execSql -i $instance -c "$sql" -q
+
+sql="
+  UPDATE civicrm_setting
+  SET value = 's:19:\"1234561014\";'
+  WHERE name = 'contact_view_options';
+"
+$execSql -i $instance -c "$sql" -q
+
+## 6798 set logging report perms
+sql="
+  UPDATE civicrm_report_instance
+  SET permission = 'access CiviReport'
+  WHERE report_id LIKE 'logging/contact%'
+"
+$execSql -i $instance -c "$sql" -q
+
+## 6833 make sure mailing component settings are set
+sql="
+  DELETE FROM civicrm_setting
+  WHERE group_name = 'Mailing Preferences'
+    AND name IN ( 'profile_double_optin', 'profile_add_to_group_double_optin', 'track_civimail_replies',
+      'civimail_workflow', 'civimail_server_wide_lock', 'civimail_multiple_bulk_emails', 'include_message_id',
+      'write_activity_record' );
+  INSERT INTO civicrm_setting (group_name, name, value, domain_id, is_domain, created_date, created_id)
+  VALUES
+    ('Mailing Preferences', 'profile_double_optin', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'profile_add_to_group_double_optin', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'track_civimail_replies', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_workflow', 'i:1;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_server_wide_lock', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'civimail_multiple_bulk_emails', 'i:1;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'include_message_id', 'i:0;', 1, 1, NOW(), 1),
+    ('Mailing Preferences', 'write_activity_record', 'i:0;', 1, 1, NOW(), 1);
+"
 $execSql -i $instance -c "$sql" -q
