@@ -1,10 +1,14 @@
 (function() {
-  jqfunc = jQuery.extend({},jQuery);
-  utils = function Utils(){
-    this.version = "0.0.1";
+  Function.prototype.bbclone = function() {
+    var that = this;
+    var temp = function temporary() { return that.apply(this, arguments); };
+    for( key in this ) {
+        temp[key] = this[key];
+    }
+    return temp;
   };
-  jQuery.each(jqfunc, function(k,v){
-    utils.prototype[k] = v;
-  });
-  window["bbUtils"] = new utils();
-}).apply(this, jQuery);
+  var bbUtils = $.bbclone();
+  window["bbUtils"] = bbUtils;
+  delete Function.prototype.bbclone;
+  console.log(Function.bbclone);
+})(window, jQuery);

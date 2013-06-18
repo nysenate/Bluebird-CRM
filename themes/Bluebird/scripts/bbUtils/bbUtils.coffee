@@ -11,8 +11,6 @@
 #
 
 # init of the namespace & cloning jQuery's bare object
-window["bbUtils"] = jQuery.noConflict()
-
 (($, window, document) ->
   # for chaining
   $this = undefined
@@ -25,7 +23,6 @@ window["bbUtils"] = jQuery.noConflict()
   # public methods - must return $this for chaining
   methods =
     init: () ->
-      console.log "jQuery: #{$.fn.jquery}, bbUtils: #{_settings.version}"
     localStorage: (options) ->
 
     isJsonString: (options) ->
@@ -33,6 +30,7 @@ window["bbUtils"] = jQuery.noConflict()
     rc4: (options) ->
 
     version: ->
+      console.log "jQuery: #{$.fn.jquery}, bbUtils: #{_settings.version}"
       
     # init: (options) ->
     #   $this = $(@)
@@ -116,7 +114,7 @@ window["bbUtils"] = jQuery.noConflict()
   # Namespacing
   # $.fn = (method) -> 
   $.each methods, (method) ->
-    console.log method
+    # console.log method
     $.fn["#{method}"] = ->
       if methods[method]
         methods[method].apply this, Array::slice.call(arguments, 1)
@@ -134,4 +132,4 @@ window["bbUtils"] = jQuery.noConflict()
       $.error "Method " + method + " does not exist on jquery.tagACInput"###
 ) bbUtils, window, document
 
-console.log bbUtils.version
+# console.log bbUtils.version
