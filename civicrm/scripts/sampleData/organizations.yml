@@ -1,0 +1,194 @@
+-
+  fk: 2
+  contact_type: "Organization"
+  organization_name: "O'Brien Realty"
+  api.phone.create:
+    phone: "518-123-9876"
+    location_type_id: 1
+    phone_type_id: 1
+-
+  fk: 3
+  contact_type: "Organization"
+  organization_name: "Acme, Inc."
+-
+  fk: 14
+  contact_type: "Organization"
+  organization_name: "Amodio World-Wide Moving and Storage"
+-
+  fk: 17
+  contact_type: "Organization"
+  organization_name: "Oneida Furniture Manufacturing Corporation"
+-
+  fk: 19
+  contact_type: "Organization"
+  organization_name: "Oneida Furniture Manufacturing Corporation"
+-
+  fk: 22
+  contact_type: "Organization"
+  organization_name: "The Steno Shop"
+-
+  fk: 25
+  contact_type: "Organization"
+  organization_name: "Anderson Moving, Inc."
+-
+  fk: 31
+  contact_type: "Organization"
+  organization_name: "Dec-W-World, Inc."
+-
+  fk: 33
+  contact_type: "Organization"
+  organization_name: "Dec-O-World, Inc."
+-
+  fk: 54
+  contact_type: "Organization"
+  organization_name: "Northeast Management & Realty"
+-
+  fk: 57
+  contact_type: "Organization"
+  nick_name: "Mike"
+  organization_name: "Northeast Management and Realty"
+-
+  fk: 138
+  contact_type: "Organization"
+  organization_name: "Castleton State College, Castleton, Vermont,"
+-
+  fk: 268
+  contact_type: "Organization"
+  organization_name: "Motown Records"
+-
+  fk: 385
+  contact_type: "Organization"
+  organization_name: "Firefighters Association"
+-
+  fk: 390
+  contact_type: "Organization"
+  organization_name: "Ent Associates"
+-
+  fk: 414
+  contact_type: "Organization"
+  organization_name: "Department of Consumer Affairs"
+-
+  fk: 422
+  contact_type: "Organization"
+  organization_name: "Kliese Household"
+-
+  fk: 681
+  contact_type: "Organization"
+  organization_name: "Loss Development, Inc."
+-
+  fk: 1639
+  contact_type: "Organization"
+  organization_name: "South Shore Oil Company"
+-
+  fk: 2481
+  contact_type: "Organization"
+  organization_name: "State University of Ny at Stony Brook"
+-
+  fk: 2672
+  contact_type: "Organization"
+  organization_name: "Smith and Smith Contractors"
+-
+  fk: 2676
+  contact_type: "Organization"
+  organization_name: "Hudson-Mohawk Urban Council Park Commission"
+-
+  fk: 2741
+  contact_type: "Organization"
+  nick_name: "Bill"
+  organization_name: "Village of Fort Johnson"
+  is_deleted: 1
+-
+  fk: 2748
+  contact_type: "Organization"
+  organization_name: "Fort Johnson Volunteer Fire Department"
+-
+  fk: 2751
+  contact_type: "Organization"
+  nick_name: "Kathleen"
+  organization_name: "Village of Fort Johnson"
+  is_deleted: 1
+-
+  fk: 2783
+  contact_type: "Organization"
+  nick_name: "Garry"
+  organization_name: "Village of Galway"
+-
+  fk: 2801
+  contact_type: "Organization"
+  organization_name: "City National Bank & Trust Company"
+-
+  fk: 2819
+  contact_type: "Organization"
+  organization_name: "Jim's Auto Repair"
+-
+  fk: 2849
+  contact_type: "Organization"
+  organization_name: "Kingsboro Lumber Company, Inc."
+-
+  fk: 2866
+  contact_type: "Organization"
+  organization_name: "City National Bank and Trust Company"
+-
+  fk: 2868
+  contact_type: "Organization"
+  organization_name: "Fulton County National Bank & Trust Co."
+-
+  fk: 2875
+  contact_type: "Organization"
+  organization_name: "Robinson & Smith, Inc."
+  is_deleted: 1
+-
+  fk: 2877
+  contact_type: "Organization"
+  organization_name: "Robison and Smith, Inc."
+-
+  fk: 2926
+  contact_type: "Organization"
+  organization_name: "Faith Baptist Temple and School"
+-
+  fk: 2964
+  contact_type: "Organization"
+  organization_name: "Hamilton-Fulton-Montgomery Counties"
+-
+  fk: 3038
+  contact_type: "Organization"
+  organization_name: "Sherwood Smith Motors"
+-
+  fk: 3052
+  contact_type: "Organization"
+  organization_name: "Smith's Reliable Body Works"
+  is_deleted: 1
+-
+  fk: 3074
+  contact_type: "Organization"
+  organization_name: "Mayfield High School"
+-
+  fk: 3115
+  contact_type: "Organization"
+  nick_name: "Munro"
+  organization_name: "Village of Speculator"
+-
+  fk: 3145
+  contact_type: "Organization"
+  organization_name: "The Sunset Motor and Oil Company"
+-
+  fk: 3148
+  contact_type: "Organization"
+  organization_name: "Educational Priorities Panel"
+-
+  fk: 3152
+  contact_type: "Organization"
+  organization_name: "Albany Urban Renewal"
+-
+  fk: 3338
+  contact_type: "Organization"
+  organization_name: "Georgea S. Perrin House"
+  is_deleted: 1
+-
+  fk: 3403
+  contact_type: "Organization"
+  organization_name: "Sterling Optical"
+-
+  fk: 3423
+  contact_type: "Organization"
+  organization_name: "General Electric"
