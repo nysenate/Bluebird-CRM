@@ -6,189 +6,557 @@
     phone: "518-123-9876"
     location_type_id: 1
     phone_type_id: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "25 Market Street, Room 1010"
+    city: "Delmar"
+    state_province_id: 1031
+    postal_code_suffix: 9709
+    postal_code: 12054
+  api.email.create:
+    location_type_id: 1
+    is_primary: 1
+    email: 'obrien@example.com'
+  api.website.create:
+    website_type_id: 2
+    url: 'http://www.nysenate.gov'
+  api.entity_tag.create:
+    tag_id: 198
+    tag_id.0: 193
+    tag_id.1: 72
+  api.note.create:
+    subject: 'Interested in zoning board'
+    note: 'would like assistance getting on the local zoning board'
 -
   fk: 3
   contact_type: "Organization"
   organization_name: "Acme, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    city: "Albany"
+    state_province_id: 1031
+    postal_code: 12205
 -
   fk: 14
   contact_type: "Organization"
   organization_name: "Amodio World-Wide Moving and Storage"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "Barry Square"
+    supplemental_address_1: "PO Box 14075"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code_suffix: 4075
+    postal_code: 12212
 -
   fk: 17
   contact_type: "Organization"
   organization_name: "Oneida Furniture Manufacturing Corporation"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "386 Lenox Avenue"
+    city: "Oneida"
+    state_province_id: 1031
+    postal_code_suffix: 1531
+    postal_code: 13421
 -
   fk: 19
   contact_type: "Organization"
   organization_name: "Oneida Furniture Manufacturing Corporation"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "356 Lenox Ave."
+    city: "Oneida"
+    state_province_id: 1031
+    postal_code_suffix: 1531
+    postal_code: 13421
 -
   fk: 22
   contact_type: "Organization"
   organization_name: "The Steno Shop"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Pine Hill Road"
+    city: "Central Bridge"
+    state_province_id: 1031
+    postal_code: 12035
 -
   fk: 25
   contact_type: "Organization"
   organization_name: "Anderson Moving, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "716 West Clinton Street"
+    city: "Ithaca"
+    state_province_id: 1031
+    postal_code_suffix: 5102
+    postal_code: 14850
 -
   fk: 31
   contact_type: "Organization"
   organization_name: "Dec-W-World, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Carman Road"
+    supplemental_address_2: "McCormack's Corner"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code: 12303
 -
   fk: 33
   contact_type: "Organization"
   organization_name: "Dec-O-World, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Carman Road"
+    supplemental_address_2: "McCormack's Corner"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code: 12303
 -
   fk: 54
   contact_type: "Organization"
   organization_name: "Northeast Management & Realty"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "305 State Street, Suite 102"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code_suffix: 2301
+    postal_code: 12305
 -
   fk: 57
   contact_type: "Organization"
   nick_name: "Mike"
   organization_name: "Northeast Management and Realty"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "604 State Street, Suite 600"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code_suffix: 2112
+    postal_code: 12305
 -
   fk: 138
   contact_type: "Organization"
   organization_name: "Castleton State College, Castleton, Vermont,"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Wheeler Hall, Rm 424"
+    supplemental_address_1: "CSC Box 424"
+    supplemental_address_2: "this is overflow"
+    city: "Castleton"
+    state_province_id: 1044
+    postal_code_suffix: 0424
+    postal_code: 05735
 -
   fk: 268
   contact_type: "Organization"
   organization_name: "Motown Records"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "45 Sunset Boulevard, Suite 103"
+    city: "Delmar"
+    state_province_id: 1031
+    postal_code_suffix: 1127
+    postal_code: 12054
 -
   fk: 385
   contact_type: "Organization"
   organization_name: "Firefighters Association"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "2 Main St."
+    city: "Albany"
+    state_province_id: 1031
+    postal_code_suffix: 2631
+    postal_code: 12204
 -
   fk: 390
   contact_type: "Organization"
   organization_name: "Ent Associates"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "747 Madison Avenue"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code: 12208
 -
   fk: 414
   contact_type: "Organization"
   organization_name: "Department of Consumer Affairs"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "211 Main Street"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code_suffix: 2412
+    postal_code: 12208
 -
   fk: 422
   contact_type: "Organization"
   organization_name: "Kliese Household"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "BOX 28A Hadley Drive"
+    supplemental_address_1: "P.O. Box 134"
+    city: "Hannacroix"
+    state_province_id: 1031
+    postal_code_suffix: 9707
+    postal_code: 12087
 -
   fk: 681
   contact_type: "Organization"
   organization_name: "Loss Development, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "16 Hearthstone Drive"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code_suffix: 1222
+    postal_code: 12205
 -
   fk: 1639
   contact_type: "Organization"
   organization_name: "South Shore Oil Company"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "1734 N.E. 26th Street, Suite 21"
+    city: "Fort Lauderdale"
+    state_province_id: 1008
+    postal_code_suffix: 1413
+    postal_code: 33305
 -
   fk: 2481
   contact_type: "Organization"
   organization_name: "State University of Ny at Stony Brook"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " "
+    city: "Stony Brook"
+    state_province_id: 1031
+    postal_code: 11794
 -
   fk: 2672
   contact_type: "Organization"
   organization_name: "Smith and Smith Contractors"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Star Route 10"
+    supplemental_address_1: "Box 50"
+    city: "Caroga Lake"
+    state_province_id: 1031
+    postal_code: 12032
 -
   fk: 2676
   contact_type: "Organization"
   organization_name: "Hudson-Mohawk Urban Council Park Commission"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "97 Mohawk Street"
+    city: "Cohoes"
+    state_province_id: 1031
+    postal_code: 12047
 -
   fk: 2741
   contact_type: "Organization"
   nick_name: "Bill"
   organization_name: "Village of Fort Johnson"
   is_deleted: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "36 Fort Johnson Avenue"
+    city: "Fort Johnson"
+    state_province_id: 1031
+    postal_code_suffix: 1500
+    postal_code: 12070
 -
   fk: 2748
   contact_type: "Organization"
   organization_name: "Fort Johnson Volunteer Fire Department"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Veteran's Drive"
+    city: "Fort Johnson"
+    state_province_id: 1031
+    postal_code_suffix: 9704
+    postal_code: 12070
 -
   fk: 2751
   contact_type: "Organization"
   nick_name: "Kathleen"
   organization_name: "Village of Fort Johnson"
   is_deleted: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Veterans Drive"
+    city: "Fort Johnson"
+    state_province_id: 1031
+    postal_code_suffix: 9704
+    postal_code: 12070
 -
   fk: 2783
   contact_type: "Organization"
   nick_name: "Garry"
   organization_name: "Village of Galway"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " East Street"
+    city: "Galway"
+    state_province_id: 1031
+    postal_code: 12074
 -
   fk: 2801
   contact_type: "Organization"
   organization_name: "City National Bank & Trust Company"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " "
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code: 12078
 -
   fk: 2819
   contact_type: "Organization"
   organization_name: "Jim's Auto Repair"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Caroga Lake Stage"
+    supplemental_address_1: "Box 34"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code_suffix: 0001
+    postal_code: 12078
 -
   fk: 2849
   contact_type: "Organization"
   organization_name: "Kingsboro Lumber Company, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " Gregory Street"
+    supplemental_address_1: "Box 108"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code_suffix: 0001
+    postal_code: 12078
 -
   fk: 2866
   contact_type: "Organization"
   organization_name: "City National Bank and Trust Company"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "14 North Main Street"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code_suffix: 3004
+    postal_code: 12078
 -
   fk: 2868
   contact_type: "Organization"
   organization_name: "Fulton County National Bank & Trust Co."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "2 North Main Street"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code: 12078
 -
   fk: 2875
   contact_type: "Organization"
   organization_name: "Robinson & Smith, Inc."
   is_deleted: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "335 North Main Street"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code: 12078
 -
   fk: 2877
   contact_type: "Organization"
   organization_name: "Robison and Smith, Inc."
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "335 North Main Street"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code: 12078
 -
   fk: 2926
   contact_type: "Organization"
   organization_name: "Faith Baptist Temple and School"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "30 West Pine Street"
+    city: "Gloversville"
+    state_province_id: 1031
+    postal_code_suffix: 3825
+    postal_code: 12078
 -
   fk: 2964
   contact_type: "Organization"
   organization_name: "Hamilton-Fulton-Montgomery Counties"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " "
+    supplemental_address_1: "P.O. Box 665"
+    city: "Johnstown"
+    state_province_id: 1031
+    postal_code_suffix: 0665
+    postal_code: 12095
 -
   fk: 3038
   contact_type: "Organization"
   organization_name: "Sherwood Smith Motors"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "108-118 South Comrie Avenue"
+    city: "Johnstown"
+    state_province_id: 1031
+    postal_code: 12095
 -
   fk: 3052
   contact_type: "Organization"
   organization_name: "Smith's Reliable Body Works"
   is_deleted: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "21 Townsend Avenue"
+    city: "Johnstown"
+    state_province_id: 1031
+    postal_code_suffix: 1004
+    postal_code: 12095
 -
   fk: 3074
   contact_type: "Organization"
   organization_name: "Mayfield High School"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " School Street"
+    city: "Mayfield"
+    state_province_id: 1031
+    postal_code_suffix: 9782
+    postal_code: 12117
 -
   fk: 3115
   contact_type: "Organization"
   nick_name: "Munro"
   organization_name: "Village of Speculator"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: " "
+    supplemental_address_1: "Box 396"
+    city: "Speculator"
+    state_province_id: 1031
+    postal_code_suffix: 0396
+    postal_code: 12164
 -
   fk: 3145
   contact_type: "Organization"
   organization_name: "The Sunset Motor and Oil Company"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "2 Main Street"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code_suffix: 2631
+    postal_code: 12204
 -
   fk: 3148
   contact_type: "Organization"
   organization_name: "Educational Priorities Panel"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "146 State Street"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code: 12207
 -
   fk: 3152
   contact_type: "Organization"
   organization_name: "Albany Urban Renewal"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "155 Washington Avenue, 4th Floor"
+    city: "Albany"
+    state_province_id: 1031
+    postal_code: 12210
 -
   fk: 3338
   contact_type: "Organization"
   organization_name: "Georgea S. Perrin House"
   is_deleted: 1
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "575 Lansing Street"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code: 12303
 -
   fk: 3403
   contact_type: "Organization"
   organization_name: "Sterling Optical"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "440 Balltown Road"
+    supplemental_address_2: "Mohawk Mall"
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code_suffix: 2245
+    postal_code: 12304
 -
   fk: 3423
   contact_type: "Organization"
   organization_name: "General Electric"
+  api.address.create:
+    location_type_id: 2
+    is_primary: 1
+    street_address: "1234 Erie Blvd."
+    city: "Schenectady"
+    state_province_id: 1031
+    postal_code_suffix: 1002
+    postal_code: 12305

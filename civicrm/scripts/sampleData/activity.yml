@@ -1,0 +1,400 @@
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "SENIOR HOUSING"
+  activity_date_time: "1994-03-09 12:32:35"
+  details: "\nStaff: DLH\nCLAB1: Agency\nCLAB2: Contact\nIssue: 10003\nLegislation: "
+  status_id: 2
+  target_contact_id: 301
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "DIVORCE/CHILD SUPPORT/CUSTODY"
+  activity_date_time: "1994-03-09 12:14:12"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 22002\nLegislation: "
+  status_id: 2
+  target_contact_id: 366
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "CHILDREN AND FAMILIES"
+  activity_date_time: "1994-03-09 12:09:35"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 22000\nLegislation: "
+  status_id: 2
+  target_contact_id: 676
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "CHILDREN AND FAMILIES"
+  activity_date_time: "1994-03-09 12:09:35"
+  details: "\nStaff: WML\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 22000\nLegislation: "
+  status_id: 2
+  target_contact_id: 680
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "CHILDREN AND FAMILIES"
+  activity_date_time: "1994-03-09 12:09:35"
+  details: "\nStaff: WML\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 22000\nLegislation: "
+  status_id: 2
+  target_contact_id: 683
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "DEATH PENALTY - PRO"
+  activity_date_time: "1994-03-09 12:16:20"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 30043\nLegislation: "
+  status_id: 2
+  target_contact_id: 906
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "LEGALIZING GAMBLING"
+  activity_date_time: "1994-03-16 10:39:00"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 68003\nLegislation: "
+  status_id: 2
+  target_contact_id: 1177
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "RACING AND WAGERING - LEGALIZING GAMBLING"
+  activity_date_time: "1994-03-16 10:39:00"
+  details: "\nCASE CLOSED ON 1916-94-03\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 68003\nLegislation: "
+  status_id: 2
+  target_contact_id: 1177
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "PARKING/PERMITS"
+  activity_date_time: "1994-03-16 10:27:52"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 42001\nLegislation: "
+  status_id: 2
+  target_contact_id: 1493
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "CREDIT AND CREDIT CARDS"
+  activity_date_time: "1994-03-09 12:34:03"
+  details: "\nStaff: DLH\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 18001\nLegislation: "
+  status_id: 2
+  target_contact_id: 1536
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "GUN CONTROL - CON"
+  activity_date_time: "1994-03-09 12:35:48"
+  details: "\nStaff: JLS\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 30004\nLegislation: "
+  status_id: 2
+  target_contact_id: 2187
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "AUTOMOBILE INSURANCE"
+  activity_date_time: "1994-03-16 10:40:57"
+  details: "\nStaff: DLH\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 52002\nLegislation: "
+  status_id: 2
+  target_contact_id: 2187
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "SENIOR HOUSING"
+  activity_date_time: "1994-03-09 12:29:49"
+  details: "\nStaff: DLH\nCLAB1: **Unassigned**\nCLAB2: **Unassigned**\nIssue: 10003\nLegislation: "
+  status_id: 2
+  target_contact_id: 2289
+-
+  source_contact_id: 3587
+  activity_type_id: 42
+  subject: "website"
+  activity_date_time: "2013-05-17 11:43:00"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 2826
+-
+  source_contact_id: 3587
+  activity_type_id: 42
+  activity_date_time: "2013-05-10 05:30:00"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 2826
+-
+  source_contact_id: 3587
+  activity_type_id: 13
+  subject: "Storm  Damage"
+  activity_date_time: "2013-05-17 11:56:00"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 2826
+-
+  source_contact_id: 3589
+  activity_type_id: 35
+  subject: "storm damage"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 30
+  location: "esopus"
+  details: "<p>fdgfd</p>\r\n"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3502
+-
+  source_contact_id: 3589
+  activity_type_id: 35
+  subject: "storm damage"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 30
+  location: "esopus"
+  details: "<p>fdgfd</p>\r\n"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3502
+-
+  source_contact_id: 3589
+  activity_type_id: 35
+  subject: "storm damage"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 30
+  location: "esopus"
+  details: "<p>fdgfd</p>\r\n"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3502
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "COMMUNITY COLLEGES"
+  activity_date_time: "1994-04-04 09:31:20"
+  details: "\nNote 1: Needs a list of Community Colleges in the area.\nStaff: DLH\nCLAB1: Agency\nCLAB2: Contact\nIssue: 34003\nLegislation: "
+  status_id: 2
+  target_contact_id: 3521
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "BOAT REGISTRATIONS"
+  activity_date_time: "1994-04-04 11:04:20"
+  details: "\nNote 1: Problems getting DMV to release boat registration\nStaff: JLS\nCLAB1: Agency\nCID1: DMV\nCLAB2: Contact\nIssue: 46001\nLegislation: "
+  status_id: 2
+  target_contact_id: 3529
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "FISHING ISSUES"
+  activity_date_time: "1994-04-06 15:37:48"
+  details: "\nNote 1: Had some questions on fishing license.\nHome Phone: 6075559029\nStaff: DLH\nCLAB1: Agency\nCLAB2: Contact\nIssue: 24002\nLegislation: "
+  status_id: 2
+  target_contact_id: 3529
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "HOUSING DEVELOPMENT PROGRAM"
+  activity_date_time: "1994-04-06 16:08:16"
+  details: "\nHome Phone: 6075559029\nStaff: DLH\nCLAB1: Agency\nCLAB2: Contact\nIssue: 48101\nLegislation: "
+  status_id: 2
+  target_contact_id: 3529
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "SCHOOL BUDGET VOTE - DON'T CHANGE DATE"
+  activity_date_time: "2003-04-21 11:18:01"
+  details: "\nCASE CLOSED ON 1921-03-04\nNote 1: 4/21/03 rec'd email opposing change in date.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: none\nCLAB2: Filed\nCID2: quinn\nIssue: 32000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "INCREASE SPEED LIMIT TO 65 - OPPOSE"
+  activity_date_time: "2003-04-21 11:19:28"
+  details: "\nCASE CLOSED ON 1921-03-04\nNote 1: 4/21/03 rec'd email opposing increase in speed on LIE.  Filed.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: none\nCLAB2: Filed\nCID2: quinn\nIssue: 46000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "PROPANE TANKS"
+  activity_date_time: "2003-06-02 15:03:25"
+  details: "\nCASE CLOSED ON 2002-03-06\nNote 1: 5/27/03 rcvd letter that he was upset he had to pay $15 to dispose of\nNote 2: empty propane tanks. advised he should go to a propane filling statio\nNote 3: not just a hardware store & gave 2 locations that accept @ no cost\nStaff: KEV\nCLAB1: Date of reply\nCID1: 06/02/03\nCLAB2: Filed\nCID2: FCQ File\nIssue: 20000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "SCHOOL VOTE DATE"
+  activity_date_time: "2003-06-05 10:03:02"
+  details: "\nCASE CLOSED ON 2005-03-06\nNote 1: 6/1/03 he wrote that school vote should be Election Day.  Also\nNote 2: wanted list of Education Committee members in Assy and Sen.  Wendy\nNote 3: mailed out 6/5/03\nStaff: WEN\nCLAB1: Date of Reply\nCID1: 6/5/03\nCLAB2: Filed\nCID2: quinn\nIssue: 32000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "SCHOOL BUDGET VOTE"
+  activity_date_time: "2003-06-23 15:51:09"
+  details: "\nCASE CLOSED ON 1923-03-06\nNote 1: 6/23/03 rec'd letter addressed to Bruno and Silver in oppositin to\nNote 2: re-voting on a school budget if it is defeated.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: none\nCLAB2: Filed\nCID2: quinn\nIssue: 32000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "PORNOGRAPHY ON INTERNET"
+  activity_date_time: "2003-08-05 13:42:43"
+  details: "\nCASE CLOSED ON 2005-03-08\nNote 1: 8/5/03 rec'd letter asking to stop from getting pornography in email.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: none\nCLAB2: Filed\nCID2: quinn\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "SCHOOL VOTE DATE"
+  activity_date_time: "2003-08-18 11:57:59"
+  details: "\nCASE CLOSED ON 1918-03-08\nNote 1: 8/18/03 sent email, school vote date should be same as election day.\nNote 2: Filed.\nStaff: WEN\nCLAB1: Date of Reply\nCLAB2: Filed\nCID2: quinn\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "BLACKOUT OF 2003"
+  activity_date_time: "2003-08-19 15:51:21"
+  details: "\nCASE CLOSED ON 1919-03-08\nNote 1: 8/19/03 wrote to urge putting into place LI  Sound cable.  Filed.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: none\nCLAB2: Filed\nCID2: qiunn\nIssue: 38000\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 35
+  subject: "SPAM EMAIL"
+  activity_date_time: "2003-09-02 16:50:21"
+  details: "\nCASE CLOSED ON 2002-03-09\nNote 1: 9/2/03 rec'd email from him.  Kevin responded.\nStaff: WEN\nCLAB1: Date of Reply\nCID1: 9/2/03\nCLAB2: Filed\nCID2: quinn\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "IDENTITY THEFT"
+  activity_date_time: "2003-09-09 11:11:38"
+  details: "\nCASE CLOSED ON 2009-03-09\nNote 1: 9/9/03 sent email re identity theft.  Filed.\nStaff: WEN\nCLAB1: Date of Reply\nCLAB2: Filed\nCID2: quinn\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "HANDICAPPED PARKING"
+  activity_date_time: "2004-01-21 14:17:26"
+  details: "\nCASE CLOSED ON 1921-04-01\nNote 1: Wrote a letter asking MALB to support a bill that allows blind people\nNote 2: to obtain handicapped parking permits.\nNote 3: 1/21/04 Wendy filed\nStaff: LRC\nCLAB1: **UNASSIGNED**\nCLAB2: **Unassigned**\nCID2: quinn\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "OPPOSITION TO GAY MARRIAGES"
+  activity_date_time: "2004-03-08 15:22:46"
+  details: "\nNote 1: 3/8/04 Received letter stating Mr.'s opposition to gay marriages.  La\nNote 2: ra gave to Wendy who is keeping a file on this subject.\nStaff: LRC\nCLAB1: **UNASSIGNED**\nCLAB2: **Unassigned**\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 1
+  activity_type_id: 37
+  subject: "CROSSING SIGNAL"
+  activity_date_time: "2004-03-08 17:11:36"
+  details: "\nNote 1: 3/8/04 Rec'd letter saying that by shopping centers on Shore Road in\nNote 2: anorhaven and Port Washington there shoul be a hand palm signal at th\nNote 3: crosswalks for the elderly who have bad vision as well as a talking\nStaff: LRC\nCLAB1: **UNASSIGNED**\nCLAB2: **Unassigned**\nLegislation: "
+  status_id: 2
+  target_contact_id: 3532
+-
+  source_contact_id: 3588
+  activity_type_id: 35
+  subject: "wesbite inquiry"
+  activity_date_time: "2013-05-17 11:43:00"
+  location: "albany"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 3592
+-
+  source_contact_id: 3588
+  activity_type_id: 13
+  subject: "Storm Damage - flooding, fallen tree, power outage, broken fence"
+  activity_date_time: "2013-05-17 11:55:00"
+  location: "Albany"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 3592
+-
+  source_contact_id: 3590
+  activity_type_id: 35
+  subject: "website inquiry"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 5
+  location: "Albany"
+  status_id: 2
+  priority_id: 3
+  target_contact_id: 3593
+-
+  source_contact_id: 3590
+  activity_type_id: 2
+  subject: "follow up for kate check the website"
+  activity_date_time: "2013-05-20 00:00:00"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3593
+-
+  source_contact_id: 3590
+  activity_type_id: 13
+  subject: "storm damage flooding power outage broken fence"
+  activity_date_time: "2013-05-17 11:55:00"
+  duration: 20
+  location: "DO"
+  details: "<p>kate called the do she has storm damage, flooding and major damage</p>\r\n"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 3593
+-
+  source_contact_id: 3585
+  activity_type_id: 35
+  subject: "Website: inquiry"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 5
+  location: "DO"
+  details: "<p>Kait called the district office and wanted to know what the Senator&#39;s web address was.&nbsp; I told her it was <a href=\"http://nysenate.gov\">http://nysenate.gov</a></p>\r\n"
+  status_id: 2
+  priority_id: 3
+  target_contact_id: 3594
+-
+  source_contact_id: 3585
+  activity_type_id: 2
+  subject: "Follow up for Kait, check the website"
+  activity_date_time: "2013-05-20 00:00:00"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3594
+-
+  source_contact_id: 3585
+  activity_type_id: 13
+  subject: "Storm Damage: flooding, fallen tree, power outtage, broken fence"
+  activity_date_time: "2013-05-17 11:55:00"
+  duration: 20
+  location: "DO"
+  details: "<p>Kait called the DO she has storm damage from recent storm. She has fallen tree on her property, broken fence, she has power outtage and flooding.</p>\r\n\r\n<ul>\r\n	<li>call insurance company</li>\r\n	<li>call the town to get tree removed</li>\r\n	<li>asfkljasf;af</li>\r\n	<li>asf&#39;afl;kjadgf&#39;</li>\r\n	<li>adg;lkadjg;jkladg</li>\r\n	<li>;lksdgl;skjdg</li>\r\n</ul>\r\n"
+  status_id: 2
+  priority_id: 2
+  target_contact_id: 3594
+-
+  source_contact_id: 3585
+  activity_type_id: 2
+  subject: "rtsdtsdt"
+  activity_date_time: "2013-05-17 12:04:00"
+  details: "<p>asfa sff</p>\r\n\r\n<p>adfdg</p>\r\n\r\n<p>adgdg</p>\r\n"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3594
+-
+  source_contact_id: 3586
+  activity_type_id: 35
+  subject: "Website Inquiry"
+  activity_date_time: "2013-05-17 11:43:00"
+  duration: 5
+  location: "DO"
+  status_id: 2
+  priority_id: 3
+  target_contact_id: 3595
+-
+  source_contact_id: 3586
+  activity_type_id: 2
+  subject: "Website Inquiry"
+  activity_date_time: "2013-05-21 00:00:00"
+  status_id: 1
+  priority_id: 2
+  target_contact_id: 3595
