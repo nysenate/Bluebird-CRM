@@ -1,0 +1,2706 @@
+-
+  id: 5
+  name: "Aging"
+  description: "Aging"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 6
+  name: "Agriculture"
+  description: "Agriculture"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 7
+  name: "Alcohol and Substance Abuse"
+  description: "Alcohol and Substance Abuse"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 8
+  name: "Arts and Cultural Affairs"
+  description: "Arts and Cultural Affairs"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 9
+  name: "Authorities and Commissions"
+  description: "Authorities and Commissions"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 10
+  name: "Banks"
+  description: "Banks"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 11
+  name: "Business and Economic Development"
+  description: "Business and Economic Development"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 12
+  name: "Children and Families"
+  description: "Children and Families"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 13
+  name: "Codes"
+  description: "Codes"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 14
+  name: "Consumer Protection"
+  description: "Consumer Protection"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 15
+  name: "Crime and Corrections"
+  description: "Crime and Corrections"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 16
+  name: "Education"
+  description: "Education"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 17
+  name: "Elections"
+  description: "Elections"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 18
+  name: "Energy"
+  description: "Energy"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 19
+  name: "Environment"
+  description: "Environment"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 20
+  name: "Government Operations"
+  description: "Government Operations"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 21
+  name: "Health"
+  description: "Health"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 22
+  name: "Higher Education"
+  description: "Higher Education"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 23
+  name: "Housing"
+  description: "Housing"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 24
+  name: "Human Rights"
+  description: "Human Rights"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 25
+  name: "Individuals With Disabilities"
+  description: "Individuals With Disabilities"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 26
+  name: "Insurance"
+  description: "Insurance"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 27
+  name: "Judiciary"
+  description: "Judiciary"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 28
+  name: "Labor"
+  description: "Labor"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 29
+  name: "Legislature"
+  description: "Legislature"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 30
+  name: "Local Government"
+  description: "Local Government"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 31
+  name: "Mental Health"
+  description: "Mental Health"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 32
+  name: "Military Affairs"
+  description: "Military Affairs"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 33
+  name: "New York City"
+  description: "New York City"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 34
+  name: "Professions"
+  description: "Professions"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 35
+  name: "Racing and Wagering"
+  description: "Racing and Wagering"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 36
+  name: "Recreation and Tourism"
+  description: "Recreation and Tourism"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 37
+  name: "Social Services"
+  description: "Social Services"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 38
+  name: "Taxes"
+  description: "Taxes"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 39
+  name: "Telecommunications"
+  description: "Telecommunications"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 40
+  name: "Transportation"
+  description: "Transportation"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 41
+  name: "Elder Abuse"
+  description: "Elder Abuse"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 42
+  name: "EPIC (Elderly Pharmaceutical Insurance Coverage) Program"
+  description: "EPIC (Elderly Pharmaceutical Insurance Coverage) Program"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 43
+  name: "Senior Centers and Services"
+  description: "Senior Centers and Services"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 44
+  name: "Senior Housing"
+  description: "Senior Housing"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 45
+  name: "Senior Real Property Tax Exemptions"
+  description: "Senior Real Property Tax Exemptions"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 46
+  name: "Seniors"
+  description: "Seniors"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 47
+  name: "State Office for the Aging"
+  description: "State Office for the Aging"
+  parent_id: 5
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 48
+  name: "Animal Protection and Regulation"
+  description: "Animal Protection and Regulation"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 49
+  name: "Dairy Industry"
+  description: "Dairy Industry"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 50
+  name: "Farmland Preservation"
+  description: "Farmland Preservation"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 51
+  name: "Organic Farming"
+  description: "Organic Farming"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 52
+  name: "Sustainable Agriculture"
+  description: "Sustainable Agriculture"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 53
+  name: "Wine and Grape Industry"
+  description: "Wine and Grape Industry"
+  parent_id: 6
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 54
+  name: "Heritage Areas"
+  description: "Heritage Areas"
+  parent_id: 8
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 55
+  name: "Historic Preservation"
+  description: "Historic Preservation"
+  parent_id: 8
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 56
+  name: "The Arts"
+  description: "The Arts"
+  parent_id: 8
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 57
+  name: "Dormitory Authority"
+  description: "Dormitory Authority"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 58
+  name: "ESDC (Empire State Development Corporation)"
+  description: "ESDC (Empire State Development Corporation)"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 59
+  name: "MTA (Metropolitan Transportation Authority)"
+  description: "MTA (Metropolitan Transportation Authority)"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 60
+  name: "New York Power Authority"
+  description: "New York Power Authority"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 61
+  name: "NYC Housing Development Corporation"
+  description: "NYC Housing Development Corporation"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 62
+  name: "PANYNJ (Port Authority of New York and New Jersey)"
+  description: "PANYNJ (Port Authority of New York and New Jersey)"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 63
+  name: "Thruway Authority"
+  description: "Thruway Authority"
+  parent_id: 9
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 64
+  name: "Credit Unions"
+  description: "Credit Unions"
+  parent_id: 10
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 65
+  name: "Financial Services"
+  description: "Financial Services"
+  parent_id: 10
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 66
+  name: "Foreclosure"
+  description: "Foreclosure"
+  parent_id: 10
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 67
+  name: "Mortgages"
+  description: "Mortgages"
+  parent_id: 10
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 68
+  name: "Predatory Lending"
+  description: "Predatory Lending"
+  parent_id: 10
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 69
+  name: "Assistance and Incentive Programs"
+  description: "Assistance and Incentive Programs"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 70
+  name: "Business Regulation"
+  description: "Business Regulation"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 71
+  name: "Community Revitalization"
+  description: "Community Revitalization"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 72
+  name: "Federal Stimulus"
+  description: "Federal Stimulus"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 73
+  name: "MWBEs (Minority and Women Business Enterprises)"
+  description: "MWBEs (Minority and Women Business Enterprises)"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 74
+  name: "Not-for-Profit Corporations"
+  description: "Not-for-Profit Corporations"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 75
+  name: "Small Business"
+  description: "Small Business"
+  parent_id: 11
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 76
+  name: "Adoption"
+  description: "Adoption"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 77
+  name: "Child Abuse and Neglect"
+  description: "Child Abuse and Neglect"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 78
+  name: "Child Custody and Visitation"
+  description: "Child Custody and Visitation"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 79
+  name: "Child Health and Safety"
+  description: "Child Health and Safety"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 80
+  name: "Child Support and Paternity"
+  description: "Child Support and Paternity"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 81
+  name: "Children in the Courtroom"
+  description: "Children in the Courtroom"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 82
+  name: "Day Care"
+  description: "Day Care"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 83
+  name: "Domestic Violence"
+  description: "Domestic Violence"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 84
+  name: "Foster Care"
+  description: "Foster Care"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 85
+  name: "Juvenile Delinquency and PINS"
+  description: "Juvenile Delinquency and PINS"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 86
+  name: "Matrimonial Actions"
+  description: "Matrimonial Actions"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 87
+  name: "Missing and Exploited Children"
+  description: "Missing and Exploited Children"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 88
+  name: "Office of Children and Family Services"
+  description: "Office of Children and Family Services"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 89
+  name: "Pregnancy and Parenthood"
+  description: "Pregnancy and Parenthood"
+  parent_id: 12
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 90
+  name: "Alcoholic Beverage Control"
+  description: "Alcoholic Beverage Control"
+  parent_id: 13
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 91
+  name: "Controlled Substances"
+  description: "Controlled Substances"
+  parent_id: 13
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 92
+  name: "Orders of Protection"
+  description: "Orders of Protection"
+  parent_id: 13
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 93
+  name: "Penal Code"
+  description: "Penal Code"
+  parent_id: 13
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 94
+  name: "Consumer Credit"
+  description: "Consumer Credit"
+  parent_id: 14
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 95
+  name: "Contracts and Transactions"
+  description: "Contracts and Transactions"
+  parent_id: 14
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 96
+  name: "Food, Drug, and Product Safety"
+  description: "Food, Drug, and Product Safety"
+  parent_id: 14
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 97
+  name: "Bail and Release on Recognizance"
+  description: "Bail and Release on Recognizance"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 98
+  name: "Capital Punishment (Death Penalty)"
+  description: "Capital Punishment (Death Penalty)"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 99
+  name: "Correction Officers"
+  description: "Correction Officers"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 100
+  name: "Crime Victims and Witnesses"
+  description: "Crime Victims and Witnesses"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 101
+  name: "Criminal Procedure"
+  description: "Criminal Procedure"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 102
+  name: "Criminal Sentencing"
+  description: "Criminal Sentencing"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 103
+  name: "Drug Crime"
+  description: "Drug Crime"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 104
+  name: "Drunk Driving"
+  description: "Drunk Driving"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 105
+  name: "Forensic Use of DNA"
+  description: "Forensic Use of DNA"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 106
+  name: "Insanity Defense"
+  description: "Insanity Defense"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 107
+  name: "Juvenile Justice"
+  description: "Juvenile Justice"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 108
+  name: "Local Jails and Corrections"
+  description: "Local Jails and Corrections"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 109
+  name: "Organized Crime and Forfeiture"
+  description: "Organized Crime and Forfeiture"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 110
+  name: "Parole, Probation, and Correctional Alternatives"
+  description: "Parole, Probation, and Correctional Alternatives"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 111
+  name: "Police Officers, Peace Officers, and Law Enforcement"
+  description: "Police Officers, Peace Officers, and Law Enforcement"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 112
+  name: "Sex Offenses"
+  description: "Sex Offenses"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 113
+  name: "State Prisons"
+  description: "State Prisons"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 114
+  name: "Weapons and Ammunition"
+  description: "Weapons and Ammunition"
+  parent_id: 15
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 115
+  name: "Board of Regents"
+  description: "Board of Regents"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 116
+  name: "BOCES"
+  description: "BOCES"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 117
+  name: "Charter Schools"
+  description: "Charter Schools"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 118
+  name: "Continuing Education"
+  description: "Continuing Education"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 119
+  name: "Curriculum and Testing"
+  description: "Curriculum and Testing"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 120
+  name: "Libraries"
+  description: "Libraries"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 121
+  name: "Local School District Issues"
+  description: "Local School District Issues"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 122
+  name: "Nonpublic Schools"
+  description: "Nonpublic Schools"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 123
+  name: "School Budgets and Elections"
+  description: "School Budgets and Elections"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 124
+  name: "School Health and Safety"
+  description: "School Health and Safety"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 125
+  name: "School Transportation"
+  description: "School Transportation"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 126
+  name: "Special Education"
+  description: "Special Education"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 127
+  name: "State Aid"
+  description: "State Aid"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 128
+  name: "Teachers"
+  description: "Teachers"
+  parent_id: 16
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 129
+  name: "Absentee and Military Voting"
+  description: "Absentee and Military Voting"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 130
+  name: "Campaign Finance"
+  description: "Campaign Finance"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 131
+  name: "Constitutional Amendments and Other Ballot Propositions"
+  description: "Constitutional Amendments and Other Ballot Propositions"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 132
+  name: "Election Reform"
+  description: "Election Reform"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 133
+  name: "HAVA (Help America Vote Act)"
+  description: "HAVA (Help America Vote Act)"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 134
+  name: "Initiative and Referendum"
+  description: "Initiative and Referendum"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 135
+  name: "Primary Elections"
+  description: "Primary Elections"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 136
+  name: "Special Elections"
+  description: "Special Elections"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 137
+  name: "Voter Protection"
+  description: "Voter Protection"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 138
+  name: "Voter Registration"
+  description: "Voter Registration"
+  parent_id: 17
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 139
+  name: "Alternative Energy and Renewable Resources (Green Energy)"
+  description: "Alternative Energy and Renewable Resources (Green Energy)"
+  parent_id: 18
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 140
+  name: "Electricity"
+  description: "Electricity"
+  parent_id: 18
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 141
+  name: "Fossil Fuels"
+  description: "Fossil Fuels"
+  parent_id: 18
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 142
+  name: "Public Power and Utilities"
+  description: "Public Power and Utilities"
+  parent_id: 18
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 143
+  name: "Air"
+  description: "Air"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 144
+  name: "Climate Change"
+  description: "Climate Change"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 145
+  name: "Earth Day"
+  description: "Earth Day"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 146
+  name: "Environmental Justice"
+  description: "Environmental Justice"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 147
+  name: "Environmental Permits"
+  description: "Environmental Permits"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 148
+  name: "Fish, Wildlife, and Marine Resources"
+  description: "Fish, Wildlife, and Marine Resources"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 149
+  name: "Going Green"
+  description: "Going Green"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 150
+  name: "Invasive Species"
+  description: "Invasive Species"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 151
+  name: "Lands and Forests"
+  description: "Lands and Forests"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 152
+  name: "Mineral Resources"
+  description: "Mineral Resources"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 153
+  name: "Site Remediation"
+  description: "Site Remediation"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 154
+  name: "Solid and Hazardous Waste"
+  description: "Solid and Hazardous Waste"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 155
+  name: "Water"
+  description: "Water"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 156
+  name: "Wetlands"
+  description: "Wetlands"
+  parent_id: 19
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 157
+  name: "Budget and Finance"
+  description: "Budget and Finance"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 158
+  name: "Census"
+  description: "Census"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 159
+  name: "Disaster Prevention, Response, and Recovery"
+  description: "Disaster Prevention, Response, and Recovery"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 160
+  name: "Executive Branch"
+  description: "Executive Branch"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 161
+  name: "Federal Programs"
+  description: "Federal Programs"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 162
+  name: "Homeland Security"
+  description: "Homeland Security"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 163
+  name: "Investigations"
+  description: "Investigations"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 164
+  name: "Land Transactions and Eminent Domain"
+  description: "Land Transactions and Eminent Domain"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 165
+  name: "Lobbying and Ethics"
+  description: "Lobbying and Ethics"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 166
+  name: "Official State Designations"
+  description: "Official State Designations"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 167
+  name: "Procurement, Contracting, and Inventory Control"
+  description: "Procurement, Contracting, and Inventory Control"
+  parent_id: 20
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 168
+  name: "Abortion"
+  description: "Abortion"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 169
+  name: "Alcoholism and Substance Abuse"
+  description: "Alcoholism and Substance Abuse"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 170
+  name: "End-of-Life Care and Decision-Making"
+  description: "End-of-Life Care and Decision-Making"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 171
+  name: "Health Care Financing"
+  description: "Health Care Financing"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 172
+  name: "HIV/AIDS"
+  description: "HIV/AIDS"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 173
+  name: "Hospitals and Other Health Care Providers"
+  description: "Hospitals and Other Health Care Providers"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 174
+  name: "Long-Term Care"
+  description: "Long-Term Care"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 175
+  name: "Organ and Tissue Donation"
+  description: "Organ and Tissue Donation"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 176
+  name: "Prescription Drugs"
+  description: "Prescription Drugs"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 177
+  name: "Public Health"
+  description: "Public Health"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 178
+  name: "Smoking and Tobacco Use"
+  description: "Smoking and Tobacco Use"
+  parent_id: 21
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 179
+  name: "Campus Issues"
+  description: "Campus Issues"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 180
+  name: "Community Colleges"
+  description: "Community Colleges"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 181
+  name: "CUNY (City University of New York)"
+  description: "CUNY (City University of New York)"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 182
+  name: "Medical and Dental Education"
+  description: "Medical and Dental Education"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 183
+  name: "Proprietary Schools"
+  description: "Proprietary Schools"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 184
+  name: "Student Financial Aid"
+  description: "Student Financial Aid"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 185
+  name: "SUNY (State University of New York)"
+  description: "SUNY (State University of New York)"
+  parent_id: 22
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 186
+  name: "Construction"
+  description: "Construction"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 187
+  name: "Co-ops and Condos"
+  description: "Co-ops and Condos"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 188
+  name: "Fire Prevention and Building Code"
+  description: "Fire Prevention and Building Code"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 189
+  name: "Homeless"
+  description: "Homeless"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 190
+  name: "Housing Preservation and Development"
+  description: "Housing Preservation and Development"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 191
+  name: "Landlord and Tenant Concerns"
+  description: "Landlord and Tenant Concerns"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 192
+  name: "Manufactured Housing"
+  description: "Manufactured Housing"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 193
+  name: "Municipal Housing Authorities"
+  description: "Municipal Housing Authorities"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 194
+  name: "Rent Regulation"
+  description: "Rent Regulation"
+  parent_id: 23
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 195
+  name: "Civil Rights"
+  description: "Civil Rights"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 196
+  name: "Immigration"
+  description: "Immigration"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 197
+  name: "LGBT Rights"
+  description: "LGBT Rights"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 198
+  name: "Native Americans"
+  description: "Native Americans"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 199
+  name: "Privacy"
+  description: "Privacy"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 200
+  name: "Women's Issues"
+  description: "Women's Issues"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 201
+  name: "Developmentally Disabled"
+  description: "Developmentally Disabled"
+  parent_id: 25
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 202
+  name: "Handicapped Accessibility"
+  description: "Handicapped Accessibility"
+  parent_id: 25
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 203
+  name: "Vocational and Educational Services for Disabled"
+  description: "Vocational and Educational Services for Disabled"
+  parent_id: 25
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 204
+  name: "Auto"
+  description: "Auto"
+  parent_id: 26
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 205
+  name: "Insurance Fraud"
+  description: "Insurance Fraud"
+  parent_id: 26
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 206
+  name: "Life Insurance and Annuities"
+  description: "Life Insurance and Annuities"
+  parent_id: 26
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 207
+  name: "Medical Malpractice"
+  description: "Medical Malpractice"
+  parent_id: 26
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 208
+  name: "Property/Casualty"
+  description: "Property/Casualty"
+  parent_id: 26
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 209
+  name: "Civil Procedure"
+  description: "Civil Procedure"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 210
+  name: "Court Administration"
+  description: "Court Administration"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 211
+  name: "Estates, Trusts, and Guardianships"
+  description: "Estates, Trusts, and Guardianships"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 212
+  name: "Judges"
+  description: "Judges"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 213
+  name: "Juries"
+  description: "Juries"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 214
+  name: "Lawyers and Legal Services"
+  description: "Lawyers and Legal Services"
+  parent_id: 27
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 215
+  name: "Child Labor/Employment of Minors"
+  description: "Child Labor/Employment of Minors"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 216
+  name: "Civil Service and Pensions"
+  description: "Civil Service and Pensions"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 217
+  name: "Employee Protections"
+  description: "Employee Protections"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 218
+  name: "Minimum Wage"
+  description: "Minimum Wage"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 219
+  name: "Public Works"
+  description: "Public Works"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 220
+  name: "Unemployment"
+  description: "Unemployment"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 221
+  name: "Unions"
+  description: "Unions"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 222
+  name: "Workers' Compensation and Disability Benefits"
+  description: "Workers' Compensation and Disability Benefits"
+  parent_id: 28
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 223
+  name: "Ethics"
+  description: "Ethics"
+  parent_id: 29
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 224
+  name: "Picture Bills and Special Legislation"
+  description: "Picture Bills and Special Legislation"
+  parent_id: 29
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 225
+  name: "Rules"
+  description: "Rules"
+  parent_id: 29
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 226
+  name: "Session"
+  description: "Session"
+  parent_id: 29
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 227
+  name: "Administration and Public Officials"
+  description: "Administration and Public Officials"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 228
+  name: "Emergency Medical Services"
+  description: "Emergency Medical Services"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 229
+  name: "Firefighters"
+  description: "Firefighters"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 230
+  name: "Intermunicipal Agreements and Consolidation"
+  description: "Intermunicipal Agreements and Consolidation"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 231
+  name: "Local Finance"
+  description: "Local Finance"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 232
+  name: "Local Laws and Ordinances"
+  description: "Local Laws and Ordinances"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 233
+  name: "Mandate Relief"
+  description: "Mandate Relief"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 234
+  name: "Planning and Zoning"
+  description: "Planning and Zoning"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 235
+  name: "Police"
+  description: "Police"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 236
+  name: "Public Lands"
+  description: "Public Lands"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 237
+  name: "Special Districts and Authorities"
+  description: "Special Districts and Authorities"
+  parent_id: 30
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 238
+  name: "Community Services"
+  description: "Community Services"
+  parent_id: 31
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 239
+  name: "Involuntary and Emergency Admissions"
+  description: "Involuntary and Emergency Admissions"
+  parent_id: 31
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 240
+  name: "Office of Mental Health"
+  description: "Office of Mental Health"
+  parent_id: 31
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 241
+  name: "Patient Rights and Safety"
+  description: "Patient Rights and Safety"
+  parent_id: 31
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 242
+  name: "Psychiatric Centers and Developmental Centers"
+  description: "Psychiatric Centers and Developmental Centers"
+  parent_id: 31
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 243
+  name: "Coast Guard"
+  description: "Coast Guard"
+  parent_id: 32
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 244
+  name: "National Guard"
+  description: "National Guard"
+  parent_id: 32
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 245
+  name: "Reserves"
+  description: "Reserves"
+  parent_id: 32
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 246
+  name: "Veterans"
+  description: "Veterans"
+  parent_id: 32
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 247
+  name: "Finance"
+  description: "Finance"
+  parent_id: 33
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 248
+  name: "Schools"
+  description: "Schools"
+  parent_id: 33
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 249
+  name: "World Trade Center"
+  description: "World Trade Center"
+  parent_id: 33
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 250
+  name: "Good Samaritan Laws"
+  description: "Good Samaritan Laws"
+  parent_id: 34
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 251
+  name: "Nursing"
+  description: "Nursing"
+  parent_id: 34
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 252
+  name: "Professional Licensing, Oversight, and Discipline"
+  description: "Professional Licensing, Oversight, and Discipline"
+  parent_id: 34
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 253
+  name: "Charitable Gaming"
+  description: "Charitable Gaming"
+  parent_id: 35
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 254
+  name: "Indian Gaming"
+  description: "Indian Gaming"
+  parent_id: 35
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 255
+  name: "Lotteries and VLTs"
+  description: "Lotteries and VLTs"
+  parent_id: 35
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 256
+  name: "New York State Board"
+  description: "New York State Board"
+  parent_id: 35
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 257
+  name: "Racing"
+  description: "Racing"
+  parent_id: 35
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 258
+  name: "Boating and Recreational Vehicle Use"
+  description: "Boating and Recreational Vehicle Use"
+  parent_id: 36
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 259
+  name: "Boxing, Sparring, and Wrestling"
+  description: "Boxing, Sparring, and Wrestling"
+  parent_id: 36
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 260
+  name: "Hunting and Fishing"
+  description: "Hunting and Fishing"
+  parent_id: 36
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 261
+  name: "State Parks"
+  description: "State Parks"
+  parent_id: 36
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 262
+  name: "Tourism"
+  description: "Tourism"
+  parent_id: 36
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 263
+  name: "Children and Family Assistance"
+  description: "Children and Family Assistance"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 264
+  name: "Medicaid"
+  description: "Medicaid"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 265
+  name: "Medicare"
+  description: "Medicare"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 266
+  name: "Social Security"
+  description: "Social Security"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 267
+  name: "SSI (Supplemental Security Income)"
+  description: "SSI (Supplemental Security Income)"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 268
+  name: "Temporary and Disability Assistance"
+  description: "Temporary and Disability Assistance"
+  parent_id: 37
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 269
+  name: "EITC (Earned Income Tax Credit)"
+  description: "EITC (Earned Income Tax Credit)"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 270
+  name: "Income Tax"
+  description: "Income Tax"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 271
+  name: "Payroll Tax"
+  description: "Payroll Tax"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 272
+  name: "Property Tax"
+  description: "Property Tax"
+  parent_id: 291
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 273
+  name: "Property Transfer, Estate, and Gift Taxes"
+  description: "Property Transfer, Estate, and Gift Taxes"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 274
+  name: "Sales Tax"
+  description: "Sales Tax"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 275
+  name: "STAR (School Tax Relief Program)"
+  description: "STAR (School Tax Relief Program)"
+  parent_id: 38
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 276
+  name: "Internet and Broadband Access"
+  description: "Internet and Broadband Access"
+  parent_id: 39
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 277
+  name: "Landlines"
+  description: "Landlines"
+  parent_id: 39
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 278
+  name: "Television Providers"
+  description: "Television Providers"
+  parent_id: 39
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 279
+  name: "Wireless and Mobile Communications"
+  description: "Wireless and Mobile Communications"
+  parent_id: 39
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 280
+  name: "Aviation"
+  description: "Aviation"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 281
+  name: "Alternative Transportation"
+  description: "Alternative Transportation"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 282
+  name: "DMV (Department of Motor Vehicles)"
+  description: "DMV (Department of Motor Vehicles)"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 283
+  name: "Infrastructure (Roads, Highways, Bridges)"
+  description: "Infrastructure (Roads, Highways, Bridges)"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 284
+  name: "New York State Thruway"
+  description: "New York State Thruway"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 285
+  name: "Ports and Waterways"
+  description: "Ports and Waterways"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 286
+  name: "Public Transportation/Mass Transit"
+  description: "Public Transportation/Mass Transit"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 287
+  name: "Trucking and Freight Rail"
+  description: "Trucking and Freight Rail"
+  parent_id: 40
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 288
+  name: "Marriage Equality"
+  description: "Marriage Equality"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 289
+  name: "GENDA"
+  description: "GENDA"
+  parent_id: 24
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 291
+  name: "Issue Codes"
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 292
+  name: "Positions"
+  description: "hidden parent tag for positions"
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 1
+  used_for: "civicrm_contact"
+-
+  id: 296
+  name: "Keywords"
+  is_selectable: 1
+  is_reserved: 1
+  is_tagset: 1
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 297
+  name: "Inbox Polling Unprocessed"
+  description: "Tag noting that this activity has been created by Inbox Polling and is still Unprocessed."
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 298
+  name: "Death penalty - Con"
+  description: "Death penalty - Con"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 299
+  name: "STATE GOVERNMENTAL OPERATIONS"
+  description: "STATE GOVERNMENTAL OPERATIONS"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 300
+  name: "Death penalty - Pro"
+  description: "Death penalty - Pro"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 301
+  name: "hunting"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 302
+  name: "hunting license"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 303
+  name: "hunting licenses"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 304
+  name: "safe act"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 305
+  name: "S1800-2013 (ESPAILLAT)"
+  description: "<a href=\"http://open.nysenate.gov/legislation/bill/S1800-2013\" target=_blank>http://open.nysenate.gov/legislation/bill/S1800-2013</a>"
+  parent_id: 292
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 306
+  name: "S500-2013 - AGAINST (ESPAILLAT)"
+  description: "<a href=\"http://open.nysenate.gov/legislation/bill/S500-2013\" target=_blank>http://open.nysenate.gov/legislation/bill/S500-2013</a>"
+  parent_id: 292
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 307
+  name: "S8500-2009 (FOLEY)"
+  description: "<a href=\"http://open.nysenate.gov/legislation/bill/S8500-2009\" target=_blank>http://open.nysenate.gov/legislation/bill/S8500-2009</a>"
+  parent_id: 292
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact"
+-
+  id: 308
+  name: "storm"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 309
+  name: "website"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
+-
+  id: 310
+  name: "storm damage"
+  parent_id: 296
+  is_selectable: 1
+  is_reserved: 0
+  is_tagset: 0
+  used_for: "civicrm_contact,civicrm_activity,civicrm_case"
