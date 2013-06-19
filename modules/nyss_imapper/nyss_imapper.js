@@ -1117,13 +1117,19 @@ function makeListSortable(){
 
               cj(nPaging).addClass('pagination').append(
                   '<ul>'+
+                      '<li class="first disabled"><a href="#">&larr; &larr; First</a></li>'+
                       '<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
                       '<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
+                      '<li class="last disabled"><a href="#"> Last &rarr; &rarr; </a></li>'+
+
                   '</ul>'
               );
               var els = cj('a', nPaging);
-              cj(els[0]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
-              cj(els[1]).bind( 'click.DT', { action: "next" }, fnClickHandler );
+              cj(els[0]).bind( 'click.DT', { action: "first" }, fnClickHandler );
+              cj(els[1]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
+              cj(els[2]).bind( 'click.DT', { action: "next" }, fnClickHandler );
+              cj(els[3]).bind( 'click.DT', { action: "last" }, fnClickHandler );
+
           },
 
           "fnUpdate": function ( oSettings, fnDraw ) {
@@ -1149,13 +1155,13 @@ function makeListSortable(){
 
               for ( i=0, iLen=an.length ; i<iLen ; i++ ) {
                   // Remove the middle elements
-                  cj('li:gt(0)', an[i]).filter(':not(:last)').remove();
+                  cj('li:gt(1)', an[i]).filter(':not(.next):not(.last)').remove();
 
                   // Add the new list items and their event handlers
                   for ( j=iStart ; j<=iEnd ; j++ ) {
                       sClass = (j==oPaging.iPage+1) ? 'class="active"' : '';
                       cj('<li '+sClass+'><a href="#">'+j+'</a></li>')
-                          .insertBefore( $('li:last', an[i])[0] )
+                          .insertBefore( $('li.next', an[i])[0] )
                           .bind('click', function (e) {
                               e.preventDefault();
                               oSettings._iDisplayStart = (parseInt(cj('a', this).text(),10)-1) * oPaging.iLength;
@@ -1180,15 +1186,23 @@ function makeListSortable(){
 
                   // Add / remove disabled classes from the static elements
                   if ( oPaging.iPage === 0 ) {
-                      cj('li:first', an[i]).addClass('disabled');
+                      cj('.first', an[i]).addClass('disabled');
+                      cj('.prev', an[i]).addClass('disabled');
+
                   } else {
-                      cj('li:first', an[i]).removeClass('disabled');
+                      cj('.first', an[i]).removeClass('disabled');
+                      cj('.prev', an[i]).removeClass('disabled');
+
                   }
 
                   if ( oPaging.iPage === oPaging.iTotalPages-1 || oPaging.iTotalPages === 0 ) {
-                      cj('li:last', an[i]).addClass('disabled');
+                      cj('.last', an[i]).addClass('disabled');
+                      cj('.next', an[i]).addClass('disabled');
+
                   } else {
-                      cj('li:last', an[i]).removeClass('disabled');
+                      cj('.last', an[i]).removeClass('disabled');
+                      cj('.next', an[i]).removeClass('disabled');
+
                   }
               }
           }
