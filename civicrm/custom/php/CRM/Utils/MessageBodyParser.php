@@ -61,50 +61,52 @@ class MessageBodyParser
 
     $bodyArray = explode("\r\n", $headerCheck);
 
-    $possibleHeaders = "subject|from|to|sent|date|cc|bcc";
+    $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
 
+    $Line = array();
+    $BlockLines = array();
+    $currentHeader=0;
+    $HeaderBlocks = array();
+
+    // search body line by line for headers 
     foreach ($bodyArray as $key => $line) {
-      $line = trim($line);
-      if ($line != '') {
-        // Remove "mailto" and "replyto" (or "reply-to" or "reply to")
-        $line = preg_replace('/(mail|reply)[- ]?to/i', '', $line);
-
-        if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
-          $header = strtolower($matches[1]);
-          $value = trim($matches[2]);
-
-          switch ($header) {
-            case 'subject':
-              $m['Subject'][] = $value;
-              break;
-            case 'from':
-              $parseEmail = self::parseFromHeader($value);
-              $m['From'][] = $parseEmail;
-              break;
-            case 'to':
-              $m['To'][] = $value;
-              break;
-            case 'sent': case 'date':
-              // Remove errors caused by "at" or ","
-              $dateValue = preg_replace('/ at |,/i', '', $value);
-              $parseDate = date("Y-m-d H:i:s", strtotime($dateValue));
-              $m['Date'][] = $parseDate;
-              break;
-            case 'cc':
-              $m['Cc'][] = $value;
-              break;
-            case 'bcc':
-              $m['Bcc'][] = $value;
-              break;
-            default:
-              break;
+      if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
+        // if we find a header, we start the header section
+        if (!isset($BlockLines[$currentHeader]['start'])) {
+          $BlockLines[$currentHeader]['start']=$key;
+        }
+      }else{
+        if (trim($line) == ''){
+          // if there is an open header, and we have an empty line, thats the end of a deader
+          if ((!isset($BlockLines[$currentHeader]['stop'])) && (isset($BlockLines[$currentHeader]['start']))) {
+            $BlockLines[$currentHeader]['stop']=$key;
+            $currentHeader++;
           }
         }
       }
     }
+    $LastHeader = '';
+    // loop through header blocks,
+    foreach ($BlockLines as $id => $payload) {
+      foreach ($bodyArray as $key => $line) {
+        if($key >= $payload['start'] && $key < $payload['stop']){
+          //echo trim($line)."\n";
+          if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
+            $LastHeader = strtolower($matches[1]);
+            $value = trim($matches[2]);
+            $HeaderBlocks[$id][$LastHeader] = $value;
+          }else{
+            $HeaderBlocks[$id][$LastHeader] = $HeaderBlocks[$id][$LastHeader]." ".$line;
+          }
 
-    // at this point, $m returns full tree, but we don't need it
+        }
+      }
+    }
+    echo " - - - - - - - - - -\n";
+    var_dump($HeaderBlocks);
+    echo " - - - - - - - - - -\n";
 
+ 
     // // maybe useful at some point
     // // search the message for other emails,
     // // SO 3901070
