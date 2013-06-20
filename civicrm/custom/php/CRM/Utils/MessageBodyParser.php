@@ -86,11 +86,11 @@ class MessageBodyParser
       }
     }
     $LastHeader = '';
-    // loop through header blocks,
+
+    // loop through header blocks, combine multi line headers
     foreach ($BlockLines as $id => $payload) {
       foreach ($bodyArray as $key => $line) {
         if($key >= $payload['start'] && $key < $payload['stop']){
-          //echo trim($line)."\n";
           if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
             $LastHeader = strtolower($matches[1]);
             $value = trim($matches[2]);
@@ -102,34 +102,46 @@ class MessageBodyParser
         }
       }
     }
-    echo " - - - - - - - - - -\n";
-    var_dump($HeaderBlocks);
-    echo " - - - - - - - - - -\n";
-
+    // So we have single lines now, lets output it !
+    $m=array();
+    foreach ($HeaderBlocks as $id => $block) {
+      foreach ($block as $header => $value) {
+        switch ($header) {
+          case 'subject':
+            $m[$id]['Subject'] = $value;
+            break;
+          case 'from':
+            $parseEmail = self::parseFromHeader($value);
+            $m[$id]['From'] = $parseEmail;
+            break;
+          case 'to':
+            $m[$id]['To'] = $value;
+            break;
+          case 'sent': case 'date':
+            // Remove errors caused by "at" or ","
+            $dateValue = preg_replace('/ at |,/i', '', $value);
+            $parseDate = date("Y-m-d H:i:s", strtotime($dateValue));
+            $m[$id]['Date'] = $parseDate;
+            break;
+          case 'cc':
+            $m[$id]['Cc'] = $value;
+            break;
+          case 'bcc':
+            $m[$id]['Bcc'] = $value;
+            break;
+          default:
+            break;
+        } 
+      }
+    }
  
-    // // maybe useful at some point
-    // // search the message for other emails,
-    // // SO 3901070
-    // $pattern = '/[a-z0-9_\-\+]+@[a-z0-9\-]+\.([a-z]{2,20})(?:\.[a-z]{3})?/i';
-    // preg_match_all($pattern, $tempbody, $matches);
-    // $mentionsCount = array();
-    // // look for a previous mention, add them up.
-    // foreach ($matches[0] as $key => $value) {
-    //   if (trim($value) != '') {
-    //     if ($mentions[$value]) {
-    //       $mentions[$value] = $mentions[$value] + 1;
-    //     }
-    //     else {
-    //       $mentions[$value] = 1;
-    //     }
-    //   }
-    // }
+    // only grab the details from the first header in the message
+    $fwdDate = $m[0]['Date'];
+    $fwdName = $m[0]['From']['name'];
+    $fwdEmail = $m[0]['From']['email'];
+    $fwdEmailLookup = $m[0]['From']['lookupType'];
+    $fwdSubject = $m[0]['Subject'];
 
-    $fwdDate = $m['Date'][0];
-    $fwdName = $m['From'][0]['name'];
-    $fwdEmail = $m['From'][0]['email'];
-    $fwdEmailLookup = $m['From'][0]['lookupType'];
-    $fwdSubject = $m['Subject'][0];
     // Remove all parentheses from the subject
     $fwdSubject = trim(preg_replace('/[()]/i', '', $fwdSubject));
 
