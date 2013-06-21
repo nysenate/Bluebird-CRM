@@ -3,12 +3,40 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2010-12-02
-// Revised: 2011-01-05
+// Revised: 2013-06-21
 //
 
-function listLdapauth($dbcon, $colname = '*')
+define('SERVER_ID', 'nyss_ldap');
+
+
+function getVariableValue($dbcon, $name)
 {
-  $sql = "SELECT $colname FROM ldapauth;";
+  $sql = "SELECT value FROM variable WHERE name='$name';";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return false;
+  }
+  else {
+    $row = mysql_fetch_assoc($result);
+    $val = unserialize($row['value']);
+    mysql_free_result($result);
+    return $val;
+  }
+} // getVariableValue()
+
+
+
+function getLdapAuthentication($dbcon)
+{
+  return getVariableValue($dbcon, 'ldap_authentication_conf');
+} // getLdapAuthentication()
+
+
+
+function listFields($dbcon, $table, $colnames = '*')
+{
+  $sql = "SELECT $colnames FROM $table WHERE sid='".SERVER_ID."';";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -22,22 +50,90 @@ function listLdapauth($dbcon, $colname = '*')
           echo $fldname.': '.$fldval."\n";
         }
         else {
-          echo $fldname.": [array]\n";
-          foreach ($val as $n => $v) {
-            echo "\t$n => $v\n";
-          }
+          echo $fldname.": ".print_r($val, true)."\n";
         }
       }
     }
   }
+  mysql_free_result($result);
   return true;
-} // listLdapauth() 
+} // listFields()
 
 
 
-function setField($dbcon, $fldname, $fldval)
+function listLdapServer($dbcon, $colnames = '*')
 {
-  $sql = "UPDATE ldapauth SET $fldname = '$fldval';";
+  echo "=== LDAP Server Info ===\n";
+  return listFields($dbcon, 'ldap_servers', $colnames);
+} // listLdapServer()
+
+
+
+function listLdapAuthentication($dbcon)
+{
+  echo "=== LDAP Authentication Info ===\n";
+  $val = getLdapAuthentication($dbcon);
+  if ($val !== false) {
+    print_r($val);
+    return true;
+  }
+  else {
+    return false;
+  }
+} // listLdapAuthentication()
+
+
+
+function listLdapAuthorization($dbcon, $colnames = '*')
+{
+  echo "=== LDAP Authorization Info ===\n";
+  return listFields($dbcon, 'ldap_authorization', $colnames);
+} // listLdapAuthorization()
+
+
+
+function setVariableValue($dbcon, $name, $val)
+{
+  $sval = serialize($val);
+  $qval = mysql_real_escape_string($sval, $dbcon);
+  $sql = "UPDATE variable SET value='$qval' WHERE name='$name';";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return false;
+  }
+  else {
+    return true;
+  }
+} // setVariableValue()
+
+
+
+function storeLdapAuthentication($dbcon, $val)
+{
+  return setVariableValue($dbcon, 'ldap_authentication_conf', $val);
+} // storeLdapAuthentication()
+
+
+
+function setAuthenticationField($dbcon, $fldname, $fldval)
+{
+  $authConfig = getLdapAuthentication($dbcon);
+  if (isset($authConfig[$fldname])) {
+    $authConfig[$fldname] = $fldval;
+    return storeLdapAuthentication($dbcon, $authConfig);
+  }
+  else {
+    echo "Field [$fldname] does not exist in the LDAP authentication config\n";
+    return false;
+  }
+} // setAuthenticationField()
+
+
+
+function setField($dbcon, $tabname, $fldname, $fldval)
+{
+  $sql = "UPDATE $tabname SET $fldname = '$fldval' where sid='".SERVER_ID."';";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -50,109 +146,40 @@ function setField($dbcon, $fldname, $fldval)
 
 
 
-function getList($dbcon, $fldname)
+function setServerField($dbcon, $fldname, $fldval)
 {
-  $sql = "SELECT $fldname FROM ldapauth;";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
-    return false;
-  }
-
-  $row = mysql_fetch_assoc($result);
-  if ($row[$fldname]) {
-    $valmap = unserialize($row[$fldname]);
-    return $valmap;
-  }
-  else {
-    // Return an empty array if the value was empty or NULL.
-    return array();
-  }
-} // getList()
+  return setField($dbcon, 'ldap_servers', $fldname, $fldval);
+} // setServerField()
 
 
 
-function storeList($dbcon, $fldname, $listval)
+function setAuthorizationField($dbcon, $fldname, $fldval)
 {
-  // Re-number the numeric indices
-  $merged_list = array_merge($listval);
-  $sql = "UPDATE ldapauth SET $fldname = '".serialize($merged_list)."';";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
-    return false;
-  }
-  return true;
-} // storeList()
+  return setField($dbcon, 'ldap_authorization', $fldname, $fldval);
+} // setAuthorizationField()
 
 
 
-function addToList($dbcon, $fldname, $fldval)
+function setEntries($dbcon, $entries)
 {
-  // Get the current list of serialized values from the field.
-  if (($fldlist = getList($dbcon, $fldname)) === false) {
-    return false;
-  }
-
-  // If a "|" is part of the new value, then break it into key/value.
-  // Otherwise, assume a numerical index and use the next increment.
-  $fldval_parts = explode("|", $fldval);
-
-  // Add the new value (plus optional key) to the list.
-  if (count($fldval_parts) == 1) {
-    // Don't add an auto-indexed value if it is already present.
-    if (!in_array($fldval, $fldlist)) {
-      $fldlist[] = $fldval;
-    }
-  }
-  else {
-    $key = $fldval_parts[0];
-    $val = $fldval_parts[1];
-    $fldlist[$key] = $val;
-  }
-
-  return storeList($dbcon, $fldname, $fldlist);
-} // addToList()
+  $entries = preg_replace('/[ ]*(,[ ]*)+/', "\n", $entries);
+  return setAuthorizationField($dbcon, 'derive_from_entry_entries', $entries);
+} // setEntries()
 
 
 
-function deleteFromList($dbcon, $fldname, $fldval)
+function setMappings($dbcon, $mappings)
 {
-  // Get the current list of serialized values from the field.
-  if (($fldlist = getList($dbcon, $fldname)) === false) {
-    return false;
-  }
-  else if ($fldlist == null) {
-    return false;
-  }
+  $mappings = preg_replace('/[ ]*(,[ ]*)+/', "\n", $mappings);
+  return setAuthorizationField($dbcon, 'mappings', $mappings);
+} // setMappings()
 
-  // If a "|" is part of the new value, then break it into key/value, and
-  // match on the key.  Otherwise, match on the value itself.
-  $fldval_parts = explode("|", $fldval);
 
-  if (count($fldval_parts) == 1) {
-    // Search the array for the matching value.
-    $key = array_search($fldval, $fldlist);
-    if ($key !== false) {
-      unset($fldlist[$key]);
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    // Search the array for the matching key.
-    $key = $fldval_parts[0];
-    if (isset($fldlist[$key])) {
-      unset($fldlist[$key]);
-    }
-    else {
-      return false;
-    }
-  }
 
-  return storeList($dbcon, $fldname, $fldlist);
-} // deleteFromList()
-
+function setPhpAuth($dbcon, $codeText)
+{
+  return setAuthenticationField($dbcon, 'allowTestPhp', $codeText);
+} // setPhpAuth()
 
 
 /***************************************************************************
@@ -164,11 +191,10 @@ $prog = basename($argv[0]);
 if ($argc != 6 && $argc != 7) {
   echo "Usage: $prog cmd dbhost dbuser dbpass dbname [param]\n".
        "   cmd can be:\n".
-       "      listAll, listEntries, listGroups, listMappings,\n".
-       "      setName, setServer, setPort,\n".
-       "      addEntry, addGroup, addMapping\n".
-       "      delEntry, delGroup, delMapping\n".
-       "      clearEntries, clearGroups, clearMappings\n";
+       "      listAll, listEntries, listMappings,\n".
+       "      listServer, listAuthentication, listAuthorization,\n".
+       "      setName, setHost, setPort,\n".
+       "      setEntries, setMappings, setPhpAuth\n";
   exit(1);
 }
 else {
@@ -178,7 +204,7 @@ else {
   $dbpass = $argv[4];
   $dbname = $argv[5];
   $param  = ($argc > 6) ? $argv[6] : "";
-  
+
   $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
   if (!$dbcon) {
     echo mysql_error()."\n";
@@ -194,57 +220,44 @@ else {
   $rc = true;
 
   if ($cmd == 'listAll') {
-    $rc = listLdapauth($dbcon);
+    $rc = listLdapServer($dbcon);
+    echo "\n";
+    $rc = listLdapAuthentication($dbcon) && $rc;
+    echo "\n";
+    $rc = listLdapAuthorization($dbcon) && $rc;
+  }
+  else if ($cmd == 'listServer') {
+    $rc = listLdapServer($dbcon);
+  }
+  else if ($cmd == 'listAuthentication') {
+    $rc = listLdapAuthentication($dbcon);
+  }
+  else if ($cmd == 'listAuthorization') {
+    $rc = listLdapAuthorization($dbcon);
   }
   else if ($cmd == 'listEntries') {
-    $rc = listLdapauth($dbcon, "ldapgroups_entries");
-  }
-  else if ($cmd == 'listGroups') {
-    $rc = listLdapauth($dbcon, "ldapgroups_groups");
+    $rc = listLdapAuthorization($dbcon, 'derive_from_entry_entries');
   }
   else if ($cmd == 'listMappings') {
-    $rc = listLdapauth($dbcon, "ldapgroups_mappings");
+    $rc = listLdapAuthorization($dbcon, 'mappings');
   }
-  elseif ($cmd == 'setName') {
-    $rc = setField($dbcon, 'name', $param);
+  else if ($cmd == 'setName') {
+    $rc = setServerField($dbcon, 'name', $param);
   }
-  elseif ($cmd == 'setServer') {
-    $rc = setField($dbcon, 'server', $param);
+  else if ($cmd == 'setHost') {
+    $rc = setServerField($dbcon, 'address', $param);
   }
-  elseif ($cmd == 'setPort') {
-    $rc = setField($dbcon, 'port', $param); 
+  else if ($cmd == 'setPort') {
+    $rc = setServerField($dbcon, 'port', $param);
   }
-  elseif ($cmd == 'addEntry') {
-    $rc = addToList($dbcon, 'ldapgroups_entries', $param);
+  else if ($cmd == 'setEntries') {
+    $rc = setEntries($dbcon, $param);
   }
-  elseif ($cmd == 'addGroup') {
-    $rc = addToList($dbcon, 'ldapgroups_groups', $param);
+  else if ($cmd == 'setMappings') {
+    $rc = setMappings($dbcon, $param);
   }
-  elseif ($cmd == 'addMapping') {
-    $rc = addToList($dbcon, 'ldapgroups_mappings', $param);
-  }
-  elseif ($cmd == 'delEntry') {
-    $rc = deleteFromList($dbcon, 'ldapgroups_entries', $param);
-  }
-  elseif ($cmd == 'delGroup') {
-    $rc = deleteFromList($dbcon, 'ldapgroups_groups', $param);
-  }
-  elseif ($cmd == 'delMapping') {
-    $rc = deleteFromList($dbcon, 'ldapgroups_mappings', $param);
-  }
-  elseif ($cmd == 'clearAll') {
-    $rc = setField($dbcon, "ldapgroups_entries", "") &&
-          setField($dbcon, "ldapgroups_groups", "") &&
-          setField($dbcon, "ldapgroups_mappings", "");
-  }
-  elseif ($cmd == 'clearEntries') {
-    $rc = setField($dbcon, "ldapgroups_entries", "");
-  }
-  elseif ($cmd == 'clearGroups') {
-    $rc = setField($dbcon, "ldapgroups_groups", "");
-  }
-  elseif ($cmd == 'clearMappings') {
-    $rc = setField($dbcon, "ldapgroups_mappings", "");
+  else if ($cmd == 'setPhpAuth') {
+    $rc = setPhpAuth($dbcon, $param);
   }
 
   mysql_close($dbcon);
