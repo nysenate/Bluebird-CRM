@@ -1,13 +1,13 @@
 <?php
 
 define('BODY_TAGS_TO_SKIP', '
-        ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+        ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|B|BASE|BASEFONT|BDO|BIG|
         BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
         COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
         FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
         ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
         NOSCRIPT|OBJECT|OL|OPTGROUP|OPTION|PARAM|PRE|P|Q|SAMP|
-        SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|
+        SCRIPT|SELECT|SMALL|STRIKE|STRONG|STYLE|SUB|SUP|S|SPAN|
         TEXTAREA|TITLE|TT|U|UL|VAR');
 
 define('HEAD_TAGS_TO_SKIP', BODY_TAGS_TO_SKIP.'|
@@ -52,13 +52,12 @@ class MessageBodyParser
       $start = quoted_printable_decode($start);
     }
 
-    $headerCheck = substr($start, 0, 1600);
+    $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
     $patterns = array('/\r\n|\r|\n/i', '/(<(br|div)[^>]*>\s*)+/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
-
     $bodyArray = explode("\r\n", $headerCheck);
 
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
@@ -134,13 +133,13 @@ class MessageBodyParser
         } 
       }
     }
- 
     // only grab the details from the first header in the message
     $fwdDate = $m[0]['Date'];
     $fwdName = $m[0]['From']['name'];
     $fwdEmail = $m[0]['From']['email'];
     $fwdEmailLookup = $m[0]['From']['lookupType'];
     $fwdSubject = $m[0]['Subject'];
+
 
     // Remove all parentheses from the subject
     $fwdSubject = trim(preg_replace('/[()]/i', '', $fwdSubject));
