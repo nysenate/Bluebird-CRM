@@ -165,7 +165,7 @@ treeBehavior =
         else
           _viewSettings["openTags"][tagid] = true
         tagLabel.toggleClass "open"
-        bbUtils.localStorage("tagViewSettings", _viewSettings["openTags"])
+        bb.Utils.localStorage("tagViewSettings", _viewSettings["openTags"])
       
 
 

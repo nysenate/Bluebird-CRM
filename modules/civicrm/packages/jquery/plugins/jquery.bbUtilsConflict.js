@@ -10,5 +10,4 @@
   var bbUtils = $.bbclone();
   window["bbUtils"] = bbUtils;
   delete Function.prototype.bbclone;
-  console.log(Function.bbclone);
 })(window, jQuery);

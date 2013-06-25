@@ -11,7 +11,7 @@
 #
 
 
-class bbhg
+class hg
   constructor: () ->
     # method, aryobj...
     # try
@@ -80,13 +80,13 @@ _settings=
   # requesting bool is assuming that 
   requesting: true 
 
-# instantiation? this is tough
-if window.bbUtils?
-  console.log bbhg
-  # bbhg.class extends bbUtilsNS
-  # bbUtilsNS = bbhg
-  # window.bbUtils ?= new bbhg
-else
-  console.log "bbUtils needs to be declared first."
+# # instantiation? this is tough
+# if window.bbUtils?
+#   console.log bbhg
+#   # bbhg.class extends bbUtilsNS
+#   # bbUtilsNS = bbhg
+#   # window.bbUtils ?= new bbhg
+# else
+#   console.log "bbUtils needs to be declared first."
 # http://open.nysenate.gov/legislation/search/?term=otype:bill+AND+oid:(S12*)&searchType=&format=json&pageSize=10
 # $target_url = self::OPENLEG_BASE_URL.'/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&searchType=&format=json&pageSize=10';

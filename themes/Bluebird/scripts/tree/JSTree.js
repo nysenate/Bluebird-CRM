@@ -541,7 +541,7 @@
             _viewSettings["openTags"][tagid] = true;
           }
           tagLabel.toggleClass("open");
-          return bbUtils.localStorage("tagViewSettings", _viewSettings["openTags"]);
+          return bb.Utils.localStorage("tagViewSettings", _viewSettings["openTags"]);
         });
       });
     }
