@@ -171,7 +171,7 @@ if ($imap_validsenders) {
   // If imap.validsenders was specified in the config file, then add those
   // e-mail addresses to the list of authorized forwarders.  The contact ID
   // for each of these "config file" forwarders will be 1 (Bluebird Admin).
-  $validSenders = explode(',', $imap_validsenders);
+  $validSenders = preg_split('/[\s,]+/', $imap_validsenders, null, PREG_SPLIT_NO_EMPTY);
   foreach ($validSenders as $validSender) {
     if ($validSender && isset($authForwarders[$validSender])) {
       echo "[INFO]    Valid sender [$validSender] from config is already in the auth forwarders list\n";
