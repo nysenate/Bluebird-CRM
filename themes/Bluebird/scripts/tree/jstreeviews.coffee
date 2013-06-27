@@ -126,6 +126,7 @@ class View
     @writeTabs()
     @cjInstanceSelector.html(_treeData.html[@displaySettings.defaultTree])
     treeBehavior.autoCompleteStart(@instance)
+    treeBehavior.readDropdownsFromLocal()
     treeBehavior.enableDropdowns()
   writeTabs: () ->
     output = ""
@@ -156,17 +157,32 @@ treeBehavior =
   enableDropdowns: () ->
     cj(".JSTree .treeButton").off "click" 
     cj(".JSTree .treeButton").on "click", ->
-      tagLabel = cj(this).parent().parent()
-      tagid = tagLabel.data('tagid')
-      # console.log tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}")
-      tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
-        if tagLabel.is(".open")
-          _viewSettings["openTags"][tagid] = false
+      treeBehavior.dropdownItem(cj(this).parent().parent())
+
+  dropdownItem: (tagLabel) ->
+    console.log tagLabel
+    tagid = tagLabel.data('tagid')
+    # console.log tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}")
+    tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
+      if tagLabel.is(".open")
+        _viewSettings["openTags"][tagid] = false
+      else
+        _viewSettings["openTags"][tagid] = true
+      tagLabel.toggleClass "open"
+      bbUtils.localStorage("tagViewSettings", _viewSettings["openTags"])
+  readDropdownsFromLocal: () ->
+    if bbUtils.localStorage("tagViewSettings")    
+      _viewSettings["openTags"] = bbUtils.localStorage("tagViewSettings")
+      for tag, bool of bbUtils.localStorage("tagViewSettings")
+        if bool
+          toPass = cj("dt.tag-#{tag}")
+          console.log toPass
+          @dropdownItem toPass
         else
-          _viewSettings["openTags"][tagid] = true
-        tagLabel.toggleClass "open"
-        bb.Utils.localStorage("tagViewSettings", _viewSettings["openTags"])
-      
+          delete _viewSettings["openTags"][tag]
+    else
+    console.log _viewSettings["openTags"]
+    _viewSettings["openTags"]
 
 
 

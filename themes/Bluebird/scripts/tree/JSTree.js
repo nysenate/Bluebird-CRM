@@ -480,6 +480,7 @@
       this.writeTabs();
       this.cjInstanceSelector.html(_treeData.html[this.displaySettings.defaultTree]);
       treeBehavior.autoCompleteStart(this.instance);
+      treeBehavior.readDropdownsFromLocal();
       return treeBehavior.enableDropdowns();
     };
 
@@ -529,21 +530,46 @@
     enableDropdowns: function() {
       cj(".JSTree .treeButton").off("click");
       return cj(".JSTree .treeButton").on("click", function() {
-        var tagLabel, tagid,
-          _this = this;
-
-        tagLabel = cj(this).parent().parent();
-        tagid = tagLabel.data('tagid');
-        return tagLabel.siblings("dl#tagDropdown_" + tagid).slideToggle("200", function() {
-          if (tagLabel.is(".open")) {
-            _viewSettings["openTags"][tagid] = false;
-          } else {
-            _viewSettings["openTags"][tagid] = true;
-          }
-          tagLabel.toggleClass("open");
-          return bb.Utils.localStorage("tagViewSettings", _viewSettings["openTags"]);
-        });
+        return treeBehavior.dropdownItem(cj(this).parent().parent());
       });
+    },
+    dropdownItem: function(tagLabel) {
+      var tagid,
+        _this = this;
+
+      console.log(tagLabel);
+      tagid = tagLabel.data('tagid');
+      return tagLabel.siblings("dl#tagDropdown_" + tagid).slideToggle("200", function() {
+        if (tagLabel.is(".open")) {
+          _viewSettings["openTags"][tagid] = false;
+        } else {
+          _viewSettings["openTags"][tagid] = true;
+        }
+        tagLabel.toggleClass("open");
+        return bbUtils.localStorage("tagViewSettings", _viewSettings["openTags"]);
+      });
+    },
+    readDropdownsFromLocal: function() {
+      var bool, tag, toPass, _ref2;
+
+      if (bbUtils.localStorage("tagViewSettings")) {
+        _viewSettings["openTags"] = bbUtils.localStorage("tagViewSettings");
+        _ref2 = bbUtils.localStorage("tagViewSettings");
+        for (tag in _ref2) {
+          bool = _ref2[tag];
+          if (bool) {
+            toPass = cj("dt.tag-" + tag);
+            console.log(toPass);
+            this.dropdownItem(toPass);
+          } else {
+            delete _viewSettings["openTags"][tag];
+          }
+        }
+      } else {
+
+      }
+      console.log(_viewSettings["openTags"]);
+      return _viewSettings["openTags"];
     }
   };
 

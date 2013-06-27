@@ -11,29 +11,29 @@
 
 
 # (($, window, document) ->
-  
-# how you get
-window["bb"] = (klass, mixin) ->
-  extend klass.prototype, mixin
+# moduleKeywords = ['extended', 'included'] 
 
-# data objects
 
-_settings=
-  version: "0.0.1"
+# # core object
+# class window.bb
+#   @extend: (obj) ->
+#     for key, value of obj when key not in moduleKeywords
+#       @[key] = value
 
-# public methods
-methods =
-  localStorage: (options) ->
-    console.log options
-  isJsonString: (options) ->
+#     obj.extended?.apply(@)
+#     this
 
-  rc4: (options) ->
+#   @include: (obj) ->
+#     for key, value of obj when key not in moduleKeywords
+#       # Assign properties to the prototype
+#       @::[key] = value
 
-  version: ->
-    console.log "bb.Utils: #{_settings.version}"
+#     obj.included?.apply(@)
+#     this
 
-# core object
-class bbUtils
+
+
+class window.bb
   # LocalStorage
   # Usage:
   # Key = uniqueIdentifier for locally stored data
@@ -42,7 +42,10 @@ class bbUtils
   # and parse it out to get it back. 
   # Returns: false if unable to use local storage, true if set, value if get
   # 
-  # 
+  #
+
+  _settings=
+    version: "0.0.1" 
   localStorage: (key, value)->
     # your easy modernizr check if it's supported, we don't save to cookie
     # because it's not important to for unsupported browsers to have
@@ -95,14 +98,7 @@ class bbUtils
       s[j] = x
       res += String.fromCharCode(v.charCodeAt(y) ^ s[(s[i] + s[j]) % 256])
     res
-  # returns version number.
 
-bb["Utils"] = () ->
-  for key in Object.keys(methods)
-    bb bb.Utils, methods.key
-
-
-
-#     # bb methods
-# ) cj, window, document
-# # console.log bbUtils.version
+window.bbUtils = new bb
+# when you go new bb... none you're not extending ONTO bb, you're extending BB. which doesn't work, so...
+# you need to merge everything into BB and then call it.

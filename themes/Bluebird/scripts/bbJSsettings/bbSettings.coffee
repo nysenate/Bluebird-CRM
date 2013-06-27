@@ -11,7 +11,7 @@
 #
 
 
-class hg
+class hg extends bb
   constructor: () ->
     # method, aryobj...
     # try
@@ -80,6 +80,8 @@ _settings=
   # requesting bool is assuming that 
   requesting: true 
 
+
+window["bbhg"] = new hg
 # # instantiation? this is tough
 # if window.bbUtils?
 #   console.log bbhg
