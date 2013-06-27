@@ -96,11 +96,11 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache {
           $data = unserialize($dao->data);
         }
         $dao->free();
-        $_cache[$argString] = $data;
-        $cache->set($argString, $_cache[$argString]);
+        self::$_cache[$argString] = $data;
+        $cache->set($argString, self::$_cache[$argString]);
       }
     }
-    return $_cache[$argString];
+    return self::$_cache[$argString];
   }
 
   //NYSS 6719
@@ -115,16 +115,16 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache {
    * @access public
    */
   static function &getItems($group, $componentID = NULL) {
-    static $_cache = NULL;
-    if ($_cache === NULL) {
-      $_cache = array();
+    //static $_cache = NULL;
+    if (self::$_cache === NULL) {
+      self::$_cache = array();
     }
 
     $argString = "CRM_CT_CI_{$group}_{$componentID}";
-    if (!array_key_exists($argString, $_cache)) {
+    if (!array_key_exists($argString, self::$_cache)) {
       $cache = CRM_Utils_Cache::singleton();
-      $_cache[$argString] = $cache->get($argString);
-      if (!$_cache[$argString]) {
+      self::$_cache[$argString] = $cache->get($argString);
+      if (!self::$_cache[$argString]) {
         $dao = new CRM_Core_DAO_Cache();
 
         $dao->group_name   = $group;
