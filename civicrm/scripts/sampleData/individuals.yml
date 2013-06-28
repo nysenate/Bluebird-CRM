@@ -81615,42 +81615,6 @@
       email: ernie.anderson14@yahoo.com
       is_primary: "1"
 - 
-  fk: "3596"
-  contact_type: Individual
-  first_name: Kat
-  last_name: Conway
-  prefix_id: "23"
-  suffix_id: "12"
-  gender_id: "1"
-  api.address.create:
-    - 
-      location_type_id: "1"
-      is_primary: "1"
-      street_address: 90 Maple Avenue
-      state_province_id: "1031"
-      api.custom_value.create:
-        custom_46: "14"
-        custom_47: "34"
-        custom_48: "82"
-        custom_50: "60"
-        custom_52: -NYC
-        custom_54: "68"
-  api.email.create:
-    - 
-      location_type_id: "1"
-      email: fake@gmail.com
-      is_primary: "1"
-- 
-  fk: "3598"
-  contact_type: Individual
-  first_name: STS
-  last_name: Teach2
-  api.email.create:
-    - 
-      location_type_id: "1"
-      email: teach2@nysenate.gov
-      is_primary: "1"
-- 
   fk: "3599"
   contact_type: Individual
   first_name: Senator
