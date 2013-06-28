@@ -1,8 +1,8 @@
 <?php
 
 define('BODY_TAGS_TO_SKIP', '
-        ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|B|BASE|BASEFONT|BDO|BIG|
-        BLOCKQUOTE|BODY|BUTTON|CAPTION|CENTER|CITE|CODE|COL|
+        ABBR|ACRONYM|ADDRESS|APPLET|AREA|A|BASE|BASEFONT|BDO|BIG|
+        BLOCKQUOTE|BODY|BUTTON|B|CAPTION|CENTER|CITE|CODE|COL|
         COLGROUP|DD|DEL|DFN|DIR|DL|DT|EM|FIELDSET|FONT|FORM|
         FRAME|FRAMESET|H\d|HEAD|HTML|IFRAME|INPUT|INS|
         ISINDEX|I|KBD|LABEL|LEGEND|LI|LINK|MAP|MENU|META|NOFRAMES|
@@ -11,7 +11,7 @@ define('BODY_TAGS_TO_SKIP', '
         TEXTAREA|TITLE|TT|U|UL|VAR');
 
 define('HEAD_TAGS_TO_SKIP', BODY_TAGS_TO_SKIP.'|
-        BR|B|DIV|HR|IMG|SPAN|TABLE|TD|TBODY|TFOOT|TH|THEAD|TR');
+        BR|HR|IMG|TABLE|TD|TBODY|TFOOT|TH|THEAD|TR');
 
 
 class MessageBodyParser
@@ -54,8 +54,10 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $patterns = array('/\r\n|\r|\n/i', '/(<(br|div)[^>]*>\s*)+/i');
+    $patterns = array('/\r\n|\r|\n/i', '/(<(br)[^>]*>\s*)+/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
+    $headerCheck = self::stripTagsForHeader($headerCheck);
+    $headerCheck = html_entity_decode($headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
     $bodyArray = explode("\r\n", $headerCheck);
@@ -101,32 +103,35 @@ class MessageBodyParser
         }
       }
     }
+
+    //var_dump($HeaderBlocks);
+
     // So we have single lines now, lets output it !
     $m=array();
     foreach ($HeaderBlocks as $id => $block) {
       foreach ($block as $header => $value) {
         switch ($header) {
           case 'subject':
-            $m[$id]['Subject'] = $value;
+            $m[$id]['Subject'] = trim($value);
             break;
           case 'from':
-            $parseEmail = self::parseFromHeader($value);
+            $parseEmail = self::parseFromHeader(trim($value));
             $m[$id]['From'] = $parseEmail;
             break;
           case 'to':
-            $m[$id]['To'] = $value;
+            $m[$id]['To'] = trim($value);
             break;
           case 'sent': case 'date':
             // Remove errors caused by "at" or ","
-            $dateValue = preg_replace('/ at |,/i', '', $value);
+            $dateValue = preg_replace('/ at |,/i', '',  trim($value));
             $parseDate = date("Y-m-d H:i:s", strtotime($dateValue));
             $m[$id]['Date'] = $parseDate;
             break;
           case 'cc':
-            $m[$id]['Cc'] = $value;
+            $m[$id]['Cc'] = trim($value);
             break;
           case 'bcc':
-            $m[$id]['Bcc'] = $value;
+            $m[$id]['Bcc'] = trim($value);
             break;
           default:
             break;
@@ -135,10 +140,10 @@ class MessageBodyParser
     }
     // only grab the details from the first header in the message
     $fwdDate = $m[0]['Date'];
-    $fwdName = $m[0]['From']['name'];
+    $fwdName = trim($m[0]['From']['name']);
     $fwdEmail = $m[0]['From']['email'];
     $fwdEmailLookup = $m[0]['From']['lookupType'];
-    $fwdSubject = $m[0]['Subject'];
+    $fwdSubject = trim($m[0]['Subject']);
 
 
     // Remove all parentheses from the subject
@@ -160,7 +165,14 @@ class MessageBodyParser
     $body = preg_replace('/[^(\x20-\x7F)]*/', '', $body);
     $body = preg_replace('/<([\w.]+@[\w.]+)>/i', '$1', $body);
 
+    // remove classes & styles 
+    $body = preg_replace( '/style=(["\'])[^\1]*?\1/i', '', $body);
+    $body = preg_replace( '/class=(["\'])[^\1]*?\1/i', '', $body);
+    $body = preg_replace( '/onclick=(["\'])[^\1]*?\1/i', '', $body);
+    $body = preg_replace( '/title=(["\'])[^\1]*?\1/i', '', $body);
+
     // final cleanup
+    $body = html_entity_decode($body); 
     $body = self::stripBodyTags($body);
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
     $body = addslashes($body);
