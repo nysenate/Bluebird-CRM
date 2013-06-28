@@ -617,7 +617,7 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   }
 
   $attachmentCount = count($attachments);
-  if ($attachmentCount > 1) {
+  if ($attachmentCount >= 1) {
     foreach ($attachments as $attachment) {
       $date = date('Ymdhis');
       $filename = mysql_real_escape_string($attachment['filename']);

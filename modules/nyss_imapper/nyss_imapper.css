@@ -203,6 +203,7 @@ thead .sorting{ cursor:pointer;cursor:hand }
 thead .sorting:hover{ background-color:#f8f8f8!important;}
 thead .sorting_desc,thead .sorting_asc{ background-color:#f1f1f1!important;}
 
+.rejected{ color: red; font-style: italic; }
 #search_help{ float:right; font-size: 10px !important; margin: 2px 6px !important;}
 /* use the group that is allowed to forward to search for the contact
 uniquely sortable tabs for
