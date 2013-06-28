@@ -567,7 +567,11 @@ cj(document).ready(function(){
           }
           cj('#message_left_email').html(message.body+"<hr/>");
           cj.each(message.attachments, function(key, value) {
-           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
           cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
           cj('#id').val(messageId);
@@ -712,7 +716,11 @@ cj(document).ready(function(){
           cj('#message_left_email').html(message.body+"<hr/>");
 
           cj.each(message.attachments, function(key, value) {
-           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
 
           cj('#id').val(activityId);
@@ -803,7 +811,11 @@ cj(document).ready(function(){
           }
           cj('#message_left_email_tag').html(messages.body+"<hr/>");
           cj.each(messages.attachments, function(key, value) {
-           cj('#message_left_email_tag').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+             if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
 
           cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
