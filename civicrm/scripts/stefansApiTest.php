@@ -18,8 +18,11 @@ $sender_email = 'dean.hill108@hotmail.com';
 // $sender_email = 'info@medmaltruth.org';
 
 // check via api 
-$apiparams = array('version'=>3, 'activity'=>'get', 'email'=>$sender_email);
-$ApiResults = civicrm_api('contact', 'get', $apiparams);
+$apiparams = array(
+  'version' => 3,
+  'email' => $sender_email,
+);
+$ApiResults = civicrm_api('email', 'get', $apiparams);
 
 // search via sql 
 $nyss_conn = new CRM_Core_DAO();
