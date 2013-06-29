@@ -29,7 +29,7 @@
     <thead>
     {*NYSS 6698*}
     <tr>
-      <th class='crm-mailing-contact-subject'>{ts}Subject{/ts}</th>
+      <th class='crm-mailing-contact-name'>{ts}Mailing Name{/ts}</th>{*NYSS 6895*}
       <th class='crm-mailing-contact_created'>{ts}Added By{/ts}</th>
       <th class='crm-contact-activity_contact nosort'>{ts}With{/ts}</th>
       <th class='crm-mailing-contact-date'>{ts}Date Sent{/ts}</th>{*NYSS 6892*}

@@ -125,8 +125,9 @@ GROUP BY   m.id
   }
   else {
     $defaultFields = array(
-      'm.id'       => 'mailing_id',
-      'm.subject'  => 'subject',
+      'm.id' => 'mailing_id',
+      'm.subject' => 'subject',
+      'm.name' => 'name', //NYSS 6895
       'c.id' => 'creator_id',
       'c.sort_name' => 'creator_name',
     );
