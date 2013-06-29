@@ -281,9 +281,11 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $components = CRM_Core_Component::getEnabledComponents();
 
     foreach ($components as $name => $component) {
-      //NYSS 6698
+      //NYSS 6698/6900
       if ( CRM_Utils_Array::value($name, $this->_viewOptions) &&
-         CRM_Core_Permission::access($component->name)
+        ( CRM_Core_Permission::access($component->name) ||
+          ( $component->name == 'CiviMail' && CRM_Core_Permission::check('access CiviCRM') )
+        )
       ) {
         $elem = $component->registerTab();
 
