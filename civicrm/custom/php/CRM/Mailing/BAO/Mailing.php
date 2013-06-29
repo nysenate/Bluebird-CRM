@@ -2809,6 +2809,7 @@ AND        m.id = %1
     $contactMailings = array();
     foreach ($mailings as $mailingId => $values) {
       $contactMailings[$mailingId]['subject'] = $values['subject'];
+      $contactMailings[$mailingId]['name'] = $values['name'];//NYSS 6895
       $contactMailings[$mailingId]['start_date'] = CRM_Utils_Date::customFormat($values['start_date']);
       //NYSS 6698
       $contactMailings[$mailingId]['recipients'] = CRM_Utils_System::href(ts('(recipients)'), 'civicrm/mailing/report/event',
