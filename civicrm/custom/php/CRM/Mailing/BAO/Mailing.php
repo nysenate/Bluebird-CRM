@@ -2798,10 +2798,10 @@ AND        m.id = %1
     // add total
     $params['total'] = CRM_Mailing_BAO_Mailing::getContactMailingsCount($params);
 
-    //NYSS 6698
+    //NYSS 6698/6890
     if ( !empty($mailings) ) {
-      $openCounts = CRM_Mailing_Event_BAO_Opened::getMailingTotalCount(array_keys($mailings));
-      $clickCounts = CRM_Mailing_Event_BAO_TrackableURLOpen::getMailingTotalCount(array_keys($mailings));
+      $openCounts = CRM_Mailing_Event_BAO_Opened::getMailingContactCount(array_keys($mailings), $params['contact_id']);
+      $clickCounts = CRM_Mailing_Event_BAO_TrackableURLOpen::getMailingContactCount(array_keys($mailings), $params['contact_id']);
       //CRM_Core_Error::debug_var('openCounts', $openCounts);
     }
 
@@ -2820,9 +2820,11 @@ AND        m.id = %1
         'civicrm/contact/view',
         "reset=1&cid={$values['creator_id']}");
 
-      //NYSS 6698
-      $contactMailings[$mailingId]['openstats'] = "Opens: ".$openCounts[$values['mailing_id']].
-        "<br />Clicks: ".$clickCounts[$values['mailing_id']];
+      //NYSS 6698/6890
+      $contactMailings[$mailingId]['openstats'] = "Opens: ".
+        CRM_Utils_Array::value($values['mailing_id'], $openCounts, 0).
+        "<br />Clicks: ".
+        CRM_Utils_Array::value($values['mailing_id'], $clickCounts, 0);
 
       $actionLinks = array(
         CRM_Core_Action::VIEW => array(
