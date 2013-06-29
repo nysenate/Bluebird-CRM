@@ -43,6 +43,8 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 
   protected $_customGroupExtends = array();
 
+  //NYSS 6910
+  protected $_add2groupSupported = FALSE;
 
   protected $_charts = array(
     '' => 'Tabular',
