@@ -31,7 +31,7 @@
     <tr>
       <th class='crm-mailing-contact-name'>{ts}Mailing Name{/ts}</th>{*NYSS 6895*}
       <th class='crm-mailing-contact_created'>{ts}Added By{/ts}</th>
-      <th class='crm-contact-activity_contact nosort'>{ts}With{/ts}</th>
+      <th class='crm-contact-activity_contact nosort'>{ts}Recipients{/ts}</th>{*NYSS 6890*}
       <th class='crm-mailing-contact-date'>{ts}Date Sent{/ts}</th>{*NYSS 6892*}
       <th class='crm-mailing_openstats'>{ts}Opens/Clicks{/ts}</th>
       <th class='crm-mailing-contact-links nosort'>&nbsp;</th>
