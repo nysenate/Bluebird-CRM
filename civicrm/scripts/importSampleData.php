@@ -504,7 +504,7 @@ class CRM_ImportSampleData {
 
     $ydata = Spyc::YAMLDump($data);
 
-    $filename = $scriptPath.'/sampleData/individuals.yml';
+    $filename = $scriptPath.'/sampleData/individuals-generated.yml';
     $fileResource = fopen($filename, 'w');
     fwrite($fileResource, $ydata);
 
