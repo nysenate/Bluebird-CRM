@@ -140,6 +140,7 @@ class View
 
 treeBehavior =
   autoCompleteStart: (@instance) ->
+    @pageElements = @instance.get 'pageElements'
     cj("#JSTree-data").data("autocomplete" : @instance.getAutocomplete())
     params =
       jqDataReference: "#JSTree-data"
@@ -148,9 +149,53 @@ treeBehavior =
     searchmonger = cj("#JSTree-ac").tagACInput("init",params)
     cj("#JSTree-ac").on "keydown", (event) =>
       searchmonger.exec(event, (terms) =>
-        console.log terms
+        if terms.tags?
+          # console.log terms.tags.length
+          # console.log terms
+          if terms.tags.length > 0
+            @hideTags(@pageElements, terms.tags, terms.term.toLowerCase())
+        #   # hide tags
+        # if terms.tags.length == 0 and term.length >= 3
+        #   # @noResultsTags()
+        # if term.length <= 3
+        #   # @showTags(@instance)
+       )
+  hideTags: (@instance, tagList, term) ->
+    # children = cj(".#{@pageElements.tagHolder.join(".")} dt")
+    @cjTagBox = cj(".#{@pageElements.tagHolder.join(".")}")
+    # @cjTagBox.addClass("NV")
+    termBox = "<dl class='search'></div>"
+    @cjTagBox.append(termBox)
+    for key,tag of tagList
+      # console.log tag.id
+      cjkids = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
+      console.log cjkids
+      cjkids.clone().appendTo(termBox)
+      # console.log cjkids.parentsUntil(".JSTree","dt")
+      # .addClass("aNV")
+    # cj("top-291").toggle()
+    console.log cjkids
+
+    # cj.each(children, (key, tag) =>
+    #   console.log cj()
+      # if not cj.inArray(,tagList)
+        # cj(tag).addClass("NV")
+      # else
+        # cj(tag).addClass("aNV")
         
-      )
+
+    # cj(".#{@pageElements.tagHolder.join(".")} dt.tag-#{tag.id}").addClass("aNV") for index,tag of tagList
+      # console.log tag.id
+    # cj.each(tagList, (key, tag) =>
+    # )
+    # notANV = cj(".#{@pageElements.tagHolder.join(".")} dt").not("aNV")
+    # notANV.addClass("NV")
+    # cj(".#{@pageElements.tagHolder.join(".")} dt.aNV.NV").removeClass("NV")
+    # @loadingGif()
+    
+    # @loadingGif()
+  showTags: (@instance) ->
+
   autoCompleteEnd: (@instance) ->
     cj("#JSTree-ac").off "keydown"
 
@@ -183,7 +228,8 @@ treeBehavior =
     else
     console.log _viewSettings["openTags"]
     _viewSettings["openTags"]
-
+  loadingGif:()->
+    cj(".#{@pageElements.tagHolder.join(".")}").toggleClass("loadingGif")
 
 
 _viewSettings=

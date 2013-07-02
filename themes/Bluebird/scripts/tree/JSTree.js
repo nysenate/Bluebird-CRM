@@ -79,7 +79,7 @@
           _this.treeTop = id;
           tagName = new BBTagLabel(id);
           _this.addTabName(cID.name);
-          _this.output += "<dl class='top-" + cID.id + "'>";
+          _this.output += "<dl class='top-" + id + "'>";
           cj.each(cID.children, function(id, tID) {
             return _this.writeOutputData(tID);
           });
@@ -508,6 +508,7 @@
         _this = this;
 
       this.instance = instance;
+      this.pageElements = this.instance.get('pageElements');
       cj("#JSTree-data").data({
         "autocomplete": this.instance.getAutocomplete()
       });
@@ -519,9 +520,31 @@
       searchmonger = cj("#JSTree-ac").tagACInput("init", params);
       return cj("#JSTree-ac").on("keydown", function(event) {
         return searchmonger.exec(event, function(terms) {
-          return console.log(terms);
+          if (terms.tags != null) {
+            if (terms.tags.length > 0) {
+              return _this.hideTags(_this.pageElements, terms.tags, terms.term.toLowerCase());
+            }
+          }
         });
       });
+    },
+    hideTags: function(instance, tagList, term) {
+      var cjkids, key, tag, termBox;
+
+      this.instance = instance;
+      this.cjTagBox = cj("." + (this.pageElements.tagHolder.join(".")));
+      termBox = "<dl class='search'></div>";
+      this.cjTagBox.append(termBox);
+      for (key in tagList) {
+        tag = tagList[key];
+        cjkids = this.cjTagBox.find("dt[data-tagid=" + tag.id + "]");
+        console.log(cjkids);
+        cjkids.clone().appendTo(termBox);
+      }
+      return console.log(cjkids);
+    },
+    showTags: function(instance) {
+      this.instance = instance;
     },
     autoCompleteEnd: function(instance) {
       this.instance = instance;
@@ -570,6 +593,9 @@
       }
       console.log(_viewSettings["openTags"]);
       return _viewSettings["openTags"];
+    },
+    loadingGif: function() {
+      return cj("." + (this.pageElements.tagHolder.join("."))).toggleClass("loadingGif");
     }
   };
 
