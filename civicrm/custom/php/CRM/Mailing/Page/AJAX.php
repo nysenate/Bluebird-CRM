@@ -68,8 +68,9 @@ class CRM_Mailing_Page_AJAX {
     $contactID = CRM_Utils_Type::escape($_GET['contact_id'], 'Integer');
     //$context = CRM_Utils_Type::escape(CRM_Utils_Array::value('context', $_GET), 'String');
 
+    //NYSS 6895
     $sortMapper = array(
-      0 => 'subject', 1 => 'creator_name', 2 => '', 3 => 'start_date', 4 => '', 5 => 'links',
+      0 => 'name', 1 => 'creator_name', 2 => '', 3 => 'start_date', 4 => '', 5 => 'links',
     );
 
     $sEcho     = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
@@ -93,9 +94,9 @@ class CRM_Mailing_Page_AJAX {
     $mailings = CRM_Mailing_BAO_Mailing::getContactMailingSelector($params);
 
     $iFilteredTotal = $iTotal = $params['total'];
-    //NYSS 6698
+    //NYSS 6698/6895
     $selectorElements = array(
-      'subject', 'mailing_creator', 'recipients',
+      'name', 'mailing_creator', 'recipients',
       'start_date', 'openstats', 'links',
     );
 

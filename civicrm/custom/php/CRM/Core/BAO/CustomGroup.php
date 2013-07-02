@@ -596,9 +596,11 @@ SELECT $select
                           'entity_id',
                           'file_id'
                         );
-                        //NYSS 5186 - fix to accommodate our url values; Jira 11137
+                        //NYSS 5186/6863 - fix to accommodate our url values; Jira 11137
                         //$customValue['imageURL'] = str_replace('persist/contribute', 'custom', $config->imageUploadURL) . $fileDAO->uri;
-                        $customValue['imageURL'] = str_replace('images', 'custom', $config->imageUploadURL) . $fileDAO->uri;
+                        $site = str_replace('http://', '', $config->userFrameworkBaseURL);
+                        $imgUrl = str_replace('images', 'custom', str_replace('sites/default/', 'sites/'.$site, $config->imageUploadURL));
+                        $customValue['imageURL'] = $imgUrl . $fileDAO->uri;
                         list($path) = CRM_Core_BAO_File::path($fileDAO->id, $entityId,
                           NULL, NULL
                         );
