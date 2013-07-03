@@ -1,0 +1,6 @@
+name = NYSS Load Sample Data
+description = NYSS: purge existing contact data and load clean sample data.
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2

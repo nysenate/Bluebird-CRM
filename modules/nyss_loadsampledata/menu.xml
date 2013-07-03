@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<menu>
+  <item>
+    <title>Load Sample Data</title>
+    <path>civicrm/nyss/loadsampledata</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/loaddata</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData::loadData</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/getoutput</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData::getOutput</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>
