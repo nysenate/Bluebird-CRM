@@ -59,7 +59,7 @@
     cj.ajax({
       url: dataUrl,
       success: function(data, textStatus, jqXHR){
-        //console.log('processing time: ', data);
+        console.log('processing time: ', data);
         procTime = data;
       },
       error: function( jqXHR, textStatus, errorThrown ) {
@@ -71,7 +71,7 @@
     var dataUrl = "{/literal}{crmURL p='civicrm/nyss/getoutput' h=0 }{literal}";
     var element = cj('#output');
     var complete = false;
-    var start = end = 0;
+    var start = end = h = 0;
 
     while ( !complete ) {
       start = end;
@@ -91,6 +91,9 @@
           }
           else {
             element.append(data);
+
+            h = element[0].scrollHeight;
+            element.scrollTop(h);
           }
         },
         error: function( jqXHR, textStatus, errorThrown ) {
