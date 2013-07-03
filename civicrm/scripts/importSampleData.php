@@ -20,7 +20,7 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'TRACE');
+define('DEFAULT_LOG_LEVEL', 'INFO');
 define('LOC_TYPE_BOE', 6);
 
 class CRM_ImportSampleData {
