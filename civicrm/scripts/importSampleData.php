@@ -30,19 +30,27 @@ class CRM_ImportSampleData {
     global $shortopts;
     global $longopts;
     global $optDry;
+    global $BB_LOG_LEVEL;
 
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = 'd:s:p:g';
-    $longopts = array('dryrun', 'system', 'purge', 'generate');
+    $shortopts = 'd:s:p:g:l';
+    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log');
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
-        $stdusage = civicrm_script_usage();
-        $usage = '[--dryrun] [--system] [--purge] [--generate]';
-        error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
-        exit(1);
+      $stdusage = civicrm_script_usage();
+      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log=LEVEL]';
+      error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
+      exit(1);
+    }
+
+    if ( empty($BB_LOG_LEVEL) && !empty($optlist['log']) ) {
+      $BB_LOG_LEVEL = $optlist['log'];
+    }
+    elseif ( empty($BB_LOG_LEVEL) ) {
+      $BB_LOG_LEVEL = DEFAULT_LOG_LEVEL;
     }
 
     //get instance settings
