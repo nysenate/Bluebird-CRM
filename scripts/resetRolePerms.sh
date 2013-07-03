@@ -275,6 +275,7 @@ sql="
     (9, 'delete in CiviCase', 'civicrm'),
     (9, 'edit all contacts', 'civicrm'),
     (9, 'edit groups', 'civicrm'),
+    (9, 'edit users with no custom roles', 'administerusersbyrole'),
     (9, 'edit users with role DataEntry', 'administerusersbyrole'),
     (9, 'edit users with role MailingApprover', 'administerusersbyrole'),
     (9, 'edit users with role MailingCreator', 'administerusersbyrole'),
