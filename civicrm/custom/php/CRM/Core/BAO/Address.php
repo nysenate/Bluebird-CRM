@@ -372,9 +372,10 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
     $asp = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::ADDRESS_STANDARDIZATION_PREFERENCES_NAME,
       'address_standardization_provider'
     );
+
     //NYSS clean up the address via specified web services if enabled
     //NYSS don't run checkAddress if importing
-	$urlpath = explode( '/', CRM_Utils_System::currentPath() );
+    $urlpath = explode( '/', CRM_Utils_System::currentPath() );
     if ( ! empty( $asp ) && $urlpath[1] != 'import' ) {
       require_once "CRM/Utils/Address/$asp.php";
       $aspClass = "CRM_Utils_Address_$asp";
@@ -405,7 +406,10 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address {
     // add latitude and longitude and format address if needed
     if (!empty($config->geocodeMethod) && ($config->geocodeMethod != 'CRM_Utils_Geocode_OpenStreetMaps')) {
       require_once (str_replace('_', DIRECTORY_SEPARATOR, $config->geocodeMethod) . '.php');
-      eval($config->geocodeMethod . '::format( $params );');
+
+      //NYSS hackish solution to prevent double geocode lookup
+      //TODO the SAGE::format function is only used by one of our scripts; consider having that method empty
+      //eval($config->geocodeMethod . '::format( $params );');
     }
   }
 
