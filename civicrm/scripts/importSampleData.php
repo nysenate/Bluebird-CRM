@@ -189,9 +189,9 @@ class CRM_ImportSampleData {
       bbscript_log('trace', 'The following tables would be truncated: ', $tblTruncate);
     }
     else {
-      bbscript_log('trace', 'Truncating tables: ');
+      bbscript_log('info', 'Truncating tables... ');
       foreach ( $tblTruncate as $tbl ) {
-        echo 'truncating... '.$tbl."\n";
+        bbscript_log('debug', "truncating: $tbl");
         $sql = "TRUNCATE TABLE {$tbl};";
         CRM_Core_DAO::executeQuery($sql);
       }
@@ -286,10 +286,10 @@ class CRM_ImportSampleData {
         $errors[] = $params;
       }
       elseif ( $type == 'contact' ) {
-        echo "imported: {$r['values'][$r['id']]['display_name']} \n";
+        bbscript_log("debug", "imported: {$r['values'][$r['id']]['display_name']}");
       }
       else {
-        echo "imported: {$type} \n";
+        bbscript_log("debug", "imported: {$type}");
       }
 
       if ( $fk ) {

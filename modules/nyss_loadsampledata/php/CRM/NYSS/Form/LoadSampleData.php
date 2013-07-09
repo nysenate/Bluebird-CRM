@@ -124,7 +124,6 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       sleep(8);
     }
 
-    //we will print every 10 lines
     $i = 0;
     $output = '';
 
@@ -144,6 +143,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       //CRM_Core_Error::debug_var('output',$output);
 
       if ( $i > $setEnd ) {
+        echo "{$setEnd} contacts imported...";
         echo $output;
         sleep(3);
 
