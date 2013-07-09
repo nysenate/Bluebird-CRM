@@ -119,5 +119,8 @@ sql="
 "
 $execSql -i $instance -c "$sql" -q
 
+## 6933 rebuild triggers
+php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
+
 ## 6933 perform log table cleanup [reminder only]
 echo "don't forget to run the logClean.php script after processing the upgrade!"
