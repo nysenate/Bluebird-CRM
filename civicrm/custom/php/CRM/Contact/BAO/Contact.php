@@ -2299,8 +2299,7 @@ AND       civicrm_openid.is_primary = 1";
 
       case 'log':
         if (CRM_Core_BAO_Log::useLoggingReport()) {
-          //NYSS 5173
-          return CRM_Core_BAO_Log::getEnhancedContactLogCount( $contactId );
+          return FALSE;
         }
         return CRM_Core_BAO_Log::getContactLogCount($contactId);
 
@@ -2332,7 +2331,9 @@ AND       civicrm_openid.is_primary = 1";
           'caseId' => NULL,
           'context' => 'activity',
         );
-        return CRM_Activity_BAO_Activity::getActivitiesCount($input);
+        //NYSS 6719
+        //return CRM_Activity_BAO_Activity::getActivitiesCount($input);
+        return FALSE;
 
       //NYSS 6698
       case 'mailing':
