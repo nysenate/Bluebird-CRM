@@ -154,5 +154,19 @@
     }
   });
 
+  //get changelog count
+  var postUrl = {/literal}"{crmURL p='civicrm/ajax/changelog' h=0 }"{literal};
+  var contactID = {/literal}{$contactId};{literal}
+  cj.ajax({
+    type: "POST",
+    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/changelog'}{literal}",
+    url: postUrl,
+    success: function(logCount){
+      var ele = cj('#tab_log a');
+      if(!isNaN(logCount)) {
+        ele.append('<em>' + logCount + '</em>');
+      }
+    }
+  });
 </script>
 {/literal}

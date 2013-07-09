@@ -2299,8 +2299,7 @@ AND       civicrm_openid.is_primary = 1";
 
       case 'log':
         if (CRM_Core_BAO_Log::useLoggingReport()) {
-          //NYSS 5173
-          return CRM_Core_BAO_Log::getEnhancedContactLogCount( $contactId );
+          return FALSE;
         }
         return CRM_Core_BAO_Log::getContactLogCount($contactId);
 
