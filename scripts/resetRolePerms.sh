@@ -31,69 +31,18 @@ fi
 
 ## reset all role perms
 sql="
-  INSERT IGNORE INTO role_permission (rid, permission, module) VALUES
-    (0, 'cancel users with no custom roles', 'administerusersbyrole'),
-    (0, 'cancel users with role Administrator', 'administerusersbyrole'),
-    (0, 'cancel users with role Administrator and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role DataEntry', 'administerusersbyrole'),
-    (0, 'cancel users with role DataEntry and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingApprover', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingApprover and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingCreator', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingCreator and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingScheduler', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingScheduler and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingViewer', 'administerusersbyrole'),
-    (0, 'cancel users with role MailingViewer and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role OfficeAdministrator', 'administerusersbyrole'),
-    (0, 'cancel users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role OfficeManager', 'administerusersbyrole'),
-    (0, 'cancel users with role OfficeManager and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role PrintProduction', 'administerusersbyrole'),
-    (0, 'cancel users with role PrintProduction and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role PrintProductionStaff', 'administerusersbyrole'),
-    (0, 'cancel users with role PrintProductionStaff and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role SOS', 'administerusersbyrole'),
-    (0, 'cancel users with role SOS and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role Staff', 'administerusersbyrole'),
-    (0, 'cancel users with role Staff and other roles', 'administerusersbyrole'),
-    (0, 'cancel users with role Volunteer', 'administerusersbyrole'),
-    (0, 'cancel users with role Volunteer and other roles', 'administerusersbyrole'),
-    (0, 'edit users with no custom roles', 'administerusersbyrole'),
-    (0, 'edit users with role Administrator', 'administerusersbyrole'),
-    (0, 'edit users with role Administrator and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role DataEntry', 'administerusersbyrole'),
-    (0, 'edit users with role DataEntry and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role MailingApprover', 'administerusersbyrole'),
-    (0, 'edit users with role MailingApprover and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role MailingCreator', 'administerusersbyrole'),
-    (0, 'edit users with role MailingCreator and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role MailingScheduler', 'administerusersbyrole'),
-    (0, 'edit users with role MailingScheduler and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role MailingViewer', 'administerusersbyrole'),
-    (0, 'edit users with role MailingViewer and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
-    (0, 'edit users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role OfficeManager', 'administerusersbyrole'),
-    (0, 'edit users with role OfficeManager and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role PrintProduction', 'administerusersbyrole'),
-    (0, 'edit users with role PrintProduction and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role PrintProductionStaff', 'administerusersbyrole'),
-    (0, 'edit users with role PrintProductionStaff and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role SOS', 'administerusersbyrole'),
-    (0, 'edit users with role SOS and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role Staff', 'administerusersbyrole'),
-    (0, 'edit users with role Staff and other roles', 'administerusersbyrole'),
-    (0, 'edit users with role Volunteer', 'administerusersbyrole'),
-    (0, 'edit users with role Volunteer and other roles', 'administerusersbyrole'),
+  INSERT IGNORE INTO role_permission (rid, permission, module)
+  VALUES
     (1, 'access content', 'node'),
     (1, 'use text format 1', 'filter'),
+
     (2, 'access content', 'node'),
     (2, 'change own e-mail', 'userprotect'),
     (2, 'change own openid', 'userprotect'),
     (2, 'change own password', 'userprotect'),
     (2, 'use text format 1', 'filter'),
     (2, 'view own unpublished content', 'node'),
+
     (3, 'access administration pages', 'system'),
     (3, 'access all cases and activities', 'civicrm'),
     (3, 'access all custom data', 'civicrm'),
@@ -145,6 +94,7 @@ sql="
     (3, 'view all activities', 'civicrm'),
     (3, 'view all contacts', 'civicrm'),
     (3, 'view the administration theme', 'system'),
+
     (4, 'access administration pages', 'system'),
     (4, 'access all cases and activities', 'civicrm'),
     (4, 'access all custom data', 'civicrm'),
@@ -176,19 +126,75 @@ sql="
     (4, 'delete in CiviMail', 'civicrm'),
     (4, 'edit all contacts', 'civicrm'),
     (4, 'edit groups', 'civicrm'),
-    (4, 'edit users with role ConferenceServices', 'administerusersbyrole'),
-    (4, 'edit users with role DataEntry', 'administerusersbyrole'),
-    (4, 'edit users with role MailingApprover', 'administerusersbyrole'),
-    (4, 'edit users with role MailingCreator', 'administerusersbyrole'),
-    (4, 'edit users with role MailingScheduler', 'administerusersbyrole'),
-    (4, 'edit users with role MailingViewer', 'administerusersbyrole'),
-    (4, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
-    (4, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
-    (4, 'edit users with role OfficeManager', 'administerusersbyrole'),
-    (4, 'edit users with role SOS', 'administerusersbyrole'),
-    (4, 'edit users with role Staff', 'administerusersbyrole'),
-    (4, 'edit users with role Volunteer', 'administerusersbyrole'),
+
     (4, 'edit users with no custom roles', 'administerusersbyrole'),
+    (4, 'cancel users with no custom roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role Administrator', 'administerusersbyrole'),
+    (4, 'cancel users with role Administrator', 'administerusersbyrole'),
+    (4, 'edit users with role Administrator and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role Administrator and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role ConferenceServices', 'administerusersbyrole'),
+    (4, 'cancel users with role ConferenceServices', 'administerusersbyrole'),
+    (4, 'edit users with role ConferenceServices and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role ConferenceServices and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role DataEntry', 'administerusersbyrole'),
+    (4, 'cancel users with role DataEntry', 'administerusersbyrole'),
+    (4, 'edit users with role DataEntry and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role DataEntry and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role MailingApprover', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingApprover', 'administerusersbyrole'),
+    (4, 'edit users with role MailingApprover and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingApprover and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role MailingCreator', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingCreator', 'administerusersbyrole'),
+    (4, 'edit users with role MailingCreator and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingCreator and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role MailingScheduler', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingScheduler', 'administerusersbyrole'),
+    (4, 'edit users with role MailingScheduler and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingScheduler and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role MailingViewer', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingViewer', 'administerusersbyrole'),
+    (4, 'edit users with role MailingViewer and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role MailingViewer and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role ManageBluebirdInbox', 'administerusersbyrole'),
+    (4, 'cancel users with role ManageBluebirdInbox', 'administerusersbyrole'),
+    (4, 'edit users with role ManageBluebirdInbox and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role ManageBluebirdInbox and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role OfficeAdministrator', 'administerusersbyrole'),
+    (4, 'cancel users with role OfficeAdministrator', 'administerusersbyrole'),
+    (4, 'edit users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role OfficeAdministrator and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role OfficeManager', 'administerusersbyrole'),
+    (4, 'cancel users with role OfficeManager', 'administerusersbyrole'),
+    (4, 'edit users with role OfficeManager and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role OfficeManager and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role SOS', 'administerusersbyrole'),
+    (4, 'cancel users with role SOS', 'administerusersbyrole'),
+    (4, 'edit users with role SOS and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role SOS and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role Staff', 'administerusersbyrole'),
+    (4, 'cancel users with role Staff', 'administerusersbyrole'),
+    (4, 'edit users with role Staff and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role Staff and other roles', 'administerusersbyrole'),
+
+    (4, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (4, 'cancel users with role Volunteer', 'administerusersbyrole'),
+    (4, 'edit users with role Volunteer and other roles', 'administerusersbyrole'),
+    (4, 'cancel users with role Volunteer and other roles', 'administerusersbyrole'),
+
     (4, 'export print production files', 'nyss_civihooks'),
     (4, 'import contacts', 'civicrm'),
     (4, 'merge duplicate contacts', 'civicrm'),
@@ -201,6 +207,7 @@ sql="
     (4, 'view all contacts', 'civicrm'),
     (4, 'view all notes', 'civicrm'),
     (4, 'view the administration theme', 'system'),
+
     (5, 'access all custom data', 'civicrm'),
     (5, 'access CiviCRM', 'civicrm'),
     (5, 'access CiviReport', 'civicrm'),
@@ -212,6 +219,7 @@ sql="
     (5, 'use text format 1', 'filter'),
     (5, 'view all activities', 'civicrm'),
     (5, 'view all contacts', 'civicrm'),
+
     (6, 'access all custom data', 'civicrm'),
     (6, 'access CiviCRM', 'civicrm'),
     (6, 'access CiviReport', 'civicrm'),
@@ -227,6 +235,7 @@ sql="
     (6, 'use text format 1', 'filter'),
     (6, 'view all activities', 'civicrm'),
     (6, 'view all contacts', 'civicrm'),
+
     (7, 'access all custom data', 'civicrm'),
     (7, 'access CiviCRM', 'civicrm'),
     (7, 'access CiviReport', 'civicrm'),
@@ -241,6 +250,7 @@ sql="
     (7, 'profile view', 'civicrm'),
     (7, 'use text format 1', 'filter'),
     (7, 'view all contacts', 'civicrm'),
+
     (8, 'access all custom data', 'civicrm'),
     (8, 'access CiviCRM', 'civicrm'),
     (8, 'access CiviReport', 'civicrm'),
@@ -251,6 +261,7 @@ sql="
     (8, 'use text format 1', 'filter'),
     (8, 'view all activities', 'civicrm'),
     (8, 'view all contacts', 'civicrm'),
+
     (9, 'access administration pages', 'system'),
     (9, 'access all cases and activities', 'civicrm'),
     (9, 'access all custom data', 'civicrm'),
@@ -294,6 +305,7 @@ sql="
     (9, 'view all activities', 'civicrm'),
     (9, 'view all contacts', 'civicrm'),
     (9, 'view the administration theme', 'system'),
+
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
     (10, 'access CiviCRM', 'civicrm'),
@@ -318,6 +330,7 @@ sql="
     (10, 'use text format 1', 'filter'),
     (10, 'view all activities', 'civicrm'),
     (10, 'view all contacts', 'civicrm'),
+
     (11, 'access all cases and activities', 'civicrm'),
     (11, 'access all custom data', 'civicrm'),
     (11, 'access CiviCRM', 'civicrm'),
@@ -340,6 +353,7 @@ sql="
     (11, 'use text format 1', 'filter'),
     (11, 'view all activities', 'civicrm'),
     (11, 'view all contacts', 'civicrm'),
+
     (12, 'access all custom data', 'civicrm'),
     (12, 'access CiviCRM', 'civicrm'),
     (12, 'access uploaded files', 'civicrm'),
@@ -351,6 +365,7 @@ sql="
     (12, 'use text format 1', 'filter'),
     (12, 'view all activities', 'civicrm'),
     (12, 'view all contacts', 'civicrm'),
+
     (13, 'access all custom data', 'civicrm'),
     (13, 'access CiviCRM', 'civicrm'),
     (13, 'access my cases and activities', 'civicrm'),
@@ -361,17 +376,22 @@ sql="
     (13, 'use text format 1', 'filter'),
     (13, 'view all activities', 'civicrm'),
     (13, 'view all contacts', 'civicrm'),
+
     (14, 'create mailings', 'civicrm'),
     (14, 'delete in CiviMail', 'civicrm'),
     (14, 'use text format 1', 'filter'),
+
     (15, 'schedule mailings', 'civicrm'),
     (15, 'delete in CiviMail', 'civicrm'),
     (15, 'use text format 1', 'filter'),
+
     (16, 'approve mailings', 'civicrm'),
     (16, 'delete in CiviMail', 'civicrm'),
     (16, 'use text format 1', 'filter'),
+
     (17, 'use text format 1', 'filter'),
     (17, 'view mass email', 'nyss_civihooks'),
+
     (18, 'access all custom data', 'civicrm'),
     (18, 'access CiviCRM', 'civicrm'),
     (18, 'access CiviReport', 'civicrm'),
@@ -385,6 +405,7 @@ sql="
     (18, 'profile view', 'civicrm'),
     (18, 'use text format 1', 'filter'),
     (18, 'view all contacts', 'civicrm'),
+
     (19, 'administer inbox polling', 'nyss_civihooks');
 "
 
