@@ -369,6 +369,12 @@ COLS;
       $tableNames = $this->tables;
     }
 
+    //NYSS 6933 - table => array (cols) - to be excluded from the update statement
+    $exceptions = array(
+      'civicrm_job' => array('last_run'),
+      'civicrm_group' => array('cache_date'),
+    );
+
     // logging is enabled, so now lets create the trigger info tables
     foreach ($tableNames as $table) {
       $columns = $this->columnsOf($table);
@@ -376,6 +382,13 @@ COLS;
       // only do the change if any data has changed
       $cond = array( );
       foreach ($columns as $column) {
+        //NYSS 6933 check if exception
+        if ( !empty($exceptions[$table]) ) {
+          if ( in_array($column, $exceptions[$table]) ) {
+            //column should be skipped
+            continue;
+          }
+        }
         $cond[] = "IFNULL(OLD.$column,'') <> IFNULL(NEW.$column,'')";
       }
       $suppressLoggingCond = "@civicrm_disable_logging IS NULL OR @civicrm_disable_logging = 0";

@@ -41,13 +41,19 @@ class CRM_cleanLogs {
       return FALSE;
     }
 
-    //we can only cleanup MyISAM tables
+    //we can only cleanup MyISAM/InnoDB tables
     $tbls = array(
       'log_civicrm_address',
+      'log_civicrm_activity',
+      'log_civicrm_activity_assignment',
+      'log_civicrm_activity_target',
       'log_civicrm_contact',
+      'log_civicrm_dashboard_contact',
       'log_civicrm_email',
       'log_civicrm_entity_tag',
+      'log_civicrm_group',
       'log_civicrm_group_contact',
+      'log_civicrm_job',
       'log_civicrm_note',
       'log_civicrm_phone',
       'log_civicrm_relationship',
@@ -78,6 +84,8 @@ class CRM_cleanLogs {
         'log_user_id',
         'log_action',
         'log_job_id',
+        'last_run',
+        'cache_date',
       );
       $tblAttr = get_object_vars($r) + $logCols;
 
@@ -87,7 +95,7 @@ class CRM_cleanLogs {
       while ( $r->fetch() ) {
         $thisRecord = array();
         foreach ( $r as $f => $v ) {
-          if ( !array_key_exists($f, $tblAttr) ) {
+          if ( !in_array($f, $tblAttr) ) {
             $thisRecord[$f] = $v;
           }
         }
@@ -100,6 +108,7 @@ class CRM_cleanLogs {
         else {
           //compare arrays; if not different, delete thisRecord
           $diff = array_diff_assoc($lastRecord, $thisRecord);
+          //bbscript_log("trace", "field: {$f}", $diff);
           if ( empty($diff) ) {
             $sql = "
               DELETE FROM {$logDB}.{$tbl}
