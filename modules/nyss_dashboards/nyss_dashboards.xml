@@ -196,7 +196,7 @@
   </item>
   <item>
     <path>civicrm/ajax/changelog</path>
-    <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
+    <page_callback>CRM_NYSS_BAO_Log::getChangeLogCount</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
