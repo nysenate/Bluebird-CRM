@@ -99,7 +99,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
     $logFile = $config->configAndLogDir.'loadSample_output.log';
 
     //run script
-    exec("php $script -S {$bbcfg['shortname']} --system --purge 1>{$logFile}");
+    exec("php $script -S {$bbcfg['shortname']} --system --purge --log=info 1>{$logFile}");
 
     $eTime = microtime(TRUE);
     $diffTime = ($eTime - $sTime)/60;
@@ -145,7 +145,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
 
       if ( $i > $setEnd ) {
         echo $output;
-        sleep(2);
+        sleep(3);
 
         fclose($fhandle);
         CRM_Utils_System::civiExit();

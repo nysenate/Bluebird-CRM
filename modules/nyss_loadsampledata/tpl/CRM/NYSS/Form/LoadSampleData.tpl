@@ -21,7 +21,7 @@
     <p>This tool is used to purge existing contact records from the instance database and load clean sample data. Click continue to proceed with the process. <strong>Note that this process will result in data loss as all existing contact records will be deleted.</strong></p>
   </div>
 
-  <div class="crm-section">
+  <div id="purge-load-action" class="crm-section">
     <div class="label">Purge and Reload?</div>
     <div class="content">
       <a href="#"
@@ -52,6 +52,7 @@
     }
 
     cj('#output').show();
+    cj('#purge-load-action').hide();
 
     //trigger data load
     var dataUrl = "{/literal}{crmURL p='civicrm/nyss/loaddata' h=0 }{literal}";
