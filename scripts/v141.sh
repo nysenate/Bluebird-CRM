@@ -118,3 +118,6 @@ sql="
     ('Mailing Preferences', 'write_activity_record', 'i:0;', 1, 1, NOW(), 1);
 "
 $execSql -i $instance -c "$sql" -q
+
+## 6933 perform log table cleanup
+php $app_rootdir/civicrm/scripts/logClean.php -S $instance
