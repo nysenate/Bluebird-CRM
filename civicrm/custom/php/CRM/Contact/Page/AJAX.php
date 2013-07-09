@@ -1232,7 +1232,8 @@ LIMIT {$offset}, {$rowCount}
    */
   static function getChangeLogCount( ) {
     if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
-      echo CRM_Contact_BAO_Contact::getCountComponent( 'log', $contactId  );
+      //NYSS 6719 call count function directly
+      echo CRM_Core_BAO_Log::getEnhancedContactLogCount( $contactId );
     }
     CRM_Utils_System::civiExit( );
   }
