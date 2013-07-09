@@ -28,6 +28,9 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+## truncate table to remove any that should not belong
+sql="TRUNCATE TABLE role_permission;"
+$execSql -i $instance -c "$sql" --drupal -q
 
 ## reset all role perms
 sql="
@@ -76,10 +79,12 @@ sql="
     (3, 'delete in CiviCase', 'civicrm'),
     (3, 'edit all contacts', 'civicrm'),
     (3, 'edit groups', 'civicrm'),
+
     (3, 'edit users with role Administrator', 'administerusersbyrole'),
-    (3, 'edit users with role SOS', 'administerusersbyrole'),
-    (3, 'edit users with role Staff', 'administerusersbyrole'),
-    (3, 'edit users with role Volunteer', 'administerusersbyrole'),
+    (3, 'cancel users with role Administrator', 'administerusersbyrole'),
+    (3, 'edit users with role Administrator and other roles', 'administerusersbyrole'),
+    (3, 'cancel users with role Administrator and other roles', 'administerusersbyrole'),
+
     (3, 'export print production files', 'nyss_civihooks'),
     (3, 'import contacts', 'civicrm'),
     (3, 'merge duplicate contacts', 'civicrm'),
@@ -408,7 +413,6 @@ sql="
 
     (19, 'administer inbox polling', 'nyss_civihooks');
 "
-
 $execSql -i $instance -c "$sql" --drupal -q
 
 ## set role weights to 0 to defer to alpha order
