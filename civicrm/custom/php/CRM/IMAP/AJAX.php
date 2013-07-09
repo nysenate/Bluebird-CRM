@@ -213,7 +213,7 @@ class CRM_IMAP_AJAX {
         mysql_close(self::$db);
         // $returnMessage = array('code' => 'ERROR','message'=>$header->uid." on {$name}");
         $returnMessage['stats']['overview']['Unprocessed'] = count($returnMessage['Unprocessed']);
-         $returnMessage['stats']['overview']['total'] =  count($ids);
+        $returnMessage['stats']['overview']['total'] =  count($ids);
         $end = microtime(true);
         $returnMessage['stats']['overview']['time'] = $end-$start;
 
