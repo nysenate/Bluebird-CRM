@@ -155,16 +155,31 @@
   });
 
   //get changelog count
-  var postUrl = {/literal}"{crmURL p='civicrm/ajax/changelog' h=0 }"{literal};
+  var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/changelog' h=0 }"{literal};
   var contactID = {/literal}{$contactId};{literal}
   cj.ajax({
     type: "POST",
-    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/changelog'}{literal}",
+    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/activity/changelog'}{literal}",
     url: postUrl,
-    success: function(logCount){
+    success: function(tabCount){
       var ele = cj('#tab_log a');
-      if(!isNaN(logCount)) {
-        ele.append('<em>' + logCount + '</em>');
+      if(!isNaN(tabCount)) {
+        ele.append('<em>' + tabCount + '</em>');
+      }
+    }
+  });
+
+  //get activity count
+  var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/activity' h=0 }"{literal};
+  var contactID = {/literal}{$contactId};{literal}
+  cj.ajax({
+    type: "POST",
+    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/activity'}{literal}",
+    url: postUrl,
+    success: function(tabCount){
+      var ele = cj('#tab_activity a');
+      if(!isNaN(tabCount)) {
+        ele.append('<em>' + tabCount + '</em>');
       }
     }
   });

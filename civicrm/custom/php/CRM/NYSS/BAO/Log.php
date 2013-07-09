@@ -8,7 +8,7 @@ class CRM_NYSS_BAO_Log {
    * NYSS pull changelog count via ajax
    * Function to get the count of the change log.
    */
-  static function getChangeLogCount( ) {
+  static function getTabCount( ) {
     if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
       //NYSS 6719 call count function directly
       echo self::getEnhancedContactLogCount( $contactId );
