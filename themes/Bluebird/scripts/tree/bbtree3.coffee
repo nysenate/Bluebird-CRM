@@ -62,7 +62,7 @@ parseTree =
         # @addDTtag tagName,cID.name
         # loops through each child.
         @addTabName (cID.name)
-        @output += "<dl class='top-#{id}'>"
+        @output += "<dl class='top-#{id} tagContainer'>"
         cj.each cID.children, (id, tID) =>
           @writeOutputData tID 
         @output += "</dl>"

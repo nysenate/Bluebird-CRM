@@ -72,6 +72,8 @@ class View
       </div>
     "
     @cjInitHolderId.append(tokenHolder)
+  addSearchBoxToElement: () ->
+
   formatPageElements: () ->
     pageElements = @instance.get 'pageElements'
     [@tagHolderSelector,@tagWrapperSelector] = ["",""]
@@ -125,6 +127,9 @@ class View
     @displaySettings = @instance.get 'displaySettings'
     @writeTabs()
     @cjInstanceSelector.html(_treeData.html[@displaySettings.defaultTree])
+    for key,val of _treeVisibility
+      _treeVisibility[key] = "top-#{@displaySettings.defaultTree}"
+    cj(@tagHolderSelector).append("<div class='search'></div>")
     treeBehavior.autoCompleteStart(@instance)
     treeBehavior.readDropdownsFromLocal()
     treeBehavior.enableDropdowns()
@@ -135,77 +140,71 @@ class View
       b = b.toLowerCase()
       output += "<div class='tab-#{b}'>#{a}</div>"
     @cjTagMenu.find(".tabs").html(output)
+
 # change data sets, not multipe implementations
+_treeVisibility =
+  currentTree: ""
+  defaultTree: ""
+  previousTree: ""
 
 
 treeBehavior =
   autoCompleteStart: (@instance) ->
     @pageElements = @instance.get 'pageElements'
+    @cjTagBox = cj(".#{@pageElements.tagHolder.join(".")}") unless @cjTagBox?
     cj("#JSTree-data").data("autocomplete" : @instance.getAutocomplete())
     params =
       jqDataReference: "#JSTree-data"
       hintText: "Type in a partial or complete name of an tag or keyword."
       theme: "JSTree"
-    searchmonger = cj("#JSTree-ac").tagACInput("init",params)
-    cj("#JSTree-ac").on "keydown", (event) =>
+    cjac = cj("#JSTree-ac")
+    searchmonger = cjac.tagACInput("init",params)
+    cjac.on "keydown", (event) =>
       searchmonger.exec(event, (terms) =>
-        if terms.tags?
-          # console.log terms.tags.length
-          # console.log terms
+        console.log terms
+        console.log _treeVisibility
+        if terms? && terms.tags?
           if terms.tags.length > 0
-            @hideTags(@pageElements, terms.tags, terms.term.toLowerCase())
-        #   # hide tags
-        # if terms.tags.length == 0 and term.length >= 3
-        #   # @noResultsTags()
-        # if term.length <= 3
-        #   # @showTags(@instance)
+            @buildSearchList(terms.tags, terms.term.toLowerCase())
+          else if terms.tags.length == 0 and terms.term.length >= 3
+            @buildSearchList(null, "No Results Found")
+        if cjac.val().length < 3
+          if _treeVisibility.currentTree == "search"
+            @showTags _treeVisibility.previousTree
        )
-  hideTags: (@instance, tagList, term) ->
-    # children = cj(".#{@pageElements.tagHolder.join(".")} dt")
-    @cjTagBox = cj(".#{@pageElements.tagHolder.join(".")}")
-    # @cjTagBox.addClass("NV")
-    termBox = "<dl class='search'></div>"
-    @cjTagBox.append(termBox)
-    for key,tag of tagList
-      # console.log tag.id
-      cjkids = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
-      console.log cjkids
-      cjkids.clone().appendTo(termBox)
-      # console.log cjkids.parentsUntil(".JSTree","dt")
-      # .addClass("aNV")
-    # cj("top-291").toggle()
-    console.log cjkids
+  buildSearchList: (tagList, term) ->
+    @cjSearchBox = @cjTagBox.find(".search") unless @cjSearchBox?
+    @cjSearchBox.empty()
+    if tagList != null
+      for key,tag of tagList
+        cjCloneTag = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
+        cjCloneTag.clone().appendTo(@cjSearchBox)
+        console.log @cjTagBox
+        console.log @cjTagBox.find("#tagDropdown_#{tag.id}")
+        cjCloneChildren = @cjTagBox.find("#tagDropdown_#{tag.id}]")
+        cjCloneChildren.clone().appendTo(@cjSearchBox)
+        @enableDropdowns(".search dt[data-tagid=#{tag.id}]")
 
-    # cj.each(children, (key, tag) =>
-    #   console.log cj()
-      # if not cj.inArray(,tagList)
-        # cj(tag).addClass("NV")
-      # else
-        # cj(tag).addClass("aNV")
-        
-
-    # cj(".#{@pageElements.tagHolder.join(".")} dt.tag-#{tag.id}").addClass("aNV") for index,tag of tagList
-      # console.log tag.id
-    # cj.each(tagList, (key, tag) =>
-    # )
-    # notANV = cj(".#{@pageElements.tagHolder.join(".")} dt").not("aNV")
-    # notANV.addClass("NV")
-    # cj(".#{@pageElements.tagHolder.join(".")} dt.aNV.NV").removeClass("NV")
-    # @loadingGif()
-    
-    # @loadingGif()
-  showTags: (@instance) ->
+    else
+      @cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>")
+    @showTags("search")
+  
+  showTags: (currentTree, noPrev) ->
+    if currentTree != _treeVisibility.currentTree
+      @cjTagBox.find(".#{_treeVisibility.currentTree}").toggle() 
+      _treeVisibility.previousTree = _treeVisibility.currentTree
+      _treeVisibility.currentTree = currentTree
+      @cjTagBox.find(".#{currentTree}").toggle()
 
   autoCompleteEnd: (@instance) ->
     cj("#JSTree-ac").off "keydown"
 
-  enableDropdowns: () ->
-    cj(".JSTree .treeButton").off "click" 
-    cj(".JSTree .treeButton").on "click", ->
+  enableDropdowns: (tag = "") ->
+    cj(".JSTree #{tag} .treeButton").off "click" 
+    cj(".JSTree #{tag} .treeButton").on "click", ->
       treeBehavior.dropdownItem(cj(this).parent().parent())
 
   dropdownItem: (tagLabel) ->
-    console.log tagLabel
     tagid = tagLabel.data('tagid')
     # console.log tagLabel.siblings("dl#tagDropdown_#{tagLabel.data('tagid')}")
     tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
