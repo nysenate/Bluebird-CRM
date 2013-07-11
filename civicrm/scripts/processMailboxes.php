@@ -330,23 +330,22 @@ function checkImapAccount($mbox, $params)
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
         // //mark as read
-        // imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
-        // // move to folder if necessary
-        // if ($params['archivemail'] == true) {
-        //   imap_mail_move($mbox, $msg_num, $params['archivebox']);
-        // }
+	imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
+	// move to folder if necessary
+	if ($params['archivemail'] == true) {
+	  imap_mail_move($mbox, $msg_num, $params['archivebox']);
+	}
       }
     }
     else {
        echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_fwders[$fwder] = true;
-      // REMOVE
-      // if (imap_delete($mbox, $msg_num) === true) {
-      //   echo "[DEBUG]   Message $msg_num has been deleted\n";
-      // }
-      // else {
-      //   echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
-      // }
+      if (imap_delete($mbox, $msg_num) === true) {
+	echo "[DEBUG]   Message $msg_num has been deleted\n";
+      }
+      else {
+	echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
+      }
     }
   }
 
