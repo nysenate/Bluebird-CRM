@@ -107,6 +107,8 @@ class CRM_cleanLogs {
       $memUseMB = round($memUse/1048576,2);
       //bbscript_log("trace", "Memory usage before processing {$tbl}: {$memUseMB} M");
 
+      $deleteRows = array();
+
       while ( $r = mysql_fetch_assoc($rq) ) {
         //bbscript_log("trace", "r", $r);
         $thisRecord = array();
@@ -115,6 +117,7 @@ class CRM_cleanLogs {
             $thisRecord[$f] = $v;
           }
         }
+        //bbscript_log("trace", "thisRecord", $thisRecord);
 
         $i++;
         if ( $i % 50000 === 0 ) {
@@ -127,41 +130,55 @@ class CRM_cleanLogs {
         }
 
         //if we've moved to a new id, reset lastRecord and continue without comparing
-        if ( $r->id != $lastRecord['id'] ) {
+        if ( $r['id'] != $lastRecord['id'] ) {
           $lastRecord = $thisRecord;
           continue;
         }
         else {
           //compare arrays; if not different, delete thisRecord
           $diff = array_diff_assoc($lastRecord, $thisRecord);
-          //bbscript_log("trace", "field: {$f}", $diff);
           if ( empty($diff) ) {
-            $sql = "
+            /*$sql = "
               DELETE FROM {$logDB}.{$tbl}
-              WHERE id = {$r->id}
-                AND log_conn_id = {$r->log_conn_id}
-                AND log_date = '{$r->log_date}'
-                AND log_action = '{$r->log_action}'
-            ";
+              WHERE id = {$r['id']}
+                AND log_conn_id = {$r['log_conn_id']}
+                AND log_date = '{$r['log_date']}'
+                AND log_action = '{$r['log_action']}'
+            ";*/
             if ( $optlist['dryrun'] ) {
               $dryLog = array(
-                'id' => $r->id,
-                'log_conn_id' => $r->log_conn_id,
-                'log_date' => $r->log_date,
-                'log_action' => $r->log_action,
+                'id' => $r['id'],
+                'log_conn_id' => $r['log_conn_id'],
+                'log_date' => $r['log_date'],
+                'log_action' => $r['log_action'],
               );
               bbscript_log("info", 'Deleting log record:', $dryLog);
             }
             else {
-              CRM_Core_DAO::executeQuery($sql);
+              $deleteRows[] = $r['id'];
+              //CRM_Core_DAO::executeQuery($sql);
             }
             $stats[$tbl]++;
           }
           else {
+            //bbscript_log("trace", "diff", $diff);
             //set lastRecord to current record if we didn't delete this record
             $lastRecord = $thisRecord;
           }
         }
+      }
+
+      //now delete records from this table
+      if ( !empty($deleteRows) ) {
+        $deleteCount = count($deleteRows);
+        bbscript_log("info", "...deleting {$deleteCount} log records for: {$tbl}");
+
+        $deleteList = implode(',', $deleteRows);
+        $sql = "
+          DELETE FROM {$logDB}.{$tbl}
+          WHERE id IN ({$deleteList})
+        ";
+        CRM_Core_DAO::executeQuery($sql);
       }
 
       //free DAO
