@@ -64,10 +64,19 @@ class CRM_cleanLogs {
     $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
     $stats = array();
 
+    // start db connection
+    $conn = mysql_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], TRUE);
+    mysql_select_db($logDB, $conn);
+
+    $memUse = memory_get_usage();
+    $memUseMB = round($memUse/1048576,2);
+    //bbscript_log("trace", "Memory usage before cycling through tables: {$memUseMB} M");
+
     foreach ( $tbls as $tbl ) {
       bbscript_log("info", "Processing {$tbl}...");
 
       //retrieve logs for the table and order so we can meaningfully cycle through them
+      //use mysql unbuffered query to try to reduce memory usage
       $sql = "
         SELECT *
         FROM {$logDB}.{$tbl}
@@ -76,7 +85,8 @@ class CRM_cleanLogs {
         ORDER BY id, log_action, log_date
       ";
       //bbscript_log("trace", "{$tbl} sql", $sql);
-      $r = CRM_Core_DAO::executeQuery($sql);
+      //$r = CRM_Core_DAO::executeQuery($sql);
+      $rq = mysql_unbuffered_query($sql, $conn);
 
       $logCols = array(
         'log_date',
@@ -87,17 +97,33 @@ class CRM_cleanLogs {
         'last_run',
         'cache_date',
       );
-      $tblAttr = get_object_vars($r) + $logCols;
+      //$tblAttr = get_object_vars($r) + $logCols;
+      $tblAttr = $logCols;
 
       $lastRecord = array('id' => 0);
-      $stats[$tbl] = 0;
+      $stats[$tbl] = $i = 0;
 
-      while ( $r->fetch() ) {
+      $memUse = memory_get_usage();
+      $memUseMB = round($memUse/1048576,2);
+      //bbscript_log("trace", "Memory usage before processing {$tbl}: {$memUseMB} M");
+
+      while ( $r = mysql_fetch_assoc($rq) ) {
+        //bbscript_log("trace", "r", $r);
         $thisRecord = array();
         foreach ( $r as $f => $v ) {
           if ( !in_array($f, $tblAttr) ) {
             $thisRecord[$f] = $v;
           }
+        }
+
+        $i++;
+        if ( $i % 50000 === 0 ) {
+          $memUse = memory_get_usage();
+          $memUseMB = round($memUse/1048576,2);
+          //bbscript_log("trace", "Memory usage at {$i} records: {$memUseMB} M");
+
+          flush();
+          ob_flush();
         }
 
         //if we've moved to a new id, reset lastRecord and continue without comparing
@@ -137,6 +163,9 @@ class CRM_cleanLogs {
           }
         }
       }
+
+      //free DAO
+      //$r->free();
     }//end table loop
 
     bbscript_log("info", 'Final stats: ', $stats);
