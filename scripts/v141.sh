@@ -79,6 +79,7 @@ $execSql -i $instance -c "$sql" -q
 ## 6698 insert contact view option
 sql="
   SELECT @option_group_id_cvOpt := max(id) from civicrm_option_group where name = 'contact_view_options';
+  DELETE FROM civicrm_option_value WHERE option_group_id = @option_group_id_cvOpt AND name = 'CiviMail';
   INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id)
   VALUES (@option_group_id_cvOpt, 'Mailings', 14, 'CiviMail', NULL, 0, NULL, 14, NULL, 0, 0, 1, NULL);
 "
@@ -122,5 +123,8 @@ $execSql -i $instance -c "$sql" -q
 ## 6933 rebuild triggers
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
 
+### Cleanup ###
+$script_dir/clearCache.sh $instance
+
 ## 6933 perform log table cleanup [reminder only]
-echo "don't forget to run the logClean.php script after processing the upgrade!"
+echo "Don't forget to run the logClean.php script after processing the upgrade!"
