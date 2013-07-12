@@ -29,6 +29,6 @@ CREATE TABLE IF NOT EXISTS `nyss_inbox_attachments` (
   `mime_type` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `size` int(8) NOT NULL,
   `ext` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`email_id`) REFERENCES nyss_inbox_messages(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
-ALTER TABLE `nyss_inbox_attachments` ADD FOREIGN KEY (email_id) REFERENCES `nyss_inbox_messages` (`id`);
