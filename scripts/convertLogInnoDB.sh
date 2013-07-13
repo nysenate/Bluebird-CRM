@@ -51,7 +51,7 @@ if [ "$tbls" ]; then
   for tbl in $tbls; do
     echo "table: $tbl"
     sql="ALTER TABLE $tbl ENGINE=InnoDB ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4;"
-    $execSql -i $instance -c "$sql" -q --log
+    $execSql $instance -c "$sql" -q --log
   done
   echo "Log table engine alteration complete."
 else

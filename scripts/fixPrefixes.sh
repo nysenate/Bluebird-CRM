@@ -50,14 +50,14 @@ fi
 #   2 = male
 
 selcnt="select count(*) from civicrm_contact"
-rec_count=`$execSql -i $instance -c "$selcnt;"`
+rec_count=`$execSql $instance -c "$selcnt;"`
 cond_noprefix="prefix_id is null"
 cond_female="gender_id=1"
 cond_male="gender_id=2"
 sql="$selcnt where $cond_noprefix"
-null_count=`$execSql -i $instance -c "$sql;"`
-female_count=`$execSql -i $instance -c "$sql and $cond_female;"`
-male_count=`$execSql -i $instance -c "$sql and $cond_male;"`
+null_count=`$execSql $instance -c "$sql;"`
+female_count=`$execSql $instance -c "$sql and $cond_female;"`
+male_count=`$execSql $instance -c "$sql and $cond_male;"`
 fixable_count=`expr $female_count + $male_count`
 
 echo "Total contact records = $rec_count"
@@ -83,7 +83,7 @@ upd_male="prefix_id=3"
 upd_cached="display_name=null,email_greeting_id=null,email_greeting_custom=null,email_greeting_display=null,postal_greeting_id=null,postal_greeting_custom=null,postal_greeting_display=null,addressee_id=null,addressee_custom=null,addressee_display=null"
 sql="update civicrm_contact set $upd_female, $upd_cached where $cond_noprefix and $cond_female; update civicrm_contact set $upd_male, $upd_cached where $cond_noprefix and $cond_male;"
 
-$execSql -i $instance -c "$sql"
+$execSql $instance -c "$sql"
 $recache --field-displayname --ok $instance
 php $greetings -S $instance 
 

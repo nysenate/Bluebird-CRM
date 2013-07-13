@@ -56,14 +56,14 @@ preg_num="preg_capture('/HOUSE: ([0-9]+)/', n.note, 1)"
 preg_suffix="preg_capture('/HOUSE: [0-9]*([^\n]*)/', n.note, 1)"
 setv="a.street_number=$preg_num, a.street_number_suffix=$preg_suffix"
 
-cnt1=`$execSql -q -i "$instance" -c "select count(*) from civicrm_address"`
-cnt2=`$execSql -q -i "$instance" -c "select count(*) from $tabs where $cond"`
+cnt1=`$execSql -q "$instance" -c "select count(*) from civicrm_address"`
+cnt2=`$execSql -q "$instance" -c "select count(*) from $tabs where $cond"`
 
 echo "Total address records: $cnt1" >&2
 echo "Total address records to be updated: $cnt2" >&2
 
 if [ $verbose -eq 1 ]; then
-  $execSql -q -i "$instance" -c "
+  $execSql -q "$instance" -c "
     select a.street_number, a.street_number_suffix,
       $preg_house, $preg_num, $preg_suffix
     from $tabs
@@ -81,7 +81,7 @@ if [ $cnt2 -gt 0 -a $dry_run -eq 0 ]; then
   fi
 
   echo "Updating $cnt2 address records with new street_number[_suffix]" >&2
-  $execSql -i "$instance" -c "update $tabs set $setv where $cond"
+  $execSql "$instance" -c "update $tabs set $setv where $cond"
 fi
 
 exit 0

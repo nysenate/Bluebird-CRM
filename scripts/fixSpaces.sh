@@ -38,7 +38,7 @@ do_field_trim() {
   done
 
   sql="select count(*) from $tab_name where $where"
-  cnt=`$execSql -q -i $instance -c "$sql;"`
+  cnt=`$execSql -q $instance -c "$sql;"`
   echo "Records to be trimmed: $cnt"
 
   if [ $cnt -gt 0 -a $dry_run -eq 0 ]; then
@@ -55,7 +55,7 @@ do_field_trim() {
     done
     sql="$sql where $where"
 
-    $execSql -i $instance -c "$sql;"
+    $execSql $instance -c "$sql;"
   fi
 }
 
@@ -76,7 +76,7 @@ do_field_space_compress()
   done
 
   sql="select count(*) from $tab_name where $where"
-  cnt=`$execSql -q -i $instance -c "$sql;"`
+  cnt=`$execSql -q $instance -c "$sql;"`
   echo "Records to be compressed: $cnt"
 
   if [ $cnt -gt 0 -a $dry_run -eq 0 ]; then
@@ -93,10 +93,10 @@ do_field_space_compress()
         got_first=1
       done
       sql="$sql where $where"
-      $execSql -i $instance -c "$sql;"
+      $execSql $instance -c "$sql;"
 
       sql="select count(*) from $tab_name where $where"
-      cnt=`$execSql -q -i $instance -c "$sql;"`
+      cnt=`$execSql -q $instance -c "$sql;"`
       echo "Records remaining to be compressed: $cnt"
     done
   fi

@@ -28,14 +28,7 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
-log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFAULT_BASE_DOMAIN"
-civi_db_prefix=`$readConfig --ig $instance db.civicrm.prefix` || civi_db_prefix="$DEFAULT_BASE_DOMAIN"
-cdb="$civi_db_prefix$db_basename"
 
 ## 6698 data cleanup
 ## remove all bulk email activities
@@ -46,7 +39,7 @@ sql="
   DELETE FROM civicrm_activity WHERE activity_type_id = @be;
   UPDATE civicrm_option_value SET is_active = 0 WHERE option_group_id = @at AND value = @be;
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## run convertLogInnoDB.sh to ensure activity tables are converted to InnoDB
 echo "converting activity log tables to InnoDB if necessary"
@@ -69,12 +62,12 @@ sql="
     ON log_civicrm_activity_target.activity_id = log_civicrm_activity.id
   WHERE log_civicrm_activity.id IS NULL;
 "
-$execSql -i $instance -c "$sql" --log -q
+$execSql $instance -c "$sql" --log -q
 
 ## 6722 add quick search index
 echo "adding index for quick search..."
 sql="ALTER TABLE civicrm_contact ADD INDEX index_quick_search(is_deleted, sort_name, id);"
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 6698 insert contact view option
 sql="
@@ -83,14 +76,14 @@ sql="
   INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id)
   VALUES (@option_group_id_cvOpt, 'Mailings', 14, 'CiviMail', NULL, 0, NULL, 14, NULL, 0, 0, 1, NULL);
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 sql="
   UPDATE civicrm_setting
   SET value = 's:19:\"1234561014\";'
   WHERE name = 'contact_view_options';
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 6798 set logging report perms
 sql="
@@ -98,7 +91,7 @@ sql="
   SET permission = 'access CiviCRM'
   WHERE report_id LIKE 'logging/contact%'
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 6833 make sure mailing component settings are set
 sql="
@@ -118,7 +111,7 @@ sql="
     ('Mailing Preferences', 'include_message_id', 'i:0;', 1, 1, NOW(), 1),
     ('Mailing Preferences', 'write_activity_record', 'i:0;', 1, 1, NOW(), 1);
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ## 6933 rebuild triggers
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance

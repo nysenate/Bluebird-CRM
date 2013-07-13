@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# clearCache.sh
+# setupCiviMail.sh
 #
 # Project: BluebirdCRM
 # Author: Brian Shaughnessy
@@ -12,7 +12,6 @@
 
 prog=`basename $0`
 script_dir=`dirname $0`
-execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 drush=$script_dir/drush.sh
 clear_all=0
@@ -41,11 +40,6 @@ if [ ! "$instance" ]; then
   usage
   exit 1
 fi
-
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
-data_dirname="$data_basename.$base_domain"
 
 ## change ldap setting to allow local users
 $drush $instance vset --yes ldapauth_login_process 0 

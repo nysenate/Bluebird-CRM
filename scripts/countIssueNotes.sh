@@ -38,7 +38,7 @@ fi
 
 sql="select count(*) from civicrm_note where subject='OMIS ISSUE CODES'"
 
-cnt=`$execSql -q -i $instance -c "$sql"`
+cnt=`$execSql -q $instance -c "$sql"`
 
 if [ $? -eq 0 ]; then
   echo "$instance: $cnt"
