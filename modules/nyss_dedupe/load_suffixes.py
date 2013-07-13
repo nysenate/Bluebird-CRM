@@ -30,7 +30,7 @@
 #
 # Even better, inject the SQL right into the target SQL instance with bash!
 #
-#   sh scripts/execSql.sh -i testing -c "`scripts/load_suffixes.py`"
+#   sh scripts/execSql.sh INSTANCE -c "`modules/nyss_dedupe/load_suffixes.py`"
 
 import os
 
