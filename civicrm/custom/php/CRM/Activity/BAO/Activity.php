@@ -1032,9 +1032,6 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
 
       $params = array(1 => array($input['contact_id'], 'Integer'));
     }
-    
-    //NYSS 6720 get opt group, add to common clauses, and remove option_group join
-    $optGrp = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
 
     //NYSS 6720 get opt group, add to common clauses, and remove option_group join
     $optGrp = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
