@@ -38,5 +38,5 @@ triggers=`$execSql -c "$triggersql" -q`
 
 echo "removing triggers..."
 for trigger in $triggers; do
-  $execSql -i $instance -c "DROP TRIGGER IF EXISTS $trigger" -q
+  $execSql $instance -c "DROP TRIGGER IF EXISTS $trigger" -q
 done

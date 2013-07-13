@@ -100,7 +100,7 @@ if echo $target_fields | grep -q 'sort_name'; then
     sql="update civicrm_contact set sort_name = $newval $cond"
   fi
 
-  $execSql -i $instance -c "$sql;"
+  $execSql $instance -c "$sql;"
   [ $? -ne 0 ] && echo "$prog: ERROR re-caching sort_name" >&2
 fi
   
@@ -131,7 +131,7 @@ if echo $target_fields | grep -q 'display_name'; then
     sql="update civicrm_contact set display_name = $newval $cond"
   fi
 
-  $execSql -i $instance -c "$sql;"
+  $execSql $instance -c "$sql;"
   [ $? -ne 0 ] && echo "$prog: ERROR re-caching display_name" >&2
 fi
 
@@ -153,7 +153,7 @@ if echo $target_fields | grep -q 'street_address'; then
     sql="update civicrm_address set street_address = $newval $cond"
   fi
 
-  $execSql -i $instance -c "$sql;"
+  $execSql $instance -c "$sql;"
   [ $? -ne 0 ] && echo "$prog: ERROR re-caching street_address" >&2
 fi
 

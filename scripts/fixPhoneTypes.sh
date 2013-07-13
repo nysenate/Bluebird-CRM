@@ -26,5 +26,5 @@ instance="$1"
 sql="UPDATE civicrm_phone SET phone_type_id=1 WHERE phone_type_id=246; UPDATE civicrm_phone SET phone_type_id=2 WHERE phone_type_id=247; UPDATE civicrm_phone SET phone_type_id=3 WHERE phone_type_id=248;"
 
 echo "Fixing phone types for instance [$instance]"
-$execSql -i $instance -c "$sql"
+$execSql $instance -c "$sql"
 

@@ -61,7 +61,7 @@ tabs="civicrm_note n, civicrm_value_constituent_information_1 ci"
 updt="ci.record_type_61=$rt_capture"
 cond="n.entity_id=ci.entity_id and n.subject='OMIS DATA' and n.entity_table='civicrm_contact' and ifnull(ci.record_type_61,'')<>$rt_capture"
 sql="select count(*) from $tabs where $cond;"
-cnt=`$execSql -q -i $instance -c "$sql"`
+cnt=`$execSql -q $instance -c "$sql"`
 
 echo "Number of records with mismatched OMIS and Bluebird record types: $cnt" >&2
 
@@ -80,7 +80,7 @@ if [ $cnt -gt 0 ]; then
     if [ $do_cleanup -eq 1 ]; then
       echo "Fixing $cnt records with record_type mismatches" >&2
       sql="update $tabs set $updt where $cond;"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
     else
       echo "Skipping update for $cnt records" >&2
       if [ $update_contacts -eq 1 ]; then
@@ -92,7 +92,7 @@ if [ $cnt -gt 0 ]; then
     echo "Contact records with mismatched OMIS RT and Bluebird record_type:" >&2
     echo "ID\tOMIS RT\tBluebird RT"
     sql="select n.entity_id, $rt_capture, ci.record_type_61 from $tabs where $cond;"
-    $execSql -q -i $instance -c "$sql" || exit 1
+    $execSql -q $instance -c "$sql" || exit 1
   fi
 else
   echo "There are no mismatched records to be fixed." >&2
@@ -113,9 +113,9 @@ cond1="c.id=ci.entity_id and ci.record_type_61=0"
 cond2="$cond1 and (c.is_deleted<>1 or c.do_not_email<>1 or c.do_not_mail<>1)"
 
 sql="select count(*) from $tabs where $cond1;"
-cnt1=`$execSql -q -i $instance -c "$sql"`
+cnt1=`$execSql -q $instance -c "$sql"`
 sql="select count(*) from $tabs where $cond2;"
-cnt2=`$execSql -q -i $instance -c "$sql"`
+cnt2=`$execSql -q $instance -c "$sql"`
 
 echo "Number of soft-deleted contact records: $cnt1" >&2
 echo "Number of soft-deleted contact records that need to be trashed: $cnt2" >&2
@@ -135,7 +135,7 @@ if [ $cnt2 -gt 0 ]; then
     if [ $do_cleanup -eq 1 ]; then
       echo "Trashing $cnt2 contacts with soft-delete record types" >&2
       sql="update $tabs set $updt where $cond2;"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
     else
       echo "Skipping update for $cnt2 contact records" >&2
     fi
@@ -143,7 +143,7 @@ if [ $cnt2 -gt 0 ]; then
     echo "Soft-deleted contact records that need to be trashed:" >&2
     echo "ID\tFIRST\tLAST"
     sql="select c.id, c.first_name, c.last_name from $tabs where $cond2;"
-    $execSql -q -i $instance -c "$sql" || exit 1
+    $execSql -q $instance -c "$sql" || exit 1
   fi
 else
   echo "There are no soft-deleted contact records that need to be trashed." >&2

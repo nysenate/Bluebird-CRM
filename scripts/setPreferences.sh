@@ -41,5 +41,5 @@ sformat='{contact.last_name}{, }{contact.first_name}{ }{contact.middle_name}{, }
 
 dformat='{contact.individual_prefix}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{, }{contact.individual_suffix}'
 
-$execSql -i $instance -c "update civicrm_preferences set sort_name_format='$sformat', display_name_format='$dformat' where id=1;"
+$execSql $instance -c "update civicrm_preferences set sort_name_format='$sformat', display_name_format='$dformat' where id=1;"
 

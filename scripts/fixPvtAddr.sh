@@ -52,15 +52,15 @@ condunit="street_unit like '%Pvt%'"
 
 echo "Counting addresses with 'Pvt' in street_name" >&2
 sql="$selacnt where $condname;"
-cnt1=`$execSql -q -i $instance -c "$sql"`
+cnt1=`$execSql -q $instance -c "$sql"`
 echo "Counting addresses with 'Pvt' in street_unit" >&2
 sql="$selacnt where $condunit;"
-cnt2=`$execSql -q -i $instance -c "$sql"`
+cnt2=`$execSql -q $instance -c "$sql"`
 
 # The master condition for determining opted out contacts.
 cond="$condname or $condunit"
 sql="$selacnt where $cond"
-pvtcnt=`$execSql -q -i $instance -c "$sql"`
+pvtcnt=`$execSql -q $instance -c "$sql"`
 
 echo "Address records with 'Pvt' in street_name: $cnt1" >&2
 echo "Address records with 'Pvt' in street_unit: $cnt2" >&2
@@ -89,7 +89,7 @@ if [ $pvtcnt -gt 0 ]; then
                street_name=$newname,
                street_unit=$newunit
            where $cond;"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
       $rebuildCache --ok --field-streetaddress $instance
     else
       echo "Skipping update for $pvtcnt addresses" >&2
@@ -98,7 +98,7 @@ if [ $pvtcnt -gt 0 ]; then
     sql="select street_name, street_unit, concat('[',$newname,']'), concat('[',$newunit,']')
          from civicrm_address
          where $cond;"
-    $execSql -q -i $instance -c "$sql" || exit 1
+    $execSql -q $instance -c "$sql" || exit 1
   fi
 fi
 

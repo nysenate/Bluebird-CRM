@@ -56,16 +56,16 @@ condinvalidinactive="$condinvalid and on_hold=1"
 
 echo "Counting total e-mails" >&2
 sql="$selecnt where $condemail;"
-cnt1=`$execSql -q -i $instance -c "$sql"`
+cnt1=`$execSql -q $instance -c "$sql"`
 echo "Counting e-mails that are invalid" >&2
 sql="$selecnt where $condinvalid;"
-cnt2=`$execSql -q -i $instance -c "$sql"`
+cnt2=`$execSql -q $instance -c "$sql"`
 echo "Counting e-mails that are invalid and on hold" >&2
 sql="$selecnt where $condinvalidinactive;"
-cnt3=`$execSql -q -i $instance -c "$sql"`
+cnt3=`$execSql -q $instance -c "$sql"`
 echo "Counting e-mails that are invalid and not on hold" >&2
 sql="$selecnt where $condinvalidactive;"
-cnt4=`$execSql -q -i $instance -c "$sql"`
+cnt4=`$execSql -q $instance -c "$sql"`
 
 echo "Total e-mail records: $cnt1"
 echo "Invalid e-mail records: $cnt2"
@@ -89,17 +89,17 @@ if [ $cnt4 -gt 0 ]; then
       sql="update civicrm_email
            set on_hold=1
            where $condinvalidactive;"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
     else
       echo "Skipping update for $cnt4 addresses" >&2
     fi
   elif [ $verbose -eq 1 ]; then
     echo "Invalid e-mail addresses that are on hold:"
     sql="select email from civicrm_email where $condinvalidinactive order by email;"
-    $execSql -q -i $instance -c "$sql" || exit 1
+    $execSql -q $instance -c "$sql" || exit 1
     echo "Invalid e-mail addresses that are not on hold:"
     sql="select email from civicrm_email where $condinvalidactive order by email;"
-    $execSql -q -i $instance -c "$sql" || exit 1
+    $execSql -q $instance -c "$sql" || exit 1
   fi
 fi
 

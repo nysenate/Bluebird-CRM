@@ -42,15 +42,15 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 if [ "$backup" ]; then
-    $execSql -i $instance -c "SELECT config_backend FROM civicrm_domain WHERE id=1" > $backup
+    $execSql $instance -c "SELECT config_backend FROM civicrm_domain WHERE id=1" > $backup
     echo "Configuration backed up to $backup"
 fi
 
 echo "Enabling the nyss_sage module."
-$execSql -i $instance --drupal -c "UPDATE system SET status=1 WHERE name='nyss_sage'"
+$execSql $instance --drupal -c "UPDATE system SET status=1 WHERE name='nyss_sage'"
 
 echo "Resetting the address standardization configuration."
-$execSql -i $instance -c "
+$execSql $instance -c "
     UPDATE civicrm_preferences SET
         address_standardization_provider=NULL,
         address_standardization_userid=NULL,
