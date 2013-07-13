@@ -9,11 +9,13 @@
 # Revised: 2012-04-18
 # Revised: 2013-02-05 - changed temp dir to be within /data
 # Revised: 2013-05-14 - added ability to dump only one of the 3 databases
+# Revised: 2013-07-12 - remove temp tables prior to dump; option to inhibit
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
+clearCache=$script_dir/clearCache.sh
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 tmpdir=/data/tmp/dumpInstance_$$
@@ -25,11 +27,12 @@ log_file=
 no_log=0
 archive_dump=
 archive_file=
+no_db_cleanup=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--civicrm-file file] [--civicrm-only] [--no-civicrm] [--drupal-file file] [--drupal-only] [--no-drupal] [--logdb-file file] [--logdb-only] [--no-logdb] [--tgz | --tbz2 | --zip] [--archive-file file] instanceName" >&2
+  echo "Usage: $prog [--civicrm-file file] [--civicrm-only] [--no-civicrm] [--drupal-file file] [--drupal-only] [--no-drupal] [--logdb-file file] [--logdb-only] [--no-logdb] [--no-db-cleanup] [--tgz | --tbz2 | --zip] [--archive-file file] instance" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -49,6 +52,7 @@ while [ $# -gt 0 ]; do
     --no-civi*) no_civi=1 ;;
     --no-drup*) no_drup=1 ;;
     --no-log*) no_log=1 ;;
+    --no-db*) no_db_cleanup=1 ;;
     --tgz) archive_dump=tgz ;;
     --tbz2) archive_dump=tbz2 ;;
     --zip) archive_dump=zip ;;
@@ -88,24 +92,32 @@ if [ "$archive_dump" ]; then
   pushd "$tmpdir"
 fi
 
+# Generate clean dump by remove temporary tables first.
+if [ $no_db_cleanup -eq 1 ]; then
+  echo "Skipping database cleanup; no temp tables will be dropped"
+else
+  echo "Cleaning up databases prior to dumping data"
+  $clearCache --tmp-only $instance
+fi
+
 if [ $no_civi -eq 0 ]; then
   echo "Dumping CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql --dump $db_civi_prefix$db_basename > "$civi_file"
+    $execSql --dump --db-name $db_civi_prefix$db_basename > "$civi_file"
   ) || errcode=$(($errcode | 1))
 fi
 
 if [ $no_drup -eq 0 ]; then
   echo "Dumping Drupal database for instance [$instance]"
   ( set -x
-    $execSql --dump $db_drup_prefix$db_basename > "$drup_file"
+    $execSql --dump --db-name $db_drup_prefix$db_basename > "$drup_file"
   ) || errcode=$(($errcode | 2))
 fi
 
 if [ $no_log -eq 0 ]; then
   echo "Dumping Logging database for instance [$instance]"
   ( set -x
-    $execSql --dump $db_log_prefix$db_basename > "$log_file"
+    $execSql --dump --db-name $db_log_prefix$db_basename > "$log_file"
   ) || errcode=$(($errcode | 4))
 fi
 
