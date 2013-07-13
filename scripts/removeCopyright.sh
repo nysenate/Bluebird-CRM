@@ -51,7 +51,7 @@ text_regexp='[\r\n]*Copyright [0-9]{4}(-[0-9]{4})? New York State Senate, All ri
 sqlend="from civicrm_mailing_component where component_type='Footer' and ( body_html like '%copyright%' or body_text like '%copyright%' )"
 
 sql="select count(*) $sqlend;"
-cnt=`$execSql -q -i $instance -c "$sql"`
+cnt=`$execSql -q $instance -c "$sql"`
 echo "Footer records with 'copyright': $cnt" >&2
 
 if [ $cnt -gt 0 ]; then
@@ -73,11 +73,11 @@ set body_html=preg_replace('|$html_regexp|', '', body_html),
     body_text=preg_replace('|$text_regexp|', '', body_text)
 where component_type='Footer';
 "
-    $execSql -q -i $instance -c "$sql"
+    $execSql -q $instance -c "$sql"
   elif [ $verbose -eq 1 ]; then
     echo "Before fix-up:"
     sql="select body_html, body_text $sqlend;"
-    $execSql -q -i $instance -c "$sql"
+    $execSql -q $instance -c "$sql"
     echo "After fix-up:"
     sql="
 select preg_replace('|$html_regexp|', '', body_html),
@@ -85,7 +85,7 @@ select preg_replace('|$html_regexp|', '', body_html),
 from civicrm_mailing_component
 where component_type='Footer';
 "
-    $execSql -q -i $instance -c "$sql"
+    $execSql -q $instance -c "$sql"
   fi   
 else
   echo "$prog: There are no footer records to update" >&2

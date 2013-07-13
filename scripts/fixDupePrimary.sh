@@ -41,4 +41,4 @@ INNER JOIN ( SELECT id, contact_id FROM civicrm_phone WHERE is_primary = 1 GROUP
 SET phone.is_primary = 0;"
 
 echo "Fixing duplicate primary records for instance [$instance]"
-$execSql -i $instance -c "$primaryrecords"
+$execSql $instance -c "$primaryrecords"

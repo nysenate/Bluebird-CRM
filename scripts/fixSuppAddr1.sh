@@ -58,19 +58,19 @@ cond="$condloctypeboe and $condsupp1val and contact_id in ( select contact_id fr
 
 echo "Counting all addresses with non-empty supp1" >&2
 sql="$selacnt where $condsupp1val;"
-acnt1=`$execSql -q -i $instance -c "$sql"`
+acnt1=`$execSql -q $instance -c "$sql"`
 echo "Counting BOE addresses with non-empty supp1" >&2
 sql="$selacnt where $condloctypeboe and $condsupp1val;"
-acnt2=`$execSql -q -i $instance -c "$sql"`
+acnt2=`$execSql -q $instance -c "$sql"`
 echo "Counting BOE mailing addresses" >&2
 sql="$selacnt where $condloctypeboemail;"
-acnt3=`$execSql -q -i $instance -c "$sql"`
+acnt3=`$execSql -q $instance -c "$sql"`
 echo "Counting BOE mailing addresses with non-empty supp1" >&2
 sql="$selacnt where $condloctypeboemail and $condsupp1val;"
-acnt4=`$execSql -q -i $instance -c "$sql"`
+acnt4=`$execSql -q $instance -c "$sql"`
 echo "Counting BOE addresses with non-empty supp1, with an associated BOE mailing address" >&2
 sql="$selacnt where $cond;"
-supp1cnt=`$execSql -q -i $instance -c "$sql"`
+supp1cnt=`$execSql -q $instance -c "$sql"`
 
 echo "Total address records with non-empty supp1: $acnt1" >&2
 echo "Total BOE address records with non-empty supp1: $acnt2" >&2
@@ -91,7 +91,7 @@ if [ $supp1cnt -gt 0 -a $dry_run -eq 0 ]; then
 
   echo "Setting supp1 to NULL for BOE address records where supp1 is set and an associated BOE mailing address exists for that contact" >&2
   sql="update civicrm_address set supplemental_address_1=null where $cond;"
-  $execSql -i $instance -c "$sql" || exit 1
+  $execSql $instance -c "$sql" || exit 1
 fi
 
 exit 0

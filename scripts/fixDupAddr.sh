@@ -49,7 +49,7 @@ for fld in supplemental_address_1 supplemental_address_2; do
   echo "Checking for street_addresses that are duplicated by $fld" >&2
   cond="$fld <> '' and street_address = $fld"
   sql="select count(*) from civicrm_address where $cond"
-  cnt=`$execSql -q -i $instance -c "$sql;"`
+  cnt=`$execSql -q $instance -c "$sql;"`
   echo "Total address records with duplicate street_address and $fld: $cnt" >&2
 
   if [ $cnt -gt 0 -a $dry_run -eq 0 ]; then
@@ -65,7 +65,7 @@ for fld in supplemental_address_1 supplemental_address_2; do
 
     echo "Nullifying $fld values that duplicate the street_address" >&2
     sql="update civicrm_address set $fld=null where $cond"
-    $execSql -q -i $instance -c "$sql;"
+    $execSql -q $instance -c "$sql;"
   fi
 done
 
