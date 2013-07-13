@@ -204,7 +204,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
    * @access public
    */
   static
-  function &testMail($testParams, $files, $self) {
+  function testMail($testParams, $files, $self) {
     $error = NULL;
 
     $urlString = 'civicrm/mailing/send';
@@ -289,6 +289,15 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       }
 	}*/
 	//NYSS end
+
+    //NYSS 6373
+    if (CRM_Utils_Array::value('_qf_Test_next', $testParams) &&
+      $self->get('count') <= 0) {
+      return array(
+        '_qf_default' =>
+        ts("You can not schedule or send this mailing because there are currently no recipients selected. Click 'Previous' to return to the Select Recipients step, OR click 'Save & Continue Later'."),
+      );
+    }
         
     if (CRM_Utils_Array::value('_qf_Import_refresh', $_POST) ||
       CRM_Utils_Array::value('_qf_Test_next', $testParams) ||

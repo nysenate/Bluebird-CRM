@@ -518,6 +518,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 
     $isDelivered = FALSE;
 
+    //NYSS 6896 if query returns 0 records, we can mark job complete
+    if ( $eq->N === 0 ) {
+      $isDelivered = TRUE;
+    }
+
     // make sure that there's no more than $config->mailerBatchLimit mails processed in a run
     while ($eq->fetch()) {
       // if ( ( $mailsProcessed % 100 ) == 0 ) {
@@ -870,26 +875,42 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
     $job_date
   ) {
     static $activityTypeID = NULL;
+    static $writeActivity = NULL;//NYSS 6698
 
     if (!empty($deliveredParams)) {
       CRM_Mailing_Event_BAO_Delivered::bulkCreate($deliveredParams);
       $deliveredParams = array();
     }
 
-    $result = TRUE;
-    if (!empty($targetParams) &&
-      !empty($mailing->scheduled_id)
-    ) {
+    //NYSS 6698
+    if ($writeActivity === NULL) {
+      $writeActivity = CRM_Core_BAO_Setting::getItem(
+        CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+        'write_activity_record',
+        NULL,
+        TRUE
+      );
+    }
 
+    if (!$writeActivity) {
+      return TRUE;
+    }
+
+    $result = TRUE;
+    if (!empty($targetParams) && !empty($mailing->scheduled_id)) {
       if (!$activityTypeID) {
-        $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
-          'Bulk Email',
-          'name'
-        );
         if ($mailing->sms_provider_id) {
           $mailing->subject = $mailing->name;
           $activityTypeID = CRM_Core_OptionGroup::getValue('activity_type',
             'Mass SMS',
+            'name'
+          );
+        }
+        //NYSS 6698
+        else {
+          $activityTypeID = CRM_Core_OptionGroup::getValue(
+            'activity_type',
+            'Bulk Email',
             'name'
           );
         }

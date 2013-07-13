@@ -228,12 +228,15 @@ cj(document).ready(function(){
     if(cj('#tab1 .street_address').val() != "Street Address"){var street_address = cj('#tab1 .street_address').val();}
     if(cj('#tab1 .email_address').val() != "Email Address"){var email_address = cj('#tab1 .email_address').val();}
     if(cj('#tab1 .dob').val() != "yyyy-mm-dd"){var dob = cj('#tab1 .dob').val();}
+    if(cj('#tab1 .state').val() != ""){var state = cj('#tab1 .state').val();}
+/*    console.log(state);*/
+
     if((first_name) || (last_name) || (city) || (phone) || (street_address) || (email_address) || (dob)){
       cj.ajax({
         url: '/civicrm/imap/ajax/searchContacts',
         async:false,
         data: {
-          state: '1031',
+          state: state,
           city: city,
           phone: phone,
           email_address: email_address,
@@ -459,6 +462,7 @@ cj(document).ready(function(){
     var create_zip = cj("#tab2 .zip").val();
     var create_city = cj("#tab2 .city").val();
     var create_dob = cj("#tab2 .dob").val();
+    var create_state = cj("#tab2 .state").val();
 
     if((create_first_name)||(create_last_name)||(create_email_address)){
       cj.ajax({
@@ -473,6 +477,7 @@ cj(document).ready(function(){
           street_address_2: create_street_address_2,
           postal_code: create_zip,
           city: create_city,
+          state: create_state,
           dob: create_dob
         },
         success: function(data, status) {
@@ -559,7 +564,11 @@ cj(document).ready(function(){
           cj('#message_left_header').append("<span class='popup_def'>&nbsp;</span><a class='fileBug'>Report Bug</a><br/>");
           cj('#message_left_email').html(message.body+"<hr/>");
           cj.each(message.attachments, function(key, value) {
-           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
           cj('.first_name, .last_name, .phone, .street_address, .street_address_2, .city, .email_address').val('');
           cj('#id').val(messageId);
@@ -703,7 +712,11 @@ cj(document).ready(function(){
           cj('#message_left_email').html(message.body+"<hr/>");
 
           cj.each(message.attachments, function(key, value) {
-           cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
 
           cj('#id').val(activityId);
@@ -794,7 +807,11 @@ cj(document).ready(function(){
           }
           cj('#message_left_email_tag').html(messages.body+"<hr/>");
           cj.each(messages.attachments, function(key, value) {
-           cj('#message_left_email_tag').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+             if((!value.rejection) || (value.rejection == '')){
+              cj('#message_left_email').append(value.fileName+" ("+((value.size / 1024) / 1024).toFixed(2)+" MB)<br/>");
+            }else{
+              cj('#message_left_email').append("<span class='rejected'>"+value.fileName+" was rejected ("+value.rejection+")</span><br/>");
+            }
           });
 
           cj("#tagging-popup").dialog({ title:  "Tagging: "+ shortenString(messages.subject,50) });
@@ -802,13 +819,9 @@ cj(document).ready(function(){
             buttons: {
               "Tag": function() {
                 pushtag();
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               "Tag and Clear": function() {
                 pushtag('clear');
-                cj('.token-input-list-facebook .token-input-token-facebook').remove();
-                cj('.token-input-dropdown-facebook').html('');
               },
               Cancel: function() {
                 cj("#tagging-popup").dialog('close');
@@ -934,13 +947,9 @@ cj(document).ready(function(){
       buttons: {
         "Tag": function() {
           pushtag();
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         "Tag and Clear": function() {
           pushtag('clear');
-          cj('.token-input-list-facebook .token-input-token-facebook').remove();
-          cj('.token-input-dropdown-facebook').html('').remove();
         },
         Cancel: function() {
           cj("#tagging-popup").dialog('close');
@@ -1082,13 +1091,136 @@ function makeListSortable(){
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
-    "bPaginate": false,
+    "iDisplayLength": 50,
+    "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
+    "sPaginationType": "bootstrap",
     "bAutoWidth": false,
-    "bInfo": false
+    "bInfo": false,
   });
-  // cj("#sortable_results_filter").append('<a id="search_help" href="#">help</a>')
   checks();
 }
+// http://moorberry.net/blog/datatables-twitter-bootstrap-pagination/
+  cj.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
+  {
+      return {
+          "iStart":         oSettings._iDisplayStart,
+          "iEnd":           oSettings.fnDisplayEnd(),
+          "iLength":        oSettings._iDisplayLength,
+          "iTotal":         oSettings.fnRecordsTotal(),
+          "iFilteredTotal": oSettings.fnRecordsDisplay(),
+          "iPage":          oSettings._iDisplayLength === -1 ?
+              0 : Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
+          "iTotalPages":    oSettings._iDisplayLength === -1 ?
+              0 : Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
+      };
+  }
+
+  /* Bootstrap style pagination control */
+  cj.extend( cj.fn.dataTableExt.oPagination, {
+      "bootstrap": {
+          "fnInit": function( oSettings, nPaging, fnDraw ) {
+              var oLang = oSettings.oLanguage.oPaginate;
+              var fnClickHandler = function ( e ) {
+                  e.preventDefault();
+                  if ( oSettings.oApi._fnPageChange(oSettings, e.data.action) ) {
+                      fnDraw( oSettings );
+                  }
+              };
+
+              cj(nPaging).addClass('pagination').append(
+                  '<ul>'+
+                      '<li class="first disabled"><a href="#">&larr; &larr; First</a></li>'+
+                      '<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
+                      '<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
+                      '<li class="last disabled"><a href="#"> Last &rarr; &rarr; </a></li>'+
+
+                  '</ul>'
+              );
+              var els = cj('a', nPaging);
+              cj(els[0]).bind( 'click.DT', { action: "first" }, fnClickHandler );
+              cj(els[1]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
+              cj(els[2]).bind( 'click.DT', { action: "next" }, fnClickHandler );
+              cj(els[3]).bind( 'click.DT', { action: "last" }, fnClickHandler );
+
+          },
+
+          "fnUpdate": function ( oSettings, fnDraw ) {
+              var iListLength = 5;
+              var oPaging = oSettings.oInstance.fnPagingInfo();
+              var an = oSettings.aanFeatures.p;
+              var i, j, sClass, iStart, iEnd, iHalf=Math.floor(iListLength/2);
+
+              if ( oPaging.iTotalPages < iListLength) {
+                  iStart = 1;
+                  iEnd = oPaging.iTotalPages;
+              }
+              else if ( oPaging.iPage <= iHalf ) {
+                  iStart = 1;
+                  iEnd = iListLength;
+              } else if ( oPaging.iPage >= (oPaging.iTotalPages-iHalf) ) {
+                  iStart = oPaging.iTotalPages - iListLength + 1;
+                  iEnd = oPaging.iTotalPages;
+              } else {
+                  iStart = oPaging.iPage - iHalf + 1;
+                  iEnd = iStart + iListLength - 1;
+              }
+
+              for ( i=0, iLen=an.length ; i<iLen ; i++ ) {
+                  // Remove the middle elements
+                  cj('li:gt(1)', an[i]).filter(':not(.next):not(.last)').remove();
+
+                  // Add the new list items and their event handlers
+                  for ( j=iStart ; j<=iEnd ; j++ ) {
+                      sClass = (j==oPaging.iPage+1) ? 'class="active"' : '';
+                      cj('<li '+sClass+'><a href="#">'+j+'</a></li>')
+                          .insertBefore( $('li.next', an[i])[0] )
+                          .bind('click', function (e) {
+                              e.preventDefault();
+                              oSettings._iDisplayStart = (parseInt(cj('a', this).text(),10)-1) * oPaging.iLength;
+                              fnDraw( oSettings );
+                          } );
+                  }
+                  
+                  // Pages
+                  //console.log("Page "+(oPaging.iPage+1) +" Of "+oPaging.iTotalPages);
+                  //console.log("Numbers "+(oPaging.iLength*(oPaging.iPage))+" THRU "+(oPaging.iLength*(oPaging.iPage+1)));
+                  totals = cj("#total_number").html();
+
+                  if((oPaging.iLength*(oPaging.iPage+1)) < 1 ){
+                    cj("#total_results").html('All Results 1 - <span id="total_number">'+totals+'</span>');
+                  }else if ((oPaging.iLength*(oPaging.iPage+1)) < cj("#total_number").html()){
+                    viewing = "Results "+(oPaging.iLength*(oPaging.iPage)+1)+" - "+(oPaging.iLength*(oPaging.iPage+1));
+                    cj("#total_results").html(viewing+' of <span id="total_number">'+totals+'</span>');
+                  }else{
+                     cj("#total_results").html("Results "+(oPaging.iLength*(oPaging.iPage)+1)+' - <span id="total_number">'+totals+'</span>');
+                  }
+
+
+                  // Add / remove disabled classes from the static elements
+                  if ( oPaging.iPage === 0 ) {
+                      cj('.first', an[i]).addClass('disabled');
+                      cj('.prev', an[i]).addClass('disabled');
+
+                  } else {
+                      cj('.first', an[i]).removeClass('disabled');
+                      cj('.prev', an[i]).removeClass('disabled');
+
+                  }
+
+                  if ( oPaging.iPage === oPaging.iTotalPages-1 || oPaging.iTotalPages === 0 ) {
+                      cj('.last', an[i]).addClass('disabled');
+                      cj('.next', an[i]).addClass('disabled');
+
+                  } else {
+                      cj('.last', an[i]).removeClass('disabled');
+                      cj('.next', an[i]).removeClass('disabled');
+
+                  }
+              }
+          }
+      }
+  } );
+
 
 // a complicated checkbox method,
 function checks(){
@@ -1289,6 +1421,10 @@ function pushtag(clear){
     return false;
   }else{
     cj("#tagging-popup").dialog('close');
+    cj('.token-input-list-facebook .token-input-token-facebook').remove();
+    cj('.token-input-dropdown-facebook').html('');
+    cj('.token-input-dropdown-facebook').html('').remove();
+
   }
 
   if(contact_tag_ids){
@@ -1424,7 +1560,7 @@ function buildContactList(loop) {
     if(contacts[i].email){ contactsHtml += contacts[i].email + '<br/>'; }
     if(contacts[i].phone){ contactsHtml += contacts[i].phone + '<br/>'; }
     if(contacts[i].street_address){ contactsHtml += contacts[i].street_address + '<br/>'; }
-    if(contacts[i].city){ contactsHtml += contacts[i].city + ', NY ' + contacts[i].postal_code + '<br/>'; }
+    if(contacts[i].city){ contactsHtml += contacts[i].city + ', ' + contacts[i].name +" "+ contacts[i].postal_code + '<br/>'; }
     contactsHtml += '</div></div>';
     contactsHtml += '<div class="clear"></div>';
   }

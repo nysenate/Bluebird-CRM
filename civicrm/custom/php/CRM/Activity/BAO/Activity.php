@@ -889,11 +889,9 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.ac
       }
       else {
         $values[$activityID]['recipients'] = ts('(recipients)');
-        $values[$activityID]['mailingId'] = '';
+        $values[$activityID]['mailingId'] = false;//NYSS 6698
         if ($accessCiviMail && in_array($dao->source_record_id, $mailingIDs)) {
-          $values[$activityID]['mailingId'] = CRM_Utils_System::url('civicrm/mailing/report',
-            "mid={$dao->source_record_id}&reset=1&cid={$dao->source_contact_id}&context=activitySelector"
-          );
+          $values[$activityID]['mailingId'] = true;//NYSS 6698
         }
       }
 
@@ -1035,6 +1033,9 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
       $params = array(1 => array($input['contact_id'], 'Integer'));
     }
     
+    //NYSS 6720 get opt group, add to common clauses, and remove option_group join
+    $optGrp = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
+
     //NYSS 6720 get opt group, add to common clauses, and remove option_group join
     $optGrp = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
 
@@ -1221,6 +1222,7 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 civicrm_activity.campaign_id as campaign_id';
       }
 
+      //NYSS 6720 remove option_group join
       $caseClause = "
                 UNION
 
@@ -2521,7 +2523,8 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
         }
 
         if (isset($values['mailingId']) && !empty($values['mailingId'])) {
-          $contactActivities[$activityId]['target_contact'] = CRM_Utils_System::href($values['recipients'], 'civicrm/mailing/report', "mid={$values['source_record_id']}&reset=1&cid={$values['source_contact_id']}&context=activitySelector");
+          //NYSS 6698
+          $contactActivities[$activityId]['target_contact'] = CRM_Utils_System::href($values['recipients'], 'civicrm/mailing/report', "mid={$values['source_record_id']}&reset=1&cid={$params['contact_id']}&context=activitySelector");
         }
         elseif (CRM_Utils_Array::value('recipients', $values)) {
           $contactActivities[$activityId]['target_contact'] = $values['recipients'];

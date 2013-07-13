@@ -194,9 +194,16 @@
     <page_callback>CRM_Dedupe_Form_RemoveDupeAddress</page_callback>
     <access_arguments>export print production files</access_arguments>
   </item>
+
+  <!--Retrieve tab counts via ajax-->
   <item>
-    <path>civicrm/ajax/changelog</path>
-    <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
+    <path>civicrm/ajax/count/changelog</path>
+    <page_callback>CRM_NYSS_BAO_Log::getTabCount</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ajax/count/activity</path>
+    <page_callback>CRM_NYSS_BAO_Activity::getTabCount</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
 
@@ -206,5 +213,16 @@
     <title>Delete file</title>
     <access_arguments>access CiviCRM</access_arguments>
     <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
+  </item>
+
+  <!--6698-->
+  <item>
+    <path>civicrm/contact/view/mailing</path>
+    <page_callback>CRM_Mailing_Page_Tab</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/contactmailing</path>
+    <page_callback>CRM_Mailing_Page_AJAX::getContactMailings</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

@@ -58,13 +58,13 @@ condschd="school_district_54<>'' and length(school_district_54)<$LEN_SDIST"
 
 echo "Counting addresses with incomplete ZIP+4" >&2
 sql="$selacnt where $condzip4;"
-cnt1=`$execSql -q -i $instance -c "$sql"`
+cnt1=`$execSql -q $instance -c "$sql"`
 echo "Counting district info with incomplete county" >&2
 sql="$seldcnt where $condcnty;"
-cnt2=`$execSql -q -i $instance -c "$sql"`
+cnt2=`$execSql -q $instance -c "$sql"`
 echo "Counting district info with incomplete school district" >&2
 sql="$seldcnt where $condschd;"
-cnt3=`$execSql -q -i $instance -c "$sql"`
+cnt3=`$execSql -q $instance -c "$sql"`
 
 echo "Address records with short ZIP+4: $cnt1" >&2
 echo "District records with short county: $cnt2" >&2
@@ -87,7 +87,7 @@ if [ $cnt1 -gt 0 ]; then
       sql="update civicrm_address
            set postal_code_suffix=lpad(postal_code_suffix,$LEN_ZIP4,'0')
            where $condzip4;"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
       $rebuildCache --ok --field-streetaddress $instance
     else
       echo "Skipping update for $cnt1 addresses" >&2
@@ -113,7 +113,7 @@ if [ $cnt2 -gt 0 -o $cnt3 -gt 0 ]; then
            set county_50=lpad(county_50,$LEN_COUNTY,'0'),
                school_district_54=lpad(school_district_54,$LEN_SDIST,'0')
            where ($condcnty) or ($condschd);"
-      $execSql -q -i $instance -c "$sql" || exit 1
+      $execSql -q $instance -c "$sql" || exit 1
     else
       echo "Skipping update for district information" >&2
     fi

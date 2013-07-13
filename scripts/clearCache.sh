@@ -37,7 +37,7 @@ clear_civicrm_caches() {
     DROP TABLE IF EXISTS civicrm_task_action_temp;
     UPDATE civicrm_setting SET value=null WHERE name='navigation';
   "
-  $execSql -i $inst -c "$sql"
+  $execSql $inst -c "$sql"
 }
 
 
@@ -45,7 +45,7 @@ clear_civicrm_dashboard() {
   inst="$1"
   echo "Clearing dashboard content"
   sql="UPDATE civicrm_dashboard_contact SET content=null;"
-  $execSql -i $inst -c "$sql"
+  $execSql $inst -c "$sql"
 }
 
 
@@ -53,7 +53,7 @@ clear_civicrm_log() {
   inst="$1"
   echo "Clearing CiviCRM log table"
   sql="TRUNCATE civicrm_log;"
-  $execSql -i $inst -c "$sql"
+  $execSql $inst -c "$sql"
 }
 
 
@@ -75,7 +75,7 @@ clear_drupal_caches() {
     TRUNCATE cache_rules;
     TRUNCATE cache_update;
   "
-  $execSql -i $inst -c "$sql" --drupal
+  $execSql $inst -c "$sql" --drupal
 }
 
 
@@ -83,7 +83,7 @@ clear_drupal_sessions() {
   inst="$1"
   echo "Clearing Drupal sessions"
   sql="TRUNCATE sessions;"
-  $execSql -i $inst -c "$sql" --drupal
+  $execSql $inst -c "$sql" --drupal
 }
 
 
@@ -91,7 +91,7 @@ clear_drupal_watchdog() {
   inst="$1"
   echo "Clearing Drupal watchdog table"
   sql="TRUNCATE watchdog;"
-  $execSql -i $inst -c "$sql" --drupal
+  $execSql $inst -c "$sql" --drupal
 }
 
 
@@ -113,11 +113,11 @@ delete_civicrm_cache_files() {
 drop_temp_tables() {
   inst="$1"
   echo "Dropping CiviCRM temporary tables"
-  tmptabs=`$execSql -i $inst -c "show tables like 'civicrm\_%temp\_%'"`
+  tmptabs=`$execSql $inst -c "show tables like 'civicrm\_%temp\_%'"`
   if [ "$tmptabs" ]; then
     tmptabs=`echo $tmptabs | tr " " ,`
     echo "Temporary tables to drop: $tmptabs"
-    $execSql -i $inst -c "drop table $tmptabs"
+    $execSql $inst -c "drop table $tmptabs"
   else
     echo "There are no temporary tables to be dropped."
   fi

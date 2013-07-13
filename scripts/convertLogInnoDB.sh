@@ -14,7 +14,7 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 
-INNO_NAMES="address contact dashboard_contact email entity_tag group group_contact note phone relationship value_constituent_information_1 value_district_information_7 activity activity_assignment activity_target"
+INNO_NAMES="address contact dashboard_contact email entity_tag group group_contact note phone relationship value_constituent_information_1 value_district_information_7 activity activity_assignment activity_target job"
 
 if [ $# -ne 1 ]; then
   echo "Usage: $prog instance" >&2
@@ -51,7 +51,7 @@ if [ "$tbls" ]; then
   for tbl in $tbls; do
     echo "table: $tbl"
     sql="ALTER TABLE $tbl ENGINE=InnoDB ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4;"
-    $execSql -i $instance -c "$sql" -q --log
+    $execSql $instance -c "$sql" -q --log
   done
   echo "Log table engine alteration complete."
 else

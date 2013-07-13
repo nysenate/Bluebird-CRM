@@ -105,9 +105,9 @@ if [ $no_dbdump -eq 0 ]; then
     for dbname in $dbs; do
       echo "Backing up $dbname"
       if [ "$backup_host" ]; then
-        $execSql --dump $dbname | ssh $backup_host "cat > $db_backup_dir/$dbname.sql"
+        $execSql --dump --db-name $dbname | ssh $backup_host "cat > $db_backup_dir/$dbname.sql"
       else
-        $execSql --dump $dbname > $db_backup_dir/$dbname.sql
+        $execSql --dump --db-name $dbname > $db_backup_dir/$dbname.sql
       fi
       [ $? -eq 0 ] && echo "OK" || echo "Failed"
     done

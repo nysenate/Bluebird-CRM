@@ -26,13 +26,13 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 ## Add/Drop the tables, functions, and triggers
-$execSql -f $script_dir/../modules/nyss_dedupe/shadow.sql -i $instance
+$execSql $instance -f $script_dir/../modules/nyss_dedupe/shadow.sql
 
 ## Force an update on all the relevant fields
 ## This is a bit of a hack right now banking on us not having other contact types
 ## in the system and never using the name portion of the civicrm_address. In the
 ## future we might want to take a better approach and be more change proof.
-$execSql -i $instance -c "
+$execSql $instance -c "
     UPDATE civicrm_contact SET contact_type='Individual' WHERE contact_type='Individual';
     UPDATE civicrm_contact SET contact_type='Organization' WHERE contact_type='Organization';
     UPDATE civicrm_contact SET contact_type='Household' WHERE contact_type='Household';

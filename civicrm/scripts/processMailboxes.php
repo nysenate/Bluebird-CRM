@@ -9,7 +9,7 @@
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 0.04);
+define('VERSION_NUMBER', 0.05);
 
 // Mailbox settings common to all CRM instances
 define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
@@ -171,7 +171,7 @@ if ($imap_validsenders) {
   // If imap.validsenders was specified in the config file, then add those
   // e-mail addresses to the list of authorized forwarders.  The contact ID
   // for each of these "config file" forwarders will be 1 (Bluebird Admin).
-  $validSenders = explode(',', $imap_validsenders);
+  $validSenders = preg_split('/[\s,]+/', $imap_validsenders, null, PREG_SPLIT_NO_EMPTY);
   foreach ($validSenders as $validSender) {
     if ($validSender && isset($authForwarders[$validSender])) {
       echo "[INFO]    Valid sender [$validSender] from config is already in the auth forwarders list\n";
@@ -329,22 +329,22 @@ function checkImapAccount($mbox, $params)
       echo "[DEBUG]   Forwarder [$fwder] is allowed to send to this mailbox\n";
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
-        //mark as read
-        imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
-        // move to folder if necessary
-        if ($params['archivemail'] == true) {
-          imap_mail_move($mbox, $msg_num, $params['archivebox']);
-        }
+        // //mark as read
+	imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
+	// move to folder if necessary
+	if ($params['archivemail'] == true) {
+	  imap_mail_move($mbox, $msg_num, $params['archivebox']);
+	}
       }
     }
     else {
        echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_fwders[$fwder] = true;
       if (imap_delete($mbox, $msg_num) === true) {
-        echo "[DEBUG]   Message $msg_num has been deleted\n";
+	echo "[DEBUG]   Message $msg_num has been deleted\n";
       }
       else {
-        echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
+	echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
       }
     }
   }
@@ -616,7 +616,7 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   }
 
   $attachmentCount = count($attachments);
-  if ($attachmentCount > 1) {
+  if ($attachmentCount >= 1) {
     foreach ($attachments as $attachment) {
       $date = date('Ymdhis');
       $filename = mysql_real_escape_string($attachment['filename']);
@@ -691,8 +691,21 @@ function searchForMatches($db, $params)
     // Use the e-mail from the body of the message (or header if direct) to
     // find target contact
     echo "[INFO]    Looking for the original sender ($sender_email) in Civi\n";
-    $apiparams = array('version'=>3, 'activity'=>'get', 'email'=>$sender_email);
-    $contact = civicrm_api('contact', 'get', $apiparams);
+    $q="SELECT  contact.id,  email.email FROM civicrm_contact contact
+    LEFT JOIN civicrm_email email ON (contact.id = email.contact_id)
+    WHERE contact.is_deleted=0
+    AND email.email LIKE '$sender_email'
+    GROUP BY contact.id
+    ORDER BY contact.id ASC, email.is_primary DESC";
+    $contact = array();
+    $result = mysql_query($q, $db);
+
+    while($row = mysql_fetch_assoc($result)) {
+      $contact['values'][] = array('id'=>$row['id'],'email'=> $row['email']);
+      $contact['id'] = $row['id'];
+    }
+
+    $contact['count'] = count($contact['values']);
 
     // No matches, or more than one match, marks message as UNMATCHED.
     if ($contact['count'] != 1) {
@@ -735,7 +748,7 @@ function searchForMatches($db, $params)
                   "target_contact_id" => $contactID,
                   "version" => 3
       );
-      // print_r($ActivityParams);
+
       $activityResult = civicrm_api('activity', 'create', $activityParams);
 
       if ($activityResult['is_error']) {

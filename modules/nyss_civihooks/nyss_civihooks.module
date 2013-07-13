@@ -1,16 +1,13 @@
 <?php
 
 function nyss_civihooks_menu() {
-
   $items = array();
-
   $items['nyss_getfile'] = array (
     'title' => t('NYSS Retrieve file'),
     'page callback' => 'nyss_civihooks_getfile',
     'access arguments' => array('export print production files'),
     'type' => MENU_SUGGESTED_ITEM,
   );
-
   return $items;
 }
 
@@ -336,6 +333,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
+      '_qf_ProofingReport_submit',
       '_qf_Label_next'
     );
     $btnExcludeValue = array(
@@ -761,28 +759,48 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
 
   //5260
   //first find parents
-  $reportNavID = $manageNavID = '';
+  $reportNavID = $adminNavID = '';
+  $reportNav = $adminNav = array();
   foreach ( $params as $navID => $navDetails ) {
+    //unset all but the reports and administer menus
     switch ( $navDetails['attributes']['label'] ) {
-      case 'Home':
-        $homeNavID = $navID;
-        break;
-      case 'Custom Search':
-        $searchNavID = $navID;
-        break;
       case 'Reports':
         $reportNavID = $navID;
+        $reportNav = $navDetails;
         break;
       case 'Administer':
         $adminNavID = $navID;
+        $adminNav = $navDetails;
         break;
       default:
-        unset($params[$navID]);
     }
+    unset($params[$navID]);
   }
 
   //get max key
   $maxKey = ( max( array_keys($params) ) );
+
+  //build home menu item
+  $params[1] = array (
+    'attributes' => array (
+      'label'      => 'Home',
+      'name'       => 'Home',
+      'url'        => 'civicrm/dashboard&reset=1',
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => 1,
+      'active'     => 1
+    ),
+    'child' => array(),
+  );
+
+  //build Custom Search menu
+  $params[2] = _buildSearchMenu(2);
+
+  //move Report menu
+  $params[$reportNavID] = $reportNav;
 
   //5260 add changelog proofing report
   $params[$reportNavID]['child'][$maxKey+1] = array (
@@ -808,6 +826,9 @@ function nyss_civihooks_civicrm_navigationMenu( &$params ) {
 
   //build Inbox menu
   $params[3000] = _buildInboxMenu(3000);
+
+  //move Administer menu
+  $params[$adminNavID] = $adminNav;
 
   //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
@@ -894,7 +915,7 @@ function _buildManageMenu($manageID) {
           'url' => 'backupdata',
           'permission' => 'administer CiviCRM,export print production files',
           'operator' => 'OR',
-          'separator' => 1,
+          'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+3,
           'active' => 1,
@@ -903,12 +924,12 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+4 => array(
         'attributes' => Array(
-          'label' => 'Import Contacts',
-          'name' => 'Import Contacts',
-          'url' => 'civicrm/import/contact&reset=1',
-          'permission' => 'import contacts',
-          'operator' => 'AND',
-          'separator' => 0,
+          'label' => 'Load Sample Data',
+          'name' => 'Load Sample Data',
+          'url' => 'civicrm/nyss/loadsampledata&reset=1',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 1,
           'parentID' => $manageID,
           'navID' => $manageID+4,
           'active' => 1,
@@ -917,12 +938,12 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+5 => array(
         'attributes' => Array(
-          'label' => 'Import Activities',
-          'name' => 'Import Activities',
-          'url' => 'civicrm/import/activity&reset=1',
+          'label' => 'Import Contacts',
+          'name' => 'Import Contacts',
+          'url' => 'civicrm/import/contact&reset=1',
           'permission' => 'import contacts',
           'operator' => 'AND',
-          'separator' => 1,
+          'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+5,
           'active' => 1,
@@ -931,12 +952,12 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+6 => array(
         'attributes' => Array(
-          'label' => 'New Group',
-          'name' => 'New Group',
-          'url' => 'civicrm/group/add&reset=1',
-          'permission' => 'edit groups',
+          'label' => 'Import Activities',
+          'name' => 'Import Activities',
+          'url' => 'civicrm/import/activity&reset=1',
+          'permission' => 'import contacts',
           'operator' => 'AND',
-          'separator' => 0,
+          'separator' => 1,
           'parentID' => $manageID,
           'navID' => $manageID+6,
           'active' => 1,
@@ -1290,4 +1311,122 @@ function _buildInboxMenu($inboxNavID) {
   );
 
   return $inbox;
-}//_buildManageMenu
+}//_buildInboxMenu
+
+function _buildSearchMenu($searchNavID) {
+  $search = array(
+    'attributes' => array (
+      'label'      => 'Custom Search',
+      'name'       => 'Custom Search',
+      'url'        => NULL,
+      'permission' => 'access CiviCRM',
+      'operator'   => 'AND',
+      'separator'  => 0,
+      'parentID'   => NULL,
+      'navID'      => $searchNavID,
+      'active'     => 1
+    ),
+    'child' => array(
+      $searchNavID+1 => array(
+        'attributes' => array (
+          'label'      => 'Find Cases',
+          'name'       => 'Find Cases',
+          'url'        => 'civicrm/case/search&reset=1',
+          'permission' => 'access my cases and activities,access all cases and activities',
+          'operator'   => 'OR',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+1,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+2 => array(
+        'attributes' => array (
+          'label'      => 'Find Activities',
+          'name'       => 'Find Activities',
+          'url'        => 'civicrm/activity/search&reset=1',
+          'permission' => 'view all activities',
+          'operator'   => 'AND',
+          'separator'  => 1,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+2,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+3 => array(
+        'attributes' => array (
+          'label'      => 'Full-text Search',
+          'name'       => 'Full-text Search',
+          'url'        => 'civicrm/contact/search/custom&csid=15&reset=1',
+          'permission' => 'access CiviCRM',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+3,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+4 => array(
+        'attributes' => array (
+          'label'      => 'Search Builder',
+          'name'       => 'Search Builder',
+          'url'        => 'civicrm/contact/search/builder&reset=1',
+          'permission' => 'access CiviCRM',
+          'operator'   => 'AND',
+          'separator'  => 1,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+4,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+5 => array(
+        'attributes' => array (
+          'label'      => 'Proximity Search',
+          'name'       => 'Proximity Search',
+          'url'        => 'civicrm/contact/search/custom&reset=1&csid=6',
+          'permission' => 'access CiviCRM',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+5,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+6 => array(
+        'attributes' => array (
+          'label'      => 'Birthday Search',
+          'name'       => 'Birthday Search',
+          'url'        => 'civicrm/contact/search/custom?reset=1&csid=16',
+          'permission' => 'access CiviCRM',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+6,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+      $searchNavID+7 => array(
+        'attributes' => array (
+          'label'      => 'Include/Exclude Group/Tag',
+          'name'       => 'Include/Exclude Group/Tag',
+          'url'        => 'civicrm/contact/search/custom?csid=4&reset=1',
+          'permission' => 'access CiviCRM,view all contacts',
+          'operator'   => 'AND',
+          'separator'  => 0,
+          'parentID'   => $searchNavID,
+          'navID'      => $searchNavID+7,
+          'active'     => 1
+        ),
+        'child' => array(),
+      ),
+    ),
+  );
+
+  return $search;
+}//_buildSearchMenu

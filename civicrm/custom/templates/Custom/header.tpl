@@ -155,6 +155,11 @@ cj( document ).ready( function( ) {
     <li><div class="menu-item">
     <a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Organization'}">New Organization</a></div></li>
   {/if}
+  {if call_user_func(array('CRM_Core_Permission','check'), 'edit groups')}
+    <li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>
+    <li><div class="menu-item">
+        <a href="{crmURL p='civicrm/group/add' q='reset=1'}">New Group</a></div></li>
+  {/if}
   </ul>
     </div>
   </span><!-- /.custom-search-link -->  
