@@ -46,7 +46,7 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 sql="select count(*) from civicrm_entity_tag"
-total_count=`$execSql -q -i $instance -c "$sql;"`
+total_count=`$execSql -q $instance -c "$sql;"`
 echo "Total entity-tag mappings: $total_count"
 # Don't check for foreign key mappings unless we successfully clean up
 # any entity-tag mappings that reference non-existent tags.
@@ -55,7 +55,7 @@ fk_chk=0
 if [ $dups_only -ne 1 ]; then
   echo "Checking for entity-tag mappings to non-existent tags..."
   sql="select count(*) from civicrm_entity_tag where tag_id not in ( select id from civicrm_tag )"
-  notag_count=`$execSql -q -i $instance -c "$sql;"`
+  notag_count=`$execSql -q $instance -c "$sql;"`
   echo "Number of mappings to non-existent tags: $notag_count"
 
   if [ $notag_count -gt 0 ]; then
@@ -70,7 +70,7 @@ if [ $dups_only -ne 1 ]; then
 
     echo "Deleting all mappings to non-existent tags..."
     sql="delete from civicrm_entity_tag where tag_id not in ( select id from civicrm_tag )"
-    $execSql -i $instance -c "$sql;"
+    $execSql $instance -c "$sql;"
 
     if [ $? -eq 0 ]; then
       echo "Successfully deleted mappings to non-existent tags"
@@ -83,17 +83,17 @@ if [ $dups_only -ne 1 ]; then
 fi
 
 sql="select count(*) from civicrm_entity_tag"
-total_count=`$execSql -q -i $instance -c "$sql;"`
+total_count=`$execSql -q $instance -c "$sql;"`
 echo "Now, total entity-tag mappings: $total_count"
 
 
 if [ $notag_only -ne 1 ]; then
   echo "Checking for duplicate entity-tag mappings..."
   sql="create table civicrm_entity_tag2 as select * from civicrm_entity_tag group by entity_table,entity_id,tag_id"
-  $execSql -i $instance -c "$sql;"
+  $execSql $instance -c "$sql;"
 
   sql="select count(*) from civicrm_entity_tag2"
-  new_total_count=`$execSql -q -i $instance -c "$sql;"`
+  new_total_count=`$execSql -q $instance -c "$sql;"`
   dup_count=`expr $total_count - $new_total_count`
 
   echo "Number of duplicate mappings: $dup_count"
@@ -105,7 +105,7 @@ if [ $notag_only -ne 1 ]; then
       case "$ch" in
         [yY]*) ;;
         *) echo "Aborted."
-           $execSql -q -i $instance -c "drop table civicrm_entity_tag2;"
+           $execSql -q $instance -c "drop table civicrm_entity_tag2;"
            exit 0
            ;;
       esac
@@ -114,7 +114,7 @@ if [ $notag_only -ne 1 ]; then
     echo "Deleting all duplicate entity tag records..."
 
     sql="truncate table civicrm_entity_tag; set foreign_key_checks=$fk_chk; insert into civicrm_entity_tag select * from civicrm_entity_tag2; drop table civicrm_entity_tag2"
-    $execSql -i $instance -c "$sql;"
+    $execSql $instance -c "$sql;"
 
     if [ $? -eq 0 ]; then
       echo "Successfully completed entity tag cleanup for instance [$instance]"
@@ -124,11 +124,11 @@ if [ $notag_only -ne 1 ]; then
     fi
   else
     echo "There are no duplicates to delete."
-    $execSql -q -i $instance -c "drop table civicrm_entity_tag2;"
+    $execSql -q $instance -c "drop table civicrm_entity_tag2;"
   fi
 fi
 
 sql="select count(*) from civicrm_entity_tag"
-total_count=`$execSql -q -i $instance -c "$sql;"`
+total_count=`$execSql -q $instance -c "$sql;"`
 echo "Finally, total entity-tag mappings: $total_count"
 exit 0

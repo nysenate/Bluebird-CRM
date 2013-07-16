@@ -9,6 +9,7 @@
 # Revised: 2012-12-21 (End of the World Day - Will Bluebird survive?)
 # Revised: 2013-01-07 (The world continued)
 # Revised: 2013-05-10 (Implement --force pass-through option.)
+# Revised: 2013-07-12 - Major interface change: removed -i option, added -n
 #
 
 prog=`basename $0`
@@ -19,7 +20,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -49,31 +50,36 @@ while [ $# -gt 0 ]; do
     -c|--cmd) shift; sqlcmd="$1" ;;
     -d|--dump) dump_db=1 ;;
     -t|--dump-table) shift; tabnames="$tabnames $1"; dump_db=1 ;;
-    -i|--instance) shift; instance="$1" ;;
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
+    -n|--db*) shift; dbname="$1" ;;
     -q|--quiet) be_quiet=1 ;;
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
-    --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
     --force) force_arg="--force" ;;
-    --log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
+    -D|--drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
+    -L|--log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
-    *) dbname="$1" ;;
+    *) instance="$1" ;;
   esac
   shift
 done
 
+if [ "$instance" -a "$dbname" ]; then
+  echo "$prog: Please specify either an instance or a dbname, but not both" >&2
+  exit 1
+fi
+
 ig_opt="--global"
 
-# By using the --instance option, this script can calculate the database
+# When specifying the instance, this script can calculate the database
 # prefix and the database basename (which are concatenated to form the
 # actual database name).  However, there are 3 databases for each instance:
 #    civicrm ("c"), drupal ("d"), and log "l")
 # This script defaults to the CiviCRM database.
-# Use the --drupal option to execute SQL on the Drupal DB instead.
-# Use the --log option to execute SQL on the Log DB instead.
+# Use the --drupal (or -D) option to execute SQL on the Drupal DB instead.
+# Use the --log (or -L) option to execute SQL on the Log DB instead.
 
 if [ "$instance" ]; then
   if ! $readConfig --instance $instance --quiet; then
@@ -81,11 +87,9 @@ if [ "$instance" ]; then
     exit 1
   fi
   ig_opt="--ig $instance"
-  if [ ! "$dbname" ]; then
-    db_basename=`$readConfig --instance $instance db.basename` || db_basename="$instance"
-    db_prefix=`$readConfig $ig_opt $db_prefix_keyname` || db_prefix=$default_db_prefix
-    dbname="$db_prefix$db_basename"
-  fi
+  db_basename=`$readConfig --instance $instance db.basename` || db_basename="$instance"
+  db_prefix=`$readConfig $ig_opt $db_prefix_keyname` || db_prefix=$default_db_prefix
+  dbname="$db_prefix$db_basename"
 fi
  
 [ "$dbhost" ] || dbhost=`$readConfig $ig_opt db.host` || dbhost=$DEFAULT_DB_HOST

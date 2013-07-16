@@ -108,7 +108,7 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
         # database config.  Thus, we iterate over each instance and attempt to
         # establish a quick connection with its DB to determine if it is "live".
         for instance in $instances; do
-          if $execSql -i $instance 2>/dev/null; then
+          if $execSql $instance 2>/dev/null; then
             live_instances="$live_instances $instance"
           fi
         done

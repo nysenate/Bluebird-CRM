@@ -52,34 +52,34 @@ fi
 
 
 if [ $rebuildRuleGroups -eq 1 ]; then
-    $execSql -i $instance --quiet -c "
+    $execSql $instance --quiet -c "
         TRUNCATE TABLE civicrm_dedupe_rule;
         TRUNCATE TABLE civicrm_dedupe_rule_group;
     "
-    $execSql -i $instance -f $dedupe_dir/rules.sql
+    $execSql $instance -f $dedupe_dir/rules.sql
 fi
 
 
 if [ $rebuildTables -eq 1 ]; then
     #Update suffixes tables
     echo "Rebuilding Suffix tables."
-    $execSql -i $instance -f $dedupe_dir/output/suffixes.sql
+    $execSql $instance -f $dedupe_dir/output/suffixes.sql
 
     #Update nickname tables
     echo "Rebuilding Nickname tables."
-    $execSql -i $instance -f $dedupe_dir/output/nicknames.sql
+    $execSql $instance -f $dedupe_dir/output/nicknames.sql
 
     ## Add/Drop the tables, functions, and triggers
     ## We might want to split some of this out in the future
     echo "Rebuilding shadow tables, triggers, and functions."
-    $execSql -i $instance -f $dedupe_dir/shadow.sql
+    $execSql $instance -f $dedupe_dir/shadow.sql
 
     ## Force an update on all the relevant fields
     ## This is a bit of a hack right now banking on us not having other contact types
     ## in the system and never using the name portion of the civicrm_address. In the
     ## future we might want to take a better approach and be more change proof.
     echo "Populating dedupe tables from civicrm tables."
-    $execSql -i $instance -c "
+    $execSql $instance -c "
         UPDATE civicrm_contact SET contact_type='Individual' WHERE contact_type='Individual';
         UPDATE civicrm_contact SET contact_type='Organization' WHERE contact_type='Organization';
         UPDATE civicrm_contact SET contact_type='Household' WHERE contact_type='Household';

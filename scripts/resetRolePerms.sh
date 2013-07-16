@@ -30,7 +30,7 @@ fi
 
 ## truncate table to remove any that should not belong
 sql="TRUNCATE TABLE role_permission;"
-$execSql -i $instance -c "$sql" --drupal -q
+$execSql -q $instance -c "$sql" --drupal
 
 ## reset all role perms
 sql="
@@ -413,11 +413,11 @@ sql="
 
     (19, 'administer inbox polling', 'nyss_civihooks');
 "
-$execSql -i $instance -c "$sql" --drupal -q
+$execSql -q $instance -c "$sql" --drupal
 
 ## set role weights to 0 to defer to alpha order
 sql="
   UPDATE role
   SET weight = 0;
 "
-$execSql -i $instance -c "$sql" --drupal -q
+$execSql -q $instance -c "$sql" --drupal

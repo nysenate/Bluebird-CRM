@@ -119,9 +119,9 @@ if [ $force_ok -eq 0 ]; then
   esac
 fi
 
-$execSql -i "$instance" -f "$civi_file"
-$execSql -i "$instance" -f "$drup_file" --drupal
-$execSql -i "$instance" -f "$log_file" --log
+$execSql "$instance" -f "$civi_file"
+$execSql "$instance" -f "$drup_file" --drupal
+$execSql "$instance" -f "$log_file" --log
 
 popd
 rm -rf $tmpdir/

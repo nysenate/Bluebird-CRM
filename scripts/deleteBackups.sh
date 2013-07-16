@@ -11,7 +11,6 @@
 
 prog=`basename $0`
 script_dir=`dirname $0`
-execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 
 . $script_dir/defaults.sh

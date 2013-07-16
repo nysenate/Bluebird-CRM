@@ -117,32 +117,32 @@ if [ $delete_instance -eq 1 ]; then
   $deleteInstance --ok $destinst
 fi
 
-if $execSql -i $destinst 2>/dev/null; then
+if $execSql $destinst 2>/dev/null; then
   echo "$prog: CiviCRM database for instance $destinst already exists; it cannot exist prior to loading." >&2
   die 1
-elif $execSql -i $destinst --drupal 2>/dev/null; then
+elif $execSql --drupal $destinst 2>/dev/null; then
   echo "$prog: Drupal database for instance $destinst already exists; it cannot exist prior to loading." >&2
   die 1
-elif $execSql -i $destinst --log 2>/dev/null; then
+elif $execSql $destinst --log 2>/dev/null; then
   echo "$prog: Logging database for instance $destinst already exists; it cannot exist prior to loading." >&2
   die 1
 fi
 
 echo "Loading CiviCRM database for instance $destinst with data from $temp_civi_file"
-$execSql --create -i $destinst || die 2
-$execSql -f "$temp_civi_file" -i $destinst || die 3
+$execSql --create $destinst || die 2
+$execSql -f "$temp_civi_file" $destinst || die 3
 
 echo "Loading Drupal database for instance $destinst with data from $temp_drup_file"
-$execSql --create -i $destinst --drupal || die 4
-$execSql -f "$temp_drup_file" -i $destinst --drupal || die 5
+$execSql --create --drupal $destinst || die 4
+$execSql -f "$temp_drup_file" --drupal $destinst || die 5
 
 if [ $copy_log_db -eq 1 ]; then
   echo "Loading Logging database for instance $destinst with data from $temp_log_file"
-  $execSql --create -i $destinst --log || die 6
-  $execSql -f "$temp_log_file" -i $destinst --log || die 7
+  $execSql --create --log $destinst || die 6
+  $execSql -f "$temp_log_file" --log $destinst || die 7
 else
   echo "Creating empty Logging database for instance $destinst"
-  $execSql --create -i $destinst --log || die 6
+  $execSql --create --log $destinst || die 6
 fi
 
 die 0

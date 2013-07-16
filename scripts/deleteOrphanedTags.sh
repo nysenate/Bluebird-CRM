@@ -59,7 +59,7 @@ fi
 
 parent_ids=`echo $parent_ids | sed 's;^,;;'`
 sql_body="from civicrm_tag where parent_id in ( $parent_ids ) and id not in ( select tag_id from civicrm_entity_tag )"
-tag_count=`$execSql -i $instance -c "select count(*) $sql_body"`
+tag_count=`$execSql $instance -c "select count(*) $sql_body"`
 
 [ $? -eq 0 ] || exit 1
 
@@ -78,7 +78,7 @@ if [ $force_ok -eq 0 ]; then
     read ch
     case "$ch" in
       [dD]*) break ;;
-      [vV]*) $execSql -i $instance -c "select id,name,description $sql_body" ;;
+      [vV]*) $execSql $instance -c "select id,name,description $sql_body" ;;
       *) echo "Aborting."; exit 0 ;;
     esac
   done
@@ -86,7 +86,7 @@ fi
 
 echo "Deleting $tag_count orphaned tags of type(s) [$parent_ids] in instance [$instance]"
 ( set -x
-  $execSql -i $instance -c "delete $sql_body"
+  $execSql $instance -c "delete $sql_body"
 )
 
 exit $?
