@@ -1722,3 +1722,7 @@ div#contact-summary div#contactTopBar {
 .dataTables_wrapper {
   overflow: auto;
 }
+#contact-log-report_processing {
+  position: relative;
+  margin-bottom: 10px;
+}
