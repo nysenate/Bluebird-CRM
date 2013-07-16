@@ -57,9 +57,15 @@
   <script type="text/javascript">
   cj( document ).ready( function ( ) {
     var dataURL = {/literal}"{$instanceUrl}"{literal};
+    //NYSS 6960
     cj.ajax({
       url: dataURL,
+      beforeSend: function(){
+        var procHtml = '<div id="contact-log-report_processing" class="dataTables_processing">Processing...</div>';
+        cj('#instance_data').before(procHtml);
+      },
       success: function( content ) {
+        cj('#contact-log-report_processing').hide();
         cj('#instance_data').show( ).html( content );
       }
     });
