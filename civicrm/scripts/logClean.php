@@ -42,7 +42,7 @@ class CRM_cleanLogs {
     }
 
     //we can only cleanup MyISAM/InnoDB tables
-    $tbls = array(
+    $tbls = $allowedTbls = array(
       'log_civicrm_address',
       'log_civicrm_activity',
       'log_civicrm_activity_assignment',
@@ -77,6 +77,10 @@ class CRM_cleanLogs {
       foreach ( $tbls as &$tbl ) {
         if ( strpos($tbl, 'log_') !== 0 ) {
           $tbl = 'log_'.$tbl;
+        }
+        if ( !in_array($tbl, $allowedTbls) ) {
+          bbscript_log('info', "The {$tbl} table is not available for this cleaning process.");
+          return FALSE;
         }
       }
       //bbscript_log('debug', 'tables to be processed:', $tbls);
