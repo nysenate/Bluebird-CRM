@@ -52,8 +52,16 @@ else {
     $auth_conf = ldap_authentication_get_valid_conf();
   }
   $ldap_server = $auth_conf->enabledAuthenticationServers['nyss_ldap'];
-  $ldap_server->connect();
-  $ldap_server->bind();
+  $res = $ldap_server->connect();
+  if ($res != LdapServer::LDAP_SUCCESS) {
+    error_log("Unable to connect to LDAP server");
+    echo 0;
+  }
+  $res = $ldap_server->bind();
+  if ($res != LdapServer::LDAP_SUCCESS) {
+    error_log("Unable to bind to LDAP server anonymously");
+    echo 0;
+  }
 
   $groupFilter = '';
   foreach ($allowedGroups as $groupName) {
@@ -81,7 +89,7 @@ else {
     echo 1;
   }
   else {
-    error_log("User [$_name] is not allowed to log in to this instance");
+    error_log("User [$_name] is not allowed to log in to this instance; CRM allows groups: [".implode(',', $allowedGroupIds)."]; user is in groups [".implode(',', $userGroupIds)."]");
     echo 0;
   }
 }
