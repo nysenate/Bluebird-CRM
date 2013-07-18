@@ -348,6 +348,11 @@ else {
     exit(1);
   }
 
+  // Since CiviCRM is not being bootstrapped, CIVICRM_SITE_KEY must be
+  // manually defined here, since the CRM_Utils_Crypt::encrypt() method
+  // depends on it.
+  define('CIVICRM_SITE_KEY', $bbconfig['site.key']);
+
   $dbcon = getDatabaseConnection($bbconfig);
   if (!$dbcon) {
     echo "$prog: Unable to connect to database for instance [$instance]\n";
