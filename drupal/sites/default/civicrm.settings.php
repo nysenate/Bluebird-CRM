@@ -37,7 +37,7 @@ global $civicrm_root;
 $civicrm_root = $bbconfig['drupal.rootdir'].'/sites/all/modules/civicrm';
 define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/civicrm/templates_c');
 define('CIVICRM_UF_BASEURL', 'http://'.$bbconfig['servername'].'/');
-define('CIVICRM_SITE_KEY', '32425kj24h5kjh24542kjh524');
+define('CIVICRM_SITE_KEY', get_config_value($bbconfig, 'site.key', '32425kj24h5kjh24542kjh524'));
 
 //define('CIVICRM_MULTISITE', null);
 //define('CIVICRM_UNIQ_EMAIL_PER_SITE', null);
