@@ -99,6 +99,10 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
     $config = CRM_Core_Config::singleton();
     $logFile = $config->configAndLogDir.'loadSample_output.log';
 
+    //truncate the log file before running the script
+    $f = fopen($logFile, 'w');
+    fclose($f);
+
     //run script
     exec("php $script -S {$bbcfg['shortname']} --system --purge --log=info 1>{$logFile}");
 
@@ -115,18 +119,9 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
     $config = CRM_Core_Config::singleton();
     $logFile = $config->configAndLogDir.'loadSample_output.log';
 
-    $setStart = CRM_Utils_Array::value('setStart', $_GET, 0);
-    $setEnd = CRM_Utils_Array::value('setEnd', $_GET, 10);
-    //CRM_Core_Error::debug_var('setStart',$setStart);
-    //CRM_Core_Error::debug_var('setEnd',$setEnd);
-
-    if ( $setStart == 0 ) {
-      //CRM_Core_Error::debug_var('setStart sleep', $setStart);
-      sleep(8);
-    }
-
-    $i = 0;
+    //$i = 0;
     $output = '';
+    $finished = FALSE;
 
     //process file
     $fhandle = fopen($logFile, "r");
@@ -135,27 +130,14 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       $i++;
       //CRM_Core_Error::debug_var('i',$i);
 
-      //skip ahead (inefficient)
-      if ( $i < $setStart ) {
-        continue;
-      }
-
-      $output .= str_replace("\n", '<br />', $line);
+      $output .= str_replace("\n", '</p><p>', $line);
       //CRM_Core_Error::debug_var('output',$output);
 
-      if ( $i > $setEnd ) {
-        bbscript_log('info', "{$setEnd} contacts imported...");
-        echo $output;
-        sleep(3);
-
-        fclose($fhandle);
-        CRM_Utils_System::civiExit();
+      if ( strpos($line, 'Completed instance cleanup') !== FALSE ) {
+        $finished = TRUE;
       }
 
-      //safety to avoid runaway script
-      if ( $i > 10000 ) {
-        break;
-      }
+      sleep(5);
     }
 
     //print final output from partial set
@@ -163,8 +145,9 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       echo $output;
     }
 
-    //final return to finish process
-    bbscript_log('info', "Complete.");
+    if ( $finished ) {
+      echo 'SCRIPTCOMPLETE';
+    }
 
     fclose($fhandle);
     CRM_Utils_System::civiExit();

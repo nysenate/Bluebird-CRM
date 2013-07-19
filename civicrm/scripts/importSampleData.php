@@ -246,6 +246,7 @@ class CRM_ImportSampleData {
 
     $type = str_replace('.yml', '', $file);
     $errors = array();
+    $i = 0;
 
     switch ( $type ) {
       case 'individuals':
@@ -305,6 +306,11 @@ class CRM_ImportSampleData {
 
       if ( $fk ) {
         $fkMap[$type][$fk] = $r['id'];
+      }
+
+      $i++;
+      if ( $i % 500 == 0 ) {
+        bbscript_log('info', "{$i} {$type} records imported... ");
       }
     }
 
