@@ -55,8 +55,9 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
 
     //TODO allowable instances should be retrieved from bluebird.cfg
     $allowedInstances = array(
-      'sd99',
+      'demo',
       'sample',
+      'sd99',
       'training1',
       'training2',
       'training3',
@@ -143,7 +144,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
       //CRM_Core_Error::debug_var('output',$output);
 
       if ( $i > $setEnd ) {
-        echo "{$setEnd} contacts imported...";
+        bbscript_log('info', "{$setEnd} contacts imported...");
         echo $output;
         sleep(3);
 
@@ -163,7 +164,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
     }
 
     //final return to finish process
-    echo "COMPLETE";
+    bbscript_log('info', "Complete.");
 
     fclose($fhandle);
     CRM_Utils_System::civiExit();
