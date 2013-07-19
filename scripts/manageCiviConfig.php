@@ -285,13 +285,14 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
   $cb['mailerBatchLimit'] = $batchlimit;
   $cb['mailerJobSize'] = $jobsize;
   $cb['mailerJobsMax'] = $jobsmax;
+  $cb['geoAPIKey'] = '';
   $rc &= updateConfigBackend($dbcon, $cb);
 
   $mb = $civicfg['mailing_backend'];
   $mb['smtpServer']   = $bbcfg['smtp.host'];
   $mb['smtpPort']     = $bbcfg['smtp.port'];
   $mb['smtpAuth']     = $bbcfg['smtp.auth'];
-  $mb['smtpUsername'] = $bbcfg['smtp.subuser'];
+  $mb['smtpUsername'] = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
   require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
   $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']);
   $rc &= updateMailingBackend($dbcon, $mb);
