@@ -107,7 +107,9 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     $sql_emails = "
       SELECT COUNT( c.id ) AS email_count
       FROM civicrm_contact c
-        JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+      JOIN civicrm_email ce
+        ON c.id = ce.contact_id
+        AND ce.is_primary = 1
       WHERE is_deleted != 1
         AND email IS NOT NULL
         AND email != '';
@@ -118,7 +120,10 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     $sql_emailsBulk = "
       SELECT COUNT( c.id ) AS emailBulk_count
       FROM civicrm_contact c
-        JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary != 1 AND ce.is_bulkmail = 1 )
+      JOIN civicrm_email ce
+        ON c.id = ce.contact_id
+        AND ce.is_primary != 1
+        AND ce.is_bulkmail = 1
       WHERE is_deleted != 1
         AND email IS NOT NULL
         AND email != '';
@@ -135,10 +140,13 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     $sql_emailsOH = "
       SELECT COUNT( c.id ) AS emailOH_count
       FROM civicrm_contact c
-      JOIN civicrm_email ce ON ( c.id = ce.contact_id
+      JOIN civicrm_email ce
+        ON c.id = ce.contact_id
         AND ( ( ce.is_primary = 1 AND ce.is_bulkmail = 0 )
-        OR ( ce.is_primary = 0 AND ce.is_bulkmail = 1 ) )
-        AND ce.on_hold = 1 )
+          OR ( ce.is_primary = 0 AND ce.is_bulkmail = 1 ) )
+        AND ce.on_hold = 1
+        AND ce.email IS NOT NULL
+        AND ce.email != ''
       WHERE is_deleted != 1;
     ";
     $emailCounts['Primary/Bulk On Hold'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOH );
@@ -149,6 +157,8 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       FROM civicrm_contact c
       JOIN civicrm_email ce
         ON c.id = ce.contact_id
+        AND ce.email IS NOT NULL
+        AND ce.email != ''
       WHERE is_deleted != 1
         AND do_not_email = 1;
     ";
@@ -160,6 +170,8 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       FROM civicrm_contact c
       JOIN civicrm_email ce
         ON c.id = ce.contact_id
+        AND ce.email IS NOT NULL
+        AND ce.email != ''
       WHERE is_deleted != 1
         AND is_opt_out = 1;
     ";
@@ -170,7 +182,10 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       SELECT COUNT( c.id ) AS emailDec_count
       FROM civicrm_contact c
       JOIN civicrm_email ce
-        ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+        ON c.id = ce.contact_id
+        AND ce.is_primary = 1
+        AND ce.email IS NOT NULL
+        AND ce.email != ''
       WHERE is_deleted != 1
         AND is_deceased = 1;
     ";
@@ -183,7 +198,10 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
         SELECT em1.id
         FROM civicrm_email em1
         JOIN civicrm_email em2
-          ON ( em1.email = em2.email AND em1.contact_id != em2.contact_ID )
+          ON em1.email = em2.email
+          AND em1.contact_id != em2.contact_ID
+          AND em2.email IS NOT NULL
+          AND em2.email != ''
         LEFT JOIN civicrm_contact c1
           ON em1.contact_id = c1.id
         LEFT JOIN civicrm_contact c2
@@ -202,9 +220,15 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
       JOIN (
         SELECT contact_id
         FROM civicrm_email
-        WHERE ( ( is_primary = 1 AND is_bulkmail = 0 )
-          OR ( is_primary = 0 AND is_bulkmail = 1 ) )
-        AND on_hold = 0
+        WHERE
+          (
+            ( is_primary = 1 AND is_bulkmail = 0 )
+              OR
+            ( is_primary = 0 AND is_bulkmail = 1 )
+          )
+          AND on_hold = 0
+          AND email IS NOT NULL
+          AND email != ''
         GROUP BY contact_id
         ORDER BY is_bulkmail DESC
       ) ce
