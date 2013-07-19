@@ -1,0 +1,57 @@
+-
+  name: "Case_Resources"
+  title: "Case Resources"
+  description: "Contacts in this group are listed in the case resources panel, case management screen."
+  is_active: 1
+  visibility: "User and User Admin Only"
+  is_hidden: 0
+  is_reserved: 1
+-
+  name: "Office_Staff"
+  title: "Office Staff"
+  description: "Contacts in this group will be available to the quick search when assigning an activity or case role."
+  is_active: 1
+  visibility: "User and User Admin Only"
+  is_hidden: 0
+  is_reserved: 1
+-
+  name: "Mailing_Exclusions"
+  title: "Mailing Exclusions"
+  description: "Deceased and do not mail contacts."
+  saved_search_id: 5
+  is_active: 1
+  visibility: "User and User Admin Only"
+  is_hidden: 0
+  is_reserved: 1
+-
+  name: "Mailing_Seeds"
+  title: "Mailing Seeds"
+  description: "Contacts in this group will be added to mailings generated using print production export."
+  is_active: 1
+  visibility: "User and User Admin Only"
+  is_hidden: 0
+  is_reserved: 1
+-
+  name: "Bluebird_Mail_Subscription"
+  title: "Bluebird Mail Subscription"
+  is_active: 1
+  visibility: "User and User Admin Only"
+  group_type: "2"
+  is_hidden: 1
+  is_reserved: 1
+-
+  name: "Email_Seeds"
+  title: "Email Seeds"
+  description: "Add contacts to this group to be automatically included in all broadcast emails sent from Bluebird."
+  is_active: 1
+  visibility: "User and User Admin Only"
+  group_type: "2"
+  is_hidden: 0
+  is_reserved: 1
+-
+  name: "Authorized_Forwarders"
+  title: "Authorized Forwarders"
+  is_active: 1
+  visibility: "User and User Admin Only"
+  is_hidden: 0
+  is_reserved: 1
