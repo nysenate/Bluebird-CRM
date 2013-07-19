@@ -5518,15 +5518,3 @@
   entity_table: "civicrm_contact"
   entity_id: 3594
   tag_id: 306
--
-  entity_table: "civicrm_contact"
-  entity_id: 3596
-  tag_id: 7
--
-  entity_table: "civicrm_contact"
-  entity_id: 3596
-  tag_id: 10
--
-  entity_table: "civicrm_contact"
-  entity_id: 3596
-  tag_id: 15
