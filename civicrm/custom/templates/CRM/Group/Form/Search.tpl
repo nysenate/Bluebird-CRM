@@ -78,7 +78,7 @@
 </table>
 
 {* handle enable/disable actions*}
-{include file="CRM/common/enableDisable.tpl"}
+{include file="CRM/common/enableDisable.tpl" title="Group"}{*NYSS 3972*}
  
 {literal}
 <script type="text/javascript">
