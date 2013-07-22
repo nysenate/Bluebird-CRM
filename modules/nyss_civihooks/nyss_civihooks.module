@@ -334,7 +334,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
       '_qf_ProofingReport_submit',
-      '_qf_Label_next'
+      '_qf_Label_next',
+      '_qf_ExportPermissions_next',
+      '_qf_ExportPermissions_submit',
+      '_qf_ExportPermissions_cancel',
     );
     $btnExcludeValue = array(
       'PDF',
@@ -1006,14 +1009,15 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
+      //6552
       $manageID+10 => array(
         'attributes' => Array(
-          'label' => 'Merge Duplicate Contacts',
-          'name' => 'Merge Duplicate Contacts',
-          'url' => 'civicrm/contact/deduperules&reset=1',
+          'label' => 'Export Permissions',
+          'name' => 'Export Permissions',
+          'url' => 'civicrm/nyss/exportpermissions',
           'permission' => 'administer CiviCRM',
           'operator' => 'OR',
-          'separator' => 2,
+          'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+10,
           'active' => 1,
@@ -1022,12 +1026,12 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+11 => array(
         'attributes' => Array(
-          'label' => 'Case Dashboard',
-          'name' => 'Case Dashboard',
-          'url' => 'civicrm/case?reset=1',
-          'permission' => 'access all cases and activities',
-          'operator' => 'AND',
-          'separator' => 0,
+          'label' => 'Merge Duplicate Contacts',
+          'name' => 'Merge Duplicate Contacts',
+          'url' => 'civicrm/contact/deduperules&reset=1',
+          'permission' => 'administer CiviCRM',
+          'operator' => 'OR',
+          'separator' => 2,
           'parentID' => $manageID,
           'navID' => $manageID+11,
           'active' => 1,
@@ -1036,11 +1040,11 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+12 => array(
         'attributes' => Array(
-          'label' => 'Import/Export Mappings',
-          'name' => 'Import/Export Mappings',
-          'url' => 'civicrm/admin/mapping?reset=1',
-          'permission' => 'administer CiviCRM,administer district',
-          'operator' => 'OR',
+          'label' => 'Case Dashboard',
+          'name' => 'Case Dashboard',
+          'url' => 'civicrm/case?reset=1',
+          'permission' => 'access all cases and activities',
+          'operator' => 'AND',
           'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+12,
@@ -1048,8 +1052,22 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
-      //5230 add duplicate address removal tool
       $manageID+13 => array(
+        'attributes' => Array(
+          'label' => 'Import/Export Mappings',
+          'name' => 'Import/Export Mappings',
+          'url' => 'civicrm/admin/mapping?reset=1',
+          'permission' => 'administer CiviCRM,administer district',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+13,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      //5230 add duplicate address removal tool
+      $manageID+14 => array(
         'attributes' => Array(
           'label' => 'Duplicate Address Removal',
           'name' => 'Duplicate Address Removal',
@@ -1058,7 +1076,7 @@ function _buildManageMenu($manageID) {
           'operator' => 'AND',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+13,
+          'navID' => $manageID+14,
           'active' => 1,
         ),
         'child' => array(),

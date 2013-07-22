@@ -1,0 +1,6 @@
+name = NYSS Export Permissions
+description = NYSS: generate CSV file detailing CiviCRM roles/permissions.
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2
