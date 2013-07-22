@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<menu>
+  <item>
+    <title>Export CiviCRM Roles/Permissions</title>
+    <path>civicrm/nyss/exportpermissions</path>
+    <page_callback>CRM_NYSS_Form_ExportPermissions</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>

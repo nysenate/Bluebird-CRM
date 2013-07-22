@@ -1,0 +1,22 @@
+<?php
+
+function nyss_exportpermissions_civicrm_config( &$config ) {
+  //establish session and ensure userID based construction if in backend
+  $session = CRM_Core_Session::singleton();
+  $contactID = $session->get('userID');
+
+  $dirRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+
+  //prepend extension php include path
+  $include_path = $dirRoot .'php'. PATH_SEPARATOR . get_include_path( );
+  set_include_path( $include_path );
+
+  //prepend extension template path
+  $template =& CRM_Core_Smarty::singleton();
+  $templateDir = $dirRoot .'tpl'.DIRECTORY_SEPARATOR;
+  array_unshift( $template->template_dir, $templateDir );
+}//config
+
+function nyss_exportpermissions_civicrm_xmlMenu( &$files ) {
+  $files[] = dirname(__FILE__)."/menu.xml";
+}//xmlMenu
