@@ -476,6 +476,16 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
     $form->addRule('subject', ts('Please include subject text.'), 'required');
   }
 
+  //6655 add to group perms
+  if ( $formName == 'CRM_Contact_Form_Task_AddToGroup' ) {
+    if ( !CRM_Core_Permission::check('edit groups') ) {
+      $go =& $form->getElement('group_option');
+      unset($go->_elements[1]);
+
+      $form->removeElement('title');
+    }
+  }
+
   _setDBVars();
 
   //CRM_Core_Error::debug($formName);
