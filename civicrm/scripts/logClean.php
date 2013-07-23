@@ -57,6 +57,7 @@ class CRM_cleanLogs {
       'log_civicrm_note',
       'log_civicrm_phone',
       'log_civicrm_relationship',
+      'log_civicrm_subscription_history',
       'log_civicrm_value_constituent_information_1',
       'log_civicrm_value_district_information_7',
     );
