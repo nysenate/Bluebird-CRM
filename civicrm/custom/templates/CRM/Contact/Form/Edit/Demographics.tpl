@@ -94,14 +94,21 @@
         }
     }
 	showOtherGender( );    
-    function showOtherGender( )
-    {
-        var x=document.getElementsByName("gender_id");
-  		if (x[2].checked){
-      	    show('showOtherGender');
-        } else {
-	    	hide('showOtherGender');
-        }
+  function showOtherGender( )
+  {
+    var x=document.getElementsByName("gender_id");
+    if (x[2].checked){
+      show('showOtherGender');
     }
+    else {
+      cj('input[name^=custom_45_]').val('');
+      hide('showOtherGender');
+    }
+  }
+
+  //NYSS 5783
+  cj('div#demographics span.crm-clear-link a').click(function(){
+    showOtherGender();
+  });
 </script>
 {/literal}
