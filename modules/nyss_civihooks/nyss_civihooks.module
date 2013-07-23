@@ -330,6 +330,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_PDF_submit',
       '_qf_PDF_cancel',
       '_qf_Contact_upload_view', //handle separately
+      '_qf_Contact_upload_new', //handle separately
+      '_qf_Contact_upload_cancel', //handle separately
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
@@ -344,6 +346,11 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       'Print Contact List',
       'File on case'
     );
+    $btnHandleValid = array(
+      '_qf_Contact_upload_view',
+      '_qf_Contact_upload_new',
+      '_qf_Contact_upload_cancel',
+    );
 
     foreach ( $buttons->_elements as $key=>$button ) {
       $btnType = $buttons->_elements[$key]->_attributes['type'];
@@ -352,10 +359,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $btnValue = $buttons->_elements[$key]->_attributes['value'];
         if ( !in_array($btnName, $btnExcludeName) &&
              !in_array($btnValue, $btnExcludeValue) ) {
-          $js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
+          $js = "if(this.value!='Processing...'){this.value='Processing...';cj('#' + this.id).click();return true;}else{return false;}";
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
-        } elseif ( $btnName == '_qf_Contact_upload_view' ) {
-          $js = 'if(this.value!="Processing..." && cj("#Contact").valid() ){this.value="Processing...";document.getElementById(this.id).click();return true;}else{return false;}';
+        }
+        elseif ( in_array($btnName, $btnHandleValid) ) {
+          $jsValid = $jsCancel = '';
+          if ( strpos($btnName, '_cancel') === FALSE ) {
+            $jsValid = '&& cj("#Contact").valid()';
+          }
+          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this.value="Processing...";cj("#" + this.id).click();return true;}else{return false;}';
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
         }
       }

@@ -45,6 +45,9 @@ cj(document).ready(function(){
     cj(this).children('option:first').text('- Active -');
   })
 });
+
+//5363 add cancel class
+cj('input[name=_qf_Contact_cancel]').addClass('cancel');
 </script>
 {/literal}
 
