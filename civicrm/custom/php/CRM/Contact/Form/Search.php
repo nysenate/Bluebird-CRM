@@ -947,9 +947,12 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
       $config = CRM_Core_Config::singleton();
       // do this only for contact search
       if ($setDynamic && $config->includeAlphabeticalPager) {
-        if ($this->_reset ||
+        /*if ($this->_reset ||
           ($this->_sortByCharacter === NULL || $this->_sortByCharacter == '')
-        ) {
+        ) {*/
+        //NYSS 6723
+        // Don't recompute if we are just paging/sorting
+        if ($this->_reset || (empty($_GET['crmPID']) && empty($_GET['crmSID']) && !$this->_sortByCharacter)) {
           $aToZBar = CRM_Utils_PagerAToZ::getAToZBar($selector, $this->_sortByCharacter);
           $this->set('AToZBar', $aToZBar);
         }
