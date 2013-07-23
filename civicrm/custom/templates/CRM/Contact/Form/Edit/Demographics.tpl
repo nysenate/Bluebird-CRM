@@ -101,6 +101,7 @@
       show('showOtherGender');
     }
     else {
+      //NYSS 5783
       cj('input[name^=custom_45_]').val('');
       hide('showOtherGender');
     }
