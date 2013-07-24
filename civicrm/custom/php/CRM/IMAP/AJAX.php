@@ -481,10 +481,18 @@ class CRM_IMAP_AJAX {
                       if ($debug) echo "<p>".$email['email'] ." != ".strtolower($senderEmail)."</p>";
                   }
               }
+	      $locationQuery = "SELECT  id FROM `civicrm_location_type` WHERE `name` = 'Other'";
+	      $locationResult = mysql_query($locationQuery, self::db());
+	      $locationResults = array();
+	      while($row = mysql_fetch_assoc($locationResult)) {
+		$locationResults[] = $row['id'];
+	      }
+
                // Prams to add email to user
               $params = array(
                   'contact_id' => $contactId,
                   'email' => $senderEmail,
+		  'location_type_id' => $locationResults[0],   // Other
                   'version' => 3,
               );
               if(($emailsCount-$matches) == 0){
@@ -1407,7 +1415,6 @@ EOQ;
         $params = array(
             'first_name' => $first_name,
             'last_name' => $last_name,
-            'email' => $email,
             'contact_type' => 'Individual',
             'birth_date' => $dob,
             'version' => 3,
@@ -1425,6 +1432,23 @@ EOQ;
           var_dump($contact);
         }
 
+	// add the email
+	if($email && $contact['id']){
+	  $locationQuery = "SELECT  id FROM `civicrm_location_type` WHERE `name` = 'Other'";
+	  $locationResult = mysql_query($locationQuery, self::db());
+	  $locationResults = array();
+	  while($row = mysql_fetch_assoc($locationResult)) {
+	    $locationResults[] = $row['id'];
+	  }
+	  // Prams to add email to user
+	  $emailParams = array(
+	    'contact_id' => $contact['id'],
+	    'email' => $email,
+	    'location_type_id' => $locationResults[0],   // Other
+	    'version' => 3,
+	  );
+	  $email = civicrm_api( 'email','create',$emailParams );
+	}
         // add the phone number
         if($phone && $contact['id']){
           $phoneParams = array(
