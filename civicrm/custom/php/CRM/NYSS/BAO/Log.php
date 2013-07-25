@@ -9,7 +9,8 @@ class CRM_NYSS_BAO_Log {
    * Function to get the count of the change log.
    */
   static function getTabCount( ) {
-    if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
+    if ( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) &&
+      CRM_Core_BAO_Log::useLoggingReport() ) {
       //NYSS 6719 call count function directly
       echo self::getEnhancedContactLogCount( $contactId );
     }
