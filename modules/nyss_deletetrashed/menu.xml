@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<menu>
+  <item>
+    <title>Permanently Delete Trashed Contacts</title>
+    <path>civicrm/nyss/deletetrashed</path>
+    <page_callback>CRM_NYSS_Form_DeleteTrashed</page_callback>
+    <access_arguments>administer CiviCRM;export print production files</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/processtrashed</path>
+    <page_callback>CRM_NYSS_Form_DeleteTrashed::processTrashed</page_callback>
+    <access_arguments>administer CiviCRM;export print production files</access_arguments>
+  </item>
+</menu>
