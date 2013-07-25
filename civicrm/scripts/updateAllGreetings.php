@@ -93,7 +93,14 @@ function run()
         }
         $transaction = new CRM_Core_Transaction();
       }
-      echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
+
+      //make sure we have a contact type
+      if ( empty($dao->contact_type) ) {
+        echo "Contact ID {$dao->id} has no contact type set. We are unable to set the greeting values.\n";
+        continue;
+      }
+
+      echo "Processing contact ID {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
       CRM_Contact_BAO_Contact::processGreetings($dao, TRUE);
       $cnt++;
     }
