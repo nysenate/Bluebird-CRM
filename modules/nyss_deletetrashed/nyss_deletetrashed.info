@@ -1,0 +1,6 @@
+name = NYSS Delete Trashed Contacts
+description = NYSS: tool to permanently delete trashed contacts.
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2

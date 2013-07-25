@@ -1103,6 +1103,21 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
+      //delete trashed tool
+      $manageID+15 => array(
+        'attributes' => Array(
+          'label' => 'Delete Trashed Contacts',
+          'name' => 'Delete Trashed Contacts',
+          'url' => 'civicrm/nyss/deletetrashed?reset=1',
+          'permission' => 'administer CiviCRM,export print production files',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+15,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
     ),
   );
 
