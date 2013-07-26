@@ -53,24 +53,35 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
-    <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
-	
-	    {foreach key=key item=item from=$tagGroup}
+  <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
+    <tr>
+      {if $groupElementType eq 'crmasmSelect'}
+        <td style="width:45%;"><span class="label">{if $title}{$form.group.label}{/if}</span>
+          {$form.group.html}
+          {literal}
+          <script type="text/javascript">
+          cj(function(){
+            cj("select#group").crmasmSelect({
+              respectParents: true
+            });
+          });
+          </script>
+          {/literal}
+        </td>
+      {/if}
+	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
 		
 			{if $key eq 'tag'}
-			<tr>
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
-				    <div id="crm-tagListWrap">
+				  <div id="crm-tagListWrap">
 						<div class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</div>
 					</div>
-					
 				</td>
-			</tr>
 			{/if}
 			{if $key eq 'group'}
-			<tr>
+			{*<tr>
 				<td width="100%" class="crm-tagGroupsList"><div class="label" onClick="rollDownGroup('.crm-tagGroupsList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				    <div id="crm-tagListWrap">
 					    <table id="crm-tagGroupTable">
@@ -78,7 +89,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 						    {if $k|is_numeric}
 							<tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
 							    <td>
-			                   			<strong>{$it.html}</strong><br /> {*LCD retain for groups list*}
+			                   			<strong>{$it.html}</strong><br /> *}{*LCD retain for groups list*}{*
 								{if $item.$k.description}
 								    <div class="description">
 									{$item.$k.description}
@@ -92,12 +103,12 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 				    </div>
 				</td>
 			</tr>
-			<tr></tr>
+			<tr></tr>*}
 			{/if}
 		{/if}
-	    {/foreach}
-	
-    </table>   
+	  {/foreach}
+	  </tr>
+  </table>
 {if $title}
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->

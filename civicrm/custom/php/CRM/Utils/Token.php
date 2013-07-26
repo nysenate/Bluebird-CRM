@@ -621,6 +621,12 @@ class CRM_Utils_Token {
       $value = str_replace('&amp;', '&', $value);
     }
 
+    //NYSS 5472
+    $imProvider = CRM_Core_PseudoConstant::IMProvider();
+    if ( $token == 'im_provider' && !empty($value) ) {
+      $value = $imProvider[$value];
+    }
+
     // if null then return actual token
     if ($returnBlankToken && !$value) {
       $value = "{contact.$token}";

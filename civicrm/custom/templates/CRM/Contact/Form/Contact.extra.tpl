@@ -39,6 +39,15 @@ cj('#addressBlockId').addClass('crm-accordion-open').removeClass('crm-accordion-
 cj('.crm-edit-address-custom_data').parent().addClass('address-custom-cell').removeAttr('colspan');
 cj('.crm-edit-address-custom_data').parent().parent().addClass('address-content-block');
 
+//4980 on hold select
+cj(document).ready(function(){
+  cj('select[id$="_on_hold"]').each(function(){
+    cj(this).children('option:first').text('- Active -');
+  })
+});
+
+//5363 add cancel class
+cj('input[name=_qf_Contact_cancel]').addClass('cancel');
 </script>
 {/literal}
 

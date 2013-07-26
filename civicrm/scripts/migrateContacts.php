@@ -944,6 +944,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       $params = array(
         'version' => 3,
         'case_id' => $contactCases->case_id,
+        'return' => 'activities',
       );
       $case = civicrm_api('case', 'get', $params);
       //bbscript_log("trace", 'exportCases $case', $case);

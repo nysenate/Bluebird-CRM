@@ -32,7 +32,10 @@
     <div class="clear"></div>
   </div>
 
-  <div id="output" style="display: none;"><h3>Loading data...</h3></div>
+  <div id="output" style="display: none;">
+    <h3>Loading data...</h3>
+    <div class="content"></div>
+  </div>
 
 </div>
 </div>  
@@ -60,8 +63,8 @@
     cj.ajax({
       url: dataUrl,
       success: function(data, textStatus, jqXHR){
-        console.log('processing time: ', data);
         procTime = data;
+        console.log('processing time: ', procTime);
       },
       error: function( jqXHR, textStatus, errorThrown ) {
         return false;
@@ -70,32 +73,29 @@
 
     //get output and write to screen
     var dataUrl = "{/literal}{crmURL p='civicrm/nyss/getoutput' h=0 }{literal}";
-    var element = cj('#output');
+    var element = cj('#output .content');
     var complete = false;
-    var start = end = h = 0;
+    var h = i = 0;
 
     while ( !complete ) {
-      start = end;
-      end += 20;
+      i++;
 
       cj.ajax({
         url: dataUrl,
         async: false,
-        data: "setStart=" + start + "&setEnd=" + end,
         success: function(data, textStatus, jqXHR){
           //console.log('retrieving file');
           //console.log('data: ', data);
 
-          if ( data == 'COMPLETE' ) {
-            //console.log('flagging as complete');
+          if ( data.search('SCRIPTCOMPLETE') > -1 ) {
+            data = data.replace('SCRIPTCOMPLETE', '');
             complete = true;
           }
-          else {
-            element.append(data);
 
-            h = element[0].scrollHeight;
-            element.scrollTop(h);
-          }
+          element.html('<p>' + data + '</p>');
+
+          h = element[0].scrollHeight;
+          element.scrollTop(h);
         },
         error: function( jqXHR, textStatus, errorThrown ) {
           return false;

@@ -28,7 +28,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordRemoveFontStyles = false;
   config.pasteFromWordNumberedHeadingToList = true;
 
-  config.extraPlugins = 'font,aspell';
+  config.extraPlugins = 'font,aspell,justify';
 
   // The toolbar groups arrangement, optimized for two toolbar rows.
   config.toolbarGroups = [
@@ -42,7 +42,7 @@ CKEDITOR.editorConfig = function( config ) {
     { name: 'others' },
     '/',
     { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ] },
+    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'justify' ] },//LCD
     { name: 'styles' },
     { name: 'colors' },
     { name: 'about' }

@@ -1726,3 +1726,12 @@ div#contact-summary div#contactTopBar {
   position: relative;
   margin-bottom: 10px;
 }
+
+/*contact edit groups/tags*/
+#crm-container #tagGroup .crmasmSelect,
+#crm-container #tagGroup .crmasmContainer {
+  width: 325px;
+}
+#crm-container #tagGroup #crm-tagListWrap {
+  border: none;
+}
