@@ -90,6 +90,8 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
    */
   static
   function loadData() {
+    global $user;
+
     $sTime = microtime(TRUE);
 
     //get script
@@ -104,7 +106,8 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
     fclose($f);
 
     //run script
-    exec("php $script -S {$bbcfg['shortname']} --system --purge --log=info 1>{$logFile}");
+    $uid = "{$user->uid}/{$user->mail}";
+    exec("php $script -S {$bbcfg['shortname']} --system --purge --log=info --uid={$uid} 1>{$logFile}");
 
     $eTime = microtime(TRUE);
     $diffTime = ($eTime - $sTime)/60;

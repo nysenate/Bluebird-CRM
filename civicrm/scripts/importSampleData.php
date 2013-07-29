@@ -36,13 +36,13 @@ class CRM_ImportSampleData {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = 'd:s:p:g:l:k';
-    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log=', 'skiplogs');
+    $shortopts = 'd:s:p:g:l:k:u';
+    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log=', 'skiplogs', 'uid=');
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log LEVEL] [--skiplogs|-k';
+      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log LEVEL] [--skiplogs|-k] [--uid USERID|-u]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -82,7 +82,7 @@ class CRM_ImportSampleData {
     //clean out all existing data
     if ( $optlist['purge'] ) {
       bbscript_log('info', 'purging old data... ');
-      self::purgeData();
+      self::purgeData($optlist['uid']);
     }
 
     //completely purge log db unless explicit skip
@@ -145,7 +145,7 @@ class CRM_ImportSampleData {
    * before importing sample data we purge the instance of all existing data
    * this is done to selective tables in order to retain system settings, option lists, and other data common to all sites
    */
-  function purgeData() {
+  function purgeData($uid) {
     global $optDry;
 
     CRM_Core_DAO::executeQuery('SET FOREIGN_KEY_CHECKS=0;');
@@ -249,9 +249,6 @@ class CRM_ImportSampleData {
       CRM_Core_DAO::executeQuery($sql);
     }
 
-    //TODO what do we do with the log tables?...
-    //the entire db should probably be dropped then reconstructed since we can't simply truncate
-
     //seed the senateroot contact id = 1
     bbscript_log('info', "seeding database with bluebird admin contact...");
     $params = array(
@@ -262,11 +259,39 @@ class CRM_ImportSampleData {
         'email' => 'bluebird.admin@nysenate.gov',
         'location_type_id' => 1,
       ),
-      'api.uf_match.create' => array(
-        'uf_id' => 1,
-      ),
     );
-    self::iAPI('contact', 'create', $params);
+    $c = self::iAPI('contact', 'create', $params);
+
+    if ( $c['id'] ) {
+      $sql = "
+        INSERT INTO civicrm_uf_match ( domain_id, uf_id, uf_name, contact_id )
+        VALUES ( 1, 1, 'bluebird.admin@nysenate.gov', {$c['id']} )
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
+    //seed the logged-in contact via drupal user object
+    if ( !empty($uid) && $uid != 1 && $uid != '/' ) {
+      $u = explode('/', $uid);
+      bbscript_log('info', "seeding database with logged in user contact...");
+      $params = array(
+        'email' => $u[1],
+        'contact_type' => 'Individual',
+        'api.email.create' => array(
+          'email' => $u[1],
+          'location_type_id' => 1,
+        ),
+      );
+      $c = self::iAPI('contact', 'create', $params);
+
+      if ( $c['id'] ) {
+        $sql = "
+          INSERT INTO civicrm_uf_match ( domain_id, uf_id, uf_name, contact_id )
+          VALUES ( 1, {$u[0]}, 'bluebird.admin@nysenate.gov', {$c['id']} )
+        ";
+        CRM_Core_DAO::executeQuery($sql);
+      }
+    }
   }//purgeData
 
   function importData($file = NULL, $scriptPath = NULL, $data = NULL) {
