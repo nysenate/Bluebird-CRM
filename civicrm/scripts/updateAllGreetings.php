@@ -72,7 +72,7 @@ function run()
   }
 
   if ($optlist['force'] == false) {
-    $dao->whereAdd('addressee_display is null or email_greeting_display is null or postal_greeting_display is null');
+    $dao->whereAdd("addressee_display is null or addressee_display='' or email_greeting_display is null or email_greeting_display='' or postal_greeting_display is null or postal_greeting_display=''");
   }
 
   $dao->find(false);
