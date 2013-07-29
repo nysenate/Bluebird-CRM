@@ -5,12 +5,11 @@ function nyss_out($type,$v,$toscreen=false) {
 	global $nyss_ioline,$nyss_iototallines;
 
 	if(!empty($v) && (($type=='debug' && NYSSIODEBUG) || $type!='debug')) {
-
 		$v = print_r($v,true);
 
 		if ($type=='error') error_log($v. " (line: $nyss_ioline)");
-		if ($toscreen) {
 
+		if ($toscreen) {
 			echo "<pre>$v (line: $nyss_ioline of $nyss_iototallines memory: ".(round(memory_get_usage()/1048576,4))." MB".")</pre>";
 			flush();
 			ob_flush();
