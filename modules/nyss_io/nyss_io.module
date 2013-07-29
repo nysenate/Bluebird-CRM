@@ -282,6 +282,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   nyss_out( 'status',
     "importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",
     TRUE);
+  nyss_flush();
 
   //set includes based on column headers
   $columns = $fo->header;
@@ -331,7 +332,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       }
     }
 
-    if ($nyss_ioline%500==0) nyss_out('status', "processed {$nyss_ioline} lines", TRUE);
+    if ( $nyss_ioline%500==0 ) {
+      nyss_out('status', "processed {$nyss_ioline} lines", TRUE);
+      nyss_flush();
+    }
 
     //fix the gender entries
     if ( !empty($l['gender']) ) {
@@ -969,7 +973,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //run greetings update on all null values unless disable greeting option is selected
     if ( !$form_state['values']['disablegreeting'] ) {
-      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
+      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'].' --quiet';
       $greetingCreate = shell_exec( $greetingScript );
       nyss_out('status', $greetingCreate, TRUE);
     }
@@ -1017,6 +1021,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     
   $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
   $pkImport = $nyss_select[$tbl]['PK']['importField'];
+
+  $prefixes = ioGetOptions("individual_prefix", $ioOptions);
+  $suffixes = ioGetOptions("individual_suffix", $ioOptions);
 
   //nyss_out('debug', $nyss_select, TRUE);
   //nyss_out('debug', "pkCivi: $pkCivi", TRUE);
@@ -1117,10 +1124,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     //contact record work
     if ( $tbl == 'civicrm_contact' ) {
       $l['contact_type'] = 'Individual';
-      $prefixes = ioGetOptions("individual_prefix", $ioOptions);
-      $suffixes = ioGetOptions("individual_suffix", $ioOptions);
       $suffix = ( !empty($l['suffix_id']) && !empty($suffixes[$l['suffix_id']]) ) ? ', '.$suffixes[$l['suffix_id']] : '';
-      $l['middle_name'] = ( !empty($l['mid']) ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
+      //account for both possible field names
+      $l['middle_name'] = ( !empty($l['mid']) ) ? $l['mid'] : $l['middle_name'];
       //need to propercase these values before constructing display and sort name
       $fnc = trim(convertProperCase( $l['first_name'], TRUE ));
       $mnc = trim(convertProperCase( $l['middle_name'], TRUE ));
@@ -1129,7 +1135,16 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
       $prefix = ( !empty($l['prefix_id']) && !empty($prefixes[$l['prefix_id']]) ) ? $prefixes[$l['prefix_id']] : '';
       $display_name = $prefix.' '.$fnc.$mnc.' '.$lnc.$suffix;
       $l['display_name'] = nyss_stripSpaces( $display_name );
-      if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
+
+      if ( !empty($l['display_name']) ) {
+        $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
+      }
+      elseif ( !empty($l['current_employer']) ) {
+        //if display name is empty, we have no indiv name data; if current_employer is set, we can assume org contact
+        $l['contact_type'] = 'Organization';
+        $l['display_name'] = $l['sort_name'] = $l['current_employer'];
+        $l['current_employer'] = '';
+      }
     }
         
     //only set these if the corresponding data columns exist in the import file
