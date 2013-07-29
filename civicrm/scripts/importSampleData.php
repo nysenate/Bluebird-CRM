@@ -36,13 +36,13 @@ class CRM_ImportSampleData {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = 'd:s:p:g:l';
-    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log=');
+    $shortopts = 'd:s:p:g:l:k';
+    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log=', 'skiplogs');
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log LEVEL]';
+      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log LEVEL] [--skiplogs|-k';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -85,6 +85,27 @@ class CRM_ImportSampleData {
       self::purgeData();
     }
 
+    //completely purge log db unless explicit skip
+    if ( $optlist['skiplogs'] == FALSE ) {
+      //disable logging
+      $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logDisable.php';
+      exec("php $script -S {$bbcfg['shortname']}");
+
+      //drop logging db
+      bbscript_log('info', 'dropping and recreating logging database... ');
+      $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
+      $sql = "
+        DROP DATABASE IF EXISTS {$logDB}
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+
+      //recreate logging db
+      $sql = "
+        CREATE DATABASE IF NOT EXISTS {$logDB}
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
     //process system data
     $sys = array(
       'tag.yml',
@@ -107,6 +128,13 @@ class CRM_ImportSampleData {
       $type = str_replace('.yml', '', $file);
       bbscript_log('info', "importing {$type} data...");
       self::importData($file, $scriptPath);
+    }
+
+    //completely purge log db unless explicit skip
+    if ( $optlist['skiplogs'] == FALSE ) {
+      //re-enable logging
+      $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logEnable.php';
+      exec("php $script -S {$bbcfg['shortname']}");
     }
 
     bbscript_log("info", "Completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
