@@ -1,4 +1,10 @@
 
-Copyright 2011-2012 New York State Senate, All rights reserved.
+---
 http://www.nysenate.gov
+
+Albany Office:
+%ALBANY_OFFICE_INFO%
+
+District Office:
+%DISTRICT_OFFICE_INFO%
 

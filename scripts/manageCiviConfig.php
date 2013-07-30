@@ -4,6 +4,8 @@
 // Organization: New York State Senate
 // Date: 2010-11-23
 // Revised: 2013-05-12
+// Revised: 2013-07-29 - added list_all and update_all options, along with
+//                       getMailingComponent() and updateEmailTemplate()
 //
 
 require_once dirname(__FILE__).'/../civicrm/scripts/bluebird_config.php';
@@ -116,6 +118,24 @@ function getConfigBackend($dbcon)
 
 
 
+function getMailingComponent($dbcon, $id)
+{
+  $sql = "SELECT name, body_html, body_text ".
+         "FROM civicrm_mailing_component WHERE id=$id";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return false;
+  }
+
+  //get the only row
+  $row = mysql_fetch_assoc($result);
+  mysql_free_result($result);
+  return $row;
+} // getMailingComponent()
+
+
+
 function getCiviConfig($dbcon)
 {
   $civiConfig = array();
@@ -124,26 +144,33 @@ function getCiviConfig($dbcon)
   $civiConfig['dirprefs'] = getSettings($dbcon, 'Directory Preferences');
   $civiConfig['urlprefs'] = getSettings($dbcon, 'URL Preferences');
   $civiConfig['from_name'] = getOptionValues($dbcon, 'from_email_address');
+  $civiConfig['template_header'] = getMailingComponent($dbcon, 1);
+  $civiConfig['template_footer'] = getMailingComponent($dbcon, 2);
   return $civiConfig;
 } // getCiviConfig()
 
 
 
-function listCiviConfig($civicfg)
+function listCiviConfig($civicfg, $listAll = false)
 {
   foreach ($civicfg as $cfggrp => $cfglist) {
-    echo "\n==> Config group: $cfggrp\n";
-    foreach ($cfglist as $key => $val) {
-      if (is_scalar($val)) {
-        if (is_string($val)) {
-          echo "[$key] => \"$val\"\n";
+    if (!$listAll && strncmp($cfggrp, 'template_', 9) == 0) {
+      echo "\n==> Skipping config group: $cfggrp\n";
+    }
+    else {
+      echo "\n==> Config group: $cfggrp\n";
+      foreach ($cfglist as $key => $val) {
+        if (is_scalar($val)) {
+          if (is_string($val)) {
+            echo "[$key] => \"$val\"\n";
+          }
+          else {
+            echo "[$key] => $val\n";
+          }
         }
         else {
-          echo "[$key] => $val\n";
+          echo "[$key] => ".print_r($val, true)."\n";
         }
-      }
-      else {
-        echo "[$key] => ".print_r($val, true)."\n";
       }
     }
   }
@@ -194,9 +221,12 @@ function updateUrlPref($dbcon, $optname, $optval)
 
 
 
+// Confirm that all Mass Email menu items are active.
 function updateEmailMenu($dbcon)
 {
-  //enable CiviMail menu/report items
+  // Must perform two queries here, since a sub-select cannot be used
+  // on the same table when performing an UPDATE.
+
   $sql = "SELECT id FROM civicrm_navigation WHERE name='Mass Email'";
   $result = mysql_query($sql, $dbcon);
   $row = mysql_fetch_assoc($result);
@@ -261,23 +291,86 @@ function updateMailingBackend($dbcon, $bknd)
 
 
 
+function updateEmailTemplate($dbcon, $bbcfg)
+{
+  // Read in the four e-mail templates (header HTML and text, footer HTML
+  // and text), and replace the following macros:
+  //   %INSTANCE%  %SERVER_NAME%  %SENATOR_FORMAL%
+  //   %ALBANY_OFFICE_INFO% %DISTRICT_OFFICE_INFO%
+
+  $appdir = $bbcfg['app.rootdir'];
+  $tpldir = "$appdir/templates";
+  $server_name = $bbcfg['servername'];
+  $instance = $bbcfg['shortname'];
+  $senator_formal = "New York State Senator";
+  $albany_office = "Legislative Office Bldg|Albany, NY 12247";
+  $district_office = "ADDRESS OF DISTRICT OFFICE";
+
+  if (isset($bbcfg['senator.name.formal'])) {
+    $senator_formal = $bbcfg['senator.name.formal'];
+  }
+  if (isset($bbcfg['senator.address.albany'])) {
+    $albany_office = $bbcfg['senator.address.albany'];
+  }
+  if (isset($bbcfg['senator.address.district'])) {
+    $district_office = $bbcfg['senator.address.district'];
+  }
+
+  $albany_office_html = str_replace("|", "\n<br/>", $albany_office);
+  $albany_office_txt = str_replace("|", "\n", $albany_office);
+  $district_office_html = str_replace("|", "\n<br/>", $district_office);
+  $district_office_txt = str_replace("|", "\n", $district_office);
+
+  $rc = true;
+  $comp_id = 1;
+  $search = array('%INSTANCE%', '%SERVER_NAME%', '%SENATOR_FORMAL%',
+                  '%ALBANY_OFFICE_INFO%', '%DISTRICT_OFFICE_INFO%');
+  $replace['html'] = array($instance, $server_name, $senator_formal,
+                           $albany_office_html, $district_office_html);
+  $replace['txt'] = array($instance, $server_name, $senator_formal,
+                          $albany_office_txt, $district_office_txt);
+
+  foreach (array('header', 'footer') as $comp_type) {
+    $comp_type_uc = ucfirst($comp_type);
+    $comp_name = "NYSS Mailing $comp_type_uc";
+    $body = array();
+    foreach (array('html', 'txt') as $cont_type) {
+      $filename = $tpldir."/email_$comp_type.$cont_type";
+      $comp_tpl = file_get_contents($filename);
+      $comp_tpl = str_replace($search, $replace[$cont_type], $comp_tpl);
+      $body[$cont_type] = $comp_tpl;
+    }
+
+    $sql = "UPDATE civicrm_mailing_component ".
+           "SET name='$comp_name', component_type='$comp_type_uc', ".
+               "subject='$comp_name', is_active=1, ".
+               "body_html='{$body['html']}', body_text='{$body['txt']}' ".
+           "WHERE id = $comp_id";
+    if (!mysql_query($sql , $dbcon)) {
+      echo mysql_error($dbcon)."\n";
+      $rc = false;
+    }
+    $comp_id++;
+  }
+  return $rc;
+} // updateEmailTemplate()
+
+
+
 function updateCiviConfig($dbcon, $civicfg, $bbcfg)
 {
-  $crmhost = $bbcfg['servername'];
+  $server_name = $bbcfg['servername'];
   $appdir = $bbcfg['app.rootdir'];
-  $datadir = $bbcfg['data.rootdir'];
   $incemail = $bbcfg['search.include_email_in_name'];
   $incwild = $bbcfg['search.include_wildcard_in_name'];
   $batchlimit = $bbcfg['mailer.batch_limit'];
   $jobsize = $bbcfg['mailer.job_size'];
   $jobsmax = $bbcfg['mailer.jobs_max'];
 
-  $http_prefix = "http://$crmhost";  // no longer necessary
-  $data_prefix = "$datadir/$crmhost/civicrm";  // no longer necessary
   $rc = true;
 
   $cb = $civicfg['config_backend'];
-  $cb['civiAbsoluteURL'] = "$http_prefix/";
+  $cb['civiAbsoluteURL'] = "http://$server_name/";
   $cb['includeEmailInName'] = $incemail;
   $cb['includeWildCardInName'] = $incwild;
   $cb['enableComponents'][] = 'CiviMail';
@@ -306,6 +399,7 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
   $rc &= updateUrlPref($dbcon, 'imageUploadURL', "sites/default/files/civicrm/images/");
 
   $rc &= updateEmailMenu($dbcon);
+  $rc &= updateFromEmail($dbcon, $bbcfg);
 
   return $rc;
 } // updateCiviConfig()
@@ -368,10 +462,15 @@ else {
     $rc = 1;
   }
   else if (is_array($civiConfig)) {
-    if ($cmd == "update") {
+    if ($cmd == "update" || $cmd == "update_all") {
       echo "Updating the CiviCRM configuration.\n";
       if (updateCiviConfig($dbcon, $civiConfig, $bbconfig) === false) {
         $rc = 1;
+      }
+      if ($cmd == "update_all") {
+        if (updateEmailTemplate($dbcon, $bbconfig) === false) {
+          $rc = 1;
+        }
       }
     }
     else if ($cmd == "nullify") {
@@ -381,7 +480,8 @@ else {
       }
     }
     else {
-      listCiviConfig($civiConfig);
+      $list_all = ($cmd == "list_all") ? true : false;
+      listCiviConfig($civiConfig, $list_all);
     }
   }
   else {
