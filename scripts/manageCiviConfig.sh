@@ -8,6 +8,8 @@
 # Date: 2010-09-30
 # Revised: 2013-05-12
 # Revised: 2013-07-29 - added --list-all and --update-all options
+# Revised: 2013-07-30 - added scope options (--standard, --config-backend,
+#                       --mail-backend, --prefs, --template, --all)
 #
 
 prog=`basename $0`
@@ -17,7 +19,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list] [--list-all] [--nullify] [--update] [--update-all] instanceName" >&2
+  echo "Usage: $prog [--list | --nullify | --update] [ --standard | --config-backend | --mail-backend | --prefs | --template | --all ] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -26,15 +28,20 @@ if [ $# -lt 1 ]; then
 fi
 
 instance=
-civi_op=list
+op=list
+scope=default
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --list) civi_op=list ;;
-    --list-all) civi_op=list_all ;;
-    --nullify) civi_op=nullify ;;
-    --update) civi_op=update ;;
-    --update-all) civi_op=update_all ;;
+    --list) op=list ;;
+    --nullify) op=nullify ;;
+    --update) op=update ;;
+    --standard|--default) scope=default ;;
+    --config*|--cb) scope=cb ;;
+    --mail*|--mb) scope=mb ;;
+    --pref*) scope=prefs ;;
+    --template|--tpl) scope=tpl ;;
+    --all) scope=all ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -53,5 +60,5 @@ fi
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageCiviConfig.php" "$instance" "$civi_op"
+php "$script_dir/manageCiviConfig.php" "$instance" "$op" "$scope"
 exit $?
