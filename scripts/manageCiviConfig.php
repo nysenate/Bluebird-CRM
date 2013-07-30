@@ -6,6 +6,7 @@
 // Revised: 2013-05-12
 // Revised: 2013-07-29 - added list_all and update_all options, along with
 //                       getMailingComponent() and updateEmailTemplate()
+// Revised: 2013-07-30 - added "scope" parameter
 //
 
 require_once dirname(__FILE__).'/../civicrm/scripts/bluebird_config.php';
@@ -28,6 +29,18 @@ function getDatabaseConnection($bbcfg)
   }
   return $dbcon;
 } // getDatabaseConnection()
+
+
+
+function sqlPrepareValue($val)
+{
+  if ($val) {
+    return "'".serialize($val)."'";
+  }
+  else {
+    return 'NULL';
+  }
+} // sqlPrepareValue()
 
 
 
@@ -136,41 +149,49 @@ function getMailingComponent($dbcon, $id)
 
 
 
-function getCiviConfig($dbcon)
+function getCiviConfig($dbcon, $scope)
 {
   $civiConfig = array();
-  $civiConfig['config_backend'] = getConfigBackend($dbcon, 'civicrm_domain', 'config_backend');
-  $civiConfig['mailing_backend'] = getSetting($dbcon, 'Mailing Preferences', 'mailing_backend');
-  $civiConfig['dirprefs'] = getSettings($dbcon, 'Directory Preferences');
-  $civiConfig['urlprefs'] = getSettings($dbcon, 'URL Preferences');
-  $civiConfig['from_name'] = getOptionValues($dbcon, 'from_email_address');
-  $civiConfig['template_header'] = getMailingComponent($dbcon, 1);
-  $civiConfig['template_footer'] = getMailingComponent($dbcon, 2);
+
+  if ($scope == 'default' || $scope == 'cb' || $scope == 'all') {
+    $civiConfig['config_backend'] = getConfigBackend($dbcon);
+  }
+
+  if ($scope == 'default' || $scope == 'mb' || $scope == 'all') {
+    $civiConfig['mailing_backend'] = getSetting($dbcon, 'Mailing Preferences', 'mailing_backend');
+    $civiConfig['from_name'] = getOptionValues($dbcon, 'from_email_address');
+  }
+
+  if ($scope == 'default' || $scope == 'prefs' || $scope == 'all') {
+    $civiConfig['dirprefs'] = getSettings($dbcon, 'Directory Preferences');
+    $civiConfig['urlprefs'] = getSettings($dbcon, 'URL Preferences');
+  }
+
+  if ($scope == 'tpl' || $scope == 'all') {
+    $civiConfig['template_header'] = getMailingComponent($dbcon, 1);
+    $civiConfig['template_footer'] = getMailingComponent($dbcon, 2);
+  }
+
   return $civiConfig;
 } // getCiviConfig()
 
 
 
-function listCiviConfig($civicfg, $listAll = false)
+function listCiviConfig($civicfg)
 {
   foreach ($civicfg as $cfggrp => $cfglist) {
-    if (!$listAll && strncmp($cfggrp, 'template_', 9) == 0) {
-      echo "\n==> Skipping config group: $cfggrp\n";
-    }
-    else {
-      echo "\n==> Config group: $cfggrp\n";
-      foreach ($cfglist as $key => $val) {
-        if (is_scalar($val)) {
-          if (is_string($val)) {
-            echo "[$key] => \"$val\"\n";
-          }
-          else {
-            echo "[$key] => $val\n";
-          }
+    echo "\n==> Config group: $cfggrp\n";
+    foreach ($cfglist as $key => $val) {
+      if (is_scalar($val)) {
+        if (is_string($val)) {
+          echo "[$key] => \"$val\"\n";
         }
         else {
-          echo "[$key] => ".print_r($val, true)."\n";
+          echo "[$key] => $val\n";
         }
+      }
+      else {
+        echo "[$key] => ".print_r($val, true)."\n";
       }
     }
   }
@@ -180,8 +201,7 @@ function listCiviConfig($civicfg, $listAll = false)
 
 function updateSetting($dbcon, $groupname, $optname, $optval)
 {
-  $val = serialize($optval);
-  $sql = "UPDATE civicrm_setting SET value='$val' ".
+  $sql = "UPDATE civicrm_setting SET value=".sqlPrepareValue($optval)." ".
          "WHERE name='$optname' AND group_name='$groupname'";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
@@ -274,7 +294,8 @@ function updateFromEmail($dbcon, $bbcfg)
 
 function updateConfigBackend($dbcon, $bkend)
 {
-  $sql = "UPDATE civicrm_domain SET config_backend='".serialize($bkend)."'";
+  $sql = "UPDATE civicrm_domain ".
+         "SET config_backend=".sqlPrepareValue($bkend)." WHERE id=1";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
     return false;
@@ -369,58 +390,66 @@ function updateCiviConfig($dbcon, $civicfg, $bbcfg)
 
   $rc = true;
 
-  $cb = $civicfg['config_backend'];
-  $cb['civiAbsoluteURL'] = "http://$server_name/";
-  $cb['includeEmailInName'] = $incemail;
-  $cb['includeWildCardInName'] = $incwild;
-  $cb['enableComponents'][] = 'CiviMail';
-  $cb['enableComponentIDs'][] = 4;
-  $cb['mailerBatchLimit'] = $batchlimit;
-  $cb['mailerJobSize'] = $jobsize;
-  $cb['mailerJobsMax'] = $jobsmax;
-  $cb['geoAPIKey'] = '';
-  $rc &= updateConfigBackend($dbcon, $cb);
+  if (isset($civicfg['config_backend'])) {
+    $cb = $civicfg['config_backend'];
+    $cb['civiAbsoluteURL'] = "http://$server_name/";
+    $cb['includeEmailInName'] = $incemail;
+    $cb['includeWildCardInName'] = $incwild;
+    $cb['enableComponents'] = array('CiviMail', 'CiviCase', 'CiviReport');
+    $cb['enableComponentIDs'] = array(4, 7, 8);
+    $cb['mailerBatchLimit'] = $batchlimit;
+    $cb['mailerJobSize'] = $jobsize;
+    $cb['mailerJobsMax'] = $jobsmax;
+    $cb['geoAPIKey'] = '';
+    $rc &= updateConfigBackend($dbcon, $cb);
+  }
 
-  $mb = $civicfg['mailing_backend'];
-  $mb['smtpServer']   = $bbcfg['smtp.host'];
-  $mb['smtpPort']     = $bbcfg['smtp.port'];
-  $mb['smtpAuth']     = $bbcfg['smtp.auth'];
-  $mb['smtpUsername'] = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
-  require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
-  $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']);
-  $rc &= updateMailingBackend($dbcon, $mb);
+  if (isset($civicfg['mailing_backend'])) {
+    $mb = $civicfg['mailing_backend'];
+    $mb['smtpServer']   = $bbcfg['smtp.host'];
+    $mb['smtpPort']     = $bbcfg['smtp.port'];
+    $mb['smtpAuth']     = $bbcfg['smtp.auth'];
+    $mb['smtpUsername'] = (!empty($bbcfg['smtp.subuser'])) ? $bbcfg['smtp.subuser'] : '';
+    require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
+    $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($bbcfg['smtp.subpass']);
+    $rc &= updateMailingBackend($dbcon, $mb);
+    $rc &= updateEmailMenu($dbcon);
+  }
 
-  $rc &= updateDirPref($dbcon, 'uploadDir', "upload/");
-  $rc &= updateDirPref($dbcon, 'imageUploadDir', "images/");
-  $rc &= updateDirPref($dbcon, 'customFileUploadDir', "custom/");
-  $rc &= updateDirPref($dbcon, 'customTemplateDir', "$appdir/civicrm/custom/templates");
-  $rc &= updateDirPref($dbcon, 'customPHPPathDir', "$appdir/civicrm/custom/php");
-  $rc &= updateUrlPref($dbcon, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
-  $rc &= updateUrlPref($dbcon, 'imageUploadURL', "sites/default/files/civicrm/images/");
+  if (isset($civicfg['from_name'])) {
+    $rc &= updateFromEmail($dbcon, $bbcfg);
+  }
 
-  $rc &= updateEmailMenu($dbcon);
-  $rc &= updateFromEmail($dbcon, $bbcfg);
+  if (isset($civicfg['dirprefs'])) {
+    $rc &= updateDirPref($dbcon, 'uploadDir', "upload/");
+    $rc &= updateDirPref($dbcon, 'imageUploadDir', "images/");
+    $rc &= updateDirPref($dbcon, 'customFileUploadDir', "custom/");
+    $rc &= updateDirPref($dbcon, 'customTemplateDir', "$appdir/civicrm/custom/templates");
+    $rc &= updateDirPref($dbcon, 'customPHPPathDir', "$appdir/civicrm/custom/php");
+  }
+
+  if (isset($civicfg['urlprefs'])) {
+    $rc &= updateUrlPref($dbcon, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
+    $rc &= updateUrlPref($dbcon, 'imageUploadURL', "sites/default/files/civicrm/images/");
+  }
+
+  if (isset($civicfg['template_header']) || isset($civicfg['template_footer'])) {
+    $rc &= updateEmailTemplate($dbcon, $bbcfg);
+  }
 
   return $rc;
 } // updateCiviConfig()
 
 
 
-function nullifyCiviConfig($dbcon)
+function nullifyCiviConfig($dbcon, $civicfg)
 {
-  $sql = "UPDATE civicrm_domain SET config_backend=NULL WHERE id=1";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
-    return false;
+  if (isset($civicfg['config_backend'])) {
+    $rc = updateConfigBackend($dbcon, null);
   }
-
-  $sql = "UPDATE civicrm_setting SET value=NULL ".
-         "WHERE group_name='Mailing Preferences' and name='mailing_backend'";
-  if (!mysql_query($sql, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
-    return false;
+  if (isset($civicfg['mailing_backend'])) {
+    $rc = updateMailingBackend($dbcon, null);
   }
-
   return true;
 } // nullifyCiviConfig()
 
@@ -428,14 +457,16 @@ function nullifyCiviConfig($dbcon)
 
 $prog = basename($argv[0]);
 
-if ($argc != 3) {
-  echo "Usage: $prog instance cmd\n";
+if ($argc != 4) {
+  echo "Usage: $prog instance cmd scope\n";
   echo "   cmd can be: list, update, or nullify\n";
+  echo " scope can be: default, cb, mb, tpl, or all\n";
   exit(1);
 }
 else {
   $instance = $argv[1];
   $cmd = $argv[2];
+  $scope = $argv[3];
 
   $bbconfig = get_bluebird_instance_config($instance);
   if (!$bbconfig) {
@@ -455,33 +486,27 @@ else {
   }
 
   $rc = 0;
-  $civiConfig = getCiviConfig($dbcon);
+  $civiConfig = getCiviConfig($dbcon, $scope);
 
   if ($civiConfig === false) {
     echo "$prog: Unable to get CiviCRM configuration.\n";
     $rc = 1;
   }
   else if (is_array($civiConfig)) {
-    if ($cmd == "update" || $cmd == "update_all") {
+    if ($cmd == "update") {
       echo "Updating the CiviCRM configuration.\n";
       if (updateCiviConfig($dbcon, $civiConfig, $bbconfig) === false) {
         $rc = 1;
       }
-      if ($cmd == "update_all") {
-        if (updateEmailTemplate($dbcon, $bbconfig) === false) {
-          $rc = 1;
-        }
-      }
     }
     else if ($cmd == "nullify") {
       echo "Nullifying the CiviCRM configuration.\n";
-      if (nullifyCiviConfig($dbcon) === false) {
+      if (nullifyCiviConfig($dbcon, $civiConfig) === false) {
         $rc = 1;
       }
     }
     else {
-      $list_all = ($cmd == "list_all") ? true : false;
-      listCiviConfig($civiConfig, $list_all);
+      listCiviConfig($civiConfig);
     }
   }
   else {
