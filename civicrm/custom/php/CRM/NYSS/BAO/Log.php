@@ -9,9 +9,12 @@ class CRM_NYSS_BAO_Log {
    * Function to get the count of the change log.
    */
   static function getTabCount( ) {
-    if ( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) &&
-      CRM_Core_BAO_Log::useLoggingReport() ) {
+    $contactId = CRM_Utils_Array::value( 'contactId', $_POST, NULL );
+    //CRM_Core_Error::debug_var('getTabCount contactId', $contactId, TRUE, TRUE, 'logCount');
+
+    if ( $contactId && CRM_Core_BAO_Log::useLoggingReport() ) {
       //NYSS 6719 call count function directly
+      //CRM_Core_Error::debug_var('getTabCount $_POST', $_POST, TRUE, TRUE, 'logCount');
       echo self::getEnhancedContactLogCount( $contactId );
     }
     CRM_Utils_System::civiExit( );
@@ -22,7 +25,8 @@ class CRM_NYSS_BAO_Log {
    */
   static function getEnhancedContactLogCount( $contactID ) {
     $rptSummary = new CRM_Report_Form_Contact_LoggingSummary();
-    //CRM_Core_Error::debug_var('rptSummary',$rptSummary);
+    //CRM_Core_Error::debug_var('rptSummary', $rptSummary, TRUE, TRUE, 'logCount');
+    //CRM_Core_Error::debug_var('contactID', $contactID, TRUE, TRUE, 'logCount');
 
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
     $loggingDB = $dsn['database'];
@@ -32,7 +36,7 @@ class CRM_NYSS_BAO_Log {
 
     CRM_Core_DAO::executeQuery('DROP TABLE IF EXISTS civicrm_temp_logcount');
     $sql = "
-      CREATE TEMPORARY TABLE civicrm_temp_logcount (
+      CREATE  TABLE civicrm_temp_logcount (
         id int(10),
         log_type varchar(64),
         log_user_id int(10),
@@ -43,18 +47,19 @@ class CRM_NYSS_BAO_Log {
         log_action varchar(64),
         is_deleted tinyint(4),
         display_name varchar(128),
-        INDEX (id)) ENGINE = MEMORY";
+        INDEX (id)) ENGINE = MyIsam";
+    //CRM_Core_Error::debug_var('sql', $sql, TRUE, TRUE, 'logCount');
     CRM_Core_DAO::executeQuery($sql);
 
     $logTables = $rptSummary->getVar('_logTables');
 
     foreach ( $logTables as $entity => $detail ) {
-      //CRM_Core_Error::debug_var('entity',$entity);
+      //CRM_Core_Error::debug_var('entity', $entity, TRUE, TRUE, 'logCount');
       //CRM_Core_Error::debug_var('detail',$detail);
 
       $rptSummary->from($entity);
       $from = $rptSummary->_from;
-      //CRM_Core_Error::debug_var('from',$rptSummary->_from);
+      //CRM_Core_Error::debug_var('from', $rptSummary->_from, TRUE, TRUE, 'logCount');
 
       $sql = "
         SELECT entity_log_civireport.id as log_civicrm_entity_id, entity_log_civireport.log_type as log_civicrm_entity_log_type, entity_log_civireport.log_user_id as log_civicrm_entity_log_user_id, entity_log_civireport.log_date as log_civicrm_entity_log_date, modified_contact_civireport.display_name as log_civicrm_entity_altered_contact, modified_contact_civireport.id as log_civicrm_entity_altered_contact_id, entity_log_civireport.log_conn_id as log_civicrm_entity_log_conn_id, entity_log_civireport.log_action as log_civicrm_entity_log_action, modified_contact_civireport.is_deleted as log_civicrm_entity_is_deleted, altered_by_contact_civireport.display_name as altered_by_contact_display_name
