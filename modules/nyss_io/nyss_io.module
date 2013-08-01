@@ -9,7 +9,6 @@ require_once(dirname(__FILE__) . '/nyss_io.php');
 
 //define menu path
 function nyss_io_menu () {
-
   $items = array();
 
   $items['importdata'] = array (
@@ -42,26 +41,26 @@ function nyss_ioimport_form() {
 
   //Import and Main Processing
   $form['processing'] = array (
-    '#type'          => 'fieldset',
-    '#title'         => t('Import Source and Processing Options'),
+    '#type' => 'fieldset',
+    '#title' => t('Import Source and Processing Options'),
   );
 
   $form['processing']['csv'] = array(
-    '#type'          => 'file',
-    '#title'         => t('Upload a file'),
-    '#size'          => 40,
+    '#type' => 'file',
+    '#title' => t('Upload a file'),
+    '#size' => 40,
   );
 
   $form['processing']['servercsv'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('OR specify a filename on the server in the \'/data/importData\' dir'),
-    '#size'          => 40,
+    '#type' => 'textfield',
+    '#title' => t('OR specify a filename on the server in the \'/data/importData\' dir'),
+    '#size' => 40,
   );
 
   $form['processing']['runnum'] = array(
-    '#type'          => 'select',
-    '#title'         => t('How many records to process in dry run mode (should be set to ALL for data import)'),
-    '#options'       =>
+    '#type' => 'select',
+    '#title' => t('How many records to process in dry run mode (should be set to ALL for data import)'),
+    '#options' =>
     array(
       '10'   => t('10'),
       '100'  => t('100'),
@@ -73,28 +72,28 @@ function nyss_ioimport_form() {
   );
 
   $form['processing']['dryrun'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Dry Run (parses data but does not alter the instance)'),
+    '#type' => 'checkbox',
+    '#title' => t('Dry Run (parses data but does not alter the instance)'),
     '#default_value' => 1,
   );
    
   $form['processing']['sendemail'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Send summary email'),
+    '#type' => 'checkbox',
+    '#title' => t('Send summary email'),
     '#default_value' => 0,
   );
 
   //Dedupe Processing Options
   $form['dedupeset'] = array (
-    '#type'          => 'fieldset',
-    '#title'         => t('Dedupe Processing'),
+    '#type' => 'fieldset',
+    '#title' => t('Dedupe Processing'),
   );
 
   $form['dedupeset']['dedupe'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Dedupe on import.'),
+    '#type' => 'checkbox',
+    '#title' => t('Dedupe on import.'),
     '#default_value' => 0,
-    '#description'   => t('When enabled, imported records will be compared and matched with existing contact records using the selected rule. Records should have first name, last name, suffix, street address, and postal code or email in order to effectively match.'),
+    '#description' => t('When enabled, imported records will be compared and matched with existing contact records using the selected rule. Records should have first name, last name, suffix, street address, and postal code or email in order to effectively match.'),
   );
 
   $rules = CRM_Core_DAO::executeQuery("
@@ -109,73 +108,73 @@ function nyss_ioimport_form() {
   }
    
   $form['dedupeset']['deduperule'] = array(
-    '#type'          => 'select',
-    '#options'       => $dedupeoptions,
-    '#title'         => t('Dedupe Rule'),
+    '#type' => 'select',
+    '#options' => $dedupeoptions,
+    '#title' => t('Dedupe Rule'),
     '#default_value' => 1,
-    '#description'   => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Individual Strict rule.'),
+    '#description' => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Individual Strict rule.'),
   );
    
   //Data Handling Options
   $form['datahandling'] = array (
-    '#type'          => 'fieldset',
-    '#title'         => t('Data Handling'),
+    '#type' => 'fieldset',
+    '#title' => t('Data Handling'),
   );
    
   $form['datahandling']['boeimport'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Process as a BOE import.'),
+    '#type' => 'checkbox',
+    '#title' => t('Process as a BOE import.'),
     '#default_value' => 0,
-    '#description'   => t(''),
+    '#description' => t(''),
   );
    
   $form['datahandling']['emailimport'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Process as an email import.'),
+    '#type' => 'checkbox',
+    '#title' => t('Process as an email import.'),
     '#default_value' => 0,
-    '#description'   => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
+    '#description' => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
   );
    
   $form['datahandling']['addtogroup_handling'] = array(
-    '#type'          => 'radios',
-    '#title'         => t('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Group Handling'),
-    '#options'       => array( 'all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None') ),
-    '#attributes'    => array( 'class' => 'addtogroup_handling-wrapper' ),
+    '#type' => 'radios',
+    '#title' => t('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Group Handling'),
+    '#options' => array( 'all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None') ),
+    '#attributes' => array( 'class' => 'addtogroup_handling-wrapper' ),
     '#default_value' => 'none',
-    '#description'   => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
+    '#description' => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
   );
    
   $form['datahandling']['addtogroup'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Group Name (if the group name does not exist, it will be created)'),
-    '#size'          => 40,
-    '#field_prefix'  => '<br />',
+    '#type' => 'textfield',
+    '#title' => t('Group Name (if the group name does not exist, it will be created)'),
+    '#size' => 40,
+    '#field_prefix' => '<br />',
   );
    
   $form['datahandling']['parsename'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Parse full name'),
+    '#type' => 'checkbox',
+    '#title' => t('Parse full name'),
     '#default_value' => 0,
-    '#description'   => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
+    '#description' => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
   );
    
   $form['datahandling']['fieldoverride'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Null/empty override'),
+    '#type' => 'checkbox',
+    '#title' => t('Null/empty override'),
     '#default_value' => 0,
-    '#description'   => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
+    '#description' => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
   );
 
   $form['datahandling']['disablegreeting'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Disable Greeting Generation'),
+    '#type' => 'checkbox',
+    '#title' => t('Disable Greeting Generation'),
     '#default_value' => 0,
-    '#description'   => t('By default, postal/email/addressee greetings are generated for imported contacts that do not already have a value set (updated contacts with an existing value are skipped). Selecting this option will skip the greeting generation process and improve import performance.'),
+    '#description' => t('By default, postal/email/addressee greetings are generated for imported contacts that do not already have a value set (updated contacts with an existing value are skipped). Selecting this option will skip the greeting generation process and improve import performance.'),
   );
 
   $form['import']['submit'] = array(
-    '#type'          => 'submit',
-    '#value'         => t('Submit'),
+    '#type' => 'submit',
+    '#value' => t('Submit'),
   );
 
   return $form;
@@ -218,6 +217,9 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
 //main function for processing import
 function nyss_ioimport_form_submit($form, &$form_state) {
   //nyss_out("debug", $form_state, TRUE);
+
+  //temporarily bump memory limit
+  ini_set('memory_limit', '2000M');
 
   //track processing time
   $timeStart = time();
@@ -282,6 +284,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   nyss_out( 'status',
     "importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",
     TRUE);
+  nyss_flush();
 
   //set includes based on column headers
   $columns = $fo->header;
@@ -297,16 +300,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   //if processing as an email import, set other required options
   if ($form_state['values']['emailimport']==1) {
-    $form_state['values']['dedupe']     = 1;
+    $form_state['values']['dedupe'] = 1;
     $form_state['values']['deduperule'] = 11;
   }
 
   //initialize arrays to be populated with contact id's during import
   $imported_contacts = array();
   $updated_contacts  = array();
-  $new_contacts      = array();
-  $addressDel        = array();
-  $tagContacts       = array();
+  $new_contacts = array();
+  $addressDel = array();
+  $tagContacts = array();
 
   $keyword_lookup = array();
 
@@ -331,7 +334,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       }
     }
 
-    if ($nyss_ioline%500==0) nyss_out('status', "processed {$nyss_ioline} lines", TRUE);
+    if ( $nyss_ioline%500==0 ) {
+      nyss_out('status', "processed {$nyss_ioline} lines", TRUE);
+      nyss_flush();
+    }
 
     //fix the gender entries
     if ( !empty($l['gender']) ) {
@@ -732,7 +738,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     if ($nyss_ioline%BATCHSIZE==0) {
       mysql_query("COMMIT", $nyss_conn);
     }
-  } //end record processing
+
+    unset($l);
+  }//end $l record processing
 
   // Commit any straglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
@@ -740,41 +748,65 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   }
 
   //Begin post process
+  nyss_out('debug', "file rows import complete. beginning post process steps.", TRUE);
+
+  //variable stats
+  /*nyss_out('debug', 'generating details about variables', TRUE);
+  $varDetails = array();
+  $vars = get_defined_vars();
+  //nyss_out('debug', $vars, TRUE);
+  foreach ( $vars as $set => $var ) {
+    $start_memory = memory_get_usage(TRUE);
+    $tmp = unserialize(serialize($var));
+    $diff = memory_get_usage(TRUE) - $start_memory - PHP_INT_SIZE * 8;
+    $varDetails[$set] = convertSize($diff);
+  }
+  nyss_out('debug', $varDetails, TRUE);*/
 
   //Handle tag processing
   if ( !$dryrun ) {
+    nyss_out('debug', "processing tags...", TRUE);
     if ( !empty($tagContacts) ) {
       //make sure entity_tag table is clean and index exists
       checkTagIndex();
 
       $tagStart = time();
+      //nyss_out('debug', $tagContacts, TRUE);
+      //nyss_out('debug', 'keyword_lookup', TRUE);
+      //nyss_out('debug', $keyword_lookup, TRUE);
+
       foreach ( $tagContacts as $keyword => $tContacts ) {
         if (empty($keyword_lookup[$keyword])) {
+          //nyss_out('debug', "looking up keyword: {$keyword}", TRUE);
           $params = array(
-            'version'   => 3,
-            'name'      => $keyword,
+            'version' => 3,
+            'name' => $keyword,
             'parent_id' => '296'
           );
           $tag = civicrm_api('tag', 'get', $params);
+          //nyss_out('debug', $tag, TRUE);
 
           if ( $tag['is_error'] || !$tag['count'] ) {
             echo 'creating tag: '.$keyword.'<br />';
-            $tag   = civicrm_api('tag', 'create', $params);
+            $tag = civicrm_api('tag', 'create', $params);
+            //nyss_out('debug', $tag, TRUE);
           }
           $tagid = $tag['id'];
           $keyword_lookup[$keyword] = $tagid;
         }
         else {
           $tagid = $keyword_lookup[$keyword];
+          //nyss_out('debug', "keyword exists: {$tagid}", TRUE);
         }
         //CRM_Core_Error::debug_var('tagid',$tagid);
 
         //create sql insert; process in batches
-        $eTList    = array();
+        $eTList = array();
         $eTSqlList = '';
-        $b         = 0; //batch count
-        $tagCount  = count($tContacts);
+        $b = 0; //batch count
+        $tagCount = count($tContacts);
 
+        nyss_out('debug', "cycle through contacts to be tagged: {$keyword}...", TRUE);
         foreach ( $tContacts as $i => $cid ) {
           $eTList[] = "'civicrm_contact', $cid, $tagid";
           if ( ( $i%BATCHSIZETAG == 0 && $i !== 0 ) ||
@@ -799,9 +831,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
           }
         }
       }
-      $tagEnd  = time();
+      $tagEnd = time();
       $tagDiff = $tagEnd - $tagStart;
       nyss_out('debug', "tag processing time: $tagDiff secs.", TRUE);
+
+      unset($tagContacts);
     }
   }
   else {
@@ -812,6 +846,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   //Add contacts to group if set
   if ( !empty($form_state['values']['addtogroup']) &&
        $form_state['values']['addtogroup_handling'] != 'none' ) {
+    nyss_out('debug', "processing group...", TRUE);
 
     //retrieve group if exists
     $groupID   = '';
@@ -878,6 +913,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   //Add all new contacts to the email only group
   if ( $form_state['values']['emailimport'] == 1 ) {
+    nyss_out('debug', "processing email only group...", TRUE);
 
     //Create the group if it doesn't already exist
     $emailGroupID = '';
@@ -933,6 +969,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   //delete addresses flagged for deletion
   $addressDelCount = count($addressDel);
   if ( !empty($addressDel) && !$dryrun ) {
+    nyss_out('debug', "processing contacts to be trashed...", TRUE);
     $addressDelList  = implode( ',', $addressDel );
     $sqlAD = "
       DELETE FROM civicrm_address
@@ -941,6 +978,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   }
 
   if ( $form_state['values']['sendmail']==1 ) {
+    nyss_out('debug', "processing log email...", TRUE);
+
     //now send a confirmation email
     $message = array(
       'to'      => $user->mail,
@@ -960,6 +999,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   //various postProcessing cleanup steps
   if ( !$dryrun ) {
+    nyss_out('debug', "post process cleanup steps...", TRUE);
+
     $bbconfig = get_bluebird_instance_config();
 
     //run duplicate primary flag cleanup
@@ -969,7 +1010,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //run greetings update on all null values unless disable greeting option is selected
     if ( !$form_state['values']['disablegreeting'] ) {
-      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
+      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'].' --quiet';
       $greetingCreate = shell_exec( $greetingScript );
       nyss_out('status', $greetingCreate, TRUE);
     }
@@ -1017,6 +1058,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     
   $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
   $pkImport = $nyss_select[$tbl]['PK']['importField'];
+
+  $prefixes = ioGetOptions("individual_prefix", $ioOptions);
+  $suffixes = ioGetOptions("individual_suffix", $ioOptions);
 
   //nyss_out('debug', $nyss_select, TRUE);
   //nyss_out('debug', "pkCivi: $pkCivi", TRUE);
@@ -1117,10 +1161,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     //contact record work
     if ( $tbl == 'civicrm_contact' ) {
       $l['contact_type'] = 'Individual';
-      $prefixes = ioGetOptions("individual_prefix", $ioOptions);
-      $suffixes = ioGetOptions("individual_suffix", $ioOptions);
       $suffix = ( !empty($l['suffix_id']) && !empty($suffixes[$l['suffix_id']]) ) ? ', '.$suffixes[$l['suffix_id']] : '';
-      $l['middle_name'] = ( !empty($l['mid']) ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
+      //account for both possible field names
+      $l['middle_name'] = ( !empty($l['mid']) ) ? $l['mid'] : $l['middle_name'];
       //need to propercase these values before constructing display and sort name
       $fnc = trim(convertProperCase( $l['first_name'], TRUE ));
       $mnc = trim(convertProperCase( $l['middle_name'], TRUE ));
@@ -1129,7 +1172,16 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
       $prefix = ( !empty($l['prefix_id']) && !empty($prefixes[$l['prefix_id']]) ) ? $prefixes[$l['prefix_id']] : '';
       $display_name = $prefix.' '.$fnc.$mnc.' '.$lnc.$suffix;
       $l['display_name'] = nyss_stripSpaces( $display_name );
-      if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
+
+      if ( !empty($l['display_name']) ) {
+        $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
+      }
+      elseif ( !empty($l['current_employer']) ) {
+        //if display name is empty, we have no indiv name data; if current_employer is set, we can assume org contact
+        $l['contact_type'] = 'Organization';
+        $l['display_name'] = $l['sort_name'] = $l['current_employer'];
+        $l['current_employer'] = '';
+      }
     }
         
     //only set these if the corresponding data columns exist in the import file
@@ -1353,8 +1405,9 @@ function checkTagIndex() {
 
   $sql = "
     SHOW INDEX FROM civicrm_entity_tag
-    WHERE Key_name = 'index_civicrm_entity_tag_entity_table_entity_id_tag_id'";
-  $ti  = CRM_Core_DAO::singleValueQuery($sql);
+    WHERE key_name = 'UI_entity_id_entity_table_tag_id'
+  ";
+  $ti = CRM_Core_DAO::singleValueQuery($sql);
 
   if ( !$ti ) {
     //remove duplicates and add index
@@ -1368,11 +1421,52 @@ function checkTagIndex() {
     //create index
     $sql = "
       ALTER TABLE civicrm_entity_tag
-      ADD UNIQUE index_civicrm_entity_tag_entity_table_entity_id_tag_id
-        ( entity_table, entity_id, tag_id ) ";
-    $ind = CRM_Core_DAO::executeQuery($sql);
-    nyss_out('status', 'index_civicrm_entity_tag_entity_table_entity_id_tag_id created', TRUE);
+      ADD UNIQUE UI_entity_id_entity_table_tag_id
+        ( entity_table, entity_id, tag_id )
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+    nyss_out('status', 'index created: UI_entity_id_entity_table_tag_id', TRUE);
+  }
+
+  //remove old duplicate index
+  $sql = "
+    SHOW INDEX FROM civicrm_entity_tag
+    WHERE key_name = 'index_civicrm_entity_tag_entity_table_entity_id_tag_id'";
+  $ti = CRM_Core_DAO::singleValueQuery($sql);
+
+  if ( $ti ) {
+    $sql = "
+      DROP INDEX index_civicrm_entity_tag_entity_table_entity_id_tag_id
+      ON civicrm_entity_tag;
+    ";
+    CRM_Core_DAO::executeQuery($sql);
   }
 
   return;
 }
+
+/*
+ * generate some details about what variables exist and how much memory they consume
+ */
+function nyss_vars() {
+  nyss_out('debug', 'generating details about variables', TRUE);
+
+  $varDetails = array();
+  $vars = get_defined_vars();
+  nyss_out('debug', $vars, TRUE);
+  foreach ( $vars as $type => $set ) {
+    foreach ( $set as $var ) {
+      $start_memory = memory_get_usage();
+      $tmp = unserialize(serialize($var));
+      $diff = memory_get_usage() - $start_memory;
+      $varDetails[$type][$var] = $diff;
+    }
+  }
+  nyss_out('debug', $varDetails, TRUE);
+}//nyss_vars
+
+function convertSize($size) {
+  $unit = array('b','kb','mb','gb','tb','pb');
+  return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
+}
+

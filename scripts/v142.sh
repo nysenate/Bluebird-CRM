@@ -35,5 +35,10 @@ $drush $instance en nyss_deletetrashed -y -q
 $drush $instance en nyss_exportpermissions -y -q
 $drush $instance en nyss_loadsampledata -y -q
 
+## 7022 create and populate long form school district table
+echo "Creating and populating school district code lookup table..."
+$execSql $instance -f $app_rootdir/scripts/sql/schoolDistrictCodes.sql -q
+
 ### Cleanup ###
+echo ""
 $script_dir/clearCache.sh $instance
