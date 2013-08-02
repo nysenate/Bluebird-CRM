@@ -154,12 +154,13 @@
     }
   });
 
+  var contactID = {/literal}{$contactId};{literal}
+
   //get changelog count
   var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/changelog' h=0 }"{literal};
-  var contactID = {/literal}{$contactId};{literal}
   cj.ajax({
     type: "POST",
-    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/activity/changelog'}{literal}",
+    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/changelog'}{literal}",
     url: postUrl,
     success: function(tabCount){
       var ele = cj('#tab_log a');
@@ -171,7 +172,6 @@
 
   //get activity count
   var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/activity' h=0 }"{literal};
-  var contactID = {/literal}{$contactId};{literal}
   cj.ajax({
     type: "POST",
     data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/activity'}{literal}",

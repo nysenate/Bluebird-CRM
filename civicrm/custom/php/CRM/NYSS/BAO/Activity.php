@@ -8,7 +8,8 @@ class CRM_NYSS_BAO_Activity {
    * Pull activity count via ajax
    */
   static function getTabCount( ) {
-    if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
+    $contactId = CRM_Utils_Array::value( 'contactId', $_POST, NULL );
+    if( $contactId ) {
       $input = array(
         'contact_id' => $contactId,
         'admin' => FALSE,
