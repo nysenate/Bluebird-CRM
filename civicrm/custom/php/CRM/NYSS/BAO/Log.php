@@ -36,7 +36,7 @@ class CRM_NYSS_BAO_Log {
 
     CRM_Core_DAO::executeQuery('DROP TABLE IF EXISTS civicrm_temp_logcount');
     $sql = "
-      CREATE  TABLE civicrm_temp_logcount (
+      CREATE TEMPORARY TABLE civicrm_temp_logcount (
         id int(10),
         log_type varchar(64),
         log_user_id int(10),
@@ -47,7 +47,7 @@ class CRM_NYSS_BAO_Log {
         log_action varchar(64),
         is_deleted tinyint(4),
         display_name varchar(128),
-        INDEX (id)) ENGINE = MyIsam";
+        INDEX (id)) ENGINE = MEMORY";
     //CRM_Core_Error::debug_var('sql', $sql, TRUE, TRUE, 'logCount');
     CRM_Core_DAO::executeQuery($sql);
 
