@@ -36,7 +36,12 @@
 }
 #districts .IssueCodes th,
 #districts .Keywords th,
-#districts .Positions th {
+#districts .Positions th,
+#districts .Counties th,
+#districts .Towns th,
+#districts .Wards th,
+#districts .Schools th,
+#districts .Zip th {
   width: 150px;
 }
 #districts table {
@@ -223,7 +228,7 @@
        		<div class="icon crm-accordion-pointer"></div>
        	 	Zip Codes
        </div>
-       <div class="crm-accordion-body Schools">
+       <div class="crm-accordion-body Zip">
        		<table>
         	{foreach from=$contactZip key=zip item=zipcount}
             	<tr><th>{$zip}</th><td>{$zipcount}</td></tr>
