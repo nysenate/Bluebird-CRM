@@ -1735,3 +1735,6 @@ div#contact-summary div#contactTopBar {
 #crm-container #tagGroup #crm-tagListWrap {
   border: none;
 }
+#crm-container #tagGroup #crmasmContainer0 {
+  margin-top: 20px;
+}
