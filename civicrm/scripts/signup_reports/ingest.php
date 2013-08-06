@@ -64,7 +64,8 @@ function updateSenators($optList, $env)
 
   // Retrieve all senator ids from the database
   $inactive_senators = array();
-  $result = mysql_query("SELECT nid, title FROM senator WHERE active=1", $conn);
+  $sql = "SELECT nid, title FROM senator WHERE active=1";
+  $result = mysql_query($sql, $conn);
   while ($row = mysql_fetch_assoc($result)) {
     $inactive_senators[$row['nid']] = $row['title'];
   }
@@ -96,8 +97,11 @@ function updateSenators($optList, $env)
 
       //Insert/Update the senator
       echo "Updating senator: D$district\t$title [$nid]; list: $list_title\n";
-      $sql = "INSERT INTO senator (nid, title, district, list_id, active) VALUES ($nid, '$title', $district, $list_id, 1) ON DUPLICATE KEY UPDATE title='$title', district=$district, list_id=$list_id, active=1";
-      if (!mysql_query($sql,$conn)) {
+      $sql = "INSERT INTO senator (nid, title, district, list_id, active)
+              VALUES ($nid, '$title', $district, $list_id, 1)
+              ON DUPLICATE KEY UPDATE title='$title', district=$district,
+                                      list_id=$list_id, active=1";
+      if (!mysql_query($sql, $conn)) {
         die(mysql_error($conn)."\n$sql\n");
       }
     }
@@ -111,7 +115,9 @@ function updateSenators($optList, $env)
     else {
       // Mark all senators not updated as inactive
       echo "Deactivating senators: ".implode(',', array_values($inactive_senators))."\n";
-      mysql_query("UPDATE senator SET active=0 WHERE nid IN (".implode(array_keys($inactive_senators)).")", $conn);
+      $sql = "UPDATE senator SET active=0 WHERE nid IN (".
+                    implode(array_keys($inactive_senators)).")";
+      mysql_query($sql, $conn);
     }
   }
 } // updateSenators()
@@ -126,7 +132,9 @@ function updateCommittees($optList, $env)
 
   // Retrieve all committee ids from the database
   $inactive_committees = array();
-  $result = mysql_query("SELECT nid, title FROM committee WHERE active=1", $conn);
+  $sql = "SELECT nid, title FROM committee WHERE active=1";
+  $result = mysql_query($sql, $conn);
+
   while ($row = mysql_fetch_assoc($result)) {
     $inactive_committees[$row['nid']] = $row['title'];
   }
@@ -165,9 +173,12 @@ function updateCommittees($optList, $env)
 
       //Insert/Update the committee
       echo "Updating committee: $title [$nid], chair: $chair_title [$chair_nid]\n";
-      $sql = "INSERT INTO committee (nid, title, chair_nid, list_id) VALUES ($nid, '$title', $chair_nid, $list_id) ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid, list_id=$list_id";
+      $sql = "INSERT INTO committee (nid, title, chair_nid, list_id)
+              VALUES ($nid, '$title', $chair_nid, $list_id)
+              ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid,
+                                      list_id=$list_id";
       if (!mysql_query($sql, $conn)) {
-        die(mysql_error($conn)."\n".$sql);
+        die(mysql_error($conn)."\n$sql\n");
       }
     }
   }
@@ -179,7 +190,9 @@ function updateCommittees($optList, $env)
     else {
       // Mark all senators not updated as inactive
       echo "Deactivating committees: ".implode(',', array_values($inactive_committees))."\n";
-      mysql_query("UPDATE committee SET active=0 WHERE nid IN (".implode(array_keys($inactive_committees)).")", $conn);
+      $sql = "UPDATE committee SET active=0 WHERE nid IN (".
+                 implode(array_keys($inactive_committees)).")";
+      mysql_query($sql, $conn);
     }
   }
 } // updateCommittees()
@@ -197,7 +210,7 @@ function updateSignups($optList, $env)
     $start_id = (int)$optList['first'];
   }
   else {
-    $start_id = get_start_id($conn)+1;
+    $start_id = get_start_id($conn) + 1;
   }
 
   while (true) {
@@ -234,7 +247,8 @@ function updateSignups($optList, $env)
       $num_lists = count($account['lists']);
       if ($num_lists > 1) {
         echo "account['name']={$account['name']} has {$num_lists} lists associated with it.\n";
-      } elseif ($num_lists == 0) {
+      }
+      elseif ($num_lists == 0) {
         //There were no lists on this account... This is BAD.
         echo "ERROR: Account with no lists found!!! ".print_r($account, TRUE)."\n";
       }
@@ -247,7 +261,6 @@ function updateSignups($optList, $env)
       //account only has one list associated with it.
       foreach ($account['contacts'] as $contact) {
         list($person_id, $person_nid) = get_or_create_person($contact, $conn);
-
         //Move up our starting point as necessary
         if ($person_nid >= $start_id) {
           $start_id = $person_nid + 1;
@@ -256,15 +269,17 @@ function updateSignups($optList, $env)
         foreach ($contact['issues'] as $issue) {
           $issue = mysql_real_escape_string($issue, $conn);
           $issue_id = get_or_create_issue($issue, $conn);
-          $sql = "INSERT IGNORE INTO subscription (person_id,issue_id) VALUES ($person_id, $issue_id)";
+          $sql = "INSERT IGNORE INTO subscription (person_id, issue_id)
+                  VALUES ($person_id, $issue_id)";
           if (!mysql_query($sql, $conn)) {
-            die(mysql_error($conn)."\n".$sql);
+            die(mysql_error($conn)."\n$sql\n");
           }
         }
 
-        $sql = "INSERT IGNORE INTO signup (list_id,person_id) VALUES ($list_id, $person_id)";
+        $sql = "INSERT IGNORE INTO signup (list_id, person_id)
+                VALUES ($list_id, $person_id)";
         if (!mysql_query($sql, $conn)) {
-          die(mysql_error($conn)."\n".$sql);
+          die(mysql_error($conn)."\n$sql\n");
         }
       }
     }
@@ -273,7 +288,8 @@ function updateSignups($optList, $env)
 } // updateSignups()
 
 
-function geocodeAddresses($optList, $env) {
+function geocodeAddresses($optList, $env)
+{
   // Bootstrap CiviCRM so we can use the SAGE module
   $conn = $env['conn'];
   $root = dirname(dirname(dirname(dirname(__FILE__))));
@@ -282,16 +298,12 @@ function geocodeAddresses($optList, $env) {
   require_once "$root/civicrm/custom/php/CRM/Utils/SAGE.php";
 
   //Format the row as civicrm likes to see it.
-  $sql = "SELECT id,
-          address1 as street_address,
-          address2 as street_address2,
-          city as city,
-          state as state_province,
-          zip as postal_code
-      FROM person WHERE district IS NULL ORDER BY id ASC";
+  $sql = "SELECT id, address1 as street_address, address2 as street_address2,
+                 city as city, state as state_province, zip as postal_code
+          FROM person WHERE district IS NULL ORDER BY id ASC";
 
   if (!($result = mysql_query($sql, $conn))) {
-    die(mysql_error($conn)."\n".$sql);
+    die(mysql_error($conn)."\n$sql\n");
   }
 
   $geocodeCount = 0;
@@ -329,9 +341,11 @@ function geocodeAddresses($optList, $env) {
 } // geocodeAddresses()
 
 
-function get_start_id($conn) {
-  if (!$result = mysql_query("SELECT max(nid) as max_id FROM person",$conn)) {
-    die(mysql_error($conn)."\n".$sql);
+function get_start_id($conn)
+{
+  $sql = "SELECT max(nid) as max_id FROM person";
+  if (!$result = mysql_query($sql, $conn)) {
+    die(mysql_error($conn)."\n$sql\n");
   }
 
   $row = mysql_fetch_assoc($result);
@@ -339,7 +353,8 @@ function get_start_id($conn) {
 } // get_start_id()
 
 
-function get_or_create_person($contact, $conn) {
+function get_or_create_person($contact, $conn)
+{
   $nid = (int)$contact['id'];
   $first_name = mysql_real_escape_string($contact['firstName'],$conn);
   $last_name = mysql_real_escape_string($contact['lastName'],$conn);
@@ -360,20 +375,21 @@ function get_or_create_person($contact, $conn) {
     if ($row = mysql_fetch_assoc($result)) {
       return array($row['id'], $nid);
     //New Person
-    } else {
-      $sql = "
-        INSERT INTO person
-          (nid, first_name, last_name, address1, address2, city, state, zip, phone, email, status, created, modified)
-        VALUES
-          ($nid,'$first_name','$last_name','$address1','$address2','$city','$state','$zip','$phone','$email','$status','$created','$modified')
-      ";
+    }
+    else {
+      $sql = "INSERT INTO person (nid, first_name, last_name,
+                                  address1, address2, city, state, zip,
+                                  phone, email, status, created, modified)
+              VALUES ($nid, '$first_name', '$last_name',
+                      '$address1', '$address2', '$city', '$state', '$zip',
+                      '$phone', '$email', '$status', '$created', '$modified')";
       if ($result = mysql_query($sql, $conn)) {
         return array(mysql_insert_id($conn), $nid);
       }
     }
   }
 
-  die(mysql_error($conn)."\n".$sql);
+  die(mysql_error($conn)."\n$sql\n");
 } // get_or_create_person()
 
 ?>
