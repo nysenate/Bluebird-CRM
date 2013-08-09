@@ -519,6 +519,7 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
         require_once 'CRM/Utils/File.php';
         require_once 'CRM/Utils/IMAP.php';
+	$bbconfig = get_bluebird_instance_config();
         $debug = false;
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
@@ -631,7 +632,14 @@ class CRM_IMAP_AJAX {
 
             $aActivityType = CRM_Core_PseudoConstant::activityType();
             $activityType = array_search('Inbound Email', $aActivityType);
-            $activityStatus = array_search('Completed', $aActivityStatus);
+	    $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
+
+	    $imap_activty_status = strtolower($bbconfig['imap.activity.status.default']);
+	    if ($imap_activty_status == false || !isset($imap_activty_status)) {
+	      $activityStatus = array_search('Completed', $aActivityStatus);
+	    }else{
+	      $activityStatus = array_search($imap_activty_status, $aActivityStatus);
+	    }
 
             $aActivityType = CRM_Core_PseudoConstant::activityType();
             $activityType = array_search('Inbound Email', $aActivityType);
