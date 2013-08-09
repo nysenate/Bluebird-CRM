@@ -38,7 +38,9 @@
 /* IMAP General styles */
 pre{ white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap;  white-space: -o-pre-wrap; word-wrap: break-word;}
 .imapperbox .clear {clear: both;}
-.imapperbox .hidden{display:none;}
+.imapperbox .hidden,
+.page-civicrm-imap .hidden{display:none;}
+
 .imapperbox h1{ padding:10px 3px; margin-bottom: 0;}
 .imapperbox h1 small{ color:#999; font-size: 20px;}
 
@@ -141,11 +143,11 @@ thead .sorting_asc{ background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_right label select {width: 167px; }
 
 /* IMAP -  Contact List */
-.page-civicrm-imap #imapper-contacts-list {scrollbar: always; overflow: auto; height: 165px; float: left;}
+.page-civicrm-imap .contacts-list {scrollbar: always; overflow: auto; height: 165px; float: left;}
 .page-civicrm-imap .imapper-contact-box {background-color: #f8f8f8; margin-bottom: 4px; padding: 4px 0; float:left;}
 .page-civicrm-imap .imapper-contact-box:hover {  background-color: #eeeeee;}
-.page-civicrm-imap .imapper-address-select-box {height: 16px; width: 20px; float: left; padding: 15px 0px;}
-.page-civicrm-imap .imapper-address-box {float: left;width: 240px;padding-left: 5px;}
+.page-civicrm-imap .imapper-address-select-box {height: 16px; width: 20px; float: left; padding: 15px 0;}
+.page-civicrm-imap .imapper-address-box {float: left;width: 240px; padding-left: 5px;}
 .page-civicrm-imap .imapper-message-box td { vertical-align: middle!important;  }
 .page-civicrm-imap .seeMore{ height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width:220px; margin: 5px 0px 10px;}
 
