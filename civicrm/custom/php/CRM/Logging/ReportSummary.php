@@ -130,8 +130,22 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     $logging = new CRM_Logging_Schema;
     $customTables = $logging->customDataLogTables();
     foreach ($customTables as $table) {
-      $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
+      //NYSS 7045
+      if ( $table != 'log_civicrm_value_district_information_7' ) {
+        $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
+      }
     }
+
+    //NYSS 7045
+    $this->_logTables['log_civicrm_value_district_information_7'] = array(
+      'fk'  => 'contact_id',
+      'table_name' => 'log_civicrm_value_district_information_7',
+      'joins' => array(
+        'table' => 'log_civicrm_address',
+        'join' => 'entity_log_civireport.entity_id = fk_table.id'
+      ),
+      'log_type' => 'Address',
+    );
 
     parent::__construct();
   }
@@ -242,6 +256,7 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
           $sql = str_replace("EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), ", "", $sql);
           $sql = str_replace("entity_log_civireport.log_conn_id, ", "", $sql);
         }
+        //CRM_Core_Error::debug_var('sql', $sql);
         $sql = "INSERT IGNORE INTO civicrm_temp_civireport_logsummary {$sql}";
         CRM_Core_DAO::executeQuery($sql);
       }
