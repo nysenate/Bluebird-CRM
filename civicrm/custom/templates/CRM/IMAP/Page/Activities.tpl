@@ -7,13 +7,13 @@
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
-				<th class='checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
-				<th class='Name'>Sender’s Info</th>
-				<th class='Subject'>Subject</th>
-				<th class='Date'>Date Forwarded</th>
-				<th class='Match_type hidden'>Match Type</th>
-				<th class='Forwarded'>Forwarded By</th>
-				<th class='Actions'>Actions</th>
+					<th class='imap_checkbox_header checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+					<th class='imap_name_header'>Sender’s Info</th>
+					<th class='imap_subject_header'>Subject</th>
+					<th class='imap_date_header'>Date Forwarded</th>
+					<th class='imap_match_type_header hidden'>Match Type</th>
+					<th class='imap_forwarded_header'>Forwarded By</th>
+					<th class='imap_action_headers'>Actions</th>
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
@@ -46,7 +46,7 @@
 					</label>
 					<label for="last_name">
 						<span class="label_def">Last Name: </span>
-						<input type="text" placeholder="Last Name"  class="form-text last_name" name="last_name">
+						<input type="text" placeholder="Last Name" class="form-text last_name" name="last_name">
 					</label>
 					<label for="email_address">
 						<span class="label_def">Email: </span>
@@ -62,7 +62,7 @@
 					</label>
 					<label for="street_address">
 						<span class="label_def">St. Address: </span>
-						<input type="text" placeholder="Street Address"  class="form-text street_address" name="street_address">
+						<input type="text" placeholder="Street Address" class="form-text street_address" name="street_address">
 					</label>
 					<label for="city">
 						<span class="label_def">City: </span>
