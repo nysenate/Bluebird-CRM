@@ -462,6 +462,11 @@ SELECT label, value
             if (in_array($id, $distinfo)) {
               $op  = 'IN';
               $field['data_type'] = 'nyss_Integer'; //flag for processing
+
+              //check for value existence
+              if ( empty($value) ) {
+                continue;
+              }
             }
 
             if ( $field['is_search_range'] && is_array( $value ) ) {
