@@ -7,7 +7,14 @@
   /*boxwidth*/
   $inputBoxWidthFull: 522px;
   $inputBoxWidthShort: 285px;
+  $normalTagWidth: 505px;
   $inputBox: 0px;
+
+  /* colors */
+  $keywordsColor: #EBB931;
+  $positionsColor: #6FD5E3;
+  $issueCodesColor: #5AD170;
+  $searchColor: #BF5866;
 
 /*mixins*/
 
@@ -78,7 +85,6 @@
   @for $i from 1 through 10 {
     dl.#{$levelClassSlug}-#{$i}
     {
-    
       width: 100% - (2*$i);
       @if $i != 0
       {
@@ -104,8 +110,25 @@
           font-weight:bold;
         }
       }
+      @if $i != 0 {
+        .transparancyBox {
+          margin-left: ((-1 + $i) * -2%) - 1%;
+        }
+      }
     }
   }
 }
-
+@mixin in-and-out-hover-opacity($color) {
+  background-color:rgba(lighten($color,5%),.7);
+  &:hover {
+    background-color:rgba($color,1);
+  }
+  &.active {
+    background-color:rgba($color,.7);
+    font-weight:bold;
+  }
+}
+@mixin tag-lightness($color) {
+  background-color:rgba(lighten($color,15%),.5);
+}
 @import "extends";

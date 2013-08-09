@@ -9,6 +9,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 /*vars*/
 /*icons*/
 /*boxwidth*/
+/* colors */
 /*mixins*/
 /* page size */
 /* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
@@ -41,52 +42,75 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 
 #BBTreeContainer .BBTree {
   overflow-y: scroll;
+  overflow-x: hidden;
   height: 400px; }
   #BBTreeContainer .BBTree dl.lv-1 {
     width: 98%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-1 .transparancyBox {
+    margin-left: -1%; }
   #BBTreeContainer .BBTree dl.lv-2 {
     width: 96%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-2 .transparancyBox {
+    margin-left: -3%; }
   #BBTreeContainer .BBTree dl.lv-3 {
     width: 94%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-3 .transparancyBox {
+    margin-left: -5%; }
   #BBTreeContainer .BBTree dl.lv-4 {
     width: 92%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-4 .transparancyBox {
+    margin-left: -7%; }
   #BBTreeContainer .BBTree dl.lv-5 {
     width: 90%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-5 .transparancyBox {
+    margin-left: -9%; }
   #BBTreeContainer .BBTree dl.lv-6 {
     width: 88%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-6 .transparancyBox {
+    margin-left: -11%; }
   #BBTreeContainer .BBTree dl.lv-7 {
     width: 86%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-7 .transparancyBox {
+    margin-left: -13%; }
   #BBTreeContainer .BBTree dl.lv-8 {
     width: 84%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-8 .transparancyBox {
+    margin-left: -15%; }
   #BBTreeContainer .BBTree dl.lv-9 {
     width: 82%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-9 .transparancyBox {
+    margin-left: -17%; }
   #BBTreeContainer .BBTree dl.lv-10 {
     width: 80%;
     margin-left: 2%;
     display: none; }
+  #BBTreeContainer .BBTree dt.lv-10 .transparancyBox {
+    margin-left: -19%; }
   #BBTreeContainer .BBTree .tag {
     padding: 0px;
     height: 20px;
     line-height: 20px;
-    overflow-y: hidden; }
+    overflow-y: hidden;
+    position: relative;
+    z-index: 2; }
     #BBTreeContainer .BBTree .tag .ddControl {
       height: 20px;
       width: 20px;
@@ -97,23 +121,71 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
         cursor: pointer; }
         #BBTreeContainer .BBTree .tag .ddControl.treeButton.open {
           background-position: -64px -15px; }
+  #BBTreeContainer .BBTree .transparancyBox {
+    position: relative;
+    z-index: 1;
+    height: 20px;
+    top: -20px;
+    margin-bottom: -20px;
+    width: 522px; }
+  #BBTreeContainer .BBTree dt {
+    height: 20px; }
   #BBTreeContainer .BBTree .search {
     display: none; }
-
-.BBTree-menu {
+  #BBTreeContainer .BBTree .search .transparancyBox.type-291 {
+    background-color: rgba(150, 226, 164, 0.5); }
+  #BBTreeContainer .BBTree .search .transparancyBox.type-296 {
+    background-color: rgba(242, 209, 119, 0.5); }
+  #BBTreeContainer .BBTree .search .transparancyBox.type-292 {
+    background-color: rgba(175, 232, 239, 0.5); }
+#BBTreeContainer .BBTree-menu {
   width: 100%; }
-  .BBTree-menu .BBTree-settings {
-    float: left;
-    width: 10%;
-    height: 20px;
-    background-color: #ccc; }
-  .BBTree-menu .BBTree-top, .BBTree-menu .BBTree-bottom {
+  #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
     height: 20px;
     border-bottom: 1px solid #ccc; }
-  .BBTree-menu .BBTree-autocomplete, .BBTree-menu .BBTree-tabs {
+  #BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-tabs {
     float: left;
-    width: 90%; }
-  .BBTree-menu input#JSTree-ac {
+    width: 84%; }
+    #BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'] {
+      float: left; }
+  #BBTreeContainer .BBTree-menu .BBTree-settings {
+    float: right;
+    width: 16%;
+    height: 20px;
+    background-color: #ccc; }
+  #BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-positions, #BBTreeContainer .BBTree-menu .tab-keywords {
+    width: 25%;
+    padding: 4px 0px;
+    text-align: center; }
+  #BBTreeContainer .BBTree-menu .tab-search {
+    background-color: rgba(198, 106, 119, 0.7); }
+    #BBTreeContainer .BBTree-menu .tab-search:hover {
+      background-color: #bf5866; }
+    #BBTreeContainer .BBTree-menu .tab-search.active {
+      background-color: rgba(191, 88, 102, 0.7);
+      font-weight: bold; }
+  #BBTreeContainer .BBTree-menu .tab-issue-codes {
+    background-color: rgba(110, 215, 129, 0.7); }
+    #BBTreeContainer .BBTree-menu .tab-issue-codes:hover {
+      background-color: #5ad170; }
+    #BBTreeContainer .BBTree-menu .tab-issue-codes.active {
+      background-color: rgba(90, 209, 112, 0.7);
+      font-weight: bold; }
+  #BBTreeContainer .BBTree-menu .tab-positions {
+    background-color: rgba(132, 219, 231, 0.7); }
+    #BBTreeContainer .BBTree-menu .tab-positions:hover {
+      background-color: #6fd5e3; }
+    #BBTreeContainer .BBTree-menu .tab-positions.active {
+      background-color: rgba(111, 213, 227, 0.7);
+      font-weight: bold; }
+  #BBTreeContainer .BBTree-menu .tab-keywords {
+    background-color: rgba(237, 193, 72, 0.7); }
+    #BBTreeContainer .BBTree-menu .tab-keywords:hover {
+      background-color: #ebb931; }
+    #BBTreeContainer .BBTree-menu .tab-keywords.active {
+      background-color: rgba(235, 185, 49, 0.7);
+      font-weight: bold; }
+  #BBTreeContainer .BBTree-menu input#JSTree-ac {
     border-style: none;
     width: 100%;
     padding: 0px;

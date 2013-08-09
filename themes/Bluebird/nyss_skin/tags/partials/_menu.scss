@@ -1,22 +1,42 @@
+// code
 .BBTree-menu {
   width:100%;
-  .BBTree-settings{
-    float:left;
-    width:10%;
-    height:20px;
-    background-color:#ccc;
-  }
   .BBTree-top {
     height:20px;
     border-bottom:1px solid #ccc;
   }
   .BBTree-bottom {
     @extend .BBTree-top;
-
   }
   .BBTree-autocomplete, .BBTree-tabs{
     float:left;
-    width:90%;
+    width:84%;
+    div[class*='tab-'] {
+      float:left;
+    }
+  }
+  .BBTree-settings {
+    float:right;
+    width:16%;
+    height:20px;
+    background-color:#ccc;
+  }
+  .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords {
+    width:25%;
+    padding:4px 0px;
+    text-align: center;
+  }
+  .tab-search {
+    @include in-and-out-hover-opacity($searchColor)
+  }
+  .tab-issue-codes {
+    @include in-and-out-hover-opacity($issueCodesColor)
+  }
+  .tab-positions {
+    @include in-and-out-hover-opacity($positionsColor)
+  }
+  .tab-keywords {
+    @include in-and-out-hover-opacity($keywordsColor)
   }
   input#JSTree-ac {
     border-style:none;

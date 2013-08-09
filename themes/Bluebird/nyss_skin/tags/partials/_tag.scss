@@ -13,4 +13,17 @@
       }
     }
   }
+  position: relative;
+  z-index:2;
+}
+.transparancyBox {
+  position: relative;
+  z-index:1;
+  height: 20px;
+  top: -20px;
+  margin-bottom:-20px;
+  width:$inputBoxWidthFull;
+}
+dt {
+  height:20px;
 }

@@ -1,0 +1,11 @@
+.search {
+  .transparancyBox.type-291 {
+    @include tag-lightness($issueCodesColor)
+  }
+  .transparancyBox.type-296 {
+    @include tag-lightness($keywordsColor)
+  }
+  .transparancyBox.type-292 {
+    @include tag-lightness($positionsColor)
+  }
+}

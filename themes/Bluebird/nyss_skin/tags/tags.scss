@@ -29,14 +29,18 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 	width: $inputBoxWidthShort;
 /*everything else should be percentage based*/
 }
-#BBTreeContainer .BBTree {
-	overflow-y:scroll;
-	height:400px;
-	// margin-left:2%;
-	@include iterator;
-	@import "partials/tag";
-	.search {
-		display:none;
-	}
+#BBTreeContainer {
+  .BBTree {
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height:400px;
+    // margin-left:2%;
+    @include iterator;
+    @import "partials/tag";
+    .search {
+      display:none;
+    }
+    @import "partials/tree"  
+  }
+  @import "partials/menu";
 }
-@import "partials/menu";

@@ -2,16 +2,20 @@ fs     = require 'fs'
 {exec} = require 'child_process'
 fspath = require 'path'
 
-pathFiles  = [
+coffeeFiles  = [
   {path: 'themes/Bluebird/scripts/tree', outputName: "JSTree"}
   {path: 'themes/Bluebird/scripts/jquery.taggingAutocomplete', outputName: "jquery.taggingAutocomplete"}
   {path: 'themes/Bluebird/scripts/bbUtils', outputName: "bbUtils"}
   {path: 'themes/Bluebird/scripts/bbJSsettings', outputName: "bbhg"}
 ]
 
-task 'sbuild', 'Build all files', ->
-  pathContents = new Array remaining = Object.keys(pathFiles).length
-  for obj, index in pathFiles then do (obj, index) ->
+sassFiles = [
+  {path: 'themes/Bluebird/nyss_skin/tags', outputName: "tags"}
+]
+
+task 'sbuild', 'Build all Coffee files', ->
+  pathContents = new Array remaining = Object.keys(coffeeFiles).length
+  for obj, index in coffeeFiles then do (obj, index) ->
     outputName = obj.outputName
     tempName = "#{outputName}_temp"
     path  = obj.path
@@ -47,3 +51,26 @@ task 'sbuild', 'Build all files', ->
             time = new Date()
             currentTime = "#{time.getHours()}:#{time.getMinutes()}:#{time.getSeconds()}"
             console.log(currentTime)
+
+task 'sassbuild', 'Build all Sass Files', ->
+  # we're not worried about concatinating because sass already does that
+  # with @import rules
+  pathContents = new Array remaining = Object.keys(sassFiles).length
+  for obj, index in sassFiles then do (obj, index) ->
+    outputName = obj.outputName
+    path  = obj.path
+    filesToProcess = []
+    fs.readdir  "#{path}", (err, files) ->
+      for file, index in files then do (files, index) ->
+        if fspath.extname(file) is (".scss" or ".sass")
+          ext = fspath.extname(file)
+          process("#{path}/#{file}", path, ext)
+    process = (filepath, path, ext) ->
+      exec "sass #{filepath} #{path}/#{outputName}.css", (err, stdout, stderr) ->
+        if err
+          console.log "errored?"
+          console.log err
+        else
+          console.log "wrote #{path}/#{outputName}#{ext}"
+          time = new Date()
+          currentTime = "#{time.getHours()}:#{time.getMinutes()}:#{time.getSeconds()}"

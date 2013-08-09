@@ -61,13 +61,13 @@ parseTree =
         # @addDLtop tagName,cID.name, true
         # @addDTtag tagName,cID.name
         # loops through each child.
-        @addTabName (cID.name)
+        @addTabName cID.name, id
         @output += "<dl class='top-#{id} tagContainer'>"
         cj.each cID.children, (id, tID) =>
           @writeOutputData tID 
         @output += "</dl>"
         @writeData()
-    console.log "Loaded Data"
+    console.log "Loaded Data at #{new Date()}"
   isItemMarked: (value,type) ->
     if value true then type else ''
   isItemChildless: (childLength) ->
@@ -87,8 +87,8 @@ parseTree =
       @addDLbottom() 
     else
       @addDLbottom()
-  addTabName: (name) ->
-    _treeData.treeNames.push(name)
+  addTabName: (name, id) ->
+    _treeData.treeNames[id] = name
   # helper functions for writing tag names
   addDLtop: (tagName,name) ->
     @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
@@ -190,12 +190,15 @@ class instance
     callAjax =
       # if it's an activity, entity_type is different
       #where to grab the tree
-      url: '/civicrm/ajax/tag/tree'
-      data:
-        entity_table: 'civicrm_contact'
-        entity_id: 0
-        call_uri: window.location.href
-        entity_counts: 0
+      # temporarily killing
+      # url: '/civicrm/ajax/tag/tree'
+      # data:
+      #   entity_table: 'civicrm_contact'
+      #   entity_id: 0
+      #   call_uri: window.location.href
+      #   entity_counts: 0
+      # local function
+      url: 'localtagdata.json'
       dataType: 'json'
     # getter/setter
     @get = (name) =>
