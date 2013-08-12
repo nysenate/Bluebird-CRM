@@ -4,16 +4,19 @@
 	</div>
 	<div id='top'></div>
 	<div class='full'>
+		<div class='page_actions'>
+			<input type="button" class="multi_delete" id="" value="Delete Selected" name="delete">
+		</div>
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
-				    <th class='checkbox' ><input type="checkbox" name="" value="" class="checkbox_switch" /></th>
-				    <th class='Name'>Sender’s Info</th>
- 				    <th class='Subject'>Subject</th>
-				    <th class='Date'>Date Forwarded</th>
-				    <th class='Match_type hidden'>Match Type</th>
-				    <th class='Forwarded'>Forwarded By</th>
-				   	<th class='Actions'>Actions</th>
+					<th class='imap_checkbox_header checkbox' ><input class='checkbox_switch'  type="checkbox" name="" value="" /></th>
+					<th class='imap_name_header'>Sender’s Info</th>
+					<th class='imap_subject_header'>Subject</th>
+					<th class='imap_date_header'>Date Forwarded</th>
+					<th class='imap_match_type_header hidden'>Match Type</th>
+					<th class='imap_forwarded_header'>Forwarded By</th>
+					<th class='imap_action_headers'>Actions</th>
 				</tr>
 			</thead>
 			<tbody id='imapper-messages-list'>
@@ -132,7 +135,7 @@
 							<option value="1048">Wisconsin</option>
 							<option value="1049">Wyoming</option>
 						</select>
-					</label>	
+					</label>
 					<input type="button" class="imapper-submit" id="filter" value="Search" name="filter">
 					<div id="imapper-contacts-list" class="contacts-list"> </div>
 					<input type="button" class="imapper-submit" id="preAssign" value="Assign" name="Assign">
