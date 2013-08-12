@@ -111,9 +111,6 @@
         }
       }
       @if $i != 0 {
-        .transparancyBox {
-          margin-left: ((-1 + $i) * -2%) - 1%;
-        }
       }
     }
   }

@@ -1,20 +1,27 @@
-.tag {
-  padding: 0px;
-  height: 20px;
-  line-height:20px;
-  overflow-y:hidden;
-  .ddControl {
-    height:20px; width:20px; float:left; margin:0px;
-    &.treeButton{
-      background: url($defaultIconLink) no-repeat -32px -15px;
-      cursor:pointer;
-      &.open {
-        background-position: -64px -15px;
+dt {
+  .tag {
+    padding: 0px;
+    height: 20px;
+    line-height:20px;
+    overflow-y:hidden;
+    .ddControl {
+      height:20px; width:20px; float:left; margin:0px;
+      &.treeButton{
+        background: url($defaultIconLink) no-repeat -32px -15px;
+        cursor:pointer;
+        
       }
     }
+    
+    position: relative;
+    z-index:2;
   }
-  position: relative;
-  z-index:2;
+  &.open .tag .ddControl.treeButton {
+    background: url($defaultIconLink) no-repeat -64px -15px;
+  }
+}
+.shaded {
+
 }
 .transparancyBox {
   position: relative;
@@ -22,7 +29,8 @@
   height: 20px;
   top: -20px;
   margin-bottom:-20px;
-  width:$inputBoxWidthFull;
+  width:1000px;
+  left:-50%;
 }
 dt {
   height:20px;

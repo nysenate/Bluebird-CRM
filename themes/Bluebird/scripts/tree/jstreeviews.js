@@ -235,7 +235,8 @@ treeBehavior = {
     });
   },
   buildSearchList: function(tagList, term) {
-    var cjCloneTag, key, tag, tagListLength, toShade;
+    var allDropdowns, cjCloneChildren, cjCloneTag, key, tag, tagListLength, toShade, value, _i, _len,
+      _this = this;
     if (this.cjSearchBox == null) {
       this.cjSearchBox = this.cjTagBox.find(".search");
     }
@@ -247,19 +248,38 @@ treeBehavior = {
         tag = tagList[key];
         cjCloneTag = this.cjTagBox.find("dt[data-tagid=" + tag.id + "]");
         if (this.cloneChildren(cjCloneTag, tagList)) {
-          cjCloneTag.clone().appendTo(this.cjSearchBox);
+          cjCloneChildren = this.cjTagBox.find("#tagDropdown_" + tag.id);
+          console.log(cjCloneChildren);
+          cjCloneTag.clone().appendTo(this.cjSearchBox).addClass("shaded");
+          cjCloneChildren.clone().appendTo(this.cjSearchBox);
         } else {
+          console.log(tag.id);
           toShade.push(tag.id);
         }
-        this.enableDropdowns(".search dt[data-tagid=" + tag.id + "]", true);
       }
+      allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent();
+      cj.each(allDropdowns, function(key, value) {
+        var tagid;
+        console.log(value);
+        tagid = cj(value).data('tagid');
+        if (tagid != null) {
+          return _this.enableDropdowns(".search dt[data-tagid='" + tagid + "']", true);
+        }
+      });
     } else {
       tagListLength = 0;
       this.cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>");
     }
+    for (_i = 0, _len = toShade.length; _i < _len; _i++) {
+      value = toShade[_i];
+      this.toShade(value);
+    }
     cj("" + this.tabsLoc + " .tab-search").show();
     this.setTabResults(tagListLength, "tab-search");
     return this.showTags("search");
+  },
+  toShade: function(tagid) {
+    return cj(".search dt[data-tagid='" + tagid + "']").addClass("shaded");
   },
   cloneChildren: function(cjTag, tagList) {
     var hasRelevantPs, key, setReturn, tag;
@@ -310,7 +330,6 @@ treeBehavior = {
     if (hidden == null) {
       hidden = false;
     }
-    console.log(a, c);
     style = "";
     if (hidden) {
       style = "style='display:none'";
@@ -324,12 +343,13 @@ treeBehavior = {
     return cj("#JSTree-ac").off("keydown");
   },
   processSearchChildren: function(tag) {
-    var searchTag;
-    searchTag = cj(".search dl#tagDropdown_" + tag);
-    searchTag.toggle();
-    cj(".search dt.tag-" + tag + " .ddContol").toggleClass("open");
-    searchTag.find("dl").toggle();
-    return cj(".search dt.tag-" + tag).find("dt .ddControl").parent().parent().toggleClass("open");
+    var dtClass, searchTag, tagid;
+    console.log(tag);
+    dtClass = cj("" + tag);
+    dtClass.addClass("open");
+    tagid = dtClass.data('tagid');
+    searchTag = cj(".search dl#tagDropdown_" + tagid);
+    return searchTag.show();
   },
   enableDropdowns: function(tag, search) {
     if (tag == null) {
@@ -339,7 +359,7 @@ treeBehavior = {
       search = false;
     }
     if (search) {
-      this.processSearchChildren;
+      this.processSearchChildren(tag);
     }
     cj(".JSTree " + tag + " .treeButton").off("click");
     return cj(".JSTree " + tag + " .treeButton").on("click", function() {

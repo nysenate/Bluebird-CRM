@@ -192,22 +192,33 @@ treeBehavior =
       for key,tag of tagList
         cjCloneTag = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
         if @cloneChildren(cjCloneTag,tagList)
-          cjCloneTag.clone().appendTo(@cjSearchBox)
+          cjCloneChildren = @cjTagBox.find("#tagDropdown_#{tag.id}")
+          console.log cjCloneChildren
+          cjCloneTag.clone().appendTo(@cjSearchBox).addClass("shaded")
+          cjCloneChildren.clone().appendTo(@cjSearchBox)
         else
+          console.log tag.id
           toShade.push(tag.id)
-        # console.log @cjTagBox.find("#tagDropdown_#{tag.id}")
-        # cjCloneChildren = @cjTagBox.find("#tagDropdown_#{tag.id}")
-        # clone = cjCloneChildren.clone()
-        # console.log clone
-        # console.log @cjSearchBox.html()
-        # @cjSearchBox.append(clone)
-        @enableDropdowns(".search dt[data-tagid=#{tag.id}]", true)
+        
+      # search for all DL's in search
+      allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent()
+      cj.each allDropdowns, (key,value) =>
+        console.log value
+        tagid = cj(value).data('tagid')
+        if tagid?
+          @enableDropdowns(".search dt[data-tagid='#{tagid}']", true)
     else
       tagListLength = 0
       @cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>")
+    for value in toShade
+      @toShade value
     cj("#{@tabsLoc} .tab-search").show()
     @setTabResults(tagListLength,"tab-search")
     @showTags("search")
+  
+  toShade: (tagid) ->
+    cj(".search dt[data-tagid='#{tagid}']").addClass("shaded")
+
 
   cloneChildren: (cjTag, tagList) ->
     setReturn = true
@@ -244,7 +255,6 @@ treeBehavior =
       return "tab-#{treeName}" if treeName == "search"
 
   appendTab: (a,c,hidden = false) ->
-    console.log a,c
     style = ""
     style = "style='display:none'" if hidden
     cjtabloc = cj("#{@tabsLoc}")
@@ -256,15 +266,21 @@ treeBehavior =
     cj("#JSTree-ac").off "keydown"
 
   processSearchChildren: (tag) ->
-    searchTag = cj(".search dl#tagDropdown_#{tag}")
-    searchTag.toggle()
-    cj(".search dt.tag-#{tag} .ddContol").toggleClass "open"
-    searchTag.find("dl").toggle()
-    cj(".search dt.tag-#{tag}").find("dt .ddControl").parent().parent().toggleClass "open"
+    # console.log "tag #{tag}"
+    # searchTag = cj(".search dl#tagDropdown_#{tag}")
+    # searchTag.toggle()
+    console.log tag
+    dtClass = cj("#{tag}")
+    #  .ddContol
+    dtClass.addClass "open"
+    tagid = dtClass.data('tagid')
+    searchTag = cj(".search dl#tagDropdown_#{tagid}")
+    searchTag.show()
+    # cj(".search dt.tag-#{tag}").find("dt .ddControl").parent().parent().toggleClass "open"
 
   enableDropdowns: (tag = "", search = false) ->
     if search
-      @processSearchChildren
+      @processSearchChildren tag
     cj(".JSTree #{tag} .treeButton").off "click" 
     cj(".JSTree #{tag} .treeButton").on "click", ->
       treeBehavior.dropdownItem(cj(this).parent().parent(), search)

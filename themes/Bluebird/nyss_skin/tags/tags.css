@@ -48,86 +48,67 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     width: 98%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-1 .transparancyBox {
-    margin-left: -1%; }
   #BBTreeContainer .BBTree dl.lv-2 {
     width: 96%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-2 .transparancyBox {
-    margin-left: -3%; }
   #BBTreeContainer .BBTree dl.lv-3 {
     width: 94%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-3 .transparancyBox {
-    margin-left: -5%; }
   #BBTreeContainer .BBTree dl.lv-4 {
     width: 92%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-4 .transparancyBox {
-    margin-left: -7%; }
   #BBTreeContainer .BBTree dl.lv-5 {
     width: 90%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-5 .transparancyBox {
-    margin-left: -9%; }
   #BBTreeContainer .BBTree dl.lv-6 {
     width: 88%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-6 .transparancyBox {
-    margin-left: -11%; }
   #BBTreeContainer .BBTree dl.lv-7 {
     width: 86%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-7 .transparancyBox {
-    margin-left: -13%; }
   #BBTreeContainer .BBTree dl.lv-8 {
     width: 84%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-8 .transparancyBox {
-    margin-left: -15%; }
   #BBTreeContainer .BBTree dl.lv-9 {
     width: 82%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-9 .transparancyBox {
-    margin-left: -17%; }
   #BBTreeContainer .BBTree dl.lv-10 {
     width: 80%;
     margin-left: 2%;
     display: none; }
-  #BBTreeContainer .BBTree dt.lv-10 .transparancyBox {
-    margin-left: -19%; }
-  #BBTreeContainer .BBTree .tag {
+  #BBTreeContainer .BBTree dt .tag {
     padding: 0px;
     height: 20px;
     line-height: 20px;
     overflow-y: hidden;
     position: relative;
     z-index: 2; }
-    #BBTreeContainer .BBTree .tag .ddControl {
+    #BBTreeContainer .BBTree dt .tag .ddControl {
       height: 20px;
       width: 20px;
       float: left;
       margin: 0px; }
-      #BBTreeContainer .BBTree .tag .ddControl.treeButton {
+      #BBTreeContainer .BBTree dt .tag .ddControl.treeButton {
         background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
         cursor: pointer; }
-        #BBTreeContainer .BBTree .tag .ddControl.treeButton.open {
-          background-position: -64px -15px; }
+  #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
+    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -64px -15px; }
   #BBTreeContainer .BBTree .transparancyBox {
     position: relative;
     z-index: 1;
     height: 20px;
     top: -20px;
     margin-bottom: -20px;
-    width: 522px; }
+    width: 1000px;
+    left: -50%; }
   #BBTreeContainer .BBTree dt {
     height: 20px; }
   #BBTreeContainer .BBTree .search {
