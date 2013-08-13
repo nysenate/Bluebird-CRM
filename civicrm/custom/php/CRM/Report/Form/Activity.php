@@ -38,7 +38,10 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
   protected $_phoneField = false; //NYSS
   protected $_customGroupExtends = array(
-    'Activity'); function __construct() {
+    'Activity'
+  );
+
+  function __construct() {
     $config = CRM_Core_Config::singleton();
     $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
     if ($campaignEnabled) {
@@ -405,8 +408,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           ) {
             //NYSS
             if ( $tableName == 'civicrm_phone' ) {
-                            $this->_phoneField = true;
-                        } 
+              $this->_phoneField = TRUE;
+            }
 
             if (!CRM_Utils_Array::value('activity_type_id', $this->_params['group_bys']) &&
               (in_array($fieldName, array(
