@@ -1,25 +1,32 @@
 #!/usr/bin/php
 <?php
 
+$prog = basename(__FILE__);
+$this_dir = dirname(__FILE__);
+require_once realpath("$this_dir/../script_utils.php");
+require_once realpath("$this_dir/../bluebird_config.php");
+require_once 'utils.php';
+
 // Process the command line arguments
-require_once realpath(dirname(__FILE__).'/../script_utils.php');
-add_packages_to_include_path();
-$optList = get_options();
+$shortopts = 'hS:d:n';
+$longopts = array('help', 'site=', 'date=', 'dryrun');
+$stdusage = civicrm_script_usage();
+$usage = "[--help|-h] [--date|-d FORMATTED_DATE] [--dryrun|-n]";
+$optList = civicrm_script_init($shortopts, $longopts);
+if ($optList === null) {
+  echo "Usage: $prog  $stdusage  $usage\n";
+  exit(1);
+}
 
 // Load the config file
-require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
 $config = get_bluebird_instance_config($optList['site']);
+if ($config == null) {
+  die("Unable to continue without a valid configuration.\n");
+}
 
-// Bootstrap CiviCRM so we can use the SAGE and DAO utilities
-$root = dirname(dirname(dirname(dirname(__FILE__))));
-$_SERVER["HTTP_HOST"] = $_SERVER['SERVER_NAME'] = $optList['site'];
-require_once "$root/drupal/sites/default/civicrm.settings.php";
-require_once "CRM/Core/Config.php";
-require_once "CRM/Core/DAO.php";
 CRM_Core_Config::singleton();
 
 // Retrieve and process the records
-require_once 'utils.php';
 $conn = get_connection($config);
 $get_bronto = ($optList['date'] == 'bronto') ? true : false;
 $result = get_signups($config['district'], $get_bronto, $conn);
@@ -50,28 +57,10 @@ else {
     die(mysql_error($conn));
   }
   else {
-    echo "Marked records as 'reported'.\n";
+    echo "[DEBUG] Marked records as 'reported'.\n";
   }
 }
 
-
-function get_options()
-{
-  $prog = basename(__FILE__);
-  $script_dir = dirname(__FILE__);
-  $short_opts = 'hS:d:n';
-  $long_opts = array('help', 'site=', 'date=', 'dryrun');
-  $usage = "[--help|-h] --site|-S SITE [--date|-d FORMATTED_DATE] [--dryrun|-n]";
-
-  if (! $optList = process_cli_args($short_opts, $long_opts)) {
-    die("$prog $usage\n");
-  }
-  else if(!$optList['site']) {
-    die("Site name is required.\n$prog $usage\n");
-  }
-
-  return $optList;
-} // get_options()
 
 
 function get_signups($district, $bronto, $conn)
@@ -125,7 +114,6 @@ function get_signups($district, $bronto, $conn)
       GROUP BY person.id
       ORDER BY `Signup Date` asc";
 
-  //Connect to the signups SQL database as constructed by the signups ingest script
   if (!$result = mysql_query($sql, $conn)) {
     die(mysql_error($conn)."\n".$sql."\n");
   }
@@ -142,7 +130,7 @@ function process_records($result, $district)
   $list_totals = array();
   $nysenate_records = array();
   $nysenate_emails = array();
-  while($row = mysql_fetch_assoc($result)) {
+  while ($row = mysql_fetch_assoc($result)) {
     // TODO: might need a more robust cleaning method here (extensions, etc)
     $row['Phone'] = str_replace('-', '', $row['Phone']);
 
@@ -192,7 +180,6 @@ function process_records($result, $district)
       $list_totals[$source]['Out of District']['Total'] += 1;
     }
 
-
     // Store the record for later, keep an additional store for emails so that
     // we can easily figure out which emails are already in bluebird later.
     $nysenate_records[] = $row;
@@ -202,11 +189,9 @@ function process_records($result, $district)
   // Grab all bluebird records from the instance, keep an additional store for
   // emails for matching against the nysenate emails.
   // TODO: We might want to filter based on contact status (e.g. deleted)
-  $bluebird_records = array();
   $bluebird_emails = array();
   $dao = CRM_Core_DAO::executeQuery("SELECT email FROM civicrm_email");
   while ($dao->fetch()) {
-    $bluebird_records[] = (array)$dao;
     $bluebird_emails[] = strtolower(trim($dao->email));
   }
 
@@ -226,7 +211,7 @@ function process_records($result, $district)
   }
 
   return array($nysenate_records, $nysenate_emails, $list_totals);
-}
+} // process_records()
 
 
 
@@ -277,6 +262,7 @@ function write_row($worksheet, $row_num, $data)
 
   return $row_num+1;
 } // write_row()
+
 
 
 function get_header($result)
