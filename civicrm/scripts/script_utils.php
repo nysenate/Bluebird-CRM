@@ -41,7 +41,7 @@ function drupal_script_init()
 
 
 
-function civicrm_script_init($shopts = "", $longopts = array(), $session=True)
+function civicrm_script_init($shopts = "", $longopts = array(), $session = true)
 {
   // Determine if script is running from command line, or from web server.
 
@@ -74,7 +74,7 @@ function civicrm_script_init($shopts = "", $longopts = array(), $session=True)
 
 
 
-function civicrm_script_init_cli($shopts, $longopts, $session=True)
+function civicrm_script_init_cli($shopts, $longopts, $session = true)
 {
   $old_incpath = add_packages_to_include_path($session);
   if ($old_incpath === false) {
@@ -118,7 +118,7 @@ function civicrm_script_init_http($longopts)
 
 
 
-function add_packages_to_include_path($session=True)
+function add_packages_to_include_path($session = true)
 {
   $old_incpath = set_include_path(SCRIPT_UTILS_CIVIROOT."/packages".PATH_SEPARATOR.get_include_path());
   if ($session) {
@@ -212,18 +212,19 @@ function get_elapsed_time($start_time = 0)
 } // get_elapsed_time()
 
 
-function bbscript_log($message_level, $message, $var = null){
+function bbscript_log($message_level, $message, $var = null)
+{
   global $BB_LOG_LEVEL, $LOG_LEVELS;
   $log_level = strtoupper($message_level);
   list($log_num, $color) = $LOG_LEVELS[$log_level];
-  if($log_num >= $BB_LOG_LEVEL) {
+  if ($log_num >= $BB_LOG_LEVEL) {
     $timestamp = date('G:i:s');
     $log_level = $color.$log_level."\33[0m";
     // Extra large padding to account for color strings!
     echo sprintf("[%s] %-20s %s\n",$timestamp, "[$log_level]", $message);
 
-    if ( !empty($var) ) {
-      if ( is_array($var) || is_object($var) ) {
+    if (!empty($var)) {
+      if (is_array($var) || is_object($var)) {
         print_r($var);
       }
       else {
@@ -233,17 +234,20 @@ function bbscript_log($message_level, $message, $var = null){
   }
 } // bbscript_log()
 
-function bbscript_log_inline($message_level, $message){
+
+function bbscript_log_inline($message_level, $message)
+{
   global $BB_LOG_LEVEL, $LOG_LEVELS;
   $log_level = strtoupper($message_level);
   list($log_num, $color) = $LOG_LEVELS[$log_level];
-  if($log_num >= $BB_LOG_LEVEL) {
+  if ($log_num >= $BB_LOG_LEVEL) {
     $timestamp = date('G:i:s');
     $log_level = $color.$log_level."\33[0m";
     // Extra large padding to account for color strings!
     echo sprintf("[%s] %-20s %s\r",$timestamp, "[$log_level]", $message);
   }
 } // bbscript_log()
+
 
 function bb_mysql_query($query, $db, $exit_on_fail = false)
 {
