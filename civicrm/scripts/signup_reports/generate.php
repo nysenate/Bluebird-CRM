@@ -128,7 +128,6 @@ function get_signups($district, $bronto, $conn)
       GROUP BY person.id
       ORDER BY `Signup Date` asc";
 
-  //Connect to the signups SQL database as constructed by the signups ingest script
   if (!$result = mysql_query($sql, $conn)) {
     die(mysql_error($conn)."\n".$sql."\n");
   }
@@ -145,7 +144,7 @@ function process_records($res, $district)
   $list_totals = array();
   $nysenate_records = array();
   $nysenate_emails = array();
-  while ($row = mysql_fetch_assoc($res)) {
+  while ($row = mysql_fetch_assoc($result)) {
     // TODO: might need a more robust cleaning method here (extensions, etc)
     $row['Phone'] = str_replace('-', '', $row['Phone']);
 
@@ -195,7 +194,6 @@ function process_records($res, $district)
       $list_totals[$source]['Out of District']['Total'] += 1;
     }
 
-
     // Store the record for later, keep an additional store for emails so that
     // we can easily figure out which emails are already in bluebird later.
     $nysenate_records[] = $row;
@@ -205,11 +203,9 @@ function process_records($res, $district)
   // Grab all bluebird records from the instance, keep an additional store for
   // emails for matching against the nysenate emails.
   // TODO: We might want to filter based on contact status (e.g. deleted)
-  $bluebird_records = array();
   $bluebird_emails = array();
   $dao = CRM_Core_DAO::executeQuery("SELECT email FROM civicrm_email");
   while ($dao->fetch()) {
-    $bluebird_records[] = (array)$dao;
     $bluebird_emails[] = strtolower(trim($dao->email));
   }
 
