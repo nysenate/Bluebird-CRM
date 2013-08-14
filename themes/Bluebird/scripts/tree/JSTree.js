@@ -466,10 +466,14 @@
       _ref = this.dataSettings.pullSets;
       for (k in _ref) {
         v = _ref[k];
+        if (v !== this.displaySettings.defaultTree) {
+          this.cjInstanceSelector.append(_treeData.html[v]);
+        }
         treeBehavior.createOpacityFaker(".top-" + v, "dt", "type-" + v);
       }
+      this.cjInstanceSelector.find(".top-" + this.displaySettings.defaultTree).addClass("active");
       treeBehavior.setCurrentTab(_treeData.treeTabs[this.displaySettings.defaultTree]);
-      cj(this.tagHolderSelector).append("<div class='search'></div>");
+      cj(this.tagHolderSelector).append("<div class='search tagContainer'></div>");
       treeBehavior.autoCompleteStart(this.instance);
       treeBehavior.readDropdownsFromLocal();
       return treeBehavior.enableDropdowns();
@@ -486,7 +490,8 @@
         b = v.replace(" ", "-");
         b = b.toLowerCase();
         treeBehavior.appendTab(b, v);
-        _results.push(_treeData.treeTabs[k] = "tab-" + b);
+        _treeData.treeTabs[k] = "tab-" + b;
+        _results.push(treeBehavior.createTabClick("tab-" + b, "top-" + k));
       }
       return _results;
     };
@@ -517,7 +522,9 @@
         _this = this;
       this.instance = instance;
       this.pageElements = this.instance.get('pageElements');
+      this.dataSettings = this.instance.get('dataSettings');
       this.appendTab("search", "search", true);
+      this.createTabClick("tab-search", "search");
       if (this.cjTagBox == null) {
         this.cjTagBox = cj("." + (this.pageElements.tagHolder.join(".")));
       }
@@ -531,11 +538,12 @@
       };
       cjac = cj("#JSTree-ac");
       searchmonger = cjac.tagACInput("init", params);
-      return cjac.on("keydown", function(event) {
+      return cjac.on("keydown", bbUtils.throttle(function(event) {
         return searchmonger.exec(event, function(terms) {
           console.log(terms);
           if ((terms != null) && (terms.tags != null)) {
             if (terms.tags.length > 0) {
+              console.log("length");
               _this.buildSearchList(terms.tags, terms.term.toLowerCase());
             } else if (terms.tags.length === 0 && terms.term.length >= 3) {
               _this.buildSearchList(null, "No Results Found");
@@ -548,54 +556,141 @@
             }
           }
         });
-      });
+      }, 300));
     },
+    grabParents: function(cjParentId) {
+      var go, newid, parentid;
+      if (this.dataSettings.pullSets.indexOf(cjParentId) !== -1) {
+        return [];
+      }
+      go = true;
+      parentid = [cjParentId];
+      while (go) {
+        newid = this.cjTagBox.find("dt[data-tagid=" + parentid[parentid.length - 1] + "]").data("parentid");
+        if (this.dataSettings.pullSets.indexOf(newid) < 0) {
+          parentid.push(newid);
+        } else {
+          go = false;
+        }
+      }
+      return parentid;
+    },
+    buildParents: function(parentArray) {
+      var clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len;
+      output = "";
+      parentArray.reverse();
+      for (index = _i = 0, _len = parentArray.length; _i < _len; index = ++_i) {
+        parentid = parentArray[index];
+        clonedTag = this.cjTagBox.find("dt[data-tagid=" + parentid + "]").clone();
+        clonedTagLvl = this.parseLvl(clonedTag.attr("class"));
+        clonedName = clonedTag.data('name');
+        if (index === 0) {
+          if (this.alreadyPlaced.indexOf(parentid) < 0) {
+            clonedTag.appendTo(this.cjSearchBox).addClass("open");
+            this.alreadyPlaced.push(parentid);
+            this.cjSearchBox.append(this.createDL(clonedTagLvl, parentid, clonedName));
+          }
+        } else {
+          if (this.alreadyPlaced.indexOf(parentid) < 0) {
+            clonedTag.appendTo(".search #tagDropdown_" + parentArray[index - 1]);
+            cj(".search #tagDropdown_" + parentArray[index - 1]).append(this.createDL(clonedTagLvl, parentid, clonedName));
+          }
+        }
+      }
+      return cj(".search #tagDropdown_" + parentArray[index - 1]);
+    },
+    parseLvl: function(tags) {
+      var tag, tagArr, _i, _len;
+      tagArr = tags.split(" ");
+      for (_i = 0, _len = tagArr.length; _i < _len; _i++) {
+        tag = tagArr[_i];
+        if (tag.indexOf("lv-") !== -1) {
+          return tag.slice(3);
+        }
+      }
+    },
+    createDL: function(lvl, id, name) {
+      return "<dl class='lv-" + lvl + "' id='tagDropdown_" + id + "' data-name='" + name + "'></dl>";
+    },
+    createDT: function(lvl, id, name, parent) {},
     buildSearchList: function(tagList, term) {
-      var allDropdowns, cjCloneChildren, cjCloneTag, key, tag, tagListLength, toShade, value, _i, _len,
+      var allDropdowns, cjCloneChildren, cjCloneTag, cjParentId, foundId, key, tag, tagListLength, toAppendTo, value, _i, _len, _ref,
         _this = this;
+      this.alreadyPlaced = [];
       if (this.cjSearchBox == null) {
         this.cjSearchBox = this.cjTagBox.find(".search");
       }
       this.cjSearchBox.empty();
       if (tagList !== null) {
         tagListLength = tagList.length;
-        toShade = [];
+        this.toShade = [];
+        foundId = [];
+        for (key in tagList) {
+          tag = tagList[key];
+          foundId.push(parseInt(tag.id));
+        }
         for (key in tagList) {
           tag = tagList[key];
           cjCloneTag = this.cjTagBox.find("dt[data-tagid=" + tag.id + "]");
+          cjParentId = cjCloneTag.data("parentid");
           if (this.cloneChildren(cjCloneTag, tagList)) {
+            if (foundId.indexOf(cjParentId) < 0) {
+              if (this.dataSettings.pullSets.indexOf(cjParentId) < 0) {
+                toAppendTo = this.buildParents(this.grabParents(cjParentId));
+              } else {
+                toAppendTo = this.cjSearchBox;
+              }
+            } else {
+              toAppendTo = this.cjSearchBox;
+            }
             cjCloneChildren = this.cjTagBox.find("#tagDropdown_" + tag.id);
-            console.log(cjCloneChildren);
-            cjCloneTag.clone().appendTo(this.cjSearchBox).addClass("shaded");
-            cjCloneChildren.clone().appendTo(this.cjSearchBox);
+            this.toShade.push(parseInt(tag.id));
+            cjCloneTag.clone().appendTo(toAppendTo).addClass("shaded");
+            cjCloneChildren.clone().appendTo(toAppendTo);
           } else {
-            console.log(tag.id);
-            toShade.push(tag.id);
+            this.toShade.push(parseInt(tag.id));
           }
         }
         allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent();
+        bbUtils.returnTime("Start Process");
+        this.processSearchChildren(this.toShade);
+        bbUtils.returnTime("End Shade Dropdowns");
         cj.each(allDropdowns, function(key, value) {
           var tagid;
-          console.log(value);
           tagid = cj(value).data('tagid');
           if (tagid != null) {
             return _this.enableDropdowns(".search dt[data-tagid='" + tagid + "']", true);
           }
         });
+        bbUtils.returnTime("End Dropdowns");
       } else {
         tagListLength = 0;
         this.cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>");
       }
-      for (_i = 0, _len = toShade.length; _i < _len; _i++) {
-        value = toShade[_i];
-        this.toShade(value);
+      _ref = this.toShade;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        value = _ref[_i];
+        this.makeShade(value, term);
       }
       cj("" + this.tabsLoc + " .tab-search").show();
       this.setTabResults(tagListLength, "tab-search");
       return this.showTags("search");
     },
-    toShade: function(tagid) {
-      return cj(".search dt[data-tagid='" + tagid + "']").addClass("shaded");
+    makeShade: function(tagid, term) {
+      var cjItems,
+        _this = this;
+      cjItems = cj(".search dt[data-tagid='" + tagid + "']");
+      cjItems.addClass("shaded");
+      return cj.each(cjItems, function(i, arr) {
+        var initIndex, strBegin, strEnd, strTerm, tagName, toLc;
+        toLc = cj(arr).find(".tag .name").text().toLowerCase();
+        initIndex = toLc.indexOf(term.toLowerCase());
+        strBegin = cj(arr).text().slice(0, initIndex);
+        strEnd = cj(arr).text().slice(term.length + initIndex);
+        strTerm = "<span>" + (cj(arr).text().slice(initIndex, term.length + initIndex)) + "</span>";
+        tagName = cj(arr).find(".tag .name");
+        return tagName.html("" + strBegin + strTerm + strEnd);
+      });
     },
     cloneChildren: function(cjTag, tagList) {
       var hasRelevantPs, key, setReturn, tag;
@@ -658,14 +753,37 @@
       this.instance = instance;
       return cj("#JSTree-ac").off("keydown");
     },
-    processSearchChildren: function(tag) {
-      var dtClass, searchTag, tagid;
-      console.log(tag);
-      dtClass = cj("" + tag);
-      dtClass.addClass("open");
-      tagid = dtClass.data('tagid');
-      searchTag = cj(".search dl#tagDropdown_" + tagid);
-      return searchTag.show();
+    processSearchChildren: function(tagArray) {
+      var alreadyProcessed, parent, parents, tag, _i, _len, _results;
+      alreadyProcessed = [];
+      _results = [];
+      for (_i = 0, _len = tagArray.length; _i < _len; _i++) {
+        tag = tagArray[_i];
+        parents = this.grabParents(tag);
+        _results.push((function() {
+          var _j, _len1, _results1;
+          _results1 = [];
+          for (_j = 0, _len1 = parents.length; _j < _len1; _j++) {
+            parent = parents[_j];
+            if (alreadyProcessed.indexOf(parent) < 0 && parent !== tag) {
+              cj(".search dt[data-tagid='" + parent + "']").addClass("open");
+              cj(".search dl#tagDropdown_" + parent).show();
+              _results1.push(alreadyProcessed.push(parent));
+            } else {
+              _results1.push(void 0);
+            }
+          }
+          return _results1;
+        })());
+      }
+      return _results;
+    },
+    createTabClick: function(tabName, tabTree) {
+      var _this = this;
+      cj(".JSTree-tabs ." + tabName).off("click");
+      return cj(".JSTree-tabs ." + tabName).on("click", function() {
+        return _this.showTags(tabTree);
+      });
     },
     enableDropdowns: function(tag, search) {
       if (tag == null) {
@@ -673,9 +791,6 @@
       }
       if (search == null) {
         search = false;
-      }
-      if (search) {
-        this.processSearchChildren(tag);
       }
       cj(".JSTree " + tag + " .treeButton").off("click");
       return cj(".JSTree " + tag + " .treeButton").on("click", function() {
