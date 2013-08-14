@@ -66,13 +66,14 @@ class CRM_Utils_SAGE
     $request->sendRequest();
     $xml = simplexml_load_string($request->getResponseBody());
 
-    if (self::validateResponse($xml) === false) {
+    if (self::validateResponse($xml) && $xml->validated == 'true') {
+      self::storeAddress($values, $xml, $addr_field);
+      return true;  
+    }
+    else {
       self::warn("Postal lookup for [$addr] has failed.\n");
       return false;
-    }
-
-    self::storeAddress($values, $xml, $addr_field);
-    return true;
+    }    
   } // checkAddress()
   
   
@@ -94,20 +95,19 @@ class CRM_Utils_SAGE
     $request = new HTTP_Request($url);
     $request->addRawPostData(json_encode($addresses));
     $request->sendRequest();
-    return $request->getResponseBody();
     $batchXml = simplexml_load_string($request->getResponseBody());
     
     if ($batchXml && $batchXml->total == count($addresses)) {
       for ($i = 0; $i < $batchXml->results->results->count(); $i++) {
         $xml = $batchXml->results->results[$i];
-        if (self::validateResponse($xml) && $xml->uspsValidated == 'true') {
+        if (self::validateResponse($xml) && $xml->validated == 'true') {
           list($addr_field, $addr) = self::getAddress($rows[$i]);
           self::storeAddress($rows[$i], $xml, $addr_field);
         }
       }
+      return true;
     }
-
-    return $rows;
+    return false;
   } // batchCheckAddress()
 
   /**
@@ -135,14 +135,15 @@ class CRM_Utils_SAGE
     $request->sendRequest();
     $xml = simplexml_load_string($request->getResponseBody());
 
-    if (!self::validateResponse($xml)) {
+    if (self::validateResponse($xml) && $xml->geocoded == 'true') {
+      self::storeGeocodes($values, $xml);  
+    }
+    else {
       //QQQ: Why do we set these values to 'null' instead of ''?
       $values['geo_code_1'] = $values['geo_code_2'] = 'null';
       self::warn("Geocoding for [$params] has failed.");
       return false;
     }
-
-    self::storeGeocodes($values, $xml);
     return true;
   } // geocode()
 
@@ -173,9 +174,9 @@ class CRM_Utils_SAGE
           self::storeGeocodes($rows[$i], $xml, $overwrite_point);
         }
       }
+      return true;
     }
-
-    return $rows;
+    return false;
   }
 
 
@@ -184,8 +185,9 @@ class CRM_Utils_SAGE
   *
   * @param array   &$values              An array representing address and district values.               
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$values}.
+  * @param boolean $overwrite_point      If true, geocode will be written by default to {$values}
   */
-  public static function distAssign(&$values, $overwrite_districts=true)
+  public static function distAssign(&$values, $overwrite_districts=true, $overwrite_point=true)
   {
     list($addr_field, $addr) = self::getAddress($values);
     if (!$addr) {
@@ -209,13 +211,19 @@ class CRM_Utils_SAGE
     $xml = simplexml_load_string($request->getResponseBody());
 
     // Check the response for validity
-    if (!self::validateResponse($xml)) {
+    if (self::validateResponse($xml)) {
+      if ($xml->districtAssigned == 'true') {
+        self::storeDistricts($values, $xml, $overwrite_districts);  
+      }
+      if ($xml->geocoded == 'true') {
+        self::storeGeocodes($values, $xml, $overwrite_point);  
+      }      
+      return true;  
+    }
+    else {
       self::warn("Distassign for [$params] has failed.");
       return false;
-    }
-
-    self::storeDistricts($values, $xml, $overwrite_districts);
-    return true;
+    }    
   } // distAssign()
 
 
@@ -224,8 +232,9 @@ class CRM_Utils_SAGE
   *
   * @param array   &$rows  An array of rows that each contain an array with address and district columms.
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$rows}
+  * @param boolean $overwrite_point      If true, geocode will be written by default to {$rows}
   */
-  public static function batchDistAssign(&$rows, $overwrite_districts=true)
+  public static function batchDistAssign(&$rows, $overwrite_districts=true, $overwrite_point=true)
   {
     $addresses = self::getAddressesFromRows($rows);
 
@@ -242,13 +251,18 @@ class CRM_Utils_SAGE
     if ($batchXml && $batchXml->total == count($addresses)) {
       for ($i = 0; $i < $batchXml->results->results->count(); $i++) {
         $xml = $batchXml->results->results[$i];
-        if (self::validateResponse($xml) && $xml->districtAssigned == 'true') {
-          self::storeDistricts($rows[$i], $xml, $overwrite_districts);
+        if (self::validateResponse($xml)) {
+          if ($xml->districtAssigned == 'true') {
+            self::storeDistricts($rows[$i], $xml, $overwrite_districts);  
+          }
+          if ($xml->geocoded == 'true') {
+            self::storeGeocodes($rows[$i], $xml, $overwrite_point);
+          }          
         }
       }
+      return true;
     }
-
-    return $rows; 
+    return false;
   }
 
 
@@ -274,18 +288,22 @@ class CRM_Utils_SAGE
     $request->sendRequest();
     $xml = simplexml_load_string($request->getResponseBody());
 
-    if (!self::validateResponse($xml)) {
+    if (self::validateResponse($xml)) {
+      self::storeDistricts($values, $xml, $overwrite_districts);
+      return true;  
+    }
+    else {
       self::warn("Lookup for [$params] has failed.");
       return false;
-    }
-
-    self::storeDistricts($values, $xml, $overwrite_districts);
-    return true;
+    }    
   } // lookupFromPoint()
 
   
   /**
+  * Performs a bluebird lookup by point and assigns district information to {$rows}.
   *
+  * @param array   &$rows  An array of rows that each contain an array point columms.
+  * @param boolean $overwrite_districts  If true, districts will be written by default to {$rows}.
   */
   public static function batchLookupFromPoint(&$rows, $overwrite_districts=true)
   {
@@ -309,9 +327,9 @@ class CRM_Utils_SAGE
           self::storeDistricts($rows[$i], $xml, $overwrite_districts);                
         }
       }
+      return true;
     }
-
-    return $rows;    
+    return false;   
   }
 
 
@@ -388,9 +406,9 @@ class CRM_Utils_SAGE
   */
   public static function batchLookup(&$rows, $overwrite_districts=true, $overwrite_point=true)
   {
-    $addresses = getAddressesFromRows($rows);
+    $addresses = self::getAddressesFromRows($rows);
     
-    $url = '/district/assign/batch?format=xml&';
+    $url = '/district/bluebird/batch?format=xml&';
     $params = http_build_query(array(
         'key' => SAGE_API_KEY
       ), '', '&');
@@ -406,12 +424,8 @@ class CRM_Utils_SAGE
         $xml = $batchXml->results->results[$i];
         if (self::validateResponse($xml)) {
           if ($xml->uspsValidated == 'true') {
-            // Don't change imported addresses, assume they are correct as given.
             list($addr_field, $addr) = self::getAddress($rows[$i]);
-            $url_components = explode(  '/', CRM_Utils_System::currentPath() );
-            if (count($url_components) > 1 && $url_components[1] != 'import') {
-              self::storeAddress($rows[$i], $xml, $addr_field);
-            }               
+            self::storeAddress($rows[$i], $xml, $addr_field);               
           }
           if ($xml->geocoded == 'true') {
             self::storeGeocodes($rows[$i], $xml, $overwrite_point);
@@ -420,10 +434,10 @@ class CRM_Utils_SAGE
             self::storeDistricts($rows[$i], $xml, $overwrite_districts);
           }   
         }
-      }  
+      }
+      return true;  
     }
-
-    return $rows;
+    return false;
   }
   
   /**
@@ -544,10 +558,10 @@ class CRM_Utils_SAGE
   protected static function storeGeocodes(&$values, $xml, $overwrite = false)
   {
     //Forced type cast required to convert the simplexml objects to strings
-    if ($overwrite || !$values["geo_code_1"]) {
+    if ($overwrite || empty($values["geo_code_1"]) || !$values["geo_code_1"]) {
      $values["geo_code_1"] = (string)$xml->geocode->lat;
     }
-    if ($overwrite || !$values["geo_code_2"]) {
+    if ($overwrite || empty($values["geo_code_2"]) || !$values["geo_code_2"]) {
      $values["geo_code_2"] = (string)$xml->geocode->lon;
     }
   } // storeGeocodes()
@@ -579,25 +593,25 @@ class CRM_Utils_SAGE
     // see the nyss_sage module, where district should not be overwritten.
     // It is always the case that they should be filled in where blank.
     // Forced type cast required to convert the simplexml objects to strings
-    if ($overwrite || !$values["custom_46_$id"]) {
+    if ($overwrite || empty($values["custom_46_$id"]) || !$values["custom_46_$id"]) {
       $values["custom_46_$id"] = (string)$xml->districts->congressional->district;
     }
-    if ($overwrite || !$values["custom_47_$id"]) {
+    if ($overwrite || empty($values["custom_47_$id"]) || !$values["custom_47_$id"]) {
       $values["custom_47_$id"] = (string)$xml->districts->senate->district;
     }
-    if ($overwrite || !$values["custom_48_$id"]) {
+    if ($overwrite || empty($values["custom_48_$id"]) || !$values["custom_48_$id"]) {
       $values["custom_48_$id"] = (string)$xml->districts->assembly->district;
     }
-    if ($overwrite || !$values["custom_49_$id"]) {
+    if ($overwrite || empty($values["custom_49_$id"]) || !$values["custom_49_$id"]) {
       $values["custom_49_$id"] = (string)$xml->districts->election->district;
     }
-    if ($overwrite || !$values["custom_50_$id"]) {
+    if ($overwrite || empty($values["custom_50_$id"]) || !$values["custom_50_$id"]) {
       $values["custom_50_$id"] = (string)$xml->districts->county->district;
     }
-    if ($overwrite || !$values["custom_52_$id"]) {
+    if ($overwrite || empty($values["custom_52_$id"]) || !$values["custom_52_$id"]) {
       $values["custom_52_$id"] = (string)$xml->districts->town->district;
     }
-    if ($overwrite || !$values["custom_54_$id"]) {
+    if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
     }
   }
