@@ -8,10 +8,10 @@ require_once realpath("$this_dir/../bluebird_config.php");
 require_once 'utils.php';
 
 // Process the command line arguments
-$shortopts = 'hS:d:n';
-$longopts = array('help', 'site=', 'date=', 'dryrun');
+$shortopts = 'hd:on';
+$longopts = array('help', 'date=', 'overwrite', 'dryrun');
 $stdusage = civicrm_script_usage();
-$usage = "[--help|-h] [--date|-d FORMATTED_DATE] [--dryrun|-n]";
+$usage = "[--help|-h] [--date|-d FORMATTED_DATE] [--overwrite] [--dryrun|-n]";
 $optList = civicrm_script_init($shortopts, $longopts);
 if ($optList === null) {
   echo "Usage: $prog  $stdusage  $usage\n";
@@ -19,7 +19,8 @@ if ($optList === null) {
 }
 
 // Load the config file
-$config = get_bluebird_instance_config($optList['site']);
+$site = $optList['site'];
+$config = get_bluebird_instance_config($site);
 if ($config == null) {
   die("Unable to continue without a valid configuration.\n");
 }
@@ -29,15 +30,29 @@ CRM_Core_Config::singleton();
 // Retrieve and process the records
 $conn = get_connection($config);
 $get_bronto = ($optList['date'] == 'bronto') ? true : false;
-$result = get_signups($config['district'], $get_bronto, $conn);
-$header = get_header($result);
-list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $config['district']);
+$resultResource = get_signups($config['district'], $get_bronto, $conn);
+$header = get_header($resultResource);
+$resultArray = process_records($resultResource, $config['district']);
+list($nysenate_records, $list_totals) = $resultArray;
+$recCount = count($nysenate_records);
+echo "[DEBUG] Pulled $recCount signups for instance [$site]\n";
 
 // Create the report
 $tdate = (isset($optList['date'])) ? $optList['date'] : null;
 $filename = get_report_path($config, $tdate);
+
+if (file_exists($filename)) {
+  if ($optList['overwrite']) {
+    echo "[WARN] File [$filename] already exists and will be overwritten.\n";
+  }
+  else {
+    echo "[ERROR] File [$filename] already exists; use --overwrite to overwrite it\n";
+    exit(1);
+  }
+}
+
 create_report($filename, $header, $nysenate_records, $list_totals);
-echo "Created signups report as [$filename].\n";
+echo "[DEBUG] Created signups report with $recCount signups as [$filename].\n";
 
 // Mark the records as successfully processed
 if ($optList['dryrun']) {
@@ -57,7 +72,11 @@ else {
     die(mysql_error($conn));
   }
   else {
-    echo "[DEBUG] Marked records as 'reported'.\n";
+    $reportCount = mysql_affected_rows($conn);
+    echo "[DEBUG] Marked $reportCount records as 'reported'.\n";
+    if ($reportCount != $recCount) {
+      echo "[ERROR] Reporting Mismatch!  Pulled $recCount signups into spreadsheet, but updated $reportCount signups in database!\n";
+    }
   }
 }
 
@@ -80,9 +99,9 @@ function get_signups($district, $bronto, $conn)
   //      list.title='New York Senate Updates'
   //      person.district=senator.district
   //
-  // Because we use reflection on the result to generate worksheet headers we have
-  // custom named all of the fields and inserted a few new ones with deafult values
-  // that we will override later.
+  // All fields are custom-named, since reflection is used on the result
+  // to generate the worksheet headers.
+
   $sql = "SELECT 'FALSE' AS `In Bluebird`,
            person.first_name AS `First Name`,
            person.last_name AS `Last Name`,
@@ -109,7 +128,7 @@ function get_signups($district, $bronto, $conn)
       WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
         AND signup.reported=0
         AND senator.active=1
-        AND committee.active=1
+        AND ( committee.active=1 OR committee.active is NULL )
         AND person.bronto=".(($bronto)?'1':'0')."
       GROUP BY person.id
       ORDER BY `Signup Date` asc";
@@ -123,14 +142,14 @@ function get_signups($district, $bronto, $conn)
 
 
 
-function process_records($result, $district)
+function process_records($res, $district)
 {
   // Pull all the matching people into memory and clean up the fields as we go.
   // TODO: This could be a bit on he memory intensive side in the distant future
   $list_totals = array();
   $nysenate_records = array();
   $nysenate_emails = array();
-  while ($row = mysql_fetch_assoc($result)) {
+  while ($row = mysql_fetch_assoc($res)) {
     // TODO: might need a more robust cleaning method here (extensions, etc)
     $row['Phone'] = str_replace('-', '', $row['Phone']);
 
@@ -195,8 +214,10 @@ function process_records($result, $district)
     $bluebird_emails[] = strtolower(trim($dao->email));
   }
 
-  // Mark all the nysenate signups that bluebird already has contacts for
+  // Mark all the nysenate signups that Bluebird already has contacts for
   // Accumulate the totals for reporting later on.
+  // Note that the keys in $nysenate_emails correspond to the same
+  // keys in $nysenate_records
   $in_bluebird = array_intersect($nysenate_emails, $bluebird_emails);
   foreach ($in_bluebird as $key => $email) {
     $record = &$nysenate_records[$key];
@@ -210,7 +231,7 @@ function process_records($result, $district)
     }
   }
 
-  return array($nysenate_records, $nysenate_emails, $list_totals);
+  return array($nysenate_records, $list_totals);
 } // process_records()
 
 
@@ -265,12 +286,12 @@ function write_row($worksheet, $row_num, $data)
 
 
 
-function get_header($result)
+function get_header($res)
 {
   $header = array();
-  $num_fields = mysql_num_fields($result);
+  $num_fields = mysql_num_fields($res);
   for ($i = 0; $i < $num_fields; $i++) {
-    $header[$i] = mysql_field_name($result, $i);
+    $header[$i] = mysql_field_name($res, $i);
   }
   return $header;
 } // get_header()
