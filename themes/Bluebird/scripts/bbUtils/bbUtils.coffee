@@ -98,7 +98,32 @@ class window.bb
       s[j] = x
       res += String.fromCharCode(v.charCodeAt(y) ^ s[(s[i] + s[j]) % 256])
     res
-
+  debounce: (func, threshold, execAsap) ->
+    timeout = null
+    (args...) ->
+      obj = this
+      delayed = ->
+        func.apply(obj, args) unless execAsap
+        timeout = null
+      if timeout
+        clearTimeout(timeout)
+      else if (execAsap)
+        func.apply(obj, args)
+      timeout = setTimeout delayed, threshold || 100
+  throttle: (fn, delay) ->
+    return fn if delay is 0
+    timer = false
+    return ->
+      return if timer
+      timer = true
+      setTimeout (-> timer = false), delay unless delay is -1
+      fn arguments...
+  returnTime: (note = "") ->
+    time = new Date()
+    rTime = "#{time.getMinutes()}:#{time.getSeconds()}:#{time.getMilliseconds()}"
+    if note.length > 0
+      console.log(note)
+    console.log(rTime)
 window.bbUtils = new bb
 # when you go new bb... none you're not extending ONTO bb, you're extending BB. which doesn't work, so...
 # you need to merge everything into BB and then call it.
