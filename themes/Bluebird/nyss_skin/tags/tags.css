@@ -101,6 +101,8 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
         cursor: pointer; }
   #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -64px -15px; }
+  #BBTreeContainer .BBTree .shaded .name span {
+    font-weight: bold; }
   #BBTreeContainer .BBTree .transparancyBox {
     position: relative;
     z-index: 1;
@@ -114,10 +116,16 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
   #BBTreeContainer .BBTree .search {
     display: none; }
   #BBTreeContainer .BBTree .search .transparancyBox.type-291 {
-    background-color: rgba(150, 226, 164, 0.5); }
+    background-color: rgba(150, 226, 164, 0.35); }
   #BBTreeContainer .BBTree .search .transparancyBox.type-296 {
-    background-color: rgba(242, 209, 119, 0.5); }
+    background-color: rgba(242, 209, 119, 0.35); }
   #BBTreeContainer .BBTree .search .transparancyBox.type-292 {
+    background-color: rgba(175, 232, 239, 0.35); }
+  #BBTreeContainer .BBTree .search .shaded .transparancyBox.type-291 {
+    background-color: rgba(150, 226, 164, 0.5); }
+  #BBTreeContainer .BBTree .search .shaded .transparancyBox.type-296 {
+    background-color: rgba(242, 209, 119, 0.5); }
+  #BBTreeContainer .BBTree .search .shaded .transparancyBox.type-292 {
     background-color: rgba(175, 232, 239, 0.5); }
 #BBTreeContainer .BBTree-menu {
   width: 100%; }
@@ -173,3 +181,7 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     padding-left: 3px;
     margin: 0px;
     height: 20px; }
+#BBTreeContainer .tagContainer.active {
+  display: block; }
+#BBTreeContainer .tagContainer {
+  display: none; }

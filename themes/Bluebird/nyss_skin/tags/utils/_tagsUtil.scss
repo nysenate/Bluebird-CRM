@@ -125,7 +125,7 @@
     font-weight:bold;
   }
 }
-@mixin tag-lightness($color) {
-  background-color:rgba(lighten($color,15%),.5);
+@mixin tag-lightness($color,$opacity) {
+  background-color:rgba(lighten($color,15%),$opacity);
 }
 @import "extends";

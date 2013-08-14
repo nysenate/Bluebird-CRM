@@ -1,11 +1,22 @@
 .search {
   .transparancyBox.type-291 {
-    @include tag-lightness($issueCodesColor)
+    @include tag-lightness($issueCodesColor,.35)
   }
   .transparancyBox.type-296 {
-    @include tag-lightness($keywordsColor)
+    @include tag-lightness($keywordsColor,.35)
   }
   .transparancyBox.type-292 {
-    @include tag-lightness($positionsColor)
+    @include tag-lightness($positionsColor,.35)
+  }
+  .shaded {
+    .transparancyBox.type-291 {
+      @include tag-lightness($issueCodesColor,.5)
+    }
+    .transparancyBox.type-296 {
+      @include tag-lightness($keywordsColor,.5)
+    }
+    .transparancyBox.type-292 {
+      @include tag-lightness($positionsColor,.5)
+    }
   }
 }

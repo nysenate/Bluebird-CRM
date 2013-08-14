@@ -21,7 +21,12 @@ dt {
   }
 }
 .shaded {
-
+  .name {
+    span {
+      font-weight:bold;
+    }
+  }
+  
 }
 .transparancyBox {
   position: relative;
