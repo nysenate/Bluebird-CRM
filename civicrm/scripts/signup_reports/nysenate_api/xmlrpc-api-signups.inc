@@ -47,6 +47,7 @@ class SignupGet extends drupalService
     $this->key[] = new xmlrpcval($params['limit'], "int");
     $message = new xmlrpcmsg($this->methodName, $this->key);
     $result = $this->client->send($message);
-    return xmlrpc_decode($result->value());
+    $xml = str_replace("\0", '', $result->value());
+    return xmlrpc_decode($xml);
   }
 }
