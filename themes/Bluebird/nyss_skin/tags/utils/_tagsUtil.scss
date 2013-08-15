@@ -116,12 +116,12 @@
   }
 }
 @mixin in-and-out-hover-opacity($color) {
-  background-color:rgba(lighten($color,5%),.7);
+  background-color:rgba(lighten($color,10%),.6);
   &:hover {
     background-color:rgba($color,1);
   }
   &.active {
-    background-color:rgba($color,.7);
+    background-color:rgba($color,.8);
     font-weight:bold;
   }
 }
