@@ -12,7 +12,7 @@
       menuElement: ".JSTree-me",
       source: "",
       minLength: 3,
-      delay: 100
+      delay: 300
     };
     _jqcache = {
       samplequery: ""

@@ -177,26 +177,53 @@ treeBehavior =
       theme: "JSTree"
     cjac = cj("#JSTree-ac")
     searchmonger = cjac.tagACInput("init",params)
-    # REALLY NEED TO START SEPARATING THIS OUT
-    # and that definitely should be debounce
-    cjac.on "keydown", bbUtils.throttle((event) =>
-      searchmonger.exec(event, (terms) =>
-        openLeg = new OpenLeg
-        console.log terms
-        if terms? && terms.tags?
-          openLeg.query({"term":terms.term}, (results) =>
-            console.log results
-            if terms.tags.length > 0
-              @buildSearchList(terms.tags, terms.term.toLowerCase())
-            else if terms.tags.length == 0 and terms.term.length >= 3
-              @buildSearchList(null, "No Results Found")
-          )
-        if cjac.val().length < 3
-          if _treeVisibility.currentTree == "search"
-            @showTags _treeVisibility.previousTree
-          cj("#{@tabsLoc} .tab-search").hide() 
-      )
-    300)
+    cjac.on "keydown", ((event) =>
+      console.log searchmonger
+      @filterKeydownEvents event,searchmonger,cjac
+    )
+
+    # bbUtils.debounce((event) =>
+    #   
+    # 500)
+
+  # filter keys first
+
+  filterKeydownEvents: (event,searchmonger,cjac) ->
+    console.log searchmonger
+    keyCode = bbUtils.keyCode(event)
+    switch keyCode.type
+      when "directioanl"
+        return @moveDropdown(keyCode.type)
+      when "letters","delete","math","punctuation"
+        return @execSearch(event,searchmonger,cjac)
+      else
+        return false
+
+  # then check length
+
+  # then do terms
+  execSearch: (event,searchmonger,cjac) ->
+    console.log searchmonger
+    searchmonger.exec(event, (terms) =>
+      openLeg = new OpenLeg
+      console.log terms
+      if terms? && terms.tags?
+        openLeg.query({"term":terms.term}, (results) =>
+          console.log results
+          if terms.tags.length > 0
+            @buildSearchList(terms.tags, terms.term.toLowerCase())
+          else if terms.tags.length == 0 and terms.term.length >= 3
+            @buildSearchList(null, "No Results Found")
+        )
+      if cjac.val().length < 3
+        if _treeVisibility.currentTree == "search"
+          @showTags _treeVisibility.previousTree
+        cj("#{@tabsLoc} .tab-search").hide() 
+    )
+
+  # or do direction
+  moveDropdown: (keyCode) ->
+
 
   grabParents: (cjParentId) ->
     return [] if @dataSettings.pullSets.indexOf(cjParentId) != -1

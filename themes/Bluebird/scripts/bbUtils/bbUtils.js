@@ -134,6 +134,345 @@
       return console.log(rTime);
     };
 
+    bb.prototype.keyCode = function(evt) {
+      var arr, charCode, keyCode, ktype, rData, _i, _results;
+      charCode = evt.which != null ? evt.which : event.keyCode;
+      keyCode = {
+        "modifier": [16, 17, 18, 19, 20, 91, 92, 93, 144, 145],
+        "number": [96, 97, 98, 99, 100, 101, 102, 103, 104].concat([48, 49, 50, 51, 52, 53, 54, 55, 56]),
+        "directional": [9, 13, 27, 33, 34, 35, 36, 37, 38, 39, 40],
+        "delete": [8, 46],
+        "insert": [45],
+        "math": [106, 107, 108, 109, 110],
+        "function": [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122],
+        "punctuation": [219, 220, 221].concat([186, 187, 188, 189, 190, 191]),
+        "letters": (function() {
+          _results = [];
+          for (_i = 65; _i < 90; _i++){ _results.push(_i); }
+          return _results;
+        }).apply(this)
+      };
+      rData = {};
+      console.log(charCode);
+      for (ktype in keyCode) {
+        arr = keyCode[ktype];
+        if (arr.indexOf(charCode) >= 0) {
+          rData.type = ktype;
+        }
+      }
+      switch (rData.type) {
+        case "modifier":
+          switch (charCode) {
+            case 16:
+              rData.name = "shift";
+              break;
+            case 17:
+              rData.name = "ctrl";
+              break;
+            case 18:
+              rData.name = "alt";
+              break;
+            case 19:
+              rData.name = "pause/break";
+              break;
+            case 20:
+              rData.name = "caps lock";
+              break;
+            case 93:
+              rData.name = "select key";
+              break;
+            case 91:
+              rData.name = "left window";
+              break;
+            case 92:
+              rData.name = "right window";
+              break;
+            case 144:
+              rData.name = "num lock";
+              break;
+            case 145:
+              rData.name = "scroll lock";
+          }
+          rData.char = false;
+          break;
+        case "number":
+          switch (charCode) {
+            case 48:
+            case 96:
+              rData.name = "0";
+              break;
+            case 49:
+            case 97:
+              rData.name = "1";
+              break;
+            case 50:
+            case 98:
+              rData.name = "2";
+              break;
+            case 51:
+            case 99:
+              rData.name = "3";
+              break;
+            case 52:
+            case 100:
+              rData.name = "4";
+              break;
+            case 53:
+            case 101:
+              rData.name = "5";
+              break;
+            case 54:
+            case 102:
+              rData.name = "6";
+              break;
+            case 55:
+            case 103:
+              rData.name = "7";
+              break;
+            case 56:
+            case 104:
+              rData.name = "8";
+              break;
+            case 57:
+            case 105:
+              rData.name = "9";
+          }
+          rData.char = true;
+          break;
+        case "directional":
+          switch (charCode) {
+            case 9:
+              rData.name = "tab";
+              break;
+            case 13:
+              rData.name = "enter";
+              break;
+            case 27:
+              rData.name = "escape";
+              break;
+            case 33:
+              rData.name = "page up";
+              break;
+            case 34:
+              rData.name = "page down";
+              break;
+            case 35:
+              rData.name = "end";
+              break;
+            case 36:
+              rData.name = "home";
+              break;
+            case 37:
+              rData.name = "left arrow";
+              break;
+            case 38:
+              rData.name = "up arrow";
+              break;
+            case 39:
+              rData.name = "right arrow";
+              break;
+            case 40:
+              rData.name = "down arrow";
+          }
+          rData.char = false;
+          break;
+        case "delete":
+          switch (charCode) {
+            case 8:
+              rData.name = "backspace";
+              break;
+            case 46:
+              rData.name = "delete";
+          }
+          rData.char = false;
+          break;
+        case "insert":
+          rData.name = "insert";
+          rData.char = false;
+          break;
+        case "math":
+          switch (charCode) {
+            case 106:
+              rData.name = "multiply";
+              break;
+            case 107:
+              rData.name = "add";
+              break;
+            case 109:
+              rData.name = "subtract";
+              break;
+            case 110:
+              rData.name = "decimal point";
+              break;
+            case 111:
+              rData.name = "divide";
+          }
+          rData.char = false;
+          break;
+        case "function":
+          switch (charCode) {
+            case 112:
+              rData.name = "F1";
+              break;
+            case 113:
+              rData.name = "F2";
+              break;
+            case 114:
+              rData.name = "F3";
+              break;
+            case 115:
+              rData.name = "F4";
+              break;
+            case 116:
+              rData.name = "F5";
+              break;
+            case 117:
+              rData.name = "F6";
+              break;
+            case 118:
+              rData.name = "F7";
+              break;
+            case 119:
+              rData.name = "F8";
+              break;
+            case 120:
+              rData.name = "F9";
+              break;
+            case 121:
+              rData.name = "F10";
+              break;
+            case 122:
+              rData.name = "F11";
+              break;
+            case 123:
+              rData.name = "F12";
+          }
+          rData.char = false;
+          break;
+        case "punctuation":
+          switch (charCode) {
+            case 186:
+              rData.name = ";";
+              break;
+            case 187:
+              rData.name = "=";
+              break;
+            case 188:
+              rData.name = ",";
+              break;
+            case 189:
+              rData.name = "-";
+              break;
+            case 190:
+              rData.name = ".";
+              break;
+            case 191:
+              rData.name = "/";
+              break;
+            case 192:
+              rData.name = "`";
+              break;
+            case 219:
+              rData.name = "[";
+              break;
+            case 220:
+              rData.name = "\\";
+              break;
+            case 221:
+              rData.name = "]";
+              break;
+            case 222:
+              rData.name = "'";
+          }
+          rData.char = true;
+          break;
+        case "letters":
+          switch (charCode) {
+            case 65:
+              rData.name = "a";
+              break;
+            case 66:
+              rData.name = "b";
+              break;
+            case 67:
+              rData.name = "c";
+              break;
+            case 68:
+              rData.name = "d";
+              break;
+            case 69:
+              rData.name = "e";
+              break;
+            case 70:
+              rData.name = "f";
+              break;
+            case 71:
+              rData.name = "g";
+              break;
+            case 72:
+              rData.name = "h";
+              break;
+            case 73:
+              rData.name = "i";
+              break;
+            case 74:
+              rData.name = "j";
+              break;
+            case 75:
+              rData.name = "k";
+              break;
+            case 76:
+              rData.name = "l";
+              break;
+            case 77:
+              rData.name = "m";
+              break;
+            case 78:
+              rData.name = "n";
+              break;
+            case 79:
+              rData.name = "o";
+              break;
+            case 80:
+              rData.name = "p";
+              break;
+            case 81:
+              rData.name = "q";
+              break;
+            case 82:
+              rData.name = "r";
+              break;
+            case 83:
+              rData.name = "s";
+              break;
+            case 84:
+              rData.name = "t";
+              break;
+            case 85:
+              rData.name = "u";
+              break;
+            case 86:
+              rData.name = "v";
+              break;
+            case 87:
+              rData.name = "w";
+              break;
+            case 88:
+              rData.name = "x";
+              break;
+            case 89:
+              rData.name = "y";
+              break;
+            case 90:
+              rData.name = "z";
+          }
+          if (evt.shiftKey) {
+            rData.name = rData.name.toUpperCase();
+          }
+      }
+      return rData;
+    };
+
     return bb;
 
   })();

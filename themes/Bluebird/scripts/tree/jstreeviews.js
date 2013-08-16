@@ -222,32 +222,55 @@ treeBehavior = {
     };
     cjac = cj("#JSTree-ac");
     searchmonger = cjac.tagACInput("init", params);
-    return cjac.on("keydown", bbUtils.throttle(function(event) {
-      return searchmonger.exec(event, function(terms) {
-        var openLeg;
-        openLeg = new OpenLeg;
-        console.log(terms);
-        if ((terms != null) && (terms.tags != null)) {
-          openLeg.query({
-            "term": terms.term
-          }, function(results) {
-            console.log(results);
-            if (terms.tags.length > 0) {
-              return _this.buildSearchList(terms.tags, terms.term.toLowerCase());
-            } else if (terms.tags.length === 0 && terms.term.length >= 3) {
-              return _this.buildSearchList(null, "No Results Found");
-            }
-          });
-        }
-        if (cjac.val().length < 3) {
-          if (_treeVisibility.currentTree === "search") {
-            _this.showTags(_treeVisibility.previousTree);
-          }
-          return cj("" + _this.tabsLoc + " .tab-search").hide();
-        }
-      });
-    }, 300));
+    return cjac.on("keydown", (function(event) {
+      console.log(searchmonger);
+      return _this.filterKeydownEvents(event, searchmonger, cjac);
+    }));
   },
+  filterKeydownEvents: function(event, searchmonger, cjac) {
+    var keyCode;
+    console.log(searchmonger);
+    keyCode = bbUtils.keyCode(event);
+    switch (keyCode.type) {
+      case "directioanl":
+        return this.moveDropdown(keyCode.type);
+      case "letters":
+      case "delete":
+      case "math":
+      case "punctuation":
+        return this.execSearch(event, searchmonger, cjac);
+      default:
+        return false;
+    }
+  },
+  execSearch: function(event, searchmonger, cjac) {
+    var _this = this;
+    console.log(searchmonger);
+    return searchmonger.exec(event, function(terms) {
+      var openLeg;
+      openLeg = new OpenLeg;
+      console.log(terms);
+      if ((terms != null) && (terms.tags != null)) {
+        openLeg.query({
+          "term": terms.term
+        }, function(results) {
+          console.log(results);
+          if (terms.tags.length > 0) {
+            return _this.buildSearchList(terms.tags, terms.term.toLowerCase());
+          } else if (terms.tags.length === 0 && terms.term.length >= 3) {
+            return _this.buildSearchList(null, "No Results Found");
+          }
+        });
+      }
+      if (cjac.val().length < 3) {
+        if (_treeVisibility.currentTree === "search") {
+          _this.showTags(_treeVisibility.previousTree);
+        }
+        return cj("" + _this.tabsLoc + " .tab-search").hide();
+      }
+    });
+  },
+  moveDropdown: function(keyCode) {},
   grabParents: function(cjParentId) {
     var go, newid, parentid;
     if (this.dataSettings.pullSets.indexOf(cjParentId) !== -1) {

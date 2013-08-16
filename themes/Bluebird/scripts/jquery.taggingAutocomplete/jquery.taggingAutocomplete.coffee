@@ -26,7 +26,7 @@
     source: ""
     minLength: 3
     # disabled: true
-    delay: 100
+    delay: 300
 
   _jqcache =
     samplequery: ""
