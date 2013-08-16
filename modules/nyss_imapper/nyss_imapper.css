@@ -11,7 +11,7 @@
 .imapperbox #matchCheck-popup,
 .imapperbox #help-popup,
 .imapperbox #AdditionalEmail-popup,
-.imapperbox #loading-popup{ display: none;}
+.imapperbox #loading-popup{display: none;}
 
 .page-civicrm-imap .ui-tabs .ui-tabs-nav {background-color: #f8f8f8!important;}
 .page-civicrm-imap .ui-tabs .ui-state-hover a{background-color: #bbcbdf!important;}
@@ -19,36 +19,36 @@
 
 
 /* Popup - Delete Has red for warning */
-#ui-dialog-title-delete-confirm{ color: red;}
+#ui-dialog-title-delete-confirm{color: red;}
 .delete_popup_class .primary_button span{background: red; color: #fff; font-weight: bold;}
 .delete_popup_class .primary_button span:hover{background: #ffc6c6; color: #000; font-weight: bold;}
 .delete_popup_class .ui-widget-content,
 .delete_popup_class #delete-confirm,
 .ui-widget-content.delete_popup_class{background: #ffe8e8;}
-.delete_popup_class #delete-confirm{ margin-bottom: 0;}
-.delete_popup_class .ui-dialog-titlebar { background: red; }
-.delete_popup_class #ui-dialog-title-delete-confirm{ color: #fff; font-weight: bold;}
+.delete_popup_class #delete-confirm{margin-bottom: 0;}
+.delete_popup_class .ui-dialog-titlebar {background: red; }
+.delete_popup_class #ui-dialog-title-delete-confirm{color: #fff; font-weight: bold;}
 
 /* Popup -  tagging specific  */
 .page-civicrm-imap .ui-dialog-buttonpane{background: #ccc !important;}
 
 /* Popup -  margin reset  */
-.page-civicrm-imap .ui-dialog .ui-dialog-content{ padding: 0; margin: 0;}
+.page-civicrm-imap .ui-dialog .ui-dialog-content{padding: 0; margin: 0;}
 
 /* IMAP General styles */
-pre{ white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap;  white-space: -o-pre-wrap; word-wrap: break-word;}
+pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap;  white-space: -o-pre-wrap; word-wrap: break-word;}
 .imapperbox .clear {clear: both;}
 .imapperbox .hidden,
 .page-civicrm-imap .hidden{display:none;}
 
-.imapperbox h1{ padding:10px 3px; margin-bottom: 0;}
-.imapperbox h1 small{ color:#999; font-size: 20px;}
+.imapperbox h1{padding:10px 3px; margin-bottom: 0;}
+.imapperbox h1 small{color:#999; font-size: 20px;}
 
 
 /* IMAP - Table View */
-.imapperbox .dataTables_length{width: 125px !important;float: left !important;}
+.imapperbox .dataTables_length{width: 125px !important; float: left !important;}
 .imapperbox #sortable_results_info{display: none !important;}
-.imapperbox .list_header{ font-weight: bold;}
+.imapperbox .list_header{font-weight: bold;}
 .imapperbox .imap_checkbox_header,
 .imapperbox .imap_name_header,
 .imapperbox .imap_subject_header,
@@ -57,10 +57,10 @@ pre{ white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap;
 .imapperbox .imap_forwarded_header,
 .imapperbox .imap_action_headers{font-weight: bold!important; color:#999!important; }
 tr.odd td.sorting_1 {background-color:#f1f1f1!important;}
-thead .sorting{ cursor:pointer;cursor:hand }
-thead .sorting:hover{ background-color:#f8f8f8!important;}
+thead .sorting{cursor:pointer; cursor:hand }
+thead .sorting:hover{background-color:#f8f8f8!important;}
 thead .sorting_desc,
-thead .sorting_asc{ background-color:#f1f1f1!important;}
+thead .sorting_asc{background-color:#f1f1f1!important;}
 
 /* IMAP - Table View - Row */
 .imapperbox .imap_checkbox_column{width: 15px !important; }
@@ -81,98 +81,98 @@ thead .sorting_asc{ background-color:#f1f1f1!important;}
 
 /* IMAP - Pagination */
 .imapperbox .paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
-.imapperbox .paging_bootstrap ul {float:right;padding:4px 0px 4px 0; margin: 0; }
-.imapperbox .paging_bootstrap ul li { display:inline-block; float:left;}
-.imapperbox .paging_bootstrap ul li a{ padding:4px 8px; border: 1px solid #ccc; background: #e5e5e5;}
-.imapperbox .paging_bootstrap ul li.disabled a{ background: #f8f8f8;}
-.imapperbox .paging_bootstrap ul li.active a{ background: #dadada;}
-.imapperbox .dataTables_paginate{float:none; text-align: none;width: 100%; }
+.imapperbox .paging_bootstrap ul {float:right; padding:4px 0px 4px 0; margin: 0; }
+.imapperbox .paging_bootstrap ul li {display:inline-block; float:left;}
+.imapperbox .paging_bootstrap ul li a{padding:4px 8px; border: 1px solid #ccc; background: #e5e5e5;}
+.imapperbox .paging_bootstrap ul li.disabled a{background: #f8f8f8;}
+.imapperbox .paging_bootstrap ul li.active a{background: #dadada;}
+.imapperbox .dataTables_paginate{float:none; text-align: none; width: 100%; }
 
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
 .imapperbox .autocomplete-tags-bank{width: 258px; padding: 0px;  min-height: 20px; margin-top:10px; max-height: 170px; overflow-y:scroll; overflow-x: hidden; margin-bottom:10px; float:left; }
-.imapperbox .autocomplete-dropdown{ padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden;}
-.imapperbox .autocomplete-dropdown a{ float: left; width: 100%;}
-.imapperbox .autocomplete-dropdown a.tag-item { color: #666!important; padding: 2px;}
-.imapperbox .autocomplete-dropdown a.tag-item:hover{ color: #336699!important; background: #e1e1e1; }
-.imapperbox .tag-selected{ 	background: #336699; padding:  2px 5px; float:left; margin:0 4px 4px 0; }
-.imapperbox .tag-selected .tag-delete-icon{ float:right; margin:5px;	width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
-.imapperbox a.tag-selected { color: #fff!important; }
-.imapperbox a.tag-selected:hover { color: #fff !important; background-color: red; }
+.imapperbox .autocomplete-dropdown{padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden;}
+.imapperbox .autocomplete-dropdown a{float: left; width: 100%;}
+.imapperbox .autocomplete-dropdown a.tag-item {color: #666!important; padding: 2px;}
+.imapperbox .autocomplete-dropdown a.tag-item:hover{color: #336699!important; background: #e1e1e1; }
+.imapperbox .tag-selected{background: #336699; padding: 2px 5px; float:left; margin:0 4px 4px 0; }
+.imapperbox .tag-selected .tag-delete-icon{float:right; margin:5px; width:10px; height:10px; background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-FFFFFF.png") no-repeat scroll; background-position: -100px -132px; }
+.imapperbox a.tag-selected {color: #fff!important; }
+.imapperbox a.tag-selected:hover {color: #fff !important; background-color: red; }
 .imapperbox .attachment{float:right !important;}
-.imapperbox .token-input-dropdown-facebook { z-index: 999999!important;}
+.imapperbox .token-input-dropdown-facebook {z-index: 999999!important;}
 
-/*  IMAP - Popup Left */
-.page-civicrm-imap  #message_left,
-.page-civicrm-imap  #message_left_tag{float:left; }
-.page-civicrm-imap  .tag_over_ride{width:655px; height:465px; overflow:auto; }
+/* IMAP - Popup Left */
+.page-civicrm-imap #message_left,
+.page-civicrm-imap #message_left_tag{float:left; }
+.page-civicrm-imap .tag_over_ride{width:655px; height:465px; overflow:auto; }
 
-/*  IMAP - Popup Left - Debug Info */
+/* IMAP - Popup Left - Debug Info */
 .page-civicrm-imap #message_left .debug_info {display: none; }
 .page-civicrm-imap #message_left .debug_on,
 .page-civicrm-imap #message_left .debug_off {color: #336699!important; }
 .page-civicrm-imap #message_left_header,
-.page-civicrm-imap #message_left_header_tag{  padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 70px;line-height: 23px;width: 640px; overflow: hidden;}
+.page-civicrm-imap #message_left_header_tag{padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 70px; line-height: 23px; width: 640px; overflow: hidden;}
 .page-civicrm-imap #message_left_email,
-.page-civicrm-imap #message_left_email_tag{ padding:10px ;width:640px; height:320px; overflow:auto;  }
+.page-civicrm-imap #message_left_email_tag{padding:10px ; width:640px; height:320px; overflow:auto; }
 
-/*  IMAP -  Popup Right*/
-.page-civicrm-imap #message_right{ width:285px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:470px;overflow: hidden;}
+/* IMAP - Popup Right*/
+.page-civicrm-imap #message_right{width:285px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:470px; overflow: hidden;}
 .page-civicrm-imap #message_right .ui-tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag.ui-tabs .ui-tabs-panel,
 .page-civicrm-imap #message_right_tag #tab1_tag,
-.page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important;  margin:0 !important; }
+.page-civicrm-imap #message_right_tag #tab2_tag{padding:0 !important; margin:0 !important; }
 
-.page-civicrm-imap #message_right_tag{ width:255px;  float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:465px;}
+.page-civicrm-imap #message_right_tag{width:255px; float:left; border-left: 1px solid #ccc; padding:0 0 0 5px; height:465px;}
 
-/*  IMAP - Debug area */
-.page-civicrm-imap .debug_sumit{ border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
+/* IMAP - Debug area */
+.page-civicrm-imap .debug_sumit{border:1px solid #e5e5e5; background: #f1f1f1; padding: 4px; margin: 10px 0;}
 
 /* IMAP - Content area for email */
-.page-civicrm-imap .email{ overflow-y: scroll;width: 620px; }
-.page-civicrm-imap .email pre { padding: 10px;}
+.page-civicrm-imap .email{overflow-y: scroll; width: 620px; }
+.page-civicrm-imap .email pre {padding: 10px;}
 .page-civicrm-imap #imapper-messages {scrollbar: always; overflow: auto; height: 600px; float: left;}
 .page-civicrm-imap .imapper-message-box {background-color: #eeeeee; margin: 2px; height:40px;}
-.page-civicrm-imap .imapper-message-box:hover { background-color: #e8eaeb!important;}
+.page-civicrm-imap .imapper-message-box:hover {background-color: #e8eaeb!important;}
 .page-civicrm-imap .imapper-message-box .imapper-select-button {padding-top: 0px;}
 
-/* IMAP -  Contact Search */
-.page-civicrm-imap .label_def{width: 110px;font-weight: bold; float: left; margin: 0.4em 0 0.02em;}
+/* IMAP - Contact Search */
+.page-civicrm-imap .label_def{width: 110px; font-weight: bold; float: left; margin: 0.4em 0 0.02em;}
 .page-civicrm-imap #message_right label{float: left; display: block;}
 .page-civicrm-imap #message_right label input {width: 160px; }
 .page-civicrm-imap #message_right label select {width: 167px; }
 
-/* IMAP -  Contact List */
+/* IMAP - Contact List */
 .page-civicrm-imap .contacts-list {scrollbar: always; overflow: auto; height: 165px; float: left;}
 .page-civicrm-imap .imapper-contact-box {background-color: #f8f8f8; margin-bottom: 4px; padding: 4px 0; float:left;}
-.page-civicrm-imap .imapper-contact-box:hover {  background-color: #eeeeee;}
+.page-civicrm-imap .imapper-contact-box:hover {background-color: #eeeeee;}
 .page-civicrm-imap .imapper-address-select-box {height: 16px; width: 20px; float: left; padding: 15px 0;}
-.page-civicrm-imap .imapper-address-box {float: left;width: 240px; padding-left: 5px;}
-.page-civicrm-imap .imapper-message-box td { vertical-align: middle!important;  }
-.page-civicrm-imap .seeMore{ height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width:220px; margin: 5px 0px 10px;}
+.page-civicrm-imap .imapper-address-box {float: left; width: 240px; padding-left: 5px;}
+.page-civicrm-imap .imapper-message-box td {vertical-align: middle!important; }
+.page-civicrm-imap .seeMore{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width:220px; margin: 5px 0px 10px;}
 
 /* Email toggle for multi tag */
-.hidden_email{ margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px; cursor:pointer;cursor:hand}
-.shown_email{ margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 640px;}
-.info.hidden_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
-.info.shown_email_info{ height: 20px; background: #e1e1e1;float: left;padding: 5px 10px; width: 620px;}
+.hidden_email{margin:0 0 10px 0; height:30px; overflow: hidden; width: 640px; cursor:pointer; cursor:hand}
+.shown_email{margin: 0 0 10px 0; height: auto; background: #fff; border-bottom:1px solid #ccc; width: 640px;}
+.info.hidden_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 620px;}
+.info.shown_email_info{height: 20px; background: #e1e1e1; float: left; padding: 5px 10px; width: 620px;}
 .info:hover{background: #ccc; }
-.add_email{ width:450px !important;padding: 5px 10px;}
+.add_email{width:450px !important; padding: 5px 10px;}
 
-/*  IMAP - Little buggers */
-#search_help{ float:right; font-size: 10px !important; margin: 2px 6px !important;}
+/* IMAP - Little buggers */
+#search_help{float:right; font-size: 10px !important; margin: 2px 6px !important;}
 .marginL10 {margin-left: 10px;}
-.marginL5  {margin-left: 5px;}
-.loading_message{ margin: 0 auto; background: #fff; padding:5px; width: 200px}
-.popup_def{ color: #777;    float: left;    margin: 0 10px 0 0;    text-align: right;   width: 125px;}
-.disabled a{ color: #999!important; text-decoration: line-through!important;}
-.rejected{ color: red; font-style: italic; }
+.marginL5 {margin-left: 5px;}
+.loading_message{margin: 0 auto; background: #fff; padding:5px; width: 200px}
+.popup_def{color: #777; float: left; margin: 0 10px 0 0; text-align: right;   width: 125px;}
+.disabled a{color: #999!important; text-decoration: line-through!important;}
+.rejected{color: red; font-style: italic; }
 .imapperbox .emailbubble,
 .imapperbox .matchbubble {padding: 2px 4px;}
-.imapperbox .emailbubble{   background-color: #dee7f8;    border: #a3beec solid 1px;    color: #333539;    line-height: 14px;    padding: 2px 8px;    vertical-align: baseline;    white-space: nowrap;    border-radius: 6px 6px 6px 6px;}
-.imapperbox .matchbubble {background-color: #B2E1C2; color: #fff;    font-weight: bold;    line-height: 14px;    padding: 2px 4px;    vertical-align: baseline;   white-space: nowrap;    border-radius: 3px 3px 3px 3px;}
-.imapperbox .multi { background-color: #468847;  }
-.imapperbox .empty { background-color: #999; }
-.imapperbox .warn { background-color: #FAA732; border-color: #FAA732; }
-.imapperbox .matchbubble.H{ background-color: #468847; }
-.imapperbox .matchbubble.A{ background-color: #999; }
+.imapperbox .emailbubble{background-color: #dee7f8; border: #a3beec solid 1px; color: #333539; line-height: 14px; padding: 2px 8px; vertical-align: baseline; white-space: nowrap; border-radius: 6px 6px 6px 6px;}
+.imapperbox .matchbubble {background-color: #B2E1C2; color: #fff; font-weight: bold; line-height: 14px; padding: 2px 4px; vertical-align: baseline;   white-space: nowrap; border-radius: 3px 3px 3px 3px;}
+.imapperbox .multi {background-color: #468847;  }
+.imapperbox .empty {background-color: #999; }
+.imapperbox .warn {background-color: #FAA732; border-color: #FAA732; }
+.imapperbox .matchbubble.H{background-color: #468847; }
+.imapperbox .matchbubble.A{background-color: #999; }
