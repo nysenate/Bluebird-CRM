@@ -330,7 +330,7 @@ function checkImapAccount($mbox, $params)
     echo "- - - - - - - - - - - - - - - - - - \n";
     echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
-    $fwder = strtolower($msgMetaData->fromEmail);
+    $fwder = 'crain@nysenate.gov';// strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
@@ -338,21 +338,21 @@ function checkImapAccount($mbox, $params)
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($mbox, $dbconn, $msgMetaData, $params) == true) {
         // //mark as read
-	imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
-	// move to folder if necessary
-	if ($params['archivemail'] == true) {
-	  imap_mail_move($mbox, $msg_num, $params['archivebox']);
-	}
+        imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
+        // move to folder if necessary
+        if ($params['archivemail'] == true) {
+          imap_mail_move($mbox, $msg_num, $params['archivebox']);
+        }
       }
     }
     else {
        echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
       $invalid_fwders[$fwder] = true;
       if (imap_delete($mbox, $msg_num) === true) {
-	echo "[DEBUG]   Message $msg_num has been deleted\n";
+        echo "[DEBUG]   Message $msg_num has been deleted\n";
       }
       else {
-	echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
+        echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
       }
     }
   }
@@ -552,10 +552,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   echo "[DEBUG]   Body download time: ".($timeEnd-$timeStart)."\n";
 
   // formatting headers
-  $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
-  $fwdName = $parsedBody['fwd_headers']['fwd_name'];
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'],0,255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'],0,255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = $parsedBody['fwd_headers']['fwd_subject'];
+  $fwdSubject = substr( $parsedBody['fwd_headers']['fwd_subject'],0,255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
@@ -563,10 +563,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $messageId = $msgMeta->uid;
   $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail = mysql_real_escape_string($msgMeta->fromEmail);
-  $fromName = mysql_real_escape_string($msgMeta->fromName);
-  $subject = mysql_real_escape_string($msgMeta->subject);
-  $date = mysql_real_escape_string($msgMeta->date);
+  $fromEmail =substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
+  $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
 
   if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
