@@ -101,7 +101,7 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
 //$conf['apc_show_debug'] = TRUE;  // Remove the slashes to use debug mode.
 
 # Varnish reverse proxy on localhost
-$conf['reverse_proxy'] = TRUE;
+$conf['reverse_proxy'] = TRUE;           
 $conf['reverse_proxy_addresses'] = array('127.0.0.1');
 
 /**
@@ -126,5 +126,3 @@ $conf['reverse_proxy_addresses'] = array('127.0.0.1');
 $conf['blocked_ips'] = array(
   'a.b.c.d',
 );
-$conf['site_offline'] = 0;
-$conf['maintenance_mode'] = FALSE;

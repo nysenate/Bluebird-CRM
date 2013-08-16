@@ -1253,7 +1253,7 @@ function buildMessageList() {
       var icon ='';
 
         // wrap the row
-        messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
+	messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
 
         // build a match count bubble
         countWarn = (value.matches_count == 1) ? 'warn' :  '';
@@ -1264,7 +1264,7 @@ function buildMessageList() {
 
         // build the name box
         if( value.sender_name != ''  && value.sender_name != null){
-          messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
+	  messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
 
           if( value.sender_email != '' && value.sender_email != null){
             messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
@@ -1275,10 +1275,10 @@ function buildMessageList() {
           messagesHtml +='</td>';
 
         }else if( value.sender_email != '' && value.sender_email != null ){
-          messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
+	  messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
           messagesHtml +=  countIcon;
         }else {
-          messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
+	  messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
           messagesHtml +=  countIcon;
         }
 
@@ -1288,27 +1288,27 @@ function buildMessageList() {
             icon = '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>'
           });
         }
-        messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
-        messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
           var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
-          messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-          messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
         }
 
         // check for direct messages & not empty forwarded messages
         if((value.status == 'direct' ) && (value.forwarder != '')){
-          messagesHtml += '<td class="imap_forwarder_column">Direct '+shortenString(value.from_email,10)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column">Direct '+shortenString(value.from_email,10)+'</td>';
         }else if(value.forwarder != ''){
-          messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
         }else{
-          messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
+	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
 
-        messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
     });
     cj('#imapper-messages-list').html(messagesHtml);
@@ -1495,17 +1495,17 @@ function buildActivitiesList() {
     // console.log(messages);
     cj.each(messages.successes, function(key, value) {
       if(value.date_short != null){
-        messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+	messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
         if( value.contactType != ''){
-          messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+	  messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-          messagesHtml += '<td class="imap_name_column matched">';
+	  messagesHtml += '<td class="imap_name_column matched">';
         }
 
         // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
@@ -1518,15 +1518,15 @@ function buildActivitiesList() {
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+	messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
         if(value.attachments.length > 0){
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-        messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
+	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
-        messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
         // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	messagesHtml += '<td class="imap_actions_column matched "><span class="edit_match"><a href="#">Edit</a></span><span class="disabled"><a href="#">Tag</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
