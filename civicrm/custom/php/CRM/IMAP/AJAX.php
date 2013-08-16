@@ -545,12 +545,12 @@ class CRM_IMAP_AJAX {
 
         $output = self::unifiedMessageInfo($messageUid);
         $oldActivityId =  mysql_real_escape_string($output['activity_id']);
-        $senderEmail = mysql_real_escape_string($output['sender_email']);
-        $senderName = mysql_real_escape_string($output['sender_name']);
-        $forwarder = mysql_real_escape_string($output['forwarder']);
+	$senderEmail = substr(mysql_real_escape_string($output['sender_email']),0,255);
+	$senderName = substr(mysql_real_escape_string($output['sender_name']),0,255);
+	$forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
         $date = mysql_real_escape_string($output['updated_date']);
         $FWDdate = mysql_real_escape_string($output['email_date']);
-        $subject = mysql_real_escape_string($output['subject']);
+	$subject = substr(mysql_real_escape_string($output['subject']),0,255);
         $body = mysql_real_escape_string($output['body']);
         $status = mysql_real_escape_string($output['status']);
         $key = mysql_real_escape_string($output['sender_email']);
