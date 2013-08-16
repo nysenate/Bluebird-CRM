@@ -11,11 +11,11 @@ define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:vgptdufy';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'validate', 'geocode', 'parse', 'throttle', 'distassign', 'usecoords', 'force', 'dryrun');
+  $shortopts = 's:e:b:h:vgpdufyz';
+  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'force', 'dryrun', 'debug');
   $stdusage = civicrm_script_usage();
   $usage = "[--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  [--threshold|-h SECS] [--validate|-v]"
-           ."[--geocode|-g] [--parse|-p]  [--throttle|-t]  [--distassign|-d]  [--usecoords|-u] [--force|-f] [--dryrun|-y]";
+           ."[--geocode|-g] [--parse|-p] [--distassign|-d]  [--usecoords|-u] [--force|-f] [--dryrun|-y] [--debug|-z]";
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
@@ -24,7 +24,7 @@ function main()
   }
 
   if (!is_cli_script()) {
-    echo "<pre>\n";
+    echo "<pre>";
   }
 
   // Log the execution of script.
@@ -38,7 +38,7 @@ function main()
   $parseStreetAddress = false;
   if (!$parseAddress) {
     if ($optlist['parse'] == true) {
-      echo ts( 'Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.' );
+      bbscript_log('ERROR', ts('Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.'));
       exit(1);
     }
   } else {
@@ -51,25 +51,25 @@ function main()
 
   $force = ($optlist['force'] ? "update" : "fill");
   if($optlist['geocode'] && $optlist['distassign']) {
-    echo ts( "Geocoding and district assigning using $force strategy.\n" );
+    bbscript_log('INFO', ts("Geocoding and district assigning using $force strategy."));
   }
   else if($optlist['geocode']) {
-    echo ts( "Geocoding using $force strategy.\n" );
+    bbscript_log('INFO', ts( "Geocoding using $force strategy." ));
   }
   else if($optlist['distassign']) {
-    echo ts( "District assigning using $force strategy.\n" );
+    bbscript_log('INFO', ts( "District assigning using $force strategy." ));
   }
 
   // Don't process if no operations are specified
-  if (!$parseStreetAddress && !$optlist['geocode'] && !$optlist['distassign']) {
-    echo ts("Error: Geocode mapping, district assignment and Street Address Parsing are disabled. At least one option must be enabled to use this script.\n");
+  if (!$parseStreetAddress && !$optlist['geocode'] && !$optlist['distassign'] && !$optlist['validate']) {
+    bbscript_log('ERROR', ts("Error:USPS correction, Geocode mapping, district assignment and Street Address Parsing are disabled. At least one option must be enabled to use this script."));
     exit(1);
   }
 
   $batch = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
   $threshold = ($optlist['threshold']) ? $optlist['threshold'] : DEFAULT_SLOW_REQUEST_THRESHOLD;
 
-  echo ts( "Using batches of $batch addresses.\n");  
+  bbscript_log('INFO', "Using batches of $batch addresses.");  
   processContacts($parseStreetAddress, $batch, $threshold, $optlist);
 }
 
@@ -97,12 +97,12 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
   // Decided not to use the dao for the query because of row counting errors.
   // $dao =& CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
   
-  echo "Query time = " . get_elapsed_time($startTime) . " secs\n";
-  echo "Iterating over addresses...\n";
-
-  $currentBatchSize = $totalAddressParsed = 0;
+  bbscript_log('INFO', "Address Retrieval Query time = " . get_elapsed_time($startTime) . " secs");
+  
+  $batchNum = $currentBatchSize = $totalAddressParsed = 0;
   $unparseableContactAddress = array();
 
+  $DEBUG = ($optlist['debug']);
   $overwrite = ($optlist['force'] == 'update');
   $performUspsValidate = $optlist['validate']; 
   $performGeocode = $optlist['geocode'];
@@ -110,9 +110,9 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
   $useCoords = $optlist['usecoords'];
   $dryrun = $optlist['dryrun'];
   $totalRows = mysql_num_rows($res);
-
-  echo "Total rows: {$totalRows}.\n";
   
+  bbscript_log('INFO', "Iterating over {$totalRows} addresses...");
+
   while (($row = mysql_fetch_assoc($res)) != null) {
     $totalAddresses++;
           
@@ -144,124 +144,112 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
     // Fill up the batch of addresses.
     if (($totalAddresses % $batchSize != 0) && ($totalAddresses != $totalRows)) continue;
     
-/**
-DEBUG print_r
-*/
-//    print_r($addressBatch);
+    $batchNum++;
+    
+    if ($DEBUG) {
+      print_r($addressBatch);
+    }
 
     // Perform batch requests based on groups of operations requested.
     if ($performUspsValidate && $performGeocode && $performDistAssign) {
-      echo ts("Performing batch bluebird lookup...\n");
+      bbscript_log('DEBUG', ts("Performing batch bluebird lookup #{$batchNum}..."));
       CRM_Utils_SAGE::batchLookup($addressBatch, $overwrite, $overwrite);
     }
     else if ($performGeocode && $performDistAssign) {
-      echo ts("Performing batch district assign...\n");
+      bbscript_log('DEBUG', ts("Performing batch district assign #{$batchNum}..."));
       CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
     }
     else {    
       if ($performUspsValidate) {
-        echo ts("Performing batch check address...\n");
+        bbscript_log('DEBUG', ts("Performing batch check address #{$batchNum}..."));
         CRM_Utils_SAGE::batchCheckAddress($addressBatch);
       } 
       if ($performGeocode && !($performDistAssign && !$useCoords)) {
-        echo ts("Performing batch geocode...\n");
+        bbscript_log('DEBUG', ts("Performing batch geocode #{$batchNum}..."));
         CRM_Utils_SAGE::batchGeocode($addressBatch, $overwrite);
       }
       if ($performDistAssign) {
         if ($useCoords) {
-          echo ts("Performing batch lookup using geocodes...\n");
+          bbscript_log('DEBUG', ts("Performing batch lookup using geocodes #{$batchNum}..."));
           CRM_Utils_SAGE::batchLookupFromPoint($addressBatch, $overwrite);
         }
         else if ($performGeocode) {
-          echo ts("Performing batch geocode/district assign...\n");
+          bbscript_log('DEBUG', ts("Performing batch geocode/district assign #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
         }
         else {
-          echo ts("Performing batch district assign without overwriting geocode...\n");
+          bbscript_log('DEBUG', ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, false);
         }
       }
     }
 
     $sageProcessTime = get_elapsed_time($batchStartTime);
-    echo ts("SAGE processing time: " . $sageProcessTime . " s.\n");
+    bbscript_log('INFO', ts("SAGE processing time: " . $sageProcessTime . " s."));
 
     // Iterate through each address in the batch and save where applicable.
     for ($i = 0; $i < count($addressBatch); $i++) {    
       $parseSuccess = false;
       // Parse street address
       if ($parseStreetAddress) {
-        $parseSuccess = parseAddress($addressBatch[$i]);  
+        $parseSuccess = parseAddress($addressBatch[$i], $unparseableContactAddress);
+        if ($parseSuccess) {
+          $totalAddressParsed++;
+        }  
       }
 
       if (!$dryrun) {
         // Save address information
-        if ($parseStreetAddress || $parseSuccess) {
-          if (!empty($addressBatch[$i])) {
-            $address_dao = new CRM_Core_DAO_Address();
-            $address_dao->id = $addressBatch[$i]['address_id'];
-            $address_dao->copyValues($addressBatch[$i]);
-            $address_dao->save();
-            $address_dao->free();
-          }
+        if ($performGeocode || $parseStreetAddress || $parseSuccess) {
+          updateAddress($addressBatch[$i]);
         }
 
         // Save custom district fields.
-        if($optlist['distassign']) {
-          if (isset($customFields)) {
-            $customFields = CRM_Core_BAO_CustomField::getFields('Address', false, true);
-          }
-          if (!empty($customFields)) {
-            $addressCustom = CRM_Core_BAO_CustomField::postProcess(
-              $addressBatch[$i], $customFields, $addressBatch[$i]['district_id'], 'Address', true        
-            );
-          }
-          if (!empty($addressCustom)) {
-            CRM_Core_BAO_CustomValueTable::store($addressCustom, 'civicrm_address', $addressBatch[$i]['district_id']);
-          }
+        if($performDistAssign) {
+          updateDistricts($addressBatch[$i], $db);
         }  
       }        
     }
-/**
-DEBUG print_r
-*/
-//    print_r($addressBatch);    
 
+    if ($DEBUG) {
+      print_r($addressBatch);
+    }
+    
     unset($addressBatch);
     $addressBatch = array();
 
     $batchProcessTime = get_elapsed_time($batchStartTime);
-    echo ts("Batch processing time: " . $batchProcessTime . " s.\n");
+    bbscript_log('INFO', ts("Batch processing time: " . $batchProcessTime . " s."));
 
     $batchStartTime = microtime(true);
   }
   
-  echo ts("Total addresses evaluated: $totalAddresses\n");
+  bbscript_log('INFO', "Total addresses evaluated: $totalAddresses");
   if ($parseStreetAddress) {
-    echo ts("Addresses parsed: $totalAddressParsed\n");
-    if ($unparseableContactAddress) {
-      echo ts("<br />\nFollowing is the list of contacts whose address is not parsed :<br />\n");
-      foreach ($unparseableContactAddress as $contactLink) {
-        echo ts("%1<br />\n", array(1 => $contactLink));
+    bbscript_log('INFO', ts("Addresses parsed: $totalAddressParsed"));
+    if (count($unparseableContactAddress) > 0) {
+      bbscript_log('INFO', ts("Below is a list of all the unparsed contact addresses:"));
+      foreach ($unparseableContactAddress as $upca) {
+        echo $upca . "\n";
       }
     }
   }
 
   $elapsed_time = get_elapsed_time($startTime);
-  echo "Elapsed time = $elapsed_time secs\n";
+  bbscript_log('INFO', "Elapsed time = $elapsed_time secs");
   if ($totalAddresses > 0) {
-    echo "Average time per address = ".($elapsed_time/$totalAddresses)." secs\n";
+    bbscript_log('INFO', "Average time per address = ".($elapsed_time/$totalAddresses)." secs");
   }
 
   if (!is_cli_script()) {
-    echo "</pre>\n";
+    echo "</pre>";
   }
 
   mysql_free_result($res);
   return;
 }
 
-function parseAddress(&$address)
+function parseAddress(&$address, &$unparseableContactAddress)
 {
   if (!empty($address['street_address'])) {
     $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($address['street_address']);
@@ -286,7 +274,57 @@ function parseAddress(&$address)
   return false;
 }
 
-//dynamically build query based on command line args
+// Updates the address in the database using the DAO
+function updateAddress($address) {
+  if (!empty($address)) {
+    $address_dao = new CRM_Core_DAO_Address();
+    $address_dao->id = $address['address_id'];
+    $address_dao->copyValues($address);
+    $address_dao->save();
+    $address_dao->free();
+    bbscript_log('TRACE', "Saved civicrm_address table entry for address_id {$address['address_id']}");
+  }
+}
+
+// Updates the districts in the database using a direct SQL query
+// May want to update this to use proper DAOs.
+function updateDistricts($address, $db) {
+  $districtColumnNames = array(
+    46 => 'congressional_district_46',
+    47 => 'ny_senate_district_47',
+    48 => 'ny_assembly_district_48',
+    49 => 'election_district_49', 
+    50 => 'county_50',
+    51 => 'county_legislative_district_51',
+    52 => 'town_52',
+    53 => 'ward_53',
+    54 => 'school_district_54'
+  );
+
+  $matches = array();
+  $sqlUpdates = array();
+  foreach ($address as $key => $value) {
+    if (preg_match('/custom_(\d{2})_\d+/', $key, $matches)) {
+      if (isset($matches[1]) && isset($districtColumnNames[$matches[1]]) && !empty($value)) {
+        if ($matches[1] == 52) {
+          $sqlUpdates[] = "{$districtColumnNames[$matches[1]]} = '{$value}'";
+        }
+        else {
+          $sqlUpdates[] = "{$districtColumnNames[$matches[1]]} = {$value}";  
+        }        
+      }      
+    }
+  }
+
+  $query = "UPDATE civicrm_value_district_information_7 di
+            SET " . implode(', ', $sqlUpdates) . "
+            WHERE di.entity_id = {$address['address_id']}";
+  
+  bb_mysql_query($query, $db, true);
+  bbscript_log('TRACE', "Saved district_information table entry for address_id {$address['address_id']}");  
+} 
+
+// Dynamically build query based on command line args
 function getQuery($optlist) {
   $query = "";
   $querySelect = array(
