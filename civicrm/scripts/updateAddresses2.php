@@ -11,10 +11,10 @@ define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:vgpdufyz';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'force', 'dryrun', 'debug');
+  $shortopts = 's:e:b:h:l:vgpdufyz';
+  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'force', 'dryrun', 'debug');
   $stdusage = civicrm_script_usage();
-  $usage = "[--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  [--threshold|-h SECS] [--validate|-v]"
+  $usage = "[--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  [--threshold|-h SECS] [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]] [--validate|-v]"
            ."[--geocode|-g] [--parse|-p] [--distassign|-d]  [--usecoords|-u] [--force|-f] [--dryrun|-y] [--debug|-z]";
 
   $optlist = civicrm_script_init($shortopts, $longopts);
@@ -33,6 +33,13 @@ function main()
 
   // Check if street address should be parsed.
   require_once 'CRM/Core/BAO/Preferences.php';
+
+  // Set the log level
+  global $BB_LOG_LEVEL, $LOG_LEVELS;
+  $BB_LOG_LEVEL = (!empty($optlist['log']) && isset($LOG_LEVELS[strtoupper($optlist['log'])])) 
+                  ? $LOG_LEVELS[strtoupper($optlist['log'])][0] 
+                  : $LOG_LEVELS['TRACE'][0];
+
   $address_options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_options');
   $parseAddress = CRM_Utils_Array::value('street_address_parsing',$address_options, false);
   $parseStreetAddress = false;
@@ -152,40 +159,40 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
     // Perform batch requests based on groups of operations requested.
     if ($performUspsValidate && $performGeocode && $performDistAssign) {
-      bbscript_log('DEBUG', ts("Performing batch bluebird lookup #{$batchNum}..."));
+      bbscript_log('INFO', ts("Performing batch bluebird lookup #{$batchNum}..."));
       CRM_Utils_SAGE::batchLookup($addressBatch, $overwrite, $overwrite);
     }
     else if ($performGeocode && $performDistAssign) {
-      bbscript_log('DEBUG', ts("Performing batch district assign #{$batchNum}..."));
+      bbscript_log('INFO', ts("Performing batch district assign #{$batchNum}..."));
       CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
     }
     else {    
       if ($performUspsValidate) {
-        bbscript_log('DEBUG', ts("Performing batch check address #{$batchNum}..."));
+        bbscript_log('INFO', ts("Performing batch check address #{$batchNum}..."));
         CRM_Utils_SAGE::batchCheckAddress($addressBatch);
       } 
       if ($performGeocode && !($performDistAssign && !$useCoords)) {
-        bbscript_log('DEBUG', ts("Performing batch geocode #{$batchNum}..."));
+        bbscript_log('INFO', ts("Performing batch geocode #{$batchNum}..."));
         CRM_Utils_SAGE::batchGeocode($addressBatch, $overwrite);
       }
       if ($performDistAssign) {
         if ($useCoords) {
-          bbscript_log('DEBUG', ts("Performing batch lookup using geocodes #{$batchNum}..."));
+          bbscript_log('INFO', ts("Performing batch lookup using geocodes #{$batchNum}..."));
           CRM_Utils_SAGE::batchLookupFromPoint($addressBatch, $overwrite);
         }
         else if ($performGeocode) {
-          bbscript_log('DEBUG', ts("Performing batch geocode/district assign #{$batchNum}..."));
+          bbscript_log('INFO', ts("Performing batch geocode/district assign #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
         }
         else {
-          bbscript_log('DEBUG', ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
+          bbscript_log('INFO', ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, false);
         }
       }
     }
 
     $sageProcessTime = get_elapsed_time($batchStartTime);
-    bbscript_log('INFO', ts("SAGE processing time: " . $sageProcessTime . " s."));
+    bbscript_log('DEBUG', ts("SAGE processing time: " . $sageProcessTime . " s."));
 
     // Iterate through each address in the batch and save where applicable.
     for ($i = 0; $i < count($addressBatch); $i++) {    
@@ -214,12 +221,17 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
     if ($DEBUG) {
       print_r($addressBatch);
     }
-    
+
     unset($addressBatch);
     $addressBatch = array();
 
     $batchProcessTime = get_elapsed_time($batchStartTime);
-    bbscript_log('INFO', ts("Batch processing time: " . $batchProcessTime . " s."));
+    if ($batchProcessTime > $threshold) {
+      bbscript_log('WARN', ts("Slow batch request: {$batchProcessTime} s"));
+    }
+    else {
+      bbscript_log('DEBUG', ts("Batch processing time: {$batchProcessTime} s"));
+    }
 
     $batchStartTime = microtime(true);
   }
