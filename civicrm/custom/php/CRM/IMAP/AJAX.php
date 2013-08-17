@@ -655,10 +655,10 @@ class CRM_IMAP_AJAX {
             );
             $activity = civicrm_api('activity', 'create', $params);
 
-            // if ($debug){
-            //   echo "<h1>Activity Created ?</h1>";
-            //   var_dump($activity);
-            // }
+	    if ($debug){
+	      echo "<h1>Activity Created ?</h1>";
+	      var_dump($activity);
+	    }
 
             // if its an error or doesnt return we need errors
             if (($activity['is_error']==1) || ($activity['values']==null ) || (count($activity['values']) !=  1 )){
