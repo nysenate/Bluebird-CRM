@@ -77,7 +77,7 @@ class MessageBodyParser
           $BlockLines[$currentHeader]['start']=$key;
         }
       }else{
-        if (trim($line) == ''){
+	if (strip_tags(trim($line) == '')){
           // if there is an open header, and we have an empty line, thats the end of a deader
           if ((!isset($BlockLines[$currentHeader]['stop'])) && (isset($BlockLines[$currentHeader]['start']))) {
             $BlockLines[$currentHeader]['stop']=$key;
