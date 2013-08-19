@@ -67,7 +67,7 @@ OpenLeg = (function() {
         forname: "" + result.oid + " - for (" + result.data.bill.sponsor.fullname + ")",
         againstname: "" + result.oid + " - against (" + result.data.bill.sponsor.fullname + ")",
         description: "" + result.data.bill.title,
-        url: result.data.bill.url
+        url: "" + result.url
       };
       returnStructure.results.push(rs);
     }

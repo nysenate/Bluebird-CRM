@@ -102,11 +102,13 @@
       return @search(value)
 
     search: (term) ->
-      if term.indexOf(@source[@searchIndex].term)
+      if term.indexOf(@source[@searchIndex].term) != -1
         if term.length <= @source[@searchIndex].term.length
           console.log "isrebuilding"
           @rebuildTag @searchIndex
-          
+      else
+        console.log "isrebuilding"
+        @rebuildTag @searchIndex
       currentArray = @ifNullArray @source[@searchIndex].tags,@searchIndex
       @searchIndex++
       arrayToFill =

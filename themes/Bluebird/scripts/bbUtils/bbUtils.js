@@ -153,7 +153,6 @@
         }).apply(this)
       };
       rData = {};
-      console.log(charCode);
       for (ktype in keyCode) {
         arr = keyCode[ktype];
         if (arr.indexOf(charCode) >= 0) {

@@ -138,7 +138,6 @@ class window.bb
       "letters": [65...90]
     
     rData = {}
-    console.log charCode
     for ktype,arr of keyCode
       if arr.indexOf(charCode) >= 0
         rData.type = ktype

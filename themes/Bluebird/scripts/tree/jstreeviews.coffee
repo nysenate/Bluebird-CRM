@@ -178,7 +178,6 @@ treeBehavior =
     cjac = cj("#JSTree-ac")
     searchmonger = cjac.tagACInput("init",params)
     cjac.on "keydown", ((event) =>
-      console.log searchmonger
       @filterKeydownEvents event,searchmonger,cjac
     )
 
@@ -188,11 +187,21 @@ treeBehavior =
 
   # filter keys first
 
+  _dropdown:
+    inDropdown: false
+    isDrawn: false
+    hasLength: false
+
+
   filterKeydownEvents: (event,searchmonger,cjac) ->
-    console.log searchmonger
     keyCode = bbUtils.keyCode(event)
+    # look at context first.
+    # space & enter add tags to list
+    # tab and down, shift tab and up are the same
+    # end and home and page up/page down work as you'd
+    # expect in the dropdown context
     switch keyCode.type
-      when "directioanl"
+      when "directional"
         return @moveDropdown(keyCode.type)
       when "letters","delete","math","punctuation"
         return @execSearch(event,searchmonger,cjac)
@@ -203,16 +212,18 @@ treeBehavior =
 
   # then do terms
   execSearch: (event,searchmonger,cjac) ->
-    console.log searchmonger
     searchmonger.exec(event, (terms) =>
       openLeg = new OpenLeg
       console.log terms
       if terms? && terms.tags?
         openLeg.query({"term":terms.term}, (results) =>
-          console.log results
-          if terms.tags.length > 0
-            @buildSearchList(terms.tags, terms.term.toLowerCase())
-          else if terms.tags.length == 0 and terms.term.length >= 3
+          # console.log results
+          hits = terms.tags.length + results.results.length + results.seeXmore
+          @addPositionsToTags(results.results)
+          tags = terms.tags
+          if hits > 0
+            @buildSearchList(tags, terms.term.toLowerCase(), hits)
+          else if hits == 0 and terms.term.length >= 3
             @buildSearchList(null, "No Results Found")
         )
       if cjac.val().length < 3
@@ -221,6 +232,29 @@ treeBehavior =
         cj("#{@tabsLoc} .tab-search").hide() 
     )
 
+  positionIdNumber: 292000
+
+  addPositionsToTags: (positions) ->
+    format = []
+    for k,o of positions
+      # check if position has id, if not. arbitrarily assign one?
+      forpos =
+        name: o.forname
+        id: "#{@positionIdNumber+1}"
+      agipos=
+        name: o.againstname
+        id: "#{@positionIdNumber+2}"
+      neupos=
+        name: o.noname
+        id: "#{@positionIdNumber+3}"
+      forpos.type = agipos.type = neupos.type = "292"
+      forpos.description = agipos.description = neupos.description = o.url
+      format.push(forpos)
+      format.push(agipos)
+      format.push(neupos)
+      @positionIdNumber = @positionIdNumber + 10
+    @positionListing = format
+    # return tags.concat(format)
   # or do direction
   moveDropdown: (keyCode) ->
 
@@ -241,6 +275,7 @@ treeBehavior =
     output = ""
     # you're going from top, down, not bottom up
     parentArray.reverse();
+
     for parentid, index in parentArray
       clonedTag = @cjTagBox.find("dt[data-tagid=#{parentid}]").clone()
       clonedTagLvl = treeManipulation.parseLvl(clonedTag.attr("class"))
@@ -261,15 +296,17 @@ treeBehavior =
       # if it has children...
 
 
-  buildSearchList: (tagList, term) ->
+  buildSearchList: (tagList, term, hits) ->
+    # this is where we need to determine which tag tree we're representing
+    # the tiny search-only or the full-tree
     @alreadyPlaced = []
     @cjSearchBox = @cjTagBox.find(".search") unless @cjSearchBox?
     @cjSearchBox.empty()
     if tagList != null
-      tagListLength = tagList.length
+      tagListLength = hits
       @toShade = []
       foundId = []
-      # pre-populate a list
+      
       for key,tag of tagList
         # parentArray.push(@cjTagBox.find("dt[data-tagid=#{tag.id}]").data("parentid"))
         foundId.push(parseInt tag.id)
@@ -305,8 +342,15 @@ treeBehavior =
     
     for value in @toShade
       @makeShade value, term
+
+    @buildPositions()
     @switchToSearch(tagListLength)
   
+  buildPositions: () ->
+    for k,o of @positionListing
+      a = treeManipulation.createDT(1, o.id, o.name, 292)
+      console.log a
+
   switchToSearch: (tagListLength) ->
     cj("#{@tabsLoc} .tab-search").show()
     @setTabResults(tagListLength,"tab-search")
@@ -426,8 +470,6 @@ treeBehavior =
     else
     _viewSettings["openTags"]
 
-  
-
 _viewSettings =
   openTags: {}
 
@@ -445,8 +487,13 @@ treeManipulation =
   createDL: (lvl, id, name) ->
     return "<dl class='lv-#{lvl}' id='tagDropdown_#{id}' data-name='#{name}'></dl>"
 
-  createDT: (lvl, id, name, parent) ->
-
+  createDT: (lvl = 0, id, name, parent, treeButton = "") ->
+    output = "<dt class='lv-#{lvl} tag-#{id}' id='tagLabel_#{id}' data-tagid='#{id}' data-name='#{name}' data-parentid='#{parent}'>"
+    output += "<div class='tag'>"
+    output += "<div class='ddControl #{treeButton}'></div>"
+    output += "<span class='name'>#{name}</span></div>"
+    output += "</dt>"
+    return output
 
 ###
 neat

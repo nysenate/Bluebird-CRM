@@ -101,11 +101,14 @@
 
       Search.prototype.search = function(term) {
         var arrayToFill, cachedQuery, currentArray;
-        if (term.indexOf(this.source[this.searchIndex].term)) {
+        if (term.indexOf(this.source[this.searchIndex].term) !== -1) {
           if (term.length <= this.source[this.searchIndex].term.length) {
             console.log("isrebuilding");
             this.rebuildTag(this.searchIndex);
           }
+        } else {
+          console.log("isrebuilding");
+          this.rebuildTag(this.searchIndex);
         }
         currentArray = this.ifNullArray(this.source[this.searchIndex].tags, this.searchIndex);
         this.searchIndex++;

@@ -70,7 +70,7 @@
           forname: "" + result.oid + " - for (" + result.data.bill.sponsor.fullname + ")",
           againstname: "" + result.oid + " - against (" + result.data.bill.sponsor.fullname + ")",
           description: "" + result.data.bill.title,
-          url: result.data.bill.url
+          url: "" + result.url
         };
         returnStructure.results.push(rs);
       }
@@ -635,16 +635,19 @@
       cjac = cj("#JSTree-ac");
       searchmonger = cjac.tagACInput("init", params);
       return cjac.on("keydown", (function(event) {
-        console.log(searchmonger);
         return _this.filterKeydownEvents(event, searchmonger, cjac);
       }));
     },
+    _dropdown: {
+      inDropdown: false,
+      isDrawn: false,
+      hasLength: false
+    },
     filterKeydownEvents: function(event, searchmonger, cjac) {
       var keyCode;
-      console.log(searchmonger);
       keyCode = bbUtils.keyCode(event);
       switch (keyCode.type) {
-        case "directioanl":
+        case "directional":
           return this.moveDropdown(keyCode.type);
         case "letters":
         case "delete":
@@ -657,7 +660,6 @@
     },
     execSearch: function(event, searchmonger, cjac) {
       var _this = this;
-      console.log(searchmonger);
       return searchmonger.exec(event, function(terms) {
         var openLeg;
         openLeg = new OpenLeg;
@@ -666,10 +668,13 @@
           openLeg.query({
             "term": terms.term
           }, function(results) {
-            console.log(results);
-            if (terms.tags.length > 0) {
-              return _this.buildSearchList(terms.tags, terms.term.toLowerCase());
-            } else if (terms.tags.length === 0 && terms.term.length >= 3) {
+            var hits, tags;
+            hits = terms.tags.length + results.results.length + results.seeXmore;
+            _this.addPositionsToTags(results.results);
+            tags = terms.tags;
+            if (hits > 0) {
+              return _this.buildSearchList(tags, terms.term.toLowerCase(), hits);
+            } else if (hits === 0 && terms.term.length >= 3) {
               return _this.buildSearchList(null, "No Results Found");
             }
           });
@@ -681,6 +686,33 @@
           return cj("" + _this.tabsLoc + " .tab-search").hide();
         }
       });
+    },
+    positionIdNumber: 292000,
+    addPositionsToTags: function(positions) {
+      var agipos, format, forpos, k, neupos, o;
+      format = [];
+      for (k in positions) {
+        o = positions[k];
+        forpos = {
+          name: o.forname,
+          id: "" + (this.positionIdNumber + 1)
+        };
+        agipos = {
+          name: o.againstname,
+          id: "" + (this.positionIdNumber + 2)
+        };
+        neupos = {
+          name: o.noname,
+          id: "" + (this.positionIdNumber + 3)
+        };
+        forpos.type = agipos.type = neupos.type = "292";
+        forpos.description = agipos.description = neupos.description = o.url;
+        format.push(forpos);
+        format.push(agipos);
+        format.push(neupos);
+        this.positionIdNumber = this.positionIdNumber + 10;
+      }
+      return this.positionListing = format;
     },
     moveDropdown: function(keyCode) {},
     grabParents: function(cjParentId) {
@@ -724,7 +756,7 @@
       }
       return cj(".search #tagDropdown_" + parentArray[index - 1]);
     },
-    buildSearchList: function(tagList, term) {
+    buildSearchList: function(tagList, term, hits) {
       var allDropdowns, cjCloneChildren, cjCloneTag, cjParentId, foundId, key, tag, tagListLength, toAppendTo, value, _i, _len, _ref,
         _this = this;
       this.alreadyPlaced = [];
@@ -733,7 +765,7 @@
       }
       this.cjSearchBox.empty();
       if (tagList !== null) {
-        tagListLength = tagList.length;
+        tagListLength = hits;
         this.toShade = [];
         foundId = [];
         for (key in tagList) {
@@ -780,7 +812,19 @@
         value = _ref[_i];
         this.makeShade(value, term);
       }
+      this.buildPositions();
       return this.switchToSearch(tagListLength);
+    },
+    buildPositions: function() {
+      var a, k, o, _ref, _results;
+      _ref = this.positionListing;
+      _results = [];
+      for (k in _ref) {
+        o = _ref[k];
+        a = treeManipulation.createDT(1, o.id, o.name, 292);
+        _results.push(console.log(a));
+      }
+      return _results;
     },
     switchToSearch: function(tagListLength) {
       cj("" + this.tabsLoc + " .tab-search").show();
@@ -980,7 +1024,21 @@
     createDL: function(lvl, id, name) {
       return "<dl class='lv-" + lvl + "' id='tagDropdown_" + id + "' data-name='" + name + "'></dl>";
     },
-    createDT: function(lvl, id, name, parent) {}
+    createDT: function(lvl, id, name, parent, treeButton) {
+      var output;
+      if (lvl == null) {
+        lvl = 0;
+      }
+      if (treeButton == null) {
+        treeButton = "";
+      }
+      output = "<dt class='lv-" + lvl + " tag-" + id + "' id='tagLabel_" + id + "' data-tagid='" + id + "' data-name='" + name + "' data-parentid='" + parent + "'>";
+      output += "<div class='tag'>";
+      output += "<div class='ddControl " + treeButton + "'></div>";
+      output += "<span class='name'>" + name + "</span></div>";
+      output += "</dt>";
+      return output;
+    }
   };
 
   /*
