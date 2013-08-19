@@ -134,7 +134,8 @@ function nyss_civihooks_getfile() {
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 
   //office staff group ID to use for activity assignees and case roles
-  $groupID = '3';
+  $sql = "SELECT id FROM civicrm_group WHERE name LIKE 'Office_Staff%'";
+  $groupID = CRM_Core_DAO::singleValueQuery($sql);
 
   //limit activity assignees to office staff group
   if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) &&
