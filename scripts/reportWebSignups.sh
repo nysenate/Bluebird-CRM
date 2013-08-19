@@ -8,6 +8,7 @@
 # Organization: New York State Senate
 # Date: 2012-03-14
 # Revised: 2012-07-19
+# Reivsed: 2013-08-13 - Geocoding is now done in a separate script
 #
 
 prog=`basename $0`
@@ -44,14 +45,11 @@ if [ $force_ok -eq 0 ]; then
   confirm_yes_no "Are you sure you want to pull signups and e-mail reports to all senators" || exit 0
 fi
 
-logdt "Retrieving Senator information and refreshing if necessary"
-php $signup_dir/ingest.php $passthru_args --senators
-logdt "Retrieving Committee information and refreshing if necessary"
-php $signup_dir/ingest.php $passthru_args --committees
-logdt "Retrieving signups from NYSenate.gov website"
-php $signup_dir/ingest.php $passthru_args --signups
+logdt "Retrieving senator, committee, and signup information from NYSenate.gov"
+php $signup_dir/ingest.php $passthru_args --senators --committees --signups
+
 logdt "Geocoding signup records to determine Senate Districts"
-php $signup_dir/ingest.php $passthru_args --geocode
+php $signup_dir/geocode.php $passthru_args
 
 logdt "Generating reports for all senators in the 'signups' instance-set"
 $script_dir/iterateInstances.sh --signups "php $signup_dir/generate.php $passthru_args -S{} -d$tdate"

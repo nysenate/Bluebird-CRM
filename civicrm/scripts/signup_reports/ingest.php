@@ -1,14 +1,17 @@
 #!/usr/bin/php
 <?php
 
-require_once realpath(dirname(__FILE__).'/../script_utils.php');
-require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+// Used as a check to make sure that NYSenate.gov API is working
+define('MIN_SENATOR_COUNT', 50);
+define('MIN_COMMITTEE_COUNT', 10);
+
+$this_dir = dirname(__FILE__);
+require_once realpath("$this_dir/../script_utils.php");
+require_once realpath("$this_dir/../bluebird_config.php");
+require_once 'utils.php';
 require_once 'nysenate_api/xmlrpc-api.inc';
 require_once 'nysenate_api/xmlrpc-api-signups.inc';
-require_once 'utils.php';
 
-# Some packages required for command line parsing
-add_packages_to_include_path();
 $optList = get_options();
 $config = get_bluebird_config();
 
@@ -30,23 +33,18 @@ if ($optList['signups'] || $optList['all']) {
   updateSignups($optList, $env);
 }
 
-if ($optList['geocode'] || $optList['all']) {
-  geocodeAddresses($optList, $env);
-}
-
 
 function get_options()
 {
   $prog = basename(__FILE__);
-  $script_dir = dirname(__FILE__);
 
-  $short_opts = 'hascgub:f:n';
-  $long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=','dryrun');
-  $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_NID] [--dryrun|-n]";
+  $short_opts = 'hascub:f:n';
+  $long_opts = array('help', 'all', 'senators', 'committees', 'signups', 'batch=', 'first=', 'dryrun');
+  $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_NID] [--dryrun|-n]";
 
   $optList = process_cli_args($short_opts, $long_opts);
   if (!$optList || $optList['help'] ||
-      !($optList['all'] || $optList['signups'] || $optList['geocode']
+      !($optList['all'] || $optList['signups']
         || $optList['senators'] || $optList['committees'])) {
     die("$prog $usage\n");
   }
@@ -57,12 +55,25 @@ function get_options()
 
 function updateSenators($optList, $env)
 {
+  echo "[NOTICE] Retrieving current list of senators from NYSenate.gov\n";
+
   // Fetch all the senators from NYSenate.gov
   list($domain, $apikey, $conn) = array_values($env);
   $view_service = new viewsGet($domain, $apikey);
   $senators = $view_service->get(array('view_name'=>'senators'));
+  $cnt = count($senators);
 
-  // Retrieve all senator ids from the database
+  if ($cnt < MIN_SENATOR_COUNT) {
+    echo "[ERROR] Unable to retrieve at least ".MIN_SENATOR_COUNT." senators from website\n";
+    return;
+  }
+    
+  echo "[DEBUG] Retrieved $cnt senators from website\n";
+
+  // Retrieve all senator IDs and titles from the database and populate the 
+  // inactive_senators array with them.  Senators will then be removed from
+  // the array as they are processed from the current NYSenate.gov feed.
+  echo "[NOTICE] Retrieving active senators from the database\n";
   $inactive_senators = array();
   $sql = "SELECT nid, title FROM senator WHERE active=1";
   $result = mysql_query($sql, $conn);
@@ -71,32 +82,34 @@ function updateSenators($optList, $env)
   }
 
   foreach ($senators as $senator) {
+    echo "[DEBUG] Retrieving senator data for nid=".$senator['nid']." from website\n";
     $node_service = new nodeGet($domain, $apikey);
     $senatorData = $node_service->get(array('nid'=>$senator['nid']));
     unset($inactive_senators[$senator['nid']]);
 
-    //Clean basic information
+    // Clean basic information
     $nid = (int)$senatorData['nid'];
     $title = mysql_real_escape_string($senatorData['title'], $conn);
+    echo "[DEBUG] Got nid=$nid, title=$title; retrieving district info\n";
 
-    //Get the district number
+    // Get the district number
     $node_service = new nodeGet($domain, $apikey);
     $districtData = $node_service->get(array('nid'=>$senatorData['field_senators_district'][0]['nid']));
     $district = (int)$districtData['field_district_number'][0]['value'];
 
-    //Get the list id
+    // Get the list id
     $list_title = $senatorData['field_bronto_mailing_list'][0]['value'];
     if (!$list_title) {
-      echo "Skipping senator: D$district\t$title [$nid]; no mailing list found.\n";
+      echo "[WARN] Skipping senator: SD$district $title [$nid]; no mailing list found.\n";
     }
     else if ($optList['dryrun']) {
-      echo "[DRYRUN] Updating senator: D$district\t$title [$nid]; list: $list_title\n";
+      echo "[DRYRUN] Updating senator: SD$district $title [$nid]; list: $list_title\n";
     }
     else {
       $list_id = get_or_create_list($list_title, $conn);
 
       //Insert/Update the senator
-      echo "Updating senator: D$district\t$title [$nid]; list: $list_title\n";
+      echo "Updating senator: SD$district $title [$nid]; list: $list_title\n";
       $sql = "INSERT INTO senator (nid, title, district, list_id, active)
               VALUES ($nid, '$title', $district, $list_id, 1)
               ON DUPLICATE KEY UPDATE title='$title', district=$district,
@@ -108,15 +121,15 @@ function updateSenators($optList, $env)
   }
 
   if (count($inactive_senators) > 0) {
+    $nid_list = implode(',', array_keys($inactive_senators));
+    $name_list = implode(',', array_values($inactive_senators));
     if ($optList['dryrun']) {
-      echo "[DRYRUN] Deactivating senators: ".implode(',', array_values($inactive_senators))."\n";
-
+      echo "[DRYRUN] Deactivating senators: $name_list\n";
     }
     else {
       // Mark all senators not updated as inactive
-      echo "Deactivating senators: ".implode(',', array_values($inactive_senators))."\n";
-      $sql = "UPDATE senator SET active=0 WHERE nid IN (".
-                    implode(array_keys($inactive_senators)).")";
+      echo "Deactivating senators: $name_list\n";
+      $sql = "UPDATE senator SET active=0 WHERE nid IN ( $nid_list )";
       mysql_query($sql, $conn);
     }
   }
@@ -125,21 +138,32 @@ function updateSenators($optList, $env)
 
 function updateCommittees($optList, $env)
 {
+  echo "[NOTICE] Retrieving current list of committees from NYSenate.gov\n";
+
   // Fetch all the committees from NYSenate.gov
   list($domain, $apikey, $conn) = array_values($env);
   $view_service = new viewsGet($domain, $apikey);
   $committees = $view_service->get(array('view_name'=>'committees'));
+  $cnt = count($committees);
 
-  // Retrieve all committee ids from the database
+  if ($cnt < MIN_COMMITTEE_COUNT) {
+    echo "[ERROR] Unable to retrieve at least ".MIN_COMMITTEE_COUNT." committees from website\n";
+    return;
+  }
+    
+  echo "[DEBUG] Retrieved $cnt committees from website\n";
+
+  // Retrieve all committee IDs from the database
+  echo "[NOTICE] Retrieving active committees from the database\n";
   $inactive_committees = array();
   $sql = "SELECT nid, title FROM committee WHERE active=1";
   $result = mysql_query($sql, $conn);
-
   while ($row = mysql_fetch_assoc($result)) {
     $inactive_committees[$row['nid']] = $row['title'];
   }
 
   foreach ($committees as $committee) {
+    echo "[DEBUG] Retrieving committee data for nid=".$committee['nid']." from website\n";
     $node_service = new nodeGet($domain, $apikey);
     $committeeData = $node_service->get(array('nid'=>$committee['nid']));
     unset($inactive_committees[$committee['nid']]);
@@ -148,10 +172,11 @@ function updateCommittees($optList, $env)
     $nid = (int)$committeeData['nid'];
     $chair_nid = (int)$committeeData['field_chairs'][0]['nid'];
     $title = mysql_real_escape_string($committeeData['title'], $conn);
+    echo "[DEBUG] Got nid=$nid, chair_nid=$chair_nid, title=$title; retrieving chair info\n";
 
     //Get chair information for log entries
-    $node_service = new nodeGet($domain, $apikey);
     if ($chair_nid) {
+      $node_service = new nodeGet($domain, $apikey);
       $chairData = $node_service->get(array('nid'=>$chair_nid));
       $chair_title = $chairData['title'];
     }
@@ -163,16 +188,16 @@ function updateCommittees($optList, $env)
     //Get the list id
     $list_title = $committeeData['field_bronto_mailing_list'][0]['value'];
     if (!$list_title) {
-      echo "Skipping committee: $title [$nid], chair: $chair_title, no mailing list found.\n";
+      echo "[WARN] Skipping committee: $title [$nid], chair: $chair_title; no mailing list found.\n";
     }
     else if ($optList['dryrun']) {
-      echo "[DRYRUN] Updating committee: $title [$nid], chair: $chair_title [$chair_nid]\n";
+      echo "[DRYRUN] Updating committee: $title [$nid], chair: $chair_title [$chair_nid]; list: $list_title\n";
     }
     else {
       $list_id = get_or_create_list($list_title, $conn);
 
       //Insert/Update the committee
-      echo "Updating committee: $title [$nid], chair: $chair_title [$chair_nid]\n";
+      echo "Updating committee: $title [$nid], chair: $chair_title [$chair_nid]; list: $list_title\n";
       $sql = "INSERT INTO committee (nid, title, chair_nid, list_id)
               VALUES ($nid, '$title', $chair_nid, $list_id)
               ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid,
@@ -184,14 +209,15 @@ function updateCommittees($optList, $env)
   }
 
   if (count($inactive_committees) > 0) {
+    $nid_list = implode(',', array_keys($inactive_committees));
+    $name_list = implode(',', array_values($inactive_committees));
     if ($optList['dryrun']) {
-      echo "[DRYRUN] Deactivating committees: ".implode(',', array_values($inactive_committees))."\n";
+      echo "[DRYRUN] Deactivating committees: $name_list\n";
     }
     else {
       // Mark all senators not updated as inactive
-      echo "Deactivating committees: ".implode(',', array_values($inactive_committees))."\n";
-      $sql = "UPDATE committee SET active=0 WHERE nid IN (".
-                 implode(array_keys($inactive_committees)).")";
+      echo "Deactivating committees: $name_list\n";
+      $sql = "UPDATE committee SET active=0 WHERE nid IN ( $nid_list )";
       mysql_query($sql, $conn);
     }
   }
@@ -200,12 +226,13 @@ function updateCommittees($optList, $env)
 
 function updateSignups($optList, $env)
 {
+  echo "[NOTICE] Retrieving current list of signups from NYSenate.gov\n";
   $issue_ids = array();
   list($domain, $apikey, $conn) = array_values($env);
   $limit = $optList['batch'] ? $optList['batch'] : 500; //default to 500
 
-  //Starting point can be user supplied or queried from the database for
-  //new contacts only
+  // Starting point can be user supplied or queried from the database for
+  // new contacts only
   if ($optList['first'] !== NULL) {
     $start_id = (int)$optList['first'];
   }
@@ -215,7 +242,7 @@ function updateSignups($optList, $env)
 
   while (true) {
     $old_start_id = $start_id;
-    echo "Fetching the new records starting from ".($start_id?$start_id:0).".\n";
+    echo "[DEBUG] Fetching new records starting from $start_id\n";
     $signup_service = new SignupGet($domain, $apikey);
     $signupData = $signup_service->get(array(
                                         'start_date' => null,
@@ -230,9 +257,9 @@ function updateSignups($optList, $env)
       exit();
     }
 
-    $count = count($signupData['accounts']);
-    if ($count == 0) {
-      echo "No Records Found.\n";
+    $cnt = count($signupData['accounts']);
+    if ($cnt == 0) {
+      echo "[DEBUG] No records found.\n";
       break;
     }
 
@@ -241,16 +268,16 @@ function updateSignups($optList, $env)
      return;
     }
 
-    echo "Processing batch of $count senator/committee accounts...\n";
+    echo "[NOTICE] Processing batch of $cnt senator/committee accounts...\n";
     foreach ($signupData['accounts'] as $account) {
       //Output a quick warning letting us know something weird is happening
       $num_lists = count($account['lists']);
       if ($num_lists > 1) {
-        echo "account['name']={$account['name']} has {$num_lists} lists associated with it.\n";
+        echo "[DEBUG] account['name']={$account['name']} has {$num_lists} lists associated with it.\n";
       }
       elseif ($num_lists == 0) {
         //There were no lists on this account... This is BAD.
-        echo "ERROR: Account with no lists found!!! ".print_r($account, TRUE)."\n";
+        echo "[ERROR] Account with no lists found!!! ".print_r($account, TRUE)."\n";
       }
 
       $list_id = get_or_create_list($account['lists'][0]['name'], $conn);
@@ -283,62 +310,9 @@ function updateSignups($optList, $env)
         }
       }
     }
-    echo "Inserted $old_start_id to $start_id signup records.\n";
+    echo "[DEBUG] Inserted $old_start_id to $start_id signup records.\n";
   }
 } // updateSignups()
-
-
-function geocodeAddresses($optList, $env)
-{
-  // Bootstrap CiviCRM so we can use the SAGE module
-  $conn = $env['conn'];
-  $root = dirname(dirname(dirname(dirname(__FILE__))));
-  $_SERVER["HTTP_HOST"] = $_SERVER['SERVER_NAME'] = 'sd99';
-  require_once "$root/drupal/sites/default/civicrm.settings.php";
-  require_once "$root/civicrm/custom/php/CRM/Utils/SAGE.php";
-
-  //Format the row as civicrm likes to see it.
-  $sql = "SELECT id, address1 as street_address, address2 as street_address2,
-                 city as city, state as state_province, zip as postal_code
-          FROM person WHERE district IS NULL ORDER BY id ASC";
-
-  if (!($result = mysql_query($sql, $conn))) {
-    die(mysql_error($conn)."\n$sql\n");
-  }
-
-  $geocodeCount = 0;
-
-  while ($row = mysql_fetch_assoc($result)) {
-    //geocode, dist assign and format address
-    echo "[DEBUG] Geocoding: {$row['street_address']}, {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
-
-    if ($optList['dryrun']) {
-     continue;
-    }
-
-    CRM_Utils_SAGE::lookup($row);
-
-    //Supply zero as a default so we can find the bad ones later
-    $district = 0;
-    if (isset($row['custom_47_-1']) && $row['custom_47_-1']) {
-      $district = $row['custom_47_-1'];
-      echo "[DEBUG] Address geocoded to Senate District $district\n";
-    }
-    else {
-      echo "[NOTICE] Address --^ could not be geocoded.\n";
-    }
-
-    $sql = "UPDATE person SET district=$district WHERE id={$row['id']}";
-
-    if (!mysql_query($sql, $conn)) {
-     echo "[ERROR] District update failed for id={$row['id']}, district=$district [".mysql_error($conn)."]\n";
-    }
-    else if ($district > 0) {
-     $geocodeCount++;
-    }
-  }
-  echo "[NOTICE] Geocoded $geocodeCount record(s).\n\n";
-} // geocodeAddresses()
 
 
 function get_start_id($conn)

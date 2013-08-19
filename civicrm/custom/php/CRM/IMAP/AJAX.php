@@ -519,6 +519,7 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
         require_once 'CRM/Utils/File.php';
         require_once 'CRM/Utils/IMAP.php';
+	$bbconfig = get_bluebird_instance_config();
         $debug = false;
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
@@ -544,12 +545,12 @@ class CRM_IMAP_AJAX {
 
         $output = self::unifiedMessageInfo($messageUid);
         $oldActivityId =  mysql_real_escape_string($output['activity_id']);
-        $senderEmail = mysql_real_escape_string($output['sender_email']);
-        $senderName = mysql_real_escape_string($output['sender_name']);
-        $forwarder = mysql_real_escape_string($output['forwarder']);
+	$senderEmail = substr(mysql_real_escape_string($output['sender_email']),0,255);
+	$senderName = substr(mysql_real_escape_string($output['sender_name']),0,255);
+	$forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
         $date = mysql_real_escape_string($output['updated_date']);
         $FWDdate = mysql_real_escape_string($output['email_date']);
-        $subject = mysql_real_escape_string($output['subject']);
+	$subject = substr(mysql_real_escape_string($output['subject']),0,255);
         $body = mysql_real_escape_string($output['body']);
         $status = mysql_real_escape_string($output['status']);
         $key = mysql_real_escape_string($output['sender_email']);
@@ -631,7 +632,14 @@ class CRM_IMAP_AJAX {
 
             $aActivityType = CRM_Core_PseudoConstant::activityType();
             $activityType = array_search('Inbound Email', $aActivityType);
-            $activityStatus = array_search('Completed', $aActivityStatus);
+	    $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
+
+	    $imap_activty_status = strtolower($bbconfig['imap.activity.status.default']);
+	    if ($imap_activty_status == false || !isset($imap_activty_status)) {
+	      $activityStatus = array_search('Completed', $aActivityStatus);
+	    }else{
+	      $activityStatus = array_search($imap_activty_status, $aActivityStatus);
+	    }
 
             // Submit the activity information and assign it to the right user
             $params = array(

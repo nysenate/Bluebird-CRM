@@ -90,6 +90,8 @@ require_once 'CRM/Utils/MessageBodyParser.php';
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
+$imap_activty_status = strtolower($bbconfig['imap.activity.status.default']);
+
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -136,12 +138,18 @@ else {
 
 // Grab default values for activities (priority, status, type).
 $aActivityPriority = CRM_Core_PseudoConstant::priority();
-$aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $aActivityType = CRM_Core_PseudoConstant::activityType();
+$aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
 $activityPriority = array_search('Normal', $aActivityPriority);
-$activityStatus = array_search('Completed', $aActivityStatus);
 $activityType = array_search('Inbound Email', $aActivityType);
+
+if ($imap_activty_status == false || !isset($imap_activty_status)) {
+  $activityStatus = array_search('Completed', $aActivityStatus);
+}else{
+  $activityStatus = array_search($imap_activty_status, $aActivityStatus);
+}
+
 
 $activityDefaults = array('priority' => $activityPriority,
                           'status' => $activityStatus,
@@ -544,10 +552,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   echo "[DEBUG]   Body download time: ".($timeEnd-$timeStart)."\n";
 
   // formatting headers
-  $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
-  $fwdName = $parsedBody['fwd_headers']['fwd_name'];
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'],0,255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'],0,255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = $parsedBody['fwd_headers']['fwd_subject'];
+  $fwdSubject = substr( $parsedBody['fwd_headers']['fwd_subject'],0,255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
@@ -555,10 +563,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $messageId = $msgMeta->uid;
   $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail = mysql_real_escape_string($msgMeta->fromEmail);
-  $fromName = mysql_real_escape_string($msgMeta->fromName);
-  $subject = mysql_real_escape_string($msgMeta->subject);
-  $date = mysql_real_escape_string($msgMeta->date);
+  $fromEmail =substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
+  $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
 
   if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
