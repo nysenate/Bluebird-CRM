@@ -42,6 +42,56 @@ $drush $instance en nyss_loadsampledata -y -q
 echo "Creating and populating school district code lookup table..."
 $execSql $instance -f $app_rootdir/scripts/sql/schoolDistrictCodes.sql -q
 
+## 7062 theme updates
+echo "Cleaning up some deprecated theme name references and improving page-not-found notification layout..."
+sql="
+  DELETE FROM block
+  WHERE theme = 'rayCivicrm';
+
+  UPDATE field_data_body
+  SET body_value = '
+    <div style=\"background-color: #FFFFFF; padding: 20px 10px 10px; border-radius: 4px; margin-top: 10px;\">
+      <div style=\"float:left;\"><img src=\"/sites/default/themes/Bluebird/nyss_skin/images/seal-bluebird.png\" style=\"float:left;margin-left:10px;\" /></div>
+      <div style=\"float:left; margin-left:30px;width:700px;\">
+        <p>The page you are trying to reach does not exist. Please check and make sure you have the correct URL. <br />
+        <a href=\"/\" title=\"Bluebird Home\"><strong>Click here</strong></a> to return to the Bluebird Dashboard. </p>
+        <p>If you feel this page was received in error, please copy the URL from your browser\'s address bar and email with additional details to your technical support staff.</p>
+      </div>
+      <div style=\"clear:both;\"></div>
+    </div>'
+  WHERE entity_type = 'node'
+    AND bundle = 'page'
+    AND entity_id = 2;
+
+  UPDATE field_revision_body
+  SET body_value = '
+    <div style=\"background-color: #FFFFFF; padding: 20px 10px 10px; border-radius: 4px; margin-top: 10px;\">
+      <div style=\"float:left;\"><img src=\"/sites/default/themes/Bluebird/nyss_skin/images/seal-bluebird.png\" style=\"float:left;margin-left:10px;\" /></div>
+      <div style=\"float:left; margin-left:30px;width:700px;\">
+        <p>The page you are trying to reach does not exist. Please check and make sure you have the correct URL. <br />
+        <a href=\"/\" title=\"Bluebird Home\"><strong>Click here</strong></a> to return to the Bluebird Dashboard. </p>
+        <p>If you feel this page was received in error, please copy the URL from your browser\'s address bar and email with additional details to your technical support staff.</p>
+      </div>
+      <div style=\"clear:both;\"></div>
+    </div>'
+  WHERE entity_type = 'node'
+    AND bundle = 'page'
+    AND entity_id = 2;
+
+  UPDATE block
+  SET weight = '-11'
+  WHERE theme = 'Bluebird'
+    AND module = 'system'
+    AND region = 'content';
+
+  UPDATE block
+  SET weight = '-10'
+  WHERE theme = 'Bluebird'
+    AND module = 'user'
+    AND region = 'content';
+"
+$execSql $instance -c "$sql"  --drupal -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance

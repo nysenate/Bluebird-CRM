@@ -552,10 +552,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   echo "[DEBUG]   Body download time: ".($timeEnd-$timeStart)."\n";
 
   // formatting headers
-  $fwdEmail = $parsedBody['fwd_headers']['fwd_email'];
-  $fwdName = $parsedBody['fwd_headers']['fwd_name'];
+  $fwdEmail = substr($parsedBody['fwd_headers']['fwd_email'],0,255);
+  $fwdName = substr($parsedBody['fwd_headers']['fwd_name'],0,255);
   $fwdLookup = $parsedBody['fwd_headers']['fwd_lookup'];
-  $fwdSubject = $parsedBody['fwd_headers']['fwd_subject'];
+  $fwdSubject = substr( $parsedBody['fwd_headers']['fwd_subject'],0,255);
   $fwdDate = $parsedBody['fwd_headers']['fwd_date'];
   $fwdFormat = $parsedBody['format'];
   $messageAction = $parsedBody['message_action'];
@@ -563,10 +563,10 @@ function storeMessage($mbox, $db, $msgMeta, $params)
   $messageId = $msgMeta->uid;
   $oldDate = $msgMeta->date;
   $imapId = 0;
-  $fromEmail = mysql_real_escape_string($msgMeta->fromEmail);
-  $fromName = mysql_real_escape_string($msgMeta->fromName);
-  $subject = mysql_real_escape_string($msgMeta->subject);
-  $date = mysql_real_escape_string($msgMeta->date);
+  $fromEmail =substr(mysql_real_escape_string($msgMeta->fromEmail),0,255);
+  $fromName = substr(mysql_real_escape_string($msgMeta->fromName),0,255);
+  $subject = substr(mysql_real_escape_string($msgMeta->subject),0,255);
+  $date = substr(mysql_real_escape_string($msgMeta->date),0,255);
 
   if ($messageAction == 'direct' && !$parsedBody['fwd_headers']['fwd_email']) {
     $fwdEmail = $fromEmail;
