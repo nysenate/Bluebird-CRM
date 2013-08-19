@@ -126,7 +126,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           'contact_target'  =>
           array(
             'name'  => 'sort_name',
-            'alias' => 'civicrm_contact_target',
+            'alias' => 'contact_civireport',
             'title' => ts( 'Target (With)' ),
           ),
         ),
@@ -280,26 +280,26 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         array(
           'source_contact_id' =>
           array(
-            'title'    => ts( 'Added by Contact' ),
+            'title' => ts( 'Added by Contact' ),
             'default_weight' => '0'
           ), //NYSS
           'activity_date_time' =>
           array(
-            'title'   => ts( 'Activity Date' ),
+            'title' => ts( 'Activity Date' ),
             'default_weight' => '1'
           ),
-          'activity_type_id'   =>
+          'activity_type_id' =>
           array(
-            'title'   => ts( 'Activity Type' ),
+            'title' => ts( 'Activity Type' ),
             'default_weight' => '2'
           ),
-          'activity_subject'   =>
+          'activity_subject' =>
           array(
-            'title'   => ts( 'Activity Subject' )
+            'title' => ts( 'Activity Subject' )
           ), //NYSS 5059
-          'status_id'   =>
+          'status_id' =>
           array(
-            'title'   => ts( 'Activity Status' )
+            'title' => ts( 'Activity Status' )
           ),
         ),
         'grouping' => 'activity-fields',
