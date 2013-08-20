@@ -347,11 +347,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //if delete contact, process and exit
     if ( !empty($l['delete_contact']) &&
-      strtolower($l['delete_contact']) == 'x' &&
-      !empty($l['id'])
+      $l['delete_contact'] === 1
     ) {
-      $delete_contacts[] = $l['id'];
-      CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+      if ( !empty($l['id']) ) {
+        $delete_contacts[] = $l['id'];
+        CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+      }
+      else {
+        nyss_out('debug', 'contact flagged for deletion but no ID provided. skipping record:', TRUE);
+        nyss_out('debug', $l, TRUE);
+      }
       continue;
     }
 
