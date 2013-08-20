@@ -294,7 +294,8 @@ treeBehavior = {
         id: "" + (this.positionIdNumber + 3)
       };
       forpos.type = agipos.type = neupos.type = "292";
-      forpos.description = agipos.description = neupos.description = o.url;
+      forpos.description = agipos.description = neupos.description = o.description;
+      forpos.url = agipos.url = neupos.url = o.url;
       format.push(forpos);
       format.push(agipos);
       format.push(neupos);
@@ -404,13 +405,13 @@ treeBehavior = {
     return this.switchToSearch(tagListLength);
   },
   buildPositions: function() {
-    var a, k, o, _ref, _results;
+    var k, o, _ref, _results;
     _ref = this.positionListing;
     _results = [];
     for (k in _ref) {
       o = _ref[k];
-      a = treeManipulation.createDT(1, o.id, o.name, 292);
-      _results.push(console.log(a));
+      console.log(k, o);
+      _results.push(cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(this.cjSearchBox));
     }
     return _results;
   },
@@ -612,18 +613,32 @@ treeManipulation = {
   createDL: function(lvl, id, name) {
     return "<dl class='lv-" + lvl + "' id='tagDropdown_" + id + "' data-name='" + name + "'></dl>";
   },
-  createDT: function(lvl, id, name, parent, treeButton) {
-    var output;
+  createDT: function(lvl, id, name, parent, treeButton, description) {
+    var hasDesc, output;
     if (lvl == null) {
       lvl = 0;
     }
     if (treeButton == null) {
       treeButton = "";
     }
+    if (description == null) {
+      description = "";
+    }
+    hasDesc = "";
+    if (description.length > 0) {
+      hasDesc = "description";
+    }
+    if (description.length > 60) {
+      hasDesc = "longdescription";
+    }
+    if (description.length > 150) {
+      "";
+    }
     output = "<dt class='lv-" + lvl + " tag-" + id + "' id='tagLabel_" + id + "' data-tagid='" + id + "' data-name='" + name + "' data-parentid='" + parent + "'>";
     output += "<div class='tag'>";
     output += "<div class='ddControl " + treeButton + "'></div>";
     output += "<span class='name'>" + name + "</span></div>";
+    output += "<div class='transparancyBox type-" + parent + "'></div>";
     output += "</dt>";
     return output;
   }

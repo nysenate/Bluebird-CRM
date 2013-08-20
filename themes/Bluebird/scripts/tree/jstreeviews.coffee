@@ -248,7 +248,8 @@ treeBehavior =
         name: o.noname
         id: "#{@positionIdNumber+3}"
       forpos.type = agipos.type = neupos.type = "292"
-      forpos.description = agipos.description = neupos.description = o.url
+      forpos.description = agipos.description = neupos.description = o.description
+      forpos.url = agipos.url = neupos.url = o.url
       format.push(forpos)
       format.push(agipos)
       format.push(neupos)
@@ -339,7 +340,7 @@ treeBehavior =
     else
       tagListLength = 0
       @cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>")
-    
+
     for value in @toShade
       @makeShade value, term
 
@@ -348,9 +349,10 @@ treeBehavior =
   
   buildPositions: () ->
     for k,o of @positionListing
-      a = treeManipulation.createDT(1, o.id, o.name, 292)
-      console.log a
-
+      console.log k,o
+      cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(@cjSearchBox)
+      # cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(@cjSearchBox)
+      
   switchToSearch: (tagListLength) ->
     cj("#{@tabsLoc} .tab-search").show()
     @setTabResults(tagListLength,"tab-search")
@@ -487,11 +489,20 @@ treeManipulation =
   createDL: (lvl, id, name) ->
     return "<dl class='lv-#{lvl}' id='tagDropdown_#{id}' data-name='#{name}'></dl>"
 
-  createDT: (lvl = 0, id, name, parent, treeButton = "") ->
+  createDT: (lvl = 0, id, name, parent, treeButton = "", description = "") ->
+    hasDesc = ""
+    if description.length > 0
+      hasDesc = "description"
+    if description.length > 60
+      hasDesc = "longdescription"
+    if description.length > 150
+      # getLastSpace
+      ""
     output = "<dt class='lv-#{lvl} tag-#{id}' id='tagLabel_#{id}' data-tagid='#{id}' data-name='#{name}' data-parentid='#{parent}'>"
     output += "<div class='tag'>"
     output += "<div class='ddControl #{treeButton}'></div>"
     output += "<span class='name'>#{name}</span></div>"
+    output += "<div class='transparancyBox type-#{parent}'></div>"
     output += "</dt>"
     return output
 
