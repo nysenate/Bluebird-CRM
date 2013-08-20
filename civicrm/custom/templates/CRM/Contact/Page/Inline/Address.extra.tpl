@@ -21,3 +21,12 @@
   }
 </script>
 {/literal}
+
+{*5412*}
+{if $privacy.do_not_mail || $privacy.do_not_trade}
+  {literal}
+  <script type="text/javascript">
+    cj('div.crm-address-block div.crm-content').wrapInner('<span class="do-not-mail" />');
+  </script>
+  {/literal}
+{/if}
