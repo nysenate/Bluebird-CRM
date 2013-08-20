@@ -156,6 +156,25 @@ function nyss_contact_civicrm_pageRun( &$page ) {
     $inCommPref = civicrm_api('contact', 'getsingle', $params);
     $page->assign('inCommPref', $inCommPref);
   }
+
+  //5412
+  if ( $pagename == 'CRM_Contact_Page_Inline_Address' ) {
+    $smarty = CRM_Core_Smarty::singleton();
+    if ( $smarty->get_template_vars('privacy') === NULL ) {
+      $cid = $smarty->get_template_vars('contactId');
+      $contact = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $cid));
+      //CRM_Core_Error::debug_var('contact', $contact);
+
+      $privacy = array();
+      foreach ( $contact as $f => $v ) {
+        if ( strpos($f, 'do_not_') !== FALSE || $f == 'is_opt_out' ) {
+          $privacy[$f] = $v;
+        }
+      }
+      //CRM_Core_Error::debug_var('$privacy', $privacy);
+      $page->assign('privacy', $privacy);
+    }
+  }
 }//pageRun
 
 function nyss_contact_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
