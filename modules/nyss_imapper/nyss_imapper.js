@@ -15,6 +15,7 @@ cj(document).ready(function(){
   var assign = cj('#assign');
   var reassign = cj('#reassign');
   var create = cj('#add-contact');
+  var createReassign = cj('#add-contact-reassign');
 
   // onpageload
   if(cj("#Activities").length){
@@ -518,9 +519,84 @@ cj(document).ready(function(){
       return false;
     }else{
       alert("Required: First Name or Last Name or Email");
-    };
+    }
   });
 
+// create a new contact and Reassign message to them
+  createReassign.click(function() {
+    var create_messageId = cj('#id').val();
+    var create_first_name = cj("#tab2 .first_name").val();
+    var create_last_name = cj("#tab2 .last_name").val();
+    var create_email_address = cj("#tab2 .email_address").val();
+    var create_phone = cj("#tab2 .phone").val();
+    var create_street_address = cj("#tab2 .street_address").val();
+    var create_street_address_2 = cj("#tab2 .street_address_2").val();
+    var create_zip = cj("#tab2 .zip").val();
+    var create_city = cj("#tab2 .city").val();
+    var create_dob = cj("#tab2 .dob").val();
+    var create_state = cj("#tab2 .state").val();
+
+    if((create_first_name)||(create_last_name)||(create_email_address)){
+      cj.ajax({
+	url: '/civicrm/imap/ajax/createNewContact',
+	data: {
+	  messageId: create_messageId,
+	  first_name: create_first_name,
+	  last_name: create_last_name,
+	  email_address: create_email_address,
+	  phone: create_phone,
+	  street_address: create_street_address,
+	  street_address_2: create_street_address_2,
+	  postal_code: create_zip,
+	  city: create_city,
+	  state: create_state,
+	  dob: create_dob
+	},
+	success: function(data, status) {
+	  contactData = cj.parseJSON(data);
+	  if (contactData.code == 'ERROR' || contactData.code === '' || contactData === null ){
+	    alert('Could Not Create Contact : '+contactData.message);
+	    return false;
+	  }else{
+	    cj.ajax({
+		url: '/civicrm/imap/ajax/reassignActivity',
+		data: {
+		  id: create_messageId,
+		  change: contactData.contact
+		},
+		success: function(data, status) {
+		  var data = cj.parseJSON(data);
+		  if (data.code =='ERROR'){
+		    alert('Could not reassign Message : '+data.message);
+		  }else{
+		    cj("#find-match-popup").dialog('close');
+		    // reset activity to new data
+		    cj('#'+create_messageId).attr("data-contact_id",data.contact_id); // contact_id
+		    cj('#'+create_messageId+" .name").attr("data-firstname",data.first_name); // first_name
+		    cj('#'+create_messageId+" .name").attr("data-lastname",data.last_name); // last_name
+		    cj('#'+create_messageId+" .match").html("ManuallyMatched");
+		    contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
+
+		    helpMessage(data.message);
+		    // redraw the table
+		    var oTable = cj('#sortable_results').dataTable();
+		    var row_index = oTable.fnGetPosition(document.getElementById(create_messageId));
+		    oTable.fnUpdate('ManuallyMatched', row_index, 4 );
+		    oTable.fnUpdate(contact, row_index, 1 );
+		    oTable.fnDraw();
+		  }
+		},
+		error: function(){
+		  alert('failure');
+		}
+	    });
+	  }
+      return false;
+    }});
+    }else{
+      alert("Required: First Name or Last Name or Email");
+    }
+  });
   // opening find match window Unmatched
   cj(".find_match").live('click', function() {
     cj("#loading-popup").dialog('open');
