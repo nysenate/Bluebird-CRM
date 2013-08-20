@@ -345,6 +345,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       nyss_flush();
     }
 
+    //if delete contact, process and exit
+    if ( !empty($l['delete_contact']) &&
+      strtolower($l['delete_contact']) == 'x' &&
+      !empty($l['id'])
+    ) {
+      $delete_contacts[] = $l['id'];
+      CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+      continue;
+    }
+
     //fix the gender entries
     _fixGender($l, $aGender);
 
@@ -562,8 +572,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   $num_updated = count($updated_contacts);
   $num_created = count($new_contacts);
+  $num_deleted = count($delete_contacts);
 
   nyss_out('status', "$num_updated updated, $num_created created.", TRUE);
+  nyss_out('status', "$num_deleted deleted.", TRUE);
   nyss_out('status', "$addressDelCount addresses deleted.", TRUE);
   nyss_out('status', "Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",TRUE);
 
