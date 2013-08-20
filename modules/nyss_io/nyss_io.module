@@ -347,7 +347,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //if delete contact, process and exit
     if ( !empty($l['delete_contact']) &&
-      $l['delete_contact'] === 1
+      $l['delete_contact'] == 1
     ) {
       if ( !empty($l['id']) ) {
         $delete_contacts[] = $l['id'];
