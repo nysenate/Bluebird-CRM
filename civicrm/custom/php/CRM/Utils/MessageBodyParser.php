@@ -11,7 +11,7 @@ define('BODY_TAGS_TO_SKIP', '
         TEXTAREA|TITLE|TT|U|UL|VAR');
 
 define('HEAD_TAGS_TO_SKIP', BODY_TAGS_TO_SKIP.'|
-        BR|HR|IMG|TABLE|TD|TBODY|TFOOT|TH|THEAD|TR');
+	BR|DIV|HR|IMG|TABLE|TD|TBODY|TFOOT|TH|THEAD|TR');
 
 
 class MessageBodyParser
@@ -77,7 +77,7 @@ class MessageBodyParser
           $BlockLines[$currentHeader]['start']=$key;
         }
       }else{
-        if (trim($line) == ''){
+	if (strip_tags(trim($line) == '')){
           // if there is an open header, and we have an empty line, thats the end of a deader
           if ((!isset($BlockLines[$currentHeader]['stop'])) && (isset($BlockLines[$currentHeader]['start']))) {
             $BlockLines[$currentHeader]['stop']=$key;
