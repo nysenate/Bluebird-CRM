@@ -112,7 +112,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page-civicrm-imap #message_left .debug_on,
 .page-civicrm-imap #message_left .debug_off {color: #336699!important; }
 .page-civicrm-imap #message_left_header,
-.page-civicrm-imap #message_left_header_tag{padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 70px; line-height: 23px; width: 640px; overflow: hidden;}
+.page-civicrm-imap #message_left_header_tag{padding:10px ; background: #f1f1f1; border-bottom: 1px solid #e5e5e5; height: 110px; line-height: 23px; width: 640px; overflow: hidden;}
 .page-civicrm-imap #message_left_email,
 .page-civicrm-imap #message_left_email_tag{padding:10px ; width:640px; height:320px; overflow:auto; }
 
