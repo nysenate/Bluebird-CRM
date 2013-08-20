@@ -137,6 +137,10 @@ cj( function() {
     }
     return false;
   });
+
+  //NYSS 6938
+  cj('#crm-container-snippet').css('width','auto');
+  cj('tr[id=^streetAddress] a[title="Edit Address Elements"]').before('<br />');
 });
 
 </script>
