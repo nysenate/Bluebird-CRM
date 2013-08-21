@@ -217,6 +217,12 @@ class CRM_ImportSampleData {
       'civicrm_tell_friend',
       'civicrm_uf_match',
       'civicrm_website',
+      'civicrm_value_activity_details_6',
+      'civicrm_value_attachments_5',
+      'civicrm_value_constituent_information_1',
+      'civicrm_value_contact_details_8',
+      'civicrm_value_district_information_7',
+      'civicrm_value_organization_constituent_informa_3',
     );
     if ( $optDry ) {
       bbscript_log('trace', 'The following tables would be truncated: ', $tblTruncate);
