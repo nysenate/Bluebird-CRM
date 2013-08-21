@@ -126,26 +126,29 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     // used for redirect back to contact summary
     $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
 
-    //NYSS 5525/Jira 11854
+    //NYSS 5525/Jira 11854/7049/7045
     $logging = new CRM_Logging_Schema;
-    $customTables = $logging->customDataLogTables();
+
+    // build _logTables for contact custom tables
+    $customTables = $logging->entityCustomDataLogTables('Contact');
     foreach ($customTables as $table) {
-      //NYSS 7045
-      if ( $table != 'log_civicrm_value_district_information_7' ) {
-        $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
-      }
+      $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
     }
 
-    //NYSS 7045
-    $this->_logTables['log_civicrm_value_district_information_7'] = array(
-      'fk'  => 'contact_id',
-      'table_name' => 'log_civicrm_value_district_information_7',
-      'joins' => array(
-        'table' => 'log_civicrm_address',
-        'join' => 'entity_log_civireport.entity_id = fk_table.id'
-      ),
-      'log_type' => 'Address',
-    );
+    //NYSS 7045/7049
+    // build _logTables for address custom tables
+    $customTables = $logging->entityCustomDataLogTables('Address');
+    foreach ($customTables as $table) {
+      $this->_logTables[$table] =
+        array(
+          'fk' => 'contact_id',// for join of fk_table with contact table
+          'joins' => array(
+            'table' => 'log_civicrm_address', // fk_table
+            'join'  => 'entity_log_civireport.entity_id = fk_table.id'
+          ),
+          'log_type' => 'Contact'
+        );
+    }
 
     parent::__construct();
   }

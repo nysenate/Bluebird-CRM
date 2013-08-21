@@ -4201,7 +4201,21 @@ civicrm_relationship.start_date > {$today}
         }
       }
     }*/
+
     //NYSS 6723
+    if(!empty($this->_permissionWhereClause)){
+      if (empty($where)) {
+        $where = "WHERE $this->_permissionWhereClause";
+      }
+      else {
+        $where = "$where AND $this->_permissionWhereClause";
+      }
+    }
+
+    if ($additionalWhereClause) {
+      $where = $where . ' AND ' . $additionalWhereClause;
+    }
+
     //additional from clause should be w/ proper joins.
     if ($additionalFromClause) {
       $from .= "\n" . $additionalFromClause;

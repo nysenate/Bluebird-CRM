@@ -442,6 +442,20 @@ COLS;
     }
   }
 
+  //NYSS 7049
+  /**
+   * Return custom data tables for specified entity / extends.
+   */
+  function entityCustomDataLogTables($extends) {
+    $customGroupTables = array();
+    $customGroupDAO = CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($extends);
+    $customGroupDAO->find();
+    while ($customGroupDAO->fetch()) {
+      $customGroupTables[$customGroupDAO->table_name] = $this->logs[$customGroupDAO->table_name];
+    }
+    return $customGroupTables;
+  }
+
   /**
    * This allow logging to be temporarily disabled for certain cases
    * where we want to do a mass cleanup but dont want to bother with
