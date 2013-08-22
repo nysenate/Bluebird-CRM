@@ -16,8 +16,10 @@
         return false;
       }
       term = args.term;
+      this.term = term;
       year = args.year;
       page = args.page || 1;
+      this.page = ajaxStructure.data.pageIdx = page;
       return this.buildQuery(term, year, page);
     };
 
@@ -59,8 +61,9 @@
       pagesLeft = Math.floor((metadata.totalresults - results.length) / ajaxStructure.data.pageSize) - ajaxStructure.data.pageIdx;
       returnStructure = {
         seeXmore: metadata.totalresults - results.length,
-        page: ajaxStructure.data.pageIdx,
+        page: this.page,
         pagesLeft: pagesLeft,
+        term: this.term,
         results: []
       };
       for (index = _i = 0, _len = results.length; _i < _len; index = ++_i) {
@@ -671,6 +674,7 @@
             var hits, tags;
             hits = terms.tags.length + results.results.length + results.seeXmore;
             _this.addPositionsToTags(results.results);
+            _this.getNextPositionRound(results);
             tags = terms.tags;
             if (hits > 0) {
               return _this.buildSearchList(tags, terms.term.toLowerCase(), hits);
@@ -688,6 +692,11 @@
       });
     },
     positionIdNumber: 292000,
+    getNextPositionRound: function(results) {
+      this.positionPage = results.page + 1;
+      this.positionPagesLeft = results.pagesLeft;
+      return this.positionSearchTerm = results.term;
+    },
     addPositionsToTags: function(positions) {
       var agipos, format, forpos, k, neupos, o;
       format = [];
@@ -817,15 +826,31 @@
       return this.switchToSearch(tagListLength);
     },
     buildPositions: function() {
-      var k, o, _ref, _results;
+      var k, o, openLeg, options, _ref,
+        _this = this;
       _ref = this.positionListing;
-      _results = [];
       for (k in _ref) {
         o = _ref[k];
-        console.log(k, o);
-        _results.push(cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(this.cjSearchBox));
+        cj(treeManipulation.createDT(1, o.id, o.name, 292, "", o.description)).appendTo(this.cjSearchBox);
       }
-      return _results;
+      if (this.positionPagesLeft > 1) {
+        openLeg = new OpenLeg;
+        options = {
+          scrollBox: ".JSTree.BBTree"
+        };
+        return cj(".JSTree .search.tagContainer").infiniscroll(options, function() {
+          var nextPage;
+          nextPage = {
+            term: _this.positionSearchTerm,
+            page: _this.positionPage
+          };
+          return openLeg.query(nextPage, function(results) {
+            _this.addPositionsToTags(results.results);
+            _this.getNextPositionRound(results);
+            return _this.buildPositions();
+          });
+        });
+      }
     },
     switchToSearch: function(tagListLength) {
       cj("" + this.tabsLoc + " .tab-search").show();
@@ -1040,16 +1065,20 @@
       if (description.length > 0) {
         hasDesc = "description";
       }
-      if (description.length > 60) {
+      if (description.length > 0 && description.length <= 95) {
+        hasDesc += " shortdescription";
+      }
+      if (description.length > 180) {
         hasDesc = "longdescription";
       }
-      if (description.length > 150) {
-        "";
-      }
-      output = "<dt class='lv-" + lvl + " tag-" + id + "' id='tagLabel_" + id + "' data-tagid='" + id + "' data-name='" + name + "' data-parentid='" + parent + "'>";
+      output = "<dt class='lv-" + lvl + " tag-" + id + " " + hasDesc + "' id='tagLabel_" + id + "' data-tagid='" + id + "' data-name='" + name + "' data-parentid='" + parent + "'>";
       output += "<div class='tag'>";
       output += "<div class='ddControl " + treeButton + "'></div>";
-      output += "<span class='name'>" + name + "</span></div>";
+      output += "<span class='name'>" + name + "</span>";
+      if (description != null) {
+        output += "<div class='description'>" + description + "</div>";
+      }
+      output += "</div>";
       output += "<div class='transparancyBox type-" + parent + "'></div>";
       output += "</dt>";
       return output;

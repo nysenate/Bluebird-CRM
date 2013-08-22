@@ -4,11 +4,7 @@
     var $this, methods, _cb, _cj, _defaults, _internals, _options;
     $this = void 0;
     _defaults = {
-      auto: true,
-      loadingtext: "<span class='loadingGif'></span>",
-      padding: 0,
-      contentSelector: "",
-      scrollBox: ".JSTree",
+      scrollBox: ".infiniScrollBox",
       box: {
         height: 0,
         percent: 99,
@@ -34,12 +30,6 @@
     };
     _internals = {
       setCJ: function(target) {
-        if (_options.contentSelector != null) {
-          _cj.cs = cj(_options.contentSelector);
-        }
-        if (_options.paginationSelector != null) {
-          _cj.ps = cj(_options.paginationSelector);
-        }
         _cj.sb = cj(_options.scrollBox);
         return _cj.loc = target;
       },

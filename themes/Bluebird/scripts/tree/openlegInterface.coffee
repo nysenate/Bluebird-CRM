@@ -6,8 +6,10 @@ class OpenLeg
   query: (args, @callback)->
     return false unless args.term? or args.term.length >= 3
     term = args.term
+    @term = term
     year = args.year
     page = args.page || 1
+    @page = ajaxStructure.data.pageIdx = page
     return @buildQuery(term, year, page)
 
   buildQuery:(term, year) ->
@@ -39,8 +41,9 @@ class OpenLeg
     pagesLeft = Math.floor((metadata.totalresults-results.length)/ajaxStructure.data.pageSize)-ajaxStructure.data.pageIdx
     returnStructure=
       seeXmore: metadata.totalresults-results.length
-      page: ajaxStructure.data.pageIdx
+      page: @page
       pagesLeft: pagesLeft
+      term: @term
       results: []
 
     for result, index in results

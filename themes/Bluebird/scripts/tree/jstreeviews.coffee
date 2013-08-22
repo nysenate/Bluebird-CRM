@@ -220,6 +220,7 @@ treeBehavior =
           # console.log results
           hits = terms.tags.length + results.results.length + results.seeXmore
           @addPositionsToTags(results.results)
+          @getNextPositionRound(results)
           tags = terms.tags
           if hits > 0
             @buildSearchList(tags, terms.term.toLowerCase(), hits)
@@ -233,6 +234,11 @@ treeBehavior =
     )
 
   positionIdNumber: 292000
+
+  getNextPositionRound:(results) ->
+    @positionPage = results.page + 1
+    @positionPagesLeft = results.pagesLeft
+    @positionSearchTerm = results.term
 
   addPositionsToTags: (positions) ->
     format = []
@@ -349,9 +355,21 @@ treeBehavior =
   
   buildPositions: () ->
     for k,o of @positionListing
-      console.log k,o
-      cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(@cjSearchBox)
-      # cj(treeManipulation.createDT(1, o.id, o.name, 292)).appendTo(@cjSearchBox)
+      cj(treeManipulation.createDT(1, o.id, o.name, 292, "", o.description)).appendTo(@cjSearchBox)
+    if @positionPagesLeft > 1 
+      openLeg = new OpenLeg
+      options =
+        scrollBox: ".JSTree.BBTree"
+      cj(".JSTree .search.tagContainer").infiniscroll(options, =>
+          nextPage =
+            term: @positionSearchTerm
+            page: @positionPage
+          openLeg.query(nextPage, (results) =>
+              @addPositionsToTags(results.results)
+              @getNextPositionRound(results)  
+              @buildPositions() 
+          )
+      )
       
   switchToSearch: (tagListLength) ->
     cj("#{@tabsLoc} .tab-search").show()
@@ -493,16 +511,18 @@ treeManipulation =
     hasDesc = ""
     if description.length > 0
       hasDesc = "description"
-    if description.length > 60
+    if description.length > 0 and description.length <= 95
+      hasDesc += " shortdescription"
+    if description.length > 180
       hasDesc = "longdescription"
-    if description.length > 150
-      # getLastSpace
-      ""
-    output = "<dt class='lv-#{lvl} tag-#{id}' id='tagLabel_#{id}' data-tagid='#{id}' data-name='#{name}' data-parentid='#{parent}'>"
+    output = "<dt class='lv-#{lvl} tag-#{id} #{hasDesc}' id='tagLabel_#{id}' data-tagid='#{id}' data-name='#{name}' data-parentid='#{parent}'>"
     output += "<div class='tag'>"
     output += "<div class='ddControl #{treeButton}'></div>"
-    output += "<span class='name'>#{name}</span></div>"
+    output += "<span class='name'>#{name}</span>"
+    output += "<div class='description'>#{description}</div>" if description?
+    output += "</div>"
     output += "<div class='transparancyBox type-#{parent}'></div>"
+
     output += "</dt>"
     return output
 

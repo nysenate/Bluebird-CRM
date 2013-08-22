@@ -13,8 +13,10 @@ OpenLeg = (function() {
       return false;
     }
     term = args.term;
+    this.term = term;
     year = args.year;
     page = args.page || 1;
+    this.page = ajaxStructure.data.pageIdx = page;
     return this.buildQuery(term, year, page);
   };
 
@@ -56,8 +58,9 @@ OpenLeg = (function() {
     pagesLeft = Math.floor((metadata.totalresults - results.length) / ajaxStructure.data.pageSize) - ajaxStructure.data.pageIdx;
     returnStructure = {
       seeXmore: metadata.totalresults - results.length,
-      page: ajaxStructure.data.pageIdx,
+      page: this.page,
       pagesLeft: pagesLeft,
+      term: this.term,
       results: []
     };
     for (index = _i = 0, _len = results.length; _i < _len; index = ++_i) {

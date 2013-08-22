@@ -10,14 +10,7 @@
   $this = undefined
  
   _defaults =
-    auto: true
-    loadingtext: "<span class='loadingGif'></span>"
-    padding: 0
-    contentSelector: ""
-    # scrollBox: ""
-    scrollBox: ".JSTree"
-    # either hav
-    # contentSelector: ".JSTree .search.tagContainer"
+    scrollBox: ".infiniScrollBox"
     box:
       height: 0
       percent: 99
@@ -28,6 +21,7 @@
   _options= {}
 
   _cb = ->
+
   # public methods - must return $this for chaining
   methods =
     init: (options, cb) ->
@@ -38,12 +32,9 @@
       _internals.matchBox()
     unbind: (ob) ->
       ob.off("scroll")
-      # @.removeEvent
 
   _internals = 
     setCJ: (target) ->
-      _cj.cs = cj(_options.contentSelector) if _options.contentSelector?
-      _cj.ps = cj(_options.paginationSelector) if _options.paginationSelector?
       _cj.sb = cj(_options.scrollBox)
       _cj.loc = target
 
@@ -69,13 +60,6 @@
         return @box.height - parseInt(@box.pixels)
       Math.floor(@box.height*parseInt(@box.percent)/100)
 
-
-
-    # figure when bottom is reached
-
-    # make ajax call
-    # return data with 
- 
   # Namespacing
   $.fn.infiniscroll = (method) ->
     if methods[method]
