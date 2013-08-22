@@ -723,7 +723,9 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
     $js = "
     <script type='text/javascript'>
       cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
-        cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+        if ( !cj(this).parent('div.bb-row-wrap').length ) {
+          cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+        }
       });
       cj('.crm-table2div-layout #crm-container-snippet').removeAttr('id');
       cj('.crm-table2div-layout .crm-inline-edit-hover').removeClass('crm-inline-edit-hover');
