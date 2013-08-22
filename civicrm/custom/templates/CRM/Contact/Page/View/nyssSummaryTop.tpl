@@ -30,7 +30,7 @@
       <td class="label">{ts}Contact Type{/ts}
         {if $custom_42.field_value}<br />{$custom_42.field_title}{/if}
       </td>
-      <td>{$contact_type_label}
+      <td class="content">{$contact_type_label}
         {if $custom_42.field_value}<br />{$custom_42.field_value}{/if}
       </td>
     </tr>
@@ -38,14 +38,14 @@
 </div>
 <div class="contactCardRight">
   <table>
-  {if $custom_58.field_value}{*Ethnicity*}
-    <tr>
+  {if $custom_58.field_value || $custom_62.field_value}{*Ethnicity*}
+    <tr class="row-ethnicity">
       <td class="label">
         {$custom_58.field_title}
       </td>
-      <td>
+      <td class="content">
         {$custom_58.field_value}
-          {if $custom_62.field_value && $custom_58.field_value}<br />{/if}
+        {if $custom_62.field_value && $custom_58.field_value}<br />{/if}
         {$custom_62.field_value}
       </td>
     </tr>
