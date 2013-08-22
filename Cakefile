@@ -26,6 +26,7 @@ fspath = require 'path'
 coffeeFiles  = [
   {path: 'themes/Bluebird/scripts/tree', outputName: "JSTree"}
   {path: 'themes/Bluebird/scripts/jquery.taggingAutocomplete', outputName: "jquery.taggingAutocomplete"}
+  {path: 'themes/Bluebird/scripts/jquery.infiniScroll', outputName: "jquery.infiniScroll"}
   {path: 'themes/Bluebird/scripts/bbUtils', outputName: "bbUtils"}
   {path: 'themes/Bluebird/scripts/bbJSsettings', outputName: "bbhg"}
 ]
