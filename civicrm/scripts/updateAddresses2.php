@@ -11,11 +11,11 @@ define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:l:vgpdufyz';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'force', 'dryrun', 'debug');
+  $shortopts = 's:e:b:h:l:vgpdutfyz';
+  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'streetonly', 'force', 'dryrun', 'debug');
   $stdusage = civicrm_script_usage();
   $usage = "[--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  [--threshold|-h SECS] [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]] [--validate|-v]"
-           ."[--geocode|-g] [--parse|-p] [--distassign|-d]  [--usecoords|-u] [--force|-f] [--dryrun|-y] [--debug|-z]";
+           ."[--geocode|-g] [--parse|-p] [--distassign|-d]  [--usecoords|-u] [--streetonly|-t] [--force|-f] [--dryrun|-y] [--debug|-z]";
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
@@ -115,6 +115,7 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
   $performGeocode = $optlist['geocode'];
   $performDistAssign = $optlist['distassign']; 
   $useCoords = $optlist['usecoords'];
+  $streetFileOnly = $optlist['streetonly'];
   $dryrun = $optlist['dryrun'];
   $totalRows = mysql_num_rows($res);
   
@@ -164,7 +165,7 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
     }
     else if ($performGeocode && $performDistAssign) {
       bbscript_log('INFO', ts("Performing batch district assign #{$batchNum}..."));
-      CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
+      CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite, $streetFileOnly);
     }
     else {    
       if ($performUspsValidate) {
@@ -182,7 +183,7 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
         }
         else if ($performGeocode) {
           bbscript_log('INFO', ts("Performing batch geocode/district assign #{$batchNum}..."));
-          CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite);
+          CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite, $streetFileOnly);
         }
         else {
           bbscript_log('INFO', ts("Performing batch district assign without overwriting geocode #{$batchNum}..."));
