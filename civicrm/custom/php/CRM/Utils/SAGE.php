@@ -186,8 +186,9 @@ class CRM_Utils_SAGE
   * @param array   &$values              An array representing address and district values.               
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$values}.
   * @param boolean $overwrite_point      If true, geocode will be written by default to {$values}
+  * @param boolean $streetfile_only      If true, only streetfile lookup will be used for district assign
   */
-  public static function distAssign(&$values, $overwrite_districts=true, $overwrite_point=true)
+  public static function distAssign(&$values, $overwrite_districts=true, $overwrite_point=true, $streetfile_only=false)
   {
     list($addr_field, $addr) = self::getAddress($values);
     if (!$addr) {
@@ -197,13 +198,17 @@ class CRM_Utils_SAGE
 
     // Construct and send the API Request
     $url = '/district/assign?format=xml&';
-    $params = http_build_query( array(
-        'addr1' => str_replace(',', '', $addr),
-        'city' => CRM_Utils_Array::value('city',$values,""),
-        'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
-        'state' => CRM_Utils_Array::value('state_province',$values,""),
-        'key' => SAGE_API_KEY,
-      ), '', '&');
+    $params = array(
+      'addr1' => str_replace(',', '', $addr),
+      'city' => CRM_Utils_Array::value('city',$values,""),
+      'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
+      'state' => CRM_Utils_Array::value('state_province',$values,""),
+      'key' => SAGE_API_KEY,
+    );
+    if ($streetfile_only) {
+      $params['districtStrategy'] = 'streetOnly';
+    }
+    $params = http_build_query($params, '', '&');
     
     $url = SAGE_API_BASE . $url . $params;
     $request = new HTTP_Request($url);
@@ -233,15 +238,21 @@ class CRM_Utils_SAGE
   * @param array   &$rows  An array of rows that each contain an array with address and district columms.
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$rows}
   * @param boolean $overwrite_point      If true, geocode will be written by default to {$rows}
+  * @param boolean $streetfile_only      If true, only streetfile lookup will be used for district assign
   */
-  public static function batchDistAssign(&$rows, $overwrite_districts=true, $overwrite_point=true)
+  public static function batchDistAssign(&$rows, $overwrite_districts=true, $overwrite_point=true, $streetfile_only=false)
   {
     $addresses = self::getAddressesFromRows($rows);
 
     $url = '/district/assign/batch?format=xml&';
-    $params = http_build_query(array(
+    $params = array(
       'key' => SAGE_API_KEY
-      ), '', '&');
+    );
+    if ($streetfile_only) {
+      $params['districtStrategy'] = 'streetOnly';
+    }
+
+    $params = http_build_query($params, '', '&');
     $url = SAGE_API_BASE . $url . $params;
     $request = new HTTP_Request($url);
     $request->addRawPostData(json_encode($addresses));

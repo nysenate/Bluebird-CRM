@@ -67,6 +67,8 @@ else {
           SET reported=1, dt_reported=NOW()
           WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
             AND signup.reported=0
+            AND senator.active=1
+            AND ( committee.active=1 OR committee.active is NULL )
             AND person.bronto=".(($get_bronto)?'1':'0');
   if (!mysql_query($sql, $conn)) {
     die(mysql_error($conn));
