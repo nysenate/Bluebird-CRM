@@ -40,3 +40,23 @@ dt {
 dt {
   height:20px;
 }
+dt.description, dt.longdescription {
+  div.description {
+    font-style:italic;
+    font-size:11px;
+    margin-left:20px;
+    margin-top:-3px;
+    color:lighten(black,50%);
+  }
+}
+
+dt.description {
+  @include descriptionChange(2);
+}
+dt.shortdescription.description {
+  @include descriptionChange(1.5);
+}
+
+dt.longdescription {
+  @include descriptionChange(3);
+}

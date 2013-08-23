@@ -364,13 +364,17 @@ treeBehavior =
           nextPage =
             term: @positionSearchTerm
             page: @positionPage
+          cj(".JSTree .search.tagContainer").append(@addPositionLoader())
           openLeg.query(nextPage, (results) =>
               @addPositionsToTags(results.results)
+              cj(".JSTree .search.tagContainer .loadingGif").remove()
               @getNextPositionRound(results)  
               @buildPositions() 
           )
       )
-      
+  addPositionLoader: () ->
+    "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>"
+
   switchToSearch: (tagListLength) ->
     cj("#{@tabsLoc} .tab-search").show()
     @setTabResults(tagListLength,"tab-search")

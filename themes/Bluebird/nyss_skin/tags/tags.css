@@ -113,6 +113,33 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     left: -50%; }
   #BBTreeContainer .BBTree dt {
     height: 20px; }
+  #BBTreeContainer .BBTree dt.description div.description, #BBTreeContainer .BBTree dt.longdescription div.description {
+    font-style: italic;
+    font-size: 11px;
+    margin-left: 20px;
+    margin-top: -3px;
+    color: gray; }
+  #BBTreeContainer .BBTree dt.description {
+    height: 40px; }
+    #BBTreeContainer .BBTree dt.description .tag {
+      height: 40px; }
+    #BBTreeContainer .BBTree dt.description .transparancyBox {
+      height: 40px;
+      top: -40px; }
+  #BBTreeContainer .BBTree dt.shortdescription.description {
+    height: 30px; }
+    #BBTreeContainer .BBTree dt.shortdescription.description .tag {
+      height: 30px; }
+    #BBTreeContainer .BBTree dt.shortdescription.description .transparancyBox {
+      height: 30px;
+      top: -30px; }
+  #BBTreeContainer .BBTree dt.longdescription {
+    height: 60px; }
+    #BBTreeContainer .BBTree dt.longdescription .tag {
+      height: 60px; }
+    #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
+      height: 60px;
+      top: -60px; }
   #BBTreeContainer .BBTree .search {
     display: none; }
   #BBTreeContainer .BBTree .search .transparancyBox.type-291 {
@@ -127,6 +154,30 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
     background-color: rgba(242, 209, 119, 0.5); }
   #BBTreeContainer .BBTree .search .shaded .transparancyBox.type-292 {
     background-color: rgba(175, 232, 239, 0.5); }
+  #BBTreeContainer .BBTree .search dt:hover .transparancyBox.type-291 {
+    background-color: rgba(150, 226, 164, 0.8); }
+  #BBTreeContainer .BBTree .search dt:hover .transparancyBox.type-296 {
+    background-color: rgba(242, 209, 119, 0.8); }
+  #BBTreeContainer .BBTree .search dt:hover .transparancyBox.type-292 {
+    background-color: rgba(175, 232, 239, 0.8); }
+  #BBTreeContainer .BBTree .search dt.active .transparancyBox.type-291 {
+    background-color: rgba(150, 226, 164, 0.8); }
+  #BBTreeContainer .BBTree .search dt.active .transparancyBox.type-296 {
+    background-color: rgba(242, 209, 119, 0.8); }
+  #BBTreeContainer .BBTree .search dt.active .transparancyBox.type-292 {
+    background-color: rgba(175, 232, 239, 0.8); }
+  #BBTreeContainer .BBTree .search dt.loadingGif {
+    height: 40px; }
+    #BBTreeContainer .BBTree .search dt.loadingGif .tag {
+      height: 40px; }
+    #BBTreeContainer .BBTree .search dt.loadingGif .transparancyBox {
+      height: 40px;
+      top: -40px; }
+    #BBTreeContainer .BBTree .search dt.loadingGif .tag .ddControl {
+      width: 0px; }
+    #BBTreeContainer .BBTree .search dt.loadingGif .tag .loadingText {
+      text-align: center;
+      font-weight: bold; }
 #BBTreeContainer .BBTree-menu {
   width: 100%; }
   #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {

@@ -128,4 +128,14 @@
 @mixin tag-lightness($color,$opacity) {
   background-color:rgba(lighten($color,15%),$opacity);
 }
+@mixin descriptionChange($lines) {
+  height:20px*$lines;
+  .tag {
+    height:20px*$lines;
+  }
+  .transparancyBox {
+    height: 20px*$lines;
+    top: -20px*$lines;
+  }
+}
 @import "extends";

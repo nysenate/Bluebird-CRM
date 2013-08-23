@@ -429,13 +429,18 @@ treeBehavior = {
           term: _this.positionSearchTerm,
           page: _this.positionPage
         };
+        cj(".JSTree .search.tagContainer").append(_this.addPositionLoader());
         return openLeg.query(nextPage, function(results) {
           _this.addPositionsToTags(results.results);
+          cj(".JSTree .search.tagContainer .loadingGif").remove();
           _this.getNextPositionRound(results);
           return _this.buildPositions();
         });
       });
     }
+  },
+  addPositionLoader: function() {
+    return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
   },
   switchToSearch: function(tagListLength) {
     cj("" + this.tabsLoc + " .tab-search").show();
