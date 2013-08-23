@@ -334,7 +334,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     ++$nyss_ioline;
 
     if(is_numeric($runnum)) {
-      if($form_state['values']['runnum']<=$nyss_ioline) {
+      if($form_state['values']['runnum'] <= $nyss_ioline) {
         nyss_out('debug',"Stopping at {$nyss_ioline} lines.", TRUE);
         break;
       }
@@ -345,13 +345,26 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       nyss_flush();
     }
 
-    //if delete contact, process and exit
+    //6998 if delete contact, process and exit
     if ( !empty($l['delete_contact']) &&
-      $l['delete_contact'] == 1
+      $l['delete_contact'] == 1 &&
+      !$dryrun
     ) {
       if ( !empty($l['id']) ) {
-        $delete_contacts[] = $l['id'];
-        CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+        //confirm that id exists
+        $sql = "
+          SELECT id
+          FROM civicrm_contact
+          WHERE id = {$l['id']}
+        ";
+        if ( CRM_Core_DAO::singleValueQuery($sql) ) {
+          $delete_contacts[] = $l['id'];
+          CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+        }
+        else {
+          nyss_out('debug', 'contact flagged for deletion but ID is not present in the database. skipping record:', TRUE);
+          nyss_out('debug', $l, TRUE);
+        }
       }
       else {
         nyss_out('debug', 'contact flagged for deletion but no ID provided. skipping record:', TRUE);
