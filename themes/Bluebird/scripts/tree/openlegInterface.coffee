@@ -20,7 +20,8 @@ class OpenLeg
     fYear = "(year:#{@getCurrentSessionYear(year)})"
     fText = "(full:#{term}~ OR full:#{term}*)"
     fOid = "(oid:#{queryDefaults.oid})"
-    ajaxStructure.jsonpCallback = "bb_#{term}"
+    console.log validjsonpterm = bbUtils.spaceTo("underscore",term)
+    ajaxStructure.jsonpCallback = "bb_#{validjsonpterm}"
     ajaxStructure.data.term = "#{fTerm} AND #{fOType} AND #{fYear} AND #{fText} NOT #{fOid}"
     return @getQuery()
 

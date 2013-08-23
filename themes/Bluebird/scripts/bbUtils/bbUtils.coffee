@@ -45,7 +45,7 @@ class window.bb
   #
 
   _settings=
-    version: "0.0.1" 
+    version: "0.0.3" 
   localStorage: (key, value)->
     # your easy modernizr check if it's supported, we don't save to cookie
     # because it's not important to for unsupported browsers to have
@@ -124,13 +124,20 @@ class window.bb
     if note.length > 0
       console.log(note)
     console.log(rTime)
+
+  spaceTo: (type, str) ->
+    return str.replace /\ /g,"_" if type == "underscore"
+    return str.replace /\ /g,"-" if type == "dash"
+    return str.replace /\ /g,"" 
+
+
   keyCode: (evt) ->
     charCode = if evt.which? then evt.which else event.keyCode
     keyCode =
       "modifier": [16,17,18,19,20,91,92,93,144,145]
       "number": [96...105].concat [48...57]
       "directional": [9,13,27,33,34,35,36,37,38,39,40]
-      "delete": [8,46]
+      "delete": [8,32,46]
       "insert": [45]
       "math": [106...111]
       "function": [112...123]
@@ -188,6 +195,7 @@ class window.bb
         switch charCode
           when 8 then rData.name = "backspace"
           when 46 then rData.name = "delete"
+          when 32 then rData.name = "space" 
         rData.char = false
       when "insert"
         rData.name = "insert"
@@ -256,7 +264,7 @@ class window.bb
           when 87 then rData.name = "w" 
           when 88 then rData.name = "x" 
           when 89 then rData.name = "y" 
-          when 90 then rData.name = "z" 
+          when 90 then rData.name = "z"
         rData.name = rData.name.toUpperCase() if evt.shiftKey
     rData
 

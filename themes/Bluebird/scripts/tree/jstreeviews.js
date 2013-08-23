@@ -241,6 +241,7 @@ treeBehavior = {
       case "delete":
       case "math":
       case "punctuation":
+      case "number":
         return this.execSearch(event, searchmonger, cjac);
       default:
         return false;

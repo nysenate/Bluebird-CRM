@@ -203,7 +203,7 @@ treeBehavior =
     switch keyCode.type
       when "directional"
         return @moveDropdown(keyCode.type)
-      when "letters","delete","math","punctuation"
+      when "letters","delete","math","punctuation","number"
         return @execSearch(event,searchmonger,cjac)
       else
         return false

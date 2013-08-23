@@ -8,7 +8,7 @@
     function bb() {}
 
     _settings = {
-      version: "0.0.1"
+      version: "0.0.3"
     };
 
     bb.prototype.localStorage = function(key, value) {
@@ -134,6 +134,16 @@
       return console.log(rTime);
     };
 
+    bb.prototype.spaceTo = function(type, str) {
+      if (type === "underscore") {
+        return str.replace(/\ /g, "_");
+      }
+      if (type === "dash") {
+        return str.replace(/\ /g, "-");
+      }
+      return str.replace(/\ /g, "");
+    };
+
     bb.prototype.keyCode = function(evt) {
       var arr, charCode, keyCode, ktype, rData, _i, _results;
       charCode = evt.which != null ? evt.which : event.keyCode;
@@ -141,7 +151,7 @@
         "modifier": [16, 17, 18, 19, 20, 91, 92, 93, 144, 145],
         "number": [96, 97, 98, 99, 100, 101, 102, 103, 104].concat([48, 49, 50, 51, 52, 53, 54, 55, 56]),
         "directional": [9, 13, 27, 33, 34, 35, 36, 37, 38, 39, 40],
-        "delete": [8, 46],
+        "delete": [8, 32, 46],
         "insert": [45],
         "math": [106, 107, 108, 109, 110],
         "function": [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122],
@@ -282,6 +292,9 @@
               break;
             case 46:
               rData.name = "delete";
+              break;
+            case 32:
+              rData.name = "space";
           }
           rData.char = false;
           break;
