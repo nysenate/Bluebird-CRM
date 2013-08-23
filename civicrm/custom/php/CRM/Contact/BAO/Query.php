@@ -4201,7 +4201,21 @@ civicrm_relationship.start_date > {$today}
         }
       }
     }*/
+
     //NYSS 6723
+    if(!empty($this->_permissionWhereClause)){
+      if (empty($where)) {
+        $where = "WHERE $this->_permissionWhereClause";
+      }
+      else {
+        $where = "$where AND $this->_permissionWhereClause";
+      }
+    }
+
+    if ($additionalWhereClause) {
+      $where = $where . ' AND ' . $additionalWhereClause;
+    }
+
     //additional from clause should be w/ proper joins.
     if ($additionalFromClause) {
       $from .= "\n" . $additionalFromClause;
@@ -4828,12 +4842,12 @@ AND   displayRelType.is_active = 1
    */
   function getCachedContacts($cacheKey, $offset, $rowCount, $includeContactIds) {
     $this->_includeContactIds = $includeContactIds;
-    list($select, $from) = $this->query();
+    list($select, $from, $where) = $this->query();//NYSS 7084
     $from = " FROM civicrm_prevnext_cache pnc INNER JOIN civicrm_contact contact_a ON contact_a.id = pnc.entity_id1 AND pnc.cacheKey = '$cacheKey' " . substr($from, 31);
     $order = " ORDER BY pnc.id";
     $groupBy = " GROUP BY contact_a.id";
     $limit = " LIMIT $offset, $rowCount";
-    $query = "$select $from $groupBy $order $limit";
+    $query = "$select $from $where $groupBy $order $limit";//NYSS 7084
     return CRM_Core_DAO::executeQuery($query);
   }
 }

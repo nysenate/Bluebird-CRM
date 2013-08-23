@@ -28,5 +28,41 @@
     }
   });
 
+  //5183 move ethnicity fields
+  var ethnicity, ethnicityOther;
+  cj('#custom-set-block-1 div.bb-row-wrap').each(function(){
+    //console.log(this);
+    //console.log(cj(this).children('div.crm-label'));
+    if ( cj(this).children('div.crm-label').text() == 'Ethnicity' ) {
+      ethnicity = cj(this).children('div.crm-custom-data').text();
+      cj(this).remove();
+    }
+    if ( cj(this).children('div.crm-label').text() == 'Other Ethnicity' ) {
+      ethnicityOther = cj(this).children('div.crm-custom-data').text();
+      cj(this).remove();
+    }
+  });
+  if ( ethnicity || ethnicityOther ) {
+    var ethVal = ethnicity;
+    if ( ethnicity && ethnicityOther ) {
+      ethVal = ethnicity + '<br />';
+    }
+    ethVal = ethVal + ethnicityOther;
+    //console.log('e: ', ethVal);
+
+    //now move above
+    if ( cj('div#contactTopBar tr.row-ethnicity').length ) {
+      cj('div#contactTopBar tr.row-ethnicity td.content').html(ethVal);
+    }
+    else {
+      var ethHtml = '<tr class="row-ethnicity"><td class="label">Ethnicity</td><td class="content">' +
+        ethVal + '</td></tr>';
+      cj('div#contactTopBar div.contactCardRight table').prepend(ethHtml);
+    }
+  }
+  else {
+    cj('div#contactTopBar tr.row-ethnicity').remove();
+  }
+
 </script>
 {/literal}

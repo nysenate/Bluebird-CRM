@@ -65,6 +65,10 @@ class CRM_Logging_Differ {
       2 => array($this->log_date, 'String'),
     );
 
+    //NYSS 7049
+    $logging = new CRM_Logging_Schema;
+    $addressCustomTables = $logging->entityCustomDataLogTables('Address');
+
     $contactIdClause = $join = '';//NYSS
     if ( $contactID ) {
       $params[3] = array($contactID, 'Integer');
@@ -93,8 +97,23 @@ LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.so
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
  	 	 	  break;
+      //NYSS 7049
+      default:
+        if (array_key_exists($table, $addressCustomTables)) {
+          $join  = "INNER JOIN `{$this->db}`.`log_civicrm_address` et ON et.id = lt.entity_id";
+          $contactIdClause = "AND contact_id = %3";
+          break;
+        }
+
+        if (empty($contactIdClause)) {
+          $contactIdClause = "AND contact_id = %3";
+        }
+        if ( strpos($table, 'civicrm_value') !== false ) {
+          $contactIdClause = "AND entity_id = %3";
+        }
+
       //NYSS 7045
-      case 'civicrm_value_district_information_7':
+      /*case 'civicrm_value_district_information_7':
         $join = "
           JOIN civicrm_address a ON lt.entity_id = a.id
         ";
@@ -104,16 +123,17 @@ LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.so
         $contactIdClause = "AND contact_id = %3";
         if ( strpos($table, 'civicrm_value') !== false ) {
           $contactIdClause = "AND entity_id = %3";
-        }
+        }*/
       }
     }
 
     // find ids in this table that were affected in the given connection (based on connection id and a ±10 s time period around the date)
+    //NYSS 7049
     $sql = "
 SELECT DISTINCT lt.id FROM `{$this->db}`.`log_$table` lt
 {$join}
-WHERE log_conn_id = %1 AND
-      log_date BETWEEN DATE_SUB(%2, INTERVAL {$this->interval}) AND DATE_ADD(%2, INTERVAL {$this->interval})
+WHERE lt.log_conn_id = %1 AND
+      lt.log_date BETWEEN DATE_SUB(%2, INTERVAL {$this->interval}) AND DATE_ADD(%2, INTERVAL {$this->interval})
       {$contactIdClause}";
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     while ($dao->fetch()) {
