@@ -201,7 +201,7 @@ instance = (function() {
     displaySettings = {
       defaultTree: 291,
       mode: 'edit',
-      fullSize: true,
+      size: 'full',
       autocomplete: true,
       print: true,
       showActive: true,

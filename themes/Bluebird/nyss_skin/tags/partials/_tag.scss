@@ -9,10 +9,8 @@ dt {
       &.treeButton{
         background: url($defaultIconLink) no-repeat -32px -15px;
         cursor:pointer;
-        
       }
     }
-    
     position: relative;
     z-index:2;
   }
@@ -20,13 +18,8 @@ dt {
     background: url($defaultIconLink) no-repeat -64px -15px;
   }
 }
-.shaded {
-  .name {
-    span {
-      font-weight:bold;
-    }
-  }
-  
+.shaded .name span {
+  font-weight:bold;
 }
 .transparancyBox {
   position: relative;
@@ -56,7 +49,6 @@ dt.description {
 dt.shortdescription.description {
   @include descriptionChange(1.5);
 }
-
 dt.longdescription {
   @include descriptionChange(3);
 }

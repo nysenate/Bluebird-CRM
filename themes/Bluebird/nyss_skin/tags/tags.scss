@@ -1,18 +1,9 @@
-/*
-
-Tags CSS
-SassCommandWin: sass --update themes\Bluebird\nyss_skin\tags\tags.scss:themes\Bluebird\nyss_skin\tags\tags.css
-SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/Bluebird/nyss_skin/tags/tags.css
-
-
-*/
 @import "utils/tagsUtil";
 
 /*pagestructure*/
 
 #BBTreeContainer{
 	@import "utils/reset";
-	/* $inputBox: $inputBoxWidthFull; */
   width:$inputBoxWidthFull;
 	background-color:#fff;
 	overflow-x:hidden;
@@ -23,30 +14,13 @@ SassCommand*nix: sass --update themes/Bluebird/nyss_skin/tags/tags.scss:themes/B
 	// temp
 	margin:15px auto;
 	// endtemp
-}
-#BBTreeContainer.short{
-	@extend #BBTreeContainer;
-	width: $inputBoxWidthShort;
-/*everything else should be percentage based*/
-}
-#BBTreeContainer {
-  .BBTree {
-    overflow-y:scroll;
-    overflow-x:hidden;
-    height:400px;
-    // margin-left:2%;
-    @include iterator;
-    @import "partials/tag";
-    .search {
-      display:none;
-    }
-    @import "partials/tree"  
-  }
   @import "partials/menu";
-  .tagContainer.active {
-    display:block;
+  @import "partials/tree";
+  &.short {
+    width: $inputBoxWidthShort;
+    @import "shape/short"  ;
   }
-  .tagContainer {
-    display:none
+  &.narrow {
+    @import "shape/narrow";
   }
 }

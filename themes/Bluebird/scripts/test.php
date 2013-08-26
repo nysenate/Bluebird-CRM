@@ -69,11 +69,11 @@ var cj = jQuery.noConflict(true);
 <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/message-manager.js?mmy6gr"></script>
 <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/civi-header.js?mmy6gr"></script>
 <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/general.js?mmy6gr"></script>
-<!-- <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/hummingbird.js?mmy6gr"></script> -->
 <script src="/sites/default/themes/Bluebird/scripts/bbUtils/bbUtils.js" type="text/javascript"></script>
 <script src="/sites/default/themes/Bluebird/scripts/bbJSsettings/bbhg.js" type="text/javascript"></script>
 <script src="/sites/default/themes/Bluebird/scripts/tree/JSTree.js" type="text/javascript"></script>
 <script src="/sites/default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/jquery.infiniScroll/jquery.infiniScroll.js"></script>
 
 </head>
 <body>
@@ -88,6 +88,9 @@ var cj = jQuery.noConflict(true);
         pullSets: [291,296],
         // pullSets: [291],
         contact: 0
+      },
+      displaySettings: {
+        size: "narrow"
       }
     }
     // i should really make this a 

@@ -1,12 +1,9 @@
 // code
 .BBTree-menu {
   width:100%;
-  .BBTree-top {
+  .BBTree-top, .BBTree-bottom {
     height:20px;
     border-bottom:1px solid #ccc;
-  }
-  .BBTree-bottom {
-    @extend .BBTree-top;
   }
   .BBTree-autocomplete, .BBTree-tabs{
     float:left;
@@ -21,10 +18,14 @@
     height:20px;
     background-color:#ccc;
   }
-  .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords {
-    width:25%;
+  /* .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords { */
+  .tab-issue-codes,.tab-search,.tab-keywords {
+    width:33%;
     padding:4px 0px;
     text-align: center;
+    &.active {
+      width:34%;
+    }
   }
   .tab-search {
     @include in-and-out-hover-opacity($searchColor)
@@ -32,9 +33,9 @@
   .tab-issue-codes {
     @include in-and-out-hover-opacity($issueCodesColor)
   }
-  .tab-positions {
+  /* .tab-positions {
     @include in-and-out-hover-opacity($positionsColor)
-  }
+  } */
   .tab-keywords {
     @include in-and-out-hover-opacity($keywordsColor)
   }

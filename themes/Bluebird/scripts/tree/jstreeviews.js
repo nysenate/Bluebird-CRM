@@ -69,8 +69,9 @@ View = (function() {
   View.prototype.addSearchBoxToElement = function() {};
 
   View.prototype.formatPageElements = function() {
-    var i, pageElements, selector, _i, _len, _ref, _ref1;
+    var displayElements, i, pageElements, selector, _i, _len, _ref, _ref1;
     pageElements = this.instance.get('pageElements');
+    displayElements = this.instance.get('displayElements');
     _ref = ["", ""], this.tagHolderSelector = _ref[0], this.tagWrapperSelector = _ref[1];
     this.menuName = {
       menu: "",
@@ -88,6 +89,7 @@ View = (function() {
       left: ""
     };
     this.addIdWrapperString = pageElements.wrapper;
+    this.addBoxSizing = pageElements.size;
     this.addClassHolderString = pageElements.tagHolder;
     this.initHolderId = pageElements.init;
     this.cjInitHolderId = cj("." + this.initHolderId);
@@ -100,7 +102,21 @@ View = (function() {
       this.tokenHolder = this.concatOnObj(this.tokenHolder, selector);
       this.tagHolderSelector = this.tagHolderSelector.concat("." + selector);
     }
-    return this.tagWrapperSelector = this.tagWrapperSelector.concat("#" + pageElements.wrapper);
+    this.tagWrapperSelector = this.tagWrapperSelector.concat("#" + pageElements.wrapper);
+    return cj(this.tagWrapperSelector).addClass(this.separateSizeElements(displayElements.size));
+  };
+
+  View.prototype.separateSizeElements = function(el) {
+    var a, b, classNames, _i, _len;
+    el.replace(/\./, "");
+    el.replace(/#/, "");
+    classNames = el.split(" ");
+    for (b = _i = 0, _len = classNames.length; _i < _len; b = ++_i) {
+      a = classNames[b];
+      el += "." + b;
+      console.log(a, b);
+    }
+    return el;
   };
 
   View.prototype.ifisarrayjoin = function(toJoin) {
@@ -422,7 +438,7 @@ treeBehavior = {
     if (this.positionPagesLeft > 1) {
       openLeg = new OpenLeg;
       options = {
-        scrollBox: ".JSTree.BBTree"
+        scrollBox: ".JSTree"
       };
       return cj(".JSTree .search.tagContainer").infiniscroll(options, function() {
         var nextPage;

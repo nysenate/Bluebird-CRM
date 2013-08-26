@@ -75,6 +75,7 @@ class View
 
   formatPageElements: () ->
     pageElements = @instance.get 'pageElements'
+    displayElements = @instance.get 'displayElements'
     [@tagHolderSelector,@tagWrapperSelector] = ["",""]
     @menuName =
       menu: ""
@@ -90,6 +91,7 @@ class View
       resize: ""
       left: ""
     @addIdWrapperString = pageElements.wrapper
+    @addBoxSizing = pageElements.size
     @addClassHolderString = pageElements.tagHolder
     @initHolderId = pageElements.init
     @cjInitHolderId = cj(".#{@initHolderId}")
@@ -101,6 +103,16 @@ class View
       @tokenHolder = @concatOnObj(@tokenHolder, selector)
       @tagHolderSelector = @tagHolderSelector.concat(".#{selector}")
     @tagWrapperSelector = @tagWrapperSelector.concat("##{pageElements.wrapper}")
+    cj(@tagWrapperSelector).addClass(@separateSizeElements(displayElements.size))
+  
+  separateSizeElements: (el) ->
+    el.replace /\./, ""
+    el.replace /#/, ""
+    classNames = el.split " "
+    for a,b in classNames
+      el += ".#{b}"
+      console.log a,b
+    return el
   ifisarrayjoin: (toJoin)->
     if cj.isArray(toJoin)
       toJoin = toJoin.join(" ")
@@ -359,7 +371,7 @@ treeBehavior =
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
       options =
-        scrollBox: ".JSTree.BBTree"
+        scrollBox: ".JSTree"
       cj(".JSTree .search.tagContainer").infiniscroll(options, =>
           nextPage =
             term: @positionSearchTerm

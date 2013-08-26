@@ -176,8 +176,8 @@ class instance
       defaultTree: 291
       #Sets default type to appear: edit/tagging
       mode: 'edit'
-      #Size? full includes tag tree
-      fullSize: true
+      # default full, options: short, narrow, short narrow
+      size: 'full'
       #autocomplete box is turned on
       autocomplete: true
       #print tags option
