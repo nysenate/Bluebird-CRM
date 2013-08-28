@@ -524,9 +524,6 @@ class CRM_IMAP_AJAX {
         $uploadDir = $config->customFileUploadDir;
         $uploadInbox = $uploadDir.'inbox/';
 
-
-
-
         if(!$messageUid || !$contactIds){
           $returnCode = array('code'      =>  'ERROR',
               'message'   =>  'Something went wrong here' );
@@ -541,7 +538,7 @@ class CRM_IMAP_AJAX {
 	$forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
         $date = mysql_real_escape_string($output['updated_date']);
         $FWDdate = mysql_real_escape_string($output['email_date']);
-	$subject = substr(mysql_real_escape_string($output['subject']),0,255);
+	$subject =substr( strip_tags( htmlspecialchars_decode( mysql_real_escape_string($output['subject'])) ) ,0,249);
         $body = mysql_real_escape_string($output['body']);
         $status = mysql_real_escape_string($output['status']);
         $key = mysql_real_escape_string($output['sender_email']);
