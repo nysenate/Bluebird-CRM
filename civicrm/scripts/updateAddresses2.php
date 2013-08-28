@@ -11,11 +11,21 @@ define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:l:vgpdutfyz';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=', 'validate', 'geocode', 'parse', 'distassign', 'usecoords', 'streetonly', 'force', 'dryrun', 'debug');
+  $shortopts = 's:e:b:h:l:vgpdutfyzNGACTHELW';
+  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=', 'validate', 'geocode', 
+                    'parse', 'distassign', 'usecoords', 'streetonly', 'force', 'dryrun', 'debug',
+                    'senate', 'congress', 'assembly', 'county', 'town', 'school', 'election', 'cleg', 'ward');
+
   $stdusage = civicrm_script_usage();
-  $usage = "[--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  [--threshold|-h SECS] [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]] [--validate|-v]"
-           ."[--geocode|-g] [--parse|-p] [--distassign|-d]  [--usecoords|-u] [--streetonly|-t] [--force|-f] [--dryrun|-y] [--debug|-z]";
+  $usage = "
+  [--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]  
+  [--threshold|-h SECS]
+  [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]] 
+  [--validate|-v]  [--geocode|-g]  [--distassign|-d]  [--parse|-p]  
+  [--usecoords|-u] [--streetonly|-t]
+  [--force|-f]  [--dryrun|-y]  [--debug|-z]
+  [--senate|-N]  [--congress|-G]  [--assembly|-A]  [--county|-C]  
+  [--town|-T]  [--school|-H]  [--election|-E]  [--cleg|-L]  [--ward|-W]\n";
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
@@ -96,7 +106,7 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
   $query = getQuery($optlist);
 
-  echo "Executing query: $query\n";
+  bbscript_log('TRACE', "Executing query: $query\n");
   $dao = new CRM_Core_DAO();
   $db = $dao->getDatabaseConnection()->connection;
   $res = bb_mysql_query($query, $db, true);
@@ -118,6 +128,17 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
   $streetFileOnly = $optlist['streetonly'];
   $dryrun = $optlist['dryrun'];
   $totalRows = mysql_num_rows($res);
+
+  $districtTypes = array('senate', 'congress', 'assembly', 'county', 'town', 'school', 'election', 'cleg', 'ward');
+  $districtAssignTypes = array();
+  foreach ($districtTypes as $dt) {
+    if ($optlist[$dt]) {
+      $districtAssignTypes[] = $dt;
+    }
+  }
+  if (empty($districtAssignTypes)) {
+    $districtAssignTypes = $districtTypes;
+  }
   
   bbscript_log('INFO', "Iterating over {$totalRows} addresses...");
 
@@ -214,7 +235,7 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
         // Save custom district fields.
         if($performDistAssign) {
-          updateDistricts($addressBatch[$i], $db);
+          updateDistricts($addressBatch[$i], $db, $districtAssignTypes);
         }  
       }        
     }
@@ -301,7 +322,7 @@ function updateAddress($address) {
 
 // Updates the districts in the database using a direct SQL query
 // May want to update this to use proper DAOs.
-function updateDistricts($address, $db) {
+function updateDistricts($address, $db, $districtTypes) {
   $districtColumnNames = array(
     46 => 'congressional_district_46',
     47 => 'ny_senate_district_47',
@@ -314,16 +335,31 @@ function updateDistricts($address, $db) {
     54 => 'school_district_54'
   );
 
+  $districtTypeNames = array(
+    46 => 'congress',
+    47 => 'senate',
+    48 => 'assembly',
+    49 => 'election', 
+    50 => 'county',
+    51 => 'cleg',
+    52 => 'town',
+    53 => 'ward',
+    54 => 'school'
+  );
+  
   $matches = array();
   $sqlUpdates = array();
   foreach ($address as $key => $value) {
     if (preg_match('/custom_(\d{2})_\d+/', $key, $matches)) {
-      if (isset($matches[1]) && isset($districtColumnNames[$matches[1]]) && !empty($value)) {
-        if ($matches[1] == 52) {
-          $sqlUpdates[] = "{$districtColumnNames[$matches[1]]} = '{$value}'";
+      $districtId = $matches[1];
+      $districtName = $districtTypeNames[$districtId];
+
+      if (isset($districtId) && isset($districtColumnNames[$districtId]) && !empty($value) && in_array($districtName, $districtTypes)) {
+        if ($districtId == 52) {
+          $sqlUpdates[] = "{$districtColumnNames[$districtId]} = '{$value}'";
         }
         else {
-          $sqlUpdates[] = "{$districtColumnNames[$matches[1]]} = {$value}";  
+          $sqlUpdates[] = "{$districtColumnNames[$districtId]} = {$value}";  
         }        
       }      
     }
