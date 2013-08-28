@@ -246,11 +246,9 @@ class CRM_Utils_SAGE
 
     $url = '/district/assign/batch?format=xml&';
     $params = array(
-      'key' => SAGE_API_KEY
+      'key' => SAGE_API_KEY,
+      'districtStrategy' => ($streetfile_only) ? 'streetOnly' : 'streetFallback'
     );
-    if ($streetfile_only) {
-      $params['districtStrategy'] = 'streetOnly';
-    }
 
     $params = http_build_query($params, '', '&');
     $url = SAGE_API_BASE . $url . $params;
