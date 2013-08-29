@@ -178,7 +178,9 @@ class CRM_Mailing_Selector_Search extends CRM_Core_Selector_Base implements CRM_
       NULL, FALSE, FALSE,
       CRM_Contact_BAO_Query::MODE_MAILING
     );
-    $this->_query->_distinctComponentClause = " civicrm_mailing_event_queue.id ";
+    //$this->_query->_distinctComponentClause = " civicrm_mailing_event_queue.id ";
+    //NYSS 6845
+    $this->_query->_distinctComponentClause = " civicrm_mailing_recipients.id ";
   }
   //end of constructor
 
@@ -299,7 +301,9 @@ class CRM_Mailing_Selector_Search extends CRM_Core_Selector_Base implements CRM_
         }
       }
 
-      $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->mailing_event_queue_id;
+      //$row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->mailing_event_queue_id;
+      //NYSS 6845
+      $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->mailing_recipients_id;
 
       $actions = array(
         'cid' => $result->contact_id,
