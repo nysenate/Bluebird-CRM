@@ -156,15 +156,14 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
       $cacheKey        = ($sortByCharacter && $sortByCharacter != 'all') ? "{$cacheKey}_alphabet" : $cacheKey;
 
       //NYSS 6723
-      /*if ($form->_action == CRM_Core_Action::COPY) {
-        $allCids[$cacheKey] = $form->getContactIds( );
+      // rather than prevnext cache table for most of the task actions except export where we rebuild query to fetch
+      // final result set
+      if ($useTable) {
+        $allCids = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey, "getall");
       }
       else {
-       $allCids = CRM_Core_BAO_PrevNextCache::getSelection($cacheKey, "getall");
-      }*/
-      // since we don't store all contacts in prevnextcache, when user selects "all" use query to retrieve contacts
-      // rather than prevnext cache table
-      $allCids[$cacheKey] = $form->getContactIds();
+        $allCids[$cacheKey] = $form->getContactIds();
+      }
 
       $form->_contactIds = array();
       if ($useTable) {
