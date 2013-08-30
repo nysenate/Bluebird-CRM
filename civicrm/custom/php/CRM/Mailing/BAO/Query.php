@@ -35,8 +35,7 @@ class CRM_Mailing_BAO_Query {
 
   static $_mailingFields = NULL;
 
-  static
-  function &getFields() {
+  static function &getFields() {
     if (!self::$_mailingFields) {
       self::$_mailingFields = array();
       $_mailingFields['mailing_id'] = array(
@@ -54,8 +53,7 @@ class CRM_Mailing_BAO_Query {
    * @return void
    * @access public
    */
-  static
-  function select(&$query) {
+  static function select(&$query) {
     // if Mailing mode add mailing id
     if ($query->_mode & CRM_Contact_BAO_Query::MODE_MAILING) {
       $query->_select['mailing_id'] = "civicrm_mailing.id as mailing_id";
@@ -138,8 +136,7 @@ class CRM_Mailing_BAO_Query {
     }
   }
 
-  static
-  function where(&$query) {
+  static function where(&$query) {
     $grouping = NULL;
     foreach (array_keys($query->_params) as $id) {
       if (!CRM_Utils_Array::value(0, $query->_params[$id])) {
@@ -155,8 +152,7 @@ class CRM_Mailing_BAO_Query {
     }
   }
 
-  static
-  function from($name, $mode, $side) {
+  static function from($name, $mode, $side) {
     $from = NULL;
     switch ($name) {
       //NYSS 6845
@@ -174,6 +170,7 @@ class CRM_Mailing_BAO_Query {
         $from = " INNER JOIN civicrm_mailing_event_queue ON
           civicrm_mailing_event_queue.contact_id = civicrm_mailing_recipients.contact_id
           AND civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id AND civicrm_mailing_job.job_type = 'child'";
+        break;
 
       case 'civicrm_mailing':
         $from = " $side JOIN civicrm_mailing ON civicrm_mailing.id = civicrm_mailing_recipients.mailing_id ";
@@ -202,8 +199,7 @@ class CRM_Mailing_BAO_Query {
     return $from;
   }
 
-  static
-  function defaultReturnProperties($mode,
+  static function defaultReturnProperties($mode,
     $includeCustomFields = TRUE
   ) {
 
@@ -228,8 +224,7 @@ class CRM_Mailing_BAO_Query {
     return $properties;
   }
 
-  static
-  function whereClauseSingle(&$values, &$query) {
+  static function whereClauseSingle(&$values, &$query) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
     $fields = array();
@@ -396,8 +391,7 @@ class CRM_Mailing_BAO_Query {
    * @return void
    * @static
    */
-  static
-  function buildSearchForm(&$form) {
+  static function buildSearchForm(&$form) {
     // mailing selectors
     $mailings = CRM_Mailing_BAO_Mailing::getMailingsList();
 
@@ -407,7 +401,7 @@ class CRM_Mailing_BAO_Query {
       );
     }
 
-    CRM_Core_Form_Date::buildDateRange($form, 'mailing_date', 1, '_low', '_high', ts('From'), FALSE, FALSE);
+    CRM_Core_Form_Date::buildDateRange($form, 'mailing_date', 1, '_low', '_high', ts('From'), FALSE);
 
     //NYSS 6845
     $mailingJobStatuses = array(
@@ -447,8 +441,7 @@ class CRM_Mailing_BAO_Query {
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
     // if an event filter is specified, then a mailing selector must also be specified
     if ((CRM_Utils_Array::value('mailing_delivery_status', $fields) ||
@@ -471,17 +464,14 @@ class CRM_Mailing_BAO_Query {
     return $errors;
   }
 
-  static
-  function addShowHide(&$showHide) {
+  static function addShowHide(&$showHide) {
     $showHide->addHide('MailingForm');
     $showHide->addShow('MailingForm_show');
   }
 
-  static
-  function searchAction(&$row, $id) {}
+  static function searchAction(&$row, $id) {}
 
-  static
-  function tableNames(&$tables) {}
+  static function tableNames(&$tables) {}
 
   /**
    * Filter query results based on which contacts do (not) have a particular mailing event in their history.
@@ -494,8 +484,7 @@ class CRM_Mailing_BAO_Query {
    *
    * @return void
    */
-  static
-  function mailingEventQueryBuilder(&$query, &$values, $tableName, $fieldName, $fieldTitle, &$valueTitles) {
+  static function mailingEventQueryBuilder(&$query, &$values, $tableName, $fieldName, $fieldTitle, &$valueTitles) {
     list($name, $op, $value, $grouping, $wildcard) = $values;
 
     if (empty($value) || $value == 'A') {
