@@ -146,6 +146,7 @@ class CRM_NYSS_BAO_Log {
 
     //$reportObj->storeResultSet();
     $reportObj->buildForm();
+    $reportObj->_nyssGetCount = 1;
     $reportObj->postProcess();
     //CRM_Core_Error::debug_var('reportObj after postProcess', $reportObj);
 
