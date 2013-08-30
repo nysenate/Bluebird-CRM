@@ -5,8 +5,10 @@
 */
 
 require_once 'script_utils.php';
-define('DEFAULT_ADDRESS_BATCH', 5);
+define('DEFAULT_ADDRESS_BATCH', 50);
 define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
+
+$geocode_stats = array();
 
 function main()
 {
@@ -92,6 +94,8 @@ function main()
 
 function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) {
 
+  global $geocode_stats;
+  
   require_once 'CRM/Utils/SAGE.php';
   require_once 'CRM/Core/DAO/Address.php';
   require_once 'CRM/Core/BAO/Address.php';  
@@ -240,6 +244,10 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
       }        
     }
 
+    foreach($geocode_stats as $method => $count) {
+      bbscript_log('INFO', "Geocode usage for $method : $count");  
+    }    
+
     if ($DEBUG) {
       print_r($addressBatch);
     }
@@ -310,6 +318,8 @@ function parseAddress(&$address, &$unparseableContactAddress)
 
 // Updates the address in the database using the DAO
 function updateAddress($address) {
+  global $geocode_stats;
+
   if (!empty($address)) {
     $address_dao = new CRM_Core_DAO_Address();
     $address_dao->id = $address['address_id'];
@@ -317,6 +327,13 @@ function updateAddress($address) {
     $address_dao->save();
     $address_dao->free();
     bbscript_log('TRACE', "Saved civicrm_address table entry for address_id {$address['address_id']}");
+    
+    if (!empty($address['geo_method'])) {
+      if (!isset($geocode_stats[$address['geo_method']])) {
+        $geocode_stats[$address['geo_method']] = 0;
+      }
+      $geocode_stats[$address['geo_method']]++;
+    }
   }
 }
 
@@ -365,16 +382,30 @@ function updateDistricts($address, $db, $districtTypes) {
     }
   }
 
-  $query = "UPDATE civicrm_value_district_information_7 di
+  if (!empty($sqlUpdates)) {
+    $query = "UPDATE civicrm_value_district_information_7 di
             SET " . implode(', ', $sqlUpdates) . "
             WHERE di.entity_id = {$address['address_id']}";
   
-  bb_mysql_query($query, $db, true);
-  bbscript_log('TRACE', "Saved district_information table entry for address_id {$address['address_id']}");  
+    bb_mysql_query($query, $db, false);  
+  }   
 } 
 
 // Dynamically build query based on command line args
 function getQuery($optlist) {
+  
+  $districtColumns = array(
+    'congress' => 'congressional_district_46',
+    'senate' => 'ny_senate_district_47',
+    'assembly' => 'ny_assembly_district_48',
+    'election' => 'election_district_49', 
+    'county' => 'county_50',
+    'cleg' => 'county_legislative_district_51',
+    'town' => 'town_52',
+    'ward' => 'ward_53',
+    'school' => 'school_district_54'
+  );
+
   $query = "";
   $querySelect = array(
     "c.id",
@@ -404,17 +435,18 @@ function getQuery($optlist) {
 
     if(!$optlist['force']) {
       $whereClause .= "
- AND (( a.geo_code_1 is null OR a.geo_code_1 = 0 ) AND
-( a.geo_code_2 is null OR a.geo_code_2 = 0 ) AND
-( a.country_id is not null ))";
+        AND (( a.geo_code_1 is null OR a.geo_code_1 = 0 OR
+               a.geo_code_2 is null OR a.geo_code_2 = 0 ) AND
+               a.country_id is not null)";
     }
   }
 
   if($optlist['distassign']) {
-    $querySelect[] = "d.congressional_district_46 as cd";
-    $querySelect[] = "d.ny_senate_district_47 as sd";
-    $querySelect[] = "d.ny_assembly_district_48 as ad";
-    $querySelect[] = "d.election_district_49 as ed";
+    $distSelect = array();
+    foreach(array_values($districtColumns) as $col) {
+      $distSelect[] = "d.$col";
+    }
+    $querySelect[] = implode(', ', $distSelect);
     $querySelect[] = "d.id as d_id";
 
     if($optlist['usecoords'] && !$optlist['geocode']) {
@@ -423,23 +455,35 @@ function getQuery($optlist) {
     }
 
     if(!$optlist['force']) {
-      $whereClause .= "
- AND (( d.congressional_district_46 is null or d.congressional_district_46 = \"\" ) OR
-( d.ny_senate_district_47 is null or d.ny_senate_district_47= \"\" ) OR
-( d.ny_assembly_district_48 is null or d.ny_assembly_district_48 = \"\" ) OR
-( d.election_district_49 is null or d.election_district_49 = \"\" ))";
+      $whereDist = array();
+      $assignTypes = array();
+      foreach (array_keys($districtColumns) as $dt) {
+        if ($optlist[$dt]) {
+          $assignTypes[] = $dt;
+        }
+      }
+
+      if (empty($assignTypes)) {
+        $assignTypes = array('senate', 'congress', 'assembly', 'county', 'school', 'town');
+      }
+
+      foreach($assignTypes as $dt) {
+        $whereDist[] = "d.{$districtColumns[$dt]} is null OR d.{$districtColumns[$dt]} = \"\"";
+      }
+      
+      $whereClause .= " AND (" . implode(' OR ', $whereDist) . ")";
     }
   }
 
-  $query = "SELECT ".implode( ', ', $querySelect )."
-FROM       civicrm_contact  c
-INNER JOIN civicrm_address                a ON a.contact_id = c.id
-LEFT  JOIN civicrm_country                o ON a.country_id = o.id
-LEFT  JOIN civicrm_state_province         s ON a.state_province_id = s.id
-LEFT  JOIN civicrm_value_district_information_7 d ON a.id = d.entity_id
-WHERE      {$whereClause}
-  ORDER BY a.id
-";
+  $query = "SELECT " . implode( ', ', $querySelect ) . "
+    FROM       civicrm_contact  c
+    INNER JOIN civicrm_address                a ON a.contact_id = c.id
+    LEFT  JOIN civicrm_country                o ON a.country_id = o.id
+    LEFT  JOIN civicrm_state_province         s ON a.state_province_id = s.id
+    LEFT  JOIN civicrm_value_district_information_7 d ON a.id = d.entity_id
+    WHERE      {$whereClause}
+    ORDER BY a.id
+    ";
 
   return $query;
 }

@@ -568,6 +568,7 @@ class CRM_Utils_SAGE
   {
     //Forced type cast required to convert the simplexml objects to strings
     if ($overwrite || empty($values["geo_code_1"]) || !$values["geo_code_1"]) {
+     $values["geo_method"] = (string)$xml->geocode->method;
      $values["geo_code_1"] = (string)$xml->geocode->lat;
     }
     if ($overwrite || empty($values["geo_code_2"]) || !$values["geo_code_2"]) {
