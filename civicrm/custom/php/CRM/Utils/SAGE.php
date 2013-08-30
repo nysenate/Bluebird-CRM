@@ -246,11 +246,9 @@ class CRM_Utils_SAGE
 
     $url = '/district/assign/batch?format=xml&';
     $params = array(
-      'key' => SAGE_API_KEY
+      'key' => SAGE_API_KEY,
+      'districtStrategy' => ($streetfile_only) ? 'streetOnly' : 'streetFallback'
     );
-    if ($streetfile_only) {
-      $params['districtStrategy'] = 'streetOnly';
-    }
 
     $params = http_build_query($params, '', '&');
     $url = SAGE_API_BASE . $url . $params;
@@ -570,6 +568,7 @@ class CRM_Utils_SAGE
   {
     //Forced type cast required to convert the simplexml objects to strings
     if ($overwrite || empty($values["geo_code_1"]) || !$values["geo_code_1"]) {
+     $values["geo_method"] = (string)$xml->geocode->method;
      $values["geo_code_1"] = (string)$xml->geocode->lat;
     }
     if ($overwrite || empty($values["geo_code_2"]) || !$values["geo_code_2"]) {

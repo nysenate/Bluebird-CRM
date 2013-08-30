@@ -519,7 +519,7 @@ class CRM_IMAP_AJAX {
         require_once 'api/api.php';
         require_once 'CRM/Utils/File.php';
         require_once 'CRM/Utils/IMAP.php';
-	$bbconfig = get_bluebird_instance_config();
+	  $bbconfig = get_bluebird_instance_config();
         $debug = false;
         $debug = self::get('debug');
         $messageUid = self::get('messageId');
@@ -532,9 +532,6 @@ class CRM_IMAP_AJAX {
         $config = CRM_Core_Config::singleton( );
         $uploadDir = $config->customFileUploadDir;
         $uploadInbox = $uploadDir.'inbox/';
-
-
-
 
         if(!$messageUid || !$contactIds){
           $returnCode = array('code'      =>  'ERROR',
@@ -550,7 +547,7 @@ class CRM_IMAP_AJAX {
 	$forwarder = substr(mysql_real_escape_string($output['forwarder']),0,255);
         $date = mysql_real_escape_string($output['updated_date']);
         $FWDdate = mysql_real_escape_string($output['email_date']);
-	$subject = substr(mysql_real_escape_string($output['subject']),0,255);
+	$subject =substr( strip_tags( htmlspecialchars_decode( mysql_real_escape_string($output['subject'])) ) ,0,249);
         $body = mysql_real_escape_string($output['body']);
         $status = mysql_real_escape_string($output['status']);
         $key = mysql_real_escape_string($output['sender_email']);
