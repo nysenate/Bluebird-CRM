@@ -23,8 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<h3>{ts}General Settings{/ts}</h3>
-<table class="form-layout">
+<div id="settings" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide">
+  <h3>{ts}General Settings{/ts}</h3>
+  <table class="form-layout">
     <tr class="crm-report-instanceForm-form-block-title">
         <td class="report-label" width="20%">{$form.title.label} {help id="id-report_title" file="CRM/Report/Form/Settings.hlp"}</td>
         <td >{$form.title.html}</td>
@@ -41,11 +42,13 @@
         <td class="report-label" width="20%">{$form.report_footer.label}</td>
         <td>{$form.report_footer.html}</td>
     </tr>
-</table>
-<br/>
+  </table>
+</div>
+
 {*NYSS*}
-<h3 class="email-delivery-settings-title">{ts}Email Delivery Settings{/ts} {help id="id-email_settings" file="CRM/Report/Form/Settings.hlp"}</h3>
-<table class="form-layout email-delivery-settings-fields">
+<div id="email" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide">
+  <h3 class="email-delivery-settings-title">{ts}Email Delivery Settings{/ts} {help id="id-email_settings" file="CRM/Report/Form/Settings.hlp"}</h3>
+  <table class="form-layout email-delivery-settings-fields">
     <tr class="crm-report-instanceForm-form-block-email_subject">
         <td class="report-label" width="20%">{$form.email_subject.label}</td>
         <td>{$form.email_subject.html|crmReplace:class:huge}</td>
@@ -58,13 +61,14 @@
         <td class="report-label">{$form.email_cc.label}</td>
         <td>{$form.email_cc.html|crmReplace:class:huge}</td>
     </tr> 
-</table>
-<br/>
+  </table>
+</div>
 
-<h3>{ts}Other Settings{/ts}</h3>
-<table class="form-layout">
+<div id="other" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide">
+  <h3>{ts}Other Settings{/ts}</h3>
+  <table class="form-layout">
     <tr class="crm-report-instanceForm-form-block-is_navigation">
-	<td class="report-label">{$form.is_navigation.label}</td>
+	  <td class="report-label">{$form.is_navigation.label}</td>
         <td>{$form.is_navigation.html}<br />
             <span class="description">{ts}All report instances are automatically included in the Report Listing page. Check this box to also add this report to the navigation menu.{/ts}</span>
         </td>
@@ -95,7 +99,8 @@
             <span class="description">{ts}Users with appropriate permissions can add this report to their dashboard.{/ts}</span>
         </td>
     </tr>
-</table>
+  </table>
+</div>
 
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="is_navigation"
