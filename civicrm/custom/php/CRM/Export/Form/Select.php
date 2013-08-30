@@ -501,5 +501,10 @@ FROM   {$this->_componentTable}
 
     return $options;
   }
+
+  //NYSS
+  function getContactIds() {
+    CRM_Contact_Form_Task::getContactIds();
+  }
 }
 

@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -181,7 +179,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
           CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $row['log_civicrm_entity_altered_contact_id'], 'is_deleted') !== '0';
       }
 
-      if (!$isDeleted[$row['log_civicrm_entity_altered_contact_id']]) {
+      if (CRM_Utils_Array::value('log_civicrm_entity_altered_contact', $row) &&
+        !$isDeleted[$row['log_civicrm_entity_altered_contact_id']]) {
         $row['log_civicrm_entity_altered_contact_link'] = 
           CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_entity_altered_contact_id']);
         $row['log_civicrm_entity_altered_contact_hover'] = ts("Go to contact summary");
@@ -193,28 +192,27 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
       $row['altered_by_contact_display_name_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_entity_log_user_id']);
       $row['altered_by_contact_display_name_hover'] = ts("Go to contact summary");
 
-      if ($row['log_civicrm_entity_is_deleted'] and $row['log_civicrm_entity_log_action'] == 'Update') {
+      if ($row['log_civicrm_entity_is_deleted'] and 'Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
         $row['log_civicrm_entity_log_action'] = ts('Delete (to trash)');
       }
 
       if ('Contact' == CRM_Utils_Array::value('log_type', $this->_logTables[$row['log_civicrm_entity_log_type']]) && 
-          $row['log_civicrm_entity_log_action'] == 'Insert' ) {
+          CRM_Utils_Array::value('log_civicrm_entity_log_action', $row) == 'Insert' ) {
         $row['log_civicrm_entity_log_action'] = ts('Update');
       }
 
       //NYSS 6056
-      if ($newAction =
-          $this->getEntityAction($row['log_civicrm_entity_id'],
-                                 $row['log_civicrm_entity_log_conn_id'],
-                                 $row['log_civicrm_entity_log_type'],
-                                 $row['log_civicrm_entity_log_action']))
+      if ($newAction = $this->getEntityAction($row['log_civicrm_entity_id'],
+                       $row['log_civicrm_entity_log_conn_id'],
+                       $row['log_civicrm_entity_log_type'],
+                       CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)))
         $row['log_civicrm_entity_log_action'] = $newAction;
 
       $row['log_civicrm_entity_log_type'] = $this->getLogType($row['log_civicrm_entity_log_type']);
 
       $date = CRM_Utils_Date::isoToMysql($row['log_civicrm_entity_log_date']);
 
-      if ($row['log_civicrm_entity_log_action'] == 'Update') {
+      if ('Update' == CRM_Utils_Array::value('log_civicrm_entity_log_action', $row)) {
         $q = "reset=1&log_conn_id={$row['log_civicrm_entity_log_conn_id']}&log_date=". $date;
         //NYSS
         if ( $this->cid ) {
@@ -240,12 +238,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
         $row['show_details'] = self::getContactDetails($cid);
       }
 
-      //NYSS add entity_id to key to ensure distinct
+      //NYSS 6844 add entity_id to key to ensure distinct
       $key  = $date . '_' .
         $row['log_civicrm_entity_log_type'] . '_' .
         $row['log_civicrm_entity_log_conn_id'] . '_' .
         $row['log_civicrm_entity_log_user_id'] . '_' .
-        $row['log_civicrm_entity_altered_contact_id'];//NYSS 6844
+        $row['log_civicrm_entity_altered_contact_id'];
       $newRows[$key] = $row;
 
       unset($row['log_civicrm_entity_log_user_id']);
@@ -280,7 +278,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary {
     }
 
     $detail = $this->_logTables[$entity];
-    $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);//NYSS 5751
+    //NYSS 5751
+    $tableName = CRM_Utils_Array::value('table_name', $detail, $entity);
     $clause = CRM_Utils_Array::value('entity_table', $detail);
     $clause = $clause ? "AND entity_log_civireport.entity_table = 'civicrm_contact'" : null;
 

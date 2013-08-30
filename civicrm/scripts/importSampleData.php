@@ -36,13 +36,13 @@ class CRM_ImportSampleData {
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = 'd:s:p:g:l:k:u';
-    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log=', 'skiplogs', 'uid=');
+    $shortopts = 'd:s:p:o:g:l:k:u';
+    $longopts = array('dryrun', 'system', 'purge', 'purge-only', 'generate', 'log=', 'skiplogs', 'uid=');
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log LEVEL] [--skiplogs|-k] [--uid USERID|-u]';
+      $usage = '[--dryrun] [--system] [--purge] [--purge-only] [--generate] [--log LEVEL] [--skiplogs|-k] [--uid USERID|-u]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -64,6 +64,7 @@ class CRM_ImportSampleData {
     $session = CRM_Core_Session::singleton();
 
     //retrieve/set options
+    //CRM_Core_Error::debug_var('optlist', $optlist);
     $optDry = $optlist['dryrun'];
     $scriptPath = $bbcfg['app.rootdir'].'/civicrm/scripts';
 
@@ -80,7 +81,7 @@ class CRM_ImportSampleData {
     }
 
     //clean out all existing data
-    if ( $optlist['purge'] ) {
+    if ( $optlist['purge'] || $optlist['purge-only'] ) {
       bbscript_log('info', 'purging old data... ');
       self::purgeData($optlist['uid']);
     }
@@ -116,28 +117,30 @@ class CRM_ImportSampleData {
       self::importSystem($sys, $scriptPath);
     }
 
-    //begin import
-    $data = array(
-      'organizations.yml',
-      'individuals.yml',
-      'activity.yml',
-      'entity_tag.yml',
-    );
+    //proceed with import unless purge only
+    if ( $optlist['purge-only'] == FALSE ) {
+      $data = array(
+        'organizations.yml',
+        'individuals.yml',
+        'activity.yml',
+        'entity_tag.yml',
+      );
 
-    foreach ( $data as $file ) {
-      $type = str_replace('.yml', '', $file);
-      bbscript_log('info', "importing {$type} data...");
-      self::importData($file, $scriptPath);
+      foreach ( $data as $file ) {
+        $type = str_replace('.yml', '', $file);
+        bbscript_log('info', "importing {$type} data...");
+        self::importData($file, $scriptPath);
+      }
     }
 
-    //completely purge log db unless explicit skip
+    //re-enable logging
     if ( $optlist['skiplogs'] == FALSE ) {
-      //re-enable logging
+      bbscript_log('info', "re-enabling logging...");
       $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logEnable.php';
       exec("php $script -S {$bbcfg['shortname']}");
     }
 
-    bbscript_log("info", "Completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
+    bbscript_log("info", "completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
 
   }//run
 
