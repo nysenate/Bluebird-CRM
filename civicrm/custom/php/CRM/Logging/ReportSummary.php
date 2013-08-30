@@ -357,6 +357,10 @@ ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$log
     $this->buildRows($sql, $rows);
     //CRM_Core_Error::debug_var('$rows',$rows);
 
+    //NYSS store row count so we can retrieve for tab
+    $this->_nyssRowCount = count($rows);
+    //CRM_Core_Error::debug_var('$this->_nyssRowCount',$this->_nyssRowCount);
+
     //NYSS
     //self::_combineContactRows($rows);
 
