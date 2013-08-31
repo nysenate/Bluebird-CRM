@@ -23,6 +23,11 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{*NYSS include additional reports css*}
+{literal}
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/css/reportsCivicrm.css" />
+{/literal}
+
 {include file="CRM/common/crmeditable.tpl"}
 {* this div is being used to apply special css *}
 {*NYSS include js files in print mode; allows sorting and removes IE erorrs*}

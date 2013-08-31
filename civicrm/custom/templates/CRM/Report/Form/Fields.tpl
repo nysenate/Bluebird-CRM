@@ -81,29 +81,19 @@
           {include file="CRM/Report/Form/Instance.tpl"}
         {/if}
       </div> {* end mainTabContainer *}
+
+      {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
+      {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}
+      <div class="crm-submit-buttons-bottom">
+        {$form.buttons.html}
+        {$form.$save.html}
+        {if $mode neq 'template' && $form.$next}
+          {$form.$next.html}
+        {/if}
+      </div>
     </div><!-- /.crm-accordion-body -->
   </div><!-- /.crm-accordion-wrapper -->
 </div> {* criteria section ends *}
-{/if}
-
-  <div>{$form.buttons.html}</div>
-
-  {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
-  {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}
-  <div class="crm-submit-buttons">
-    {$form.$save.html}
-    {if $mode neq 'template' && $form.$next}
-      {$form.$next.html}
-    {/if}
-  </div>
-
-{if $updateReportButton}
-<div id='update-button' class="crm-submit-buttons">
-  {$form.$save.html}
-  {if $mode neq 'template' && $form.$next}
-    {$form.$next.html}
-  {/if}
-</div>
 {/if}
 
 {literal}

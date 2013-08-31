@@ -23,21 +23,6 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{*NYSS - keep css local to this tpl*}
-{literal}
-  <style type="text/css">
-    <!--
-    #crm-container #mainTabContainer .ui-tabs-panel {
-      float: none;
-      width: auto;
-    }
-    #crm-container #mainTabContainer .ui-tabs-panel {
-      min-height: 0;
-    }
-    -->
-  </style>
-{/literal}
-
 {* Report form criteria section *}
 {if $colGroups}
   <div id="col-groups" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom">
