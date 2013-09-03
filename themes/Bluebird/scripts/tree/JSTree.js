@@ -302,7 +302,7 @@
       displaySettings = {
         defaultTree: 291,
         mode: 'edit',
-        fullSize: true,
+        size: 'full',
         autocomplete: true,
         print: true,
         showActive: true,
@@ -364,6 +364,16 @@
       };
     }
 
+    instance.prototype.removeDupFromExtend = function(obj) {
+      var _this = this;
+      return cj.each(obj, function(k, v) {
+        if (cj.isPlainObject(v)) {
+          _this.removeDupFromExtend(v);
+        }
+        return v = bbUtils.uniqueAry(v);
+      });
+    };
+
     instance.prototype.checkForArray = function(propDefault, obj) {
       return cj.each(obj, function(k, def) {
         var a, ar, b, c, i, _i, _j, _len, _len1;
@@ -375,8 +385,11 @@
             if (c !== b[i]) {
               for (_j = 0, _len1 = def.length; _j < _len1; _j++) {
                 ar = def[_j];
-                propDefault[k].push(ar);
+                if (propDefault[k].indexOf(ar) < 0) {
+                  propDefault[k].push(ar);
+                }
               }
+              console.log(propDefault[k]);
             }
           }
           return obj[k] = propDefault[k];
@@ -485,8 +498,9 @@
     View.prototype.addSearchBoxToElement = function() {};
 
     View.prototype.formatPageElements = function() {
-      var i, pageElements, selector, _i, _len, _ref, _ref1;
+      var displayElements, i, pageElements, selector, _i, _len, _ref, _ref1;
       pageElements = this.instance.get('pageElements');
+      displayElements = this.instance.get('displayElements');
       _ref = ["", ""], this.tagHolderSelector = _ref[0], this.tagWrapperSelector = _ref[1];
       this.menuName = {
         menu: "",
@@ -504,6 +518,7 @@
         left: ""
       };
       this.addIdWrapperString = pageElements.wrapper;
+      this.addBoxSizing = pageElements.size;
       this.addClassHolderString = pageElements.tagHolder;
       this.initHolderId = pageElements.init;
       this.cjInitHolderId = cj("." + this.initHolderId);
@@ -516,7 +531,21 @@
         this.tokenHolder = this.concatOnObj(this.tokenHolder, selector);
         this.tagHolderSelector = this.tagHolderSelector.concat("." + selector);
       }
-      return this.tagWrapperSelector = this.tagWrapperSelector.concat("#" + pageElements.wrapper);
+      this.tagWrapperSelector = this.tagWrapperSelector.concat("#" + pageElements.wrapper);
+      return console.log(displayElements);
+    };
+
+    View.prototype.separateSizeElements = function(el) {
+      var a, b, classNames, _i, _len;
+      el.replace(/\./, "");
+      el.replace(/#/, "");
+      classNames = el.split(" ");
+      for (b = _i = 0, _len = classNames.length; _i < _len; b = ++_i) {
+        a = classNames[b];
+        el += "." + b;
+        console.log(a, b);
+      }
+      return el;
     };
 
     View.prototype.ifisarrayjoin = function(toJoin) {
@@ -607,6 +636,11 @@
   };
 
   treeBehavior = {
+    addPositionReminderText: function(cjlocation) {
+      var positionText;
+      positionText = "            <dl class='top-292 tagContainer' style='display:none'>              <div class='position-box-text-reminder'>                Type in a Bill Number or Name for Results              </div>            </dl>          ";
+      return cjlocation.append(positionText);
+    },
     setLocals: function(locals) {
       if (locals.menu != null) {
         this.tabsLoc = locals.menu;
@@ -623,8 +657,6 @@
       this.instance = instance;
       this.pageElements = this.instance.get('pageElements');
       this.dataSettings = this.instance.get('dataSettings');
-      this.appendTab("search", "Search", true);
-      this.createTabClick("tab-search", "search");
       if (this.cjTagBox == null) {
         this.cjTagBox = cj("." + (this.pageElements.tagHolder.join(".")));
       }
@@ -686,10 +718,7 @@
           });
         }
         if (cjac.val().length < 3) {
-          if (_treeVisibility.currentTree === "search") {
-            _this.showTags(_treeVisibility.previousTree);
-          }
-          return cj("" + _this.tabsLoc + " .tab-search").hide();
+          return _this.removePositions;
         }
       });
     },
@@ -768,65 +797,6 @@
       }
       return cj(".search #tagDropdown_" + parentArray[index - 1]);
     },
-    buildSearchList: function(tagList, term, hits) {
-      var allDropdowns, cjCloneChildren, cjCloneTag, cjParentId, foundId, key, tag, tagListLength, toAppendTo, value, _i, _len, _ref,
-        _this = this;
-      this.alreadyPlaced = [];
-      if (this.cjSearchBox == null) {
-        this.cjSearchBox = this.cjTagBox.find(".search");
-      }
-      this.cjSearchBox.empty();
-      if (tagList !== null) {
-        tagListLength = hits;
-        this.toShade = [];
-        foundId = [];
-        for (key in tagList) {
-          tag = tagList[key];
-          foundId.push(parseInt(tag.id));
-        }
-        for (key in tagList) {
-          tag = tagList[key];
-          cjCloneTag = this.cjTagBox.find("dt[data-tagid=" + tag.id + "]");
-          cjParentId = cjCloneTag.data("parentid");
-          if (this.cloneChildren(cjCloneTag, tagList)) {
-            if (foundId.indexOf(cjParentId) < 0) {
-              if (this.dataSettings.pullSets.indexOf(cjParentId) < 0) {
-                toAppendTo = this.buildParents(this.grabParents(cjParentId));
-              } else {
-                toAppendTo = this.cjSearchBox;
-              }
-            } else {
-              toAppendTo = this.cjSearchBox;
-            }
-            cjCloneChildren = this.cjTagBox.find("#tagDropdown_" + tag.id);
-            this.toShade.push(parseInt(tag.id));
-            cjCloneTag.clone().appendTo(toAppendTo).addClass("shaded");
-            cjCloneChildren.clone().appendTo(toAppendTo);
-          } else {
-            this.toShade.push(parseInt(tag.id));
-          }
-        }
-        allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent();
-        this.processSearchChildren(this.toShade);
-        cj.each(allDropdowns, function(key, value) {
-          var tagid;
-          tagid = cj(value).data('tagid');
-          if (tagid != null) {
-            return _this.enableDropdowns(".search dt[data-tagid='" + tagid + "']", true);
-          }
-        });
-      } else {
-        tagListLength = 0;
-        this.cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>");
-      }
-      _ref = this.toShade;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        value = _ref[_i];
-        this.makeShade(value, term);
-      }
-      this.buildPositions();
-      return this.switchToSearch(tagListLength);
-    },
     buildPositions: function() {
       var k, o, openLeg, options, _ref,
         _this = this;
@@ -838,7 +808,7 @@
       if (this.positionPagesLeft > 1) {
         openLeg = new OpenLeg;
         options = {
-          scrollBox: ".JSTree.BBTree"
+          scrollBox: ".JSTree"
         };
         return cj(".JSTree .search.tagContainer").infiniscroll(options, function() {
           var nextPage;

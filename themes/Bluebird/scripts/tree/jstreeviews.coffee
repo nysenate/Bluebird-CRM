@@ -103,7 +103,8 @@ class View
       @tokenHolder = @concatOnObj(@tokenHolder, selector)
       @tagHolderSelector = @tagHolderSelector.concat(".#{selector}")
     @tagWrapperSelector = @tagWrapperSelector.concat("##{pageElements.wrapper}")
-    cj(@tagWrapperSelector).addClass(@separateSizeElements(displayElements.size))
+    console.log displayElements
+    # cj(@tagWrapperSelector).addClass(@separateSizeElements(displayElements.size))
   
   separateSizeElements: (el) ->
     el.replace /\./, ""
@@ -113,6 +114,7 @@ class View
       el += ".#{b}"
       console.log a,b
     return el
+    
   ifisarrayjoin: (toJoin)->
     if cj.isArray(toJoin)
       toJoin = toJoin.join(" ")
@@ -146,6 +148,8 @@ class View
     for k,v of @dataSettings.pullSets
       if v isnt @displaySettings.defaultTree
         @cjInstanceSelector.append(_treeData.html[v])
+        # if parseFloat(v) == 292
+          # treeBehavior.addPositionReminderText(@cjInstanceSelector)
       treeBehavior.createOpacityFaker(".top-#{v}","dt","type-#{v}")
     @cjInstanceSelector.find(".top-#{@displaySettings.defaultTree}").addClass("active")
     treeBehavior.setCurrentTab _treeData.treeTabs[@displaySettings.defaultTree]
@@ -171,6 +175,15 @@ _treeVisibility =
 
 
 treeBehavior =
+  addPositionReminderText: (cjlocation) ->
+    positionText = "
+            <dl class='top-292 tagContainer' style='display:none'>
+              <div class='position-box-text-reminder'>
+                Type in a Bill Number or Name for Results
+              </div>
+            </dl>
+          "
+    cjlocation.append(positionText)
   setLocals: (locals) ->
     @tabsLoc = locals.menu if locals.menu?
     if locals.top?
@@ -179,8 +192,8 @@ treeBehavior =
   autoCompleteStart: (@instance) ->
     @pageElements = @instance.get 'pageElements'
     @dataSettings = @instance.get 'dataSettings'
-    @appendTab("search","Search",true)
-    @createTabClick("tab-search", "search")
+    # @appendTab("search","Search",true)
+    # @createTabClick("tab-search", "search")
     @cjTagBox = cj(".#{@pageElements.tagHolder.join(".")}") unless @cjTagBox?
     cj("#JSTree-data").data("autocomplete" : @instance.getAutocomplete())
     params =
@@ -240,9 +253,10 @@ treeBehavior =
             @buildSearchList(null, "No Results Found")
         )
       if cjac.val().length < 3
-        if _treeVisibility.currentTree == "search"
-          @showTags _treeVisibility.previousTree
-        cj("#{@tabsLoc} .tab-search").hide() 
+        @removePositions
+        # if _treeVisibility.currentTree == "search"
+          # @showTags _treeVisibility.previousTree
+        # cj("#{@tabsLoc} .tab-search").hide() 
     )
 
   positionIdNumber: 292000
@@ -315,55 +329,53 @@ treeBehavior =
       # if it has children...
 
 
-  buildSearchList: (tagList, term, hits) ->
-    # this is where we need to determine which tag tree we're representing
-    # the tiny search-only or the full-tree
-    @alreadyPlaced = []
-    @cjSearchBox = @cjTagBox.find(".search") unless @cjSearchBox?
-    @cjSearchBox.empty()
-    if tagList != null
-      tagListLength = hits
-      @toShade = []
-      foundId = []
+  # buildSearchList: (tagList, term, hits) ->
+  #   # this is where we need to determine which tag tree we're representing
+  #   # the tiny search-only or the full-tree
+  #   @alreadyPlaced = []
+  #   @cjSearchBox = @cjTagBox.find(".search") unless @cjSearchBox?
+  #   @cjSearchBox.empty()
+  #   if tagList != null
+  #     tagListLength = hits
+  #     @toShade = []
+  #     foundId = []
       
-      for key,tag of tagList
-        # parentArray.push(@cjTagBox.find("dt[data-tagid=#{tag.id}]").data("parentid"))
-        foundId.push(parseInt tag.id)
-      for key,tag of tagList
-        cjCloneTag = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
-        cjParentId = cjCloneTag.data("parentid")
-        if @cloneChildren(cjCloneTag,tagList)
-          # checking to see if orphaned children?
-          if foundId.indexOf(cjParentId) < 0 
-            if @dataSettings.pullSets.indexOf(cjParentId) < 0
-              toAppendTo = @buildParents(@grabParents(cjParentId))
-            else
-              toAppendTo = @cjSearchBox
-          else
-            toAppendTo = @cjSearchBox
-          cjCloneChildren = @cjTagBox.find("#tagDropdown_#{tag.id}")
-          @toShade.push(parseInt tag.id)
-          cjCloneTag.clone().appendTo(toAppendTo).addClass("shaded")
-          cjCloneChildren.clone().appendTo(toAppendTo)
-        else
-          @toShade.push(parseInt tag.id)
-      # search for all DL's in search
-      allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent()
-      # 3 tenths of a second from here to end
-      @processSearchChildren @toShade
-      cj.each allDropdowns, (key,value) =>
-        tagid = cj(value).data('tagid')
-        if tagid?
-          @enableDropdowns(".search dt[data-tagid='#{tagid}']", true)
-    else
-      tagListLength = 0
-      @cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>")
-
-    for value in @toShade
-      @makeShade value, term
-
-    @buildPositions()
-    @switchToSearch(tagListLength)
+  #     for key,tag of tagList
+  #       # parentArray.push(@cjTagBox.find("dt[data-tagid=#{tag.id}]").data("parentid"))
+  #       foundId.push(parseInt tag.id)
+  #     for key,tag of tagList
+  #       cjCloneTag = @cjTagBox.find("dt[data-tagid=#{tag.id}]")
+  #       cjParentId = cjCloneTag.data("parentid")
+  #       if @cloneChildren(cjCloneTag,tagList)
+  #         # checking to see if orphaned children?
+  #         if foundId.indexOf(cjParentId) < 0 
+  #           if @dataSettings.pullSets.indexOf(cjParentId) < 0
+  #             toAppendTo = @buildParents(@grabParents(cjParentId))
+  #           else
+  #             toAppendTo = @cjSearchBox
+  #         else
+  #           toAppendTo = @cjSearchBox
+  #         cjCloneChildren = @cjTagBox.find("#tagDropdown_#{tag.id}")
+  #         @toShade.push(parseInt tag.id)
+  #         cjCloneTag.clone().appendTo(toAppendTo).addClass("shaded")
+  #         cjCloneChildren.clone().appendTo(toAppendTo)
+  #       else
+  #         @toShade.push(parseInt tag.id)
+  #     # search for all DL's in search
+  #     allDropdowns = cj(".search dt .tag .ddControl.treeButton").parent().parent()
+  #     # 3 tenths of a second from here to end
+  #     @processSearchChildren @toShade
+  #     cj.each allDropdowns, (key,value) =>
+  #       tagid = cj(value).data('tagid')
+  #       if tagid?
+  #         @enableDropdowns(".search dt[data-tagid='#{tagid}']", true)
+  #   else
+  #     tagListLength = 0
+  #     @cjSearchBox.append("<div class='noResultsFound'>No Results Found</div>")
+  #   for value in @toShade
+  #     @makeShade value, term
+  #   @buildPositions()
+  #   @switchToSearch(tagListLength)
   
   buildPositions: () ->
     for k,o of @positionListing

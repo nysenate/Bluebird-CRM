@@ -129,6 +129,14 @@ class window.bb
     return str.replace /\ /g,"_" if type == "underscore"
     return str.replace /\ /g,"-" if type == "dash"
     return str.replace /\ /g,"" 
+  
+  # returns a random string
+  randomString: (length) ->
+    b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    a = ""
+    for i in [1..length]
+      a = "#{a}#{b.charAt(Math.floor(Math.random() * b.length))}"
+    a
 
 
   keyCode: (evt) ->
@@ -267,6 +275,13 @@ class window.bb
           when 90 then rData.name = "z"
         rData.name = rData.name.toUpperCase() if evt.shiftKey
     rData
+  uniqueAry: (ary) ->
+    uniqAry = []
+    cj.each ary, (i, el) ->
+      uniqueAry.push(el) if cj.inArray(el, ary) == -1
+    uniqAry
+  insertIntoArray: (ary, index, item) ->
+    ary.splice(index, 0, item)
 
 window.bbUtils = new bb
 # when you go new bb... none you're not extending ONTO bb, you're extending BB. which doesn't work, so...

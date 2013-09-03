@@ -229,6 +229,11 @@ class instance
         ready = obj
     @getAutocomplete = =>
       _treeData.autocomplete
+  removeDupFromExtend: (obj) ->
+    cj.each obj, (k, v) =>
+      @removeDupFromExtend(v) if cj.isPlainObject(v)
+      v = bbUtils.uniqueAry(v)
+
   checkForArray: (propDefault, obj) ->
     cj.each obj, (k, def) ->
       # sort prop and obj
@@ -238,7 +243,8 @@ class instance
         for c, i in a 
           if c isnt b[i] 
             for ar in def
-              propDefault[k].push(ar)
+              if propDefault[k].indexOf(ar) < 0
+                propDefault[k].push(ar)
         obj[k] = propDefault[k]
 
 #helpers

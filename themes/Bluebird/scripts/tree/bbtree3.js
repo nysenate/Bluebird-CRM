@@ -263,6 +263,16 @@ instance = (function() {
     };
   }
 
+  instance.prototype.removeDupFromExtend = function(obj) {
+    var _this = this;
+    return cj.each(obj, function(k, v) {
+      if (cj.isPlainObject(v)) {
+        _this.removeDupFromExtend(v);
+      }
+      return v = bbUtils.uniqueAry(v);
+    });
+  };
+
   instance.prototype.checkForArray = function(propDefault, obj) {
     return cj.each(obj, function(k, def) {
       var a, ar, b, c, i, _i, _j, _len, _len1;
@@ -274,7 +284,9 @@ instance = (function() {
           if (c !== b[i]) {
             for (_j = 0, _len1 = def.length; _j < _len1; _j++) {
               ar = def[_j];
-              propDefault[k].push(ar);
+              if (propDefault[k].indexOf(ar) < 0) {
+                propDefault[k].push(ar);
+              }
             }
           }
         }

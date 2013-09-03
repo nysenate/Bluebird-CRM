@@ -144,6 +144,16 @@
       return str.replace(/\ /g, "");
     };
 
+    bb.prototype.randomString = function(length) {
+      var a, b, i, _i;
+      b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      a = "";
+      for (i = _i = 1; 1 <= length ? _i <= length : _i >= length; i = 1 <= length ? ++_i : --_i) {
+        a = "" + a + (b.charAt(Math.floor(Math.random() * b.length)));
+      }
+      return a;
+    };
+
     bb.prototype.keyCode = function(evt) {
       var arr, charCode, keyCode, ktype, rData, _i, _results;
       charCode = evt.which != null ? evt.which : event.keyCode;
@@ -483,6 +493,21 @@
           }
       }
       return rData;
+    };
+
+    bb.prototype.uniqueAry = function(ary) {
+      var uniqAry;
+      uniqAry = [];
+      cj.each(ary, function(i, el) {
+        if (cj.inArray(el, ary) === -1) {
+          return uniqueAry.push(el);
+        }
+      });
+      return uniqAry;
+    };
+
+    bb.prototype.insertIntoArray = function(ary, index, item) {
+      return ary.splice(index, 0, item);
     };
 
     return bb;
