@@ -66,6 +66,7 @@ parseTree =
         cj.each cID.children, (id, tID) =>
           @writeOutputData tID 
         @output += "</dl>"
+        return if parseFloat(id) is 292
         @writeData()
     console.log "Loaded Data at #{new Date()}"
   isItemMarked: (value,type) ->

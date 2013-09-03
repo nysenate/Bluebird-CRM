@@ -168,6 +168,9 @@ View = (function() {
       v = _ref[k];
       if (v !== this.displaySettings.defaultTree) {
         this.cjInstanceSelector.append(_treeData.html[v]);
+        if (parseFloat(v) === 292) {
+          treeBehavior.addPositionReminderText(this.cjInstanceSelector);
+        }
       }
       treeBehavior.createOpacityFaker(".top-" + v, "dt", "type-" + v);
     }
@@ -282,9 +285,10 @@ treeBehavior = {
           _this.getNextPositionRound(results);
           tags = terms.tags;
           if (hits > 0) {
-            return _this.buildSearchList(tags, terms.term.toLowerCase(), hits);
+            console.log(tags);
+            return _this.sortSearchedTags(tags);
           } else if (hits === 0 && terms.term.length >= 3) {
-            return _this.buildSearchList(null, "No Results Found");
+            return _this.buildFilterList(null, "No Results Found");
           }
         });
       }
@@ -294,6 +298,23 @@ treeBehavior = {
     });
   },
   positionIdNumber: 292000,
+  sortSearchedTags: function(tags) {
+    var list;
+    list = {};
+    cj.each(tags, function(i, el) {
+      var obj;
+      console.log(el);
+      if (list[el.type] == null) {
+        list[el.type] = [];
+      }
+      obj = {
+        id: el.id,
+        name: el.name
+      };
+      return list[el.type].push(obj);
+    });
+    return console.log(list);
+  },
   getNextPositionRound: function(results) {
     this.positionPage = results.page + 1;
     this.positionPagesLeft = results.pagesLeft;

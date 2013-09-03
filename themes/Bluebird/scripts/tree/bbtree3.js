@@ -78,6 +78,9 @@ parseTree = {
           return _this.writeOutputData(tID);
         });
         _this.output += "</dl>";
+        if (parseFloat(id) === 292) {
+          return;
+        }
         return _this.writeData();
       }
     });

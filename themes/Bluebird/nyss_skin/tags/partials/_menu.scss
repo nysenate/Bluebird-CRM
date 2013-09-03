@@ -18,13 +18,15 @@
     height:20px;
     background-color:#ccc;
   }
-  /* .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords { */
-  .tab-issue-codes,.tab-search,.tab-keywords {
+  .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords {
+  // .tab-issue-codes,.tab-search,.tab-keywords {
     width:33%;
+    // width:25%;
     padding:4px 0px;
     text-align: center;
     &.active {
       width:34%;
+      // width:25%;
     }
   }
   .tab-search {
@@ -33,9 +35,9 @@
   .tab-issue-codes {
     @include in-and-out-hover-opacity($issueCodesColor)
   }
-  /* .tab-positions {
+  .tab-positions {
     @include in-and-out-hover-opacity($positionsColor)
-  } */
+  }
   .tab-keywords {
     @include in-and-out-hover-opacity($keywordsColor)
   }

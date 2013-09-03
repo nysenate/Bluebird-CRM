@@ -1,0 +1,39 @@
+.search {
+  display:none;
+}
+@mixin addColors($opacity) {
+  .transparancyBox.type-291 {
+    @include tag-lightness($issueCodesColor,$opacity)
+  }
+  .transparancyBox.type-296 {
+    @include tag-lightness($keywordsColor,$opacity)
+  }
+  .transparancyBox.type-292 {
+    @include tag-lightness($positionsColor,$opacity)
+  }
+}
+
+.search {
+  @include addColors(.35);
+  .shaded {
+    @include addColors(.5);
+  }
+  dt:hover {
+    @include addColors(.8);
+  }
+  dt.active {
+    @include addColors(.8);
+  }
+  dt.loadingGif {
+    @include descriptionChange(2);
+    .tag {
+      .ddControl {
+        width:0px;
+      }
+      .loadingText {
+        text-align:center;
+        font-weight:bold;
+      }
+    } 
+  }
+}

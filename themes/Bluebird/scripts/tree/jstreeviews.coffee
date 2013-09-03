@@ -148,8 +148,8 @@ class View
     for k,v of @dataSettings.pullSets
       if v isnt @displaySettings.defaultTree
         @cjInstanceSelector.append(_treeData.html[v])
-        # if parseFloat(v) == 292
-          # treeBehavior.addPositionReminderText(@cjInstanceSelector)
+        if parseFloat(v) == 292
+          treeBehavior.addPositionReminderText(@cjInstanceSelector)
       treeBehavior.createOpacityFaker(".top-#{v}","dt","type-#{v}")
     @cjInstanceSelector.find(".top-#{@displaySettings.defaultTree}").addClass("active")
     treeBehavior.setCurrentTab _treeData.treeTabs[@displaySettings.defaultTree]
@@ -248,9 +248,11 @@ treeBehavior =
           @getNextPositionRound(results)
           tags = terms.tags
           if hits > 0
-            @buildSearchList(tags, terms.term.toLowerCase(), hits)
+            console.log tags
+            # @buildFilterList(tags, terms.term.toLowerCase(), hits)
+            @sortSearchedTags tags
           else if hits == 0 and terms.term.length >= 3
-            @buildSearchList(null, "No Results Found")
+            @buildFilterList(null, "No Results Found")
         )
       if cjac.val().length < 3
         @removePositions
@@ -260,6 +262,19 @@ treeBehavior =
     )
 
   positionIdNumber: 292000
+
+  sortSearchedTags: (tags) ->
+    list = {}
+    cj.each tags, (i,el) ->
+      console.log el
+      if !list[el.type]?
+        list[el.type] = []
+      obj =
+        id: el.id
+        name: el.name
+      list[el.type].push(obj)
+    console.log list
+
 
   getNextPositionRound:(results) ->
     @positionPage = results.page + 1
@@ -329,7 +344,7 @@ treeBehavior =
       # if it has children...
 
 
-  # buildSearchList: (tagList, term, hits) ->
+  # buildFilterList: (tagList, term, hits) ->
   #   # this is where we need to determine which tag tree we're representing
   #   # the tiny search-only or the full-tree
   #   @alreadyPlaced = []

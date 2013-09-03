@@ -27,11 +27,7 @@
     font-size: 12px;
     font-weight: normal; }
   #BBTreeContainer .BBTree-menu {
-    width: 100%;
-    /* .tab-issue-codes,.tab-search,.tab-positions,.tab-keywords { */
-    /* .tab-positions {
-      @include in-and-out-hover-opacity($positionsColor)
-    } */ }
+    width: 100%; }
     #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
       height: 20px;
       border-bottom: 1px solid #ccc; }
@@ -45,11 +41,11 @@
       width: 16%;
       height: 20px;
       background-color: #ccc; }
-    #BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-keywords {
+    #BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-positions, #BBTreeContainer .BBTree-menu .tab-keywords {
       width: 33%;
       padding: 4px 0px;
       text-align: center; }
-      #BBTreeContainer .BBTree-menu .tab-issue-codes.active, #BBTreeContainer .BBTree-menu .tab-search.active, #BBTreeContainer .BBTree-menu .tab-keywords.active {
+      #BBTreeContainer .BBTree-menu .tab-issue-codes.active, #BBTreeContainer .BBTree-menu .tab-search.active, #BBTreeContainer .BBTree-menu .tab-positions.active, #BBTreeContainer .BBTree-menu .tab-keywords.active {
         width: 34%; }
     #BBTreeContainer .BBTree-menu .tab-search {
       background-color: rgba(205, 125, 136, 0.6); }
@@ -64,6 +60,13 @@
         background-color: #5ad170; }
       #BBTreeContainer .BBTree-menu .tab-issue-codes.active {
         background-color: rgba(90, 209, 112, 0.8);
+        font-weight: bold; }
+    #BBTreeContainer .BBTree-menu .tab-positions {
+      background-color: rgba(154, 225, 235, 0.6); }
+      #BBTreeContainer .BBTree-menu .tab-positions:hover {
+        background-color: #6fd5e3; }
+      #BBTreeContainer .BBTree-menu .tab-positions.active {
+        background-color: rgba(111, 213, 227, 0.8);
         font-weight: bold; }
     #BBTreeContainer .BBTree-menu .tab-keywords {
       background-color: rgba(240, 201, 95, 0.6); }
