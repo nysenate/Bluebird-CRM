@@ -153,7 +153,7 @@ class View
       treeBehavior.createOpacityFaker(".top-#{v}","dt","type-#{v}")
     @cjInstanceSelector.find(".top-#{@displaySettings.defaultTree}").addClass("active")
     treeBehavior.setCurrentTab _treeData.treeTabs[@displaySettings.defaultTree]
-    cj(@tagHolderSelector).append("<div class='search tagContainer'></div>")
+    # cj(@tagHolderSelector).append("<div class='search tagContainer'></div>")
     treeBehavior.autoCompleteStart(@instance)
     treeBehavior.readDropdownsFromLocal()
     treeBehavior.enableDropdowns()
@@ -248,14 +248,14 @@ treeBehavior =
           @getNextPositionRound(results)
           tags = terms.tags
           if hits > 0
-            console.log tags
-            # @buildFilterList(tags, terms.term.toLowerCase(), hits)
+            @buildFilterList(tags, terms.term.toLowerCase(), hits)
             @sortSearchedTags tags
           else if hits == 0 and terms.term.length >= 3
             @buildFilterList(null, "No Results Found")
         )
       if cjac.val().length < 3
         @removePositions
+        @toggleFilterList()
         # if _treeVisibility.currentTree == "search"
           # @showTags _treeVisibility.previousTree
         # cj("#{@tabsLoc} .tab-search").hide() 
@@ -266,15 +266,12 @@ treeBehavior =
   sortSearchedTags: (tags) ->
     list = {}
     cj.each tags, (i,el) ->
-      console.log el
       if !list[el.type]?
         list[el.type] = []
       obj =
         id: el.id
         name: el.name
       list[el.type].push(obj)
-    console.log list
-
 
   getNextPositionRound:(results) ->
     @positionPage = results.page + 1
@@ -334,16 +331,58 @@ treeBehavior =
           @alreadyPlaced.push parentid
           @cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
           # cj(".search #tagDropdown_#{parentid}").append(clonedTag).addClass("open")
-      else
-        if @alreadyPlaced.indexOf(parentid) < 0
-          clonedTag.appendTo(".search #tagDropdown_#{parentArray[index-1]}")
-          cj(".search #tagDropdown_#{parentArray[index-1]}").append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
-    cj(".search #tagDropdown_#{parentArray[index-1]}")
+      # else
+        # if @alreadyPlaced.indexOf(parentid) < 0
+          # clonedTag.appendTo(".search #tagDropdown_#{parentArray[index-1]}")
+          # cj(".search #tagDropdown_#{parentArray[index-1]}").append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
+    # cj(".search #tagDropdown_#{parentArray[index-1]}")
 
-      
-      # if it has children...
+  
 
+  buildFilterList:(tagList, term, hits) ->
+    # start with hiding current lists
+    if !@isFiltered
+      @toggleFilterList(tagList)
+    # add numbers to tags
+    # clone tags
+    # get positions
 
+  isFiltered: false
+
+  toggleFilterList: (lists) ->
+    if !lists?
+      lists = cj(".JSTree").data("lists")
+    if cj("#BBTreeContainer #JSTree-data dl").length > 0
+      for k,v of lists
+        cj(".JSTree .tagContainer[class*=\"#{v}\"]").remove()
+        console.log k,v
+        list = cj("#BBTreeContainer #JSTree-data .top-#{v}")
+        console.log list
+        activeTree = @convertTabToTreeName(@getActiveTab())
+        console.log activeTree
+        console.log cj(".JSTree dl.tagContainer.#{activeTree}")
+        cj(".JSTree dl.tagContainer.#{activeTree}").addClass("active")
+        cj(list).appendTo(".JSTree")
+        cj(".JSTree").removeClass("isFiltered")
+        cj(".JSTree").data("lists", [])
+        @isFiltered = false
+    else
+      cj(".JSTree").data("lists", [])
+      a = cj(".JSTree").data("lists")
+      for k,v of lists
+        a.push(parseFloat(v.type)) unless a.indexOf(parseFloat(v.type)) >= 0
+      cj(".JSTree").data("lists", a)
+      for tagTypeId in a
+        cj(".JSTree").addClass("isFiltered")
+        list = cj(".JSTree .tagContainer[class*=\"#{tagTypeId}\"]").removeClass("active")
+        cj(list).appendTo("#BBTreeContainer #JSTree-data")
+        @isFiltered = true
+        cj(".JSTree").append("<dl class='top-#{tagTypeId} tagContainer filtered'></dl>")
+
+  getActiveTab: () ->
+    a = cj(".JSTree-menu .JSTree-tabs .active").attr("class").split(" ")
+    for i in a
+      return i if i isnt "active"
   # buildFilterList: (tagList, term, hits) ->
   #   # this is where we need to determine which tag tree we're representing
   #   # the tiny search-only or the full-tree
@@ -399,37 +438,37 @@ treeBehavior =
       openLeg = new OpenLeg
       options =
         scrollBox: ".JSTree"
-      cj(".JSTree .search.tagContainer").infiniscroll(options, =>
-          nextPage =
-            term: @positionSearchTerm
-            page: @positionPage
-          cj(".JSTree .search.tagContainer").append(@addPositionLoader())
-          openLeg.query(nextPage, (results) =>
-              @addPositionsToTags(results.results)
-              cj(".JSTree .search.tagContainer .loadingGif").remove()
-              @getNextPositionRound(results)  
-              @buildPositions() 
-          )
-      )
+      # cj(".JSTree .search.tagContainer").infiniscroll(options, =>
+      #     nextPage =
+      #       term: @positionSearchTerm
+      #       page: @positionPage
+      #     cj(".JSTree .search.tagContainer").append(@addPositionLoader())
+      #     openLeg.query(nextPage, (results) =>
+      #         @addPositionsToTags(results.results)
+      #         cj(".JSTree .search.tagContainer .loadingGif").remove()
+      #         @getNextPositionRound(results)  
+      #         @buildPositions() 
+      #     )
+      # )
   addPositionLoader: () ->
     "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>"
 
   switchToSearch: (tagListLength) ->
-    cj("#{@tabsLoc} .tab-search").show()
-    @setTabResults(tagListLength,"tab-search")
-    @showTags("search")
+    # cj("#{@tabsLoc} .tab-search").show()
+    # @setTabResults(tagListLength,"tab-search")
+    # @showTags("search")
 
   makeShade: (tagid, term) ->
-    cjItems = cj(".search dt[data-tagid='#{tagid}']")
-    cjItems.addClass("shaded")
-    cj.each cjItems, (i,arr) =>
-      toLc = cj(arr).find(".tag .name").text().toLowerCase()
-      initIndex = toLc.indexOf(term.toLowerCase())
-      strBegin = cj(arr).text().slice(0,initIndex)
-      strEnd = cj(arr).text().slice(term.length + initIndex)
-      strTerm = "<span>#{cj(arr).text().slice(initIndex,term.length + initIndex)}</span>"
-      tagName = cj(arr).find(".tag .name")
-      tagName.html("#{strBegin}#{strTerm}#{strEnd}")
+    # cjItems = cj(".search dt[data-tagid='#{tagid}']")
+    # cjItems.addClass("shaded")
+    # cj.each cjItems, (i,arr) =>
+    #   toLc = cj(arr).find(".tag .name").text().toLowerCase()
+    #   initIndex = toLc.indexOf(term.toLowerCase())
+    #   strBegin = cj(arr).text().slice(0,initIndex)
+    #   strEnd = cj(arr).text().slice(term.length + initIndex)
+    #   strTerm = "<span>#{cj(arr).text().slice(initIndex,term.length + initIndex)}</span>"
+    #   tagName = cj(arr).find(".tag .name")
+    #   tagName.html("#{strBegin}#{strTerm}#{strEnd}")
 
 
   cloneChildren: (cjTag, tagList) ->
@@ -465,6 +504,10 @@ treeBehavior =
       return "#{_treeData.treeTabs[parsed]}"
     else
       return "tab-#{treeName}" if treeName == "search"
+  convertTabToTreeName: (tab) ->
+    for k,v of _treeData.treeTabs
+      return "top-#{k}" if v is tab
+
 
   appendTab: (a,c,hidden = false) ->
     style = ""
@@ -485,8 +528,8 @@ treeBehavior =
       parents = @grabParents(tag)
       for parent in parents
         if alreadyProcessed.indexOf(parent) < 0 && parent != tag
-          cj(".search dt[data-tagid='#{parent}']").addClass "open"
-          cj(".search dl#tagDropdown_#{parent}").show()
+          # cj(".search dt[data-tagid='#{parent}']").addClass "open"
+          # cj(".search dl#tagDropdown_#{parent}").show()
           alreadyProcessed.push(parent)
 
   # onclick method for tabs

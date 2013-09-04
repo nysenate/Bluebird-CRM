@@ -176,7 +176,6 @@ View = (function() {
     }
     this.cjInstanceSelector.find(".top-" + this.displaySettings.defaultTree).addClass("active");
     treeBehavior.setCurrentTab(_treeData.treeTabs[this.displaySettings.defaultTree]);
-    cj(this.tagHolderSelector).append("<div class='search tagContainer'></div>");
     treeBehavior.autoCompleteStart(this.instance);
     treeBehavior.readDropdownsFromLocal();
     return treeBehavior.enableDropdowns();
@@ -285,7 +284,7 @@ treeBehavior = {
           _this.getNextPositionRound(results);
           tags = terms.tags;
           if (hits > 0) {
-            console.log(tags);
+            _this.buildFilterList(tags, terms.term.toLowerCase(), hits);
             return _this.sortSearchedTags(tags);
           } else if (hits === 0 && terms.term.length >= 3) {
             return _this.buildFilterList(null, "No Results Found");
@@ -293,7 +292,8 @@ treeBehavior = {
         });
       }
       if (cjac.val().length < 3) {
-        return _this.removePositions;
+        _this.removePositions;
+        return _this.toggleFilterList();
       }
     });
   },
@@ -301,9 +301,8 @@ treeBehavior = {
   sortSearchedTags: function(tags) {
     var list;
     list = {};
-    cj.each(tags, function(i, el) {
+    return cj.each(tags, function(i, el) {
       var obj;
-      console.log(el);
       if (list[el.type] == null) {
         list[el.type] = [];
       }
@@ -313,7 +312,6 @@ treeBehavior = {
       };
       return list[el.type].push(obj);
     });
-    return console.log(list);
   },
   getNextPositionRound: function(results) {
     this.positionPage = results.page + 1;
@@ -366,9 +364,10 @@ treeBehavior = {
     return parentid;
   },
   buildParents: function(parentArray) {
-    var clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len;
+    var clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len, _results;
     output = "";
     parentArray.reverse();
+    _results = [];
     for (index = _i = 0, _len = parentArray.length; _i < _len; index = ++_i) {
       parentid = parentArray[index];
       clonedTag = this.cjTagBox.find("dt[data-tagid=" + parentid + "]").clone();
@@ -378,20 +377,79 @@ treeBehavior = {
         if (this.alreadyPlaced.indexOf(parentid) < 0) {
           clonedTag.appendTo(this.cjSearchBox).addClass("open");
           this.alreadyPlaced.push(parentid);
-          this.cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName));
+          _results.push(this.cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)));
+        } else {
+          _results.push(void 0);
         }
       } else {
-        if (this.alreadyPlaced.indexOf(parentid) < 0) {
-          clonedTag.appendTo(".search #tagDropdown_" + parentArray[index - 1]);
-          cj(".search #tagDropdown_" + parentArray[index - 1]).append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName));
-        }
+        _results.push(void 0);
       }
     }
-    return cj(".search #tagDropdown_" + parentArray[index - 1]);
+    return _results;
+  },
+  buildFilterList: function(tagList, term, hits) {
+    if (!this.isFiltered) {
+      return this.toggleFilterList(tagList);
+    }
+  },
+  isFiltered: false,
+  toggleFilterList: function(lists) {
+    var a, activeTree, k, list, tagTypeId, v, _i, _len, _results, _results1;
+    if (lists == null) {
+      lists = cj(".JSTree").data("lists");
+    }
+    if (cj("#BBTreeContainer #JSTree-data dl").length > 0) {
+      _results = [];
+      for (k in lists) {
+        v = lists[k];
+        cj(".JSTree .tagContainer[class*=\"" + v + "\"]").remove();
+        console.log(k, v);
+        list = cj("#BBTreeContainer #JSTree-data .top-" + v);
+        console.log(list);
+        activeTree = this.convertTabToTreeName(this.getActiveTab());
+        console.log(activeTree);
+        console.log(cj(".JSTree dl.tagContainer." + activeTree));
+        cj(".JSTree dl.tagContainer." + activeTree).addClass("active");
+        cj(list).appendTo(".JSTree");
+        cj(".JSTree").removeClass("isFiltered");
+        cj(".JSTree").data("lists", []);
+        _results.push(this.isFiltered = false);
+      }
+      return _results;
+    } else {
+      cj(".JSTree").data("lists", []);
+      a = cj(".JSTree").data("lists");
+      for (k in lists) {
+        v = lists[k];
+        if (!(a.indexOf(parseFloat(v.type)) >= 0)) {
+          a.push(parseFloat(v.type));
+        }
+      }
+      cj(".JSTree").data("lists", a);
+      _results1 = [];
+      for (_i = 0, _len = a.length; _i < _len; _i++) {
+        tagTypeId = a[_i];
+        cj(".JSTree").addClass("isFiltered");
+        list = cj(".JSTree .tagContainer[class*=\"" + tagTypeId + "\"]").removeClass("active");
+        cj(list).appendTo("#BBTreeContainer #JSTree-data");
+        this.isFiltered = true;
+        _results1.push(cj(".JSTree").append("<dl class='top-" + tagTypeId + " tagContainer filtered'></dl>"));
+      }
+      return _results1;
+    }
+  },
+  getActiveTab: function() {
+    var a, i, _i, _len;
+    a = cj(".JSTree-menu .JSTree-tabs .active").attr("class").split(" ");
+    for (_i = 0, _len = a.length; _i < _len; _i++) {
+      i = a[_i];
+      if (i !== "active") {
+        return i;
+      }
+    }
   },
   buildPositions: function() {
-    var k, o, openLeg, options, _ref,
-      _this = this;
+    var k, o, openLeg, options, _ref;
     _ref = this.positionListing;
     for (k in _ref) {
       o = _ref[k];
@@ -399,49 +457,16 @@ treeBehavior = {
     }
     if (this.positionPagesLeft > 1) {
       openLeg = new OpenLeg;
-      options = {
+      return options = {
         scrollBox: ".JSTree"
       };
-      return cj(".JSTree .search.tagContainer").infiniscroll(options, function() {
-        var nextPage;
-        nextPage = {
-          term: _this.positionSearchTerm,
-          page: _this.positionPage
-        };
-        cj(".JSTree .search.tagContainer").append(_this.addPositionLoader());
-        return openLeg.query(nextPage, function(results) {
-          _this.addPositionsToTags(results.results);
-          cj(".JSTree .search.tagContainer .loadingGif").remove();
-          _this.getNextPositionRound(results);
-          return _this.buildPositions();
-        });
-      });
     }
   },
   addPositionLoader: function() {
     return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
   },
-  switchToSearch: function(tagListLength) {
-    cj("" + this.tabsLoc + " .tab-search").show();
-    this.setTabResults(tagListLength, "tab-search");
-    return this.showTags("search");
-  },
-  makeShade: function(tagid, term) {
-    var cjItems,
-      _this = this;
-    cjItems = cj(".search dt[data-tagid='" + tagid + "']");
-    cjItems.addClass("shaded");
-    return cj.each(cjItems, function(i, arr) {
-      var initIndex, strBegin, strEnd, strTerm, tagName, toLc;
-      toLc = cj(arr).find(".tag .name").text().toLowerCase();
-      initIndex = toLc.indexOf(term.toLowerCase());
-      strBegin = cj(arr).text().slice(0, initIndex);
-      strEnd = cj(arr).text().slice(term.length + initIndex);
-      strTerm = "<span>" + (cj(arr).text().slice(initIndex, term.length + initIndex)) + "</span>";
-      tagName = cj(arr).find(".tag .name");
-      return tagName.html("" + strBegin + strTerm + strEnd);
-    });
-  },
+  switchToSearch: function(tagListLength) {},
+  makeShade: function(tagid, term) {},
   cloneChildren: function(cjTag, tagList) {
     var hasRelevantPs, key, setReturn, tag;
     setReturn = true;
@@ -486,6 +511,16 @@ treeBehavior = {
       }
     }
   },
+  convertTabToTreeName: function(tab) {
+    var k, v, _ref;
+    _ref = _treeData.treeTabs;
+    for (k in _ref) {
+      v = _ref[k];
+      if (v === tab) {
+        return "top-" + k;
+      }
+    }
+  },
   appendTab: function(a, c, hidden) {
     var cjtabloc, output, style;
     if (hidden == null) {
@@ -516,8 +551,6 @@ treeBehavior = {
         for (_j = 0, _len1 = parents.length; _j < _len1; _j++) {
           parent = parents[_j];
           if (alreadyProcessed.indexOf(parent) < 0 && parent !== tag) {
-            cj(".search dt[data-tagid='" + parent + "']").addClass("open");
-            cj(".search dl#tagDropdown_" + parent).show();
             _results1.push(alreadyProcessed.push(parent));
           } else {
             _results1.push(void 0);
