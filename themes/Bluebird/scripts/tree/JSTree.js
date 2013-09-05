@@ -545,7 +545,6 @@
       for (b = _i = 0, _len = classNames.length; _i < _len; b = ++_i) {
         a = classNames[b];
         el += "." + b;
-        console.log(a, b);
       }
       return el;
     };
@@ -699,6 +698,16 @@
           return false;
       }
     },
+    separateHits: function(terms, results) {
+      var hits, k, v;
+      hits = {};
+      for (k in terms) {
+        v = terms[k];
+        hits[k] = v.length;
+      }
+      hits[292] = results.seeXmore + results.results.length;
+      return hits;
+    },
     execSearch: function(event, searchmonger, cjac) {
       var _this = this;
       return searchmonger.exec(event, function(terms) {
@@ -709,14 +718,18 @@
           openLeg.query({
             "term": terms.term
           }, function(results) {
-            var hits, tags;
-            hits = terms.tags.length + results.results.length + results.seeXmore;
+            var hcounts, hits, k, tags, v;
             _this.addPositionsToTags(results.results);
             _this.getNextPositionRound(results);
-            tags = terms.tags;
-            if (hits > 0) {
-              _this.buildFilterList(tags, terms.term.toLowerCase(), hits);
-              return _this.sortSearchedTags(tags);
+            tags = _this.sortSearchedTags(terms.tags);
+            hits = _this.separateHits(tags, results);
+            hcounts = 0;
+            for (k in hits) {
+              v = hits[k];
+              hcounts += v;
+            }
+            if (hcounts > 0) {
+              return _this.buildFilterList(tags, terms.term.toLowerCase(), hits);
             } else if (hits === 0 && terms.term.length >= 3) {
               return _this.buildFilterList(null, "No Results Found");
             }
@@ -732,7 +745,7 @@
     sortSearchedTags: function(tags) {
       var list;
       list = {};
-      return cj.each(tags, function(i, el) {
+      cj.each(tags, function(i, el) {
         var obj;
         if (list[el.type] == null) {
           list[el.type] = [];
@@ -743,6 +756,7 @@
         };
         return list[el.type].push(obj);
       });
+      return list;
     },
     getNextPositionRound: function(results) {
       this.positionPage = results.page + 1;
@@ -794,79 +808,95 @@
       }
       return parentid;
     },
-    buildParents: function(parentArray) {
-      var clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len, _results;
+    buildParents: function(cjDataBox, parentArray, domList) {
+      var cjDomList, clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len;
       output = "";
       parentArray.reverse();
-      _results = [];
+      cjDomList = cj(domList);
+      console.log(parentArray);
       for (index = _i = 0, _len = parentArray.length; _i < _len; index = ++_i) {
         parentid = parentArray[index];
-        clonedTag = this.cjTagBox.find("dt[data-tagid=" + parentid + "]").clone();
+        clonedTag = cjDataBox.find("dt[data-tagid=" + parentid + "]").clone();
         clonedTagLvl = treeManipulation.parseLvl(clonedTag.attr("class"));
         clonedName = clonedTag.data('name');
         if (index === 0) {
           if (this.alreadyPlaced.indexOf(parentid) < 0) {
-            clonedTag.appendTo(this.cjSearchBox).addClass("open");
             this.alreadyPlaced.push(parentid);
-            _results.push(this.cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)));
-          } else {
-            _results.push(void 0);
+            cjDomList.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName));
+            cjDomList.find("#tagDropdown_" + parentid).append(clonedTag).addClass("open");
           }
         } else {
-          _results.push(void 0);
+          if (this.alreadyPlaced.indexOf(parentid) < 0) {
+            console.log(cjDomList.find("#tagDropdown_" + parentArray[index - 1]));
+            cjDomList.find("#tagDropdown_" + parentArray[index - 1]).append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag);
+          }
+        }
+      }
+      return domList;
+    },
+    buildFilterList: function(tagList, term, hits) {
+      var filteredList, k, name, v, _results;
+      if (tagList === null) {
+        console.log("no tags");
+      }
+      if (!this.isFiltered) {
+        this.toggleFilterList(tagList);
+      }
+      for (k in hits) {
+        v = hits[k];
+        name = this.convertTreeNameToTab("top-" + k);
+        this.setTabResults(v, name);
+      }
+      _results = [];
+      for (k in tagList) {
+        v = tagList[k];
+        if (v.length > 0) {
+          filteredList = this.createFilteredList(v);
+          _results.push(cj(filteredList).appendTo(".JSTree.isFiltered .top-" + k));
+        } else {
+          _results.push(console.log("no matches"));
         }
       }
       return _results;
     },
-    buildFilterList: function(tagList, term, hits) {
-      if (!this.isFiltered) {
-        return this.toggleFilterList(tagList);
-      }
-    },
     isFiltered: false,
     toggleFilterList: function(lists) {
-      var a, activeTree, k, list, tagTypeId, v, _i, _len, _results, _results1;
+      var a, activeTree, k, list, tagTypeId, v, _i, _len;
       if (lists == null) {
         lists = cj(".JSTree").data("lists");
       }
       if (cj("#BBTreeContainer #JSTree-data dl").length > 0) {
-        _results = [];
         for (k in lists) {
           v = lists[k];
           cj(".JSTree .tagContainer[class*=\"" + v + "\"]").remove();
-          console.log(k, v);
           list = cj("#BBTreeContainer #JSTree-data .top-" + v);
-          console.log(list);
           activeTree = this.convertTabToTreeName(this.getActiveTab());
-          console.log(activeTree);
-          console.log(cj(".JSTree dl.tagContainer." + activeTree));
           cj(".JSTree dl.tagContainer." + activeTree).addClass("active");
           cj(list).appendTo(".JSTree");
           cj(".JSTree").removeClass("isFiltered");
           cj(".JSTree").data("lists", []);
-          _results.push(this.isFiltered = false);
+          this.isFiltered = false;
         }
-        return _results;
+        return cj(".JSTree .top-292 .position-box-text-reminder").show();
       } else {
         cj(".JSTree").data("lists", []);
         a = cj(".JSTree").data("lists");
         for (k in lists) {
           v = lists[k];
-          if (!(a.indexOf(parseFloat(v.type)) >= 0)) {
-            a.push(parseFloat(v.type));
+          if (!(a.indexOf(parseFloat(k)) >= 0)) {
+            a.push(parseFloat(k));
           }
         }
         cj(".JSTree").data("lists", a);
-        _results1 = [];
         for (_i = 0, _len = a.length; _i < _len; _i++) {
           tagTypeId = a[_i];
           cj(".JSTree").addClass("isFiltered");
           list = cj(".JSTree .tagContainer[class*=\"" + tagTypeId + "\"]").removeClass("active");
           cj(list).appendTo("#BBTreeContainer #JSTree-data");
           this.isFiltered = true;
-          _results1.push(cj(".JSTree").append("<dl class='top-" + tagTypeId + " tagContainer filtered'></dl>"));
+          cj(".JSTree").append("<dl class='top-" + tagTypeId + " tagContainer filtered'></dl>");
         }
-        return _results1;
+        return cj(".JSTree .top-292 .position-box-text-reminder").hide();
       }
     },
     getActiveTab: function() {
@@ -878,6 +908,70 @@
           return i;
         }
       }
+    },
+    createFilteredList: function(tagList) {
+      var cjCloneTag, cjDataBox, cjDomList, cjParentId, domList, filteredList, key, parentTags, parentsId, parentsIds, parentsToGet, pid, tag, _i, _j, _len, _len1;
+      if (this.isFiltered) {
+        cjDataBox = cj("#BBTreeContainer #JSTree-data");
+      } else {
+        cjDataBox = this.cjTagBox;
+      }
+      parentsIds = [];
+      this.alreadyPlaced = [];
+      parentsToGet = [];
+      domList = cj();
+      domList = domList.add("<div class='filteredList'></div>");
+      filteredList = "";
+      for (key in tagList) {
+        tag = tagList[key];
+        parentsIds.push(cjDataBox.find("dt[data-tagid=" + tag.id + "]").data("parentid"));
+      }
+      parentsIds = bbUtils.uniqueAry(parentsIds);
+      for (_i = 0, _len = parentsIds.length; _i < _len; _i++) {
+        parentsId = parentsIds[_i];
+        parentsToGet.push(this.getParents(cjDataBox, parentsId));
+      }
+      if (parentsToGet.length > 0) {
+        for (_j = 0, _len1 = parentsToGet.length; _j < _len1; _j++) {
+          parentTags = parentsToGet[_j];
+          domList = this.buildParents(cjDataBox, parentTags, domList);
+        }
+      }
+      cjDomList = cj(domList);
+      for (key in tagList) {
+        tag = tagList[key];
+        cjCloneTag = cjDataBox.find("dt[data-tagid=" + tag.id + "]");
+        console.log(cjCloneTag);
+        cjParentId = cjCloneTag.data("parentid");
+        console.log(cjDomList.find("#tagDropdown_" + cjParentId));
+        pid = parseFloat(cjParentId);
+        cjDomList.append(cjCloneTag);
+      }
+      return domList;
+    },
+    getParents: function(cjDataBox, parentsId) {
+      var currentId, go, i, newid, parentArray;
+      if (this.dataSettings.pullSets.indexOf(parentsId) !== -1) {
+        return [];
+      }
+      go = true;
+      i = 0;
+      parentArray = [parentsId];
+      currentId = parentsId;
+      while (go) {
+        newid = cjDataBox.find("dt[data-tagid=" + currentId + "]").data("parentid");
+        if (this.dataSettings.pullSets.indexOf(newid) < 0) {
+          parentArray.push(newid);
+          currentId = newid;
+        } else {
+          go = false;
+        }
+        i += 1;
+        if (i === 5) {
+          go = false;
+        }
+      }
+      return parentArray;
     },
     buildPositions: function() {
       var k, o, openLeg, options, _ref;

@@ -278,7 +278,7 @@ class window.bb
   uniqueAry: (ary) ->
     uniqAry = []
     cj.each ary, (i, el) ->
-      uniqueAry.push(el) if cj.inArray(el, ary) == -1
+      uniqAry.push(el) if cj.inArray(el, uniqAry) == -1
     uniqAry
   insertIntoArray: (ary, index, item) ->
     ary.splice(index, 0, item)

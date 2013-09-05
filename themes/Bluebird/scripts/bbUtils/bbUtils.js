@@ -499,8 +499,8 @@
       var uniqAry;
       uniqAry = [];
       cj.each(ary, function(i, el) {
-        if (cj.inArray(el, ary) === -1) {
-          return uniqueAry.push(el);
+        if (cj.inArray(el, uniqAry) === -1) {
+          return uniqAry.push(el);
         }
       });
       return uniqAry;

@@ -112,7 +112,6 @@ class View
     classNames = el.split " "
     for a,b in classNames
       el += ".#{b}"
-      console.log a,b
     return el
     
   ifisarrayjoin: (toJoin)->
@@ -235,21 +234,31 @@ treeBehavior =
 
   # then check length
 
+  separateHits: (terms, results) ->
+    hits = {}
+    for k, v of terms
+      hits[k] = v.length
+    hits[292] = results.seeXmore + results.results.length
+    hits
+
   # then do terms
   execSearch: (event,searchmonger,cjac) ->
     searchmonger.exec(event, (terms) =>
       openLeg = new OpenLeg
       console.log terms
       if terms? && terms.tags?
+        # don't wrap this in a callback anymore
+        # as they're not needed because it's separated
         openLeg.query({"term":terms.term}, (results) =>
           # console.log results
-          hits = terms.tags.length + results.results.length + results.seeXmore
           @addPositionsToTags(results.results)
           @getNextPositionRound(results)
-          tags = terms.tags
-          if hits > 0
+          tags = @sortSearchedTags(terms.tags)
+          hits = @separateHits(tags,results)
+          hcounts = 0
+          hcounts += v for k,v of hits
+          if hcounts > 0
             @buildFilterList(tags, terms.term.toLowerCase(), hits)
-            @sortSearchedTags tags
           else if hits == 0 and terms.term.length >= 3
             @buildFilterList(null, "No Results Found")
         )
@@ -272,6 +281,7 @@ treeBehavior =
         id: el.id
         name: el.name
       list[el.type].push(obj)
+    list
 
   getNextPositionRound:(results) ->
     @positionPage = results.page + 1
@@ -316,20 +326,32 @@ treeBehavior =
         go = false
     parentid   
 
-  buildParents: (parentArray) ->
+  buildParents: (cjDataBox,parentArray,domList) ->
     output = ""
     # you're going from top, down, not bottom up
     parentArray.reverse();
-
+    cjDomList = cj(domList)
+    console.log parentArray
     for parentid, index in parentArray
-      clonedTag = @cjTagBox.find("dt[data-tagid=#{parentid}]").clone()
+      clonedTag = cjDataBox.find("dt[data-tagid=#{parentid}]").clone()
       clonedTagLvl = treeManipulation.parseLvl(clonedTag.attr("class"))
       clonedName = clonedTag.data('name')
-      if index == 0
+      if index == 0 
         if @alreadyPlaced.indexOf(parentid) < 0
-          clonedTag.appendTo(@cjSearchBox).addClass("open")
+          # clonedTag.appendTo(domList).addClass("open")
           @alreadyPlaced.push parentid
-          @cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
+          cjDomList.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
+          cjDomList.find("#tagDropdown_#{parentid}").append(clonedTag).addClass("open")
+      else
+        if @alreadyPlaced.indexOf(parentid) < 0
+          console.log cjDomList.find("#tagDropdown_#{parentArray[index-1]}")
+          cjDomList.find("#tagDropdown_#{parentArray[index-1]}").append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag)
+    domList
+      # if index == 0
+        # if @alreadyPlaced.indexOf(parentid) < 0
+          # clonedTag.appendTo(@cjSearchBox).addClass("open")
+          # @alreadyPlaced.push parentid
+          # @cjSearchBox.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
           # cj(".search #tagDropdown_#{parentid}").append(clonedTag).addClass("open")
       # else
         # if @alreadyPlaced.indexOf(parentid) < 0
@@ -337,16 +359,28 @@ treeBehavior =
           # cj(".search #tagDropdown_#{parentArray[index-1]}").append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
     # cj(".search #tagDropdown_#{parentArray[index-1]}")
 
-  
 
   buildFilterList:(tagList, term, hits) ->
+    # console.log tagList,term,hits
+    if tagList == null
+      console.log "no tags"
     # start with hiding current lists
     if !@isFiltered
       @toggleFilterList(tagList)
-    # add numbers to tags
-    # clone tags
     # get positions
 
+    # add numbers to tags
+    for k,v of hits
+      name = @convertTreeNameToTab("top-#{k}")
+      @setTabResults(v,name)
+    # clone tags
+    for k,v of tagList
+      if v.length > 0
+        filteredList = @createFilteredList(v)
+        cj(filteredList).appendTo(".JSTree.isFiltered .top-#{k}")
+      else
+        console.log "no matches"
+    # undo loading gif
   isFiltered: false
 
   toggleFilterList: (lists) ->
@@ -355,34 +389,98 @@ treeBehavior =
     if cj("#BBTreeContainer #JSTree-data dl").length > 0
       for k,v of lists
         cj(".JSTree .tagContainer[class*=\"#{v}\"]").remove()
-        console.log k,v
         list = cj("#BBTreeContainer #JSTree-data .top-#{v}")
-        console.log list
         activeTree = @convertTabToTreeName(@getActiveTab())
-        console.log activeTree
-        console.log cj(".JSTree dl.tagContainer.#{activeTree}")
         cj(".JSTree dl.tagContainer.#{activeTree}").addClass("active")
+        # loadingGif
         cj(list).appendTo(".JSTree")
         cj(".JSTree").removeClass("isFiltered")
         cj(".JSTree").data("lists", [])
         @isFiltered = false
+      cj(".JSTree .top-292 .position-box-text-reminder").show()
     else
+      
       cj(".JSTree").data("lists", [])
       a = cj(".JSTree").data("lists")
       for k,v of lists
-        a.push(parseFloat(v.type)) unless a.indexOf(parseFloat(v.type)) >= 0
+        a.push(parseFloat(k)) unless a.indexOf(parseFloat(k)) >= 0
       cj(".JSTree").data("lists", a)
       for tagTypeId in a
         cj(".JSTree").addClass("isFiltered")
         list = cj(".JSTree .tagContainer[class*=\"#{tagTypeId}\"]").removeClass("active")
+        # loadingGif
         cj(list).appendTo("#BBTreeContainer #JSTree-data")
         @isFiltered = true
         cj(".JSTree").append("<dl class='top-#{tagTypeId} tagContainer filtered'></dl>")
+      cj(".JSTree .top-292 .position-box-text-reminder").hide()
 
   getActiveTab: () ->
     a = cj(".JSTree-menu .JSTree-tabs .active").attr("class").split(" ")
     for i in a
       return i if i isnt "active"
+  createFilteredList:(tagList) ->
+    if @isFiltered
+      cjDataBox = cj("#BBTreeContainer #JSTree-data")
+    else
+      cjDataBox = @cjTagBox
+    parentsIds = []
+    @alreadyPlaced = []
+    parentsToGet = []
+    domList = cj()
+    domList = domList.add("<div class='filteredList'></div>")
+    filteredList = ""
+    for key,tag of tagList
+      parentsIds.push(cjDataBox.find("dt[data-tagid=#{tag.id}]").data("parentid"))
+    parentsIds = bbUtils.uniqueAry(parentsIds)
+    for parentsId in parentsIds
+      parentsToGet.push(@getParents(cjDataBox, parentsId))
+    if parentsToGet.length > 0 
+      for parentTags in parentsToGet 
+        domList = @buildParents(cjDataBox,parentTags,domList)
+    cjDomList = cj(domList)
+    for key,tag of tagList
+      cjCloneTag = cjDataBox.find("dt[data-tagid=#{tag.id}]")
+      console.log cjCloneTag
+      cjParentId = cjCloneTag.data("parentid")
+      # cjDomList.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName))
+      console.log cjDomList.find("#tagDropdown_#{cjParentId}")
+      pid =  parseFloat(cjParentId)
+      # if parentsIds.indexOf(pid) != -1
+      # if parentsId.indexOf(parseFloat(cjParentId)) >= 0
+        # cjDomList.find("#tagDropdown_#{cjParentId}").append(cjCloneTag)
+      # else
+      cjDomList.append(cjCloneTag)
+    domList
+      # if parentsIds.length > 0
+        # console.log @getParents(parentsIds)
+      # console.log cjParentId
+      # console.log parentsIds
+      # console.log parentsIds.indexOf(cjParentId)
+      # if parentsIds.indexOf(cjParentId) < 0
+        # console.log @dataSettings.pullSets
+        # if @dataSettings.pullSets.indexOf(cjParentId) < 0
+          # toAppendTo = @buildParents(@grabParents(cjParentId))
+          # console.log toAppendTo
+
+
+
+  getParents: (cjDataBox, parentsId) ->
+    return [] if @dataSettings.pullSets.indexOf(parentsId) != -1
+    go = true
+    i = 0
+    parentArray = [parentsId]
+    currentId = parentsId 
+    while go
+      newid = cjDataBox.find("dt[data-tagid=#{currentId}]").data("parentid")
+      if @dataSettings.pullSets.indexOf(newid) < 0
+        parentArray.push(newid)
+        currentId = newid
+      else
+        go = false
+      i += 1
+      if i == 5
+        go = false
+    parentArray
   # buildFilterList: (tagList, term, hits) ->
   #   # this is where we need to determine which tag tree we're representing
   #   # the tiny search-only or the full-tree
