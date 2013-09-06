@@ -79,6 +79,11 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox .imap_actions_column .delete a{color:red !important;}
 .imapperbox .imap_actions_column .delete a:hover{background: #ff9999; }
 
+/* Button goups */
+.page_actions{ width:100%;margin:10px 0 10px 0; height: 30px;}
+.page_actions input{ float:right;}
+.page_actions_label{ float:right; margin:5px 10px 0 0}
+
 /* IMAP - Pagination */
 .imapperbox .paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
 .imapperbox .paging_bootstrap ul {float:right; padding:4px 0px 4px 0; margin: 0; }

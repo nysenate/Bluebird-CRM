@@ -4,6 +4,11 @@
 	</div>
 	<div id='top'></div>
 	<div class='full'>
+		<div class='page_actions'>
+			<input type="button" class="multi_tag" value="Tag " name="multi_tag">
+			<input type="button" class="multi_clear" value="Remove From List" name="multi_clear">
+			<span class="page_actions_label">With selected :</span>
+		</div>
 		<table id="sortable_results" class="">
 			<thead>
 				<tr class='list_header'>
@@ -21,9 +26,9 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_tag" value="Tag Selected" name="multi_tag">
-			<span style="padding-right:20px;"></span>
-			<input type="button" class="multi_clear" value="Remove Selected From List" name="multi_clear">
+			<input type="button" class="multi_tag" value="Tag " name="multi_tag">
+			<input type="button" class="multi_clear" value="Remove From List" name="multi_clear">
+			<span class="page_actions_label">With selected :</span>
 		</div>
 	</div>
 	<div id="find-match-popup" title="Loading Data"  style="display:none;">
