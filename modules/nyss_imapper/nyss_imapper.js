@@ -1393,12 +1393,72 @@ function buildMessageList() {
 }
 
 function buildReports() {
-  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">Not Quite Ready yet</td>');
-	// console.log(reports.Unprocessed.length);
-	// console.log(reports.Matched.length);
-	// console.log(reports.Cleared.length);
-	// console.log(reports.Errors.length);
-	// console.log(reports.Deleted.length);
+  var messagesHtml = '';
+    // console.log(messages);
+    cj.each(reports.Messages.successes, function(key, value) {
+  messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+
+	if( value.contactType != 'Unknown'){
+    messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+	  messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
+	  messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+	  messagesHtml += '</a>';
+	  messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
+	  messagesHtml += ' ';
+	}else {
+	  messagesHtml += '<td class="imap_name_column unmatched">';
+	  messagesHtml += shortenString(value.fromName,19);
+
+	}
+
+	// messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+
+	// match_sort = 'ProcessError';
+	// if(value.matcher){
+	//   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
+	//   var match_short = (value.matcher != 0) ? "M" : "A" ;
+	//   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+	//   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+	// }
+	// messagesHtml +='</td>';
+  messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+	// if(value.attachments.length > 0){
+	//   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+	// }
+	messagesHtml +='</td>';
+	var message_status = '';
+      console.log(value.message_status);
+     if(value.message_status === "0"){
+      message_status="Unmatched";
+     }else if(value.message_status === "1"){
+      message_status="Matched";
+     }else if(value.message_status === "7"){
+      message_status="Cleared";
+     }else if(value.message_status === "8"){
+      message_status="Deleted";
+     }else if(value.message_status === "9"){
+      message_status="Deleted";
+     }
+
+  messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
+
+    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+
+  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+      messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+	// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+
+    });
+    cj('#imapper-messages-list').html(messagesHtml);
+    makeListSortable();
+  var total_results = reports.Unprocessed+reports.Matched+reports.Cleared+reports.Errors+reports.Deleted;
+  cj('#total_Emails').html(total_results);
+  cj('#total_Unprocessed').html(reports.Unprocessed);
+  cj('#total_Matched').html(reports.Matched);
+  cj('#total_Cleared').html(reports.Cleared);
+  cj('#total_Errors').html(reports.Errors);
+  cj('#total_Deleted').html(reports.Deleted);
+
 }
 function DeleteMessage(id,imapid){
   cj.ajax({
