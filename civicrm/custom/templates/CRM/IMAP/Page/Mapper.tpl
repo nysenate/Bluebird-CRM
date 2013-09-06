@@ -5,7 +5,8 @@
 	<div id='top'></div>
 	<div class='full'>
 		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete Selected" name="delete">
+			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
+			<span class="page_actions_label">With selected :</span>
 		</div>
 		<table id="sortable_results" class="">
 			<thead>
@@ -24,7 +25,8 @@
 			</tbody>
 		</table>
 		<div class='page_actions'>
-			<input type="button" class="multi_delete" id="" value="Delete Selected" name="delete">
+			<input type="button" class="multi_delete" id="" value="Delete" name="delete">
+			<span class="page_actions_label">With selected :</span>
 		</div>
 	</div>
 	<div id="find-match-popup" title="Loading Data" style="display:none;">
