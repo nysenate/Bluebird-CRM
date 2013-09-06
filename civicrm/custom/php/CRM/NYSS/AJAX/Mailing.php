@@ -49,14 +49,13 @@ class CRM_NYSS_AJAX_Mailing
   {
     $groupid = self::get('group');
     if (!empty($groupid)) {
-      $query = "SELECT count(gc.id) AS count, g.title AS title
-      FROM civicrm_group_contact gc
-      LEFT JOIN civicrm_group g ON (g.id = gc.group_id)
-      WHERE gc.group_id = ".$groupid;
+      $output['count']  = count(CRM_Contact_BAO_Group::getMember($groupid));
+      $query = "SELECT  g.title AS title
+      FROM civicrm_group g
+      WHERE g.id = ".$groupid;
 
       $result = mysql_query($query, self::db());
       while ($row = mysql_fetch_assoc($result)) {
-        $output['count'] = $row['count'];
         $output['title'] = $row['title'];
       }
 
