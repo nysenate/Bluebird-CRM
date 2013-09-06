@@ -510,6 +510,14 @@
       return ary.splice(index, 0, item);
     };
 
+    bb.prototype.compact = function(ary) {
+      var arr;
+      arr = cj.grep(ary, function(n) {
+        return n;
+      });
+      return arr;
+    };
+
     return bb;
 
   })();

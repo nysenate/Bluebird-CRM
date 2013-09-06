@@ -282,7 +282,11 @@ class window.bb
     uniqAry
   insertIntoArray: (ary, index, item) ->
     ary.splice(index, 0, item)
-
+  compact: (ary) ->
+    arr = cj.grep(ary, (n) ->
+        return(n) 
+      )
+    arr
 window.bbUtils = new bb
 # when you go new bb... none you're not extending ONTO bb, you're extending BB. which doesn't work, so...
 # you need to merge everything into BB and then call it.

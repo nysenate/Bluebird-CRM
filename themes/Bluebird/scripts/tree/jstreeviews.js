@@ -242,8 +242,15 @@ treeBehavior = {
     };
     cjac = cj("#JSTree-ac");
     searchmonger = cjac.tagACInput("init", params);
-    return cjac.on("keydown", (function(event) {
+    cjac.on("keydown", (function(event) {
       return _this.filterKeydownEvents(event, searchmonger, cjac);
+    }));
+    return cjac.on("keyup", (function(event) {
+      var keyCode;
+      keyCode = bbUtils.keyCode(event);
+      if (keyCode.type === "delete" && cjac.val().length < 3) {
+        return _this.clearBoard();
+      }
     }));
   },
   _dropdown: {
@@ -283,34 +290,49 @@ treeBehavior = {
       var openLeg;
       openLeg = new OpenLeg;
       console.log(terms);
-      if ((terms != null) && (terms.tags != null)) {
-        openLeg.query({
+      if ((terms != null) && !cj.isEmptyObject(terms)) {
+        return openLeg.query({
           "term": terms.term
         }, function(results) {
-          var hcounts, hits, k, tags, v;
-          _this.addPositionsToTags(results.results);
+          var foundTags, hcounts, hits, k, set, tags, v, _i, _len, _ref;
+          console.log(_this.addPositionsToTags(results.results));
           _this.getNextPositionRound(results);
           tags = _this.sortSearchedTags(terms.tags);
           hits = _this.separateHits(tags, results);
           hcounts = 0;
+          foundTags = [];
           for (k in hits) {
             v = hits[k];
             hcounts += v;
+            foundTags.push(parseFloat(k));
           }
-          if (hcounts > 0) {
-            return _this.buildFilterList(tags, terms.term.toLowerCase(), hits);
-          } else if (hits === 0 && terms.term.length >= 3) {
-            return _this.buildFilterList(null, "No Results Found");
+          _ref = _this.dataSettings.pullSets;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            set = _ref[_i];
+            if (foundTags.indexOf(parseFloat(set)) < 0) {
+              hits[set] = 0;
+              tags[set] = [];
+            }
           }
+          _this.removePreviousList();
+          return _this.buildFilterList(tags, terms.term.toLowerCase(), hits);
         });
-      }
-      if (cjac.val().length < 3) {
-        _this.removePositions;
-        return _this.toggleFilterList();
       }
     });
   },
+  clearBoard: function() {
+    this.removePositions();
+    this.removePreviousList();
+    this.removeTabResults();
+    if (this.isFiltered) {
+      this.toggleFilterList();
+    }
+    return this.isFiltered = false;
+  },
   positionIdNumber: 292000,
+  removePositions: function() {
+    return cj(".JSTree .top-292 :not(:first-child)").remove();
+  },
   sortSearchedTags: function(tags) {
     var list;
     list = {};
@@ -377,12 +399,14 @@ treeBehavior = {
     }
     return parentid;
   },
+  removePreviousList: function() {
+    return cj(".JSTree dl .filteredList").remove();
+  },
   buildParents: function(cjDataBox, parentArray, domList) {
     var cjDomList, clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len;
     output = "";
     parentArray.reverse();
     cjDomList = cj(domList);
-    console.log(parentArray);
     for (index = _i = 0, _len = parentArray.length; _i < _len; index = ++_i) {
       parentid = parentArray[index];
       clonedTag = cjDataBox.find("dt[data-tagid=" + parentid + "]").clone();
@@ -392,61 +416,77 @@ treeBehavior = {
         if (this.alreadyPlaced.indexOf(parentid) < 0) {
           this.alreadyPlaced.push(parentid);
           cjDomList.append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName));
-          cjDomList.find("#tagDropdown_" + parentid).append(clonedTag).addClass("open");
+          cjDomList.find("#tagDropdown_" + parentid).before(clonedTag).addClass("open");
         }
       } else {
         if (this.alreadyPlaced.indexOf(parentid) < 0) {
-          console.log(cjDomList.find("#tagDropdown_" + parentArray[index - 1]));
-          cjDomList.find("#tagDropdown_" + parentArray[index - 1]).append(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag);
+          cjDomList.find("#tagDropdown_" + parentArray[index - 1]).after(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag);
         }
       }
     }
     return domList;
   },
   buildFilterList: function(tagList, term, hits) {
-    var filteredList, k, name, v, _results;
-    if (tagList === null) {
-      console.log("no tags");
-    }
+    var allDropdowns, filteredList, k, name, v,
+      _this = this;
     if (!this.isFiltered) {
       this.toggleFilterList(tagList);
+      this.isFiltered = true;
+    }
+    for (k in hits) {
+      v = hits[k];
+      if (v === 0) {
+        cj("<div class='noResultsFound'>No Results Found</div>").appendTo(".JSTree.isFiltered .top-" + k);
+      }
     }
     for (k in hits) {
       v = hits[k];
       name = this.convertTreeNameToTab("top-" + k);
       this.setTabResults(v, name);
     }
-    _results = [];
     for (k in tagList) {
       v = tagList[k];
       if (v.length > 0) {
         filteredList = this.createFilteredList(v);
-        _results.push(cj(filteredList).appendTo(".JSTree.isFiltered .top-" + k));
+        cj(filteredList).appendTo(".JSTree.isFiltered .top-" + k);
       } else {
-        _results.push(console.log("no matches"));
+        console.log("no matches");
       }
+      allDropdowns = cj(".JSTree.isFiltered .top-" + k + " dt .tag .ddControl.treeButton").parent().parent();
+      cj.each(allDropdowns, function(key, value) {
+        var tagid;
+        tagid = cj(value).data('tagid');
+        if (!(cj(".JSTree.isFiltered .top-" + k + " dl#tagDropdown_" + tagid).children().length > 0)) {
+          cj(value).find(".ddControl.treeButton").removeClass("treeButton");
+        }
+        if (tagid != null) {
+          return _this.enableDropdowns(".top-" + k + " dt[data-tagid='" + tagid + "']", true);
+        }
+      });
     }
-    return _results;
+    return this.buildPositions();
   },
   isFiltered: false,
   toggleFilterList: function(lists) {
-    var a, activeTree, k, list, tagTypeId, v, _i, _len;
-    if (lists == null) {
-      lists = cj(".JSTree").data("lists");
+    var a, activeTree, addActive, k, list, tagTypeId, v, _i, _len;
+    if (cj.isEmptyObject(lists)) {
+      lists = {};
+      lists[291] = "";
+      lists[296] = "";
     }
     if (cj("#BBTreeContainer #JSTree-data dl").length > 0) {
       for (k in lists) {
         v = lists[k];
-        cj(".JSTree .tagContainer[class*=\"" + v + "\"]").remove();
-        list = cj("#BBTreeContainer #JSTree-data .top-" + v);
+        cj(".JSTree .tagContainer[class*=\"top-" + k + "\"]").remove();
+        list = cj("#BBTreeContainer #JSTree-data .top-" + k);
         activeTree = this.convertTabToTreeName(this.getActiveTab());
-        cj(".JSTree dl.tagContainer." + activeTree).addClass("active");
         cj(list).appendTo(".JSTree");
-        cj(".JSTree").removeClass("isFiltered");
-        cj(".JSTree").data("lists", []);
-        this.isFiltered = false;
+        cj(".JSTree .tagContainer." + activeTree).addClass("active");
       }
-      return cj(".JSTree .top-292 .position-box-text-reminder").show();
+      cj(".JSTree .top-292 .position-box-text-reminder").show();
+      cj(".JSTree .tagContainer").removeClass("search");
+      cj(".JSTree").removeClass("isFiltered");
+      return cj(".JSTree").data("lists", []);
     } else {
       cj(".JSTree").data("lists", []);
       a = cj(".JSTree").data("lists");
@@ -459,12 +499,20 @@ treeBehavior = {
       cj(".JSTree").data("lists", a);
       for (_i = 0, _len = a.length; _i < _len; _i++) {
         tagTypeId = a[_i];
+        addActive = false;
         cj(".JSTree").addClass("isFiltered");
-        list = cj(".JSTree .tagContainer[class*=\"" + tagTypeId + "\"]").removeClass("active");
+        list = cj(".JSTree .tagContainer[class*=\"" + tagTypeId + "\"]");
+        if (list.hasClass("active")) {
+          list.removeClass("active");
+          addActive = true;
+        }
         cj(list).appendTo("#BBTreeContainer #JSTree-data");
-        this.isFiltered = true;
         cj(".JSTree").append("<dl class='top-" + tagTypeId + " tagContainer filtered'></dl>");
+        if (addActive) {
+          cj(".JSTree .top-" + tagTypeId).addClass("active");
+        }
       }
+      cj(".JSTree .tagContainer").addClass("search");
       return cj(".JSTree .top-292 .position-box-text-reminder").hide();
     }
   },
@@ -478,27 +526,29 @@ treeBehavior = {
       }
     }
   },
+  alreadyPlaced: [],
   createFilteredList: function(tagList) {
-    var cjCloneTag, cjDataBox, cjDomList, cjParentId, domList, filteredList, key, parentTags, parentsId, parentsIds, parentsToGet, pid, tag, _i, _j, _len, _len1;
-    if (this.isFiltered) {
-      cjDataBox = cj("#BBTreeContainer #JSTree-data");
-    } else {
-      cjDataBox = this.cjTagBox;
-    }
+    var cjCloneName, cjCloneTag, cjCloneTagLvl, cjDataBox, cjDomList, cjParentId, dl, domList, filteredList, gpid, key, parentTags, parentsId, parentsIds, parentsToGet, pid, tag, toFindParentOf, _i, _j, _len, _len1;
+    cjDataBox = cj("#BBTreeContainer :not(.isFiltered) .tagContainer");
     parentsIds = [];
-    this.alreadyPlaced = [];
     parentsToGet = [];
     domList = cj();
     domList = domList.add("<div class='filteredList'></div>");
     filteredList = "";
     for (key in tagList) {
       tag = tagList[key];
-      parentsIds.push(cjDataBox.find("dt[data-tagid=" + tag.id + "]").data("parentid"));
+      toFindParentOf = cjDataBox.find("dt[data-tagid=" + tag.id + "]").data("parentid");
+      if ((toFindParentOf != null) && this.dataSettings.pullSets.indexOf(toFindParentOf) < 0) {
+        parentsIds.push(toFindParentOf);
+      }
     }
-    parentsIds = bbUtils.uniqueAry(parentsIds);
+    parentsIds = bbUtils.compact(bbUtils.uniqueAry(parentsIds));
     for (_i = 0, _len = parentsIds.length; _i < _len; _i++) {
       parentsId = parentsIds[_i];
-      parentsToGet.push(this.getParents(cjDataBox, parentsId));
+      gpid = this.getParents(cjDataBox, parentsId);
+      if (gpid != null) {
+        parentsToGet.push(gpid);
+      }
     }
     if (parentsToGet.length > 0) {
       for (_j = 0, _len1 = parentsToGet.length; _j < _len1; _j++) {
@@ -509,19 +559,28 @@ treeBehavior = {
     cjDomList = cj(domList);
     for (key in tagList) {
       tag = tagList[key];
-      cjCloneTag = cjDataBox.find("dt[data-tagid=" + tag.id + "]");
-      console.log(cjCloneTag);
+      cjCloneTag = cjDataBox.find("dt[data-tagid=" + tag.id + "]").clone();
       cjParentId = cjCloneTag.data("parentid");
-      console.log(cjDomList.find("#tagDropdown_" + cjParentId));
+      cjCloneTagLvl = treeManipulation.parseLvl(cjCloneTag.attr("class"));
+      cjCloneName = cjCloneTag.data('name');
       pid = parseFloat(cjParentId);
-      cjDomList.append(cjCloneTag);
+      if (this.alreadyPlaced.indexOf(parseFloat(tag.id)) < 0) {
+        if (parentsIds.indexOf(parseFloat(cjParentId)) >= 0) {
+          cjDomList.find("#tagDropdown_" + cjParentId).append(cjCloneTag);
+        } else {
+          dl = treeManipulation.createDL(cjCloneTagLvl, cjParentId, cjCloneName);
+          cjDomList.append(dl);
+          cjDomList.append(cjCloneTag);
+        }
+        this.alreadyPlaced.push(parseFloat(tag.id));
+      }
     }
     return domList;
   },
   getParents: function(cjDataBox, parentsId) {
     var currentId, go, i, newid, parentArray;
     if (this.dataSettings.pullSets.indexOf(parentsId) !== -1) {
-      return [];
+      return;
     }
     go = true;
     i = 0;
@@ -543,17 +602,32 @@ treeBehavior = {
     return parentArray;
   },
   buildPositions: function() {
-    var k, o, openLeg, options, _ref;
+    var k, o, openLeg, options, _ref,
+      _this = this;
     _ref = this.positionListing;
     for (k in _ref) {
       o = _ref[k];
-      cj(treeManipulation.createDT(1, o.id, o.name, 292, "", o.description)).appendTo(this.cjSearchBox);
+      cj(treeManipulation.createDT(1, o.id, o.name, 292, "", o.description)).appendTo(".JSTree .top-292.tagContainer");
     }
     if (this.positionPagesLeft > 1) {
       openLeg = new OpenLeg;
-      return options = {
+      options = {
         scrollBox: ".JSTree"
       };
+      return cj(".JSTree .top-292.tagContainer").infiniscroll(options, function() {
+        var nextPage;
+        nextPage = {
+          term: _this.positionSearchTerm,
+          page: _this.positionPage
+        };
+        cj(".JSTree .top-292.tagContainer").append(_this.addPositionLoader());
+        return openLeg.query(nextPage, function(results) {
+          _this.addPositionsToTags(results.results);
+          cj(".JSTree .top-292.tagContainer .loadingGif").remove();
+          _this.getNextPositionRound(results);
+          return _this.buildPositions();
+        });
+      });
     }
   },
   addPositionLoader: function() {
@@ -580,16 +654,21 @@ treeBehavior = {
     result = tab.html();
     return tab.html("" + result + "<span>(" + number + ")</span>");
   },
+  removeTabResults: function() {
+    var tab;
+    tab = cj("" + this.tabsLoc + " [class*=\"tab-\"]");
+    return tab.find("span").remove();
+  },
   setCurrentTab: function(treeTag) {
     cj("" + this.tabsLoc).find(".active").toggleClass("active");
     return cj("" + this.tabsLoc).find("." + treeTag).toggleClass("active");
   },
   showTags: function(currentTree, noPrev) {
     if (currentTree !== _treeVisibility.currentTree) {
-      this.cjTagBox.find("." + _treeVisibility.currentTree).toggle();
+      this.cjTagBox.find("." + _treeVisibility.currentTree).toggle().removeClass("active");
       _treeVisibility.previousTree = _treeVisibility.currentTree;
       _treeVisibility.currentTree = currentTree;
-      this.cjTagBox.find("." + currentTree).toggle();
+      this.cjTagBox.find("." + currentTree).toggle().addClass("active");
       return this.setCurrentTab(this.convertTreeNameToTab(currentTree));
     }
   },
