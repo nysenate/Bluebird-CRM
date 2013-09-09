@@ -427,6 +427,7 @@ function getQuery($optlist)
   );
 
   $whereClause = '( c.id = a.contact_id )';
+  $forceClauseArr = array();
 
   $start = $optlist['start'];
   if ($start && is_numeric($start)) {
@@ -443,10 +444,7 @@ function getQuery($optlist)
     $querySelect[] = "a.geo_code_2 as lon";
 
     if (!$optlist['force']) {
-      $whereClause .= "
-        AND (( a.geo_code_1 is null OR a.geo_code_1 = 0 OR
-               a.geo_code_2 is null OR a.geo_code_2 = 0 ) AND
-               a.country_id is not null)";
+      $forceClauseArr[] = "(a.geo_code_1 is null OR a.geo_code_1 = 0 OR a.geo_code_2 is null OR a.geo_code_2 = 0)";
     }
   }
 
@@ -480,9 +478,11 @@ function getQuery($optlist)
         $whereDist[] = "d.{$districtColumns[$dt]} is null OR d.{$districtColumns[$dt]} = \"\"";
       }
 
-      $whereClause .= " AND (" . implode(' OR ', $whereDist) . ")";
+      $forceClauseArr[] = "(" . implode(' OR ', $whereDist) . ")"; 
     }
   }
+
+  $whereClause .=  " AND (" . implode(' OR ', $forceClauseArr) . ")";
 
   $query = "SELECT " . implode( ', ', $querySelect ) . "
     FROM       civicrm_contact  c
