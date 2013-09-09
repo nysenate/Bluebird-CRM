@@ -1262,15 +1262,17 @@ EOQ;
 
     public static function getReports() {
       $Query = " SELECT
-	nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.email_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.sender_name,nyss_inbox_messages.status,
-	nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size
+	nyss_inbox_messages.id,nyss_inbox_messages.updated_date,nyss_inbox_messages.email_date,nyss_inbox_messages.matched_to,nyss_inbox_messages.sender_email,nyss_inbox_messages.subject,nyss_inbox_messages.forwarder,nyss_inbox_messages.activity_id,nyss_inbox_messages.sender_name,nyss_inbox_messages.status,nyss_inbox_messages.matcher,
+	nyss_inbox_attachments.file_name,nyss_inbox_attachments.rejection,nyss_inbox_attachments.size,
+	civicrm_contact.display_name
 	FROM `nyss_inbox_messages`
 	LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
+	LEFT JOIN civicrm_contact ON (nyss_inbox_messages.matcher = civicrm_contact.id)
 	LIMIT 0 , 100000";
 
       $QueryResult = mysql_query($Query, self::db());
       $Output = array();
-      $Unprocessed= 0;
+      $unMatched= 0;
       $Matched =0;
       $Cleared =0;
       $Deleted =0;
@@ -1289,15 +1291,20 @@ EOQ;
 	  $Output['successes'][$message_id]['date_u'] = $cleanDate['u'];
 	  $Output['successes'][$message_id]['date_long'] = $cleanDate['long'];
 	  $Output['successes'][$message_id]['message_status'] = $row['status'];
+	  $Output['successes'][$message_id]['matcher'] = $row['matcher'];
 
 	  $emailDate = self::cleanDate($row['email_date']);
 	  $Output['successes'][$message_id]['email_date_short'] = $emailDate['short'];
 	  $Output['successes'][$message_id]['email_date_u'] = $emailDate['u'];
 	  $Output['successes'][$message_id]['email_date_long'] = $emailDate['long'];
 
-	  $Output['successes'][$message_id]['key'] = $row['sender_email'];
 	  $Output['successes'][$message_id]['matched_to'] = $row['matched_to'];
 
+	  if(!$row['display_name'] || $row['display_name'] != 0){
+	    $Output['successes'][$message_id]['matcher_name'] =  'Automatically Matched';
+	  }else{
+	    $Output['successes'][$message_id]['matcher_name'] =  $row['display_name'];
+	  }
 	  $MatchedToQuery = " SELECT contact_type,first_name,last_name,display_name
 	    FROM `civicrm_contact`
 	    WHERE `id` = ".$row['matched_to']." LIMIT 1";
@@ -1311,6 +1318,8 @@ EOQ;
 	      $Output['successes'][$message_id]['lastName'] = $row['last_name'];
 	      $Output['successes'][$message_id]['fromName'] = $row['display_name'];
 	    }
+
+
 	  if ( $Output['successes'][$message_id]['contactType'] == '') {
 	    $Output['successes'][$message_id]['contactType'] = "Unknown";
 	    $Output['successes'][$message_id]['fromName'] = $Output['successes'][$message_id]['sender_name'];
@@ -1335,18 +1344,18 @@ EOQ;
 	  while($row = mysql_fetch_assoc($result)) {
 	    $matches[] = $row;
 	  }
-	  // var_dump($matches);
 	  $Output['successes'][$message_id]['matches_count'] = count($matches);
 
       }
       $returnCode = array('code'      =>  'SUCCESS',
-			  // 'Unprocessed' =>  count($returnMessage['Unprocessed']);
-			  // 'Matched' =>  $Matched,
-			  // 'Cleared' =>  $Cleared,
-			  // 'Errors' =>  $Errors,
-			  // 'Deleted' =>  $Deleted,
-			  'Messages'=> $Output
-                          );
+			'total' =>  $unMatched+$Matched+$Cleared+$Errors+$Deleted,
+			'unMatched' =>  $unMatched,
+			'Matched' =>  $Matched,
+			'Cleared' =>  $Cleared,
+			'Errors' =>  $Errors,
+			'Deleted' =>  $Deleted,
+			'Messages'=> $Output
+			);
           echo json_encode($returnCode);
       CRM_Utils_System::civiExit();
     }
