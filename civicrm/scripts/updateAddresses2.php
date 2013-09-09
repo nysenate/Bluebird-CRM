@@ -482,8 +482,10 @@ function getQuery($optlist)
     }
   }
 
-  $whereClause .=  " AND (" . implode(' OR ', $forceClauseArr) . ")";
-
+  if (!empty($forceClauseArr)) {
+    $whereClause .=  " AND (" . implode(' OR ', $forceClauseArr) . ")";  
+  }
+  
   $query = "SELECT " . implode( ', ', $querySelect ) . "
     FROM       civicrm_contact  c
     INNER JOIN civicrm_address                a ON a.contact_id = c.id
