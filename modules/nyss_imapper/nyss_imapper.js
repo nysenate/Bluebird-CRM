@@ -1401,7 +1401,7 @@ function buildReports() {
   var Deleted = 0;
     // console.log(messages);
     cj.each(reports.Messages.successes, function(key, value) {
-  messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+  messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box">';
       messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
 
 	if( value.contactType != 'Unknown'){
