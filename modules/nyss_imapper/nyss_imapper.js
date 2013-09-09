@@ -1138,7 +1138,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/reports',
+    url: '/civicrm/imap/ajax/getReports',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
@@ -1393,13 +1393,115 @@ function buildMessageList() {
 }
 
 function buildReports() {
-  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">Not Quite Ready yet</td>');
-	// console.log(reports.Unprocessed.length);
-	// console.log(reports.Matched.length);
-	// console.log(reports.Cleared.length);
-	// console.log(reports.Errors.length);
-	// console.log(reports.Deleted.length);
+  var messagesHtml = '';
+  var unMatched= 0;
+  var Matched= 0;
+  var Cleared= 0;
+  var Errors= 0;
+  var Deleted = 0;
+    // console.log(messages);
+    cj.each(reports.Messages.successes, function(key, value) {
+  messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+      messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
+
+	if( value.contactType != 'Unknown'){
+    messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+	  messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
+	  messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+	  messagesHtml += '</a>';
+	  messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
+	  messagesHtml += ' ';
+	}else {
+	  messagesHtml += '<td class="imap_name_column unmatched">';
+	  messagesHtml += " ";
+
+	}
+
+	// messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+
+	// match_sort = 'ProcessError';
+	// if(value.matcher){
+	//   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
+	//   var match_short = (value.matcher != 0) ? "M" : "A" ;
+	//   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+	//   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+	// }
+	// messagesHtml +='</td>';
+
+      messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+	// if(value.attachments.length > 0){
+	//   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+	// }
+	messagesHtml +='</td>';
+	var message_status = '';
+      // console.log(value.message_status);
+     if(value.message_status === "0"){
+      message_status="Unmatched";
+      unMatched++;
+     }else if(value.message_status === "1"){
+      Matched++;
+      if(value.matcher){
+	  if (value.matcher != 0){
+	    matcherHtml = 'Matched by <a href="/civicrm/contact/view?reset=1&cid='+value.matcher+'" title="'+value.matcher_name+'">'+value.matcher_name+'</a>';
+
+	  }else{
+	    matcherHtml = "Matched by Bluebird" ;
+	  }
+
+	  message_status = matcherHtml;
+	 }
+     }else if(value.message_status === "7"){
+      Cleared++;
+      message_status="Cleared";
+     }else if(value.message_status === "8"){
+      message_status="Deleted";
+      Deleted++;
+     }else if(value.message_status === "9"){
+      message_status="Deleted";
+      Deleted++;
+     }
+
+  messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
+
+    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+
+  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+      messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+	// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+
+    });
+    cj('#imapper-messages-list').html(messagesHtml);
+    makeListSortable();
+  var total_results = unMatched+Matched+Cleared+Errors+Deleted;
+  cj('#total_number').html(total_results);
+  cj('#total_unMatched').html(unMatched);
+  // console.log(unMatched);
+  cj('#total_Matched').html(Matched);
+  cj('#total_Cleared').html(Cleared);
+  cj('#total_Errors').html(Errors);
+  cj('#total_Deleted').html(Deleted);
 }
+
+cj(".UnMatched").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'UnMatched' );
+});
+cj(".Matched").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Matched by' );
+});
+cj(".Cleared").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Cleared' );
+});
+cj(".Errors").live('click', function() {
+      var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'error' );
+});
+cj(".Deleted").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Deleted' );
+});
 function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
