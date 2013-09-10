@@ -1268,6 +1268,7 @@ EOQ;
 	FROM `nyss_inbox_messages`
 	LEFT JOIN nyss_inbox_attachments ON (nyss_inbox_messages.id = nyss_inbox_attachments.email_id)
 	LEFT JOIN civicrm_contact ON (nyss_inbox_messages.matcher = civicrm_contact.id)
+	WHERE `status` != 99
 	LIMIT 0 , 100000";
 
       $QueryResult = mysql_query($Query, self::db());
