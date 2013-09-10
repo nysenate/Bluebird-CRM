@@ -1400,7 +1400,7 @@ function buildReports() {
   var Errors= 0;
   var Deleted = 0;
 
-  if(!reports.messages){
+  if(!reports.Messages.successes){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
     cj("#total_number").html('0');
   }else{
