@@ -1399,13 +1399,17 @@ function buildReports() {
   var Cleared= 0;
   var Errors= 0;
   var Deleted = 0;
-    // console.log(messages);
+
+  if(!reports.messages){
+    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
+    cj("#total_number").html('0');
+  }else{
     cj.each(reports.Messages.successes, function(key, value) {
-  messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box">';
+    messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
       messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
 
 	if( value.contactType != 'Unknown'){
-    messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+      messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
 	  messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
 	  messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
 	  messagesHtml += '</a>';
