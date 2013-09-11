@@ -64,14 +64,18 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website {
    * @static
    */
   static function create(&$params, $contactID, $skipDelete) {
-    //NYSS don't create website block if not url present
-    if (empty($params) || empty($params['url'])) {
+    if (empty($params)) {
       return FALSE;
     }
 
     $ids = self::allWebsites($contactID);
 
     foreach ($params as $key => $values) {
+      //NYSS don't create website block if no url present; fixed with 7111
+      if ( empty($values['url']) ) {
+        continue;
+      }
+
       $websiteId = CRM_Utils_Array::value('id', $values);
       if ($websiteId) {
         if (array_key_exists($websiteId, $ids)) {
