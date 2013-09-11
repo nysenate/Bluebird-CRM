@@ -1054,7 +1054,7 @@ function _buildManageMenu($manageID) {
           'label' => 'Merge Duplicate Contacts',
           'name' => 'Merge Duplicate Contacts',
           'url' => 'civicrm/contact/deduperules&reset=1',
-          'permission' => 'administer CiviCRM',
+          'permission' => 'merge duplicate contacts',
           'operator' => 'OR',
           'separator' => 2,
           'parentID' => $manageID,
