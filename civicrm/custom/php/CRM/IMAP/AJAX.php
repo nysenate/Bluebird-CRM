@@ -343,10 +343,10 @@ class CRM_IMAP_AJAX {
         $from.=" LEFT JOIN civicrm_state_province AS state ON address.state_province_id=state.id\n";
 
         if(self::get('first_name')) $first_name = (strtolower(self::get('first_name')) == 'first name' || trim(self::get('first_name')) =='') ? NULL : self::get('first_name');
-        if($first_name) $where .=" AND (contact.first_name LIKE '$first_name' OR contact.organization_name LIKE '$first_name')\n";
+	if($first_name) $where .=" AND (contact.first_name LIKE BB_NORMALIZE('$first_name') OR contact.organization_name LIKE BB_NORMALIZE('$first_name'))\n";
 
         if(self::get('last_name')) $last_name = (strtolower(self::get('last_name')) == 'last name' || trim(self::get('last_name')) =='') ? NULL : self::get('last_name');
-        if($last_name) $where .=" AND (contact.last_name LIKE '$last_name' OR contact.household_name LIKE '%$last_name%' )\n";
+	if($last_name) $where .=" AND (contact.last_name LIKE BB_NORMALIZE('$last_name') OR contact.household_name LIKE BB_NORMALIZE('$last_name') )\n";
 
         if(self::get('email_address')) $email_address = (strtolower(self::get('email_address')) == 'email address' || trim(self::get('email_address')) =='') ? NULL : self::get('email_address');
         if($email_address) {
@@ -368,10 +368,10 @@ class CRM_IMAP_AJAX {
         if($street_address || $city){
           $order.=", address.is_primary DESC";
           if($street_address) {
-            $where.=" AND address.street_address LIKE '$street_address'\n";
+	    $where.=" AND address.street_address LIKE BB_NORMALIZE_ADDR('$street_address')\n";
           }
           if ($city) {
-            $where.=" AND address.city LIKE '$city'\n";
+	    $where.=" AND address.city LIKE BB_NORMALIZE_ADDR('$city')\n";
           }
         }
 
