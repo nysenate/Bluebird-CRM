@@ -17,6 +17,9 @@ dt {
   &.open .tag .ddControl.treeButton {
     background: url($defaultIconLink) no-repeat -64px -15px;
   }
+  // span.name {
+  //   display: block;
+  // }
 }
 .shaded .name span {
   font-weight:bold;
@@ -42,7 +45,6 @@ dt.description, dt.longdescription {
     color:lighten(black,50%);
   }
 }
-
 dt.description {
   @include descriptionChange(2);
 }

@@ -23,4 +23,7 @@
   &.narrow {
     @import "shape/narrow";
   }
+  &.short.narrow {
+    @import "shape/shortnarrow";
+  }
 }

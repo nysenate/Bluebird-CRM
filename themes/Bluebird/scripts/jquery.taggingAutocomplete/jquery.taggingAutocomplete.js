@@ -9,7 +9,7 @@
       theme: "JSTree",
       ajaxLocation: "",
       textBoxLocation: "#JSTree-ac",
-      menuElement: ".JSTree-me",
+      menuElement: ".JSTree-menu",
       source: "",
       minLength: 3,
       delay: 300

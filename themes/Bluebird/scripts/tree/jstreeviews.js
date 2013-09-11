@@ -172,6 +172,7 @@ View = (function() {
         }
       }
       treeBehavior.createOpacityFaker(".top-" + v, "dt", "type-" + v);
+      cj("#JSTree-data").append(_treeData.html[v]);
     }
     this.cjInstanceSelector.find(".top-" + this.displaySettings.defaultTree).addClass("active");
     treeBehavior.setCurrentTab(_treeData.treeTabs[this.displaySettings.defaultTree]);
@@ -248,7 +249,7 @@ treeBehavior = {
     return cjac.on("keyup", (function(event) {
       var keyCode;
       keyCode = bbUtils.keyCode(event);
-      if (keyCode.type === "delete" && cjac.val().length < 3) {
+      if (keyCode.type === "delete" && cjac.val().length <= 3) {
         return _this.clearBoard();
       }
     }));
@@ -295,7 +296,6 @@ treeBehavior = {
           "term": terms.term
         }, function(results) {
           var foundTags, hcounts, hits, k, set, tags, v, _i, _len, _ref;
-          console.log(_this.addPositionsToTags(results.results));
           _this.getNextPositionRound(results);
           tags = _this.sortSearchedTags(terms.tags);
           hits = _this.separateHits(tags, results);
@@ -325,9 +325,9 @@ treeBehavior = {
     this.removePreviousList();
     this.removeTabResults();
     if (this.isFiltered) {
-      this.toggleFilterList();
+      this.shouldFilter = true;
+      return this.toggleFilterList();
     }
-    return this.isFiltered = false;
   },
   positionIdNumber: 292000,
   removePositions: function() {
@@ -404,12 +404,14 @@ treeBehavior = {
   },
   buildParents: function(cjDataBox, parentArray, domList) {
     var cjDomList, clonedName, clonedTag, clonedTagLvl, index, output, parentid, _i, _len;
+    this.cjDataBox = cjDataBox;
     output = "";
     parentArray.reverse();
     cjDomList = cj(domList);
     for (index = _i = 0, _len = parentArray.length; _i < _len; index = ++_i) {
       parentid = parentArray[index];
-      clonedTag = cjDataBox.find("dt[data-tagid=" + parentid + "]").clone();
+      clonedTag = this.cjDataBox.find("dt[data-tagid=" + parentid + "]").clone();
+      console.log(clonedTag);
       clonedTagLvl = treeManipulation.parseLvl(clonedTag.attr("class"));
       clonedName = clonedTag.data('name');
       if (index === 0) {
@@ -420,7 +422,7 @@ treeBehavior = {
         }
       } else {
         if (this.alreadyPlaced.indexOf(parentid) < 0) {
-          cjDomList.find("#tagDropdown_" + parentArray[index - 1]).after(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag);
+          cjDomList.find("#tagDropdown_" + parentid).after(treeManipulation.createDL(clonedTagLvl, parentid, clonedName)).append(clonedTag);
         }
       }
     }
@@ -429,9 +431,9 @@ treeBehavior = {
   buildFilterList: function(tagList, term, hits) {
     var allDropdowns, filteredList, k, name, v,
       _this = this;
-    if (!this.isFiltered) {
-      this.toggleFilterList(tagList);
-      this.isFiltered = true;
+    if (cj(".JSTree.isFiltered").length === 0) {
+      this.shouldFilter = true;
+      this.toggleFilterList();
     }
     for (k in hits) {
       v = hits[k];
@@ -448,7 +450,7 @@ treeBehavior = {
       v = tagList[k];
       if (v.length > 0) {
         filteredList = this.createFilteredList(v);
-        cj(filteredList).appendTo(".JSTree.isFiltered .top-" + k);
+        cj(filteredList).appendTo(".JSTree .top-" + k);
       } else {
         console.log("no matches");
       }
@@ -466,55 +468,38 @@ treeBehavior = {
     }
     return this.buildPositions();
   },
+  shouldFilter: false,
   isFiltered: false,
-  toggleFilterList: function(lists) {
-    var a, activeTree, addActive, k, list, tagTypeId, v, _i, _len;
-    if (cj.isEmptyObject(lists)) {
-      lists = {};
-      lists[291] = "";
-      lists[296] = "";
+  toggleFilterList: function() {
+    var a, addActive, lists, thisBox, _i, _j, _len, _len1;
+    if (!this.shouldFilter) {
+      return false;
     }
-    if (cj("#BBTreeContainer #JSTree-data dl").length > 0) {
-      for (k in lists) {
-        v = lists[k];
-        cj(".JSTree .tagContainer[class*=\"top-" + k + "\"]").remove();
-        list = cj("#BBTreeContainer #JSTree-data .top-" + k);
-        activeTree = this.convertTabToTreeName(this.getActiveTab());
-        cj(list).appendTo(".JSTree");
-        cj(".JSTree .tagContainer." + activeTree).addClass("active");
+    lists = [291, 296];
+    if (this.isFiltered) {
+      for (_i = 0, _len = lists.length; _i < _len; _i++) {
+        a = lists[_i];
+        cj("#BBTreeContainer #JSTree-data .top-" + a).children().clone().appendTo(".JSTree .top-" + a);
+        cj(".JSTree .top-" + a).removeClass("filtered");
       }
+      cj(".JSTree .top-292").removeClass("filtered");
       cj(".JSTree .top-292 .position-box-text-reminder").show();
-      cj(".JSTree .tagContainer").removeClass("search");
       cj(".JSTree").removeClass("isFiltered");
-      return cj(".JSTree").data("lists", []);
+      this.isFiltered = false;
     } else {
-      cj(".JSTree").data("lists", []);
-      a = cj(".JSTree").data("lists");
-      for (k in lists) {
-        v = lists[k];
-        if (!(a.indexOf(parseFloat(k)) >= 0)) {
-          a.push(parseFloat(k));
-        }
+      addActive = "";
+      cj(".JSTree").addClass("isFiltered");
+      for (_j = 0, _len1 = lists.length; _j < _len1; _j++) {
+        a = lists[_j];
+        thisBox = cj(".JSTree .tagContainer[class*=\"" + a + "\"]");
+        thisBox.empty();
+        thisBox.addClass("filtered");
       }
-      cj(".JSTree").data("lists", a);
-      for (_i = 0, _len = a.length; _i < _len; _i++) {
-        tagTypeId = a[_i];
-        addActive = false;
-        cj(".JSTree").addClass("isFiltered");
-        list = cj(".JSTree .tagContainer[class*=\"" + tagTypeId + "\"]");
-        if (list.hasClass("active")) {
-          list.removeClass("active");
-          addActive = true;
-        }
-        cj(list).appendTo("#BBTreeContainer #JSTree-data");
-        cj(".JSTree").append("<dl class='top-" + tagTypeId + " tagContainer filtered'></dl>");
-        if (addActive) {
-          cj(".JSTree .top-" + tagTypeId).addClass("active");
-        }
-      }
-      cj(".JSTree .tagContainer").addClass("search");
-      return cj(".JSTree .top-292 .position-box-text-reminder").hide();
+      cj(".JSTree .top-292").addClass("filtered");
+      cj(".JSTree .top-292 .position-box-text-reminder").hide();
+      this.isFiltered = true;
     }
+    return this.shouldFilter = false;
   },
   getActiveTab: function() {
     var a, i, _i, _len;
@@ -527,9 +512,10 @@ treeBehavior = {
     }
   },
   alreadyPlaced: [],
+  cjDataBox: "",
   createFilteredList: function(tagList) {
-    var cjCloneName, cjCloneTag, cjCloneTagLvl, cjDataBox, cjDomList, cjParentId, dl, domList, filteredList, gpid, key, parentTags, parentsId, parentsIds, parentsToGet, pid, tag, toFindParentOf, _i, _j, _len, _len1;
-    cjDataBox = cj("#BBTreeContainer :not(.isFiltered) .tagContainer");
+    var cjCloneName, cjCloneTag, cjCloneTagLvl, cjDomList, cjParentId, dl, domList, filteredList, gpid, key, parentTags, parentsId, parentsIds, parentsToGet, pid, tag, toFindParentOf, _i, _j, _len, _len1;
+    this.cjDataBox = cj("#JSTree-data .tagContainer");
     parentsIds = [];
     parentsToGet = [];
     domList = cj();
@@ -537,7 +523,7 @@ treeBehavior = {
     filteredList = "";
     for (key in tagList) {
       tag = tagList[key];
-      toFindParentOf = cjDataBox.find("dt[data-tagid=" + tag.id + "]").data("parentid");
+      toFindParentOf = this.cjDataBox.find("dt[data-tagid=" + tag.id + "]").data("parentid");
       if ((toFindParentOf != null) && this.dataSettings.pullSets.indexOf(toFindParentOf) < 0) {
         parentsIds.push(toFindParentOf);
       }
@@ -545,21 +531,23 @@ treeBehavior = {
     parentsIds = bbUtils.compact(bbUtils.uniqueAry(parentsIds));
     for (_i = 0, _len = parentsIds.length; _i < _len; _i++) {
       parentsId = parentsIds[_i];
-      gpid = this.getParents(cjDataBox, parentsId);
+      gpid = this.getParents(this.cjDataBox, parentsId);
       if (gpid != null) {
         parentsToGet.push(gpid);
       }
     }
+    console.log(parentsToGet);
     if (parentsToGet.length > 0) {
       for (_j = 0, _len1 = parentsToGet.length; _j < _len1; _j++) {
         parentTags = parentsToGet[_j];
-        domList = this.buildParents(cjDataBox, parentTags, domList);
+        domList = this.buildParents(this.cjDataBox, parentTags, domList);
       }
     }
     cjDomList = cj(domList);
+    console.log(tagList);
     for (key in tagList) {
       tag = tagList[key];
-      cjCloneTag = cjDataBox.find("dt[data-tagid=" + tag.id + "]").clone();
+      cjCloneTag = this.cjDataBox.find("dt[data-tagid=" + tag.id + "]").clone();
       cjParentId = cjCloneTag.data("parentid");
       cjCloneTagLvl = treeManipulation.parseLvl(cjCloneTag.attr("class"));
       cjCloneName = cjCloneTag.data('name');
@@ -579,6 +567,7 @@ treeBehavior = {
   },
   getParents: function(cjDataBox, parentsId) {
     var currentId, go, i, newid, parentArray;
+    this.cjDataBox = cjDataBox;
     if (this.dataSettings.pullSets.indexOf(parentsId) !== -1) {
       return;
     }
@@ -587,7 +576,7 @@ treeBehavior = {
     parentArray = [parentsId];
     currentId = parentsId;
     while (go) {
-      newid = cjDataBox.find("dt[data-tagid=" + currentId + "]").data("parentid");
+      newid = this.cjDataBox.find("dt[data-tagid=" + currentId + "]").data("parentid");
       if (this.dataSettings.pullSets.indexOf(newid) < 0) {
         parentArray.push(newid);
         currentId = newid;
@@ -837,14 +826,19 @@ treeManipulation = {
       description = "";
     }
     hasDesc = "";
-    if (description.length > 0) {
-      hasDesc = "description";
-    }
-    if (description.length > 0 && description.length <= 95) {
-      hasDesc += " shortdescription";
-    }
-    if (description.length > 180) {
-      hasDesc = "longdescription";
+    if (description != null) {
+      if (description.length > 0) {
+        hasDesc = "description";
+      }
+      if (description.length > 0 && description.length <= 80) {
+        hasDesc += " shortdescription";
+      }
+      if (description.length > 160) {
+        hasDesc = "longdescription";
+      }
+      if (description.length > 80) {
+        description = _utils.textWrap(description, 80);
+      }
     }
     output = "<dt class='lv-" + lvl + " tag-" + id + " " + hasDesc + "' id='tagLabel_" + id + "' data-tagid='" + id + "' data-name='" + name + "' data-parentid='" + parent + "'>";
     output += "<div class='tag'>";

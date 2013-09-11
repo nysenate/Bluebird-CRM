@@ -79,7 +79,7 @@ parseTree =
     tagName = new BBTagLabel(tID.id)
     @addAutocompleteEntry tID.id, tID.name
     if tID.children.length > 0 then hasChild = true else hasChild = false
-    @addDTtag tagName,tID.name,parentTag,hasChild
+    @addDTtag tagName,tID.name,tID.description,parentTag,hasChild
     @addDLtop tagName,tID.name
     if hasChild
       cj.each tID.children, (id, cID) =>
@@ -93,19 +93,31 @@ parseTree =
   # helper functions for writing tag names
   addDLtop: (tagName,name) ->
     @output += "<dl class='lv-#{@tagLvl}' id='#{tagName.addDD()}' data-name='#{name}'>"
-  addDTtag: (tagName,name,parentTag,hasChild,except) ->
+  addDTtag: (tagName,name,description,parentTag,hasChild,except) ->
     if !except 
       @tagLvl++
     if hasChild then treeButton = "treeButton" else treeButton = ""
     # console.log "#{name} #{hasChild} #{treeButton} "
     if !parentTag?
       parentTag = @treeTop
-    @output += "<dt class='lv-#{@tagLvl} #{@tagType}-#{tagName.passThru()}' id='#{tagName.add()}' data-tagid='#{tagName.passThru()}' data-name='#{name}' data-parentid='#{parentTag}'>"
+    hasDesc = ""
+    if description?
+      if description.length > 0
+        hasDesc = "description"
+      if description.length > 0 and description.length <= 80
+        hasDesc += " shortdescription"
+      if description.length > 160
+        hasDesc = "longdescription"
+      if description.length > 80
+        description = _utils.textWrap(description, 80)
+    @output += "<dt class='lv-#{@tagLvl} #{hasDesc} #{@tagType}-#{tagName.passThru()}' id='#{tagName.add()}' data-tagid='#{tagName.passThru()}' data-name='#{name}' data-parentid='#{parentTag}'>"
     @output += "<div class='tag'>"
 
     @output += "<div class='ddControl #{treeButton}'></div>"
-    @output += "<span class='name'>#{name}</span></div>"
-    @output += "</dt>"
+    @output += "<span class='name'>#{name}</span>"
+    if description?
+      @output += "<div class='description'>#{description}</div>"
+    @output += "</div></dt>"
   addDLbottom: ->
     @tagLvl--
     @output += "</dl>"
@@ -259,3 +271,23 @@ class BBTagLabel
   addDD: -> "tagDropdown_" + @tagID
   removeDD: -> @tagID.replace "tagDropdown_", ""
   passThru: -> @tagID
+
+_utils = 
+  textWrap: (text, length) ->
+    numberOfSegs = Math.ceil(text.length/length)
+    toRet = ""
+    shouldRet = false
+    rx = /\s|-| |\u00A0|\u8209|\r|\n/g
+    for a in [0..numberOfSegs] 
+      seg = text.slice(length*a,length*(a+1))
+      if !seg.match(rx) and seg.length >= length
+        shouldRet = true
+        toRet += "#{seg} "
+      else 
+        toRet += "#{seg}"
+    return toRet if shouldRet
+    text
+
+
+
+

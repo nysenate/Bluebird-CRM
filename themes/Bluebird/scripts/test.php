@@ -85,7 +85,7 @@ var cj = jQuery.noConflict(true);
         tagHolder: ['BBTree']
       },
       dataSettings: {
-        pullSets: [291,296],
+        pullSets: [291,296,292],
         // pullSets: [291],
         contact: 0
       },

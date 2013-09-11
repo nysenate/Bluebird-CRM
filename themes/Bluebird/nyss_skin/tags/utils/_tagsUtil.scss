@@ -137,5 +137,9 @@
     height: 20px*$lines;
     top: -20px*$lines;
   }
+  .description {
+    position:absolute;
+    bottom:0px;
+  }
 }
 @import "extends";
