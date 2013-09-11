@@ -32,7 +32,7 @@
       {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
       {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}
       <div class="crm-submit-buttons-top">
-        {$form.buttons.html}
+        {$form.buttons.html}&nbsp;&nbsp;&nbsp;&nbsp;
         {$form.$save.html}
         {if $mode neq 'template' && $form.$next}
           {$form.$next.html}
@@ -79,7 +79,7 @@
       {assign var=save value="_qf_"|cat:$form.formName|cat:"_submit_save"}
       {assign var=next value="_qf_"|cat:$form.formName|cat:"_submit_next"}
       <div class="crm-submit-buttons-top">
-        {$form.buttons.html}
+        {$form.buttons.html}&nbsp;&nbsp;&nbsp;&nbsp;
         {$form.$save.html}
         {if $mode neq 'template' && $form.$next}
           {$form.$next.html}
