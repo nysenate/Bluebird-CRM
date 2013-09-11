@@ -24,11 +24,12 @@ fspath = require 'path'
 # this could be a header at the top that looks for "bbjsrequire 'path'"
 # and read the path, and drop it into the array.
 coffeeFiles  = [
-  {path: 'themes/Bluebird/scripts/tree', outputName: "JSTree"}
-  {path: 'themes/Bluebird/scripts/jquery.taggingAutocomplete', outputName: "jquery.taggingAutocomplete"}
-  {path: 'themes/Bluebird/scripts/jquery.infiniScroll', outputName: "jquery.infiniScroll"}
+  {path: 'themes/Bluebird/scripts/tag', outputName: "JSTree2"}
+  # {path: 'themes/Bluebird/scripts/tree', outputName: "JSTree"}
+  # {path: 'themes/Bluebird/scripts/jquery.taggingAutocomplete', outputName: "jquery.taggingAutocomplete"}
+  # {path: 'themes/Bluebird/scripts/jquery.infiniScroll', outputName: "jquery.infiniScroll"}
   {path: 'themes/Bluebird/scripts/bbUtils', outputName: "bbUtils"}
-  {path: 'themes/Bluebird/scripts/bbJSsettings', outputName: "bbhg"}
+  # {path: 'themes/Bluebird/scripts/bbJSsettings', outputName: "bbhg"}
 ]
 
 # sassFiles outputs a single css file named "outputName"

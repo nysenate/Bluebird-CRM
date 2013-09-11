@@ -242,7 +242,7 @@ class instance
         ready = obj
     @getAutocomplete = =>
       _treeData.autocomplete
-  removeDupFromExtend: (obj) ->
+  removeDupFromExtend: (obj) =>
     cj.each obj, (k, v) =>
       @removeDupFromExtend(v) if cj.isPlainObject(v)
       v = bbUtils.uniqueAry(v)
@@ -287,7 +287,3 @@ _utils =
         toRet += "#{seg}"
     return toRet if shouldRet
     text
-
-
-
-
