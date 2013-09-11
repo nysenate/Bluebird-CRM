@@ -178,7 +178,7 @@ class CRM_Mailing_BAO_Query {
 
       case 'civicrm_mailing_job':
         //NYSS 6845
-        $from = " $side JOIN civicrm_mailing_job ON civicrm_mailing_job.mailing_id = civicrm_mailing.id AND civicrm_mailing_job.parent_id IS NULL AND civicrm_mailing_job.is_test != 1";
+        $from = " $side JOIN civicrm_mailing_job ON civicrm_mailing_job.mailing_id = civicrm_mailing.id AND civicrm_mailing_job.is_test != 1";
         break;
 
       case 'civicrm_mailing_event_bounce':
