@@ -90,7 +90,7 @@ require_once 'CRM/Utils/MessageBodyParser.php';
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
-$imap_activty_status = strtolower($bbconfig['imap.activity.status.default']);
+$imap_activty_status = $bbconfig['imap.activity.status.default'];
 
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
