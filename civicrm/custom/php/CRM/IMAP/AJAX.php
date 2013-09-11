@@ -631,7 +631,7 @@ class CRM_IMAP_AJAX {
             $activityType = array_search('Inbound Email', $aActivityType);
 	    $aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
-	    $imap_activty_status = strtolower($bbconfig['imap.activity.status.default']);
+	    $imap_activty_status = $bbconfig['imap.activity.status.default'];
 	    if ($imap_activty_status == false || !isset($imap_activty_status)) {
 	      $activityStatus = array_search('Completed', $aActivityStatus);
 	    }else{
