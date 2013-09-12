@@ -3,15 +3,18 @@ Function::property = (prop, desc) ->
 
 jstree = 
   init: (settings,view) ->
+    # build the instance of data
     instance = new Instance()
     setProp(settings, instance)
     pageElements = instance.get("pageElements")
+    # call the view, and we're using call
+    # so that you can change the view...
+    # or use super to change it
     view["exec"].call(@, instance)
-    cj(pageElements.wrapper).data("isLoading",true)
-    request = cj.when(getTrees.getRawJSON(instance))
+    request = cj.when(_getTrees.getRawJSON(instance))
     request.done((data) =>
-      getTrees.putRawJSON(data.message,instance)
-      cj(pageElements.wrapper).data("isLoading",false)
+      _getTrees.putRawJSON(data.message,instance)
+      _parseTree.init(instance)
       view["done"].call(@, instance)
       )
     instance
@@ -19,37 +22,8 @@ setProp = (properties..., instance) ->
   for k, v of properties[0]
     instance.set k,v
 
-getTrees =
-  # makes the JSON call, and then writes it.
-  # with putRaw. allows timestamp checks/if applicable
-  getRawJSON: (instance) ->
-    cj.ajax(instance.get('callAjax'))
-  putRawJSON: (data, instance) ->
-    rawData = {}
-    cj.each data, (i,tID) ->
-      if parseFloat(tID.id) in instance.get('dataSettings').pullSets
-        rawData[tID.id] =
-          'name':tID.name
-          'children':tID.children
-    instance.rawData = rawData
 
 class Instance
-  #sets the instance variables for that particular instance 
-  # _data = (prop) ->
-  #   autocomplete: []
-  #     # json array of objects
-  #     # using tokenize autocomplete jquery
-  #     # [{"id":"856","name":"Issue Code ABC"},
-  #     # {"id":"1035","name":"Keyword"},
-  #     # {"id":"1048","name":"Dollhouse"},
-  #     # {"id":"1113","name":"Full House"}]
-  #   rawData: {}
-  #     # 291 :json_data 
-  #   treeNames: []
-  #   trees: {}
-  #   return =>
-  #     @[prop]
-
   constructor: (@_rawData,@_autocomplete,@_treeNames,@_trees) ->
     # if the definitions are an array, it's because they can have
     # multiple values
@@ -173,6 +147,69 @@ _utils =
         toRet += "#{seg}"
     return toRet if shouldRet
     text
+
+_getTrees =
+  # makes the JSON call, and then writes it.
+  # with putRaw. allows timestamp checks/if applicable
+  getRawJSON: (instance) ->
+    cj.ajax(instance.get('callAjax'))
+  putRawJSON: (data, instance) ->
+    rawData = {}
+    cj.each data, (i,tID) ->
+      if parseFloat(tID.id) in instance.get('dataSettings').pullSets
+        rawData[tID.id] =
+          'name':tID.name
+          'children':tID.children
+    instance.rawData = rawData
+
+_tree =
+  blacklist: (id) ->
+    return true if id == 292
+    return false
+
+
+_parseTree =
+  init: (instance) ->
+    for k,o of instance.rawData
+      _parseAutocomplete["type"] = "#{k}"
+      @treeNames.push k
+      if o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))
+        _parseAutocomplete.deepIterate o.children, _parseAutocomplete.pre, _parseAutocomplete.post
+    instance.autocomplete =  @ac
+    instance.treeNames = @treeNames
+  ac: []
+  treeNames: []
+
+_parseAutocomplete =  
+  pre: (obj) ->
+    _parseAutocomplete.level++
+    hasChildren = false
+    if obj.children.length > 0
+      hasChildren = true 
+    item =
+      "name": obj.name
+      "id": obj.id
+      "parent": obj.parent_id
+      "type": _parseAutocomplete.type
+      "children": hasChildren
+      "description": obj.description
+      "is_reserved": obj.is_reserved
+      "created_id": obj.created_id
+      "created_date": obj.created_date
+      "created_name": obj.created_display_name
+      "level": _parseAutocomplete.level
+    _parseTree.ac.push(item)
+  post: (obj) ->
+    _parseAutocomplete.level--
+  level: 0
+
+
+  deepIterate: (obj, before, after) ->
+    for o in obj
+      before(o)
+      if o.children.length > 0
+        @.deepIterate o.children, before, after
+      after(o)
 
 
 window.jstree = jstree
