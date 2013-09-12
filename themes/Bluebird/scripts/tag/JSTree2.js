@@ -211,6 +211,9 @@
         return toRet;
       }
       return text;
+    },
+    hyphenize: function(text) {
+      return text.replace(" ", "-");
     }
   };
 
@@ -250,7 +253,7 @@
       for (k in _ref) {
         o = _ref[k];
         _parseAutocomplete["type"] = "" + k;
-        this.treeNames.push(k);
+        this.treeNames[k] = o.name;
         if (o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))) {
           _parseAutocomplete.deepIterate(o.children, _parseAutocomplete.pre, _parseAutocomplete.post);
         }
@@ -259,7 +262,7 @@
       return instance.treeNames = this.treeNames;
     },
     ac: [],
-    treeNames: []
+    treeNames: {}
   };
 
   _parseAutocomplete = {
@@ -318,18 +321,29 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         a = _ref[_i];
         b = _treeUtils.selectByTree(instance.autocomplete, a);
-        trees[a] = new Tree(b, a, instance);
+        trees[a] = new Tree(b, a);
       }
-      instance.trees = trees;
+      this.view.trees = trees;
+      this.view.init();
       return console.log("done");
     },
     view: {}
   };
 
   View = (function() {
+    View.property("trees", {
+      get: function() {
+        return this._trees;
+      },
+      set: function(a) {
+        return this._trees = a;
+      }
+    });
+
     function View(instance) {
       this.instance = instance;
       this.writeContainers();
+      this.displaySettings = this.instance.get("displaySettings");
     }
 
     View.prototype.writeContainers = function() {
@@ -423,7 +437,8 @@
       this.cjTagWrapperSelector = cj(this.tagWrapperSelector);
       this.cjTagHolderSelector = cj(this.tagHolderSelector);
       this.cjInstanceSelector = cj(this.tagWrapperSelector.concat(" " + this.tagHolderSelector));
-      return this.cjTabs = cj(this.menuName.cj_tabs);
+      this.cjTabs = cj(this.menuName.cj_tabs);
+      return console.log(this.menuName.cj_tabs);
     };
 
     View.prototype.menuHtml = function(name) {
@@ -438,6 +453,42 @@
       return "<div id='JSTree-data' style='display:none'></div>";
     };
 
+    View.prototype.init = function() {
+      var k, locals, tabName, v, _ref, _results;
+      this.getCJQsaves();
+      locals = {
+        "menu": this.menuName.cj_tabs,
+        "top": this.displaySettings.defaultTree
+      };
+      this.setActiveTree(this.displaySettings.defaultTree);
+      _ref = this.instance.treeNames;
+      _results = [];
+      for (k in _ref) {
+        v = _ref[k];
+        _results.push(tabName = this.createTreeTabs(v));
+      }
+      return _results;
+    };
+
+    View.prototype.setActiveTree = function(id) {
+      return cj(".JSTree .top-" + id).addClass("active");
+    };
+
+    View.prototype.createTreeTabs = function(tabName, isHidden) {
+      var output, style, tabClass;
+      if (isHidden == null) {
+        isHidden = false;
+      }
+      if (isHidden) {
+        style = "style='display:none'";
+      } else {
+        style = "";
+      }
+      tabClass = (_utils.hyphenize(tabName)).toLowerCase();
+      output = "<div class='tab-" + tabClass + "' " + style + ">" + tabName + "</div>";
+      return this.cjTabs.append(output);
+    };
+
     return View;
 
   })();
@@ -445,19 +496,14 @@
   Tree = (function() {
     Tree.prototype.domList = {};
 
-    Tree.prototype.currentDepth = [];
-
-    Tree.prototype.hierarchedList = {};
-
     Tree.prototype.nodeList = {};
 
-    function Tree(tagList, tagId, instance) {
-      var displaySettings;
+    Tree.prototype.tabName = "";
+
+    function Tree(tagList, tagId) {
       this.tagList = tagList;
       this.tagId = tagId;
       this.buildTree();
-      displaySettings = instance.get("displaySettings");
-      cj(".JSTree .top-" + displaySettings.defaultTree).addClass("active");
     }
 
     Tree.prototype.buildTree = function() {

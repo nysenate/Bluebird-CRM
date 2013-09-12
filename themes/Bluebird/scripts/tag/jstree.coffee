@@ -147,6 +147,8 @@ _utils =
         toRet += "#{seg}"
     return toRet if shouldRet
     text
+  hyphenize: (text) ->
+    text.replace(" ","-")
 
 _getTrees =
   # makes the JSON call, and then writes it.
@@ -172,13 +174,13 @@ _parseTree =
   init: (instance) ->
     for k,o of instance.rawData
       _parseAutocomplete["type"] = "#{k}"
-      @treeNames.push k
+      @treeNames[k] = o.name
       if o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))
         _parseAutocomplete.deepIterate o.children, _parseAutocomplete.pre, _parseAutocomplete.post
     instance.autocomplete =  @ac
     instance.treeNames = @treeNames
   ac: []
-  treeNames: []
+  treeNames: {}
 
 _parseAutocomplete =  
   pre: (obj) ->

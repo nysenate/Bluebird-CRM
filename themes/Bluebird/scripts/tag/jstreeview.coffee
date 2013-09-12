@@ -6,16 +6,21 @@ window.jstree["views"] =
     trees = {}
     for a in instance.treeNames
       b = _treeUtils.selectByTree(instance.autocomplete, a)
-      trees[a] = new Tree(b,a,instance)
-    instance.trees = trees
+      trees[a] = new Tree(b,a)
+    @view.trees = trees
+    @view.init()
     console.log "done"
     
   view: {}
 
 class View
+  @property "trees",
+    get: -> @_trees
+    set: (a) -> @_trees = a
   constructor: (@instance) ->
     # starts the chain to write the page structure
     @writeContainers()
+    @displaySettings = @instance.get("displaySettings")
   writeContainers: () ->
     @formatPageElements()
     @addClassesToElement()
@@ -82,6 +87,7 @@ class View
     @cjTagHolderSelector = cj(@tagHolderSelector)
     @cjInstanceSelector = cj(@tagWrapperSelector.concat(" #{@tagHolderSelector}"))
     @cjTabs = cj(@menuName.cj_tabs)
+    console.log @menuName.cj_tabs
   # what we're going to do here is
   # allow for options
   menuHtml: (name) -> 
@@ -111,17 +117,34 @@ class View
       "
   dataHolderHtml: () ->
     "<div id='JSTree-data' style='display:none'></div>"
+  init:() ->
+    @getCJQsaves()
+    locals = {"menu":@menuName.cj_tabs,"top":@displaySettings.defaultTree}
+    @setActiveTree(@displaySettings.defaultTree)
+    for k,v of @instance.treeNames
+      tabName = @createTreeTabs(v)
+
+    # console.log @instance.treeNames
+    # @createTreeTabs(@instance.treeNames)
+  setActiveTree: (id) ->
+    cj(".JSTree .top-#{id}").addClass("active")
+  createTreeTabs: (tabName, isHidden = false) ->
+    if isHidden then style = "style='display:none'" else style = ""
+    tabClass = (_utils.hyphenize(tabName)).toLowerCase()
+    output = "<div class='tab-#{tabClass}' #{style}>#{tabName}</div>"
+    @cjTabs.append(output)
+    
+    # cj(".JSTree")
+
 
 # tree creates new trees
 class Tree
   domList: {}
-  currentDepth: []
-  hierarchedList: {}
-  nodeList: {}   
-  constructor: (@tagList, @tagId, instance) ->
+  nodeList: {}
+  tabName: ""
+  constructor: (@tagList, @tagId) ->
     @buildTree()
-    displaySettings = instance.get("displaySettings")
-    cj(".JSTree .top-#{displaySettings.defaultTree}").addClass("active")
+    # @cjLocation = 
   buildTree: () ->
     @domList = cj()
     @domList = @domList.add("<div class='top-#{@tagId} tagContainer'></div>")
@@ -132,16 +155,13 @@ class Tree
     for node in ary
       @nodeList[node.id] = kNode = new Node(node)
       # does parent exist already?
-      
       if node.parent == @tagId
         cjTagList.append(kNode.html)
       else
-        # console.log kNode.html
         cjTagList.find("dl#tagDropdown_#{kNode.parent}").append(kNode.html)
       # if parent exists attach to parent
       # if parent doesn't exist, attach to list
     cjTagList.appendTo(".JSTree")
-  
   
 
 _treeUtils =

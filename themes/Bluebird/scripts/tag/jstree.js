@@ -210,6 +210,9 @@ _utils = {
       return toRet;
     }
     return text;
+  },
+  hyphenize: function(text) {
+    return text.replace(" ", "-");
   }
 };
 
@@ -249,7 +252,7 @@ _parseTree = {
     for (k in _ref) {
       o = _ref[k];
       _parseAutocomplete["type"] = "" + k;
-      this.treeNames.push(k);
+      this.treeNames[k] = o.name;
       if (o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))) {
         _parseAutocomplete.deepIterate(o.children, _parseAutocomplete.pre, _parseAutocomplete.post);
       }
@@ -258,7 +261,7 @@ _parseTree = {
     return instance.treeNames = this.treeNames;
   },
   ac: [],
-  treeNames: []
+  treeNames: {}
 };
 
 _parseAutocomplete = {
