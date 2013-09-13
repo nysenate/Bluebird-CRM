@@ -30,11 +30,14 @@ class Instance
     #this is what makes the page-data tick.
     pageElements =
       init: 'JSTreeInit'
-      wrapper: 'JSTreeContainer'
+      wrapper: ['JSTree-container']
       tagHolder: ['JSTree']
-      messageHandler: ['JSMessages']
-      # tabLocation: ['JST']
+      messageHandler: 'messages'
+      tabLocation: 'tabs'
+      tagDropdown: 'dropdown'
       location: ''
+      autocomplete: 'autocomplete'
+      tokenHolder: 'tokens'
     #interrupts ajax tag save process to not happen for edit type pages
     onSave = false
     dataSettings =
@@ -49,17 +52,15 @@ class Instance
       #IssueCodes = 291 KW = 296. Sets default tree to show first.
       defaultTree: 291
       #Sets default type to appear: edit/tagging
-      mode: 'edit'
-      # default full, options: short, narrow, short narrow
-      size: 'full'
+      edit: false
+      tagging: true
+      # tall or wide or some combination
+      tall: true
+      wide: true
       #autocomplete box is turned on
       autocomplete: true
       #print tags option
       print: true
-      #show all active tags
-      showActive: true
-      #shows stubs on stub items
-      showStubs: false
     #ajax related settings
     callAjax =
       # if it's an activity, entity_type is different
@@ -149,6 +150,8 @@ _utils =
     text
   hyphenize: (text) ->
     text.replace(" ","-")
+
+
 
 _getTrees =
   # makes the JSON call, and then writes it.

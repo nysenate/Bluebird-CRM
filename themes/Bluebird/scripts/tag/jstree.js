@@ -48,10 +48,14 @@ Instance = (function() {
     this._trees = _trees;
     pageElements = {
       init: 'JSTreeInit',
-      wrapper: 'JSTreeContainer',
+      wrapper: ['JSTree-container'],
       tagHolder: ['JSTree'],
-      messageHandler: ['JSMessages'],
-      location: ''
+      messageHandler: 'messages',
+      tabLocation: 'tabs',
+      tagDropdown: 'dropdown',
+      location: '',
+      autocomplete: 'autocomplete',
+      tokenHolder: 'tokens'
     };
     onSave = false;
     dataSettings = {
@@ -60,12 +64,12 @@ Instance = (function() {
     };
     displaySettings = {
       defaultTree: 291,
-      mode: 'edit',
-      size: 'full',
+      edit: false,
+      tagging: true,
+      tall: true,
+      wide: true,
       autocomplete: true,
-      print: true,
-      showActive: true,
-      showStubs: false
+      print: true
     };
     callAjax = {
       url: 'localtagdata.json',

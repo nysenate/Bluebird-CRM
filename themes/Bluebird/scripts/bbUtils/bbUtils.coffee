@@ -151,7 +151,7 @@ class window.bb
       "function": [112...123]
       "punctuation": [219...222].concat [186...192]
       "letters": [65...90]
-    
+    notHtmlSafe: []
     rData = {}
     for ktype,arr of keyCode
       if arr.indexOf(charCode) >= 0
@@ -232,18 +232,32 @@ class window.bb
           when 123 then rData.name = "F12"
         rData.char = false
       when "punctuation"
-        switch charCode
-          when 186 then rData.name = ";"
-          when 187 then rData.name = "="
-          when 188 then rData.name = ","
-          when 189 then rData.name = "-"
-          when 190 then rData.name = "."
-          when 191 then rData.name = "/"
-          when 192 then rData.name = "`"
-          when 219 then rData.name = "["
-          when 220 then rData.name = "\\"
-          when 221 then rData.name = "]"
-          when 222 then rData.name = "'"
+        if evt.shiftKey
+          switch charCode
+            when 186 then rData.name = ";"
+            when 187 then rData.name = "="
+            when 188 then rData.name = ","
+            when 189 then rData.name = "-"
+            when 190 then rData.name = "."
+            when 191 then rData.name = "/"
+            when 192 then rData.name = "`"
+            when 219 then rData.name = "["
+            when 220 then rData.name = "\\"
+            when 221 then rData.name = "]"
+            when 222 then rData.name = "'"
+        else
+          switch charCode
+            when 186 then rData.name = ":"
+            when 187 then rData.name = "+"
+            when 188 then rData.name = "<"
+            when 189 then rData.name = "_"
+            when 190 then rData.name = ">"
+            when 191 then rData.name = "?"
+            when 192 then rData.name = "~"
+            when 219 then rData.name = "{"
+            when 220 then rData.name = "|"
+            when 221 then rData.name = "}"
+            when 222 then rData.name = "\""
         rData.char = true
       when "letters"
         switch charCode

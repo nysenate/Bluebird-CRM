@@ -82,13 +82,14 @@ var cj = jQuery.noConflict(true);
   <script>
     var jsTreePageSettings = {
       pageElements: {
-        wrapper: 'BBTreeContainer',
-        tagHolder: ['BBTree']
+        wrapper: ['BBTreeContainer'],
+        tagHolder: ['BBTree'],
+        prefix: ['BBtree']
       },
       dataSettings: {
         pullSets: [291,296,292],
         // pullSets: [291],
-        contact: 0
+        entity_id: 0
       },
       displaySettings: {
         // size: "narrow"

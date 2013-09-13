@@ -172,6 +172,9 @@
           return _results;
         }).apply(this)
       };
+      ({
+        notHtmlSafe: []
+      });
       rData = {};
       for (ktype in keyCode) {
         arr = keyCode[ktype];
@@ -372,39 +375,76 @@
           rData.char = false;
           break;
         case "punctuation":
-          switch (charCode) {
-            case 186:
-              rData.name = ";";
-              break;
-            case 187:
-              rData.name = "=";
-              break;
-            case 188:
-              rData.name = ",";
-              break;
-            case 189:
-              rData.name = "-";
-              break;
-            case 190:
-              rData.name = ".";
-              break;
-            case 191:
-              rData.name = "/";
-              break;
-            case 192:
-              rData.name = "`";
-              break;
-            case 219:
-              rData.name = "[";
-              break;
-            case 220:
-              rData.name = "\\";
-              break;
-            case 221:
-              rData.name = "]";
-              break;
-            case 222:
-              rData.name = "'";
+          if (evt.shiftKey) {
+            switch (charCode) {
+              case 186:
+                rData.name = ";";
+                break;
+              case 187:
+                rData.name = "=";
+                break;
+              case 188:
+                rData.name = ",";
+                break;
+              case 189:
+                rData.name = "-";
+                break;
+              case 190:
+                rData.name = ".";
+                break;
+              case 191:
+                rData.name = "/";
+                break;
+              case 192:
+                rData.name = "`";
+                break;
+              case 219:
+                rData.name = "[";
+                break;
+              case 220:
+                rData.name = "\\";
+                break;
+              case 221:
+                rData.name = "]";
+                break;
+              case 222:
+                rData.name = "'";
+            }
+          } else {
+            switch (charCode) {
+              case 186:
+                rData.name = ":";
+                break;
+              case 187:
+                rData.name = "+";
+                break;
+              case 188:
+                rData.name = "<";
+                break;
+              case 189:
+                rData.name = "_";
+                break;
+              case 190:
+                rData.name = ">";
+                break;
+              case 191:
+                rData.name = "?";
+                break;
+              case 192:
+                rData.name = "~";
+                break;
+              case 219:
+                rData.name = "{";
+                break;
+              case 220:
+                rData.name = "|";
+                break;
+              case 221:
+                rData.name = "}";
+                break;
+              case 222:
+                rData.name = "\"";
+            }
           }
           rData.char = true;
           break;

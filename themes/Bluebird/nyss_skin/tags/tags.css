@@ -9,7 +9,7 @@
   background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white; }
 
 /*pagestructure*/
-#BBTreeContainer {
+#JSTree-container.BBTreeContainer, #BBTreeContainer {
   width: 522px;
   background-color: #fff;
   overflow-x: hidden;
@@ -18,134 +18,134 @@
   position: relative;
   margin: 0 auto;
   margin: 15px auto; }
-  #BBTreeContainer dl {
+  #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
-  #BBTreeContainer * {
+  #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
     line-height: 1em;
     color: black;
     font-family: Arial;
     font-size: 12px;
     font-weight: normal; }
-  #BBTreeContainer .BBTree-menu {
+  #JSTree-container.BBTreeContainer .BBTree-menu, #BBTreeContainer .BBTree-menu {
     width: 100%; }
-    #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
+    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-top, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-bottom, #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
       height: 20px;
       border-bottom: 1px solid #ccc; }
-    #BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-tabs {
+    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs, #BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-tabs {
       float: left;
       width: 84%; }
-      #BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'] {
+      #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'] {
         float: left; }
-    #BBTreeContainer .BBTree-menu .BBTree-settings {
+    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-settings, #BBTreeContainer .BBTree-menu .BBTree-settings {
       float: right;
       width: 16%;
       height: 20px;
       background-color: #ccc; }
-    #BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-positions, #BBTreeContainer .BBTree-menu .tab-keywords {
+    #JSTree-container.BBTreeContainer .BBTree-menu .tab-issue-codes, #JSTree-container.BBTreeContainer .BBTree-menu .tab-search, #JSTree-container.BBTreeContainer .BBTree-menu .tab-positions, #JSTree-container.BBTreeContainer .BBTree-menu .tab-keywords, #BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-positions, #BBTreeContainer .BBTree-menu .tab-keywords {
       width: 33%;
       padding: 4px 0px;
       text-align: center; }
-      #BBTreeContainer .BBTree-menu .tab-issue-codes.active, #BBTreeContainer .BBTree-menu .tab-search.active, #BBTreeContainer .BBTree-menu .tab-positions.active, #BBTreeContainer .BBTree-menu .tab-keywords.active {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-issue-codes.active, #JSTree-container.BBTreeContainer .BBTree-menu .tab-search.active, #JSTree-container.BBTreeContainer .BBTree-menu .tab-positions.active, #JSTree-container.BBTreeContainer .BBTree-menu .tab-keywords.active, #BBTreeContainer .BBTree-menu .tab-issue-codes.active, #BBTreeContainer .BBTree-menu .tab-search.active, #BBTreeContainer .BBTree-menu .tab-positions.active, #BBTreeContainer .BBTree-menu .tab-keywords.active {
         width: 34%; }
-    #BBTreeContainer .BBTree-menu .tab-search {
+    #JSTree-container.BBTreeContainer .BBTree-menu .tab-search, #BBTreeContainer .BBTree-menu .tab-search {
       background-color: rgba(205, 125, 136, 0.6); }
-      #BBTreeContainer .BBTree-menu .tab-search:hover {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-search:hover, #BBTreeContainer .BBTree-menu .tab-search:hover {
         background-color: #bf5866; }
-      #BBTreeContainer .BBTree-menu .tab-search.active {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-search.active, #BBTreeContainer .BBTree-menu .tab-search.active {
         background-color: rgba(191, 88, 102, 0.8);
         font-weight: bold; }
-    #BBTreeContainer .BBTree-menu .tab-issue-codes {
+    #JSTree-container.BBTreeContainer .BBTree-menu .tab-issue-codes, #BBTreeContainer .BBTree-menu .tab-issue-codes {
       background-color: rgba(130, 220, 147, 0.6); }
-      #BBTreeContainer .BBTree-menu .tab-issue-codes:hover {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-issue-codes:hover, #BBTreeContainer .BBTree-menu .tab-issue-codes:hover {
         background-color: #5ad170; }
-      #BBTreeContainer .BBTree-menu .tab-issue-codes.active {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-issue-codes.active, #BBTreeContainer .BBTree-menu .tab-issue-codes.active {
         background-color: rgba(90, 209, 112, 0.8);
         font-weight: bold; }
-    #BBTreeContainer .BBTree-menu .tab-positions {
+    #JSTree-container.BBTreeContainer .BBTree-menu .tab-positions, #BBTreeContainer .BBTree-menu .tab-positions {
       background-color: rgba(154, 225, 235, 0.6); }
-      #BBTreeContainer .BBTree-menu .tab-positions:hover {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-positions:hover, #BBTreeContainer .BBTree-menu .tab-positions:hover {
         background-color: #6fd5e3; }
-      #BBTreeContainer .BBTree-menu .tab-positions.active {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-positions.active, #BBTreeContainer .BBTree-menu .tab-positions.active {
         background-color: rgba(111, 213, 227, 0.8);
         font-weight: bold; }
-    #BBTreeContainer .BBTree-menu .tab-keywords {
+    #JSTree-container.BBTreeContainer .BBTree-menu .tab-keywords, #BBTreeContainer .BBTree-menu .tab-keywords {
       background-color: rgba(240, 201, 95, 0.6); }
-      #BBTreeContainer .BBTree-menu .tab-keywords:hover {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-keywords:hover, #BBTreeContainer .BBTree-menu .tab-keywords:hover {
         background-color: #ebb931; }
-      #BBTreeContainer .BBTree-menu .tab-keywords.active {
+      #JSTree-container.BBTreeContainer .BBTree-menu .tab-keywords.active, #BBTreeContainer .BBTree-menu .tab-keywords.active {
         background-color: rgba(235, 185, 49, 0.8);
         font-weight: bold; }
-    #BBTreeContainer .BBTree-menu input#JSTree-ac {
+    #JSTree-container.BBTreeContainer .BBTree-menu input#JSTree-ac, #BBTreeContainer .BBTree-menu input#JSTree-ac {
       border-style: none;
       width: 100%;
       padding: 0px;
       padding-left: 3px;
       margin: 0px;
       height: 20px; }
-  #BBTreeContainer .BBTree {
+  #JSTree-container.BBTreeContainer .BBTree, #BBTreeContainer .BBTree {
     overflow-y: scroll;
     overflow-x: hidden;
     height: 400px; }
-    #BBTreeContainer .BBTree dl.lv-1 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1 {
       width: 98%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-2 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-2, #BBTreeContainer .BBTree dl.lv-2 {
       width: 96%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-3 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-3, #BBTreeContainer .BBTree dl.lv-3 {
       width: 94%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-4 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-4, #BBTreeContainer .BBTree dl.lv-4 {
       width: 92%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-5 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-5, #BBTreeContainer .BBTree dl.lv-5 {
       width: 90%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-6 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-6, #BBTreeContainer .BBTree dl.lv-6 {
       width: 88%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-7 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-7, #BBTreeContainer .BBTree dl.lv-7 {
       width: 86%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-8 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-8, #BBTreeContainer .BBTree dl.lv-8 {
       width: 84%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-9 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-9, #BBTreeContainer .BBTree dl.lv-9 {
       width: 82%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dl.lv-10 {
+    #JSTree-container.BBTreeContainer .BBTree dl.lv-10, #BBTreeContainer .BBTree dl.lv-10 {
       width: 80%;
       margin-left: 2%;
       display: none; }
-    #BBTreeContainer .BBTree dt .tag {
+    #JSTree-container.BBTreeContainer .BBTree dt .tag, #BBTreeContainer .BBTree dt .tag {
       padding: 0px;
       height: 20px;
       line-height: 20px;
       overflow-y: hidden;
       position: relative;
       z-index: 2; }
-      #BBTreeContainer .BBTree dt .tag .ddControl {
+      #JSTree-container.BBTreeContainer .BBTree dt .tag .ddControl, #BBTreeContainer .BBTree dt .tag .ddControl {
         height: 20px;
         width: 20px;
         float: left;
         margin: 0px; }
-        #BBTreeContainer .BBTree dt .tag .ddControl.treeButton {
+        #JSTree-container.BBTreeContainer .BBTree dt .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt .tag .ddControl.treeButton {
           background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
           cursor: pointer; }
-    #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
+    #JSTree-container.BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
       background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -64px -15px; }
-    #BBTreeContainer .BBTree .shaded .name span {
+    #JSTree-container.BBTreeContainer .BBTree .shaded .name span, #BBTreeContainer .BBTree .shaded .name span {
       font-weight: bold; }
-    #BBTreeContainer .BBTree .transparancyBox {
+    #JSTree-container.BBTreeContainer .BBTree .transparancyBox, #BBTreeContainer .BBTree .transparancyBox {
       position: relative;
       z-index: 1;
       height: 20px;
@@ -153,71 +153,71 @@
       margin-bottom: -20px;
       width: 1000px;
       left: -50%; }
-    #BBTreeContainer .BBTree dt {
+    #JSTree-container.BBTreeContainer .BBTree dt, #BBTreeContainer .BBTree dt {
       height: 20px; }
-    #BBTreeContainer .BBTree dt.description div.description, #BBTreeContainer .BBTree dt.longdescription div.description {
+    #JSTree-container.BBTreeContainer .BBTree dt.description div.description, #JSTree-container.BBTreeContainer .BBTree dt.longdescription div.description, #BBTreeContainer .BBTree dt.description div.description, #BBTreeContainer .BBTree dt.longdescription div.description {
       font-style: italic;
       font-size: 11px;
       margin-left: 20px;
       margin-top: -3px;
       color: gray; }
-    #BBTreeContainer .BBTree dt.description {
+    #JSTree-container.BBTreeContainer .BBTree dt.description, #BBTreeContainer .BBTree dt.description {
       height: 40px; }
-      #BBTreeContainer .BBTree dt.description .tag {
+      #JSTree-container.BBTreeContainer .BBTree dt.description .tag, #BBTreeContainer .BBTree dt.description .tag {
         height: 40px; }
-      #BBTreeContainer .BBTree dt.description .transparancyBox {
+      #JSTree-container.BBTreeContainer .BBTree dt.description .transparancyBox, #BBTreeContainer .BBTree dt.description .transparancyBox {
         height: 40px;
         top: -40px; }
-      #BBTreeContainer .BBTree dt.description .description {
+      #JSTree-container.BBTreeContainer .BBTree dt.description .description, #BBTreeContainer .BBTree dt.description .description {
         position: absolute;
         bottom: 0px; }
-    #BBTreeContainer .BBTree dt.shortdescription.description {
+    #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description, #BBTreeContainer .BBTree dt.shortdescription.description {
       height: 30px; }
-      #BBTreeContainer .BBTree dt.shortdescription.description .tag {
+      #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .tag, #BBTreeContainer .BBTree dt.shortdescription.description .tag {
         height: 30px; }
-      #BBTreeContainer .BBTree dt.shortdescription.description .transparancyBox {
+      #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .transparancyBox, #BBTreeContainer .BBTree dt.shortdescription.description .transparancyBox {
         height: 30px;
         top: -30px; }
-      #BBTreeContainer .BBTree dt.shortdescription.description .description {
+      #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .description, #BBTreeContainer .BBTree dt.shortdescription.description .description {
         position: absolute;
         bottom: 0px; }
-    #BBTreeContainer .BBTree dt.longdescription {
+    #JSTree-container.BBTreeContainer .BBTree dt.longdescription, #BBTreeContainer .BBTree dt.longdescription {
       height: 60px; }
-      #BBTreeContainer .BBTree dt.longdescription .tag {
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 60px; }
-      #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
         height: 60px;
         top: -60px; }
-      #BBTreeContainer .BBTree dt.longdescription .description {
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .description, #BBTreeContainer .BBTree dt.longdescription .description {
         position: absolute;
         bottom: 0px; }
-    #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.35); }
-    #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296 {
       background-color: rgba(242, 209, 119, 0.35); }
-    #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-292 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-292 {
       background-color: rgba(175, 232, 239, 0.35); }
-    #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-291 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.5); }
-    #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-296 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-296 {
       background-color: rgba(242, 209, 119, 0.5); }
-    #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-292 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-292 {
       background-color: rgba(175, 232, 239, 0.5); }
-    #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-291 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-296 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-296 {
       background-color: rgba(242, 209, 119, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-292 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-292 {
       background-color: rgba(175, 232, 239, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-291 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-296 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-296 {
       background-color: rgba(242, 209, 119, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-292 {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-292 {
       background-color: rgba(175, 232, 239, 0.8); }
-    #BBTreeContainer .BBTree .tagContainer.active {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer.active, #BBTreeContainer .BBTree .tagContainer.active {
       display: block; }
-    #BBTreeContainer .BBTree .tagContainer {
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
       display: none; }
-  #BBTreeContainer.short {
+  #JSTree-container.BBTreeContainer.short, #BBTreeContainer.short {
     width: 285px; }
