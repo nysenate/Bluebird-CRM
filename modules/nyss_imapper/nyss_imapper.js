@@ -1472,8 +1472,8 @@ function buildReports() {
   messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
 	// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-
     });
+    };
     cj('#imapper-messages-list').html(messagesHtml);
     makeListSortable();
   var total_results = unMatched+Matched+Cleared+Errors+Deleted;
