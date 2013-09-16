@@ -6,15 +6,14 @@
 
 require_once 'script_utils.php';
 define('DEFAULT_ADDRESS_BATCH', 50);
-define('DEFAULT_SLOW_REQUEST_THRESHOLD', 15.0);
 
 $geocode_stats = array();
 
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:l:vgpdutfyzNGACTHELW';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'log=',
+  $shortopts = 's:e:b:h:P:l:vgpdutfyzNGACTHELW';
+  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'sleep=', 'log=',
                     'validate', 'geocode', 'parse', 'distassign', 'usecoords',
                     'streetonly', 'force', 'dryrun', 'debug',
                     'senate', 'congress', 'assembly', 'county', 'town',
@@ -23,7 +22,7 @@ function main()
   $stdusage = civicrm_script_usage();
   $usage = "
   [--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]
-  [--threshold|-h SECS]
+  [--threshold|-h COUNT] [--sleep|-P MINUTES]
   [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]]
   [--validate|-v]  [--geocode|-g]  [--distassign|-d]  [--parse|-p]
   [--usecoords|-u] [--streetonly|-t]
@@ -87,16 +86,12 @@ function main()
     exit(1);
   }
 
-  $batch = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
-  $threshold = ($optlist['threshold']) ? $optlist['threshold'] : DEFAULT_SLOW_REQUEST_THRESHOLD;
-
-  bbscript_log('INFO', "Using batches of $batch addresses.");
-  processContacts($parseStreetAddress, $batch, $threshold, $optlist);
+  processContacts($parseStreetAddress, $optlist);
 } // main()
 
 
-function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) {
-  global $geocode_stats;
+function processContacts($parseStreetAddress, $optlist) {
+  global $geocode_stats, $total_geocode_stats;
 
   require_once 'CRM/Utils/SAGE.php';
   require_once 'CRM/Core/DAO/Address.php';
@@ -124,6 +119,9 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
   $batchNum = $currentBatchSize = $totalAddressParsed = 0;
   $unparseableContactAddress = array();
+  
+  $batchSize = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
+  bbscript_log('INFO', "Using batches of $batchSize addresses.");
 
   $DEBUG = ($optlist['debug']);
   $overwrite = ($optlist['force'] == 'update');
@@ -133,18 +131,10 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
   $useCoords = $optlist['usecoords'];
   $streetFileOnly = $optlist['streetonly'];
   $dryrun = $optlist['dryrun'];
+  $threshold = $optlist['threshold'];
+  $sleepDuration = $optlist['sleep'];
+  $sleepCount = 1;
   $totalRows = mysql_num_rows($res);
-
-  $districtTypes = array('senate', 'congress', 'assembly', 'county', 'town', 'school', 'election', 'cleg', 'ward');
-  $districtAssignTypes = array();
-  foreach ($districtTypes as $dt) {
-    if ($optlist[$dt]) {
-      $districtAssignTypes[] = $dt;
-    }
-  }
-  if (empty($districtAssignTypes)) {
-    $districtAssignTypes = $districtTypes;
-  }
 
   bbscript_log('INFO', "Iterating over {$totalRows} addresses...");
 
@@ -243,14 +233,20 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
         // Save custom district fields.
         if ($performDistAssign) {
-          updateDistricts($addressBatch[$i], $db, $districtAssignTypes);
+          updateDistricts($addressBatch[$i], $db);
         }
       }
     }
 
     foreach($geocode_stats as $method => $count) {
-      bbscript_log('INFO', "Geocode usage for $method : $count");
+      if (!isset($total_geocode_stats[$method])) {
+        $total_geocode_stats[$method] = 0;
+      }
+      $total_geocode_stats[$method] += $count;
+      bbscript_log('INFO', "Current usage for $method: $count | Total usage: {$total_geocode_stats[$method]}");
     }
+
+    $geocode_stats = array();
 
     if ($DEBUG) {
       print_r($addressBatch);
@@ -260,11 +256,13 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
     $addressBatch = array();
 
     $batchProcessTime = get_elapsed_time($batchStartTime);
-    if ($batchProcessTime > $threshold) {
-      bbscript_log('WARN', ts("Slow batch request: {$batchProcessTime} s"));
-    }
-    else {
-      bbscript_log('DEBUG', ts("Batch processing time: {$batchProcessTime} s"));
+    bbscript_log('DEBUG', ts("Batch processing time: {$batchProcessTime} s"));
+    
+    if (!empty($threshold) && !empty($sleepDuration) && 
+        $totalAddresses >= ($threshold * $sleepCount)) {
+      bbscript_log('WARN', ts("Reached threshold at {$totalAddresses} addresses. Pausing script for {$sleepDuration} minutes!"));  
+      sleep($sleepDuration * 60);
+      $sleepCount++;
     }
 
     $batchStartTime = microtime(true);
@@ -283,6 +281,11 @@ function processContacts($parseStreetAddress, $batchSize, $threshold, $optlist) 
 
   $elapsed_time = get_elapsed_time($startTime);
   bbscript_log('INFO', "Elapsed time = $elapsed_time secs");
+  // Adjust actual elapsed time to account for sleep delays. 
+  if (!empty($threshold) && !empty($sleepDuration)) {
+    $elapsed_time -= ($sleepDuration * 60 * ($sleepCount -1));
+    bbscript_log('INFO', "Actual processing time = {$elapsed_time} secs");
+  }
   if ($totalAddresses > 0) {
     bbscript_log('INFO', "Average time per address = ".($elapsed_time/$totalAddresses)." secs");
   }
@@ -322,7 +325,10 @@ function parseAddress(&$address, &$unparseableContactAddress)
 } // parseAddress()
 
 
-// Updates the address in the database using the DAO
+/**
+* Updates the address in the database using the DAO
+* @param $address - Array containing address column values.
+*/ 
 function updateAddress($address)
 {
   global $geocode_stats;
@@ -333,21 +339,35 @@ function updateAddress($address)
     $address_dao->copyValues($address);
     $address_dao->save();
     $address_dao->free();
-    bbscript_log('TRACE', "Saved civicrm_address table entry for address_id {$address['address_id']}");
 
-    if (!empty($address['geo_method'])) {
-      if (!isset($geocode_stats[$address['geo_method']])) {
-        $geocode_stats[$address['geo_method']] = 0;
+    $addressLine = getAddressLine($address);
+
+    if (!empty($address['geo_code_1'])) {
+      if (!empty($address['geo_method'])) {
+        bbscript_log('TRACE', "Saved geocode for address id {$address['address_id']}:  {$address['geo_method']} [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
+        // Log geocode method stats
+        if (!isset($geocode_stats[$address['geo_method']])) {
+          $geocode_stats[$address['geo_method']] = 0;
+        }
+        $geocode_stats[$address['geo_method']]++;
       }
-      $geocode_stats[$address['geo_method']]++;
+      else {
+        bbscript_log('TRACE', "Geocode already exists for address id {$address['address_id']}: [{$address['geo_code_1']}, {$address['geo_code_2']}]");        
+      }      
+    }
+    else {
+      bbscript_log('DEBUG', "Missing geocode for address: $addressLine");
     }
   }
 } // updateAddress()
 
 
-// Updates the districts in the database using a direct SQL query
-// May want to update this to use proper DAOs.
-function updateDistricts($address, $db, $districtTypes)
+/**
+* Updates the districts in the database using a direct SQL query.
+* @param $address - Array containing address id and district table values.
+* @param $db - Database handle.
+*/
+function updateDistricts($address, $db)
 {
   $districtColumnNames = array(
     46 => 'congressional_district_46',
@@ -375,18 +395,21 @@ function updateDistricts($address, $db, $districtTypes)
 
   $matches = array();
   $sqlUpdates = array();
+  $distUpdates = array();
   foreach ($address as $key => $value) {
     if (preg_match('/custom_(\d{2})_\d+/', $key, $matches)) {
       $districtId = $matches[1];
       $districtName = $districtTypeNames[$districtId];
 
-      if (isset($districtId) && isset($districtColumnNames[$districtId]) && !empty($value) && in_array($districtName, $districtTypes)) {
+      if (isset($districtId) && isset($districtColumnNames[$districtId]) && !empty($value)) {
         if ($districtId == 52) {
           $sqlUpdates[] = "{$districtColumnNames[$districtId]} = '{$value}'";
         }
         else {
           $sqlUpdates[] = "{$districtColumnNames[$districtId]} = {$value}";
         }
+        // Also store the district value in a simple array for logging purposes.
+        $distUpdates[$districtName] = $value;
       }
     }
   }
@@ -396,11 +419,20 @@ function updateDistricts($address, $db, $districtTypes)
               SET " . implode(', ', $sqlUpdates) . "
               WHERE di.entity_id = {$address['address_id']}";
     bb_mysql_query($query, $db, false);
+    $districtLine = getAssignedDistrictsLine($distUpdates);
+    bbscript_log('TRACE', "Address id: {$address['address_id']} - $districtLine");            
+  }
+  else {
+    bbscript_log('TRACE', "No districts assigned for address id: {$address['address_id']}");
   }
 } // updateDistricts()
 
 
-// Dynamically build query based on command line args
+/** 
+* Dynamically build SQL query based on supplied command line args.
+* @param $optlist - The array containing the arguments.
+* @return string 
+*/
 function getQuery($optlist)
 {
   $districtColumns = array(
@@ -443,6 +475,9 @@ function getQuery($optlist)
     $querySelect[] = "a.geo_code_1 as lat";
     $querySelect[] = "a.geo_code_2 as lon";
 
+    // If force is not requested the query may deny an address if it already has a geocode. An 
+    // address with a geocode may still pass if district assign is requested and certain districts
+    // are not assigned. 
     if (!$optlist['force']) {
       $forceClauseArr[] = "(a.geo_code_1 is null OR a.geo_code_1 = 0 OR a.geo_code_2 is null OR a.geo_code_2 = 0)";
     }
@@ -461,6 +496,9 @@ function getQuery($optlist)
       $querySelect[] = "a.geo_code_2 as lon";
     }
 
+    // If force is not requested the query tries to filter out addresses that already have 
+    // certain districts assigned. These certain district types are determined either by the 
+    // command line args or a default set of districts if args are missing.    
     if (!$optlist['force']) {
       $whereDist = array();
       $assignTypes = array();
@@ -499,11 +537,34 @@ function getQuery($optlist)
   return $query;
 } // getQuery()
 
-
-function get_address_line(&$dao_p)
+/**
+* Returns a string containing the address portions.
+* @param $address - Array containing address columns from the database.
+* @return string
+*/
+function getAddressLine(&$address)
 {
-  return 'ID #'.$dao_p->address_id.': '.$dao_p->street_address.', '.$dao_p->city.', '.$dao_p->state.' '.$dao_p->postal_code;
-} // get_address_line()
+  $addressLine = "";
+  $addressLine .= (isset($address['address_id'])) ? "Id: `{$address['address_id']}` " : "";
+  $addressLine .= (isset($address['street_address'])) ? "Addr: `{$address['street_address']}` " : "";
+  $addressLine .= (isset($address['city'])) ? "City: `{$address['city']}` " : "";
+  $addressLine .= (isset($address['state_province'])) ? "State: `{$address['state_province']}` " : "";
+  $addressLine .= (isset($address['postal_code'])) ? "Zip: `{$address['postal_code']}` " : ""; 
+  
+  return $addressLine;
+} // getAddressLine()
 
+/**
+* Returns a string that summarizes the assigned districts.
+* @param $assignedDistricts - An assoc array mapping district type -> code.
+* @return string
+*/
+function getAssignedDistrictsLine($assignedDistricts) {
+  $output = "Assigned districts: ";
+  foreach ($assignedDistricts as $dist => $code) {
+    $output .= "$dist [$code] "; 
+  } 
+  return $output;
+} // getAssignedDistrictsLine()
 
 main();
