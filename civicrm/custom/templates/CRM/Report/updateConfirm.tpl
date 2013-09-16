@@ -28,7 +28,7 @@
         cj('input[value="Update Existing Report"]').attr('update', 'false');
 
         var $dialog = cj('<div></div>')
-          .html('Are you sure you wish to update the existing report? Remember that this report may be in use by other staff in your office, and changing the report criteria and settings may impact their workflow. If you wish to create a new report rather than modify an existing report, cancel this step, click the settings tab and give your report a new name, then click "Save as New Report".')
+          .html('<p>"Update Existing Report" will save your changes and use them as the defaults for <strong>all</strong> users in your office. "Save as New Report" will create a separate report, based on your changes.</p><p>If you wish to Update this report, click OK, but if you would rather create a new report, click Cancel, go to the Settings tab in the Report Configuration, give your report a new title, and then click "Save as New Report."</p>')
           .dialog({
             autoOpen: false,
             title: 'Update Existing Report',
