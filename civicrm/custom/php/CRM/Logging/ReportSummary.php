@@ -339,18 +339,12 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
       $logActionOrderBy = ', log_civicrm_entity_log_action ASC';
     }
 
-    //NYSS 7037 don't apply limit if getCount
-    $limit = $this->_limit;
-    if ( $this->_nyssGetCount ) {
-      $limit = '';
-    }
-
-    //NYSS use limit per above
+    //NYSS
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
 GROUP BY log_civicrm_entity_log_date, log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id
 ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
-{$limit}";
+{$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
     //NYSS 6111 - hackish temporary solution; see Jira 11798
     $sql = str_replace('entity_log_civireport.id as log_civicrm_entity_altered_contact_id',
@@ -364,13 +358,13 @@ ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$log
     $this->buildRows($sql, $rows);
     //CRM_Core_Error::debug_var('$rows',$rows);
 
-    //NYSS store row count so we can retrieve for tab
+    //NYSS 7037 store row count so we can retrieve for tab
     if ( $this->_nyssGetCount ) {
-      $this->_nyssRowCount = count($rows);
-      //CRM_Core_Error::debug_var('$this->_nyssRowCount',$this->_nyssRowCount);
+      $this->_nyssRowCount = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();");
+      //CRM_Core_Error::debug_var('$this->_nyssRowCount', $this->_nyssRowCount);
     }
 
-    //NYSS
+    //NYSS 7037
     //self::_combineContactRows($rows);
 
     // format result set.
