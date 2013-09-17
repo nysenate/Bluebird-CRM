@@ -104,10 +104,8 @@
     search: (term) ->
       if term.indexOf(@source[@searchIndex].term) != -1
         if term.length <= @source[@searchIndex].term.length
-          console.log "isrebuilding"
           @rebuildTag @searchIndex
       else
-        console.log "isrebuilding"
         @rebuildTag @searchIndex
       currentArray = @ifNullArray @source[@searchIndex].tags,@searchIndex
       @searchIndex++
@@ -118,7 +116,6 @@
       cachedQuery = @checkCache term
       
       if cachedQuery.length
-        console.log cachedQuery
         arrayToFill["term"] = cachedQuery[0].term
         arrayToFill["tags"] = cachedQuery[0].tags
         arrayToFill["cached"] = true
@@ -162,28 +159,3 @@
     else
       $.error "Method " + method + " does not exist on jquery.tagACInput"
 ) cj, window, document
-
-# coffeescript jquery Keycodes
-# switch event.keyCode
-#   when keyCode.PAGE_UP
-#     @._move "previousPage", event
-#   when keyCode.PAGE_DOWN
-#     @._move "nextPage", event
-#   when keyCode.UP
-#     @._keyEvent "previous", event
-#   when keyCode.DOWN
-#     @._keyEvent "next", event
-#   when keyCode.ENTER || keyCode.NUMPAD_ENTER
-#     if @menu.active
-#       @suppressKeyPress = true
-#     if !@.menu.active
-#       return
-#     @menu.select event
-#   when keyCode.TAB
-#     if !@.menu.active
-#       return
-#     @menu.select event
-#   when keyCode.ESCAPE
-#     @element.val @term
-#     @close event
-#   else

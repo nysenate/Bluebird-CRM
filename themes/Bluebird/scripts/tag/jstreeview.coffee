@@ -1,6 +1,5 @@
 window.jstree["views"] =
   exec: (instance) ->
-    console.log "exec"
     @view = new View(instance)
   done: (instance) ->
     trees = {}
@@ -9,7 +8,6 @@ window.jstree["views"] =
       trees[a] = new Tree(b,a)
     @view.trees = trees
     @view.init()
-    console.log "done"
     
   view: {}
 
@@ -66,7 +64,6 @@ class View
   constructor: (@instance) ->
     # starts the chain to write the page structure
     @writeContainers()
-    # @displaySettings = @instance.get("displaySettings")
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
@@ -164,15 +161,33 @@ class View
     return "<div id='JSTree-data' style='display:none'></div>"
   init:() ->
     @createSelectors()
-
+    _treeVisibility.currentTree = _treeVisibility.defaultTree = _treeVisibility.previousTree = @settings.defaultTree
     for k,v of @instance.treeNames
       tabName = @createTreeTabs(v)
     @setActiveTree(@settings.defaultTree)
     ac = new Autocomplete(@instance, @)
+    for k,v of @instance.treeNames
+      @createTabClick("tab-#{@getTabNameFromId(k,true)}", k)
+      if parseInt(k) == 292
+        @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+  createTabClick: (tabName, tabTree) ->
+    @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
+    @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
+      @showTags tabTree,tabName
+  showTags: (currentTree, tabName, noPrev) ->
+    if currentTree != _treeVisibility.currentTree
+      @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(_treeVisibility.currentTree,true)}").removeClass("active")
+      @cj_selectors.tagBox.find(".top-#{_treeVisibility.currentTree}").toggle().removeClass("active") 
+      _treeVisibility.previousTree = _treeVisibility.currentTree
+      _treeVisibility.currentTree = currentTree
+      @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(currentTree,true)}").addClass("active")
+      @cj_selectors.tagBox.find(".top-#{currentTree}").toggle().addClass("active")
   setActiveTree: (id) ->
     tabName = @getTabNameFromId(id,true)
-    cj(".JSTree-tabs .tab-#{tabName}").addClass("active")
-    cj(".JSTree .top-#{id}").addClass("active")
+    @cj_menuSelectors.tabs.find("div").removeClass("active")
+    @cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display","none")
+    @cj_menuSelectors.tabs.find(".tab-#{tabName}").addClass("active")
+    @cj_selectors.tagBox.find(".top-#{id}").addClass("active").css("display","block")
   createTreeTabs: (tabName, isHidden = false) ->
     if isHidden then style = "style='display:none'" else style = ""
     tabClass = (_utils.hyphenize(tabName)).toLowerCase()
@@ -183,28 +198,95 @@ class View
     return treeNames[id] unless hyphenize
     return _utils.hyphenize(treeNames[id]).toLowerCase()
   getIdFromTabName: (tabName) ->
-    # cj(".JSTree")
-  buildFilteredList: (a,b,c) ->
+    tabName = cj.trim(tabName)
+    return 291 if tabName == "tab-issue-codes" or tabName == "issue-codes"
+    return 296 if tabName == "tab-keywords" or tabName == "keywords"
+    return 292 if tabName == "tab-positions" or tabName == "positions"
+      
+  buildFilteredList: (tags) ->
     checkAgainst = {}
-    for m,n of a
+    for m,n of tags
       checkAgainst[m] = []
       for x,y of n
         checkAgainst[m].push(parseFloat(y.id))
-    console.log checkAgainst
     buildList = {}
     for d,e of checkAgainst
       buildList[d] = []
       for k,o of @instance.autocomplete
         if e.indexOf(parseFloat(o.id)) >= 0
           buildList[d].push o
-
     # now you remove trees
     # buildList
-    console.log buildList
-
-
+    buildList
+  writeFilteredList: (list,term,hits = {}) ->
+    @setTabResults(hits)
+    activeTree = @removeTrees()
+    for k,v of list
+      if v.length > 0
+        new Tree(v,k,true)
+      if @cj_selectors.tagBox.find(".top-#{k}").length == 0
+        @cj_selectors.tagBox.append("<div class='top-#{k} filtered tagContainer'></div>")
+    @setActiveTree(@getIdFromTabName(activeTree))
+    for k,v of hits
+      @removeUnnecessaryDropdowns(k)
     # @tagList, @tagId, @filter = false
     # send to tree to make list
+  removeUnnecessaryDropdowns: (treeId) ->
+    dropdowned = @cj_selectors.tagBox.find(".top-#{treeId} .treeButton").parent().parent()
+    cj.each(dropdowned, (i,item) ->
+        cjItem = cj(item)
+        tagid = cjItem.data("tagid")
+        sibLength = cjItem.siblings("dl#tagDropdown_#{tagid}").length
+        if cjItem.siblings("dl#tagDropdown_#{tagid}").children().length == 0
+          cjItem.find(".treeButton").removeClass("treeButton")
+      )
+  removeTrees: () ->
+    @activeTree = @cj_menuSelectors.tabs.find(".active").attr("class")
+    @activeTree = @activeTree.replace("active","")
+    @cj_selectors.tagBox.empty()
+    @activeTree
+  rebuildInitialTree: () ->
+    if @cj_selectors.tagBox.find(".filtered").length > 0
+      activeTree = @removeTrees()
+      for k,v of @trees
+        @trees[k] = new Tree(v.tagList,v.tagId)
+        if parseInt(k) == 292
+          @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+      @setActiveTree(@getIdFromTabName(activeTree))
+  setTabResults: (hits) ->
+    for k,v of hits
+      cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k, true)}")
+      count = cjTab.find("span").html()
+      if count?
+        count = count.replace(/\(|\)/g,"")
+      # doesn't exist yet
+      if !count? && parseInt(v) > 0
+        result = cjTab.html()
+        cjTab.html("#{result}<span>(#{v})</span>")
+      else   
+        if count == 0 && parseInt(v) > 0
+          cjTab.find("span").remove()
+          result = cjTab.html()
+          cjTab.html("#{result}<span>(#{v})</span>")
+        if parseInt(v) == 0
+          cjTab.find("span").remove()
+          result = cjTab.html()
+          cjTab.html("#{result}<span>(#{v})</span>")
+        if count != parseInt(v)
+          cjTab.find("span").remove()
+          result = cjTab.html()
+          cjTab.html("#{result}<span>(#{v})</span>")
+
+  removeTabCounts: () ->
+    @cj_menuSelectors.tabs.find("span").remove()
+  addPositionReminderText: (cjlocation) ->
+    positionText = "
+              <div class='position-box-text-reminder'>
+                Type in a Bill Number or Name for Results
+              </div>
+          "
+    cjlocation.append(positionText)
+
 
   
 class Autocomplete
@@ -224,8 +306,9 @@ class Autocomplete
     )
     cjac.on "keyup", ((event) =>
       keyCode = bbUtils.keyCode(event)
-      # if keyCode.type == "delete" && cjac.val().length <= 3
-        # @clearBoard()
+      if keyCode.type == "delete" && cjac.val().length <= 3
+        @view.removeTabCounts()
+        @view.rebuildInitialTree()
     )
   filterKeydownEvents: (event, searchmonger, cjac) ->
     keyCode = bbUtils.keyCode(event)
@@ -268,15 +351,15 @@ class Autocomplete
             hcounts += v
             foundTags.push(parseFloat(k))
           for set of @view.trees
-            console.log set
             if foundTags.indexOf(parseFloat(set)) < 0
               hits[set] = 0
               tags[set] = []
-          @view.buildFilteredList(tags, terms.term.toLowerCase(), hits)
-        
+          filteredList = @view.buildFilteredList(tags)
+          @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
         if terms? && cj.isEmptyObject(terms)
           tags = {}
-          @view.buildFilteredList(tags, terms.term.toLowerCase(), {291:0,296:0})
+          # filteredList = @view.buildFilteredList(tags)
+          # @view.writeFilteredList(filteredList, term)
       )
 
   separateHits: (terms, results) ->
@@ -286,15 +369,7 @@ class Autocomplete
     # hits[292] = results.seeXmore + results.results.length
     hits
 
-  addPositionReminderText: (cjlocation) ->
-    positionText = "
-            <dl class='top-292 tagContainer' style='display:none'>
-              <div class='position-box-text-reminder'>
-                Type in a Bill Number or Name for Results
-              </div>
-            </dl>
-          "
-    cjlocation.append(positionText)
+  
 
   sortSearchedTags: (tags) ->
     list = {}
@@ -307,13 +382,19 @@ class Autocomplete
       list[el.type].push(obj)
     list
 
+_openTags = {}
+
+_treeVisibility =
+  currentTree: ""
+  defaultTree: ""
+  previousTree: ""
+
 # tree creates new trees
 class Tree
   domList: {}
   nodeList: {}
   tabName: ""
   constructor: (@tagList, @tagId, @filter = false) ->
-    # console.log @tagList, @tagId
     @buildTree()
     # @cjLocation = 
   buildTree: () ->
@@ -321,6 +402,7 @@ class Tree
     @domList = cj()
     @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
     @iterate(@tagList)
+    
   iterate: (ary) ->
     cjTagList = cj(@domList)
     # console.log cjTagList
@@ -330,10 +412,16 @@ class Tree
       if node.parent == @tagId
         cjTagList.append(kNode.html)
       else
-        cjTagList.find("dl#tagDropdown_#{kNode.parent}").append(kNode.html)
+        cjToAppendTo = cjTagList.find("dl#tagDropdown_#{kNode.parent}")
+        if cjToAppendTo.length == 0
+          cjTagList.append(kNode.html)
+        else
+          cjToAppendTo.append(kNode.html)
       # if parent exists attach to parent
       # if parent doesn't exist, attach to list
     cjTagList.appendTo(".JSTree")
+    _treeUtils.makeDropdown(cj(".JSTree .top-#{@tagId}"))
+    _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
 _treeUtils =
   selectByParent: (list, parent) ->
@@ -348,6 +436,36 @@ _treeUtils =
       if b.type == tree
         treeList.push b
     treeList
+  makeDropdown: (cjTree) ->
+    cjTree.find(".treeButton").off "click"
+    cjTree.find(".treeButton").on "click", ->
+      _treeUtils.dropdownItem(cj(@).parent().parent())
+  dropdownItem: (tagLabel, search = false) ->
+    tagid = tagLabel.data('tagid')
+    if tagLabel.length > 0
+      if tagLabel.is(".open")
+        _openTags[tagid] = false
+      else
+        _openTags[tagid] = true
+    tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
+      tagLabel.toggleClass "open"
+    if !search
+      bbUtils.localStorage("tagViewSettings", _openTags)
+    
+  readDropdownsFromLocal: (cjTree) ->
+    if parseInt(cjTree) == 291
+      if bbUtils.localStorage("tagViewSettings")    
+        _openTags = bbUtils.localStorage("tagViewSettings")
+        for tag, bool of bbUtils.localStorage("tagViewSettings")
+          if bool
+            toPass = cj("dt.tag-#{tag}")
+            @dropdownItem toPass
+          else
+            delete _openTags[tag]
+      else
+      _openTags 
+
+
 
 
 class Node
@@ -372,15 +490,19 @@ class Node
         @hasDesc = "longdescription"
       if @description.length > 80
         @description = _utils.textWrap(@description, 80)
-      console.log 
   html: (node) ->
-    if @parent > 0 then treeButton = "treeButton" else treeButton = ""
+    # if @parent > 0 then treeButton = "treeButton" else treeButton = ""
+    if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
-    html = "<dt class='lv-#{node.level} #{@hasDesc}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
+    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
     html += "
               <div class='tag'>
+            "
+    html += "
                 <div class='ddControl #{treeButton}'></div>
+              "
+    html += "
                 <span class='name'>#{node.name}</span>
             "
     if @hasDesc.length > 0
