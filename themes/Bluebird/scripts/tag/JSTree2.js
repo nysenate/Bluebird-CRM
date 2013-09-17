@@ -757,20 +757,55 @@
     };
 
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var activeTree, k, v, _results;
+      var activeTree, currentBoxes, k, v, _results,
+        _this = this;
       if (hits == null) {
         hits = {};
       }
+      if (!this.shouldBeFiltered) {
+        return false;
+      }
+      if (this.cj_selectors.tagBox.hasClass("filtered")) {
+        if (this.cleanTree === true) {
+          return false;
+        }
+        currentBoxes = this.cj_selectors.tagBox.find(".tagContainer");
+        cj.each(currentBoxes, function(i, tree) {
+          var currentTerm, incomingTerm;
+          currentTerm = cj(tree).data("term");
+          if (currentTerm == null) {
+            currentTerm = "";
+            cj(tree).data("term", "");
+          }
+          incomingTerm = term;
+          if (currentTerm !== incomingTerm) {
+            return cj(tree).remove();
+          }
+        });
+      } else {
+        this.cj_selectors.tagBox.addClass("filtered");
+        currentBoxes = this.cj_selectors.tagBox.find(".tagContainer");
+        cj.each(currentBoxes, function(i, tree) {
+          var currentTerm, incomingTerm;
+          currentTerm = cj(tree).data("term");
+          if (currentTerm == null) {
+            currentTerm = "";
+            cj(tree).data("term", "");
+          }
+          incomingTerm = term;
+          if (currentTerm !== incomingTerm) {
+            return cj(tree).remove();
+          }
+        });
+        this.cj_selectors.tagBox.empty();
+        this.cleanTree = false;
+      }
       this.setTabResults(hits);
-      activeTree = this.removeTrees();
+      activeTree = this.cj_menuSelectors.tabs.find(".active").attr("class").replace("active", "");
       for (k in list) {
         v = list[k];
-        if (v.length > 0) {
-          new Tree(v, k, true);
-        }
-        if (this.cj_selectors.tagBox.find(".top-" + k).length === 0) {
-          this.cj_selectors.tagBox.append("<div class='top-" + k + " filtered tagContainer'></div>");
-        }
+        new Tree(v, k, true);
+        this.cj_selectors.tagBox.find(".top-" + k).data("term", term);
       }
       this.setActiveTree(this.getIdFromTabName(activeTree));
       _results = [];
@@ -795,21 +830,16 @@
       });
     };
 
-    View.prototype.removeTrees = function() {
-      this.activeTree = this.cj_menuSelectors.tabs.find(".active").attr("class");
-      this.activeTree = this.activeTree.replace("active", "");
-      this.cj_selectors.tagBox.empty();
-      return this.activeTree;
-    };
-
     View.prototype.rebuildInitialTree = function() {
       var activeTree, k, v, _ref;
-      if (this.cj_selectors.tagBox.find(".filtered").length > 0) {
-        activeTree = this.removeTrees();
+      if (this.cj_selectors.tagBox.hasClass("filtered")) {
+        this.cj_selectors.tagBox.removeClass("filtered");
+        this.cj_selectors.tagBox.find(".filtered").remove();
+        activeTree = this.cj_menuSelectors.tabs.find(".active").attr("class").replace("active", "");
         _ref = this.trees;
         for (k in _ref) {
           v = _ref[k];
-          this.trees[k] = new Tree(v.tagList, v.tagId);
+          this.cj_selectors.tagBox.append(v.html);
           if (parseInt(k) === 292) {
             this.addPositionReminderText(this.cj_selectors.tagBox.find(".top-" + k));
           }
@@ -832,22 +862,19 @@
           result = cjTab.html();
           _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
         } else {
+          if (count > 0 && parseInt(v) === 0) {
+            cjTab.find("span").remove();
+            result = cjTab.html();
+            cjTab.html("" + result + "<span>(" + count + ")</span>");
+          }
           if (count === 0 && parseInt(v) > 0) {
-            cjTab.find("span").remove();
-            result = cjTab.html();
-            cjTab.html("" + result + "<span>(" + v + ")</span>");
-          }
-          if (parseInt(v) === 0) {
-            cjTab.find("span").remove();
-            result = cjTab.html();
-            cjTab.html("" + result + "<span>(" + v + ")</span>");
-          }
-          if (count !== parseInt(v)) {
             cjTab.find("span").remove();
             result = cjTab.html();
             _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
           } else {
-            _results.push(void 0);
+            cjTab.find("span").remove();
+            result = cjTab.html();
+            _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
           }
         }
       }
@@ -861,7 +888,7 @@
     View.prototype.addPositionReminderText = function(cjlocation) {
       var positionText;
       positionText = "              <div class='position-box-text-reminder'>                Type in a Bill Number or Name for Results              </div>          ";
-      return cjlocation.append(positionText);
+      return cjlocation.html(positionText);
     };
 
     return View;
@@ -897,6 +924,7 @@
         keyCode = bbUtils.keyCode(event);
         if (keyCode.type === "delete" && cjac.val().length <= 3) {
           _this.view.removeTabCounts();
+          _this.view.shouldBeFiltered = false;
           return _this.view.rebuildInitialTree();
         }
       }));
@@ -926,18 +954,63 @@
 
     Autocomplete.prototype.moveDropdown = function() {};
 
+    Autocomplete.prototype.buildPositions = function(list, term, hits) {
+      var openLeg, options,
+        _this = this;
+      this.view.writeFilteredList(list, term, hits);
+      if (this.positionPagesLeft > 1) {
+        openLeg = new OpenLeg;
+        options = {
+          scrollBox: ".JSTree"
+        };
+        return this.cjTagBox.find(".top-292.tagContainer").infiniscroll(options, function() {
+          var nextPage;
+          nextPage = {
+            term: _this.positionSearchTerm,
+            page: _this.positionPage
+          };
+          _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
+          return openLeg.query(nextPage, function(results) {
+            var filteredList, poses;
+            poses = _this.addPositionsToTags(results.results);
+            filteredList = {
+              292: poses
+            };
+            return _this.getNextPositionRound(results);
+          });
+        });
+      }
+    };
+
+    Autocomplete.prototype.addPositionLoader = function() {
+      return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
+    };
+
     Autocomplete.prototype.execSearch = function(event, searchmonger, cjac, lastLetter) {
-      var openLeg, term,
+      var term,
         _this = this;
       term = cjac.val() + lastLetter;
       if (term.length >= 3) {
-        openLeg = new OpenLeg;
-        openLeg.query({
-          "term": term
-        }, function(results) {});
+        this.view.shouldBeFiltered = true;
+        console.log(this.view);
         return searchmonger.exec(event, function(terms) {
-          var filteredList, foundTags, hcounts, hits, k, set, tags, v;
+          var filteredList, foundTags, hcounts, hits, k, openLeg, tags, v;
           if ((terms != null) && !cj.isEmptyObject(terms)) {
+            openLeg = new OpenLeg;
+            openLeg.query({
+              "term": term
+            }, function(results) {
+              var filteredList, poses;
+              poses = _this.addPositionsToTags(results.results);
+              filteredList = {
+                292: poses
+              };
+              _this.getNextPositionRound(results);
+              _this.buildPositions(filteredList, term, {
+                292: results.seeXmore + 10
+              });
+              return _this.openLegQueryDone = true;
+            });
             tags = _this.sortSearchedTags(terms.tags);
             hits = _this.separateHits(tags);
             hcounts = 0;
@@ -947,14 +1020,9 @@
               hcounts += v;
               foundTags.push(parseFloat(k));
             }
-            for (set in _this.view.trees) {
-              if (foundTags.indexOf(parseFloat(set)) < 0) {
-                hits[set] = 0;
-                tags[set] = [];
-              }
-            }
             filteredList = _this.view.buildFilteredList(tags);
             _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
+            _this.localQueryDone = true;
           }
           if ((terms != null) && cj.isEmptyObject(terms)) {
             return tags = {};
@@ -968,9 +1036,53 @@
       hits = {};
       for (k in terms) {
         v = terms[k];
-        hits[k] = v.length;
+        if (v.length > 0) {
+          hits[k] = v.length;
+        }
       }
       return hits;
+    };
+
+    Autocomplete.prototype.positionIdNumber = 292000;
+
+    Autocomplete.prototype.getNextPositionRound = function(results) {
+      this.positionPage = results.page + 1;
+      this.positionPagesLeft = results.pagesLeft;
+      return this.positionSearchTerm = results.term;
+    };
+
+    Autocomplete.prototype.addPositionsToTags = function(positions) {
+      var agipos, format, forpos, k, neupos, o;
+      format = [];
+      for (k in positions) {
+        o = positions[k];
+        forpos = {
+          name: o.forname,
+          id: "" + (this.positionIdNumber + 1)
+        };
+        agipos = {
+          name: o.againstname,
+          id: "" + (this.positionIdNumber + 2)
+        };
+        neupos = {
+          name: o.noname,
+          id: "" + (this.positionIdNumber + 3)
+        };
+        forpos.type = agipos.type = neupos.type = "292";
+        forpos.description = agipos.description = neupos.description = o.description;
+        forpos.children = agipos.children = neupos.children = false;
+        forpos.created_date = agipos.created_date = neupos.created_date = "";
+        forpos.created_id = agipos.created_id = neupos.created_id = "";
+        forpos.created_name = agipos.created_name = neupos.created_name = "";
+        forpos.parent = agipos.parent = neupos.parent = "292";
+        forpos.level = agipos.level = neupos.level = 1;
+        forpos.url = agipos.url = neupos.url = o.url;
+        format.push(forpos);
+        format.push(agipos);
+        format.push(neupos);
+        this.positionIdNumber = this.positionIdNumber + 10;
+      }
+      return this.positionListing = format;
     };
 
     Autocomplete.prototype.sortSearchedTags = function(tags) {
@@ -1046,6 +1158,7 @@
         }
       }
       cjTagList.appendTo(".JSTree");
+      this.html = cjTagList;
       _treeUtils.makeDropdown(cj(".JSTree .top-" + this.tagId));
       return _treeUtils.readDropdownsFromLocal(this.tagId, this.tagList);
     };

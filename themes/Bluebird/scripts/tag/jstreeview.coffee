@@ -219,13 +219,42 @@ class View
     # buildList
     buildList
   writeFilteredList: (list,term,hits = {}) ->
+    return false if !@shouldBeFiltered
+    if @cj_selectors.tagBox.hasClass("filtered")
+      return false if @cleanTree == true
+      currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
+      cj.each(currentBoxes, (i,tree) =>
+        currentTerm = cj(tree).data("term")
+        if !currentTerm?
+          currentTerm = ""
+          cj(tree).data("term","")
+        incomingTerm = term
+        if currentTerm != incomingTerm
+          # if currentTerm == ""
+          cj(tree).remove()
+        )
+    else
+      # this is the initial clear
+      @cj_selectors.tagBox.addClass("filtered")
+      currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
+      cj.each(currentBoxes, (i,tree) =>
+        currentTerm = cj(tree).data("term")
+        if !currentTerm?
+          currentTerm = ""
+          cj(tree).data("term","")
+        incomingTerm = term
+        if currentTerm != incomingTerm
+          # if currentTerm == ""
+          cj(tree).remove()
+        ) 
+      @cj_selectors.tagBox.empty()
+      @cleanTree = false
     @setTabResults(hits)
-    activeTree = @removeTrees()
+    activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
     for k,v of list
-      if v.length > 0
-        new Tree(v,k,true)
-      if @cj_selectors.tagBox.find(".top-#{k}").length == 0
-        @cj_selectors.tagBox.append("<div class='top-#{k} filtered tagContainer'></div>")
+      new Tree(v,k,true)
+      @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+
     @setActiveTree(@getIdFromTabName(activeTree))
     for k,v of hits
       @removeUnnecessaryDropdowns(k)
@@ -240,16 +269,14 @@ class View
         if cjItem.siblings("dl#tagDropdown_#{tagid}").children().length == 0
           cjItem.find(".treeButton").removeClass("treeButton")
       )
-  removeTrees: () ->
-    @activeTree = @cj_menuSelectors.tabs.find(".active").attr("class")
-    @activeTree = @activeTree.replace("active","")
-    @cj_selectors.tagBox.empty()
-    @activeTree
+  
   rebuildInitialTree: () ->
-    if @cj_selectors.tagBox.find(".filtered").length > 0
-      activeTree = @removeTrees()
+    if @cj_selectors.tagBox.hasClass("filtered")
+      @cj_selectors.tagBox.removeClass("filtered")
+      @cj_selectors.tagBox.find(".filtered").remove()
+      activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
       for k,v of @trees
-        @trees[k] = new Tree(v.tagList,v.tagId)
+        @cj_selectors.tagBox.append(v.html)
         if parseInt(k) == 292
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
       @setActiveTree(@getIdFromTabName(activeTree))
@@ -264,18 +291,19 @@ class View
         result = cjTab.html()
         cjTab.html("#{result}<span>(#{v})</span>")
       else   
+        if count > 0 and parseInt(v) == 0
+          cjTab.find("span").remove()
+          result = cjTab.html()
+          cjTab.html("#{result}<span>(#{count})</span>")
         if count == 0 && parseInt(v) > 0
           cjTab.find("span").remove()
           result = cjTab.html()
           cjTab.html("#{result}<span>(#{v})</span>")
-        if parseInt(v) == 0
+        else
           cjTab.find("span").remove()
           result = cjTab.html()
           cjTab.html("#{result}<span>(#{v})</span>")
-        if count != parseInt(v)
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{v})</span>")
+        
 
   removeTabCounts: () ->
     @cj_menuSelectors.tabs.find("span").remove()
@@ -285,7 +313,7 @@ class View
                 Type in a Bill Number or Name for Results
               </div>
           "
-    cjlocation.append(positionText)
+    cjlocation.html(positionText)
 
 
   
@@ -301,13 +329,18 @@ class Autocomplete
       theme: "JSTree"
     cjac = cj("#JSTree-ac")
     searchmonger = cjac.tagACInput("init",params)
-    cjac.on "keydown", ((event) =>
-      @filterKeydownEvents event,searchmonger,cjac
+    # console.log searchmonger
+    # cjac.on "keydown", bbUtils.debounce((event) =>
+    #   @filterKeydownEvents(event,searchmonger,cjac)
+    # 1000)
+    cjac.on "keydown",((event) =>
+      @filterKeydownEvents(event,searchmonger,cjac)
     )
     cjac.on "keyup", ((event) =>
       keyCode = bbUtils.keyCode(event)
       if keyCode.type == "delete" && cjac.val().length <= 3
         @view.removeTabCounts()
+        @view.shouldBeFiltered = false
         @view.rebuildInitialTree()
     )
   filterKeydownEvents: (event, searchmonger, cjac) ->
@@ -329,19 +362,41 @@ class Autocomplete
 
   moveDropdown: () ->
 
+  buildPositions: (list,term,hits) ->
+    @view.writeFilteredList(list,term,hits)
+    if @positionPagesLeft > 1 
+      openLeg = new OpenLeg
+      options =
+        scrollBox: ".JSTree"
+      @cjTagBox.find(".top-292.tagContainer").infiniscroll(options, =>
+          nextPage =
+            term: @positionSearchTerm
+            page: @positionPage
+          @cjTagBox.find(".top-292.tagContainer").append(@addPositionLoader())
+          openLeg.query(nextPage, (results) =>
+              poses = @addPositionsToTags(results.results)
+              filteredList = {292: poses}
+              @getNextPositionRound(results)
+              # console.log poses
+          )
+      )
+  addPositionLoader: () ->
+    "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>"
   execSearch: (event,searchmonger,cjac,lastLetter) ->
     term = cjac.val() + lastLetter
     if term.length >= 3
-      openLeg = new OpenLeg
-      # addDebounce for openledge
-      openLeg.query({"term":term}, (results) =>
-
-      )
+      @view.shouldBeFiltered = true
+      console.log @view
       searchmonger.exec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
-          # console.log results
-          # console.log @addPositionsToTags(results.results)
-          # @getNextPositionRound(results)
+          openLeg = new OpenLeg
+          openLeg.query({"term":term}, (results) =>
+            poses = @addPositionsToTags(results.results)
+            filteredList = {292: poses}
+            @getNextPositionRound(results)
+            @buildPositions(filteredList, term, {292: (results.seeXmore + 10)})
+            @openLegQueryDone = true
+          )
           tags = @sortSearchedTags(terms.tags)
           hits = @separateHits(tags)
           hcounts = 0
@@ -350,26 +405,62 @@ class Autocomplete
           for k,v of hits
             hcounts += v
             foundTags.push(parseFloat(k))
-          for set of @view.trees
-            if foundTags.indexOf(parseFloat(set)) < 0
-              hits[set] = 0
-              tags[set] = []
+          # for set of @view.trees
+            # if foundTags.indexOf(parseFloat(set)) < 0
+            #   hits[set] = 0
+            #   tags[set] = []
           filteredList = @view.buildFilteredList(tags)
           @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
+          @localQueryDone = true
         if terms? && cj.isEmptyObject(terms)
           tags = {}
           # filteredList = @view.buildFilteredList(tags)
           # @view.writeFilteredList(filteredList, term)
       )
+      
 
   separateHits: (terms, results) ->
     hits = {}
     for k, v of terms
-      hits[k] = v.length
+      if v.length > 0
+        hits[k] = v.length
     # hits[292] = results.seeXmore + results.results.length
     hits
 
-  
+  positionIdNumber: 292000
+
+  getNextPositionRound:(results) ->
+    @positionPage = results.page + 1
+    @positionPagesLeft = results.pagesLeft
+    @positionSearchTerm = results.term
+
+  addPositionsToTags: (positions) ->
+    format = []
+    for k,o of positions
+      # check if position has id, if not. arbitrarily assign one?
+      forpos =
+        name: o.forname
+        id: "#{@positionIdNumber+1}"
+      agipos=
+        name: o.againstname
+        id: "#{@positionIdNumber+2}"
+      neupos=
+        name: o.noname
+        id: "#{@positionIdNumber+3}"
+      forpos.type = agipos.type = neupos.type = "292"
+      forpos.description = agipos.description = neupos.description = o.description
+      forpos.children = agipos.children = neupos.children = false
+      forpos.created_date = agipos.created_date = neupos.created_date = ""
+      forpos.created_id = agipos.created_id = neupos.created_id = ""
+      forpos.created_name = agipos.created_name = neupos.created_name = ""
+      forpos.parent = agipos.parent = neupos.parent = "292"
+      forpos.level = agipos.level = neupos.level = 1
+      forpos.url = agipos.url = neupos.url = o.url
+      format.push(forpos)
+      format.push(agipos)
+      format.push(neupos)
+      @positionIdNumber = @positionIdNumber + 10
+    @positionListing = format 
 
   sortSearchedTags: (tags) ->
     list = {}
@@ -420,6 +511,7 @@ class Tree
       # if parent exists attach to parent
       # if parent doesn't exist, attach to list
     cjTagList.appendTo(".JSTree")
+    @html = cjTagList
     _treeUtils.makeDropdown(cj(".JSTree .top-#{@tagId}"))
     _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
