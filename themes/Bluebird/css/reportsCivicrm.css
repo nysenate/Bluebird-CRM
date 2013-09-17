@@ -1,10 +1,8 @@
 /* CiviCRM Reports Stylesheet */
 
-#crm-container #mainTabContainer .ui-tabs-panel {
+#crm-container div.crm-report-criteria #mainTabContainer .ui-tabs-panel {
   float: none;
   width: auto;
-}
-#crm-container #mainTabContainer .ui-tabs-panel {
   min-height: 0;
 }
 #crm-container .ui-tabs .ui-tabs-nav {
