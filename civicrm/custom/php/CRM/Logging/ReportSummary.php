@@ -194,7 +194,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
   function groupBy() {
     //NYSS 5751
-    $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id';
+    $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), entity_log_civireport.id';
   }
 
   function select() {
@@ -296,7 +296,7 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
         //NYSS 6713 temp hack to avoid duplicate log records for the same bulk email activity
         if ( $entity == 'log_civicrm_activity_for_target' ) {
           //$sql = str_replace("DAY_MICROSECOND", "DAY_HOUR", $sql);
-          $sql = str_replace("EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), ", "", $sql);
+          $sql = str_replace("EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), ", "", $sql);
           $sql = str_replace("entity_log_civireport.log_conn_id, ", "", $sql);
         }
         //CRM_Core_Error::debug_var('sql', $sql);
@@ -342,7 +342,7 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
     //NYSS
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
-GROUP BY log_civicrm_entity_log_date, log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id
+GROUP BY EXTRACT(DAY_HOUR FROM log_civicrm_entity_log_date), log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id
 ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
 {$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
