@@ -4202,14 +4202,20 @@ civicrm_relationship.start_date > {$today}
       }
     }*/
 
-    //NYSS 6723
-    if(!empty($this->_permissionWhereClause)){
+    //NYSS 6723 - retain old format until core upgrade to 4.3+
+    /*if(!empty($this->_permissionWhereClause)){
       if (empty($where)) {
         $where = "WHERE $this->_permissionWhereClause";
       }
       else {
         $where = "$where AND $this->_permissionWhereClause";
       }
+    }*/
+    if (empty($where)) {
+      $where = "WHERE $permission";
+    }
+    else {
+      $where = "$where AND $permission";
     }
 
     if ($additionalWhereClause) {
