@@ -86,3 +86,8 @@ js/jquery/jquery.crmtooltip.js
 
 {*NYSS*}
 packages/jquery/plugins/jquery.cursorStart.js
+../../../default/themes/Bluebird/scripts/bbUtils/bbUtils.js
+../../../default/themes/Bluebird/scripts/bbJSsettings/bbhg.js
+../../../default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js
+../../../default/themes/Bluebird/scripts/jquery.infiniScroll/jquery.infiniScroll.js
+../../../default/themes/Bluebird/scripts/tagging/tag/JSTree.js
