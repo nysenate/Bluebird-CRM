@@ -92,6 +92,13 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
   function loadData() {
     global $user;
 
+    $action = CRM_Utils_Array::value('action', $_GET);
+
+    $purge = '--purge';
+    if ( $action == 'purgeData' ) {
+      $purge = '--purge-only';
+    }
+
     $sTime = microtime(TRUE);
 
     //get script
@@ -107,7 +114,7 @@ class CRM_NYSS_Form_LoadSampleData extends CRM_Core_Form
 
     //run script
     $uid = "{$user->uid}/{$user->mail}";
-    exec("php $script -S {$bbcfg['shortname']} --system --purge --log=info --uid={$uid} 1>{$logFile}");
+    exec("php $script -S {$bbcfg['shortname']} --system {$purge} --log=info --uid={$uid} 1>{$logFile}");
 
     $eTime = microtime(TRUE);
     $diffTime = ($eTime - $sTime)/60;

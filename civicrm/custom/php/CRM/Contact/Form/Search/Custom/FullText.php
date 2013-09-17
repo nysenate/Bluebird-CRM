@@ -64,7 +64,8 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
   protected $_foundRows = array();
 
   function __construct(&$formValues) {
-    $this->_formValues = &$formValues;
+    //NYSS 7050
+    //$this->_formValues = &$formValues;
 
     $this->_text = CRM_Utils_Array::value('text', $formValues);
     $this->_table = CRM_Utils_Array::value('table', $formValues);
@@ -120,6 +121,9 @@ class CRM_Contact_Form_Search_Custom_FullText implements CRM_Contact_Form_Search
       $this->_limitRowClause = " LIMIT $rowCount";
       $this->_limitDetailClause = " LIMIT $offset, $rowCount";
     }
+
+    //NYSS 7050
+    $this->_formValues = $formValues;
   }
 
   function __destruct() {
@@ -338,53 +342,56 @@ AND        cf.html_type IN ( 'Text', 'TextArea', 'RichTextEditor' )
       if ($tableName == 'final') {
         continue;
       }
-      else if ($tableName == 'sql') {
-        foreach ($tableValues as $sqlStatement) {
-          $sql = "
-REPLACE INTO {$this->_entityIDTableName} ( entity_id )
-$sqlStatement
-{$this->_limitClause}
-";
-          CRM_Core_DAO::executeQuery($sql);
-        }
-      }
+      //NYSS 7050 entire block
       else {
-        $clauses = array();
+        if ($tableName == 'sql') {
+          foreach ($tableValues as $sqlStatement) {
+            $sql = "
+  REPLACE INTO {$this->_entityIDTableName} ( entity_id )
+  $sqlStatement
+  {$this->_limitClause}
+  ";
+            CRM_Core_DAO::executeQuery($sql);
+          }
+        }
+        else {
+          $clauses = array();
 
-        foreach ($tableValues['fields'] as $fieldName => $fieldType) {
-          if ($fieldType == 'Int') {
-            if ($this->_textID) {
-              $clauses[] = "$fieldName = {$this->_textID}";
+          foreach ($tableValues['fields'] as $fieldName => $fieldType) {
+            if ($fieldType == 'Int') {
+              if ($this->_textID) {
+                $clauses[] = "$fieldName = {$this->_textID}";
+              }
+            }
+            else {
+              $clauses[] = "$fieldName LIKE {$this->_text}";
             }
           }
-          else {
-            $clauses[] = "$fieldName LIKE {$this->_text}";
+
+          if (empty($clauses)) {
+            continue;
           }
+
+          $whereClause = implode(' OR ', $clauses);
+
+          //resolve conflict between entity tables.
+          if ($tableName == 'civicrm_note' &&
+            $entityTable = CRM_Utils_Array::value('entity_table', $tableValues)
+          ) {
+            $whereClause .= " AND entity_table = '{$entityTable}'";
+          }
+
+          $sql = "
+  REPLACE  INTO {$this->_entityIDTableName} ( entity_id )
+  SELECT   {$tableValues['id']}
+  FROM     $tableName
+  WHERE    ( $whereClause )
+  AND      {$tableValues['id']} IS NOT NULL
+  GROUP BY {$tableValues['id']}
+  {$this->_limitClause}
+  ";
+          CRM_Core_DAO::executeQuery($sql);
         }
-
-        if (empty($clauses)) {
-          continue;
-        }
-
-        $whereClause = implode(' OR ', $clauses);
-
-        //resolve conflict between entity tables.
-        if ($tableName == 'civicrm_note' &&
-          $entityTable = CRM_Utils_Array::value('entity_table', $tableValues)
-        ) {
-          $whereClause .= " AND entity_table = '{$entityTable}'";
-        }
-
-        $sql = "
-REPLACE  INTO {$this->_entityIDTableName} ( entity_id )
-SELECT   {$tableValues['id']}
-FROM     $tableName
-WHERE    ( $whereClause )
-AND      {$tableValues['id']} IS NOT NULL
-GROUP BY {$tableValues['id']}
-{$this->_limitClause}
-";
-        CRM_Core_DAO::executeQuery($sql);
       }
     }
 
@@ -779,6 +786,23 @@ WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text
 
     // also add the limit constant
     $form->assign('limit', self::LIMIT);
+
+    //NYSS 7050
+    // set form defaults
+    if (!empty($form->_formValues)) {
+      $defaults = array();
+
+      if (isset($form->_formValues['text'])) {
+        $defaults['text'] = $form->_formValues['text'];
+      }
+
+      if (isset($form->_formValues['table'])) {
+        $defaults['table'] = $form->_formValues['table'];
+        $form->assign('table', $form->_formValues['table']);
+      }
+
+      $form->setDefaults($defaults);
+    }
 
     /**
      * You can define a custom title for the search form

@@ -38,7 +38,7 @@ require_once 'CRM/Contact/Form/Task.php';
 require_once 'CRM/Core/BAO/EntityTag.php';
 
 define( 'PPDEBUG', 0 ); //set debug mode status
-define( 'EXITLOC', 5 ); //define exit location in script
+define( 'EXITLOC', 0 ); //define exit location in script
 
 /**
  * This class provides the functionality to export large data sets for print production.
@@ -100,9 +100,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
       $groups,
       false,
       array(
-        'id'       => 'excludeGroups',
+        'id' => 'excludeGroups',
         'multiple' => 'multiple',
-        'title'    => ts('- select -')
+        'title' => ts('- select -')
       )
     );
 
@@ -166,7 +166,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
       'orderBy' => 'male_eldest',
     );
     //$defaults['restrict_state'] = 1031; //NY
-
 
     return $defaults;
   }
@@ -1184,10 +1183,10 @@ function idebug( $var, $varName = '', $level = 1 ) {
 
   if ( PPDEBUG >= $level ) {
     if ( $varName ) {
-      CRM_Core_Error::debug($varName, $var);
+      CRM_Core_Error::debug_var($varName, $var);
     }
     else {
-      CRM_Core_Error::debug($var);
+      CRM_Core_Error::debug_var('debug var', $var);
     }
   }
 }//idebug

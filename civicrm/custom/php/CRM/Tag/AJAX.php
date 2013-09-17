@@ -12,14 +12,13 @@ require_once 'CRM/Core/BAO/Tag.php';
 // TODO: Needs to return good responses when things go wrong!
 // TODO: How do you tell if a save was successful?
 class CRM_Tag_AJAX extends CRM_Core_Page {
+
     const SUCCESS = 1;
     const ERROR = 0;
     // The full set of fields that can be attached to each node.
     // If you don't want a field, just comment it out.
     //
     // id, parent_id, and is_tagset are required.
-    // sets the role access to 13 (crmVolunteer, will be modified on access)
-    static $ROLE_ACCESS = 13;
     static public $TAG_FIELDS = array(
             'id',
             'name',
@@ -33,12 +32,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             'created_display_name',
             'created_date'
         );
-    static public $USER_ROLES = array(
-            "administer" => 9,
-            "manage"     => 10,
-            "edit"       => 12,
-            "volunteer"  => 13
-        );
+
     static function _build_tree($root, &$nodes) {
         // We need a copy to do looping
         $current_nodes = $nodes;
@@ -56,6 +50,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach(self::$TAG_FIELDS as $field){
             $node[$field] = $source->$field;
         }
+
+        if($entity_counts !== null)
+            $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 0);
+
         $node['children'] = array();
         return $node;
     }
@@ -70,11 +68,18 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_tree() {
-        self::check_user_level("volunteer");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
+        $start = microtime(TRUE);
+        $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
 
         //If they request entity counts, build that into the tree as well.
+        $ec_start = microtime(TRUE);
         if(CRM_Utils_Array::value('entity_counts', $_GET)) {
-            $entity_table = CRM_Core_DAO::escapeString(self::_require('entity_table', $_GET, "`entity_table` parameter is required."));
+
             // There is definitely nothing like this in the civicrm_api. Using
             // the DAO layer is way too slow when we get to hundreds of results.
             // Hand rolled SQL it is...
@@ -85,10 +90,10 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 FROM civicrm_tag as tag
                   LEFT JOIN civicrm_entity_tag as entity_tag ON (
                          tag.id = entity_tag.tag_id AND
-                         entity_tag.entity_table = '$entity_table')
-                  LEFT JOIN $entity_table as entity ON (
+                         entity_tag.entity_table = '$entity_type')
+                  LEFT JOIN $entity_type as entity ON (
                          entity.id = entity_tag.entity_id)
-                WHERE tag.used_for LIKE '%$entity_table%'
+                WHERE tag.used_for LIKE '%$entity_type%'
                   AND entity.is_deleted = 0
                 GROUP BY tag.id", $conn);
 
@@ -100,6 +105,29 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         } else {
             $entity_counts = null;
         }
+        $ec_time = microtime(TRUE)-$ec_start;
+
+        // If they pass in an entity_id we can also get information on which tags apply
+        // to the specified entity and include that along with the tree
+        $et_start = microtime(TRUE);
+        // if(array_key_exists('entity_id', $_GET)) {
+        //     $entity_id = $_GET['entity_id'];
+
+        //     //Get the tags for the specifed entity
+        //     $params = array('version'=>3,
+        //         'entity_type'=>$entity_type,
+        //         'entity_id'=>$entity_id);
+        //     $result = civicrm_api('entity_tag', 'get', $params);
+
+        //     $entity_tags = array();
+        //     foreach($result['values'] as $entity_tag)
+        //         $entity_tags[] = $entity_tag['tag_id'];
+
+        // } else {
+        //     $entity_tags = null;
+        // }
+        $et_time = microtime(TRUE)-$et_start;
+
         // We need to build a list of tags ordered by hierarchy and sorted by
         // name. Instead of recursively making mysql queries, we'll make one
         // big query and build the heirarchy with the recursive algorithm below.
@@ -108,13 +136,14 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //the tags to be sorted in alphabetical order on each level. Can't use
         //the DAO object because it doesn't support queries by LIKE. Atleast, I
         //don't know how you would do it, maybe it can be done.
+        $bt_start = microtime(TRUE);
         $tags = CRM_Core_DAO::executeQuery("
                 SELECT tag.*, contact.display_name as created_display_name
                 FROM civicrm_tag as tag
                 LEFT JOIN civicrm_contact as contact ON contact.id=tag.created_id
                 WHERE used_for LIKE %1
                 ORDER BY tag.name
-            ",array( 1 => array("%$entity_table%",'String')));
+            ",array( 1 => array("%$entity_type%",'String')));
 
         // Sort all the tags into root and nodes buckets. This simpifies the process
         // to building the root nodes by moving tags from the nodes bucket.
@@ -131,21 +160,26 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         foreach($roots as $root) {
             $tree[] = self::_build_tree($root,$nodes);
         }
+        $bt_time = microtime(TRUE)-$bt_start;
 
-        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree));
+        echo json_encode(array("code"=>self::SUCCESS,"message"=>$tree,'build_time'=>(microtime(TRUE)-$start),'ec_time'=>$ec_time,'et_time'=>$et_time,'bt_time'=>$bt_time));
         CRM_Utils_System::civiExit();
     }
     static function get_entity_tag(){
-        self::check_user_level("volunteer");
-        if(array_key_exists('entity_id', $_GET) && array_key_exists('entity_table', $_GET)) {
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
+        if(array_key_exists('entity_id', $_GET)) {
             $entity_id = $_GET['entity_id'];
-            $entity_table = $_GET['entity_table'];
+
             //Get the tags for the specifed entity
             $params = array('version'=>3,
-                            'entity_table'=>$entity_table,
-                            'entity_id'=>$entity_id);
+                'entity_type'=>$entity_type,
+                'entity_id'=>$entity_id);
             $result = civicrm_api('entity_tag', 'get', $params);
-            echo $entity_table;
+
             $entity_tags = array();
             foreach($result['values'] as $entity_tag)
                 $entity_tags[] = $entity_tag['tag_id'];
@@ -157,7 +191,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_create() {
-        self::check_user_level("edit");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         // Extract the new tag parameters
         $tag = array('version'=>3);
         foreach(self::$TAG_FIELDS as $field) {
@@ -175,7 +213,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_update() {
-        self::check_user_level("edit");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         // Get the existing tag for manipulation
         $tag_id = self::_require('id', $_GET, '`id` parameter is required to identify the tag to be updated.');
         $params = array('version'=>3, 'id'=>$tag_id);
@@ -203,7 +245,11 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_delete() {
-        self::check_user_level("edit");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $id = self::_require('id', $_GET, '`id` of the tag to be deleted is required.');
         $params = array('version'=>3, 'tag_id'=>$id);
         $result = civicrm_api('tag', 'delete', $params);
@@ -219,10 +265,14 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function entity_tag_create() {
-        self::check_user_level("volunteer");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false || $stop['view_only'] == true){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
-        $entity_table = self::_require('entity_table', $_GET, '`entity_table` parameter is required to identify the entity being tagged.');
+        $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
 
         // Allow use of tag_id[]=1&tag_id[]=2 for creating multiple tags at once.
         if (is_array($tag_id)) {
@@ -237,7 +287,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             $params = array('version'=>3,
                             'tag_id'=>$new_tag_id,
                             'entity_id'=>$entity_id,
-                            'entity_table'=>$entity_table);
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'create', $params);
 
             // Error handling for entity tags is somewhat less informative...
@@ -260,10 +310,14 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function entity_tag_delete() {
-        self::check_user_level("volunteer");
+        $stop = self::check_user_level('true');
+        if($stop['code'] == false || $stop['view_only'] == true){ 
+            echo json_encode(array("code" => self::ERROR, "message"=>"WARNING: Bad user level.")); 
+            CRM_Utils_System::civiExit();
+        }
         $tag_id = self::_require('tag_id', $_GET, '`tag_id` parameter is required to identify the tag to apply.');
         $entity_id = self::_require('entity_id', $_GET, '`entity_id` parameter is required to identify the entity being tagged.');
-        $entity_table = self::_require('entity_table', $_GET, '`entity_table` parameter is required to identify the entity being tagged.');
+        $entity_type = self::_require('entity_type', $_GET, '`entity_type` parameter is required to identify the entity being tagged.');
 
 
         // Allow use of tag_id[]=1&tag_id[]=2 for creating multiple tags at once.
@@ -280,7 +334,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             $params = array('version'=>3,
                             'tag_id'=>$new_tag_id,
                             'entity_id'=>$entity_id,
-                            'entity_table'=>$entity_table);
+                            'entity_type'=>$entity_type);
             $result = civicrm_api('entity_tag', 'delete', $params);
 
             // Error handling for entity tags is somewhat less informative...
@@ -300,72 +354,57 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         CRM_Utils_System::civiExit();
     }
+    
+
+
+
     // Checking User levels,
     // Avaiable thought api call, or locally
     // args = return true / false toggles return / echo 
-    static function check_user_against_role($role_name){
-        // looking for "administer", "manage", "edit", "volunteer"
-        $role_access = self::$ROLE_ACCESS;
-        $user_roles = self::$USER_ROLES;
-        if( $role_access <= $user_roles[$role_name] ) {
-            return true;
-        }
-        return false;
-    }
-    static function check_user_level($role_name) {
-        // declares drupal global user roles
-        global $user;
-        $array_of_roles = array_keys(($user->roles));
+    static function check_user_level($return) {
+        $start = microtime(TRUE);
+        $call = self::_require('call_uri', $_GET, '`call_uri` parameter is required to identify the tag to apply.');
+        $call_uri = parse_url($call);
 
-        // pops out 1&2 from user roles (anon & authenticated,)
-        while(min($array_of_roles) < 3)
-        {
-            array_shift($array_of_roles);
-        }
-        self::$ROLE_ACCESS = min($array_of_roles);
-        $role = self::check_user_against_role($role_name);
-        
-        if($role == false)
-        {
-            // check if the users are accessing their own page
-            $entity_id = 0;
-            if(array_key_exists('entity_id', $_GET))
-            {
-                // checks entity_id (activity) to see if their user id belongs to the activity
-                $entity_id = $_GET['entity_id'];
-                $entity_table = CRM_Core_DAO::escapeString(self::_require('entity_table', $_GET, "`entity_table` parameter is required."));
-                if($entity_table == "civicrm_activity")
-                {
-                    // checks the m2m table activity_target on activity_id
-                    $dao = new CRM_Core_DAO();
-                    $conn = $dao->getDatabaseConnection()->connection;
-                    $result = mysql_query("
-                        SELECT target_contact_id from civicrm_activity_target
-                            WHERE activity_id = $entity_id", $conn);
-                    $activity_contact_target = [];
-                    while($row = mysql_fetch_assoc($result))
-                        array_push($activity_contact_target, $row["target_contact_id"]);
+        parse_str($call_uri['query'],$cid);
+        $entityId = $cid['cid'];
+
+        $session = CRM_Core_Session::singleton();
+        $userid = $session->get('userID');
+
+        // different functionality for different areas of the UI. 
+        switch ($call_uri['path']) {
+            case '/civicrm/contact/add':
+                // if can add contact then user can add tag.
+                $role = CRM_Core_Permission::check('add contacts');
+                break;
+            case '/civicrm/contact/view':
+                if($userid == $entityId){ // if is viewing and is my contact record -> can edit
+                    $role = true;
+                }else{ // else -> check permissions to edit
+                    $role = CRM_Core_Permission::check('edit all contacts');
+                    if( $role == false ) {
+                        $role = CRM_Core_Permission::check('view all contacts');
+                        $view_only = true;
+                    }
                 }
-                // grabs the current user id
-                $session = CRM_Core_Session::singleton();
-                $userid = $session->get('userID');
-                // 
-                if(!in_array($userid, $activity_contact_target))
-                {
-                    $role = false;
-                }
-            }
+                break;
+            default:
+                $role = CRM_Core_Permission::check('edit all contacts');
+                break;
         }
-        $message = ($role == true ) ? 'SUCCESS' : "WARNING: Bad user level"; 
+
+        $message = ($role == true )? 'SUCCESS' : "WARNING: Bad user level"; 
         $output = array(
             "code"=>$role,
+            "view_only"=>$view_only,
             "userId"=>$userid,
-            "entity_table"=>$entity_table,
-            "entity_id"=>$entity_id,
-            "message"=> $message
+            "message"=> $message, 
+            'build_time'=>(microtime(TRUE)-$start),
+            'bt_time'=>$bt_time
         );
 
-        if($role == true){
+        if($return == 'true'){
             return $output;
         }else{
             echo json_encode($output);

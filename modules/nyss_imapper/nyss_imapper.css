@@ -79,6 +79,11 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox .imap_actions_column .delete a{color:red !important;}
 .imapperbox .imap_actions_column .delete a:hover{background: #ff9999; }
 
+/* Button goups */
+.page_actions{ width:100%;margin:10px 0 10px 0; height: 30px;}
+.page_actions input{ float:right;}
+.page_actions_label{ float:right; margin:5px 10px 0 0}
+
 /* IMAP - Pagination */
 .imapperbox .paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
 .imapperbox .paging_bootstrap ul {float:right; padding:4px 0px 4px 0; margin: 0; }
@@ -159,6 +164,56 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .info:hover{background: #ccc; }
 .add_email{width:450px !important; padding: 5px 10px;}
 
+/* Reports */
+
+.page-civicrm-imap #crm-container .crm-content-block {
+ background-color: #FFFFFF;
+    clear: both;
+    display: block;
+    float: left;
+    padding: 4px;
+    position: relative;
+    width: 934px;
+}
+
+.full{
+    float: left;
+    position: relative;
+    width: 100%;
+}
+.page-civicrm-imap  .dataTables_wrapper {
+    clear: both;
+    float: left;
+    position: relative;
+    width: 100%;
+    overflow: visible;
+}
+.stats{
+    width:100%;
+
+    border-top: 1px solid #ccc;
+    margin: 10px 0;
+    z-index: 1;
+}
+a.stats_overview{
+    float: left;
+    padding: 18px 0 12px 10px;
+    width: 172px;
+    color: #666666;
+    font-size: 1.2em;
+    border-bottom: 1px solid #ccc;
+    margin: 0 4px 10px 0;
+}
+a.stats_overview:hover{
+    background: #f2f2f2;
+}
+.stats_overview span {
+    padding: 0 10px;
+    font-weight: bold;
+    font-size: 1em;
+    color: #444;
+
+}
 /* IMAP - Little buggers */
 #search_help{float:right; font-size: 10px !important; margin: 2px 6px !important;}
 .marginL10 {margin-left: 10px;}

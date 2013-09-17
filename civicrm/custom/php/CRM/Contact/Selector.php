@@ -288,7 +288,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           elseif ($value['key'] == 'email') {
             $url = "civicrm/contact/view/activity";
             $qs = "atype=3&action=add&reset=1&cid=%%id%%{$extraParams}";
-          } else if ( $value['key'] == 'tag' ) { //NYSS 3329
+          }
+          elseif ( $value['key'] == 'tag' ) { //NYSS 3329
 			$url = "civicrm/contact/view";
 			$qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
 		  }
@@ -845,7 +846,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     $cacheKey = 'civicrm search ' . $this->_key;
 
     // Get current page requested
-    $pageNum = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+    //NYSS temporarily explicitly ref REQUEST (default in 4.4)
+    $pageNum = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject, FALSE, NULL, 'REQUEST');
     // When starting from scratch, clear any old cache
     if (!$pageNum) {
       CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
@@ -976,11 +978,11 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
   //NYSS 6723
   //function fillupPrevNextCache($sort, $cacheKey = NULL) {
   function fillupPrevNextCache($sort, $cacheKey, $start = 0, $end = 500) {
-    if (!$cacheKey) {
-      $cacheKey = "civicrm search {$this->_key}";
-    }
+    //if (!$cacheKey) {
+      //$cacheKey = "civicrm search {$this->_key}";
+    //}
 
-    CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
+    //CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
 
     //NYSS 6723
     // For custom searches, use the contactIDs method
@@ -1078,7 +1080,8 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         'address_options', TRUE, NULL, TRUE
       );
 
-      self::$_columnHeaders = array('contact_type' => array('desc' => ts('Contact Type')),
+      self::$_columnHeaders = array(
+        'contact_type' => array('desc' => ts('Contact Type')),
         'sort_name' => array(
           'name' => ts('Name'),
           'sort' => 'sort_name',
@@ -1086,20 +1089,25 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         ),
       );
 
-      $defaultAddress = array('street_address' => array('name' => ts('Address')),
-        'city' => array('name' => ts('City'),
+      $defaultAddress = array(
+        'street_address' => array('name' => ts('Address')),
+        'city' => array(
+          'name' => ts('City'),
           'sort' => 'city',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'state_province' => array('name' => ts('State'),
+        'state_province' => array(
+          'name' => ts('State'),
           'sort' => 'state_province',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'postal_code' => array('name' => ts('Postal'),
+        'postal_code' => array(
+          'name' => ts('Postal'),
           'sort' => 'postal_code',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'country' => array('name' => ts('Country'),
+        'country' => array(
+          'name' => ts('Country'),
           'sort' => 'country',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
@@ -1111,7 +1119,8 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         }
       }
 
-      self::$_columnHeaders['email'] = array('name' => ts('Email'),
+      self::$_columnHeaders['email'] = array(
+        'name' => ts('Email'),
         'sort' => 'email',
         'direction' => CRM_Utils_Sort::DONTCARE,
       );

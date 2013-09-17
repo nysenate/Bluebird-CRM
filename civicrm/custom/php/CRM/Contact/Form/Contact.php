@@ -691,7 +691,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       $cacheTagValues = $cache->get($cacheKeyTagValues);
 
       // We're on the edit or save page, and it's not via ajax (_get['block'])
-      if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
+      if( $cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
         // Load the classes for all of the QuickForm element types or else
         // we'll get PHP Incomplete Class objects.
         require_once('HTML/QuickForm.php');
@@ -700,6 +700,26 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         }
         // Load the elements and tag values out of cache and assign them
         $cacheElements = unserialize($cacheElements);
+
+        //unset subrecords if deleted
+        $subTypes = array('email', 'phone', 'im', 'website');
+        $postEles = array();
+        foreach ( $subTypes as $st ) {
+          foreach ( $_POST[$st] as $fID => $fData ) {
+            $postEles[] = "{$st}[{$fID}]";
+          }
+        }
+        foreach ( $cacheElements as $eID => $ele ) {
+          $fldName = $ele->_attributes['name'];
+          $fldType = strstr($fldName, '[', TRUE);
+          if ( in_array($fldType, $subTypes) ) {
+            $fldTypeID = strstr($fldName, ']', TRUE).']';
+            if ( !in_array($fldTypeID, $postEles) ) {
+              unset($cacheElements[$eID]);
+            }
+          }
+        }
+
         $this->_elements = $cacheElements;
         if($cacheTagValues) {
           $cacheTagValues = unserialize($cacheTagValues);

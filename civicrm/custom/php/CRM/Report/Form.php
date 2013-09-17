@@ -902,17 +902,17 @@ class CRM_Report_Form extends CRM_Core_Form {
       $this->assign('group', TRUE);
     }
 
-    $label = ts('Add these Contacts to Group');
+    $label = ts('Add Contacts to Group');//NYSS
     $this->addElement('submit', $this->_groupButtonName, $label, array('onclick' => 'return checkGroup();'));
 
     $this->addChartOptions();
     $this->addButtons(array(
-        array(
-          'type' => 'submit',
-          'name' => ts('Preview Report'),
-          'isDefault' => TRUE,
-          'js' => $jsBegin //NYSS
-        ),
+      array(
+        'type' => 'submit',
+        'name' => ts('Preview Report'),
+        'isDefault' => TRUE,
+        'js' => $jsBegin //NYSS
+      ),
       )
     );
   }

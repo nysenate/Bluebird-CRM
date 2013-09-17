@@ -30,24 +30,26 @@
   {assign var=text value=$smarty.get.text}
 {/if}
 <div class="crm-block crm-form-block crm-search-form-block">
-<div id="searchForm">
-    <div class="form-item">
-    <table class="form-layout-compressed">
-        <tr>
-            <td class="label">{$form.text.label}</td><td>{$form.text.html}</td>
-            <td class="label">{ts}in...{/ts}</td><td>{$form.table.html}</td>
-            <td>{$form.buttons.html} {help id="id-fullText"}</td>
-        </tr>
-    </table>
-    </div>
-</div>
+  <div id="searchForm">
+      <div class="form-item">
+        <table class="form-layout-compressed">
+            <tr>
+              <td class="label">{$form.text.label}</td>
+              <td>{$form.text.html}</td>
+              <td class="label">{ts}in...{/ts}</td>
+              <td>{$form.table.html}</td>
+              <td>{$form.buttons.html} {help id="id-fullText"}</td>
+            </tr>
+        </table>
+      </div>
+  </div>
 </div>
 <div class="crm-block crm-content-block">
   {include file="CRM/common/jsortable.tpl"}
-  {include file="CRM/common/pager.tpl" location="top"}
+  {if !$table}{include file="CRM/common/pager.tpl" location="top"}{/if}{*NYSS 7050*}
 
   {if $rowsEmpty}
-      {include file="CRM/Contact/Form/Search/Custom/EmptyResults.tpl"}
+    {include file="CRM/Contact/Form/Search/Custom/EmptyResults.tpl"}
   {/if}
 
 {assign var=table value=$form.table.value.0}
@@ -302,5 +304,5 @@
     {* END Actions/Results section *}
 </div>
 {/if}
-  {include file="CRM/common/pager.tpl" location="bottom"}
+  {if !$table}{include file="CRM/common/pager.tpl" location="bottom"}{/if}{*NYSS 7050*}
 </div>
