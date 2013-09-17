@@ -92,6 +92,19 @@ sql="
 "
 $execSql $instance -c "$sql"  --drupal -q
 
+## 7134
+sql="
+SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'individual_prefix';
+SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
+SELECT @wght:=weight FROM civicrm_option_value WHERE option_group_id = @optgrp AND name = 'Admiral';
+UPDATE civicrm_option_value SET weight = weight + 3 WHERE option_group_id = @optgrp AND weight > @wght;
+INSERT INTO civicrm_option_value (option_group_id, label, value, name, weight, is_active)
+VALUES (@optgrp, 'Assemblyman', @maxval+1, 'Assemblyman', @wght+1, 1),
+  (@optgrp, 'Assemblymember', @maxval+2, 'Assemblymember', @wght+2, 1),
+  (@optgrp, 'Assemblywoman', @maxval+3, 'Assemblywoman', @wght+3, 1);
+"
+$execSql -i $instance -c "$sql" -q
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance

@@ -144,11 +144,8 @@ class CRM_NYSS_BAO_Log {
       'instanceId' => $instanceId,
     );
 
-    //$reportObj->storeResultSet();
-    $reportObj->buildForm();
     $reportObj->_nyssGetCount = 1;
-    $reportObj->postProcess();
-    //CRM_Core_Error::debug_var('reportObj after postProcess', $reportObj);
+    $reportObj->buildForm();
 
     return ( $reportObj->_nyssRowCount ) ? $reportObj->_nyssRowCount : 0;
   }//getEnhancedContactLogCountReport
