@@ -63,9 +63,15 @@ function updateSenators($optList, $env)
   $senators = $view_service->get(array('view_name'=>'senators'));
   $cnt = count($senators);
 
-  if ($cnt < MIN_SENATOR_COUNT) {
+  if (isset($senators['faultCode'])) {
+    $code = $senators['faultCode'];
+    $msg = $senators['faultString'];
+    echo "[ERROR] Received faultCode=$code ('$msg') from server\n";
+    return false;
+  }
+  else if ($cnt < MIN_SENATOR_COUNT) {
     echo "[ERROR] Unable to retrieve at least ".MIN_SENATOR_COUNT." senators from website\n";
-    return;
+    return false;
   }
     
   echo "[DEBUG] Retrieved $cnt senators from website\n";
@@ -133,6 +139,8 @@ function updateSenators($optList, $env)
       mysql_query($sql, $conn);
     }
   }
+
+  return true;
 } // updateSenators()
 
 
@@ -146,9 +154,15 @@ function updateCommittees($optList, $env)
   $committees = $view_service->get(array('view_name'=>'committees'));
   $cnt = count($committees);
 
-  if ($cnt < MIN_COMMITTEE_COUNT) {
+  if (isset($committees['faultCode'])) {
+    $code = $committees['faultCode'];
+    $msg = $committees['faultString'];
+    echo "[ERROR] Received faultCode=$code ('$msg') from server\n";
+    return false;
+  }
+  else if ($cnt < MIN_COMMITTEE_COUNT) {
     echo "[ERROR] Unable to retrieve at least ".MIN_COMMITTEE_COUNT." committees from website\n";
-    return;
+    return false;
   }
     
   echo "[DEBUG] Retrieved $cnt committees from website\n";
@@ -221,6 +235,8 @@ function updateCommittees($optList, $env)
       mysql_query($sql, $conn);
     }
   }
+
+  return true;
 } // updateCommittees()
 
 
@@ -253,8 +269,10 @@ function updateSignups($optList, $env)
                                       ));
 
     if (isset($signupData['faultCode'])) {
-      var_dump($signupData);
-      exit();
+      $code = $signupData['faultCode'];
+      $msg = $signupData['faultString'];
+      echo "[ERROR] Received faultCode=$code ('$msg') from server\n";
+      return false;
     }
 
     $cnt = count($signupData['accounts']);
@@ -265,7 +283,7 @@ function updateSignups($optList, $env)
 
     if ($optList['dryrun']) {
      echo "[DRYRUN] Retrieved signups from website: ".print_r($signupData, true)."\n";
-     return;
+     return true;
     }
 
     echo "[NOTICE] Processing batch of $cnt senator/committee accounts...\n";
@@ -312,6 +330,7 @@ function updateSignups($optList, $env)
     }
     echo "[DEBUG] Inserted $old_start_id to $start_id signup records.\n";
   }
+  return true;
 } // updateSignups()
 
 

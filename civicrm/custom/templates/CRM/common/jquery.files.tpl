@@ -28,10 +28,8 @@
  * We will unify the two files in a future release
  *}
 packages/jquery/jquery.min.js
-{*NYSS Bump*}
 packages/jquery/jquery-ui-1.8.16/js/jquery-ui-1.8.16.custom.min.js
 packages/jquery/jquery-ui-1.8.16/css/smoothness/jquery-ui-1.8.16.custom.css
-../../../default/themes/Bluebird/scripts/plugins/jquery.bbUtilsConflict.js
 
 packages/jquery/plugins/jquery.autocomplete.js
 packages/jquery/css/jquery.autocomplete.css

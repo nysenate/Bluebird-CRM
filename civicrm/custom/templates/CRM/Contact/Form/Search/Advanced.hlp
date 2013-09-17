@@ -46,8 +46,9 @@
     <p>{ts}You can modify the columns displayed in your search results by creating a Profile containing a different set of contact fields and then selecting that Profile here. For example you may want to include columns for Gender and Date of Birth, while eliminating Country.{/ts} {docURL page="user/the-user-interface/profiles"}</p>
 {/htxt}
 
+{*NYSS 5645*}
 {htxt id="id-search-operator"}
-    <p>{ts}Use the Search Operator to determine whether your criteria are combined with AND statements, or combined with OR statements. For example, you may want to find all individuals who are in the Volunteers group AND who have a Volunteer Training activity recorded for them. In this case use the AND operator. If you need to find everyone who is in the Volunteers group OR has a Volunteer Training activity recorded, use the OR operator.{/ts}</p>
+    <p>{ts}Use the search operator to determine whether your criteria are combined with AND statements or combined with OR statements. For example, you may want to find all individuals who are in a particular mass email group AND who have an issue code of Aging recorded for them. In this case use the AND operator. If you need to find everyone who is in a particular mass email group OR has an issue code of Aging recorded, use the OR operator.{/ts}</p>
 {/htxt}
 
 {htxt id="id-relationship-target-group"}{*NYSS 6601*}

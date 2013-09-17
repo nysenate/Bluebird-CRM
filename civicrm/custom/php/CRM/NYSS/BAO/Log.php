@@ -15,7 +15,7 @@ class CRM_NYSS_BAO_Log {
     if ( $contactId && CRM_Core_BAO_Log::useLoggingReport() ) {
       //NYSS 6719 call count function directly
       //CRM_Core_Error::debug_var('getTabCount $_POST', $_POST, TRUE, TRUE, 'logCount');
-      echo self::getEnhancedContactLogCount( $contactId );
+      echo self::getEnhancedContactLogCountReport( $contactId );
     }
     CRM_Utils_System::civiExit( );
   }
@@ -105,4 +105,48 @@ class CRM_NYSS_BAO_Log {
 
     return $totalCount;
   }
+
+  /*
+   * alternate method for retrieving contact log report count by silently running the report
+   * based on unit test from:
+   * https://github.com/civicrm/civicrm-core/blob/master/tests/phpunit/CiviTest/CiviReportTestCase.php#L79
+   */
+  function getEnhancedContactLogCountReport($contactID) {
+    $reportClass = 'CRM_Report_Form_Contact_LoggingSummary';
+
+    $config = CRM_Core_Config::singleton();
+    $config->keyDisable = TRUE;
+    $controller = new CRM_Core_Controller_Simple($reportClass, ts('some title'));
+    $tmpReportVal = explode('_', $reportClass);
+    $reportName = array_pop($tmpReportVal);
+    $reportObj =& $controller->_pages[$reportName];
+    //CRM_Core_Error::debug_var('reportObj', $reportObj);
+
+    //get the instanceId to use
+    $sql = "
+      SELECT id
+      FROM civicrm_report_instance
+      WHERE report_id = 'logging/contact/summary'
+        AND is_reserved = 1
+      ORDER BY id ASC
+      LIMIT 1
+    ";
+    $instanceId = CRM_Core_DAO::singleValueQuery($sql);
+
+    $_GET = array(
+      $config->userFrameworkURLVar => 'civicrm/report/instance',
+      'altered_contact_id_op' => 'eq',
+      'altered_contact_id_value' => $contactID,
+      'cid' => $contactID,
+      'context' => 'contact',
+      'force' => 1,
+      'reset' => 1,
+      'instanceId' => $instanceId,
+    );
+
+    $reportObj->_nyssGetCount = 1;
+    $reportObj->buildForm();
+
+    return ( $reportObj->_nyssRowCount ) ? $reportObj->_nyssRowCount : 0;
+  }//getEnhancedContactLogCountReport
 }

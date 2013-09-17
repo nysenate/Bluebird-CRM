@@ -20,6 +20,12 @@
     <br />
     {$form.mailing_subject.html}
   </td>
+  {*NYSS 6845*}
+  <td>
+    {$form.mailing_job_status.label}
+    <br />
+    {$form.mailing_job_status.html}
+  </td>
 </tr>
 <tr>
 	<tr><td><label>{ts}Mailing Date{/ts}</label></td></tr>

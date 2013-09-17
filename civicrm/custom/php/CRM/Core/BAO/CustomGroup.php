@@ -909,6 +909,21 @@ SELECT $select
     return $tableName;
   }
 
+  //NYSS 7049
+  /**
+   * Get a list of custom groups which extend a given entity type.
+   * If there are custom-groups which only apply to certain subtypes,
+   * those WILL be included.
+   *
+   * @param $entityType string
+   * @return CRM_Core_DAO_CustomGroup
+   */
+  static function getAllCustomGroupsByBaseEntity($entityType) {
+    $customGroupDAO = new CRM_Core_DAO_CustomGroup();
+    self::_addWhereAdd($customGroupDAO, $entityType, NULL, TRUE);
+    return $customGroupDAO;
+  }
+
   /**
    * Add the whereAdd clause for the DAO depending on the type of entity
    * the custom group is extending.

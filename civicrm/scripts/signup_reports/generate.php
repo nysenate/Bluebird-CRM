@@ -8,10 +8,10 @@ require_once realpath("$this_dir/../bluebird_config.php");
 require_once 'utils.php';
 
 // Process the command line arguments
-$shortopts = 'hS:d:n';
-$longopts = array('help', 'site=', 'date=', 'dryrun');
+$shortopts = 'hd:on';
+$longopts = array('help', 'date=', 'overwrite', 'dryrun');
 $stdusage = civicrm_script_usage();
-$usage = "[--help|-h] [--date|-d FORMATTED_DATE] [--dryrun|-n]";
+$usage = "[--help|-h] [--date|-d FORMATTED_DATE] [--overwrite] [--dryrun|-n]";
 $optList = civicrm_script_init($shortopts, $longopts);
 if ($optList === null) {
   echo "Usage: $prog  $stdusage  $usage\n";
@@ -19,7 +19,8 @@ if ($optList === null) {
 }
 
 // Load the config file
-$config = get_bluebird_instance_config($optList['site']);
+$site = $optList['site'];
+$config = get_bluebird_instance_config($site);
 if ($config == null) {
   die("Unable to continue without a valid configuration.\n");
 }
@@ -66,12 +67,18 @@ else {
           SET reported=1, dt_reported=NOW()
           WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
             AND signup.reported=0
+            AND senator.active=1
+            AND ( committee.active=1 OR committee.active is NULL )
             AND person.bronto=".(($get_bronto)?'1':'0');
   if (!mysql_query($sql, $conn)) {
     die(mysql_error($conn));
   }
   else {
-    echo "[DEBUG] Marked records as 'reported'.\n";
+    $reportCount = mysql_affected_rows($conn);
+    echo "[DEBUG] Marked $reportCount records as 'reported'.\n";
+    if ($reportCount != $recCount) {
+      echo "[ERROR] Reporting Mismatch!  Pulled $recCount signups into spreadsheet, but updated $reportCount signups in database!\n";
+    }
   }
 }
 
@@ -144,7 +151,7 @@ function process_records($res, $district)
   $list_totals = array();
   $nysenate_records = array();
   $nysenate_emails = array();
-  while ($row = mysql_fetch_assoc($result)) {
+  while ($row = mysql_fetch_assoc($res)) {
     // TODO: might need a more robust cleaning method here (extensions, etc)
     $row['Phone'] = str_replace('-', '', $row['Phone']);
 
@@ -226,7 +233,7 @@ function process_records($res, $district)
     }
   }
 
-  return array($nysenate_records, $nysenate_emails, $list_totals);
+  return array($nysenate_records, $list_totals);
 } // process_records()
 
 
@@ -280,7 +287,8 @@ function write_row($worksheet, $row_num, $data)
 } // write_row()
 
 
-function get_header($result)
+
+function get_header($res)
 {
   $header = array();
   $num_fields = mysql_num_fields($res);
