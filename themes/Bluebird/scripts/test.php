@@ -71,37 +71,37 @@ var cj = jQuery.noConflict(true);
 <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/general.js?mmy6gr"></script>
 <script src="/sites/default/themes/Bluebird/scripts/bbUtils/bbUtils.js" type="text/javascript"></script>
 <script src="/sites/default/themes/Bluebird/scripts/bbJSsettings/bbhg.js" type="text/javascript"></script>
-<script src="/sites/default/themes/Bluebird/scripts/tree/JSTree.js" type="text/javascript"></script>
+<script src="/sites/default/themes/Bluebird/scripts/tag/JSTree2.js" type="text/javascript"></script>
 <script src="/sites/default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js" type="text/javascript"></script>
 <script type="text/javascript" src="http://bluebird/sites/default/themes/Bluebird/scripts/jquery.infiniScroll/jquery.infiniScroll.js"></script>
 
 </head>
 <body>
   Tag Testing Ground
+  <div class="JSTreeInit"></div>
   <script>
     var jsTreePageSettings = {
       pageElements: {
-        wrapper: 'BBTreeContainer',
-        tagHolder: ['BBTree']
+        wrapper: ['BBTreeContainer'],
+        tagHolder: ['BBTree'],
+        prefix: ['BBtree']
       },
       dataSettings: {
         pullSets: [291,296,292],
         // pullSets: [291],
-        contact: 0
+        entity_id: 0
       },
       displaySettings: {
-        size: "narrow"
+        // size: "narrow"
       }
     }
-    // i should really make this a 
-    var instance = jstree.startInstance(jsTreePageSettings);
+    jstree.init(jsTreePageSettings, jstree.views);
   </script>
-  <div class="JSTreeInit"></div>
   <script>
-    // console.log(jstree);
-    // must put instance in there, well instance + properties
-    var viewA = jstree.views.createNewView(instance);
-    //BBTree.initContainer();
+    // // console.log(jstree);
+    // // must put instance in there, well instance + properties
+    // var viewA = jstree.views.createNewView(instance);
+    // BBTree.initContainer();
   </script>
   <script>
     // var viewB = jstree.views.createNewView();

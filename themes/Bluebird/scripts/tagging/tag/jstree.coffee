@@ -66,14 +66,12 @@ class Instance
       # if it's an activity, entity_type is different
       #where to grab the tree
       # temporarily killing
-      # url: '/civicrm/ajax/tag/tree'
-      # data:
-      #   entity_table: 'civicrm_contact'
-      #   entity_id: 0
-      #   call_uri: window.location.href
-      #   entity_counts: 0
-      # local function
-      url: 'localtagdata.json'
+      url: '/civicrm/ajax/tag/tree'
+      data:
+        entity_table: 'civicrm_contact'
+        entity_id: 0
+        call_uri: window.location.href
+        entity_counts: 0
       dataType: 'json'
     # getter/setter
     @get = (name) =>

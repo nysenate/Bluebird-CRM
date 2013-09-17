@@ -173,7 +173,13 @@
         print: true
       };
       callAjax = {
-        url: 'localtagdata.json',
+        url: '/civicrm/ajax/tag/tree',
+        data: {
+          entity_table: 'civicrm_contact',
+          entity_id: 0,
+          call_uri: window.location.href,
+          entity_counts: 0
+        },
         dataType: 'json'
       };
       this.get = function(name) {
