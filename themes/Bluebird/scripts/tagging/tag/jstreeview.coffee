@@ -276,7 +276,8 @@ class View
       @cj_selectors.tagBox.find(".filtered").remove()
       activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
       for k,v of @trees
-        @cj_selectors.tagBox.append(v.html)
+        new Tree(v.tagList, k)
+        # @cj_selectors.tagBox.append(v.html)
         if parseInt(k) == 292
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
       @setActiveTree(@getIdFromTabName(activeTree))
@@ -329,7 +330,6 @@ class Autocomplete
       theme: "JSTree"
     cjac = cj("#JSTree-ac")
     searchmonger = cjac.tagACInput("init",params)
-    # console.log searchmonger
     # cjac.on "keydown", bbUtils.debounce((event) =>
     #   @filterKeydownEvents(event,searchmonger,cjac)
     # 1000)
@@ -363,12 +363,13 @@ class Autocomplete
   moveDropdown: () ->
 
   buildPositions: (list,term,hits) ->
-    @view.writeFilteredList(list,term,hits)
+
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
       options =
         scrollBox: ".JSTree"
       @cjTagBox.find(".top-292.tagContainer").infiniscroll(options, =>
+          @openLegQueryDone = false
           nextPage =
             term: @positionSearchTerm
             page: @positionPage
@@ -377,7 +378,9 @@ class Autocomplete
               poses = @addPositionsToTags(results.results)
               filteredList = {292: poses}
               @getNextPositionRound(results)
-              # console.log poses
+              new Tree(poses,"292",false,cj(".JSTree .top-292"))
+              @openLegQueryDone = true
+              @buildPositions()
           )
       )
   addPositionLoader: () ->
@@ -386,7 +389,6 @@ class Autocomplete
     term = cjac.val() + lastLetter
     if term.length >= 3
       @view.shouldBeFiltered = true
-      console.log @view
       searchmonger.exec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
           openLeg = new OpenLeg
@@ -394,7 +396,8 @@ class Autocomplete
             poses = @addPositionsToTags(results.results)
             filteredList = {292: poses}
             @getNextPositionRound(results)
-            @buildPositions(filteredList, term, {292: (results.seeXmore + 10)})
+            @view.writeFilteredList(filteredList,term,{292: (results.seeXmore + 10)})
+            @buildPositions()
             @openLegQueryDone = true
           )
           tags = @sortSearchedTags(terms.tags)
@@ -485,21 +488,24 @@ class Tree
   domList: {}
   nodeList: {}
   tabName: ""
-  constructor: (@tagList, @tagId, @filter = false) ->
+  constructor: (@tagList, @tagId, @filter = false, @location) ->
     @buildTree()
     # @cjLocation = 
   buildTree: () ->
     if @filter then filter = "filtered" else filter = "" 
-    @domList = cj()
-    @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
+    if @location?
+      @append = true
+      @domList = cj()
+      @domList = @domList.add("<div></div>")
+    else
+      @domList = cj()
+      @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
     @iterate(@tagList)
     
   iterate: (ary) ->
     cjTagList = cj(@domList)
-    # console.log cjTagList
     for node in ary
       @nodeList[node.id] = kNode = new Node(node)
-      # does parent exist already?
       if node.parent == @tagId
         cjTagList.append(kNode.html)
       else
@@ -510,7 +516,10 @@ class Tree
           cjToAppendTo.append(kNode.html)
       # if parent exists attach to parent
       # if parent doesn't exist, attach to list
-    cjTagList.appendTo(".JSTree")
+    if !@append
+      cjTagList.appendTo(".JSTree")
+    else
+      @location.find(".loadingGif").replaceWith(cjTagList)
     @html = cjTagList
     _treeUtils.makeDropdown(cj(".JSTree .top-#{@tagId}"))
     _treeUtils.readDropdownsFromLocal(@tagId,@tagList)

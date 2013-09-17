@@ -182,6 +182,6 @@
         return $.error("Method " + method + " does not exist on jquery.tagACInput");
       }
     };
-  })(cj, window, document);
+  })($, window, document);
 
 }).call(this);

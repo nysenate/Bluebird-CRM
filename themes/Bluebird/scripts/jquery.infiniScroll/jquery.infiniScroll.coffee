@@ -68,4 +68,4 @@
       methods.init.apply this, arguments
     else
       $.error "Method " + method + " does not exist on jquery.infiniscroll"
-) cj, window, document
+) $, window, document

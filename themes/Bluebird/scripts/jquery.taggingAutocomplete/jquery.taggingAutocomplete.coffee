@@ -158,4 +158,4 @@
       methods.init.apply this, arguments
     else
       $.error "Method " + method + " does not exist on jquery.tagACInput"
-) cj, window, document
+) $, window, document
