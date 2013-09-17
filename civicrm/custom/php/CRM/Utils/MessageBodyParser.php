@@ -174,6 +174,7 @@ class MessageBodyParser
     $body = html_entity_decode($body);
     $patterns = array('/\<p(\s*)?\/?\>/i');
     $body = ltrim($body);
+    $body = preg_replace('/^(?:<br\s*\/?>\s*)+/', '', $body);
 
     $body = preg_replace($patterns, '<br/><br/>', $body);
     $body = self::stripBodyTags($body);
