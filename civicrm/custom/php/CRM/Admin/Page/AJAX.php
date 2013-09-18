@@ -281,9 +281,6 @@ class CRM_Admin_Page_AJAX {
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       $content = curl_exec($ch);
       curl_close($ch);
-
-      // NYSS 5128 - Handle any non-printables
-      $content = iconv('ISO-8859-1', 'UTF-8', $content);
       $json = json_decode($content, true);
 
       // Sort bills by year (descending), and by bill number (ascending)
