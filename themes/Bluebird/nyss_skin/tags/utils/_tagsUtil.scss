@@ -1,0 +1,145 @@
+/*vars*/
+  $textColor:#000;
+  /*icons*/
+  $functionIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/fcb.png";
+  $defaultIconLink : "/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png";
+  $levelClassSlug: "lv";
+  /*boxwidth*/
+  $inputBoxWidthFull: 522px;
+  $inputBoxWidthShort: 285px;
+  $normalTagWidth: 505px;
+  $inputBox: 0px;
+
+  /* colors */
+  $keywordsColor: #EBB931;
+  $positionsColor: #6FD5E3;
+  $issueCodesColor: #5AD170;
+  $searchColor: #BF5866;
+
+/*mixins*/
+
+
+/* page size */
+
+/* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */
+@mixin functionIcon($setIconLink) {
+  background-image: url('#{$setIconLink}') !important;
+  cursor: pointer;
+}
+@mixin addTag {
+  .addTag {
+    @include functionIcon($functionIconLink); background-position: 0;
+  }
+}
+@mixin removeTag {
+  .removeTag{
+    @include functionIcon($functionIconLink); background-position: -17px 0px;
+  }
+}
+@mixin moveTag {
+  .moveTag {
+    @include functionIcon($functionIconLink); background-position: -34px 0px;
+  }
+}
+@mixin updateTag {
+  .updateTag{
+    @include functionIcon($functionIconLink); background-position: -50px 0px;
+  }
+}
+@mixin mergeTag {
+  .mergeTag{
+    @include functionIcon($functionIconLink); background-position: -66px 0px;
+  }
+}
+@mixin convertTag {
+  .convertTag{
+    @include functionIcon($functionIconLink); background-position: -107px 0px;
+  }
+}
+@mixin printTag {
+  .printTag{
+    @include functionIcon($defaultIconLink); background-position: -160px -96px;
+  }
+}
+@mixin closeButton {
+  .closeButton{
+    @include functionIcon($defaultIconLink); background-position: -97px -129px;
+  }
+}
+@mixin editIssueCodeButtons {
+  @include addTag;
+  @include removeTag;
+  @include moveTag;
+  @include updateTag;
+  @include mergeTag;
+}
+@mixin editKeywordButtons {
+  @include addTag;
+  @include removeTag;
+  @include updateTag;
+  @include mergeTag;
+  @include convertTag;
+}
+
+@mixin iterator {
+  @for $i from 1 through 10 {
+    dl.#{$levelClassSlug}-#{$i}
+    {
+      width: 100% - (2*$i);
+      @if $i != 0
+      {
+        margin-left: 2%;
+      }
+      @if $i > 0
+      {
+        display:none;
+      }
+      
+    }
+    dt.#{$levelClassSlug}-#{$i}
+    {
+      @if $i == 0
+      {
+        width: 485px;
+        margin: 10px 10px 0;
+        .treeButton {
+          display:none;
+        }
+        .tag {
+          font-size: 14px;
+          font-weight:bold;
+        }
+      }
+      @if $i != 0 {
+      }
+    }
+  }
+}
+@mixin in-and-out-hover-opacity($color) {
+  background-color:rgba(lighten($color,10%),.6);
+  &:hover {
+    background-color:rgba($color,1);
+  }
+  &.active {
+    background-color:rgba($color,.8);
+    font-weight:bold;
+  }
+}
+@mixin tag-lightness($color,$opacity) {
+  background-color:rgba(lighten($color,15%),$opacity);
+}
+@mixin descriptionChange($lines) {
+  height:20px*$lines;
+  .tag {
+    height:20px*$lines;
+  }
+  .transparancyBox {
+    height: 20px*$lines;
+    top: -20px*$lines;
+  }
+  .description {
+    position:absolute;
+    bottom:0px;
+  }
+}
+@import "extends";
