@@ -172,10 +172,12 @@ class MessageBodyParser
 
     // final cleanup
     $body = html_entity_decode($body);
-    $patterns = array('/\<p(\s*)?\/?\>/i');
     $body = ltrim($body);
-    $body = preg_replace('/^(?:<br\s*\/?>\s*)+/', '', $body);
+    // remove random tags that appear in the beginning of the body
+    $body = preg_replace('/^.*?>(?=[A-Za-z0-9-.,])/', '', $body);
+    $body = ltrim($body);
 
+    $patterns = array('/\<p(\s*)?\/?\>/i');
     $body = preg_replace($patterns, '<br/><br/>', $body);
     $body = self::stripBodyTags($body);
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
