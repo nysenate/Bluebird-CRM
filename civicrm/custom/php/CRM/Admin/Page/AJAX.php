@@ -275,15 +275,12 @@ class CRM_Admin_Page_AJAX {
        */
       $billNo = $name;
       // NYSS 6990 - ORDER BY year DESC as current bills are more relevant.
-      $target_url = self::OPENLEG_BASE_URL.'/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&searchType=&format=json&pageSize=10&sort=year&sortOrder=true';
+      $target_url = self::OPENLEG_BASE_URL.'/api/1.0/json/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&pageSize=10&sort=year&sortOrder=true';
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $target_url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       $content = curl_exec($ch);
       curl_close($ch);
-
-      // NYSS 5128 - Handle any non-printables
-      $content = iconv('ISO-8859-1', 'UTF-8', $content);
       $json = json_decode($content, true);
 
       // Sort bills by year (descending), and by bill number (ascending)
