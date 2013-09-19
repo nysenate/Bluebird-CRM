@@ -27,8 +27,7 @@ OpenLeg = (function() {
     fYear = "(year:" + (this.getCurrentSessionYear(year)) + ")";
     fText = "(full:" + term + "~ OR full:" + term + "*)";
     fOid = "(oid:" + queryDefaults.oid + ")";
-    console.log(validjsonpterm = bbUtils.spaceTo("underscore", term));
-    ajaxStructure.jsonpCallback = "bb_" + validjsonpterm;
+    validjsonpterm = bbUtils.spaceTo("underscore", term);
     ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
     return this.getQuery();
   };
