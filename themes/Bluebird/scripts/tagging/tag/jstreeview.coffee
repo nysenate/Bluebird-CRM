@@ -67,6 +67,9 @@ class View
   defaultPrefix: "JSTree"
   prefixes: []
   defaultTree: 0
+  descWidths:
+    normal: 80
+    long: 160
   constructor: (@instance) ->
     # starts the chain to write the page structure
     @writeContainers()
@@ -74,7 +77,9 @@ class View
     @formatPageElements()
     @createSelectors()
     tagBox = new Resize
+    @setDescWidths()
     if @settings.tall
+
       if tagBox?
         if tagBox.height >= 0  
           height = " style='height:#{tagBox.height}px'"
@@ -86,6 +91,21 @@ class View
         @addClassesToElement(height)
     else
       @buildDropdown()
+  setDescWidths: () ->
+    if @settings.tall
+      if @settings.wide
+        _descWidths.normal = 80
+        _descWidths.long = 160
+      else
+        _descWidths.normal = 20
+        _descWidths.long = 40
+    else
+      if @settings.wide
+        _descWidths.normal = 70
+        _descWidths.long = 150
+      else
+        _descWidths.normal = 20
+        _descWidths.long = 40
   buildDropdown: () ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
@@ -349,15 +369,22 @@ class View
   toggleDropdown: (oc = false) ->
     # debugger
     if oc
-      tagHeight = @getTagHeight @cj_selectors.tagBox.find(".tagContainer:not('.top-292')")
+      if @cj_selectors.tagBox.find(".top-291,.top-296").length == 2
+        cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
+          @getTagHeight(cj(container))
+        )
+      if @cj_selectors.tagBox.find(".top-292").length == 1
+        cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
+          @getTagHeight(cj(container))
+        )
       @cj_selectors.container.css("position","static")
-      @cj_selectors.tagBox.css("height","auto").addClass("open")
+      @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+      
     else
       boxHeight = new Resize()
-      console.log boxHeight
       @cj_selectors.container.css("position","relative").height(boxHeight)
-      @cj_selectors.tagBox.removeClass("open")
-  getTagHeight:(cjTagContainer) ->
+      @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll")
+  getTagHeight:(cjTagContainer,maxHeight = 180) ->
     # get all dl's
     cj.each(cjTagContainer, (a,container) =>
       checkDTs = []
@@ -365,13 +392,11 @@ class View
       propHeight = 0
       for v in heightTotal
         propHeight += parseInt(v)
-      console.log heightTotal
-      console.log propHeight
-      if propHeight > 180
+      if propHeight > maxHeight
         closestTo = 0
         for v in heightTotal
           console.log closestTo
-          if closestTo > 180
+          if closestTo > maxHeight
             break
           closestTo += parseInt(v)
         cj(container).height(closestTo)
@@ -383,13 +408,9 @@ class View
       return heightTotal
     cj.each(cj(container).find("dt"), (i,el) =>
       cjEl = cj(el)
-      console.log cjEl.data('tagid'),cjEl.height()
       heightTotal.push cjEl.height()
       if heightTotal.length > 8
         return false
-      # cjDL = cj("#tagDropdown_#{cjEl.data('tagid')}[style*='block']")
-      # if cjDL.length > 0
-      #   @getRecTagHeight(cjDL[0],heightTotal)
     )
     return heightTotal
 
@@ -537,6 +558,7 @@ class Autocomplete
             @view.writeFilteredList(filteredList,term,{292: (results.seeXmore)})
             @buildPositions()
             @openLegQueryDone = true
+            @view.toggleDropdown(true)
           )
           tags = @sortSearchedTags(terms.tags)
           hits = @separateHits(tags)
@@ -562,7 +584,6 @@ class Autocomplete
                 # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
 
           @localQueryDone = true
-          @view.toggleDropdown(true)
         if terms? && cj.isEmptyObject(terms)
           tags = {}
       )
@@ -717,7 +738,9 @@ _treeUtils =
       else
       _openTags 
 
-
+_descWidths = 
+  normal: 80
+  long: 160
 
 
 class Node
@@ -725,7 +748,7 @@ class Node
     @data = node
     @parent = node.parent
     @hasDesc = ""
-    @description = node.description
+    @description = node.descriptf_ion
     @descLength(node.description)
     @id = node.id
     @children = node.children
@@ -734,14 +757,22 @@ class Node
     return @
   descLength: (@description) ->
     if @description?
-      if description.length > 0
-        @hasDesc = "description"
-      if @description.length > 0 and @description.length <= 80
-        @hasDesc += " shortdescription"
-      if @description.length > 160
-        @hasDesc = "longdescription"
-      if @description.length > 80
-        @description = _utils.textWrap(@description, 80)
+      if @description.length > 0
+        desc = _utils.textWrap(@description, _descWidths.normal)
+        console.log desc
+        if desc.segs == 1
+          @hasDesc = "description shortdescription"
+        if desc.segs == 2
+          @hasDesc = "description"
+        if desc.segs == 3
+          @hasDesc = "longdescription"
+        if desc.segs > 3
+          if desc.toRet[2] < _descWidth.normal
+            desc.toRet[2] += "..."
+        if desc.segs > 1
+          @description = desc.toRet.join("<br />")
+        else
+          @description = desc.toRet[0]
   html: (node) ->
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false

@@ -135,18 +135,43 @@ _utils =
         obj[k] = propDefault[k]
   textWrap: (text, length) ->
     numberOfSegs = Math.ceil(text.length/length)
-    toRet = ""
+    retObj =
+      segs: numberOfSegs
+      toRet: []
     shouldRet = false
     rx = /\s|-| |\u00A0|\u8209|\r|\n/g
+    if numberOfSegs <= 1
+      retObj.toRet = ["#{text}"]
+      return retObj
+    lastEnd = 0
     for a in [0..numberOfSegs] 
       seg = text.slice(length*a,length*(a+1))
       if !seg.match(rx) and seg.length >= length
-        shouldRet = true
-        toRet += "#{seg} "
-      else 
-        toRet += "#{seg}"
-    return toRet if shouldRet
-    text
+        # if there's no spaces or any line breaks
+        lastEnd = length*(a+1)
+      else
+        if seg.length > 0
+          currentEnd = lastEnd+length
+          # find all spaces
+          nextSpace = 0
+          for wordPiece in text.split(rx)
+            currentLastSpace = nextSpace
+            if wordPiece.length == 0
+              nextSpace++
+            nextSpace += wordPiece.length + 1
+            if nextSpace >= currentEnd
+              break
+          if nextSpace >= text.length
+            currentLastSpace = nextSpace
+            killFutureSegs = true
+          retObj.toRet.push text.slice(lastEnd,currentLastSpace)
+          if killFutureSegs?
+            retObj.segs = a+1
+            break
+          lastEnd = currentLastSpace
+
+    return retObj
+    
   hyphenize: (text) ->
     text.replace(" ","-")
 

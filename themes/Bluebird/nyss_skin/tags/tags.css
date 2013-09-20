@@ -182,7 +182,8 @@
         position: absolute;
         bottom: 0px; }
     #JSTree-container.BBTreeContainer .BBTree dt.longdescription, #BBTreeContainer .BBTree dt.longdescription {
-      height: 60px; }
+      height: 60px;
+      height: 52px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 60px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
@@ -191,6 +192,11 @@
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .description, #BBTreeContainer .BBTree dt.longdescription .description {
         position: absolute;
         bottom: 0px; }
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
+        height: 52px; }
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
+        height: 52px;
+        top: -52px; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.35); }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296 {

@@ -53,4 +53,12 @@ dt.shortdescription.description {
 }
 dt.longdescription {
   @include descriptionChange(3);
+  height:52px;
+  .tag {
+    height:52px;
+  }
+  .transparancyBox {
+    height:52px;
+    top:-52px;
+  }
 }
