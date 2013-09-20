@@ -89,13 +89,38 @@ View = (function() {
   }
 
   View.prototype.writeContainers = function() {
+    var height, tagBox;
     this.formatPageElements();
     this.createSelectors();
-    return this.addClassesToElement();
+    tagBox = new Resize;
+    console.log(this.settings.tall);
+    if (this.settings.tall) {
+      if (tagBox != null) {
+        if (tagBox.height > 0) {
+          height = " style='height:" + tagBox.height + "px'";
+          return this.addClassesToElement(height);
+        } else {
+          return this.buildDropdown();
+        }
+      } else {
+        height = "";
+        return this.addClassesToElement(height);
+      }
+    } else {
+      return this.buildDropdown();
+    }
   };
 
-  View.prototype.addClassesToElement = function() {
-    this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + "'></div>");
+  View.prototype.buildDropdown = function() {
+    this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + " dropdown'></div>");
+    this.cj_selectors.initHolder.prepend(this.menuHtml(this.menuSelectors));
+    this.cj_selectors.initHolder.append(this.dataHolderHtml());
+    this.cj_selectors.initHolder.append(this.tokenHolderHtml(this.tokenHolder));
+    return this.cj_selectors.initHolder.removeClass(this.selectors.initHolder).attr("id", this.selectors.container).addClass(this.selectors.containerClass);
+  };
+
+  View.prototype.addClassesToElement = function(height) {
+    this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + "' " + height + "></div>");
     this.cj_selectors.initHolder.prepend(this.menuHtml(this.menuSelectors));
     this.cj_selectors.initHolder.append(this.dataHolderHtml());
     this.cj_selectors.initHolder.append(this.tokenHolderHtml(this.tokenHolder));
@@ -494,6 +519,10 @@ View = (function() {
     return cjlocation.html(positionText);
   };
 
+  View.prototype.collapseTagBox = function() {
+    return this.cj_selectors.tagBox.hide();
+  };
+
   return View;
 
 })();
@@ -875,7 +904,8 @@ Tree = (function() {
   };
 
   Tree.prototype.iterate = function(ary) {
-    var cjTagList, cjToAppendTo, kNode, node, _i, _len;
+    var buttons, cjTagList, cjToAppendTo, kNode, node, _i, _len,
+      _this = this;
     cjTagList = cj(this.domList);
     for (_i = 0, _len = ary.length; _i < _len; _i++) {
       node = ary[_i];
@@ -898,7 +928,15 @@ Tree = (function() {
     }
     this.html = cjTagList;
     _treeUtils.makeDropdown(cj(".JSTree .top-" + this.tagId));
-    return _treeUtils.readDropdownsFromLocal(this.tagId, this.tagList);
+    if (this.filter) {
+      buttons = cj(".JSTree .top-" + this.tagId + " .treeButton").parent().parent();
+      return cj.each(buttons, function(i, button) {
+        return _treeUtils.dropdownItem(cj(button), true);
+      });
+    } else {
+      console.log(this.filter);
+      return _treeUtils.readDropdownsFromLocal(this.tagId, this.tagList);
+    }
   };
 
   return Tree;

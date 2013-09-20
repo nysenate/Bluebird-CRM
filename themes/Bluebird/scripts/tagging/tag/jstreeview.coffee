@@ -70,9 +70,28 @@ class View
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
-    @addClassesToElement()
-  addClassesToElement: () ->
-    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}'></div>"
+    tagBox = new Resize
+    console.log @settings.tall
+    if @settings.tall
+      if tagBox?
+        if tagBox.height > 0  
+          height = " style='height:#{tagBox.height}px'"
+          @addClassesToElement(height)
+        else
+          @buildDropdown()
+      else
+        height = ""
+        @addClassesToElement(height)
+    else
+      @buildDropdown()
+  buildDropdown: () ->
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
+    @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
+    @cj_selectors.initHolder.append(@dataHolderHtml())
+    @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
+    @cj_selectors.initHolder.removeClass(@selectors.initHolder).attr("id", @selectors.container).addClass(@selectors.containerClass)
+  addClassesToElement: (height) ->
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}' #{height}></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
@@ -323,6 +342,10 @@ class View
               </div>
           "
     cjlocation.html(positionText)
+  collapseTagBox: () ->
+    @cj_selectors.tagBox.hide()
+
+
 
 class Settings
   constructor: (@instance, @view) ->
@@ -598,7 +621,14 @@ class Tree
       @location.find(".loadingGif").replaceWith(cjTagList)
     @html = cjTagList
     _treeUtils.makeDropdown(cj(".JSTree .top-#{@tagId}"))
-    _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
+    if @filter
+      buttons = cj(".JSTree .top-#{@tagId} .treeButton").parent().parent()
+      cj.each(buttons, (i,button) =>
+        _treeUtils.dropdownItem(cj(button),true)
+      )
+    else
+      console.log @filter
+      _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
 _treeUtils =
   selectByParent: (list, parent) ->

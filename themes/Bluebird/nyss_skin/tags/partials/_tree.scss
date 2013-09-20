@@ -12,5 +12,8 @@
   .tagContainer {
     display:none
   }
+  &.dropdown {
+    display:none;
+  }
 }
 @import "tokenHolder";
