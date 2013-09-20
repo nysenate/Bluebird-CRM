@@ -78,10 +78,11 @@ class View
     @createSelectors()
     tagBox = new Resize
     @setDescWidths()
+    console.log tagBox
+    console.log @settings.tall
     if @settings.tall
-
       if tagBox?
-        if tagBox.height >= 0  
+        if tagBox.height > 0  
           height = " style='height:#{tagBox.height}px'"
           @addClassesToElement(height)
         else
@@ -380,15 +381,14 @@ class View
         )
       @cj_selectors.container.css("position","static")
       @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
-      
     else
       boxHeight = new Resize()
-      @cj_selectors.container.css("position","relative").height(boxHeight)
+      console.log boxHeight
+      @cj_selectors.container.css("position","relative")
       @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll")
   getTagHeight:(cjTagContainer,maxHeight = 180) ->
     # get all dl's
     cj.each(cjTagContainer, (a,container) =>
-      console.log container
       checkDTs = []
       heightTotal = @getRecTagHeight(container)
       propHeight = 0
@@ -400,7 +400,6 @@ class View
           if closestTo > maxHeight
             break
           closestTo += parseInt(v)
-        console.log closestTo
         cj(container).height(closestTo)
       else
         cj(container).height(propHeight)
@@ -436,9 +435,17 @@ class Settings
     return "<div class='#{name}'></div>"
 
 class Resize
-  constructor: () ->
+  constructor: (boxHeight) ->
+    if boxHeight?
+      bbUtils.localStorage("tagBoxHeight",boxheight)
+      return boxHeight
     if bbUtils.localStorage("tagBoxHeight")?
+      console.log "know height"
       lsheight = bbUtils.localStorage("tagBoxHeight")
+      console.log bbUtils.localStorage("tagBoxHeight")
+      if lsheight.height > 600
+       bbUtils.localStorage("tagBoxHeight", 600)
+       lsheight.height = 600
       @height = lsheight.height
     else
       @height = 400
@@ -451,14 +458,18 @@ class Resize
     cj(document).on("mouseup", (event,tagBox) =>
       cj(document).off("mousemove")
       if @tagBox.height() < 15
-        @view.toggleTagBox()
         @tagBox.height(0)
-      bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
+        @tagBox.addClass("dropdown")
+      if !@tagBox.hasClass("dropdown")
+        bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
+      else
+        bbUtils.localStorage("tagBoxHeight", {height:0})
     )
     @view.cj_tokenHolder.resize.on("mousedown", (ev,tagBox) =>
       if @tagBox.hasClass("dropdown")
         @tagBox.height(0)
-        @view.toggleTagBox()
+        @tagBox.show()
+        @tagBox.removeClass("dropdown")
       ev.preventDefault()
       cj(document).on("mousemove", (ev,tagBox) =>
           if ev.pageY-cj(".JSTree").offset().top < maxHeight
@@ -498,7 +509,8 @@ class Autocomplete
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
         @view.rebuildInitialTree()
-        @view.toggleDropdown()
+        if @view.cj_selectors.tagBox.hasClass("dropdown")
+          @view.toggleDropdown()
         if @initHint
           @hintText(cjac,params)
           @initHint = false
@@ -562,7 +574,8 @@ class Autocomplete
             @view.writeFilteredList(filteredList,term,{292: (results.seeXmore)})
             @buildPositions()
             @openLegQueryDone = true
-            @view.toggleDropdown(true)
+            if @view.cj_selectors.tagBox.hasClass("dropdown")
+              @view.toggleDropdown(true)
           )
           tags = @sortSearchedTags(terms.tags)
           hits = @separateHits(tags)

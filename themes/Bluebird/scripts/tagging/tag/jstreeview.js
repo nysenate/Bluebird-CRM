@@ -103,9 +103,11 @@ View = (function() {
     this.createSelectors();
     tagBox = new Resize;
     this.setDescWidths();
+    console.log(tagBox);
+    console.log(this.settings.tall);
     if (this.settings.tall) {
       if (tagBox != null) {
-        if (tagBox.height >= 0) {
+        if (tagBox.height > 0) {
           height = " style='height:" + tagBox.height + "px'";
           return this.addClassesToElement(height);
         } else {
@@ -576,7 +578,8 @@ View = (function() {
       return this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
     } else {
       boxHeight = new Resize();
-      this.cj_selectors.container.css("position", "relative").height(boxHeight);
+      console.log(boxHeight);
+      this.cj_selectors.container.css("position", "relative");
       return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll");
     }
   };
@@ -588,7 +591,6 @@ View = (function() {
     }
     return cj.each(cjTagContainer, function(a, container) {
       var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
-      console.log(container);
       checkDTs = [];
       heightTotal = _this.getRecTagHeight(container);
       propHeight = 0;
@@ -605,7 +607,6 @@ View = (function() {
           }
           closestTo += parseInt(v);
         }
-        console.log(closestTo);
         return cj(container).height(closestTo);
       } else {
         return cj(container).height(propHeight);
@@ -677,10 +678,20 @@ Settings = (function() {
 })();
 
 Resize = (function() {
-  function Resize() {
+  function Resize(boxHeight) {
     var lsheight;
+    if (boxHeight != null) {
+      bbUtils.localStorage("tagBoxHeight", boxheight);
+      return boxHeight;
+    }
     if (bbUtils.localStorage("tagBoxHeight") != null) {
+      console.log("know height");
       lsheight = bbUtils.localStorage("tagBoxHeight");
+      console.log(bbUtils.localStorage("tagBoxHeight"));
+      if (lsheight.height > 600) {
+        bbUtils.localStorage("tagBoxHeight", 600);
+        lsheight.height = 600;
+      }
       this.height = lsheight.height;
     } else {
       this.height = 400;
@@ -701,17 +712,24 @@ Resize = (function() {
     cj(document).on("mouseup", function(event, tagBox) {
       cj(document).off("mousemove");
       if (_this.tagBox.height() < 15) {
-        _this.view.toggleTagBox();
         _this.tagBox.height(0);
+        _this.tagBox.addClass("dropdown");
       }
-      return bbUtils.localStorage("tagBoxHeight", {
-        height: _this.tagBox.height()
-      });
+      if (!_this.tagBox.hasClass("dropdown")) {
+        return bbUtils.localStorage("tagBoxHeight", {
+          height: _this.tagBox.height()
+        });
+      } else {
+        return bbUtils.localStorage("tagBoxHeight", {
+          height: 0
+        });
+      }
     });
     return this.view.cj_tokenHolder.resize.on("mousedown", function(ev, tagBox) {
       if (_this.tagBox.hasClass("dropdown")) {
         _this.tagBox.height(0);
-        _this.view.toggleTagBox();
+        _this.tagBox.show();
+        _this.tagBox.removeClass("dropdown");
       }
       ev.preventDefault();
       return cj(document).on("mousemove", function(ev, tagBox) {
@@ -770,7 +788,9 @@ Autocomplete = (function() {
         _this.view.removeTabCounts();
         _this.view.shouldBeFiltered = false;
         _this.view.rebuildInitialTree();
-        _this.view.toggleDropdown();
+        if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
+          _this.view.toggleDropdown();
+        }
         if (_this.initHint) {
           _this.hintText(cjac, params);
           return _this.initHint = false;
@@ -869,7 +889,9 @@ Autocomplete = (function() {
             });
             _this.buildPositions();
             _this.openLegQueryDone = true;
-            return _this.view.toggleDropdown(true);
+            if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
+              return _this.view.toggleDropdown(true);
+            }
           });
           tags = _this.sortSearchedTags(terms.tags);
           hits = _this.separateHits(tags);
