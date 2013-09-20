@@ -9,8 +9,11 @@ window.jstree["views"] =
       trees[a] = new Tree(b,a)
     @view.trees = trees
     @view.init()
-    resize = new Resize
-    resize.addResize(instance,@view)
+    if @view.settings.tall
+      resize = new Resize
+      resize.addResize(instance,@view)
+    else
+      @view.cj_tokenHolder.resize.remove()
     
   view: {}
 
@@ -71,10 +74,9 @@ class View
     @formatPageElements()
     @createSelectors()
     tagBox = new Resize
-    console.log @settings.tall
     if @settings.tall
       if tagBox?
-        if tagBox.height > 0  
+        if tagBox.height >= 0  
           height = " style='height:#{tagBox.height}px'"
           @addClassesToElement(height)
         else
@@ -342,10 +344,54 @@ class View
               </div>
           "
     cjlocation.html(positionText)
-  collapseTagBox: () ->
-    @cj_selectors.tagBox.hide()
-
-
+  toggleTagBox: () ->
+    @cj_selectors.tagBox.toggle().toggleClass("dropdown")
+  toggleDropdown: (oc = false) ->
+    # debugger
+    if oc
+      tagHeight = @getTagHeight @cj_selectors.tagBox.find(".tagContainer:not('.top-292')")
+      @cj_selectors.container.css("position","static")
+      @cj_selectors.tagBox.css("height","auto").addClass("open")
+    else
+      boxHeight = new Resize()
+      console.log boxHeight
+      @cj_selectors.container.css("position","relative").height(boxHeight)
+      @cj_selectors.tagBox.removeClass("open")
+  getTagHeight:(cjTagContainer) ->
+    # get all dl's
+    cj.each(cjTagContainer, (a,container) =>
+      checkDTs = []
+      heightTotal = @getRecTagHeight(container)
+      propHeight = 0
+      for v in heightTotal
+        propHeight += parseInt(v)
+      console.log heightTotal
+      console.log propHeight
+      if propHeight > 180
+        closestTo = 0
+        for v in heightTotal
+          console.log closestTo
+          if closestTo > 180
+            break
+          closestTo += parseInt(v)
+        cj(container).height(closestTo)
+      else
+        cj(container).height(propHeight)
+    )
+  getRecTagHeight:(container,heightTotal = [],already) ->
+    if heightTotal.length > 8
+      return heightTotal
+    cj.each(cj(container).find("dt"), (i,el) =>
+      cjEl = cj(el)
+      console.log cjEl.data('tagid'),cjEl.height()
+      heightTotal.push cjEl.height()
+      if heightTotal.length > 8
+        return false
+      # cjDL = cj("#tagDropdown_#{cjEl.data('tagid')}[style*='block']")
+      # if cjDL.length > 0
+      #   @getRecTagHeight(cjDL[0],heightTotal)
+    )
+    return heightTotal
 
 class Settings
   constructor: (@instance, @view) ->
@@ -382,14 +428,15 @@ class Resize
     cj(document).on("mouseup", (event,tagBox) =>
       cj(document).off("mousemove")
       if @tagBox.height() < 15
-        @view.collapseTagBox()
+        @view.toggleTagBox()
         @tagBox.height(0)
-      console.log @tagBox.height()
       bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
     )
     @view.cj_tokenHolder.resize.on("mousedown", (ev,tagBox) =>
+      if @tagBox.hasClass("dropdown")
+        @tagBox.height(0)
+        @view.toggleTagBox()
       ev.preventDefault()
-      console.log @instance
       cj(document).on("mousemove", (ev,tagBox) =>
           if ev.pageY-cj(".JSTree").offset().top < maxHeight
             @tagBox.css("height",ev.pageY-cj(".JSTree").offset().top)
@@ -426,6 +473,7 @@ class Autocomplete
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
         @view.rebuildInitialTree()
+        @view.toggleDropdown()
         if @initHint
           @hintText(cjac,params)
           @initHint = false
@@ -445,18 +493,15 @@ class Autocomplete
     # expect in the dropdown context
     switch keyCode.type
       when "directional"
-        return @moveDropdown(keyCode.type)
+        return true
+        # return @moveDropdown(keyCode.type)
       when "letters","delete","math","punctuation","number"
         if keyCode.type != "delete" then name = keyCode.name  else name = ""
         return @execSearch(event,searchmonger,cjac,name)
       else
         return false
 
-
-  moveDropdown: () ->
-
   buildPositions: (list,term,hits) ->
-
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
       options =
@@ -517,6 +562,7 @@ class Autocomplete
                 # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
 
           @localQueryDone = true
+          @view.toggleDropdown(true)
         if terms? && cj.isEmptyObject(terms)
           tags = {}
       )
@@ -627,7 +673,6 @@ class Tree
         _treeUtils.dropdownItem(cj(button),true)
       )
     else
-      console.log @filter
       _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
 _treeUtils =

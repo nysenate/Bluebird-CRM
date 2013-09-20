@@ -435,8 +435,12 @@
       }
       this.view.trees = trees;
       this.view.init();
-      resize = new Resize;
-      return resize.addResize(instance, this.view);
+      if (this.view.settings.tall) {
+        resize = new Resize;
+        return resize.addResize(instance, this.view);
+      } else {
+        return this.view.cj_tokenHolder.resize.remove();
+      }
     },
     view: {}
   };
@@ -511,10 +515,9 @@
       this.formatPageElements();
       this.createSelectors();
       tagBox = new Resize;
-      console.log(this.settings.tall);
       if (this.settings.tall) {
         if (tagBox != null) {
-          if (tagBox.height > 0) {
+          if (tagBox.height >= 0) {
             height = " style='height:" + tagBox.height + "px'";
             return this.addClassesToElement(height);
           } else {
@@ -937,8 +940,75 @@
       return cjlocation.html(positionText);
     };
 
-    View.prototype.collapseTagBox = function() {
-      return this.cj_selectors.tagBox.hide();
+    View.prototype.toggleTagBox = function() {
+      return this.cj_selectors.tagBox.toggle().toggleClass("dropdown");
+    };
+
+    View.prototype.toggleDropdown = function(oc) {
+      var boxHeight, tagHeight;
+      if (oc == null) {
+        oc = false;
+      }
+      if (oc) {
+        tagHeight = this.getTagHeight(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"));
+        this.cj_selectors.container.css("position", "static");
+        return this.cj_selectors.tagBox.css("height", "auto").addClass("open");
+      } else {
+        boxHeight = new Resize();
+        console.log(boxHeight);
+        this.cj_selectors.container.css("position", "relative").height(boxHeight);
+        return this.cj_selectors.tagBox.removeClass("open");
+      }
+    };
+
+    View.prototype.getTagHeight = function(cjTagContainer) {
+      var _this = this;
+      return cj.each(cjTagContainer, function(a, container) {
+        var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
+        checkDTs = [];
+        heightTotal = _this.getRecTagHeight(container);
+        propHeight = 0;
+        for (_i = 0, _len = heightTotal.length; _i < _len; _i++) {
+          v = heightTotal[_i];
+          propHeight += parseInt(v);
+        }
+        console.log(heightTotal);
+        console.log(propHeight);
+        if (propHeight > 180) {
+          closestTo = 0;
+          for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
+            v = heightTotal[_j];
+            console.log(closestTo);
+            if (closestTo > 180) {
+              break;
+            }
+            closestTo += parseInt(v);
+          }
+          return cj(container).height(closestTo);
+        } else {
+          return cj(container).height(propHeight);
+        }
+      });
+    };
+
+    View.prototype.getRecTagHeight = function(container, heightTotal, already) {
+      var _this = this;
+      if (heightTotal == null) {
+        heightTotal = [];
+      }
+      if (heightTotal.length > 8) {
+        return heightTotal;
+      }
+      cj.each(cj(container).find("dt"), function(i, el) {
+        var cjEl;
+        cjEl = cj(el);
+        console.log(cjEl.data('tagid'), cjEl.height());
+        heightTotal.push(cjEl.height());
+        if (heightTotal.length > 8) {
+          return false;
+        }
+      });
+      return heightTotal;
     };
 
     return View;
@@ -1010,17 +1080,19 @@
       cj(document).on("mouseup", function(event, tagBox) {
         cj(document).off("mousemove");
         if (_this.tagBox.height() < 15) {
-          _this.view.collapseTagBox();
+          _this.view.toggleTagBox();
           _this.tagBox.height(0);
         }
-        console.log(_this.tagBox.height());
         return bbUtils.localStorage("tagBoxHeight", {
           height: _this.tagBox.height()
         });
       });
       return this.view.cj_tokenHolder.resize.on("mousedown", function(ev, tagBox) {
+        if (_this.tagBox.hasClass("dropdown")) {
+          _this.tagBox.height(0);
+          _this.view.toggleTagBox();
+        }
         ev.preventDefault();
-        console.log(_this.instance);
         return cj(document).on("mousemove", function(ev, tagBox) {
           if (ev.pageY - cj(".JSTree").offset().top < maxHeight) {
             return _this.tagBox.css("height", ev.pageY - cj(".JSTree").offset().top);
@@ -1074,6 +1146,7 @@
           _this.view.removeTabCounts();
           _this.view.shouldBeFiltered = false;
           _this.view.rebuildInitialTree();
+          _this.view.toggleDropdown();
           if (_this.initHint) {
             _this.hintText(cjac, params);
             return _this.initHint = false;
@@ -1096,7 +1169,7 @@
       keyCode = bbUtils.keyCode(event);
       switch (keyCode.type) {
         case "directional":
-          return this.moveDropdown(keyCode.type);
+          return true;
         case "letters":
         case "delete":
         case "math":
@@ -1112,8 +1185,6 @@
           return false;
       }
     };
-
-    Autocomplete.prototype.moveDropdown = function() {};
 
     Autocomplete.prototype.buildPositions = function(list, term, hits) {
       var openLeg, options,
@@ -1197,6 +1268,7 @@
               }
             }
             _this.localQueryDone = true;
+            _this.view.toggleDropdown(true);
           }
           if ((terms != null) && cj.isEmptyObject(terms)) {
             return tags = {};
@@ -1352,7 +1424,6 @@
           return _treeUtils.dropdownItem(cj(button), true);
         });
       } else {
-        console.log(this.filter);
         return _treeUtils.readDropdownsFromLocal(this.tagId, this.tagList);
       }
     };

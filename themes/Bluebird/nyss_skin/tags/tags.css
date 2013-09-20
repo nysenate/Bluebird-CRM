@@ -221,6 +221,14 @@
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
       display: none; }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown.open, #BBTreeContainer .BBTree.dropdown.open {
+        display: block;
+        position: absolute;
+        top: 78px;
+        width: 438px;
+        z-index: 10;
+        background-color: white;
+        height: 150px; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
     height: 6px;
