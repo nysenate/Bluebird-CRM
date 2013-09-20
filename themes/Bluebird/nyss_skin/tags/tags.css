@@ -242,5 +242,12 @@
     margin: 0 auto; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
       cursor: s-resize; }
-  #JSTree-container.BBTreeContainer.short, #BBTreeContainer.short {
-    width: 285px; }
+  #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
+    width: 294px; }
+    #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {
+      font-size: 10px;
+      padding: 5px 0; }
+      #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div span, #BBTreeContainer.narrow .BBTree-tabs div span {
+        font-size: 10px; }
+    #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown, #BBTreeContainer.narrow .BBTree.dropdown {
+      width: 295px; }

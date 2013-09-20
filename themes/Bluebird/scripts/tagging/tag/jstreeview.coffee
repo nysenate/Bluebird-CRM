@@ -97,14 +97,14 @@ class View
         _descWidths.normal = 80
         _descWidths.long = 160
       else
-        _descWidths.normal = 20
+        _descWidths.normal = 40
         _descWidths.long = 40
     else
       if @settings.wide
         _descWidths.normal = 70
         _descWidths.long = 150
       else
-        _descWidths.normal = 20
+        _descWidths.normal = 40
         _descWidths.long = 40
   buildDropdown: () ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
@@ -136,7 +136,8 @@ class View
       @prefixes.push(v)
     @joinPrefix()
     @selectors.byHeightWidth = @setByHeightWidth()
-
+    if !@settings.wide
+      @selectors.containerClass += " narrow"
   joinPrefix: () ->
     for v in @settingCollection
       for k,o of @["#{v}"]
@@ -395,7 +396,6 @@ class View
       if propHeight > maxHeight
         closestTo = 0
         for v in heightTotal
-          console.log closestTo
           if closestTo > maxHeight
             break
           closestTo += parseInt(v)
@@ -476,6 +476,8 @@ class Autocomplete
       jqDataReference: "#JSTree-data"
       hintText: "Type in a partial or complete name of an tag or keyword."
       theme: "JSTree"
+    if !@view.settings.wide
+      params.hintText = "Search..."
     cjac = cj("#JSTree-ac")
     @hintText(cjac,params)
     searchmonger = cjac.tagACInput("init",params)
@@ -759,20 +761,25 @@ class Node
     if @description?
       if @description.length > 0
         desc = _utils.textWrap(@description, _descWidths.normal)
-        console.log desc
         if desc.segs == 1
           @hasDesc = "description shortdescription"
         if desc.segs == 2
           @hasDesc = "description"
-        if desc.segs == 3
+        if desc.segs >= 3
           @hasDesc = "longdescription"
         if desc.segs > 3
-          if desc.toRet[2] < _descWidth.normal
-            desc.toRet[2] += "..."
-        if desc.segs > 1
-          @description = desc.toRet.join("<br />")
+          tempDesc = ""
+          console.log desc
+          for text,i in desc.toRet
+            tempDesc += "#{text}<br />"
+            if i >= 2
+              break
+          @description = tempDesc
         else
-          @description = desc.toRet[0]
+          if desc.segs > 1
+            @description = desc.toRet.join("<br />")
+          else
+            @description = desc.toRet[0]
   html: (node) ->
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false

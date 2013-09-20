@@ -319,6 +319,7 @@
       for (a = _i = 0; 0 <= numberOfSegs ? _i <= numberOfSegs : _i >= numberOfSegs; a = 0 <= numberOfSegs ? ++_i : --_i) {
         seg = text.slice(length * a, length * (a + 1));
         if (!seg.match(rx) && seg.length >= length) {
+          retObj.toRet.push(seg);
           lastEnd = length * (a + 1);
         } else {
           if (seg.length > 0) {
@@ -336,16 +337,16 @@
                 break;
               }
             }
-            if (nextSpace >= text.length) {
+            if (nextSpace > text.length) {
               currentLastSpace = nextSpace;
               killFutureSegs = true;
             }
             retObj.toRet.push(text.slice(lastEnd, currentLastSpace));
+            lastEnd = currentLastSpace;
             if (killFutureSegs != null) {
               retObj.segs = a + 1;
               break;
             }
-            lastEnd = currentLastSpace;
           }
         }
       }
@@ -573,7 +574,7 @@
           _descWidths.normal = 80;
           return _descWidths.long = 160;
         } else {
-          _descWidths.normal = 20;
+          _descWidths.normal = 40;
           return _descWidths.long = 40;
         }
       } else {
@@ -581,7 +582,7 @@
           _descWidths.normal = 70;
           return _descWidths.long = 150;
         } else {
-          _descWidths.normal = 20;
+          _descWidths.normal = 40;
           return _descWidths.long = 40;
         }
       }
@@ -622,7 +623,10 @@
         this.prefixes.push(v);
       }
       this.joinPrefix();
-      return this.selectors.byHeightWidth = this.setByHeightWidth();
+      this.selectors.byHeightWidth = this.setByHeightWidth();
+      if (!this.settings.wide) {
+        return this.selectors.containerClass += " narrow";
+      }
     };
 
     View.prototype.joinPrefix = function() {
@@ -1043,7 +1047,6 @@
           closestTo = 0;
           for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
             v = heightTotal[_j];
-            console.log(closestTo);
             if (closestTo > maxHeight) {
               break;
             }
@@ -1190,6 +1193,9 @@
         hintText: "Type in a partial or complete name of an tag or keyword.",
         theme: "JSTree"
       };
+      if (!this.view.settings.wide) {
+        params.hintText = "Search...";
+      }
       cjac = cj("#JSTree-ac");
       this.hintText(cjac, params);
       searchmonger = cjac.tagACInput("init", params);
@@ -1589,30 +1595,38 @@
     }
 
     Node.prototype.descLength = function(description) {
-      var desc;
+      var desc, i, tempDesc, text, _i, _len, _ref;
       this.description = description;
       if (this.description != null) {
         if (this.description.length > 0) {
           desc = _utils.textWrap(this.description, _descWidths.normal);
-          console.log(desc);
           if (desc.segs === 1) {
             this.hasDesc = "description shortdescription";
           }
           if (desc.segs === 2) {
             this.hasDesc = "description";
           }
-          if (desc.segs === 3) {
+          if (desc.segs >= 3) {
             this.hasDesc = "longdescription";
           }
           if (desc.segs > 3) {
-            if (desc.toRet[2] < _descWidth.normal) {
-              desc.toRet[2] += "...";
+            tempDesc = "";
+            console.log(desc);
+            _ref = desc.toRet;
+            for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+              text = _ref[i];
+              tempDesc += "" + text + "<br />";
+              if (i >= 2) {
+                break;
+              }
             }
-          }
-          if (desc.segs > 1) {
-            return this.description = desc.toRet.join("<br />");
+            return this.description = tempDesc;
           } else {
-            return this.description = desc.toRet[0];
+            if (desc.segs > 1) {
+              return this.description = desc.toRet.join("<br />");
+            } else {
+              return this.description = desc.toRet[0];
+            }
           }
         }
       }

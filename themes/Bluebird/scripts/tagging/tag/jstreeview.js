@@ -126,7 +126,7 @@ View = (function() {
         _descWidths.normal = 80;
         return _descWidths.long = 160;
       } else {
-        _descWidths.normal = 20;
+        _descWidths.normal = 40;
         return _descWidths.long = 40;
       }
     } else {
@@ -134,7 +134,7 @@ View = (function() {
         _descWidths.normal = 70;
         return _descWidths.long = 150;
       } else {
-        _descWidths.normal = 20;
+        _descWidths.normal = 40;
         return _descWidths.long = 40;
       }
     }
@@ -175,7 +175,10 @@ View = (function() {
       this.prefixes.push(v);
     }
     this.joinPrefix();
-    return this.selectors.byHeightWidth = this.setByHeightWidth();
+    this.selectors.byHeightWidth = this.setByHeightWidth();
+    if (!this.settings.wide) {
+      return this.selectors.containerClass += " narrow";
+    }
   };
 
   View.prototype.joinPrefix = function() {
@@ -596,7 +599,6 @@ View = (function() {
         closestTo = 0;
         for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
           v = heightTotal[_j];
-          console.log(closestTo);
           if (closestTo > maxHeight) {
             break;
           }
@@ -743,6 +745,9 @@ Autocomplete = (function() {
       hintText: "Type in a partial or complete name of an tag or keyword.",
       theme: "JSTree"
     };
+    if (!this.view.settings.wide) {
+      params.hintText = "Search...";
+    }
     cjac = cj("#JSTree-ac");
     this.hintText(cjac, params);
     searchmonger = cjac.tagACInput("init", params);
@@ -1142,30 +1147,38 @@ Node = (function() {
   }
 
   Node.prototype.descLength = function(description) {
-    var desc;
+    var desc, i, tempDesc, text, _i, _len, _ref;
     this.description = description;
     if (this.description != null) {
       if (this.description.length > 0) {
         desc = _utils.textWrap(this.description, _descWidths.normal);
-        console.log(desc);
         if (desc.segs === 1) {
           this.hasDesc = "description shortdescription";
         }
         if (desc.segs === 2) {
           this.hasDesc = "description";
         }
-        if (desc.segs === 3) {
+        if (desc.segs >= 3) {
           this.hasDesc = "longdescription";
         }
         if (desc.segs > 3) {
-          if (desc.toRet[2] < _descWidth.normal) {
-            desc.toRet[2] += "...";
+          tempDesc = "";
+          console.log(desc);
+          _ref = desc.toRet;
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            text = _ref[i];
+            tempDesc += "" + text + "<br />";
+            if (i >= 2) {
+              break;
+            }
           }
-        }
-        if (desc.segs > 1) {
-          return this.description = desc.toRet.join("<br />");
+          return this.description = tempDesc;
         } else {
-          return this.description = desc.toRet[0];
+          if (desc.segs > 1) {
+            return this.description = desc.toRet.join("<br />");
+          } else {
+            return this.description = desc.toRet[0];
+          }
         }
       }
     }

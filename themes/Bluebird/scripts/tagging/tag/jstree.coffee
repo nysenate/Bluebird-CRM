@@ -148,6 +148,7 @@ _utils =
       seg = text.slice(length*a,length*(a+1))
       if !seg.match(rx) and seg.length >= length
         # if there's no spaces or any line breaks
+        retObj.toRet.push seg
         lastEnd = length*(a+1)
       else
         if seg.length > 0
@@ -161,14 +162,14 @@ _utils =
             nextSpace += wordPiece.length + 1
             if nextSpace >= currentEnd
               break
-          if nextSpace >= text.length
+          if nextSpace > text.length
             currentLastSpace = nextSpace
             killFutureSegs = true
           retObj.toRet.push text.slice(lastEnd,currentLastSpace)
-          if killFutureSegs?
+          lastEnd = currentLastSpace
+          if killFutureSegs? 
             retObj.segs = a+1
             break
-          lastEnd = currentLastSpace
 
     return retObj
     
