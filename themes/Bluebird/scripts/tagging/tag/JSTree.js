@@ -169,7 +169,8 @@
         tall: true,
         wide: true,
         autocomplete: true,
-        print: true
+        print: true,
+        maxHeight: 600
       };
       callAjax = {
         url: '/civicrm/ajax/tag/tree',
@@ -434,7 +435,8 @@
       }
       this.view.trees = trees;
       this.view.init();
-      return resize = new Resize(instance, this.view);
+      resize = new Resize;
+      return resize.addResize(instance, this.view);
     },
     view: {}
   };
@@ -955,33 +957,43 @@
   })();
 
   Resize = (function() {
-    function Resize(instance, view) {
-      var currentHeight, resizeVal;
-      this.instance = instance;
-      this.view = view;
-      resizeVal = this.checkResize();
-      currentHeight = this.addResize(resizeVal);
+    function Resize() {
+      var lsheight;
+      if (bbUtils.localStorage("tagBoxHeight") != null) {
+        lsheight = bbUtils.localStorage("tagBoxHeight");
+        this.height = lsheight.height;
+      } else {
+        this.height = 400;
+      }
     }
 
-    Resize.prototype.checkResize = function() {
-      if (bbUtils.localStorage("tagBoxHeight") != null) {
-        return bbUtils.localStorage("tagBoxHeight");
-      } else {
-        console.log(this.view.cj_selectors.tagBox);
-        return this.view.cj_selectors.tagBox.height();
+    Resize.prototype.addResize = function(instance, view) {
+      var displaySettings, maxHeight,
+        _this = this;
+      this.instance = instance;
+      this.view = view;
+      displaySettings = this.instance.get("displaySettings");
+      maxHeight = 500;
+      if (displaySettings.maxHeight != null) {
+        maxHeight = displaySettings.maxHeight;
       }
-    };
-
-    Resize.prototype.addResize = function(height) {
-      var _this = this;
       this.tagBox = this.view.cj_selectors.tagBox;
       cj(document).on("mouseup", function(event, tagBox) {
-        return cj(document).off("mousemove");
+        cj(document).off("mousemove");
+        if (_this.tagBox.height() < 15) {
+          _this.view.collapseTagBox();
+          _this.tagBox.height(0);
+        }
+        console.log(_this.tagBox.height());
+        return bbUtils.localStorage("tagBoxHeight", {
+          height: _this.tagBox.height()
+        });
       });
       return this.view.cj_tokenHolder.resize.on("mousedown", function(ev, tagBox) {
         ev.preventDefault();
+        console.log(_this.instance);
         return cj(document).on("mousemove", function(ev, tagBox) {
-          if (ev.pageY - cj(".JSTree").offset().top < 500) {
+          if (ev.pageY - cj(".JSTree").offset().top < maxHeight) {
             return _this.tagBox.css("height", ev.pageY - cj(".JSTree").offset().top);
           }
         });

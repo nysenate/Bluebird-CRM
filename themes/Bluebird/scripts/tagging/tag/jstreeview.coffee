@@ -9,7 +9,8 @@ window.jstree["views"] =
       trees[a] = new Tree(b,a)
     @view.trees = trees
     @view.init()
-    resize = new Resize(instance,@view)
+    resize = new Resize
+    resize.addResize(instance,@view)
     
   view: {}
 
@@ -334,32 +335,40 @@ class Settings
       @cj_top_settings.append(@addButton(a))
     for b in icons.bottom 
       @cj_bottom_settings.append(@addButton(b))
+    # onclicks
   icons =
     top: ['setting','add','print']
     bottom: ['slide']
+
   addButton: (name) ->
     return "<div class='#{name}'></div>"
 
 class Resize
-  constructor: (@instance,@view) ->
-    resizeVal = @checkResize()
-    currentHeight = @addResize(resizeVal)
-  checkResize: () ->
+  constructor: () ->
     if bbUtils.localStorage("tagBoxHeight")?
-      return bbUtils.localStorage("tagBoxHeight")
+      lsheight = bbUtils.localStorage("tagBoxHeight")
+      @height = lsheight.height
     else
-      console.log @view.cj_selectors.tagBox
-      return @view.cj_selectors.tagBox.height()
-  addResize: (height) ->
+      @height = 400
+  addResize: (@instance,@view) ->
+    displaySettings = @instance.get("displaySettings")
+    maxHeight = 500
+    if displaySettings.maxHeight?
+      maxHeight = displaySettings.maxHeight
     @tagBox = @view.cj_selectors.tagBox
     cj(document).on("mouseup", (event,tagBox) =>
       cj(document).off("mousemove")
-      # if @tagBox.css("height") < 15
+      if @tagBox.height() < 15
+        @view.collapseTagBox()
+        @tagBox.height(0)
+      console.log @tagBox.height()
+      bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
     )
     @view.cj_tokenHolder.resize.on("mousedown", (ev,tagBox) =>
       ev.preventDefault()
+      console.log @instance
       cj(document).on("mousemove", (ev,tagBox) =>
-          if ev.pageY-cj(".JSTree").offset().top < 500
+          if ev.pageY-cj(".JSTree").offset().top < maxHeight
             @tagBox.css("height",ev.pageY-cj(".JSTree").offset().top)
         )
     )

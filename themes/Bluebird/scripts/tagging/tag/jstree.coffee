@@ -61,6 +61,7 @@ class Instance
       autocomplete: true
       #print tags option
       print: true
+      maxHeight: 600
     #ajax related settings
     callAjax =
       # if it's an activity, entity_type is different
