@@ -12,5 +12,17 @@
   .tagContainer {
     display:none
   }
+  &.dropdown {
+    display:none;
+    &.open {
+      display:block;
+      position:absolute;
+      top:78px;
+      width:438px;
+      z-index:10;
+      background-color:white;
+      height: 150px;
+    }
+  }
 }
 @import "tokenHolder";

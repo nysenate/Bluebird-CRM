@@ -96,7 +96,7 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
         entity_id: 0
       },
       displaySettings: {
-        // size: "narrow"
+        wide:false
       },
       callAjax: {
         data: undefined,

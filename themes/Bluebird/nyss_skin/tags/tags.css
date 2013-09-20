@@ -182,7 +182,8 @@
         position: absolute;
         bottom: 0px; }
     #JSTree-container.BBTreeContainer .BBTree dt.longdescription, #BBTreeContainer .BBTree dt.longdescription {
-      height: 60px; }
+      height: 60px;
+      height: 52px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 60px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
@@ -191,6 +192,11 @@
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .description, #BBTreeContainer .BBTree dt.longdescription .description {
         position: absolute;
         bottom: 0px; }
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
+        height: 52px; }
+      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
+        height: 52px;
+        top: -52px; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291 {
       background-color: rgba(150, 226, 164, 0.35); }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296 {
@@ -219,6 +225,19 @@
       display: block; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
       display: none; }
+<<<<<<< HEAD
+=======
+    #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
+      display: none; }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown.open, #BBTreeContainer .BBTree.dropdown.open {
+        display: block;
+        position: absolute;
+        top: 78px;
+        width: 438px;
+        z-index: 10;
+        background-color: white;
+        height: 150px; }
+>>>>>>> tagging-1.4.2
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
     height: 6px;
@@ -226,5 +245,19 @@
     margin: 0 auto; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
       cursor: s-resize; }
+<<<<<<< HEAD
   #JSTree-container.BBTreeContainer.short, #BBTreeContainer.short {
     width: 285px; }
+=======
+  #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
+    width: 294px; }
+    #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {
+      font-size: 10px;
+      padding: 5px 0; }
+      #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div span, #BBTreeContainer.narrow .BBTree-tabs div span {
+        font-size: 10px; }
+    #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown, #BBTreeContainer.narrow .BBTree.dropdown {
+      width: 295px; }
+      #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown dt .tag .name, #BBTreeContainer.narrow .BBTree.dropdown dt .tag .name {
+        font-size: 11px; }
+>>>>>>> tagging-1.4.2

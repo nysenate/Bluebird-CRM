@@ -9,7 +9,11 @@ window.jstree["views"] =
       trees[a] = new Tree(b,a)
     @view.trees = trees
     @view.init()
-    resize = new Resize(instance,@view)
+    if @view.settings.tall
+      resize = new Resize
+      resize.addResize(instance,@view)
+    else
+      @view.cj_tokenHolder.resize.remove()
     
   view: {}
 
@@ -63,15 +67,54 @@ class View
   defaultPrefix: "JSTree"
   prefixes: []
   defaultTree: 0
+  descWidths:
+    normal: 80
+    long: 160
   constructor: (@instance) ->
     # starts the chain to write the page structure
     @writeContainers()
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
-    @addClassesToElement()
-  addClassesToElement: () ->
-    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}'></div>"
+    tagBox = new Resize
+    @setDescWidths()
+    console.log tagBox
+    console.log @settings.tall
+    if @settings.tall
+      if tagBox?
+        if tagBox.height > 0  
+          height = " style='height:#{tagBox.height}px'"
+          @addClassesToElement(height)
+        else
+          @buildDropdown()
+      else
+        height = ""
+        @addClassesToElement(height)
+    else
+      @buildDropdown()
+  setDescWidths: () ->
+    if @settings.tall
+      if @settings.wide
+        _descWidths.normal = 80
+        _descWidths.long = 160
+      else
+        _descWidths.normal = 40
+        _descWidths.long = 40
+    else
+      if @settings.wide
+        _descWidths.normal = 70
+        _descWidths.long = 150
+      else
+        _descWidths.normal = 40
+        _descWidths.long = 40
+  buildDropdown: () ->
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
+    @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
+    @cj_selectors.initHolder.append(@dataHolderHtml())
+    @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
+    @cj_selectors.initHolder.removeClass(@selectors.initHolder).attr("id", @selectors.container).addClass(@selectors.containerClass)
+  addClassesToElement: (height) ->
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}' #{height}></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
@@ -94,7 +137,8 @@ class View
       @prefixes.push(v)
     @joinPrefix()
     @selectors.byHeightWidth = @setByHeightWidth()
-
+    if !@settings.wide
+      @selectors.containerClass += " narrow"
   joinPrefix: () ->
     for v in @settingCollection
       for k,o of @["#{v}"]
@@ -322,6 +366,60 @@ class View
               </div>
           "
     cjlocation.html(positionText)
+  toggleTagBox: () ->
+    @cj_selectors.tagBox.toggle().toggleClass("dropdown")
+  toggleDropdown: (oc = false) ->
+    # debugger
+    if oc
+      console.log ":filtered"
+      console.log @cj_selectors.tagBox.hasClass("filtered")
+      if @cj_selectors.tagBox.hasClass("filtered")
+        if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
+          cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
+            @getTagHeight(cj(container))
+          )
+        if @cj_selectors.tagBox.find(".top-292").length == 1
+          cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
+            @getTagHeight(cj(container))
+          )
+        @cj_selectors.container.css("position","static")
+        @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+      else
+        boxHeight = new Resize()
+        @cj_selectors.container.css("position","relative")
+        @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)  
+    else
+      boxHeight = new Resize()
+      @cj_selectors.container.css("position","relative")
+      @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)
+  getTagHeight:(cjTagContainer,maxHeight = 180) ->
+    # get all dl's
+    cj.each(cjTagContainer, (a,container) =>
+      checkDTs = []
+      heightTotal = @getRecTagHeight(container)
+      propHeight = 0
+      for v in heightTotal
+        propHeight += parseInt(v)
+      if propHeight > maxHeight
+        closestTo = 0
+        for v in heightTotal
+          if closestTo > maxHeight
+            break
+          closestTo += parseInt(v)
+        cj(container).height(closestTo)
+      else
+        cj(container).height(propHeight)
+    )
+  getRecTagHeight:(container,heightTotal = [],already) ->
+    if heightTotal.length > 8
+      return heightTotal
+    cj.each(cj(container).find("dt"), (i,el) =>
+      cjEl = cj(el)
+      heightTotal.push cjEl.height()
+      if heightTotal.length > 8
+        return false
+    )
+    return heightTotal
 
 class Settings
   constructor: (@instance, @view) ->
@@ -334,32 +432,53 @@ class Settings
       @cj_top_settings.append(@addButton(a))
     for b in icons.bottom 
       @cj_bottom_settings.append(@addButton(b))
+    # onclicks
   icons =
     top: ['setting','add','print']
     bottom: ['slide']
+
   addButton: (name) ->
     return "<div class='#{name}'></div>"
 
 class Resize
-  constructor: (@instance,@view) ->
-    resizeVal = @checkResize()
-    currentHeight = @addResize(resizeVal)
-  checkResize: () ->
+  constructor: (boxHeight) ->
+    if boxHeight?
+      bbUtils.localStorage("tagBoxHeight",boxheight)
+      return boxHeight
     if bbUtils.localStorage("tagBoxHeight")?
-      return bbUtils.localStorage("tagBoxHeight")
+      console.log "know height"
+      lsheight = bbUtils.localStorage("tagBoxHeight")
+      console.log bbUtils.localStorage("tagBoxHeight")
+      if lsheight.height > 600
+       bbUtils.localStorage("tagBoxHeight", 600)
+       lsheight.height = 600
+      @height = lsheight.height
     else
-      console.log @view.cj_selectors.tagBox
-      return @view.cj_selectors.tagBox.height()
-  addResize: (height) ->
+      @height = 400
+  addResize: (@instance,@view) ->
+    displaySettings = @instance.get("displaySettings")
+    maxHeight = 500
+    if displaySettings.maxHeight?
+      maxHeight = displaySettings.maxHeight
     @tagBox = @view.cj_selectors.tagBox
     cj(document).on("mouseup", (event,tagBox) =>
       cj(document).off("mousemove")
-      # if @tagBox.css("height") < 15
+      if @tagBox.height() < 15
+        @tagBox.height(0)
+        @tagBox.addClass("dropdown")
+      if !@tagBox.hasClass("dropdown")
+        bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
+      else
+        bbUtils.localStorage("tagBoxHeight", {height:0})
     )
     @view.cj_tokenHolder.resize.on("mousedown", (ev,tagBox) =>
+      if @tagBox.hasClass("dropdown")
+        @tagBox.height(0)
+        @tagBox.show()
+        @tagBox.removeClass("dropdown")
       ev.preventDefault()
       cj(document).on("mousemove", (ev,tagBox) =>
-          if ev.pageY-cj(".JSTree").offset().top < 500
+          if ev.pageY-cj(".JSTree").offset().top < maxHeight
             @tagBox.css("height",ev.pageY-cj(".JSTree").offset().top)
         )
     )
@@ -376,6 +495,8 @@ class Autocomplete
       jqDataReference: "#JSTree-data"
       hintText: "Type in a partial or complete name of an tag or keyword."
       theme: "JSTree"
+    if !@view.settings.wide
+      params.hintText = "Search..."
     cjac = cj("#JSTree-ac")
     @hintText(cjac,params)
     searchmonger = cjac.tagACInput("init",params)
@@ -393,7 +514,11 @@ class Autocomplete
       if keyCode.type == "delete" && cjac.val().length <= 3
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
-        @view.rebuildInitialTree()
+        if @view.cj_selectors.tagBox.hasClass("dropdown")
+          @view.toggleDropdown()
+          @view.rebuildInitialTree()
+        else
+          @view.rebuildInitialTree()
         if @initHint
           @hintText(cjac,params)
           @initHint = false
@@ -413,18 +538,15 @@ class Autocomplete
     # expect in the dropdown context
     switch keyCode.type
       when "directional"
-        return @moveDropdown(keyCode.type)
+        return true
+        # return @moveDropdown(keyCode.type)
       when "letters","delete","math","punctuation","number"
         if keyCode.type != "delete" then name = keyCode.name  else name = ""
         return @execSearch(event,searchmonger,cjac,name)
       else
         return false
 
-
-  moveDropdown: () ->
-
   buildPositions: (list,term,hits) ->
-
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
       options =
@@ -460,6 +582,8 @@ class Autocomplete
             @view.writeFilteredList(filteredList,term,{292: (results.seeXmore)})
             @buildPositions()
             @openLegQueryDone = true
+            if @view.cj_selectors.tagBox.hasClass("dropdown")
+              @view.toggleDropdown(true)
           )
           tags = @sortSearchedTags(terms.tags)
           hits = @separateHits(tags)
@@ -589,7 +713,13 @@ class Tree
       @location.find(".loadingGif").replaceWith(cjTagList)
     @html = cjTagList
     _treeUtils.makeDropdown(cj(".JSTree .top-#{@tagId}"))
-    _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
+    if @filter
+      buttons = cj(".JSTree .top-#{@tagId} .treeButton").parent().parent()
+      cj.each(buttons, (i,button) =>
+        _treeUtils.dropdownItem(cj(button),true)
+      )
+    else
+      _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
 _treeUtils =
   selectByParent: (list, parent) ->
@@ -633,7 +763,9 @@ _treeUtils =
       else
       _openTags 
 
-
+_descWidths = 
+  normal: 80
+  long: 160
 
 
 class Node
@@ -641,7 +773,7 @@ class Node
     @data = node
     @parent = node.parent
     @hasDesc = ""
-    @description = node.description
+    @description = node.descriptf_ion
     @descLength(node.description)
     @id = node.id
     @children = node.children
@@ -650,14 +782,26 @@ class Node
     return @
   descLength: (@description) ->
     if @description?
-      if description.length > 0
-        @hasDesc = "description"
-      if @description.length > 0 and @description.length <= 80
-        @hasDesc += " shortdescription"
-      if @description.length > 160
-        @hasDesc = "longdescription"
-      if @description.length > 80
-        @description = _utils.textWrap(@description, 80)
+      if @description.length > 0
+        desc = _utils.textWrap(@description, _descWidths.normal)
+        if desc.segs == 1
+          @hasDesc = "description shortdescription"
+        if desc.segs == 2
+          @hasDesc = "description"
+        if desc.segs >= 3
+          @hasDesc = "longdescription"
+        if desc.segs > 3
+          tempDesc = ""
+          for text,i in desc.toRet
+            tempDesc += "#{text}<br />"
+            if i >= 2
+              break
+          @description = tempDesc
+        else
+          if desc.segs > 1
+            @description = desc.toRet.join("<br />")
+          else
+            @description = desc.toRet[0]
   html: (node) ->
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
