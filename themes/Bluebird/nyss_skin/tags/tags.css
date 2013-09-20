@@ -251,3 +251,5 @@
         font-size: 10px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown, #BBTreeContainer.narrow .BBTree.dropdown {
       width: 295px; }
+      #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown dt .tag .name, #BBTreeContainer.narrow .BBTree.dropdown dt .tag .name {
+        font-size: 11px; }

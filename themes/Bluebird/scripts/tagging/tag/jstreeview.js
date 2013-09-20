@@ -562,7 +562,7 @@ View = (function() {
       oc = false;
     }
     if (oc) {
-      if (this.cj_selectors.tagBox.find(".top-291,.top-296").length === 2) {
+      if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
         cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
           return _this.getTagHeight(cj(container));
         });
@@ -588,6 +588,7 @@ View = (function() {
     }
     return cj.each(cjTagContainer, function(a, container) {
       var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
+      console.log(container);
       checkDTs = [];
       heightTotal = _this.getRecTagHeight(container);
       propHeight = 0;
@@ -604,6 +605,7 @@ View = (function() {
           }
           closestTo += parseInt(v);
         }
+        console.log(closestTo);
         return cj(container).height(closestTo);
       } else {
         return cj(container).height(propHeight);
@@ -1163,7 +1165,6 @@ Node = (function() {
         }
         if (desc.segs > 3) {
           tempDesc = "";
-          console.log(desc);
           _ref = desc.toRet;
           for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
             text = _ref[i];

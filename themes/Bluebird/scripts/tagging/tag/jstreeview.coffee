@@ -370,7 +370,7 @@ class View
   toggleDropdown: (oc = false) ->
     # debugger
     if oc
-      if @cj_selectors.tagBox.find(".top-291,.top-296").length == 2
+      if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
         cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
           @getTagHeight(cj(container))
         )
@@ -388,6 +388,7 @@ class View
   getTagHeight:(cjTagContainer,maxHeight = 180) ->
     # get all dl's
     cj.each(cjTagContainer, (a,container) =>
+      console.log container
       checkDTs = []
       heightTotal = @getRecTagHeight(container)
       propHeight = 0
@@ -399,6 +400,7 @@ class View
           if closestTo > maxHeight
             break
           closestTo += parseInt(v)
+        console.log closestTo
         cj(container).height(closestTo)
       else
         cj(container).height(propHeight)
@@ -769,7 +771,6 @@ class Node
           @hasDesc = "longdescription"
         if desc.segs > 3
           tempDesc = ""
-          console.log desc
           for text,i in desc.toRet
             tempDesc += "#{text}<br />"
             if i >= 2
