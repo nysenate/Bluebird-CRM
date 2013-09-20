@@ -564,23 +564,30 @@ View = (function() {
       oc = false;
     }
     if (oc) {
-      if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
-        cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
-          return _this.getTagHeight(cj(container));
-        });
+      console.log(":filtered");
+      console.log(this.cj_selectors.tagBox.hasClass("filtered"));
+      if (this.cj_selectors.tagBox.hasClass("filtered")) {
+        if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
+          cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
+            return _this.getTagHeight(cj(container));
+          });
+        }
+        if (this.cj_selectors.tagBox.find(".top-292").length === 1) {
+          cj.each(this.cj_selectors.tagBox.find(".tagContainer.top-292"), function(i, container) {
+            return _this.getTagHeight(cj(container));
+          });
+        }
+        this.cj_selectors.container.css("position", "static");
+        return this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+      } else {
+        boxHeight = new Resize();
+        this.cj_selectors.container.css("position", "relative");
+        return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
       }
-      if (this.cj_selectors.tagBox.find(".top-292").length === 1) {
-        cj.each(this.cj_selectors.tagBox.find(".tagContainer.top-292"), function(i, container) {
-          return _this.getTagHeight(cj(container));
-        });
-      }
-      this.cj_selectors.container.css("position", "static");
-      return this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
     } else {
       boxHeight = new Resize();
-      console.log(boxHeight);
       this.cj_selectors.container.css("position", "relative");
-      return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll");
+      return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
     }
   };
 
@@ -787,9 +794,11 @@ Autocomplete = (function() {
       if (keyCode.type === "delete" && cjac.val().length <= 3) {
         _this.view.removeTabCounts();
         _this.view.shouldBeFiltered = false;
-        _this.view.rebuildInitialTree();
         if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
           _this.view.toggleDropdown();
+          _this.view.rebuildInitialTree();
+        } else {
+          _this.view.rebuildInitialTree();
         }
         if (_this.initHint) {
           _this.hintText(cjac, params);

@@ -371,21 +371,27 @@ class View
   toggleDropdown: (oc = false) ->
     # debugger
     if oc
-      if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
-        cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
-          @getTagHeight(cj(container))
-        )
-      if @cj_selectors.tagBox.find(".top-292").length == 1
-        cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
-          @getTagHeight(cj(container))
-        )
-      @cj_selectors.container.css("position","static")
-      @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+      console.log ":filtered"
+      console.log @cj_selectors.tagBox.hasClass("filtered")
+      if @cj_selectors.tagBox.hasClass("filtered")
+        if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
+          cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
+            @getTagHeight(cj(container))
+          )
+        if @cj_selectors.tagBox.find(".top-292").length == 1
+          cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
+            @getTagHeight(cj(container))
+          )
+        @cj_selectors.container.css("position","static")
+        @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+      else
+        boxHeight = new Resize()
+        @cj_selectors.container.css("position","relative")
+        @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)  
     else
       boxHeight = new Resize()
-      console.log boxHeight
       @cj_selectors.container.css("position","relative")
-      @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll")
+      @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)
   getTagHeight:(cjTagContainer,maxHeight = 180) ->
     # get all dl's
     cj.each(cjTagContainer, (a,container) =>
@@ -508,9 +514,11 @@ class Autocomplete
       if keyCode.type == "delete" && cjac.val().length <= 3
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
-        @view.rebuildInitialTree()
         if @view.cj_selectors.tagBox.hasClass("dropdown")
           @view.toggleDropdown()
+          @view.rebuildInitialTree()
+        else
+          @view.rebuildInitialTree()
         if @initHint
           @hintText(cjac,params)
           @initHint = false
