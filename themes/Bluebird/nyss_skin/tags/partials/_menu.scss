@@ -1,5 +1,8 @@
 // code
 .BBTree-menu {
+  input[type=text]::-ms-clear { 
+    display: none; 
+  }  
   width:100%;
   .BBTree-top, .BBTree-bottom {
     height:20px;

@@ -551,8 +551,6 @@
       this.createSelectors();
       tagBox = new Resize;
       this.setDescWidths();
-      console.log(tagBox);
-      console.log(this.settings.tall);
       if (this.settings.tall) {
         if (tagBox != null) {
           if (tagBox.height > 0) {
@@ -576,16 +574,16 @@
           _descWidths.normal = 80;
           return _descWidths.long = 160;
         } else {
-          _descWidths.normal = 40;
-          return _descWidths.long = 40;
+          _descWidths.normal = 42;
+          return _descWidths.long = 42;
         }
       } else {
         if (this.settings.wide) {
           _descWidths.normal = 70;
           return _descWidths.long = 150;
         } else {
-          _descWidths.normal = 40;
-          return _descWidths.long = 40;
+          _descWidths.normal = 42;
+          return _descWidths.long = 42;
         }
       }
     };
@@ -854,8 +852,35 @@
       return buildList;
     };
 
+    View.prototype.shouldBeFiltered = false;
+
+    View.prototype.currentWrittenTerm = "";
+
+    View.prototype.queryLog = {
+      "291": [],
+      "296": [],
+      "292": []
+    };
+
+    View.prototype.createQueryLog = function(term, tree) {
+      var k, v, _ref;
+      if (this.queryLog[tree].lastIndexOf(term) < 0) {
+        this.queryLog[tree].push(term);
+      }
+      _ref = this.queryLog;
+      for (k in _ref) {
+        v = _ref[k];
+        if (v.length > this.queryLog[tree].length) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    View.prototype.writeEmptyList = function(term, tree) {};
+
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var activeTree, currentBoxes, k, v, _results,
+      var activeTree, k, latestQuery, v,
         _this = this;
       if (hits == null) {
         hits = {};
@@ -863,55 +888,40 @@
       if (!this.shouldBeFiltered) {
         return false;
       }
-      if (this.cj_selectors.tagBox.hasClass("filtered")) {
-        if (this.cleanTree === true) {
-          return false;
-        }
-        currentBoxes = this.cj_selectors.tagBox.find(".tagContainer");
-        cj.each(currentBoxes, function(i, tree) {
-          var currentTerm, incomingTerm;
-          currentTerm = cj(tree).data("term");
-          if (currentTerm == null) {
-            currentTerm = "";
-            cj(tree).data("term", "");
-          }
-          incomingTerm = term;
-          if (currentTerm !== incomingTerm) {
-            return cj(tree).remove();
-          }
-        });
-      } else {
-        this.cj_selectors.tagBox.addClass("filtered");
-        currentBoxes = this.cj_selectors.tagBox.find(".tagContainer");
-        cj.each(currentBoxes, function(i, tree) {
-          var currentTerm, incomingTerm;
-          currentTerm = cj(tree).data("term");
-          if (currentTerm == null) {
-            currentTerm = "";
-            cj(tree).data("term", "");
-          }
-          incomingTerm = term;
-          if (currentTerm !== incomingTerm) {
-            return cj(tree).remove();
-          }
-        });
-        this.cj_selectors.tagBox.empty();
-        this.cleanTree = false;
-      }
-      this.setTabResults(hits);
-      activeTree = this.cj_menuSelectors.tabs.find(".active").attr("class").replace("active", "");
-      for (k in list) {
-        v = list[k];
-        new Tree(v, k, true);
-        this.cj_selectors.tagBox.find(".top-" + k).data("term", term);
-      }
-      this.setActiveTree(this.getIdFromTabName(activeTree));
-      _results = [];
       for (k in hits) {
         v = hits[k];
-        _results.push(this.removeUnnecessaryDropdowns(k));
+        latestQuery = this.createQueryLog(term, "" + k);
+        if (!latestQuery) {
+          return false;
+        }
       }
-      return _results;
+      if (!this.cj_selectors.tagBox.hasClass("filtered")) {
+        this.cj_selectors.tagBox.addClass("filtered");
+      }
+      cj.each(this.cj_selectors.tagBox.find(".tagContainer"), function(i, tree) {
+        var cjTree;
+        cjTree = cj(tree);
+        if (!cjTree.hasClass("filtered")) {
+          cjTree.remove();
+        }
+        if (cjTree.data("term") !== term) {
+          return cjTree.remove();
+        }
+      });
+      for (k in hits) {
+        v = hits[k];
+        activeTree = this.cj_menuSelectors.tabs.find(".active").attr("class").replace("active", "");
+        if (v === 0) {
+          this.setTabResults(k, "0");
+          this.writeEmptyList(term, k);
+          this.cj_selectors.tagBox.find(".top-" + k).data("term", term);
+        } else {
+          this.setTabResults(k, v);
+          new Tree(list[k], k, true);
+          this.cj_selectors.tagBox.find(".top-" + k).data("term", term);
+        }
+      }
+      return this.setActiveTree(this.getIdFromTabName(activeTree));
     };
 
     View.prototype.noResultsBox = function(treeId, k) {
@@ -958,41 +968,23 @@
       }
     };
 
-    View.prototype.setTabResults = function(hits) {
-      var cjTab, count, k, result, v, _results;
-      _results = [];
-      for (k in hits) {
-        v = hits[k];
-        cjTab = this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(k, true)));
-        count = cjTab.find("span").html();
-        if (count != null) {
-          count = count.replace(/\(|\)/g, "");
-        }
-        if ((count == null) && parseInt(v) > 0) {
-          result = cjTab.html();
-          _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
-        } else {
-          if (count > 0 && parseInt(v) === 0) {
-            cjTab.find("span").remove();
-            result = cjTab.html();
-            cjTab.html("" + result + "<span>(" + count + ")</span>");
-          }
-          if (count === 0 && parseInt(v) > 0) {
-            cjTab.find("span").remove();
-            result = cjTab.html();
-            _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
-          } else {
-            cjTab.find("span").remove();
-            result = cjTab.html();
-            _results.push(cjTab.html("" + result + "<span>(" + v + ")</span>"));
-          }
-        }
+    View.prototype.setTabResults = function(tree, val) {
+      var cjTab, result;
+      cjTab = this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(tree, true)));
+      if (cjTab.find("span").length > 0) {
+        return cjTab.find("span").html("(" + val + ")");
+      } else {
+        result = cjTab.html();
+        return cjTab.html("" + result + "<span>(" + val + ")</span>");
       }
-      return _results;
     };
 
-    View.prototype.removeTabCounts = function() {
-      return this.cj_menuSelectors.tabs.find("span").remove();
+    View.prototype.removeTabCounts = function(id) {
+      if (id != null) {
+        return this.cj_menuSelectors.tabs.find("." + " span").remove();
+      } else {
+        return this.cj_menuSelectors.tabs.find("span").remove();
+      }
     };
 
     View.prototype.addPositionReminderText = function(cjlocation) {
@@ -1012,8 +1004,6 @@
         oc = false;
       }
       if (oc) {
-        console.log(":filtered");
-        console.log(this.cj_selectors.tagBox.hasClass("filtered"));
         if (this.cj_selectors.tagBox.hasClass("filtered")) {
           if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
             cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
@@ -1140,9 +1130,7 @@
         return boxHeight;
       }
       if (bbUtils.localStorage("tagBoxHeight") != null) {
-        console.log("know height");
         lsheight = bbUtils.localStorage("tagBoxHeight");
-        console.log(bbUtils.localStorage("tagBoxHeight"));
         if (lsheight.height > 600) {
           bbUtils.localStorage("tagBoxHeight", 600);
           lsheight.height = 600;
@@ -1239,9 +1227,10 @@
       cjac.on("keyup", (function(event) {
         var keyCode;
         keyCode = bbUtils.keyCode(event);
-        if (keyCode.type === "delete" && cjac.val().length <= 3) {
+        if (keyCode.type === "delete" && cjac.val().length < 3) {
           _this.view.removeTabCounts();
           _this.view.shouldBeFiltered = false;
+          _this.view.currentWrittenTerm = "";
           if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
             _this.view.toggleDropdown();
             _this.view.rebuildInitialTree();
@@ -1333,7 +1322,7 @@
           if ((terms != null) && !cj.isEmptyObject(terms)) {
             openLeg = new OpenLeg;
             openLeg.query({
-              "term": term
+              "term": terms.term.toLowerCase()
             }, function(results) {
               var filteredList, poses;
               poses = _this.addPositionsToTags(results.results);
@@ -1341,7 +1330,7 @@
                 292: poses
               };
               _this.getNextPositionRound(results);
-              _this.view.writeFilteredList(filteredList, term, {
+              _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), {
                 292: results.seeXmore
               });
               _this.buildPositions();
@@ -1359,22 +1348,9 @@
               hcounts += v;
               foundTags.push(parseFloat(k));
             }
-            console.log(hits);
             filteredList = _this.view.buildFilteredList(tags);
-            console.log(cj.isEmptyObject(terms));
             _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
-            console.log(Object.keys(hits).length);
-            if (Object.keys(hits).length < 2) {
-              for (k in hits) {
-                v = hits[k];
-                console.log(k, v);
-                console.log([291, 296].indexOf(k));
-              }
-            }
-            _this.localQueryDone = true;
-          }
-          if ((terms != null) && cj.isEmptyObject(terms)) {
-            return tags = {};
+            return _this.localQueryDone = true;
           }
         });
       }
@@ -1385,9 +1361,13 @@
       hits = {};
       for (k in terms) {
         v = terms[k];
-        if (v.length > 0) {
-          hits[k] = v.length;
-        }
+        hits[k] = v.length;
+      }
+      if (hits[296] == null) {
+        hits[296] = 0;
+      }
+      if (hits[291] == null) {
+        hits[291] = 0;
       }
       return hits;
     };
@@ -1615,6 +1595,7 @@
 
   Node = (function() {
     function Node(node) {
+      var levelModifier;
       this.data = node;
       this.parent = node.parent;
       this.hasDesc = "";
@@ -1623,6 +1604,15 @@
       this.id = node.id;
       this.children = node.children;
       this.name = node.name;
+      this.nameLength = "";
+      if (this.name.length > _descWidths.normal) {
+        levelModifier = 0;
+        if (node.level > 2) {
+          levelModifier = node.level * 5;
+        }
+        this.name = _utils.textWrap(this.name, _descWidths.normal - levelModifier);
+        this.nameLength = "longName";
+      }
       this.html = this.html(node);
       return this;
     }
@@ -1676,7 +1666,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + "' id='tagLabel_" + node.id + "' data-tagid='" + node.id + "' data-name='" + node.name + "' data-parentid='" + node.parent + "'>";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "' data-tagid='" + node.id + "' data-name='" + node.name + "' data-parentid='" + node.parent + "'>";
       html += "              <div class='tag'>            ";
       html += "                <div class='ddControl " + treeButton + "'></div>              ";
       html += "                <span class='name'>" + node.name + "</span>            ";

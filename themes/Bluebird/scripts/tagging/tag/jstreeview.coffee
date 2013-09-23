@@ -78,8 +78,6 @@ class View
     @createSelectors()
     tagBox = new Resize
     @setDescWidths()
-    console.log tagBox
-    console.log @settings.tall
     if @settings.tall
       if tagBox?
         if tagBox.height > 0  
@@ -98,15 +96,15 @@ class View
         _descWidths.normal = 80
         _descWidths.long = 160
       else
-        _descWidths.normal = 40
-        _descWidths.long = 40
+        _descWidths.normal = 42
+        _descWidths.long = 42
     else
       if @settings.wide
         _descWidths.normal = 70
         _descWidths.long = 150
       else
-        _descWidths.normal = 40
-        _descWidths.long = 40
+        _descWidths.normal = 42
+        _descWidths.long = 42
   buildDropdown: () ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
@@ -262,44 +260,54 @@ class View
         if e.indexOf(parseFloat(o.id)) >= 0
           buildList[d].push o
     buildList
+  shouldBeFiltered: false
+  currentWrittenTerm: ""
+  queryLog:
+    "291": []
+    "296": []
+    "292": []
+
+  createQueryLog: (term,tree) ->
+    if @queryLog[tree].lastIndexOf(term) < 0
+      @queryLog[tree].push term
+    for k,v of @queryLog
+      if v.length > @queryLog[tree].length
+        return false
+    return true
+  writeEmptyList: (term,tree) ->
+
   writeFilteredList: (list,term,hits = {}) ->
-    return false if !@shouldBeFiltered
-    if @cj_selectors.tagBox.hasClass("filtered")
-      return false if @cleanTree == true
-      currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
-      cj.each(currentBoxes, (i,tree) =>
-        currentTerm = cj(tree).data("term")
-        if !currentTerm?
-          currentTerm = ""
-          cj(tree).data("term","")
-        incomingTerm = term
-        if currentTerm != incomingTerm
-          cj(tree).remove()
-        )
-    else
-      # this is the initial clear
-      @cj_selectors.tagBox.addClass("filtered")
-      currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
-      cj.each(currentBoxes, (i,tree) =>
-        currentTerm = cj(tree).data("term")
-        if !currentTerm?
-          currentTerm = ""
-          cj(tree).data("term","")
-        incomingTerm = term
-        if currentTerm != incomingTerm
-          cj(tree).remove()
-        ) 
-      @cj_selectors.tagBox.empty()
-      @cleanTree = false
-    @setTabResults(hits)
-    activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
-    for k,v of list
-      new Tree(v,k,true)
-      @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
-    @setActiveTree(@getIdFromTabName(activeTree))
+    if !@shouldBeFiltered
+      return false
+
     for k,v of hits
-      @removeUnnecessaryDropdowns(k)
-    # send to tree to make list
+      latestQuery = @createQueryLog(term,"#{k}")
+      unless latestQuery
+        return false
+
+    if !@cj_selectors.tagBox.hasClass("filtered")
+      @cj_selectors.tagBox.addClass("filtered")
+
+    cj.each(@cj_selectors.tagBox.find(".tagContainer"), (i,tree)=>
+      cjTree = cj(tree)
+      unless cjTree.hasClass("filtered")
+        cjTree.remove()
+      if cjTree.data("term") != term
+        cjTree.remove()
+    )
+    for k,v of hits
+      # if if it's a hit, delete current box and write new box
+      activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
+      if v == 0
+        @setTabResults(k,"0")
+        @writeEmptyList(term,k)
+        @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+      else
+        @setTabResults(k,v)
+        new Tree(list[k],k,true)
+        @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+    @setActiveTree(@getIdFromTabName(activeTree))
+    
   noResultsBox: (treeId,k) ->
     activeTree = @getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
     if parseInt(k) == parseInt(activeTree) then isActive = "active" else isActive = ""
@@ -332,33 +340,20 @@ class View
         if parseInt(k) == 292
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
       @setActiveTree(@getIdFromTabName(activeTree))
-  setTabResults: (hits) ->
-    for k,v of hits
-      cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k, true)}")
-      count = cjTab.find("span").html()
-      if count?
-        count = count.replace(/\(|\)/g,"")
-      # doesn't exist yet
-      if !count? && parseInt(v) > 0
-        result = cjTab.html()
-        cjTab.html("#{result}<span>(#{v})</span>")
-      else   
-        if count > 0 and parseInt(v) == 0
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{count})</span>")
-        if count == 0 && parseInt(v) > 0
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{v})</span>")
-        else
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{v})</span>")
+  setTabResults: (tree,val) ->
+    cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(tree, true)}")
+    if cjTab.find("span").length > 0
+      cjTab.find("span").html("(#{val})")
+    else
+      result = cjTab.html()
+      cjTab.html("#{result}<span>(#{val})</span>")
         
 
-  removeTabCounts: () ->
-    @cj_menuSelectors.tabs.find("span").remove()
+  removeTabCounts: (id) ->
+    if id?
+      @cj_menuSelectors.tabs.find(".#{} span").remove()
+    else
+      @cj_menuSelectors.tabs.find("span").remove()
   addPositionReminderText: (cjlocation) ->
     positionText = "
               <div class='position-box-text-reminder'>
@@ -371,8 +366,6 @@ class View
   toggleDropdown: (oc = false) ->
     # debugger
     if oc
-      console.log ":filtered"
-      console.log @cj_selectors.tagBox.hasClass("filtered")
       if @cj_selectors.tagBox.hasClass("filtered")
         if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
           cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
@@ -446,9 +439,7 @@ class Resize
       bbUtils.localStorage("tagBoxHeight",boxheight)
       return boxHeight
     if bbUtils.localStorage("tagBoxHeight")?
-      console.log "know height"
       lsheight = bbUtils.localStorage("tagBoxHeight")
-      console.log bbUtils.localStorage("tagBoxHeight")
       if lsheight.height > 600
        bbUtils.localStorage("tagBoxHeight", 600)
        lsheight.height = 600
@@ -511,9 +502,10 @@ class Autocomplete
     )
     cjac.on "keyup", ((event) =>
       keyCode = bbUtils.keyCode(event)
-      if keyCode.type == "delete" && cjac.val().length <= 3
+      if keyCode.type == "delete" && cjac.val().length < 3
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
+        @view.currentWrittenTerm = ""
         if @view.cj_selectors.tagBox.hasClass("dropdown")
           @view.toggleDropdown()
           @view.rebuildInitialTree()
@@ -575,11 +567,11 @@ class Autocomplete
       searchmonger.exec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
           openLeg = new OpenLeg
-          openLeg.query({"term":term}, (results) =>
+          openLeg.query({"term":terms.term.toLowerCase()}, (results) =>
             poses = @addPositionsToTags(results.results)
             filteredList = {292: poses}
             @getNextPositionRound(results)
-            @view.writeFilteredList(filteredList,term,{292: (results.seeXmore)})
+            @view.writeFilteredList(filteredList,terms.term.toLowerCase(),{292: (results.seeXmore)})
             @buildPositions()
             @openLegQueryDone = true
             if @view.cj_selectors.tagBox.hasClass("dropdown")
@@ -593,33 +585,32 @@ class Autocomplete
           for k,v of hits
             hcounts += v
             foundTags.push(parseFloat(k))
-          console.log hits
           filteredList = @view.buildFilteredList(tags)
-          console.log cj.isEmptyObject(terms)
+
           # if !cj.isEmptyObject(terms)
           #   for k in [291,296]
               # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
           @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
-          console.log Object.keys(hits).length
-          if Object.keys(hits).length < 2
-            for k,v of hits
-              console.log k,v
-              console.log [291,296].indexOf(k)
+          # if Object.keys(hits).length < 2
+            # for k,v of hits
+              # console.log k,v
+              # console.log [291,296].indexOf(k)
               # if [291,296].indexOf(k) < 0
                 # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
 
           @localQueryDone = true
-        if terms? && cj.isEmptyObject(terms)
-          tags = {}
+
       )
-      
 
   separateHits: (terms, results) ->
     hits = {}
     for k, v of terms
-      if v.length > 0
-        hits[k] = v.length
+      # if v.length > 0
+      hits[k] = v.length
+    hits[296] = 0 unless hits[296]?
+    hits[291] = 0 unless hits[291]?
     hits
+
 
   positionIdNumber: 292000
 
@@ -778,6 +769,13 @@ class Node
     @id = node.id
     @children = node.children
     @name = node.name
+    @nameLength = ""
+    if @name.length > _descWidths.normal
+      levelModifier = 0
+      if node.level > 2
+        levelModifier = node.level*5
+      @name = _utils.textWrap(@name, (_descWidths.normal - levelModifier) )
+      @nameLength = "longName"
     @html = @html(node)
     return @
   descLength: (@description) ->
@@ -806,7 +804,7 @@ class Node
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
-    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
+    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
     html += "
               <div class='tag'>
             "
