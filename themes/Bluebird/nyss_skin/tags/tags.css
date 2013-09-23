@@ -28,6 +28,8 @@
     font-weight: normal; }
   #JSTree-container.BBTreeContainer .BBTree-menu, #BBTreeContainer .BBTree-menu {
     width: 100%; }
+    #JSTree-container.BBTreeContainer .BBTree-menu input[type=text]::-ms-clear, #BBTreeContainer .BBTree-menu input[type=text]::-ms-clear {
+      display: none; }
     #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-top, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-bottom, #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
       height: 20px;
       border-bottom: 1px solid #ccc; }
