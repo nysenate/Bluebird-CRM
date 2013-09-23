@@ -13,6 +13,14 @@ dt {
     }
     position: relative;
     z-index:2;
+    &.longName {
+      line-height:12px;
+      height:40px;
+      .transparancyBox {
+        height:50px;
+        top: -50px;
+      }
+    }
   }
   &.open .tag .ddControl.treeButton {
     background: url($defaultIconLink) no-repeat -64px -15px;
@@ -53,4 +61,12 @@ dt.shortdescription.description {
 }
 dt.longdescription {
   @include descriptionChange(3);
+  height:52px;
+  .tag {
+    height:52px;
+  }
+  .transparancyBox {
+    height:52px;
+    top:-52px;
+  }
 }

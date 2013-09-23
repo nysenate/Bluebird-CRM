@@ -17,10 +17,11 @@
   @import "partials/menu";
   @import "partials/tree";
   &.short {
-    width: $inputBoxWidthShort;
-    @import "shape/short"  ;
+    // width: $inputBoxWidthShort;
+    @import "shape/short";
   }
   &.narrow {
+    width: 294px;
     @import "shape/narrow";
   }
   &.short.narrow {
