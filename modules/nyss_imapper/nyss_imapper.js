@@ -1175,6 +1175,22 @@ function makeListSortable(){
   });
   checks();
 }
+
+// http://stackoverflow.com/questions/12915988/retrieving-row-data-after-filtering-jquery-datatables
+cj.fn.dataTableExt.oApi.fnGetVisibleData = function(){
+    displayed = [];
+    currentlyDisplayed = this.fnSettings().aiDisplay; //gets displayed rows by their int identifier
+    for (index in currentlyDisplayed){
+        displayed.push( this.fnGetData( currentlyDisplayed[index] ));
+    }
+    if(displayed.length <1){
+      return "No Results";
+    }else{
+      return displayed.length;
+    }
+
+}
+
 // http://moorberry.net/blog/datatables-twitter-bootstrap-pagination/
   cj.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
   {
@@ -1408,36 +1424,36 @@ function buildReports() {
     messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
       messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
 
-	if( value.contactType != 'Unknown'){
+        if( value.contactType != 'Unknown'){
       messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
-	  messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
-	  messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
-	  messagesHtml += '</a>';
-	  messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
-	  messagesHtml += ' ';
-	}else {
-	  messagesHtml += '<td class="imap_name_column unmatched">';
-	  messagesHtml += " ";
+          messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
+          messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+          messagesHtml += '</a>';
+          messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
+          messagesHtml += ' ';
+        }else {
+          messagesHtml += '<td class="imap_name_column unmatched">';
+          messagesHtml += " ";
 
-	}
+        }
 
-	// messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+        // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
 
-	// match_sort = 'ProcessError';
-	// if(value.matcher){
-	//   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
-	//   var match_short = (value.matcher != 0) ? "M" : "A" ;
-	//   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
-	//   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
-	// }
-	// messagesHtml +='</td>';
+        // match_sort = 'ProcessError';
+        // if(value.matcher){
+        //   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
+        //   var match_short = (value.matcher != 0) ? "M" : "A" ;
+        //   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+        //   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+        // }
+        // messagesHtml +='</td>';
 
       messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
-	// if(value.attachments.length > 0){
-	//   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
-	// }
-	messagesHtml +='</td>';
-	var message_status = '';
+        // if(value.attachments.length > 0){
+        //   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+        // }
+        messagesHtml +='</td>';
+        var message_status = '';
       // console.log(value.message_status);
      if(value.message_status === "0"){
       message_status="Unmatched";
@@ -1445,15 +1461,15 @@ function buildReports() {
      }else if(value.message_status === "1"){
       Matched++;
       if(value.matcher){
-	  if (value.matcher != 0){
-	    matcherHtml = 'Matched by <a href="/civicrm/contact/view?reset=1&cid='+value.matcher+'" title="'+value.matcher_name+'">'+value.matcher_name+'</a>';
+          if (value.matcher != 0){
+            matcherHtml = 'Matched by <a href="/civicrm/contact/view?reset=1&cid='+value.matcher+'" title="'+value.matcher_name+'">'+value.matcher_name+'</a>';
 
-	  }else{
-	    matcherHtml = "Matched by Bluebird" ;
-	  }
+          }else{
+            matcherHtml = "Matched by Bluebird" ;
+          }
 
-	  message_status = matcherHtml;
-	 }
+          message_status = matcherHtml;
+         }
      }else if(value.message_status === "7"){
       Cleared++;
       message_status="Cleared";
@@ -1471,7 +1487,7 @@ function buildReports() {
 
   messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
-	// messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+        // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     };
     cj('#imapper-messages-list').html(messagesHtml);
@@ -1488,23 +1504,34 @@ function buildReports() {
 
 cj(".UnMatched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'UnMatched' );
+    oTable.fnFilter( 'UnMatched',3 );
+    rows = oTable.fnGetVisibleData();
+    cj('#total_number').html(rows);
+
 });
 cj(".Matched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Matched by' );
+    oTable.fnFilter( 'Matched by', 3 );
+    rows = oTable.fnGetVisibleData();
+    cj('#total_number').html(rows);
 });
 cj(".Cleared").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Cleared' );
+    oTable.fnFilter( 'Cleared', 3 );
+    rows = oTable.fnGetVisibleData();
+    cj('#total_number').html(rows);
 });
 cj(".Errors").live('click', function() {
       var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'error' );
+    oTable.fnFilter( 'error', 3 );
+    rows = oTable.fnGetVisibleData();
+    cj('#total_number').html(rows);
 });
 cj(".Deleted").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Deleted' );
+    oTable.fnFilter( 'Deleted', 3);
+    rows = oTable.fnGetVisibleData();
+    cj('#total_number').html(rows);
 });
 function DeleteMessage(id,imapid){
   cj.ajax({
