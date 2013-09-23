@@ -262,88 +262,52 @@ class View
     buildList
   shouldBeFiltered: false
   currentWrittenTerm: ""
+  queryLog:
+    "291": []
+    "296": []
+    "292": []
+
+  createQueryLog: (term,tree) ->
+    if @queryLog[tree].lastIndexOf(term) < 0
+      @queryLog[tree].push term
+    for k,v of @queryLog
+      if v.length > @queryLog[tree].length
+        return false
+    return true
+  writeEmptyList: (term,tree) ->
+
   writeFilteredList: (list,term,hits = {}) ->
     if !@shouldBeFiltered
       return false
-    console.log @shouldBeFiltered 
-    console.log hits
-    console.log term
-    console.log @currentWrittenTerm
-    if @currentWrittenTerm.length == 0
-      @currentWrittenTerm = term
-    if @currentWrittenTerm != term
-      console.log "not equal"
-      if term.length > 0
-        if term.match(@currentWrittenTerm)?
-          console.log "matched"
-          @currentWrittenTerm = term
-        if term.length < @currentWrittenTerm.length
-          console.log "shorter"
-          @currentWrittenTerm = term
-        else
-          console.log "not matched"
-        @currentWrittenTerm = ""
 
-    # term != @currentWrittenTerm
-      
-    # @currentWrittenTerm = term
-    # if !@cj_selectors.tagBox.hasClass("filtered")
-    #   alreadyFiltered = false
-    #   for k,v of _filtered
-    #     if v == true
-    #       alreadyFiltered = true
-    #   @isFiltered = true
-    #   @cj_selectors.tagBox.addClass("filtered")
-    # else
-    #   # if it's filtered already, you should check hits
-    #   for k,v of hits
-    #     count = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k)} span")
-    # for k,v of hits
-    #   if v > 0
-    #     console.log list["#{k}"]
-    #     _filtered["#{k}"] = true
-    #     console.log _filtered["#{k}"]
-    #     _length["#{k}"] = v
+    for k,v of hits
+      latestQuery = @createQueryLog(term,"#{k}")
+      unless latestQuery
+        return false
 
-    # currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
-    # # this is where I check on the boxes, i
-    # @setTabResults(hits)
-    # 
-    #   return false if @cleanTree == true
-    #   currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
-    #   cj.each(currentBoxes, (i,tree) =>
-    #     currentTerm = cj(tree).data("term")
-    #     if !currentTerm?
-    #       currentTerm = ""
-    #       cj(tree).data("term","")
-    #     incomingTerm = term
-    #     if currentTerm != incomingTerm
-    #       cj(tree).remove()
-    #     )
-    # else
-    #   # this is the initial clear
-    #   @cj_selectors.tagBox.addClass("filtered")
-    #   currentBoxes = @cj_selectors.tagBox.find(".tagContainer")
-    #   cj.each(currentBoxes, (i,tree) =>
-    #     currentTerm = cj(tree).data("term")
-    #     if !currentTerm?
-    #       currentTerm = ""
-    #       cj(tree).data("term","")
-    #     incomingTerm = term
-    #     if currentTerm != incomingTerm
-    #       cj(tree).remove()
-    #     ) 
-    #   @cj_selectors.tagBox.empty()
-    #   @cleanTree = false
-    # @setTabResults(hits)
-    # activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
-    # for k,v of list
-    #   new Tree(v,k,true)
-    #   @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
-    # @setActiveTree(@getIdFromTabName(activeTree))
-    # for k,v of hits
-    #   @removeUnnecessaryDropdowns(k)
-    # send to tree to make list
+    if !@cj_selectors.tagBox.hasClass("filtered")
+      @cj_selectors.tagBox.addClass("filtered")
+
+    cj.each(@cj_selectors.tagBox.find(".tagContainer"), (i,tree)=>
+      cjTree = cj(tree)
+      unless cjTree.hasClass("filtered")
+        cjTree.remove()
+      if cjTree.data("term") != term
+        cjTree.remove()
+    )
+    for k,v of hits
+      # if if it's a hit, delete current box and write new box
+      activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
+      if v == 0
+        @setTabResults(k,"0")
+        @writeEmptyList(term,k)
+        @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+      else
+        @setTabResults(k,v)
+        new Tree(list[k],k,true)
+        @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+    @setActiveTree(@getIdFromTabName(activeTree))
+    
   noResultsBox: (treeId,k) ->
     activeTree = @getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
     if parseInt(k) == parseInt(activeTree) then isActive = "active" else isActive = ""
@@ -376,29 +340,13 @@ class View
         if parseInt(k) == 292
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
       @setActiveTree(@getIdFromTabName(activeTree))
-  setTabResults: (hits) ->
-    for k,v of hits
-      cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k, true)}")
-      count = cjTab.find("span").html()
-      if count?
-        count = count.replace(/\(|\)/g,"")
-      # doesn't exist yet
-      if !count? && parseInt(v) > 0
-        result = cjTab.html()
-        cjTab.html("#{result}<span>(#{v})</span>")
-      else   
-        if count > 0 and parseInt(v) == 0
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{count})</span>")
-        if count == 0 && parseInt(v) > 0
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{v})</span>")
-        else
-          cjTab.find("span").remove()
-          result = cjTab.html()
-          cjTab.html("#{result}<span>(#{v})</span>")
+  setTabResults: (tree,val) ->
+    cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(tree, true)}")
+    if cjTab.find("span").length > 0
+      cjTab.find("span").html("(#{val})")
+    else
+      result = cjTab.html()
+      cjTab.html("#{result}<span>(#{val})</span>")
         
 
   removeTabCounts: (id) ->
@@ -465,15 +413,6 @@ class View
         return false
     )
     return heightTotal
-
-_filtered =
-  "291": false
-  "292": false
-  "296": false
-_length =
-  "291": 0
-  "292": 0
-  "296": 0
 
 class Settings
   constructor: (@instance, @view) ->
@@ -628,11 +567,11 @@ class Autocomplete
       searchmonger.exec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
           openLeg = new OpenLeg
-          openLeg.query({"term":term}, (results) =>
+          openLeg.query({"term":terms.term.toLowerCase()}, (results) =>
             poses = @addPositionsToTags(results.results)
             filteredList = {292: poses}
             @getNextPositionRound(results)
-            @view.writeFilteredList(filteredList,term,{292: (results.seeXmore)})
+            @view.writeFilteredList(filteredList,terms.term.toLowerCase(),{292: (results.seeXmore)})
             @buildPositions()
             @openLegQueryDone = true
             if @view.cj_selectors.tagBox.hasClass("dropdown")
@@ -662,7 +601,6 @@ class Autocomplete
           @localQueryDone = true
 
       )
-      
 
   separateHits: (terms, results) ->
     hits = {}
