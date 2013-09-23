@@ -87,43 +87,33 @@
     overflow-x: hidden;
     height: 400px; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1 {
-      width: 98%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-2, #BBTreeContainer .BBTree dl.lv-2 {
-      width: 96%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-3, #BBTreeContainer .BBTree dl.lv-3 {
-      width: 94%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-4, #BBTreeContainer .BBTree dl.lv-4 {
-      width: 92%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-5, #BBTreeContainer .BBTree dl.lv-5 {
-      width: 90%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-6, #BBTreeContainer .BBTree dl.lv-6 {
-      width: 88%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-7, #BBTreeContainer .BBTree dl.lv-7 {
-      width: 86%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-8, #BBTreeContainer .BBTree dl.lv-8 {
-      width: 84%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-9, #BBTreeContainer .BBTree dl.lv-9 {
-      width: 82%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-10, #BBTreeContainer .BBTree dl.lv-10 {
-      width: 80%;
       margin-left: 2%;
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dt .tag, #BBTreeContainer .BBTree dt .tag {
@@ -141,6 +131,12 @@
         #JSTree-container.BBTreeContainer .BBTree dt .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt .tag .ddControl.treeButton {
           background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
           cursor: pointer; }
+      #JSTree-container.BBTreeContainer .BBTree dt .tag.longName, #BBTreeContainer .BBTree dt .tag.longName {
+        line-height: 12px;
+        height: 40px; }
+        #JSTree-container.BBTreeContainer .BBTree dt .tag.longName .transparancyBox, #BBTreeContainer .BBTree dt .tag.longName .transparancyBox {
+          height: 50px;
+          top: -50px; }
     #JSTree-container.BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
       background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -64px -15px; }
     #JSTree-container.BBTreeContainer .BBTree .shaded .name span, #BBTreeContainer .BBTree .shaded .name span {
@@ -225,8 +221,6 @@
       display: block; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
       display: none; }
-<<<<<<< HEAD
-=======
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
       display: none; }
       #JSTree-container.BBTreeContainer .BBTree.dropdown.open, #BBTreeContainer .BBTree.dropdown.open {
@@ -237,7 +231,6 @@
         z-index: 10;
         background-color: white;
         height: 150px; }
->>>>>>> tagging-1.4.2
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
     height: 6px;
@@ -245,10 +238,6 @@
     margin: 0 auto; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
       cursor: s-resize; }
-<<<<<<< HEAD
-  #JSTree-container.BBTreeContainer.short, #BBTreeContainer.short {
-    width: 285px; }
-=======
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {
@@ -260,4 +249,3 @@
       width: 295px; }
       #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown dt .tag .name, #BBTreeContainer.narrow .BBTree.dropdown dt .tag .name {
         font-size: 11px; }
->>>>>>> tagging-1.4.2

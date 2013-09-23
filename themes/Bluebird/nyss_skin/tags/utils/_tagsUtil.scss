@@ -85,7 +85,7 @@
   @for $i from 1 through 10 {
     dl.#{$levelClassSlug}-#{$i}
     {
-      width: 100% - (2*$i);
+      // width: 100% - (2*$i);
       @if $i != 0
       {
         margin-left: 2%;
