@@ -296,7 +296,7 @@ class CRM_ImportSampleData {
       if ( $c['id'] ) {
         $sql = "
           INSERT INTO civicrm_uf_match ( domain_id, uf_id, uf_name, contact_id )
-          VALUES ( 1, {$u[0]}, 'bluebird.admin@nysenate.gov', {$c['id']} )
+          VALUES ( 1, {$u[0]}, '{$u[1]}', {$c['id']} )
         ";
         CRM_Core_DAO::executeQuery($sql);
       }
