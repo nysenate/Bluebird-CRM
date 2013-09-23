@@ -13,17 +13,18 @@ dt {
     }
     position: relative;
     z-index:2;
-    &.longName {
-      line-height:12px;
-      height:40px;
-      .transparancyBox {
-        height:50px;
-        top: -50px;
-      }
-    }
+
   }
   &.open .tag .ddControl.treeButton {
     background: url($defaultIconLink) no-repeat -64px -15px;
+  }
+  &.longName {
+    line-height:12px;
+    height:40px;
+    .transparancyBox {
+      height:50px;
+      top: -50px;
+    }
   }
   // span.name {
   //   display: block;
@@ -55,9 +56,37 @@ dt.description, dt.longdescription {
 }
 dt.description {
   @include descriptionChange(2);
+  &.longName {
+    line-height:12px;
+    height:50px;
+    .tag {
+      height:50px;
+      line-height: 12px;
+      .name {
+      }
+    }
+    .transparancyBox {
+      height:50px;
+      top: -50px;
+    }
+  }
 }
 dt.shortdescription.description {
   @include descriptionChange(1.5);
+  &.longName {
+    line-height:12px;
+    height:50px;
+    .tag {
+      height:50px;
+      line-height: 12px;
+      .name {
+      }
+    }
+    .transparancyBox {
+      height:50px;
+      top: -50px;
+    }
+  }
 }
 dt.longdescription {
   @include descriptionChange(3);
