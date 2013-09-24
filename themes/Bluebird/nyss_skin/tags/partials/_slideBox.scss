@@ -1,0 +1,18 @@
+@import "../utils/tagsUtil";
+.tagContainer {
+  position:relative;
+  dt:hover {
+    .fCB {
+      display:none;
+    }
+    @include addColors(.35);
+  }
+}
+.slideBox {
+  position:absolute;
+  width:0%;
+  height:inherit;
+  background-color:rgba(0,0,0,.2);
+  z-index: 15;
+  right:0px;
+}
