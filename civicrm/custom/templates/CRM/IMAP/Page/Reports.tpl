@@ -1,6 +1,6 @@
 <div class="crm-content-block imapperbox " id="Reports">
 	<div class='full'>
-		<h1>Inbox Reports <small id='total_results'><span id="total_Emails">Loading</span> results</small></h1>
+		<h1>Inbox Reports  </h1>
 		<div class="stats" >
 			<a href="#UnMatched" class="stats_overview UnMatched">UnMatched<span id="total_unMatched"> </span></a>
 			<a href="#Matched" class="stats_overview Matched">Matched<span id="total_Matched"> </span></a>
