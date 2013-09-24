@@ -1347,19 +1347,19 @@ function buildReports() {
       message_status="Deleted";
       Deleted++;
      }
+  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
   messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
 
-    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
 
-  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
       messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
         // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
     });
     };
     cj('#imapper-messages-list').html(messagesHtml);
     makeListSortable();
-
+  cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
   cj('#total_Matched').html(Matched);
@@ -1368,32 +1368,77 @@ function buildReports() {
   cj('#total_Deleted').html(Deleted);
 }
 
+cj( ".range" ).live('change', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnDraw();
+});
+
+cj.fn.dataTableExt.afnFiltering.push(
+    function( oSettings, aData, iDataIndex ) {
+        // "date-range" is the id for my input
+        var dateRange = cj('#range').attr("value");
+        if(dateRange <1){
+          dateRange = 1000000;
+        }
+        // expecting 2010-03-01 - 2010-03-31
+        var today = new Date();
+        var past = new Date();
+        past.setDate(today.getDate() - dateRange);
+
+
+        // parse the range from a single field into min and max, remove " - "
+        start = cj.datepicker.formatDate('@', past);
+        stop = cj.datepicker.formatDate('@', today);
+
+        // 4 here is the column where my dates are.
+        var date = aData[3];
+
+        // convert to unix time
+        date = date.substring(10,20)*1000;
+
+        // run through cases
+        if ( start == "" && date <= stop){
+            return true;
+        }
+        else if ( start =="" && date <= stop ){
+            return true;
+        }
+        else if ( start <= date && "" == stop ){
+            return true;
+        }
+        else if ( start <= date && date <= stop ){
+            return true;
+        }
+        // all failed
+        return false;
+    }
+);
+
+
+
+cj(".Total").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( "", 5, false,false);
+});
 cj(".UnMatched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'UnMatched',3 );
-
+    oTable.fnFilter( 'UnMatched',5 );
 });
 cj(".Matched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Matched by', 3 );
-
+    oTable.fnFilter( 'Matched by', 5 );
 });
 cj(".Cleared").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Cleared', 3 );
-
+    oTable.fnFilter( 'Cleared', 5 );
 });
 cj(".Errors").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'error', 3 );
-
-
+    oTable.fnFilter( 'error', 5 );
 });
 cj(".Deleted").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
-    oTable.fnFilter( 'Deleted', 3);
-
-
+    oTable.fnFilter( 'Deleted', 5);
 });
 
 
