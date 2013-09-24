@@ -28,42 +28,42 @@
 }
 @mixin addTag {
   .addTag {
-    @include functionIcon($functionIconLink); background-position: 0;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: 0;
   }
 }
 @mixin removeTag {
   .removeTag{
-    @include functionIcon($functionIconLink); background-position: -17px 0px;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: -17px 0px;
   }
 }
 @mixin moveTag {
   .moveTag {
-    @include functionIcon($functionIconLink); background-position: -34px 0px;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: -34px 0px;
   }
 }
 @mixin updateTag {
   .updateTag{
-    @include functionIcon($functionIconLink); background-position: -50px 0px;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: -50px 0px;
   }
 }
 @mixin mergeTag {
   .mergeTag{
-    @include functionIcon($functionIconLink); background-position: -66px 0px;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: -66px 0px;
   }
 }
 @mixin convertTag {
   .convertTag{
-    @include functionIcon($functionIconLink); background-position: -107px 0px;
+    @include functionIcon($functionIconLink); background-color: transparent; background-position: -107px 0px;
   }
 }
 @mixin printTag {
   .printTag{
-    @include functionIcon($defaultIconLink); background-position: -160px -96px;
+    @include functionIcon($defaultIconLink); background-color: transparent; background-position: -160px -96px;
   }
 }
 @mixin closeButton {
   .closeButton{
-    @include functionIcon($defaultIconLink); background-position: -97px -129px;
+    @include functionIcon($defaultIconLink); background-color: transparent; background-position: -97px -129px;
   }
 }
 @mixin editIssueCodeButtons {
