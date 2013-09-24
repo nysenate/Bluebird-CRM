@@ -241,38 +241,53 @@ cj( document ).ready( function( ) {
   <div id="advanced-search-form"></div>
   
   {if $ssID or $rows or $savedSearch}
-    
   {else}
-      
-  {literal}
-  <script>
-  cj('.civi-advanced-search-link').click(function() {
-    if (cj('form#Advanced').length == 0) {
-      $('.civi-adv-search-linkwrap').addClass('crm-loading');
-      cj('#advanced-search-form').load('{/literal}{crmURL p="civicrm/contact/search/advanced" q="snippet=1&reset=1"}{literal}',
-        function() { 
-          $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
-           if ($('#advanced-search-form .crm-accordion-processed').length == 0){
-              cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
-              cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
-              $('#advanced-search-form .crm-accordion-header').bind('click', function () {
-                $(this).parent().toggleClass('crm-accordion-open');
-              $(this).parent().toggleClass('crm-accordion-closed');
+    {literal}
+    <script>
+    cj('.civi-advanced-search-link-inner').click(function(){
+      if (cj('form#Advanced').length == 0) {
+        cj('.civi-adv-search-linkwrap').addClass('crm-loading');
+        cj('#advanced-search-form').load('{/literal}{crmURL p="civicrm/contact/search/advanced" q="snippet=1&reset=1"}{literal}', function(){
+          cj('.civi-adv-search-linkwrap').removeClass('crm-loading');
+          if (cj('#advanced-search-form .crm-accordion-processed').length == 0) {
+            cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function(){
+              cj(this).addClass('crm-accordion-header-hover');
+            });
+            cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function(){
+              cj(this).removeClass('crm-accordion-header-hover');
+            });
+            cj('#advanced-search-form .crm-accordion-header').bind('click', function (){
+              cj(this).parent().toggleClass('crm-accordion-open');
+              cj(this).parent().toggleClass('crm-accordion-closed');
               //return false to prevent wiring of click event
               return false;
-              });
-              $('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
-            };
-          });
-    } else {
-      cj('.civi-advanced-search-link').removeClass('civi-advanced-search-link').addClass('civi-advanced-search-button');
-    }
+            });
+            cj('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
+          };
+
+          cj('div.crm-search_criteria_basic-accordion div.crm-accordion-body table tr:first td:first div.helpicon').
+            insertAfter('.civi-advanced-search-link-inner').
+            css('float', 'right').
+            css('position', 'relative');
+        });
+      }
+      else {
+        cj('.civi-advanced-search-link').addClass('civi-advanced-search-button');
+      }
+
+      cj(this).parent().toggleClass('civi-adv-search-linkwrap-active');
+      cj('.civi-adv-search-body').toggle();
+
+      if ( $(this).parent().hasClass('civi-adv-search-linkwrap-active') ) {
+        cj('div.civi-advanced-search-button div.helpicon').show();
+      }
+      else {
+        cj('div.civi-advanced-search-button div.helpicon').hide();
+      }
     });
-  </script>
-  {/literal}
-
+    </script>
+    {/literal}
   {/if}
-
 </div>
 </div>
 
