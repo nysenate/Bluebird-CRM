@@ -1,7 +1,17 @@
 <div class="crm-content-block imapperbox " id="Reports">
 	<div class='full'>
-		<h1>Inbox Reports  </h1>
+		<h1>Inbox Reports
+			<select class="form-select range" id="range" name="range">
+				<option value="0">All Time</option>
+				<option value="1">Last 24 hours</option>
+				<option value="7">Last 7 days</option>
+				<option value="30">Last 30 days</option>
+				<option value="90">Last 90 days</option>
+				<option value="365">Last Year</option>
+			</select>
+		</h1>
 		<div class="stats" >
+			<a href="#Total" class="stats_overview Total">Total<span id="total"> </span></a>
 			<a href="#UnMatched" class="stats_overview UnMatched">UnMatched<span id="total_unMatched"> </span></a>
 			<a href="#Matched" class="stats_overview Matched">Matched<span id="total_Matched"> </span></a>
 			<a href="#Cleared" class="stats_overview Cleared">Cleared<span id="total_Cleared"> </span></a>
@@ -17,9 +27,9 @@
 				    <th class='Name'>Sender’s Info</th>
 				    <th class='Name'>Matched To</th>
  				    <th class='Subject'>Subject</th>
-				    <th class='Status'>Status</th>
-				    <th class='Date'>Date Sent</th>
 				    <th class='Date'>Last Edited</th>
+				    <th class='Date'>Date Sent</th>
+				    <th class='Status'>Status</th>
 				    <th class='Forwarded'>Forwarded By</th>
 				</tr>
 			</thead>
