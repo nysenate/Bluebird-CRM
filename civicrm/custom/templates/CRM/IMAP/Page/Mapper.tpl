@@ -1,6 +1,6 @@
 <div class="crm-content-block imapperbox " id="Unmatched">
 	<div class='full'>
-	<h1>Unmatched Messages <small id='total_results'><span id="total_number">Loading</span> results</small></h1>
+	<h1>Unmatched Messages </h1>
 	</div>
 	<div id='top'></div>
 	<div class='full'>

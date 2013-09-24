@@ -46,8 +46,7 @@ pre{white-space: pre-wrap;  white-space: -moz-pre-wrap; white-space: -pre-wrap; 
 
 
 /* IMAP - Table View */
-.imapperbox .dataTables_length{width: 125px !important; float: left !important;}
-.imapperbox #sortable_results_info{display: none !important;}
+
 .imapperbox .list_header{font-weight: bold;}
 .imapperbox .imap_checkbox_header,
 .imapperbox .imap_name_header,
@@ -85,13 +84,12 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .page_actions_label{ float:right; margin:5px 10px 0 0}
 
 /* IMAP - Pagination */
-.imapperbox .paging_bootstrap {width:100% !important;  float:left; margin:10px 0 10px 0; }
-.imapperbox .paging_bootstrap ul {float:right; padding:4px 0px 4px 0; margin: 0; }
-.imapperbox .paging_bootstrap ul li {display:inline-block; float:left;}
-.imapperbox .paging_bootstrap ul li a{padding:4px 8px; border: 1px solid #ccc; background: #e5e5e5;}
-.imapperbox .paging_bootstrap ul li.disabled a{background: #f8f8f8;}
-.imapperbox .paging_bootstrap ul li.active a{background: #dadada;}
-.imapperbox .dataTables_paginate{float:none; text-align: none; width: 100%; }
+.imapperbox .controlls{border-bottom:1px solid #ccc; float: left; width:100%;}
+.imapperbox .dataTables_length {display: inline; float: left !important; width: 30%;padding: 4px 10px;}
+.imapperbox .dataTables_info {display: inline;float: left; width: auto; padding: 10px; font-weight: bold;}
+.imapperbox .dataTables_filter {display: inline;float: right; width: auto; padding: 4px 10px;}
+
+.imapperbox .dataTables_paginate{ text-align: none; width: 100%; padding:20px 0;}
 
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
@@ -215,6 +213,7 @@ a.stats_overview:hover{
 
 }
 /* IMAP - Little buggers */
+.imapperbox #help{float: left; width: 99%;}
 #search_help{float:right; font-size: 10px !important; margin: 2px 6px !important;}
 .marginL10 {margin-left: 10px;}
 .marginL5 {margin-left: 5px;}

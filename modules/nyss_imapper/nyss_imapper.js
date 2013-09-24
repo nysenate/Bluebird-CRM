@@ -1164,154 +1164,24 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 
 function makeListSortable(){
   cj("#sortable_results").dataTable({
+    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    // "iDisplayLength": 1,
+    "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "sPaginationType": "bootstrap",
     "bAutoWidth": false,
-    "bInfo": false,
   });
+  // var oTable = cj('#sortable_results').dataTable();
+  // rows = oTable.fnGetVisibleData();
+
+
   checks();
 }
 
-// http://stackoverflow.com/questions/12915988/retrieving-row-data-after-filtering-jquery-datatables
-cj.fn.dataTableExt.oApi.fnGetVisibleData = function(){
-    displayed = [];
-    currentlyDisplayed = this.fnSettings().aiDisplay; //gets displayed rows by their int identifier
-    for (index in currentlyDisplayed){
-        displayed.push( this.fnGetData( currentlyDisplayed[index] ));
-    }
-    if(displayed.length <1){
-      return "No Results";
-    }else{
-      return displayed.length;
-    }
 
-}
-
-// http://moorberry.net/blog/datatables-twitter-bootstrap-pagination/
-  cj.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
-  {
-      return {
-          "iStart":         oSettings._iDisplayStart,
-          "iEnd":           oSettings.fnDisplayEnd(),
-          "iLength":        oSettings._iDisplayLength,
-          "iTotal":         oSettings.fnRecordsTotal(),
-          "iFilteredTotal": oSettings.fnRecordsDisplay(),
-          "iPage":          oSettings._iDisplayLength === -1 ?
-              0 : Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
-          "iTotalPages":    oSettings._iDisplayLength === -1 ?
-              0 : Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
-      };
-  }
-
-  /* Bootstrap style pagination control */
-  cj.extend( cj.fn.dataTableExt.oPagination, {
-      "bootstrap": {
-          "fnInit": function( oSettings, nPaging, fnDraw ) {
-              var oLang = oSettings.oLanguage.oPaginate;
-              var fnClickHandler = function ( e ) {
-                  e.preventDefault();
-                  if ( oSettings.oApi._fnPageChange(oSettings, e.data.action) ) {
-                      fnDraw( oSettings );
-                  }
-              };
-
-              cj(nPaging).addClass('pagination').append(
-                  '<ul>'+
-                      '<li class="first disabled"><a href="#">&larr; &larr; First</a></li>'+
-                      '<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
-                      '<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
-                      '<li class="last disabled"><a href="#"> Last &rarr; &rarr; </a></li>'+
-
-                  '</ul>'
-              );
-              var els = cj('a', nPaging);
-              cj(els[0]).bind( 'click.DT', { action: "first" }, fnClickHandler );
-              cj(els[1]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
-              cj(els[2]).bind( 'click.DT', { action: "next" }, fnClickHandler );
-              cj(els[3]).bind( 'click.DT', { action: "last" }, fnClickHandler );
-
-          },
-
-          "fnUpdate": function ( oSettings, fnDraw ) {
-              var iListLength = 5;
-              var oPaging = oSettings.oInstance.fnPagingInfo();
-              var an = oSettings.aanFeatures.p;
-              var i, j, sClass, iStart, iEnd, iHalf=Math.floor(iListLength/2);
-
-              if ( oPaging.iTotalPages < iListLength) {
-                  iStart = 1;
-                  iEnd = oPaging.iTotalPages;
-              }
-              else if ( oPaging.iPage <= iHalf ) {
-                  iStart = 1;
-                  iEnd = iListLength;
-              } else if ( oPaging.iPage >= (oPaging.iTotalPages-iHalf) ) {
-                  iStart = oPaging.iTotalPages - iListLength + 1;
-                  iEnd = oPaging.iTotalPages;
-              } else {
-                  iStart = oPaging.iPage - iHalf + 1;
-                  iEnd = iStart + iListLength - 1;
-              }
-
-              for ( i=0, iLen=an.length ; i<iLen ; i++ ) {
-                  // Remove the middle elements
-                  cj('li:gt(1)', an[i]).filter(':not(.next):not(.last)').remove();
-
-                  // Add the new list items and their event handlers
-                  for ( j=iStart ; j<=iEnd ; j++ ) {
-                      sClass = (j==oPaging.iPage+1) ? 'class="active"' : '';
-                      cj('<li '+sClass+'><a href="#">'+j+'</a></li>')
-                          .insertBefore( $('li.next', an[i])[0] )
-                          .bind('click', function (e) {
-                              e.preventDefault();
-                              oSettings._iDisplayStart = (parseInt(cj('a', this).text(),10)-1) * oPaging.iLength;
-                              fnDraw( oSettings );
-                          } );
-                  }
-
-                  // Pages
-                  //console.log("Page "+(oPaging.iPage+1) +" Of "+oPaging.iTotalPages);
-                  //console.log("Numbers "+(oPaging.iLength*(oPaging.iPage))+" THRU "+(oPaging.iLength*(oPaging.iPage+1)));
-                  totals = cj("#total_number").html();
-
-                  if((oPaging.iLength*(oPaging.iPage+1)) < 1 ){
-                    cj("#total_results").html('All Results 1 - <span id="total_number">'+totals+'</span>');
-                  }else if ((oPaging.iLength*(oPaging.iPage+1)) < cj("#total_number").html()){
-                    viewing = "Results "+(oPaging.iLength*(oPaging.iPage)+1)+" - "+(oPaging.iLength*(oPaging.iPage+1));
-                    cj("#total_results").html(viewing+' of <span id="total_number">'+totals+'</span>');
-                  }else{
-                     cj("#total_results").html("Results "+(oPaging.iLength*(oPaging.iPage)+1)+' - <span id="total_number">'+totals+'</span>');
-                  }
-
-
-                  // Add / remove disabled classes from the static elements
-                  if ( oPaging.iPage === 0 ) {
-                      cj('.first', an[i]).addClass('disabled');
-                      cj('.prev', an[i]).addClass('disabled');
-
-                  } else {
-                      cj('.first', an[i]).removeClass('disabled');
-                      cj('.prev', an[i]).removeClass('disabled');
-
-                  }
-
-                  if ( oPaging.iPage === oPaging.iTotalPages-1 || oPaging.iTotalPages === 0 ) {
-                      cj('.last', an[i]).addClass('disabled');
-                      cj('.next', an[i]).addClass('disabled');
-
-                  } else {
-                      cj('.last', an[i]).removeClass('disabled');
-                      cj('.next', an[i]).removeClass('disabled');
-
-                  }
-              }
-          }
-      }
-  } );
 
 
 // a complicated checkbox method,
@@ -1333,7 +1203,6 @@ function checks(){
 function buildMessageList() {
   if(messages.stats.overview.Unprocessed == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
-    cj("#total_number").html('0');
   }else{
     var messagesHtml = '';
     var total_results = messages.stats.overview.Unprocessed;
@@ -1400,7 +1269,6 @@ function buildMessageList() {
 
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    cj("#total_number").html(total_results);
     makeListSortable();
     cj('.checkbox').removeClass('sorting');
     cj('.Actions').removeClass('sorting');
@@ -1418,7 +1286,6 @@ function buildReports() {
 
   if(!reports.Messages.successes){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
-    cj("#total_number").html('0');
   }else{
     cj.each(reports.Messages.successes, function(key, value) {
     messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
@@ -1492,8 +1359,7 @@ function buildReports() {
     };
     cj('#imapper-messages-list').html(messagesHtml);
     makeListSortable();
-  var total_results = unMatched+Matched+Cleared+Errors+Deleted;
-  cj('#total_number').html(total_results);
+
   cj('#total_unMatched').html(unMatched);
   // console.log(unMatched);
   cj('#total_Matched').html(Matched);
@@ -1505,34 +1371,32 @@ function buildReports() {
 cj(".UnMatched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'UnMatched',3 );
-    rows = oTable.fnGetVisibleData();
-    cj('#total_number').html(rows);
 
 });
 cj(".Matched").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Matched by', 3 );
-    rows = oTable.fnGetVisibleData();
-    cj('#total_number').html(rows);
+
 });
 cj(".Cleared").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Cleared', 3 );
-    rows = oTable.fnGetVisibleData();
-    cj('#total_number').html(rows);
+
 });
 cj(".Errors").live('click', function() {
-      var oTable = cj('#sortable_results').dataTable();
+    var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'error', 3 );
-    rows = oTable.fnGetVisibleData();
-    cj('#total_number').html(rows);
+
+
 });
 cj(".Deleted").live('click', function() {
     var oTable = cj('#sortable_results').dataTable();
     oTable.fnFilter( 'Deleted', 3);
-    rows = oTable.fnGetVisibleData();
-    cj('#total_number').html(rows);
+
+
 });
+
+
 function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
@@ -1693,7 +1557,6 @@ function pushtag(clear){
 function buildActivitiesList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
-    cj("#total_number").html('0');
   }else{
     var messagesHtml = '';
     var total_results = messages.stats.overview.successes;
@@ -1738,7 +1601,6 @@ function buildActivitiesList() {
       }
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    cj("#total_number").html(total_results);
     makeListSortable();
   }
 }
@@ -1867,25 +1729,12 @@ function checkForMatch(key,contactIds){
 
 }
 
-// updates the count at the top of the page
-function updateTotalCount(){
-  var count = cj("#total_number").html();
-  count = parseInt(count,10);
-  output = count -1;
-  cj("#total_number").html(output);
-  if(output < 1){
-    cj("#total_number").html('0');
-    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records left, Please Reload the page</td>');
-  }
-}
-
 // removes row from the UI, forces table reload
 function removeRow(id){
   if(cj("#"+id).length){
     var oTable = cj('#sortable_results').dataTable();
     var row_index = oTable.fnGetPosition( document.getElementById(id));
     oTable.fnDeleteRow(row_index);
-    updateTotalCount();
   }else{
     // alert('could not delete row');
   }
