@@ -94,7 +94,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 /* IMAP - Autocomplete */
 .imapperbox #tagging-popup.ac_input,
 .imapperbox .autocomplete-tags-bank{width: 258px; padding: 0px;  min-height: 20px; margin-top:10px; max-height: 170px; overflow-y:scroll; overflow-x: hidden; margin-bottom:10px; float:left; }
-.imapperbox .autocomplete-dropdown{padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden;}
+.imapperbox .autocomplete-dropdown{padding:0 5px;  max-height: 150px; overflow-y:scroll; overflow-x: hidden; z-index: 10000000; }
 .imapperbox .autocomplete-dropdown a{float: left; width: 100%;}
 .imapperbox .autocomplete-dropdown a.tag-item {color: #666!important; padding: 2px;}
 .imapperbox .autocomplete-dropdown a.tag-item:hover{color: #336699!important; background: #e1e1e1; }
@@ -103,7 +103,7 @@ thead .sorting_asc{background-color:#f1f1f1!important;}
 .imapperbox a.tag-selected {color: #fff!important; }
 .imapperbox a.tag-selected:hover {color: #fff !important; background-color: red; }
 .imapperbox .attachment{float:right !important;}
-.imapperbox .token-input-dropdown-facebook {z-index: 999999!important;}
+.token-input-dropdown-facebook {z-index: 999999!important; float: left;}
 
 /* IMAP - Popup Left */
 .page-civicrm-imap #message_left,
