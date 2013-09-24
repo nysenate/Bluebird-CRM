@@ -149,8 +149,9 @@ padding-left:2px;
 	}
 
 .civi-advanced-search-link-inner {
-	width:214px;
-	}
+  width: 196px;
+  float: left;
+}
 
 .civi-advanced-search-link,
 .civi-advanced-search-button {
@@ -158,7 +159,8 @@ padding-left:2px;
 	background-color: #457AA4;
 	float: left;
 	padding:2px 4px;
-	}
+  width: 214px;
+}
 
 
 .civi-advanced-search-link .crm-accordion-pointer,
