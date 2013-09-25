@@ -1,16 +1,24 @@
 .BBTree {
+  &.top-291-active {
+    @include addColors($issueCodesColor,.3);
+  }
+  &.top-296-active {
+    @include addColors($keywordsColor,.3);
+  }
+  &.top-292-active {
+    @include addColors($positionsColor,.3);
+  }
   overflow-y:scroll;
   overflow-x:hidden;
   height:400px;
   // margin-left:2%;
   @include iterator;
   @import "tag";
-  @import "search";
   .tagContainer.active {
     display:block;
   }
   .tagContainer {
-    display:none
+   
   }
   &.dropdown {
     display:none;
@@ -25,7 +33,6 @@
     }
   }
   &.hasSlideBox {
-    
     @import "slideBox";
   }
 }

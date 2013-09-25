@@ -142,4 +142,16 @@
     bottom:0px;
   }
 }
+@mixin addColors($color,$opacity) {
+  @include tag-lightness($color,$opacity);
+  &.shaded {
+    @include tag-lightness($color,($opacity+.15));
+  }
+  dt:hover {
+    @include tag-lightness($color,($opacity+.45));
+  }
+  dt.active {
+    @include tag-lightness($color,($opacity+.45));
+  }
+}
 @import "extends";

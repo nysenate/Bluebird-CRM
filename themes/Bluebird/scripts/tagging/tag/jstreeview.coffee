@@ -223,17 +223,20 @@ class View
   showTags: (currentTree, tabName, noPrev) ->
     if currentTree != _treeVisibility.currentTree
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(_treeVisibility.currentTree,true)}").removeClass("active")
+      @cj_selectors.tagBox.removeClass("top-#{_treeVisibility.currentTree}-active")
       @cj_selectors.tagBox.find(".top-#{_treeVisibility.currentTree}").toggle().removeClass("active") 
       _treeVisibility.previousTree = _treeVisibility.currentTree
       _treeVisibility.currentTree = currentTree
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(currentTree,true)}").addClass("active")
       @cj_selectors.tagBox.find(".top-#{currentTree}").toggle().addClass("active")
+      @cj_selectors.tagBox.addClass("top-#{currentTree}-active")
   setActiveTree: (id) ->
     tabName = @getTabNameFromId(id,true)
     @cj_menuSelectors.tabs.find("div").removeClass("active")
     @cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display","none")
     @cj_menuSelectors.tabs.find(".tab-#{tabName}").addClass("active")
     @cj_selectors.tagBox.find(".top-#{id}").addClass("active").css("display","block")
+    @cj_selectors.tagBox.addClass("top-#{id}-active")
   createTreeTabs: (tabName, isHidden = false) ->
     if isHidden then style = "style='display:none'" else style = ""
     tabClass = (_utils.hyphenize(tabName)).toLowerCase()
