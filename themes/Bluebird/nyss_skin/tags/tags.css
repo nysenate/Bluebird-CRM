@@ -88,6 +88,30 @@
     overflow-y: scroll;
     overflow-x: hidden;
     height: 400px; }
+    #JSTree-container.BBTreeContainer .BBTree.top-291-active, #BBTreeContainer .BBTree.top-291-active {
+      background-color: rgba(150, 226, 164, 0.3); }
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active.shaded, #BBTreeContainer .BBTree.top-291-active.shaded {
+        background-color: rgba(150, 226, 164, 0.45); }
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt:hover, #BBTreeContainer .BBTree.top-291-active dt:hover {
+        background-color: rgba(150, 226, 164, 0.75); }
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.active, #BBTreeContainer .BBTree.top-291-active dt.active {
+        background-color: rgba(150, 226, 164, 0.75); }
+    #JSTree-container.BBTreeContainer .BBTree.top-296-active, #BBTreeContainer .BBTree.top-296-active {
+      background-color: rgba(242, 209, 119, 0.3); }
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active.shaded, #BBTreeContainer .BBTree.top-296-active.shaded {
+        background-color: rgba(242, 209, 119, 0.45); }
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt:hover, #BBTreeContainer .BBTree.top-296-active dt:hover {
+        background-color: rgba(242, 209, 119, 0.75); }
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt.active, #BBTreeContainer .BBTree.top-296-active dt.active {
+        background-color: rgba(242, 209, 119, 0.75); }
+    #JSTree-container.BBTreeContainer .BBTree.top-292-active, #BBTreeContainer .BBTree.top-292-active {
+      background-color: rgba(175, 232, 239, 0.3); }
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active.shaded, #BBTreeContainer .BBTree.top-292-active.shaded {
+        background-color: rgba(175, 232, 239, 0.45); }
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt:hover, #BBTreeContainer .BBTree.top-292-active dt:hover {
+        background-color: rgba(175, 232, 239, 0.75); }
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt.active, #BBTreeContainer .BBTree.top-292-active dt.active {
+        background-color: rgba(175, 232, 239, 0.75); }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1 {
       margin-left: 2%;
       display: none; }
@@ -279,34 +303,8 @@
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
         height: 52px;
         top: -52px; }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-291 {
-      background-color: rgba(150, 226, 164, 0.35); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-296 {
-      background-color: rgba(242, 209, 119, 0.35); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer .transparancyBox.type-292 {
-      background-color: rgba(175, 232, 239, 0.35); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-291 {
-      background-color: rgba(150, 226, 164, 0.5); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-296 {
-      background-color: rgba(242, 209, 119, 0.5); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer .shaded .transparancyBox.type-292 {
-      background-color: rgba(175, 232, 239, 0.5); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-291 {
-      background-color: rgba(150, 226, 164, 0.8); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-296 {
-      background-color: rgba(242, 209, 119, 0.8); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer dt:hover .transparancyBox.type-292 {
-      background-color: rgba(175, 232, 239, 0.8); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-291, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-291 {
-      background-color: rgba(150, 226, 164, 0.8); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-296, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-296 {
-      background-color: rgba(242, 209, 119, 0.8); }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-292, #BBTreeContainer .BBTree .tagContainer dt.active .transparancyBox.type-292 {
-      background-color: rgba(175, 232, 239, 0.8); }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer.active, #BBTreeContainer .BBTree .tagContainer.active {
       display: block; }
-    #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
-      display: none; }
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
       display: none; }
       #JSTree-container.BBTreeContainer .BBTree.dropdown.open, #BBTreeContainer .BBTree.dropdown.open {
@@ -317,33 +315,17 @@
         z-index: 10;
         background-color: white;
         height: 150px; }
-    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox, #BBTreeContainer .BBTree.hasSlideBox {
-      /*vars*/
-      /*icons*/
-      /*boxwidth*/
-      /* colors */
-      /*mixins*/
-      /* page size */
-      /* fCB icon mixins, would like to make this into an each statement once Variable Interpolation comes out */ }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox .loadingGif {
-        background: url("/sites/default/themes/Bluebird/images/loading.gif") no-repeat scroll center white; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
-        position: relative; }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB {
-          display: none; }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-291, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-291 {
-          background-color: rgba(150, 226, 164, 0.35); }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-296, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-296 {
-          background-color: rgba(242, 209, 119, 0.35); }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-292, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .transparancyBox.type-292 {
-          background-color: rgba(175, 232, 239, 0.35); }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox {
-        position: absolute;
-        width: 0%;
-        height: inherit;
-        background-color: rgba(0, 0, 0, 0.2);
-        z-index: 15;
-        right: 0px; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
+      position: relative; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB {
+        display: none; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox {
+      position: absolute;
+      width: 0%;
+      height: inherit;
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: 15;
+      right: 0px; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
     height: 6px;

@@ -767,11 +767,13 @@
     View.prototype.showTags = function(currentTree, tabName, noPrev) {
       if (currentTree !== _treeVisibility.currentTree) {
         this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(_treeVisibility.currentTree, true))).removeClass("active");
+        this.cj_selectors.tagBox.removeClass("top-" + _treeVisibility.currentTree + "-active");
         this.cj_selectors.tagBox.find(".top-" + _treeVisibility.currentTree).toggle().removeClass("active");
         _treeVisibility.previousTree = _treeVisibility.currentTree;
         _treeVisibility.currentTree = currentTree;
         this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(currentTree, true))).addClass("active");
-        return this.cj_selectors.tagBox.find(".top-" + currentTree).toggle().addClass("active");
+        this.cj_selectors.tagBox.find(".top-" + currentTree).toggle().addClass("active");
+        return this.cj_selectors.tagBox.addClass("top-" + currentTree + "-active");
       }
     };
 
@@ -781,7 +783,8 @@
       this.cj_menuSelectors.tabs.find("div").removeClass("active");
       this.cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display", "none");
       this.cj_menuSelectors.tabs.find(".tab-" + tabName).addClass("active");
-      return this.cj_selectors.tagBox.find(".top-" + id).addClass("active").css("display", "block");
+      this.cj_selectors.tagBox.find(".top-" + id).addClass("active").css("display", "block");
+      return this.cj_selectors.tagBox.addClass("top-" + id + "-active");
     };
 
     View.prototype.createTreeTabs = function(tabName, isHidden) {
