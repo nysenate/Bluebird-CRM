@@ -144,8 +144,8 @@
 }
 @mixin addColors($color,$opacity) {
   @include tag-lightness($color,$opacity);
-  &.shaded {
-    @include tag-lightness($color,($opacity+.15));
+  dt.shaded {
+    @include tag-lightness($color,($opacity+.05));
   }
   dt:hover {
     @include tag-lightness($color,($opacity+.45));

@@ -123,7 +123,7 @@ class Instance
       dataSettings = @get 'dataSettings'
       entityId = dataSettings.entity_id
       # @set 'dataSettings', dataSettings
-    new Entity(entityId, (tags) =>
+    @entity = new Entity(entityId, (tags) =>
       cb.call(@,tags)
     )
 
@@ -291,7 +291,7 @@ class Entity
   addTag: (tagId)->
     @_create.data.tag_id = tagId
     return cj.when(cj.ajax(@_create))
-  removeTag: ()->
+  removeTag: (tagId)->
     @_del.data.tag_id = tagId
     index = @tags.indexOf(tagId)
     if index > -1
