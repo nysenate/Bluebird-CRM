@@ -227,7 +227,6 @@ class View
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
     buttons = new Buttons(@)
     console.log @entity_id
-    @applyTagged(@entity_id)
     @setTaggingOrEdit()
   setTaggingOrEdit: () ->
     if @cj_selectors.tagBox.hasClass("tagging,edit")
@@ -238,6 +237,7 @@ class View
       @cj_selectors.tagBox.addClass("edit")
     if @settings.tagging
       @cj_selectors.tagBox.addClass("tagging")
+      @applyTagged(@entity_id)
 
   createTabClick: (tabName, tabTree) ->
     @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
@@ -446,6 +446,54 @@ class View
   createAction: (tagId,action) ->
     # this is where you save previous history
     new Action(@,@instance,tagId,action)
+  toggleCheckInBox: () ->
+    a = @
+    @cj_selectors.tagBox.find("dt input.checkbox").on("change", ->
+      action =
+        type: "checkbox"
+      removeTag = () ->
+        removeTag = entity.removeTag(tagId)
+        removeTag.done((i) =>
+          doAction.apply(null,[i,"remove"])
+        )
+      addTag = () ->
+        addTag = entity.addTag(tagId)
+        addTag.done((i) =>
+          doAction.apply(null,[i,"add"])
+        )
+      doAction = (res, typeOfAction) ->
+        action["action"] = typeOfAction
+        if res.code != 1
+          removeTag.call(null,null) if typeOfAction == "add"
+          addTag.call(null,null) if typeOfAction == "remove"
+        new ActivityLog(res,action)
+      hasTaggedChildren = (cjDT) ->
+        tagId = cjDT.data("tagid")
+        if cjDT.siblings("#tagDropdown_#{tagId}").find("dt.shaded").length > 0
+          cjDT.toggleClass("shadedChildren")
+        console.log parents = cjDT.parents("dl").data("")
+        # need to get id from dl... why isn't that a util method?
+
+
+        # here
+
+
+
+        # if cjDT.parents("dt.shaded")
+          # console.log 
+
+      entity = a.instance.entity
+      cjDT = cj(@).parents("dt").first()
+      cjDT.toggleClass("shaded")
+      hasTaggedChildren.call(null,cjDT)
+      tagId = cjDT.data("tagid")
+      action.tagId = tagId
+      if cj(@).prop("checked")
+        addTag.call(@,null)
+      else
+        removeTag.call(@,null)
+      
+    )
 
 _utils["createLabel"] = (labelName, className...) ->
 
@@ -513,6 +561,7 @@ class Buttons
       if cj(@).siblings(".fCB").length == 0
         a.createButtons(cj(@).parent().parent().data("tagid"))
     )
+    @view.toggleCheckInBox()
   removeTaggingCheckboxes: () ->
     @view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove()
 
@@ -569,6 +618,10 @@ class Buttons
       cjDT.on("click", "li", (button) =>
         # cj(button.target).data("do")
       )
+
+class ActivityLog
+  constructor: (jsonObj,action) ->
+    console.log jsonObj,action
 
 class Settings
   constructor: (@instance, @view) ->
