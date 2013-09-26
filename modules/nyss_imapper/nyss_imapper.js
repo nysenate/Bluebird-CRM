@@ -903,7 +903,6 @@ cj(document).ready(function(){
                 cj("#tagging-popup").dialog('close');
                 cj('.token-input-list-facebook').html('').remove();
                 cj('.token-input-dropdown-facebook').html('').remove();
-
               }
             }
           });
@@ -1382,8 +1381,9 @@ cj.fn.dataTableExt.afnFiltering.push(
         }
         // expecting 2010-03-01 - 2010-03-31
         var today = new Date();
+        today.setDate(today.getDate() +1);
         var past = new Date();
-        past.setDate(today.getDate() - dateRange);
+        past.setDate(past.getDate() - dateRange);
 
 
         // parse the range from a single field into min and max, remove " - "
@@ -1394,9 +1394,14 @@ cj.fn.dataTableExt.afnFiltering.push(
         var date = aData[3];
 
         // convert to unix time
-        date = date.substring(10,20)*1000;
+        date = date.match(/id="(.*?)"/)[1].toLowerCase()*1000;
+        // console.log(start +"<="+date+"<="+stop);
+        // console.log(start <= date && date <= stop );
+        // console.log(start <= date);
+        // console.log(date <= stop);
+        // console.log( " - " );
 
-        // run through cases
+         // run through cases
         if ( start == "" && date <= stop){
             return true;
         }
