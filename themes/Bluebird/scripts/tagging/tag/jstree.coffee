@@ -7,6 +7,7 @@ jstree =
     instance = new Instance()
     setProp(settings, instance)
     pageElements = instance.get("pageElements")
+    dataSettings = instance.get("dataSettings")
     # call the view, and we're using call
     # so that you can change the view...
     # or use super to change it
@@ -69,7 +70,7 @@ class Instance
       # temporarily killing
       url: '/civicrm/ajax/tag/tree'
       data:
-        entity_table: 'civicrm_contact'
+        entity_table: "civicrm_contact,civicrm_activity,civicrm_case"
         entity_id: 0
         call_uri: window.location.href
         entity_counts: 0
@@ -114,6 +115,17 @@ class Instance
   @property "trees",
     get: -> @_trees
     set: (a) -> @_trees = a
+  @property "entity",
+    get: -> @_entity
+    set: (a) -> @_entity = a
+  getEntity: (entityId, cb) ->
+    if entityId == 0
+      dataSettings = @get 'dataSettings'
+      entityId = dataSettings.entity_id
+      # @set 'dataSettings', dataSettings
+    new Entity(entityId, (tags) =>
+      cb.call(@,tags)
+    )
 
 _utils =
   removeDupFromExtend: (obj) =>
@@ -148,7 +160,7 @@ _utils =
       seg = text.slice(length*a,length*(a+1))
       if !seg.match(rx) and seg.length >= length
         # if there's no spaces or any line breaks
-        retObj.toRet.push seg
+        retObj.toRet.push "#{seg} "
         lastEnd = length*(a+1)
       else
         if seg.length > 0
@@ -241,5 +253,49 @@ _parseAutocomplete =
         @.deepIterate o.children, before, after
       after(o)
 
+class Entity
+  tags: []
+  entity_id: 0 
+  _get:
+    url: '/civicrm/ajax/entity_tag/get'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  _create:
+    url: '/civicrm/ajax/entity_tag/create'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  _del:
+    url: '/civicrm/ajax/entity_tag/delete'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  constructor: (entity_id,cb) ->
+    @entity_id = entity_id
+    a = ["_get","_create","_del"]
+    for i in a
+      @[i].data.entity_id = @entity_id
+    request = cj.when(cj.ajax(@_get))
+    request.done((data) =>
+        @tags = data["message"]
+        cb.call(@, @tags)
+      )
+    return @
+  addTag: (tagId)->
+    @_create.data.tag_id = tagId
+    return cj.when(cj.ajax(@_create))
+  removeTag: ()->
+    @_del.data.tag_id = tagId
+    index = @tags.indexOf(tagId)
+    if index > -1
+      @tags.splice(index,1)
+    return cj.when(cj.ajax(@_del))
 
 window.jstree = jstree
