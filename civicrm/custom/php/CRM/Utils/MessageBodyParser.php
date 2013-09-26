@@ -54,7 +54,7 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<(br)[^>]*>\s*)+/i');
+    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<br\ ?\/?>)+/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = html_entity_decode($headerCheck);
