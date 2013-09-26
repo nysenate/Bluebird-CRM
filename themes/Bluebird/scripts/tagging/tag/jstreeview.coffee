@@ -9,7 +9,7 @@ window.jstree["views"] =
       trees[a] = new Tree(b,a)
     @view.trees = trees
     @view.init()
-    if @view.settings.tall
+    if @view.settings.tall && !@view.settings.lock
       resize = new Resize
       resize.addResize(instance,@view)
     else
@@ -63,6 +63,7 @@ class View
     edit: false
     tagging: false
     print: true
+    lock: false
   entity_id: 0
   defaultPrefix: "JSTree"
   prefixes: []
@@ -214,6 +215,7 @@ class View
       @createTabClick("tab-#{@getTabNameFromId(k,true)}", k)
       if parseInt(k) == 292
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+    buttons = new Buttons(@)
   createTabClick: (tabName, tabTree) ->
     @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
     @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
@@ -260,6 +262,8 @@ class View
         if e.indexOf(parseFloat(o.id)) >= 0
           buildList[d].push o
     buildList
+
+  # variables
   shouldBeFiltered: false
   currentWrittenTerm: ""
   queryLog:
@@ -274,6 +278,7 @@ class View
       if v.length > @queryLog[tree].length
         return false
     return true
+
   writeEmptyList: (term,tree) ->
 
   writeFilteredList: (list,term,hits = {}) ->
@@ -304,8 +309,9 @@ class View
         @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
       else
         @setTabResults(k,v)
-        new Tree(list[k],k,true)
+        t = new Tree(list[k],k,true)
         @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+    new Buttons(@)
     @setActiveTree(@getIdFromTabName(activeTree))
     
   noResultsBox: (treeId,k) ->
@@ -320,26 +326,18 @@ class View
           "
     cj(".JSTree").append(noResults)
 
-  removeUnnecessaryDropdowns: (treeId) ->
-    dropdowned = @cj_selectors.tagBox.find(".top-#{treeId} .treeButton").parent().parent()
-    cj.each(dropdowned, (i,item) ->
-        cjItem = cj(item)
-        tagid = cjItem.data("tagid")
-        sibLength = cjItem.siblings("dl#tagDropdown_#{tagid}").length
-        if cjItem.siblings("dl#tagDropdown_#{tagid}").children().length == 0
-          cjItem.find(".treeButton").removeClass("treeButton")
-      )
-  
   rebuildInitialTree: () ->
     if @cj_selectors.tagBox.hasClass("filtered")
       @cj_selectors.tagBox.removeClass("filtered")
       @cj_selectors.tagBox.find(".filtered").remove()
       activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
       for k,v of @trees
-        new Tree(v.tagList, k)
+        t = new Tree(v.tagList, k)
         if parseInt(k) == 292
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+      new Buttons(@)
       @setActiveTree(@getIdFromTabName(activeTree))
+
   setTabResults: (tree,val) ->
     cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(tree, true)}")
     if cjTab.find("span").length > 0
@@ -354,6 +352,7 @@ class View
       @cj_menuSelectors.tabs.find(".#{} span").remove()
     else
       @cj_menuSelectors.tabs.find("span").remove()
+
   addPositionReminderText: (cjlocation) ->
     positionText = "
               <div class='position-box-text-reminder'>
@@ -361,8 +360,10 @@ class View
               </div>
           "
     cjlocation.html(positionText)
+
   toggleTagBox: () ->
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
+
   toggleDropdown: (oc = false) ->
     # debugger
     if oc
@@ -385,6 +386,7 @@ class View
       boxHeight = new Resize()
       @cj_selectors.container.css("position","relative")
       @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)
+  
   getTagHeight:(cjTagContainer,maxHeight = 180) ->
     # get all dl's
     cj.each(cjTagContainer, (a,container) =>
@@ -403,6 +405,7 @@ class View
       else
         cj(container).height(propHeight)
     )
+  
   getRecTagHeight:(container,heightTotal = [],already) ->
     if heightTotal.length > 8
       return heightTotal
@@ -413,11 +416,105 @@ class View
         return false
     )
     return heightTotal
+  createAction: (tagId,action) ->
+    # this is where you save previous history
+    new Action(@,@instance,tagId,action)
+
+class Action
+  constructor: (@view, @instance, tagId, action) ->
+    @createSlide()
+    # @[action]
+  inputBoxes:
+    name: "<input type='text' name='tagName'>"
+    description: "<input type='text' name='tagDescription'>"
+    reserved: "<input type='checkbox' name='isReserved'>"
+  createSlide: () ->
+    console.log @instance
+    resize = new Resize
+    @view.cj_selectors.tagBox.addClass("hasSlideBox")
+    console.log @view.cj_selectors.tagBox.children(".active")
+    if resize.height > 200
+      @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
+      @view.cj_selectors.tagBox.find(".slideBox").css("right","#{@findGutterSpace()}px")
+      @view.cj_selectors.tagBox.find(".slideBox").animate({width:'40%'}, 500, =>
+        # console.log "time to populate"
+      )
+    else
+
+  findGutterSpace: () ->
+    outerWidth = @view.cj_selectors.tagBox.width()
+    innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
+    return outerWidth-innerWidth
+
+
+  moveTag: () ->
+  addTag: () ->
+  removeTag: () ->
+  mergeTag: () ->
+  updateTag: () ->
+
+class Buttons
+  checkbox: "<input type='checkbox' class='checkbox'>"
+  addTag: "<li class='addTag' title='Add New Tag' data-do='add'></li>"
+  removeTag: "<li class='removeTag' title='Remove Tag' data-do='remove'></li>"
+  moveTag: "<li class='moveTag' title='Move Tag' data-do='move'></li>"
+  updateTag: "<li class='updateTag' title='Update Tag' data-do='update'></li>"
+  mergeTag: "<li class='mergeTag' title='Merge Tag' data-do='merge'></li>"
+  convertTag: "<li class='convertTag' title='Convert Keyword' data-do='convert'></li>"
+  keywords: ["removeTag","updateTag","mergeTag","convertTag"]
+  issuecodes: ["addTag","removeTag","updateTag","moveTag","mergeTag"]
+  constructor: (@view) ->
+    if !@nodeList?
+      @nodeList = @view._trees[291].nodeList
+    for k,v of @view._trees
+      cjTreeTop = @view.cj_selectors.tagBox.find(".top-#{k}").find("dt")
+      cjTreeTop.off("mouseenter")
+      cjTreeTop.off("mouseleave")
+      cjTreeTop.on("mouseenter", (tag) =>
+        cjDT = cj(tag.currentTarget)
+        cjDT.find(".tag").append(@createButtons(cjDT.data("tree")))
+        @executeButton(cjDT)
+      )
+      cjTreeTop.on("mouseleave", (tag) =>
+        cjDT = cj(tag.currentTarget).find(".tag span.fCB")
+        cjDT.remove()
+
+      )
+  createButtons: (treeTop) ->
+    html = "<span class='fCB'>"
+    html += "<ul>"
+    if @view.settings.edit
+      if parseInt(treeTop) == 291
+        for tag in @issuecodes
+          html += @[tag]
+      if parseInt(treeTop) == 296
+        for tag in @keywords
+          html += @[tag]
+    else
+      html += "<li>"
+      html += @checkbox
+      html += "</li>"
+    html += "</ul>"
+    html += "</span>"
+  addRadios: (treeTop) ->
+    # "<input type="radio" class="selectRadio" name="selectTag">"
+  executeButton: (cjDT) ->
+    cjDT.off("click")
+    if @view.settings.edit
+      cjDT.on("click", "li", (button) =>
+        action = cj(button.target).data("do")
+        tagid =  cjDT.data("tagid")
+        @view.createAction(tagid,action)
+      )
+    else
+      # tagging
+      cjDT.on("click", "li", (button) =>
+        # cj(button.target).data("do")
+      )
 
 class Settings
   constructor: (@instance, @view) ->
     @createButtons()
-
   createButtons: () ->
     @cj_top_settings = cj(".#{@view.menuSelectors.top.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
     @cj_bottom_settings = cj(".#{@view.menuSelectors.bottom.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
@@ -586,17 +683,7 @@ class Autocomplete
             hcounts += v
             foundTags.push(parseFloat(k))
           filteredList = @view.buildFilteredList(tags)
-
-          # if !cj.isEmptyObject(terms)
-          #   for k in [291,296]
-              # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
           @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
-          # if Object.keys(hits).length < 2
-            # for k,v of hits
-              # console.log k,v
-              # console.log [291,296].indexOf(k)
-              # if [291,296].indexOf(k) < 0
-                # @view.noResultsBox(cj(".JSTree .top-#{k}"),k)
 
           @localQueryDone = true
 
@@ -672,7 +759,7 @@ class Tree
   tabName: ""
   constructor: (@tagList, @tagId, @filter = false, @location) ->
     @buildTree()
-    # @cjLocation = 
+    return @
   buildTree: () ->
     if @filter then filter = "filtered" else filter = "" 
     if @location?
@@ -683,6 +770,8 @@ class Tree
       @domList = cj()
       @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
     @iterate(@tagList)
+  # setHover: () ->
+    # console.log @nodeList
     
   iterate: (ary) ->
     cjTagList = cj(@domList)
@@ -740,7 +829,7 @@ _treeUtils =
       tagLabel.toggleClass "open"
     if !search
       bbUtils.localStorage("tagViewSettings", _openTags)
-    
+
   readDropdownsFromLocal: (cjTree) ->
     if parseInt(cjTree) == 291
       if bbUtils.localStorage("tagViewSettings")    
@@ -752,7 +841,9 @@ _treeUtils =
           else
             delete _openTags[tag]
       else
-      _openTags 
+      _openTags
+
+
 
 _descWidths = 
   normal: 80
@@ -804,14 +895,10 @@ class Node
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
-    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
+    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
     html += "
               <div class='tag'>
-            "
-    html += "
                 <div class='ddControl #{treeButton}'></div>
-              "
-    html += "
                 <span class='name'>#{node.name}</span>
             "
     if @hasDesc.length > 0
@@ -821,13 +908,19 @@ class Node
     html += "
               </div>
               <div class='transparancyBox type-#{node.type}'></div>
+              </dt>
             " 
-    html += "</dt>"
     # dl second
     html += "
               <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-name='#{node.name}'></dl>
             "
     return html
+  # add
+  # remove
+  # update
+  # merge
+  # move
+  # convert
 
   # nodes have processes
   # nodes have data

@@ -26,9 +26,52 @@ dt {
       top: -50px;
     }
   }
-  // span.name {
-  //   display: block;
-  // }
+  .fCB {
+    display:none;
+    padding:1px 0;
+    float:right;
+    ul {
+      margin:0;
+      li {
+        height:16px;
+        width:16px;
+        float:left;
+        margin:1px 1px 0 0;
+        list-style-image:none !important;
+        list-style-type:none !important;
+      }
+    }
+    @include addTag;
+    @include removeTag;
+    @include moveTag;
+    @include updateTag;
+    @include mergeTag;
+    @include convertTag;
+    @include printTag;
+  }
+  &:hover {
+    .fCB {
+      display:inline;
+    }
+    &.lv-0
+    {
+      background-color:transparent;
+    }
+  }
+  &.subChecked {
+    // background-color: #F1F8EB;
+    border: 1px dashed #B0D730;
+    &:hover {
+      // background-color:#DEDEDE;
+    }
+  }
+  &.checked {
+    // background-color: #F1F8EB;
+    border: 1px solid #B0D730;
+    &:hover {
+      // background-color:#DEDEDE;
+    }
+  }
 }
 .shaded .name span {
   font-weight:bold;
@@ -53,9 +96,15 @@ dt.description, dt.longdescription {
     margin-top:-3px;
     color:lighten(black,50%);
   }
+  .fCB {
+
+  }
 }
 dt.description {
   @include descriptionChange(2);
+  .fCB {
+    margin-top:10px;
+  }
   &.longName {
     line-height:12px;
     height:50px;
@@ -68,11 +117,17 @@ dt.description {
     .transparancyBox {
       height:50px;
       top: -50px;
+    }
+    .fCB {
+      margin-top:10px;
     }
   }
 }
 dt.shortdescription.description {
   @include descriptionChange(1.5);
+  .fCB {
+    margin-top:5px;
+  }
   &.longName {
     line-height:12px;
     height:50px;
@@ -86,10 +141,16 @@ dt.shortdescription.description {
       height:50px;
       top: -50px;
     }
+    .fCB {
+      margin-top:10px;
+    }
   }
 }
 dt.longdescription {
   @include descriptionChange(3);
+  .fCB {
+    margin-top:10px;
+  }
   height:52px;
   .tag {
     height:52px;
