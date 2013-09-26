@@ -69,11 +69,20 @@ class View
   prefixes: []
   defaultTree: 0
   descWidths:
-    normal: 80
-    long: 160
+    normal: 75
+    long: 150
   constructor: (@instance) ->
     # starts the chain to write the page structure
     @writeContainers()
+  applyTagged:() ->
+    @instance.getEntity(@entity_id, (tags) =>
+        findList = []
+        for i in tags
+          findList.push "#tagLabel_#{i}"
+        cjDTs = @cj_selectors.tagBox.find(findList.join(","))
+        cjDTs.addClass("shaded")
+        cjDTs.find(".fCB input.checkbox").prop("checked",true)
+      )
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
@@ -94,18 +103,18 @@ class View
   setDescWidths: () ->
     if @settings.tall
       if @settings.wide
-        _descWidths.normal = 80
-        _descWidths.long = 160
-      else
-        _descWidths.normal = 42
-        _descWidths.long = 42
-    else
-      if @settings.wide
-        _descWidths.normal = 70
+        _descWidths.normal = 75
         _descWidths.long = 150
       else
-        _descWidths.normal = 42
-        _descWidths.long = 42
+        _descWidths.normal = 38
+        _descWidths.long = 38
+    else
+      if @settings.wide
+        _descWidths.normal = 73
+        _descWidths.long = 145
+      else
+        _descWidths.normal = 38
+        _descWidths.long = 38
   buildDropdown: () ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
@@ -121,7 +130,7 @@ class View
   formatPageElements: () ->
     pageElements = @instance.get 'pageElements'
     displaySettings = @instance.get 'displaySettings'
-
+    dataSettings = @instance.get 'dataSettings'
     # could reorginize to allow best flexibility for tags
     @selectors.container = pageElements.wrapper.shift()
     @selectors.containerClass = pageElements.wrapper.join(" ")
@@ -130,6 +139,7 @@ class View
     @menuSelectors.autocomplete = pageElements.autocomplete
     @selectors.dropdown = pageElements.tagDropdown
     @selectors.initHolder = pageElements.init
+    @entity_id = dataSettings.entity_id
     @settings = displaySettings
     @settingCollection = ["settings","menuSelectors","tokenHolder","selectors"]
     for v in pageElements.tagHolder
@@ -216,6 +226,19 @@ class View
       if parseInt(k) == 292
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
     buttons = new Buttons(@)
+    console.log @entity_id
+    @applyTagged(@entity_id)
+    @setTaggingOrEdit()
+  setTaggingOrEdit: () ->
+    if @cj_selectors.tagBox.hasClass("tagging,edit")
+      @cj_selectors.tagBox.removeClass("tagging").removeClass("edit")
+    if @settings.edit && @settings.tagging
+      @settings.tagging = false
+    if @settings.edit
+      @cj_selectors.tagBox.addClass("edit")
+    if @settings.tagging
+      @cj_selectors.tagBox.addClass("tagging")
+
   createTabClick: (tabName, tabTree) ->
     @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
     @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
@@ -266,7 +289,7 @@ class View
           buildList[d].push o
     buildList
 
-  # variables
+  # instance variables
   shouldBeFiltered: false
   currentWrittenTerm: ""
   queryLog:
@@ -337,6 +360,7 @@ class View
       for k,v of @trees
         t = new Tree(v.tagList, k)
         if parseInt(k) == 292
+          @cj_selectors.tagBox.find(".top-#{k}").empty()
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
       new Buttons(@)
       @setActiveTree(@getIdFromTabName(activeTree))
@@ -423,14 +447,24 @@ class View
     # this is where you save previous history
     new Action(@,@instance,tagId,action)
 
+_utils["createLabel"] = (labelName, className...) ->
+
+_utils["_createInputBox"] = (type,name,value = "",classNames...) ->
+  classes = classNames.join(" ")
+  return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"
+_utils["createTextBox"] = (name,value,classNames...) ->
+  return _utils["_createInputBox"]("text",name,value,classNames)
+_utils["createCheckBox"] = (name,value,classNames...) ->
+  return _utils["_createInputBox"]("checkbox",name,value,classNames)
+_utils["createRadioButton"] = (name,value,classNames...) ->
+  return _utils["_createInputBox"]("radio",name,value,classNames)
+
+
 class Action
   constructor: (@view, @instance, tagId, action) ->
     @createSlide()
     # @[action]
-  inputBoxes:
-    name: "<input type='text' name='tagName'>"
-    description: "<input type='text' name='tagDescription'>"
-    reserved: "<input type='checkbox' name='isReserved'>"
+  
   createSlide: () ->
     console.log @instance
     resize = new Resize
@@ -443,12 +477,11 @@ class Action
         # console.log "time to populate"
       )
     else
-
+  
   findGutterSpace: () ->
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
     return outerWidth-innerWidth
-
 
   moveTag: () ->
   addTag: () ->
@@ -467,6 +500,23 @@ class Buttons
   keywords: ["removeTag","updateTag","mergeTag","convertTag"]
   issuecodes: ["addTag","removeTag","updateTag","moveTag","mergeTag"]
   constructor: (@view) ->
+    if @view.settings.tagging
+      @removeFCB()
+      @createTaggingCheckboxes()
+    if @view.settings.edit
+      @removeTaggingCheckboxes()
+      @createFCB()
+
+  createTaggingCheckboxes: () ->
+    a = @
+    @view.cj_selectors.tagBox.find("dt .tag .name").before( ->
+      if cj(@).siblings(".fCB").length == 0
+        a.createButtons(cj(@).parent().parent().data("tagid"))
+    )
+  removeTaggingCheckboxes: () ->
+    @view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove()
+
+  createFCB: () ->
     if !@nodeList?
       @nodeList = @view._trees[291].nodeList
     for k,v of @view._trees
@@ -479,12 +529,17 @@ class Buttons
         @executeButton(cjDT)
       )
       cjTreeTop.on("mouseleave", (tag) =>
-        cjDT = cj(tag.currentTarget).find(".tag span.fCB")
+        cjDT = cj(tag.currentTarget).find(".tag .fCB")
         cjDT.remove()
-
       )
+  removeFCB: () ->
+    for k,v of @view._trees
+      cjTreeTop = @view.cj_selectors.tagBox.find(".top-#{k}").find("dt")
+      cjTreeTop.off("mouseenter")
+      cjTreeTop.off("mouseleave")
+
   createButtons: (treeTop) ->
-    html = "<span class='fCB'>"
+    html = "<div class='fCB'>"
     html += "<ul>"
     if @view.settings.edit
       if parseInt(treeTop) == 291
@@ -495,10 +550,10 @@ class Buttons
           html += @[tag]
     else
       html += "<li>"
-      html += @checkbox
+      html += _utils.createCheckBox("tag[#{treeTop}]","","checkbox")
       html += "</li>"
     html += "</ul>"
-    html += "</span>"
+    html += "</div>"
   addRadios: (treeTop) ->
     # "<input type="radio" class="selectRadio" name="selectTag">"
   executeButton: (cjDT) ->
@@ -849,8 +904,8 @@ _treeUtils =
 
 
 _descWidths = 
-  normal: 80
-  long: 160
+  normal: 75
+  long: 150
 
 
 class Node
@@ -869,7 +924,9 @@ class Node
       if node.level > 2
         levelModifier = node.level*5
       @name = _utils.textWrap(@name, (_descWidths.normal - levelModifier) )
+      @name = @name.toRet.join('<br />')
       @nameLength = "longName"
+    @name = cj.trim(@name)
     @html = @html(node)
     return @
   descLength: (@description) ->
@@ -902,7 +959,7 @@ class Node
     html += "
               <div class='tag'>
                 <div class='ddControl #{treeButton}'></div>
-                <span class='name'>#{node.name}</span>
+                <div class='name'>#{@name}</div>
             "
     if @hasDesc.length > 0
       html += "
@@ -910,7 +967,6 @@ class Node
             "
     html += "
               </div>
-              <div class='transparancyBox type-#{node.type}'></div>
               </dt>
             " 
     # dl second

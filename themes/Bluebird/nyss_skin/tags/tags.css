@@ -144,7 +144,6 @@
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree dt .tag, #BBTreeContainer .BBTree dt .tag {
       padding: 0px;
-      height: 20px;
       line-height: 20px;
       overflow-y: hidden;
       position: relative;
@@ -157,14 +156,14 @@
         #JSTree-container.BBTreeContainer .BBTree dt .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt .tag .ddControl.treeButton {
           background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
           cursor: pointer; }
+      #JSTree-container.BBTreeContainer .BBTree dt .tag .name, #BBTreeContainer .BBTree dt .tag .name {
+        line-height: 20px;
+        float: left; }
     #JSTree-container.BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton, #BBTreeContainer .BBTree dt.open .tag .ddControl.treeButton {
       background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat -64px -15px; }
     #JSTree-container.BBTreeContainer .BBTree dt.longName, #BBTreeContainer .BBTree dt.longName {
       line-height: 12px;
-      height: 40px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.longName .transparancyBox, #BBTreeContainer .BBTree dt.longName .transparancyBox {
-        height: 50px;
-        top: -50px; }
+      height: 35px; }
     #JSTree-container.BBTreeContainer .BBTree dt .fCB, #BBTreeContainer .BBTree dt .fCB {
       display: none;
       padding: 1px 0;
@@ -221,16 +220,8 @@
       border: 1px dashed #B0D730; }
     #JSTree-container.BBTreeContainer .BBTree dt.checked, #BBTreeContainer .BBTree dt.checked {
       border: 1px solid #B0D730; }
-    #JSTree-container.BBTreeContainer .BBTree .shaded .name span, #BBTreeContainer .BBTree .shaded .name span {
+    #JSTree-container.BBTreeContainer .BBTree dt.shaded .name, #BBTreeContainer .BBTree dt.shaded .name {
       font-weight: bold; }
-    #JSTree-container.BBTreeContainer .BBTree .transparancyBox, #BBTreeContainer .BBTree .transparancyBox {
-      position: relative;
-      z-index: 1;
-      height: 20px;
-      top: -20px;
-      margin-bottom: -20px;
-      width: 1000px;
-      left: -50%; }
     #JSTree-container.BBTreeContainer .BBTree dt, #BBTreeContainer .BBTree dt {
       height: 20px; }
     #JSTree-container.BBTreeContainer .BBTree dt.description div.description, #JSTree-container.BBTreeContainer .BBTree dt.longdescription div.description, #BBTreeContainer .BBTree dt.description div.description, #BBTreeContainer .BBTree dt.longdescription div.description {
@@ -257,9 +248,6 @@
         #JSTree-container.BBTreeContainer .BBTree dt.description.longName .tag, #BBTreeContainer .BBTree dt.description.longName .tag {
           height: 50px;
           line-height: 12px; }
-        #JSTree-container.BBTreeContainer .BBTree dt.description.longName .transparancyBox, #BBTreeContainer .BBTree dt.description.longName .transparancyBox {
-          height: 50px;
-          top: -50px; }
         #JSTree-container.BBTreeContainer .BBTree dt.description.longName .fCB, #BBTreeContainer .BBTree dt.description.longName .fCB {
           margin-top: 10px; }
     #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description, #BBTreeContainer .BBTree dt.shortdescription.description {
@@ -272,19 +260,12 @@
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .description, #BBTreeContainer .BBTree dt.shortdescription.description .description {
         position: absolute;
         bottom: 0px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .fCB, #BBTreeContainer .BBTree dt.shortdescription.description .fCB {
-        margin-top: 5px; }
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description.longName, #BBTreeContainer .BBTree dt.shortdescription.description.longName {
         line-height: 12px;
         height: 50px; }
         #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description.longName .tag, #BBTreeContainer .BBTree dt.shortdescription.description.longName .tag {
           height: 50px;
           line-height: 12px; }
-        #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description.longName .transparancyBox, #BBTreeContainer .BBTree dt.shortdescription.description.longName .transparancyBox {
-          height: 50px;
-          top: -50px; }
-        #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description.longName .fCB, #BBTreeContainer .BBTree dt.shortdescription.description.longName .fCB {
-          margin-top: 10px; }
     #JSTree-container.BBTreeContainer .BBTree dt.longdescription, #BBTreeContainer .BBTree dt.longdescription {
       height: 60px;
       height: 52px; }
@@ -300,9 +281,21 @@
         margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 52px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .transparancyBox, #BBTreeContainer .BBTree dt.longdescription .transparancyBox {
-        height: 52px;
-        top: -52px; }
+    #JSTree-container.BBTreeContainer .BBTree.tagging dt .tag .name, #BBTreeContainer .BBTree.tagging dt .tag .name {
+      vertical-align: baseline;
+      display: inline-table; }
+    #JSTree-container.BBTreeContainer .BBTree.tagging .fCB, #BBTreeContainer .BBTree.tagging .fCB {
+      display: inline;
+      float: left;
+      margin: 0px;
+      padding: 0px;
+      margin-right: 5px; }
+      #JSTree-container.BBTreeContainer .BBTree.tagging .fCB input.checkbox, #BBTreeContainer .BBTree.tagging .fCB input.checkbox {
+        margin-top: 2px; }
+    #JSTree-container.BBTreeContainer .BBTree.tagging dt.description div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.longdescription div.description, #BBTreeContainer .BBTree.tagging dt.description div.description, #BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #BBTreeContainer .BBTree.tagging dt.longdescription div.description {
+      margin-left: 40px; }
+    #JSTree-container.BBTreeContainer .BBTree.tagging dt.description .fCB, #JSTree-container.BBTreeContainer .BBTree.tagging dt.shortdescription .fCB, #JSTree-container.BBTreeContainer .BBTree.tagging dt.longdescription .fCB, #BBTreeContainer .BBTree.tagging dt.description .fCB, #BBTreeContainer .BBTree.tagging dt.shortdescription .fCB, #BBTreeContainer .BBTree.tagging dt.longdescription .fCB {
+      margin-top: 0px; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer.active, #BBTreeContainer .BBTree .tagContainer.active {
       display: block; }
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
@@ -317,8 +310,10 @@
         height: 150px; }
     #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
       position: relative; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB {
-        display: none; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover {
+        background-color: transparent; }
+        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB {
+          display: none; }
     #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox {
       position: absolute;
       width: 0%;

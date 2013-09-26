@@ -1,7 +1,7 @@
 dt {
   .tag {
     padding: 0px;
-    height: 20px;
+    // height: 20px;
     line-height:20px;
     overflow-y:hidden;
     .ddControl {
@@ -10,6 +10,10 @@ dt {
         background: url($defaultIconLink) no-repeat -32px -15px;
         cursor:pointer;
       }
+    }
+    .name {
+      line-height:20px;
+      float:left;
     }
     position: relative;
     z-index:2;
@@ -20,11 +24,7 @@ dt {
   }
   &.longName {
     line-height:12px;
-    height:40px;
-    .transparancyBox {
-      height:50px;
-      top: -50px;
-    }
+    height:35px;
   }
   .fCB {
     display:none;
@@ -72,19 +72,11 @@ dt {
       // background-color:#DEDEDE;
     }
   }
+  &.shaded .name {
+    font-weight:bold;
+  }
 }
-.shaded .name span {
-  font-weight:bold;
-}
-.transparancyBox {
-  position: relative;
-  z-index:1;
-  height: 20px;
-  top: -20px;
-  margin-bottom:-20px;
-  width:1000px;
-  left:-50%;
-}
+
 dt {
   height:20px;
 }
@@ -114,10 +106,6 @@ dt.description {
       .name {
       }
     }
-    .transparancyBox {
-      height:50px;
-      top: -50px;
-    }
     .fCB {
       margin-top:10px;
     }
@@ -126,7 +114,7 @@ dt.description {
 dt.shortdescription.description {
   @include descriptionChange(1.5);
   .fCB {
-    margin-top:5px;
+    // margin-top:5px;
   }
   &.longName {
     line-height:12px;
@@ -137,12 +125,8 @@ dt.shortdescription.description {
       .name {
       }
     }
-    .transparancyBox {
-      height:50px;
-      top: -50px;
-    }
     .fCB {
-      margin-top:10px;
+      // margin-top:10px;
     }
   }
 }
@@ -155,8 +139,28 @@ dt.longdescription {
   .tag {
     height:52px;
   }
-  .transparancyBox {
-    height:52px;
-    top:-52px;
+}
+&.tagging {
+  dt .tag .name{
+    vertical-align: baseline;
+    display:inline-table;
+  }
+  .fCB {
+    display:inline;
+    float:left;
+    margin: 0px;
+    padding: 0px;
+    margin-right:5px;
+    input.checkbox {
+      margin-top:2px;
+    }
+  }
+  dt.description, dt.shortdescription, dt.longdescription {
+    div.description {
+      margin-left:40px;
+    }
+    .fCB {
+      margin-top:0px;
+    }
   }
 }
