@@ -64,7 +64,15 @@
     <weight>600</weight>
     <component>CiviMail</component>
   </item>
-  
+
+  <!--NYSS 6957-->
+  <item>
+    <path>civicrm/NYSS/AJAX/Mailing</path>
+    <page_callback>CRM_NYSS_AJAX_Mailing::checkTest</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+
   <!--JIRA 7734-->
   <item>
     <path>civicrm/admin/options/languages</path>
