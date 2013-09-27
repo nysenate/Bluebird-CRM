@@ -41,30 +41,36 @@ class CRM_NYSS_AJAX_Mailing {
      */
     public static function checkTest() {
         $groupid = self::get('group');
+        if(isset($groupid) && ($groupid != NULL)){
+            $Query = "SELECT count(civicrm_group_contact.id) AS count, civicrm_group.title AS title
+            FROM civicrm_group_contact
+            LEFT JOIN civicrm_group  ON (civicrm_group.id = civicrm_group_contact.group_id)
+            WHERE civicrm_group_contact.group_id = ".$groupid;
 
-        $Query = "SELECT count(civicrm_group_contact.id) AS count, civicrm_group.title AS title
-        FROM civicrm_group_contact
-        LEFT JOIN civicrm_group  ON (civicrm_group.id = civicrm_group_contact.group_id)
-        WHERE civicrm_group_contact.group_id = ".$groupid;
+            $Result = mysql_query($Query, self::db());
+            while($row = mysql_fetch_assoc($Result)) {
+                $output['count'] = $row['count'];
+                $output['title']  = $row['title'];
+            }
 
-        $Result = mysql_query($Query, self::db());
-        while($row = mysql_fetch_assoc($Result)) {
-            $output['count'] = $row['count'];
-            $output['title']  = $row['title'];
-        }
-
-        if($output['count'] <= 10){
-            $message="SUCCESS";
-            $code="SUCCESS";
-            $status = 0;
+            if($output['count'] <= 10){
+                $message="SUCCESS";
+                $code="SUCCESS";
+                $status = 0;
+            }else{
+                $message="There were ".$output['count']." contacts in '".$output['title']."', Are you sure you want to send this message to all of them?";
+                $code="WARN";
+                $status = 2;
+            }
+            $returnCode = array('code'=>$code,'status'=> $status,'message'=>$message,'count'=>$output['count'],'group'=>$output['title']);
+            echo json_encode($returnCode);
+            mysql_close(self::$db);
+            CRM_Utils_System::civiExit();
         }else{
-            $message="There were ".$output['count']." contacts in '".$output['title']."', Are you sure you want to send this message to all of them?";
-            $code="WARN";
-            $status = 2;
+            $returnCode = array('code'=>"Error",'status'=> 1,'message'=>"nothing selected",'count'=>0,'group'=>0);
+            echo json_encode($returnCode);
+            mysql_close(self::$db);
+            CRM_Utils_System::civiExit();
         }
-        $returnCode = array('code'=>$code,'status'=> $status,'message'=>$message,'count'=>$output['count'],'group'=>$output['title']);
-        echo json_encode($returnCode);
-        mysql_close(self::$db);
-        CRM_Utils_System::civiExit();
     }
 }
