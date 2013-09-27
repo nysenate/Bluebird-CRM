@@ -110,7 +110,10 @@ View = (function() {
       }
       cjDTs = _this.cj_selectors.tagBox.find(findList.join(","));
       cjDTs.addClass("shaded");
-      return cjDTs.find(".fCB input.checkbox").prop("checked", true);
+      cjDTs.find(".fCB input.checkbox").prop("checked", true);
+      return cj.each(cjDTs, function(i, DT) {
+        return _this.hasTaggedChildren(cj(DT));
+      });
     });
   };
 
@@ -166,7 +169,7 @@ View = (function() {
   };
 
   View.prototype.addClassesToElement = function(height) {
-    this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + "' " + height + "></div>");
+    this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + "' " + height + "></div><div class='JSTree-overlay'></div>");
     this.cj_selectors.initHolder.prepend(this.menuHtml(this.menuSelectors));
     this.cj_selectors.initHolder.append(this.dataHolderHtml());
     this.cj_selectors.initHolder.append(this.tokenHolderHtml(this.tokenHolder));
@@ -324,7 +327,6 @@ View = (function() {
       }
     }
     buttons = new Buttons(this);
-    console.log(this.entity_id);
     return this.setTaggingOrEdit();
   };
 
@@ -664,7 +666,7 @@ View = (function() {
     var a;
     a = this;
     return this.cj_selectors.tagBox.find("dt input.checkbox").on("change", function() {
-      var action, addTag, cjDT, doAction, entity, hasTaggedChildren, removeTag, tagId;
+      var action, addTag, cjDT, doAction, entity, removeTag, tagId;
       action = {
         type: "checkbox"
       };
@@ -694,18 +696,10 @@ View = (function() {
         }
         return new ActivityLog(res, action);
       };
-      hasTaggedChildren = function(cjDT) {
-        var parents, tagId;
-        tagId = cjDT.data("tagid");
-        if (cjDT.siblings("#tagDropdown_" + tagId).find("dt.shaded").length > 0) {
-          cjDT.toggleClass("shadedChildren");
-        }
-        return console.log(parents = cjDT.parents("dl").data(""));
-      };
       entity = a.instance.entity;
       cjDT = cj(this).parents("dt").first();
       cjDT.toggleClass("shaded");
-      hasTaggedChildren.call(null, cjDT);
+      a.hasTaggedChildren(cjDT);
       tagId = cjDT.data("tagid");
       action.tagId = tagId;
       if (cj(this).prop("checked")) {
@@ -714,6 +708,27 @@ View = (function() {
         return removeTag.call(this, null);
       }
     });
+  };
+
+  View.prototype.hasTaggedChildren = function(cjDT) {
+    var cjSiblingDT, dl, i, parentTagId, parents, tagId, _i, _len, _results;
+    tagId = cjDT.data("tagid");
+    if (cjDT.siblings("#tagDropdown_" + tagId).find("dt.shaded").length > 0) {
+      cjDT.addClass("shadedChildren");
+    }
+    parents = cjDT.parentsUntil(".JSTree", "dl");
+    _results = [];
+    for (i = _i = 0, _len = parents.length; _i < _len; i = ++_i) {
+      dl = parents[i];
+      parentTagId = cj(dl).data("tagid");
+      cjSiblingDT = this.cj_selectors.tagBox.find("#tagLabel_" + parentTagId);
+      if (cj(dl).find("dt.shaded").length > 0) {
+        _results.push(cjSiblingDT.addClass("shadedChildren"));
+      } else {
+        _results.push(cjSiblingDT.removeClass("shadedChildren"));
+      }
+    }
+    return _results;
   };
 
   return View;
@@ -763,10 +778,8 @@ Action = (function() {
   Action.prototype.createSlide = function() {
     var resize,
       _this = this;
-    console.log(this.instance);
     resize = new Resize;
     this.view.cj_selectors.tagBox.addClass("hasSlideBox");
-    console.log(this.view.cj_selectors.tagBox.children(".active"));
     if (resize.height > 200) {
       this.view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>");
       this.view.cj_selectors.tagBox.find(".slideBox").css("right", "" + (this.findGutterSpace()) + "px");
@@ -936,9 +949,7 @@ Buttons = (function() {
 })();
 
 ActivityLog = (function() {
-  function ActivityLog(jsonObj, action) {
-    console.log(jsonObj, action);
-  }
+  function ActivityLog(jsonObj, action) {}
 
   return ActivityLog;
 
@@ -1537,7 +1548,7 @@ Node = (function() {
       html += "                <div class='description'>" + this.description + "</div>            ";
     }
     html += "              </div>              </dt>            ";
-    html += "              <dl class='lv-" + node.level + "' id='tagDropdown_" + node.id + "' data-name='" + node.name + "'></dl>            ";
+    html += "              <dl class='lv-" + node.level + "' id='tagDropdown_" + node.id + "' data-tagid='" + node.id + "' data-name='" + node.name + "'></dl>            ";
     return html;
   };
 

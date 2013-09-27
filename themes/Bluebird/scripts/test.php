@@ -100,7 +100,7 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
         // wide:false,
         // lock:false
         // edit:true
-        tagging:true
+        // tagging:true
       },
       callAjax: {
         data: undefined,
