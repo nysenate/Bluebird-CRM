@@ -54,7 +54,7 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<(br)[^>]*>\s*)+/i');
+    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<br\ ?\/?>)+/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = html_entity_decode($headerCheck);
@@ -68,7 +68,7 @@ class MessageBodyParser
     $currentHeader=0;
     $HeaderBlocks = array();
 
-    // search body line by line for headers 
+    // search body line by line for headers
     foreach ($bodyArray as $key => $line) {
       if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
         // if we find a header, we start the header section
@@ -134,15 +134,16 @@ class MessageBodyParser
             break;
           default:
             break;
-        } 
+        }
       }
     }
     // only grab the details from the first header in the message
     $fwdDate = $m[0]['Date'];
-    $fwdName = trim($m[0]['From']['name']);
-    $fwdEmail = $m[0]['From']['email'];
+    $fwdName = trim(strip_tags($m[0]['From']['name']));
+    $fwdEmail = trim(strip_tags($m[0]['From']['email']));
     $fwdEmailLookup = $m[0]['From']['lookupType'];
-    $fwdSubject = trim($m[0]['Subject']);
+    $fwdSubject = trim(strip_tags($m[0]['Subject']));
+
 
 
     // Remove all parentheses from the subject
