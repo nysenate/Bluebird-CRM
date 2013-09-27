@@ -378,20 +378,6 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
       elseif ( $testParams['test_email'] ) {
         $testTarget = $testParams['test_email'];
       }
-	$query = "
-		      SELECT count(id) AS count
-		      FROM civicrm_group_contact
-		      WHERE civicrm_group_contact.group_id = ".$testParams['test_group'];
-
-      $dao = CRM_Core_DAO::executeQuery($query);
-      $emailDetail = array();
-      // fetch contact_id and email id for all existing emails
-      while ($dao->fetch()) {
-	$count = $dao->count;
-      }
-      if($count > 10){
-	$status = ts("Your was set to go to <em>$count</em> Contacts.<br />");//NYSS
-      }
       $status = ts("Your test message has been sent to <em>$testTarget</em>.<br />");//NYSS
       if (CRM_Mailing_Info::workflowEnabled()) {
         if ((CRM_Core_Permission::check('schedule mailings') &&
