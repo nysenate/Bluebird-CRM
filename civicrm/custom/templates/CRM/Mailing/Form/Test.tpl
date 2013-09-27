@@ -42,7 +42,7 @@
     <tr class="crm-mailing-test-form-block-test_group"><td class="label">{$form.test_group.label}</td><td>{$form.test_group.html}</td></tr>
     <tr><td></td>
     <td>
-      <input class='form-submit' id="checktest" value="Send a Test Mailing">
+      <input type="button" class='form-submit' id="checktest" value="Send a Test Mailing">
       {$form.sendtest.html}
     </td>
   </table>
