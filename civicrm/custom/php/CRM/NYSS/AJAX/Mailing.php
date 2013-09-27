@@ -53,7 +53,7 @@ class CRM_NYSS_AJAX_Mailing {
             $output['title']  = $row['title'];
         }
 
-        if($output['count'] <= 4){
+        if($output['count'] <= 10){
             $message="SUCCESS";
             $code="SUCCESS";
             $status = 0;
