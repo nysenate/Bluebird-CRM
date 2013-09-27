@@ -41,7 +41,7 @@ class CRM_NYSS_AJAX_Mailing {
      */
     public static function checkTest() {
         $groupid = self::get('group');
-        if(isset($groupid) && ($groupid != NULL)){
+        if(!empty($groupid)){
             $Query = "SELECT count(civicrm_group_contact.id) AS count, civicrm_group.title AS title
             FROM civicrm_group_contact
             LEFT JOIN civicrm_group  ON (civicrm_group.id = civicrm_group_contact.group_id)
