@@ -16,7 +16,6 @@
 
 /* reset.css */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
-body {line-height:1.5;}
 table {border-collapse:separate;border-spacing:0;}
 caption, th, td {text-align:left;font-weight:normal;}
 table, td, th {vertical-align:middle;}
@@ -25,8 +24,18 @@ blockquote, q {quotes:"" "";}
 a img {border:none;}
 
 /* typography.css */
-body {font-size:75%;color:#222;background:#fff;font-family:"Helvetica Neue", Arial, Helvetica, sans-serif;}
-h1, h2, h3, h4, h5, h6 {font-weight:normal;color:#111;}
+body {
+  font-size:75%;
+  color:#222;
+  background:#fff;
+  font-family:"Helvetica Neue", Arial, Helvetica, sans-serif;
+  margin: 0;
+  line-height:1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight:normal;color:#111;
+}
 h1 {font-size:3em;line-height:1;margin-bottom:0.5em;}
 h2 {font-size:2em;margin-bottom:0.75em;}
 h3 {font-size:1.5em;line-height:1;margin-bottom:1em;}
@@ -258,11 +267,6 @@ hr.space {background:#fff;color:#fff;}
 
 
 /* @group blueprint overrides */
-
-body {
-  margin: 0;
-}
-
 div.container {
   margin: 0px auto 50px;
 }
@@ -1373,7 +1377,7 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*ensure tooltip sits above other text*/
-#crm-toolTip {
+div#crm-toolTip {
 	z-index: 1000 !important;
 }
 
