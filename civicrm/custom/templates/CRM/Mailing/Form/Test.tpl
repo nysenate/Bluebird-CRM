@@ -94,11 +94,9 @@ cj(function() {
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
-        // console.log('errors found and canceled');
       },
       "Send Message Anyway": function() {
          cj( this ).dialog( "close" );
-         // console.log('errors found but ignored');
          cj('#sendtest').click();
       }
     }
@@ -117,13 +115,11 @@ cj('#checktest').live('click', function() {
       success: function(data,status) {
         if(data != null || data != ''){
           results = cj.parseJSON(data);
-          console.log(data);
           if (results.code == "WARN") {
               cj("#send-confirm .message").html(results.message);
               cj("#send-confirm").dialog('open');
           }else{
             cj('#sendtest').click();
-            // console.log(' no errors found');
           }
         }
       }
