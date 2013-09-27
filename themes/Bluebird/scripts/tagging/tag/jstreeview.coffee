@@ -82,6 +82,9 @@ class View
         cjDTs = @cj_selectors.tagBox.find(findList.join(","))
         cjDTs.addClass("shaded")
         cjDTs.find(".fCB input.checkbox").prop("checked",true)
+        cj.each(cjDTs, (i,DT) =>
+          @hasTaggedChildren(cj(DT))  
+        )
       )
   writeContainers: () ->
     @formatPageElements()
@@ -122,7 +125,7 @@ class View
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
     @cj_selectors.initHolder.removeClass(@selectors.initHolder).attr("id", @selectors.container).addClass(@selectors.containerClass)
   addClassesToElement: (height) ->
-    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}' #{height}></div>"
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}' #{height}></div><div class='JSTree-overlay'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
@@ -226,7 +229,6 @@ class View
       if parseInt(k) == 292
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
     buttons = new Buttons(@)
-    console.log @entity_id
     @setTaggingOrEdit()
   setTaggingOrEdit: () ->
     if @cj_selectors.tagBox.hasClass("tagging,edit")
@@ -467,25 +469,14 @@ class View
           removeTag.call(null,null) if typeOfAction == "add"
           addTag.call(null,null) if typeOfAction == "remove"
         new ActivityLog(res,action)
-      hasTaggedChildren = (cjDT) ->
-        tagId = cjDT.data("tagid")
-        if cjDT.siblings("#tagDropdown_#{tagId}").find("dt.shaded").length > 0
-          cjDT.toggleClass("shadedChildren")
-        console.log parents = cjDT.parents("dl").data("")
-        # need to get id from dl... why isn't that a util method?
-
-
-        # here
-
-
-
-        # if cjDT.parents("dt.shaded")
-          # console.log 
-
       entity = a.instance.entity
       cjDT = cj(@).parents("dt").first()
+      # if position!
+
+      # requires addTag (if doesn't already exist)
+
       cjDT.toggleClass("shaded")
-      hasTaggedChildren.call(null,cjDT)
+      a.hasTaggedChildren(cjDT)
       tagId = cjDT.data("tagid")
       action.tagId = tagId
       if cj(@).prop("checked")
@@ -494,6 +485,20 @@ class View
         removeTag.call(@,null)
       
     )
+  hasTaggedChildren: (cjDT) ->
+    tagId = cjDT.data("tagid")
+    if cjDT.siblings("#tagDropdown_#{tagId}").find("dt.shaded").length > 0
+      cjDT.addClass("shadedChildren")
+    parents = cjDT.parentsUntil(".JSTree","dl")
+    # checks up and down the chain for children/parents that aren't
+    # correctly labeled
+    for dl,i in parents
+      parentTagId = cj(dl).data("tagid")
+      cjSiblingDT = @cj_selectors.tagBox.find("#tagLabel_#{parentTagId}")
+      if cj(dl).find("dt.shaded").length > 0
+        cjSiblingDT.addClass("shadedChildren")
+      else
+        cjSiblingDT.removeClass("shadedChildren") 
 
 _utils["createLabel"] = (labelName, className...) ->
 
@@ -514,10 +519,8 @@ class Action
     # @[action]
   
   createSlide: () ->
-    console.log @instance
     resize = new Resize
     @view.cj_selectors.tagBox.addClass("hasSlideBox")
-    console.log @view.cj_selectors.tagBox.children(".active")
     if resize.height > 200
       @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
       @view.cj_selectors.tagBox.find(".slideBox").css("right","#{@findGutterSpace()}px")
@@ -621,7 +624,7 @@ class Buttons
 
 class ActivityLog
   constructor: (jsonObj,action) ->
-    console.log jsonObj,action
+    # console.log jsonObj,action
 
 class Settings
   constructor: (@instance, @view) ->
@@ -1024,7 +1027,7 @@ class Node
             " 
     # dl second
     html += "
-              <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-name='#{node.name}'></dl>
+              <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}'></dl>
             "
     return html
   # add
