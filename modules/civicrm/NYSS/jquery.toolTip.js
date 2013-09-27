@@ -31,7 +31,6 @@
 		if ( clickedElement == $(this).children().attr('id') ) { clickedElement = null; return; }
 		 $("body").append('<div id="crm-toolTip" style="z-index: 100;"><div id="hide-tooltip" class="ui-icon ui-icon-close"></div>' + text + "</div>");
       //NYSS
-      console.log('check if implemented');
 		  if ($.browser.msie && parseFloat($.browser.version) < 7) {
 		  	$("#crm-toolTip").css('position','absolute');
 			  $(window).bind('scroll', function() {

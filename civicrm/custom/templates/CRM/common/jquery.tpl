@@ -57,7 +57,7 @@
 
 {*NYSS 7187*}
 {*<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.toolTip.js"></script>*}
-<script type="text/javascript" src="/sites/default/themes/Bluebird/scripts/jquery.toolTip.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}NYSS/jquery.toolTip.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables/media/css/demo_table_jui.css");</style>
