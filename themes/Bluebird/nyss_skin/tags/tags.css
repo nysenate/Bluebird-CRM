@@ -11,13 +11,14 @@
 /*pagestructure*/
 #JSTree-container.BBTreeContainer, #BBTreeContainer {
   width: 522px;
-  background-color: #fff;
   overflow-x: hidden;
-  border: 1px solid #ccc;
   cursor: default;
   position: relative;
   margin: 0 auto;
-  margin: 15px auto; }
+  margin: 15px auto;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px; }
   #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
   #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
@@ -32,7 +33,8 @@
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-top, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-bottom, #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
       height: 20px;
-      border-bottom: 1px solid #ccc; }
+      border-bottom: 1px solid #ccc;
+      background-color: #fff; }
     #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs, #BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-tabs {
       float: left;
       width: 84%; }
@@ -85,9 +87,12 @@
       margin: 0px;
       height: 20px; }
   #JSTree-container.BBTreeContainer .BBTree, #BBTreeContainer .BBTree {
+    background-color: #fff;
     overflow-y: scroll;
     overflow-x: hidden;
     height: 400px; }
+    #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
+      height: 100%; }
     #JSTree-container.BBTreeContainer .BBTree.top-291-active, #BBTreeContainer .BBTree.top-291-active {
       background-color: rgba(150, 226, 164, 0.3); }
       #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.shaded, #BBTreeContainer .BBTree.top-291-active dt.shaded {
@@ -222,6 +227,10 @@
       border: 1px solid #B0D730; }
     #JSTree-container.BBTreeContainer .BBTree dt.shaded .name, #BBTreeContainer .BBTree dt.shaded .name {
       font-weight: bold; }
+    #JSTree-container.BBTreeContainer .BBTree dt.shadedChildren, #BBTreeContainer .BBTree dt.shadedChildren {
+      -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+      -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+      box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
     #JSTree-container.BBTreeContainer .BBTree dt, #BBTreeContainer .BBTree dt {
       height: 20px; }
     #JSTree-container.BBTreeContainer .BBTree dt.description div.description, #JSTree-container.BBTreeContainer .BBTree dt.longdescription div.description, #BBTreeContainer .BBTree dt.description div.description, #BBTreeContainer .BBTree dt.longdescription div.description {
@@ -239,7 +248,8 @@
         top: -40px; }
       #JSTree-container.BBTreeContainer .BBTree dt.description .description, #BBTreeContainer .BBTree dt.description .description {
         position: absolute;
-        bottom: 0px; }
+        bottom: 2px;
+        left: 2px; }
       #JSTree-container.BBTreeContainer .BBTree dt.description .fCB, #BBTreeContainer .BBTree dt.description .fCB {
         margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.description.longName, #BBTreeContainer .BBTree dt.description.longName {
@@ -259,7 +269,8 @@
         top: -30px; }
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .description, #BBTreeContainer .BBTree dt.shortdescription.description .description {
         position: absolute;
-        bottom: 0px; }
+        bottom: 2px;
+        left: 2px; }
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description.longName, #BBTreeContainer .BBTree dt.shortdescription.description.longName {
         line-height: 12px;
         height: 50px; }
@@ -276,7 +287,8 @@
         top: -60px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .description, #BBTreeContainer .BBTree dt.longdescription .description {
         position: absolute;
-        bottom: 0px; }
+        bottom: 2px;
+        left: 2px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .fCB, #BBTreeContainer .BBTree dt.longdescription .fCB {
         margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
@@ -299,11 +311,17 @@
     #JSTree-container.BBTreeContainer .BBTree .tagContainer.active, #BBTreeContainer .BBTree .tagContainer.active {
       display: block; }
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
-      display: none; }
+      display: none;
+      border-bottom-left-radius: 3px;
+      -webkit-border-bottom-left-radius: 3px;
+      border-bottom-right-radius: 3px;
+      -webkit-border-bottom-right-radius: 3px;
+      -moz-border-radius-bottomleft: 3px;
+      -moz-border-radius-bottomright: 3px; }
       #JSTree-container.BBTreeContainer .BBTree.dropdown.open, #BBTreeContainer .BBTree.dropdown.open {
         display: block;
         position: absolute;
-        top: 78px;
+        top: 76px;
         width: 438px;
         z-index: 10;
         background-color: white;
@@ -321,13 +339,40 @@
       background-color: rgba(0, 0, 0, 0.2);
       z-index: 15;
       right: 0px; }
-  #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
-    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
-    height: 6px;
-    width: 10px;
-    margin: 0 auto; }
-    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
-      cursor: s-resize; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .label, #BBTreeContainer .BBTree.hasSlideBox .label {
+      background-color: #ccc;
+      border-radius: 5px;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+      color: #fff;
+      padding: 4px; }
+  #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
+    text-align: center;
+    font-style: italic;
+    padding-top: 20px;
+    font-size: 1.2em; }
+  #JSTree-container.BBTreeContainer .JSTree-overlay, #BBTreeContainer .JSTree-overlay {
+    background-color: #fff;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: -1;
+    top: 0; }
+  #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
+    background-color: #fff;
+    border-bottom-left-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    -webkit-border-bottom-right-radius: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    -moz-border-radius-bottomright: 3px; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
+      background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
+      height: 6px;
+      width: 10px;
+      margin: 0 auto; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
+        cursor: s-resize; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {

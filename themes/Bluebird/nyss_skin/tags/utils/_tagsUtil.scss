@@ -139,8 +139,53 @@
   }
   .description {
     position:absolute;
-    bottom:0px;
+    bottom:2px;
+    left:2px;
   }
+}
+$default_rounded_amount: 5px;
+// Round corner at position by amount.
+@mixin round-corner($position, $amount: $default_rounded_amount){
+  border-#{$position}-radius: $amount;
+  -webkit-border-#{$position}-radius: $amount;
+}
+ 
+@mixin round-corner-mozilla($position, $amount: $default_rounded_amount){
+  -moz-border-radius-#{$position}: $amount;
+}
+// Round left corners by amount
+@mixin round-left-corners($amount: $default_rounded_amount){
+  @include round-corner("top-left", $amount);
+  @include round-corner("bottom-left", $amount);
+  @include round-corner-mozilla("topleft", $amount);
+  @include round-corner-mozilla("bottomleft", $amount);
+} 
+// Round right corners by amount
+@mixin round-right-corners($amount: $default_rounded_amount){
+  @include round-corner("top-right", $amount);
+  @include round-corner("bottom-right", $amount);
+  @include round-corner-mozilla("topright", $amount);
+  @include round-corner-mozilla("bottomright", $amount);
+} 
+// Round top corners by amount
+@mixin round-top-corners($amount: $default_rounded_amount){
+  @include round-corner("top-left", $amount);
+  @include round-corner("top-right", $amount);
+  @include round-corner-mozilla("topleft", $amount);
+  @include round-corner-mozilla("topright", $amount);
+} 
+// Round bottom corners by amount
+@mixin round-bottom-corners($amount: $default_rounded_amount){
+  @include round-corner("bottom-left", $amount);
+  @include round-corner("bottom-right", $amount);
+  @include round-corner-mozilla("bottomleft", $amount);
+  @include round-corner-mozilla("bottomright", $amount);
+} 
+// Round all corners by amount
+@mixin round-corners($amount: $default_rounded_amount){
+  border-radius: $amount;
+  -moz-border-radius: $amount;
+  -webkit-border-radius: $amount;
 }
 @mixin addColors($color,$opacity) {
   @include tag-lightness($color,$opacity);
@@ -153,5 +198,10 @@
   dt.active {
     @include tag-lightness($color,($opacity+.45));
   }
+}
+@mixin inset-shadow($horizontal:0, $vertical:1px, $blur:2px, $alpha:0.4) {
+  -webkit-box-shadow: inset $horizontal $vertical $blur rgba(0, 0, 0, $alpha);
+  -moz-box-shadow: inset $horizontal $vertical $blur rgba(0, 0, 0, $alpha);
+  box-shadow: inset $horizontal $vertical $blur rgba(0, 0, 0, $alpha);
 }
 @import "extends";
