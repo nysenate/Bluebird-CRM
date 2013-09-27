@@ -27,9 +27,9 @@
 <![if !IE]>
 {literal}
 <script type="text/javascript">
-     cj( function( ) {
-         cj("#{/literal}{$form.formName}{literal}").FormNavigate("{/literal}{ts}You have unsaved changes.{/ts}{literal}"); 
-     });
+  cj( function( ) {
+    cj("#{/literal}{$form.formName}{literal}").FormNavigate("{/literal}{ts}You have unsaved changes.{/ts}{literal}");
+  });
 </script>
 {/literal}
 <![endif]>
