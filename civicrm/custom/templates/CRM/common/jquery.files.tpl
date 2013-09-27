@@ -57,7 +57,7 @@ packages/jquery/plugins/jquery.mousewheel.pack.js
 
 {*NYSS 7187*}
 {*packages/jquery/plugins/jquery.toolTip.js*}
-../../../default/themes/Bluebird/scripts/jquery.toolTip.js
+NYSS/jquery.toolTip.js
 
 packages/jquery/plugins/DataTables/media/css/demo_table_jui.css
 packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js
