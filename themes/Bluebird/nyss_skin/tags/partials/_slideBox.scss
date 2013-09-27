@@ -15,3 +15,9 @@
   z-index: 15;
   right:0px;
 }
+.label {
+  background-color:#ccc;
+  @include round-corners(5px);
+  color:#fff;
+  padding:4px;
+}
