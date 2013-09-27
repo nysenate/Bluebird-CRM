@@ -106,25 +106,30 @@ cj(function() {
 
 cj('#checktest').live('click', function() {
   var groupid = cj('#test_group').val();
-  cj.ajax({
-    url: '/civicrm/NYSS/AJAX/Mailing',
-    data: {
-      group: groupid
-    },
-    success: function(data,status) {
-      if(data != null || data != ''){
-        results = cj.parseJSON(data);
-        console.log(data);
-        if (results.code == "WARN") {
-            cj("#send-confirm .message").html(results.message);
-            cj("#send-confirm").dialog('open');
-        }else{
-          cj('#sendtest').click();
-          // console.log(' no errors found');
+  if(groupid == null || groupid == ''){
+    cj('#sendtest').click();
+  }else{
+    cj.ajax({
+      url: '/civicrm/NYSS/AJAX/Mailing',
+      data: {
+        group: groupid
+      },
+      success: function(data,status) {
+        if(data != null || data != ''){
+          results = cj.parseJSON(data);
+          console.log(data);
+          if (results.code == "WARN") {
+              cj("#send-confirm .message").html(results.message);
+              cj("#send-confirm").dialog('open');
+          }else{
+            cj('#sendtest').click();
+            // console.log(' no errors found');
+          }
         }
       }
-    }
-  });
+    });
+  }
+
 
 });
 
