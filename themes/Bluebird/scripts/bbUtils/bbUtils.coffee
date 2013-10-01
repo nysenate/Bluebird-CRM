@@ -143,14 +143,14 @@ class window.bb
     charCode = if evt.which? then evt.which else event.keyCode
     keyCode =
       "modifier": [16,17,18,19,20,91,92,93,144,145]
-      "number": [96...105].concat [48...57]
+      "number": [96..105].concat [48..57]
       "directional": [9,13,27,33,34,35,36,37,38,39,40]
       "delete": [8,32,46]
       "insert": [45]
-      "math": [106...111]
-      "function": [112...123]
-      "punctuation": [219...222].concat [186...192]
-      "letters": [65...90]
+      "math": [106..111]
+      "function": [112..123]
+      "punctuation": [219..222].concat [186..192]
+      "letters": [65..90]
     notHtmlSafe: []
     rData = {}
     for ktype,arr of keyCode
