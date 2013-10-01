@@ -71,12 +71,14 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     //special case for custom search, directly give option to download csv file
     $customSearchID = $this->get('customSearchID');
-		
-	//NYSS 3651/3652 allow include/exclude, birthday search, and proximity search to use full export
-    if ( $customSearchID && $customSearchID != 4 && $customSearchID != 16 && $customSearchID != 6 ) {
+
+    //NYSS 3651/3652 allow include/exclude, birthday search, and proximity search to use full export
+    $allowCustSearch = array(4, 16, 6);
+    if ( $customSearchID && !in_array($customSearchID, $allowCustSearch) ) {
       CRM_Export_BAO_Export::exportCustom( $this->get( 'customSearchClass' ),
         $this->get( 'formValues' ),
         $this->get(CRM_Utils_Sort::SORT_ORDER)
