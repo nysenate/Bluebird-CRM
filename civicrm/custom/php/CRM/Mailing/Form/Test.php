@@ -370,10 +370,11 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
 
     if (CRM_Utils_Array::value('sendtest', $testParams)) {
 
-      //NYSS 4557
+      //NYSS 4557/7223
       $testTarget = '';
       if ( $testParams['test_group'] ) {
-        $testTarget = $testParams['test_group'];
+        $group = CRM_Contact_BAO_Group::getGroups(array('id' => $testParams['test_group']));
+        $testTarget = $group[0]->title;
       }
       elseif ( $testParams['test_email'] ) {
         $testTarget = $testParams['test_email'];
