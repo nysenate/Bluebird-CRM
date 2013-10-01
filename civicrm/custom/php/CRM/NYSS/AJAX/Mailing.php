@@ -54,7 +54,7 @@ class CRM_NYSS_AJAX_Mailing
       LEFT JOIN civicrm_group g ON (g.id = gc.group_id)
       WHERE gc.group_id = ".$groupid;
 
-      $result = mysql_query($Query, self::db());
+      $result = mysql_query($query, self::db());
       while ($row = mysql_fetch_assoc($result)) {
         $output['count'] = $row['count'];
         $output['title'] = $row['title'];
