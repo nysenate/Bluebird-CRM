@@ -400,7 +400,9 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       }
     }
 
-    $query = new CRM_Contact_BAO_Query(NULL, $returnProperties, NULL,
+    //NYSS 7197
+    //CRM_Core_Error::debug_var('params', $params);
+    $query = new CRM_Contact_BAO_Query($params, $returnProperties, NULL,
       FALSE, FALSE, $queryMode,
       FALSE, TRUE, TRUE, NULL, $queryOperator
     );
@@ -439,7 +441,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
       if ($relationReturnProperties = CRM_Utils_Array::value($rel, $returnProperties)) {
         $allRelContactArray[$rel] = array();
         // build Query for each relationship
-        $relationQuery[$rel] = new CRM_Contact_BAO_Query(NULL, $relationReturnProperties,
+        //NYSS 7197
+        $relationQuery[$rel] = new CRM_Contact_BAO_Query($params, $relationReturnProperties,
           NULL, FALSE, FALSE, $queryMode
         );
         list($relationSelect, $relationFrom, $relationWhere, $relationHaving) = $relationQuery[$rel]->query();
