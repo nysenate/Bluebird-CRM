@@ -56,7 +56,7 @@ function nyss_mail_civicrm_alterMailParams(&$params, $context)
 
   $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
   $params['text'] = $whitelist_txt."\n\n".$params['text'];
-  $params['html'] = preg_replace('/(<body [^>]*>\s*<center>\s*)/', "$1<small>$whitelist_txt</small>\n", $params['html'], 1);
+  $params['html'] = preg_replace('/(<body [^>]*>\s*<center>\s*)/', "$1<small>$whitelist_txt</small>\n<br/><br/>\n", $params['html'], 1);
   
   // Prevent Sendgrid from dropping any of our messages.
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
