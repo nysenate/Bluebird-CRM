@@ -42,8 +42,10 @@
     <tr class="crm-mailing-test-form-block-test_group"><td class="label">{$form.test_group.label}</td><td>{$form.test_group.html}</td></tr>
     <tr><td></td>
     <td>
+      <!--NYSS-6957-->
       <input type="button" class='form-submit' id="checktest" value="Send a Test Mailing">
       {$form.sendtest.html}
+      <!--NYSS-->
     </td>
   </table>
 </fieldset>
@@ -83,6 +85,7 @@
 cj(function() {
   cj().crmaccordions();
   $('iframe').iframeAutoHeight({heightOffset: 20}); //NYSS
+  //NYSS-6957
   cj( "#sendtest" ).hide();
   cj( "#send-confirm" ).dialog({
     modal: true,
@@ -94,40 +97,38 @@ cj(function() {
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
-        // console.log('errors found and canceled');
       },
       "Send Message Anyway": function() {
          cj( this ).dialog( "close" );
-         // console.log('errors found but ignored');
          cj('#sendtest').click();
       }
     }
   });
-
-cj('#checktest').live('click', function() {
-  var groupid = cj('#test_group').val();
-  cj.ajax({
-    url: '/civicrm/NYSS/AJAX/Mailing',
-    data: {
-      group: groupid
-    },
-    success: function(data,status) {
-      if(data != null || data != ''){
-        results = cj.parseJSON(data);
-        console.log(data);
-        if (results.code == "WARN") {
-            cj("#send-confirm .message").html(results.message);
-            cj("#send-confirm").dialog('open');
-        }else{
-          cj('#sendtest').click();
-          // console.log(' no errors found');
+  cj('#checktest').live('click', function() {
+    var groupid = cj('#test_group').val();
+    if(groupid == null || groupid == ''){
+      cj('#sendtest').click();
+    }else{
+      cj.ajax({
+        url: '/civicrm/NYSS/AJAX/Mailing',
+        data: {
+          group: groupid
+        },
+        success: function(data,status) {
+          if(data != null || data != ''){
+            results = cj.parseJSON(data);
+            if (results.code == "WARN") {
+                cj("#send-confirm .message").html(results.message);
+                cj("#send-confirm").dialog('open');
+            }else{
+              cj('#sendtest').click();
+            }
+          }
         }
-      }
+      });
     }
   });
-
-});
-
+  //NYSS
 });
 </script>
 {/literal}
