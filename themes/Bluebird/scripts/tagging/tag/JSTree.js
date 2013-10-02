@@ -16,10 +16,18 @@
       if (!((args.term != null) || args.term.length >= 3)) {
         return false;
       }
-      term = args.term;
-      this.term = term;
-      year = args.year;
-      page = args.page || 1;
+      this.pSearch = args.term.search(/\-20[0-9][0-9]/g);
+      if (this.pSearch > -1) {
+        year = args.term.slice(this.pSearch + 1, this.pSearch + 5);
+        term = args.term.slice(0, this.pSearch);
+        this.term = args.term;
+      } else {
+        this.term = term = args.term;
+      }
+      if (year == null) {
+        year = args.year;
+      }
+      page = args.page || 0;
       this.page = ajaxStructure.data.pageIdx = page;
       return this.buildQuery(term, year, page);
     };
@@ -32,13 +40,17 @@
       fText = "(full:" + term + "~ OR full:" + term + "*)";
       fOid = "(oid:" + queryDefaults.oid + ")";
       validjsonpterm = bbUtils.spaceTo("underscore", term);
-      ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
+      if (this.pSearch > -1) {
+        ajaxStructure.data.term = "(oid:" + term + "-" + year + ")";
+      } else {
+        ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
+      }
       return this.getQuery();
     };
 
     OpenLeg.prototype.getCurrentSessionYear = function(year) {
       var dateobject;
-      if ((year != null) || isNaN(parseInt(year))) {
+      if ((year == null) || isNaN(parseInt(year))) {
         dateobject = new Date();
         year = dateobject.getFullYear();
       }
@@ -71,9 +83,10 @@
         result = results[index];
         rs = {
           noname: "" + result.oid + " - (" + result.data.bill.sponsor.fullname + ")",
-          forname: "" + result.oid + " - for (" + result.data.bill.sponsor.fullname + ")",
-          againstname: "" + result.oid + " - against (" + result.data.bill.sponsor.fullname + ")",
+          forname: "" + result.oid + " - FOR (" + result.data.bill.sponsor.fullname + ")",
+          againstname: "" + result.oid + " - AGAINST (" + result.data.bill.sponsor.fullname + ")",
           description: "" + result.data.bill.title,
+          billNo: "" + result.oid,
           url: "" + result.url
         };
         returnStructure.results.push(rs);
@@ -96,7 +109,7 @@
       data: {
         term: '',
         pageSize: 10,
-        pageIdx: 1
+        pageIdx: 0
       }
     };
 
@@ -251,6 +264,15 @@
       }
     });
 
+    Instance.property("positionList", {
+      get: function() {
+        return this._positionList;
+      },
+      set: function(a) {
+        return this._positionList = a;
+      }
+    });
+
     Instance.property("treeNames", {
       get: function() {
         return this._treeNames;
@@ -376,6 +398,47 @@
     },
     hyphenize: function(text) {
       return text.replace(" ", "-");
+    },
+    createLabel: function() {
+      var className, labelName;
+      labelName = arguments[0], className = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    },
+    _createInputBox: function() {
+      var classNames, classes, name, type, value;
+      type = arguments[0], name = arguments[1], value = arguments[2], classNames = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
+      if (value == null) {
+        value = "";
+      }
+      classes = classNames.join(" ");
+      return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "'>";
+    },
+    createTextBox: function() {
+      var classNames, name, value;
+      name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      return _utils._createInputBox("text", name, value, classNames);
+    },
+    createCheckBox: function() {
+      var classNames, name, value;
+      name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      return _utils._createInputBox("checkbox", name, value, classNames);
+    },
+    createRadioButton: function() {
+      var classNames, name, value;
+      name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      return _utils._createInputBox("radio", name, value, classNames);
+    },
+    removePositionTextFromBill: function(positionName) {
+      return positionName.replace(/\ (\-|)(.*AGAINST|.*FOR|.*\(.*\))/g, "");
+    },
+    checkPositionFromBill: function(positionName) {
+      var a;
+      a = positionName.replace(/\ \(.*\)/g, "");
+      a = a.replace(/(A|S|J|K)([0-9]*|[0-9]*.)\-20[0-9][0-9]/g, "");
+      a = a.replace(/\ \-\ /g, "").toLowerCase();
+      if (a === "" || a === " -" || a === " ") {
+        a = "neutral";
+      }
+      return a;
     }
   };
 
@@ -401,6 +464,9 @@
 
   _tree = {
     blacklist: function(id) {
+      if (id === 292) {
+        return true;
+      }
       return false;
     }
   };
@@ -416,10 +482,39 @@
         if (o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))) {
           _parseAutocomplete.deepIterate(o.children, _parseAutocomplete.pre, _parseAutocomplete.post);
         }
+        if (o.children.length > 0 && parseFloat(k) === 292) {
+          this.positionList(o.children);
+        }
       }
       instance.autocomplete = this.ac;
+      instance.positionList = this.pl;
       return instance.treeNames = this.treeNames;
     },
+    positionList: function(obj) {
+      var a, k, v, _results;
+      _results = [];
+      for (k in obj) {
+        v = obj[k];
+        a = {
+          "name": _utils.removePositionTextFromBill(v.name),
+          "posName": v.name,
+          "id": v.id,
+          "pos": _utils.checkPositionFromBill(v.name),
+          "parent": 292,
+          "type": 292,
+          "children": false,
+          "description": v.description,
+          "is_reserved": v.is_reserved,
+          "created_id": v.created_id,
+          "created_date": v.created_date,
+          "created_name": v.created_display_name,
+          "level": 1
+        };
+        _results.push(this.pl.push(a));
+      }
+      return _results;
+    },
+    pl: [],
     ac: [],
     treeNames: {}
   };
@@ -639,19 +734,71 @@
     View.prototype.applyTagged = function() {
       var _this = this;
       return this.instance.getEntity(this.entity_id, function(tags) {
-        var cjDTs, findList, i, _i, _len;
-        findList = [];
-        for (_i = 0, _len = tags.length; _i < _len; _i++) {
-          i = tags[_i];
-          findList.push("#tagLabel_" + i);
+        _this.entityList = tags;
+        _this.applyTaggedKWIC();
+        return _this.applyTaggedPositions();
+      });
+    };
+
+    View.prototype.applyTaggedKWIC = function(filter) {
+      var cjDTs, findList, i, _i, _len, _ref,
+        _this = this;
+      if (filter == null) {
+        filter = "";
+      }
+      findList = [];
+      _ref = this.entityList;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        findList.push("" + filter + " #tagLabel_" + i);
+      }
+      cjDTs = this.cj_selectors.tagBox.find(findList.join(","));
+      cjDTs.addClass("shaded");
+      return cj.each(cjDTs, function(i, DT) {
+        cj(DT).find(".fCB input.checkbox").prop("checked", true);
+        return _this.hasTaggedChildren(cj(DT));
+      });
+    };
+
+    View.prototype.findPositionLocalMatch = function(cjDT) {
+      var a, b, name, position, _ref, _results;
+      name = cjDT.find(".tag .name").text;
+      _ref = this.instance.positionList;
+      _results = [];
+      for (a in _ref) {
+        b = _ref[a];
+        name = _utils.removePositionTextFromBill(cjDT.name);
+        _results.push(position = cjDT.data("position"));
+      }
+      return _results;
+    };
+
+    View.prototype.applyTaggedPositions = function() {
+      var a, b, cjDTs, iO, posList, trees, _ref;
+      posList = [];
+      trees = this.trees;
+      _ref = this.instance.positionList;
+      for (a in _ref) {
+        b = _ref[a];
+        iO = this.entityList.indexOf("" + b.id);
+        if (iO > -1) {
+          posList.push(b);
         }
-        cjDTs = _this.cj_selectors.tagBox.find(findList.join(","));
+      }
+      if (posList.length > 0) {
+        this.cj_selectors.tagBox.find(".top-292").remove();
+        trees[292] = new Tree(posList, 292);
+        if (this.cj_menuSelectors.tabs.find(".tab-positions").hasClass("active")) {
+
+        } else {
+          this.cj_selectors.tagBox.find(".top-292").css("display", "none");
+        }
+        new Buttons(this, ".top-292");
+        cjDTs = this.cj_selectors.tagBox.find(".top-292 dt");
         cjDTs.addClass("shaded");
         cjDTs.find(".fCB input.checkbox").prop("checked", true);
-        return cj.each(cjDTs, function(i, DT) {
-          return _this.hasTaggedChildren(cj(DT));
-        });
-      });
+        return this.trees = trees;
+      }
     };
 
     View.prototype.writeContainers = function() {
@@ -1008,7 +1155,7 @@
     View.prototype.writeEmptyList = function(term, tree) {};
 
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var activeTree, k, latestQuery, t, v,
+      var a, activeTree, b, cjDTs, iO, k, latestQuery, t, v, _ref,
         _this = this;
       if (hits == null) {
         hits = {};
@@ -1048,8 +1195,25 @@
           t = new Tree(list[k], k, true);
           this.cj_selectors.tagBox.find(".top-" + k).data("term", term);
         }
+        if (parseInt(k) === 292) {
+          if (v > 0) {
+            _ref = this.instance.positionList;
+            for (a in _ref) {
+              b = _ref[a];
+              iO = b.id.indexOf(this.entityList);
+              if (iO > -1) {
+                cjDTs = this.cj_selectors.tagBox.find("#tagLabel_" + b.id);
+                cjDTs.addClass("shaded");
+                cjDTs.find(".fCB input.checkbox").prop("checked", true);
+              }
+            }
+          }
+        }
       }
       new Buttons(this);
+      if (this.settings.tagging) {
+        this.applyTaggedKWIC();
+      }
       return this.setActiveTree(this.getIdFromTabName(activeTree));
     };
 
@@ -1074,13 +1238,22 @@
         _ref = this.trees;
         for (k in _ref) {
           v = _ref[k];
-          t = new Tree(v.tagList, k);
-          if (parseInt(k) === 292) {
+          if (parseInt(k) !== 292) {
+            t = new Tree(v.tagList, k);
+          }
+          if (parseInt(k) === 292 && !this.settings.tagging) {
             this.cj_selectors.tagBox.find(".top-" + k).empty();
             this.addPositionReminderText(this.cj_selectors.tagBox.find(".top-" + k));
           }
+          if (parseInt(k) === 292 && this.settings.tagging) {
+            this.cj_selectors.tagBox.find(".top-" + k).empty();
+            this.applyTaggedPositions();
+          }
         }
         new Buttons(this);
+        if (this.settings.tagging) {
+          this.applyTaggedKWIC();
+        }
         return this.setActiveTree(this.getIdFromTabName(activeTree));
       }
     };
@@ -1195,29 +1368,35 @@
       return heightTotal;
     };
 
-    View.prototype.createAction = function(tagId, action) {
-      return new Action(this, this.instance, tagId, action);
+    View.prototype.createAction = function(tagId, action, cb) {
+      if (tagId == null) {
+        tagId = "";
+      }
+      return new Action(this, this.instance, tagId, action, cb);
     };
 
     View.prototype.toggleCheckInBox = function() {
       var a;
       a = this;
+      this.cj_selectors.tagBox.find("dt input.checkbox").off("change");
       return this.cj_selectors.tagBox.find("dt input.checkbox").on("change", function() {
-        var action, addTag, cjDT, doAction, entity, removeTag, tagId;
+        var action, addTag, cjDT, doAction, entity, o, removeTag, tagId, toggleClass;
         action = {
           type: "checkbox"
         };
         removeTag = function() {
-          var _this = this;
-          removeTag = entity.removeTag(tagId);
-          return removeTag.done(function(i) {
+          var _removeTag,
+            _this = this;
+          _removeTag = entity.removeTag(tagId);
+          return _removeTag.done(function(i) {
             return doAction.apply(null, [i, "remove"]);
           });
         };
         addTag = function() {
-          var _this = this;
-          addTag = entity.addTag(tagId);
-          return addTag.done(function(i) {
+          var _addTag,
+            _this = this;
+          _addTag = entity.addTag(tagId);
+          return _addTag.done(function(i) {
             return doAction.apply(null, [i, "add"]);
           });
         };
@@ -1233,16 +1412,33 @@
           }
           return new ActivityLog(res, action);
         };
+        toggleClass = function(cjDT) {
+          cjDT.toggleClass("shaded");
+          a.hasTaggedChildren(cjDT);
+          if (cj(this).prop("checked")) {
+            return addTag.call(this, null);
+          } else {
+            return removeTag.call(this, null);
+          }
+        };
         entity = a.instance.entity;
         cjDT = cj(this).parents("dt").first();
-        cjDT.toggleClass("shaded");
-        a.hasTaggedChildren(cjDT);
-        tagId = cjDT.data("tagid");
-        action.tagId = tagId;
-        if (cj(this).prop("checked")) {
-          return addTag.call(this, null);
+        if (cjDT.data("tree") === 292 && parseInt(cjDT.data("tagid")) >= 292000) {
+          o = this;
+          return a.createAction(cjDT.data("tagid"), "addTagFromPosition", function(response) {
+            var newDT;
+            newDT = response.cjDT;
+            if (response === false) {
+              return console.log("response false");
+            } else {
+              action.tagId = response["message"]["id"];
+              return toggleClass.call(newDT.find("input.checkbox")[0], newDT);
+            }
+          });
         } else {
-          return removeTag.call(this, null);
+          tagId = cjDT.data("tagid");
+          action.tagId = tagId;
+          return toggleClass.call(this, cjDT);
         }
       });
     };
@@ -1272,44 +1468,31 @@
 
   })();
 
-  _utils["createLabel"] = function() {
-    var className, labelName;
-    labelName = arguments[0], className = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-  };
-
-  _utils["_createInputBox"] = function() {
-    var classNames, classes, name, type, value;
-    type = arguments[0], name = arguments[1], value = arguments[2], classNames = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-    if (value == null) {
-      value = "";
-    }
-    classes = classNames.join(" ");
-    return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "'>";
-  };
-
-  _utils["createTextBox"] = function() {
-    var classNames, name, value;
-    name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    return _utils["_createInputBox"]("text", name, value, classNames);
-  };
-
-  _utils["createCheckBox"] = function() {
-    var classNames, name, value;
-    name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    return _utils["_createInputBox"]("checkbox", name, value, classNames);
-  };
-
-  _utils["createRadioButton"] = function() {
-    var classNames, name, value;
-    name = arguments[0], value = arguments[1], classNames = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-    return _utils["_createInputBox"]("radio", name, value, classNames);
-  };
-
   Action = (function() {
-    function Action(view, instance, tagId, action) {
+    Action.prototype.ajax = {
+      addTag: {
+        url: "/civicrm/ajax/tag/create",
+        data: {
+          name: "",
+          description: "",
+          parent_id: "",
+          is_reserved: true
+        }
+      }
+    };
+
+    function Action(view, instance, tagId, action, cb) {
+      var k, v, _ref;
       this.view = view;
       this.instance = instance;
-      this.createSlide();
+      this.cb = cb;
+      _ref = this.ajax;
+      for (k in _ref) {
+        v = _ref[k];
+        v.data["call_uri"] = window.location.href;
+        v["dataType"] = "json";
+      }
+      this[action].apply(this, [tagId, action]);
     }
 
     Action.prototype.createSlide = function() {
@@ -1328,6 +1511,63 @@
       }
     };
 
+    Action.prototype.addTagFromPosition = function(tagId, action) {
+      var cjDT, k, manipBox, message, response, v, _ref,
+        _this = this;
+      manipBox = function(tagId, messageId) {
+        var cjDL;
+        cjDL = _this.view.cj_selectors.tagBox.find("#tagDropdown_" + tagId);
+        cjDL.attr("id", "tagDropdown_" + messageId);
+        cjDL.data("tagid", messageId);
+        cjDT.data("tagid", messageId);
+        cjDT.attr("id", "tagLabel_" + messageId);
+        cjDT.removeClass("tag-" + tagId).addClass("tag-" + messageId);
+        return cjDT.find("input.checkbox").attr("name", "tag[" + messageId + "]");
+      };
+      cjDT = this.view.cj_selectors.tagBox.find("#tagLabel_" + tagId);
+      this.ajax.addTag.data.name = cjDT.find(".tag .name").text();
+      this.ajax.addTag.data.description = cjDT.find(".tag .description").text();
+      this.ajax.addTag.data.parent_id = "292";
+      this.ajax.addTag.data.is_reserved = true;
+      _ref = this.instance.positionList;
+      for (k in _ref) {
+        v = _ref[k];
+        if (_utils.removePositionTextFromBill(this.ajax.addTag.data.name) === v.name) {
+          if (_utils.checkPositionFromBill(this.ajax.addTag.data.name) === v.pos) {
+            manipBox.call(this, cjDT.data("tagid"), v.id);
+            message = {
+              id: v.id
+            };
+            response = {
+              "cjDT": cjDT,
+              "message": message
+            };
+            this.cb(response);
+          }
+        }
+      }
+      return this.addTag(tagId, action, function(message) {
+        if (message === "DB Error: already exists") {
+          cjDT.prop("checked", false);
+          if (_this.cb != null) {
+            response = {
+              "cjDT": cjDT,
+              "message": message
+            };
+            _this.cb(response);
+          }
+        }
+        manipBox.call(_this, tagId, message.id);
+        if (_this.cb != null) {
+          response = {
+            "cjDT": cjDT,
+            "message": message
+          };
+          return _this.cb(response);
+        }
+      });
+    };
+
     Action.prototype.findGutterSpace = function() {
       var innerWidth, outerWidth;
       outerWidth = this.view.cj_selectors.tagBox.width();
@@ -1337,7 +1577,25 @@
 
     Action.prototype.moveTag = function() {};
 
-    Action.prototype.addTag = function() {};
+    Action.prototype.addTag = function(tagId, action, locCb) {
+      var request,
+        _this = this;
+      if (this.ajax.addTag.data.name === "") {
+        if (this.cb != null) {
+          this.cb(false);
+        }
+        return false;
+      }
+      request = cj.when(cj.ajax(this.ajax.addTag));
+      request.done(function(data) {
+        if (locCb != null) {
+          return locCb(data.message);
+        } else if (_this.cb != null) {
+          return _this.cb(data.message);
+        }
+      });
+      return this;
+    };
 
     Action.prototype.removeTag = function() {};
 
@@ -1368,11 +1626,14 @@
 
     Buttons.prototype.issuecodes = ["addTag", "removeTag", "updateTag", "moveTag", "mergeTag"];
 
-    function Buttons(view) {
+    function Buttons(view, finder) {
       this.view = view;
+      if (finder == null) {
+        finder = "";
+      }
       if (this.view.settings.tagging) {
         this.removeFCB();
-        this.createTaggingCheckboxes();
+        this.createTaggingCheckboxes(finder);
       }
       if (this.view.settings.edit) {
         this.removeTaggingCheckboxes();
@@ -1380,10 +1641,10 @@
       }
     }
 
-    Buttons.prototype.createTaggingCheckboxes = function() {
+    Buttons.prototype.createTaggingCheckboxes = function(finder) {
       var a;
       a = this;
-      this.view.cj_selectors.tagBox.find("dt .tag .name").before(function() {
+      this.view.cj_selectors.tagBox.find("" + finder + " dt .tag .name").before(function() {
         if (cj(this).siblings(".fCB").length === 0) {
           return a.createButtons(cj(this).parent().parent().data("tagid"));
         }
@@ -1601,7 +1862,7 @@
     var initHint;
 
     function Autocomplete(instance, view) {
-      var cjac, params, searchmonger,
+      var a, cjac, debounced, params, searchmonger,
         _this = this;
       this.instance = instance;
       this.view = view;
@@ -1631,8 +1892,10 @@
           return _this.initHint = false;
         }
       }));
+      debounced = bbUtils.debounce(this.filterKeydownEvents, 500);
+      a = this;
       cjac.on("keydown", (function(event) {
-        return _this.filterKeydownEvents(event, searchmonger, cjac);
+        return debounced(a, event, searchmonger, cjac);
       }));
       cjac.on("keyup", (function(event) {
         var keyCode;
@@ -1664,7 +1927,7 @@
       return cjac.css("color", "#999");
     };
 
-    Autocomplete.prototype.filterKeydownEvents = function(event, searchmonger, cjac) {
+    Autocomplete.prototype.filterKeydownEvents = function(obj, event, searchmonger, cjac) {
       var keyCode, name;
       keyCode = bbUtils.keyCode(event);
       switch (keyCode.type) {
@@ -1680,7 +1943,7 @@
           } else {
             name = "";
           }
-          return this.execSearch(event, searchmonger, cjac, name);
+          return obj.execSearch(event, searchmonger, cjac);
         default:
           return false;
       }
@@ -1721,34 +1984,16 @@
       return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
     };
 
-    Autocomplete.prototype.execSearch = function(event, searchmonger, cjac, lastLetter) {
+    Autocomplete.prototype.execSearch = function(event, searchmonger, cjac) {
       var term,
         _this = this;
-      term = cjac.val() + lastLetter;
+      term = cjac.val();
       if (term.length >= 3) {
         this.view.shouldBeFiltered = true;
-        return searchmonger.exec(event, function(terms) {
-          var filteredList, foundTags, hcounts, hits, k, openLeg, tags, v;
+        this.doOpenLegQuery();
+        return searchmonger.nExec(event, function(terms) {
+          var filteredList, foundTags, hcounts, hits, k, tags, v;
           if ((terms != null) && !cj.isEmptyObject(terms)) {
-            openLeg = new OpenLeg;
-            openLeg.query({
-              "term": terms.term.toLowerCase()
-            }, function(results) {
-              var filteredList, poses;
-              poses = _this.addPositionsToTags(results.results);
-              filteredList = {
-                292: poses
-              };
-              _this.getNextPositionRound(results);
-              _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), {
-                292: results.seeXmore
-              });
-              _this.buildPositions();
-              _this.openLegQueryDone = true;
-              if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
-                return _this.view.toggleDropdown(true);
-              }
-            });
             tags = _this.sortSearchedTags(terms.tags);
             hits = _this.separateHits(tags);
             hcounts = 0;
@@ -1765,6 +2010,38 @@
         });
       }
     };
+
+    Autocomplete.prototype.doOpenLegQuery = function() {
+      var openLeg, terms,
+        _this = this;
+      openLeg = new OpenLeg;
+      terms = cj("#JSTree-ac").val();
+      return openLeg.query({
+        "term": terms
+      }, function(results) {
+        var filteredList, hitCount, poses;
+        poses = _this.addPositionsToTags(results.results);
+        filteredList = {
+          292: poses
+        };
+        _this.getNextPositionRound(results);
+        if (results.seeXmore === 0) {
+          hitCount = results.results.length * 3;
+        } else {
+          hitCount = results.seeXmore;
+        }
+        _this.view.writeFilteredList(filteredList, terms.toLowerCase(), {
+          292: hitCount
+        });
+        _this.buildPositions();
+        _this.openLegQueryDone = true;
+        if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
+          return _this.view.toggleDropdown(true);
+        }
+      });
+    };
+
+    Autocomplete.prototype.queryPending = [];
 
     Autocomplete.prototype.separateHits = function(terms, results) {
       var hits, k, v;
@@ -1791,22 +2068,46 @@
     };
 
     Autocomplete.prototype.addPositionsToTags = function(positions) {
-      var agipos, format, forpos, k, neupos, o;
+      var agipos, format, forpos, k, neupos, o, positionList, v, _ref;
       format = [];
+      positionList = this.instance.positionList;
       for (k in positions) {
         o = positions[k];
         forpos = {
           name: o.forname,
-          id: "" + (this.positionIdNumber + 1)
+          id: "" + (this.positionIdNumber + 1),
+          position: "for"
         };
         agipos = {
           name: o.againstname,
-          id: "" + (this.positionIdNumber + 2)
+          id: "" + (this.positionIdNumber + 2),
+          position: "against"
         };
         neupos = {
           name: o.noname,
-          id: "" + (this.positionIdNumber + 3)
+          id: "" + (this.positionIdNumber + 3),
+          position: "neutral"
         };
+        _ref = this.instance.positionList;
+        for (k in _ref) {
+          v = _ref[k];
+          if (_utils.removePositionTextFromBill(forpos.name) === v.name) {
+            if (_utils.checkPositionFromBill(forpos.name) === v.pos) {
+              forpos.id = v.id;
+            }
+          }
+          if (_utils.removePositionTextFromBill(agipos.name) === v.name) {
+            if (_utils.checkPositionFromBill(agipos.name) === v.pos) {
+              agipos.id = v.id;
+            }
+          }
+          if (_utils.removePositionTextFromBill(neupos.name) === v.name) {
+            if (_utils.checkPositionFromBill(neupos.name) === v.pos) {
+              neupos.id = v.id;
+            }
+          }
+        }
+        forpos.billNo = agipos.billNo = neupos.billNo = o.billNo;
         forpos.type = agipos.type = neupos.type = "292";
         forpos.description = agipos.description = neupos.description = o.description;
         forpos.children = agipos.children = neupos.children = false;
@@ -2016,6 +2317,23 @@
       this.children = node.children;
       this.name = node.name;
       this.nameLength = "";
+      this.billNo = node.billNo;
+      if (node.type === 292) {
+        if (this.billNo == null) {
+          this.billNo = node.name;
+        }
+        this.name = node.posName;
+      }
+      if (this.billNo == null) {
+        this.billNo = "";
+      }
+      this.position = node.position;
+      if (this.position == null) {
+        this.position = node.pos;
+      }
+      if (this.position == null) {
+        this.position = "";
+      }
       if (this.name.length > _descWidths.normal) {
         levelModifier = 0;
         if (node.level > 2) {
@@ -2079,7 +2397,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "' data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "' data-parentid='" + node.parent + "'>";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "'            >";
       html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
       if (this.hasDesc.length > 0) {
         html += "                <div class='description'>" + this.description + "</div>            ";

@@ -190,7 +190,14 @@ $default_rounded_amount: 5px;
 @mixin addColors($color,$opacity) {
   @include tag-lightness($color,$opacity);
   dt.shaded {
-    @include tag-lightness($color,($opacity+.05));
+    @include tag-lightness($color,($opacity + .2));
+  }
+  dt.shadedChildren {
+    @include tag-lightness($color,$opacity - .1);
+    @include inset-shadow(3px,-1px,6px,.15);
+    &.shaded {
+      @include tag-lightness($color,($opacity + .2));
+    }
   }
   dt:hover {
     @include tag-lightness($color,($opacity+.45));

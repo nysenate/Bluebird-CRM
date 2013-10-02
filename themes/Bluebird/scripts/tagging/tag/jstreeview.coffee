@@ -76,16 +76,44 @@ class View
     @writeContainers()
   applyTagged:() ->
     @instance.getEntity(@entity_id, (tags) =>
-        findList = []
-        for i in tags
-          findList.push "#tagLabel_#{i}"
-        cjDTs = @cj_selectors.tagBox.find(findList.join(","))
-        cjDTs.addClass("shaded")
-        cjDTs.find(".fCB input.checkbox").prop("checked",true)
-        cj.each(cjDTs, (i,DT) =>
-          @hasTaggedChildren(cj(DT))  
-        )
+        @entityList = tags
+        @applyTaggedKWIC()
+        @applyTaggedPositions()
       )
+  applyTaggedKWIC:(filter="") ->
+    findList = []
+    for i in @entityList
+      findList.push "#{filter} #tagLabel_#{i}"
+    cjDTs = @cj_selectors.tagBox.find(findList.join(","))
+    cjDTs.addClass("shaded")
+    cj.each(cjDTs, (i,DT) =>
+      cj(DT).find(".fCB input.checkbox").prop("checked",true)
+      @hasTaggedChildren(cj(DT))  
+    )
+  findPositionLocalMatch:(cjDT) ->
+    name = cjDT.find(".tag .name").text
+    for a,b of @instance.positionList
+      name = _utils.removePositionTextFromBill(cjDT.name)
+      position = cjDT.data("position")
+  applyTaggedPositions:() ->
+    posList = []
+    trees = @trees
+    for a,b of @instance.positionList
+      iO = @entityList.indexOf("#{b.id}")
+      if iO > -1
+        posList.push b
+    if posList.length > 0
+      @cj_selectors.tagBox.find(".top-292").remove()
+      trees[292] = new Tree(posList, 292)
+      if @cj_menuSelectors.tabs.find(".tab-positions").hasClass("active")
+
+      else
+        @cj_selectors.tagBox.find(".top-292").css("display","none")
+      new Buttons(@,".top-292")
+      cjDTs = @cj_selectors.tagBox.find(".top-292 dt")
+      cjDTs.addClass("shaded")
+      cjDTs.find(".fCB input.checkbox").prop("checked",true)
+      @trees = trees
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
@@ -240,7 +268,6 @@ class View
     if @settings.tagging
       @cj_selectors.tagBox.addClass("tagging")
       @applyTagged(@entity_id)
-
   createTabClick: (tabName, tabTree) ->
     @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
     @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
@@ -339,8 +366,19 @@ class View
         @setTabResults(k,v)
         t = new Tree(list[k],k,true)
         @cj_selectors.tagBox.find(".top-#{k}").data("term",term)
+      if parseInt(k) == 292
+        if v > 0
+          for a,b of @instance.positionList
+            iO = b.id.indexOf(@entityList)
+            if iO > -1
+              cjDTs = @cj_selectors.tagBox.find("#tagLabel_#{b.id}")
+              cjDTs.addClass("shaded")
+              cjDTs.find(".fCB input.checkbox").prop("checked",true)
     new Buttons(@)
+    if @settings.tagging
+      @applyTaggedKWIC()
     @setActiveTree(@getIdFromTabName(activeTree))
+
     
   noResultsBox: (treeId,k) ->
     activeTree = @getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
@@ -360,11 +398,19 @@ class View
       @cj_selectors.tagBox.find(".filtered").remove()
       activeTree = @cj_menuSelectors.tabs.find(".active").attr("class").replace("active","")
       for k,v of @trees
-        t = new Tree(v.tagList, k)
-        if parseInt(k) == 292
+        if parseInt(k) != 292
+          t = new Tree(v.tagList, k)
+        if parseInt(k) == 292 && !@settings.tagging
           @cj_selectors.tagBox.find(".top-#{k}").empty()
           @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+        if parseInt(k) == 292 && @settings.tagging
+          # fix this here to write entity settings
+          @cj_selectors.tagBox.find(".top-#{k}").empty()
+          # @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+          @applyTaggedPositions()
       new Buttons(@)
+      if @settings.tagging
+        @applyTaggedKWIC()
       @setActiveTree(@getIdFromTabName(activeTree))
 
   setTabResults: (tree,val) ->
@@ -445,22 +491,23 @@ class View
         return false
     )
     return heightTotal
-  createAction: (tagId,action) ->
+  createAction: (tagId="",action,cb) ->
     # this is where you save previous history
-    new Action(@,@instance,tagId,action)
+    new Action(@,@instance,tagId,action,cb)
   toggleCheckInBox: () ->
     a = @
+    @cj_selectors.tagBox.find("dt input.checkbox").off("change")
     @cj_selectors.tagBox.find("dt input.checkbox").on("change", ->
       action =
         type: "checkbox"
       removeTag = () ->
-        removeTag = entity.removeTag(tagId)
-        removeTag.done((i) =>
+        _removeTag = entity.removeTag(tagId)
+        _removeTag.done((i) =>
           doAction.apply(null,[i,"remove"])
         )
       addTag = () ->
-        addTag = entity.addTag(tagId)
-        addTag.done((i) =>
+        _addTag = entity.addTag(tagId)
+        _addTag.done((i) =>
           doAction.apply(null,[i,"add"])
         )
       doAction = (res, typeOfAction) ->
@@ -469,21 +516,32 @@ class View
           removeTag.call(null,null) if typeOfAction == "add"
           addTag.call(null,null) if typeOfAction == "remove"
         new ActivityLog(res,action)
+      toggleClass = (cjDT) ->
+        # requires addTag (if doesn't already exist)
+        cjDT.toggleClass("shaded")
+        a.hasTaggedChildren(cjDT)
+        if cj(@).prop("checked")
+          addTag.call(@,null)
+        else
+          removeTag.call(@,null)
       entity = a.instance.entity
       cjDT = cj(@).parents("dt").first()
       # if position!
-
-      # requires addTag (if doesn't already exist)
-
-      cjDT.toggleClass("shaded")
-      a.hasTaggedChildren(cjDT)
-      tagId = cjDT.data("tagid")
-      action.tagId = tagId
-      if cj(@).prop("checked")
-        addTag.call(@,null)
+      if cjDT.data("tree") == 292 && parseInt(cjDT.data("tagid")) >= 292000
+        # create new position
+        o = @
+        a.createAction(cjDT.data("tagid"),"addTagFromPosition", (response)->
+            newDT = response.cjDT
+            if response == false
+              console.log "response false"
+            else
+              action.tagId = response["message"]["id"]
+              toggleClass.call(newDT.find("input.checkbox")[0],newDT)
+          )
       else
-        removeTag.call(@,null)
-      
+        tagId = cjDT.data("tagid")
+        action.tagId = tagId
+        toggleClass.call(@,cjDT)
     )
   hasTaggedChildren: (cjDT) ->
     tagId = cjDT.data("tagid")
@@ -500,24 +558,22 @@ class View
       else
         cjSiblingDT.removeClass("shadedChildren") 
 
-_utils["createLabel"] = (labelName, className...) ->
-
-_utils["_createInputBox"] = (type,name,value = "",classNames...) ->
-  classes = classNames.join(" ")
-  return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"
-_utils["createTextBox"] = (name,value,classNames...) ->
-  return _utils["_createInputBox"]("text",name,value,classNames)
-_utils["createCheckBox"] = (name,value,classNames...) ->
-  return _utils["_createInputBox"]("checkbox",name,value,classNames)
-_utils["createRadioButton"] = (name,value,classNames...) ->
-  return _utils["_createInputBox"]("radio",name,value,classNames)
-
 
 class Action
-  constructor: (@view, @instance, tagId, action) ->
-    @createSlide()
-    # @[action]
-  
+  ajax:
+    addTag:
+      url: "/civicrm/ajax/tag/create"
+      data:
+        name: ""
+        description: ""
+        parent_id: ""
+        is_reserved: true
+  constructor: (@view, @instance, tagId, action,@cb) ->
+    # @createSlide()
+    for k,v of @ajax
+      v.data["call_uri"] = window.location.href
+      v["dataType"] = "json"
+    @[action].apply(@,[tagId,action])
   createSlide: () ->
     resize = new Resize
     @view.cj_selectors.tagBox.addClass("hasSlideBox")
@@ -528,14 +584,63 @@ class Action
         # console.log "time to populate"
       )
     else
-  
+  addTagFromPosition:(tagId,action) ->
+    manipBox = (tagId,messageId) =>
+      cjDL = @view.cj_selectors.tagBox.find("#tagDropdown_#{tagId}")
+      cjDL.attr("id","tagDropdown_#{messageId}")
+      cjDL.data("tagid",messageId)
+      cjDT.data("tagid",messageId)
+      cjDT.attr("id","tagLabel_#{messageId}")
+      cjDT.removeClass("tag-#{tagId}").addClass("tag-#{messageId}")
+      cjDT.find("input.checkbox").attr("name","tag[#{messageId}]")
+    cjDT = @view.cj_selectors.tagBox.find("#tagLabel_#{tagId}")
+    @ajax.addTag.data.name = cjDT.find(".tag .name").text()
+    @ajax.addTag.data.description = cjDT.find(".tag .description").text()
+    @ajax.addTag.data.parent_id = "292"
+    @ajax.addTag.data.is_reserved = true
+    for k,v of @instance.positionList
+      if _utils.removePositionTextFromBill(@ajax.addTag.data.name) == v.name
+        if _utils.checkPositionFromBill(@ajax.addTag.data.name) == v.pos
+          manipBox.call(@,cjDT.data("tagid"),v.id)
+          message =
+            id: v.id
+          response = {"cjDT": cjDT,"message":message}
+          @cb(response)
+    @addTag(tagId,action, (message) =>
+      # change tag onces completed
+      # if message == "ERROR: `tag_id` parameter is required to identify the tag to apply."
+      #   cjDT.prop("checked",false)
+      #   console.log message
+      #   return false
+      if message == "DB Error: already exists"
+        cjDT.prop("checked",false)
+        if @cb?
+          response = {"cjDT": cjDT,"message":message}
+          @cb(response)
+      manipBox.call(@,tagId,message.id)
+      if @cb?
+        response = {"cjDT": cjDT,"message":message}
+        @cb(response)
+    )
+
   findGutterSpace: () ->
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
     return outerWidth-innerWidth
 
   moveTag: () ->
-  addTag: () ->
+  addTag: (tagId,action,locCb) ->
+    if @ajax.addTag.data.name == ""
+      @cb(false) if @cb?
+      return false
+    request = cj.when(cj.ajax(@ajax.addTag))
+    request.done((data) =>
+        if locCb?
+          locCb(data.message)
+        else if @cb?
+          @cb(data.message)
+      )
+    return @
   removeTag: () ->
   mergeTag: () ->
   updateTag: () ->
@@ -550,17 +655,17 @@ class Buttons
   convertTag: "<li class='convertTag' title='Convert Keyword' data-do='convert'></li>"
   keywords: ["removeTag","updateTag","mergeTag","convertTag"]
   issuecodes: ["addTag","removeTag","updateTag","moveTag","mergeTag"]
-  constructor: (@view) ->
+  constructor: (@view,finder="") ->
     if @view.settings.tagging
       @removeFCB()
-      @createTaggingCheckboxes()
+      @createTaggingCheckboxes(finder)
     if @view.settings.edit
       @removeTaggingCheckboxes()
       @createFCB()
 
-  createTaggingCheckboxes: () ->
+  createTaggingCheckboxes: (finder) ->
     a = @
-    @view.cj_selectors.tagBox.find("dt .tag .name").before( ->
+    @view.cj_selectors.tagBox.find("#{finder} dt .tag .name").before( ->
       if cj(@).siblings(".fCB").length == 0
         a.createButtons(cj(@).parent().parent().data("tagid"))
     )
@@ -708,8 +813,10 @@ class Autocomplete
         cjac.css("color","#000")
         @initHint = false
     )
-    cjac.on "keydown",((event) =>
-      @filterKeydownEvents(event,searchmonger,cjac)
+    debounced = bbUtils.debounce(@filterKeydownEvents,500)
+    a = @
+    cjac.on "keydown",((event) ->
+      debounced(a,event,searchmonger,cjac)
     )
     cjac.on "keyup", ((event) =>
       keyCode = bbUtils.keyCode(event)
@@ -729,10 +836,12 @@ class Autocomplete
           cjac.css("color","#000")
     )
   initHint = true
+    
   hintText: (cjac,params) ->
     cjac.val(params.hintText)
     cjac.css("color","#999")
-  filterKeydownEvents: (event, searchmonger, cjac) ->
+
+  filterKeydownEvents: (obj, event, searchmonger, cjac) ->
     keyCode = bbUtils.keyCode(event)
     # look at context first.
     # space & enter add tags to list
@@ -745,9 +854,10 @@ class Autocomplete
         # return @moveDropdown(keyCode.type)
       when "letters","delete","math","punctuation","number"
         if keyCode.type != "delete" then name = keyCode.name  else name = ""
-        return @execSearch(event,searchmonger,cjac,name)
+        return obj.execSearch(event,searchmonger,cjac)
       else
         return false
+    
 
   buildPositions: (list,term,hits) ->
     if @positionPagesLeft > 1 
@@ -769,25 +879,16 @@ class Autocomplete
               @buildPositions()
           )
       )
+
   addPositionLoader: () ->
     "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>"
-  execSearch: (event,searchmonger,cjac,lastLetter) ->
-    term = cjac.val() + lastLetter
+  execSearch: (event,searchmonger,cjac) ->
+    term = cjac.val()
     if term.length >= 3
       @view.shouldBeFiltered = true
-      searchmonger.exec(event, (terms) =>
+      @doOpenLegQuery()
+      searchmonger.nExec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
-          openLeg = new OpenLeg
-          openLeg.query({"term":terms.term.toLowerCase()}, (results) =>
-            poses = @addPositionsToTags(results.results)
-            filteredList = {292: poses}
-            @getNextPositionRound(results)
-            @view.writeFilteredList(filteredList,terms.term.toLowerCase(),{292: (results.seeXmore)})
-            @buildPositions()
-            @openLegQueryDone = true
-            if @view.cj_selectors.tagBox.hasClass("dropdown")
-              @view.toggleDropdown(true)
-          )
           tags = @sortSearchedTags(terms.tags)
           hits = @separateHits(tags)
           hcounts = 0
@@ -798,11 +899,35 @@ class Autocomplete
             foundTags.push(parseFloat(k))
           filteredList = @view.buildFilteredList(tags)
           @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
-
           @localQueryDone = true
-
       )
-
+  doOpenLegQuery:() ->
+    openLeg = new OpenLeg
+    terms = cj("#JSTree-ac").val()
+    openLeg.query({"term":terms}, (results) =>
+        # console.log "exec: term: #{terms} #{new Date().getSeconds()}.#{new Date().getMilliseconds()}"
+        poses = @addPositionsToTags(results.results)
+        filteredList = {292: poses}
+        @getNextPositionRound(results)
+        if results.seeXmore == 0
+          hitCount = (results.results.length*3)
+        else
+          hitCount = results.seeXmore
+        @view.writeFilteredList(filteredList,terms.toLowerCase(),{292: (hitCount)})
+        @buildPositions()
+        @openLegQueryDone = true
+        if @view.cj_selectors.tagBox.hasClass("dropdown")
+          @view.toggleDropdown(true)
+        )
+    # console.log "call: term: #{terms} #{new Date().getSeconds()}.#{new Date().getMilliseconds()}"
+    
+    # @queryPending.push "#{terms}"
+    # if @queryPending.length == 1
+    #   bbUtils.throttle.call(@,a,1000)
+    # else
+    #   bbUtils.throttle.call(@,a,1000*@queryPending.length)
+    # console.log @queryPending
+  queryPending: []
   separateHits: (terms, results) ->
     hits = {}
     for k, v of terms
@@ -822,17 +947,37 @@ class Autocomplete
 
   addPositionsToTags: (positions) ->
     format = []
+    positionList = @instance.positionList
+        # for storedPos in a.instance.positionList
+        #   console.log storedPos
+        #   if storedPos.name == billno && storedPos.pos == position
+        #     action.tagId = storedPos.id
+        #     toggleClass.call(@,cjDT)
     for k,o of positions
       # check if position has id, if not. arbitrarily assign one?
       forpos =
         name: o.forname
         id: "#{@positionIdNumber+1}"
+        position: "for"
       agipos=
         name: o.againstname
         id: "#{@positionIdNumber+2}"
+        position: "against"
       neupos=
         name: o.noname
         id: "#{@positionIdNumber+3}"
+        position: "neutral"
+      for k,v of @instance.positionList
+        if _utils.removePositionTextFromBill(forpos.name) == v.name
+          if _utils.checkPositionFromBill(forpos.name) == v.pos
+              forpos.id = v.id
+        if _utils.removePositionTextFromBill(agipos.name) == v.name
+          if _utils.checkPositionFromBill(agipos.name) == v.pos
+              agipos.id = v.id
+        if _utils.removePositionTextFromBill(neupos.name) == v.name
+          if _utils.checkPositionFromBill(neupos.name) == v.pos
+              neupos.id = v.id
+      forpos.billNo = agipos.billNo = neupos.billNo = o.billNo
       forpos.type = agipos.type = neupos.type = "292"
       forpos.description = agipos.description = neupos.description = o.description
       forpos.children = agipos.children = neupos.children = false
@@ -975,6 +1120,14 @@ class Node
     @children = node.children
     @name = node.name
     @nameLength = ""
+    @billNo = node.billNo
+    if node.type == 292
+      @billNo ?= node.name
+      @name = node.posName
+    @billNo ?= ""
+    @position = node.position
+    @position ?= node.pos
+    @position ?= ""
     if @name.length > _descWidths.normal
       levelModifier = 0
       if node.level > 2
@@ -1011,7 +1164,11 @@ class Node
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
-    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}' data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' data-parentid='#{node.parent}'>"
+    html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}'
+             data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' 
+             data-parentid='#{node.parent}' data-billno='#{@billNo}'
+             data-position='#{@position}'
+            >"
     html += "
               <div class='tag'>
                 <div class='ddControl #{treeButton}'></div>
