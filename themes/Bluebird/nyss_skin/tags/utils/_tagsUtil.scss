@@ -83,35 +83,36 @@
 
 @mixin iterator {
   @for $i from 1 through 10 {
-    dl.#{$levelClassSlug}-#{$i}
-    {
-      // width: 100% - (2*$i);
-      @if $i != 0
-      {
-        margin-left: 2%;
-      }
+    dl.#{$levelClassSlug}-#{$i} {
+    //   // width: 100% - (2*$i);
+    //   @if $i != 0
+    //   {
+    //     margin-left: 2%;
+    //   }
       @if $i > 0
       {
         display:none;
       }
-      
     }
     dt.#{$levelClassSlug}-#{$i}
     {
-      @if $i == 0
-      {
-        width: 485px;
-        margin: 10px 10px 0;
-        .treeButton {
-          display:none;
-        }
-        .tag {
-          font-size: 14px;
-          font-weight:bold;
-        }
-      }
       @if $i != 0 {
+        padding-left: (2%*($i - 1));
       }
+      // @if $i == 0
+      // {
+      //   width: 485px;
+      //   margin: 10px 10px 0;
+      //   .treeButton {
+      //     display:none;
+      //   }
+      //   .tag {
+      //     font-size: 14px;
+      //     font-weight:bold;
+      //   }
+      // }
+      // @if $i != 0 {
+      // }
     }
   }
 }

@@ -4,15 +4,15 @@
     height:100%;
   }
   // &.top-291-active .top-291{
-  &.top-291-active{
+  &.top-291-active:not(.dropdown){
     @include addColors($issueCodesColor,.3);
   }
   // &.top-296-active .top-296{
-  &.top-296-active{
+  &.top-296-active:not(.dropdown){
     @include addColors($keywordsColor,.3);
   }
   // &.top-292-acti/ve .top-292{
-  &.top-292-active {
+  &.top-292-active:not(.dropdown) {
     @include addColors($positionsColor,.5);
   }
   overflow-y:scroll;
@@ -38,6 +38,15 @@
       background-color:white;
       height: 150px;
     }
+    .top-291{
+      @include addColors($issueCodesColor,.3);
+    }
+    .top-296{
+      @include addColors($keywordsColor,.3);
+    }
+    .top-292{
+      @include addColors($positionsColor,.5);
+    }
     @include round-bottom-corners(3px);
   }
   &.hasSlideBox {
@@ -52,9 +61,10 @@
 
 }
 .JSTree-overlay {
-  background-color: #fff;
+  // background-color: #fff;
+  @include tag-lightness($issueCodesColor,.3);
   height: 100%;
-  position: absolute;
+  position: relative;
   width: 100%;
   z-index: -1;
   top: 0;
