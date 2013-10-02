@@ -36,7 +36,9 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
 
   protected $_latitude = NULL;
   protected $_longitude = NULL;
-  protected $_distance = NULL; function __construct(&$formValues) {
+  protected $_distance = NULL;
+
+  function __construct(&$formValues) {
     parent::__construct($formValues);
 
     // unset search profile and other search params if set
@@ -154,15 +156,15 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
      */
     $form->assign('elements', array(
       'distance',
-        'prox_distance_unit',
-        'street_address',
-        'city',
-        'postal_code',
-        'country_id',
-        'state_province_id',
-        'group',
-        'tag',
-      ));
+      'prox_distance_unit',
+      'street_address',
+      'city',
+      'postal_code',
+      'country_id',
+      'state_province_id',
+      'group',
+      'tag',
+    ));
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
@@ -209,6 +211,7 @@ LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id AND cgc.s
 
     return $f;
   }
+
   function where($includeContactIDs = FALSE) {
     $params = array();
     $clause = array();
@@ -229,15 +232,15 @@ AND t.tag_id = {$this->_tag}
 AND cgc.group_id = {$this->_group}
  ";
     }
-		
+
     //NYSS
     if (! empty($this->_formValues['contact_type']) ) {
       $where .= " AND contact_a.contact_type LIKE '%{$this->_formValues['contact_type']}%'";
     }
-		
-	//NYSS standard clauses
+
+    //NYSS standard clauses
     $where .= " AND is_deleted = 0 AND is_deceased = 0 ";
-    
+
     return $this->whereClause($where, $params);
   }
 
@@ -265,7 +268,7 @@ AND cgc.group_id = {$this->_group}
 
   //NYSS 4899
   function alterRow( &$row ) {
-	require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
+    require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
     $row['contact_type' ] = 
       CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
         false,
@@ -282,4 +285,3 @@ AND cgc.group_id = {$this->_group}
     }
   }
 }
-
