@@ -824,6 +824,8 @@ class Autocomplete
         @view.removeTabCounts()
         @view.shouldBeFiltered = false
         @view.currentWrittenTerm = ""
+        @view.cj_selectors.tagBox.find(".top-292.tagContainer").infiniscroll("unbind", cj(".JSTree"))
+        @view.cj_selectors.tagBox.find(".top-292.tagContainer").remove("dt.loadingGif")
         if @view.cj_selectors.tagBox.hasClass("dropdown")
           @view.toggleDropdown()
           @view.rebuildInitialTree()
@@ -870,14 +872,15 @@ class Autocomplete
             term: @positionSearchTerm
             page: @positionPage
           @cjTagBox.find(".top-292.tagContainer").append(@addPositionLoader())
-          openLeg.query(nextPage, (results) =>
-              poses = @addPositionsToTags(results.results)
-              filteredList = {292: poses}
-              @getNextPositionRound(results)
-              new Tree(poses,"292",false,cj(".JSTree .top-292"))
-              @openLegQueryDone = true
-              @buildPositions()
-          )
+          if @cjTagBox.find(".top-292.tagContainer").hasClass('active')
+            openLeg.query(nextPage, (results) =>
+                poses = @addPositionsToTags(results.results)
+                filteredList = {292: poses}
+                @getNextPositionRound(results)
+                new Tree(poses,"292",false,cj(".JSTree .top-292"))
+                @openLegQueryDone = true
+                @buildPositions()
+            )
       )
 
   addPositionLoader: () ->

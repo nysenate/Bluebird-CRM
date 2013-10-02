@@ -1271,6 +1271,8 @@ Autocomplete = (function() {
         _this.view.removeTabCounts();
         _this.view.shouldBeFiltered = false;
         _this.view.currentWrittenTerm = "";
+        _this.view.cj_selectors.tagBox.find(".top-292.tagContainer").infiniscroll("unbind", cj(".JSTree"));
+        _this.view.cj_selectors.tagBox.find(".top-292.tagContainer").remove("dt.loadingGif");
         if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
           _this.view.toggleDropdown();
           _this.view.rebuildInitialTree();
@@ -1332,17 +1334,19 @@ Autocomplete = (function() {
           page: _this.positionPage
         };
         _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
-        return openLeg.query(nextPage, function(results) {
-          var filteredList, poses;
-          poses = _this.addPositionsToTags(results.results);
-          filteredList = {
-            292: poses
-          };
-          _this.getNextPositionRound(results);
-          new Tree(poses, "292", false, cj(".JSTree .top-292"));
-          _this.openLegQueryDone = true;
-          return _this.buildPositions();
-        });
+        if (_this.cjTagBox.find(".top-292.tagContainer").hasClass('active')) {
+          return openLeg.query(nextPage, function(results) {
+            var filteredList, poses;
+            poses = _this.addPositionsToTags(results.results);
+            filteredList = {
+              292: poses
+            };
+            _this.getNextPositionRound(results);
+            new Tree(poses, "292", false, cj(".JSTree .top-292"));
+            _this.openLegQueryDone = true;
+            return _this.buildPositions();
+          });
+        }
       });
     }
   };
