@@ -100,13 +100,14 @@ function run()
   echo "\nbegin processing dedupeSubRecords.php...\n\n";
 
   foreach ( $types as $type => $details ) {
+    $tmpTbl = 'nyss_temp_dedupe_'.$type;
     //get order and group bys
     $orderByList = implode(', ', $details['orderBys']);
     $groupByList = implode(', ', $details['groupBys']);
 
     //remove duplicate records; prefer removing record with larger id (newer)
-    CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS tmpDedupe_{$type};");
-    $sql = "CREATE TABLE tmpDedupe_{$type} ( id INT(10), PRIMARY KEY (id) )
+    CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS $tmpTbl;");
+    $sql = "CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
             SELECT id
             FROM (
               SELECT *
@@ -116,11 +117,11 @@ function run()
             HAVING count(id) > 1;";
     CRM_Core_DAO::executeQuery($sql);
 
-    $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM tmpDedupe_{$type}");
+    $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM $tmpTbl");
 
     if ( $optDry ) {
       CRM_Core_DAO::executeQuery('SET group_concat_max_len = 100000');
-      $sql = "SELECT GROUP_CONCAT(id) FROM tmpDedupe_{$type}";
+      $sql = "SELECT GROUP_CONCAT(id) FROM $tmpTbl";
       $recs = CRM_Core_DAO::singleValueQuery($sql);
       if ( $recs ) {
         echo "The following {$count} {$type} records would be removed:\n{$recs}\n\n";
@@ -130,10 +131,12 @@ function run()
       echo "Removing {$count} duplicate {$type} records from {$optlist['site']}\n";
       $sql = "
         DELETE FROM civicrm_{$type}
-        WHERE id IN ( SELECT id FROM tmpDedupe_{$type} );
+        WHERE id IN ( SELECT id FROM $tmpTbl );
       ";
       CRM_Core_DAO::executeQuery($sql);
     }
+
+    CRM_Core_DAO::executeQuery("DROP TABLE $tmpTbl;");
   }
 
   $eTime = microtime(true);

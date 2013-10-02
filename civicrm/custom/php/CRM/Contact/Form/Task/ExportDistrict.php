@@ -37,11 +37,14 @@
 require_once 'CRM/Contact/Form/Task.php';
 require_once 'CRM/Core/BAO/EntityTag.php';
 
+define('TEMP_TABLE_PREFIX', 'nyss_temp_');
+
+
 /**
  * This class provides the functionality to export large data sets for print production.
  */
-class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
-
+class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
+{
   /**
    * @var string
    */
@@ -60,8 +63,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
    * @access public
    * @return void
    */
-  function buildQuickForm( ) {
-
+  function buildQuickForm( )
+  {
     CRM_Utils_System::setTitle( ts('Export District for Merge/Purge') );
 
     require_once 'CRM/Core/Permission.php';
@@ -101,7 +104,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
     $defaults['locType'] = 0;
     $this->setDefaults($defaults);
-  }
+  } // buildQuickForm()
+
 
   /**
    * process the form after the input has been submitted and validated
@@ -109,8 +113,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
    * @access public
    * @return None
    */
-  public function postProcess() {
-
+  public function postProcess()
+  {
     //get form values
     $params = $this->controller->exportValues( $this->_name );
     $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
@@ -140,6 +144,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
     //generate random number for export and tables
     $rnd = mt_rand(1,9999999999999999);
+    $tmpExport = TEMP_TABLE_PREFIX."export_$rnd";
 
     //CRM_Core_Error::debug('this',$this);
     //CRM_Core_Error::debug('this->_contactIds',$this->_contactIds);exit();
@@ -148,14 +153,14 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     $ids = implode("),(",$this->_contactIds);
     $ids = "($ids)";
 
-    $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key) ENGINE=myisam;";
+    $sql = "CREATE TABLE $tmpExport (id int not null primary key) ENGINE=myisam;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
+    $sql = "INSERT INTO $tmpExport VALUES $ids;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     if ( $excludeGroups ) {
-      excludeGroupContacts( "tmpExport$rnd", $excludeGroups );
+      excludeGroupContacts( $tmpExport, $excludeGroups );
     }
 
     //4874
@@ -185,7 +190,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     }
 
     $sql .= " FROM civicrm_contact c ";
-    $sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
+    $sql .= " INNER JOIN $tmpExport t on t.id=c.id ";
     $sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND $addressClause ";
     $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
     $sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
@@ -278,10 +283,10 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     //exit;
 
     //final count
-    $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM tmpExport$rnd;");
+    $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM $tmpExport;");
 
     //get rid of helper table
-    $sql = "DROP TABLE tmpExport$rnd;";
+    $sql = "DROP TABLE $tmpExport;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //get rid of log table
@@ -306,11 +311,14 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     }
 
     CRM_Core_Session::setStatus( $status );
-  } //end postProcess
+  } // postProcess()
 } //end class
 
-function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
+
+function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"',
+                   $mysql_null = false, $blank_as_null = false)
+{
   $delimiter_esc = preg_quote($delimiter, '/');
   $enclosure_esc = preg_quote($enclosure, '/');
 
@@ -326,12 +334,14 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
     ) : $field;
   }
   fwrite($fh, join($delimiter, $output) . "\n");
-}
+} // fputcsv2()
+
 
 /*
  * retrieve option values for a given group
  */
-function getOptions($strGroup) {
+function getOptions($strGroup)
+{
   $dao = CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';",
     CRM_Core_DAO::$_nullArray);
   $dao->fetch();
@@ -350,11 +360,13 @@ function getOptions($strGroup) {
   return $options;
 } // getOptions()
 
+
 /*
  * retrieve id and abbreviation for state/provinces
  * return array of values
  */
-function getStates() {
+function getStates()
+{
   $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province",
     CRM_Core_DAO::$_nullArray);
 
@@ -366,13 +378,15 @@ function getStates() {
   return $options;
 } // getStates()
 
+
 /*
  * create table with only the most recent log entry for each contact
  */
-function createLogTable( $rnd ) {
-  $tblIDs       = "tmpExport$rnd";
-  $tblLog       = "tmpLog$rnd";
-  $tblLogDedupe = "tmpLogDedupe$rnd";
+function createLogTable( $rnd )
+{
+  $tblIDs       = TEMP_TABLE_PREFIX."export_$rnd";
+  $tblLog       = TEMP_TABLE_PREFIX."log_$rnd";
+  $tblLogDedupe = TEMP_TABLE_PREFIX."log_dedupe_$rnd";
 
   $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
   $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
@@ -439,11 +453,13 @@ function createLogTable( $rnd ) {
   //exit();
 
   return $tblLogDedupe;
-} //createLogTable
+} // createLogTable()
 
-function buildTouched( $rnd ) {
-  $tblIDs = "tmpExport$rnd";
-  $tblTouched = "tmpTouched$rnd";
+
+function buildTouched( $rnd )
+{
+  $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
+  $tblTouched = TEMP_TABLE_PREFIX."touched_$rnd";
 
   $sql = "CREATE TABLE $tblTouched ( cid int not null, untouched int, privacy int, INDEX (cid) ) ENGINE=myisam;";
   CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
@@ -504,13 +520,15 @@ function buildTouched( $rnd ) {
   CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
   return $tblTouched;
-} //buildTouched
+} // buildTouched()
+
 
 /*
  * given one or more groups passed from the form,
  * remove contacts who are in those groups from the export table
  */
-function excludeGroupContacts( $tbl, $groups ) {
+function excludeGroupContacts( $tbl, $groups )
+{
   require_once 'CRM/Contact/BAO/Group.php';
 
   //get group contacts
@@ -529,9 +547,11 @@ function excludeGroupContacts( $tbl, $groups ) {
   CRM_Core_DAO::executeQuery($sql);
 
   return;
-}
+} // excludeGroupContacts()
 
-function _checkEmail($cid) {
+
+function _checkEmail($cid)
+{
   $sql = "
     SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
     FROM civicrm_email
@@ -541,9 +561,11 @@ function _checkEmail($cid) {
   ";
   $exists = CRM_Core_DAO::singleValueQuery($sql);
   return $exists;
-}//_checkEmail
+} // _checkEmail()
 
-function _checkNotes($cid) {
+
+function _checkNotes($cid)
+{
   $sql = "
     SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
     FROM civicrm_note
@@ -554,9 +576,11 @@ function _checkNotes($cid) {
   ";
   $exists = CRM_Core_DAO::singleValueQuery($sql);
   return $exists;
-}//_checkNotes
+} // _checkNotes()
 
-function _checkActivities($cid) {
+
+function _checkActivities($cid)
+{
   //exclude bulk email activities
   $sql = "
     SELECT CASE WHEN count(at.id) > 0 THEN 0 ELSE 1 END
@@ -569,9 +593,11 @@ function _checkActivities($cid) {
   ";
   $exists = CRM_Core_DAO::singleValueQuery($sql);
   return $exists;
-}//_checkActivities
+} // _checkActivities()
 
-function _checkCases($cid) {
+
+function _checkCases($cid)
+{
   $sql = "
     SELECT CASE WHEN count(cc.id) > 0 THEN 0 ELSE 1 END
     FROM civicrm_case_contact cc
@@ -582,9 +608,11 @@ function _checkCases($cid) {
   ";
   $exists = CRM_Core_DAO::singleValueQuery($sql);
   return $exists;
-}//_checkCases
+} // _checkCases()
 
-function _checkPrivacy($cid) {
+
+function _checkPrivacy($cid)
+{
   $sql = "
     SELECT do_not_phone, do_not_mail, do_not_email, is_opt_out, on_hold
     FROM civicrm_contact c
@@ -602,4 +630,4 @@ function _checkPrivacy($cid) {
     }
   }
   return 0;
-}//_checkPrivacy
+} // _checkPrivacy()
