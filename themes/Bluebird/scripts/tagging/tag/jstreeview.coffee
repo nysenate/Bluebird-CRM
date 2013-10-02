@@ -118,7 +118,11 @@ class View
     @formatPageElements()
     @createSelectors()
     tagBox = new Resize
-    @setDescWidths()
+    if tagBox?
+      if tagBox.height == 0
+        @setDescWidths(false,undefined)
+      else
+        @setDescWidths()
     if @settings.tall
       if tagBox?
         if tagBox.height > 0  
@@ -131,23 +135,28 @@ class View
         @addClassesToElement(height)
     else
       @buildDropdown()
-  setDescWidths: () ->
-    if @settings.tall
-      if @settings.wide
+  setDescWidths: (tall,wide) ->
+    if !tall?
+      tall = @settings.tall
+    if !wide?
+      wide = @settings.wide
+    # changes the maximum text with in menus
+    if tall
+      if wide
         _descWidths.normal = 75
         _descWidths.long = 150
       else
         _descWidths.normal = 38
         _descWidths.long = 38
     else
-      if @settings.wide
-        _descWidths.normal = 73
-        _descWidths.long = 145
+      if wide
+        _descWidths.normal = 70
+        _descWidths.long = 140
       else
         _descWidths.normal = 38
         _descWidths.long = 38
   buildDropdown: () ->
-    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div>"
+    @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div><div class='JSTree-overlay'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
@@ -282,6 +291,12 @@ class View
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(currentTree,true)}").addClass("active")
       @cj_selectors.tagBox.find(".top-#{currentTree}").toggle().addClass("active")
       @cj_selectors.tagBox.addClass("top-#{currentTree}-active")
+      @setOverlay()
+  setOverlay:() ->
+    if @cj_selectors.tagBox.hasClass("dropdown")
+      cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
+      cjOverlay.height(@cj_selectors.tagBox.height())
+      cjOverlay.width(@cj_selectors.tagBox.width())
   setActiveTree: (id) ->
     tabName = @getTabNameFromId(id,true)
     @cj_menuSelectors.tabs.find("div").removeClass("active")
@@ -444,7 +459,8 @@ class View
 
   toggleTagBox: () ->
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
-
+  # addOverlay: () ->
+    # @cj_selectors.tagBox.after("")
   toggleDropdown: (oc = false) ->
     # this turns on/off the dropdown based on the tagging/edit functionality
     if oc
@@ -459,6 +475,7 @@ class View
           )
         @cj_selectors.container.css("position","static")
         @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+        @setOverlay()
       else
         boxHeight = new Resize()
         @cj_selectors.container.css("position","relative")
@@ -486,6 +503,7 @@ class View
       else
         cj(container).height(propHeight)
     )
+
   
   getRecTagHeight:(container,heightTotal = [],already) ->
     if heightTotal.length > 8
@@ -539,7 +557,7 @@ class View
         a.createAction(cjDT.data("tagid"),"addTagFromPosition", (response)->
             newDT = response.cjDT
             if response == false
-              console.log "response false"
+              # console.log "response false"
             else
               action.tagId = response["message"]["id"]
               toggleClass.call(newDT.find("input.checkbox")[0],newDT)
@@ -779,10 +797,14 @@ class Resize
       if @tagBox.height() < 15
         @tagBox.height(0)
         @tagBox.addClass("dropdown")
+        @view.settings.tall = false
       if !@tagBox.hasClass("dropdown")
         bbUtils.localStorage("tagBoxHeight", {height:@tagBox.height()})
+        @view.settings.tall = true
       else
         bbUtils.localStorage("tagBoxHeight", {height:0})
+        @view.settings.tall = false
+      @view.setDescWidths()
     )
     @view.cj_tokenHolder.resize.on("mousedown", (ev,tagBox) =>
       if @tagBox.hasClass("dropdown")
@@ -883,14 +905,24 @@ class Autocomplete
                 poses = @addPositionsToTags(results.results)
                 filteredList = {292: poses}
                 @getNextPositionRound(results)
-                new Tree(poses,"292",false,cj(".JSTree .top-292"))
+                new Tree(poses,"292",false,cj(".JSTree .top-292"),nextPage)
+                # " #{k}-#{v} "
+                addButtonsTo = ""
+                for k,v of nextPage
+                  addButtonsTo += ".#{k}-#{v}"
+                new Buttons(@view,addButtonsTo)
                 @openLegQueryDone = true
                 @buildPositions()
             )
       )
 
-  addPositionLoader: () ->
-    "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>"
+  addPositionLoader: (nextPage = {}) ->
+    "<dt class='loadingGif' data-parentid='292'>
+      <div class='tag'>
+        <div class='ddControl'></div>
+        <div class='loadingText'>Loading...</div>
+      </div>
+    </dt>"
   execSearch: (event,searchmonger,cjac) ->
     term = cjac.val()
     if term.length >= 3
@@ -1025,7 +1057,7 @@ class Tree
   domList: {}
   nodeList: {}
   tabName: ""
-  constructor: (@tagList, @tagId, @filter = false, @location) ->
+  constructor: (@tagList, @tagId, @filter = false, @location, @listClasses) ->
     @buildTree()
     return @
   buildTree: () ->
@@ -1033,7 +1065,17 @@ class Tree
     if @location?
       @append = true
       @domList = cj()
-      @domList = @domList.add("<div></div>")
+      if @listClasses?
+        # gives the ability to target specific blocks of position responses
+        # nextPage =
+          # term: @positionSearchTerm
+          # page: @positionPage
+        dataNames = ""
+        for k,v of @listClasses
+          dataNames += " #{k}-#{v} "
+        @domList = @domList.add("<div class='#{dataNames}'></div>")
+      else
+        @domList = @domList.add("<div></div>")
     else
       @domList = cj()
       @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
@@ -1140,7 +1182,7 @@ class Node
     @position = node.position
     @position ?= node.pos
     @position ?= ""
-    if @name.length > _descWidths.normal
+    if @name.length >= _descWidths.normal
       levelModifier = 0
       if node.level > 2
         levelModifier = node.level*5

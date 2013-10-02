@@ -11,7 +11,6 @@
 /*pagestructure*/
 #JSTree-container.BBTreeContainer, #BBTreeContainer {
   width: 522px;
-  background-color: #fff;
   overflow-x: hidden;
   cursor: default;
   position: relative;
@@ -399,6 +398,12 @@
           background-color: rgba(175, 232, 239, 0.95); }
         #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt.active, #BBTreeContainer .BBTree.dropdown .top-292 dt.active {
           background-color: rgba(175, 232, 239, 0.95); }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown.top-292-active, #BBTreeContainer .BBTree.dropdown.top-292-active {
+        background-color: rgba(175, 232, 239, 0.5); }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown.top-291-active, #BBTreeContainer .BBTree.dropdown.top-291-active {
+        background-color: rgba(150, 226, 164, 0.3); }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown.top-296-active, #BBTreeContainer .BBTree.dropdown.top-296-active {
+        background-color: rgba(242, 209, 119, 0.3); }
     #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
       position: relative; }
       #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover {
@@ -425,12 +430,23 @@
     padding-top: 20px;
     font-size: 1.2em; }
   #JSTree-container.BBTreeContainer .JSTree-overlay, #BBTreeContainer .JSTree-overlay {
-    background-color: rgba(150, 226, 164, 0.3);
-    height: 100%;
     position: relative;
+    z-index: 1;
+    background-color: white;
+    border-bottom-left-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    -webkit-border-bottom-right-radius: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    -moz-border-radius-bottomright: 3px;
+    width: 0px;
+    height: 0px; }
+  #JSTree-container.BBTreeContainer .JSTree:not(.dropdown) + .JSTree-overlay, #BBTreeContainer .JSTree:not(.dropdown) + .JSTree-overlay {
+    position: absolute;
     width: 100%;
-    z-index: -1;
-    top: 0; }
+    height: 100%;
+    top: 0px;
+    z-index: -1; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
     background-color: #fff;
     border-bottom-left-radius: 3px;
@@ -446,6 +462,8 @@
       margin: 0 auto; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
         cursor: s-resize; }
+  #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
+    display: none; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {

@@ -378,6 +378,7 @@
               }
               nextSpace += wordPiece.length + 1;
               if (nextSpace >= currentEnd) {
+                nextSpace = currentLastSpace;
                 break;
               }
             }
@@ -806,7 +807,13 @@
       this.formatPageElements();
       this.createSelectors();
       tagBox = new Resize;
-      this.setDescWidths();
+      if (tagBox != null) {
+        if (tagBox.height === 0) {
+          this.setDescWidths(false, void 0);
+        } else {
+          this.setDescWidths();
+        }
+      }
       if (this.settings.tall) {
         if (tagBox != null) {
           if (tagBox.height > 0) {
@@ -824,9 +831,15 @@
       }
     };
 
-    View.prototype.setDescWidths = function() {
-      if (this.settings.tall) {
-        if (this.settings.wide) {
+    View.prototype.setDescWidths = function(tall, wide) {
+      if (tall == null) {
+        tall = this.settings.tall;
+      }
+      if (wide == null) {
+        wide = this.settings.wide;
+      }
+      if (tall) {
+        if (wide) {
           _descWidths.normal = 75;
           return _descWidths.long = 150;
         } else {
@@ -834,9 +847,9 @@
           return _descWidths.long = 38;
         }
       } else {
-        if (this.settings.wide) {
-          _descWidths.normal = 73;
-          return _descWidths.long = 145;
+        if (wide) {
+          _descWidths.normal = 70;
+          return _descWidths.long = 140;
         } else {
           _descWidths.normal = 38;
           return _descWidths.long = 38;
@@ -845,7 +858,7 @@
     };
 
     View.prototype.buildDropdown = function() {
-      this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + " dropdown'></div>");
+      this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + " dropdown'></div><div class='JSTree-overlay'></div>");
       this.cj_selectors.initHolder.prepend(this.menuHtml(this.menuSelectors));
       this.cj_selectors.initHolder.append(this.dataHolderHtml());
       this.cj_selectors.initHolder.append(this.tokenHolderHtml(this.tokenHolder));
@@ -1047,7 +1060,17 @@
         _treeVisibility.currentTree = currentTree;
         this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(currentTree, true))).addClass("active");
         this.cj_selectors.tagBox.find(".top-" + currentTree).toggle().addClass("active");
-        return this.cj_selectors.tagBox.addClass("top-" + currentTree + "-active");
+        this.cj_selectors.tagBox.addClass("top-" + currentTree + "-active");
+        return this.setOverlay();
+      }
+    };
+
+    View.prototype.setOverlay = function() {
+      var cjOverlay;
+      if (this.cj_selectors.tagBox.hasClass("dropdown")) {
+        cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        cjOverlay.height(this.cj_selectors.tagBox.height());
+        return cjOverlay.width(this.cj_selectors.tagBox.width());
       }
     };
 
@@ -1315,7 +1338,8 @@
             });
           }
           this.cj_selectors.container.css("position", "static");
-          return this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+          this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+          return this.setOverlay();
         } else {
           boxHeight = new Resize();
           this.cj_selectors.container.css("position", "relative");
@@ -1438,7 +1462,7 @@
             var newDT;
             newDT = response.cjDT;
             if (response === false) {
-              return console.log("response false");
+
             } else {
               action.tagId = response["message"]["id"];
               return toggleClass.call(newDT.find("input.checkbox")[0], newDT);
@@ -1837,16 +1861,20 @@
         if (_this.tagBox.height() < 15) {
           _this.tagBox.height(0);
           _this.tagBox.addClass("dropdown");
+          _this.view.settings.tall = false;
         }
         if (!_this.tagBox.hasClass("dropdown")) {
-          return bbUtils.localStorage("tagBoxHeight", {
+          bbUtils.localStorage("tagBoxHeight", {
             height: _this.tagBox.height()
           });
+          _this.view.settings.tall = true;
         } else {
-          return bbUtils.localStorage("tagBoxHeight", {
+          bbUtils.localStorage("tagBoxHeight", {
             height: 0
           });
+          _this.view.settings.tall = false;
         }
+        return _this.view.setDescWidths();
       });
       return this.view.cj_tokenHolder.resize.on("mousedown", function(ev, tagBox) {
         if (_this.tagBox.hasClass("dropdown")) {
@@ -1978,13 +2006,19 @@
           _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
           if (_this.cjTagBox.find(".top-292.tagContainer").hasClass('active')) {
             return openLeg.query(nextPage, function(results) {
-              var filteredList, poses;
+              var addButtonsTo, filteredList, k, poses, v;
               poses = _this.addPositionsToTags(results.results);
               filteredList = {
                 292: poses
               };
               _this.getNextPositionRound(results);
-              new Tree(poses, "292", false, cj(".JSTree .top-292"));
+              new Tree(poses, "292", false, cj(".JSTree .top-292"), nextPage);
+              addButtonsTo = "";
+              for (k in nextPage) {
+                v = nextPage[k];
+                addButtonsTo += "." + k + "-" + v;
+              }
+              new Buttons(_this.view, addButtonsTo);
               _this.openLegQueryDone = true;
               return _this.buildPositions();
             });
@@ -1993,8 +2027,11 @@
       }
     };
 
-    Autocomplete.prototype.addPositionLoader = function() {
-      return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
+    Autocomplete.prototype.addPositionLoader = function(nextPage) {
+      if (nextPage == null) {
+        nextPage = {};
+      }
+      return "<dt class='loadingGif' data-parentid='292'>      <div class='tag'>        <div class='ddControl'></div>        <div class='loadingText'>Loading...</div>      </div>    </dt>";
     };
 
     Autocomplete.prototype.execSearch = function(event, searchmonger, cjac) {
@@ -2174,17 +2211,18 @@
 
     Tree.prototype.tabName = "";
 
-    function Tree(tagList, tagId, filter, location) {
+    function Tree(tagList, tagId, filter, location, listClasses) {
       this.tagList = tagList;
       this.tagId = tagId;
       this.filter = filter != null ? filter : false;
       this.location = location;
+      this.listClasses = listClasses;
       this.buildTree();
       return this;
     }
 
     Tree.prototype.buildTree = function() {
-      var filter;
+      var dataNames, filter, k, v, _ref;
       if (this.filter) {
         filter = "filtered";
       } else {
@@ -2193,7 +2231,17 @@
       if (this.location != null) {
         this.append = true;
         this.domList = cj();
-        this.domList = this.domList.add("<div></div>");
+        if (this.listClasses != null) {
+          dataNames = "";
+          _ref = this.listClasses;
+          for (k in _ref) {
+            v = _ref[k];
+            dataNames += " " + k + "-" + v + " ";
+          }
+          this.domList = this.domList.add("<div class='" + dataNames + "'></div>");
+        } else {
+          this.domList = this.domList.add("<div></div>");
+        }
       } else {
         this.domList = cj();
         this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer'></div>");
@@ -2344,7 +2392,7 @@
       if (this.position == null) {
         this.position = "";
       }
-      if (this.name.length > _descWidths.normal) {
+      if (this.name.length >= _descWidths.normal) {
         levelModifier = 0;
         if (node.level > 2) {
           levelModifier = node.level * 5;
