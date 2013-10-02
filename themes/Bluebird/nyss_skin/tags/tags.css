@@ -11,6 +11,7 @@
 /*pagestructure*/
 #JSTree-container.BBTreeContainer, #BBTreeContainer {
   width: 522px;
+  background-color: #fff;
   overflow-x: hidden;
   cursor: default;
   position: relative;
@@ -93,81 +94,91 @@
     height: 400px; }
     #JSTree-container.BBTreeContainer .BBTree .tagContainer, #BBTreeContainer .BBTree .tagContainer {
       height: 100%; }
-    #JSTree-container.BBTreeContainer .BBTree.top-291-active, #BBTreeContainer .BBTree.top-291-active {
+    #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown), #BBTreeContainer .BBTree.top-291-active:not(.dropdown) {
       background-color: rgba(150, 226, 164, 0.3); }
-      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.shaded, #BBTreeContainer .BBTree.top-291-active dt.shaded {
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shaded, #BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shaded {
         background-color: rgba(150, 226, 164, 0.5); }
-      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.shadedChildren, #BBTreeContainer .BBTree.top-291-active dt.shadedChildren {
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shadedChildren, #BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shadedChildren {
         background-color: rgba(150, 226, 164, 0.2);
         -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
-        #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-291-active dt.shadedChildren.shaded {
+        #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.shadedChildren.shaded {
           background-color: rgba(150, 226, 164, 0.5); }
-      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt:hover, #BBTreeContainer .BBTree.top-291-active dt:hover {
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt:hover, #BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt:hover {
         background-color: rgba(150, 226, 164, 0.75); }
-      #JSTree-container.BBTreeContainer .BBTree.top-291-active dt.active, #BBTreeContainer .BBTree.top-291-active dt.active {
+      #JSTree-container.BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.active, #BBTreeContainer .BBTree.top-291-active:not(.dropdown) dt.active {
         background-color: rgba(150, 226, 164, 0.75); }
-    #JSTree-container.BBTreeContainer .BBTree.top-296-active, #BBTreeContainer .BBTree.top-296-active {
+    #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown), #BBTreeContainer .BBTree.top-296-active:not(.dropdown) {
       background-color: rgba(242, 209, 119, 0.3); }
-      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt.shaded, #BBTreeContainer .BBTree.top-296-active dt.shaded {
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shaded, #BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shaded {
         background-color: rgba(242, 209, 119, 0.5); }
-      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt.shadedChildren, #BBTreeContainer .BBTree.top-296-active dt.shadedChildren {
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shadedChildren, #BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shadedChildren {
         background-color: rgba(242, 209, 119, 0.2);
         -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
-        #JSTree-container.BBTreeContainer .BBTree.top-296-active dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-296-active dt.shadedChildren.shaded {
+        #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.shadedChildren.shaded {
           background-color: rgba(242, 209, 119, 0.5); }
-      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt:hover, #BBTreeContainer .BBTree.top-296-active dt:hover {
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt:hover, #BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt:hover {
         background-color: rgba(242, 209, 119, 0.75); }
-      #JSTree-container.BBTreeContainer .BBTree.top-296-active dt.active, #BBTreeContainer .BBTree.top-296-active dt.active {
+      #JSTree-container.BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.active, #BBTreeContainer .BBTree.top-296-active:not(.dropdown) dt.active {
         background-color: rgba(242, 209, 119, 0.75); }
-    #JSTree-container.BBTreeContainer .BBTree.top-292-active, #BBTreeContainer .BBTree.top-292-active {
+    #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown), #BBTreeContainer .BBTree.top-292-active:not(.dropdown) {
       background-color: rgba(175, 232, 239, 0.5); }
-      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt.shaded, #BBTreeContainer .BBTree.top-292-active dt.shaded {
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shaded, #BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shaded {
         background-color: rgba(175, 232, 239, 0.7); }
-      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt.shadedChildren, #BBTreeContainer .BBTree.top-292-active dt.shadedChildren {
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shadedChildren, #BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shadedChildren {
         background-color: rgba(175, 232, 239, 0.4);
         -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
         box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
-        #JSTree-container.BBTreeContainer .BBTree.top-292-active dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-292-active dt.shadedChildren.shaded {
+        #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shadedChildren.shaded, #BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.shadedChildren.shaded {
           background-color: rgba(175, 232, 239, 0.7); }
-      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt:hover, #BBTreeContainer .BBTree.top-292-active dt:hover {
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt:hover, #BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt:hover {
         background-color: rgba(175, 232, 239, 0.95); }
-      #JSTree-container.BBTreeContainer .BBTree.top-292-active dt.active, #BBTreeContainer .BBTree.top-292-active dt.active {
+      #JSTree-container.BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.active, #BBTreeContainer .BBTree.top-292-active:not(.dropdown) dt.active {
         background-color: rgba(175, 232, 239, 0.95); }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-1, #BBTreeContainer .BBTree dl.lv-1 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-1, #BBTreeContainer .BBTree dt.lv-1 {
+      padding-left: 0%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-2, #BBTreeContainer .BBTree dl.lv-2 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-2, #BBTreeContainer .BBTree dt.lv-2 {
+      padding-left: 2%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-3, #BBTreeContainer .BBTree dl.lv-3 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-3, #BBTreeContainer .BBTree dt.lv-3 {
+      padding-left: 4%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-4, #BBTreeContainer .BBTree dl.lv-4 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-4, #BBTreeContainer .BBTree dt.lv-4 {
+      padding-left: 6%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-5, #BBTreeContainer .BBTree dl.lv-5 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-5, #BBTreeContainer .BBTree dt.lv-5 {
+      padding-left: 8%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-6, #BBTreeContainer .BBTree dl.lv-6 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-6, #BBTreeContainer .BBTree dt.lv-6 {
+      padding-left: 10%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-7, #BBTreeContainer .BBTree dl.lv-7 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-7, #BBTreeContainer .BBTree dt.lv-7 {
+      padding-left: 12%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-8, #BBTreeContainer .BBTree dl.lv-8 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-8, #BBTreeContainer .BBTree dt.lv-8 {
+      padding-left: 14%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-9, #BBTreeContainer .BBTree dl.lv-9 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-9, #BBTreeContainer .BBTree dt.lv-9 {
+      padding-left: 16%; }
     #JSTree-container.BBTreeContainer .BBTree dl.lv-10, #BBTreeContainer .BBTree dl.lv-10 {
-      margin-left: 2%;
       display: none; }
+    #JSTree-container.BBTreeContainer .BBTree dt.lv-10, #BBTreeContainer .BBTree dt.lv-10 {
+      padding-left: 18%; }
     #JSTree-container.BBTreeContainer .BBTree dt .tag, #BBTreeContainer .BBTree dt .tag {
       padding: 0px;
       line-height: 20px;
@@ -343,6 +354,51 @@
         z-index: 10;
         background-color: white;
         height: 150px; }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291, #BBTreeContainer .BBTree.dropdown .top-291 {
+        background-color: rgba(150, 226, 164, 0.3); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291 dt.shaded, #BBTreeContainer .BBTree.dropdown .top-291 dt.shaded {
+          background-color: rgba(150, 226, 164, 0.5); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291 dt.shadedChildren, #BBTreeContainer .BBTree.dropdown .top-291 dt.shadedChildren {
+          background-color: rgba(150, 226, 164, 0.2);
+          -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
+          #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291 dt.shadedChildren.shaded, #BBTreeContainer .BBTree.dropdown .top-291 dt.shadedChildren.shaded {
+            background-color: rgba(150, 226, 164, 0.5); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291 dt:hover, #BBTreeContainer .BBTree.dropdown .top-291 dt:hover {
+          background-color: rgba(150, 226, 164, 0.75); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-291 dt.active, #BBTreeContainer .BBTree.dropdown .top-291 dt.active {
+          background-color: rgba(150, 226, 164, 0.75); }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296, #BBTreeContainer .BBTree.dropdown .top-296 {
+        background-color: rgba(242, 209, 119, 0.3); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296 dt.shaded, #BBTreeContainer .BBTree.dropdown .top-296 dt.shaded {
+          background-color: rgba(242, 209, 119, 0.5); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296 dt.shadedChildren, #BBTreeContainer .BBTree.dropdown .top-296 dt.shadedChildren {
+          background-color: rgba(242, 209, 119, 0.2);
+          -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
+          #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296 dt.shadedChildren.shaded, #BBTreeContainer .BBTree.dropdown .top-296 dt.shadedChildren.shaded {
+            background-color: rgba(242, 209, 119, 0.5); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296 dt:hover, #BBTreeContainer .BBTree.dropdown .top-296 dt:hover {
+          background-color: rgba(242, 209, 119, 0.75); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-296 dt.active, #BBTreeContainer .BBTree.dropdown .top-296 dt.active {
+          background-color: rgba(242, 209, 119, 0.75); }
+      #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292, #BBTreeContainer .BBTree.dropdown .top-292 {
+        background-color: rgba(175, 232, 239, 0.5); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt.shaded, #BBTreeContainer .BBTree.dropdown .top-292 dt.shaded {
+          background-color: rgba(175, 232, 239, 0.7); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt.shadedChildren, #BBTreeContainer .BBTree.dropdown .top-292 dt.shadedChildren {
+          background-color: rgba(175, 232, 239, 0.4);
+          -webkit-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          -moz-box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15);
+          box-shadow: inset 3px -1px 6px rgba(0, 0, 0, 0.15); }
+          #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt.shadedChildren.shaded, #BBTreeContainer .BBTree.dropdown .top-292 dt.shadedChildren.shaded {
+            background-color: rgba(175, 232, 239, 0.7); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt:hover, #BBTreeContainer .BBTree.dropdown .top-292 dt:hover {
+          background-color: rgba(175, 232, 239, 0.95); }
+        #JSTree-container.BBTreeContainer .BBTree.dropdown .top-292 dt.active, #BBTreeContainer .BBTree.dropdown .top-292 dt.active {
+          background-color: rgba(175, 232, 239, 0.95); }
     #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
       position: relative; }
       #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover {
@@ -369,9 +425,9 @@
     padding-top: 20px;
     font-size: 1.2em; }
   #JSTree-container.BBTreeContainer .JSTree-overlay, #BBTreeContainer .JSTree-overlay {
-    background-color: #fff;
+    background-color: rgba(150, 226, 164, 0.3);
     height: 100%;
-    position: absolute;
+    position: relative;
     width: 100%;
     z-index: -1;
     top: 0; }
