@@ -522,7 +522,7 @@ View = (function() {
   View.prototype.writeEmptyList = function(term, tree) {};
 
   View.prototype.writeFilteredList = function(list, term, hits) {
-    var a, activeTree, b, cjDTs, iO, k, latestQuery, t, v, _ref,
+    var a, activeTree, b, cjDTs, delay, iO, k, latestQuery, t, v, _ref,
       _this = this;
     if (hits == null) {
       hits = {};
@@ -579,7 +579,16 @@ View = (function() {
     }
     new Buttons(this);
     if (this.settings.tagging) {
-      this.applyTaggedKWIC();
+      if (this.entityList != null) {
+        this.applyTaggedKWIC();
+      } else {
+        delay = function(ms, func) {
+          return setTimeout(func, ms);
+        };
+        delay(500, function() {
+          return _this.applyTaggedKWIC();
+        });
+      }
     }
     return this.setActiveTree(this.getIdFromTabName(activeTree));
   };
@@ -1627,11 +1636,10 @@ _treeUtils = {
       return _treeUtils.dropdownItem(cj(this).parent().parent());
     });
   },
-  dropdownItem: function(tagLabel, search) {
-    var tagid,
-      _this = this;
-    if (search == null) {
-      search = false;
+  dropdownItem: function(tagLabel, filter) {
+    var tagid;
+    if (filter == null) {
+      filter = false;
     }
     tagid = tagLabel.data('tagid');
     if (tagLabel.length > 0) {
@@ -1641,15 +1649,14 @@ _treeUtils = {
         _openTags[tagid] = true;
       }
     }
-    tagLabel.siblings("dl#tagDropdown_" + tagid).slideToggle("200", function() {
-      return tagLabel.toggleClass("open");
-    });
-    if (!search) {
+    tagLabel.siblings("#tagDropdown_" + tagid).slideToggle("200");
+    tagLabel.toggleClass("open");
+    if (!filter) {
       return bbUtils.localStorage("tagViewSettings", _openTags);
     }
   },
   readDropdownsFromLocal: function(cjTree) {
-    var bool, tag, toPass, _ref;
+    var bool, tag, _ref;
     if (parseInt(cjTree) === 291) {
       if (bbUtils.localStorage("tagViewSettings")) {
         _openTags = bbUtils.localStorage("tagViewSettings");
@@ -1657,8 +1664,7 @@ _treeUtils = {
         for (tag in _ref) {
           bool = _ref[tag];
           if (bool) {
-            toPass = cj("dt.tag-" + tag);
-            this.dropdownItem(toPass);
+            this.dropdownItem(cj("#tagLabel_" + tag));
           } else {
             delete _openTags[tag];
           }

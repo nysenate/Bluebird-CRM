@@ -376,7 +376,13 @@ class View
               cjDTs.find(".fCB input.checkbox").prop("checked",true)
     new Buttons(@)
     if @settings.tagging
-      @applyTaggedKWIC()
+      if @entityList?
+        @applyTaggedKWIC()
+      else
+        # should really do a full check, but i'm lazy
+        delay = (ms, func) -> setTimeout func, ms
+        delay(500, => @applyTaggedKWIC())
+
     @setActiveTree(@getIdFromTabName(activeTree))
 
     
@@ -440,7 +446,7 @@ class View
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
 
   toggleDropdown: (oc = false) ->
-    # debugger
+    # this turns on/off the dropdown based on the tagging/edit functionality
     if oc
       if @cj_selectors.tagBox.hasClass("filtered")
         if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
@@ -1080,16 +1086,21 @@ _treeUtils =
     cjTree.find(".treeButton").off "click"
     cjTree.find(".treeButton").on "click", ->
       _treeUtils.dropdownItem(cj(@).parent().parent())
-  dropdownItem: (tagLabel, search = false) ->
+  dropdownItem: (tagLabel, filter = false) ->
+    # console.log filter
     tagid = tagLabel.data('tagid')
+    # console.log tagid
     if tagLabel.length > 0
       if tagLabel.is(".open")
         _openTags[tagid] = false
       else
         _openTags[tagid] = true
-    tagLabel.siblings("dl#tagDropdown_#{tagid}").slideToggle "200", =>
-      tagLabel.toggleClass "open"
-    if !search
+    # console.log tagLabel.siblings("#tagDropdown_#{tagid}")
+    tagLabel.siblings("#tagDropdown_#{tagid}").slideToggle("200")
+      # , =>
+      # console.log "should happen twice #{tagid}"
+    tagLabel.toggleClass "open"
+    if !filter
       bbUtils.localStorage("tagViewSettings", _openTags)
 
   readDropdownsFromLocal: (cjTree) ->
@@ -1098,13 +1109,11 @@ _treeUtils =
         _openTags = bbUtils.localStorage("tagViewSettings")
         for tag, bool of bbUtils.localStorage("tagViewSettings")
           if bool
-            toPass = cj("dt.tag-#{tag}")
-            @dropdownItem toPass
+            @dropdownItem cj("#tagLabel_#{tag}")
           else
             delete _openTags[tag]
       else
       _openTags
-
 
 
 _descWidths = 
