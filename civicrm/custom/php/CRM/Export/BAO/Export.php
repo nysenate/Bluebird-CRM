@@ -98,7 +98,6 @@ class CRM_Export_BAO_Export {
       FALSE
     );
     $queryMode = CRM_Contact_BAO_Query::MODE_CONTACTS;
-
     switch ($exportMode) {
       case CRM_Export_Form_Select::CONTRIBUTE_EXPORT:
         $queryMode = CRM_Contact_BAO_Query::MODE_CONTRIBUTE;
@@ -401,7 +400,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     }
 
     //NYSS 7197
-    //CRM_Core_Error::debug_var('params', $params);
     $query = new CRM_Contact_BAO_Query($params, $returnProperties, NULL,
       FALSE, FALSE, $queryMode,
       FALSE, TRUE, TRUE, NULL, $queryOperator

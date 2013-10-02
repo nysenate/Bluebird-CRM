@@ -84,6 +84,12 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
         $this->get(CRM_Utils_Sort::SORT_ORDER)
       );
     }
+    //NYSS
+    $useTable = TRUE;
+    if ( $customSearchID ) {
+      $this->_isCustomSearch = TRUE;
+      $useTable = FALSE;
+    }
 
     $this->_selectAll = FALSE;
     $this->_exportMode = self::CONTACT_EXPORT;
@@ -170,7 +176,8 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
       $contactTasks = CRM_Contact_Task::taskTitles();
       $taskName     = $contactTasks[$this->_task];
       $component    = FALSE;
-      CRM_Contact_Form_Task::preProcessCommon($this, TRUE);
+      //NYSS 7197 don't use Table if custom search
+      CRM_Contact_Form_Task::preProcessCommon($this, $useTable);
     }
     else {
       $this->assign('taskName', "Export $componentName[1]");
@@ -504,9 +511,9 @@ FROM   {$this->_componentTable}
     return $options;
   }
 
-  //NYSS
+  //NYSS 7197 supports full export for custom searches
   function getContactIds() {
-    CRM_Contact_Form_Task::getContactIds();
+    $cids = CRM_Contact_Form_Task::getContactIds();
+    return $cids;
   }
 }
-
