@@ -85,6 +85,9 @@
       @delay event , ((toret) =>
         cb(toret)
       )
+    nExec: (event, cb) ->
+      @query = @element.val()
+      cb(@validate event)
     delay: (event, cb) ->
       clearTimeout @searching
       @searching = setTimeout ( =>

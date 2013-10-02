@@ -301,6 +301,28 @@ class window.bb
         return(n) 
       )
     arr
+  debounce: (func, wait, immediate) ->
+    result = undefined
+    timeout = null
+    ->
+      context = this
+      args = arguments
+      later = ->
+        timeout = null
+        result = func.apply(context, args) unless immediate
+      callNow = immediate and not timeout
+      clearTimeout timeout
+      timeout = setTimeout(later, wait)
+      result = func.apply(context, args) if callNow
+      result
+  throttle: (func, threshold) ->
+    return func if threshold is 0
+    timer = false
+    return ->
+      return if timer
+      timer = true
+      setTimeout (-> timer = false), threshold unless threshold is -1
+      func arguments...
 window.bbUtils = new bb
 # when you go new bb... none you're not extending ONTO bb, you're extending BB. which doesn't work, so...
 # you need to merge everything into BB and then call it.

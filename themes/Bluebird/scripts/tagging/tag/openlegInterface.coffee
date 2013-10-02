@@ -5,10 +5,15 @@ class OpenLeg
 
   query: (args, @callback)->
     return false unless args.term? or args.term.length >= 3
-    term = args.term
-    @term = term
-    year = args.year
-    page = args.page || 1
+    @pSearch = args.term.search(/\-20[0-9][0-9]/g)
+    if @pSearch > -1
+      year = args.term.slice(@pSearch+1,@pSearch+5)
+      term = args.term.slice(0,@pSearch)
+      @term = args.term
+    else
+      @term = term = args.term
+    year ?= args.year
+    page = args.page || 0
     @page = ajaxStructure.data.pageIdx = page
     return @buildQuery(term, year, page)
 
@@ -22,11 +27,14 @@ class OpenLeg
     fOid = "(oid:#{queryDefaults.oid})"
     validjsonpterm = bbUtils.spaceTo("underscore",term)
     # ajaxStructure.jsonpCallback = "bb_#{validjsonpterm}"
-    ajaxStructure.data.term = "#{fTerm} AND #{fOType} AND #{fYear} AND #{fText} NOT #{fOid}"
+    if @pSearch > -1
+      ajaxStructure.data.term = "(oid:#{term}-#{year})"
+    else
+      ajaxStructure.data.term = "#{fTerm} AND #{fOType} AND #{fYear} AND #{fText} NOT #{fOid}"
     return @getQuery()
 
   getCurrentSessionYear: (year) ->
-    if year? or isNaN(parseInt(year))
+    if !year? or isNaN(parseInt(year))
       dateobject = new Date()
       year = dateobject.getFullYear()
     year = parseInt(year) - 1 if year % 2 == 0
@@ -37,7 +45,6 @@ class OpenLeg
     get.done((data) =>
       return @callback(@ripApartQueryData(data.response.metadata,data.response.results))
     )
-
   ripApartQueryData: (metadata,results) ->
     pagesLeft = Math.floor((metadata.totalresults-results.length)/ajaxStructure.data.pageSize)-ajaxStructure.data.pageIdx
     returnStructure=
@@ -50,9 +57,10 @@ class OpenLeg
     for result, index in results
       rs =
         noname: "#{result.oid} - (#{result.data.bill.sponsor.fullname})"
-        forname: "#{result.oid} - for (#{result.data.bill.sponsor.fullname})"
-        againstname: "#{result.oid} - against (#{result.data.bill.sponsor.fullname})"
+        forname: "#{result.oid} - FOR (#{result.data.bill.sponsor.fullname})"
+        againstname: "#{result.oid} - AGAINST (#{result.data.bill.sponsor.fullname})"
         description: "#{result.data.bill.title}"
+        billNo: "#{result.oid}"
         url: "#{result.url}"
       returnStructure.results.push(rs)
     returnStructure
@@ -71,6 +79,6 @@ class OpenLeg
     data:
       term: ''
       pageSize: 10
-      pageIdx: 1
+      pageIdx: 0
 
       
