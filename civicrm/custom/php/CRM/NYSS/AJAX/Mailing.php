@@ -66,7 +66,7 @@ class CRM_NYSS_AJAX_Mailing
         $status = 0;
       }
       else {
-        $message = "There were {$output['count']} contacts in '{$output['title']}', Are you sure you want to send this message to all of them?";
+        $message = "There are {$output['count']} contacts in '{$output['title']}'.<br/><br/>Are you sure that you want to send this test message to all of them?";
         $code = 'WARN';
         $status = 2;
       }
