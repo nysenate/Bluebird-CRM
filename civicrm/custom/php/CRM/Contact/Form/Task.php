@@ -257,7 +257,8 @@ class CRM_Contact_Form_Task extends CRM_Core_Form {
 
    
     if (CRM_Utils_Array::value('radio_ts', self::$_searchFormValues) == 'ts_sel'
-    && ($form->_action != CRM_Core_Action::COPY) ) {
+      && ($form->_action != CRM_Core_Action::COPY)
+    ) {
       $params = array();
       $sel = CRM_Utils_Array::value('radio_ts', self::$_searchFormValues);
       $form->assign('searchtype',$sel);

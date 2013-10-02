@@ -400,11 +400,16 @@ FROM   {$this->_componentTable}
       $this->set('mappingId', NULL);
     }
 
+    //NYSS 7228
+    $queryParams = $this->get('queryParams');
+    if ( $this->_isCustomSearch ) {
+      $queryParams = NULL;
+    }
 
     if ($exportOption == self::EXPORT_ALL) {
       CRM_Export_BAO_Export::exportComponents($this->_selectAll,
         $this->_componentIds,
-        $this->get('queryParams'),
+        $queryParams,//NYSS
         $this->get(CRM_Utils_Sort::SORT_ORDER),
         NULL,
         $this->get('returnProperties'),
@@ -514,6 +519,8 @@ FROM   {$this->_componentTable}
   //NYSS 7197 supports full export for custom searches
   function getContactIds() {
     $cids = CRM_Contact_Form_Task::getContactIds();
+    //CRM_Core_Error::debug_var('cids', $cids);
+    //CRM_Core_Error::debug_var('cids count', count($cids));
     return $cids;
   }
 }
