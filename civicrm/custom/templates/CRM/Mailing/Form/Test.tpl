@@ -75,7 +75,7 @@
 
 </div><!-- / .crm-form-block -->
 
-<div id="send-confirm" title="Please confirm you wanted to send this message" style="display:none;">
+<div id="send-confirm" title="Please confirm that you want to send this test message" style="display:none;">
   <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span class="message"></span></p>
 </div>
 {* include jscript to warn if unsaved form field changes *}
@@ -93,7 +93,6 @@ cj(function() {
     autoOpen: false,
     resizable: false,
     draggable: false,
-    title: 'Please confirm you wanted to send this message',
     buttons: {
       Cancel: function() {
         cj( this ).dialog( "close" );
