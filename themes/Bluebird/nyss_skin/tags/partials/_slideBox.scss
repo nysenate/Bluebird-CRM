@@ -1,11 +1,10 @@
-@import "../utils/tagsUtil";
 .tagContainer {
   position:relative;
   dt:hover {
     .fCB {
       display:none;
     }
-    @include addColors(.35);
+    background-color:transparent;
   }
 }
 .slideBox {
@@ -15,4 +14,10 @@
   background-color:rgba(0,0,0,.2);
   z-index: 15;
   right:0px;
+}
+.label {
+  background-color:#ccc;
+  @include round-corners(5px);
+  color:#fff;
+  padding:4px;
 }

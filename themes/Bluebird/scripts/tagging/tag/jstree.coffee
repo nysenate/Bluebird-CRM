@@ -7,6 +7,7 @@ jstree =
     instance = new Instance()
     setProp(settings, instance)
     pageElements = instance.get("pageElements")
+    dataSettings = instance.get("dataSettings")
     # call the view, and we're using call
     # so that you can change the view...
     # or use super to change it
@@ -69,7 +70,7 @@ class Instance
       # temporarily killing
       url: '/civicrm/ajax/tag/tree'
       data:
-        entity_table: 'civicrm_contact'
+        entity_table: "civicrm_contact,civicrm_activity,civicrm_case"
         entity_id: 0
         call_uri: window.location.href
         entity_counts: 0
@@ -108,12 +109,26 @@ class Instance
   @property "autocomplete",
     get: -> @_autocomplete
     set: (a) -> @_autocomplete = a
+  @property "positionList",
+    get: -> @_positionList
+    set: (a) -> @_positionList = a
   @property "treeNames",
     get: -> @_treeNames
     set: (a) -> @_treeNames = a
   @property "trees",
     get: -> @_trees
     set: (a) -> @_trees = a
+  @property "entity",
+    get: -> @_entity
+    set: (a) -> @_entity = a
+  getEntity: (entityId, cb) ->
+    if entityId == 0
+      dataSettings = @get 'dataSettings'
+      entityId = dataSettings.entity_id
+      # @set 'dataSettings', dataSettings
+    @entity = new Entity(entityId, (tags) =>
+      cb.call(@,tags)
+    )
 
 _utils =
   removeDupFromExtend: (obj) =>
@@ -148,7 +163,7 @@ _utils =
       seg = text.slice(length*a,length*(a+1))
       if !seg.match(rx) and seg.length >= length
         # if there's no spaces or any line breaks
-        retObj.toRet.push seg
+        retObj.toRet.push "#{seg} "
         lastEnd = length*(a+1)
       else
         if seg.length > 0
@@ -175,8 +190,25 @@ _utils =
     
   hyphenize: (text) ->
     text.replace(" ","-")
+  createLabel: (labelName, className...) ->
 
-
+  _createInputBox: (type,name,value = "",classNames...) ->
+    classes = classNames.join(" ")
+    return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"
+  createTextBox: (name,value,classNames...) ->
+    return _utils._createInputBox("text",name,value,classNames)
+  createCheckBox: (name,value,classNames...) ->
+    return _utils._createInputBox("checkbox",name,value,classNames)
+  createRadioButton: (name,value,classNames...) ->
+    return _utils._createInputBox("radio",name,value,classNames)
+  removePositionTextFromBill: (positionName) ->
+    return positionName.replace(/\ (\-|)(.*AGAINST|.*FOR|.*\(.*\))/g, "")
+  checkPositionFromBill: (positionName) ->
+    a = positionName.replace(/\ \(.*\)/g,"")
+    a = a.replace(/(A|S|J|K)([0-9]*|[0-9]*.)\-20[0-9][0-9]/g,"")
+    a = a.replace(/\ \-\ /g,"").toLowerCase()
+    a = "neutral" if (a == "" or a == " -" or a == " ")
+    return a
 
 _getTrees =
   # makes the JSON call, and then writes it.
@@ -205,8 +237,29 @@ _parseTree =
       @treeNames[k] = o.name
       if o.children.length > 0 && !(_tree.blacklist(parseFloat(k)))
         _parseAutocomplete.deepIterate o.children, _parseAutocomplete.pre, _parseAutocomplete.post
-    instance.autocomplete =  @ac
+      if o.children.length > 0 && parseFloat(k) == 292
+        @positionList(o.children)
+    instance.autocomplete = @ac
+    instance.positionList = @pl
     instance.treeNames = @treeNames
+  positionList: (obj) ->
+    for k,v of obj
+      a =
+        "name": _utils.removePositionTextFromBill(v.name)
+        "posName": v.name
+        "id": v.id
+        "pos": _utils.checkPositionFromBill(v.name)
+        "parent": 292
+        "type": 292
+        "children": false
+        "description": v.description
+        "is_reserved": v.is_reserved
+        "created_id": v.created_id
+        "created_date": v.created_date
+        "created_name": v.created_display_name
+        "level": 1
+      @pl.push a
+  pl: []
   ac: []
   treeNames: {}
 
@@ -241,5 +294,49 @@ _parseAutocomplete =
         @.deepIterate o.children, before, after
       after(o)
 
+class Entity
+  tags: []
+  entity_id: 0 
+  _get:
+    url: '/civicrm/ajax/entity_tag/get'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  _create:
+    url: '/civicrm/ajax/entity_tag/create'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  _del:
+    url: '/civicrm/ajax/entity_tag/delete'
+    data:
+      entity_type: "civicrm_contact,civicrm_activity,civicrm_case"
+      entity_id: 0
+      call_uri: window.location.href
+    dataType: 'json'
+  constructor: (entity_id,cb) ->
+    @entity_id = entity_id
+    a = ["_get","_create","_del"]
+    for i in a
+      @[i].data.entity_id = @entity_id
+    request = cj.when(cj.ajax(@_get))
+    request.done((data) =>
+        @tags = data["message"]
+        cb.call(@, @tags)
+      )
+    return @
+  addTag: (tagId)->
+    @_create.data.tag_id = tagId
+    return cj.when(cj.ajax(@_create))
+  removeTag: (tagId)->
+    @_del.data.tag_id = tagId
+    index = @tags.indexOf(tagId)
+    if index > -1
+      @tags.splice(index,1)
+    return cj.when(cj.ajax(@_del))
 
 window.jstree = jstree

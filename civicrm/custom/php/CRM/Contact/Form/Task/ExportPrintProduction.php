@@ -43,8 +43,8 @@ define( 'EXITLOC', 0 ); //define exit location in script
 /**
  * This class provides the functionality to export large data sets for print production.
  */
-class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task {
-
+class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
+{
   /**
    * @var string
    */
@@ -63,8 +63,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
    * @access public
    * @return void
    */
-  function buildQuickForm( ) {
-
+  function buildQuickForm( )
+  {
     CRM_Utils_System::setTitle( ts('Print Production Export') );
 
     require_once 'CRM/Core/Permission.php';
@@ -159,16 +159,19 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     );
 
     $this->addDefaultButtons( 'Export Print Production' );
-  }
+  } // buildQuickForm()
 
-  function setDefaultValues() {
+
+  function setDefaultValues()
+  {
     $defaults = array(
       'orderBy' => 'male_eldest',
     );
     //$defaults['restrict_state'] = 1031; //NY
 
     return $defaults;
-  }
+  } // setDefaultValues()
+
 
   /**
    * process the form after the input has been submitted and validated
@@ -176,8 +179,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
    * @access public
    * @return None
    */
-  public function postProcess() {
-
+  public function postProcess()
+  {
     //set start time
     if ( PPDEBUG ) { $tStart = microtime(); }
 
@@ -206,6 +209,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     //generate random number for export and tables
     $rnd = date('Ymdhis');
+    $tmpTbl = "nyss_temp_export_$rnd";
+    $tmpTblIds = $tmpTbl.'_IDs';
 
     //retrieve Mailing Exclusions group id
     $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
@@ -236,16 +241,16 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     //create temp table to hold IDs
     $sql = "
-      CREATE TEMPORARY TABLE tmpExport{$rnd}_IDs
+      CREATE TEMPORARY TABLE $tmpTblIds
       (id int not null primary key)
       ENGINE = myisam;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    $sql = "INSERT INTO tmpExport{$rnd}_IDs VALUES $ids;";
+    $sql = "INSERT INTO $tmpTblIds VALUES $ids;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     if ( $excludeGroups ) {
-      excludeGroupContacts( "tmpExport{$rnd}_IDs", $excludeGroups, $localSeedsList );
+      excludeGroupContacts( $tmpTblIds, $excludeGroups, $localSeedsList );
     }
 
     //now construct sql to retrieve fields and inject in a second tmp table
@@ -254,7 +259,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     idebug($cFlds, 'cFlds', 2);
 
     $sql = "
-      CREATE TABLE tmpExport$rnd
+      CREATE TABLE $tmpTbl
       ( $cFlds,
         INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id)
       )
@@ -262,13 +267,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $dao   = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
     idebug($dao, 'dao tmp table2', 2);
 
-    $sql  = "INSERT INTO tmpExport$rnd ";
-    $sql .= "SELECT $sFlds ";
-
     //begin with temp table so we work with a smaller data set
-    $sql .= " FROM tmpExport{$rnd}_IDs t ";
-
-    $sql .= " JOIN civicrm_contact c ON t.id = c.id ";
+    $sql = "INSERT INTO $tmpTbl
+            SELECT $sFlds FROM $tmpTblIds t
+            JOIN civicrm_contact c ON t.id = c.id ";
 
     //address joins
     if ( $primaryAddress ) {
@@ -384,13 +386,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     //merge Households
     if ( $merge_households ) {
-      mergeHouseholds( "tmpExport$rnd" );
+      mergeHouseholds( $tmpTbl );
     }
 
     //5142 remove district exclusions
     if ( PPDEBUG ) { $tEnd1 = microtime(); }
     if ( $districtExclude ) {
-      processDistrictExclude( $districtExclude, "tmpExport$rnd", $localSeedsList );
+      processDistrictExclude( $districtExclude, $tmpTbl, $localSeedsList );
     }
     if ( PPDEBUG ) { $tEnd2 = microtime(); }
 
@@ -402,7 +404,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     }
 
     //remove the household_id column so print prod processing is not altered
-    $sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
+    $sql = "ALTER TABLE $tmpTbl DROP COLUMN household_id;";
     CRM_Core_DAO::executeQuery( $sql );
 
     //check if printProduction subfolder exists; if not, create it
@@ -426,9 +428,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $issueCodes = null;
     getIssueCodesRecursive($issueCodes);
 
-    $sql    = "SELECT tmp.id, t.tag_id FROM civicrm_entity_tag t INNER JOIN tmpExport$rnd tmp on t.entity_id=tmp.id";
+    $sql = "SELECT tmp.id, t.tag_id
+            FROM civicrm_entity_tag t
+            INNER JOIN $tmpTbl tmp on t.entity_id=tmp.id";
     $issdao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-    $iss    = array();
+    $iss = array();
 
     while ($issdao->fetch()) {
       $ic = $issueCodes[$issdao->tag_id];
@@ -457,7 +461,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $skipVars['_database'] = 1;
 
     //retrieve records from temp table
-    $sql = "SELECT * FROM tmpExport$rnd";
+    $sql = "SELECT * FROM $tmpTbl;
     $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 
     //fetch records
@@ -541,8 +545,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //exit();
 
     //generate issue code and keyword stats
-    $ic_stats  = statsIssueCodes( 'tmpExport'.$rnd );
-    $key_stats = statsKeywords( 'tmpExport'.$rnd );
+    $ic_stats  = statsIssueCodes( $tmpTbl );
+    $key_stats = statsKeywords( $tmpTbl );
     $tag_stats = array_merge( array('Issue Code'=>'Count'), $ic_stats, array(''=>'','Keyword'=>'Count'), $key_stats);
     //CRM_Core_Error::debug($ic_stats); exit();
     //CRM_Core_Error::debug($key_stats); exit();
@@ -550,8 +554,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     //set filename and full path
     $filenameStats = 'printExportTagStats_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
-    $fnameStats    = $path.'/'.$filenameStats;
-    $fhoutStats    = fopen($fnameStats, 'w');
+    $fnameStats = $path.'/'.$filenameStats;
+    $fhoutStats = fopen($fnameStats, 'w');
 
     //write to file
     foreach ( $tag_stats as $tag_name => $tag_stat ) {
@@ -564,7 +568,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //end stats
 
     //get rid of temp tables
-    $sql = "DROP TABLE tmpExport{$rnd}, tmpExport{$rnd}_IDs;";
+    $sql = "DROP TABLE $tmpTbl, $tmpTblIds;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     $url  = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
@@ -588,13 +592,15 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     CRM_Core_Session::setStatus( $status );
     iexit(4);
-
-  } //end of function
+  } // postProcess()
 }//end class
 
-//helper functions
-function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
+
+//helper functions
+function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"',
+                   $mysql_null = false, $blank_as_null = false)
+{
   $delimiter_esc = preg_quote($delimiter, '/');
   $enclosure_esc = preg_quote($enclosure, '/');
 
@@ -610,10 +616,11 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
     ) : $field;
   }
   fwrite($fh, join($delimiter, $output) . "\n");
-}
+} // fputcsv2()
 
-function getIssueCodesRecursive(&$issueCodes, $parent_id=null) {
 
+function getIssueCodesRecursive(&$issueCodes, $parent_id=null)
+{
   if ($parent_id==null) {
 
     $issueCodes = array();
@@ -631,9 +638,11 @@ function getIssueCodesRecursive(&$issueCodes, $parent_id=null) {
     $issueCodes[$key] = $val;
     getIssueCodesRecursive($issueCodes, $key);
   }
-}
+} // getIssueCodesRecursive()
 
-function getOptions($strGroup) {
+
+function getOptions($strGroup)
+{
   $session =& CRM_Core_Session::singleton();
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
@@ -650,9 +659,11 @@ function getOptions($strGroup) {
   }
 
   return $options;
-}//getOptions()
+} //getOptions()
 
-function getStates() {
+
+function getStates()
+{
   $session =& CRM_Core_Session::singleton();
   $dao = &CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province", CRM_Core_DAO::$_nullArray);
 
@@ -663,9 +674,11 @@ function getStates() {
   }
 
   return $options;
-}//getStates()
+} //getStates()
 
-function statsIssueCodes( $tmpTbl ) {
+
+function statsIssueCodes( $tmpTbl )
+{
   $sql = "
     SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
     FROM civicrm_entity_tag
@@ -687,9 +700,11 @@ function statsIssueCodes( $tmpTbl ) {
   }
 
   return $ic_stats;
-}//statsIssueCodes
+} // statsIssueCodes()
 
-function statsKeywords( $tmpTbl ) {
+
+function statsKeywords( $tmpTbl )
+{
   $sql = "
     SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as key_count
     FROM civicrm_entity_tag
@@ -709,11 +724,12 @@ function statsKeywords( $tmpTbl ) {
   }
 
   return $key_stats;
-}//statsKeywords
+} // statsKeywords()
+
 
 //merge temp table down into households
-function mergeHouseholds( $tbl ) {
-
+function mergeHouseholds( $tbl )
+{
   //our resulting export could have actual household records OR
   //individuals who are part of households OR both
 
@@ -760,11 +776,12 @@ function mergeHouseholds( $tbl ) {
   $dao = CRM_Core_DAO::executeQuery( $sql );
 
   return;
-} //end mergeHouseholds
+} // mergeHouseholds()
+
 
 //defines the columns in our table and select statement
-function getColumns( $output = 'select' ) {
-
+function getColumns( $output = 'select' )
+{
   $fields = array(
     'c.id' => array(
       'alias' => 'id',
@@ -960,10 +977,11 @@ function getColumns( $output = 'select' ) {
     default:
       return '';
   }
-}
+} // getColumns()
 
-function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
 
+function excludeGroupContacts( $tbl, $groups, $localSeedsList )
+{
   require_once 'CRM/Contact/BAO/Group.php';
 
   //get group contacts
@@ -984,7 +1002,8 @@ function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
   CRM_Core_DAO::executeQuery($sql);
 
   return;
-}
+} // excludeGroupContacts()
+
 
 /**
 *
@@ -992,8 +1011,8 @@ function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
 * given a district ID, collect district exclusions and remove from the import
 *
 */
-function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
-
+function processDistrictExclude( $districtID, $tbl, $localSeedsList )
+{
   if ( PPDEBUG ) { $tStartDE = microtime(); }
 
   //retrieve the instance name using the district ID
@@ -1090,10 +1109,11 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
   }
 
   return;
-}//processDistrictExclude
+} // processDistrictExclude()
 
-function addExternalSeeds($tbl, $db) {
 
+function addExternalSeeds($tbl, $db)
+{
   $sFlds = getColumns( 'select' );
   $sFlds = str_replace( 'c.id as id', "(c.id + 1000000000) as id", $sFlds ); //avoid conflicts with source db
 
@@ -1168,10 +1188,12 @@ function addExternalSeeds($tbl, $db) {
   $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
   return;
-} //addExternalSeeds
+} // addExternalSeeds()
+
 
 //display debug based on constant
-function idebug( $var, $varName = '', $level = 1 ) {
+function idebug( $var, $varName = '', $level = 1 )
+{
   if ( !PPDEBUG )
     return;
 
@@ -1189,14 +1211,16 @@ function idebug( $var, $varName = '', $level = 1 ) {
       CRM_Core_Error::debug_var('debug var', $var);
     }
   }
-}//idebug
+} // idebug()
+
 
 //exit if debug enabled and exit location defined
-function iexit( $loc = 0 ) {
+function iexit( $loc = 0 )
+{
   if ( !PPDEBUG )
     return;
 
   if ( $loc == EXITLOC ) {
     exit();
   }
-}
+} // iexit()

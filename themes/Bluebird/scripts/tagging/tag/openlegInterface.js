@@ -12,10 +12,18 @@ OpenLeg = (function() {
     if (!((args.term != null) || args.term.length >= 3)) {
       return false;
     }
-    term = args.term;
-    this.term = term;
-    year = args.year;
-    page = args.page || 1;
+    this.pSearch = args.term.search(/\-20[0-9][0-9]/g);
+    if (this.pSearch > -1) {
+      year = args.term.slice(this.pSearch + 1, this.pSearch + 5);
+      term = args.term.slice(0, this.pSearch);
+      this.term = args.term;
+    } else {
+      this.term = term = args.term;
+    }
+    if (year == null) {
+      year = args.year;
+    }
+    page = args.page || 0;
     this.page = ajaxStructure.data.pageIdx = page;
     return this.buildQuery(term, year, page);
   };
@@ -28,13 +36,17 @@ OpenLeg = (function() {
     fText = "(full:" + term + "~ OR full:" + term + "*)";
     fOid = "(oid:" + queryDefaults.oid + ")";
     validjsonpterm = bbUtils.spaceTo("underscore", term);
-    ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
+    if (this.pSearch > -1) {
+      ajaxStructure.data.term = "(oid:" + term + "-" + year + ")";
+    } else {
+      ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
+    }
     return this.getQuery();
   };
 
   OpenLeg.prototype.getCurrentSessionYear = function(year) {
     var dateobject;
-    if ((year != null) || isNaN(parseInt(year))) {
+    if ((year == null) || isNaN(parseInt(year))) {
       dateobject = new Date();
       year = dateobject.getFullYear();
     }
@@ -67,9 +79,10 @@ OpenLeg = (function() {
       result = results[index];
       rs = {
         noname: "" + result.oid + " - (" + result.data.bill.sponsor.fullname + ")",
-        forname: "" + result.oid + " - for (" + result.data.bill.sponsor.fullname + ")",
-        againstname: "" + result.oid + " - against (" + result.data.bill.sponsor.fullname + ")",
+        forname: "" + result.oid + " - FOR (" + result.data.bill.sponsor.fullname + ")",
+        againstname: "" + result.oid + " - AGAINST (" + result.data.bill.sponsor.fullname + ")",
         description: "" + result.data.bill.title,
+        billNo: "" + result.oid,
         url: "" + result.url
       };
       returnStructure.results.push(rs);
@@ -92,7 +105,7 @@ OpenLeg = (function() {
     data: {
       term: '',
       pageSize: 10,
-      pageIdx: 1
+      pageIdx: 0
     }
   };
 

@@ -159,16 +159,16 @@
       charCode = evt.which != null ? evt.which : event.keyCode;
       keyCode = {
         "modifier": [16, 17, 18, 19, 20, 91, 92, 93, 144, 145],
-        "number": [96, 97, 98, 99, 100, 101, 102, 103, 104].concat([48, 49, 50, 51, 52, 53, 54, 55, 56]),
+        "number": [96, 97, 98, 99, 100, 101, 102, 103, 104, 105].concat([48, 49, 50, 51, 52, 53, 54, 55, 56, 57]),
         "directional": [9, 13, 27, 33, 34, 35, 36, 37, 38, 39, 40],
         "delete": [8, 32, 46],
         "insert": [45],
-        "math": [106, 107, 108, 109, 110],
-        "function": [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122],
-        "punctuation": [219, 220, 221].concat([186, 187, 188, 189, 190, 191]),
+        "math": [106, 107, 108, 109, 110, 111],
+        "function": [112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123],
+        "punctuation": [219, 220, 221, 222].concat([186, 187, 188, 189, 190, 191, 192]),
         "letters": (function() {
           _results = [];
-          for (_i = 65; _i < 90; _i++){ _results.push(_i); }
+          for (_i = 65; _i <= 90; _i++){ _results.push(_i); }
           return _results;
         }).apply(this)
       };
@@ -556,6 +556,50 @@
         return n;
       });
       return arr;
+    };
+
+    bb.prototype.debounce = function(func, wait, immediate) {
+      var result, timeout;
+      result = void 0;
+      timeout = null;
+      return function() {
+        var args, callNow, context, later;
+        context = this;
+        args = arguments;
+        later = function() {
+          timeout = null;
+          if (!immediate) {
+            return result = func.apply(context, args);
+          }
+        };
+        callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) {
+          result = func.apply(context, args);
+        }
+        return result;
+      };
+    };
+
+    bb.prototype.throttle = function(func, threshold) {
+      var timer;
+      if (threshold === 0) {
+        return func;
+      }
+      timer = false;
+      return function() {
+        if (timer) {
+          return;
+        }
+        timer = true;
+        if (threshold !== -1) {
+          setTimeout((function() {
+            return timer = false;
+          }), threshold);
+        }
+        return func.apply(null, arguments);
+      };
     };
 
     return bb;

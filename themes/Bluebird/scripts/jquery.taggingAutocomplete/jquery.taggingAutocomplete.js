@@ -75,6 +75,11 @@
         }));
       };
 
+      Search.prototype.nExec = function(event, cb) {
+        this.query = this.element.val();
+        return cb(this.validate(event));
+      };
+
       Search.prototype.delay = function(event, cb) {
         var _this = this;
         clearTimeout(this.searching);

@@ -1,32 +1,62 @@
 .BBTree {
+  background-color:#fff;
+  .tagContainer {
+    height:100%;
+  }
+  // &.top-291-active .top-291{
+  &.top-291-active{
+    @include addColors($issueCodesColor,.3);
+  }
+  // &.top-296-active .top-296{
+  &.top-296-active{
+    @include addColors($keywordsColor,.3);
+  }
+  // &.top-292-acti/ve .top-292{
+  &.top-292-active {
+    @include addColors($positionsColor,.5);
+  }
   overflow-y:scroll;
   overflow-x:hidden;
   height:400px;
   // margin-left:2%;
   @include iterator;
   @import "tag";
-  @import "search";
   .tagContainer.active {
     display:block;
   }
   .tagContainer {
-    display:none
+   
   }
   &.dropdown {
     display:none;
     &.open {
       display:block;
       position:absolute;
-      top:78px;
+      top:76px;
       width:438px;
       z-index:10;
       background-color:white;
       height: 150px;
     }
+    @include round-bottom-corners(3px);
   }
   &.hasSlideBox {
-    
     @import "slideBox";
   }
+}
+.top-292 .position-box-text-reminder {
+  text-align: center;
+  font-style:italic;
+  padding-top: 20px;
+  font-size: 1.2em;
+
+}
+.JSTree-overlay {
+  background-color: #fff;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+  top: 0;
 }
 @import "tokenHolder";
