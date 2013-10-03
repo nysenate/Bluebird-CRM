@@ -522,10 +522,14 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         ";
       }
       else {
+        //NYSS 7238
         $includeTag = "
           INSERT INTO It_{$this->_tableName} (contact_id, tag_names)
           SELECT civicrm_contact.id as contact_id, ''
           FROM civicrm_contact
+          LEFT JOIN civicrm_entity_tag
+            ON civicrm_contact.id = civicrm_entity_tag.entity_id
+            AND civicrm_entity_tag.entity_table = 'civicrm_contact'
         ";
       }
 
