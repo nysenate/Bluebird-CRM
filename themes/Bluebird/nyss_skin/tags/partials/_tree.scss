@@ -4,17 +4,18 @@
     height:100%;
   }
   // &.top-291-active .top-291{
-  &.top-291-active{
+  &.top-291-active:not(.dropdown){
     @include addColors($issueCodesColor,.3);
   }
   // &.top-296-active .top-296{
-  &.top-296-active{
+  &.top-296-active:not(.dropdown){
     @include addColors($keywordsColor,.3);
   }
   // &.top-292-acti/ve .top-292{
-  &.top-292-active {
+  &.top-292-active:not(.dropdown) {
     @include addColors($positionsColor,.5);
   }
+  @include round-bottom-corners(3px);
   overflow-y:scroll;
   overflow-x:hidden;
   height:400px;
@@ -38,6 +39,24 @@
       background-color:white;
       height: 150px;
     }
+    // .top-291{
+    //   @include addColors($issueCodesColor,.3);
+    // }
+    // .top-296{
+    //   @include addColors($keywordsColor,.3);
+    // }
+    // .top-292{
+    //   @include addColors($positionsColor,.5);
+    // }
+    &.top-292-active {
+      @include addColors($positionsColor,.5);
+    }
+    &.top-291-active {
+      @include addColors($issueCodesColor,.3);
+    }
+    &.top-296-active {
+      @include addColors($keywordsColor,.3);
+    }
     @include round-bottom-corners(3px);
   }
   &.hasSlideBox {
@@ -51,12 +70,38 @@
   font-size: 1.2em;
 
 }
+// .JSTree.dropdown {
+//   &.top-291-active .JSTree-overlay {
+//     @include tag-lightness($issueCodesColor,.3);
+//   }
+//   &.top-296-active .JSTree-overlay {
+//     @include tag-lightness($keywordsColor,.3);
+//   }
+//   &.top-292-active .JSTree-overlay {
+//     @include tag-lightness($positionsColor,.5);
+//   }
+// }
 .JSTree-overlay {
-  background-color: #fff;
-  height: 100%;
-  position: absolute;
-  width: 100%;
-  z-index: -1;
-  top: 0;
+  position: relative;
+  z-index: 1;
+  background-color:white;
+  @include round-bottom-corners(3px);
+  // set via js
+  width:0px;
+  height:0px;
 }
+.JSTree:not(.dropdown)+.JSTree-overlay {
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0px;
+  z-index:-1;
+}
+  
 @import "tokenHolder";
+.BBTree.dropdown.open {
+  // might not work cross browser
+  ~.BBTree-tokenHolder {
+    display:none;
+  }
+}

@@ -378,6 +378,7 @@
               }
               nextSpace += wordPiece.length + 1;
               if (nextSpace >= currentEnd) {
+                nextSpace = currentLastSpace;
                 break;
               }
             }
@@ -806,7 +807,13 @@
       this.formatPageElements();
       this.createSelectors();
       tagBox = new Resize;
-      this.setDescWidths();
+      if (tagBox != null) {
+        if (tagBox.height === 0) {
+          this.setDescWidths(false, void 0);
+        } else {
+          this.setDescWidths();
+        }
+      }
       if (this.settings.tall) {
         if (tagBox != null) {
           if (tagBox.height > 0) {
@@ -824,9 +831,15 @@
       }
     };
 
-    View.prototype.setDescWidths = function() {
-      if (this.settings.tall) {
-        if (this.settings.wide) {
+    View.prototype.setDescWidths = function(tall, wide) {
+      if (tall == null) {
+        tall = this.settings.tall;
+      }
+      if (wide == null) {
+        wide = this.settings.wide;
+      }
+      if (tall) {
+        if (wide) {
           _descWidths.normal = 75;
           return _descWidths.long = 150;
         } else {
@@ -834,9 +847,9 @@
           return _descWidths.long = 38;
         }
       } else {
-        if (this.settings.wide) {
-          _descWidths.normal = 73;
-          return _descWidths.long = 145;
+        if (wide) {
+          _descWidths.normal = 70;
+          return _descWidths.long = 140;
         } else {
           _descWidths.normal = 38;
           return _descWidths.long = 38;
@@ -845,7 +858,7 @@
     };
 
     View.prototype.buildDropdown = function() {
-      this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + " dropdown'></div>");
+      this.cj_selectors.initHolder.html("<div class='" + this.selectors.tagBox + " dropdown'></div><div class='JSTree-overlay'></div>");
       this.cj_selectors.initHolder.prepend(this.menuHtml(this.menuSelectors));
       this.cj_selectors.initHolder.append(this.dataHolderHtml());
       this.cj_selectors.initHolder.append(this.tokenHolderHtml(this.tokenHolder));
@@ -1047,7 +1060,21 @@
         _treeVisibility.currentTree = currentTree;
         this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(currentTree, true))).addClass("active");
         this.cj_selectors.tagBox.find(".top-" + currentTree).toggle().addClass("active");
-        return this.cj_selectors.tagBox.addClass("top-" + currentTree + "-active");
+        this.cj_selectors.tagBox.addClass("top-" + currentTree + "-active");
+        return this.setOverlay();
+      }
+    };
+
+    View.prototype.setOverlay = function() {
+      var cjOverlay;
+      if (this.cj_selectors.tagBox.hasClass("dropdown")) {
+        cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        cjOverlay.height(this.cj_selectors.tagBox.height());
+        return cjOverlay.width(this.cj_selectors.tagBox.width());
+      } else {
+        cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        cjOverlay.css("height", "100%");
+        return cjOverlay.css("width", "100%");
       }
     };
 
@@ -1155,7 +1182,7 @@
     View.prototype.writeEmptyList = function(term, tree) {};
 
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var a, activeTree, b, cjDTs, iO, k, latestQuery, t, v, _ref,
+      var a, activeTree, b, cjDTs, delay, iO, k, latestQuery, t, v, _ref,
         _this = this;
       if (hits == null) {
         hits = {};
@@ -1212,7 +1239,16 @@
       }
       new Buttons(this);
       if (this.settings.tagging) {
-        this.applyTaggedKWIC();
+        if (this.entityList != null) {
+          this.applyTaggedKWIC();
+        } else {
+          delay = function(ms, func) {
+            return setTimeout(func, ms);
+          };
+          delay(500, function() {
+            return _this.applyTaggedKWIC();
+          });
+        }
       }
       return this.setActiveTree(this.getIdFromTabName(activeTree));
     };
@@ -1287,66 +1323,51 @@
       return this.cj_selectors.tagBox.toggle().toggleClass("dropdown");
     };
 
-    View.prototype.toggleDropdown = function(oc) {
-      var boxHeight,
-        _this = this;
-      if (oc == null) {
-        oc = false;
-      }
-      if (oc) {
-        if (this.cj_selectors.tagBox.hasClass("filtered")) {
-          if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
-            cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
-              return _this.getTagHeight(cj(container));
-            });
-          }
-          if (this.cj_selectors.tagBox.find(".top-292").length === 1) {
-            cj.each(this.cj_selectors.tagBox.find(".tagContainer.top-292"), function(i, container) {
-              return _this.getTagHeight(cj(container));
-            });
+    View.prototype.toggleDropdown = function(hits) {
+      var boxHeight, k, v;
+      if (this.cj_selectors.tagBox.hasClass("dropdown")) {
+        if (hits != null) {
+          for (k in hits) {
+            v = hits[k];
+            this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
           }
           this.cj_selectors.container.css("position", "static");
-          return this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+          this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+          return this.setOverlay();
         } else {
           boxHeight = new Resize();
           this.cj_selectors.container.css("position", "relative");
-          return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
+          this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
+          return this.setOverlay();
         }
-      } else {
-        boxHeight = new Resize();
-        this.cj_selectors.container.css("position", "relative");
-        return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
       }
     };
 
-    View.prototype.getTagHeight = function(cjTagContainer, maxHeight) {
-      var _this = this;
+    View.prototype.getTagHeight = function(tagBox, maxHeight) {
+      var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
       if (maxHeight == null) {
         maxHeight = 180;
       }
-      return cj.each(cjTagContainer, function(a, container) {
-        var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
-        checkDTs = [];
-        heightTotal = _this.getRecTagHeight(container);
-        propHeight = 0;
-        for (_i = 0, _len = heightTotal.length; _i < _len; _i++) {
-          v = heightTotal[_i];
-          propHeight += parseInt(v);
-        }
-        if (propHeight > maxHeight) {
-          closestTo = 0;
-          for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
-            v = heightTotal[_j];
-            if (closestTo > maxHeight) {
-              break;
-            }
-            closestTo += parseInt(v);
+      checkDTs = [];
+      heightTotal = this.getRecTagHeight(tagBox);
+      propHeight = 0;
+      for (_i = 0, _len = heightTotal.length; _i < _len; _i++) {
+        v = heightTotal[_i];
+        propHeight += parseInt(v);
+      }
+      if (propHeight > maxHeight) {
+        closestTo = 0;
+        for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
+          v = heightTotal[_j];
+          if (closestTo > maxHeight) {
+            break;
           }
-          return cj(container).height(closestTo);
-        } else {
-          return cj(container).height(propHeight);
+          closestTo += parseInt(v);
         }
-      });
+        return cj(tagBox).height(closestTo);
+      } else {
+        return cj(tagBox).height(propHeight);
+      }
     };
 
     View.prototype.getRecTagHeight = function(container, heightTotal, already) {
@@ -1429,7 +1450,7 @@
             var newDT;
             newDT = response.cjDT;
             if (response === false) {
-              return console.log("response false");
+
             } else {
               action.tagId = response["message"]["id"];
               return toggleClass.call(newDT.find("input.checkbox")[0], newDT);
@@ -1828,16 +1849,20 @@
         if (_this.tagBox.height() < 15) {
           _this.tagBox.height(0);
           _this.tagBox.addClass("dropdown");
+          _this.view.settings.tall = false;
         }
         if (!_this.tagBox.hasClass("dropdown")) {
-          return bbUtils.localStorage("tagBoxHeight", {
+          bbUtils.localStorage("tagBoxHeight", {
             height: _this.tagBox.height()
           });
+          _this.view.settings.tall = true;
         } else {
-          return bbUtils.localStorage("tagBoxHeight", {
+          bbUtils.localStorage("tagBoxHeight", {
             height: 0
           });
+          _this.view.settings.tall = false;
         }
+        return _this.view.setDescWidths();
       });
       return this.view.cj_tokenHolder.resize.on("mousedown", function(ev, tagBox) {
         if (_this.tagBox.hasClass("dropdown")) {
@@ -1847,6 +1872,7 @@
         }
         ev.preventDefault();
         return cj(document).on("mousemove", function(ev, tagBox) {
+          _this.view.toggleDropdown();
           if (ev.pageY - cj(".JSTree").offset().top < maxHeight) {
             return _this.tagBox.css("height", ev.pageY - cj(".JSTree").offset().top);
           }
@@ -1862,7 +1888,7 @@
     var initHint;
 
     function Autocomplete(instance, view) {
-      var a, cjac, debounced, params, searchmonger,
+      var cjac, debounced, params, searchmonger,
         _this = this;
       this.instance = instance;
       this.view = view;
@@ -1892,10 +1918,9 @@
           return _this.initHint = false;
         }
       }));
-      debounced = bbUtils.debounce(this.filterKeydownEvents, 500);
-      a = this;
+      debounced = bbUtils.debounce(this.execSearch, 500);
       cjac.on("keydown", (function(event) {
-        return debounced(a, event, searchmonger, cjac);
+        return _this.filterKeydownEvents(debounced, event, searchmonger, cjac);
       }));
       cjac.on("keyup", (function(event) {
         var keyCode;
@@ -1904,6 +1929,8 @@
           _this.view.removeTabCounts();
           _this.view.shouldBeFiltered = false;
           _this.view.currentWrittenTerm = "";
+          _this.view.cj_selectors.tagBox.find(".top-292.tagContainer").infiniscroll("unbind", cj(".JSTree"));
+          _this.view.cj_selectors.tagBox.find(".top-292.tagContainer").remove("dt.loadingGif");
           if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
             _this.view.toggleDropdown();
             _this.view.rebuildInitialTree();
@@ -1943,7 +1970,7 @@
           } else {
             name = "";
           }
-          return obj.execSearch(event, searchmonger, cjac);
+          return obj(this, event, searchmonger, cjac);
         default:
           return false;
       }
@@ -1966,13 +1993,19 @@
           };
           _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
           return openLeg.query(nextPage, function(results) {
-            var filteredList, poses;
+            var addButtonsTo, filteredList, k, poses, v;
             poses = _this.addPositionsToTags(results.results);
             filteredList = {
               292: poses
             };
             _this.getNextPositionRound(results);
-            new Tree(poses, "292", false, cj(".JSTree .top-292"));
+            new Tree(poses, "292", false, cj(".JSTree .top-292"), nextPage);
+            addButtonsTo = "";
+            for (k in nextPage) {
+              v = nextPage[k];
+              addButtonsTo += "." + k + "-" + v;
+            }
+            new Buttons(_this.view, addButtonsTo);
             _this.openLegQueryDone = true;
             return _this.buildPositions();
           });
@@ -1980,22 +2013,25 @@
       }
     };
 
-    Autocomplete.prototype.addPositionLoader = function() {
-      return "<dt class='loadingGif' data-parentid='292'><div class='tag'><div class='ddControl'></div><div class='loadingText'>Loading...</div></div><div class='transparancyBox type-292'></div></dt>";
+    Autocomplete.prototype.addPositionLoader = function(nextPage) {
+      if (nextPage == null) {
+        nextPage = {};
+      }
+      return "<dt class='loadingGif' data-parentid='292'>      <div class='tag'>        <div class='ddControl'></div>        <div class='loadingText'>Loading...</div>      </div>    </dt>";
     };
 
-    Autocomplete.prototype.execSearch = function(event, searchmonger, cjac) {
+    Autocomplete.prototype.execSearch = function(obj, event, searchmonger, cjac) {
       var term,
         _this = this;
       term = cjac.val();
       if (term.length >= 3) {
-        this.view.shouldBeFiltered = true;
-        this.doOpenLegQuery();
+        obj.view.shouldBeFiltered = true;
+        obj.doOpenLegQuery();
         return searchmonger.nExec(event, function(terms) {
           var filteredList, foundTags, hcounts, hits, k, tags, v;
           if ((terms != null) && !cj.isEmptyObject(terms)) {
-            tags = _this.sortSearchedTags(terms.tags);
-            hits = _this.separateHits(tags);
+            tags = obj.sortSearchedTags(terms.tags);
+            hits = obj.separateHits(tags);
             hcounts = 0;
             foundTags = [];
             for (k in hits) {
@@ -2003,9 +2039,12 @@
               hcounts += v;
               foundTags.push(parseFloat(k));
             }
-            filteredList = _this.view.buildFilteredList(tags);
-            _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
-            return _this.localQueryDone = true;
+            filteredList = obj.view.buildFilteredList(tags);
+            obj.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
+            obj.localQueryDone = true;
+            if (obj.view.cj_selectors.tagBox.hasClass("dropdown")) {
+              return obj.view.toggleDropdown(hits);
+            }
           }
         });
       }
@@ -2034,10 +2073,10 @@
           292: hitCount
         });
         _this.buildPositions();
-        _this.openLegQueryDone = true;
-        if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
-          return _this.view.toggleDropdown(true);
-        }
+        _this.view.toggleDropdown({
+          292: hitCount
+        });
+        return _this.openLegQueryDone = true;
       });
     };
 
@@ -2161,17 +2200,18 @@
 
     Tree.prototype.tabName = "";
 
-    function Tree(tagList, tagId, filter, location) {
+    function Tree(tagList, tagId, filter, location, listClasses) {
       this.tagList = tagList;
       this.tagId = tagId;
       this.filter = filter != null ? filter : false;
       this.location = location;
+      this.listClasses = listClasses;
       this.buildTree();
       return this;
     }
 
     Tree.prototype.buildTree = function() {
-      var filter;
+      var dataNames, filter, k, v, _ref;
       if (this.filter) {
         filter = "filtered";
       } else {
@@ -2180,7 +2220,17 @@
       if (this.location != null) {
         this.append = true;
         this.domList = cj();
-        this.domList = this.domList.add("<div></div>");
+        if (this.listClasses != null) {
+          dataNames = "";
+          _ref = this.listClasses;
+          for (k in _ref) {
+            v = _ref[k];
+            dataNames += " " + k + "-" + v + " ";
+          }
+          this.domList = this.domList.add("<div class='" + dataNames + "'></div>");
+        } else {
+          this.domList = this.domList.add("<div></div>");
+        }
       } else {
         this.domList = cj();
         this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer'></div>");
@@ -2256,11 +2306,10 @@
         return _treeUtils.dropdownItem(cj(this).parent().parent());
       });
     },
-    dropdownItem: function(tagLabel, search) {
-      var tagid,
-        _this = this;
-      if (search == null) {
-        search = false;
+    dropdownItem: function(tagLabel, filter) {
+      var tagid;
+      if (filter == null) {
+        filter = false;
       }
       tagid = tagLabel.data('tagid');
       if (tagLabel.length > 0) {
@@ -2270,15 +2319,14 @@
           _openTags[tagid] = true;
         }
       }
-      tagLabel.siblings("dl#tagDropdown_" + tagid).slideToggle("200", function() {
-        return tagLabel.toggleClass("open");
-      });
-      if (!search) {
+      tagLabel.siblings("#tagDropdown_" + tagid).slideToggle("200");
+      tagLabel.toggleClass("open");
+      if (!filter) {
         return bbUtils.localStorage("tagViewSettings", _openTags);
       }
     },
     readDropdownsFromLocal: function(cjTree) {
-      var bool, tag, toPass, _ref;
+      var bool, tag, _ref;
       if (parseInt(cjTree) === 291) {
         if (bbUtils.localStorage("tagViewSettings")) {
           _openTags = bbUtils.localStorage("tagViewSettings");
@@ -2286,8 +2334,7 @@
           for (tag in _ref) {
             bool = _ref[tag];
             if (bool) {
-              toPass = cj("dt.tag-" + tag);
-              this.dropdownItem(toPass);
+              this.dropdownItem(cj("#tagLabel_" + tag));
             } else {
               delete _openTags[tag];
             }
@@ -2334,7 +2381,7 @@
       if (this.position == null) {
         this.position = "";
       }
-      if (this.name.length > _descWidths.normal) {
+      if (this.name.length >= _descWidths.normal) {
         levelModifier = 0;
         if (node.level > 2) {
           levelModifier = node.level * 5;

@@ -176,6 +176,7 @@ _utils =
               nextSpace++
             nextSpace += wordPiece.length + 1
             if nextSpace >= currentEnd
+              nextSpace = currentLastSpace
               break
           if nextSpace > text.length
             currentLastSpace = nextSpace
