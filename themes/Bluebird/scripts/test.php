@@ -97,7 +97,7 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
         entity_id: 15103
       },
       displaySettings: {
-        // wide:false,
+        wide:false
         // lock:false
         // edit:true
         // tagging:true

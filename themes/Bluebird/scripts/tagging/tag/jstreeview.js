@@ -1358,25 +1358,23 @@ Autocomplete = (function() {
           page: _this.positionPage
         };
         _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
-        if (_this.cjTagBox.find(".top-292.tagContainer").hasClass('active')) {
-          return openLeg.query(nextPage, function(results) {
-            var addButtonsTo, filteredList, k, poses, v;
-            poses = _this.addPositionsToTags(results.results);
-            filteredList = {
-              292: poses
-            };
-            _this.getNextPositionRound(results);
-            new Tree(poses, "292", false, cj(".JSTree .top-292"), nextPage);
-            addButtonsTo = "";
-            for (k in nextPage) {
-              v = nextPage[k];
-              addButtonsTo += "." + k + "-" + v;
-            }
-            new Buttons(_this.view, addButtonsTo);
-            _this.openLegQueryDone = true;
-            return _this.buildPositions();
-          });
-        }
+        return openLeg.query(nextPage, function(results) {
+          var addButtonsTo, filteredList, k, poses, v;
+          poses = _this.addPositionsToTags(results.results);
+          filteredList = {
+            292: poses
+          };
+          _this.getNextPositionRound(results);
+          new Tree(poses, "292", false, cj(".JSTree .top-292"), nextPage);
+          addButtonsTo = "";
+          for (k in nextPage) {
+            v = nextPage[k];
+            addButtonsTo += "." + k + "-" + v;
+          }
+          new Buttons(_this.view, addButtonsTo);
+          _this.openLegQueryDone = true;
+          return _this.buildPositions();
+        });
       });
     }
   };
