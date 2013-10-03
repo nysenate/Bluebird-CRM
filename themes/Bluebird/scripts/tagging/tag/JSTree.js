@@ -1071,6 +1071,10 @@
         cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
         cjOverlay.height(this.cj_selectors.tagBox.height());
         return cjOverlay.width(this.cj_selectors.tagBox.width());
+      } else {
+        cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        cjOverlay.css("height", "100%");
+        return cjOverlay.css("width", "100%");
       }
     };
 
@@ -1319,23 +1323,13 @@
       return this.cj_selectors.tagBox.toggle().toggleClass("dropdown");
     };
 
-    View.prototype.toggleDropdown = function(oc) {
-      var boxHeight,
-        _this = this;
-      if (oc == null) {
-        oc = false;
-      }
-      if (oc) {
-        if (this.cj_selectors.tagBox.hasClass("filtered")) {
-          if (this.cj_selectors.tagBox.find(".top-291,.top-296").length > 0) {
-            cj.each(this.cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), function(i, container) {
-              return _this.getTagHeight(cj(container));
-            });
-          }
-          if (this.cj_selectors.tagBox.find(".top-292").length === 1) {
-            cj.each(this.cj_selectors.tagBox.find(".tagContainer.top-292"), function(i, container) {
-              return _this.getTagHeight(cj(container));
-            });
+    View.prototype.toggleDropdown = function(hits) {
+      var boxHeight, k, v;
+      if (this.cj_selectors.tagBox.hasClass("dropdown")) {
+        if (hits != null) {
+          for (k in hits) {
+            v = hits[k];
+            this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
           }
           this.cj_selectors.container.css("position", "static");
           this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
@@ -1343,43 +1337,37 @@
         } else {
           boxHeight = new Resize();
           this.cj_selectors.container.css("position", "relative");
-          return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
+          this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
+          return this.setOverlay();
         }
-      } else {
-        boxHeight = new Resize();
-        this.cj_selectors.container.css("position", "relative");
-        return this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight);
       }
     };
 
-    View.prototype.getTagHeight = function(cjTagContainer, maxHeight) {
-      var _this = this;
+    View.prototype.getTagHeight = function(tagBox, maxHeight) {
+      var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
       if (maxHeight == null) {
         maxHeight = 180;
       }
-      return cj.each(cjTagContainer, function(a, container) {
-        var checkDTs, closestTo, heightTotal, propHeight, v, _i, _j, _len, _len1;
-        checkDTs = [];
-        heightTotal = _this.getRecTagHeight(container);
-        propHeight = 0;
-        for (_i = 0, _len = heightTotal.length; _i < _len; _i++) {
-          v = heightTotal[_i];
-          propHeight += parseInt(v);
-        }
-        if (propHeight > maxHeight) {
-          closestTo = 0;
-          for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
-            v = heightTotal[_j];
-            if (closestTo > maxHeight) {
-              break;
-            }
-            closestTo += parseInt(v);
+      checkDTs = [];
+      heightTotal = this.getRecTagHeight(tagBox);
+      propHeight = 0;
+      for (_i = 0, _len = heightTotal.length; _i < _len; _i++) {
+        v = heightTotal[_i];
+        propHeight += parseInt(v);
+      }
+      if (propHeight > maxHeight) {
+        closestTo = 0;
+        for (_j = 0, _len1 = heightTotal.length; _j < _len1; _j++) {
+          v = heightTotal[_j];
+          if (closestTo > maxHeight) {
+            break;
           }
-          return cj(container).height(closestTo);
-        } else {
-          return cj(container).height(propHeight);
+          closestTo += parseInt(v);
         }
-      });
+        return cj(tagBox).height(closestTo);
+      } else {
+        return cj(tagBox).height(propHeight);
+      }
     };
 
     View.prototype.getRecTagHeight = function(container, heightTotal, already) {
@@ -1884,6 +1872,7 @@
         }
         ev.preventDefault();
         return cj(document).on("mousemove", function(ev, tagBox) {
+          _this.view.toggleDropdown();
           if (ev.pageY - cj(".JSTree").offset().top < maxHeight) {
             return _this.tagBox.css("height", ev.pageY - cj(".JSTree").offset().top);
           }
@@ -1899,7 +1888,7 @@
     var initHint;
 
     function Autocomplete(instance, view) {
-      var a, cjac, debounced, params, searchmonger,
+      var cjac, debounced, params, searchmonger,
         _this = this;
       this.instance = instance;
       this.view = view;
@@ -1929,10 +1918,9 @@
           return _this.initHint = false;
         }
       }));
-      debounced = bbUtils.debounce(this.filterKeydownEvents, 500);
-      a = this;
+      debounced = bbUtils.debounce(this.execSearch, 500);
       cjac.on("keydown", (function(event) {
-        return debounced(a, event, searchmonger, cjac);
+        return _this.filterKeydownEvents(debounced, event, searchmonger, cjac);
       }));
       cjac.on("keyup", (function(event) {
         var keyCode;
@@ -1982,7 +1970,7 @@
           } else {
             name = "";
           }
-          return obj.execSearch(event, searchmonger, cjac);
+          return obj(this, event, searchmonger, cjac);
         default:
           return false;
       }
@@ -2034,18 +2022,18 @@
       return "<dt class='loadingGif' data-parentid='292'>      <div class='tag'>        <div class='ddControl'></div>        <div class='loadingText'>Loading...</div>      </div>    </dt>";
     };
 
-    Autocomplete.prototype.execSearch = function(event, searchmonger, cjac) {
+    Autocomplete.prototype.execSearch = function(obj, event, searchmonger, cjac) {
       var term,
         _this = this;
       term = cjac.val();
       if (term.length >= 3) {
-        this.view.shouldBeFiltered = true;
-        this.doOpenLegQuery();
+        obj.view.shouldBeFiltered = true;
+        obj.doOpenLegQuery();
         return searchmonger.nExec(event, function(terms) {
           var filteredList, foundTags, hcounts, hits, k, tags, v;
           if ((terms != null) && !cj.isEmptyObject(terms)) {
-            tags = _this.sortSearchedTags(terms.tags);
-            hits = _this.separateHits(tags);
+            tags = obj.sortSearchedTags(terms.tags);
+            hits = obj.separateHits(tags);
             hcounts = 0;
             foundTags = [];
             for (k in hits) {
@@ -2053,9 +2041,12 @@
               hcounts += v;
               foundTags.push(parseFloat(k));
             }
-            filteredList = _this.view.buildFilteredList(tags);
-            _this.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
-            return _this.localQueryDone = true;
+            filteredList = obj.view.buildFilteredList(tags);
+            obj.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits);
+            obj.localQueryDone = true;
+            if (obj.view.cj_selectors.tagBox.hasClass("dropdown")) {
+              return obj.view.toggleDropdown(hits);
+            }
           }
         });
       }
@@ -2084,10 +2075,10 @@
           292: hitCount
         });
         _this.buildPositions();
-        _this.openLegQueryDone = true;
-        if (_this.view.cj_selectors.tagBox.hasClass("dropdown")) {
-          return _this.view.toggleDropdown(true);
-        }
+        _this.view.toggleDropdown({
+          292: hitCount
+        });
+        return _this.openLegQueryDone = true;
       });
     };
 
