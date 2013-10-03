@@ -926,19 +926,18 @@ class Autocomplete
             term: @positionSearchTerm
             page: @positionPage
           @cjTagBox.find(".top-292.tagContainer").append(@addPositionLoader())
-          if @cjTagBox.find(".top-292.tagContainer").hasClass('active')
-            openLeg.query(nextPage, (results) =>
-                poses = @addPositionsToTags(results.results)
-                filteredList = {292: poses}
-                @getNextPositionRound(results)
-                new Tree(poses,"292",false,cj(".JSTree .top-292"),nextPage)
-                # " #{k}-#{v} "
-                addButtonsTo = ""
-                for k,v of nextPage
-                  addButtonsTo += ".#{k}-#{v}"
-                new Buttons(@view,addButtonsTo)
-                @openLegQueryDone = true
-                @buildPositions()
+          openLeg.query(nextPage, (results) =>
+              poses = @addPositionsToTags(results.results)
+              filteredList = {292: poses}
+              @getNextPositionRound(results)
+              new Tree(poses,"292",false,cj(".JSTree .top-292"),nextPage)
+              # " #{k}-#{v} "
+              addButtonsTo = ""
+              for k,v of nextPage
+                addButtonsTo += ".#{k}-#{v}"
+              new Buttons(@view,addButtonsTo)
+              @openLegQueryDone = true
+              @buildPositions()
             )
       )
 

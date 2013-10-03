@@ -99,10 +99,34 @@
 </div>
 {if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
-        <div class="BBInit"></div>
-        {literal}
+        <div class="JSTreeInit"></div>
         <script>
-            BBTree.initContainer('', {pullSets: [291]});
+            console.log("trying");
+            var jsTreePageSettings = {
+              pageElements: {
+                wrapper: ['BBTreeContainer'],
+                tagHolder: ['BBTree'],
+                prefix: ['BBtree']
+              },
+              dataSettings: {
+                pullSets: [291,296,292],
+                // pullSets: [291],
+                // entity_id: 18002
+                entity_id: BBCID
+              },
+              displaySettings: {
+                // wide:false
+                // lock:false
+                // edit:true
+                tagging:true
+              },
+              callAjax: {
+                // data: undefined,
+                // url: 'localtagdata.json'
+              }
+            }
+            console.log("trying");
+            jstree.init(jsTreePageSettings, jstree.views);
         </script>
         {/literal}
     {/if}   
