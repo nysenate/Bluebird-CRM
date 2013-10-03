@@ -297,6 +297,10 @@ class View
       cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
       cjOverlay.height(@cj_selectors.tagBox.height())
       cjOverlay.width(@cj_selectors.tagBox.width())
+    else
+      cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
+      cjOverlay.css("height","100%")
+      cjOverlay.css("width","100%")
   setActiveTree: (id) ->
     tabName = @getTabNameFromId(id,true)
     @cj_menuSelectors.tabs.find("div").removeClass("active")
@@ -461,48 +465,56 @@ class View
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
   # addOverlay: () ->
     # @cj_selectors.tagBox.after("")
-  toggleDropdown: (oc = false) ->
+  toggleDropdown: (hits) ->
     # this turns on/off the dropdown based on the tagging/edit functionality
-    if oc
-      if @cj_selectors.tagBox.hasClass("filtered")
-        if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
-          cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
-            @getTagHeight(cj(container))
-          )
-        if @cj_selectors.tagBox.find(".top-292").length == 1
-          cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
-            @getTagHeight(cj(container))
-          )
+    # if oc
+    #   if @cj_selectors.tagBox.hasClass("filtered")
+    #     if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
+    #       cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
+    #         @getTagHeight(cj(container))
+    #       )
+    #     if @cj_selectors.tagBox.find(".top-292").length == 1
+    #       cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
+    #         @getTagHeight(cj(container))
+    #       )
+    #     @cj_selectors.container.css("position","static")
+    #     @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+    #     @setOverlay()
+    #   else
+    #     console.log "here"
+    #     boxHeight = new Resize()
+    #     @cj_selectors.container.css("position","relative")
+    #     @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)  
+    # else
+    if @cj_selectors.tagBox.hasClass("dropdown")
+      if hits?
+        for k,v of hits
+          @getTagHeight(@cj_selectors.tagBox.find(".top-#{k}"))
         @cj_selectors.container.css("position","static")
         @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
         @setOverlay()
       else
         boxHeight = new Resize()
         @cj_selectors.container.css("position","relative")
-        @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)  
-    else
-      boxHeight = new Resize()
-      @cj_selectors.container.css("position","relative")
-      @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight)
+        @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)
+        @setOverlay()
   
-  getTagHeight:(cjTagContainer,maxHeight = 180) ->
+  getTagHeight:(tagBox,maxHeight = 180) ->
     # get all dl's
-    cj.each(cjTagContainer, (a,container) =>
-      checkDTs = []
-      heightTotal = @getRecTagHeight(container)
-      propHeight = 0
+    checkDTs = []
+    heightTotal = @getRecTagHeight(tagBox)
+    propHeight = 0
+    for v in heightTotal
+      propHeight += parseInt(v)
+    if propHeight > maxHeight
+      closestTo = 0
       for v in heightTotal
-        propHeight += parseInt(v)
-      if propHeight > maxHeight
-        closestTo = 0
-        for v in heightTotal
-          if closestTo > maxHeight
-            break
-          closestTo += parseInt(v)
-        cj(container).height(closestTo)
-      else
-        cj(container).height(propHeight)
-    )
+        if closestTo > maxHeight
+          break
+        closestTo += parseInt(v)
+      cj(tagBox).height(closestTo)
+    else
+      cj(tagBox).height(propHeight)
 
   
   getRecTagHeight:(container,heightTotal = [],already) ->
@@ -813,6 +825,7 @@ class Resize
         @tagBox.removeClass("dropdown")
       ev.preventDefault()
       cj(document).on("mousemove", (ev,tagBox) =>
+          @view.toggleDropdown()
           if ev.pageY-cj(".JSTree").offset().top < maxHeight
             @tagBox.css("height",ev.pageY-cj(".JSTree").offset().top)
         )
@@ -841,10 +854,18 @@ class Autocomplete
         cjac.css("color","#000")
         @initHint = false
     )
-    debounced = bbUtils.debounce(@filterKeydownEvents,500)
-    a = @
-    cjac.on "keydown",((event) ->
-      debounced(a,event,searchmonger,cjac)
+    # modded the debounce a little. it HAS to live outside
+    # of the event. that said
+    # now it allows keydown events, but only actually
+    # triggers a search event on debounce
+    # debounced = bbUtils.debounce(@filterKeydownEvents,500)
+    # a = @
+    # cjac.on "keydown",((event) ->
+    #   debounced(a,event,searchmonger,cjac)
+    # )
+    debounced = bbUtils.debounce(@execSearch,500)
+    cjac.on "keydown", ((event) =>
+      @filterKeydownEvents(debounced,event,searchmonger,cjac)
     )
     cjac.on "keyup", ((event) =>
       keyCode = bbUtils.keyCode(event)
@@ -884,11 +905,16 @@ class Autocomplete
         # return @moveDropdown(keyCode.type)
       when "letters","delete","math","punctuation","number"
         if keyCode.type != "delete" then name = keyCode.name  else name = ""
-        return obj.execSearch(event,searchmonger,cjac)
+        return obj(@,event,searchmonger,cjac)
+        # return obj.execSearch(event,searchmonger,cjac)
       else
         return false
-    
-
+    # debounced = bbUtils.debounce(@filterKeydownEvents,500)
+    # a = @
+    # cjac.on "keydown",((event) ->
+    #   debounced(a,event,searchmonger,cjac)
+    # )
+  
   buildPositions: (list,term,hits) ->
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
@@ -923,24 +949,26 @@ class Autocomplete
         <div class='loadingText'>Loading...</div>
       </div>
     </dt>"
-  execSearch: (event,searchmonger,cjac) ->
+  execSearch: (obj,event,searchmonger,cjac) ->
     term = cjac.val()
     if term.length >= 3
-      @view.shouldBeFiltered = true
-      @doOpenLegQuery()
+      obj.view.shouldBeFiltered = true
+      obj.doOpenLegQuery()
       searchmonger.nExec(event, (terms) =>
         if terms? && !cj.isEmptyObject(terms)
-          tags = @sortSearchedTags(terms.tags)
-          hits = @separateHits(tags)
+          tags = obj.sortSearchedTags(terms.tags)
+          hits = obj.separateHits(tags)
           hcounts = 0
           foundTags = []
           # where trees the tags are in
           for k,v of hits
             hcounts += v
             foundTags.push(parseFloat(k))
-          filteredList = @view.buildFilteredList(tags)
-          @view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
-          @localQueryDone = true
+          filteredList = obj.view.buildFilteredList(tags)
+          obj.view.writeFilteredList(filteredList, terms.term.toLowerCase(), hits)
+          obj.localQueryDone = true
+          if obj.view.cj_selectors.tagBox.hasClass("dropdown")
+            obj.view.toggleDropdown(hits)
       )
   doOpenLegQuery:() ->
     openLeg = new OpenLeg
@@ -956,10 +984,9 @@ class Autocomplete
           hitCount = results.seeXmore
         @view.writeFilteredList(filteredList,terms.toLowerCase(),{292: (hitCount)})
         @buildPositions()
+        @view.toggleDropdown({292:(hitCount)})
         @openLegQueryDone = true
-        if @view.cj_selectors.tagBox.hasClass("dropdown")
-          @view.toggleDropdown(true)
-        )
+      )
     # console.log "call: term: #{terms} #{new Date().getSeconds()}.#{new Date().getMilliseconds()}"
     
     # @queryPending.push "#{terms}"

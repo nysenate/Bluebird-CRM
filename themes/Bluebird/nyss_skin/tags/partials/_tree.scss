@@ -38,23 +38,23 @@
       background-color:white;
       height: 150px;
     }
-    .top-291{
-      @include addColors($issueCodesColor,.3);
-    }
-    .top-296{
-      @include addColors($keywordsColor,.3);
-    }
-    .top-292{
+    // .top-291{
+    //   @include addColors($issueCodesColor,.3);
+    // }
+    // .top-296{
+    //   @include addColors($keywordsColor,.3);
+    // }
+    // .top-292{
+    //   @include addColors($positionsColor,.5);
+    // }
+    &.top-292-active {
       @include addColors($positionsColor,.5);
     }
-    &.top-292-active {
-      @include tag-lightness($positionsColor,.5);
-    }
     &.top-291-active {
-      @include tag-lightness($issueCodesColor,.3);
+      @include addColors($issueCodesColor,.3);
     }
     &.top-296-active {
-      @include tag-lightness($keywordsColor,.3);
+      @include addColors($keywordsColor,.3);
     }
     @include round-bottom-corners(3px);
   }
