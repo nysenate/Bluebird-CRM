@@ -14,10 +14,63 @@
   background-color:rgba(0,0,0,.2);
   z-index: 15;
   right:0px;
-}
-.label {
-  background-color:#ccc;
-  @include round-corners(5px);
-  color:#fff;
-  padding:4px;
+  .label {
+    background-color:lighten(#999,5%);
+    @include round-corners(5px);
+    color:#fff;
+    padding:4px;
+    display: inline-block;
+    float:left;
+    clear:both;
+    margin-left:2%;
+    letter-spacing: 1px;
+    @include inset-shadow(-2px,-1px,3px,.35);
+  }
+  .header {
+    @extend .label;
+    background-color:darken(#aaa,10%);
+    margin:5px 0 10px;
+    font-size:1.2em;
+    font-weight:bold;
+    letter-spacing: 1px;
+    text-align:center;
+    float:none;
+    clear:both;
+    display:block;
+
+  }
+  .textBox {
+    @include round-corners(5px);
+    margin-left:2%;
+    margin-bottom:5px;
+  }
+  .submit {
+    @extend .label;
+    background-color:darken(#aaa,10%);
+    margin-top:5px;
+    font-weight:bold;
+    text-transform: capitalize;
+    float:left;
+    margin-right:2%;
+    cursor:pointer;
+    clear:none;
+    &:active {
+
+    }
+    &:hover {
+
+    }
+  }
+  .cancel {
+    @extend .submit;
+    float:right;
+    background-color:lighten(#aaa,5%)
+  }
+  .isReserved {
+    // float:left;
+    // clear:both;
+    &:input{
+      margin-left:10px;
+    }
+  }
 }
