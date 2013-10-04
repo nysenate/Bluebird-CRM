@@ -5,7 +5,7 @@
 # Project: BluebirdCRM
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
-# Date: 2013-07-24
+# Date: 2013-10-04
 #
 
 prog=`basename $0`
@@ -35,8 +35,14 @@ echo "Enabling nyss_deletetrashed module..."
 $drush $instance en nyss_deletetrashed -y -q
 echo "Enabling nyss_exportpermissions module..."
 $drush $instance en nyss_exportpermissions -y -q
-echo "Enabling nyss_loadsampledata module..."
-$drush $instance en nyss_loadsampledata -y -q
+
+case $instance in
+  training*|sd99)
+    echo "Enabling nyss_loadsampledata module..."
+    $drush $instance en nyss_loadsampledata -y -q
+    ;;
+  *) echo "Skipping the enabling of nyss_loadsampledata module" ;;
+esac
 
 ## 7022 create and populate long form school district table
 echo "Creating and populating school district code lookup table..."
@@ -93,8 +99,13 @@ sql="
 $execSql $instance -c "$sql"  --drupal -q
 
 ## 7134
-echo "Adding values to individual prefix..."
-sql="
+echo "Examining option_value table for Assembly prefixes..."
+sql="select count(*) from civicrm_option_value where name like 'Assembly%' and option_group_id=(select id from civicrm_option_group where name='individual_prefix')"
+cnt=`$execSql $instance -c "$sql" -q`
+
+if [ $cnt -eq 0 ]; then
+  echo "Adding Assembly values to individual prefix"
+  sql="
 SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'individual_prefix';
 SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
 SELECT @wght:=weight FROM civicrm_option_value WHERE option_group_id = @optgrp AND name = 'Admiral';
@@ -104,7 +115,12 @@ VALUES (@optgrp, 'Assemblyman', @maxval+1, 'Assemblyman', @wght+1, 1),
   (@optgrp, 'Assemblymember', @maxval+2, 'Assemblymember', @wght+2, 1),
   (@optgrp, 'Assemblywoman', @maxval+3, 'Assemblywoman', @wght+3, 1);
 "
-$execSql $instance -c "$sql" -q
+  $execSql $instance -c "$sql" -q
+elif [ $cnt -eq 3 ]; then
+  echo "All 3 Assembly prefixes are already available"
+else
+  echo "ERROR: Found $cnt Assembly prefixes, but we are expecting 0 or 3; this must be manually fixed"
+fi
 
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
