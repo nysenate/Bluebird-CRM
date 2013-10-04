@@ -96,7 +96,7 @@ LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.so
         break;
       case 'civicrm_case':
         $contactIdClause = "AND id = (select case_id FROM civicrm_case_contact WHERE contact_id = %3 LIMIT 1)";
- 	 	 	  break;
+        break;
       //NYSS 7049
       default:
         if (array_key_exists($table, $addressCustomTables)) {
@@ -111,19 +111,6 @@ LEFT JOIN civicrm_activity source ON source.id = lt.id             AND source.so
         if ( strpos($table, 'civicrm_value') !== false ) {
           $contactIdClause = "AND entity_id = %3";
         }
-
-      //NYSS 7045
-      /*case 'civicrm_value_district_information_7':
-        $join = "
-          JOIN civicrm_address a ON lt.entity_id = a.id
-        ";
-        $contactIdClause = "AND a.contact_id = %3";
-        break;
-      default:
-        $contactIdClause = "AND contact_id = %3";
-        if ( strpos($table, 'civicrm_value') !== false ) {
-          $contactIdClause = "AND entity_id = %3";
-        }*/
       }
     }
 
