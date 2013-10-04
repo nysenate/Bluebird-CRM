@@ -31,11 +31,11 @@ fi
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
 ## Enable new modules
-echo "Enabling nyss_deletetrashed module"
+echo "Enabling nyss_deletetrashed module..."
 $drush $instance en nyss_deletetrashed -y -q
-echo "Enabling nyss_exportpermissions module"
+echo "Enabling nyss_exportpermissions module..."
 $drush $instance en nyss_exportpermissions -y -q
-echo "Enabling nyss_loadsampledata module"
+echo "Enabling nyss_loadsampledata module..."
 $drush $instance en nyss_loadsampledata -y -q
 
 ## 7022 create and populate long form school district table
@@ -93,6 +93,7 @@ sql="
 $execSql $instance -c "$sql"  --drupal -q
 
 ## 7134
+echo "Adding values to individual prefix..."
 sql="
 SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'individual_prefix';
 SELECT @maxval:=max(cast(value as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
@@ -103,7 +104,7 @@ VALUES (@optgrp, 'Assemblyman', @maxval+1, 'Assemblyman', @wght+1, 1),
   (@optgrp, 'Assemblymember', @maxval+2, 'Assemblymember', @wght+2, 1),
   (@optgrp, 'Assemblywoman', @maxval+3, 'Assemblywoman', @wght+3, 1);
 "
-$execSql -i $instance -c "$sql" -q
+$execSql $instance -c "$sql" -q
 
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
