@@ -19,6 +19,7 @@ jstree =
       view["done"].call(@, instance)
       )
     instance
+  
 setProp = (properties..., instance) ->
   for k, v of properties[0]
     instance.set k,v
@@ -122,11 +123,14 @@ class Instance
     get: -> @_entity
     set: (a) -> @_entity = a
   getEntity: (entityId, cb) ->
+    console.log entityId
     if entityId == 0
       dataSettings = @get 'dataSettings'
       entityId = dataSettings.entity_id
       # @set 'dataSettings', dataSettings
+
     @entity = new Entity(entityId, (tags) =>
+
       cb.call(@,tags)
     )
 
@@ -191,8 +195,17 @@ _utils =
     
   hyphenize: (text) ->
     text.replace(" ","-")
-  createLabel: (labelName, className...) ->
-
+  camelCase: (text) ->
+    a = text.split(" ")
+    b = ""
+    for word,i in a
+      if i isnt 0
+        word = word.toLowerCase()
+        word = word.charAt(0).toUpperCase() + word.substring(1)
+      else
+        word = word.toLowerCase()
+      b += word
+    return b
   _createInputBox: (type,name,value = "",classNames...) ->
     classes = classNames.join(" ")
     return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"

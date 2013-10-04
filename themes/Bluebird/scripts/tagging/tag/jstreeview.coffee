@@ -14,8 +14,11 @@ window.jstree["views"] =
       resize.addResize(instance,@view)
     else
       @view.cj_tokenHolder.resize.remove()
-    
-  view: {}
+  changeEntity: (entity_id) ->
+    # get entity id from instance
+    @view = jstree.view
+    @view.entity_id = entity_id
+    @view.applyTagged()
 
 class View
   @property "trees",
@@ -65,21 +68,30 @@ class View
     print: true
     lock: false
   entity_id: 0
+  entityList: []
   defaultPrefix: "JSTree"
   prefixes: []
   defaultTree: 0
   descWidths:
     normal: 75
     long: 150
+  # starts the chain to write the page structure
   constructor: (@instance) ->
-    # starts the chain to write the page structure
     @writeContainers()
+  # applies tags to entity, by procuring them from instance.getEntity,
   applyTagged:() ->
     @instance.getEntity(@entity_id, (tags) =>
+        if @entityList.length > 0
+          @removeAllTagsFromEntity()
         @entityList = tags
         @applyTaggedKWIC()
         @applyTaggedPositions()
       )
+  removeAllTagsFromEntity:() ->
+    cjDTs = @cj_selectors.tagBox.find("dt")
+    cjDTs.find("dt").removeClass("shaded").removeClass("shadedChildren")
+    cjDTs.find("dt input.checkbox").prop("checked",false)
+  # uses current view.entityList and applies that to the view
   applyTaggedKWIC:(filter="") ->
     findList = []
     for i in @entityList
@@ -90,11 +102,17 @@ class View
       cj(DT).find(".fCB input.checkbox").prop("checked",true)
       @hasTaggedChildren(cj(DT))  
     )
+  # turns the arbitrarily ID's incoming positions into their real, local DB value
+  # based on procuring the values from the DB and applying them
+  # based on their name, i.e. "S2953-2013", and by removing the position from them
+  # via regex
   findPositionLocalMatch:(cjDT) ->
     name = cjDT.find(".tag .name").text
     for a,b of @instance.positionList
       name = _utils.removePositionTextFromBill(cjDT.name)
       position = cjDT.data("position")
+  # tags the positions, as opposed to applyTaggedKWIC on initial load
+  # to show all currently tagged positions on an entity
   applyTaggedPositions:() ->
     posList = []
     trees = @trees
@@ -114,6 +132,8 @@ class View
       cjDTs.addClass("shaded")
       cjDTs.find(".fCB input.checkbox").prop("checked",true)
       @trees = trees
+
+  # controls the writers for the initial HTML to create the box
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
@@ -135,6 +155,9 @@ class View
         @addClassesToElement(height)
     else
       @buildDropdown()
+  # checks on if the settings describe the box as tall or wide
+  # and sets the widths for the text processer (_utils.textWrap)
+  # to follow when it writes tags
   setDescWidths: (tall,wide) ->
     if !tall?
       tall = @settings.tall
@@ -155,18 +178,22 @@ class View
       else
         _descWidths.normal = 38
         _descWidths.long = 38
+  # writes the html for a not tall dropdown box
   buildDropdown: () ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox} dropdown'></div><div class='JSTree-overlay'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
     @cj_selectors.initHolder.removeClass(@selectors.initHolder).attr("id", @selectors.container).addClass(@selectors.containerClass)
+  # writes the html for a tall scrollbox
   addClassesToElement: (height) ->
     @cj_selectors.initHolder.html "<div class='#{@selectors.tagBox}' #{height}></div><div class='JSTree-overlay'></div>"
     @cj_selectors.initHolder.prepend(@menuHtml(@menuSelectors))
     @cj_selectors.initHolder.append(@dataHolderHtml())
     @cj_selectors.initHolder.append(@tokenHolderHtml(@tokenHolder))
     @cj_selectors.initHolder.removeClass(@selectors.initHolder).attr("id", @selectors.container).addClass(@selectors.containerClass)
+  # initializes and sets up variables for the view to use
+  # along with @cj_xyz shortcuts for cached jquery variables
   formatPageElements: () ->
     pageElements = @instance.get 'pageElements'
     displaySettings = @instance.get 'displaySettings'
@@ -188,6 +215,9 @@ class View
     @selectors.byHeightWidth = @setByHeightWidth()
     if !@settings.wide
       @selectors.containerClass += " narrow"
+  # util function that should be moved to _utils
+  # writes out the prefix 'BBTree' on all CSS classes
+  # used for custom theming based on location (via display settings)
   joinPrefix: () ->
     for v in @settingCollection
       for k,o of @["#{v}"]
@@ -206,11 +236,12 @@ class View
 
               name += " " if @prefixes.length - 1 > i
             @["#{v}"][k] = name
-
+  # iterator for createCJfrom Obj
   createSelectors: () ->
     for v in @settingCollection
       @createCJfromObj(@[v],v)
-
+  # smaller function of createSelctors, useful for only
+  # creating cj updates for a single object branch
   createCJfromObj: (obj, name) ->
     cjed = {}
     for k,v of obj
@@ -220,13 +251,15 @@ class View
         selectorType = "#" if obj["idedKeys"].indexOf(k) >= 0
       cjed[k] = cj("#{selectorType}#{cj.trim(v).replace(/\ /g, ".")}")
     @["cj_#{name}"] = cjed
-  
+  # sets the page css for narrow/short
   setByHeightWidth: () ->
     ret = ""
     ret += "narrow " unless @settings.wide
     ret += "short" unless @settings.tall
     ret
 
+  # html for menu. should be moved to its own class
+  # you can use __super__ to overwrite the html if you have to
   menuHtml: (name) -> 
     return "
       <div class='#{name.menu}'>
@@ -242,6 +275,8 @@ class View
        </div>
       </div>
     "
+  # html for token. should be moved to its own class
+  # you can use __super__ to overwrite the html if you have to
   tokenHolderHtml: (name) ->
     return "
         <div class='#{name.box}'>
@@ -252,8 +287,14 @@ class View
          </div>
         </div>
       "
+  # html for where the 'tags' live. should be moved to its own class
+  # you can use __super__ to overwrite the html if you have to
   dataHolderHtml: () ->
     return "<div id='JSTree-data' style='display:none'></div>"
+  
+  # init is called on execution of the inital response of tag data from the server
+  # once it's been processed, it re-executes the selectors and updates them
+  # based on changes in the dom
   init:() ->
     @createSelectors()
     _treeVisibility.currentTree = _treeVisibility.defaultTree = _treeVisibility.previousTree = @settings.defaultTree
@@ -267,6 +308,10 @@ class View
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
     buttons = new Buttons(@)
     @setTaggingOrEdit()
+  # sets tagging functions or edit functions
+  # depending on if the settings call for tagging or edit
+  # you can write accessors (like in jstree["views"] to, post load, change this data)
+  # or your own accessor class
   setTaggingOrEdit: () ->
     if @cj_selectors.tagBox.hasClass("tagging,edit")
       @cj_selectors.tagBox.removeClass("tagging").removeClass("edit")
@@ -276,11 +321,13 @@ class View
       @cj_selectors.tagBox.addClass("edit")
     if @settings.tagging
       @cj_selectors.tagBox.addClass("tagging")
-      @applyTagged(@entity_id)
+      @applyTagged()
+  # jquery for functionality when you click on a menu tab
   createTabClick: (tabName, tabTree) ->
     @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
     @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
       @showTags tabTree,tabName
+  # changes shown tags based on current tree and previous tree.
   showTags: (currentTree, tabName, noPrev) ->
     if currentTree != _treeVisibility.currentTree
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(_treeVisibility.currentTree,true)}").removeClass("active")
@@ -292,6 +339,10 @@ class View
       @cj_selectors.tagBox.find(".top-#{currentTree}").toggle().addClass("active")
       @cj_selectors.tagBox.addClass("top-#{currentTree}-active")
       @setOverlay()
+  # overlay is a 'color' box which provides the coloring for the backgrounds
+  # and the dropdown white background-height for variable height dropdowns
+  # it's important because you won't have a white background all the time
+  # and the dropdown floats over text, and is transparent
   setOverlay:() ->
     if @cj_selectors.tagBox.hasClass("dropdown")
       cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
@@ -301,6 +352,7 @@ class View
       cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
       cjOverlay.css("height","100%")
       cjOverlay.css("width","100%")
+  # sets the "active" tree, visible, and the tab to be declared "active
   setActiveTree: (id) ->
     tabName = @getTabNameFromId(id,true)
     @cj_menuSelectors.tabs.find("div").removeClass("active")
@@ -308,21 +360,25 @@ class View
     @cj_menuSelectors.tabs.find(".tab-#{tabName}").addClass("active")
     @cj_selectors.tagBox.find(".top-#{id}").addClass("active").css("display","block")
     @cj_selectors.tagBox.addClass("top-#{id}-active")
+  # writes the tabs HTML based on # of tabs.
   createTreeTabs: (tabName, isHidden = false) ->
     if isHidden then style = "style='display:none'" else style = ""
     tabClass = (_utils.hyphenize(tabName)).toLowerCase()
     output = "<div class='tab-#{tabClass}' #{style}>#{tabName}</div>"
     @cj_menuSelectors.tabs.append(output)
+  # utility class. gets the tab name (issue-codes) from tree id (291)
   getTabNameFromId: (id, hyphenize = false) ->
     treeNames = @instance.treeNames
     return treeNames[id] unless hyphenize
     return _utils.hyphenize(treeNames[id]).toLowerCase()
+  # utility class. gets the tab id (291) from tab-name ("tab-issue-codes")
   getIdFromTabName: (tabName) ->
     tabName = cj.trim(tabName)
     return 291 if tabName == "tab-issue-codes" or tabName == "issue-codes"
     return 296 if tabName == "tab-keywords" or tabName == "keywords"
     return 292 if tabName == "tab-positions" or tabName == "positions"
-      
+  # builds a filtered list of the tags that are to be written
+  # and makes sure there's no duplication
   buildFilteredList: (tags) ->
     checkAgainst = {}
     for m,n of tags
@@ -338,6 +394,7 @@ class View
     buildList
 
   # instance variables
+  # might be unnecessary, should deprecate
   shouldBeFiltered: false
   currentWrittenTerm: ""
   queryLog:
@@ -345,6 +402,8 @@ class View
     "296": []
     "292": []
 
+  # i thing this is incorrectly implemented
+  # should memoize the query results and return them
   createQueryLog: (term,tree) ->
     if @queryLog[tree].lastIndexOf(term) < 0
       @queryLog[tree].push term
@@ -353,8 +412,7 @@ class View
         return false
     return true
 
-  writeEmptyList: (term,tree) ->
-
+  # writes the list of tags to be added (291:array_of_objs,296:array_of_objs)
   writeFilteredList: (list,term,hits = {}) ->
     if !@shouldBeFiltered
       return false
@@ -390,6 +448,7 @@ class View
           for a,b of @instance.positionList
             iO = b.id.indexOf(@entityList)
             if iO > -1
+              console.log b.id
               cjDTs = @cj_selectors.tagBox.find("#tagLabel_#{b.id}")
               cjDTs.addClass("shaded")
               cjDTs.find(".fCB input.checkbox").prop("checked",true)
@@ -404,7 +463,7 @@ class View
 
     @setActiveTree(@getIdFromTabName(activeTree))
 
-    
+  # what it says, but i don't think it's implemented
   noResultsBox: (treeId,k) ->
     activeTree = @getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
     if parseInt(k) == parseInt(activeTree) then isActive = "active" else isActive = ""
@@ -417,6 +476,9 @@ class View
           "
     cj(".JSTree").append(noResults)
 
+  # when you go to zero length of the text input, you should go back to 
+  # the initial state of the tree, which uses memoized trees to
+  # quickly shift back and forth
   rebuildInitialTree: () ->
     if @cj_selectors.tagBox.hasClass("filtered")
       @cj_selectors.tagBox.removeClass("filtered")
@@ -437,7 +499,7 @@ class View
       if @settings.tagging
         @applyTaggedKWIC()
       @setActiveTree(@getIdFromTabName(activeTree))
-
+  # sets the 'hits' result that a query returns to the tabs
   setTabResults: (tree,val) ->
     cjTab = @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(tree, true)}")
     if cjTab.find("span").length > 0
@@ -445,14 +507,14 @@ class View
     else
       result = cjTab.html()
       cjTab.html("#{result}<span>(#{val})</span>")
-        
-
+  # removes the tab count for rebuild tree situations
   removeTabCounts: (id) ->
     if id?
       @cj_menuSelectors.tabs.find(".#{} span").remove()
     else
       @cj_menuSelectors.tabs.find("span").remove()
 
+  # this is useful on 
   addPositionReminderText: (cjlocation) ->
     positionText = "
               <div class='position-box-text-reminder'>
@@ -461,31 +523,11 @@ class View
           "
     cjlocation.html(positionText)
 
+  # shortcut for the toggleClass on a tagbox
   toggleTagBox: () ->
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
-  # addOverlay: () ->
-    # @cj_selectors.tagBox.after("")
+  # this turns on/off the dropdown based on the tagging/edit functionality
   toggleDropdown: (hits) ->
-    # this turns on/off the dropdown based on the tagging/edit functionality
-    # if oc
-    #   if @cj_selectors.tagBox.hasClass("filtered")
-    #     if @cj_selectors.tagBox.find(".top-291,.top-296").length > 0
-    #       cj.each(@cj_selectors.tagBox.find(".tagContainer:not('.top-292')"), (i,container) =>
-    #         @getTagHeight(cj(container))
-    #       )
-    #     if @cj_selectors.tagBox.find(".top-292").length == 1
-    #       cj.each(@cj_selectors.tagBox.find(".tagContainer.top-292"), (i,container) =>
-    #         @getTagHeight(cj(container))
-    #       )
-    #     @cj_selectors.container.css("position","static")
-    #     @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
-    #     @setOverlay()
-    #   else
-    #     console.log "here"
-    #     boxHeight = new Resize()
-    #     @cj_selectors.container.css("position","relative")
-    #     @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)  
-    # else
     if @cj_selectors.tagBox.hasClass("dropdown")
       if hits?
         for k,v of hits
@@ -498,9 +540,9 @@ class View
         @cj_selectors.container.css("position","relative")
         @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)
         @setOverlay()
-  
+  # queries the height of the tag box so that it can inform the selector
+  # how large the tags are in the box, based on their DOM height
   getTagHeight:(tagBox,maxHeight = 180) ->
-    # get all dl's
     checkDTs = []
     heightTotal = @getRecTagHeight(tagBox)
     propHeight = 0
@@ -516,7 +558,9 @@ class View
     else
       cj(tagBox).height(propHeight)
 
-  
+  # if there's more than 8 elements, show only those 8
+  # i think this is primarily to not cut off individual
+  # tags?
   getRecTagHeight:(container,heightTotal = [],already) ->
     if heightTotal.length > 8
       return heightTotal
@@ -527,9 +571,14 @@ class View
         return false
     )
     return heightTotal
+  
+  # this is view's action wrapper
   createAction: (tagId="",action,cb) ->
-    # this is where you save previous history
     new Action(@,@instance,tagId,action,cb)
+
+  # creates the event bindings for tag checkboxes
+  # when it's checked, then it calls the internal actions
+  # relating to the status
   toggleCheckInBox: () ->
     a = @
     @cj_selectors.tagBox.find("dt input.checkbox").off("change")
@@ -579,6 +628,8 @@ class View
         action.tagId = tagId
         toggleClass.call(@,cjDT)
     )
+  # checks to see if a given tag has descendants that are checked as well
+  # so we can provide inheritance tracking
   hasTaggedChildren: (cjDT) ->
     tagId = cjDT.data("tagid")
     if cjDT.siblings("#tagDropdown_#{tagId}").find("dt.shaded").length > 0
@@ -595,6 +646,8 @@ class View
         cjSiblingDT.removeClass("shadedChildren") 
 
 
+# action creates the events required to interact with tag manipulation
+# not entity manipulation
 class Action
   ajax:
     addTag:
@@ -604,22 +657,33 @@ class Action
         description: ""
         parent_id: ""
         is_reserved: true
+  fields:
+    addTag: ["Tag Name","Description","Is Reserved"]
+  # constructor uses name based applications to call functions
+  # so you only have to remember to call new Action
   constructor: (@view, @instance, tagId, action,@cb) ->
-    # @createSlide()
+    # 
     for k,v of @ajax
       v.data["call_uri"] = window.location.href
       v["dataType"] = "json"
     @[action].apply(@,[tagId,action])
+  # createSlide pulls a slider from right side to provide a platform for editing tags
+  # if it's tall enough, if not, uses the bottom.
   createSlide: () ->
     resize = new Resize
     @view.cj_selectors.tagBox.addClass("hasSlideBox")
-    if resize.height > 200
+    if resize.height > 190
       @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
-      @view.cj_selectors.tagBox.find(".slideBox").css("right","#{@findGutterSpace()}px")
-      @view.cj_selectors.tagBox.find(".slideBox").animate({width:'40%'}, 500, =>
-        # console.log "time to populate"
+      # memoize this
+      @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
+      @cj_slideBox.css("right","#{@findGutterSpace()}px")
+      @cj_slideBox.animate({width:'50%'}, 500, =>
+        @cj_slideBox.append(@slideHtml)
       )
     else
+      # it adds a dropdown
+  # creates a tag from thin air, for positions.
+  # this should be broken up into separate non-private functions
   addTagFromPosition:(tagId,action) ->
     manipBox = (tagId,messageId) =>
       cjDL = @view.cj_selectors.tagBox.find("#tagDropdown_#{tagId}")
@@ -635,6 +699,7 @@ class Action
     @ajax.addTag.data.parent_id = "292"
     @ajax.addTag.data.is_reserved = true
     for k,v of @instance.positionList
+      # need to figure out a better way to implement this?
       if _utils.removePositionTextFromBill(@ajax.addTag.data.name) == v.name
         if _utils.checkPositionFromBill(@ajax.addTag.data.name) == v.pos
           manipBox.call(@,cjDT.data("tagid"),v.id)
@@ -642,12 +707,7 @@ class Action
             id: v.id
           response = {"cjDT": cjDT,"message":message}
           @cb(response)
-    @addTag(tagId,action, (message) =>
-      # change tag onces completed
-      # if message == "ERROR: `tag_id` parameter is required to identify the tag to apply."
-      #   cjDT.prop("checked",false)
-      #   console.log message
-      #   return false
+    @addTagAjax(tagId,action, (message) =>
       if message == "DB Error: already exists"
         cjDT.prop("checked",false)
         if @cb?
@@ -658,14 +718,47 @@ class Action
         response = {"cjDT": cjDT,"message":message}
         @cb(response)
     )
-
+  # finds the gutter space for active tag containers
+  # so that create slide doesn't overlap the scroll bar 
   findGutterSpace: () ->
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
     return outerWidth-innerWidth
-
+  # values provides a shell for updateTag to use same field
+  # but add in values
+  addTag: (values="") ->
+    @createSlide()
+    @slideHtml = @gatherLabelHTML()
+  removeTag: () ->
+    @createSlide()
   moveTag: () ->
-  addTag: (tagId,action,locCb) ->
+    @createSlide()
+  mergeTag: () ->
+    @createSlide()
+  updateTag: () ->
+    # gather values
+    # addTag values
+  gatherLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html = label.buildLabel("header","Add Tag","Add Tag#{}")
+    for field in @fields.addTag
+      # html += "<div>"
+      # creates label
+      html += label.buildLabel("label",field,field)
+      # in update tag, this is important
+      if field is "Is Reserved"
+        html += label.buildLabel("checkBox",field,"")
+      else
+        html += label.buildLabel("textBox",field,"")
+      # html += "</div>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    return html
+  # addTag is merely a validation and request wrapper. should be explicitly called
+  # and provide methods based on tagId properties which are discernable from 
+  # the tagId (via a jQuery search)
+  addTagAjax: (tagId,action,locCb) ->
     if @ajax.addTag.data.name == ""
       @cb(false) if @cb?
       return false
@@ -677,10 +770,64 @@ class Action
           @cb(data.message)
       )
     return @
-  removeTag: () ->
-  mergeTag: () ->
-  updateTag: () ->
+  removeTagAjax: () ->
+  moveTagAjax: () ->
+  mergeTagAjax: () ->
+  updateTagAjax: () ->
 
+class Label
+  defaults:
+    header:
+      className: "label header"
+      value: "Header"
+    label:
+      className: "label"
+      value: "Label"
+    textBox:
+      className: "textBox"
+      value: ""
+      name: ""
+    submit:
+      className: "label submit"
+      value: "Submit"
+    checkBox:
+      className: "checkBox"
+      value: ""
+    cancel:
+      className: "label cancel"
+      value: "Cancel"
+  buildLabel:(type,className,value) ->
+    @passed =
+      className: _utils.camelCase(className)
+      value: value
+    console.log @passed
+    @[type].call(@,null)
+  header:() ->
+    @passed.value ?= @.defaults.header.value
+    return "<div class='#{@.defaults.header.className} #{@passed.className}'>#{@passed.value}</div>"
+  label:() ->
+    # pass.className ?= defaults.label.className
+    @passed.value ?= @.defaults.label.value
+    return "<div class='#{@.defaults.label.className} #{@passed.className}'>#{@passed.value}</div>"
+  textBox:() ->
+    @passed.className ?= @.defaults.textBox.className
+    @passed.value ?= @.defaults.textBox.value
+    return "<input type='text' class='#{@.defaults.textBox.className} #{@passed.className}' name='#{@passed.className}'>"
+  checkBox:() ->
+    @passed.className ?= @.defaults.textBox.className
+    # @passed.value ?= @.defaults.textBox.value
+    # checked='#{}'
+    return "<input type='checkbox' class='#{@.defaults.checkBox.className} #{@passed.className}' name='#{@passed.className}'>"
+  submit:() ->
+    # @passed.className ?= @.defaults.submit.className
+    @passed.value ?= @.defaults.submit.value
+    return "<div class='#{@.defaults.submit.className} #{@passed.className}'>#{@passed.value}</div>"
+  cancel:() ->
+    # @passed.className ?= @.defaults.submit.className
+    @passed.value ?= @.defaults.cancel.value
+    return "<div class='#{@.defaults.cancel.className} #{@passed.className}'>#{@passed.value}</div>"
+
+# buttons handles creating and removing checkboxes, and fCB tags
 class Buttons
   checkbox: "<input type='checkbox' class='checkbox'>"
   addTag: "<li class='addTag' title='Add New Tag' data-do='add'></li>"
@@ -691,6 +838,7 @@ class Buttons
   convertTag: "<li class='convertTag' title='Convert Keyword' data-do='convert'></li>"
   keywords: ["removeTag","updateTag","mergeTag","convertTag"]
   issuecodes: ["addTag","removeTag","updateTag","moveTag","mergeTag"]
+
   constructor: (@view,finder="") ->
     if @view.settings.tagging
       @removeFCB()
@@ -698,7 +846,9 @@ class Buttons
     if @view.settings.edit
       @removeTaggingCheckboxes()
       @createFCB()
-
+  # finder is a prefix to buttons that allows for
+  # specifically targeting the tree or div of tagboxes
+  # the div is used in positions for the ajax loaded content
   createTaggingCheckboxes: (finder) ->
     a = @
     @view.cj_selectors.tagBox.find("#{finder} dt .tag .name").before( ->
@@ -706,9 +856,12 @@ class Buttons
         a.createButtons(cj(@).parent().parent().data("tagid"))
     )
     @view.toggleCheckInBox()
+
   removeTaggingCheckboxes: () ->
     @view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove()
-
+  # fcb = floating control box
+  # as opposed to previous iterations, now just appends and deletes
+  # instead of adding extra page weight with 1400 pieces of html
   createFCB: () ->
     if !@nodeList?
       @nodeList = @view._trees[291].nodeList
@@ -725,12 +878,14 @@ class Buttons
         cjDT = cj(tag.currentTarget).find(".tag .fCB")
         cjDT.remove()
       )
+  # kills FCB for each tree
   removeFCB: () ->
     for k,v of @view._trees
       cjTreeTop = @view.cj_selectors.tagBox.find(".top-#{k}").find("dt")
       cjTreeTop.off("mouseenter")
       cjTreeTop.off("mouseleave")
-
+  # function for creating buttons using predefined lists
+  # of what appears for each tree
   createButtons: (treeTop) ->
     html = "<div class='fCB'>"
     html += "<ul>"
@@ -747,26 +902,33 @@ class Buttons
       html += "</li>"
     html += "</ul>"
     html += "</div>"
+  # radio buttons are used during selecting move candidates
   addRadios: (treeTop) ->
     # "<input type="radio" class="selectRadio" name="selectTag">"
+
+  # execute creates an action in the view, for logging
   executeButton: (cjDT) ->
     cjDT.off("click")
     if @view.settings.edit
       cjDT.on("click", "li", (button) =>
-        action = cj(button.target).data("do")
+        action = "#{cj(button.target).data("do")}Tag"
         tagid =  cjDT.data("tagid")
         @view.createAction(tagid,action)
       )
     else
-      # tagging
+      # i think there's another on li somewhere else
       cjDT.on("click", "li", (button) =>
         # cj(button.target).data("do")
       )
-
+# activity log powers the errors
+# not currently implemented
 class ActivityLog
   constructor: (jsonObj,action) ->
     # console.log jsonObj,action
 
+# settings is the 'settings box' in the upper right.
+# add tag lives there, along with print, settings (which creates)
+# a dropdown, "clear", options, etc. that kind of stuff.
 class Settings
   constructor: (@instance, @view) ->
     @createButtons()
@@ -785,6 +947,7 @@ class Settings
   addButton: (name) ->
     return "<div class='#{name}'></div>"
 
+# resize specifically relates to the height of the tagbox
 class Resize
   constructor: (boxHeight) ->
     if boxHeight?
@@ -798,6 +961,7 @@ class Resize
       @height = lsheight.height
     else
       @height = 400
+  # resize handler for resizing the box
   addResize: (@instance,@view) ->
     displaySettings = @instance.get("displaySettings")
     maxHeight = 500
@@ -831,9 +995,11 @@ class Resize
         )
     )
 
-
-  
+# autocomplete. you instantiate the autocomplete, and it uses
+# the data provided by the @view and @instance to create the
+# autocomplete environment
 class Autocomplete
+  # jqDataReference doesn't do anything. I think.
   constructor: (@instance, @view) ->
     @pageElements = @instance.get 'pageElements'
     @dataSettings = @instance.get 'dataSettings'
@@ -854,15 +1020,6 @@ class Autocomplete
         cjac.css("color","#000")
         @initHint = false
     )
-    # modded the debounce a little. it HAS to live outside
-    # of the event. that said
-    # now it allows keydown events, but only actually
-    # triggers a search event on debounce
-    # debounced = bbUtils.debounce(@filterKeydownEvents,500)
-    # a = @
-    # cjac.on "keydown",((event) ->
-    #   debounced(a,event,searchmonger,cjac)
-    # )
     debounced = bbUtils.debounce(@execSearch,500)
     cjac.on "keydown", ((event) =>
       @filterKeydownEvents(debounced,event,searchmonger,cjac)
@@ -886,12 +1043,17 @@ class Autocomplete
         else
           cjac.css("color","#000")
     )
+  # inithint is the hint text "type in a partial or complete name"
+  # and cheks that if it exists
   initHint = true
-    
+  
+  # because it's not always there, the hint text needs to be styled as it comes in
+  # and unstyled as it leaves
   hintText: (cjac,params) ->
     cjac.val(params.hintText)
     cjac.css("color","#999")
 
+  # meat and potatoes of determining events, directs traffic
   filterKeydownEvents: (obj, event, searchmonger, cjac) ->
     keyCode = bbUtils.keyCode(event)
     # look at context first.
@@ -906,15 +1068,11 @@ class Autocomplete
       when "letters","delete","math","punctuation","number"
         if keyCode.type != "delete" then name = keyCode.name  else name = ""
         return obj(@,event,searchmonger,cjac)
-        # return obj.execSearch(event,searchmonger,cjac)
       else
         return false
-    # debounced = bbUtils.debounce(@filterKeydownEvents,500)
-    # a = @
-    # cjac.on "keydown",((event) ->
-    #   debounced(a,event,searchmonger,cjac)
-    # )
-  
+    
+  # builds the recursive positions list once the inital call's been made
+  # and there's more than one page left.
   buildPositions: (list,term,hits) ->
     if @positionPagesLeft > 1 
       openLeg = new OpenLeg
@@ -931,7 +1089,6 @@ class Autocomplete
               filteredList = {292: poses}
               @getNextPositionRound(results)
               new Tree(poses,"292",false,cj(".JSTree .top-292"),nextPage)
-              # " #{k}-#{v} "
               addButtonsTo = ""
               for k,v of nextPage
                 addButtonsTo += ".#{k}-#{v}"
@@ -940,7 +1097,8 @@ class Autocomplete
               @buildPositions()
             )
       )
-
+  # html fixture for position loder
+  # i don't think it uses nextPage for antyhing
   addPositionLoader: (nextPage = {}) ->
     "<dt class='loadingGif' data-parentid='292'>
       <div class='tag'>
@@ -948,6 +1106,13 @@ class Autocomplete
         <div class='loadingText'>Loading...</div>
       </div>
     </dt>"
+  # execSearch is the 'main' search query, once it validates that it should
+  # perform a query, uses searchmonger to query the lists, write the lists to the view
+  # and executes them. because of some nuances, i'm not referring to the this object
+  # aka @, as @, but instead obj in this function because of some silly things
+  # with the debonce function making that difficult to pass (as it's inside a
+  # closure from the debounce function, and i didn't bother to fix it yet)
+  # openLeg is queries independently, and thus, enter at different times
   execSearch: (obj,event,searchmonger,cjac) ->
     term = cjac.val()
     if term.length >= 3
@@ -969,6 +1134,7 @@ class Autocomplete
           if obj.view.cj_selectors.tagBox.hasClass("dropdown")
             obj.view.toggleDropdown(hits)
       )
+  # executes the openLeg query
   doOpenLegQuery:() ->
     openLeg = new OpenLeg
     terms = cj("#JSTree-ac").val()
@@ -986,15 +1152,8 @@ class Autocomplete
         @view.toggleDropdown({292:(hitCount)})
         @openLegQueryDone = true
       )
-    # console.log "call: term: #{terms} #{new Date().getSeconds()}.#{new Date().getMilliseconds()}"
-    
-    # @queryPending.push "#{terms}"
-    # if @queryPending.length == 1
-    #   bbUtils.throttle.call(@,a,1000)
-    # else
-    #   bbUtils.throttle.call(@,a,1000*@queryPending.length)
-    # console.log @queryPending
-  queryPending: []
+  # writes the 'hits', which is an obj with array counts of
+  # the returned, formatted, json objects
   separateHits: (terms, results) ->
     hits = {}
     for k, v of terms
@@ -1004,22 +1163,23 @@ class Autocomplete
     hits[291] = 0 unless hits[291]?
     hits
 
-
+  # arbitrary seed number for positions without an id
   positionIdNumber: 292000
 
+  # changes definitions for each new page
   getNextPositionRound:(results) ->
     @positionPage = results.page + 1
     @positionPagesLeft = results.pagesLeft
     @positionSearchTerm = results.term
-
+  # creates the 3 variations of a position for a bill
+  # for, against, neutral, and duplicates it 3 times
+  # to use in a tree
   addPositionsToTags: (positions) ->
     format = []
     positionList = @instance.positionList
-        # for storedPos in a.instance.positionList
-        #   console.log storedPos
-        #   if storedPos.name == billno && storedPos.pos == position
-        #     action.tagId = storedPos.id
-        #     toggleClass.call(@,cjDT)
+    checkName = (name,v) =>
+      return true if _utils.removePositionTextFromBill(name) == v.name and _utils.checkPositionFromBill(name) == v.pos
+      return false
     for k,o of positions
       # check if position has id, if not. arbitrarily assign one?
       forpos =
@@ -1035,6 +1195,8 @@ class Autocomplete
         id: "#{@positionIdNumber+3}"
         position: "neutral"
       for k,v of @instance.positionList
+        # ideally should use checkname, but not tested yet
+        # but a lot of this is totes inefficient.
         if _utils.removePositionTextFromBill(forpos.name) == v.name
           if _utils.checkPositionFromBill(forpos.name) == v.pos
               forpos.id = v.id
@@ -1059,7 +1221,8 @@ class Autocomplete
       format.push(neupos)
       @positionIdNumber = @positionIdNumber + 10
     @positionListing = format 
-
+  # sorts an unorganized list of tags into
+  # categories based upon it's type
   sortSearchedTags: (tags) ->
     list = {}
     cj.each tags, (i,el) ->
@@ -1070,9 +1233,11 @@ class Autocomplete
         name: el.name
       list[el.type].push(obj)
     list
-
+# closured variable for determine what tags have been opened
+# and closed during the session for reload
 _openTags = {}
 
+# provides global knowledge of what trees are visible
 _treeVisibility =
   currentTree: ""
   defaultTree: ""
@@ -1083,19 +1248,26 @@ class Tree
   domList: {}
   nodeList: {}
   tabName: ""
+  # taglist is an ordered list of tags with data
+  # tagId is which type of tag it is (numeric)
+  # filter is if you're building the list via filter methods
+  # location is when you're specifically targeting specific blocks of position responses
+  # i.e. nextPage =
+  #        term: @positionSearchTerm
+  #        page: @positionPage
+  # list classes allows you to add classes to the location that you target
+  # so you can target it in the future
   constructor: (@tagList, @tagId, @filter = false, @location, @listClasses) ->
     @buildTree()
     return @
+  # build tree creates a blank tree, with dom elements to be inserted, and then
+  # appended to the tree required
   buildTree: () ->
     if @filter then filter = "filtered" else filter = "" 
     if @location?
       @append = true
       @domList = cj()
       if @listClasses?
-        # gives the ability to target specific blocks of position responses
-        # nextPage =
-          # term: @positionSearchTerm
-          # page: @positionPage
         dataNames = ""
         for k,v of @listClasses
           dataNames += " #{k}-#{v} "
@@ -1106,9 +1278,7 @@ class Tree
       @domList = cj()
       @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
     @iterate(@tagList)
-  # setHover: () ->
-    # console.log @nodeList
-    
+  # because we know how to attach each tag to a parent, it's not a DAG...
   iterate: (ary) ->
     cjTagList = cj(@domList)
     for node in ary
@@ -1137,40 +1307,43 @@ class Tree
     else
       _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
 
+# util functions that the tree uses
 _treeUtils =
+  # don't remember what this does
   selectByParent: (list, parent) ->
     childList = [] 
     for b in list
       if b.parent == parent
         childList.push b
     childList
+  # don't remember what this does
   selectByTree: (list, tree) ->
     treeList = [] 
     for b in list
       if b.type == tree
         treeList.push b
     treeList
+  # event for what happens when you click on a slide button
   makeDropdown: (cjTree) ->
     cjTree.find(".treeButton").off "click"
     cjTree.find(".treeButton").on "click", ->
       _treeUtils.dropdownItem(cj(@).parent().parent())
+  # executes a dropdown on a particular tag
+  # useful for individuall picking and choosing tags
   dropdownItem: (tagLabel, filter = false) ->
-    # console.log filter
     tagid = tagLabel.data('tagid')
-    # console.log tagid
     if tagLabel.length > 0
       if tagLabel.is(".open")
         _openTags[tagid] = false
       else
         _openTags[tagid] = true
-    # console.log tagLabel.siblings("#tagDropdown_#{tagid}")
     tagLabel.siblings("#tagDropdown_#{tagid}").slideToggle("200")
-      # , =>
-      # console.log "should happen twice #{tagid}"
     tagLabel.toggleClass "open"
     if !filter
       bbUtils.localStorage("tagViewSettings", _openTags)
-
+  # i don't know how cjTree is parseIntable (meaning it's probably named wrong)
+  # but this reads the local storage variables for what tags are opened
+  # and opens them again
   readDropdownsFromLocal: (cjTree) ->
     if parseInt(cjTree) == 291
       if bbUtils.localStorage("tagViewSettings")    
@@ -1183,13 +1356,17 @@ _treeUtils =
       else
       _openTags
 
-
+# closured settings for determining how many characters a node
+# should be, in name and description
 _descWidths = 
   normal: 75
   long: 150
 
 
 class Node
+  # attaches a lot of descriptions to the class
+  # which is only good because it still shows the state
+  # of unmodified vs modified nodes
   constructor: (node) ->
     @data = node
     @parent = node.parent
@@ -1218,6 +1395,7 @@ class Node
     @name = cj.trim(@name)
     @html = @html(node)
     return @
+  # processes a description and attaches classes based on parameters
   descLength: (@description) ->
     if @description?
       if @description.length > 0
@@ -1240,6 +1418,10 @@ class Node
             @description = desc.toRet.join("<br />")
           else
             @description = desc.toRet[0]
+  # writes the html of a node
+  # basically, send a node class the right parameters, and you'll
+  # get an actionable node. and you don't have to worry about putting in dependencies
+  # because you're using dom characteristics to create tags
   html: (node) ->
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
@@ -1267,14 +1449,3 @@ class Node
               <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}'></dl>
             "
     return html
-  # add
-  # remove
-  # update
-  # merge
-  # move
-  # convert
-
-  # nodes have processes
-  # nodes have data
-  # nodes have name
-  # nodes don't have html in the tree

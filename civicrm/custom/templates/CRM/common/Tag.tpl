@@ -100,6 +100,7 @@
 {if $action eq 16 || $action eq 2 || $action eq 1}
     {if $tagset.parentID eq 296}
         <div class="JSTreeInit"></div>
+        {literal}
         <script>
             console.log("trying");
             var jsTreePageSettings = {

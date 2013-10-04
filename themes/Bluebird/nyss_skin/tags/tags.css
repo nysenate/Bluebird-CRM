@@ -209,7 +209,9 @@
     #JSTree-container.BBTreeContainer .BBTree dt .fCB, #BBTreeContainer .BBTree dt .fCB {
       display: none;
       padding: 1px 0;
-      float: right; }
+      position: absolute;
+      z-index: 5;
+      right: 0px; }
       #JSTree-container.BBTreeContainer .BBTree dt .fCB ul, #BBTreeContainer .BBTree dt .fCB ul {
         margin: 0; }
         #JSTree-container.BBTreeContainer .BBTree dt .fCB ul li, #BBTreeContainer .BBTree dt .fCB ul li {
@@ -283,16 +285,12 @@
         position: absolute;
         bottom: 2px;
         left: 2px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.description .fCB, #BBTreeContainer .BBTree dt.description .fCB {
-        margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.description.longName, #BBTreeContainer .BBTree dt.description.longName {
         line-height: 12px;
         height: 50px; }
         #JSTree-container.BBTreeContainer .BBTree dt.description.longName .tag, #BBTreeContainer .BBTree dt.description.longName .tag {
           height: 50px;
           line-height: 12px; }
-        #JSTree-container.BBTreeContainer .BBTree dt.description.longName .fCB, #BBTreeContainer .BBTree dt.description.longName .fCB {
-          margin-top: 10px; }
     #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description, #BBTreeContainer .BBTree dt.shortdescription.description {
       height: 30px; }
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .tag, #BBTreeContainer .BBTree dt.shortdescription.description .tag {
@@ -322,8 +320,6 @@
         position: absolute;
         bottom: 2px;
         left: 2px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .fCB, #BBTreeContainer .BBTree dt.longdescription .fCB {
-        margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 52px; }
     #JSTree-container.BBTreeContainer .BBTree.tagging dt .tag .name, #BBTreeContainer .BBTree.tagging dt .tag .name {
@@ -417,13 +413,51 @@
       background-color: rgba(0, 0, 0, 0.2);
       z-index: 15;
       right: 0px; }
-    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .label, #BBTreeContainer .BBTree.hasSlideBox .label {
-      background-color: #ccc;
-      border-radius: 5px;
-      -moz-border-radius: 5px;
-      -webkit-border-radius: 5px;
-      color: #fff;
-      padding: 4px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        background-color: #a6a6a6;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        color: #fff;
+        padding: 4px;
+        display: inline-block;
+        float: left;
+        clear: both;
+        margin-left: 2%;
+        letter-spacing: 1px;
+        -webkit-box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35);
+        -moz-box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35);
+        box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35); }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header {
+        background-color: #909090;
+        margin: 5px 0 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-align: center;
+        float: none;
+        clear: both;
+        display: block; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox {
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        margin-left: 2%;
+        margin-bottom: 5px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        background-color: #909090;
+        margin-top: 5px;
+        font-weight: bold;
+        text-transform: capitalize;
+        float: left;
+        margin-right: 2%;
+        cursor: pointer;
+        clear: none; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        float: right;
+        background-color: #b7b7b7; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input, #BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input {
+        margin-left: 10px; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
     font-style: italic;
