@@ -160,6 +160,11 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
     $this->_columns['civicrm_event_opened']  = array( 
       'dao'=> 'CRM_Mailing_Event_DAO_Opened',
       'fields'=> array(
+        //NYSS 7196
+        'id' => array(
+          'required' => TRUE,
+          'no_display' => TRUE,
+        ),
         //NYSS 4893
         'time_stamp' => array(
           'title' => ts('Open Date'),
@@ -235,7 +240,8 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
     }
 
     if (CRM_Utils_Array::value('charts', $this->_params)) {
-      $select[] = "COUNT(civicrm_mailing_event_opened.id) as civicrm_mailing_opened_count";
+      //NYSS use alias
+      $select[] = "COUNT({$this->_aliases['civicrm_event_opened']}.id) as civicrm_mailing_opened_count";
       $this->_columnHeaders["civicrm_mailing_opened_count"]['title'] = ts('Opened Count');
     }
 

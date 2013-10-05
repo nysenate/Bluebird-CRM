@@ -63,7 +63,7 @@
         {/if}
             <tr>
                 <td class="label">{$form.attachFile_1.label}</td>
-                <td>{$form.attachFile_1.html}<span class="crm-clear-link">(<a href="javascript:clearAttachment( '#attachFile_1' );">{ts}clear{/ts}</a>)</span><br />
+                <td>{$form.attachFile_1.html}<span class="crm-clear-link">(<a href="#" onclick="clearAttachment( '#attachFile_1' ); return false;">{ts}clear{/ts}</a>)</span><br />{*NYSS 7098*}
                     <span class="description">{ts}Browse to the <strong>file</strong> you want to upload.{/ts}{if $numAttachments GT 1} {ts 1=$numAttachments}You can have a maximum of %1 attachment(s).{/ts}{/if} Each file must be less than {$config->maxFileSize}MB in size.</span>{*NYSS 5396*}
                 </td>
             </tr>
@@ -72,7 +72,7 @@
         {assign var=attachName value="attachFile_"|cat:$index}
             <tr>
                 <td class="label"></td>
-                <td>{$form.$attachName.html}<span class="crm-clear-link">(<a href="javascript:clearAttachment( '#{$attachName}' );">{ts}clear{/ts}</a>)</span></td>
+                <td>{$form.$attachName.html}<span class="crm-clear-link">(<a href="javascript:clearAttachment( '#{$attachName}' );">{ts}clear{/ts}</a>)</span></td>{*NYSS 7098*}
             </tr>
     {/section}
     {if $currentAttachmentInfo}
@@ -113,13 +113,16 @@
     {/literal}
 {/if}
 
-    {literal}
-    <script type="text/javascript">
-        function clearAttachment( element ) {
-            cj(element).val('');
-        }
-    </script>
-    {/literal}
+  {literal}
+  <script type="text/javascript">
+    function clearAttachment( element ) {
+      //NYSS 7098
+      var control = cj(element);
+      control.replaceWith( control = control.clone( true ) );
+      cj(element).val('');
+    }
+  </script>
+  {/literal}
 {/if} {* edit/add if*}
 
 {if $currentAttachmentInfo}

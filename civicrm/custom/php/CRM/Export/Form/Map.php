@@ -79,9 +79,9 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
 
     $this->_mappingId = $this->get('mappingId');
 		
-	//NYSS 4426
-	$this->_streetLong = $this->get('streetLong');
-	//CRM_Core_Error::debug('this',$this);exit();
+	  //NYSS 4426
+	  $this->_streetLong = $this->get('streetLong');
+	  //CRM_Core_Error::debug_var('this',$this);
   }
 
   public function buildQuickForm() {
@@ -233,10 +233,17 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
       }
     }
 
+    //NYSS 7228
+    $attr = $this->_attributes;
+    $queryParams = $this->get('queryParams');
+    if ( $attr['action'] == '/civicrm/contact/search/custom' ) {
+      $queryParams = NULL;
+    }
+
     //get the csv file
     CRM_Export_BAO_Export::exportComponents($this->get('selectAll'),
       $this->get('componentIds'),
-      $this->get('queryParams'),
+      $queryParams,//NYSS
       $this->get(CRM_Utils_Sort::SORT_ORDER),
       $mapperKeys,
       $this->get('returnProperties'),

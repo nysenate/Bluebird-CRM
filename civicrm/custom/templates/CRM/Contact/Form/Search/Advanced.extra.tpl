@@ -20,5 +20,10 @@
   //5647 default open address block
   cj('#location').trigger('click');
   cj('.crm-location-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
+
+  if ( cj('div.crm-advanced_search_form-accordion div.crm-accordion-header').css('display') == 'block' ) {
+    cj('div.crm-search_criteria_basic-accordion div.crm-accordion-body table tr:first td:first div.helpicon').
+      appendTo('div.crm-title h1.title');
+  }
 </script>
 {/literal}

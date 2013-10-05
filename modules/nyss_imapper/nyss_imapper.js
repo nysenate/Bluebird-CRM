@@ -15,6 +15,7 @@ cj(document).ready(function(){
   var assign = cj('#assign');
   var reassign = cj('#reassign');
   var create = cj('#add-contact');
+  var createReassign = cj('#add-contact-reassign');
 
   // onpageload
   if(cj("#Activities").length){
@@ -518,9 +519,84 @@ cj(document).ready(function(){
       return false;
     }else{
       alert("Required: First Name or Last Name or Email");
-    };
+    }
   });
 
+// create a new contact and Reassign message to them
+  createReassign.click(function() {
+    var create_messageId = cj('#id').val();
+    var create_first_name = cj("#tab2 .first_name").val();
+    var create_last_name = cj("#tab2 .last_name").val();
+    var create_email_address = cj("#tab2 .email_address").val();
+    var create_phone = cj("#tab2 .phone").val();
+    var create_street_address = cj("#tab2 .street_address").val();
+    var create_street_address_2 = cj("#tab2 .street_address_2").val();
+    var create_zip = cj("#tab2 .zip").val();
+    var create_city = cj("#tab2 .city").val();
+    var create_dob = cj("#tab2 .dob").val();
+    var create_state = cj("#tab2 .state").val();
+
+    if((create_first_name)||(create_last_name)||(create_email_address)){
+      cj.ajax({
+	url: '/civicrm/imap/ajax/createNewContact',
+	data: {
+	  messageId: create_messageId,
+	  first_name: create_first_name,
+	  last_name: create_last_name,
+	  email_address: create_email_address,
+	  phone: create_phone,
+	  street_address: create_street_address,
+	  street_address_2: create_street_address_2,
+	  postal_code: create_zip,
+	  city: create_city,
+	  state: create_state,
+	  dob: create_dob
+	},
+	success: function(data, status) {
+	  contactData = cj.parseJSON(data);
+	  if (contactData.code == 'ERROR' || contactData.code === '' || contactData === null ){
+	    alert('Could Not Create Contact : '+contactData.message);
+	    return false;
+	  }else{
+	    cj.ajax({
+		url: '/civicrm/imap/ajax/reassignActivity',
+		data: {
+		  id: create_messageId,
+		  change: contactData.contact
+		},
+		success: function(data, status) {
+		  var data = cj.parseJSON(data);
+		  if (data.code =='ERROR'){
+		    alert('Could not reassign Message : '+data.message);
+		  }else{
+		    cj("#find-match-popup").dialog('close');
+		    // reset activity to new data
+		    cj('#'+create_messageId).attr("data-contact_id",data.contact_id); // contact_id
+		    cj('#'+create_messageId+" .name").attr("data-firstname",data.first_name); // first_name
+		    cj('#'+create_messageId+" .name").attr("data-lastname",data.last_name); // last_name
+		    cj('#'+create_messageId+" .match").html("ManuallyMatched");
+		    contact = '<a href="/civicrm/profile/view?reset=1&amp;gid=13&amp;id='+data.contact_id+'&amp;snippet=4" class="crm-summary-link"><div class="icon crm-icon '+data.contact_type+'-icon" title="'+data.contact_type+'"></div></a><a title="'+data.display_name+'" href="/civicrm/contact/view?reset=1&amp;cid='+data.contact_id+'">'+data.display_name+'</a><span class="emailbubble marginL5">'+shortenString(data.email,13)+'</span> <span class="matchbubble marginL5  M" title="This email was Manually matched">M</span>';
+
+		    helpMessage(data.message);
+		    // redraw the table
+		    var oTable = cj('#sortable_results').dataTable();
+		    var row_index = oTable.fnGetPosition(document.getElementById(create_messageId));
+		    oTable.fnUpdate('ManuallyMatched', row_index, 4 );
+		    oTable.fnUpdate(contact, row_index, 1 );
+		    oTable.fnDraw();
+		  }
+		},
+		error: function(){
+		  alert('failure');
+		}
+	    });
+	  }
+      return false;
+    }});
+    }else{
+      alert("Required: First Name or Last Name or Email");
+    }
+  });
   // opening find match window Unmatched
   cj(".find_match").live('click', function() {
     cj("#loading-popup").dialog('open');
@@ -827,7 +903,6 @@ cj(document).ready(function(){
                 cj("#tagging-popup").dialog('close');
                 cj('.token-input-list-facebook').html('').remove();
                 cj('.token-input-dropdown-facebook').html('').remove();
-
               }
             }
           });
@@ -1062,7 +1137,7 @@ function getMatchedMessages() {
 }
 function getReports() {
   cj.ajax({
-    url: '/civicrm/imap/ajax/reports',
+    url: '/civicrm/imap/ajax/getReports',
     success: function(data,status) {
       reports = cj.parseJSON(data);
       buildReports();
@@ -1088,138 +1163,24 @@ cj.extend( cj.fn.dataTableExt.oSort, {
 
 function makeListSortable(){
   cj("#sortable_results").dataTable({
+    "sDom":'<"controlls"lif><"clear">rt <p>',//add i here this is the number of records
+    // "iDisplayLength": 1,
+    "sPaginationType": "full_numbers",
     "aaSorting": [[ 3, "desc" ]],
     "aoColumnDefs": [ { "sType": "title-string", "aTargets": [ 3 ] }],
     'aTargets': [ 1 ],
     "iDisplayLength": 50,
     "aLengthMenu": [[10, 50, 100, -1], [10, 50, 100, 'All']],
-    "sPaginationType": "bootstrap",
     "bAutoWidth": false,
-    "bInfo": false,
   });
+  // var oTable = cj('#sortable_results').dataTable();
+  // rows = oTable.fnGetVisibleData();
+
+
   checks();
 }
-// http://moorberry.net/blog/datatables-twitter-bootstrap-pagination/
-  cj.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
-  {
-      return {
-          "iStart":         oSettings._iDisplayStart,
-          "iEnd":           oSettings.fnDisplayEnd(),
-          "iLength":        oSettings._iDisplayLength,
-          "iTotal":         oSettings.fnRecordsTotal(),
-          "iFilteredTotal": oSettings.fnRecordsDisplay(),
-          "iPage":          oSettings._iDisplayLength === -1 ?
-              0 : Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
-          "iTotalPages":    oSettings._iDisplayLength === -1 ?
-              0 : Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
-      };
-  }
-
-  /* Bootstrap style pagination control */
-  cj.extend( cj.fn.dataTableExt.oPagination, {
-      "bootstrap": {
-          "fnInit": function( oSettings, nPaging, fnDraw ) {
-              var oLang = oSettings.oLanguage.oPaginate;
-              var fnClickHandler = function ( e ) {
-                  e.preventDefault();
-                  if ( oSettings.oApi._fnPageChange(oSettings, e.data.action) ) {
-                      fnDraw( oSettings );
-                  }
-              };
-
-              cj(nPaging).addClass('pagination').append(
-                  '<ul>'+
-                      '<li class="first disabled"><a href="#">&larr; &larr; First</a></li>'+
-                      '<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
-                      '<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
-                      '<li class="last disabled"><a href="#"> Last &rarr; &rarr; </a></li>'+
-
-                  '</ul>'
-              );
-              var els = cj('a', nPaging);
-              cj(els[0]).bind( 'click.DT', { action: "first" }, fnClickHandler );
-              cj(els[1]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
-              cj(els[2]).bind( 'click.DT', { action: "next" }, fnClickHandler );
-              cj(els[3]).bind( 'click.DT', { action: "last" }, fnClickHandler );
-
-          },
-
-          "fnUpdate": function ( oSettings, fnDraw ) {
-              var iListLength = 5;
-              var oPaging = oSettings.oInstance.fnPagingInfo();
-              var an = oSettings.aanFeatures.p;
-              var i, j, sClass, iStart, iEnd, iHalf=Math.floor(iListLength/2);
-
-              if ( oPaging.iTotalPages < iListLength) {
-                  iStart = 1;
-                  iEnd = oPaging.iTotalPages;
-              }
-              else if ( oPaging.iPage <= iHalf ) {
-                  iStart = 1;
-                  iEnd = iListLength;
-              } else if ( oPaging.iPage >= (oPaging.iTotalPages-iHalf) ) {
-                  iStart = oPaging.iTotalPages - iListLength + 1;
-                  iEnd = oPaging.iTotalPages;
-              } else {
-                  iStart = oPaging.iPage - iHalf + 1;
-                  iEnd = iStart + iListLength - 1;
-              }
-
-              for ( i=0, iLen=an.length ; i<iLen ; i++ ) {
-                  // Remove the middle elements
-                  cj('li:gt(1)', an[i]).filter(':not(.next):not(.last)').remove();
-
-                  // Add the new list items and their event handlers
-                  for ( j=iStart ; j<=iEnd ; j++ ) {
-                      sClass = (j==oPaging.iPage+1) ? 'class="active"' : '';
-                      cj('<li '+sClass+'><a href="#">'+j+'</a></li>')
-                          .insertBefore( $('li.next', an[i])[0] )
-                          .bind('click', function (e) {
-                              e.preventDefault();
-                              oSettings._iDisplayStart = (parseInt(cj('a', this).text(),10)-1) * oPaging.iLength;
-                              fnDraw( oSettings );
-                          } );
-                  }
-                  
-                  // Pages
-                  //console.log("Page "+(oPaging.iPage+1) +" Of "+oPaging.iTotalPages);
-                  //console.log("Numbers "+(oPaging.iLength*(oPaging.iPage))+" THRU "+(oPaging.iLength*(oPaging.iPage+1)));
-                  totals = cj("#total_number").html();
-
-                  if((oPaging.iLength*(oPaging.iPage+1)) < 1 ){
-                    cj("#total_results").html('All Results 1 - <span id="total_number">'+totals+'</span>');
-                  }else if ((oPaging.iLength*(oPaging.iPage+1)) < cj("#total_number").html()){
-                    viewing = "Results "+(oPaging.iLength*(oPaging.iPage)+1)+" - "+(oPaging.iLength*(oPaging.iPage+1));
-                    cj("#total_results").html(viewing+' of <span id="total_number">'+totals+'</span>');
-                  }else{
-                     cj("#total_results").html("Results "+(oPaging.iLength*(oPaging.iPage)+1)+' - <span id="total_number">'+totals+'</span>');
-                  }
 
 
-                  // Add / remove disabled classes from the static elements
-                  if ( oPaging.iPage === 0 ) {
-                      cj('.first', an[i]).addClass('disabled');
-                      cj('.prev', an[i]).addClass('disabled');
-
-                  } else {
-                      cj('.first', an[i]).removeClass('disabled');
-                      cj('.prev', an[i]).removeClass('disabled');
-
-                  }
-
-                  if ( oPaging.iPage === oPaging.iTotalPages-1 || oPaging.iTotalPages === 0 ) {
-                      cj('.last', an[i]).addClass('disabled');
-                      cj('.next', an[i]).addClass('disabled');
-
-                  } else {
-                      cj('.last', an[i]).removeClass('disabled');
-                      cj('.next', an[i]).removeClass('disabled');
-
-                  }
-              }
-          }
-      }
-  } );
 
 
 // a complicated checkbox method,
@@ -1241,7 +1202,6 @@ function checks(){
 function buildMessageList() {
   if(messages.stats.overview.Unprocessed == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
-    cj("#total_number").html('0');
   }else{
     var messagesHtml = '';
     var total_results = messages.stats.overview.Unprocessed;
@@ -1249,7 +1209,7 @@ function buildMessageList() {
       var icon ='';
 
         // wrap the row
-        messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
+	messagesHtml += '<tr id="'+value.id+'" data-key="'+value.key+'" class="imapper-message-box"> <td class="imap_checkbox_column" ><input class="checkbox" type="checkbox" name="'+value.id+'"  data-id="'+value.id+'"/></td>';
 
         // build a match count bubble
         countWarn = (value.matches_count == 1) ? 'warn' :  '';
@@ -1260,7 +1220,7 @@ function buildMessageList() {
 
         // build the name box
         if( value.sender_name != ''  && value.sender_name != null){
-          messagesHtml += '<td class="name" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
+	  messagesHtml += '<td class="imap_name_column unmatched" data-firstName="'+firstName(value.sender_name)+'" data-lastName="'+lastName(value.sender_name)+'">'+shortenString(value.sender_name,20);
 
           if( value.sender_email != '' && value.sender_email != null){
             messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,15)+'</span>';
@@ -1271,10 +1231,10 @@ function buildMessageList() {
           messagesHtml +='</td>';
 
         }else if( value.sender_email != '' && value.sender_email != null ){
-          messagesHtml += '<td class="name"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
+	  messagesHtml += '<td class="imap_name_column unmatched"><span class="emailbubble">'+shortenString(value.sender_email,25)+'</span>';
           messagesHtml +=  countIcon;
         }else {
-          messagesHtml += '<td class="name"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
+	  messagesHtml += '<td class="imap_name_column unmatched"><span class="matchbubble warn" title="There was no info found in regard to the source of this message">No source info found</span></td>';
           messagesHtml +=  countIcon;
         }
 
@@ -1284,31 +1244,30 @@ function buildMessageList() {
             icon = '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>'
           });
         }
-        messagesHtml += '<td class="subject">'+shortenString(value.subject,40) +' '+icon+'</td>';
-        messagesHtml += '<td class="date"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_subject_column unmatched">'+shortenString(value.subject,40) +' '+icon+'</td>';
+	messagesHtml += '<td class="imap_date_column unmatched"><span id="'+value.date_u+'" title="'+value.date_long+'">'+value.date_short +'</span></td>';
 
         // hidden column to sort by
         if(value.match_count != 1){
           var match_short = (value.match_count == 0) ? "NoMatch" : "MultiMatch" ;
-          messagesHtml += '<td class="match hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="'+match_short+'">'+match_short +'</span></td>';
         }else{
-          messagesHtml += '<td class="match hidden"><span data="Error">ProcessError</span></td>';
+	  messagesHtml += '<td class="imap_match_column hidden"><span data="Error">ProcessError</span></td>';
         }
 
         // check for direct messages & not empty forwarded messages
         if((value.status == 'direct' ) && (value.forwarder != '')){
-          messagesHtml += '<td class="forwarder">Direct '+shortenString(value.from_email,10)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column">Direct '+shortenString(value.from_email,10)+'</td>';
         }else if(value.forwarder != ''){
-          messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
+	  messagesHtml += '<td class="imap_forwarder_column">'+shortenString(value.forwarder,14)+'</td>';
         }else{
-          messagesHtml += '<td class="forwarder"> N/A </td>';
+	  messagesHtml += '<td class="imap_forwarder_column"> N/A </td>';
         }
 
-        messagesHtml += '<td class="actions"><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+	messagesHtml += '<td class="imap_actions_column "><span class="find_match"><a href="#">Find match</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    cj("#total_number").html(total_results);
     makeListSortable();
     cj('.checkbox').removeClass('sorting');
     cj('.Actions').removeClass('sorting');
@@ -1317,13 +1276,177 @@ function buildMessageList() {
 }
 
 function buildReports() {
-  cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">Not Quite Ready yet</td>');
-	// console.log(reports.Unprocessed.length);
-	// console.log(reports.Matched.length);
-	// console.log(reports.Cleared.length);
-	// console.log(reports.Errors.length);
-	// console.log(reports.Deleted.length);
+  var messagesHtml = '';
+  var unMatched= 0;
+  var Matched= 0;
+  var Cleared= 0;
+  var Errors= 0;
+  var Deleted = 0;
+
+  if(!reports.Messages.successes){
+    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
+  }else{
+    cj.each(reports.Messages.successes, function(key, value) {
+    messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> ';
+      messagesHtml += '<td class="imap_column matched">'+shortenString(value.fromName,40);
+
+        if( value.contactType != 'Unknown'){
+      messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+          messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
+          messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
+          messagesHtml += '</a>';
+          messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
+          messagesHtml += ' ';
+        }else {
+          messagesHtml += '<td class="imap_name_column unmatched">';
+          messagesHtml += " ";
+
+        }
+
+        // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
+
+        // match_sort = 'ProcessError';
+        // if(value.matcher){
+        //   var match_string = (value.matcher != 0) ? "Manually matched by "+value.matcher_name : "Automatically Matched" ;
+        //   var match_short = (value.matcher != 0) ? "M" : "A" ;
+        //   match_sort = (value.matcher != 0) ? "ManuallyMatched" : "AutomaticallyMatched" ;
+        //   messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
+        // }
+        // messagesHtml +='</td>';
+
+      messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
+        // if(value.attachments.length > 0){
+        //   messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
+        // }
+        messagesHtml +='</td>';
+        var message_status = '';
+      // console.log(value.message_status);
+     if(value.message_status === "0"){
+      message_status="Unmatched";
+      unMatched++;
+     }else if(value.message_status === "1"){
+      Matched++;
+      if(value.matcher){
+          if (value.matcher != 0){
+            matcherHtml = 'Matched by <a href="/civicrm/contact/view?reset=1&cid='+value.matcher+'" title="'+value.matcher_name+'">'+value.matcher_name+'</a>';
+
+          }else{
+            matcherHtml = "Matched by Bluebird" ;
+          }
+
+          message_status = matcherHtml;
+         }
+     }else if(value.message_status === "7"){
+      Cleared++;
+      message_status="Cleared";
+     }else if(value.message_status === "8"){
+      message_status="Deleted";
+      Deleted++;
+     }else if(value.message_status === "9"){
+      message_status="Deleted";
+      Deleted++;
+     }
+  messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+    messagesHtml += '<td class="imap_date_column matched"><span id="'+value.email_date_u+'"  title="'+value.email_date_long+'">'+value.email_date_short +'</span></td>';
+
+  messagesHtml += '<td class="imap_date_column">'+message_status +'</td>';
+
+
+      messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+        // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+    });
+    };
+    cj('#imapper-messages-list').html(messagesHtml);
+    makeListSortable();
+  cj('#total').html(unMatched+Matched+Cleared+Errors+Deleted);
+  cj('#total_unMatched').html(unMatched);
+  // console.log(unMatched);
+  cj('#total_Matched').html(Matched);
+  cj('#total_Cleared').html(Cleared);
+  cj('#total_Errors').html(Errors);
+  cj('#total_Deleted').html(Deleted);
 }
+
+cj( ".range" ).live('change', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnDraw();
+});
+
+cj.fn.dataTableExt.afnFiltering.push(
+    function( oSettings, aData, iDataIndex ) {
+        // "date-range" is the id for my input
+        var dateRange = cj('#range').attr("value");
+        if(dateRange <1){
+          dateRange = 1000000;
+        }
+        // expecting 2010-03-01 - 2010-03-31
+        var today = new Date();
+        today.setDate(today.getDate() +1);
+        var past = new Date();
+        past.setDate(past.getDate() - dateRange);
+
+
+        // parse the range from a single field into min and max, remove " - "
+        start = cj.datepicker.formatDate('@', past);
+        stop = cj.datepicker.formatDate('@', today);
+
+        // 4 here is the column where my dates are.
+        var date = aData[3];
+
+        // convert to unix time
+        date = date.match(/id="(.*?)"/)[1].toLowerCase()*1000;
+        // console.log(start +"<="+date+"<="+stop);
+        // console.log(start <= date && date <= stop );
+        // console.log(start <= date);
+        // console.log(date <= stop);
+        // console.log( " - " );
+
+         // run through cases
+        if ( start == "" && date <= stop){
+            return true;
+        }
+        else if ( start =="" && date <= stop ){
+            return true;
+        }
+        else if ( start <= date && "" == stop ){
+            return true;
+        }
+        else if ( start <= date && date <= stop ){
+            return true;
+        }
+        // all failed
+        return false;
+    }
+);
+
+
+
+cj(".Total").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( "", 5, false,false);
+});
+cj(".UnMatched").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'UnMatched',5 );
+});
+cj(".Matched").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Matched by', 5 );
+});
+cj(".Cleared").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Cleared', 5 );
+});
+cj(".Errors").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'error', 5 );
+});
+cj(".Deleted").live('click', function() {
+    var oTable = cj('#sortable_results').dataTable();
+    oTable.fnFilter( 'Deleted', 5);
+});
+
+
 function DeleteMessage(id,imapid){
   cj.ajax({
     url: '/civicrm/imap/ajax/deleteMessage',
@@ -1484,24 +1607,23 @@ function pushtag(clear){
 function buildActivitiesList() {
   if(messages.stats.overview.successes == '0' || messages == null){
     cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records found</td>');
-    cj("#total_number").html('0');
   }else{
     var messagesHtml = '';
     var total_results = messages.stats.overview.successes;
     // console.log(messages);
     cj.each(messages.successes, function(key, value) {
       if(value.date_short != null){
-        messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="" ><input class="checkboxieout" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
+	messagesHtml += '<tr id="'+value.id+'" data-id="'+value.activity_id+'" data-contact_id="'+value.matched_to+'" class="imapper-message-box"> <td class="imap_checkbox_column matched" ><input class="checkbox" type="checkbox" name="'+value.id+'" data-id="'+value.matched_to+'"/></td>';
 
         if( value.contactType != ''){
-          messagesHtml += '<td class="name" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
+	  messagesHtml += '<td class="imap_name_column matched" data-firstName="'+value.firstName +'" data-lastName="'+value.lastName +'">';
           messagesHtml += '<a class="crm-summary-link" href="/civicrm/profile/view?reset=1&gid=13&id='+value.matched_to+'&snippet=4">';
           messagesHtml += '<div class="icon crm-icon '+value.contactType+'-icon"></div>';
           messagesHtml += '</a>';
           messagesHtml += '<a href="/civicrm/contact/view?reset=1&cid='+value.matched_to+'" title="'+value.fromName+'">'+shortenString(value.fromName,19)+'</a>';
           messagesHtml += ' ';
         }else {
-          messagesHtml += '<td class="name">';
+	  messagesHtml += '<td class="imap_name_column matched">';
         }
 
         // messagesHtml += '<span class="emailbubble marginL5">'+shortenString(value.sender_email,13)+'</span>';
@@ -1514,22 +1636,21 @@ function buildActivitiesList() {
           messagesHtml += '<span class="matchbubble marginL5 '+match_short+'" title="This email was '+match_string+'">'+match_short+'</span>';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="subject">'+shortenString(value.subject,40);
+	messagesHtml += '<td class="imap_subject_column matched">'+shortenString(value.subject,40);
         if(value.attachments.length > 0){
           messagesHtml += '<div class="icon attachment-icon attachment" title="'+value.attachments.length+' Attachments" ></div>';
         }
         messagesHtml +='</td>';
-        messagesHtml += '<td class="date"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
-        messagesHtml += '<td class="match hidden">'+match_sort +'</td>';
+	messagesHtml += '<td class="imap_date_column matched"><span id="'+value.date_u+'"  title="'+value.date_long+'">'+value.date_short +'</span></td>';
+	messagesHtml += '<td class="imap_match_column matched  hidden">'+match_sort +'</td>';
 
-        messagesHtml += '<td class="forwarder">'+shortenString(value.forwarder,14)+'</td>';
-        // messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
-        messagesHtml += '<td class="actions"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+	messagesHtml += '<td class="imap_forwarder_column matched">'+shortenString(value.forwarder,14)+'</td>';
+        messagesHtml += '<td class="imap_actions_column matched"><span class="edit_match"><a href="#">Edit</a></span><span class="add_tag"><a href="#">Tag</a></span><span class="clear_activity"><a href="#">Clear</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
+	// messagesHtml += '<td class="imap_actions_column matched "><span class="edit_match"><a href="#">Edit</a></span><span class="disabled"><a href="#">Tag</a></span><span class="delete"><a href="#">Delete</a></span></td> </tr>';
 
       }
     });
     cj('#imapper-messages-list').html(messagesHtml);
-    cj("#total_number").html(total_results);
     makeListSortable();
   }
 }
@@ -1658,25 +1779,12 @@ function checkForMatch(key,contactIds){
 
 }
 
-// updates the count at the top of the page
-function updateTotalCount(){
-  var count = cj("#total_number").html();
-  count = parseInt(count,10);
-  output = count -1;
-  cj("#total_number").html(output);
-  if(output < 1){
-    cj("#total_number").html('0');
-    cj('#imapper-messages-list').html('<td valign="top" colspan="7" class="dataTables_empty">No records left, Please Reload the page</td>');
-  }
-}
-
 // removes row from the UI, forces table reload
 function removeRow(id){
   if(cj("#"+id).length){
     var oTable = cj('#sortable_results').dataTable();
     var row_index = oTable.fnGetPosition( document.getElementById(id));
     oTable.fnDeleteRow(row_index);
-    updateTotalCount();
   }else{
     // alert('could not delete row');
   }

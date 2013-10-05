@@ -100,10 +100,11 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
   public function postProcess($output_status = true)
   {
     $sTime = microtime(true);
+    $tmpTbl = 'nyss_temp_dedupe_address';
 
     //remove duplicate addresses; prefer removing address with larger id (newer)
-    CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS tmpAddressDedupe;");
-    $sql = "CREATE TABLE tmpAddressDedupe ( id INT(10), PRIMARY KEY (id) )
+    CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS $tmpTbl;");
+    $sql = "CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
             SELECT id
               FROM (
                 SELECT * 
@@ -115,13 +116,15 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "DELETE FROM civicrm_address
-            WHERE id IN ( SELECT id FROM tmpAddressDedupe );";
+            WHERE id IN ( SELECT id FROM $tmpTbl );";
     CRM_Core_DAO::executeQuery($sql);
 
     //also cleanup any orphaned district block sets
     $sql = "DELETE FROM civicrm_value_district_information_7
-            WHERE entity_id IN ( SELECT id FROM tmpAddressDedupe );";
+            WHERE entity_id IN ( SELECT id FROM $tmpTbl );";
     CRM_Core_DAO::executeQuery($sql);
+
+    CRM_Core_DAO::executeQuery("DROP TABLE $tmpTbl;");
 
     $eTime = microtime(true);
     $diffTime = $eTime - $sTime;
@@ -130,5 +133,5 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
       $url = CRM_Utils_System::url( 'civicrm','reset=1');
       CRM_Core_Error::statusBounce( "Contacts with duplicate addresses have been cleaned up. The process took $diffTime seconds.", $url );
     }
-  }    
+  } // postProcess()
 }

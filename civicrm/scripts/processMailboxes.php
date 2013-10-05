@@ -90,6 +90,8 @@ require_once 'CRM/Utils/MessageBodyParser.php';
 $bbconfig = get_bluebird_instance_config();
 $imap_accounts = $bbconfig['imap.accounts'];
 $imap_validsenders = strtolower($bbconfig['imap.validsenders']);
+$imap_activty_status = $bbconfig['imap.activity.status.default'];
+
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -136,12 +138,18 @@ else {
 
 // Grab default values for activities (priority, status, type).
 $aActivityPriority = CRM_Core_PseudoConstant::priority();
-$aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 $aActivityType = CRM_Core_PseudoConstant::activityType();
+$aActivityStatus = CRM_Core_PseudoConstant::activityStatus();
 
 $activityPriority = array_search('Normal', $aActivityPriority);
-$activityStatus = array_search('Completed', $aActivityStatus);
 $activityType = array_search('Inbound Email', $aActivityType);
+
+if ($imap_activty_status == false || !isset($imap_activty_status)) {
+  $activityStatus = array_search('Completed', $aActivityStatus);
+}else{
+  $activityStatus = array_search($imap_activty_status, $aActivityStatus);
+}
+
 
 $activityDefaults = array('priority' => $activityPriority,
                           'status' => $activityStatus,

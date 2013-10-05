@@ -40,13 +40,19 @@
   <table class="form-layout">
     <tr class="crm-mailing-test-form-block-test_email"><td class="label">{$form.test_email.label}</td><td>{$form.test_email.html} {ts}(filled with your contact's token values){/ts}</td></tr>
     <tr class="crm-mailing-test-form-block-test_group"><td class="label">{$form.test_group.label}</td><td>{$form.test_group.html}</td></tr>
-    <tr><td></td><td>{$form.sendtest.html}</td>  
+    <tr><td></td>
+    <td>
+      <!--NYSS-6957-->
+      <input type="button" class='form-submit' id="checktest" value="Send a Test Mailing">
+      {$form.sendtest.html}
+      <!--NYSS-->
+    </td>
   </table>
 </fieldset>
 
 <div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
     <div class="crm-accordion-header">
-        <div class="icon crm-accordion-pointer"></div> 
+        <div class="icon crm-accordion-pointer"></div>
         {ts}Preview Mailing{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -63,19 +69,65 @@
           {/if}
         </table>
     </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->    
+</div><!-- /.crm-accordion-wrapper -->
 
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
-    
+
 </div><!-- / .crm-form-block -->
 
+<div id="send-confirm" title="Please confirm that you want to send this test message" style="display:none;">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span class="message"></span></p>
+</div>
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions();
-   $('iframe').iframeAutoHeight({heightOffset: 20}); //NYSS
+  cj().crmaccordions();
+  $('iframe').iframeAutoHeight({heightOffset: 20}); //NYSS
+  //NYSS-6957
+  cj( "#sendtest" ).hide();
+  cj( "#send-confirm" ).dialog({
+    modal: true,
+    width: 500,
+    autoOpen: false,
+    resizable: false,
+    draggable: false,
+    buttons: {
+      Cancel: function() {
+        cj( this ).dialog( "close" );
+      },
+      "Send Message Anyway": function() {
+         cj( this ).dialog( "close" );
+         cj('#sendtest').click();
+      }
+    }
+  });
+  cj('#checktest').live('click', function() {
+    var groupid = cj('#test_group').val();
+    if(groupid == null || groupid == ''){
+      cj('#sendtest').click();
+    }else{
+      cj.ajax({
+        url: '/civicrm/NYSS/AJAX/Mailing',
+        data: {
+          group: groupid
+        },
+        success: function(data,status) {
+          if(data != null || data != ''){
+            results = cj.parseJSON(data);
+            if (results.code == "WARN") {
+                cj("#send-confirm .message").html(results.message);
+                cj("#send-confirm").dialog('open');
+            }else{
+              cj('#sendtest').click();
+            }
+          }
+        }
+      });
+    }
+  });
+  //NYSS
 });
 </script>
 {/literal}

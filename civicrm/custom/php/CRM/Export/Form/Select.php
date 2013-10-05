@@ -71,16 +71,24 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     //special case for custom search, directly give option to download csv file
     $customSearchID = $this->get('customSearchID');
-		
-	//NYSS 3651/3652 allow include/exclude, birthday search, and proximity search to use full export
-    if ( $customSearchID && $customSearchID != 4 && $customSearchID != 16 && $customSearchID != 6 ) {
+
+    //NYSS 3651/3652 allow include/exclude, birthday search, and proximity search to use full export
+    $allowCustSearch = array(4, 16, 6);
+    if ( $customSearchID && !in_array($customSearchID, $allowCustSearch) ) {
       CRM_Export_BAO_Export::exportCustom( $this->get( 'customSearchClass' ),
         $this->get( 'formValues' ),
         $this->get(CRM_Utils_Sort::SORT_ORDER)
       );
+    }
+    //NYSS
+    $useTable = TRUE;
+    if ( $customSearchID ) {
+      $this->_isCustomSearch = TRUE;
+      $useTable = FALSE;
     }
 
     $this->_selectAll = FALSE;
@@ -168,7 +176,8 @@ class CRM_Export_Form_Select extends CRM_Core_Form {
       $contactTasks = CRM_Contact_Task::taskTitles();
       $taskName     = $contactTasks[$this->_task];
       $component    = FALSE;
-      CRM_Contact_Form_Task::preProcessCommon($this, TRUE);
+      //NYSS 7197 don't use Table if custom search
+      CRM_Contact_Form_Task::preProcessCommon($this, $useTable);
     }
     else {
       $this->assign('taskName', "Export $componentName[1]");
@@ -391,11 +400,16 @@ FROM   {$this->_componentTable}
       $this->set('mappingId', NULL);
     }
 
+    //NYSS 7228
+    $queryParams = $this->get('queryParams');
+    if ( $this->_isCustomSearch ) {
+      $queryParams = NULL;
+    }
 
     if ($exportOption == self::EXPORT_ALL) {
       CRM_Export_BAO_Export::exportComponents($this->_selectAll,
         $this->_componentIds,
-        $this->get('queryParams'),
+        $queryParams,//NYSS
         $this->get(CRM_Utils_Sort::SORT_ORDER),
         NULL,
         $this->get('returnProperties'),
@@ -501,5 +515,12 @@ FROM   {$this->_componentTable}
 
     return $options;
   }
-}
 
+  //NYSS 7197 supports full export for custom searches
+  function getContactIds() {
+    $cids = CRM_Contact_Form_Task::getContactIds();
+    //CRM_Core_Error::debug_var('cids', $cids);
+    //CRM_Core_Error::debug_var('cids count', count($cids));
+    return $cids;
+  }
+}

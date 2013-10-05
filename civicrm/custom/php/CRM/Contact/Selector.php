@@ -288,7 +288,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           elseif ($value['key'] == 'email') {
             $url = "civicrm/contact/view/activity";
             $qs = "atype=3&action=add&reset=1&cid=%%id%%{$extraParams}";
-          } else if ( $value['key'] == 'tag' ) { //NYSS 3329
+          }
+          elseif ( $value['key'] == 'tag' ) { //NYSS 3329
 			$url = "civicrm/contact/view";
 			$qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
 		  }
@@ -497,7 +498,17 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @access public
    */
   function getTotalCount($action) {
-    return $this->_query->searchQuery(0, 0, NULL, TRUE);
+    //NYSS 6723
+    //return $this->_query->searchQuery(0, 0, NULL, TRUE);
+    // Use count from cache during paging/sorting
+    if (!empty($_GET['crmPID']) || !empty($_GET['crmSID'])) {
+      $count = CRM_Core_BAO_Cache::getItem('Search Results Count', $this->_key);
+    }
+    if (empty($count)) {
+      $count = $this->_query->searchQuery(0, 0, NULL, TRUE);
+      CRM_Core_BAO_Cache::setItem($count, 'Search Results Count', $this->_key);
+    }
+    return $count;
   }
 
   /**
@@ -528,7 +539,15 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // note the formvalues were given by CRM_Contact_Form_Search to us
     // and contain the search criteria (parameters)
     // note that the default action is basic
-    $result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
+    //NYSS 6723
+    //$result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
+    if ($rowCount) {
+      $cacheKey = $this->buildPrevNextCache($sort);
+      $result = $this->_query->getCachedContacts($cacheKey, $offset, $rowCount, $includeContactIds);
+    }
+    else {
+      $result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
+    }
 
     // process the result of the query
     $rows = array();
@@ -815,23 +834,40 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       }
     }
 
-    $this->buildPrevNextCache($sort);
+    //NYSS 6723
+    //$this->buildPrevNextCache($sort);
 
     return $rows;
   }
 
   function buildPrevNextCache($sort) {
-    $cacheKey = CRM_Utils_Array::value('qfKey', $this->_formValues);
+    //NYSS 6723
+    //$cacheKey = CRM_Utils_Array::value('qfKey', $this->_formValues);
+    $cacheKey = 'civicrm search ' . $this->_key;
+
+    // Get current page requested
+    //NYSS temporarily explicitly ref REQUEST (default in 4.4)
+    $pageNum = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject, FALSE, NULL, 'REQUEST');
+    // When starting from scratch, clear any old cache
+    if (!$pageNum) {
+      CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
+      $pageNum = 1;
+    }
+
     //for prev/next pagination
-    $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+    //$crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
+
+    $pageSize = CRM_Utils_Request::retrieve('crmRowCount', 'Integer', CRM_Core_DAO::$_nullObject, FALSE, 50);
+    $firstRecord = ($pageNum - 1) * $pageSize;
 
     //for alphabetic pagination selection save
     $sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String', CRM_Core_DAO::$_nullObject);
 
     //for text field pagination selection save
-    $countRow = CRM_Core_BAO_PrevNextCache::getCount("%civicrm search {$cacheKey}%", NULL, "entity_table = 'civicrm_contact'", "LIKE");
+    //$countRow = CRM_Core_BAO_PrevNextCache::getCount("%civicrm search {$cacheKey}%", NULL, "entity_table = 'civicrm_contact'", "LIKE");
+    $countRow = CRM_Core_BAO_PrevNextCache::getCount($cacheKey, NULL, "entity_table = 'civicrm_contact'");
 
-    if (!$crmPID && $countRow == 0 && !$sortByCharacter) {
+    /*if (!$crmPID && $countRow == 0 && !$sortByCharacter) {
       $this->fillupPrevNextCache($sort);
     }
     elseif ($sortByCharacter) {
@@ -843,7 +879,16 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       else {
         $this->fillupPrevNextCache($sort, $cacheKeyCharacter);
       }
+    }*/
+    // $sortByCharacter triggers a refresh in the prevNext cache
+    if ($sortByCharacter && $sortByCharacter != 'all') {
+      $cacheKey .= "_alphabet";
+      $this->fillupPrevNextCache($sort, $cacheKey);
     }
+    elseif ($firstRecord >= $countRow) {
+      $this->fillupPrevNextCache($sort, $cacheKey, $countRow, $firstRecord + 500);
+    }
+    return $cacheKey;
   }
 
   function addActions(&$rows) {
@@ -930,18 +975,36 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     }
   }
 
-  function fillupPrevNextCache($sort, $cacheKey = NULL) {
-    if (!$cacheKey) {
-      $cacheKey = "civicrm search {$this->_key}";
+  //NYSS 6723
+  //function fillupPrevNextCache($sort, $cacheKey = NULL) {
+  function fillupPrevNextCache($sort, $cacheKey, $start = 0, $end = 500) {
+    //if (!$cacheKey) {
+      //$cacheKey = "civicrm search {$this->_key}";
+    //}
+
+    //CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
+
+    //NYSS 6723
+    // For custom searches, use the contactIDs method
+    if (is_a($this, 'CRM_Contact_Selector_Custom')) {
+      $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);
+      $replaceSQL = "SELECT contact_a.id as contact_id";
+    }
+    // For core searches use the searchQuery method
+    else {
+      $sql = $this->_query->searchQuery(
+        $start, $end, $sort,
+        FALSE, FALSE,
+        FALSE, TRUE, TRUE, NULL
+      );
+      $replaceSQL = "SELECT contact_a.id as id";
     }
 
-    CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
-
     // lets fill up the prev next cache here, so view can scroll thru
-    $sql = $this->_query->searchQuery(0, 0, $sort,
+    /*$sql = $this->_query->searchQuery(0, 0, $sort,
       FALSE, FALSE,
       FALSE, TRUE, TRUE, NULL
-    );
+    );*/
     // CRM-9096
     // due to limitations in our search query writer, the above query does not work
     // in cases where the query is being sorted on a non-contact table
@@ -955,7 +1018,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
 SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
 ";
-    $replaceSQL = "SELECT contact_a.id as id";
+    /*$replaceSQL = "SELECT contact_a.id as id";*/
 
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
@@ -1017,7 +1080,8 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         'address_options', TRUE, NULL, TRUE
       );
 
-      self::$_columnHeaders = array('contact_type' => array('desc' => ts('Contact Type')),
+      self::$_columnHeaders = array(
+        'contact_type' => array('desc' => ts('Contact Type')),
         'sort_name' => array(
           'name' => ts('Name'),
           'sort' => 'sort_name',
@@ -1025,20 +1089,25 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         ),
       );
 
-      $defaultAddress = array('street_address' => array('name' => ts('Address')),
-        'city' => array('name' => ts('City'),
+      $defaultAddress = array(
+        'street_address' => array('name' => ts('Address')),
+        'city' => array(
+          'name' => ts('City'),
           'sort' => 'city',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'state_province' => array('name' => ts('State'),
+        'state_province' => array(
+          'name' => ts('State'),
           'sort' => 'state_province',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'postal_code' => array('name' => ts('Postal'),
+        'postal_code' => array(
+          'name' => ts('Postal'),
           'sort' => 'postal_code',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
-        'country' => array('name' => ts('Country'),
+        'country' => array(
+          'name' => ts('Country'),
           'sort' => 'country',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
@@ -1050,7 +1119,8 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
         }
       }
 
-      self::$_columnHeaders['email'] = array('name' => ts('Email'),
+      self::$_columnHeaders['email'] = array(
+        'name' => ts('Email'),
         'sort' => 'email',
         'direction' => CRM_Utils_Sort::DONTCARE,
       );

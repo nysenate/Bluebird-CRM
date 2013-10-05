@@ -6,21 +6,21 @@ define('FILTER_IN_SD_ONLY', 1);
 define('FILTER_IN_SD_OR_NO_SD', 2);
 
 
-function nyss_mail_civicrm_alterMailParams( &$params, $context )
+function nyss_mail_civicrm_alterMailParams(&$params, $context)
 {
   require_once 'SmtpApiHeader.php';
-  //CRM_Core_Error::debug_var('alterMailParams params', $params);
-  //CRM_Core_Error::debug_var('alterMailParams context', $context);
+  //CRM_Core_Error::debug_var('params', $params);
+  //CRM_Core_Error::debug_var('context', $context);
 
   /* Re-write any URLs in the message body of the form:
   **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
   ** into:
   **   pubfiles.nysenate.gov/crm(dev|test)?/senator/
   */
-  $bodyvalues = array( 'text', 'html' );
-  foreach ( $bodyvalues as $bodyvalue ) {
-    if ( isset($params[$bodyvalue]) ) {
-      $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+  $bodyvalues = array('text', 'html');
+  foreach ($bodyvalues as $bodyvalue) {
+    if (isset($params[$bodyvalue])) {
+      $params[$bodyvalue] = preg_replace('#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue]);
     }
   }
 
@@ -28,16 +28,36 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
   //universal settings
   $bbconfig = get_bluebird_instance_config();
-  if ( !empty($bbconfig['senator.email.replyto']) ) {
+
+  if (isset($bbconfig['senator.email'])) {
+    $senator_email = $bbconfig['senator.email'];
+  }
+  else {
+    $senator_email = '';
+  }
+
+  if (!empty($bbconfig['senator.email.replyto'])) {
     $replyto = $bbconfig['senator.email.replyto'];
   }
-  elseif ( !empty($bbconfig['senator.email']) ) {
-    $replyto = $bbconfig['senator.email'];
+  elseif ($senator_email != '') {
+    $replyto = $senator_email;
   }
   else {
     $replyto = $bbconfig['smtp.subuser'];
   }
 
+  // NYSS 5579 - Construct the whitelisting language and add to e-mail body.
+  if (isset($bbconfig['smtp.whitelist.text'])) {
+    $whitelist_txt = $bbconfig['smtp.whitelist.text'];
+  }
+  else {
+    $whitelist_txt = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
+  }
+
+  $whitelist_txt = str_replace('%SENATOR_EMAIL%', $senator_email, $whitelist_txt);
+  $params['text'] = $whitelist_txt."\n\n".$params['text'];
+  $params['html'] = preg_replace('/(<body [^>]*>\s*<center>\s*)/', "$1<small>$whitelist_txt</small>\n<br/><br/>\n", $params['html'], 1);
+  
   // Prevent Sendgrid from dropping any of our messages.
   $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
@@ -45,9 +65,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
   //$params['Content-Transfer-Encoding'] = 'Quoted-Printable';
 
   //set some values based on context
-  if ( $context == 'civimail' ) {
-    if ( empty($params['event_queue_id']) && empty($params['is_test']) ) {
-      CRM_Core_Error::debug_var('alterMailParams params: event_queue_id not found',$params);
+  if ($context == 'civimail') {
+    if (empty($params['event_queue_id']) && empty($params['is_test'])) {
+      CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
     }
 
     $params['Return-Path'] = '';
@@ -55,21 +75,21 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
     $params['Reply-To'] = $replyto;
 
     $test = $event_queue_id = $jid = $mid = $mname = 0;
-    if ( isset($params['job_id']) ) {
-      $jid   = $params['job_id'];
-      $mid   = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
+    if (isset($params['job_id'])) {
+      $jid = $params['job_id'];
+      $mid = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
       $mname = CRM_Core_DAO::singleValueQuery("SELECT name FROM civicrm_mailing WHERE id = $mid;");
-      $test  = CRM_Core_DAO::singleValueQuery("SELECT is_test FROM civicrm_mailing_job WHERE id = $jid;");
+      $test = CRM_Core_DAO::singleValueQuery("SELECT is_test FROM civicrm_mailing_job WHERE id = $jid;");
       unset($params['job_id']);
     }
 
-    if ( isset($params['event_queue_id']) ) {
+    if (isset($params['event_queue_id'])) {
       $event_queue_id = $params['event_queue_id'];
       unset($params['event_queue_id']);
     }
 
     //5354
-    if ( isset($params['contact_id']) ) {
+    if (isset($params['contact_id'])) {
       $contactID = $params['contact_id'];
       unset($params['contact_id']);
       $params['X-clientid'] = $contactID;
@@ -77,7 +97,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
-    $hdr->setUniqueArgs( array(
+    $hdr->setUniqueArgs(array(
       'mailing_id'    => $mid,
       'job_id'        => $jid,
       'instance'      => $bbconfig['shortname'],
@@ -100,50 +120,45 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
-  //CRM_Core_Error::debug('session',$_SESSION);
-  //CRM_Core_Error::debug_var('params',$params);
-  //CRM_Core_Error::debug_var('mname',$mname);
+  //CRM_Core_Error::debug('session', $_SESSION);
+  //CRM_Core_Error::debug_var('params', $params);
+  //CRM_Core_Error::debug_var('mname', $mname);
   //exit();
-}
+} // nyss_mail_civicrm_alterMailParams()
 
 
-function nyss_mail_civicrm_buildForm( $formName, &$form ) {
-
-  if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
-
-    //get base mailing group, add to option list, set as default, then freeze field
-    $params       = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
-    $groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
-
+function nyss_mail_civicrm_buildForm($formName, &$form)
+{
+  if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
+    //get base mailing group, add to option list, set as default, freeze field
+    $params       = array ('name' => BASE_SUBSCRIPTION_GROUP);
+    $groupObjects = CRM_Contact_BAO_Group::getGroups($params);
     $groupID      = $groupObjects[0]->id;
     $groupTitle   = $groupObjects[0]->title;
     $baseGroup    =& $form->getElement('baseGroup');
-    $baseGroup->addOption( $groupTitle, $groupID );
-
+    $baseGroup->addOption($groupTitle, $groupID);
     $defaults['baseGroup'] = $groupID;
-    $form->setDefaults( $defaults );
-
+    $form->setDefaults($defaults);
     $baseGroup->freeze();
   }
 
-  if ( $formName == 'CRM_Mailing_Form_Group' ) {
-
+  if ($formName == 'CRM_Mailing_Form_Group') {
     $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $form, false, null );
 
     //4628
     $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
     //4879
-    $form->add('select', 'exclude_ood',  ts( 'Send only to emails matched with in-district postal addresses'),
+    $form->add('select', 'exclude_ood', ts('Send only to emails matched with in-district postal addresses'),
       array(FILTER_ALL => 'No District Filtering',
             FILTER_IN_SD_ONLY => 'In-District Only',
             FILTER_IN_SD_OR_NO_SD => 'In-District and Unknowns'),
       false);
 
-    if ( $mailingID ) {
-      $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
+    if ($mailingID) {
+      $defaults['all_emails'] = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
       $defaults['dedupe_email'] = CRM_Core_DAO::singleValueQuery("SELECT dedupe_email FROM civicrm_mailing WHERE id = $mailingID");
-      $defaults['exclude_ood']  = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailingID");
+      $defaults['exclude_ood'] = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailingID");
     }
     else {
       $defaults['dedupe_email'] = true;
@@ -152,76 +167,76 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
     $form->setDefaults( $defaults );
   }
 
-  if ( $formName == 'CRM_Mailing_Form_Test' ) {
+  if ($formName == 'CRM_Mailing_Form_Test') {
     //change button text
     $buttons =& $form->getElement('buttons');
-    foreach ( $buttons->_elements as $key => $button ) {
-      if ( $button->_attributes['value'] == 'Inform Scheduler' ) {
+    foreach ($buttons->_elements as $key => $button) {
+      if ($button->_attributes['value'] == 'Inform Scheduler') {
         $buttons->_elements[$key]->_attributes['value'] = 'Submit for Scheduling';
       }
     }
   }
 
-    if ( $formName == 'CRM_Mailing_Form_Schedule' ) {
+    if ($formName == 'CRM_Mailing_Form_Schedule') {
       //change button text
       $buttons =& $form->getElement('buttons');
-      foreach ( $buttons->_elements as $key => $button ) {
-        if ( $button->_attributes['value'] == 'Submit Mailing' ) {
+      foreach ($buttons->_elements as $key => $button) {
+        if ($button->_attributes['value'] == 'Submit Mailing') {
           $buttons->_elements[$key]->_attributes['value'] = 'Submit for Approval';
         }
       }
     }
 
-    if ( $formName == 'CRM_Mailing_Form_Group' ||
-         $formName == 'CRM_Mailing_Form_Upload' ||
-         $formName == 'CRM_Mailing_Form_Test' ||
-         $formName == 'CRM_Mailing_Form_Schedule' ) {
+    if ($formName == 'CRM_Mailing_Form_Group' ||
+        $formName == 'CRM_Mailing_Form_Upload' ||
+        $formName == 'CRM_Mailing_Form_Test' ||
+        $formName == 'CRM_Mailing_Form_Schedule') {
       CRM_Utils_System::setTitle( 'New Mass Email' );
 
       //NYSS 4557
       //CRM_Core_Error::debug_var('form',$form);
       $session =& CRM_Core_Session::singleton();
-      if ( !empty($form->_finalValues['name']) ) {
+      if (!empty($form->_finalValues['name'])) {
         $form->assign('mailingName', $form->_finalValues['name']);
         $session->set('mailingName', $form->_finalValues['name']);
       }
-      elseif ( $session->get('mailingName') ) {
+      elseif ($session->get('mailingName')) {
         $form->assign('mailingName', $session->get('mailingName'));
       }
     }
 
-    if ( $formName == 'CRM_Mailing_Form_Search' ) {
+    if ($formName == 'CRM_Mailing_Form_Search') {
       $parent = $form->controller->getParent();
       $title  = $parent->getVar('_title');
 
-      if ( $title == 'Draft and Unscheduled Mailings' ) {
-        CRM_Utils_System::setTitle( 'Draft and Unscheduled Email' );
+      if ($title == 'Draft and Unscheduled Mailings') {
+        CRM_Utils_System::setTitle('Draft and Unscheduled Email');
       }
-      elseif ( $title == 'Scheduled and Sent Mailings' ) {
-        CRM_Utils_System::setTitle( 'Scheduled and Sent Email' );
+      elseif ($title == 'Scheduled and Sent Mailings') {
+        CRM_Utils_System::setTitle('Scheduled and Sent Email');
       }
-      elseif ( $title == 'Archived Mailings' ) {
-        CRM_Utils_System::setTitle( 'Archived Email' );
+      elseif ($title == 'Archived Mailings') {
+        CRM_Utils_System::setTitle('Archived Email');
       }
       //CRM_Core_Error::debug($parent);
     }
 
     //CRM_Core_Error::debug($formName);
     //CRM_Core_Error::debug($form);
-}
+} // nyss_mail_civicrm_buildForm()
 
-function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
-  if ( $formName == 'CRM_Mailing_Form_Group' ) {
-
+function nyss_mail_civicrm_postProcess($formName, &$form)
+{
+  if ($formName == 'CRM_Mailing_Form_Group') {
     $mailingID    = $form->getVar('_mailingID');
     $submitValues = $form->_submitValues;
     $dedupeEmails = $submitValues['dedupe_email'];
 
     //add exclude_ood to mailing record
-    $excludeOOD = ( !empty($submitValues['exclude_ood']) ) ? $submitValues['exclude_ood'] : FILTER_ALL;
+    $excludeOOD = (!empty($submitValues['exclude_ood'])) ? $submitValues['exclude_ood'] : FILTER_ALL;
 
-    //exclude_ood will be set from the config file initially, so we overwrite the form values
+    //exclude_ood is set from config file initially, so overwrite form values
     $bbconfig   = get_bluebird_instance_config();
 
     $excludeOOD = FILTER_ALL;
@@ -241,39 +256,39 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
     }
 
     $sqlParams  = array(
-      1 => array( $mailingID,  'Integer' ),
-      2 => array( $excludeOOD, 'Integer' )
+      1 => array($mailingID,  'Integer'),
+      2 => array($excludeOOD, 'Integer')
     );
 
-    CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams);
 
     //4628, 4879
-    if ( $form->_submitValues['all_emails'] ) {
-      _addAllEmails( $mailingID, $dedupeEmails, $excludeOOD );
+    if ($form->_submitValues['all_emails']) {
+      _addAllEmails($mailingID, $dedupeEmails, $excludeOOD);
     }
 
-    if ( $excludeOOD != FILTER_ALL ) {
-      _excludeOOD( $mailingID, $dedupeEmails, $excludeOOD );
+    if ($excludeOOD != FILTER_ALL) {
+      _excludeOOD($mailingID, $dedupeEmails, $excludeOOD);
     }
 
     //add email seed group as last step in the process
-    _addEmailSeeds( $mailingID );
+    _addEmailSeeds($mailingID);
 
     //recalculate the total recipients
     if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL) {
       require_once 'CRM/Mailing/BAO/Mailing.php';
-      $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailingID );
+      $count = CRM_Mailing_BAO_Recipients::mailingSize($mailingID);
       $form->set('count', $count);
       $form->assign('count', $count);
     }
 
     //5996 set default header/footer if save later on step 1
     $buttonName = $form->controller->getButtonName();
-    if ( $buttonName == '_qf_Group_submit' ) {
+    if ($buttonName == '_qf_Group_submit') {
       $mailing = new CRM_Mailing_DAO_Mailing();
       $mailing->id = $mailingID;
       $mailing->find(TRUE);
-      if ( empty($mailing->header_id) || empty($mailing->footer_id) ) {
+      if (empty($mailing->header_id) || empty($mailing->footer_id)) {
         //get default header/footer
         $componentFields = array(
           'header_id' => 'Header',
@@ -282,7 +297,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
         foreach ($componentFields as $componentVar => $componentType) {
           $mailing->$componentVar = CRM_Mailing_PseudoConstant::defaultComponent($componentType, '');
         }
-        $mailing->created_date = date( 'YmdHis', strtotime($mailing->created_date) );
+        $mailing->created_date = date('YmdHis', strtotime($mailing->created_date));
         $mailing->save();
       }
       //CRM_Core_Error::debug_var('$mailing',$mailing);
@@ -291,9 +306,11 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
     //CRM_Core_Error::debug('postProcess Group form', $form); exit();
   }
   //CRM_Core_Error::debug($form); exit();
-}//postProcess
+} //nyss_mail_civicrm_postProcess()
 
-function nyss_mail_civicrm_pageRun( &$page ) {
+
+function nyss_mail_civicrm_pageRun(&$page)
+{
   //CRM_Core_Error::debug('page', $page);
 
   //expose url/open tracking to mailing report
@@ -316,11 +333,12 @@ function nyss_mail_civicrm_pageRun( &$page ) {
       CRM_Utils_System::setTitle( ts('Opt-out Requests') );
     }
   }
-} //end pageRun
+} // nyss_mail_civicrm_pageRun()
+
 
 //4628
-function _addAllEmails( $mailingID, $dedupeEmails = false, $excludeOOD = FILTER_ALL) {
-
+function _addAllEmails($mailingID, $dedupeEmails = false, $excludeOOD = FILTER_ALL)
+{
   require_once 'CRM/Mailing/BAO/Mailing.php';
 
   $sql = "
@@ -350,27 +368,30 @@ WHERE e.id NOT IN (
       )
     ";
   }
-  $params = array( 1 => array( $mailingID, 'Integer' ) );
+  $params = array(1 => array($mailingID, 'Integer'));
   //CRM_Core_Error::debug('params',$params); exit();
 
-  $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+  $dao = CRM_Core_DAO::executeQuery($sql, $params);
 
   //remove onHold as we didn't do it earlier
-  CRM_Mailing_BAO_Mailing::removeOnHold( (int) $mailingID );
-} //_addAllEmails
+  CRM_Mailing_BAO_Mailing::removeOnHold((int)$mailingID);
+} //_addAllEmails()
+
 
 //4879
-function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
-
+function _excludeOOD($mailingID, $dedupeEmails = false, $excludeOOD)
+{
   //determine what SD we are in
   $bbconfig = get_bluebird_instance_config();
   $district = $bbconfig['district'];
 
-  if ( empty($district) ) { return; }
+  if (empty($district)) {
+    return;
+  }
 
   //create temp table to store contacts confirmed to be in district
-  $tempTbl = "tmpExcludeOOD_$mailingID";
-  $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) ENGINE=MyISAM;";
+  $tempTbl = "nyss_temp_excludeOOD_$mailingID";
+  $sql = "CREATE TEMPORARY TABLE $tempTbl(contact_id INT NOT NULL, PRIMARY KEY(contact_id)) ENGINE=MyISAM;";
   CRM_Core_DAO::executeQuery($sql);
 
   $sql = "INSERT INTO $tempTbl
@@ -385,8 +406,7 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
   CRM_Core_DAO::executeQuery($sql);
 
   //also include unknowns if option enabled
-  if ( $excludeOOD == FILTER_IN_SD_OR_NO_SD ) {
-
+  if ($excludeOOD == FILTER_IN_SD_OR_NO_SD) {
       //include where no district is known or no address is present
       $sql = "INSERT INTO $tempTbl
               SELECT mr.contact_id
@@ -412,13 +432,13 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
 
   //if not deduping emails, return now
-  if ( !$dedupeEmails ) {
+  if (!$dedupeEmails) {
     return;
   }
 
-  //if dedupeEmails, we need to handle that now, as it was skipped earlier in the process
-  $tempTbl = "tmpDedupeEmails_$mailingID";
-  $sql = "CREATE TEMPORARY TABLE $tempTbl( email_id INT NOT NULL, PRIMARY KEY(email_id) ) ENGINE=MyISAM;";
+  //if dedupeEmails, handle that now, as it was skipped earlier in the process
+  $tempTbl = "nyss_temp_dedupe_emails_$mailingID";
+  $sql = "CREATE TEMPORARY TABLE $tempTbl (email_id INT NOT NULL, PRIMARY KEY(email_id)) ENGINE=MyISAM;";
   CRM_Core_DAO::executeQuery($sql);
 
   $sql = "INSERT INTO $tempTbl
@@ -441,13 +461,14 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
-} //_excludeOOD
+} // _excludeOOD()
 
-function _addEmailSeeds( $mailingID ) {
 
-  $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
+function _addEmailSeeds($mailingID)
+{
+  $gid = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';");
 
-  if ( !$gid ) {
+  if (!$gid) {
     return;
   }
 
@@ -469,4 +490,4 @@ function _addEmailSeeds( $mailingID ) {
             AND c.is_deleted = 0;";
   //CRM_Core_Error::debug($sql);exit();
   CRM_Core_DAO::executeQuery($sql);
-} //_addEmailSeeds
+} // _addEmailSeeds()

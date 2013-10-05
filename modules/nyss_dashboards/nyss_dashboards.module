@@ -1,6 +1,4 @@
 <?php 
 function nyss_dashboards_civicrm_xmlMenu( &$files ) {
-    $files[] =
-        dirname( __FILE__ ) . DIRECTORY_SEPARATOR .
-        'nyss_dashboards.xml';
+  $files[] = dirname( __FILE__ ).'/nyss_dashboards.xml';
 }

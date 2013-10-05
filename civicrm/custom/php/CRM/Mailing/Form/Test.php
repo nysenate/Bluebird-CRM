@@ -229,7 +229,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
     $emails = NULL;
     if (CRM_Utils_Array::value('sendtest', $testParams)) {
       if (!($testParams['test_group'] || $testParams['test_email'])) {
-        CRM_Core_Session::setStatus(ts('Your did not provided any email address or selected any group. No test mail is sent.'));
+        CRM_Core_Session::setStatus(ts('You did not provide an email address or select a group.  No test mailing has been sent.'));
         $error = TRUE;
       }
 
@@ -298,7 +298,7 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
         ts("You can not schedule or send this mailing because there are currently no recipients selected. Click 'Previous' to return to the Select Recipients step, OR click 'Save & Continue Later'."),
       );
     }
-        
+
     if (CRM_Utils_Array::value('_qf_Import_refresh', $_POST) ||
       CRM_Utils_Array::value('_qf_Test_next', $testParams) ||
       !CRM_Utils_Array::value('sendtest', $testParams)
@@ -370,10 +370,11 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form {
 
     if (CRM_Utils_Array::value('sendtest', $testParams)) {
 
-      //NYSS 4557
+      //NYSS 4557/7223
       $testTarget = '';
       if ( $testParams['test_group'] ) {
-        $testTarget = $testParams['test_group'];
+        $group = CRM_Contact_BAO_Group::getGroups(array('id' => $testParams['test_group']));
+        $testTarget = $group[0]->title;
       }
       elseif ( $testParams['test_email'] ) {
         $testTarget = $testParams['test_email'];

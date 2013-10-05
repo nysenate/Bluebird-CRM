@@ -474,12 +474,14 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 
     //get contact counts by School District
     $sql_sc = "
-      SELECT COUNT( civicrm_contact.id ) as sc_count, school_district_54
+      SELECT COUNT( civicrm_contact.id ) as sc_count, DistrictName, school_district_54 as sc_id
       FROM ( civicrm_address
       INNER JOIN civicrm_value_district_information_7
         ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
       INNER JOIN civicrm_contact
         ON ( civicrm_contact.id = civicrm_address.contact_id )
+      INNER JOIN nyss_schooldistricts nsd
+        ON ( LPAD(school_district_54, 3, 0) = nsd.Code )
       WHERE ( civicrm_contact.is_deleted != 1 )
         AND ( civicrm_address.is_primary = 1 )
         AND ( civicrm_value_district_information_7.school_district_54 IS NOT NULL )
@@ -488,7 +490,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_sc );
     while ( $dao->fetch( ) ) {
-      $contactSC[$dao->school_district_54] = $dao->sc_count;
+      $contactSC["{$dao->DistrictName} [{$dao->sc_id}]"] = $dao->sc_count;
     }
     $this->assign('contactSC', $contactSC);
     

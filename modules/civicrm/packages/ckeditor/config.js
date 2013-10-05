@@ -1,5 +1,5 @@
 ﻿/**
- * @license Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -28,7 +28,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.pasteFromWordRemoveFontStyles = false;
   config.pasteFromWordNumberedHeadingToList = true;
 
-  config.extraPlugins = 'font,aspell';
+  config.extraPlugins = 'font,aspell,justify';
 
   // The toolbar groups arrangement, optimized for two toolbar rows.
   config.toolbarGroups = [
@@ -42,7 +42,7 @@ CKEDITOR.editorConfig = function( config ) {
     { name: 'others' },
     '/',
     { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ] },
+    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'justify' ] },//LCD
     { name: 'styles' },
     { name: 'colors' },
     { name: 'about' }

@@ -27,12 +27,19 @@
       <a href="#"
          title="{ts}Purge and Load Sample Data AJAX{/ts}"
          id="loadData"
-         class="button"><span>{ts}Continue{/ts}</span></a>
+         class="button crm-action"><span>{ts}Purge and Load Data{/ts}</span></a>
+      <a href="#"
+         title="{ts}Purge and Load Sample Data AJAX{/ts}"
+         id="purgeData"
+         class="button crm-action"><span>{ts}Purge Only{/ts}</span></a>
     </div>
     <div class="clear"></div>
   </div>
 
-  <div id="output" style="display: none;"><h3>Loading data...</h3></div>
+  <div id="output" style="display: none;">
+    <h3>Loading data...</h3>
+    <div class="content"></div>
+  </div>
 
 </div>
 </div>  
@@ -45,8 +52,10 @@
 
   var procTime = 0;
 
-  cj('#loadData').click(function(){
+  cj('a.crm-action').click(function(){
+    var action = cj(this).attr('id');
     var result = confirm('Are you sure you want to purge existing contacts and load sample data?');
+
     if ( result != true ) {
       return;
     }
@@ -56,53 +65,55 @@
 
     //trigger data load
     var dataUrl = "{/literal}{crmURL p='civicrm/nyss/loaddata' h=0 }{literal}";
+    var data = 'action=' + action;
 
     cj.ajax({
       url: dataUrl,
+      data: data,
       success: function(data, textStatus, jqXHR){
-        console.log('processing time: ', data);
         procTime = data;
+        //console.log('processing time: ', procTime);
       },
       error: function( jqXHR, textStatus, errorThrown ) {
         return false;
       }
     });
 
-    //get output and write to screen
-    var dataUrl = "{/literal}{crmURL p='civicrm/nyss/getoutput' h=0 }{literal}";
-    var element = cj('#output');
-    var complete = false;
-    var start = end = h = 0;
+    //delay a bit before retrieving log file
+    window.setTimeout(function(){
+      //get output and write to screen
+      var dataUrl = "{/literal}{crmURL p='civicrm/nyss/getoutput' h=0 }{literal}";
+      var element = cj('#output .content');
+      var complete = false;
+      var h = i = 0;
 
-    while ( !complete ) {
-      start = end;
-      end += 20;
+      while ( !complete ) {
+        i++;
 
-      cj.ajax({
-        url: dataUrl,
-        async: false,
-        data: "setStart=" + start + "&setEnd=" + end,
-        success: function(data, textStatus, jqXHR){
-          //console.log('retrieving file');
-          //console.log('data: ', data);
+        cj.ajax({
+          url: dataUrl,
+          async: false,
+          success: function(data, textStatus, jqXHR){
+            //console.log('retrieving file');
+            //console.log('data: ', data);
 
-          if ( data == 'COMPLETE' ) {
-            //console.log('flagging as complete');
-            complete = true;
-          }
-          else {
-            element.append(data);
+            if ( data.search('SCRIPTCOMPLETE') > -1 ) {
+              data = data.replace('SCRIPTCOMPLETE', '');
+              complete = true;
+            }
+
+            element.html('<p>' + data + '</p>');
 
             h = element[0].scrollHeight;
             element.scrollTop(h);
+          },
+          error: function( jqXHR, textStatus, errorThrown ) {
+            return false;
           }
-        },
-        error: function( jqXHR, textStatus, errorThrown ) {
-          return false;
-        }
-      });
-      //console.log('complete end: ', complete);
-    }
+        });
+        //console.log('complete end: ', complete);
+      }
+    }, 5000);
   });
 </script>
 {/literal}

@@ -354,7 +354,8 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       if (array_key_exists('TagsAndGroups', $this->_editOptions)) {
         // set group and tag defaults if any
         if ($this->_gid) {
-          $defaults['group'][$this->_gid] = 1;
+          //$defaults['group'][$this->_gid] = 1;
+          $defaults['group'][] = $this->_gid; //NYSS 6102
         }
         if ($this->_tid) {
           $defaults['tag'][$this->_tid] = 1;
@@ -690,7 +691,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       $cacheTagValues = $cache->get($cacheKeyTagValues);
 
       // We're on the edit or save page, and it's not via ajax (_get['block'])
-      if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
+      if( $cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
         // Load the classes for all of the QuickForm element types or else
         // we'll get PHP Incomplete Class objects.
         require_once('HTML/QuickForm.php');
@@ -699,6 +700,26 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         }
         // Load the elements and tag values out of cache and assign them
         $cacheElements = unserialize($cacheElements);
+
+        //unset subrecords if deleted
+        $subTypes = array('email', 'phone', 'im', 'website');
+        $postEles = array();
+        foreach ( $subTypes as $st ) {
+          foreach ( $_POST[$st] as $fID => $fData ) {
+            $postEles[] = "{$st}[{$fID}]";
+          }
+        }
+        foreach ( $cacheElements as $eID => $ele ) {
+          $fldName = $ele->_attributes['name'];
+          $fldType = strstr($fldName, '[', TRUE);
+          if ( in_array($fldType, $subTypes) ) {
+            $fldTypeID = strstr($fldName, ']', TRUE).']';
+            if ( !in_array($fldTypeID, $postEles) ) {
+              unset($cacheElements[$eID]);
+            }
+          }
+        }
+
         $this->_elements = $cacheElements;
         if($cacheTagValues) {
           $cacheTagValues = unserialize($cacheTagValues);
@@ -785,8 +806,18 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         continue;
       }
 
+      //NYSS 6102
+      if ($name == 'TagsAndGroups') {
+        continue;
+      }
+
       eval('CRM_Contact_Form_Edit_' . $name . '::buildQuickForm( $this );');
     }
+
+    //NYSS 6102
+    // build tags and groups
+    CRM_Contact_Form_Edit_TagsAndGroups::buildQuickForm($this, 0, CRM_Contact_Form_Edit_TagsAndGroups::ALL,
+      FALSE, NULL, 'Group(s)', 'Tag(s)', NULL, 'crmasmSelect');
 
     // build location blocks.
     CRM_Contact_Form_Location::buildQuickForm($this);
@@ -863,6 +894,15 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
     //get the submitted values in an array
     $params = $this->controller->exportValues($this->_name);
+
+    //NYSS 6102
+    $group = CRM_Utils_Array::value('group', $params);
+    if ($group && is_array($group)) {
+      unset($params['group']);
+      foreach ($group as $key => $value) {
+        $params['group'][$value] = 1;
+      }
+    }
 
     CRM_Contact_BAO_Contact_Optimizer::edit( $params, $this->_preEditValues );
     // CRM_Core_Error::debug( 'PEV', $this->_preEditValues ) ; CRM_Core_Error::debug( 'POST', $params ); exit( );
@@ -951,7 +991,8 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
     if (CRM_Utils_Array::value('contact_id', $params) && ($this->_action & CRM_Core_Action::UPDATE)) {
       // figure out which all groups are intended to be removed
-      if (!empty($params['group'])) {
+      //NYSS 6102
+      /*if (!empty($params['group'])) {
         $contactGroupList = CRM_Contact_BAO_GroupContact::getContactGroup($params['contact_id'], 'Added');
         if (is_array($contactGroupList)) {
           foreach ($contactGroupList as $key) {
@@ -962,7 +1003,17 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
             }
           }
         }
-      }
+      }*/
+      $contactGroupList = CRM_Contact_BAO_GroupContact::getContactGroup($params['contact_id'], 'Added');
+      if (is_array($contactGroupList)) {
+        foreach ($contactGroupList as $key) {
+          if ((!array_key_exists($key['group_id'], $params['group']) || $params['group'][$key['group_id']] != 1)
+            && !CRM_Utils_Array::value('is_hidden', $key)
+          ) {
+            $params['group'][$key['group_id']] = -1;
+          }
+         }
+       }
     }
 
     // parse street address, CRM-5450

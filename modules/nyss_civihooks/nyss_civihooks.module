@@ -331,16 +331,26 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
       '_qf_PDF_submit',
       '_qf_PDF_cancel',
       '_qf_Contact_upload_view', //handle separately
+      '_qf_Contact_upload_new', //handle separately
+      '_qf_Contact_upload_cancel', //handle separately
       '_qf_Relationship_upload', //4414
       '_qf_Search_refresh',
       '_qf_ProofingReport_next',
       '_qf_ProofingReport_submit',
-      '_qf_Label_next'
+      '_qf_Label_next',
+      '_qf_ExportPermissions_next',
+      '_qf_ExportPermissions_submit',
+      '_qf_ExportPermissions_cancel',
     );
     $btnExcludeValue = array(
       'PDF',
       'Print Contact List',
       'File on case'
+    );
+    $btnHandleValid = array(
+      '_qf_Contact_upload_view',
+      '_qf_Contact_upload_new',
+      '_qf_Contact_upload_cancel',
     );
 
     foreach ( $buttons->_elements as $key=>$button ) {
@@ -350,10 +360,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $btnValue = $buttons->_elements[$key]->_attributes['value'];
         if ( !in_array($btnName, $btnExcludeName) &&
              !in_array($btnValue, $btnExcludeValue) ) {
-          $js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
+          $js = "if(this.value!='Processing...'){this.value='Processing...';cj('#' + this.id).click();return true;}else{return false;}";
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
-        } elseif ( $btnName == '_qf_Contact_upload_view' ) {
-          $js = 'if(this.value!="Processing..." && cj("#Contact").valid() ){this.value="Processing...";document.getElementById(this.id).click();return true;}else{return false;}';
+        }
+        elseif ( in_array($btnName, $btnHandleValid) ) {
+          $jsValid = $jsCancel = '';
+          if ( strpos($btnName, '_cancel') === FALSE ) {
+            $jsValid = '&& cj("#Contact").valid()';
+          }
+          $js = 'if(this.value!="Processing..." '.$jsValid.' ){this.value="Processing...";cj("#" + this.id).click();return true;}else{return false;}';
           $buttons->_elements[$key]->_attributes['onclick'] = $js;
         }
       }
@@ -460,6 +475,16 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
   //5399
   if ( $formName == 'CRM_Note_Form_Note' ) {
     $form->addRule('subject', ts('Please include subject text.'), 'required');
+  }
+
+  //6655 add to group perms
+  if ( $formName == 'CRM_Contact_Form_Task_AddToGroup' ) {
+    if ( !CRM_Core_Permission::check('edit groups') ) {
+      $go =& $form->getElement('group_option');
+      unset($go->_elements[1]);
+
+      $form->removeElement('title');
+    }
   }
 
   _setDBVars();
@@ -698,7 +723,9 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
     $js = "
     <script type='text/javascript'>
       cj('.crm-summary-block .crm-table2div-layout .crm-label').each(function(){
-        cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+        if ( !cj(this).parent('div.bb-row-wrap').length ) {
+          cj(this).next('.crm-content').andSelf().wrapAll('<div class=\"bb-row-wrap\"/>');
+        }
       });
       cj('.crm-table2div-layout #crm-container-snippet').removeAttr('id');
       cj('.crm-table2div-layout .crm-inline-edit-hover').removeClass('crm-inline-edit-hover');
@@ -1007,14 +1034,15 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
+      //6552
       $manageID+10 => array(
         'attributes' => Array(
-          'label' => 'Merge Duplicate Contacts',
-          'name' => 'Merge Duplicate Contacts',
-          'url' => 'civicrm/contact/deduperules&reset=1',
-          'permission' => 'merge duplicate contacts',
+          'label' => 'Export Permissions',
+          'name' => 'Export Permissions',
+          'url' => 'civicrm/nyss/exportpermissions',
+          'permission' => 'administer CiviCRM',
           'operator' => 'OR',
-          'separator' => 2,
+          'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+10,
           'active' => 1,
@@ -1023,12 +1051,12 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+11 => array(
         'attributes' => Array(
-          'label' => 'Case Dashboard',
-          'name' => 'Case Dashboard',
-          'url' => 'civicrm/case?reset=1',
-          'permission' => 'access all cases and activities',
-          'operator' => 'AND',
-          'separator' => 0,
+          'label' => 'Merge Duplicate Contacts',
+          'name' => 'Merge Duplicate Contacts',
+          'url' => 'civicrm/contact/deduperules&reset=1',
+          'permission' => 'merge duplicate contacts',
+          'operator' => 'OR',
+          'separator' => 2,
           'parentID' => $manageID,
           'navID' => $manageID+11,
           'active' => 1,
@@ -1037,11 +1065,11 @@ function _buildManageMenu($manageID) {
       ),
       $manageID+12 => array(
         'attributes' => Array(
-          'label' => 'Import/Export Mappings',
-          'name' => 'Import/Export Mappings',
-          'url' => 'civicrm/admin/mapping?reset=1',
-          'permission' => 'administer CiviCRM,administer district',
-          'operator' => 'OR',
+          'label' => 'Case Dashboard',
+          'name' => 'Case Dashboard',
+          'url' => 'civicrm/case?reset=1',
+          'permission' => 'access all cases and activities',
+          'operator' => 'AND',
           'separator' => 0,
           'parentID' => $manageID,
           'navID' => $manageID+12,
@@ -1049,8 +1077,22 @@ function _buildManageMenu($manageID) {
         ),
         'child' => array(),
       ),
-      //5230 add duplicate address removal tool
       $manageID+13 => array(
+        'attributes' => Array(
+          'label' => 'Import/Export Mappings',
+          'name' => 'Import/Export Mappings',
+          'url' => 'civicrm/admin/mapping?reset=1',
+          'permission' => 'administer CiviCRM,administer district',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+13,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      //5230 add duplicate address removal tool
+      $manageID+14 => array(
         'attributes' => Array(
           'label' => 'Duplicate Address Removal',
           'name' => 'Duplicate Address Removal',
@@ -1059,7 +1101,22 @@ function _buildManageMenu($manageID) {
           'operator' => 'AND',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+13,
+          'navID' => $manageID+14,
+          'active' => 1,
+        ),
+        'child' => array(),
+      ),
+      //delete trashed tool
+      $manageID+15 => array(
+        'attributes' => Array(
+          'label' => 'Delete Trashed Contacts',
+          'name' => 'Delete Trashed Contacts',
+          'url' => 'civicrm/nyss/deletetrashed?reset=1',
+          'permission' => 'administer CiviCRM,export print production files',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $manageID,
+          'navID' => $manageID+15,
           'active' => 1,
         ),
         'child' => array(),
@@ -1294,7 +1351,7 @@ function _buildInboxMenu($inboxNavID) {
         ),
         'child' => array(),
       ),
-      /*$inboxNavID+3 => array(
+      $inboxNavID+3 => array(
         'attributes' => array (
           'label'      => 'Reports',
           'name'       => 'Reports',
@@ -1307,7 +1364,7 @@ function _buildInboxMenu($inboxNavID) {
           'active'     => 1
         ),
         'child' => array(),
-      ),*/
+      ),
     ),
   );
 

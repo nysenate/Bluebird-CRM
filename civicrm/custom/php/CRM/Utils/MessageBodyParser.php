@@ -54,14 +54,13 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $patterns = array('/\r\n|\r|\n/i', '/(<(br)[^>]*>\s*)+/i');
+    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<br\ ?\/?>)+/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = html_entity_decode($headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
     $bodyArray = explode("\r\n", $headerCheck);
-
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
 
     $Line = array();
@@ -69,7 +68,7 @@ class MessageBodyParser
     $currentHeader=0;
     $HeaderBlocks = array();
 
-    // search body line by line for headers 
+    // search body line by line for headers
     foreach ($bodyArray as $key => $line) {
       if (preg_match('/('.$possibleHeaders.'):([^\r\n]*)/i', $line, $matches)) {
         // if we find a header, we start the header section
@@ -135,15 +134,16 @@ class MessageBodyParser
             break;
           default:
             break;
-        } 
+        }
       }
     }
     // only grab the details from the first header in the message
     $fwdDate = $m[0]['Date'];
-    $fwdName = trim($m[0]['From']['name']);
-    $fwdEmail = $m[0]['From']['email'];
+    $fwdName = trim(strip_tags($m[0]['From']['name']));
+    $fwdEmail = trim(strip_tags($m[0]['From']['email']));
     $fwdEmailLookup = $m[0]['From']['lookupType'];
-    $fwdSubject = trim($m[0]['Subject']);
+    $fwdSubject = trim(strip_tags($m[0]['Subject']));
+
 
 
     // Remove all parentheses from the subject
@@ -165,14 +165,21 @@ class MessageBodyParser
     $body = preg_replace('/[^(\x20-\x7F)]*/', '', $body);
     $body = preg_replace('/<([\w.]+@[\w.]+)>/i', '$1', $body);
 
-    // remove classes & styles 
+    // remove classes & styles
     $body = preg_replace( '/style=(["\'])[^\1]*?\1/i', '', $body);
     $body = preg_replace( '/class=(["\'])[^\1]*?\1/i', '', $body);
     $body = preg_replace( '/onclick=(["\'])[^\1]*?\1/i', '', $body);
     $body = preg_replace( '/title=(["\'])[^\1]*?\1/i', '', $body);
 
     // final cleanup
-    $body = html_entity_decode($body); 
+    $body = html_entity_decode($body);
+    $body = ltrim($body);
+    // remove random tags that appear in the beginning of the body
+    $body = preg_replace('/^.*?>(?=[A-Za-z0-9-.,])/', '', $body);
+    $body = ltrim($body);
+
+    $patterns = array('/\<p(\s*)?\/?\>/i');
+    $body = preg_replace($patterns, '<br/><br/>', $body);
     $body = self::stripBodyTags($body);
     $body = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~is', '', $body);
     $body = addslashes($body);

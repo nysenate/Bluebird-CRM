@@ -3,7 +3,7 @@
  +--------------------------------------------------------------------+
  | CiviCRM version 4.2                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -40,84 +40,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
   protected $loggingDB;
 
   function __construct() {
-    $this->_logTables =
-    array(
-      'log_civicrm_contact' =>
-      array( 'fk'  => 'id',
-      ),
-      'log_civicrm_email' =>
-      array( 'fk'  => 'contact_id',
-        'log_type' => 'Contact',
-      ),
-      'log_civicrm_phone' =>
-      array( 'fk'  => 'contact_id',
-        'log_type' => 'Contact',
-      ),
-      'log_civicrm_address' =>
-      array( 'fk'  => 'contact_id',
-        'log_type' => 'Contact',
-      ),
-      //NYSS 6275
-      'log_civicrm_note' =>
-      array( 'fk'  => 'entity_id',
-        'entity_table' => true,
-        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
-      ),
-      //NYSS 5751
-      'log_civicrm_note_comment' =>
-      array( 'fk'  => 'entity_id',
-        'table_name'  => 'log_civicrm_note',
-        'joins' => array('table' => 'log_civicrm_note',
-                         'join'  => "entity_log_civireport.entity_id = fk_table.id AND entity_log_civireport.entity_table = 'civicrm_note'"),
-        'entity_table' => true,
-        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
-      ),
-      //NYSS 6275
-      'log_civicrm_group_contact' =>
-      array( 'fk'  => 'contact_id',
-        'bracket_info'  => array('entity_column' => 'group_id', 'table' => 'log_civicrm_group', 'column' => 'title'),
-        'action_column' => 'status',
-        'log_type'      => 'Group',
-      ),
-      'log_civicrm_entity_tag' =>
-      array( 'fk'  => 'entity_id',
-        'bracket_info'  => array('entity_column' => 'tag_id', 'table' => 'log_civicrm_tag', 'column' => 'name'),
-        'entity_table'  => true
-      ),
-      'log_civicrm_relationship' =>
-      array(
-        'fk'  => 'contact_id_a',
-        'bracket_info'  => array('entity_column' => 'relationship_type_id', 'table' => 'log_civicrm_relationship_type', 'column' => 'label_a_b'),
-      ),
-      //NYSS 6275
-      'log_civicrm_activity_for_target' =>
-      array( 'fk'  => 'target_contact_id',
-        'table_name'  => 'log_civicrm_activity',
-        'joins' => array('table' => 'log_civicrm_activity_target', 'join' => 'entity_log_civireport.id = fk_table.activity_id'),
-        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
-        'log_type'      => 'Activity',
-      ),
-      'log_civicrm_activity_for_assignee' =>
-      array( 'fk'  => 'assignee_contact_id',
-        'table_name'  => 'log_civicrm_activity',
-        'joins' => array('table' => 'log_civicrm_activity_assignment', 'join' => 'entity_log_civireport.id = fk_table.activity_id'),
-        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
-        'log_type'      => 'Activity',
-      ),
-      'log_civicrm_activity_for_source' =>
-      array( 'fk'  => 'source_contact_id',
-        'table_name'  => 'log_civicrm_activity',
-        'bracket_info'  => array('entity_column' => 'activity_type_id', 'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)),
-        'log_type'      => 'Activity',
-      ),
-      'log_civicrm_case' =>
-      array( 'fk'  => 'contact_id',
-        'joins' => array('table' => 'log_civicrm_case_contact', 'join' => 'entity_log_civireport.id = fk_table.case_id'),
-        'bracket_info'  => array('entity_column' => 'case_type_id', 'options' => CRM_Case_PseudoConstant::caseType('label', FALSE)),
-      ),
-    );
-
-    // don’t display the ‘Add these Contacts to Group’ button
+    // don't display the 'Add these Contacts to Group' button
     $this->_add2groupSupported = FALSE;
 
     $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
@@ -126,33 +49,152 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
     // used for redirect back to contact summary
     $this->cid = CRM_Utils_Request::retrieve('cid', 'Integer', CRM_Core_DAO::$_nullObject);
 
-    //NYSS 5525/Jira 11854
+    $this->_logTables =
+    array(
+      'log_civicrm_contact' =>
+        array(
+          'fk' => 'id',
+      ),
+      'log_civicrm_email' =>
+        array(
+          'fk' => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      'log_civicrm_phone' =>
+        array(
+          'fk' => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      'log_civicrm_address' =>
+        array(
+          'fk' => 'contact_id',
+        'log_type' => 'Contact',
+      ),
+      //NYSS 6275
+      'log_civicrm_note' =>
+        array(
+          'fk' => 'entity_id',
+          'entity_table' => TRUE,
+        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
+      ),
+      //NYSS 5751
+      'log_civicrm_note_comment' =>
+        array(
+          'fk' => 'entity_id',
+        'table_name'  => 'log_civicrm_note',
+          'joins' => array(
+            'table' => 'log_civicrm_note',
+            'join' => "entity_log_civireport.entity_id = fk_table.id AND entity_log_civireport.entity_table = 'civicrm_note'"
+          ),
+          'entity_table' => TRUE,
+        'bracket_info' => array('table' => 'log_civicrm_note', 'column' => 'subject'),
+      ),
+      //NYSS 6275
+      'log_civicrm_group_contact' =>
+        array(
+          'fk' => 'contact_id',
+        'bracket_info'  => array('entity_column' => 'group_id', 'table' => 'log_civicrm_group', 'column' => 'title'),
+        'action_column' => 'status',
+        'log_type'      => 'Group',
+      ),
+      'log_civicrm_entity_tag' =>
+        array(
+          'fk' => 'entity_id',
+        'bracket_info'  => array('entity_column' => 'tag_id', 'table' => 'log_civicrm_tag', 'column' => 'name'),
+          'entity_table' => TRUE
+      ),
+      'log_civicrm_relationship' =>
+      array(
+        'fk'  => 'contact_id_a',
+          'bracket_info' => array(
+            'entity_column' => 'relationship_type_id',
+            'table' => 'log_civicrm_relationship_type',
+            'column' => 'label_a_b'
+          ),
+      ),
+      //NYSS 6275
+      'log_civicrm_activity_for_target' =>
+        array(
+        'fk' => 'target_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'joins' => array(
+          'table' => 'log_civicrm_activity_target', 
+          'join' => 'entity_log_civireport.id = fk_table.activity_id'
+        ),
+        'bracket_info'  => array(
+          'entity_column' => 'activity_type_id', 
+          'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)
+        ),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_activity_for_assignee' =>
+      array( 
+        'fk'  => 'assignee_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'joins' => array(
+          'table' => 'log_civicrm_activity_assignment', 
+          'join' => 'entity_log_civireport.id = fk_table.activity_id'
+        ),
+        'bracket_info'  => array(
+          'entity_column' => 'activity_type_id', 
+          'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)
+        ),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_activity_for_source' =>
+      array( 
+        'fk' => 'source_contact_id',
+        'table_name'  => 'log_civicrm_activity',
+        'bracket_info'  => array(
+          'entity_column' => 'activity_type_id', 
+          'options' => CRM_Core_PseudoConstant::activityType(TRUE, TRUE, FALSE, 'label', TRUE)
+        ),
+        'log_type'      => 'Activity',
+      ),
+      'log_civicrm_case' =>
+        array(
+          'fk' => 'contact_id',
+          'joins' => array(
+            'table' => 'log_civicrm_case_contact',
+            'join' => 'entity_log_civireport.id = fk_table.case_id'
+          ),
+          'bracket_info' => array(
+            'entity_column' => 'case_type_id',
+            'options' => CRM_Case_PseudoConstant::caseType('label', FALSE)
+      ),
+        ),
+    );
+
+    //NYSS 5525/Jira 11854/7049/7045
     $logging = new CRM_Logging_Schema;
-    $customTables = $logging->customDataLogTables();
+
+    // build _logTables for contact custom tables
+    $customTables = $logging->entityCustomDataLogTables('Contact');
     foreach ($customTables as $table) {
-      //NYSS 7045
-      if ( $table != 'log_civicrm_value_district_information_7' ) {
-        $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
-      }
+      $this->_logTables[$table] = array('fk' => 'entity_id', 'log_type' => 'Contact');
     }
 
-    //NYSS 7045
-    $this->_logTables['log_civicrm_value_district_information_7'] = array(
-      'fk'  => 'contact_id',
-      'table_name' => 'log_civicrm_value_district_information_7',
-      'joins' => array(
-        'table' => 'log_civicrm_address',
-        'join' => 'entity_log_civireport.entity_id = fk_table.id'
-      ),
-      'log_type' => 'Address',
-    );
+    //NYSS 7045/7049
+    // build _logTables for address custom tables
+    $customTables = $logging->entityCustomDataLogTables('Address');
+    foreach ($customTables as $table) {
+      $this->_logTables[$table] =
+        array(
+          'fk' => 'contact_id',// for join of fk_table with contact table
+          'joins' => array(
+            'table' => 'log_civicrm_address', // fk_table
+            'join'  => 'entity_log_civireport.entity_id = fk_table.id'
+          ),
+          'log_type' => 'Contact'
+        );
+    }
 
     parent::__construct();
   }
 
   function groupBy() {
     //NYSS 5751
-    $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), entity_log_civireport.id';
+    $this->_groupBy = 'GROUP BY log_civicrm_entity_id, entity_log_civireport.log_conn_id, entity_log_civireport.log_user_id, EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), entity_log_civireport.id';
   }
 
   function select() {
@@ -175,8 +217,8 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form {
 
   function where() {
     parent::where();
-
-    $this->_where .= " AND (entity_log_civireport.log_action != 'Initialization')";//NYSS 5751
+    //NYSS 5751
+    $this->_where .= " AND (entity_log_civireport.log_action != 'Initialization')";
   }
 
   function postProcess() {
@@ -230,7 +272,7 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
                                        CRM_Utils_Type::T_DATE,
                                        CRM_Utils_Array::value("log_date_from_time", $this->_params),
                                        CRM_Utils_Array::value("log_date_to_time",   $this->_params));
-    $logDateClause = $logDateClause ? "AND {$logDateClause}" : null;
+    $logDateClause = $logDateClause ? "AND {$logDateClause}" : NULL;
 
     $logTypes = CRM_Utils_Array::value('log_type_value', $this->_params);
     unset($this->_params['log_type_value']);
@@ -245,15 +287,16 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
       if ((in_array($this->getLogType($entity), $logTypes) &&
         CRM_Utils_Array::value('log_type_op', $this->_params) == 'in') ||
         (!in_array($this->getLogType($entity), $logTypes) &&
-          CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')) {
+          CRM_Utils_Array::value('log_type_op', $this->_params) == 'notin')
+      ) {
         $this->from( $entity );
-        $sql = $this->buildQuery(false);
+        $sql = $this->buildQuery(FALSE);
         //CRM_Core_Error::debug_var('sql',$sql);
         $sql = str_replace("entity_log_civireport.log_type as", "'{$entity}' as", $sql);
         //NYSS 6713 temp hack to avoid duplicate log records for the same bulk email activity
         if ( $entity == 'log_civicrm_activity_for_target' ) {
           //$sql = str_replace("DAY_MICROSECOND", "DAY_HOUR", $sql);
-          $sql = str_replace("EXTRACT(DAY_MICROSECOND FROM entity_log_civireport.log_date), ", "", $sql);
+          $sql = str_replace("EXTRACT(DAY_HOUR FROM entity_log_civireport.log_date), ", "", $sql);
           $sql = str_replace("entity_log_civireport.log_conn_id, ", "", $sql);
         }
         //CRM_Core_Error::debug_var('sql', $sql);
@@ -262,6 +305,33 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
       }
     }
 
+    //NYSS 6844
+    // add computed log_type column so that we can do a group by after that, which will help
+    // alterDisplay() counts sync with pager counts
+    $sql = "SELECT DISTINCT log_type FROM civicrm_temp_civireport_logsummary";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $replaceWith = array();
+    while($dao->fetch()){
+      $type = $this->getLogType($dao->log_type);
+      if (!array_key_exists($type, $replaceWith)) {
+        $replaceWith[$type] = array();
+      }
+      $replaceWith[$type][] = $dao->log_type;
+    }
+    foreach ($replaceWith as $type => $tables) {
+      if (!empty($tables)) {
+        $replaceWith[$type] = implode("','", $tables);
+      }
+    }
+
+    $sql = "ALTER TABLE civicrm_temp_civireport_logsummary ADD COLUMN log_civicrm_entity_log_type_label varchar(64)";
+    CRM_Core_DAO::executeQuery($sql);
+    foreach ($replaceWith as $type => $in) {
+      $sql = "UPDATE civicrm_temp_civireport_logsummary SET log_civicrm_entity_log_type_label='{$type}', log_date=log_date WHERE log_type IN('$in')";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
+    // note the group by columns are same as that used in alterDisplay as $newRows - $key
     $this->limit();
     //NYSS hack log_action order by
     $logActionOrderBy = '';
@@ -269,9 +339,11 @@ CREATE TEMPORARY TABLE civicrm_temp_civireport_logsummary (
       $logActionOrderBy = ', log_civicrm_entity_log_action ASC';
     }
 
+    //NYSS
     $sql = "{$this->_select}
 FROM civicrm_temp_civireport_logsummary entity_log_civireport
-ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
+GROUP BY EXTRACT(DAY_HOUR FROM log_civicrm_entity_log_date), log_civicrm_entity_log_type_label, log_civicrm_entity_log_conn_id, log_civicrm_entity_log_user_id, log_civicrm_entity_altered_contact_id
+ORDER BY log_civicrm_entity_log_date DESC, log_civicrm_entity_log_type ASC {$logActionOrderBy}
 {$this->_limit}";
     $sql = str_replace(array('modified_contact_civireport.', 'altered_by_contact_civireport.'), 'entity_log_civireport.', $sql);
     //NYSS 6111 - hackish temporary solution; see Jira 11798
@@ -286,8 +358,14 @@ ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC {$
     $this->buildRows($sql, $rows);
     //CRM_Core_Error::debug_var('$rows',$rows);
 
-    //NYSS
-    self::_combineContactRows($rows);
+    //NYSS 7037 store row count so we can retrieve for tab
+    if ( $this->_nyssGetCount ) {
+      $this->_nyssRowCount = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();");
+      //CRM_Core_Error::debug_var('$this->_nyssRowCount', $this->_nyssRowCount);
+    }
+
+    //NYSS 7037
+    //self::_combineContactRows($rows);
 
     // format result set.
     $this->formatDisplay($rows);
@@ -316,8 +394,15 @@ ORDER BY entity_log_civireport.log_date DESC, log_civicrm_entity_log_type ASC {$
 SELECT {$this->_logTables[$entity]['bracket_info']['entity_column']}
   FROM `{$this->loggingDB}`.{$logTable}
  WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
-        $entityID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'), 2 => array ($id, 'Integer')));
-      } else {
+        $entityID = CRM_Core_DAO::singleValueQuery($sql, array(
+          1 => array(
+            CRM_Utils_Date::isoToMysql($logDate),
+            'Timestamp'
+          ),
+          2 => array($id, 'Integer')
+        ));
+      }
+      else {
         $entityID = $id;
       }
 
@@ -334,31 +419,42 @@ SELECT {$this->_logTables[$entity]['bracket_info']['entity_column']}
 SELECT {$this->_logTables[$entity]['bracket_info']['column']}
 FROM  `{$this->loggingDB}`.{$this->_logTables[$entity]['bracket_info']['table']}
 WHERE  log_date <= %1 AND id = %2 ORDER BY log_date DESC LIMIT 1";
-        return CRM_Core_DAO::singleValueQuery($sql, array(1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'), 2 => array ($entityID, 'Integer')));
-      } else if (array_key_exists('options', $this->_logTables[$entity]['bracket_info']) && $entityID) {
+        return CRM_Core_DAO::singleValueQuery($sql, array(
+          1 => array(CRM_Utils_Date::isoToMysql($logDate), 'Timestamp'),
+          2 => array($entityID, 'Integer')
+        ));
+      }
+      else {
+        if (array_key_exists('options', $this->_logTables[$entity]['bracket_info']) && $entityID) {
         return CRM_Utils_Array::value($entityID, $this->_logTables[$entity]['bracket_info']['options']);
       }
     }
-    return null;
+    }
+    return NULL;
   }
 
   //NYSS 6056
   function getEntityAction( $id, $connId, $entity, $oldAction ) {
     if (CRM_Utils_Array::value('action_column', $this->_logTables[$entity])) {
       $sql = "select {$this->_logTables[$entity]['action_column']} from `{$this->loggingDB}`.{$entity} where id = %1 AND log_conn_id = %2";
-      $newAction = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($id, 'Integer'), 2 => array($connId, 'Integer')));
+      $newAction = CRM_Core_DAO::singleValueQuery($sql, array(
+        1 => array($id, 'Integer'),
+        2 => array($connId, 'Integer')
+      ));
 
       switch ($entity) {
       case 'log_civicrm_group_contact':
-        if ($oldAction !== 'Update')
+          if ($oldAction !== 'Update') {
           $newAction = $oldAction;
-        if ($oldAction == 'Insert')
+          }
+          if ($oldAction == 'Insert') {
           $newAction = 'Added';
+          }
         break;
       }
       return $newAction;
     }
-    return null;
+    return NULL;
   }
 
   //NYSS

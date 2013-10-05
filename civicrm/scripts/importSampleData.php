@@ -20,7 +20,7 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'INFO');
+define('DEFAULT_LOG_LEVEL', 'TRACE');
 define('LOC_TYPE_BOE', 6);
 
 class CRM_ImportSampleData {
@@ -31,31 +31,32 @@ class CRM_ImportSampleData {
     global $longopts;
     global $optDry;
     global $BB_LOG_LEVEL;
+    global $LOG_LEVELS;
 
     require_once 'script_utils.php';
 
     // Parse the options
-    $shortopts = 'd:s:p:g:l';
-    $longopts = array('dryrun', 'system', 'purge', 'generate', 'log');
+    $shortopts = 'd:s:p:o:g:l:k:u';
+    $longopts = array('dryrun', 'system', 'purge', 'purge-only', 'generate', 'log=', 'skiplogs', 'uid=');
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--system] [--purge] [--generate] [--log=LEVEL]';
+      $usage = '[--dryrun] [--system] [--purge] [--purge-only] [--generate] [--log LEVEL] [--skiplogs|-k] [--uid USERID|-u]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
 
     if ( empty($BB_LOG_LEVEL) && !empty($optlist['log']) ) {
-      $BB_LOG_LEVEL = $optlist['log'];
+      $BB_LOG_LEVEL = $LOG_LEVELS[strtoupper($optlist['log'])][0];
     }
     elseif ( empty($BB_LOG_LEVEL) ) {
-      $BB_LOG_LEVEL = DEFAULT_LOG_LEVEL;
+      $BB_LOG_LEVEL = $LOG_LEVELS[DEFAULT_LOG_LEVEL][0];
     }
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log("trace", "bbcfg", $bbcfg);
+    bbscript_log("trace", "bbcfg", $bbcfg);
 
     // Initialize CiviCRM
     require_once 'CRM/Core/Config.php';
@@ -63,6 +64,7 @@ class CRM_ImportSampleData {
     $session = CRM_Core_Session::singleton();
 
     //retrieve/set options
+    //CRM_Core_Error::debug_var('optlist', $optlist);
     $optDry = $optlist['dryrun'];
     $scriptPath = $bbcfg['app.rootdir'].'/civicrm/scripts';
 
@@ -74,36 +76,71 @@ class CRM_ImportSampleData {
       exit();
     }
 
-    //process system data
-    $sys = array(
-      'tag.yml',
-    );
-    if ( $optlist['system'] && !$optDry ) {
-      self::importSystem($sys, $scriptPath);
-    }
-
-    $data = array(
-      'organizations.yml',
-      'individuals.yml',
-      'activity.yml',
-      'entity_tag.yml',
-    );
-
     if ( $optDry ) {
       bbscript_log("info", "Running in dryrun mode. No data will be altered.");
     }
 
     //clean out all existing data
-    if ( $optlist['purge'] ) {
-      self::purgeData();
+    if ( $optlist['purge'] || $optlist['purge-only'] ) {
+      bbscript_log('info', 'purging old data... ');
+      self::purgeData($optlist['uid']);
     }
 
-    //begin import
-    foreach ( $data as $file ) {
-      self::importData($file, $scriptPath);
+    //completely purge log db unless explicit skip
+    if ( $optlist['skiplogs'] == FALSE ) {
+      //disable logging
+      $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logDisable.php';
+      exec("php $script -S {$bbcfg['shortname']}");
+
+      //drop logging db
+      bbscript_log('info', 'dropping and recreating logging database... ');
+      $logDB = $bbcfg['db.log.prefix'].$bbcfg['db.basename'];
+      $sql = "
+        DROP DATABASE IF EXISTS {$logDB}
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+
+      //recreate logging db
+      $sql = "
+        CREATE DATABASE IF NOT EXISTS {$logDB}
+      ";
+      CRM_Core_DAO::executeQuery($sql);
     }
 
-    bbscript_log("info", "Completed instance cleanup and sample data import for {$bbcfg['name']}.");
+    //process system data
+    $sys = array(
+      'tag.yml',
+      'group.yml',
+    );
+    if ( $optlist['system'] && !$optDry ) {
+      bbscript_log('info', 'importing system data... ');
+      self::importSystem($sys, $scriptPath);
+    }
+
+    //proceed with import unless purge only
+    if ( $optlist['purge-only'] == FALSE ) {
+      $data = array(
+        'organizations.yml',
+        'individuals.yml',
+        'activity.yml',
+        'entity_tag.yml',
+      );
+
+      foreach ( $data as $file ) {
+        $type = str_replace('.yml', '', $file);
+        bbscript_log('info', "importing {$type} data...");
+        self::importData($file, $scriptPath);
+      }
+    }
+
+    //re-enable logging
+    if ( $optlist['skiplogs'] == FALSE ) {
+      bbscript_log('info', "re-enabling logging...");
+      $script = $bbcfg['app.rootdir'].'/civicrm/scripts/logEnable.php';
+      exec("php $script -S {$bbcfg['shortname']}");
+    }
+
+    bbscript_log("info", "completed instance cleanup and sample data import for: {$bbcfg['shortname']}.");
 
   }//run
 
@@ -111,11 +148,10 @@ class CRM_ImportSampleData {
    * before importing sample data we purge the instance of all existing data
    * this is done to selective tables in order to retain system settings, option lists, and other data common to all sites
    */
-  function purgeData() {
+  function purgeData($uid) {
     global $optDry;
 
     CRM_Core_DAO::executeQuery('SET FOREIGN_KEY_CHECKS=0;');
-
     $tblTruncate = array(
       'civicrm_acl',
       'civicrm_acl_cache',
@@ -184,12 +220,18 @@ class CRM_ImportSampleData {
       'civicrm_tell_friend',
       'civicrm_uf_match',
       'civicrm_website',
+      'civicrm_value_activity_details_6',
+      'civicrm_value_attachments_5',
+      'civicrm_value_constituent_information_1',
+      'civicrm_value_contact_details_8',
+      'civicrm_value_district_information_7',
+      'civicrm_value_organization_constituent_informa_3',
     );
     if ( $optDry ) {
       bbscript_log('trace', 'The following tables would be truncated: ', $tblTruncate);
     }
     else {
-      bbscript_log('info', 'Truncating tables... ');
+      bbscript_log('info', 'truncating tables... ');
       foreach ( $tblTruncate as $tbl ) {
         bbscript_log('debug', "truncating: $tbl");
         $sql = "TRUNCATE TABLE {$tbl};";
@@ -217,7 +259,7 @@ class CRM_ImportSampleData {
     }
 
     //seed the senateroot contact id = 1
-    echo "\nseeding database with bluebird admin contact... \n";
+    bbscript_log('info', "seeding database with bluebird admin contact...");
     $params = array(
       'first_name' => 'Bluebird',
       'last_name' => 'Administrator',
@@ -226,11 +268,39 @@ class CRM_ImportSampleData {
         'email' => 'bluebird.admin@nysenate.gov',
         'location_type_id' => 1,
       ),
-      'api.uf_match.create' => array(
-        'uf_id' => 1,
-      ),
     );
-    self::iAPI('contact', 'create', $params);
+    $c = self::iAPI('contact', 'create', $params);
+
+    if ( $c['id'] ) {
+      $sql = "
+        INSERT INTO civicrm_uf_match ( domain_id, uf_id, uf_name, contact_id )
+        VALUES ( 1, 1, 'bluebird.admin@nysenate.gov', {$c['id']} )
+      ";
+      CRM_Core_DAO::executeQuery($sql);
+    }
+
+    //seed the logged-in contact via drupal user object
+    if ( !empty($uid) && $uid != 1 && $uid != '/' ) {
+      $u = explode('/', $uid);
+      bbscript_log('info', "seeding database with logged in user contact...");
+      $params = array(
+        'email' => $u[1],
+        'contact_type' => 'Individual',
+        'api.email.create' => array(
+          'email' => $u[1],
+          'location_type_id' => 1,
+        ),
+      );
+      $c = self::iAPI('contact', 'create', $params);
+
+      if ( $c['id'] ) {
+        $sql = "
+          INSERT INTO civicrm_uf_match ( domain_id, uf_id, uf_name, contact_id )
+          VALUES ( 1, {$u[0]}, '{$u[1]}', {$c['id']} )
+        ";
+        CRM_Core_DAO::executeQuery($sql);
+      }
+    }
   }//purgeData
 
   function importData($file = NULL, $scriptPath = NULL, $data = NULL) {
@@ -238,6 +308,7 @@ class CRM_ImportSampleData {
 
     $type = str_replace('.yml', '', $file);
     $errors = array();
+    $i = 0;
 
     switch ( $type ) {
       case 'individuals':
@@ -252,6 +323,9 @@ class CRM_ImportSampleData {
       $filename = $scriptPath.'/sampleData/'.$file;
       bbscript_log("trace", "filename: $filename");
       $data = Spyc::YAMLLoad($filename);
+    }
+    else {
+      echo "\ndata was passed to importData internally...\n";
     }
 
     foreach ( $data as $params ) {
@@ -295,6 +369,11 @@ class CRM_ImportSampleData {
       if ( $fk ) {
         $fkMap[$type][$fk] = $r['id'];
       }
+
+      $i++;
+      if ( $i % 500 == 0 ) {
+        bbscript_log('info', "{$i} {$type} records imported... ");
+      }
     }
 
     //reprocess errors
@@ -331,6 +410,25 @@ class CRM_ImportSampleData {
             ";
             //bbscript_log("trace", "tagSQL", $tagSQL);
             CRM_Core_DAO::executeQuery($tagSQL);
+          }
+          break;
+
+        case 'group':
+          //need to setup the mailing exclusion saved search criteria manually, then load groups
+          $sqls = array(
+            "INSERT INTO `civicrm_saved_search`
+            (`id`, `form_values`, `mapping_id`, `search_custom_id`, `where_clause`, `select_tables`, `where_tables`)
+            VALUES
+            (5, 'a:7:{s:5:\"qfKey\";s:37:\"0115d58ba08db0ff037fa76a39374c60_3224\";s:6:\"mapper\";a:4:{i:1;a:1:{i:0;a:2:{i:0;s:10:\"Individual\";i:1;s:11:\"is_deceased\";}}i:2;a:1:{i:0;a:2:{i:0;s:10:\"Individual\";i:1;s:11:\"do_not_mail\";}}i:3;a:1:{i:0;a:2:{i:0;s:9:\"Household\";i:1;s:11:\"do_not_mail\";}}i:4;a:1:{i:0;a:2:{i:0;s:12:\"Organization\";i:1;s:11:\"do_not_mail\";}}}s:8:\"operator\";a:4:{i:1;a:1:{i:0;s:1:\"=\";}i:2;a:1:{i:0;s:1:\"=\";}i:3;a:1:{i:0;s:1:\"=\";}i:4;a:1:{i:0;s:1:\"=\";}}s:5:\"value\";a:4:{i:1;a:1:{i:0;s:1:\"1\";}i:2;a:1:{i:0;s:1:\"1\";}i:3;a:1:{i:0;s:1:\"1\";}i:4;a:1:{i:0;s:1:\"1\";}}s:4:\"task\";s:2:\"13\";s:8:\"radio_ts\";s:6:\"ts_all\";s:11:\"uf_group_id\";s:2:\"11\";}', 5, NULL, ' (  ( contact_a.is_deceased = 1 AND contact_a.contact_type IN (''Individual'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Individual'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Household'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Organization'') )  ) ', 'a:11:{s:15:\"civicrm_contact\";i:1;s:15:\"civicrm_address\";i:1;s:22:\"civicrm_state_province\";i:1;s:15:\"civicrm_country\";i:1;s:13:\"civicrm_email\";i:1;s:13:\"civicrm_phone\";i:1;s:10:\"civicrm_im\";i:1;s:19:\"civicrm_worldregion\";i:1;s:6:\"gender\";i:1;s:17:\"individual_prefix\";i:1;s:17:\"individual_suffix\";i:1;}', 'a:1:{s:15:\"civicrm_contact\";i:1;}');",
+          );
+          foreach ( $sqls as $sql ) {
+            CRM_Core_DAO::executeQuery($sql);
+          }
+
+          //now import groups
+          foreach ( $data as $row ) {
+            $params = $row;
+            $r = self::iAPI('group', 'create', $params);
           }
           break;
       }

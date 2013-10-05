@@ -4005,12 +4005,13 @@ civicrm_relationship.start_date > {$today}
       }
     }
 
-    list($select, $from, $where, $having) = $this->query($count, $sortByChar, $groupContacts);
+    //NYSS 6723
+    //list($select, $from, $where, $having) = $this->query($count, $sortByChar, $groupContacts);
 
     //additional from clause should be w/ proper joins.
-    if ($additionalFromClause) {
+    /*if ($additionalFromClause) {
       $from .= "\n" . $additionalFromClause;
-    }
+    }*/
 
     if (empty($where)) {
       $where = "WHERE $permission";
@@ -4096,7 +4097,8 @@ civicrm_relationship.start_date > {$today}
         }
       }
 
-      $doOpt = TRUE;
+      //NYSS 6723
+      //$doOpt = TRUE;
       // hack for order clause
       if ($order) {
         $fieldStr   = trim(str_replace('ORDER BY', '', $order));
@@ -4129,19 +4131,26 @@ civicrm_relationship.start_date > {$today}
               break;
 
             default:
-              $doOpt = FALSE;
+              //$doOpt = FALSE;
           }
+          //NYSS 6723
+          $this->_fromClause = self::fromClause($this->_tables, NULL, NULL, $this->_primaryLocation, $this->_mode);
+          $this->_simpleFromClause = self::fromClause($this->_whereTables, NULL, NULL, $this->_primaryLocation, $this->_mode);
         }
       }
 
 
       if ($rowCount > 0 && $offset >= 0) {
         $limit = " LIMIT $offset, $rowCount ";
+      }
+    }
+    //NYSS 6723
+    list($select, $from, $where, $having) = $this->query($count, $sortByChar, $groupContacts);
 
         // ok here is a first hack at an optimization, lets get all the contact ids
         // that are restricted and we'll then do the final clause with it
         // CRM-5954
-        if (isset($this->_distinctComponentClause)) {
+        /*if (isset($this->_distinctComponentClause)) {
           if (strpos($this->_distinctComponentClause, 'DISTINCT') == FALSE) {
             $limitSelect = "SELECT DISTINCT {$this->_distinctComponentClause}";
           }
@@ -4191,6 +4200,31 @@ civicrm_relationship.start_date > {$today}
           $limit = NULL;
         }
       }
+    }*/
+
+    //NYSS 6723 - retain old format until core upgrade to 4.3+
+    /*if(!empty($this->_permissionWhereClause)){
+      if (empty($where)) {
+        $where = "WHERE $this->_permissionWhereClause";
+      }
+      else {
+        $where = "$where AND $this->_permissionWhereClause";
+      }
+    }*/
+    if (empty($where)) {
+      $where = "WHERE $permission";
+    }
+    else {
+      $where = "$where AND $permission";
+    }
+
+    if ($additionalWhereClause) {
+      $where = $where . ' AND ' . $additionalWhereClause;
+    }
+
+    //additional from clause should be w/ proper joins.
+    if ($additionalFromClause) {
+      $from .= "\n" . $additionalFromClause;
     }
 
     // if we are doing a transform, do it here
@@ -4800,6 +4834,27 @@ AND   displayRelType.is_active = 1
       }
     }
     return FALSE;
+  }
+
+  //NYSS 6723
+  /**
+   * Fetch a list of contacts from the prev/next cache for displaying a search results page
+   *
+   * @param string $cacheKey
+   * @param int    $offset
+   * @param int    $rowCount
+   * @param bool   $includeContactIds
+   * @return CRM_Core_DAO
+   */
+  function getCachedContacts($cacheKey, $offset, $rowCount, $includeContactIds) {
+    $this->_includeContactIds = $includeContactIds;
+    list($select, $from, $where) = $this->query();//NYSS 7084/6723
+    $from = " FROM civicrm_prevnext_cache pnc INNER JOIN civicrm_contact contact_a ON contact_a.id = pnc.entity_id1 AND pnc.cacheKey = '$cacheKey' " . substr($from, 31);
+    $order = " ORDER BY pnc.id";
+    $groupBy = " GROUP BY contact_a.id";
+    $limit = " LIMIT $offset, $rowCount";
+    $query = "$select $from $where $groupBy $order $limit";//NYSS 7084/6723
+    return CRM_Core_DAO::executeQuery($query);
   }
 }
 

@@ -55,7 +55,9 @@ packages/jquery/css/token-input-facebook.css
 packages/jquery/plugins/jquery.timeentry.pack.js
 packages/jquery/plugins/jquery.mousewheel.pack.js
 
-packages/jquery/plugins/jquery.toolTip.js
+{*NYSS 7187*}
+{*packages/jquery/plugins/jquery.toolTip.js*}
+NYSS/jquery.toolTip.js
 
 packages/jquery/plugins/DataTables/media/css/demo_table_jui.css
 packages/jquery/plugins/DataTables/media/js/jquery.dataTables.min.js
@@ -69,7 +71,8 @@ packages/jquery/plugins/jquery.validate.js
 packages/jquery/plugins/jquery.civicrm-validate.js
 packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js
 
-packages/jquery/plugins/jquery-fieldselection.js{*NYSS*}
+{*NYSS*}
+packages/jquery/plugins/jquery-fieldselection.js
 
 packages/jquery/plugins/jquery.jeditable.mini.js
 packages/jquery/plugins/jquery.mustache.js
