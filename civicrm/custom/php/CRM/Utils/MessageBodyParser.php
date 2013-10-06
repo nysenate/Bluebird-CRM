@@ -54,13 +54,14 @@ class MessageBodyParser
 
     $headerCheck = substr($start, 0, 2500);
     $headerCheck = preg_replace("/\\t/i", " ", $headerCheck);
-    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/(<br\ ?\/?>)+/i');
+    $patterns = array('/\r\n|\r|\n/i', '/\<p(\s*)?\/?\>/i', '/\<br(\s*)?\/?\>/i');
     $headerCheck = preg_replace($patterns, '#####---', $headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = html_entity_decode($headerCheck);
     $headerCheck = self::stripTagsForHeader($headerCheck);
     $headerCheck = preg_replace('/#####---/', "\r\n", $headerCheck);
     $bodyArray = explode("\r\n", $headerCheck);
+
     $possibleHeaders = "subject|from|to|sent|date|cc|bcc|sent by";
 
     $Line = array();
