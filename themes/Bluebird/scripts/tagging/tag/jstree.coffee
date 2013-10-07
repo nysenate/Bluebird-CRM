@@ -123,16 +123,15 @@ class Instance
     get: -> @_entity
     set: (a) -> @_entity = a
   getEntity: (entityId, cb) ->
-    console.log entityId
     if entityId == 0
       dataSettings = @get 'dataSettings'
       entityId = dataSettings.entity_id
-      # @set 'dataSettings', dataSettings
-
     @entity = new Entity(entityId, (tags) =>
-
       cb.call(@,tags)
     )
+  appendToAC:(node) ->
+    @_autocomplete.push node
+    true
 
 _utils =
   removeDupFromExtend: (obj) =>

@@ -303,7 +303,6 @@
     Instance.prototype.getEntity = function(entityId, cb) {
       var dataSettings,
         _this = this;
-      console.log(entityId);
       if (entityId === 0) {
         dataSettings = this.get('dataSettings');
         entityId = dataSettings.entity_id;
@@ -311,6 +310,11 @@
       return this.entity = new Entity(entityId, function(tags) {
         return cb.call(_this, tags);
       });
+    };
+
+    Instance.prototype.appendToAC = function(node) {
+      this._autocomplete.push(node);
+      return true;
     };
 
     return Instance;
@@ -1034,7 +1038,7 @@
     };
 
     View.prototype.init = function() {
-      var ac, buttons, k, tabName, v, _ref, _ref1;
+      var ac, buttons, k, tabName, v, _ref;
       this.createSelectors();
       _treeVisibility.currentTree = _treeVisibility.defaultTree = _treeVisibility.previousTree = this.settings.defaultTree;
       _ref = this.instance.treeNames;
@@ -1044,14 +1048,7 @@
       }
       this.setActiveTree(this.settings.defaultTree);
       ac = new Autocomplete(this.instance, this);
-      _ref1 = this.instance.treeNames;
-      for (k in _ref1) {
-        v = _ref1[k];
-        this.createTabClick("tab-" + (this.getTabNameFromId(k, true)), k);
-        if (parseInt(k) === 292) {
-          this.addPositionReminderText(this.cj_selectors.tagBox.find(".top-" + k));
-        }
-      }
+      this.createTabClick();
       buttons = new Buttons(this);
       return this.setTaggingOrEdit();
     };
@@ -1072,12 +1069,42 @@
       }
     };
 
-    View.prototype.createTabClick = function(tabName, tabTree) {
-      var _this = this;
-      this.cj_menuSelectors.tabs.find("." + tabName).off("click");
-      return this.cj_menuSelectors.tabs.find("." + tabName).on("click", function() {
-        return _this.showTags(tabTree, tabName);
+    View.prototype.unbindTabClick = function() {
+      var k, v, _ref, _results;
+      _ref = this.instance.treeNames;
+      _results = [];
+      for (k in _ref) {
+        v = _ref[k];
+        _results.push(this.cj_menuSelectors.tabs.find(".tab-" + (this.getTabNameFromId(k, true))).off("click"));
+      }
+      return _results;
+    };
+
+    View.prototype.createTabClick = function() {
+      var k, onTabClick, tabName, v, _ref, _results;
+      this.unbindTabClick();
+      onTabClick = function(currentTree, tabName) {
+        var _this = this;
+        return this.cj_menuSelectors.tabs.find("." + tabName).on("click", function() {
+          return _this.showTags(currentTree, tabName);
+        });
+      };
+      cj.each(this.cj_menuSelectors.tabs.find("div"), function(i, div) {
+        return cj(div).off("click");
       });
+      _ref = this.instance.treeNames;
+      _results = [];
+      for (k in _ref) {
+        v = _ref[k];
+        tabName = "tab-" + (this.getTabNameFromId(k, true));
+        onTabClick.call(this, k, "" + tabName);
+        if (parseInt(k) === 292) {
+          _results.push(this.addPositionReminderText(this.cj_selectors.tagBox.find(".top-" + k)));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     View.prototype.showTags = function(currentTree, tabName, noPrev) {
@@ -1534,10 +1561,19 @@
       addTag: ["Tag Name", "Description", "Is Reserved"]
     };
 
+    Action.prototype.requiredFields = {
+      addTag: ["Tag Name"]
+    };
+
+    Action.prototype.requiredValidation = {
+      addTag: ["isRequired", "appliesNullToText"]
+    };
+
     function Action(view, instance, tagId, action, cb) {
       var k, v, _ref;
       this.view = view;
       this.instance = instance;
+      this.tagId = tagId;
       this.cb = cb;
       _ref = this.ajax;
       for (k in _ref) {
@@ -1545,10 +1581,12 @@
         v.data["call_uri"] = window.location.href;
         v["dataType"] = "json";
       }
-      this[action].apply(this, [tagId, action]);
+      this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "'");
+      this.tagName = this.cjDT.data("name");
+      this[action].apply(this, [action]);
     }
 
-    Action.prototype.createSlide = function() {
+    Action.prototype.createSlide = function(cb) {
       var resize,
         _this = this;
       resize = new Resize;
@@ -1558,13 +1596,36 @@
         this.cj_slideBox = this.view.cj_selectors.tagBox.find(".slideBox");
         this.cj_slideBox.css("right", "" + (this.findGutterSpace()) + "px");
         return this.cj_slideBox.animate({
-          width: '50%'
+          width: '60%'
         }, 500, function() {
-          return _this.cj_slideBox.append(_this.slideHtml);
+          _this.cj_slideBox.append(_this.slideHtml);
+          _this.setCancel();
+          return cb();
         });
       } else {
 
       }
+    };
+
+    Action.prototype.setCancel = function() {
+      var _this = this;
+      this.cj_slideBox.find(".label.cancel").off("click");
+      return this.cj_slideBox.find(".label.cancel").on("click", function() {
+        return _this.destroySlideBox();
+      });
+    };
+
+    Action.prototype.destroySlideBox = function() {
+      var _this = this;
+      this.cj_slideBox.empty();
+      return this.cj_slideBox.animate({
+        width: '0%'
+      }, 500, function() {
+        _this.cj_slideBox.find(".label.cancel").off("click");
+        _this.cj_slideBox.remove();
+        _this.view.cj_selectors.tagBox.removeClass("hasSlideBox");
+        return _this.view.createTabClick();
+      });
     };
 
     Action.prototype.addTagFromPosition = function(tagId, action) {
@@ -1631,12 +1692,116 @@
       return outerWidth - innerWidth;
     };
 
+    Action.prototype.setRequiredFields = function(type) {
+      var i, reqFields, _i, _len;
+      reqFields = this.requiredFields[type];
+      this.requiredFields = [];
+      for (_i = 0, _len = reqFields.length; _i < _len; _i++) {
+        i = reqFields[_i];
+        this.requiredFields.push(_utils.camelCase(i));
+      }
+      return this.requiredValidation = this.requiredValidation[type];
+    };
+
     Action.prototype.addTag = function(values) {
+      var _this = this;
       if (values == null) {
         values = "";
       }
-      this.createSlide();
-      return this.slideHtml = this.gatherLabelHTML();
+      this.slideHtml = this.gatherLabelHTML();
+      this.setRequiredFields("addTag");
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.unbindTabClick();
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.addTag.data.name = data.fields.tagName;
+              _this.ajax.addTag.data.description = data.fields.description;
+              _this.ajax.addTag.data.is_reserved = data.fields.isReserved;
+              _this.ajax.addTag.data.parent_id = data.tagId;
+              _this.convertSubmitToLoading();
+              return _this.addTagAjax(data.tagId, void 0, function(message) {
+                if (message === "DB Error: already exists") {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "Tag " + data.fields.tagName + " already exists."
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.addEntityToTree(data.tagId, message);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
+    };
+
+    Action.prototype.revertSubmitFromLoading = function() {
+      var cjSubmitButton, text;
+      cjSubmitButton = this.cj_slideBox.find(".label.submit");
+      cjSubmitButton.removeClass("loadingGif");
+      text = cjSubmitButton.data("text");
+      return cjSubmitButton.text(text);
+    };
+
+    Action.prototype.convertSubmitToLoading = function() {
+      var cjSubmitButton;
+      cjSubmitButton = this.cj_slideBox.find(".label.submit");
+      cjSubmitButton.addClass("loadingGif");
+      cjSubmitButton.data("text", cjSubmitButton.text());
+      return cjSubmitButton.text("");
+    };
+
+    Action.prototype.addEntityToTree = function(parent, message) {
+      var cjParent, node, node_parsed;
+      node = {};
+      if (message.created_date != null) {
+        node.created_date = "";
+        node.created_date += "" + (message.created_date.substring(0, 3)) + "-";
+        node.created_date += "" + (message.created_date.substring(4, 5)) + "-";
+        node.created_date += "" + (message.created_date.substring(6, 7)) + " ";
+        node.created_date += "" + (message.created_date.substring(8, 9)) + ":";
+        node.created_date += "" + (message.created_date.substring(10, 11)) + ":";
+        node.created_date += "" + (message.created_date.substring(12, 13));
+      }
+      if (message.name != null) {
+        node.name = message.name;
+      }
+      if (message.description != null) {
+        if (message.description === null) {
+          node.description = "";
+        } else {
+          node.description = message.description;
+        }
+      }
+      if (message.parent_id != null) {
+        node.parent = node.parent_id = message.parent_id;
+      }
+      if (message.id != null) {
+        node.id = message.id;
+      }
+      node.children = false;
+      cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
+      node.level = cjParent.data("level") + 1;
+      node.type = "" + (cjParent.data("tree"));
+      if (message.is_reserved = "false") {
+        node.is_reserved = "0";
+      } else {
+        node.is_reserved = "1";
+      }
+      this.instance.appendToAC(node);
+      _tree = this.view.trees;
+      node_parsed = new Node(node);
+      _tree[parseInt(node.type)].appendNode(node, node.parent_id, node_parsed.html);
+      return this.view.cj_selectors.tagBox.find("#tagDropdown_" + node.parent_id).append(node_parsed.html);
     };
 
     Action.prototype.removeTag = function() {
@@ -1653,6 +1818,139 @@
 
     Action.prototype.updateTag = function() {};
 
+    Action.prototype.removeErrors = function(data) {
+      var cjEl, k, notErrored, nowGood, oldName, v, _i, _len, _ref, _results;
+      notErrored = [];
+      _ref = data.fields;
+      for (k in _ref) {
+        v = _ref[k];
+        if (data.errors[k] == null) {
+          notErrored.push(k);
+        }
+      }
+      _results = [];
+      for (_i = 0, _len = notErrored.length; _i < _len; _i++) {
+        nowGood = notErrored[_i];
+        cjEl = this.cj_slideBox.find(".label." + nowGood);
+        oldName = cjEl.data("oldname");
+        cjEl.removeClass("errorLabel").text(oldName);
+        _results.push(this.cj_slideBox.find("input[name='" + nowGood + "']").removeClass("errorBox"));
+      }
+      return _results;
+    };
+
+    Action.prototype.markErrors = function(errors) {
+      var cjEl, k, v, _results;
+      _results = [];
+      for (k in errors) {
+        v = errors[k];
+        cjEl = this.cj_slideBox.find(".label." + k);
+        if (!cjEl.hasClass("errorLabel")) {
+          cjEl.data("oldname", cjEl.text());
+          cjEl.addClass("errorLabel").text(v);
+        }
+        _results.push(this.cj_slideBox.find("input[name='" + k + "']").addClass("errorBox"));
+      }
+      return _results;
+    };
+
+    Action.prototype.gatherValuesFromSlideBox = function() {
+      var cjFields, data,
+        _this = this;
+      cjFields = this.cj_slideBox.find("input");
+      data = {
+        tagId: this.cjDT.data("tagid"),
+        fields: {},
+        errors: {}
+      };
+      cj.each(cjFields, function(i, el) {
+        var cjEl;
+        cjEl = cj(el);
+        if (cjEl.attr("type").toLowerCase() === "checkbox") {
+          return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
+        } else {
+          return data.fields[cjEl.attr("name")] = cjEl.val();
+        }
+      });
+      return this.validateValues(data);
+    };
+
+    Action.prototype.validateValues = function(data) {
+      var cjEl, k, test, v, validations, _i, _len, _ref, _ref1,
+        _this = this;
+      validations = {
+        createError: function(name, val) {
+          var niceName;
+          niceName = _this.cj_slideBox.find(".label." + name).text();
+          val = "" + niceName + " " + val;
+          return data.errors[name] = val;
+        },
+        isString: function(name, val) {
+          return validations.createError.call(this, name, "cannot contain numbers or symbols.");
+        },
+        appliesNullToText: function(name, val) {
+          var noSpaces, passing;
+          passing = true;
+          if (val.length > 0) {
+            noSpaces = val.replace(/\ /g, "");
+            if (noSpaces.length === 0) {
+              passing = false;
+            }
+          } else {
+            passing = false;
+          }
+          if (!passing) {
+            return data.fields[name] = null;
+          }
+        },
+        noSpaces: function(name, val) {
+          return validations.createError.call(this, name, "cannot be contain spaces.");
+        },
+        isRequired: function(name, val) {
+          var noSpaces, passing;
+          if (this.requiredFields.indexOf(name) !== -1) {
+            passing = true;
+            if (val.length > 0) {
+              noSpaces = val.replace(/\ /g, "");
+              if (noSpaces.length === 0) {
+                passing = false;
+              }
+            } else {
+              passing = false;
+            }
+            if (!passing) {
+              return validations.createError.call(this, name, "is required.");
+            }
+          }
+        }
+      };
+      _ref = data.fields;
+      for (k in _ref) {
+        v = _ref[k];
+        cjEl = this.cj_slideBox.find("input[name='" + k + "']");
+        if (cjEl.attr("name").toLowerCase() === "checkbox") {
+          continue;
+        }
+        _ref1 = this.requiredValidation;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          test = _ref1[_i];
+          validations[test].call(this, k, v);
+        }
+      }
+      return data;
+    };
+
+    Action.prototype.submitButton = function(gather, cb) {
+      var _this = this;
+      return this.cj_slideBox.find(".label.submit").on("click", function() {
+        if (gather) {
+          return cb(_this.gatherValuesFromSlideBox());
+        } else {
+          return true;
+        }
+      });
+    };
+
     Action.prototype.gatherLabelHTML = function(values) {
       var field, html, label, _i, _len, _ref;
       if (values == null) {
@@ -1660,31 +1958,34 @@
       }
       label = new Label;
       html = "";
-      html = label.buildLabel("header", "Add Tag", "Add Tag");
+      if (this.tagName != null) {
+        html += label.buildLabel("header", "Add Tag", "Add Tag Under:");
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      } else {
+        html += label.buildLabel("header", "Add Tag", "Add Tag");
+      }
       _ref = this.fields.addTag;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         field = _ref[_i];
+        html += "<div class='elementGroup'>";
         html += label.buildLabel("label", field, field);
         if (field === "Is Reserved") {
           html += label.buildLabel("checkBox", field, "");
         } else {
           html += label.buildLabel("textBox", field, "");
         }
+        html += "</div>";
       }
+      html += "<div class='actionButtons'>";
       html += label.buildLabel("submit", "", "submit");
       html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
       return html;
     };
 
     Action.prototype.addTagAjax = function(tagId, action, locCb) {
       var request,
         _this = this;
-      if (this.ajax.addTag.data.name === "") {
-        if (this.cb != null) {
-          this.cb(false);
-        }
-        return false;
-      }
       request = cj.when(cj.ajax(this.ajax.addTag));
       request.done(function(data) {
         if (locCb != null) {
@@ -1736,6 +2037,10 @@
       cancel: {
         className: "label cancel",
         value: "Cancel"
+      },
+      headerdescription: {
+        className: "label headerDescription",
+        value: ""
       }
     };
 
@@ -1744,7 +2049,6 @@
         className: _utils.camelCase(className),
         value: value
       };
-      console.log(this.passed);
       return this[type].call(this, null);
     };
 
@@ -1789,6 +2093,14 @@
         _base.value = this.defaults.submit.value;
       }
       return "<div class='" + this.defaults.submit.className + " " + this.passed.className + "'>" + this.passed.value + "</div>";
+    };
+
+    Label.prototype.headerdescription = function() {
+      var _base;
+      if ((_base = this.passed).value == null) {
+        _base.value = this.defaults.headerdescription.value;
+      }
+      return "<div class='" + this.defaults.headerdescription.className + " " + this.passed.className + "'>" + this.passed.value + "</div>";
     };
 
     Label.prototype.cancel = function() {
@@ -2453,6 +2765,12 @@
       }
     };
 
+    Tree.prototype.appendNode = function(node, parent, html) {
+      this.tagList.push(node);
+      cj(this.domList).find(".JSTree .tagLabel_" + parent).append(html);
+      return cj(this.html).find(".JSTree .tagLabel_" + parent).append(html);
+    };
+
     return Tree;
 
   })();
@@ -2538,7 +2856,7 @@
       this.data = node;
       this.parent = node.parent;
       this.hasDesc = "";
-      this.description = node.descriptf_ion;
+      this.description = node.description;
       this.descLength(node.description);
       this.id = node.id;
       this.children = node.children;
@@ -2624,7 +2942,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "'            >";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'            >";
       html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
       if (this.hasDesc.length > 0) {
         html += "                <div class='description'>" + this.description + "</div>            ";
