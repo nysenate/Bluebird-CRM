@@ -302,10 +302,7 @@ class View
       tabName = @createTreeTabs(v)
     @setActiveTree(@settings.defaultTree)
     ac = new Autocomplete(@instance, @)
-    for k,v of @instance.treeNames
-      @createTabClick("tab-#{@getTabNameFromId(k,true)}", k)
-      if parseInt(k) == 292
-        @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+    @createTabClick()
     buttons = new Buttons(@)
     @setTaggingOrEdit()
   # sets tagging functions or edit functions
@@ -322,11 +319,24 @@ class View
     if @settings.tagging
       @cj_selectors.tagBox.addClass("tagging")
       @applyTagged()
+  unbindTabClick: () ->
+    for k,v of @instance.treeNames
+      @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k,true)}").off "click"
   # jquery for functionality when you click on a menu tab
-  createTabClick: (tabName, tabTree) ->
-    @cj_menuSelectors.tabs.find(".#{tabName}").off "click"
-    @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
-      @showTags tabTree,tabName
+  createTabClick: () ->
+    @unbindTabClick()
+    onTabClick = (currentTree,tabName) ->
+      @cj_menuSelectors.tabs.find(".#{tabName}").on "click", =>
+        @showTags currentTree,tabName
+    cj.each(@cj_menuSelectors.tabs.find("div"), (i,div) ->
+      cj(div).off "click"
+    )
+    for k,v of @instance.treeNames
+      tabName = "tab-#{@getTabNameFromId(k,true)}"
+      onTabClick.call(@,k,"#{tabName}")
+      if parseInt(k) == 292
+        @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
+    
   # changes shown tags based on current tree and previous tree.
   showTags: (currentTree, tabName, noPrev) ->
     if currentTree != _treeVisibility.currentTree
@@ -659,17 +669,24 @@ class Action
         is_reserved: true
   fields:
     addTag: ["Tag Name","Description","Is Reserved"]
+  requiredFields:
+    addTag: ["Tag Name"]
+  requiredValidation:
+    addTag: ["isRequired","appliesNullToText"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
-  constructor: (@view, @instance, tagId, action,@cb) ->
+  constructor: (@view, @instance, @tagId, action, @cb) ->
     # 
     for k,v of @ajax
       v.data["call_uri"] = window.location.href
       v["dataType"] = "json"
-    @[action].apply(@,[tagId,action])
+    @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}'")
+    @tagName = @cjDT.data("name")
+    @[action].apply(@,[action])
   # createSlide pulls a slider from right side to provide a platform for editing tags
   # if it's tall enough, if not, uses the bottom.
-  createSlide: () ->
+  createSlide: (cb) ->
+    # remove the ability to swap tabs
     resize = new Resize
     @view.cj_selectors.tagBox.addClass("hasSlideBox")
     if resize.height > 190
@@ -677,11 +694,26 @@ class Action
       # memoize this
       @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
       @cj_slideBox.css("right","#{@findGutterSpace()}px")
-      @cj_slideBox.animate({width:'50%'}, 500, =>
+      @cj_slideBox.animate({width:'60%'}, 500, =>
         @cj_slideBox.append(@slideHtml)
+        @setCancel()
+        cb()
       )
     else
       # it adds a dropdown
+  setCancel:() ->
+    @cj_slideBox.find(".label.cancel").off "click"
+    @cj_slideBox.find(".label.cancel").on "click", =>
+      @destroySlideBox()
+
+  destroySlideBox:() ->
+    @cj_slideBox.empty()
+    @cj_slideBox.animate({width:'0%'}, 500, =>
+      @cj_slideBox.find(".label.cancel").off "click"
+      @cj_slideBox.remove()
+      @view.cj_selectors.tagBox.removeClass("hasSlideBox")
+      @view.createTabClick()
+    )
   # creates a tag from thin air, for positions.
   # this should be broken up into separate non-private functions
   addTagFromPosition:(tagId,action) ->
@@ -724,11 +756,86 @@ class Action
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
     return outerWidth-innerWidth
+  # destructive method
+  setRequiredFields: (type) ->
+    reqFields = @requiredFields[type]
+    @requiredFields = []
+    for i in reqFields
+      @requiredFields.push _utils.camelCase(i)
+    @requiredValidation = @requiredValidation[type]
   # values provides a shell for updateTag to use same field
   # but add in values
   addTag: (values="") ->
-    @createSlide()
     @slideHtml = @gatherLabelHTML()
+    @setRequiredFields("addTag")
+    @createSlide(=>
+      @view.unbindTabClick()
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          @removeErrors(data)
+          # if there's errors
+          if bbUtils.objSize(data.errors) > 0
+            @markErrors(data.errors)
+          else
+            @ajax.addTag.data.name = data.fields.tagName
+            @ajax.addTag.data.description = data.fields.description
+            @ajax.addTag.data.is_reserved = data.fields.isReserved
+            @ajax.addTag.data.parent_id = data.tagId
+            @convertSubmitToLoading()
+            # undefined middle callback for some reason.
+            @addTagAjax(data.tagId, undefined, (message) =>
+              if message == "DB Error: already exists"
+                @revertSubmitFromLoading()
+                @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+                doSubmit.call(@)
+              else
+                @addEntityToTree(data.tagId,message)
+                @revertSubmitFromLoading()
+                @destroySlideBox()
+            )
+          )
+      doSubmit.call(@)
+    )
+  revertSubmitFromLoading:() ->
+    cjSubmitButton = @cj_slideBox.find(".label.submit")
+    cjSubmitButton.removeClass("loadingGif")
+    text = cjSubmitButton.data("text")
+    cjSubmitButton.text(text)
+  convertSubmitToLoading:() ->
+    cjSubmitButton = @cj_slideBox.find(".label.submit")
+    cjSubmitButton.addClass("loadingGif")
+    cjSubmitButton.data("text",cjSubmitButton.text())
+    cjSubmitButton.text("")
+  addEntityToTree: (parent,message) ->
+    node = {}
+    if message.created_date?
+      node.created_date = ""
+      node.created_date += "#{message.created_date.substring(0,3)}-"
+      node.created_date += "#{message.created_date.substring(4,5)}-"
+      node.created_date += "#{message.created_date.substring(6,7)} "
+      node.created_date += "#{message.created_date.substring(8,9)}:"
+      node.created_date += "#{message.created_date.substring(10,11)}:"
+      node.created_date += "#{message.created_date.substring(12,13)}"
+    node.name = message.name if message.name?
+    if message.description?
+      if message.description == null
+        node.description = ""
+      else
+        node.description = message.description 
+    node.parent = node.parent_id = message.parent_id if message.parent_id?
+    node.id = message.id if message.id?
+    node.children = false
+    cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
+    node.level = cjParent.data("level")+1
+    node.type = "#{cjParent.data("tree")}"
+    if message.is_reserved = "false" then node.is_reserved = "0" else node.is_reserved = "1"
+    @instance.appendToAC(node)
+    _tree = @view.trees
+    node_parsed = new Node(node)
+    _tree[parseInt(node.type)].appendNode(node,node.parent_id,node_parsed.html)
+    @view.cj_selectors.tagBox.find("#tagDropdown_#{node.parent_id}").append(node_parsed.html)
+    # validate change to parent tag now
+
   removeTag: () ->
     @createSlide()
   moveTag: () ->
@@ -738,12 +845,93 @@ class Action
   updateTag: () ->
     # gather values
     # addTag values
+  removeErrors: (data)->
+    notErrored = []
+    for k,v of data.fields
+      unless data.errors[k]?
+        notErrored.push k
+    for nowGood in notErrored
+      cjEl = @cj_slideBox.find(".label.#{nowGood}")
+      oldName = cjEl.data("oldname")
+      cjEl.removeClass("errorLabel").text(oldName)
+      @cj_slideBox.find("input[name='#{nowGood}']").removeClass("errorBox")
+  markErrors: (errors) ->
+    for k,v of errors
+      cjEl = @cj_slideBox.find(".label.#{k}")
+      unless cjEl.hasClass("errorLabel")
+        cjEl.data("oldname",cjEl.text())
+        cjEl.addClass("errorLabel").text(v)
+      @cj_slideBox.find("input[name='#{k}']").addClass("errorBox")
+  gatherValuesFromSlideBox: () ->
+    cjFields = @cj_slideBox.find("input")
+    data =
+      tagId: @cjDT.data("tagid")
+      fields: {}
+      errors: {}
+    cj.each(cjFields, (i,el) =>
+      cjEl = cj(el)
+      if cjEl.attr("type").toLowerCase() == "checkbox"
+        data.fields[cjEl.attr("name")] = cjEl.prop("checked")
+      else
+        data.fields[cjEl.attr("name")] = cjEl.val()
+    )
+    @validateValues(data)
+    
+
+  validateValues:(data) ->
+    validations =
+      createError: (name,val) =>
+        niceName = @cj_slideBox.find(".label.#{name}").text()
+        val = "#{niceName} #{val}"
+        data.errors[name] = val
+      isString: (name,val) ->
+        validations.createError.call(@,name,"cannot contain numbers or symbols.")
+      appliesNullToText:(name,val) ->
+        passing = true
+        if val.length > 0
+          noSpaces = val.replace(/\ /g,"")
+          passing = false if noSpaces.length == 0
+        else
+          passing = false
+        unless passing
+          data.fields[name] = null
+      noSpaces: (name,val) ->
+        validations.createError.call(@,name,"cannot be contain spaces.")
+      isRequired: (name,val) ->
+        if @requiredFields.indexOf(name) != -1
+          passing = true
+          if val.length > 0
+            noSpaces = val.replace(/\ /g,"")
+            passing = false if noSpaces.length == 0
+          else
+            passing = false
+          unless passing
+            validations.createError.call(@,name,"is required.")
+    for k,v of data.fields
+      cjEl = @cj_slideBox.find("input[name='#{k}']")
+      if cjEl.attr("name").toLowerCase() == "checkbox"
+        continue
+      for test in @requiredValidation
+        validations[test].call(@,k,v)
+    data
+
+  submitButton: (gather,cb) ->
+    @cj_slideBox.find(".label.submit").on "click", =>
+      if gather
+        cb(@gatherValuesFromSlideBox())
+      else
+        true
+
   gatherLabelHTML: (values="") ->
     label = new Label
     html = ""
-    html = label.buildLabel("header","Add Tag","Add Tag#{}")
+    if @tagName?
+      html += label.buildLabel("header","Add Tag","Add Tag Under:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+    else
+      html += label.buildLabel("header","Add Tag","Add Tag")
     for field in @fields.addTag
-      # html += "<div>"
+      html += "<div class='elementGroup'>"
       # creates label
       html += label.buildLabel("label",field,field)
       # in update tag, this is important
@@ -751,17 +939,16 @@ class Action
         html += label.buildLabel("checkBox",field,"")
       else
         html += label.buildLabel("textBox",field,"")
-      # html += "</div>"
+      html += "</div>"
+    html += "<div class='actionButtons'>"
     html += label.buildLabel("submit","","submit")
     html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
     return html
   # addTag is merely a validation and request wrapper. should be explicitly called
   # and provide methods based on tagId properties which are discernable from 
   # the tagId (via a jQuery search)
   addTagAjax: (tagId,action,locCb) ->
-    if @ajax.addTag.data.name == ""
-      @cb(false) if @cb?
-      return false
     request = cj.when(cj.ajax(@ajax.addTag))
     request.done((data) =>
         if locCb?
@@ -796,17 +983,19 @@ class Label
     cancel:
       className: "label cancel"
       value: "Cancel"
+    headerdescription:
+      className: "label headerDescription"
+      value: ""
   buildLabel:(type,className,value) ->
     @passed =
       className: _utils.camelCase(className)
       value: value
-    console.log @passed
     @[type].call(@,null)
+  # this can be implemented more DRY
   header:() ->
     @passed.value ?= @.defaults.header.value
     return "<div class='#{@.defaults.header.className} #{@passed.className}'>#{@passed.value}</div>"
   label:() ->
-    # pass.className ?= defaults.label.className
     @passed.value ?= @.defaults.label.value
     return "<div class='#{@.defaults.label.className} #{@passed.className}'>#{@passed.value}</div>"
   textBox:() ->
@@ -815,15 +1004,14 @@ class Label
     return "<input type='text' class='#{@.defaults.textBox.className} #{@passed.className}' name='#{@passed.className}'>"
   checkBox:() ->
     @passed.className ?= @.defaults.textBox.className
-    # @passed.value ?= @.defaults.textBox.value
-    # checked='#{}'
     return "<input type='checkbox' class='#{@.defaults.checkBox.className} #{@passed.className}' name='#{@passed.className}'>"
   submit:() ->
-    # @passed.className ?= @.defaults.submit.className
     @passed.value ?= @.defaults.submit.value
     return "<div class='#{@.defaults.submit.className} #{@passed.className}'>#{@passed.value}</div>"
+  headerdescription:() ->
+    @passed.value ?= @.defaults.headerdescription.value
+    return "<div class='#{@.defaults.headerdescription.className} #{@passed.className}'>#{@passed.value}</div>"
   cancel:() ->
-    # @passed.className ?= @.defaults.submit.className
     @passed.value ?= @.defaults.cancel.value
     return "<div class='#{@.defaults.cancel.className} #{@passed.className}'>#{@passed.value}</div>"
 
@@ -1306,6 +1494,11 @@ class Tree
       )
     else
       _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
+  appendNode:(node,parent,html) ->
+    @tagList.push node
+    cj(@domList).find(".JSTree .tagLabel_#{parent}").append(html)
+    cj(@html).find(".JSTree .tagLabel_#{parent}").append(html)
+
 
 # util functions that the tree uses
 _treeUtils =
@@ -1371,7 +1564,7 @@ class Node
     @data = node
     @parent = node.parent
     @hasDesc = ""
-    @description = node.descriptf_ion
+    @description = node.description
     @descLength(node.description)
     @id = node.id
     @children = node.children
@@ -1429,7 +1622,7 @@ class Node
     html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}'
              data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' 
              data-parentid='#{node.parent}' data-billno='#{@billNo}'
-             data-position='#{@position}'
+             data-position='#{@position}' data-level='#{node.level}'
             >"
     html += "
               <div class='tag'>

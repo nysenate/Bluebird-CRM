@@ -413,7 +413,7 @@
       background-color: rgba(0, 0, 0, 0.2);
       z-index: 15;
       right: 0px; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
         background-color: #a6a6a6;
         border-radius: 5px;
         -moz-border-radius: 5px;
@@ -421,43 +421,91 @@
         color: #fff;
         padding: 4px;
         display: inline-block;
-        float: left;
-        clear: both;
         margin-left: 2%;
         letter-spacing: 1px;
-        -webkit-box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35);
-        -moz-box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35);
-        box-shadow: inset -2px -1px 3px rgba(0, 0, 0, 0.35); }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header {
-        background-color: #909090;
+        -webkit-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        -moz-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35); }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription {
+        background-color: #999999;
         margin: 5px 0 10px;
         font-size: 1.2em;
         font-weight: bold;
         letter-spacing: 1px;
         text-align: center;
-        float: none;
-        clear: both;
         display: block; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox {
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox {
         border-radius: 5px;
         -moz-border-radius: 5px;
         -webkit-border-radius: 5px;
         margin-left: 2%;
-        margin-bottom: 5px; }
+        margin-bottom: 5px;
+        width: 90%; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox {
+        border: 2px solid red;
+        margin-bottom: 3px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription {
+        margin-top: -10px;
+        margin-bottom: 10px;
+        font-weight: normal;
+        font-size: .9em;
+        min-height: 8px; }
       #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
-        background-color: #909090;
+        background-color: #999999;
         margin-top: 5px;
         font-weight: bold;
         text-transform: capitalize;
-        float: left;
+        float: right;
         margin-right: 2%;
         cursor: pointer;
         clear: none; }
       #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
         float: right;
-        background-color: #b7b7b7; }
+        background-color: #bfbfbf; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorLabel {
+        background-color: red; }
       #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input, #BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input {
         margin-left: 10px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .actionButtons, #BBTreeContainer .BBTree.hasSlideBox .slideBox .actionButtons {
+        float: left;
+        clear: both;
+        width: 100%; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription {
+      background-color: #5ad170; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription {
+      background-color: #36c250; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel {
+      background-color: #82dc93; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription {
+      background-color: #6fd5e3; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription {
+      background-color: #44c9db; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel {
+      background-color: #9ae1eb; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription {
+      background-color: #ebb931; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription {
+      background-color: #d4a115; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel {
+      background-color: #f0c95f; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
     font-style: italic;

@@ -98,26 +98,31 @@ class window.bb
       s[j] = x
       res += String.fromCharCode(v.charCodeAt(y) ^ s[(s[i] + s[j]) % 256])
     res
-  debounce: (func, threshold, execAsap) ->
-    timeout = null
-    (args...) ->
-      obj = this
-      delayed = ->
-        func.apply(obj, args) unless execAsap
-        timeout = null
-      if timeout
-        clearTimeout(timeout)
-      else if (execAsap)
-        func.apply(obj, args)
-      timeout = setTimeout delayed, threshold || 100
-  throttle: (fn, delay) ->
-    return fn if delay is 0
-    timer = false
-    return ->
-      return if timer
-      timer = true
-      setTimeout (-> timer = false), delay unless delay is -1
-      fn arguments...
+  objSize: (obj) ->
+    count = 0
+    for i,v of obj
+      count++
+    count
+  # debounce: (func, threshold, execAsap) ->
+  #   timeout = null
+  #   (args...) ->
+  #     obj = this
+  #     delayed = ->
+  #       func.apply(obj, args) unless execAsap
+  #       timeout = null
+  #     if timeout
+  #       clearTimeout(timeout)
+  #     else if (execAsap)
+  #       func.apply(obj, args)
+  #     timeout = setTimeout delayed, threshold || 100
+  # throttle: (fn, delay) ->
+  #   return fn if delay is 0
+  #   timer = false
+  #   return ->
+  #     return if timer
+  #     timer = true
+  #     setTimeout (-> timer = false), delay unless delay is -1
+  #     fn arguments...
   returnTime: (note = "") ->
     time = new Date()
     rTime = "#{time.getMinutes()}:#{time.getSeconds()}:#{time.getMilliseconds()}"
