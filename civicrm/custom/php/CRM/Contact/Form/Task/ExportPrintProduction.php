@@ -461,7 +461,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $skipVars['_database'] = 1;
 
     //retrieve records from temp table
-    $sql = "SELECT * FROM $tmpTbl;
+    $sql = "SELECT * FROM $tmpTbl";
     $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 
     //fetch records
