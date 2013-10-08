@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -92,6 +92,11 @@ function _civicrm_core_data(&$data, $enabled) {
       'left_field' => 'contact_id',
       'field' => 'id',
     ),
+    // Links to case contacts
+      'civicrm_case_contact' => array(
+      'left_field' => 'contact_id',
+      'field' => 'id',
+     ),
   );
 
   // For other base tables, explain how we join -
@@ -136,6 +141,30 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
   );
 
+  $data['civicrm_contact']['relationship_id_a'] = array(
+    'real field' => 'id',
+    'title' => t('CiviCRM Relationship (via Contact A)'),
+    'help' => t('Connects a contact (as contact a) to a relationship'),
+    'relationship' => array(
+      'base' => 'civicrm_relationship',
+      'base field' => 'contact_id_a',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Relationship (via Contact A)'),
+    ),
+  );
+
+  $data['civicrm_contact']['relationship_id_b'] = array(
+    'real field' => 'id',
+    'title' => t('CiviCRM Relationship (via Contact B)'),
+    'help' => t('Connects a contact (as contact b) to a relationship'),
+    'relationship' => array(
+      'base' => 'civicrm_relationship',
+      'base field' => 'contact_id_b',
+      'handler' => 'views_handler_relationship',
+      'label' => t('CiviCRM Relationship (via Contact B)'),
+    ),
+  );
+
   // Drupal ID of the contact (from uf_match.uf_id)
   $data['civicrm_contact']['drupal_id'] = array(
     'real field' => 'id',
@@ -165,7 +194,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -185,7 +214,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -205,7 +234,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'gender',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -214,7 +244,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'gender',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -229,16 +260,18 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
-      'pseudo class' => t('CRM_Core_PseudoConstant'),
-      'pseudo method' => t('individualPrefix'),
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'civicrm_handler_filter_pseudo_constant',
-      'pseudo class' => t('CRM_Core_PseudoConstant'),
-      'pseudo method' => t('individualPrefix'),
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
   );
   // Suffix
@@ -250,16 +283,18 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
-      'pseudo class' => t('CRM_Core_PseudoConstant'),
-      'pseudo method' => t('individualSuffix'),
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'civicrm_handler_filter_pseudo_constant',
-      'pseudo class' => t('CRM_Core_PseudoConstant'),
-      'pseudo method' => t('individualSuffix'),
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
   );
 
@@ -272,7 +307,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -292,7 +327,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -312,11 +347,38 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
       'allow empty' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  //PREFERRED LANGUAGE
+  $data['civicrm_contact']['preferred_language'] = array(
+    'title' => t('Preferred Language'),
+    'real field' => 'preferred_language',
+    'help' => t('Which language is preferred for selection'),
+    'field' => array(
+      'handler' => 'civicrm_handler_field_pseudo_constant',
+      'click sortable' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
+    'filter' => array(
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
+      'allow empty' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Contact_DAO_Contact',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -505,16 +567,16 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
-      'pseudo class' => t('CRM_Core_SelectValues'),
-      'pseudo method' => t('contactType'),
+      'pseudo class' => 'CRM_Contact_BAO_ContactType',
+      'pseudo method' => 'basicTypePairs',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
     'filter' => array(
       'handler' => 'civicrm_handler_filter_pseudo_constant',
-      'pseudo class' => t('CRM_Contact_BAO_ContactType'),
-      'pseudo method' => t('basicTypePairs'),
+      'pseudo class' => 'CRM_Contact_BAO_ContactType',
+      'pseudo method' => 'basicTypePairs',
     ),
   );
 
@@ -525,13 +587,13 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field',
       'click sortable' => TRUE,
-      'pseudo class' => t('CRM_Contact_BAO_ContactType'),
-      'pseudo method' => t('subTypePairs'),
+      'pseudo class' => 'CRM_Contact_BAO_ContactType',
+      'pseudo method' => 'subTypePairs',
     ),
     'filter' => array(
       'handler' => 'civicrm_handler_filter_pseudo_constant',
-      'pseudo class' => t('CRM_Contact_BAO_ContactType'),
-      'pseudo method' => t('subTypePairs'),
+      'pseudo class' => 'CRM_Contact_BAO_ContactType',
+      'pseudo method' => 'subTypePairs',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -562,6 +624,9 @@ function _civicrm_core_data(&$data, $enabled) {
   $skipFields = array(
     'contact_is_deleted' => 1,
     'current_employer_id' => 1,
+    'group' => 1,
+    'note' => 1,
+    'tag' => 1,
   );
   civicrm_views_add_fields($fields, $data['civicrm_contact'], 'civicrm_contact', $skipFields);
 
@@ -674,7 +739,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'locationType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -682,7 +748,8 @@ function _civicrm_core_data(&$data, $enabled) {
     'filter' => array(
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'locationType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -696,9 +763,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -716,9 +784,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -736,9 +805,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -756,9 +826,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -799,9 +870,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -819,9 +891,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -839,9 +912,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -883,7 +957,7 @@ function _civicrm_core_data(&$data, $enabled) {
     'real field' => 'county_id',
     'help' => t('The County of the Address'),
     'field' => array(
-      'handler' => 'civicrm_handler_field_pseudo_constant',
+      'handler' => 'civicrm_handler_field_county',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
       'pseudo method' => 'county',
@@ -909,9 +983,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_address',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Address',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1024,15 +1099,21 @@ function _civicrm_core_data(&$data, $enabled) {
     'real field' => 'location_type_id',
     'help' => t('The Location of the Address for the Contact'),
     'field' => array(
-      'handler' => 'civicrm_handler_field_location_type',
+      'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Email',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
     ),
     'filter' => array(
-      'handler' => 'civicrm_handler_filter_location_type',
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Email',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1046,9 +1127,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_email',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Email',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1160,15 +1242,21 @@ function _civicrm_core_data(&$data, $enabled) {
     'real field' => 'location_type_id',
     'help' => t('The Location of the Phone for the Contact'),
     'field' => array(
-      'handler' => 'civicrm_handler_field_location_type',
+      'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Phone',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
     ),
     'filter' => array(
-      'handler' => 'civicrm_handler_filter_location_type',
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
+      'pseudo class' => 'CRM_Core_PseudoConstant',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Phone',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1182,9 +1270,10 @@ function _civicrm_core_data(&$data, $enabled) {
     'field' => array(
       'handler' => 'civicrm_handler_field_phone',
       'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Phone',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1195,6 +1284,26 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
   );
 
+  $data['civicrm_phone']['phone_ext'] = array(
+    'title' => t('Phone Number Extension'),
+    'help' => t('Extension for Phone Number'),
+    'field' => array(
+      'handler' => 'civicrm_handler_field_phone',
+      'click sortable' => TRUE,
+      'dao class' => 'CRM_Core_DAO_Phone',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      'allow empty' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+  
   //CONTACT ID contact this number belongs to
   $data['civicrm_phone']['contact_id'] = array(
     'title' => t('Contact ID'),
@@ -1232,7 +1341,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'phoneType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Phone',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -1241,7 +1351,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'phoneType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Phone',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1308,7 +1419,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'websiteType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Website',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -1317,7 +1429,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'websiteType',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Core_DAO_Website',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1333,7 +1446,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1431,6 +1544,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
       'pseudo method' => 'activityType',
+      'pseudo args' => array(TRUE, TRUE), // Include cases (if CiviCase is enabled)
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -1440,6 +1554,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
       'pseudo method' => 'activityType',
+      'pseudo args' => array(TRUE, TRUE),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1480,7 +1595,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'priority',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Activity_DAO_Activity',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -1489,7 +1605,8 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
-      'pseudo method' => 'priority',
+      'pseudo method' => 'get',
+      'dao class' => 'CRM_Activity_DAO_Activity',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1525,7 +1642,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1587,7 +1704,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1607,7 +1724,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1657,7 +1774,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'views_handler_sort',
     ),
   );
-  //BOOLEAN : IS A TEST ACTIVITY
+  //BOOLEAN : IS AUTO ACTIVITY
   $data['civicrm_activity']['is_auto'] = array(
     'title' => t('Is Automaticaly created'),
     'help' => t('Is the activity created by the system?'),
@@ -1698,7 +1815,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'help' => t('Activity -> Campaign'),
       'relationship' => array(
         'base' => 'civicrm_campaign',
-        'field' => 'id',
+        'base field' => 'id',
         'handler' => 'views_handler_relationship',
         'label' => t('Activity -> Campaign'),
       ),
@@ -1727,9 +1844,43 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
   );
 
+  // CRM-11488
+  $data['civicrm_activity']['is_current_revision'] = array(
+    'title' => t('Current Revision'),
+    'help' => t('Use to dedupe Civicase revisions'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+   ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+  $data['civicrm_activity']['is_deleted'] = array(
+    'title' => t('Is Deleted'),
+    'help' => t('If the current Activity is deleted. Also used to dedupe Civicase revisions'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+   ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
 
-
-  // CHILLING OUT AT THE CIVICRM_ACTIVTY_ASSIGNMENT TABLE
+  // CHILLING OUT AT THE civicrm_activity_assignment TABLE
 
   $data['civicrm_activity_assignment']['table']['group'] = t('CiviCRM Activity Assignments');
 
@@ -1754,7 +1905,7 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
   );
 
-  // CHILLING OUT AT THE CIVICRM_ACTIVTY_ASSIGNMENT TABLE
+  // CHILLING OUT AT THE civicrm_activity_target TABLE
 
   $data['civicrm_activity_target']['table']['group'] = t('CiviCRM Activity Targets');
 
@@ -1813,19 +1964,6 @@ function _civicrm_core_data(&$data, $enabled) {
 
   //TABLE JOINS FOR CIVICRM RELATIONSHIPS GO HERE!
 
-  $data['civicrm_relationship']['table']['join'] = array(
-    // Directly links to contact table - link A
-    'civicrm_contact' => array(
-      'left_field' => 'id',
-      'field' => 'contact_id_a',
-    ),
-    // Directly links to contact table - link B also.
-    //		   'civicrm_contact' => array(
-    //									  'left_field' => 'id',
-    //									  'field' => 'contact_id_b',
-    //									  ),
-  );
-
   //Display A->B relationships in User Views
   $data['civicrm_relationship']['table']['join']['users'] = array(
     'left_table' => 'civicrm_uf_match',
@@ -1883,14 +2021,22 @@ function _civicrm_core_data(&$data, $enabled) {
     'title' => t('Contact ID A'),
     'real field' => 'contact_id_a',
     'help' => t('The contact A'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => FALSE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument',
+    ),
     'relationship' => array(
       'base' => 'civicrm_contact',
-      'field' => 'id',
-      'relationship table' => 'civicrm_relationship',
-      'relationship field' => 'contact_id_a',
-      'other_field' => 'contact_id_b',
-      'handler' => 'civicrm_handler_relationship',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Contact A'),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
     ),
   );
 
@@ -1907,12 +2053,13 @@ function _civicrm_core_data(&$data, $enabled) {
     ),
     'relationship' => array(
       'base' => 'civicrm_contact',
-      'field' => 'id',
-      'relationship table' => 'civicrm_relationship',
-      'relationship field' => 'contact_id_b',
-      'other_field' => 'contact_id_a',
-      'handler' => 'civicrm_handler_relationship',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Contact B'),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
     ),
   );
 
@@ -1924,7 +2071,7 @@ function _civicrm_core_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -2005,6 +2152,32 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_field_link_relationship',
     ),
   );
+
+  // Case ID for CiviCase
+  if (isset($enabled['CiviCase'])) {
+	  $data['civicrm_relationship']['case_id'] = array(
+		'title' => t('Case ID'),
+		'real field' => 'case_id',
+		'help' => t('The case ID of this relationship'),
+		'field' => array(
+		  'handler' => 'views_handler_field',
+		  'click sortable' => FALSE,
+		),
+		'argument' => array(
+		  'handler' => 'views_handler_argument',
+		),
+		'filter' => array(
+		  'handler' => 'views_handler_filter_numeric',
+		  'allow empty' => TRUE,
+		),
+		'relationship' => array(
+		  'base' => 'civicrm_case',
+		  'field' => 'case_id',
+		  'handler' => 'views_handler_relationship',
+		  'label' => t('CiviCRM Case'),
+		),
+	  );
+  }
 
   /*
      * Add support for CivicRM groups table
@@ -2104,8 +2277,9 @@ function _civicrm_core_data(&$data, $enabled) {
   $data['civicrm_group']['title'] = array(
     'title' => t('Title'),
     'help' => t('Group Title'),
+    'real field' => 'id',
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Core_PseudoConstant',
       'pseudo method' => 'allGroup',
@@ -2203,8 +2377,9 @@ function _civicrm_core_data(&$data, $enabled) {
   $data['civicrm_tag']['name'] = array(
     'title' => t('Name'),
     'help' => t('Name of Tag'),
+    'real field' => 'id',
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Member_PseudoConstant',
       'pseudo method' => 'tag',
@@ -2241,6 +2416,10 @@ function _civicrm_core_data(&$data, $enabled) {
     */
 
   $data['civicrm_uf_match']['table']['group'] = t("CiviCRM Drupal match table");
+  $data['civicrm_uf_match']['table']['join']['civicrm_contact'] = array(
+    'left_field' => 'id',
+    'field' => 'contact_id'
+  );
   $data['civicrm_uf_match']['uf_id'] = array(
     'title' => t('Drupal User ID'),
     'help' => t('The user id of the User matched to a CiviCRM Contact'),

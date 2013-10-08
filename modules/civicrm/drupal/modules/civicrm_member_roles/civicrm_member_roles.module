@@ -104,13 +104,11 @@ function civicrm_member_roles_sync_user($account) {
   if (!civicrm_initialize()) {
     return;
   }
-  if (variable_get('civicrm_member_roles_sync_method', 0) == 0) {
+  if (
+    variable_get('civicrm_member_roles_sync_method', 0) == 0 ||
+    variable_get('civicrm_member_roles_sync_method', 0) == 3
+  ) {
     _civicrm_member_roles_sync($account->uid);
-  }
-  if (variable_get('civicrm_member_roles_sync_method', 0) == 3) {
-    if ($op == 'insert') {
-      _civicrm_member_roles_sync($account->uid);
-    }
   }
 }
 
@@ -571,7 +569,7 @@ function _civicrm_member_roles_sync($ext_uid = NULL, $cid = NULL) {
         if (count($addRoles) > 0 || count($expRoles) > 0) {
           $addRoles = array_unique($addRoles);
           $expRoles = array_unique($expRoles);
-          $account  = user_load($uid);
+          $account  = user_load($uid, TRUE);
           if ($account !== FALSE) {
             // Retain a user's existing roles that aren't explicitly expired--the assumption is that roles granted
             // manually won't have expired memberships that correspond to those roles.  If a status is neither

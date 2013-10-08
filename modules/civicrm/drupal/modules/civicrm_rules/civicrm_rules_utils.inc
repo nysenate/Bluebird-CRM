@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -42,12 +42,10 @@
  */
 function _civicrm_get_groups() {
   civicrm_initialize();
-  require_once 'api/api.php';
-  $params = array('return.id' => 1, 'return.title' => 1, 'version' => 2);
-  $groupInformation = civicrm_api('group', 'get', $params);
+  $groupInformation = civicrm_api('group', 'get', array('version' => 3));
 
   $groups = array();
-  foreach ($groupInformation as $values) {
+  foreach ($groupInformation['values'] as $values) {
     $groups[$values['id']] = $values['title'];
   }
 
@@ -57,22 +55,21 @@ function _civicrm_get_groups() {
 /**
  * Function to add contacts to group
  */
-function _civicrm_rules_group_contact($contactId, $groupId, $action = 'add') {
+function _civicrm_rules_group_contact($contactId, $groupId, $action = 'create') {
   civicrm_initialize();
   $params = array(
     'contact_id' => $contactId,
     'group_id' => $groupId,
-    'version' => 2,
+    'version' => 3,
   );
   // This used to be civicrm_group_contact_common($params, $action);
-  $re = civicrm_api('group_contact', 'common', $params, $action);
+  civicrm_api('group_contact', $action, $params);
 }
 
 /**
  * Loads a contact into a version suitable for the rules actions
  */
 function _civicrm_rules_load_contact($contactID) {
-  require_once 'CRM/Contact/DAO/Contact.php';
   $contact = new CRM_Contact_DAO_Contact();
   $contact->id = $contactID;
 
@@ -93,7 +90,6 @@ function _civicrm_rules_in_group($contact, $group) {
  * Loads a mailing into a version suitable for the rules actions
  */
 function _civicrm_rules_load_mailing($mailingID) {
-  require_once 'CRM/Mailing/DAO/Mailing.php';
   $mailing = new CRM_Mailing_DAO_Mailing();
   $mailing->id = $mailingID;
 
@@ -113,20 +109,10 @@ function civicrm_rules_get_options($type) {
   if (!civicrm_initialize()) {
     return;
   }
-  require_once 'api/api.php';
-  $result = civicrm_api('OptionValue', 'Get', array('version' => 3, 'option_group_name' => $type));
+
+  $result = civicrm_api('OptionValue', 'get', array('version' => 3, 'option_group_name' => $type));
   foreach ($result['values'] as $options) {
     $values[$options['value']] = $options['label'];
   }
   return $values;
 }
-
-/**
- * Loads an entity into a version suitable for the rules actions
- */
-function _civicrm_rules_load_fromAPI($entity_id, $entity) {
-  require_once 'api/api.php';
-  $entity = civicrm_api($entity_id, 'Get', array('version' => 3, 'id' => $entity_id));
-  return $entity['values'][$entity['id']];
-}
-

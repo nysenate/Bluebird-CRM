@@ -1,9 +1,9 @@
 name = CiviCRM
-description = Constituent Relationship Management CRM - v4.2. Allows sites to manage contacts, relationships and groups, and track contact activities, contributions, memberships and events. 
-version = 4.2
+description = Constituent Relationship Management CRM - v4.3. Allows sites to manage contacts, relationships and groups, and track contact activities, contributions, memberships and events.
+version = 4.4
 package = CiviCRM
 core = 7.x
-php = 5.2
+php = 5.3
 files[] = civicrm.module
 files[] = civicrm.install
 files[] = civicrm_user.inc
@@ -17,6 +17,7 @@ files[] = modules/views/civicrm/civicrm_handler_field.inc
 files[] = modules/views/civicrm/civicrm_handler_field_pseudo_constant.inc
 files[] = modules/views/civicrm/civicrm_handler_field_address.inc
 files[] = modules/views/civicrm/civicrm_handler_field_contact_link.inc
+files[] = modules/views/civicrm/civicrm_handler_field_county.inc
 files[] = modules/views/civicrm/civicrm_handler_field_country.inc
 files[] = modules/views/civicrm/civicrm_handler_field_custom.inc
 files[] = modules/views/civicrm/civicrm_handler_field_datetime.inc
@@ -48,6 +49,7 @@ files[] = modules/views/civicrm/civicrm_handler_field_prefix.inc
 files[] = modules/views/civicrm/civicrm_handler_field_relationship_type.inc
 files[] = modules/views/civicrm/civicrm_handler_field_state.inc
 files[] = modules/views/civicrm/civicrm_handler_field_suffix.inc
+files[] = modules/views/civicrm/civicrm_handler_field_custom_file.inc
 
 ; filter handlers
 files[] = modules/views/civicrm/civicrm_handler_filter_pseudo_constant.inc
@@ -61,6 +63,7 @@ files[] = modules/views/civicrm/civicrm_handler_filter_prefix.inc
 files[] = modules/views/civicrm/civicrm_handler_filter_relationship_type.inc
 files[] = modules/views/civicrm/civicrm_handler_filter_suffix.inc
 files[] = modules/views/civicrm/civicrm_handler_filter_country_multi.inc
+files[] = modules/views/civicrm/civicrm_handler_filter_state_multi.inc
 files[] = modules/views/civicrm/civicrm_handler_filter_domain.inc
 
 ; sort handlers

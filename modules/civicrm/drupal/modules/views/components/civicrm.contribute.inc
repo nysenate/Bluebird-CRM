@@ -1,26 +1,26 @@
 <?php
 /*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
+  +--------------------------------------------------------------------+
+  | CiviCRM version 4.4                                                |
+  +--------------------------------------------------------------------+
+  | This file is a part of CiviCRM.                                    |
+  |                                                                    |
+  | CiviCRM is free software; you can copy, modify, and distribute it  |
+  | under the terms of the GNU Affero General Public License           |
+  | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+  |                                                                    |
+  | CiviCRM is distributed in the hope that it will be useful, but     |
+  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+  | See the GNU Affero General Public License for more details.        |
+  |                                                                    |
+  | You should have received a copy of the GNU Affero General Public   |
+  | License and the CiviCRM Licensing Exception along                  |
+  | with this program; if not, contact CiviCRM LLC                     |
+  | at info[AT]civicrm[DOT]org. If you have questions about the        |
+  | GNU Affero General Public License or the licensing of CiviCRM,     |
+  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+  +--------------------------------------------------------------------+
 */
 
 /**
@@ -104,16 +104,16 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'label' => t('CiviCRM Contact, with custom fields'),
     ),
   );
-  //Contribution Type
-  $data['civicrm_contribution']['contribution_type'] = array(
-    'title' => t('Contribution Type'),
-    'real field' => 'contribution_type_id',
+  //Financial Type
+  $data['civicrm_contribution']['financial_type'] = array(
+    'title' => t('Financial Type'),
+    'real field' => 'financial_type_id',
     'help' => t('The Type of Contribution made, ie Member Dues, Event Fees etc'),
     'field' => array(
       'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
       'pseudo class' => 'CRM_Contribute_PseudoConstant',
-      'pseudo method' => 'contributionType',
+      'pseudo method' => 'financialType',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
@@ -122,7 +122,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
       'pseudo class' => 'CRM_Contribute_PseudoConstant',
-      'pseudo method' => 'contributionType',
+      'pseudo method' => 'financialType',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -291,7 +291,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -311,7 +311,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -331,7 +331,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -372,7 +372,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -434,7 +434,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -517,7 +517,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -533,7 +533,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'help' => t('Contribution -> Campaign'),
       'relationship' => array(
         'base' => 'civicrm_campaign',
-        'field' => 'id',
+        'base field' => 'id',
         'handler' => 'views_handler_relationship',
         'label' => t('Contribution -> Campaign'),
       ),
@@ -631,7 +631,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -650,7 +650,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -709,7 +709,8 @@ function _civicrm_contribute_data(&$data, $enabled) {
     ),
     'relationship' => array(
       'base' => 'civicrm_contact',
-      'field' => 'id',
+      'left_field' => 'id',
+      'field' => 'contact_id',
       'handler' => 'views_handler_relationship',
       'label' => t('CiviCRM Recurring payment Contact'),
     ),
@@ -754,7 +755,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -945,20 +946,24 @@ function _civicrm_contribute_data(&$data, $enabled) {
     ),
   );
   //recurring contributions Status
-  $data['civicrm_contribution_recur']['contiribution_status'] = array(
+  $data['civicrm_contribution_recur']['contribution_status'] = array(
     'title' => t('Contribution Status'),
     'real field' => 'contribution_status_id',
     'help' => t('The Contribution\'s Status'),
     'field' => array(
-      'handler' => 'civicrm_handler_field_contribution_status',
+      'handler' => 'civicrm_handler_field_pseudo_constant',
       'click sortable' => TRUE,
+      'pseudo class' => 'CRM_Contribute_PseudoConstant',
+      'pseudo method' => 'contributionStatus',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument',
     ),
     'filter' => array(
-      'handler' => 'civicrm_handler_filter_contribution_status',
+      'handler' => 'civicrm_handler_filter_pseudo_constant',
       'allow empty' => TRUE,
+      'pseudo class' => 'CRM_Contribute_PseudoConstant',
+      'pseudo method' => 'contributionStatus',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -1210,7 +1215,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1230,7 +1235,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1250,7 +1255,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1270,7 +1275,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1397,7 +1402,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
@@ -1436,7 +1441,7 @@ function _civicrm_contribute_data(&$data, $enabled) {
       'click sortable' => TRUE,
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument',
+      'handler' => 'views_handler_argument_string',
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',

@@ -450,7 +450,7 @@ function civicrm_cck_event_field_values($field, $index = null) {
         foreach ( $eventInfo as $info ) {
             $discountId = CRM_Core_BAO_Discount::findSet( $info['id'], 'civicrm_event' );
             if ( $discountId ) {
-                CRM_Core_OptionGroup::getAssoc( CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Discount',
+                CRM_Core_OptionGroup::getAssoc( CRM_Core_DAO::getFieldValue( 'CRM_Order_DAO_Discount',
                                                                              $discountId, 'option_group_id' ),
                                                 $feeBlock, true, 'id' );
             } else {
@@ -547,10 +547,10 @@ function civitest_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$
        if ( ! $externalID ) {
           $errors['external_identifier'] = ts( 'External Identifier is a required field' );
        } else {
-	 require_once "CRM/Utils/Rule.php";
-	 if ( ! CRM_Utils_Rule::integer( $externalID ) ) {
-	   $errors['external_identifier'] = ts( 'External Identifier is not an integer' );
-	 }
+   require_once "CRM/Utils/Rule.php";
+   if ( ! CRM_Utils_Rule::integer( $externalID ) ) {
+     $errors['external_identifier'] = ts( 'External Identifier is not an integer' );
+   }
        }
     }
     return;
@@ -598,7 +598,7 @@ function civitest_civicrm_pageRun( &$page ) {
 }
 
 function civitest_civicrm_eventDiscount( &$form, &$params ) {
-	 require_once 'CRM/Utils/Money.php';
+   require_once 'CRM/Utils/Money.php';
 
     // we only are interested in event id 1
     if ( $form->getVar( '_eventId' ) != 1 ) {
@@ -736,8 +736,8 @@ function civitest_civicrm_buildForm( $formName, &$form ) {
     if ( $formName == 'CRM_Event_Form_Registration_Register' &&
          $form->getVar( '_eventId' ) == 3 ) {
         $form->addElement( 'text', 'discountCode', ts( 'Discount Code' ) );
-	// in template use
-	// {$form.discountCode.label}&nbsp;{$form.discountCode.html}
+  // in template use
+  // {$form.discountCode.label}&nbsp;{$form.discountCode.html}
 
         // also assign to template
         $template = CRM_Core_Smarty::singleton( );
@@ -1017,7 +1017,7 @@ For styling put this in css/extras.css:
 #mcstat {display: table-row; border: 1px solid #999999; border-left: 0; width: 200px;}
 #caseSummary label {display: table-cell;}
 #caseSummary div {display: table-cell; padding-left: 5px; padding-right: 5px;}
-	*/
+  */
 
     // More realistic example, but will return nothing unless you have these activities in your database.
     // TIP: Put these queries into methods in a custom class. You will likely want to re-use them elsewhere, such as in a CiviReport.
@@ -1387,48 +1387,48 @@ function civitest_civicrm_import( $object, $usage, &$objectRef, $params ) {
         return;
     }
 
-	//during import, accept special tag_import column for processing
-	$cType           = $objectRef->_contactType;
-	$dupeType        = $objectRef->_onDuplicate;
-	$contactID       = $params['contactID'];
-	$importID        = $params['importID'];
-	$importTempTable = $params['importTempTable'];
-	$fields          = $params['fields'];
+  //during import, accept special tag_import column for processing
+  $cType           = $objectRef->_contactType;
+  $dupeType        = $objectRef->_onDuplicate;
+  $contactID       = $params['contactID'];
+  $importID        = $params['importID'];
+  $importTempTable = $params['importTempTable'];
+  $fields          = $params['fields'];
 
-	require_once 'CRM/Core/DAO.php';
-	$sqlTags = "SELECT tag_import
-				FROM $importTempTable
-				WHERE _id = $importID;";
-	$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
+  require_once 'CRM/Core/DAO.php';
+  $sqlTags = "SELECT tag_import
+        FROM $importTempTable
+        WHERE _id = $importID;";
+  $taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
 
-	if ( $taglist ) {
+  if ( $taglist ) {
 
-		require_once 'api/api.php';
-		require_once 'CRM/Core/BAO/EntityTag.php';
+    require_once 'api/api.php';
+    require_once 'CRM/Core/BAO/EntityTag.php';
 
-		$keywords = array();
-		$keywords = explode( '|', $taglist );
+    $keywords = array();
+    $keywords = explode( '|', $taglist );
 
-		foreach ( $keywords as $keyword ) {
-			$params = array( 'name' => $keyword, 'parent_id' => '296', 'version' => 3 ); //import tags to tagset with id 296
+    foreach ( $keywords as $keyword ) {
+      $params = array( 'name' => $keyword, 'parent_id' => '296', 'version' => 3 ); //import tags to tagset with id 296
 
-			//lookup tag; create new if nonexist
-			$tag = civicrm_api( 'Tag', 'get', $params );
-			if ( civicrm_error( $tag ) ) {
-			    $tag = civicrm_api( 'Tag', 'create', $params );
-			    $tagid = $tag['id'];
-			} else {
-			    $tagid = $tag['id'];
-			}
+      //lookup tag; create new if nonexist
+      $tag = civicrm_api( 'Tag', 'get', $params );
+      if ( civicrm_error( $tag ) ) {
+          $tag = civicrm_api( 'Tag', 'create', $params );
+          $tagid = $tag['id'];
+      } else {
+          $tagid = $tag['id'];
+      }
 
-			//only add tag to contact if not already present
-			$entityTags = CRM_Core_BAO_EntityTag::getTag($contactID);
-			if ( !in_array($tagid, $entityTags) ) {
-			    $entityParams = array( 'tag_id' => $tagid, 'contact_id' => $contactID, 'version' => 3 );
-			    $entityTag = civicrm_api( 'EntityTag', 'create', $entityParams );
-			}
-		}
-	}
+      //only add tag to contact if not already present
+      $entityTags = CRM_Core_BAO_EntityTag::getTag($contactID);
+      if ( !in_array($tagid, $entityTags) ) {
+          $entityParams = array( 'tag_id' => $tagid, 'contact_id' => $contactID, 'version' => 3 );
+          $entityTag = civicrm_api( 'EntityTag', 'create', $entityParams );
+      }
+    }
+  }
 }
 
 /**
@@ -1512,16 +1512,16 @@ function civitest_civicrm_searchColumns( $objectName, &$headers,  &$values, &$se
 
         foreach ( $values as $id => $value ) {
             $sql = "
-																																																						  SELECT SUM(total_amount)
-																																																						  FROM   civicrm_contribution
-																																																						  WHERE  contact_id = %1
-																																																						  ";
+                                                                                                              SELECT SUM(total_amount)
+                                                                                                              FROM   civicrm_contribution
+                                                                                                              WHERE  contact_id = %1
+                                                                                                              ";
             $values[$id]['total'] = CRM_Core_DAO::singleValueQuery( $sql,
                                                                     array( 1 => array( $value['contact_id'],
                                                                                        'Integer' ) ) );
             // this is cheating, but allows us NOT to modify the template
             // override the values that we are not using
-            $values[$id]['contribution_type'] = $values[$id]['total'];
+            $values[$id]['financial_type'] = $values[$id]['total'];
         }
     }
 
@@ -1566,8 +1566,8 @@ SELECT t1.id id1, t2.id id2, 5 weight
 FROM   civicrm_contact t1
 INNER JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
                                    t1.last_name = t2.last_name AND
-	                               IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
-	                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
+                                 IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
+                                 IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
 INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
 INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
                                  a1.postal_code = a2.postal_code AND
@@ -1922,3 +1922,36 @@ function civitest_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
     );
 }
 
+function civitest_civicrm_alterReportVar($varType, &$var, &$form) {
+  $formName = get_class($form);
+  if ( $formName == 'CRM_Report_Form_Campaign_SurveyDetails' ) {
+    if ( $varType == 'columns' ) {
+      $var['civicrm_contribution'] = 
+        array(
+              'dao' => 'CRM_Contribute_DAO_Contribution',
+              'fields' =>
+              array(
+                    'receive_date' => 
+                    array('title' => ts('last contribution date'),
+                          ),
+                    'total_amount' => 
+                    array('title' => ts('last contri Amount'),
+                          ),
+                    ),
+              'grouping' => 'survey-activity-fields',
+              );
+    } else if ( $varType == 'sql' ) {
+      $params = $form->getVar( '_params' );
+      if ( CRM_Utils_Array::value('receive_date', $params['fields']) || CRM_Utils_Array::value('total_amount', $params['fields']) ) {
+        $var->_from .= "LEFT JOIN civicrm_contribution {$form->_aliases['civicrm_contribution']} ON ({$form->_aliases['civicrm_contribution']}.id = (select id from civicrm_contribution con where con.contact_id = {$form->_aliases['civicrm_contact']}.id ORDER BY con.receive_date DESC LIMIT 1 ))\n";
+      }
+    }
+  }
+}
+
+function civitest_civicrm_alterBarcode(&$data, $type, $context ) {
+  if ($type == 'barcode' && $context == 'name_badge') {
+    // change the encoding of barcode
+    $data['current_value'] = $data['event_id'] . '-' . $data['participant_id'] . '-' . $data['contact_id'];
+  }
+}
