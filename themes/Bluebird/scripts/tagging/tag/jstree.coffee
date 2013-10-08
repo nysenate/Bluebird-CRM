@@ -132,6 +132,11 @@ class Instance
   appendToAC:(node) ->
     @_autocomplete.push node
     true
+  removeFromAC:(node) ->
+    for v,i in @_autocomplete
+      if parseInt(node.id) == parseInt(v.id)
+        console.log "removeAC #{i}"
+        @_autocomplete.splice(i,1)
 
 _utils =
   removeDupFromExtend: (obj) =>
