@@ -758,7 +758,8 @@
       edit: false,
       tagging: false,
       print: true,
-      lock: false
+      lock: false,
+      dropdown: false
     };
 
     View.prototype.entity_id = 0;
@@ -784,9 +785,10 @@
     View.prototype.applyTagged = function() {
       var _this = this;
       return this.instance.getEntity(this.entity_id, function(tags) {
-        var id, _i, _len, _ref;
+        var autoHeight, curHeight, id, _i, _len, _ref;
         if (_this.entityList.length > 0) {
           _this.removeAllTagsFromEntity();
+          _this.cj_tokenHolder.body.empty();
         }
         _this.entityList = tags;
         if (_this.entityList.length > 0) {
@@ -797,7 +799,34 @@
             id = _ref[_i];
             _this.addTagsToHolder(id);
           }
-          return _this.cj_tokenHolder.body.slideToggle(400);
+          _this.cj_tokenHolder.options.find(".showToggle").off("click");
+          _this.cj_tokenHolder.options.find(".showToggle").on("click", function() {
+            var autoHeight, curHeight;
+            _this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
+            if (_this.cj_tokenHolder.body.height() <= 20) {
+              curHeight = _this.cj_tokenHolder.body.height();
+              _this.cj_tokenHolder.body.css('height', 'auto');
+              autoHeight = _this.cj_tokenHolder.body.height();
+              _this.cj_tokenHolder.body.height(curHeight);
+              return _this.cj_tokenHolder.body.animate({
+                height: autoHeight
+              }, 500, function() {});
+            } else {
+              return _this.cj_tokenHolder.body.animate({
+                height: "16px"
+              }, 500, function() {});
+            }
+          });
+          if (_this.settings.dropdown) {
+            _this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
+            curHeight = _this.cj_tokenHolder.body.height();
+            _this.cj_tokenHolder.body.css('height', 'auto');
+            autoHeight = _this.cj_tokenHolder.body.height();
+            _this.cj_tokenHolder.body.height(curHeight);
+            return _this.cj_tokenHolder.body.animate({
+              height: autoHeight
+            }, 500, function() {});
+          }
         }
       });
     };
@@ -807,7 +836,7 @@
         _this = this;
       cjDT = this.cj_selectors.tagBox.find("#tagLabel_" + id);
       killToken = function() {
-        return cjDT.find("input.checkbox").trigger("change").prop("checked", false);
+        return cjDT.find("input.checkbox").prop("checked", false).trigger("change");
       };
       name = cjDT.data("name");
       type = cjDT.data("tree");
@@ -1081,7 +1110,7 @@
     };
 
     View.prototype.tokenHolderHtml = function(name) {
-      return "        <div class='" + name.box + "'>         <div class='" + name.options + "'>          <div class='showToggle'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
+      return "        <div class='" + name.box + "'>         <div class='" + name.options + "' >          <div class='showToggle' title='Toggle Tokens'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
     };
 
     View.prototype.dataHolderHtml = function() {
@@ -1543,6 +1572,7 @@
         addTag = function() {
           var _addTag,
             _this = this;
+          a.addTagsToHolder(cjDT.data("tagid"));
           _addTag = entity.addTag(tagId);
           return _addTag.done(function(i) {
             return doAction.apply(null, [i, "add"]);
@@ -3174,9 +3204,9 @@
   Token = (function() {
     function Token(cjLocation) {
       if (cjLocation.children().length === 2) {
-        console.log("2 kids empty");
+
       } else {
-        console.log("plenty of kids");
+
       }
     }
 
@@ -3185,7 +3215,6 @@
     Token.prototype.create = function(cjLocation, name, type, id, cb) {
       var html,
         _this = this;
-      console.log("create");
       html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>                " + name + "             </div>           ";
       cjLocation.append(html);
       cjLocation.find(".token-" + id).on("click", function() {
