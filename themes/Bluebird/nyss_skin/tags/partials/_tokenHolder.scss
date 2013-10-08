@@ -1,14 +1,68 @@
+.JSTree-resize {
+  background:url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat #fff -51px -229px;
+  height:6px;
+  width:10px;
+  margin: 0 auto;
+  &:hover {
+    cursor: s-resize;
+  }
+}
 .JSTree-tokenHolder {
   background-color:#fff;
+  position:relative;
+  padding-bottom:8px;
+  width:100%;
+  overflow-x:hidden;
   @include round-bottom-corners(3px);
-  .JSTree-resize {
-    background:url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
-    height:6px;
-    width:10px;
-    margin: 0 auto;
-    &:hover {
-      cursor: s-resize;
+  .JSTree-tokenBody {
+    display:none;
+    overflow:hidden;
+    padding-top:5px;
+    $defaultTokenColor:#999;
+    .token {
+      background-color:lighten($defaultTokenColor,5%);
+      @include round-corners(5px);
+      padding:2px 6px;
+      margin-bottom:1px;
+      display: inline-block;
+      margin-left:2px;
+      letter-spacing: 1px;
+      float:left;
+      @include inset-shadow(-1px,-1px,2px,.35);
+      color:#fff;
+      min-height:12px;
+    }
+    .token:hover {
+      text-decoration:line-through;
+      color:lighten(red,15%);
+      cursor:pointer;
+    }
+    [data-type="291"] {
+      background-color:$issueCodesColor;
+    }
+    [data-type="292"] {
+      background-color:$positionsColor;
+    }
+    [data-type="296"] {
+      background-color:$keywordsColor;
     }
   }
-
+  .JSTree-tokenBody.oneLine {
+    height:16px;
+  }
+  .JSTree-options {
+    position:absolute;
+    right:0px;
+    height:15px;
+    width:16%;
+    .button {
+      height:15px;
+      width:15px;
+      background:url(sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent;
+    }
+    .showToggle{
+      @extend button;
+      background-position:-10px -10px;
+    }
+  }
 }
