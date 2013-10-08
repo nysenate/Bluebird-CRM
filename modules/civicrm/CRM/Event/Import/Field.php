@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -63,7 +63,8 @@ class CRM_Event_Import_Field {
    * value of this field
    * @var object
    */
-  public $_value; function __construct($name, $title, $type = CRM_Utils_Type::T_INT, $headerPattern = '//', $dataPattern = '//') {
+  public $_value;
+  function __construct($name, $title, $type = CRM_Utils_Type::T_INT, $headerPattern = '//', $dataPattern = '//') {
     $this->_name = $name;
     $this->_title = $title;
     $this->_type = $type;
@@ -121,7 +122,7 @@ class CRM_Event_Import_Field {
     if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($this->_name)) {
       static $customFields = NULL;
       if (!$customFields) {
-        $customFields = CRM_Core_BAO_CustomField::getFields('Membership');
+        $customFields = CRM_Core_BAO_CustomField::getFields('Participant');
       }
       if (!array_key_exists($customFieldID, $customFields)) {
         return FALSE;

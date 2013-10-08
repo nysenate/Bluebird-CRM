@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -78,7 +78,7 @@ ORDER BY title
 SELECT v.label ,v.value
 FROM   civicrm_option_value v,
        civicrm_option_group g
-WHERE  v.option_group_id = g.id 
+WHERE  v.option_group_id = g.id
 AND g.name = 'event_type'
 AND v.is_active = 1
 AND {$whereClause}
@@ -102,14 +102,14 @@ ORDER by v.weight";
     }
 
     $whereClause = "cv.label LIKE '$name%' ";
-    
+
     $query = "SELECT DISTINCT (
 cv.label
 ), cv.id
 FROM civicrm_price_field_value cv
 LEFT JOIN civicrm_price_field cf ON cv.price_field_id = cf.id
 LEFT JOIN civicrm_price_set_entity ce ON ce.price_set_id = cf.price_set_id
-WHERE ce.entity_table = 'civicrm_event' AND {$whereClause} 
+WHERE ce.entity_table = 'civicrm_event' AND {$whereClause}
 GROUP BY cv.label";
     $dao = CRM_Core_DAO::executeQuery($query);
     while ($dao->fetch()) {
@@ -119,7 +119,8 @@ GROUP BY cv.label";
   }
 
   function eventList() {
-    $events = CRM_Event_BAO_Event::getEvents(TRUE);
+    $listparams = CRM_Utils_Array::value('listall', $_REQUEST, 1);
+    $events = CRM_Event_BAO_Event::getEvents($listparams);
 
     $elements = array(array('name' => ts('- select -'),
         'value' => '',
@@ -139,8 +140,6 @@ GROUP BY cv.label";
    * Function to get default participant role
    */
   function participantRole() {
-
-
     $eventID = $_GET['eventId'];
 
     $defaultRoleId = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event',

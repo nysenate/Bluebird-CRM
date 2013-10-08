@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -54,8 +54,8 @@ class CRM_Grant_Form_GrantView extends CRM_Core_Form {
     $values = array();
     $params['id'] = $this->_id;
     CRM_Grant_BAO_Grant::retrieve($params, $values);
-    $grantType = CRM_Grant_PseudoConstant::grantType();
-    $grantStatus = CRM_Grant_PseudoConstant::grantStatus();
+    $grantType = CRM_Core_PseudoConstant::get('CRM_Grant_DAO_Grant', 'grant_type_id');
+    $grantStatus = CRM_Core_PseudoConstant::get('CRM_Grant_DAO_Grant', 'status_id');
     $this->assign('grantType', $grantType[$values['grant_type_id']]);
     $this->assign('grantStatus', $grantStatus[$values['status_id']]);
     $grantTokens = array(
@@ -109,9 +109,7 @@ class CRM_Grant_Form_GrantView extends CRM_Core_Form {
       $recentOther
     );
 
-    $attachment = CRM_Core_BAO_File::attachmentInfo('civicrm_grant',
-      $this->_id
-    );
+    $attachment = CRM_Core_BAO_File::attachmentInfo('civicrm_grant', $this->_id);
     $this->assign('attachment', $attachment);
 
     $grantType = CRM_Core_DAO::getFieldValue("CRM_Grant_DAO_Grant", $this->_id, "grant_type_id");

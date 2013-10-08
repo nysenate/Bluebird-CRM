@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,7 @@ class CRM_Event_Form_Task_SearchTaskHookSample extends CRM_Event_Form_Task {
     $query = "
      SELECT p.fee_amount as amount,
             p.register_date as register_date,
-            p.source as source,   
+            p.source as source,
             ct.display_name as display_name
        FROM civicrm_participant p
  INNER JOIN civicrm_contact ct ON ( p.contact_id = ct.id )

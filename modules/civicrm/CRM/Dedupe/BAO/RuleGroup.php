@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -132,8 +132,9 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
     // Reserved Rule Groups can optionally get special treatment by
     // implementing an optimization class and returning a query array.
     if ($this->is_reserved &&
-      include_once "CRM/Dedupe/BAO/QueryBuilder/{$this->name}.php"
+      CRM_Utils_File::isIncludable("CRM/Dedupe/BAO/QueryBuilder/{$this->name}.php")
     ) {
+      include_once "CRM/Dedupe/BAO/QueryBuilder/{$this->name}.php";
       $class   = "CRM_Dedupe_BAO_QueryBuilder_{$this->name}";
       $command = empty($this->params) ? 'internal' : 'record';
       $queries = call_user_func(array($class, $command), $this);
@@ -266,8 +267,7 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
 
   // Function to determine if a given query set contains inclusive or exclusive set of weights.
   // The function assumes that the query set is already ordered by weight in desc order.
-  static
-  function isQuerySetInclusive($tableQueries, $threshold, $exclWeightSum = array(
+  static function isQuerySetInclusive($tableQueries, $threshold, $exclWeightSum = array(
     )) {
     $input = array();
     foreach ($tableQueries as $key => $query) {
@@ -301,8 +301,7 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
   }
 
   // sort queries by number of records for the table associated with them
-  static
-  function orderByTableCount(&$tableQueries) {
+  static function orderByTableCount(&$tableQueries) {
     static $tableCount = array();
 
     $tempArray = array();
@@ -354,10 +353,10 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
         $this->_aclWhere = $this->_aclWhere ? "AND {$this->_aclWhere}" : '';
       }
       $query = "SELECT dedupe.id1, dedupe.id2, dedupe.weight
-                FROM dedupe JOIN civicrm_contact c1 ON dedupe.id1 = c1.id 
+                FROM dedupe JOIN civicrm_contact c1 ON dedupe.id1 = c1.id
                             JOIN civicrm_contact c2 ON dedupe.id2 = c2.id {$this->_aclFrom}
                        LEFT JOIN civicrm_dedupe_exception exc ON dedupe.id1 = exc.contact_id1 AND dedupe.id2 = exc.contact_id2
-                WHERE c1.contact_type = '{$this->contact_type}' AND 
+                WHERE c1.contact_type = '{$this->contact_type}' AND
                       c2.contact_type = '{$this->contact_type}' {$this->_aclWhere}
                       AND weight >= {$this->threshold} AND exc.contact_id1 IS NULL";
     }
@@ -374,11 +373,10 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
    * @return (rule field => weight) array and threshold associated to rule group
    * @access public
    */
-  function dedupeRuleFieldsWeight($params) {
+  static function dedupeRuleFieldsWeight($params) {
     $rgBao               = new CRM_Dedupe_BAO_RuleGroup();
-    $rgBao->level        = $params['level'];
+    $rgBao->used         = $params['used'];
     $rgBao->contact_type = $params['contact_type'];
-    $rgBao->is_default   = 1;
     $rgBao->find(TRUE);
 
     $ruleBao = new CRM_Dedupe_BAO_Rule();
@@ -403,8 +401,7 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
    *
    * @return array id => "nice name" of rule group
    */
-  static
-  function getByType($contactType = NULL) {
+  static function getByType($contactType = NULL) {
     $dao = new CRM_Dedupe_DAO_RuleGroup();
 
     if ($contactType) {
@@ -414,12 +411,11 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup {
     $dao->find();
     $result = array();
     while ($dao->fetch()) {
-      if (!empty($dao->name)) {
-        $name = "{$dao->name} - {$dao->level}";
-      }
-      else {
-        $name = "{$dao->contact_type} - {$dao->level}";
-      }
+      $title =
+        !empty($dao->title) ? $dao->title :
+        (!empty($dao->name)  ? $dao->name : $dao->contact_type);
+
+      $name = "$title - {$dao->used}";
       $result[$dao->id] = $name;
     }
     return $result;

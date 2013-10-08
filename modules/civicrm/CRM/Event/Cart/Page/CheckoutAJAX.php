@@ -18,7 +18,7 @@ class CRM_Event_Cart_Page_CheckoutAJAX {
 
     $form = new CRM_Core_Form();
     $pform = new CRM_Event_Cart_Form_MerParticipant($participant);
-    $pform->buildQuickForm($form);
+    $pform->appendQuickForm($form);
 
     $renderer = $form->getRenderer();
 

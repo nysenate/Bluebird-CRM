@@ -1,7 +1,7 @@
 <?php
 class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
   public $all_participants;
-  public $contribution_type_id;
+  public $financial_type_id;
   public $description;
   public $line_items;
   public $_fields = array();
@@ -11,7 +11,9 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
   public $payment_required = TRUE;
   public $payer_contact_id;
   public $is_pay_later = FALSE;
-  public $pay_later_receipt; function registerParticipant($params, &$participant, $event) {
+  public $pay_later_receipt;
+
+  function registerParticipant($params, &$participant, $event) {
     $transaction = new CRM_Core_Transaction();
 
     // handle register date CRM-4320
@@ -123,7 +125,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
     foreach ($this->cart->get_main_events_in_carts() as $event_in_cart) {
       if ($payment_processor_id == NULL && $event_in_cart->event->payment_processor != NULL) {
         $payment_processor_id = $event_in_cart->event->payment_processor;
-        $this->contribution_type_id = $event_in_cart->event->contribution_type_id;
+    $this->financial_type_id = $event_in_cart->event->financial_type_id;
       }
       else {
         if ($event_in_cart->event->payment_processor != NULL && $event_in_cart->event->payment_processor != $payment_processor_id) {
@@ -144,7 +146,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       CRM_Core_Error::statusBounce(ts('A payment processor must be selected for this event registration page, or the event must be configured to give users the option to pay later (contact the site administrator for assistance).'));
     }
 
-    $this->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($payment_processor_id, $this->_mode);
+    $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($payment_processor_id, $this->_mode);
     $this->assign('paymentProcessor', $this->_paymentProcessor);
 
     CRM_Core_Payment_Form::setCreditCardFields($this);
@@ -224,7 +226,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
 
   function process_event_line_item(&$event_in_cart, $class = NULL) {
     $cost         = 0;
-    $price_set_id = CRM_Price_BAO_Set::getFor("civicrm_event", $event_in_cart->event_id);
+    $price_set_id = CRM_Price_BAO_PriceSet::getFor("civicrm_event", $event_in_cart->event_id);
     $amount_level = NULL;
     if ($price_set_id) {
       $event_price_values = array();
@@ -233,11 +235,10 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
           $event_price_values[$matches[1]] = $value;
         }
       }
-      $price_sets       = CRM_Price_BAO_Set::getSetDetail($price_set_id, TRUE);
+      $price_sets       = CRM_Price_BAO_PriceSet::getSetDetail($price_set_id, TRUE);
       $price_set        = $price_sets[$price_set_id];
       $price_set_amount = array();
-      CRM_Price_BAO_Set::processAmount($price_set['fields'], $event_price_values, $price_set_amount);
-      $price_set_index = end(array_keys($event_price_values['amount_priceset_level_radio']));
+      CRM_Price_BAO_PriceSet::processAmount($price_set['fields'], $event_price_values, $price_set_amount);
       $cost            = $event_price_values['amount'];
       $amount_level    = $event_price_values['amount_level'];
     }
@@ -333,7 +334,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
         'pay_later_receipt' => $this->pay_later_receipt,
       ),
       'valueName' => 'event_registration_receipt',
-      'PDFFilename' => 'eventReceipt.pdf',
+      'PDFFilename' => ts('confirmation').'.pdf',
     );
     $template_params_to_copy = array(
       'billing_name',
@@ -350,11 +351,10 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       $this->set($template_param_to_copy, $send_template_params['tplParams'][$template_param_to_copy]);
     }
 
-    CRM_Core_BAO_MessageTemplates::sendTemplate($send_template_params);
+    CRM_Core_BAO_MessageTemplate::sendTemplate($send_template_params);
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
 
     if ($self->payment_required && !CRM_Utils_Array::value('is_pay_later', $self->_submitValues)) {
@@ -363,27 +363,10 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       if ($error) {
         $errors['_qf_default'] = $error;
       }
+      CRM_Core_Form::validateMandatoryFields($self->_fields, $fields, $errors);
 
-      foreach ($self->_fields as $name => $field) {
-        if ($field['is_required'] && CRM_Utils_System::isNull(CRM_Utils_Array::value($name, $fields))) {
-          $errors[$name] = ts('%1 is a required field.', array(1 => $field['title']));
-        }
-      }
-
-
-      if (CRM_Utils_Array::value('credit_card_type', $fields)) {
-        if (CRM_Utils_Array::value('credit_card_number', $fields) &&
-          !CRM_Utils_Rule::creditCardNumber($fields['credit_card_number'], $fields['credit_card_type'])
-        ) {
-          $errors['credit_card_number'] = ts("Please enter a valid Credit Card Number");
-        }
-
-        if (CRM_Utils_Array::value('cvv2', $fields) &&
-          !CRM_Utils_Rule::cvv($fields['cvv2'], $fields['credit_card_type'])
-        ) {
-          $errors['cvv2'] = ts("Please enter a valid Credit Card Verification Number");
-        }
-      }
+      // make sure that credit card number and cvv are valid
+      CRM_Core_Payment_Form::validateCreditCard($fields, $errors);
     }
 
     return empty($errors) ? TRUE : $errors;
@@ -464,7 +447,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
     $params['now'] = date('YmdHis');
     $params['invoiceID'] = md5(uniqid(rand(), TRUE));
     $params['amount'] = $this->total;
-    $params['contribution_type_id'] = $this->contribution_type_id;
+        $params['financial_type_id'] = $this->financial_type_id;
     if ($this->payment_required && !CRM_Utils_Array::value('is_pay_later', $params)) {
       $trxn = $this->make_payment($params);
       $params['trxn_id'] = $trxn->trxn_id;
@@ -525,8 +508,8 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
         // XXX move
         $params['amount'] = $mer_participant->cost - $mer_participant->discount_amount;
 
-        if ($event_in_cart->event->contribution_type_id && $mer_participant->cost) {
-          $params['contribution_type_id'] = $event_in_cart->event->contribution_type_id;
+            if ($event_in_cart->event->financial_type_id && $mer_participant->cost) {
+              $params['financial_type_id'] = $event_in_cart->event->financial_type_id;
           $params['participant_contact_id'] = $mer_participant->contact_id;
           $this->record_contribution($mer_participant, $params, $event_in_cart->event);
         }
@@ -576,7 +559,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       'payment_processor' => $this->_paymentProcessor['payment_processor_type'],
       'trxn_id' => $result['trxn_id'],
     );
-    $trxn = new CRM_Core_DAO_FinancialTrxn();
+    $trxn = new CRM_Financial_DAO_FinancialTrxn();
     $trxn->copyValues($trxnParams);
     if (!CRM_Utils_Rule::currencyCode($trxn->currency)) {
       $config = CRM_Core_Config::singleton();
@@ -604,7 +587,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
 
     $contribParams = array(
       'contact_id' => $payer,
-      'contribution_type_id' => $params['contribution_type_id'],
+      'financial_type_id' => $params['financial_type_id'],
       'receive_date' => $params['now'],
       'total_amount' => $params['amount'],
       'amount_level' => $mer_participant->fee_level,
@@ -635,7 +618,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
         'amount' => $params['amount'],
         'currency' => CRM_Utils_Array::value('currencyID', $params),
       );
-      $entity_trxn = &new CRM_Core_DAO_EntityFinancialTrxn();
+        $entity_trxn =& new CRM_Financial_DAO_EntityFinancialTrxn();
       $entity_trxn->copyValues($entity_financial_trxn_params);
       $entity_trxn->save();
     }

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -59,7 +59,7 @@ class CRM_Custom_Form_DeleteField extends CRM_Core_Form {
    *
    * @return void
    * @acess protected
-   */ 
+   */
   function preProcess() {
     $this->_id = $this->get('id');
 
@@ -114,10 +114,8 @@ class CRM_Custom_Form_DeleteField extends CRM_Core_Form {
     CRM_Core_BAO_CustomField::deleteField($field);
 
     // also delete any profiles associted with this custom field
-    CRM_Core_BAO_UFField::delUFField($this->_id);
-    CRM_Core_Session::setStatus(ts('The custom field \'%1\' has been deleted.', array(1 => $field->label)));
+    CRM_Core_Session::setStatus(ts('The custom field \'%1\' has been deleted.', array(1 => $field->label)), '', 'success');
 
-    CRM_Utils_Weight::correctDuplicateWeights('CRM_Core_DAO_CustomField');
   }
 }
 

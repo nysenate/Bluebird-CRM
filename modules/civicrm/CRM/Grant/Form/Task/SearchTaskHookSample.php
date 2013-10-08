@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -54,9 +54,9 @@ class CRM_Grant_Form_Task_SearchTaskHookSample extends CRM_Grant_Form_Task {
     SELECT grt.decision_date  as decision_date,
            grt.amount_total   as amount_total,
            grt.amount_granted as amount_granted,
-           ct.display_name    as display_name      
+           ct.display_name    as display_name
       FROM civicrm_grant grt
-INNER JOIN civicrm_contact ct ON ( grt.contact_id = ct.id )       
+INNER JOIN civicrm_contact ct ON ( grt.contact_id = ct.id )
      WHERE grt.id IN ( $grantIDs )";
 
     $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);

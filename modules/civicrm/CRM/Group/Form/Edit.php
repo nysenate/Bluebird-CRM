@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -85,7 +85,8 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
    *
    * @return void
    * @acess protected
-   */ function preProcess() {
+   */
+  function preProcess() {
     $this->_id = $this->get('id');
 
     if ($this->_id) {
@@ -98,9 +99,7 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
 
       $this->_groupValues = array();
       $params             = array('id' => $this->_id);
-      $this->_group       = &CRM_Contact_BAO_Group::retrieve($params,
-        $this->_groupValues
-      );
+      $this->_group       = CRM_Contact_BAO_Group::retrieve($params, $this->_groupValues);
       $this->_title = $this->_groupValues['title'];
     }
 
@@ -133,6 +132,10 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
             'search_custom_id'
           );
         }
+        if (CRM_Utils_Array::value('created_id', $this->_groupValues))
+          $groupValues['created_by'] =
+            CRM_Core_DAO::getFieldValue("CRM_Contact_DAO_Contact", $this->_groupValues['created_id'] , 'sort_name', 'id');
+
         $this->assign_by_ref('group', $groupValues);
 
         CRM_Utils_System::setTitle(ts('Group Settings: %1', array(1 => $this->_title)));
@@ -146,12 +149,12 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
   }
 
   /*
-     * This function sets the default values for the form. LocationType that in edit/view mode
-     * the default values are retrieved from the database
-     *
-     * @access public
-     * @return None
-     */
+   * This function sets the default values for the form. LocationType that in edit/view mode
+   * the default values are retrieved from the database
+   *
+   * @access public
+   * @return None
+   */
   function setDefaultValues() {
     $defaults = array();
 
@@ -177,7 +180,7 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
           $this->_groupOrganizationID = $defaults['group_organization'];
         }
 
-        $this->assign('organizationID', CRM_Utils_Array::value('organization_id', $defaults));
+        $this->assign('organizationID', CRM_Utils_Array::value('organization_id',$defaults));
       }
     }
 
@@ -360,8 +363,7 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $fileParams, $options) {
+  static function formRule($fields, $fileParams, $options) {
     $errors = array();
 
     $doParentCheck = $options['doParentCheck'];
@@ -392,7 +394,7 @@ class CRM_Group_Form_Edit extends CRM_Core_Form {
       $title = trim($fields['title']);
       $query = "
 SELECT count(*)
-FROM   civicrm_group 
+FROM   civicrm_group
 WHERE  title = %1
 ";
       $params = array(1 => array($title, 'String'));
@@ -423,7 +425,7 @@ WHERE  title = %1
     $updateNestingCache = FALSE;
     if ($this->_action & CRM_Core_Action::DELETE) {
       CRM_Contact_BAO_Group::discard($this->_id);
-      CRM_Core_Session::setStatus(ts("The Group '%1' has been deleted.", array(1 => $this->_title)));
+      CRM_Core_Session::setStatus(ts("The Group '%1' has been deleted.", array(1 => $this->_title)), ts('Group Deleted'), 'success');
       $updateNestingCache = TRUE;
     }
     else {
@@ -465,7 +467,7 @@ WHERE  title = %1
         }
       }
 
-      CRM_Core_Session::setStatus(ts('The Group \'%1\' has been saved.', array(1 => $group->title)));
+      CRM_Core_Session::setStatus(ts('The Group \'%1\' has been saved.', array(1 => $group->title)), ts('Group Saved'), 'success');
 
       /*
              * Add context to the session, in case we are adding members to the group
