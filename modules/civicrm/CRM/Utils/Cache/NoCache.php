@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,12 +28,12 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 
-class CRM_Utils_Cache_NoCache {
+class CRM_Utils_Cache_NoCache implements CRM_Utils_Cache_Interface {
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -51,7 +51,7 @@ class CRM_Utils_Cache_NoCache {
    *
    * @return void
    */
-  function __construct(&$config) {
+  function __construct($config) {
   }
 
   function set($key, &$value) {

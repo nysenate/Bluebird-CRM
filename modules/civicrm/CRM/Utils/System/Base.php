@@ -3,47 +3,45 @@
 /**
  * Base class for UF system integrations
  */
-class CRM_Utils_System_Base {
+abstract class CRM_Utils_System_Base {
   var $is_drupal = FALSE;
   var $is_joomla = FALSE;
   var $is_wordpress = FALSE;
 
   /*
-     * Does the CMS allow CMS forms to be extended by hooks
-     */
-
+   * Does the CMS allow CMS forms to be extended by hooks
+   */
   var $supports_form_extensions = FALSE;
 
   /**
    * if we are using a theming system, invoke theme, else just print the
    * content
    *
-   * @param string  $type    name of theme object/file
    * @param string  $content the content that will be themed
-   * @param array   $args    the args for the themeing function if any
    * @param boolean $print   are we displaying to the screen or bypassing theming?
-   * @param boolean $ret     should we echo or return output
    * @param boolean $maintenance  for maintenance mode
    *
    * @return void           prints content on stdout
    * @access public
    */
-  function theme($type, &$content, $args = NULL, $print = FALSE, $ret = FALSE, $maintenance = FALSE) {
+  function theme(&$content, $print = FALSE, $maintenance = FALSE) {
+    $ret = FALSE;
+
     // TODO: Split up; this was copied verbatim from CiviCRM 4.0's multi-UF theming function
     // but the parts should be copied into cleaner subclass implementations
     if (function_exists('theme') && !$print) {
       if ($maintenance) {
         drupal_set_breadcrumb('');
         drupal_maintenance_theme();
+        if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
+          CRM_Utils_System::addHTMLHead($region->render(''));
+        }
         print theme('maintenance_page', array('content' => $content));
         exit();
       }
-      $out = $content;
-      $ret = TRUE;
+      $ret = TRUE; // TODO: Figure out why D7 returns but everyone else prints
     }
-    else {
-      $out = $content;
-    }
+    $out = $content;
 
     $config = &CRM_Core_Config::singleton();
     if (!$print &&
@@ -89,10 +87,81 @@ class CRM_Utils_System_Base {
     return $url;
   }
 
-  /*
-     * Currently this is just helping out the test class as defaults is calling it - maybe move fix to defaults
-     */
+  /**
+   * Determine the location of the CMS root.
+   *
+   * @return string|NULL local file system path to CMS root, or NULL if it cannot be determined
+   */
   function cmsRootPath() {
+    return NULL;
+  }
+
+  /**
+   * Get user login URL for hosting CMS (method declared in each CMS system class)
+   *
+   * @param string $destination - if present, add destination to querystring (works for Drupal only)
+   *
+   * @return string - loginURL for the current CMS
+   * @static
+   */
+  public abstract function getLoginURL($destination = '');
+
+  /**
+   * Determine the native ID of the CMS user
+   *
+   * @param $username
+   * @return int|NULL
+   */
+  function getUfId($username) {
+    $className = get_class($this);
+    throw new CRM_Core_Exception("Not implemented: {$className}->getUfId");
+  }
+
+  /**
+   * Set a init session with user object
+   *
+   * @param array $data  array with user specific data
+   *
+   * @access public
+   */
+  function setUserSession($data) {
+    list($userID, $ufID) = $data;
+    $session = CRM_Core_Session::singleton();
+    $session->set('ufID', $ufID);
+    $session->set('userID', $userID);
+  }
+
+  /**
+   * Reset any system caches that may be required for proper CiviCRM
+   * integration.
+   */
+  function flush() {
+    // nullop by default
+  }
+
+  /**
+   * Return default Site Settings
+   * @return array array
+   * - $url, (Joomla - non admin url)
+   * - $siteName,
+   * - $siteRoot
+   */
+  function getDefaultSiteSettings($dir) {
+    $config = CRM_Core_Config::singleton();
+    $url = $config->userFrameworkBaseURL;
+    return array($url, NULL, NULL);
+  }
+
+  /**
+   * Perform any post login activities required by the CMS -
+   * e.g. for drupal: records a watchdog message about the new session, saves the login timestamp,
+   * calls hook_user op 'login' and generates a new session.
+   *
+   * @param array params
+   *
+   * FIXME: Document values accepted/required by $params
+   */
+  function userLoginFinalize($params = array()){
   }
 }
 

@@ -1,10 +1,9 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +28,7 @@
 /**
  *
  * @package CiviCRM_Hook
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id: $
  *
  */
@@ -38,30 +37,60 @@ class CRM_Utils_Hook_Drupal6 extends CRM_Utils_Hook {
   /**
    * @var bool
    */
-  private $first = FALSE;
+  private $isBuilt = FALSE;
 
   /**
    * @var array(string)
    */
-  private $allModules = array();
+  private $allModules = NULL;
+
+  /**
+   * @var array(string)
+   */
+  private $civiModules = NULL;
+
+  /**
+   * @var array(string)
+   */
+  private $drupalModules = NULL;
 
   function invoke($numParams,
     &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
     $fnSuffix
   ) {
-    if (! $this->first || empty($this->allModules)) {
-      $this->first = true;
 
-      // copied from user_module_invoke
-      if (function_exists('module_list')) {
-        $this->allModules =  module_list();
-      }
-
-      $this->requireCiviModules($this->allModules);
-    }
+    $this->buildModuleList();
 
     return $this->runHooks($this->allModules, $fnSuffix,
-                           $numParams, $arg1, $arg2, $arg3, $arg4, $arg5);
+      $numParams, $arg1, $arg2, $arg3, $arg4, $arg5
+    );
+  }
+
+  /**
+   * Build the list of modules to be processed for hooks.
+   */
+  function buildModuleList() {
+    if ($this->isBuilt === FALSE) {
+      if ($this->drupalModules === NULL) {
+        if (function_exists('module_list')) {
+          // copied from user_module_invoke
+          $this->drupalModules = module_list();
+        }
+      }
+
+      if ($this->civiModules === NULL) {
+        $this->civiModules = array();
+        $this->requireCiviModules($this->civiModules);
+      }
+
+      $this->allModules = array_merge((array)$this->drupalModules, (array)$this->civiModules);
+      if ($this->drupalModules !== NULL && $this->civiModules !== NULL) {
+        // both CRM and CMS have bootstrapped, so this is the final list
+        $this->isBuilt = TRUE;
+      }
+    }
   }
 }
+
+
 
