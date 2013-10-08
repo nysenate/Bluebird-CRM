@@ -355,7 +355,8 @@
         width: 438px;
         z-index: 10;
         background-color: white;
-        height: 150px; }
+        height: 150px;
+        max-height: 600px; }
       #JSTree-container.BBTreeContainer .BBTree.dropdown.top-292-active, #BBTreeContainer .BBTree.dropdown.top-292-active {
         background-color: rgba(175, 232, 239, 0.5); }
         #JSTree-container.BBTreeContainer .BBTree.dropdown.top-292-active dt.shaded, #BBTreeContainer .BBTree.dropdown.top-292-active dt.shaded {
@@ -534,7 +535,8 @@
     background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat white -51px -229px;
     height: 6px;
     width: 10px;
-    margin: 0 auto; }
+    margin: 0 auto;
+    position: relative; }
     #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
       cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
@@ -548,9 +550,10 @@
     border-bottom-right-radius: 3px;
     -webkit-border-bottom-right-radius: 3px;
     -moz-border-radius-bottomleft: 3px;
-    -moz-border-radius-bottomright: 3px; }
+    -moz-border-radius-bottomright: 3px;
+    min-height: 16px; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody {
-      display: none;
+      height: 16px;
       overflow: hidden;
       padding-top: 5px; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token {
@@ -585,15 +588,28 @@
       position: absolute;
       right: 0px;
       height: 15px;
-      width: 16%; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .button {
+      width: 8%;
+      margin-top: 5px;
+      border-top-left-radius: 3px;
+      -webkit-border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px;
+      -webkit-border-bottom-left-radius: 3px;
+      -moz-border-radius-topleft: 3px;
+      -moz-border-radius-bottomleft: 3px;
+      background-color: #ccc; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #BBTreeContainer #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #JSTree-container.BBTreeContainer #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle {
         height: 15px;
         width: 15px;
-        background: url(sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent; }
+        background: url(/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent;
+        cursor: pointer; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle {
-        background-position: -10px -10px; }
+        background-position: -48px -64px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp {
+        background-position: -191px -49px; }
   #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
     display: none; }
+  #JSTree-container.BBTreeContainer .JSTree.dropdown ~ .JSTree-resize, #BBTreeContainer .JSTree.dropdown ~ .JSTree-resize {
+    bottom: 6px; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {

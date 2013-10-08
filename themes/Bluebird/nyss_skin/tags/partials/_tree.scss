@@ -38,6 +38,7 @@
       z-index:10;
       background-color:white;
       height: 150px;
+      max-height:600px;
     }
     // .top-291{
     //   @include addColors($issueCodesColor,.3);
@@ -104,4 +105,7 @@
   ~.BBTree-tokenHolder {
     display:none;
   }
+}
+.JSTree.dropdown ~.JSTree-resize{
+  bottom:6px;
 }

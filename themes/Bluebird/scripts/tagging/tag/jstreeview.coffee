@@ -77,6 +77,7 @@ class View
     tagging: false
     print: true
     lock: false
+    dropdown:false
   entity_id: 0
   entityList: []
   defaultPrefix: "JSTree"
@@ -93,23 +94,45 @@ class View
     @instance.getEntity(@entity_id, (tags) =>
         if @entityList.length > 0
           @removeAllTagsFromEntity()
+          @cj_tokenHolder.body.empty()
         @entityList = tags
         if @entityList.length > 0
           @applyTaggedKWIC()
           @applyTaggedPositions()
           for id in @entityList
             @addTagsToHolder(id)
-          @cj_tokenHolder.body.slideToggle(400)
+          @cj_tokenHolder.options.find(".showToggle").off "click"
+          @cj_tokenHolder.options.find(".showToggle").on "click", =>
+            @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
+            if @cj_tokenHolder.body.height() <= 20
+              curHeight = @cj_tokenHolder.body.height()
+              @cj_tokenHolder.body.css('height','auto')
+              autoHeight = @cj_tokenHolder.body.height()
+              @cj_tokenHolder.body.height(curHeight)
+              @cj_tokenHolder.body.animate({height:autoHeight},500, =>
+              )
+            else
+              @cj_tokenHolder.body.animate({height:"16px"},500, =>
+              )
+            # @cj_tokenHolder.body.slideToggle(400)
+          if @settings.dropdown
+            @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
+            curHeight = @cj_tokenHolder.body.height()
+            @cj_tokenHolder.body.css('height','auto')
+            autoHeight = @cj_tokenHolder.body.height()
+            @cj_tokenHolder.body.height(curHeight)
+            @cj_tokenHolder.body.animate({height:autoHeight},500, =>
+            )
       )
   addTagsToHolder:(id) ->
-      cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
-      killToken = =>
-        cjDT.find("input.checkbox").trigger("change").prop("checked",false)
-      name = cjDT.data("name")
-      type = cjDT.data("tree")
-      @cj_tokenHolder.body
-      token = new Token(@cj_tokenHolder.body)
-      token.create(@cj_tokenHolder.body,name,type,id,killToken)
+    cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
+    killToken = =>
+      cjDT.find("input.checkbox").prop("checked",false).trigger("change")
+    name = cjDT.data("name")
+    type = cjDT.data("tree")
+    @cj_tokenHolder.body
+    token = new Token(@cj_tokenHolder.body)
+    token.create(@cj_tokenHolder.body,name,type,id,killToken)
   removeAllTagsFromEntity:() ->
     cjDTs = @cj_selectors.tagBox.find("dt")
     cjDTs.find("dt").removeClass("shaded").removeClass("shadedChildren")
@@ -306,8 +329,8 @@ class View
     # <div class='#{name.left}'></div>
     return "
         <div class='#{name.box}'>
-         <div class='#{name.options}'>
-          <div class='showToggle'></div>
+         <div class='#{name.options}' >
+          <div class='showToggle' title='Toggle Tokens'></div>
          </div>
          <div class='#{name.body}'></div>
         </div>
@@ -647,6 +670,7 @@ class View
           doAction.apply(null,[i,"remove"])
         )
       addTag = () ->
+        a.addTagsToHolder(cjDT.data("tagid"))
         _addTag = entity.addTag(tagId)
         _addTag.done((i) =>
           doAction.apply(null,[i,"add"])
@@ -667,6 +691,7 @@ class View
           removeTag.call(@,null)
       entity = a.instance.entity
       cjDT = cj(@).parents("dt").first()
+
       # if position!
       if cjDT.data("tree") == 292 && parseInt(cjDT.data("tagid")) >= 292000
         # create new position
@@ -1820,14 +1845,14 @@ class Token
     
     # there's 2 children to start
     if cjLocation.children().length == 2
-      console.log "2 kids empty"
+      # console.log "2 kids empty"
     else
-      console.log "plenty of kids"
+      # console.log "plenty of kids"
 
   dropdown: (cjLocation) ->  
 
   create:(cjLocation,name,type,id,cb) ->
-    console.log "create"
+    # console.log "create"
     html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>
                 #{name}
              </div>

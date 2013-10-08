@@ -6,6 +6,7 @@
   &:hover {
     cursor: s-resize;
   }
+  position:relative;
 }
 .JSTree-tokenHolder {
   background-color:#fff;
@@ -14,8 +15,9 @@
   width:100%;
   overflow-x:hidden;
   @include round-bottom-corners(3px);
+  min-height:16px;
   .JSTree-tokenBody {
-    display:none;
+    height:16px;
     overflow:hidden;
     padding-top:5px;
     $defaultTokenColor:#999;
@@ -54,15 +56,22 @@
     position:absolute;
     right:0px;
     height:15px;
-    width:16%;
+    width:8%;
+    margin-top:5px;
+    @include round-left-corners(3px);
+    background-color:#ccc;
     .button {
       height:15px;
       width:15px;
-      background:url(sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent;
+      background:url(/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent;
+      cursor:pointer;
     }
     .showToggle{
-      @extend button;
-      background-position:-10px -10px;
+      @extend .button;
+      background-position:-48px -64px;
+    }
+    .showToggle.slideUp {
+      background-position:-191px -49px;
     }
   }
 }
