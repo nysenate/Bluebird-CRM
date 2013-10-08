@@ -88,7 +88,7 @@ js/jquery/jquery.crmasmselect.js
 js/jquery/jquery.crmtooltip.js
 
 {*NYSS*}
-packages/jquery/plugins/jquery.cursorStart.js
+NYSS/jquery.cursorStart.js
 ../../../default/themes/Bluebird/scripts/bbUtils/bbUtils.js
 ../../../default/themes/Bluebird/scripts/bbJSsettings/bbhg.js
 ../../../default/themes/Bluebird/scripts/jquery.taggingAutocomplete/jquery.taggingAutocomplete.js
