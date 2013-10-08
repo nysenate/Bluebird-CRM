@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -40,11 +39,14 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
 
   protected $_emailField = FALSE;
 
-  protected $_summary = NULL; function __construct() {
+  public $_drilldownReport = array('contribute/detail' => 'Link to Detail Report');
 
+  protected $_summary = NULL;
+
+  function __construct() {
     self::validRelationships();
     $config = CRM_Core_Config::singleton();
-    $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
+    $campaignEnabled = in_array('CiviCampaign', $config->enableComponents);
     if ($campaignEnabled) {
       $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
       $this->activeCampaigns = $getCampaigns['campaigns'];
@@ -66,6 +68,14 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
           array(
             'no_display' => TRUE,
             'required' => TRUE,
+          ),
+          'contact_type' =>
+          array(
+            'title' => ts('Contact Type'),
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
           ),
         ),
         'filters' =>
@@ -129,6 +139,12 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
             'title' => 'Contribution Status',
             'default' => TRUE,
           ),
+          'check_number' => array('title' => ts('Check Number'),
+          ),
+          'currency' => array(
+            'required' => TRUE,
+            'no_display' => TRUE,
+          ),
           'trxn_id' => NULL,
           'receive_date' => array('default' => TRUE),
           'receipt_date' => NULL,
@@ -139,6 +155,13 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
           array('operatorType' => CRM_Report_Form::OP_DATE),
           'total_amount' =>
           array('title' => ts('Amount Between')),
+          'currency' =>
+          array('title' => 'Currency',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
+          ),
           'contribution_status_id' =>
           array('title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -185,6 +208,7 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
       );
     }
 
+    $this->_currencyColumn = 'civicrm_contribution_currency';
     parent::__construct();
   }
 
@@ -233,24 +257,24 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
     $this->_from = NULL;
     $this->_from = "
         FROM  civicrm_relationship  {$this->_aliases['civicrm_relationship']}
-            LEFT  JOIN civicrm_contact {$this->_aliases['civicrm_contact_organization']} ON 
+            LEFT  JOIN civicrm_contact {$this->_aliases['civicrm_contact_organization']} ON
                       ({$this->_aliases['civicrm_contact_organization']}.id = {$this->_aliases['civicrm_relationship']}.$this->orgContact AND {$this->_aliases['civicrm_contact_organization']}.contact_type='Organization')
-            LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON 
-                      ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_relationship']}.$this->otherContact )       
+            LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON
+                      ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_relationship']}.$this->otherContact )
             {$this->_aclFrom}
             INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']} ON
                       ({$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_relationship']}.$this->otherContact ) AND {$this->_aliases['civicrm_contribution']}.is_test = 0 ";
 
     if ($this->_addressField) {
-      $this->_from .= " 
-            LEFT JOIN civicrm_address  {$this->_aliases['civicrm_address']} ON 
-                      {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
+      $this->_from .= "
+            LEFT JOIN civicrm_address  {$this->_aliases['civicrm_address']} ON
+                      {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
                       {$this->_aliases['civicrm_address']}.is_primary = 1\n ";
     }
     if ($this->_emailField) {
       $this->_from .= "
-            LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} ON 
-                      {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND 
+            LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} ON
+                      {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1\n ";
     }
   }
@@ -431,14 +455,14 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
         ) &&
         array_key_exists('civicrm_contact_organization_id', $row)
       ) {
-        $url = CRM_Utils_System::url("civicrm/contact/view",
+        $url = CRM_Utils_System::url('civicrm/contact/view',
           'reset=1&cid=' .
           $rows[$rowNum]['civicrm_contact_organization_id'],
           $this->_absoluteUrl
         );
 
         $rows[$rowNum]['civicrm_contact_organization_organization_name_link'] = $url;
-        $rows[$rowNum]['civicrm_contact_organization_organization_name_hover'] = ts("View contact summary for this organization.");
+        $rows[$rowNum]['civicrm_contact_organization_organization_name_hover'] = ts('View contact summary for this organization.');
       }
 
       //remove duplicate Contact names and relationship type
@@ -497,7 +521,7 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
         $url = CRM_Report_Utils_Report::getNextUrl('contribute/detail',
           'reset=1&force=1&id_op=eq&id_value=' .
           $row['civicrm_contact_id'],
-          $this->_absoluteUrl, $this->_id
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
         $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts('View contribution details for this individual');
@@ -509,12 +533,12 @@ class CRM_Report_Form_Contribute_OrganizationSummary extends CRM_Report_Form {
       if (($value = CRM_Utils_Array::value('civicrm_contribution_total_amount', $row)) &&
         CRM_Core_Permission::check('access CiviContribute')
       ) {
-        $url = CRM_Utils_System::url("civicrm/contact/view/contribution",
+        $url = CRM_Utils_System::url('civicrm/contact/view/contribution',
           "reset=1&id=" . $row['civicrm_contribution_id'] . "&cid=" . $row['civicrm_contact_id'] . "&action=view&context=contribution&selectedChild=contribute",
           $this->_absoluteUrl
         );
         $rows[$rowNum]['civicrm_contribution_total_amount_link'] = $url;
-        $rows[$rowNum]['civicrm_contribution_total_amount_hover'] = ts("View this contribution.");
+        $rows[$rowNum]['civicrm_contribution_total_amount_hover'] = ts('View this contribution.');
         $entryFound = TRUE;
       }
 

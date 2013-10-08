@@ -1,36 +1,35 @@
 <?php
-// $Id$
 
 /*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
+  +--------------------------------------------------------------------+
+  | CiviCRM version 4.4                                                |
+  +--------------------------------------------------------------------+
+  | Copyright CiviCRM LLC (c) 2004-2013                                |
+  +--------------------------------------------------------------------+
+  | This file is a part of CiviCRM.                                    |
+  |                                                                    |
+  | CiviCRM is free software; you can copy, modify, and distribute it  |
+  | under the terms of the GNU Affero General Public License           |
+  | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+  |                                                                    |
+  | CiviCRM is distributed in the hope that it will be useful, but     |
+  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+  | See the GNU Affero General Public License for more details.        |
+  |                                                                    |
+  | You should have received a copy of the GNU Affero General Public   |
+  | License and the CiviCRM Licensing Exception along                  |
+  | with this program; if not, contact CiviCRM LLC                     |
+  | at info[AT]civicrm[DOT]org. If you have questions about the        |
+  | GNU Affero General Public License or the licensing of CiviCRM,     |
+  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+  +--------------------------------------------------------------------+
 */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,10 +45,10 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
 
   protected $_customGroupExtends = array(
     'Contribution', 'Membership');
-  
+
   function __construct() {
     $config = CRM_Core_Config::singleton();
-    $campaignEnabled = in_array("CiviCampaign", $config->enableComponents);
+    $campaignEnabled = in_array('CiviCampaign', $config->enableComponents);
     if ($campaignEnabled) {
       $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns(NULL, NULL, TRUE, FALSE, TRUE);
       $this->activeCampaigns = $getCampaigns['campaigns'];
@@ -76,6 +75,11 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
           ),
           'contact_type' =>
           array('title' => ts('Contact Type'),
+            'no_repeat' => TRUE,
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
             'no_repeat' => TRUE,
           ),
           'do_not_email' =>
@@ -170,7 +174,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         ),
         'grouping' => 'contact-fields',
       ),
-       'first_donation' => array(
+      'first_donation' => array(
         'dao' => 'CRM_Contribute_DAO_Contribution',
         'fields' =>
         array(
@@ -198,7 +202,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
             'csv_display' => TRUE,
             'title' => ts('Contribution ID'),
           ),
-          'contribution_type_id' => array('title' => ts('Contribution Type'),
+          'financial_type_id' => array('title' => ts('Financial Type'),
             'default' => TRUE,
           ),
           'contribution_recur_id' => array('title' => ts('Recurring Contribution Id'),
@@ -215,26 +219,37 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
             'name' => 'source',
             'title' => ts('Contribution Source'),
           ),
+          'currency' => array(
+            'required' => TRUE,
+            'no_display' => TRUE,
+          ),
           'trxn_id' => NULL,
           'receive_date' => array('default' => TRUE),
           'receipt_date' => NULL,
           'honor_type_id' => array('title' => ts('Honor Type'),
-            'default' => FALSE,
+                           'default' => FALSE,
           ),
           'fee_amount' => NULL,
           'net_amount' => NULL,
           'total_amount' => array('title' => ts('Amount'),
-            'required' => TRUE,
+                          'required' => TRUE,
           ),
         ),
         'filters' =>
         array(
           'receive_date' =>
           array('operatorType' => CRM_Report_Form::OP_DATE),
-          'contribution_type_id' =>
-          array('title' => ts('Contribution Type'),
+          'financial_type_id' =>
+          array('title' => ts('Financial Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionType(),
+            'options' => CRM_Contribute_PseudoConstant::financialType(),
+          ),
+          'currency' =>
+          array('title' => 'Currency',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
           ),
           'payment_instrument_id' =>
           array('title' => ts('Payment Type'),
@@ -317,17 +332,17 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         'fields' =>
         array(
           'membership_type_id' => array('title' => ts('Membership Type'),
-            'required' => TRUE,
-            'no_repeat' => TRUE,
+                                'required' => TRUE,
+                                'no_repeat' => TRUE,
           ),
           'membership_start_date' => array('title' => ts('Start Date'),
-            'default' => TRUE,
+                                   'default' => TRUE,
           ),
           'membership_end_date' => array('title' => ts('End Date'),
-            'default' => TRUE,
+                                 'default' => TRUE,
           ),
           'join_date' => array('title' => ts('Join Date'),
-            'default' => TRUE,
+                       'default' => TRUE,
           ),
           'source' => array('title' => ts('Membership Source')),
         ),
@@ -393,10 +408,10 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         array(
           'note' =>
           array(
-                'name'  => 'note',
-                'title' => ts('Contribution Note'),
-                'operator' => 'like',
-                'type'  => CRM_Utils_Type::T_STRING,
+            'name'  => 'note',
+            'title' => ts('Contribution Note'),
+            'operator' => 'like',
+            'type'  => CRM_Utils_Type::T_STRING,
           ),
         ),
       ),
@@ -405,9 +420,9 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
     $this->_tagFilter = TRUE;
 
     // Don't show Batch display column and filter unless batches are being used
-    $this->_closedBatches = CRM_Core_BAO_Batch::getBatches();
+    $this->_closedBatches = CRM_Batch_BAO_Batch::getBatches();
     if (!empty($this->_closedBatches)) {
-      $this->_columns['civicrm_batch']['dao'] = 'CRM_Core_DAO_Batch';
+      $this->_columns['civicrm_batch']['dao'] = 'CRM_Batch_DAO_Batch';
       $this->_columns['civicrm_batch']['fields']['batch_id'] = array(
         'name' => 'id',
         'title' => ts('Batch Name'),
@@ -419,7 +434,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
         'options' => $this->_closedBatches,
       );
-      $this->_columns['civicrm_entity_batch']['dao'] = 'CRM_Core_DAO_EntityBatch';
+      $this->_columns['civicrm_entity_batch']['dao'] = 'CRM_Batch_DAO_EntityBatch';
       $this->_columns['civicrm_entity_batch']['fields']['entity_batch_id'] = array(
         'name' => 'batch_id',
         'default' => TRUE,
@@ -433,13 +448,13 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         'default' => 'false',
       );
       $this->_columns['civicrm_contribution']['filters']['campaign_id'] = array('title' => ts('Campaign'),
-        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-        'options' => $this->activeCampaigns,
+                                                                          'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                                                                          'options' => $this->activeCampaigns,
       );
       $this->_columns['civicrm_contribution']['order_bys']['campaign_id'] = array('title' => ts('Campaign'));
     }
 
-
+    $this->_currencyColumn = 'civicrm_contribution_currency';
     parent::__construct();
   }
 
@@ -505,7 +520,6 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
             }
             else {
               $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
-
               $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value('title', $field);
               $this->_columnHeaders["{$tableName}_{$fieldName}"]['type'] = CRM_Utils_Array::value('type', $field);
             }
@@ -514,7 +528,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
       }
     }
 
-    $this->_select = "SELECT " . implode(', ', $select) . " ";
+    $this->_select = 'SELECT ' . implode(', ', $select) . ' ';
   }
 
   function from() {
@@ -522,14 +536,14 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
               FROM civireport_membership_contribution_detail
               INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
                       ON (civireport_membership_contribution_detail.contribution_id = {$this->_aliases['civicrm_contribution']}.id)
-               LEFT JOIN  civicrm_membership {$this->_aliases['civicrm_membership']}
+              LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
                       ON (civireport_membership_contribution_detail.membership_id = {$this->_aliases['civicrm_membership']}.id)
               INNER JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
                       ON (civireport_membership_contribution_detail.contact_id = {$this->_aliases['civicrm_contact']}.id)
-              LEFT JOIN civicrm_membership_status {$this->_aliases['civicrm_membership_status']}
-                      ON {$this->_aliases['civicrm_membership_status']}.id =
-                      {$this->_aliases['civicrm_membership']}.status_id
-    ";
+              LEFT  JOIN civicrm_membership_status {$this->_aliases['civicrm_membership_status']}
+                          ON {$this->_aliases['civicrm_membership_status']}.id =
+                             {$this->_aliases['civicrm_membership']}.status_id
+";
 
     //for premiums
     if (CRM_Utils_Array::value('product_name', $this->_params['fields']) || CRM_Utils_Array::value('product_option', $this->_params['fields'])) {
@@ -551,18 +565,18 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
             LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
                       ON ( {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_contribution' AND
                            {$this->_aliases['civicrm_contribution']}.id = {$this->_aliases['civicrm_note']}.entity_id )";
-      
+
     }
 
     if (CRM_Utils_Array::value('phone', $this->_params['fields'])) {
-      $this->_from .=" 
+      $this->_from .= "
                LEFT JOIN  civicrm_phone {$this->_aliases['civicrm_phone']}
                       ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                          {$this->_aliases['civicrm_phone']}.is_primary = 1)";
     }
     //for contribution batches
-    if ($this->_closedBatches && 
-        (CRM_Utils_Array::value('batch_id', $this->_params['fields']) || !empty($this->_params['bid_value']))) {
+    if ($this->_closedBatches &&
+      (CRM_Utils_Array::value('batch_id', $this->_params['fields']) || !empty($this->_params['bid_value']))) {
       $this->_from .= "
                  LEFT JOIN  civicrm_entity_batch {$this->_aliases['civicrm_entity_batch']}
                         ON ({$this->_aliases['civicrm_entity_batch']}.entity_id = {$this->_aliases['civicrm_contribution']}.id AND
@@ -600,27 +614,27 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
                       AND emailhonor.is_primary = 1\n";
     }
   }
-  
+
   function tempTable($applyLimit = TRUE) {
     // create temp table with contact ids,contribtuion id,membership id
-    $dropTempTable = "DROP TABLE IF EXISTS civireport_membership_contribution_detail";
+    $dropTempTable = 'DROP TABLE IF EXISTS civireport_membership_contribution_detail';
     CRM_Core_DAO::executeQuery($dropTempTable);
-    
-    $sql = "CREATE TEMPORARY TABLE civireport_membership_contribution_detail
-            (contribution_id int, contact_id int, membership_id int, payment_id int) ENGINE=HEAP";
+
+    $sql = 'CREATE TEMPORARY TABLE civireport_membership_contribution_detail
+            (contribution_id int, contact_id int, membership_id int, payment_id int) ENGINE=HEAP';
     CRM_Core_DAO::executeQuery($sql);
-    
+
     $fillTemp = "
           INSERT INTO civireport_membership_contribution_detail (contribution_id, contact_id, membership_id)
           SELECT contribution.id, contact.id, m.id
-          FROM civicrm_contribution contribution 
+          FROM civicrm_contribution contribution
           INNER JOIN civicrm_contact contact {$this->_aclFrom}
                 ON contact.id = contribution.contact_id AND contribution.is_test = 0
            LEFT JOIN civicrm_membership_payment mp
                 ON contribution.id = mp.contribution_id
            LEFT JOIN civicrm_membership m
                 ON mp.membership_id = m.id AND m.is_test = 0 ";
-    
+
     CRM_Core_DAO::executeQuery($fillTemp);
   }
 
@@ -639,15 +653,15 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
     foreach ($unselectedSectionColumns as $alias => $section) {
       $this->_select .= ", {$section['dbAlias']} as {$alias}";
     }
-    
+
     if ($applyLimit && !CRM_Utils_Array::value('charts', $this->_params)) {
       $this->limit();
     }
-    
+
     $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
     return $sql;
   }
-  
+
   function groupBy() {
     $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_contribution']}.id ";
   }
@@ -655,7 +669,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
   function orderBy() {
     $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id ";
     if (CRM_Utils_Array::value('first_donation_date', $this->_params['fields'])
-        || CRM_Utils_Array::value('first_donation_amount', $this->_params['fields'])) {
+      || CRM_Utils_Array::value('first_donation_amount', $this->_params['fields'])) {
       $this->_orderBy .= ", {$this->_aliases['civicrm_contribution']}.receive_date";
     }
   }
@@ -663,33 +677,28 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
   function statistics(&$rows) {
     $statistics = parent::statistics($rows);
 
-    $select = "
-        SELECT ROUND(AVG({$this->_aliases['civicrm_contribution']}.total_amount), 2) as amt
-        ";
+    $select = "                                                                                                                                                                                                     SELECT COUNT({$this->_aliases['civicrm_contribution']}.total_amount ) as count,                                                                                                                                   SUM( {$this->_aliases['civicrm_contribution']}.total_amount ) as amount,                                                                                                                                   ROUND(AVG({$this->_aliases['civicrm_contribution']}.total_amount), 2) as avg,                                                                                                                              {$this->_aliases['civicrm_contribution']}.currency as currency                                                                                                                                       ";
 
-    $groupBy = " 
-        GROUP BY contribution_id
-        ";
-
-    $sql = "{$select} {$this->_from} {$this->_where} {$groupBy}";
+    $group = "\nGROUP BY {$this->_aliases['civicrm_contribution']}.currency";
+    $sql = "{$select} {$this->_from} {$this->_where} {$group}";
 
     $dao = CRM_Core_DAO::executeQuery($sql);
-    $amount = 0;
     while ($dao->fetch()) {
-      $amount = $amount + $dao->amt;
+      $totalAmount[] = CRM_Utils_Money::format($dao->amount, $dao->currency)."(".$dao->count.")";
+      $average[] =   CRM_Utils_Money::format($dao->avg, $dao->currency);
     }
-    $statistics['counts']['amount'] = array(                                                                                                                                                    
-      'value' => $amount,                                                                                                                                    
-      'title' => 'Total Amount',
-      'type' => CRM_Utils_Type::T_MONEY,
-      );       
+    $statistics['counts']['amount'] = array(
+      'title' => ts('Total Amount'),
+      'value' => implode(',  ', $totalAmount),
+      'type' => CRM_Utils_Type::T_STRING,
+    );
 
     $statistics['counts']['avg'] = array(
-      'value' => $amount/$dao->N,
-      'title' => 'Average',
-      'type' => CRM_Utils_Type::T_MONEY,
-      );
-  
+      'title' => ts('Average'),
+      'value' => implode(',  ', $average),
+      'type' => CRM_Utils_Type::T_STRING,
+    );
+
     return $statistics;
   }
 
@@ -704,7 +713,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
     $checkList = array();
 
     $entryFound         = FALSE;
-    $contributionTypes  = CRM_Contribute_PseudoConstant::contributionType();
+    $contributionTypes  = CRM_Contribute_PseudoConstant::financialType();
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus();
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
     $honorTypes         = CRM_Core_OptionGroup::values('honor_type', FALSE, FALSE, FALSE, NULL, 'label');
@@ -794,7 +803,7 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
 
       if (array_key_exists('civicrm_batch_batch_id', $row)) {
         if ($value = $row['civicrm_batch_batch_id']) {
-          $rows[$rowNum]['civicrm_batch_batch_id'] = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Batch', $value, 'title');
+          $rows[$rowNum]['civicrm_batch_batch_id'] = CRM_Core_DAO::getFieldValue('CRM_Batch_DAO_Batch', $value, 'title');
         }
         $entryFound = TRUE;
       }
@@ -818,13 +827,13 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         CRM_Utils_Array::value('civicrm_contact_sort_name', $rows[$rowNum]) &&
         array_key_exists('civicrm_contact_id', $row)
       ) {
-        $url = CRM_Utils_System::url("civicrm/contact/view",
+        $url = CRM_Utils_System::url('civicrm/contact/view',
           'reset=1&cid=' . $row['civicrm_contact_id'],
           $this->_absoluteUrl
         );
 
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
-        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact Summary for this Contact.");
+        $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts('View Contact Summary for this Contact.');
       }
 
       // convert honoree sort name to link
@@ -833,16 +842,16 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
         array_key_exists('civicrm_contact_honor_id_honor', $row)
       ) {
 
-        $url = CRM_Utils_System::url("civicrm/contact/view",
+        $url = CRM_Utils_System::url('civicrm/contact/view',
           'reset=1&cid=' . $row['civicrm_contact_honor_id_honor'],
           $this->_absoluteUrl
         );
         $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_link'] = $url;
-        $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_hover'] = ts("View Contact Summary for Honoree.");
+        $rows[$rowNum]['civicrm_contact_honor_sort_name_honor_hover'] = ts('View Contact Summary for Honoree.');
       }
 
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_type_id', $row)) {
-        $rows[$rowNum]['civicrm_contribution_contribution_type_id'] = $contributionTypes[$value];
+      if ($value = CRM_Utils_Array::value('civicrm_contribution_financial_type_id', $row)) {
+        $rows[$rowNum]['civicrm_contribution_financial_type_id'] = $contributionTypes[$value];
         $entryFound = TRUE;
       }
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
@@ -860,12 +869,12 @@ class CRM_Report_Form_Member_ContributionDetail extends CRM_Report_Form {
       if (($value = CRM_Utils_Array::value('civicrm_contribution_total_amount_sum', $row)) &&
         CRM_Core_Permission::check('access CiviContribute')
       ) {
-        $url = CRM_Utils_System::url("civicrm/contact/view/contribution",
-          "reset=1&id=" . $row['civicrm_contribution_contribution_id'] . "&cid=" . $row['civicrm_contact_id'] . "&action=view&context=contribution&selectedChild=contribute",
+        $url = CRM_Utils_System::url('civicrm/contact/view/contribution',
+          'reset=1&id=' . $row['civicrm_contribution_contribution_id'] . '&cid=' . $row['civicrm_contact_id'] . '&action=view&context=contribution&selectedChild=contribute',
           $this->_absoluteUrl
         );
         $rows[$rowNum]['civicrm_contribution_total_amount_sum_link'] = $url;
-        $rows[$rowNum]['civicrm_contribution_total_amount_sum_hover'] = ts("View Details of this Contribution.");
+        $rows[$rowNum]['civicrm_contribution_total_amount_sum_hover'] = ts('View Details of this Contribution.');
         $entryFound = TRUE;
       }
 

@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,7 +40,9 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
   protected $_customGroupExtends = array('Pledge', 'Individual');
   protected $_customGroupGroupBy = TRUE;
   protected $_addressField = FALSE;
-  protected $_emailField = FALSE; function __construct() {
+  protected $_emailField = FALSE;
+
+  function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -93,6 +94,10 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
             'no_display' => TRUE,
             'required' => FALSE,
           ),
+          'currency' => array(
+            'required' => TRUE,
+            'no_display' => TRUE,
+          ),
           'amount' =>
           array('title' => ts('Pledge Amount'),
             'required' => TRUE,
@@ -123,9 +128,6 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
           'status_id' =>
           array('title' => ts('Pledge Status'),
           ),
-          'total_paid' =>
-          array('title' => ts('Total Amount Paid'),
-          ),
         ),
         'filters' =>
         array(
@@ -137,6 +139,13 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
           'pledge_amount' =>
           array('title' => ts('Pledged Amount'),
             'operatorType' => CRM_Report_Form::OP_INT,
+          ),
+          'currency' =>
+          array('title' => 'Currency',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
           ),
           'sid' =>
           array(
@@ -162,6 +171,19 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
           ),
         ),
       ),
+      'civicrm_pledge_payment' =>
+      array(
+        'dao' => 'CRM_Pledge_DAO_PledgePayment',
+        'fields' =>
+        array(
+          'total_paid' =>
+            array(
+              'title' => ts('Total Amount Paid'),
+              'type' => CRM_Utils_Type::T_STRING,
+              'dbAlias' => 'sum(pledge_payment_civireport.actual_amount)',
+            ),
+        ),
+      ),
       'civicrm_group' =>
       array(
         'dao' => 'CRM_Contact_DAO_Group',
@@ -181,6 +203,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
     ) + $this->addAddressFields();
 
     $this->_tagFilter = TRUE;
+    $this->_currencyColumn = 'civicrm_pledge_currency';
     parent::__construct();
   }
 
@@ -195,16 +218,16 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
   function from() {
     $this->_from = "
             FROM civicrm_pledge {$this->_aliases['civicrm_pledge']}
-                 LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} 
-                      ON ({$this->_aliases['civicrm_contact']}.id = 
+                 LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']}
+                      ON ({$this->_aliases['civicrm_contact']}.id =
                           {$this->_aliases['civicrm_pledge']}.contact_id )
                  {$this->_aclFrom} ";
 
     // include address field if address column is to be included
     if ($this->_addressField) {
       $this->_from .= "
-                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-                           ON ({$this->_aliases['civicrm_contact']}.id = 
+                 LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+                           ON ({$this->_aliases['civicrm_contact']}.id =
                                {$this->_aliases['civicrm_address']}.contact_id) AND
                                {$this->_aliases['civicrm_address']}.is_primary = 1\n";
     }
@@ -212,10 +235,18 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
     // include email field if email column is to be included
     if ($this->_emailField) {
       $this->_from .= "
-                 LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} 
-                           ON ({$this->_aliases['civicrm_contact']}.id = 
-                               {$this->_aliases['civicrm_email']}.contact_id) AND 
+                 LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
+                           ON ({$this->_aliases['civicrm_contact']}.id =
+                               {$this->_aliases['civicrm_email']}.contact_id) AND
                                {$this->_aliases['civicrm_email']}.is_primary = 1\n";
+    }
+
+    if(CRM_Utils_Array::value('total_paid', $this->_params['fields'])){
+      $this->_from .= "
+        LEFT JOIN civicrm_pledge_payment {$this->_aliases['civicrm_pledge_payment']} ON
+          {$this->_aliases['civicrm_pledge']}.id = {$this->_aliases['civicrm_pledge_payment']}.pledge_id
+          AND {$this->_aliases['civicrm_pledge_payment']}.status_id = 1
+      ";
     }
   }
 
@@ -278,6 +309,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
             ";
 
       $sql = "{$select} {$this->_from} {$this->_where}";
+
       $dao = CRM_Core_DAO::executeQuery($sql);
 
       if ($dao->fetch()) {
@@ -343,7 +375,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
       $this->_where = "WHERE ({$this->_aliases['civicrm_pledge']}.is_test=0 ) ";
     }
     else {
-      $this->_where = "WHERE  ({$this->_aliases['civicrm_pledge']}.is_test=0 )  AND 
+      $this->_where = "WHERE  ({$this->_aliases['civicrm_pledge']}.is_test=0 )  AND
                                       " . implode(' AND ', $clauses);
     }
 
@@ -361,7 +393,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
     $entryFound   = FALSE;
     $checkList    = array();
     $display_flag = $prev_cid = $cid = 0;
-
+    crm_Core_error::Debug('$rows', $rows);
     foreach ($rows as $rowNum => $row) {
 
       // convert display name to links

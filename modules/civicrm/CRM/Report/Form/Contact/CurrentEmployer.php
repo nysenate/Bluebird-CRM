@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,7 +38,11 @@ class CRM_Report_Form_Contact_CurrentEmployer extends CRM_Report_Form {
   protected $_summary = NULL;
 
   protected $_customGroupExtends = array(
-    'Contact', 'Individual'); function __construct() {
+    'Contact', 'Individual');
+
+  public $_drilldownReport = array('contact/detail' => 'Link to Detail Report');
+
+  function __construct() {
 
     $this->_columns = array(
       'civicrm_employer' =>
@@ -75,6 +78,10 @@ class CRM_Report_Form_Contact_CurrentEmployer extends CRM_Report_Form {
           array('title' => ts('Employee Name'),
             'required' => TRUE,
           ),
+      'first_name' => array('title' => ts('First Name'),
+          ),
+      'last_name' => array('title' => ts('Last Name'),
+          ),
           'job_title' =>
           array('title' => ts('Job Title'),
             'default' => TRUE,
@@ -86,6 +93,14 @@ class CRM_Report_Form_Contact_CurrentEmployer extends CRM_Report_Form {
           array(
             'no_display' => TRUE,
             'required' => TRUE,
+          ),
+          'contact_type' =>
+          array(
+            'title' => ts('Contact Type'),
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
           ),
         ),
         'filters' =>
@@ -208,22 +223,22 @@ class CRM_Report_Form_Contact_CurrentEmployer extends CRM_Report_Form {
 
   function from() {
     $this->_from = "
-FROM civicrm_contact {$this->_aliases['civicrm_contact']} 
+FROM civicrm_contact {$this->_aliases['civicrm_contact']}
 
      LEFT JOIN civicrm_contact {$this->_aliases['civicrm_employer']}
           ON {$this->_aliases['civicrm_employer']}.id={$this->_aliases['civicrm_contact']}.employer_id
 
      {$this->_aclFrom}
      LEFT JOIN civicrm_relationship {$this->_aliases['civicrm_relationship']}
-          ON ( {$this->_aliases['civicrm_relationship']}.contact_id_a={$this->_aliases['civicrm_contact']}.id 
-              AND {$this->_aliases['civicrm_relationship']}.contact_id_b={$this->_aliases['civicrm_contact']}.employer_id 
-              AND {$this->_aliases['civicrm_relationship']}.relationship_type_id=4) 
-     LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-          ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id 
+          ON ( {$this->_aliases['civicrm_relationship']}.contact_id_a={$this->_aliases['civicrm_contact']}.id
+              AND {$this->_aliases['civicrm_relationship']}.contact_id_b={$this->_aliases['civicrm_contact']}.employer_id
+              AND {$this->_aliases['civicrm_relationship']}.relationship_type_id=4)
+     LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+          ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id
              AND {$this->_aliases['civicrm_address']}.is_primary = 1 )
- 
-     LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
-          ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id 
+
+     LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}
+          ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id
              AND {$this->_aliases['civicrm_email']}.is_primary = 1) ";
   }
 
@@ -299,7 +314,7 @@ FROM civicrm_contact {$this->_aliases['civicrm_contact']}
       ) {
         $url = CRM_Report_Utils_Report::getNextUrl('contact/detail',
           'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_employer_id'],
-          $this->_absoluteUrl, $this->_id
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $rows[$rowNum]['civicrm_employer_organization_name_link'] = $url;
         $entryFound = TRUE;
@@ -324,7 +339,7 @@ FROM civicrm_contact {$this->_aliases['civicrm_contact']}
       //handle gender
       if (array_key_exists('civicrm_contact_gender_id', $row)) {
         if ($value = $row['civicrm_contact_gender_id']) {
-          $gender = CRM_Core_PseudoConstant::gender();
+          $gender = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
           $rows[$rowNum]['civicrm_contact_gender_id'] = $gender[$value];
         }
         $entryFound = TRUE;
@@ -336,7 +351,7 @@ FROM civicrm_contact {$this->_aliases['civicrm_contact']}
       ) {
         $url = CRM_Report_Utils_Report::getNextUrl('contact/detail',
           'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-          $this->_absoluteUrl, $this->_id
+          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
         );
         $rows[$rowNum]['civicrm_contact_display_name_link'] = $url;
         $entryFound = TRUE;

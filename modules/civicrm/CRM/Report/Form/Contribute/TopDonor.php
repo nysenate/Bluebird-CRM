@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,11 +37,15 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
 
   protected $_summary = NULL;
 
+  public $_drilldownReport = array('contribute/detail' => 'Link to Detail Report');
+
   protected $_charts = array(
     '' => 'Tabular',
     'barChart' => 'Bar Chart',
     'pieChart' => 'Pie Chart',
-  ); function __construct() {
+  );
+
+  function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -58,6 +61,20 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
           array('title' => ts('Contact Name'),
             'required' => TRUE,
             'no_repeat' => TRUE,
+          ),
+          'first_name' => array(
+            'title' => ts('First Name'),
+          ),
+          'last_name' => array(
+            'title' => ts('Last Name'),
+          ),
+          'contact_type' =>
+          array(
+            'title' => ts('Contact Type'),
+          ),
+          'contact_sub_type' =>
+          array(
+            'title' => ts('Contact SubType'),
           ),
         ),
       ),
@@ -75,6 +92,10 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
               'avg' => ts('Average'),
             ),
           ),
+          'currency' =>
+          array('required' => TRUE,
+             'no_display' => TRUE,
+          ),
         ),
         'filters' =>
         array(
@@ -83,17 +104,23 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             'default' => 'this.year',
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
+          'currency' =>
+          array('title' => 'Currency',
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
+            'default' => NULL,
+            'type' => CRM_Utils_Type::T_STRING,
+            ),
           'total_range' =>
           array('title' => ts('Show no. of Top Donors'),
             'type' => CRM_Utils_Type::T_INT,
             'default_op' => 'eq',
           ),
-          'contribution_type_id' =>
-          array(
-            'name' => 'contribution_type_id',
-            'title' => ts('Contribution Type'),
+          'financial_type_id' =>
+          array('name' => 'financial_type_id',
+            'title' => ts('Financial Type'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::contributionType(),
+            'options' => CRM_Contribute_PseudoConstant::financialType() ,
           ),
           'contribution_status_id' =>
           array('title' => ts('Donation Status'),
@@ -102,6 +129,33 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             'default' => array(1),
           ),
         ),
+      ),
+  'civicrm_email' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Email',
+        'fields' =>
+        array(
+          'email' =>
+          array('title' => ts('Email'),
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'email-fields',
+      ),
+
+      'civicrm_phone' =>
+      array(
+        'dao' => 'CRM_Core_DAO_Phone',
+        'fields' =>
+        array(
+          'phone' =>
+          array('title' => ts('Phone'),
+            'default' => TRUE,
+            'no_repeat' => TRUE,
+          ),
+        ),
+        'grouping' => 'phone-fields',
       ),
       'civicrm_group' =>
       array(
@@ -122,6 +176,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     );
 
     $this->_tagFilter = TRUE;
+    $this->_currencyColumn = 'civicrm_contribution_currency';
     parent::__construct();
   }
 
@@ -182,8 +237,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     $this->_select = " SELECT * FROM ( SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = array();
 
     $op = CRM_Utils_Array::value('total_range_op', $fields);
@@ -203,9 +257,15 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   function from() {
     $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
-        	 INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']} 
-		             ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0
-        ";
+            INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
+                 ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0
+             LEFT  JOIN civicrm_email  {$this->_aliases['civicrm_email']}
+                         ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id
+                         AND {$this->_aliases['civicrm_email']}.is_primary = 1
+             LEFT  JOIN civicrm_phone  {$this->_aliases['civicrm_phone']}
+                         ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
+                            {$this->_aliases['civicrm_phone']}.is_primary = 1
+  ";
   }
 
   function where() {
@@ -261,7 +321,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   }
 
   function groupBy() {
-    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id ";
+    $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_contribution']}.currency";
   }
 
   function postProcess() {
@@ -286,7 +346,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     $setVariable = " SET @rows:=0, @rank=0 ";
     CRM_Core_DAO::singleValueQuery($setVariable);
 
-    $sql = " {$this->_select} {$this->_from}  {$this->_where} {$this->_groupBy} 
+    $sql = " {$this->_select} {$this->_from}  {$this->_where} {$this->_groupBy}
                      ORDER BY civicrm_contribution_total_amount_sum DESC
                  ) as abc {$this->_outerCluase} $this->_limit
                ";
@@ -312,8 +372,8 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   function add2group($groupID) {
     if (is_numeric($groupID)) {
 
-      $sql = " 
-{$this->_select} {$this->_from}  {$this->_where} {$this->_groupBy} 
+      $sql = "
+{$this->_select} {$this->_from}  {$this->_where} {$this->_groupBy}
 ORDER BY civicrm_contribution_total_amount_sum DESC
 ) as abc {$this->_outerCluase}";
       $dao = CRM_Core_DAO::executeQuery($sql);
@@ -325,7 +385,7 @@ ORDER BY civicrm_contribution_total_amount_sum DESC
       }
 
       CRM_Contact_BAO_GroupContact::addContactsToGroup($contact_ids, $groupID);
-      CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."));
+      CRM_Core_Session::setStatus(ts("Listed contact(s) have been added to the selected group."), ts('Contacts Added'), 'success');
     }
   }
 
@@ -365,11 +425,12 @@ ORDER BY civicrm_contribution_total_amount_sum DESC
         $rows[$rowNum]['civicrm_donor_rank'] = $rank++;
         // convert display name to links
         if (array_key_exists('civicrm_contact_display_name', $row) &&
-          array_key_exists('civicrm_contact_id', $row)
+          array_key_exists('civicrm_contact_id', $row) &&
+            CRM_Utils_Array::value('civicrm_contribution_currency', $row)
         ) {
           $url = CRM_Report_Utils_Report::getNextUrl('contribute/detail',
-            'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
-            $this->_absoluteUrl, $this->_id
+            'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'] . "&currency_value=" . $row['civicrm_contribution_currency'],
+            $this->_absoluteUrl, $this->_id, $this->_drilldownReport
           );
           $rows[$rowNum]['civicrm_contact_display_name_link'] = $url;
           $entryFound = TRUE;
