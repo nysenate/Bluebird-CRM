@@ -1742,3 +1742,12 @@ div#contact-summary div#contactTopBar {
 #crm-container #tagGroup #crmasmContainer0 {
   margin-top: 20px;
 }
+
+/* NYSS#7095 */
+#quickSearch input[type=text]::-ms-clear {
+    display: none;
+}
+#sortable_results_filter input[type=text]::-ms-clear {
+    display: none;
+}
+/* END NYSS#7095 */
