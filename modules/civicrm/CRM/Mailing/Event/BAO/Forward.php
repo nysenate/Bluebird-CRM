@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,7 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
   /**
    * Create a new forward event, create a new contact if necessary
    */
-  static
-  function &forward($job_id, $queue_id, $hash, $forward_email, $fromEmail = NULL, $comment = NULL) {
+  static function &forward($job_id, $queue_id, $hash, $forward_email, $fromEmail = NULL, $comment = NULL) {
     $q = CRM_Mailing_Event_BAO_Queue::verify($job_id, $queue_id, $hash);
 
     $successfulForward = FALSE;
@@ -56,13 +55,13 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
 
     /* Find the email address/contact, if it exists */
 
-    $contact    = CRM_Contact_BAO_Contact::getTableName();
-    $location   = CRM_Core_BAO_Location::getTableName();
-    $email      = CRM_Core_BAO_Email::getTableName();
+    $contact = CRM_Contact_BAO_Contact::getTableName();
+    $location = CRM_Core_BAO_Location::getTableName();
+    $email = CRM_Core_BAO_Email::getTableName();
     $queueTable = CRM_Mailing_Event_BAO_Queue::getTableName();
-    $job        = CRM_Mailing_BAO_Job::getTableName();
-    $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
-    $forward    = self::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
+    $mailing = CRM_Mailing_BAO_Mailing::getTableName();
+    $forward = self::getTableName();
 
     $domain = CRM_Core_BAO_Domain::getDomain();
 
@@ -118,7 +117,7 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
         'email' => $forward_email,
         'location_type_id' => $locationType->id,
       );
-      require_once 'api/v3/DeprecatedUtils.php';
+      require_once 'CRM/Utils/DeprecatedUtils.php';
       _civicrm_api3_deprecated_add_formatted_param($value, $formatted);
       $formatted['onDuplicate'] = CRM_Import_Parser::DUPLICATE_SKIP;
       $formatted['fixAddress'] = TRUE;
@@ -153,7 +152,7 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
     $forward->save();
 
     $dao->reset();
-    $dao->query("   SELECT  $job.mailing_id as mailing_id 
+    $dao->query("   SELECT  $job.mailing_id as mailing_id
                         FROM    $job
                         WHERE   $job.id = " .
       CRM_Utils_Type::escape($job_id, 'Integer')
@@ -164,11 +163,11 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
     $mailing_obj->find(TRUE);
 
     $config = CRM_Core_Config::singleton();
-    $mailer = &$config->getMailer();
+    $mailer = $config->getMailer();
 
-    $recipient   = NULL;
+    $recipient = NULL;
     $attachments = NULL;
-    $message     = &$mailing_obj->compose($job_id, $queue->id, $queue->hash,
+    $message = $mailing_obj->compose($job_id, $queue->id, $queue->hash,
       $queue->contact_id, $forward_email, $recipient, FALSE, NULL, $attachments, TRUE, $fromEmail
     );
     //append comment if added while forwarding.
@@ -233,9 +232,9 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
     $dao = new CRM_Core_DAO();
 
     $forward = self::getTableName();
-    $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
 
     $query = "
             SELECT      COUNT($forward.id) as forward
@@ -288,11 +287,11 @@ class CRM_Mailing_Event_BAO_Forward extends CRM_Mailing_Event_DAO_Forward {
     $dao = new CRM_Core_Dao();
 
     $forward = self::getTableName();
-    $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact = CRM_Contact_BAO_Contact::getTableName();
-    $email   = CRM_Core_BAO_Email::getTableName();
+    $email = CRM_Core_BAO_Email::getTableName();
 
     $query = "
             SELECT      $contact.display_name as from_name,

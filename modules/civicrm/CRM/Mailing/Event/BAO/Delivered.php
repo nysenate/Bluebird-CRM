@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -92,16 +92,14 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
    * @access public
    * @static
    */
-  public static function getTotalCount($mailing_id, $job_id = NULL,
-    $is_distinct = FALSE
-  ) {
+  public static function getTotalCount($mailing_id, $job_id = NULL, $is_distinct = FALSE) {
     $dao = new CRM_Core_DAO();
 
     $delivered = self::getTableName();
     $bounce    = CRM_Mailing_Event_BAO_Bounce::getTableName();
     $queue     = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing   = CRM_Mailing_BAO_Mailing::getTableName();
-    $job       = CRM_Mailing_BAO_Job::getTableName();
+    $job       = CRM_Mailing_BAO_MailingJob::getTableName();
 
     $query = "
             SELECT      COUNT($delivered.id) as delivered
@@ -160,7 +158,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
     $bounce    = CRM_Mailing_Event_BAO_Bounce::getTableName();
     $queue     = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing   = CRM_Mailing_BAO_Mailing::getTableName();
-    $job       = CRM_Mailing_BAO_Job::getTableName();
+    $job       = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact   = CRM_Contact_BAO_Contact::getTableName();
     $email     = CRM_Core_BAO_Email::getTableName();
 
@@ -246,5 +244,60 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
       CRM_Core_DAO::executeQuery($sql);
     }
   }
+
+  /**
+   * Since we never no when a mailing really bounces (hard bounce == NOW, soft bounce == NOW to NOW + 3 days?)
+   * we cannot decide when an email address last got an email.
+   *
+   * We want to avoid putting on hold an email address which had a few bounces (mbox full) and then got quite a few
+   * successfull deliveries before starting the bounce again. The current code does not set the resetDate and hence
+   * the above scenario results in the email being put on hold
+   *
+   * This function rectifies that by considering all non-test mailing jobs which have completed between $minDays and $maxDays
+   * and setting the resetDate to the date that an email was delivered
+   *
+   * @param integer $minDays consider mailings that were completed at least $minDays ago
+   * @param integer $maxDays consider mailings that were completed not more than $maxDays ago
+   *
+   * @return void
+   * @static
+   **/
+  public static function updateEmailResetDate($minDays = 3, $maxDays = 7) {
+    $dao = new CRM_Core_Dao();
+
+    $query = "
+CREATE TEMPORARY TABLE civicrm_email_temp_values (
+  id           int primary key,
+  reset_date   datetime
+) ENGINE = HEAP;
+";
+    CRM_Core_DAO::executeQuery($query);
+
+    $query = "
+            INSERT INTO civicrm_email_temp_values (id, reset_date)
+            SELECT      civicrm_email.id as email_id,
+                        max(civicrm_mailing_event_delivered.time_stamp) as reset_date
+            FROM        civicrm_mailing_event_queue
+            INNER JOIN  civicrm_email ON  civicrm_mailing_event_queue.email_id = civicrm_email.id
+            INNER JOIN  civicrm_mailing_event_delivered ON civicrm_mailing_event_delivered.event_queue_id = civicrm_mailing_event_queue.id
+            LEFT JOIN   civicrm_mailing_event_bounce ON civicrm_mailing_event_bounce.event_queue_id = civicrm_mailing_event_queue.id
+            INNER JOIN  civicrm_mailing_job ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id AND civicrm_mailing_job.is_test = 0
+            WHERE       civicrm_mailing_event_bounce.id IS NULL
+              AND       civicrm_mailing_job.status = 'Complete'
+              AND       civicrm_mailing_job.end_date BETWEEN DATE_SUB(NOW(), INTERVAL $maxDays day) AND DATE_SUB(NOW(), INTERVAL $minDays day)
+              AND       (civicrm_email.reset_date IS NULL OR civicrm_email.reset_date < civicrm_mailing_job.start_date)
+            GROUP BY    civicrm_email.id
+         ";
+
+    $query = "
+UPDATE     civicrm_email e
+INNER JOIN civicrm_email_temp_values et ON e.id = et.id
+SET        e.on_hold = 0,
+           e.hold_date = NULL,
+           e.reset_date = et.reset_date
+";
+    CRM_Core_DAO::executeQuery($query);
+  }
+
 }
 

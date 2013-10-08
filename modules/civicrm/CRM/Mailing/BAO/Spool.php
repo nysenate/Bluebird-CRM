@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -60,13 +60,63 @@ class CRM_Mailing_BAO_Spool extends CRM_Mailing_DAO_Spool {
    *               failure.
    * @access public
    */
-  function send($recipient, $headers, $body, $job_id) {
-
+  function send($recipient, $headers, $body, $job_id = null) {
     $headerStr = array();
     foreach ($headers as $name => $value) {
       $headerStr[] = "$name: $value";
     }
     $headerStr = implode("\n", $headerStr);
+
+    if ( is_null( $job_id ) ) {
+      // This is not a bulk mailing. Create a dummy job for it.
+
+      $session = CRM_Core_Session::singleton();
+      $params = array();
+      $params['created_id'] = $session->get('userID');
+      $params['created_date'] = date('YmdHis');
+      $params['scheduled_id'] = $params['created_id'];
+      $params['scheduled_date'] = $params['created_date'];
+      $params['approver_id'] = $params['created_id'];
+      $params['approval_date'] = $params['created_date'];
+      $params['approval_status_id'] = CRM_Core_OptionGroup::getValue('mail_approval_status', 'Approved', 'name');
+      $params['is_completed'] = 1;
+      $params['is_archived'] = 1;
+      $params['body_html'] = htmlspecialchars( $headerStr ) . "\n\n" . $body;
+      $params['subject'] = $headers['Subject'];
+      $params['name'] = $headers['Subject'];
+      $ids = array();
+      $mailing = CRM_Mailing_BAO_Mailing::create($params, $ids);
+
+      if ( empty( $mailing ) || is_a( $mailing, 'CRM_Core_Error' ) ) {
+        return PEAR::raiseError( 'Unable to create spooled mailing.' );
+      }
+
+      $job = new CRM_Mailing_BAO_MailingJob();
+      $job->is_test = 0; // if set to 1 it doesn't show in the UI
+      $job->status = 'Complete';
+      $job->scheduled_date = CRM_Utils_Date::processDate(date('Y-m-d'), date('H:i:s'));
+      $job->start_date = $job->scheduled_date;
+      $job->end_date = $job->scheduled_date;
+      $job->mailing_id = $mailing->id;
+      $job->save();
+      $job_id = $job->id; // need this for parent_id below
+
+      $job = new CRM_Mailing_BAO_MailingJob();
+      $job->is_test = 0;
+      $job->status = 'Complete';
+      $job->scheduled_date = CRM_Utils_Date::processDate(date('Y-m-d'), date('H:i:s'));
+      $job->start_date = $job->scheduled_date;
+      $job->end_date = $job->scheduled_date;
+      $job->mailing_id = $mailing->id;
+      $job->parent_id = $job_id;
+      $job->job_type = 'child';
+      $job->save();
+      $job_id = $job->id; // this is the one we want for the spool
+
+      if ( is_array( $recipient ) ) {
+        $recipient = implode( ';', $recipient );
+      }
+    }
 
     $session = CRM_Core_Session::singleton();
 

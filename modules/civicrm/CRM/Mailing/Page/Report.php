@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,7 +44,8 @@ class CRM_Mailing_Page_Report extends CRM_Core_Page_Basic {
    * Get BAO Name
    *
    * @return string Classname of BAO
-   */ function getBAOName() {
+   */
+  function getBAOName() {
     return 'CRM_Mailing_BAO_Mailing';
   }
 
@@ -101,6 +102,10 @@ class CRM_Mailing_Page_Report extends CRM_Core_Page_Basic {
       );
       $backUrlTitle = ts('Back to Activity');
     }
+    elseif ($context == 'mailing') {
+      $backUrl = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$cid}&selectedChild=mailing");
+      $backUrlTitle = ts('Back to Mailing');
+    }
     else {
       $backUrl = CRM_Utils_System::url('civicrm/mailing', 'reset=1');
       $backUrlTitle = ts('Back to CiviMail');
@@ -113,7 +118,7 @@ class CRM_Mailing_Page_Report extends CRM_Core_Page_Basic {
         array(1 => $report['mailing']['name'])
       ));
 
-    return parent::run();
+    return CRM_Core_Page::run();
   }
 }
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -88,18 +88,16 @@ class CRM_Mailing_BAO_BouncePattern extends CRM_Mailing_DAO_BouncePattern {
     if (self::$_patterns == NULL) {
       self::buildPatterns();
     }
+
     foreach (self::$_patterns as $type => $re) {
       if (preg_match($re, $message, $matches)) {
         $bounce = array(
           'bounce_type_id' => $type,
           'bounce_reason' => $message,
         );
-
         return $bounce;
       }
     }
-
-
 
     $bounce = array(
       'bounce_type_id' => NULL,
