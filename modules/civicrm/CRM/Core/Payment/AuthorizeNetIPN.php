@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -55,7 +55,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       // load post ids in $ids
       $this->getIDs($ids, $input);
 
-      $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_PaymentProcessorType',
+      $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_PaymentProcessorType',
         'AuthNet', 'id', 'name'
       );
 
@@ -111,7 +111,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       // create a contribution and then get it processed
       $contribution = new CRM_Contribute_BAO_Contribution();
       $contribution->contact_id = $ids['contact'];
-      $contribution->contribution_type_id = $objects['contributionType']->id;
+      $contribution->financial_type_id  = $objects['contributionType']->id;
       $contribution->contribution_page_id = $ids['contributionPage'];
       $contribution->contribution_recur_id = $ids['contributionRecur'];
       $contribution->receive_date = $now;
@@ -119,6 +119,10 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       $contribution->payment_instrument_id = $objects['contribution']->payment_instrument_id;
       $contribution->amount_level = $objects['contribution']->amount_level;
       $contribution->address_id = $objects['contribution']->address_id;
+      $contribution->honor_contact_id = $objects['contribution']->honor_contact_id;
+      $contribution->honor_type_id = $objects['contribution']->honor_type_id;
+      $contribution->campaign_id = $objects['contribution']->campaign_id;
+
       $objects['contribution'] = &$contribution;
     }
     $objects['contribution']->invoice_id = md5(uniqid(rand(), TRUE));
@@ -240,16 +244,24 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
 
     // joining with contribution table for extra checks
     $sql = "
-    SELECT cr.id
+    SELECT cr.id, cr.contact_id
       FROM civicrm_contribution_recur cr
 INNER JOIN civicrm_contribution co ON co.contribution_recur_id = cr.id
      WHERE cr.processor_id = '{$input['subscription_id']}' AND
            (cr.contact_id = {$ids['contact']} OR co.id = {$ids['contribution']})
      LIMIT 1";
-    $ids['contributionRecur'] = CRM_Core_DAO::singleValueQuery($sql);
+    $contRecur = CRM_Core_DAO::executeQuery($sql);
+    $contRecur->fetch();
+    $ids['contributionRecur'] = $contRecur->id;
+    if($ids['contact_id'] != $contRecur->contact_id){
+      CRM_Core_Error::debug_log_message("Recurring contribution appears to have been re-assigned from id {$ids['contact_id']} to {$contRecur->contact_id}
+        Continuing with {$contRecur->contact_id}
+      ");
+      $ids['contact_id'] = $contRecur->contact_id;
+    }
     if (!$ids['contributionRecur']) {
-      CRM_Core_Error::debug_log_message("Could not find contributionRecur id");
-      echo "Failure: Missing Parameter<p>";
+      CRM_Core_Error::debug_log_message("Could not find contributionRecur id: ".print_r($input, TRUE));
+      echo "Failure: Could not find contributionRecur<p>";
       exit();
     }
 
@@ -280,14 +292,15 @@ INNER JOIN civicrm_membership_payment mp ON m.id = mp.membership_id AND mp.contr
     }
   }
 
-  static
-  function retrieve($name, $type, $abort = TRUE, $default = NULL, $location = 'POST') {
+  static function retrieve($name, $type, $abort = TRUE, $default = NULL, $location = 'POST') {
     static $store = NULL;
     $value = CRM_Utils_Request::retrieve($name, $type, $store,
       FALSE, $default, $location
     );
     if ($abort && $value === NULL) {
       CRM_Core_Error::debug_log_message("Could not find an entry for $name in $location");
+      CRM_Core_Error::debug_var('POST', $_POST);
+      CRM_Core_Error::debug_var('REQUEST', $_REQUEST);
       echo "Failure: Missing Parameter<p>";
       exit();
     }
@@ -295,7 +308,7 @@ INNER JOIN civicrm_membership_payment mp ON m.id = mp.membership_id AND mp.contr
   }
 
   function checkMD5($ids, $input) {
-    $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($ids['paymentProcessor'],
+    $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($ids['paymentProcessor'],
       $input['is_test'] ? 'test' : 'live'
     );
     $paymentObject = CRM_Core_Payment::singleton($input['is_test'] ? 'test' : 'live', $paymentProcessor);

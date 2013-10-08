@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * by every scheduled job (cron task) in CiviCRM.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -46,10 +46,10 @@ class CRM_Core_ScheduledJob {
 
   /*
      * Class constructor
-     * 
+     *
      * @param string $namespace namespace prefix for component's files
      * @access public
-     * 
+     *
      */
 
   public function __construct($params) {
@@ -68,10 +68,10 @@ class CRM_Core_ScheduledJob {
     $this->apiParams = array('version' => $this->version);
 
     if (!empty($this->parameters)) {
-      $lines = split("\n", $this->parameters);
+      $lines = explode("\n", $this->parameters);
 
       foreach ($lines as $line) {
-        $pair = split("=", $line);
+        $pair = explode("=", $line);
         if (empty($pair[0]) || empty($pair[1])) {
           $this->remarks[] .= 'Malformed parameters!';
           break;

@@ -14,7 +14,7 @@
      <path>civicrm/admin/custom/group/field</path>
      <title>Custom Data Fields</title>
      <page_callback>CRM_Custom_Page_Field</page_callback>
-     <skipBreadcrumb>true</skipBreadcrumb> 
+     <skipBreadcrumb>true</skipBreadcrumb>
      <weight>11</weight>
   </item>
   <item>
@@ -55,7 +55,7 @@
      <path>civicrm/admin/uf/group/field</path>
      <title>CiviCRM Profile Fields</title>
      <page_callback>CRM_UF_Page_Field</page_callback>
-     <skipBreadcrumb>true</skipBreadcrumb> 
+     <skipBreadcrumb>true</skipBreadcrumb>
      <weight>21</weight>
   </item>
   <item>
@@ -87,7 +87,7 @@
      <title>AdditionalInfo Form</title>
      <page_callback>CRM_UF_Form_AdvanceSetting</page_callback>
      <weight>0</weight>
-  </item>  
+  </item>
   <item>
      <path>civicrm/admin/tag</path>
      <title>Tags (Categories)</title>
@@ -339,7 +339,7 @@
      <adminGroup>Communications</adminGroup>
      <icon>admin/small/01.png</icon>
      <weight>80</weight>
-  </item> 
+  </item>
   <item>
      <path>civicrm/admin/options/postal_greeting</path>
      <title>Postal Greeting Formats</title>
@@ -403,6 +403,13 @@
      <icon>admin/small/03.png</icon>
      <weight>10</weight>
   </item>
+    <item>
+     <path>civicrm/admin/access/wp-permissions</path>
+     <title>WordPress Access Control</title>
+     <desc>Grant access to CiviCRM components and other CiviCRM permissions.</desc>
+     <page_callback>CRM_ACL_Form_WordPress_Permissions</page_callback>
+     <weight>10</weight>
+  </item>
   <item>
      <path>civicrm/admin/synchUser</path>
      <title>Synchronize Users to Contacts</title>
@@ -425,7 +432,7 @@
   <item>
      <path>civicrm/admin/setting/component</path>
      <title>Enable CiviCRM Components</title>
-	 <desc>Enable or disable components (e.g. CiviEvent, CiviMember, etc.) for your site based on the features you need. We recommend disabling any components not being used in order to simplify the user interface. You can easily re-enable components at any time from this screen.</desc>
+   <desc>Enable or disable components (e.g. CiviEvent, CiviMember, etc.) for your site based on the features you need. We recommend disabling any components not being used in order to simplify the user interface. You can easily re-enable components at any time from this screen.</desc>
      <page_callback>CRM_Admin_Form_Setting_Component</page_callback>
      <adminGroup>System Settings</adminGroup>
      <icon>admin/small/36.png</icon>
@@ -440,13 +447,13 @@
      <adminGroup>System Settings</adminGroup>
      <icon>admin/small/price_sets.png</icon>
      <weight>120</weight>
-  </item>  
+  </item>
   <item>
      <path>civicrm/admin/extensions/upgrade</path>
      <title>Database Upgrades</title>
      <page_callback>CRM_Admin_Page_ExtensionsUpgrade</page_callback>
      <access_arguments>administer CiviCRM</access_arguments>
-  </item>  
+  </item>
   <item>
      <path>civicrm/admin/setting/smtp</path>
      <title>Outbound Email Settings</title>
@@ -474,8 +481,8 @@
   </item>
   <item>
      <path>civicrm/admin/setting/misc</path>
-     <title>Undelete, Logging and ReCAPTCHA</title>
-	 <desc>Enable undelete/move to trash feature, detailed change logging, ReCAPTCHA to protect forms.</desc>
+     <title>Misc (Undelete, PDFs, Limits, Logging, Captcha, etc.)</title>
+   <desc>Enable undelete/move to trash feature, detailed change logging, ReCAPTCHA to protect forms.</desc>
      <page_callback>CRM_Admin_Form_Setting_Miscellaneous</page_callback>
      <adminGroup>System Settings</adminGroup>
      <icon>admin/small/36.png</icon>
@@ -605,15 +612,15 @@
      <title>Scheduled Jobs Log</title>
      <desc>Browsing the log of periodially running tasks.</desc>
      <page_callback>CRM_Admin_Page_JobLog</page_callback>
-     <access_arguments>access CiviCRM,administer CiviCRM</access_arguments>     
+     <access_arguments>access CiviCRM,administer CiviCRM</access_arguments>
      <adminGroup>Manage</adminGroup>
      <icon>admin/small/13.png</icon>
      <weight>1380</weight>
-  </item>    
+  </item>
   <item>
      <path>civicrm/admin/options/grant_type</path>
      <title>Grant Types</title>
-     <desc>List of types which can be assigned to Grants. (Enable CiviGrant from Global Settings - Enable Components if you want to track grants.)</desc>
+     <desc>List of types which can be assigned to Grants. (Enable CiviGrant from Administer > Systme Settings > Enable Components if you want to track grants.)</desc>
      <path_arguments>group=grant_type</path_arguments>
      <page_callback>CRM_Admin_Page_Options</page_callback>
      <adminGroup>Option Lists</adminGroup>
@@ -755,5 +762,16 @@
      <path>civicrm/sms/callback</path>
      <page_callback>CRM_SMS_Page_Callback</page_callback>
      <access_callback>1</access_callback>
+  </item>
+  <item>
+    <path>civicrm/admin/badgelayout</path>
+    <title>Badge Layout</title>
+    <page_callback>CRM_Badge_Page_Layout</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/admin/badgelayout/add</path>
+    <page_callback>CRM_Badge_Form_Layout</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
   </item>
 </menu>

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -70,8 +70,7 @@ class CRM_Core_OptionValue {
    * @access public
    * @static
    */
-  static
-  function getRows($groupParams, $links, $orderBy = 'weight') {
+  static function getRows($groupParams, $links, $orderBy = 'weight') {
     $optionValue = array();
 
     $optionGroupID = NULL;
@@ -178,8 +177,7 @@ class CRM_Core_OptionValue {
    * @access public
    * @static
    */
-  static
-  function addOptionValue(&$params, &$groupParams, &$action, &$optionValueID) {
+  static function addOptionValue(&$params, &$groupParams, &$action, &$optionValueID) {
     $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
     // checking if the group name with the given id or name (in $groupParams) exists
     if (!empty($groupParams)) {
@@ -203,7 +201,7 @@ class CRM_Core_OptionValue {
         $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue', $optionValueID, 'weight', 'id');
       }
       $fieldValues = array('option_group_id' => $optionGroupID);
-      $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_OptionValue', $oldWeight, $params['weight'], $fieldValues);
+      $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_OptionValue', $oldWeight, CRM_Utils_Array::value('weight', $params), $fieldValues);
     }
     $params['option_group_id'] = $optionGroupID;
 
@@ -246,10 +244,8 @@ class CRM_Core_OptionValue {
    * @access public
    * @static
    */
-  static
-  function optionExists($value, $daoName, $daoID, $optionGroupID, $fieldName = 'name') {
-    require_once (str_replace('_', DIRECTORY_SEPARATOR, $daoName) . ".php");
-    eval('$object = new ' . $daoName . '( );');
+  static function optionExists($value, $daoName, $daoID, $optionGroupID, $fieldName = 'name') {
+    $object = new $daoName();
     $object->$fieldName = $value;
     $object->option_group_id = $optionGroupID;
 
@@ -274,8 +270,7 @@ class CRM_Core_OptionValue {
    * @access public
    * @static
    */
-  static
-  function getFields($mode = '', $contactType = 'Individual') {
+  static function getFields($mode = '', $contactType = 'Individual') {
     $key = "$mode $contactType";
     if (empty(self::$_fields[$key]) || !self::$_fields[$key]) {
       self::$_fields[$key] = array();
@@ -302,13 +297,15 @@ class CRM_Core_OptionValue {
         if (in_array($contactType, array(
           'Individual', 'Household', 'Organization', 'All'))) {
           $nameTitle = array(
-            'addressee' => array('name' => 'addressee',
+            'addressee' => array(
+              'name' => 'addressee',
               'title' => ts('Addressee'),
               'headerPattern' => '/^addressee$/i',
             ),
           );
           $title = array(
-            'email_greeting' => array('name' => 'email_greeting',
+            'email_greeting' => array(
+              'name' => 'email_greeting',
               'title' => ts('Email Greeting'),
               'headerPattern' => '/^email_greeting$/i',
             ),
@@ -320,35 +317,12 @@ class CRM_Core_OptionValue {
           );
           $nameTitle = array_merge($nameTitle, $title);
         }
-
-        if ($contactType == 'Individual' || $contactType == 'All') {
-          $title = array(
-            'gender' => array('name' => 'gender',
-              'title' => ts('Gender'),
-              'headerPattern' => '/^gender$/i',
-            ),
-            'individual_prefix' => array(
-              'name' => 'individual_prefix',
-              'title' => ts('Individual Prefix'),
-              'headerPattern' => '/^(prefix|title)/i',
-            ),
-            'individual_suffix' => array(
-              'name' => 'individual_suffix',
-              'title' => ts('Individual Suffix'),
-              'headerPattern' => '/^suffix$/i',
-            ),
-          );
-          $nameTitle = array_merge($nameTitle, $title);
-        }
       }
 
       if (is_array($nameTitle)) {
         foreach ($nameTitle as $name => $attribs) {
           self::$_fields[$key][$name] = $optionName;
           list($tableName, $fieldName) = explode('.', $optionName['where']);
-          // not sure of this fix, so keeping it commented for now
-          // this is from CRM-1541
-          // self::$_fields[$mode][$name]['where'] = $name . '.' . $fieldName;
           self::$_fields[$key][$name]['where'] = "{$name}.label";
           foreach ($attribs as $k => $val) {
             self::$_fields[$key][$name][$k] = $val;
@@ -366,12 +340,14 @@ class CRM_Core_OptionValue {
    * @return void
    * @access public
    */
-  static
-  function select(&$query) {
+  static function select(&$query) {
     if (!empty($query->_params) || !empty($query->_returnProperties)) {
       $field = self::getFields();
-      foreach ($field as $name => $title) {
-        list($tableName, $fieldName) = explode('.', $title['where']);
+      foreach ($field as $name => $values) {
+        if (CRM_Utils_Array::value('pseudoconstant', $values)) {
+          continue;
+        }
+        list($tableName, $fieldName) = explode('.', $values['where']);
         if (CRM_Utils_Array::value($name, $query->_returnProperties)) {
           $query->_select["{$name}_id"] = "{$name}.value as {$name}_id";
           $query->_element["{$name}_id"] = 1;
@@ -399,8 +375,7 @@ class CRM_Core_OptionValue {
    * @access public
    * @static
    */
-  static
-  function getValues($groupParams, &$values, $orderBy = 'weight', $isActive = FALSE) {
+  static function getValues($groupParams, &$values, $orderBy = 'weight', $isActive = FALSE) {
     if (empty($groupParams)) {
       return NULL;
     }

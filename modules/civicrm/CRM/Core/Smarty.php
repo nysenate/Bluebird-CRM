@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -112,7 +112,12 @@ class CRM_Core_Smarty extends Smarty {
 
     $customPluginsDir = NULL;
     if (isset($config->customPHPPathDir)) {
-      $customPluginsDir = $config->customPHPPathDir . DIRECTORY_SEPARATOR . 'CRM' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Smarty' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR;
+      $customPluginsDir =
+        $config->customPHPPathDir . DIRECTORY_SEPARATOR .
+        'CRM'                     . DIRECTORY_SEPARATOR .
+        'Core'                    . DIRECTORY_SEPARATOR .
+        'Smarty'                  . DIRECTORY_SEPARATOR .
+        'plugins'                 . DIRECTORY_SEPARATOR;
       if (!file_exists($customPluginsDir)) {
         $customPluginsDir = NULL;
       }
@@ -131,18 +136,16 @@ class CRM_Core_Smarty extends Smarty {
     $this->assign_by_ref('config', $config);
     $this->assign_by_ref('session', $session);
 
-    // check default editor and assign to template, store it in session to reduce db calls
+    // check default editor and assign to template
     $defaultWysiwygEditor = $session->get('defaultWysiwygEditor');
-    if (!$defaultWysiwygEditor &&
-      !CRM_Core_Config::isUpgradeMode()
-    ) {
-      $editorID = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    if (!$defaultWysiwygEditor && !CRM_Core_Config::isUpgradeMode()) {
+      $defaultWysiwygEditor = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
         'editor_id'
       );
-      if (!$session->isEmpty()) {
-        $session->set('defaultWysiwygEditor', $editorID);
+      // For logged-in users, store it in session to reduce db calls
+      if ($session->get('userID')) {
+        $session->set('defaultWysiwygEditor', $defaultWysiwygEditor);
       }
-      $defaultWysiwygEditor = $editorID;
     }
 
     $this->assign('defaultWysiwygEditor', $defaultWysiwygEditor);
@@ -183,7 +186,15 @@ class CRM_Core_Smarty extends Smarty {
    * @param boolean $display
    */
   function fetch($resource_name, $cache_id = NULL, $compile_id = NULL, $display = FALSE) {
-    return parent::fetch($resource_name, $cache_id, $compile_id, $display);
+    if (preg_match( '/^(\s+)?string:/', $resource_name)) {
+      $old_security = $this->security;
+      $this->security = TRUE;
+    }
+    $output = parent::fetch($resource_name, $cache_id, $compile_id, $display);
+    if (isset($old_security)) {
+      $this->security = $old_security;
+    }
+    return $output;
   }
 
   function appendValue($name, $value) {
@@ -210,6 +221,15 @@ class CRM_Core_Smarty extends Smarty {
   static function registerStringResource() {
     require_once 'CRM/Core/Smarty/resources/String.php';
     civicrm_smarty_register_string_resource();
+  }
+
+  function addTemplateDir($path) {
+    if ( is_array( $this->template_dir ) ) {
+      array_unshift( $this->template_dir, $path );
+    } else {
+      $this->template_dir = array( $path, $this->template_dir );
+    }
+
   }
 }
 

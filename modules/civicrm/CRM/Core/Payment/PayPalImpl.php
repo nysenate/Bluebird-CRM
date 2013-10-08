@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,16 +52,18 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('PayPal Pro');
+    $paymentProcessorType = CRM_Core_PseudoConstant::paymentProcessorType(false, null, 'name');
 
-    if ($this->_paymentProcessor['payment_processor_type'] == 'PayPal_Standard') {
+    if ($this->_paymentProcessor['payment_processor_type_id'] == CRM_Utils_Array::key('PayPal_Standard', $paymentProcessorType)) {
       $this->_processorName = ts('PayPal Standard');
       return;
     }
-    elseif ($this->_paymentProcessor['payment_processor_type'] == 'PayPal_Express') {
+    elseif ($this->_paymentProcessor['payment_processor_type_id'] == CRM_Utils_Array::key('PayPal_Express', $paymentProcessorType)) {
       $this->_processorName = ts('PayPal Express');
     }
 
@@ -79,10 +81,9 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor, &$paymentForm = NULL, $force = FALSE) {
     $processorName = $paymentProcessor['name'];
-    if (!empty($processorName) || self::$_singleton[$processorName] === NULL) {
+    if (!isset(self::$_singleton[$processorName]) || self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_PaypalImpl($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
@@ -240,7 +241,13 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     //$args['desc']           = 'Recurring Contribution';
     $args['totalbillingcycles'] = $params['installments'];
     $args['version'] = '56.0';
-    $args['profilereference'] = "i={$params['invoiceID']}" . "&m=$component" . "&c={$params['contactID']}" . "&r={$params['contributionRecurID']}" . "&b={$params['contributionID']}" . "&p={$params['contributionPageID']}";
+    $args['profilereference'] =
+      "i={$params['invoiceID']}" .
+      "&m=$component" .
+      "&c={$params['contactID']}" .
+      "&r={$params['contributionRecurID']}" .
+      "&b={$params['contributionID']}" .
+      "&p={$params['contributionPageID']}";
 
     $result = $this->invokeAPI($args);
 
@@ -303,7 +310,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     $args['state'] = $params['state_province'];
     $args['countryCode'] = $params['country'];
     $args['zip'] = $params['postal_code'];
-    $args['desc'] = CRM_Utils_Array::value('description', $params);
+    $args['desc'] = substr(CRM_Utils_Array::value('description', $params), 0, 127);
     $args['custom'] = CRM_Utils_Array::value('accountingCode', $params);
 
     if (CRM_Utils_Array::value('is_recur', $params) == 1) {
@@ -315,11 +322,18 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
       $args['billingfrequency'] = $params['frequency_interval'];
       $args['method'] = "CreateRecurringPaymentsProfile";
       $args['profilestartdate'] = $start_date;
-      $args['desc'] = $params['description'] . ": " . $params['amount'] . " Per " . $params['frequency_interval'] . " " . $params['frequency_unit'];
+      $args['desc'] =
+        $params['description'] . ": " .
+        $params['amount'] . " Per " .
+        $params['frequency_interval'] . " " .
+        $params['frequency_unit'];
       $args['amt'] = $params['amount'];
       $args['totalbillingcycles'] = $params['installments'];
       $args['version'] = 56.0;
-      $args['PROFILEREFERENCE'] = "i=" . $params['invoiceID'] . "&m=" . $component . "&c=" . $params['contactID'] . "&r=" . $params['contributionRecurID'] . "&b=" . $params['contributionID'] . "&p=" . $params['contributionPageID'];
+      $args['PROFILEREFERENCE'] =
+        "i=" . $params['invoiceID'] . "&m=" . $component .
+        "&c=" . $params['contactID'] . "&r=" . $params['contributionRecurID'] .
+        "&b=" . $params['contributionID'] . "&p=" . $params['contributionPageID'];
     }
 
     // Allow further manipulation of the arguments via custom hooks ..
@@ -353,21 +367,23 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
    */
   function checkConfig() {
     $error = array();
-    if ($this->_paymentProcessor['payment_processor_type'] == 'PayPal_Standard' ||
-      $this->_paymentProcessor['payment_processor_type'] == 'PayPal'
+    $paymentProcessorType = CRM_Core_PseudoConstant::paymentProcessorType(false, null, 'name');
+    if (
+      $this->_paymentProcessor['payment_processor_type_id'] == CRM_Utils_Array::key('PayPal_Standard', $paymentProcessorType) ||
+      $this->_paymentProcessor['payment_processor_type_id'] == CRM_Utils_Array::key('PayPal', $paymentProcessorType)
     ) {
       if (empty($this->_paymentProcessor['user_name'])) {
-        $error[] = ts('User Name is not set in the Administer CiviCRM &raquo; System Settings &raquo; Payment Processors.');
+        $error[] = ts('User Name is not set in the Administer &raquo; System Settings &raquo; Payment Processors.');
       }
     }
 
-    if ($this->_paymentProcessor['payment_processor_type'] != 'PayPal_Standard') {
+    if ($this->_paymentProcessor['payment_processor_type_id'] != CRM_Utils_Array::key('PayPal_Standard', $paymentProcessorType)) {
       if (empty($this->_paymentProcessor['signature'])) {
-        $error[] = ts('Signature is not set in the Administer CiviCRM &raquo; System Settings &raquo; Payment Processors.');
+        $error[] = ts('Signature is not set in the Administer &raquo; System Settings &raquo; Payment Processors.');
       }
 
       if (empty($this->_paymentProcessor['password'])) {
-        $error[] = ts('Password is not set in the Administer CiviCRM &raquo; System Settings &raquo; Payment Processors.');
+        $error[] = ts('Password is not set in the Administer &raquo; System Settings &raquo; Payment Processors.');
       }
     }
 
@@ -450,8 +466,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     return FALSE;
   }
 
-  function changeSubscriptionAmount(&$message = '', $params = array(
-    )) {
+  function changeSubscriptionAmount(&$message = '', $params = array()) {
     if ($this->_paymentProcessor['payment_processor_type'] == 'PayPal') {
       $config = CRM_Core_Config::singleton();
       $args = array();
@@ -510,10 +525,11 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
 
     $cancelUrlString = "$cancel=1&cancel=1&qfKey={$params['qfKey']}";
     if (CRM_Utils_Array::value('is_recur', $params)) {
-      $cancelUrlString .= "&isRecur=1&recurId={$params['contributionRecurID']}&contribId={$params[contributionID]}";
+      $cancelUrlString .= "&isRecur=1&recurId={$params['contributionRecurID']}&contribId={$params['contributionID']}";
     }
 
-    $cancelURL = CRM_Utils_System::url($url,
+    $cancelURL = CRM_Utils_System::url(
+      $url,
       $cancelUrlString,
       TRUE, NULL, FALSE
     );
@@ -521,7 +537,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     // ensure that the returnURL is absolute.
     if (substr($returnURL, 0, 4) != 'http') {
       $fixUrl = CRM_Utils_System::url("civicrm/admin/setting/url", '&reset=1');
-      CRM_Core_Error::fatal(ts('Sending a relative URL to PayPalIPN is erroneous. Please make your resource URL (in <a href="%1">Administer CiviCRM &raquo; System Settings &raquo; Resource URLs</a> ) complete.', array(1 => $fixUrl)));
+      CRM_Core_Error::fatal(ts('Sending a relative URL to PayPalIPN is erroneous. Please make your resource URL (in <a href="%1">Administer &raquo; System Settings &raquo; Resource URLs</a> ) complete.', array(1 => $fixUrl)));
     }
 
     $paypalParams = array(
@@ -593,12 +609,12 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
 
       $paypalParams += array(
         'cmd' => '_xclick-subscriptions',
-        'a3' => $params['amount'],
-        'p3' => $params['frequency_interval'],
-        't3' => ucfirst(substr($params['frequency_unit'], 0, 1)),
+        'a3'  => $params['amount'],
+        'p3'  => $params['frequency_interval'],
+        't3'  => ucfirst(substr($params['frequency_unit'], 0, 1)),
         'src' => 1,
         'sra' => 1,
-        'srt' => ($params['installments'] > 0) ? $params['installments'] : NULL,
+        'srt' => CRM_Utils_Array::value('installments', $params),
         'no_note' => 1,
         'modify' => 0,
       );
@@ -664,7 +680,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
 
     //turning off the server and peer verification(TrustManager Concept).
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL'));
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL') ? 2 : 0);
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -717,9 +733,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
    * @nvpstr is NVPString.
    * @nvpArray is Associative Array.
    */
-
-  static
-  function deformat($str) {
+  static function deformat($str) {
     $result = array();
 
     while (strlen($str)) {

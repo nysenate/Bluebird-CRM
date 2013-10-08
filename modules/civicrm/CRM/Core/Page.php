@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -111,7 +111,7 @@ class CRM_Core_Page {
    * @param int    $mode  mode of the page
    *
    * @return CRM_Core_Page
-   */ 
+   */
   function __construct($title = NULL, $mode = NULL) {
     $this->_name  = CRM_Utils_System::getClassName($this);
     $this->_title = $title;
@@ -123,20 +123,20 @@ class CRM_Core_Page {
       self::$_session = CRM_Core_Session::singleton();
     }
 
-    if (isset($_GET['snippet']) && $_GET['snippet']) {
-      if ($_GET['snippet'] == 3) {
+    if (isset($_REQUEST['snippet']) && $_REQUEST['snippet']) {
+      if ($_REQUEST['snippet'] == 3) {
         $this->_print = CRM_Core_Smarty::PRINT_PDF;
       }
-      else if ($_GET['snippet'] == 5) {
+      else if ($_REQUEST['snippet'] == 5) {
         $this->_print = CRM_Core_Smarty::PRINT_NOFORM;
       }
       else {
         $this->_print = CRM_Core_Smarty::PRINT_SNIPPET;
       }
     }
-    
+
     // if the request has a reset value, initialize the controller session
-    if (CRM_Utils_Array::value('reset', $_GET)) {
+    if (CRM_Utils_Array::value('reset', $_REQUEST)) {
       $this->reset();
     }
   }
@@ -155,12 +155,12 @@ class CRM_Core_Page {
 
     self::$_template->assign('mode', $this->_mode);
 
-    $pageTemplateFile = $this->getTemplateFileName();
+    $pageTemplateFile = $this->getHookedTemplateFileName();
     self::$_template->assign('tplFile', $pageTemplateFile);
 
     // invoke the pagRun hook, CRM-3906
     CRM_Utils_Hook::pageRun($this);
-    
+
     if ($this->_print) {
       if (in_array( $this->_print, array( CRM_Core_Smarty::PRINT_SNIPPET,
         CRM_Core_Smarty::PRINT_PDF, CRM_Core_Smarty::PRINT_NOFORM ))) {
@@ -190,9 +190,23 @@ class CRM_Core_Page {
     }
 
     $config = CRM_Core_Config::singleton();
+
+    // TODO: Is there a better way to ensure these actions don't happen during AJAX requests?
+    if (empty($_GET['snippet'])) {
+      // Version check and intermittent alert to admins
+      CRM_Utils_VersionCheck::singleton()->versionAlert();
+
+      // Debug msg once per hour
+      if ($config->debug && CRM_Core_Permission::check('administer CiviCRM') && CRM_Core_Session::singleton()->timer('debug_alert', 3600)) {
+        $msg = ts('Warning: Debug is enabled in <a href="%1">system settings</a>. This should not be enabled on production servers.', array(1 => CRM_Utils_System::url('civicrm/admin/setting/debug', 'reset=1')));
+        CRM_Core_Session::setStatus($msg, ts('Debug Mode'));
+      }
+    }
+
     $content = self::$_template->fetch('CRM/common/' . strtolower($config->userFramework) . '.tpl');
 
-    if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
+    // Render page header
+    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
       CRM_Utils_System::addHTMLHead($region->render(''));
     }
     CRM_Utils_System::appendTPLFile($pageTemplateFile, $content);
@@ -200,7 +214,7 @@ class CRM_Core_Page {
     //its time to call the hook.
     CRM_Utils_Hook::alterContent($content, 'page', $pageTemplateFile, $this);
 
-    echo CRM_Utils_System::theme('page', $content, TRUE, $this->_print);
+    echo CRM_Utils_System::theme($content, $this->_print);
     return;
   }
 
@@ -284,6 +298,16 @@ class CRM_Core_Page {
   }
 
   /**
+   * A wrapper for getTemplateFileName that includes calling the hook to
+   * prevent us from having to copy & paste the logic of calling the hook
+   */
+  function getHookedTemplateFileName() {
+    $pageTemplateFile = $this->getTemplateFileName();
+    CRM_Utils_Hook::alterTemplateFile(get_class($this), $this, 'page', $pageTemplateFile);
+    return $pageTemplateFile;
+  }
+
+  /**
    * Default extra tpl file basically just replaces .tpl with .extra.tpl
    * i.e. we dont override
    *
@@ -338,8 +362,7 @@ class CRM_Core_Page {
     return $this->_print;
   }
 
-  static
-  function &getTemplate() {
+  static function &getTemplate() {
     return self::$_template;
   }
 

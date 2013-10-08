@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,132 +36,55 @@
 /**
  *
  */
-class CRM_Core_Permission_WordPress {
-
-  /**
-   * get the current permission of this user
-   *
-   * @return string the permission of the user (edit or view or null)
-   */
-  public static function getPermission() {
-    return CRM_Core_Permission::EDIT;
-  }
-
-  /**
-   * Get the permissioned where clause for the user
-   *
-   * @param int $type the type of permission needed
-   * @param  array $tables (reference ) add the tables that are needed for the select clause
-   * @param  array $whereTables (reference ) add the tables that are needed for the where clause
-   *
-   * @return string the group where clause for this user
-   * @access public
-   */
-  public static function whereClause($type, &$tables, &$whereTables) {
-    return '( 1 )';
-  }
-
-  /**
-   * Get all groups from database, filtered by permissions
-   * for this user
-   *
-   * @param string $groupType     type of group(Access/Mailing)
-   * @param boolen $excludeHidden exclude hidden groups.
-   *
-   * @access public
-   * @static
-   *
-   * @return array - array reference of all groups.
-   *
-   */
-  public static function &group($groupType = NULL, $excludeHidden = TRUE) {
-    return CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
-  }
-
+class CRM_Core_Permission_WordPress extends CRM_Core_Permission_Base {
   /**
    * given a permission string, check for access requirements
    *
    * @param string $str the permission to check
    *
    * @return boolean true if yes, else false
-   * @static
    * @access public
    */
-  static
   function check($str) {
+    // Generic cms 'administer users' role tranlates to 'administrator' WordPress role
+    $str = $this->translatePermission($str, 'WordPress', array(
+      'administer users' => 'administrator',
+    ));
+    if ($str == CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
+      return FALSE;
+    }
+    if ($str == CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION) {
+      return TRUE;
+    }
+
     // for administrators give them all permissions
     if (!function_exists('current_user_can')) {
       return TRUE;
     }
 
-    if (current_user_can('super admin') ||
-      current_user_can('administrator') ||
-      current_user_can('editor')
-    ) {
+    if (current_user_can('super admin') || current_user_can('administrator')) {
       return TRUE;
     }
 
-    static $otherPerms = NULL;
-    if (!$otherPerms) {
-      $otherPerms = array(
-        'access CiviMail subscribe/unsubscribe pages' => 1,
-        'access all custom data' => 1,
-        'access uploaded files' => 1,
-        'make online contributions' => 1,
-        'profile create' => 1,
-        'profile edit' => 1,
-        'profile view' => 1,
-        'register for events' => 1,
-        'view event info' => 1,
-        'access Contact Dashboard' => 1,
-        'sign CiviCRM Petition' => 1,
-        'view public CiviMail content' => 1,
-      );
+    // Make string lowercase and convert spaces into underscore
+    $str = CRM_Utils_String::munge(strtolower($str));
+
+    if ( is_user_logged_in() ) {
+      // Check whether the logged in user has the capabilitity
+      if (current_user_can($str)) {
+        return TRUE;
+      }
     }
-
-    // for everyone else, give them permission only for
-    // some public pages
-    if (array_key_exists($str, $otherPerms)) {
-      return TRUE;
+    else {
+      //check the capabilities of Anonymous user)
+      $roleObj = new WP_Roles();
+      if (
+        $roleObj->get_role('anonymous_user') != NULL &&
+        array_key_exists($str, $roleObj->get_role('anonymous_user')->capabilities)
+      ) {
+        return TRUE;
+      }
     }
-
     return FALSE;
-  }
-
-  /**
-   * Given a roles array, check for access requirements
-   *
-   * @param array $array the roles to check
-   *
-   * @return boolean true if yes, else false
-   * @static
-   * @access public
-   */
-  static
-  function checkGroupRole($array) {
-    return FALSE;
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific permission
-   *
-   * @param string $permissionName name of the permission we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function permissionEmails($permissionName) {
-    return '';
-  }
-
-  /**
-   * Get all the contact emails for users that have a specific role
-   *
-   * @param string $roleName name of the role we are interested in
-   *
-   * @return string a comma separated list of email addresses
-   */
-  public static function roleEmails($roleName) {
-    return '';
   }
 }
-

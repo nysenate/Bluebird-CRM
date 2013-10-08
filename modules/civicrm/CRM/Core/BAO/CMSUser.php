@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -208,7 +208,7 @@ class CRM_Core_BAO_CMSUser {
         'plural' => 'Created %count new contact records.'
       )
     );
-    CRM_Core_Session::setStatus($status, TRUE);
+    CRM_Core_Session::setStatus($status, ts('Saved'), 'success');
     CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin', 'reset=1'));
   }
 
@@ -251,7 +251,8 @@ class CRM_Core_BAO_CMSUser {
    *
    * @param object  $form
    * @param integer $gid id of group of profile
-   * @param string $emailPresent true, if the profile field has email(primary)
+   * @param bool $emailPresent true if the profile field has email(primary)
+   * @return FALSE|void WTF
    *
    * @access public
    * @static
@@ -322,35 +323,21 @@ class CRM_Core_BAO_CMSUser {
       }
     }
 
-
-    $loginUrl = $config->userFrameworkBaseURL;
-    if ($isJoomla) {
-      $loginUrl = str_replace('administrator/', '', $loginUrl);
-      $loginUrl .= 'index.php?option=com_users&view=login';
-    }
-    elseif ($isDrupal) {
-      $loginUrl .= 'user';
-      // append destination so user is returned to form they came from after login
-      $destination = $config->userSystem->getLoginDestination($form);
-      if (!empty($destination)) {
-        $loginUrl .= '?destination=' . urlencode($destination);
-      }
-    }
-
-    $form->assign('loginUrl', $loginUrl);
+    $destination = $config->userSystem->getLoginDestination($form);
+    $loginURL = $config->userSystem->getLoginURL($destination);
+    $form->assign('loginURL', $loginURL);
     $form->assign('showCMS', $showCMS);
   }
 
   /*
-     * Checks that there is a valid username & email
-     *  optionally checks password is present & matches DB & gets the CMS to validate
-     *
-     *  @params array $fields Posted values of form
-     *  @param  array $files uploaded files if any
-     *  @param array $self reference to form object
-     *
-     */
-
+   * Checks that there is a valid username & email
+   *  optionally checks password is present & matches DB & gets the CMS to validate
+   *
+   *  @params array $fields Posted values of form
+   *  @param  array $files uploaded files if any
+   *  @param array $self reference to form object
+   *
+   */
   static function formRule($fields, $files, $self) {
     if (!CRM_Utils_Array::value('cms_create_account', $fields)) {
       return TRUE;

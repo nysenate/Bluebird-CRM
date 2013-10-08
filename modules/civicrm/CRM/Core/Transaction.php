@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @copyright David Strauss <david@fourkitchens.com> (c) 2007
  * $Id$
  *
@@ -83,7 +83,8 @@ class CRM_Core_Transaction {
    * Whether commit() has been called on this instance
    * of CRM_Core_Transaction
    */
-  private $_pseudoCommitted = FALSE; function __construct() {
+  private $_pseudoCommitted = FALSE;
+  function __construct() {
     if (!self::$_dao) {
       self::$_dao = new CRM_Core_DAO();
     }
@@ -184,15 +185,20 @@ class CRM_Core_Transaction {
    *
    * @param $phase A constant; one of: self::PHASE_{PRE,POST}_{COMMIT,ROLLBACK}
    * @param $callback A PHP callback
+   * @param mixed $params Optional values to pass to callback.
+   *          See php manual call_user_func_array for details.
    */
-  static public function addCallback($phase, $callback) {
-    self::$_callbacks[$phase][] = $callback;
+  static public function addCallback($phase, $callback, $params = null) {
+    self::$_callbacks[$phase][] = array(
+      'callback' => $callback,
+      'parameters' => (is_array($params) ? $params : array($params))
+    );
   }
 
   static protected function invokeCallbacks($phase, $callbacks) {
     if (is_array($callbacks[$phase])) {
       foreach ($callbacks[$phase] as $cb) {
-        call_user_func($cb);
+        call_user_func_array($cb['callback'], $cb['parameters']);
       }
     }
   }

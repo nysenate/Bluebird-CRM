@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -47,12 +47,16 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
    * @access public
    * @static
    */
-  static
-  function add(&$params) {
+  static function add(&$params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'OpenID', CRM_Utils_Array::value('id', $params), $params);
+
     $openId = new CRM_Core_DAO_OpenID();
     $openId->copyValues($params);
+    $openId->save();
 
-    return $openId->save();
+    CRM_Utils_Hook::post($hook, 'OpenID', $openId->id, $openId);
+    return $openId;
   }
 
   /**
@@ -65,8 +69,7 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
    * @access public
    * @static
    */
-  static
-  function &getValues($entityBlock) {
+  static function &getValues($entityBlock) {
     return CRM_Core_BAO_Block::getValues('openid', $entityBlock);
   }
 
@@ -79,8 +82,7 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
    * @access public
    * @static
    */
-  static
-  function isAllowedToLogin($identity_url) {
+  static function isAllowedToLogin($identity_url) {
     $openId = new CRM_Core_DAO_OpenID();
     $openId->openid = $identity_url;
     if ($openId->find(TRUE)) {
@@ -98,15 +100,14 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
    * @access public
    * @static
    */
-  static
-  function allOpenIDs($id, $updateBlankLocInfo = FALSE) {
+  static function allOpenIDs($id, $updateBlankLocInfo = FALSE) {
     if (!$id) {
       return NULL;
     }
 
     $query = "
-SELECT civicrm_openid.openid, civicrm_location_type.name as locationType, civicrm_openid.is_primary as is_primary, 
-civicrm_openid.allowed_to_login as allowed_to_login, civicrm_openid.id as openid_id, 
+SELECT civicrm_openid.openid, civicrm_location_type.name as locationType, civicrm_openid.is_primary as is_primary,
+civicrm_openid.allowed_to_login as allowed_to_login, civicrm_openid.id as openid_id,
 civicrm_openid.location_type_id as locationTypeId
 FROM      civicrm_contact
 LEFT JOIN civicrm_openid ON ( civicrm_openid.contact_id = civicrm_contact.id )
@@ -138,6 +139,13 @@ ORDER BY
       }
     }
     return $openids;
+  }
+
+  /**
+   * Call common delete function
+   */
+  static function del($id) {
+    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('OpenID', $id);
   }
 }
 
