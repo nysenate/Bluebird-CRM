@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,14 +41,14 @@
          </tr>
       {foreach from=$rows item=row}
          <tr class="{cycle values="odd-row,even-row"} crm-participant-name">
-            <td>{$row.name}</td>	
+            <td>{$row.name}</td>
          </tr>
       {/foreach}
       </table>
     {include file="CRM/common/pager.tpl" location="bottom"}
 {else}
     <div class='spacer'></div>
-    <div class="messages status">
+    <div class="messages status no-popup">
     <div class="icon inform-icon"></div>
         {ts}There are currently no participants registered for this event.{/ts}
     </div>

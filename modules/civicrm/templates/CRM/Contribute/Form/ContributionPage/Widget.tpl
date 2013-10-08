@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 <h3>{ts}Configure Widget{/ts}</h3>
 {if $showStatus}
-<div class="messages status">
+<div class="messages status no-popup">
     <div class="icon inform-icon"></div>
     {ts}It looks like you may have posted and / or distributed the flash version of the Contribution widget. We won't be supporting the flash version in next release. You should try and get all sites using the flash widget to update to the improved HTML widget code below as soon as possible.{/ts}
 </div>
@@ -36,10 +36,10 @@
     </div>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout-compressed">
-    	<tr class="crm-contribution-contributionpage-widget-form-block-is_active"><td style="width: 12em;">&nbsp;</td><td style="font-size: 10pt;">{$form.is_active.html}&nbsp;{$form.is_active.label}</td></tr>
+      <tr class="crm-contribution-contributionpage-widget-form-block-is_active"><td style="width: 12em;">&nbsp;</td><td style="font-size: 10pt;">{$form.is_active.html}&nbsp;{$form.is_active.label}</td></tr>
     </table>
     <div class="spacer"></div>
-    
+
     <div id="widgetFields">
         <table class="form-layout-compressed">
             <tr class="crm-contribution-contributionpage-widget-form-block-title"><td class="label">{$form.title.label}<span class="marker"> *</span></td><td>{$form.title.html}</td></tr>
@@ -47,10 +47,10 @@
             <tr class="crm-contribution-contributionpage-widget-form-block-button_title"><td class="label">{$form.button_title.label}</td><td>{$form.button_title.html}</td></tr>
             <tr class="crm-contribution-contributionpage-widget-form-block-about"><td class="label">{$form.about.label}<span class="marker"> *</span></td><td>{$form.about.html}
 <br /><span class="description">{ts}Enter content for the about message. You may include HTML formatting tags. You can also include images, as long as they are already uploaded to a server - reference them using complete URLs.{/ts}</span>
-</td></tr>  
-	  
+</td></tr>
+
         </table>
-        
+
         <div id="id-get_code">
             <fieldset>
             <legend>{ts}Preview Widget and Get Code{/ts}</legend>
@@ -85,11 +85,10 @@
             </fieldset>
         </div>
 
-        
-        <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-case-roles-block">
+
+        <div class="crm-accordion-wrapper collapsed crm-case-roles-block">
          <div class="crm-accordion-header">
-          <div class="icon crm-accordion-pointer"></div> 
-        	{ts}Edit Widget Colors{/ts}
+          {ts}Edit Widget Colors{/ts}
          </div><!-- /.crm-accordion-header -->
          <div class="crm-accordion-body">
             <div class="description">
@@ -107,11 +106,11 @@
 
     <div id="crm-submit-buttons">
         <table id="preview" class"form-layout-compressed">
-	   <tr>
-	      <td>{$form._qf_Widget_refresh.html}</td>
-	      </td>
-	   </tr>
-	</table>  
+     <tr>
+        <td>{$form._qf_Widget_refresh.html}</td>
+        </td>
+     </tr>
+  </table>
     </div>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
@@ -119,21 +118,21 @@
 
 {literal}
 <script type="text/javascript">
-	var is_act = document.getElementsByName('is_active');
-  	if ( ! is_act[0].checked) {
-           hide('widgetFields');
-	   hide('preview');
-	} 
+  var is_act = document.getElementsByName('is_active');
+    if ( ! is_act[0].checked) {
+           cj('#widgetFields').hide();
+     cj('#preview').hide();
+  }
     function widgetBlock(chkbox) {
         if (chkbox.checked) {
-	      show('widgetFields');
-	      show('preview');
-	      return;
+        cj('#widgetFields').show();
+        cj('#preview').show();
+        return;
         } else {
-	      hide('widgetFields');
-	      hide('preview');
+        cj('#widgetFields').hide();
+        cj('#preview').hide();
               return;
-	   }
+     }
     }
 </script>
 {/literal}
@@ -144,7 +143,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

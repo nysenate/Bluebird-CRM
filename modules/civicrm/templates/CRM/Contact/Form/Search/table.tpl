@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,32 +24,37 @@
  +--------------------------------------------------------------------+
 *}
 {* template for search builder *}
- <div id="map-field">
-  {strip}
-     {section start=1 name=blocks loop=$blockCount}
-       {assign var="x" value=$smarty.section.blocks.index}
-       <div class="crm-search-block">
-    <h3>{if $x eq 1}{ts}Include contacts where{/ts}{else}{ts}Also include contacts where{/ts}{/if}</h3>
-	<table>
+<div id="map-field">
+{strip}
+  {section start=1 name=blocks loop=$blockCount}
+    {assign var="x" value=$smarty.section.blocks.index}
+    <div class="crm-search-block">
+      <h3>{if $x eq 1}{ts}Include contacts where{/ts}{else}{ts}Also include contacts where{/ts}{/if}</h3>
+      <table>
         {section name=cols loop=$columnCount[$x]}
-            {assign var="i" value=$smarty.section.cols.index}
-            <tr>
-                <td class="form-item even-row">
-                    {$form.mapper[$x][$i].html}
-                    {$form.operator[$x][$i].html}
-                    &nbsp;&nbsp;{$form.value[$x][$i].html}
-                </td>
-            </tr>
+          {assign var="i" value=$smarty.section.cols.index}
+          <tr>
+            <td class="form-item even-row">
+              {$form.mapper[$x][$i].html}
+              {$form.operator[$x][$i].html|crmAddClass:'required'}&nbsp;&nbsp;
+              <span class="crm-search-value" id="crm_search_value_{$x}_{$i}">
+                {$form.value[$x][$i].html|crmAddClass:'required'}
+              </span>
+              {if $i gt 0 or $x gt 1}
+                &nbsp;&nbsp;<a href="#" class="crm-reset-builder-row" title="{ts}Remove this row{/ts}"><img src="{$config->resourceBase}i/close.png" class="action-icon" alt="X" /></a>
+              {/if}
+            </td>
+          </tr>
         {/section}
-    
-         <tr>
-           <td class="form-item even-row underline-effect">
-               {$form.addMore[$x].html}
-           </td>
-         </tr>            
-       </table>
-      </div>
-    {/section}
-    <div class="underline-effect">{$form.addBlock.html}</div> 
-  {/strip}
- </div>
+
+        <tr class="crm-search-builder-add-row">
+          <td class="form-item even-row underline-effect">
+            {$form.addMore[$x].html}
+          </td>
+        </tr>
+      </table>
+    </div>
+  {/section}
+  <h3 class="crm-search-builder-add-block underline-effect">{$form.addBlock.html}</h3>
+{/strip}
+</div>

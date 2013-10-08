@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,40 +31,40 @@
            <table class="form-layout">
             <tr class="crm-path-form-block-uploadDir">
                 <td class="label">{$form.uploadDir.label}</td>
-                <td>{$form.uploadDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.uploadDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}File system path where temporary CiviCRM files - such as import data files - are uploaded.{/ts}</span>
                 </td>
             </tr>
             <tr class="crm-path-form-block-imageUploadDir">
                 <td class="label">{$form.imageUploadDir.label}</td>
-                <td>{$form.imageUploadDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.imageUploadDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}File system path where image files are uploaded. Currently, this path is used for images associated with premiums (CiviContribute thank-you gifts).{/ts}</span>
-                </td>    
+                </td>
             </tr>
-            <tr class="crm-path-form-block-customFileUploadDir">  
+            <tr class="crm-path-form-block-customFileUploadDir">
                 <td class="label">{$form.customFileUploadDir.label}</td>
-                <td>{$form.customFileUploadDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.customFileUploadDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}Path where documents and images which are attachments to contact records are stored (e.g. contact photos, resumes, contracts, etc.). These attachments are defined using 'file' type custom fields.{/ts}</span>
                 </td>
             </tr>
-            <tr class="crm-path-form-block-customTemplateDir">  
+            <tr class="crm-path-form-block-customTemplateDir">
                 <td class="label">{$form.customTemplateDir.label}</td>
-                <td>{$form.customTemplateDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.customTemplateDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}Path where site specific templates are stored if any. This directory is searched first if set. Custom JavaScript code can be added to templates by creating files named <em>templateFile.extra.tpl</em>.{/ts} {docURL page="developer/techniques/templates"}</span><br />
                     <span class="description">{ts}CiviCase configuration files can also be stored in this custom path.{/ts} {docURL page="user/case-management/setup"}</span>
                 </td>
             </tr>
-            <tr class="crm-path-form-block-customPHPPathDir">  
+            <tr class="crm-path-form-block-customPHPPathDir">
                 <td class="label">{$form.customPHPPathDir.label}</td>
-                <td>{$form.customPHPPathDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.customPHPPathDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}Path where site specific PHP code files are stored if any. This directory is searched first if set.{/ts}</span>
-                </td>    
+                </td>
             </tr>
-            <tr class="crm-path-form-block-extensionsDir">  
+            <tr class="crm-path-form-block-extensionsDir">
                 <td class="label">{$form.extensionsDir.label}</td>
-                <td>{$form.extensionsDir.html|crmReplace:class:'huge40'}<br />
+                <td>{$form.extensionsDir.html|crmAddClass:'huge40'}<br />
                     <span class="description">{ts}Path where CiviCRM extensions are stored.{/ts}</span>
-                </td>    
+                </td>
             </tr>
         </table>
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

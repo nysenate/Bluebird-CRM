@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-status_change-title"}
+  {ts}Participant Status{/ts}
+{/htxt}
 {htxt id="id-status_change"}
 <p><strong>{ts}Enabling Waitlisting and Registration Approval{/ts}</strong><br />
 {ts}This screen is particularly useful for managing events with Waitlisting and / or Registration Approval features enabled. In order to use these features you must first enable the related Participant Statuses (Administer &raquo; CiviEvent &raquo; Participant Statuses).{/ts}</p>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,11 +35,11 @@
     {ts}Use Groups to organize contacts (e.g. these contacts are part of our 'Steering Committee'). You can also create 'smart' groups based on contact characteristics (e.g. this group consists of all people in our database who live in a specific locality).{/ts} {help id="manage_groups"}
 </div>
 {/if}
-{if $action ne 2 AND $action ne 8}	
+{if $action ne 2 AND $action ne 8}
 {include file="CRM/Group/Form/Search.tpl"}
 {/if}
 
-{if $action eq 1 or $action eq 2} 
+{if $action eq 1 or $action eq 2}
    {include file="CRM/Group/Form/Edit.tpl"}
 {elseif $action eq 8}
    {include file="CRM/Group/Form/Delete.tpl"}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Confirmation of contribution deletes  *}
-<div class="messages status">
+<div class="messages status no-popup">
   <div class="icon inform-icon"></div>
         &nbsp;{ts}Are you sure you want to restore the selected cases? This operation will retrieve the case(s) and all associated activities from Trash.{/ts}</p>
         <p>{include file="CRM/Case/Form/Task.tpl"}</p>

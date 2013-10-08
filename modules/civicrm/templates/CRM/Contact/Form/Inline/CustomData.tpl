@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,20 +24,10 @@
  +--------------------------------------------------------------------+
 *}
 
-<div class="crm-inline-edit-form crm-table2div-layout">
+{$form.oplock_ts.html}
+<div class="crm-inline-edit-form">
   <div class="crm-inline-button">
     {include file="CRM/common/formButtons.tpl"}
   </div>
   {include file="CRM/Custom/Form/CustomData.tpl" skipTitle=true}
 </div> <!-- end of main -->
-{include file="CRM/Contact/Form/Inline/InlineCommon.tpl"}
-
-{literal}
-<script type="text/javascript">
-cj( function() {
-  var cgId = {/literal}{$customGroupId}{literal};
-  // add ajax form submitting
-  inlineEditForm( 'CustomData', 'custom-set-block-' + cgId, {/literal}{$contactId}{literal}, cgId ); 
-});
-</script>
-{/literal}

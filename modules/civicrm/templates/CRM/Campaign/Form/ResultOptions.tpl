@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,49 +40,49 @@
 <td colspan="2" class="html-adjust">
     <fieldset><legend>{ts}Result Options{/ts}</legend>
     <span class="description">
-        {ts}Enter up to ten (10) multiple choice options in this table (click 'another choice' for each additional choice).You can use existing result set options by selecting survey result set.{/ts} 
+        {ts}Enter up to ten (10) multiple choice options in this table (click 'another choice' for each additional choice).You can use existing result set options by selecting survey result set.{/ts}
     </span>
     <br />
-	{strip}
-	<table id="optionField">
-	<tr>
+  {strip}
+  <table id="optionField">
+  <tr>
         <th>&nbsp;</th>
         <th> {ts}Default{/ts}</th>
         <th> {ts}Label{/ts}</th>
         <th> {ts}Value{/ts}</th>
-	<th> {ts}Recontact Interval{/ts}</th>
+  <th> {ts}Recontact Interval{/ts}</th>
         <th> {ts}Weight{/ts}</th>
     </tr>
-	
-	{section name=rowLoop start=1 loop=12}
-	{assign var=index value=$smarty.section.rowLoop.index}
-	<tr id="optionField_{$index}" class="form-item {cycle values="odd-row,even-row"}">
-        <td> 
+
+  {section name=rowLoop start=1 loop=12}
+  {assign var=index value=$smarty.section.rowLoop.index}
+  <tr id="optionField_{$index}" class="form-item {cycle values="odd-row,even-row"}">
+        <td>
         {if $index GT 1}
-            <a onclick="showHideRow({$index});" name="optionField_{$index}" href="javascript:void(0)" class="form-link"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}hide field or section{/ts}"/></a>
+            <a onclick="showHideRow({$index}); return false;" name="optionField_{$index}" href="#" class="form-link"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}hide field or section{/ts}"/></a>
         {/if}
         </td>
-	    <td> 
-		<div id="radio{$index}">
-		     {$form.default_option[$index].html} 
-		</div>
-	
-	    </td>
-	    <td> {$form.option_label.$index.html}</td>
-	    <td> {$form.option_value.$index.html}</td>
-	    <td> {$form.option_interval.$index.html}</td>
-	    <td> {$form.option_weight.$index.html}</td>
-	</tr>
+      <td>
+    <div id="radio{$index}">
+         {$form.default_option[$index].html}
+    </div>
+
+      </td>
+      <td> {$form.option_label.$index.html}</td>
+      <td> {$form.option_value.$index.html}</td>
+      <td> {$form.option_interval.$index.html}</td>
+      <td> {$form.option_weight.$index.html}</td>
+  </tr>
     {/section}
     </table>
-	<div id="optionFieldLink" class="add-remove-link">
-        <a onclick="showHideRow();" name="optionFieldLink" href="javascript:void(0)" class="form-link"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}show field or section{/ts}"/>{ts}another choice{/ts}</a>
+  <div id="optionFieldLink" class="add-remove-link">
+        <a onclick="showHideRow(); return false;" name="optionFieldLink" href="#" class="form-link"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}show field or section{/ts}"/>{ts}another choice{/ts}</a>
     </div>
-	<span id="additionalOption" class="description">
-		{ts}If you need additional options - you can add them after you Save your current entries.{/ts}
-	</span>
+  <span id="additionalOption" class="description">
+    {ts}If you need additional options - you can add them after you Save your current entries.{/ts}
+  </span>
     {/strip}
-    
+
 </fieldset>
 </td>
 </tr>
@@ -92,19 +92,19 @@
     var hideBlocks = new Array({$hideBlocks});
     var rowcounter = 0;
     var surveyId   = {if $surveyId}{$surveyId}{else}''{/if};
-    
+
     {literal}
-    if (navigator.appName == "Microsoft Internet Explorer") {    
-	for ( var count = 0; count < hideBlocks.length; count++ ) {
-	    var r = document.getElementById(hideBlocks[count]);
+    if (navigator.appName == "Microsoft Internet Explorer") {
+  for ( var count = 0; count < hideBlocks.length; count++ ) {
+      var r = document.getElementById(hideBlocks[count]);
             r.style.display = 'none';
         }
     }
-    
+
     function showOptionSelect( ) {
         if ( document.getElementsByName("option_type")[0].checked ) {
             cj('#option_group').hide();
-            cj('#default_option').val(''); 
+            cj('#default_option').val('');
         } else {
             cj('#option_group').show();
             loadOptionGroup( );
@@ -125,23 +125,23 @@
 
     function loadOptionGroup( ) {
         var data = new Object;
-	
+
         resetResultSet( );
-        if ( cj('#option_group_id').val() ) { 
+        if ( cj('#option_group_id').val() ) {
             data['option_group_id'] = cj('#option_group_id').val();
             data['survey_id'] = surveyId;
         } else {
             return false;
         }
 
-     	var dataUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0 q='className=CRM_Campaign_Page_AJAX&fnName=loadOptionGroupDetails' }"{literal}	          
-	
-	    // build new options
-    	cj.post( dataUrl, data, function( opGroup ) {
-	       if ( opGroup.status == 'success' ) {
-	         var result = opGroup.result;
+       var dataUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0 q='className=CRM_Campaign_Page_AJAX&fnName=loadOptionGroupDetails' }"{literal}
+
+      // build new options
+      cj.post( dataUrl, data, function( opGroup ) {
+         if ( opGroup.status == 'success' ) {
+           var result = opGroup.result;
              var countRows = 1;
-	       	 for( key in result ) {
+            for( key in result ) {
                 cj('#option_label_'+ countRows).val( result[key].label);
                 cj('#option_value_'+ countRows).val( result[key].value);
                 cj('#option_weight_'+ countRows).val( result[key].weight);
@@ -152,22 +152,22 @@
 
                 if ( result[key].is_default == 1 ) {
                     cj('#radio'+countRows+' input').attr('checked', 'true');
-                } 
+                }
 
                 if ( countRows > 1 ) {
                     showHideRow( );
                 }
-                countRows +=1; 
-		    }
-	      }		 
-	    }, "json" );
+                countRows +=1;
+        }
+        }
+      }, "json" );
   }
-    
+
     cj(document).ready( function( ) {
         showOptionSelect( );
     });
 
-    {/literal}	
+    {/literal}
     on_load_init_blocks( showRows, hideBlocks, '' );
 </script>
 

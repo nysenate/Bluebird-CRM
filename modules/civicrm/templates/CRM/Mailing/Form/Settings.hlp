@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,8 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="mailing-visibility-title"}
+  {ts}Visibility{/ts}
+{/htxt}
 {htxt id="mailing-visibility"}
-<p></p>
 <p>
 {assign var=hlpViewURL value="mailing.viewUrl"}
 {ts 1=$hlpViewURL}This option makes it possible to make the contents of the email accessible to users as a web page. This option is only relevant if you insert the Mailing permalink token %1 in your message in the next step. This token generates a URL on which the message can be viewed (remember to insert the code in the appropriate HTML tags).{/ts}

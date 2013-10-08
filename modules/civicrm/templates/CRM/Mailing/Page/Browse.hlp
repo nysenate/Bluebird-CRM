@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,10 +23,16 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-mailing_name-title"}
+  {ts}Mailing Name{/ts}
+{/htxt}
 {htxt id="id-mailing_name"}
 {ts}Find mailings by mailing name. You can enter a partial or complete name.{/ts}
 {/htxt}
 
+{htxt id="id-create_sort_name-title"}
+  {ts}Mailing Sender{/ts}
+{/htxt}
 {htxt id="id-create_sort_name"}
 {ts}Find mailings by the name of the person who created or sent them. You can enter a complete OR partial name (last name, first name format).{/ts}
 {/htxt}

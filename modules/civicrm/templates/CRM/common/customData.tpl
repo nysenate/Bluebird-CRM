@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,66 +29,101 @@
 {/if}
 {literal}
 <script type="text/javascript">
-
-function buildCustomData( type, subType, subName, cgCount, groupID, isMultiple )
+var CRM = CRM || {};
+CRM.buildCustomData = function( type, subType, subName, cgCount, groupID, isMultiple )
 {
-	var dataUrl = {/literal}"{crmURL p=$urlPath h=0 q='snippet=4&type='}"{literal} + type; 
+  var dataUrl = {/literal}"{crmURL p=$urlPath h=0 q='snippet=4&type='}"{literal} + type;
 
-	if ( subType ) {
-		dataUrl = dataUrl + '&subType=' + subType;
-	}
+  if ( subType ) {
+    dataUrl = dataUrl + '&subType=' + subType;
+  }
 
-	if ( subName ) {
-		dataUrl = dataUrl + '&subName=' + subName;
-		cj('#customData' + subName ).show();
-	} else {
-		cj('#customData').show();		
-	}
-	
-	{/literal}
-		{if $urlPathVar}
-			dataUrl = dataUrl + '&' + '{$urlPathVar}'
-		{/if}
-		{if $groupID}
-			dataUrl = dataUrl + '&groupID=' + '{$groupID}'
-		{/if}
-		{if $qfKey}
-			dataUrl = dataUrl + '&qfKey=' + '{$qfKey}'
-		{/if}
-		{if $entityID}
-			dataUrl = dataUrl + '&entityID=' + '{$entityID}'
-		{/if}
-	{literal}
+  if ( subName ) {
+    dataUrl = dataUrl + '&subName=' + subName;
+    cj('#customData' + subName ).show();
+  }
+  else {
+    cj('#customData').show();
+  }
+  if ( groupID ) {
+      dataUrl = dataUrl + '&groupID=' + groupID;
+  }
 
-	if ( !cgCount ) {
-		cgCount = 1;
-		var prevCount = 1;		
-	} else if ( cgCount >= 1 ) {
-		var prevCount = cgCount;	
-		cgCount++;
-	}
+  {/literal}
+    {if $urlPathVar}
+      dataUrl = dataUrl + '&' + '{$urlPathVar}'
+    {/if}
+    {if $groupID}
+      dataUrl = dataUrl + '&groupID=' + '{$groupID}'
+    {/if}
+    {if $qfKey}
+      dataUrl = dataUrl + '&qfKey=' + '{$qfKey}'
+    {/if}
+    {if $entityID}
+      dataUrl = dataUrl + '&entityID=' + '{$entityID}'
+    {/if}
+  {literal}
 
-	dataUrl = dataUrl + '&cgcount=' + cgCount;
+  if ( !cgCount ) {
+    cgCount = 1;
+    var prevCount = 1;
+  }
+  else if ( cgCount >= 1 ) {
+    var prevCount = cgCount;
+    cgCount++;
+  }
+
+  dataUrl = dataUrl + '&cgcount=' + cgCount;
 
 
-	if ( isMultiple ) {
-		var fname = '#custom_group_' + groupID + '_' + prevCount;
-		cj("#add-more-link-"+prevCount).hide();
-	} else {
-		if ( subName && subName != 'null' ) {		
-			var fname = '#customData' + subName ;
-		} else {
-			var fname = '#customData';
-		}		
-	}
-	
-	var response = cj.ajax({
-						url: dataUrl,
-						async: false
-					}).responseText;
+  if ( isMultiple ) {
+    var fname = '#custom_group_' + groupID + '_' + prevCount;
+    if (cj(".add-more-link-" + groupID + "-" + prevCount ).length) {
+      cj(".add-more-link-" + groupID + "-" + prevCount).hide();
+    }
+    else {
+      cj("#add-more-link-"+prevCount).hide();
+    }
+  }
+  else {
+    if ( subName && subName != 'null' ) {
+      var fname = '#customData' + subName ;
+    }
+    else {
+      var fname = '#customData';
+    }
+  }
 
-	cj( fname ).html( response );
-}
+  cj.ajax({
+    url: dataUrl,
+    dataType: 'html',
+    async: false,
+    success: function(response) {
+      var target = cj(fname);
+      var storage = {};
+      target.children().each(function() {
+        var id = cj(this).attr('id');
+        if (id) {
+          // Help values survive storage
+          cj('textarea', this).each(function() {
+            cj(this).text(cj(this).val());
+          });
+          cj('option:selected', this).attr('selected', 'selected');
+          cj('option:not(:selected)', this).removeAttr('selected');
+          storage[id] = cj(this).detach();
+        }
+      });
+      target.html(response);
+      target.children().each(function() {
+        var id = cj(this).attr('id');
+        if (id && storage[id]) {
+          cj(this).replaceWith(storage[id]);
+        }
+      });
+      storage = null;
+    }
+  });
+};
 
 </script>
 {/literal}

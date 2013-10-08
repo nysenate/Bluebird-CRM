@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,9 +25,8 @@
 *}
 {* Search form and results for Activities *}
 <div class="crm-form-block crm-search-form-block">
-<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if $rows}collapsed{/if}">
  <div class="crm-accordion-header crm-master-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
         {ts}Edit Search Criteria{/ts}
 </div><!-- /.crm-accordion-header -->
 <div class="crm-accordion-body">
@@ -36,7 +35,7 @@
         <table class="form-layout">
         <tr>
            <td class="font-size12pt" colspan="3">
-               {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmReplace:class:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
+               {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmAddClass:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
            </td>
         </tr>
 
@@ -80,7 +79,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions();
+   cj().crmAccordions();
 });
 </script>
 {/literal}

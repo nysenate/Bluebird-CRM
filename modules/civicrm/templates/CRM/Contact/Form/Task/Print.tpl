@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,7 +41,7 @@
     {if !empty($columnHeaders.street_address)}
       <td>{ts}Address{/ts}</td>
     {/if}
-    {if !empty($columnHeaders.city)} 
+    {if !empty($columnHeaders.city)}
       <td>{ts}City{/ts}</td>
     {/if}
     {if !empty($columnHeaders.state_province)}
@@ -78,10 +78,10 @@
         {if !empty($columnHeaders.state_province)}
           <td>{$row.state_province}</td>
         {/if}
-	{if !empty($columnHeaders.postal_code)}
+  {if !empty($columnHeaders.postal_code)}
           <td>{$row.postal_code}</td>
         {/if}
-	{if !empty($columnHeaders.country)}
+  {if !empty($columnHeaders.country)}
           <td>{$row.country}</td>
         {/if}
         <td>{$row.email}</td>
@@ -97,7 +97,7 @@
 </div>
 
 {else}
-   <div class="messages status">
+   <div class="messages status no-popup">
   <div class="icon inform-icon"></div>
        {ts}There are no records selected for Print.{/ts}
   </div>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,43 +58,43 @@
   <tr id='rowid{$list}{$row.case_id}' class="{cycle values="odd-row,even-row"} crm-case crm-case-status_{$row.case_status_id} crm-case-type_{$row.case_type_id}">
     {if $context eq 'Search' && !$single}
         {assign var=cbName value=$row.checkbox}
-        <td>{$form.$cbName.html}</td> 
+        <td>{$form.$cbName.html}</td>
     {/if}
     {if $single }
         <td class="crm-case-id crm-case-id_{$row.case_id}">{$row.case_id}</td>
     {/if}
-    {if $context != 'case'}	
+    {if $context != 'case'}
         <td class="crm-case-id crm-case-id_{$row.case_id}">
         <span id="{$list}{$row.case_id}_show">
-            <a href="#" onclick="show('caseDetails{$list}{$row.case_id}', 'table-row'); 
-                                 buildCaseDetails('{$list}{$row.case_id}','{$row.contact_id}'); 
-                                 hide('{$list}{$row.case_id}_show');
-                                 show('minus{$list}{$row.case_id}_hide');
-                                 show('{$list}{$row.case_id}_hide','table-row');
+            <a href="#" onclick="cj('#caseDetails{$list}{$row.case_id}').show();
+                                 buildCaseDetails('{$list}{$row.case_id}','{$row.contact_id}');
+                                 cj('#{$list}{$row.case_id}_show').hide();
+                                 cj('#minus{$list}{$row.case_id}_hide').show();
+                                 cj('#{$list}{$row.case_id}_hide').show();
                                  return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
         </span>
         <span id="minus{$list}{$row.case_id}_hide">
-            <a href="#" onclick="hide('caseDetails{$list}{$row.case_id}'); 
-                                 show('{$list}{$row.case_id}_show', 'table-row');
-                                 hide('{$list}{$row.case_id}_hide');
-                                 hide('minus{$list}{$row.case_id}_hide');
+            <a href="#" onclick="cj('#caseDetails{$list}{$row.case_id}').hide();
+                                 cj('#{$list}{$row.case_id}_show').show();
+                                 cj('#{$list}{$row.case_id}_hide').hide();
+                                 cj('#minus{$list}{$row.case_id}_hide').hide();
                                  return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
         </td>
-    {/if}	
-  
-    {if !$single}
-    	<td class="crm-case-id crm-case-id_{$row.case_id}"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}" title="{ts}view contact details{/ts}">{$row.sort_name}</a>{if $row.phone}<br /><span class="description">{$row.phone}</span>{/if}<br /><span class="description">{ts}Case ID{/ts}: {$row.case_id}</span></td>
     {/if}
-    
+
+    {if !$single}
+      <td class="crm-case-id crm-case-id_{$row.case_id}"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}" title="{ts}view contact details{/ts}">{$row.sort_name}</a>{if $row.phone}<br /><span class="description">{$row.phone}</span>{/if}<br /><span class="description">{ts}Case ID{/ts}: {$row.case_id}</span></td>
+    {/if}
+
     <td class="crm-case-subject">{$row.case_subject}</td>
     <td class="{$row.class} crm-case-status_{$row.case_status}">{$row.case_status}</td>
     <td class="crm-case-case_type">{$row.case_type}</td>
     <td class="crm-case-case_role">{if $row.case_role}{$row.case_role}{else}---{/if}</td>
     <td class="crm-case-case_manager">{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
     <td class="crm-case-case_recent_activity_type">{if $row.case_recent_activity_type}
-	{$row.case_recent_activity_type}<br />{$row.case_recent_activity_date|crmDate}{else}---{/if}</td>
+  {$row.case_recent_activity_type}<br />{$row.case_recent_activity_date|crmDate}{else}---{/if}</td>
     <td class="crm-case-case_scheduled_activity_type">{if $row.case_scheduled_activity_type}
-	{$row.case_scheduled_activity_type}<br />{$row.case_scheduled_activity_date|crmDate}{else}---{/if}</td>
+  {$row.case_scheduled_activity_type}<br />{$row.case_scheduled_activity_date|crmDate}{else}---{/if}</td>
     <td>{$row.action|replace:'xx':$row.case_id}{$row.moreActions|replace:'xx':$row.case_id}</td>
    </tr>
 {if $context != 'case'}
@@ -110,8 +110,8 @@
      </td>
    </tr>
  <script type="text/javascript">
-     hide('{$list}{$row.case_id}_hide');
-     hide('minus{$list}{$row.case_id}_hide');
+     cj('#{$list}{$row.case_id}_hide').hide();
+     cj('#minus{$list}{$row.case_id}_hide').hide();
  </script>
 {/if}
   {/foreach}
@@ -134,7 +134,7 @@
 {if $context EQ 'Search'}
  <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  </script>
 {/if}
@@ -164,4 +164,4 @@ function buildCaseDetails( caseId, contactId )
 }
 </script>
 
-{/literal}	
+{/literal}

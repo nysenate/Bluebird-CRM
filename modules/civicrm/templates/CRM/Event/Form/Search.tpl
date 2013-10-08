@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,23 +27,22 @@
 {assign var="showBlock" value="'searchForm'"}
 {assign var="hideBlock" value="'searchForm_show'"}
 <div class="crm-block crm-form-block crm-event-search-form-block">
-<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if !empty($ssID) or $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if !empty($ssID) or $rows}collapsed{/if}">
  <div class="crm-accordion-header crm-master-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
         {ts}Edit Search Criteria{/ts}
   </div>
  <div class="crm-accordion-body">
 <div id="searchForm">
-    {strip} 
+    {strip}
         <table class="form-layout">
         <tr class="crm-event-search-form-block-sort_name">
            <td class="font-size12pt" colspan="2">
-               {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmReplace:class:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
-           </td>       
+               {$form.sort_name.label}&nbsp;&nbsp;{$form.sort_name.html|crmAddClass:'twenty'}&nbsp;&nbsp;&nbsp;{$form.buttons.html}
+           </td>
         </tr>
-     
+
         {include file="CRM/Event/Form/Search/Common.tpl"}
-     
+
         <tr>
            <td colspan="2">{include file="CRM/common/formButtons.tpl"}</td>
         </tr>
@@ -56,9 +55,9 @@
 {if $rowsEmpty|| $rows}
 <div class="crm-block crm-content-block">
 {if $rowsEmpty}
-	<div class="crm-results-block crm-results-block-empty">
+  <div class="crm-results-block crm-results-block-empty">
     {include file="CRM/Event/Form/Search/EmptyResults.tpl"}
-	</div>
+  </div>
 {/if}
 
 {if $rows}
@@ -67,10 +66,10 @@
         {* This section handles form elements for action task select and submit *}
         <div class="crm-search-tasks crm-event-search-tasks">
            {include file="CRM/common/searchResultTasks.tpl" context='Event'}
-	    </div>
+      </div>
         {* This section displays the rows along and includes the paging controls *}
-    	<div id='participantSearch' class="crm-event-search-results">
-	        {include file="CRM/Event/Form/Selector.tpl" context="Search"}
+      <div id='participantSearch' class="crm-event-search-results">
+          {include file="CRM/Event/Form/Selector.tpl" context="Search"}
         </div>
     {* END Actions/Results section *}
 </div>
@@ -81,7 +80,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,24 +27,30 @@
 <h3>{if $action eq 1}{ts}New Option Value{/ts}{elseif $action eq 2}{ts}Edit Option Value{/ts}{else}{ts}Delete Option Value{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-admin-optionvalue-form-block">
    {if $action eq 8}
-      <div class="messages status">
+      <div class="messages status no-popup">
           <div class="icon inform-icon"></div>
           {ts}WARNING: Deleting this option value will result in the loss of all records which use the option value.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
    {else}
-      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
+      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
       <table class="form-layout-compressed">
         <tr class="crm-admin-optionvalue-form-block-label">
-            <td class="label">{$form.label.label} 
+            <td class="label">{$form.label.label}
               {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_option_value' field='label' id=$id}{/if}</td>
             <td>{$form.label.html}</td>
-        </tr>    
+        </tr>
         <tr class="crm-admin-optionvalue-form-block-value">
             <td class="label">{$form.value.label}</td>
-            <td>{$form.value.html}<br /> {if $config->languageLimit|@count >= 2}
-            <span class="description">{ts}The same option value is stored for all languages. Changing this value will change it for all languages.{/ts}</span> {/if} </td>
-        </tr> 
-        <tr class="crm-admin-optionvalue-form-block-name">   
+            <td>{$form.value.html}<br />
+            {if $action eq 2}
+              <span class="description red"><div class="icon alert-icon"></div>{ts}Changing the Value field will unlink records which have been marked with this option. This change can not be undone except by restoring the previous value.{/ts}</span>
+            {/if}
+            {if $config->languageLimit|@count >= 2}<br />
+              <span class="description">{ts}The same option value is stored for all languages. Changing this value will change it for all languages.{/ts}</span>
+            {/if}
+            </td>
+        </tr>
+        <tr class="crm-admin-optionvalue-form-block-name">
             <td class="label">{$form.name.label}</td>
             <td>{$form.name.html}</td>
         </tr>
@@ -52,6 +58,12 @@
             <td class="label">{$form.grouping.label}</td>
             <td>{$form.grouping.html}</td>
         </tr>
+  {if $form.financial_account_id}
+          <tr class="crm-admin-optionvalue-form-block-financialAccount">
+            <td class="label">{$form.financial_account_id.label}</td>
+            <td>{$form.financial_account_id.html}</td>
+          </tr>
+  {/if}
         <tr class="crm-admin-optionvalue-form-block-description">
             <td class="label">{$form.description.label}</td>
             <td>{$form.description.html}</td>
@@ -79,8 +91,8 @@
             <td class="label">{$form.contactOptions.label}</td>
             <td>{$form.contactOptions.html}</td>
         </tr>
-       {/if}  
-      </table> 
+       {/if}
+      </table>
      {/if}
-     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>      
+     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

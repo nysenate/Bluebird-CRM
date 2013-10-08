@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,68 +37,67 @@
    {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
     {if $locEvents}
-    	<table class="form-layout-compressed">
-			<tr id="optionType" class="crm-event-manage-location-form-block-location_option">
-				<td class="labels">
-					{$form.location_option.label}
-				</td>
-				{foreach from=$form.location_option key=key item =item}
-					{if $key|is_numeric}
-						<td class="value"><strong>{$item.html}</strong></td>
-				    {/if}
-                {/foreach} 
-			 </tr>
-			<tr id="existingLoc" class="crm-event-manage-location-form-block-loc_event_id">
-				<td class="labels">
-					{$form.loc_event_id.label}
-				</td>
-				<td class="value" colspan="2">
-					{$form.loc_event_id.html|crmReplace:class:huge}
-				</td>
-			</tr>
-			<tr>
-				<td id="locUsedMsg" colspan="3">
-				{assign var=locUsedMsgTxt value="<strong>Note:</strong> This location is used by multiple events. Modifying location information will change values for all events."}
-				</td>
-			</tr>
-			
-		</table>
-    {/if}	
+      <table class="form-layout-compressed">
+      <tr id="optionType" class="crm-event-manage-location-form-block-location_option">
+        <td class="labels">
+          {$form.location_option.label}
+        </td>
+        {foreach from=$form.location_option key=key item =item}
+          {if $key|is_numeric}
+            <td class="value"><strong>{$item.html}</strong></td>
+            {/if}
+                {/foreach}
+       </tr>
+      <tr id="existingLoc" class="crm-event-manage-location-form-block-loc_event_id">
+        <td class="labels">
+          {$form.loc_event_id.label}
+        </td>
+        <td class="value" colspan="2">
+          {$form.loc_event_id.html|crmAddClass:huge}
+        </td>
+      </tr>
+      <tr>
+        <td id="locUsedMsg" colspan="3">
+        {assign var=locUsedMsgTxt value="<strong>Note:</strong> This location is used by multiple events. Modifying location information will change values for all events."}
+        </td>
+      </tr>
 
-    
+    </table>
+    {/if}
+
+
 
     <div id="newLocation">
       <h3>Address</h3>
-		{* Display the address block *}
-		{include file="CRM/Contact/Form/Edit/Address.tpl"} 
-	<table class="form-layout-compressed">
-    {* Display the email block(s) *}  
+    {* Display the address block *}
+    {include file="CRM/Contact/Form/Edit/Address.tpl"}
+  <table class="form-layout-compressed">
+    {* Display the email block(s) *}
     {include file="CRM/Contact/Form/Edit/Email.tpl"}
 
     {* Display the phone block(s) *}
-    {include file="CRM/Contact/Form/Edit/Phone.tpl"} 
+    {include file="CRM/Contact/Form/Edit/Phone.tpl"}
     </table>
-	 <table class="form-layout-compressed">
-	 <tr class="crm-event-is_show_location">
-		<td colspan="2">{$form.is_show_location.label}</td>
-		<td colspan="2">
-			{$form.is_show_location.html}<br />
-			<span class="description">{ts}Uncheck this box if you want to HIDE the event Address on Event Information and Registration pages as well as on email confirmations.{/ts}
-		</td>
-	</tr>
-	</table>
+   <table class="form-layout-compressed">
+   <tr class="crm-event-is_show_location">
+    <td colspan="2">{$form.is_show_location.label}</td>
+    <td colspan="2">
+      {$form.is_show_location.html}<br />
+      <span class="description">{ts}Uncheck this box if you want to HIDE the event Address on Event Information and Registration pages as well as on email confirmations.{/ts}
+    </td>
+  </tr>
+  </table>
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>
 </div>
-    
-{* Include Javascript to hide and display the appropriate blocks as directed by the php code *} 
+
+{* Include Javascript to hide and display the appropriate blocks as directed by the php code *}
 {*include file="CRM/common/showHide.tpl"*}
 {if $locEvents}
-<script type="text/javascript">    
+<script type="text/javascript">
 {literal}
 var locUsedMsgTxt = {/literal}"{$locUsedMsgTxt}"{literal};
-var locBlockURL   = {/literal}"{crmURL p='civicrm/ajax/locBlock' q='reset=1' h=0}"{literal};
 var locBlockId    = {/literal}"{$form.loc_event_id.value.0}"{literal};
 
 if ( {/literal}"{$locUsed}"{literal} ) {
@@ -108,7 +107,7 @@ if ( {/literal}"{$locUsed}"{literal} ) {
 cj(document).ready(function() {
   cj('#loc_event_id').change(function() {
     cj.ajax({
-      url: locBlockURL, 
+      url: CRM.url('civicrm/ajax/locBlock', 'reset=1'),
       type: 'POST',
       data: {'lbid': cj(this).val()},
       dataType: 'json',
@@ -116,7 +115,7 @@ cj(document).ready(function() {
         var selectLocBlockId = cj('#loc_event_id').val();
         for(i in data) {
           if ( i == 'count_loc_used' ) {
-            if ( ((selectLocBlockId == locBlockId) && data['count_loc_used'] > 1) || 
+            if ( ((selectLocBlockId == locBlockId) && data['count_loc_used'] > 1) ||
                  ((selectLocBlockId != locBlockId) && data['count_loc_used'] > 0) ) {
               displayMessage( true );
             } else {

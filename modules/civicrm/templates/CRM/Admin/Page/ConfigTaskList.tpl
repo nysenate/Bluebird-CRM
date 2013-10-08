@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,10 +26,16 @@
 {capture assign="linkTitle"}{ts}Edit settings{/ts}{/capture}
 {capture assign="adminMenu"}{crmURL p="civicrm/admin" q="reset=1"}{/capture}
 {if $fromEmailId}
-    {assign var='fromAction' value="&action=update&id=`$fromEmailId`"} 
+    {assign var='fromAction' value="&action=update&id=`$fromEmailId`"}
 {else}
     {assign var='fromAction' value="&action=add"}
 {/if}
+{if $payPalProId}
+    {assign var='defaultPPUrl' value="action=add&pp=`$payPalProId`&reset=1"}
+{else}
+    {assign var='defaultPPUrl' value="reset=1"}
+{/if}
+
 <div id="help" class="description">
     {ts 1=$adminMenu}Use this checklist to review and complete configuration tasks for your site. You will be redirected back to this checklist after saving each setting. Settings which you have not yet reviewed will be <span class="status-overdue">displayed in red</span>. After you have visited a page, the links will <span class="status-pending">display in green</span>  (although you may still need to revisit the page to complete or update the settings). You can access this page again from the <a href="%1">Administer CiviCRM</a> menu at any time.{/ts}
 </div>
@@ -68,7 +74,7 @@
         <td>{ts}Adjust search behaviors including wildcards, and data to include in quick search results. Adjusting search settings can improve performance for larger datasets.{/ts}</li>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/misc" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Undelete, Logging and ReCAPTCHA{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/setting/misc" q="reset=1&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Misc (Undelete, PDFs, Limits, Logging, Captcha, etc.){/ts}</a></td>
         <td>{ts}Version reporting and alerts, reCAPTCHA configuration and attachments.{/ts}</li>
     </tr>
     <tr class="even">
@@ -92,9 +98,9 @@
         <td colspan="2">{ts}Online Contributions / Online Membership Signup / Online Event Registration{/ts}</td>
     </tr>
     <tr class="even">
-        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/paymentProcessor" q="action=add&reset=1&pp=PayPal&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Payment Processors{/ts}</a></td>
+        <td class="tasklist nowrap"><a href="{crmURL p="civicrm/admin/paymentProcessor" q="`$defaultPPUrl`&civicrmDestination=`$destination`"}" title="{$linkTitle}">{ts}Payment Processors{/ts}</a></td>
         <td>{ts}Select and configure one or more payment processing services for online contributions, events and / or membership fees.{/ts}</td>
-    </tr>  
+    </tr>
     {if $config->userSystem->is_drupal EQ '1'}
         <tr class="even">
             {if $config->userFramework EQ 'Drupal'}
@@ -115,7 +121,7 @@
 <div class="description">
     {capture assign=docLink}{docURL page="user/organising-your-data/overview" text="Organizing Your Data"}{/capture}
     {ts 1=$adminMenu 2=$docLink}The next set of tasks involve planning and have multiple steps. You may want to check out the %2 section in the User and Administrator Guide before you begin. You will not be returned to this page after completing these tasks, but you can always get back here from the <a href="%1">Administer CiviCRM</a> menu.{/ts}
-</div>  
+</div>
 
 <table class="selector">
     <tr class="columnheader">
@@ -153,11 +159,11 @@
     </tr>
     <tr class="even">
         <td class="tasklist nowrap" style="width: 10%;">{docURL page="user/contributions/what-is-civicontribute" text="CiviContribute"}</td>
-        <td>{ts}Online fundraising and donor management, as well as offline contribution processing and tracking.{/ts}</td>    
+        <td>{ts}Online fundraising and donor management, as well as offline contribution processing and tracking.{/ts}</td>
     </tr>
     <tr class="even">
         <td class="tasklist nowrap" style="width: 10%;">{docURL page="user/pledges/what-is-civipledge" text="CiviPledge"}</td>
-        <td>{ts}Accept and track pledges (for recurring gifts).{/ts}</td>    
+        <td>{ts}Accept and track pledges (for recurring gifts).{/ts}</td>
     </tr>
     <tr class="even">
         <td class="tasklist nowrap">{docURL page="user/events/what-is-civievent" text="CiviEvent"}</td>

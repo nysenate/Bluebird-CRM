@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,19 +27,19 @@
 {include file="CRM/common/WizardHeader.tpl"}
 
 <div id="help">
-    {ts}You can either <strong>upload</strong> the sms content from your computer OR <strong>compose</strong> the content on this screen.{/ts} {help id="content-intro"} 
+    {ts}You can either <strong>upload</strong> the sms content from your computer OR <strong>compose</strong> the content on this screen.{/ts} {help id="content-intro"}
 </div>
 
 {include file="CRM/Mailing/Form/Count.tpl"}
 
 <table class="form-layout-compressed">
     <tr class="crm-mailing-upload-form-block-sms_provider_id"><td class="label">{$form.sms_provider_id.label}</td>
-        <td>{$form.sms_provider_id.html} {help id ="id-sms_provider"}</td>
+        <td>{$form.sms_provider_id.html} {help id ="id-sms_provider" isAdmin=$isAdmin}</td>
     </tr>
-    
+
     <tr class="crm-mailing-upload-form-block-template">
-    	<td class="label">{$form.template.label}</td>
-	<td>{$form.template.html}</td>
+      <td class="label">{$form.template.label}</td>
+  <td>{$form.template.html}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-upload_type"><td></td><td colspan="2">{$form.upload_type.label} {$form.upload_type.html} {help id="upload-compose"}</td></tr>
 </table>
@@ -58,7 +58,7 @@
         </tr>
     </table>
   </fieldset>
-  
+
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div><!-- / .crm-form-block -->
 
@@ -68,15 +68,15 @@
 <script type="text/javascript">
     showHideUpload();
     function showHideUpload()
-    { 
-	if (document.getElementsByName("upload_type")[0].checked) {
-            hide('compose_id');
-	    cj('.crm-mailing-upload-form-block-template').hide();
-	    show('upload_id');	
+    {
+  if (document.getElementsByName("upload_type")[0].checked) {
+            cj('#compose_id').hide();
+      cj('.crm-mailing-upload-form-block-template').hide();
+      cj('#upload_id').show();
         } else {
-            show('compose_id');
-	    cj('.crm-mailing-upload-form-block-template').show();
-	    hide('upload_id');
+            cj('#compose_id').show();
+      cj('.crm-mailing-upload-form-block-template').show();
+      cj('#upload_id').hide();
             verify( );
         }
     }

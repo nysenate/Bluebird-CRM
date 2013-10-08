@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,9 +27,8 @@
    custom search .php file. If you want a different layout, clone and customize this file and point to new file using
    templateFile() function.*}
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
-<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">
-    <div class="icon crm-accordion-pointer"></div>
       {ts}Edit Search Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -91,7 +90,7 @@
        <div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
     {* This section handles form elements for action task select and submit *}
-        <div class="crm-search-tasks">        
+        <div class="crm-search-tasks">
         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
         </div>
         {* This section displays the rows along and includes the paging controls *}
@@ -103,7 +102,7 @@
         {if $atoZ}
             {include file="CRM/common/pagerAToZ.tpl"}
         {/if}
-        
+
         {strip}
         <table class="selector" summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
@@ -142,7 +141,7 @@
 
         <script type="text/javascript">
         {* this function is called to change the color of selected row(s) *}
-           var fname = "{$form.formName}";	
+           var fname = "{$form.formName}";
            on_load_init_checkboxes(fname);
         </script>
 
@@ -159,7 +158,7 @@
 {literal}
 <script type="text/javascript">
  cj(function() {
-    cj().crmaccordions(); 
+    cj().crmAccordions();
  });
 </script>
 {/literal}

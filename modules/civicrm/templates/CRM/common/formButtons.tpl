@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 {* Loops through $form.buttons.html array and assigns separate spans with classes to allow theming
    by button and name. crmBtnType grabs type keyword from button name (e.g. 'upload', 'next', 'back', 'cancel') so
    types of buttons can be styled differently via css. *}
-   
+
 {foreach from=$form.buttons item=button key=key name=btns}
     {if $key|substring:0:4 EQ '_qf_'}
         {if $location}
@@ -35,6 +35,7 @@
         {else}
           {assign var='html' value=$form.buttons.$key.html}
         {/if}
-        <span class="crm-button crm-button-type-{$key|crmBtnType} crm-button{$key}"{if $buttonStyle} style="{$buttonStyle}"{/if}>{$html}</span>
+        {capture assign=validate}{$key|crmBtnValidate}{/capture}
+        <span class="crm-button crm-button-type-{$key|crmBtnType} crm-button{$key}"{if $buttonStyle} style="{$buttonStyle}"{/if}>{$html|crmAddClass:$validate}</span>
     {/if}
 {/foreach}
