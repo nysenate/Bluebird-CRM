@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -88,9 +88,7 @@ function civicrm_main(&$config) {
 
   civicrm_source($dsn, $sqlPath . DIRECTORY_SEPARATOR . 'civicrm.mysql');
 
-  if (isset($config['loadGenerated']) &&
-    $config['loadGenerated']
-  ) {
+  if (!empty($config['loadGenerated'])) {
     civicrm_source($dsn, $sqlPath . DIRECTORY_SEPARATOR . 'civicrm_generated.mysql', TRUE);
   }
   else {
@@ -120,6 +118,7 @@ function civicrm_main(&$config) {
   civicrm_write_file($configFile,
     $string
   );
+
 }
 
 function civicrm_source($dsn, $fileName, $lineMode = FALSE) {
@@ -188,23 +187,21 @@ function civicrm_config(&$config) {
   );
 
   $params['baseURL'] = isset($config['base_url']) ? $config['base_url'] : civicrm_cms_base();
-  if ($installType == 'drupal' &&
-    version_compare(VERSION, '7.0-rc1') >= 0
-  ) {
-    $params['cms']       = 'Drupal';
-    $params['CMSdbUser'] = addslashes($config['drupal']['username']);
-    $params['CMSdbPass'] = addslashes($config['drupal']['password']);
-    $params['CMSdbHost'] = $config['drupal']['server'];
-    $params['CMSdbName'] = addslashes($config['drupal']['database']);
-  }
-  elseif ($installType == 'drupal' &&
-    version_compare(VERSION, '6.0') >= 0
-  ) {
-    $params['cms']       = 'Drupal6';
-    $params['CMSdbUser'] = addslashes($config['drupal']['username']);
-    $params['CMSdbPass'] = addslashes($config['drupal']['password']);
-    $params['CMSdbHost'] = $config['drupal']['server'];
-    $params['CMSdbName'] = addslashes($config['drupal']['database']);
+  if ($installType == 'drupal') {
+    if (version_compare(VERSION, '7.0-rc1') >= 0) {
+      $params['cms']       = 'Drupal';
+      $params['CMSdbUser'] = addslashes($config['drupal']['username']);
+      $params['CMSdbPass'] = addslashes($config['drupal']['password']);
+      $params['CMSdbHost'] = $config['drupal']['server'];
+      $params['CMSdbName'] = addslashes($config['drupal']['database']);
+    }
+    elseif (version_compare(VERSION, '6.0') >= 0) {
+      $params['cms']       = 'Drupal6';
+      $params['CMSdbUser'] = addslashes($config['drupal']['username']);
+      $params['CMSdbPass'] = addslashes($config['drupal']['password']);
+      $params['CMSdbHost'] = $config['drupal']['server'];
+      $params['CMSdbName'] = addslashes($config['drupal']['database']);
+    }
   }
   else {
     $params['cms']       = 'WordPress';
@@ -212,11 +209,14 @@ function civicrm_config(&$config) {
     $params['CMSdbPass'] = addslashes(DB_PASSWORD);
     $params['CMSdbHost'] = DB_HOST;
     $params['CMSdbName'] = addslashes(DB_NAME);
+
+    // CRM-12386
+    $params['crmRoot'] = addslashes($params['crmRoot']);
   }
 
   $params['siteKey'] = md5(uniqid('', TRUE) . $params['baseURL']);
 
-  $str = file_get_contents($tplPath . 'civicrm.settings.php.tpl');
+  $str = file_get_contents($tplPath . 'civicrm.settings.php.template');
   foreach ($params as $key => $value) {
     $str = str_replace('%%' . $key . '%%', $value, $str);
   }
@@ -229,13 +229,14 @@ function civicrm_cms_base() {
   // for drupal
   $numPrevious = 6;
 
-  if (!isset($_SERVER['HTTPS']) ||
-    strtolower($_SERVER['HTTPS']) == 'off'
+  if (isset($_SERVER['HTTPS']) &&
+    !empty($_SERVER['HTTPS']) &&
+    strtolower($_SERVER['HTTPS']) != 'off'
   ) {
-    $url = 'http://' . $_SERVER['HTTP_HOST'];
+    $url = 'https://' . $_SERVER['HTTP_HOST'];
   }
   else {
-    $url = 'https://' . $_SERVER['HTTP_HOST'];
+    $url = 'http://' . $_SERVER['HTTP_HOST'];
   }
 
   $baseURL = $_SERVER['SCRIPT_NAME'];
