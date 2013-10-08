@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -50,6 +50,9 @@ class CRM_Upgrade_Headless {
       throw new Exception($error);
     }
 
+    // Disable our SQL triggers
+    CRM_Core_DAO::dropTriggers();
+
     // CRM-11156
     $preUpgradeMessage = NULL;
     $upgrade->setPreUpgradeMessage($preUpgradeMessage, $currentVer, $latestVer);
@@ -65,7 +68,7 @@ class CRM_Upgrade_Headless {
       CRM_Core_Error::debug_log_message($errorMessage);
       if ($enablePrint) {
         print($errorMessage);
-      }
+    }
       throw $queueResult['exception']; // FIXME test
     }
 

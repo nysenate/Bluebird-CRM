@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -89,7 +89,7 @@ class CRM_Upgrade_TwoOne_Page_Upgrade extends CRM_Core_Page {
 
   function runForm($stepID) {
     $formName = "CRM_Upgrade_TwoOne_Form_Step{$stepID}";
-    eval("\$form = new $formName( );");
+    $form = new $formName();
 
     $error = NULL;
     if (!$form->verifyPreDBState($error)) {
@@ -115,7 +115,7 @@ class CRM_Upgrade_TwoOne_Page_Upgrade extends CRM_Core_Page {
 
   function runTwoOneTwo() {
     $formName = "CRM_Upgrade_TwoOne_Form_TwoOneTwo";
-    eval("\$form = new $formName( '2.1.4' );");
+    $form = new $formName( '2.1.4' );
 
     $error = NULL;
     if (!$form->verifyPreDBState($error)) {

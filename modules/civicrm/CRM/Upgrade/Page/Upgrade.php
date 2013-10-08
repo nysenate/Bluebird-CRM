@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -47,21 +47,17 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     list($currentVer, $latestVer) = $upgrade->getUpgradeVersions();
 
     CRM_Utils_System::setTitle(ts('Upgrade CiviCRM to Version %1',
-        array(1 => $latestVer)
-      ));
+      array(1 => $latestVer)
+    ));
 
     $template = CRM_Core_Smarty::singleton();
     $template->assign('pageTitle', ts('Upgrade CiviCRM to Version %1',
-        array(1 => $latestVer)
-      ));
-    $template->assign('menuRebuildURL',
-      CRM_Utils_System::url('civicrm/menu/rebuild', 'reset=1')
-    );
+      array(1 => $latestVer)
+    ));
     $template->assign('cancelURL',
       CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
     );
 
-    // $action = CRM_Utils_Request::retrieve( 'action', 'String',  CRM_Core_DAO::$_nullObject, false, 'intro', null );
     $action = CRM_Utils_Array::value('action', $_REQUEST, 'intro');
     switch ($action) {
       case 'intro':
@@ -111,15 +107,20 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     $template->assign('currentVersion', $currentVer);
     $template->assign('newVersion', $latestVer);
     $template->assign('upgradeTitle', ts('Upgrade CiviCRM from v %1 To v %2',
-        array(1 => $currentVer, 2 => $latestVer)
-      ));
+      array(1 => $currentVer, 2 => $latestVer)
+    ));
     $template->assign('upgraded', FALSE);
+
+    // Render page header
+    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
+      CRM_Utils_System::addHTMLHead($region->render(''));
+    }
 
     $template->assign('preUpgradeMessage', $preUpgradeMessage);
     // $template->assign( 'message', $postUpgradeMessage );
 
     $content = $template->fetch('CRM/common/success.tpl');
-    echo CRM_Utils_System::theme('page', $content, TRUE, $this->_print, FALSE, TRUE);
+    echo CRM_Utils_System::theme($content, $this->_print, TRUE);
   }
 
   /**
@@ -143,18 +144,23 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
 
     $postUpgradeMessage = ts('CiviCRM upgrade was successful.');
 
+    // lets drop all the triggers here
+    CRM_Core_DAO::dropTriggers();
+
+    $this->set('isUpgradePending', TRUE);
+
     // Persistent message storage across upgrade steps. TODO: Use structured message store
     // Note: In clustered deployments, this file must be accessible by all web-workers.
     $this->set('postUpgradeMessageFile', CRM_Utils_File::tempnam('civicrm-post-upgrade'));
     file_put_contents($this->get('postUpgradeMessageFile'), $postUpgradeMessage);
 
     $queueRunner = new CRM_Queue_Runner(array(
-        'title' => ts('CiviCRM Upgrade Tasks'),
-        'queue' => CRM_Upgrade_Form::buildQueue($currentVer, $latestVer, $this->get('postUpgradeMessageFile')),
-        'isMinimal' => TRUE,
-        'pathPrefix' => 'civicrm/upgrade/queue',
-        'onEndUrl' => CRM_Utils_System::url('civicrm/upgrade', 'action=finish', FALSE, NULL, FALSE ),
-        'buttons' => array('retry' => $config->debug, 'skip' => $config->debug),
+      'title' => ts('CiviCRM Upgrade Tasks'),
+      'queue' => CRM_Upgrade_Form::buildQueue($currentVer, $latestVer, $this->get('postUpgradeMessageFile')),
+      'isMinimal' => TRUE,
+      'pathPrefix' => 'civicrm/upgrade/queue',
+      'onEndUrl' => CRM_Utils_System::url('civicrm/upgrade', 'action=finish', FALSE, NULL, FALSE ),
+      'buttons' => array('retry' => $config->debug, 'skip' => $config->debug),
       ));
     $queueRunner->runAllViaWeb();
     CRM_Core_Error::fatal(ts('Upgrade failed to redirect'));
@@ -167,11 +173,17 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     $upgrade = new CRM_Upgrade_Form();
     $template = CRM_Core_Smarty::singleton();
 
-    // TODO: Use structured message store
-    $postUpgradeMessage = file_get_contents($this->get('postUpgradeMessageFile'));
+    // If we're redirected from queue-runner, then isUpgradePending=true.
+    // If user then reloads the finish page, the isUpgradePending will be unset. (Because the session has been cleared.)
+    if ($this->get('isUpgradePending')) {
+      // TODO: Use structured message store
+      $postUpgradeMessage = file_get_contents($this->get('postUpgradeMessageFile'));
 
-    // This destroys $session, so do it after ge('postUpgradeMessageFile')
-    CRM_Upgrade_Form::doFinish();
+      // This destroys $session, so do it after get('postUpgradeMessageFile')
+      CRM_Upgrade_Form::doFinish();
+    } else {
+      $postUpgradeMessage = ''; // Session was destroyed! Can't recover messages.
+    }
 
     // do a version check - after doFinish() sets the final version
     list($currentVer, $latestVer) = $upgrade->getUpgradeVersions();
@@ -182,8 +194,13 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     $template->assign('message', $postUpgradeMessage);
     $template->assign('upgraded', TRUE);
 
+    // Render page header
+    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
+      CRM_Utils_System::addHTMLHead($region->render(''));
+    }
+
     $content = $template->fetch('CRM/common/success.tpl');
-    echo CRM_Utils_System::theme('page', $content, TRUE, $this->_print, FALSE, TRUE);
+    echo CRM_Utils_System::theme($content, $this->_print, TRUE);
   }
 }
 

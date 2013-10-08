@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,11 +28,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Upgrade_Incremental_php_FourOne {
+  // This was changed in 4.3 so we define it locally for compatability with older dbs
+  const NAVIGATION_NAME = "Navigation Menu";
+
   function verifyPreDBstate(&$errors) {
     $config = CRM_Core_Config::singleton();
     if (in_array('CiviCase', $config->enableComponents)) {
@@ -123,7 +126,7 @@ class CRM_Upgrade_Incremental_php_FourOne {
 
 
     $userColumnNames = array(
-      CRM_Core_BAO_Setting::NAVIGATION_NAME => array(
+      self::NAVIGATION_NAME => array(
         'navigation',
       ),
     );
@@ -268,8 +271,7 @@ VALUES
     CRM_Core_DAO::executeQuery($sql);
   }
 
-  static
-  function retrieveDirectoryAndURLPaths(&$params) {
+  static function retrieveDirectoryAndURLPaths(&$params) {
 
     $sql = "
 SELECT v.name as valueName, v.value, g.name as optionName

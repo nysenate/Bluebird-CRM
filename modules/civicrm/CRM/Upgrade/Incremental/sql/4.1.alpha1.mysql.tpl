@@ -29,29 +29,29 @@ VALUES
 
 -- CRM-8780
 
--- add the settings table //NYSS
--- CREATE TABLE `civicrm_setting` (
---  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
---  `group_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for setting element, useful in caching setting elements',
---  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique name for setting',
---  `value` text COLLATE utf8_unicode_ci COMMENT 'data associated with this group / name combo',
---  `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
---  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID if the setting is localized to a contact',
---  `is_domain` tinyint(4) DEFAULT NULL COMMENT 'Is this setting a contact specific or site wide setting?',
---  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
---  `created_date` datetime DEFAULT NULL COMMENT 'When was the setting created',
---  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this setting',
---  PRIMARY KEY (`id`),
---  KEY `index_group_name` (`group_name`,`name`),
---  KEY `FK_civicrm_setting_domain_id` (`domain_id`),
---  KEY `FK_civicrm_setting_contact_id` (`contact_id`),
---  KEY `FK_civicrm_setting_component_id` (`component_id`),
---  KEY `FK_civicrm_setting_created_id` (`created_id`),
---  CONSTRAINT `FK_civicrm_setting_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE,
---  CONSTRAINT `FK_civicrm_setting_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
---  CONSTRAINT `FK_civicrm_setting_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`),
---  CONSTRAINT `FK_civicrm_setting_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
---) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+-- add the settings table
+ CREATE TABLE `civicrm_setting` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for setting element, useful in caching setting elements',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique name for setting',
+  `value` text COLLATE utf8_unicode_ci COMMENT 'data associated with this group / name combo',
+  `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID if the setting is localized to a contact',
+  `is_domain` tinyint(4) DEFAULT NULL COMMENT 'Is this setting a contact specific or site wide setting?',
+  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
+  `created_date` datetime DEFAULT NULL COMMENT 'When was the setting created',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this setting',
+  PRIMARY KEY (`id`),
+  KEY `index_group_name` (`group_name`,`name`),
+  KEY `FK_civicrm_setting_domain_id` (`domain_id`),
+  KEY `FK_civicrm_setting_contact_id` (`contact_id`),
+  KEY `FK_civicrm_setting_component_id` (`component_id`),
+  KEY `FK_civicrm_setting_created_id` (`created_id`),
+  CONSTRAINT `FK_civicrm_setting_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_civicrm_setting_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_civicrm_setting_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`),
+  CONSTRAINT `FK_civicrm_setting_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 
 -- CRM-8508
     SELECT @caseCompId := id FROM `civicrm_component` where `name` like 'CiviCase';
@@ -95,13 +95,13 @@ INSERT INTO `civicrm_dashboard`
 
 -- CRM-9059 Admin menu rebuild
 SELECT @domainID := min(id) FROM civicrm_domain;
-SELECT @adminlastID := id   FROM civicrm_navigation where name = 'Administer';
-SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize';
-SELECT @configureOld := id  FROM civicrm_navigation where name = 'Configure';
-SELECT @globalOld := id     FROM civicrm_navigation where name = 'Global Settings';
-SELECT @manageOld := id     FROM civicrm_navigation where name = 'Manage';
-SELECT @optionsOld := id    FROM civicrm_navigation where name = 'Option Lists';
-SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize';
+SELECT @adminlastID := id   FROM civicrm_navigation where name = 'Administer' AND domain_id = @domainID;
+SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize' AND domain_id = @domainID;
+SELECT @configureOld := id  FROM civicrm_navigation where name = 'Configure' AND domain_id = @domainID;
+SELECT @globalOld := id     FROM civicrm_navigation where name = 'Global Settings' AND domain_id = @domainID;
+SELECT @manageOld := id     FROM civicrm_navigation where name = 'Manage' AND domain_id = @domainID;
+SELECT @optionsOld := id    FROM civicrm_navigation where name = 'Option Lists' AND domain_id = @domainID;
+SELECT @customizeOld := id  FROM civicrm_navigation where name = 'Customize' AND domain_id = @domainID;
 
 DELETE from civicrm_navigation WHERE parent_id = @globalOld;
 DELETE from civicrm_navigation WHERE parent_id IN (@customizeOld, @configureOld, @manageOld, @optionsOld);
@@ -252,8 +252,8 @@ VALUES
     ( @domainID, 'civicrm/admin/setting/preferences/member&reset=1',    '{ts escape="sql" skip="true"}CiviMember Component Settings{/ts}', 'CiviMember Component Settings','access CiviMember,administer CiviCRM', 'AND', @memberAdminID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/options/event_badge&group=event_badge&reset=1', '{ts escape="sql" skip="true"}Event Badge Formats{/ts}', 'Event Badge Formats', 'access CiviEvent,administer CiviCRM', 'AND', @eventAdminID, '1', NULL, 11 );
 
--- CRM-9113 //NYSS
---ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
+-- CRM-9113
+ALTER TABLE `civicrm_report_instance` ADD `grouprole` VARCHAR( 1024 ) NULL AFTER `permission`;
 
 -- CRM-8762 Fix option_group table
 ALTER TABLE civicrm_option_group CHANGE `is_reserved` `is_reserved` TINYINT DEFAULT 1;
@@ -267,7 +267,7 @@ UPDATE civicrm_option_group SET `is_reserved` = 1;
 {/if}
 
 -- CRM-9112
- ALTER TABLE `civicrm_dedupe_rule_group` ADD `title` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL COMMENT 'Label of the rule group';
+  ALTER TABLE `civicrm_dedupe_rule_group` ADD `title` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL COMMENT 'Label of the rule group';
 
 ALTER TABLE `civicrm_dedupe_rule_group` ADD `is_reserved` TINYINT( 4 ) NULL DEFAULT NULL COMMENT 'Is this a reserved rule - a rule group that has been optimized and cannot be changed by the admin';
 
@@ -381,8 +381,8 @@ ALTER TABLE `civicrm_pcp` DROP COLUMN `referer`;
 
 UPDATE civicrm_navigation SET url = 'civicrm/admin/pcp?reset=1&page_type=contribute' WHERE url = 'civicrm/admin/pcp&reset=1';
 
-SELECT @lastEventId        := MAX(id) FROM civicrm_navigation where name = 'Events';
-SELECT @adminEventId       := MAX(id) FROM civicrm_navigation where name = 'CiviEvent';
+SELECT @lastEventId        := MAX(id) FROM civicrm_navigation where name = 'Events' AND domain_id = @domainID;
+SELECT @adminEventId       := MAX(id) FROM civicrm_navigation where name = 'CiviEvent' AND domain_id = @domainID;
 SELECT @lastEventIdWeight  := MAX(weight)+1 FROM civicrm_navigation where parent_id = @lastEventId;
 SELECT @adminEventIdWeight := MAX(weight)+1 FROM civicrm_navigation where parent_id = @adminEventId;
 
