@@ -330,7 +330,8 @@
       float: left;
       margin: 0px;
       padding: 0px;
-      margin-right: 5px; }
+      margin-right: 5px;
+      position: static; }
       #JSTree-container.BBTreeContainer .BBTree.tagging .fCB input.checkbox, #BBTreeContainer .BBTree.tagging .fCB input.checkbox {
         margin-top: 2px; }
     #JSTree-container.BBTreeContainer .BBTree.tagging dt.description div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.longdescription div.description, #BBTreeContainer .BBTree.tagging dt.description div.description, #BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #BBTreeContainer .BBTree.tagging dt.longdescription div.description {
