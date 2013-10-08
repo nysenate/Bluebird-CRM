@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,14 +28,12 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
-  function run($caseType,
-    &$params
-  ) {
+  function run($caseType, &$params) {
     $xml = $this->retrieve($caseType);
 
     if ($xml === FALSE) {
@@ -52,9 +50,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
     $this->process($xml, $params);
   }
 
-  function get($caseType,
-    $fieldSet, $isLabel = FALSE, $maskAction = FALSE
-  ) {
+  function get($caseType, $fieldSet, $isLabel = FALSE, $maskAction = FALSE) {
     $xml = $this->retrieve($caseType);
     if ($xml === FALSE) {
       $docLink = CRM_Utils_System::docURL2("user/case-management/setup");
@@ -76,17 +72,12 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
     }
   }
 
-  function process($xml,
-    &$params
-  ) {
-
+  function process($xml, &$params) {
     $standardTimeline = CRM_Utils_Array::value('standardTimeline', $params);
     $activitySetName  = CRM_Utils_Array::value('activitySetName', $params);
     $activityTypeName = CRM_Utils_Array::value('activityTypeName', $params);
 
-    if ('Open Case' ==
-      CRM_Utils_Array::value('activityTypeName', $params)
-    ) {
+    if ('Open Case' == CRM_Utils_Array::value('activityTypeName', $params)) {
       // create relationships for the ones that are required
       foreach ($xml->CaseRoles as $caseRoleXML) {
         foreach ($caseRoleXML->RelationshipType as $relationshipTypeXML) {
@@ -102,9 +93,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
       }
     }
 
-    if ('Change Case Start Date' ==
-      CRM_Utils_Array::value('activityTypeName', $params)
-    ) {
+    if ('Change Case Start Date' == CRM_Utils_Array::value('activityTypeName', $params)) {
       // delete all existing activities which are non-empty
       $this->deleteEmptyActivity($params);
     }
@@ -130,12 +119,9 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
     }
   }
 
-  function processStandardTimeline($activitySetXML,
-    &$params
-  ) {
-    if ('Change Case Type' ==
-      CRM_Utils_Array::value('activityTypeName', $params)
-    ) {
+  function processStandardTimeline($activitySetXML, &$params) {
+    if ('Change Case Type' == CRM_Utils_Array::value('activityTypeName', $params)
+      && CRM_Utils_Array::value('resetTimeline', $params, TRUE)) {
       // delete all existing activities which are non-empty
       $this->deleteEmptyActivity($params);
     }
@@ -180,14 +166,11 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
     return $result;
   }
 
-  function createRelationships($relationshipTypeName,
-    &$params
-  ) {
+  function createRelationships($relationshipTypeName, &$params) {
     $relationshipTypes = &$this->allRelationshipTypes();
     // get the relationship id
-    $relationshipTypeID = array_search($relationshipTypeName,
-      $relationshipTypes
-    );
+    $relationshipTypeID = array_search($relationshipTypeName, $relationshipTypes);
+
     if ($relationshipTypeID === FALSE) {
       $docLink = CRM_Utils_System::docURL2("user/case-management/setup");
       CRM_Core_Error::fatal(ts('Relationship type %1, found in case configuration file, is not present in the database %2',
@@ -220,7 +203,6 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
   }
 
   function createRelationship(&$params) {
-
     $dao = new CRM_Contact_DAO_Relationship();
     $dao->copyValues($params);
     // only create a relationship if it does not exist
@@ -241,9 +223,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
 
         if ($activityTypeInfo['id']) {
           if ($maskAction) {
-            if ($maskAction == 'edit' &&
-              '0' === (string ) $recordXML->editable
-            ) {
+            if ($maskAction == 'edit' && '0' === (string ) $recordXML->editable) {
               $result[$maskAction][] = $activityTypeInfo['id'];
             }
           }
@@ -274,11 +254,15 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
   }
 
   function deleteEmptyActivity(&$params) {
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+
     $query = "
 DELETE a
 FROM   civicrm_activity a
-INNER JOIN civicrm_activity_target t ON t.activity_id = a.id
-WHERE  t.target_contact_id = %1
+INNER JOIN civicrm_activity_contact t ON t.activity_id = a.id
+WHERE  t.contact_id = %1
+AND    t.record_type_id = $targetID
 AND    a.is_auto = 1
 AND    a.is_current_revision = 1
 ";
@@ -308,10 +292,7 @@ AND        a.is_deleted = 0
     return $maxInstance ? ($count < $maxInstance ? FALSE : TRUE) : FALSE;
   }
 
-  function createActivity($activityTypeXML,
-    &$params
-  ) {
-
+  function createActivity($activityTypeXML, &$params) {
     $activityTypeName = (string) $activityTypeXML->name;
     $activityTypes    = &$this->allActivityTypes(TRUE, TRUE);
     $activityTypeInfo = CRM_Utils_Array::value($activityTypeName, $activityTypes);
@@ -323,6 +304,7 @@ AND        a.is_deleted = 0
         ));
       return FALSE;
     }
+
     $activityTypeID = $activityTypeInfo['id'];
 
     if (isset($activityTypeXML->status)) {
@@ -388,6 +370,16 @@ AND        a.is_deleted = 0
       $activityParams['activity_date_time'] = $params['activity_date_time'];
       if (array_key_exists('custom', $params) && is_array($params['custom'])) {
         $activityParams['custom'] = $params['custom'];
+      }
+
+      // Add parameters for attachments
+
+      $numAttachments = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'max_attachments');
+      for ( $i = 1; $i <= $numAttachments; $i++ ) {
+        $attachName = "attachFile_$i";
+        if ( isset( $params[$attachName] ) && !empty( $params[$attachName] ) ) {
+          $activityParams[$attachName] = $params[$attachName];
+        }
       }
     }
     else {

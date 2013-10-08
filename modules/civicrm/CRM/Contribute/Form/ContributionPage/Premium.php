@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -67,22 +67,27 @@ class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_C
    * @access public
    */
   public function buildQuickForm() {
-    $this->addElement('checkbox', 'premiums_active', ts('Premiums Section Enabled?'), NULL, array('onclick' => "premiumBlock(this);"));
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium');
+    $this->addElement('checkbox', 'premiums_active', ts('Premiums Section Enabled?'), NULL);
 
-    $this->addElement('text', 'premiums_intro_title', ts('Title'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_intro_title'));
+    $this->addElement('text', 'premiums_intro_title', ts('Title'), $attributes['premiums_intro_title']);
 
     $this->add('textarea', 'premiums_intro_text', ts('Introductory Message'), 'rows=5, cols=50');
 
-    $this->add('text', 'premiums_contact_email', ts('Contact Email') . ' ', CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_email'));
+    $this->add('text', 'premiums_contact_email', ts('Contact Email') . ' ', $attributes['premiums_contact_email']);
 
     $this->addRule('premiums_contact_email', ts('Please enter a valid email address for Contact Email') . ' ', 'email');
 
-    $this->add('text', 'premiums_contact_phone', ts('Contact Phone'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_phone'));
+    $this->add('text', 'premiums_contact_phone', ts('Contact Phone'), $attributes['premiums_contact_phone']);
 
     $this->addRule('premiums_contact_phone', ts('Please enter a valid phone number.'), 'phone');
 
     $this->addElement('checkbox', 'premiums_display_min_contribution', ts('Display Minimum Contribution Amount?'));
 
+    // CRM-10999 Control label and position for No Thank-you radio button
+    $this->add('text', 'premiums_nothankyou_label', ts('No Thank-you Label'), $attributes['premiums_nothankyou_label']);
+    $positions = array(1 => ts('Before Premiums'), 2 => ts('After Premiums'));
+    $this->add('select','premiums_nothankyou_position', ts('No Thank-you Option'), $positions);
     $showForm = TRUE;
 
     if ($this->_single) {
@@ -99,9 +104,29 @@ class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_C
     $this->assign('showForm', $showForm);
 
     parent::buildQuickForm();
+    $this->addFormRule(array('CRM_Contribute_Form_ContributionPage_Premium', 'formRule'), $this);
 
     $premiumPage = new CRM_Contribute_Page_Premium();
     $premiumPage->browse();
+  }
+
+  /**
+   * Function for validation
+   *
+   * @param array $params (ref.) an assoc array of name/value pairs
+   *
+   * @return mixed true or array of errors
+   * @access public
+   * @static
+   */
+  public static function formRule($params) {
+    $errors = array();
+    if (CRM_Utils_Array::value('premiums_active', $params)) {
+      if (!CRM_Utils_Array::value('premiums_nothankyou_label', $params)) {
+        $errors['premiums_nothankyou_label'] = ts('No Thank-you Label is a required field.');
+      }
+    }
+    return empty($errors) ? TRUE : $errors;
   }
 
   /**

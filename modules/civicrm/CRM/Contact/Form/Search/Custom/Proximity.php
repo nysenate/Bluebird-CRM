@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,7 +36,9 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
 
   protected $_latitude = NULL;
   protected $_longitude = NULL;
-  protected $_distance = NULL; function __construct(&$formValues) {
+  protected $_distance = NULL;
+
+  function __construct(&$formValues) {
     parent::__construct($formValues);
 
     // unset search profile and other search params if set
@@ -134,7 +136,7 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
     $group = array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group();
     $form->addElement('select', 'group', ts('Group'), $group);
 
-    $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::tag();
+    $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
     $form->addElement('select', 'tag', ts('Tag'), $tag);
 
 
@@ -165,18 +167,22 @@ class CRM_Contact_Form_Search_Custom_Proximity extends CRM_Contact_Form_Search_C
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
-
-    $selectClause = "
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "
 contact_a.id           as contact_id    ,
 contact_a.sort_name    as sort_name     ,
 address.street_address as street_address,
 address.city           as city          ,
 address.postal_code    as postal_code   ,
 state_province.name    as state_province,
-country.name           as country       
+country.name           as country
 ";
+    }
 
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,
@@ -239,9 +245,10 @@ AND cgc.group_id = {$this->_group}
   }
 
   function setDefaultValues() {
-    $config         = CRM_Core_Config::singleton();
+    $config = CRM_Core_Config::singleton();
     $countryDefault = $config->defaultContactCountry;
-    $defaults       = array();
+    $stateprovinceDefault = $config->defaultContactStateProvince;
+    $defaults = array();
 
     if ($countryDefault) {
       if ($countryDefault == '1228' || $countryDefault == '1226') {
@@ -251,6 +258,9 @@ AND cgc.group_id = {$this->_group}
         $defaults['prox_distance_unit'] = 'km';
       }
       $defaults['country_id'] = $countryDefault;
+      if ($stateprovinceDefault) {
+        $defaults['state_province_id'] = $stateprovinceDefault;
+      }
       return $defaults;
     }
     return NULL;

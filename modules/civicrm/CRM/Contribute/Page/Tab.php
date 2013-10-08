@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -96,8 +96,7 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
    * @access public
    *
    */
-  static
-  function &recurLinks($recurID = FALSE, $context = 'contribution') {
+  static function &recurLinks($recurID = FALSE, $context = 'contribution') {
     if (!(self::$_links)) {
       self::$_links = array(
         CRM_Core_Action::VIEW => array(
@@ -122,7 +121,7 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
     }
 
     if ($recurID) {
-      $paymentProcessorObj = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity($recurID, 'recur', 'obj');
+      $paymentProcessorObj = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($recurID, 'recur', 'obj');
       if (is_object( $paymentProcessorObj) && $paymentProcessorObj->isSupported('cancelSubscription')) {
         unset(self::$_links[CRM_Core_Action::DISABLE]['extra'], self::$_links[CRM_Core_Action::DISABLE]['ref']);
         self::$_links[CRM_Core_Action::DISABLE]['url'] = "civicrm/contribute/unsubscribe";
@@ -157,7 +156,12 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
     ) = CRM_Contribute_BAO_Contribution::annual($this->_contactId);
     $this->assign('annual', $annual);
 
-    $controller = new CRM_Core_Controller_Simple('CRM_Contribute_Form_Search', ts('Contributions'), $this->_action);
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Contribute_Form_Search',
+      ts('Contributions'),
+      $this->_action,
+      FALSE, FALSE, TRUE
+    );
     $controller->setEmbedded(TRUE);
     $controller->reset();
     $controller->set('cid', $this->_contactId);
@@ -233,7 +237,7 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
     }
     $this->assign('isTest', $isTest);
 
-    $softCreditList = CRM_Contribute_BAO_Contribution::getSoftContributionList($this->_contactId, $isTest);
+    $softCreditList = CRM_Contribute_BAO_ContributionSoft::getSoftContributionList($this->_contactId, $isTest);
 
     if (!empty($softCreditList)) {
       $softCreditTotals = array();
@@ -241,7 +245,7 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
       list($softCreditTotals['amount'],
         $softCreditTotals['avg'],
         $softCreditTotals['currency']
-      ) = CRM_Contribute_BAO_Contribution::getSoftContributionTotals($this->_contactId, $isTest);
+      ) = CRM_Contribute_BAO_ContributionSoft::getSoftContributionTotals($this->_contactId, $isTest);
 
       $this->assign('softCredit', TRUE);
       $this->assign('softCreditRows', $softCreditList);
@@ -261,8 +265,9 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
    * @access public
    */
   function view() {
-    $controller = new CRM_Core_Controller_Simple('CRM_Contribute_Form_ContributionView',
-      'View Contribution',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Contribute_Form_ContributionView',
+      ts('View Contribution'),
       $this->_action
     );
     $controller->setEmbedded(TRUE);
@@ -285,7 +290,8 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
       CRM_Utils_System::redirectToSSL();
     }
 
-    $controller = new CRM_Core_Controller_Simple('CRM_Contribute_Form_Contribution',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Contribute_Form_Contribution',
       'Create Contribution',
       $this->_action
     );
@@ -334,15 +340,7 @@ class CRM_Contribute_Page_Tab extends CRM_Core_Page {
     $this->preProcess();
 
     // check if we can process credit card contribs
-    $processors = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE,
-      "billing_mode IN ( 1, 3 )"
-    );
-    if (count($processors) > 0) {
-      $this->assign('newCredit', TRUE);
-    }
-    else {
-      $this->assign('newCredit', FALSE);
-    }
+    CRM_Core_Payment::allowBackofficeCreditCard($this);
 
     $this->setContext();
 

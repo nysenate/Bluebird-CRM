@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -68,6 +68,9 @@ class CRM_Case_Form_Activity_OpenCase {
     $form->_context = CRM_Utils_Request::retrieve('context', 'String', $form);
     $form->_contactID = CRM_Utils_Request::retrieve('cid', 'Positive', $form);
     $form->assign('context', $form->_context);
+
+    // Add attachments
+    CRM_Core_BAO_File::buildAttachment( $form, 'civicrm_activity', $form->_activityId );
   }
 
   /**
@@ -78,13 +81,13 @@ class CRM_Case_Form_Activity_OpenCase {
    *
    * @return None
    */
-  function setDefaultValues(&$form) {
+  static function setDefaultValues(&$form) {
     $defaults = array();
     if ($form->_context == 'caseActivity') {
       return $defaults;
     }
 
-    list($defaults['start_date'], $defaults['start_date_time']) = CRM_Utils_Date::setDateDefaults();
+    list($defaults['start_date'], $defaults['start_date_time']) = CRM_Utils_Date::setDateDefaults(NULL, 'activityDateTime');
 
     // set default case status, case type, encounter medium, location type and phone type defaults are set in DB
     $caseStatus = CRM_Core_OptionGroup::values('case_status', FALSE, FALSE, FALSE, 'AND is_default = 1');
@@ -113,8 +116,7 @@ class CRM_Case_Form_Activity_OpenCase {
     return $defaults;
   }
 
-  static
-  function buildQuickForm(&$form) {
+  static function buildQuickForm(&$form) {
     if ($form->_context == 'caseActivity') {
       return;
     }
@@ -126,7 +128,7 @@ class CRM_Case_Form_Activity_OpenCase {
     $form->add('select', 'case_type_id', ts('Case Type'),
       $caseType, TRUE, array(
         'onchange' =>
-        "buildCustomData( 'Case', this.value );",
+        "CRM.buildCustomData( 'Case', this.value );",
       )
     );
 
@@ -180,7 +182,7 @@ class CRM_Case_Form_Activity_OpenCase {
    *
    * @return None
    */
-  public function beginPostProcess(&$form, &$params) {
+  static function beginPostProcess(&$form, &$params) {
     if ($form->_context == 'caseActivity') {
       return;
     }
@@ -205,6 +207,15 @@ class CRM_Case_Form_Activity_OpenCase {
 
     // rename activity_location param to the correct column name for activity DAO
     $params['location'] = CRM_Utils_Array::value('activity_location', $params);
+
+    // Add attachments
+    CRM_Core_BAO_File::formatAttachment(
+      $params,
+      $params,
+      'civicrm_activity',
+      $form->_activityId
+    );
+
   }
 
   /**
@@ -216,8 +227,7 @@ class CRM_Case_Form_Activity_OpenCase {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $files, $form) {
+  static function formRule($fields, $files, $form) {
     if ($form->_context == 'caseActivity') {
       return TRUE;
     }
@@ -246,7 +256,7 @@ class CRM_Case_Form_Activity_OpenCase {
    *
    * @return None
    */
-  public function endPostProcess(&$form, &$params) {
+  static function endPostProcess(&$form, &$params) {
     if ($form->_context == 'caseActivity') {
       return;
     }
@@ -266,7 +276,7 @@ class CRM_Case_Form_Activity_OpenCase {
     }
 
     // 1. create case-contact
-    if ($isMultiClient && $this->_context != 'case') {
+    if ($isMultiClient && $form->_context != 'case') {
       $client = explode(',', $params['contact'][1]);
       foreach ($client as $key => $cliId) {
         if (empty($cliId)) {
@@ -309,15 +319,24 @@ class CRM_Case_Form_Activity_OpenCase {
       $xmlProcessorParams['custom'] = $params['custom'];
     }
 
+    // Add parameters for attachments
+    $numAttachments = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'max_attachments');
+    for ( $i = 1; $i <= $numAttachments; $i++ ) {
+      $attachName = "attachFile_$i";
+      if ( isset( $params[$attachName] ) && !empty( $params[$attachName] ) ) {
+        $xmlProcessorParams[$attachName] = $params[$attachName];
+      }
+    }
+
     $xmlProcessor->run($params['case_type'], $xmlProcessorParams);
 
     // status msg
     $params['statusMsg'] = ts('Case opened successfully.');
 
-    $buttonName = $this->controller->getButtonName();
+    $buttonName = $form->controller->getButtonName();
     $session = CRM_Core_Session::singleton();
-    if ($buttonName == $this->getButtonName('upload', 'new')) {
-      if ($this->_context == 'standalone') {
+    if ($buttonName == $form->getButtonName('upload', 'new')) {
+      if ($form->_context == 'standalone') {
         $session->replaceUserContext(CRM_Utils_System::url('civicrm/case/add',
             'reset=1&action=add&context=standalone'
           ));

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -69,7 +69,11 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         'entity_table' => 'civicrm_contribution_page',
         'entity_id' => $this->_id,
       );
-      $defaults['onbehalf_profile_id'] = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
+      $onBehalfIDs = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
+      if ($onBehalfIDs) {
+        // get the first one only
+        $defaults['onbehalf_profile_id'] = $onBehalfIDs[0];
+      }
     }
     else {
       CRM_Utils_System::setTitle(ts('Title and Settings'));
@@ -89,14 +93,16 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
     $this->_first = TRUE;
     $attributes = CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_ContributionPage');
 
-    // name
-    $this->add('text', 'title', ts('Title'), $attributes['title'], TRUE);
-
-    $this->add('select', 'contribution_type_id',
-      ts('Contribution Type'),
-      CRM_Contribute_PseudoConstant::contributionType(),
+    // financial Type
+    $financialType = CRM_Financial_BAO_FinancialType::getIncomeFinancialType();
+    $this->add('select', 'financial_type_id',
+      ts('Financial Type'),
+      $financialType,
       TRUE
     );
+
+    // name
+    $this->add('text', 'title', ts('Title'), $attributes['title'], TRUE);
 
     //CRM-7362 --add campaigns.
     CRM_Campaign_BAO_Campaign::addCampaign($this, CRM_Utils_Array::value('campaign_id', $this->_values));
@@ -173,7 +179,7 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
     $this->addDateTime('start_date', ts('Start Date'));
     $this->addDateTime('end_date', ts('End Date'));
 
-    $this->addFormRule(array('CRM_Contribute_Form_ContributionPage_Settings', 'formRule'));
+    $this->addFormRule(array('CRM_Contribute_Form_ContributionPage_Settings', 'formRule'), $this);
 
     parent::buildQuickForm();
   }
@@ -187,10 +193,9 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
    * @static
    * @access public
    */
-  static
-  function formRule($values) {
+  static function formRule($values, $files, $self) {
     $errors = array();
-
+    $contributionPageId = $self->_id;
     //CRM-4286
     if (strstr($values['title'], '/')) {
       $errors['title'] = ts("Please do not use '/' in Title");
@@ -202,6 +207,49 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
       $errors['onbehalf_profile_id'] = ts('Please select a profile to collect organization information on this contribution page.');
     }
 
+    //CRM-11494
+    $start = CRM_Utils_Date::processDate($values['start_date']);
+    $end = CRM_Utils_Date::processDate($values['end_date']);
+    if (($end < $start) && ($end != 0)) {
+      $errors['end_date'] = ts('End date should be after Start date.');
+    }
+    
+    if (CRM_Utils_Array::value('payment_processor', $self->_values) 
+      && $financialType = CRM_Contribute_BAO_Contribution::validateFinancialType($values['financial_type_id'])) {
+      $errors['financial_type_id'] = ts("Financial Account of account relationship of 'Expense Account is' is not configured for Financial Type : ") . $financialType;  
+    }
+    
+    //dont allow on behalf of save when
+    //pre or post profile consists of membership fields
+    if ($contributionPageId && CRM_Utils_Array::value('is_organization', $values)) {
+      $ufJoinParams = array(
+        'module' => 'CiviContribute',
+        'entity_table' => 'civicrm_contribution_page',
+        'entity_id' => $contributionPageId,
+      );
+
+      list($contributionProfiles['custom_pre_id'],
+        $contributionProfiles['custom_post_id']
+      ) = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
+
+      $conProfileType = NULL;
+      if ($contributionProfiles['custom_pre_id']) {
+        $preProfileType = CRM_Core_BAO_UFField::getProfileType($contributionProfiles['custom_pre_id']);
+        if ($preProfileType == 'Membership') {
+          $conProfileType = "'Includes Profile (top of page)'";
+        }
+      }
+            
+      if ($contributionProfiles['custom_post_id']) {
+        $postProfileType = CRM_Core_BAO_UFField::getProfileType($contributionProfiles['custom_post_id']);
+        if ($postProfileType == 'Membership') {
+          $conProfileType  = empty($conProfileType) ? "'Includes Profile (bottom of page)'" : "{$conProfileType} and 'Includes Profile (bottom of page)'";
+        }
+      }
+      if (!empty($conProfileType)) {
+        $errors['is_organization'] = ts("You should move the membership related fields configured in %1 to the 'On Behalf' profile for this Contribution Page", array(1 => $conProfileType));
+      }
+    }
     return $errors;
   }
 
@@ -273,7 +321,7 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         $urlParams = 'reset=1';
         CRM_Core_Session::setStatus(ts("'%1' information has been saved.",
             array(1 => $this->getTitle())
-          ));
+          ), ts('Saved'), 'success');
       }
 
       CRM_Utils_System::redirect(CRM_Utils_System::url($url, $urlParams));

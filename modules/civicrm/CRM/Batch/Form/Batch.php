@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -60,10 +60,15 @@ class CRM_Batch_Form_Batch extends CRM_Admin_Form {
     }
 
     $this->applyFilter('__ALL__', 'trim');
-    $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Batch');
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Batch_DAO_Batch');
     $this->add('text', 'title', ts('Batch Name'), $attributes['name'], TRUE);
 
-    $type = $this->add('select', 'type_id', ts('Type'), CRM_Core_PseudoConstant::getBatchType());
+    $batchTypes = CRM_Batch_BAO_Batch::buildOptions('type_id');
+
+    // unset non-related types
+    unset($batchTypes[3]);
+    unset($batchTypes[4]);
+    $type = $this->add('select', 'type_id', ts('Type'), $batchTypes);
 
     if ($this->_action & CRM_Core_Action::UPDATE) {
       $type->freeze();
@@ -72,7 +77,6 @@ class CRM_Batch_Form_Batch extends CRM_Admin_Form {
     $this->add('textarea', 'description', ts('Description'), $attributes['description']);
     $this->add('text', 'item_count', ts('Number of items'), $attributes['item_count'], TRUE);
     $this->add('text', 'total', ts('Total Amount'), $attributes['total'], TRUE);
-    $this->add('select', 'status_id', ts('Status'), CRM_Core_PseudoConstant::getBatchStatus());
   }
 
   /**
@@ -87,13 +91,11 @@ class CRM_Batch_Form_Batch extends CRM_Admin_Form {
 
     if ($this->_action & CRM_Core_Action::ADD) {
       // set batch name default
-      $defaults['title'] = CRM_Core_BAO_Batch::generateBatchName();
+      $defaults['title'] = CRM_Batch_BAO_Batch::generateBatchName();
     }
     else {
       $defaults = $this->_values;
     }
-
-
     return $defaults;
   }
 
@@ -107,8 +109,8 @@ class CRM_Batch_Form_Batch extends CRM_Admin_Form {
   public function postProcess() {
     $params = $this->controller->exportValues($this->_name);
     if ($this->_action & CRM_Core_Action::DELETE) {
-      CRM_Core_Session::setStatus("Batch has been deleted successfully.");
-      CRM_Core_BAO_Batch::deleteBatch($this->_id);
+      CRM_Core_Session::setStatus("", ts("Batch Deleted"), "success");
+      CRM_Batch_BAO_Batch::deleteBatch($this->_id);
       return;
     }
 
@@ -118,10 +120,12 @@ class CRM_Batch_Form_Batch extends CRM_Admin_Form {
     else {
       $session = CRM_Core_Session::singleton();
       $params['created_id'] = $session->get('userID');
-      $params['created_date'] = CRM_Utils_Date::processDate(date("Y-m-d his"));
+      $params['created_date'] = CRM_Utils_Date::processDate( date( "Y-m-d" ), date( "H:i:s" ) );
     }
 
-    $batch = CRM_Core_BAO_Batch::create($params);
+    // always create with data entry status
+    $params['status_id'] = 3;
+    $batch = CRM_Batch_BAO_Batch::create($params);
 
     // redirect to batch entry page.
     $session = CRM_Core_Session::singleton();

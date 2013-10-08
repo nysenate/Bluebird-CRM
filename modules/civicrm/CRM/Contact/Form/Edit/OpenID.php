@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -42,18 +42,20 @@ class CRM_Contact_Form_Edit_OpenID {
    * build the form elements for an open id object
    *
    * @param CRM_Core_Form $form       reference to the form object
-   * @param array         $location   the location object to store all the form elements in
-   * @param int           $locationId the locationId we are dealing with
-   * @param int           $count      the number of blocks to create
+   * @param int           $blockCount block number to build
+   * @param boolean       $blockEdit  is it block edit
    *
    * @return void
    * @access public
    * @static
    */
-  static
-  function buildQuickForm(&$form) {
-    $blockId = ($form->get('OpenID_Block_Count')) ? $form->get('OpenID_Block_Count') : 1;
-
+  static function buildQuickForm(&$form, $blockCount = NULL, $blockEdit = FALSE) {
+    if (!$blockCount) {
+      $blockId = ($form->get('OpenID_Block_Count')) ? $form->get('OpenID_Block_Count') : 1;
+    }
+    else {
+      $blockId = $blockCount;
+    }
     $form->applyFilter('__ALL__', 'trim');
 
     $form->addElement('text', "openid[$blockId][openid]", ts('OpenID'),
@@ -62,16 +64,14 @@ class CRM_Contact_Form_Edit_OpenID {
     $form->addRule("openid[$blockId][openid]", ts('OpenID is not a valid URL.'), 'url');
 
     //Block type
-    $form->addElement('select', "openid[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
-
-    $config = CRM_Core_Config::singleton();
-    if ($config->userFramework == 'Standalone') {
-      $js = array('id' => "OpenID_" . $blockId . "_IsLogin", 'onClick' => 'singleSelect( this.id );');
-      $form->addElement('advcheckbox', "openid[$blockId][allowed_to_login]", NULL, '', $js);
-    }
+    $form->addElement('select', "openid[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id'));
 
     //is_Primary radio
-    $js = array('id' => "OpenID_" . $blockId . "_IsPrimary", 'onClick' => 'singleSelect( this.id );');
+    $js = array('id' => "OpenID_" . $blockId . "_IsPrimary");
+    if (!$blockEdit) {
+      $js['onClick'] = 'singleSelect( this.id );';
+    }
+
     $form->addElement('radio', "openid[$blockId][is_primary]", '', '', '1', $js);
   }
 }

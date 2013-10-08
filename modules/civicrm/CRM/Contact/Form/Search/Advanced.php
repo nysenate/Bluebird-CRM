@@ -1,14 +1,14 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
  | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
+s | under the terms of the GNU Affero General Public License           |
  | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
  |                                                                    |
  | CiviCRM is distributed in the hope that it will be useful, but     |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,7 +52,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
     $this->set('searchFormName', 'Advanced');
 
     parent::preProcess();
-    $openedPanes = CRM_Contact_BAO_Query::openedSearchPanes();
+    $openedPanes = CRM_Contact_BAO_Query::$_openedPanes;
     $openedPanes = array_merge($openedPanes, $this->_openedPanes);
     $this->assign('openedPanes', $openedPanes);
   }
@@ -126,10 +126,13 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       $paneNames[$pane['title']] = $pane['name'];
     }
 
-    $this->_paneTemplatePath = array();
+    $hookPanes = array();
+    CRM_Contact_BAO_Query_Hook::singleton()->registerAdvancedSearchPane($hookPanes);
+    $paneNames = array_merge($paneNames, $hookPanes);
 
+    $this->_paneTemplatePath = array();
     foreach ($paneNames as $name => $type) {
-      if (!$this->_searchOptions[$type]) {
+      if (!array_key_exists($type, $this->_searchOptions) && !in_array($type, $hookPanes)) {
         continue;
       }
 
@@ -148,15 +151,18 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       ) {
         $allPanes[$name]['open'] = 'true';
 
-
         if (CRM_Utils_Array::value($type, $components)) {
           $c = $components[$type];
           $this->add('hidden', "hidden_$type", 1);
           $c->buildAdvancedSearchPaneForm($this);
           $this->_paneTemplatePath[$type] = $c->getAdvancedSearchPaneTemplatePath();
         }
+        else if (in_array($type, $hookPanes)) {
+          CRM_Contact_BAO_Query_Hook::singleton()->buildAdvancedSearchPaneForm($this, $type);
+          CRM_Contact_BAO_Query_Hook::singleton()->setAdvancedSearchPaneTemplatePath($this->_paneTemplatePath, $type);
+        }
         else {
-          eval('CRM_Contact_Form_Search_Criteria::' . $type . '( $this );');
+          CRM_Contact_Form_Search_Criteria::$type($this);
           $template = ucfirst($type);
           $this->_paneTemplatePath[$type] = "CRM/Contact/Form/Search/Criteria/{$template}.tpl";
         }
@@ -194,7 +200,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
    *
    * @return array the default array reference
    */
-  function &setDefaultValues() {
+  function setDefaultValues() {
     $defaults = $this->_formValues;
     $this->normalizeDefaultValues($defaults);
 
@@ -245,7 +251,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       }
 
       // set the group if group is submitted
-      if ($this->_formValues['uf_group_id']) {
+      if (!empty($this->_formValues['uf_group_id'])) {
         $this->set('id', $this->_formValues['uf_group_id']);
       }
       else {
@@ -295,15 +301,16 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
     // we dont want to store the sortByCharacter in the formValue, it is more like
     // a filter on the result set
     // this filter is reset if we click on the search button
-    if ($this->_sortByCharacter !== NULL
-      && empty($_POST)
-    ) {
+    if ($this->_sortByCharacter !== NULL && empty($_POST)) {
       if (strtolower($this->_sortByCharacter) == 'all') {
         $this->_formValues['sortByCharacter'] = NULL;
       }
       else {
         $this->_formValues['sortByCharacter'] = $this->_sortByCharacter;
       }
+    }
+    else {
+      $this->_sortByCharacter = NULL;
     }
 
     CRM_Core_BAO_CustomValue::fixFieldValueOfTypeMemo($this->_formValues);
@@ -332,13 +339,11 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
     }
 
     $config = CRM_Core_Config::singleton();
-    if (!$config->groupTree) {
-      $group = CRM_Utils_Array::value('group', $this->_formValues);
-      if ($group && is_array($group)) {
-        unset($this->_formValues['group']);
-        foreach ($group as $key => $value) {
-          $this->_formValues['group'][$value] = 1;
-        }
+    $group = CRM_Utils_Array::value('group', $this->_formValues);
+    if ($group && is_array($group)) {
+      unset($this->_formValues['group']);
+      foreach ($group as $key => $value) {
+        $this->_formValues['group'][$value] = 1;
       }
     }
 
@@ -372,7 +377,8 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
   /**
    * normalize default values for multiselect plugins
    *
-   * @return void
+   * @param $defaults array
+   * @return array
    * @access private
    */
   function normalizeDefaultValues(&$defaults) {

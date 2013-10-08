@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,6 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
     $excludeTypes = array('Organization', 'Household', 'Participant', 'Activity');
 
     $excludeProfiles = CRM_Core_BAO_UFGroup::getProfiles($excludeTypes);
-    
     foreach ($excludeProfiles as $key => $value) {
       if (array_key_exists( $key, $profiles)) {
         unset($profiles[$key]);
@@ -165,8 +164,7 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
    * @access public
    * @static
    */
-  static
-  function formRule($fields, $files, $contributionPageId) {
+  static function formRule($fields, $files, $contributionPageId) {
     $errors = array();
     $preProfileType = $postProfileType = NULL;
     // for membership profile make sure Membership section is enabled
@@ -199,6 +197,20 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
       $errors['custom_post_id'] = $errorMsg;
     }
 
+    $behalf = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $contributionPageId, 'is_for_organization');
+    if ($fields['custom_pre_id']) {
+      $errorMsg = ts('You should move the membership related fields in the "On Behalf" profile for this Contribution Page');
+      if ($preProfileType == 'Membership' && $behalf) {
+        $errors['custom_pre_id'] = isset($errors['custom_pre_id']) ? $errors['custom_pre_id'] . $errorMsg : $errorMsg;
+      }
+    }
+
+    if ($fields['custom_post_id']) {
+      $errorMsg = ts('You should move the membership related fields in the "On Behalf" profile for this Contribution Page');
+      if ($postProfileType == 'Membership' && $behalf) {
+        $errors['custom_post_id'] = isset($errors['custom_post_id']) ? $errors['custom_post_id'] . $errorMsg : $errorMsg;
+      }
+    }
     return empty($errors) ? TRUE : $errors;
   }
 }

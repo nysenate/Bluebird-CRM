@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -121,6 +121,7 @@ class CRM_Contribute_Page_DashBoard extends CRM_Core_Page {
     $chartForm->setEmbedded(TRUE);
     $chartForm->process();
     $chartForm->run();
+    CRM_Core_Resources::singleton()->addScriptFile('civicrm', 'templates/CRM/Contribute/Page/DashBoard.js');
 
     return parent::run();
   }

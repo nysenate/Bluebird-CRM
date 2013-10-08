@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -141,7 +141,7 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
     CRM_Contribute_BAO_Premium::deletePremium($this->_id);
 
     // price set cleanup, CRM-5527
-    CRM_Price_BAO_Set::removeFrom('civicrm_contribution_page', $this->_id);
+    CRM_Price_BAO_PriceSet::removeFrom('civicrm_contribution_page', $this->_id);
 
     // finally delete the contribution page
     $dao = new CRM_Contribute_DAO_ContributionPage();
@@ -150,7 +150,7 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
 
     $transaction->commit();
 
-    CRM_Core_Session::setStatus(ts('The contribution page \'%1\' has been deleted.', array(1 => $this->_title)));
+    CRM_Core_Session::setStatus(ts("The contribution page '%1' has been deleted.", array(1 => $this->_title)), ts('Deleted'), 'success');
   }
 }
 

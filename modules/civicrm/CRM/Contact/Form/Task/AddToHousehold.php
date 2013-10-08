@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -134,9 +134,7 @@ class CRM_Contact_Form_Task_AddToHousehold extends CRM_Contact_Form_Task {
     //$params['relationship_type_id']='4_a_b';
     $data['relationship_type_id'] = $params['relationship_type_id'];
     $data['is_active'] = 1;
-    $invalid = 0;
-    $valid = 0;
-    $duplicate = 0;
+    $invalid = $valid = $duplicate = 0;
     if (is_array($this->_contactIds)) {
       foreach ($this->_contactIds as $value) {
         $ids = array();
@@ -145,7 +143,7 @@ class CRM_Contact_Form_Task_AddToHousehold extends CRM_Contact_Form_Task {
         // contact a  -> individual
         $errors = CRM_Contact_BAO_Relationship::checkValidRelationship($params, $ids, $params['contact_check']);
         if ($errors) {
-          $invalid = $invalid + 1;
+          $invalid++;
           continue;
         }
 
@@ -161,26 +159,21 @@ class CRM_Contact_Form_Task_AddToHousehold extends CRM_Contact_Form_Task {
         $valid++;
       }
 
-      $status = array(
-        ts('Added Contact(s) to Household'),
-        ts('Total Selected Contact(s): %1', array(1 => $valid + $invalid + $duplicate)),
-      );
-      if ($valid) {
-        $status[] = ts('New relationship record(s) created: %1.', array(
-          1 => $valid)) . '<br/>';
+      $house = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $params['contact_check'], 'display_name');
+      list($rtype, $a_b) = explode('_', $data['relationship_type_id'], 2);
+      $relationship = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', $rtype, "label_$a_b");
+
+      $status = array(ts('%count %2 %3 relationship created', array('count' => $valid, 'plural' => '%count %2 %3 relationships created', 2 => $relationship, 3 => $house)));
+      if ($duplicate) {
+        $status[] = ts('%count was skipped because the contact is already %2 %3', array('count' => $duplicate, 'plural' => '%count were skipped because the contacts are already %2 %3', 2 => $relationship, 3 => $house));
       }
       if ($invalid) {
-        $status[] = ts('Relationship record(s) not created due to invalid target contact type: %1.', array(
-          1 => $invalid)) . '<br/>';
+        $status[] = ts('%count relationship was not created because the contact is not of the right type for this relationship', array('count' => $invalid, 'plural' => '%count relationships were not created because the contact is not of the right type for this relationship'));
       }
-      if ($duplicate) {
-        $status[] = ts('Relationship record(s) not created - duplicate of existing relationship: %1.', array(
-          1 => $duplicate)) . '<br/>';
-      }
-      CRM_Core_Session::setStatus($status);
+      $status = '<ul><li>' . implode('</li><li>', $status) . '</li></ul>';
+      CRM_Core_Session::setStatus($status, ts('Relationship Created', array('count' => $valid, 'plural' => 'Relationships Created')), 'success', array('expires' => 0));
     }
   }
-  //end of function
 
   /**
    * This function is to get the result of the search for Add to * forms
@@ -260,6 +253,7 @@ class CRM_Contact_Form_Task_AddToHousehold extends CRM_Contact_Form_Task {
       $duplicateRelationship = 0;
 
       while ($result->fetch()) {
+        $query->convertToPseudoNames($result);
         $contactID = $result->contact_id;
         if (in_array($contactID, $excludedContactIds)) {
           $duplicateRelationship++;

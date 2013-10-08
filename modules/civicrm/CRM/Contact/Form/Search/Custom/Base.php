@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,34 +38,41 @@ class CRM_Contact_Form_Search_Custom_Base {
 
   protected $_columns;
 
-  protected $_stateID; function __construct(&$formValues) {
+  protected $_stateID;
+
+  function __construct(&$formValues) {
     $this->_formValues = &$formValues;
   }
 
   function count() {
-    return CRM_Core_DAO::singleValueQuery($this->sql('count(distinct contact_a.id) as total'),
-      CRM_Core_DAO::$_nullArray
-    );
+    return CRM_Core_DAO::singleValueQuery($this->sql('count(distinct contact_a.id) as total'));
   }
 
   function summary() {
     return NULL;
   }
 
-  function contactIDs($offset = 0, $rowcount = 0, $sort = NULL) {
-    $sql = $this->sql('contact_a.id as contact_id',
-      $offset, $rowcount, $sort
+  function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
+    $sql = $this->sql(
+      'contact_a.id as contact_id',
+      $offset,
+      $rowcount,
+      $sort
     );
     $this->validateUserSQL($sql);
 
-    return CRM_Core_DAO::composeQuery($sql,
-      CRM_Core_DAO::$_nullArray,
-      TRUE
-    );
+    if ($returnSQL) {
+      return $sql;
+    }
+
+    return CRM_Core_DAO::composeQuery($sql, CRM_Core_DAO::$_nullArray);
   }
 
-  function sql($selectClause,
-    $offset            = 0, $rowcount = 0, $sort = NULL,
+  function sql(
+    $selectClause,
+    $offset   = 0,
+    $rowcount = 0,
+    $sort = NULL,
     $includeContactIDs = FALSE,
     $groupBy           = NULL
   ) {
@@ -98,8 +105,7 @@ class CRM_Contact_Form_Search_Custom_Base {
     return $this->_columns;
   }
 
-  static
-  function includeContactIDs(&$sql, &$formValues) {
+  static function includeContactIDs(&$sql, &$formValues) {
     $contactIDs = array();
     foreach ($formValues as $id => $value) {
       if ($value &&
@@ -115,9 +121,7 @@ class CRM_Contact_Form_Search_Custom_Base {
     }
   }
 
-  function addSortOffset(&$sql,
-    $offset, $rowcount, $sort
-  ) {
+  function addSortOffset(&$sql, $offset, $rowcount, $sort) {
     if (!empty($sort)) {
       if (is_string($sort)) {
         $sql .= " ORDER BY $sort ";
@@ -160,5 +164,10 @@ class CRM_Contact_Form_Search_Custom_Base {
   function whereClause(&$where, &$params) {
     return CRM_Core_DAO::composeQuery($where, $params, TRUE);
   }
-}
 
+  // override this method to define the contact query object
+  // used for creating $sql
+  function getQueryObj() {
+    return NULL;
+  }
+}

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,12 +57,12 @@ class CRM_Contact_Form_Task_Print extends CRM_Contact_Form_Task {
     if (!empty($this->_contactIds)) {
       //using _contactIds field for creating params for query so that multiple selections on multiple pages
       //can be printed.
-      foreach ($this->_contactIds as $contactId) {
+    foreach ($this->_contactIds as $contactId) {
         $params[] = array(
           CRM_Core_Form::CB_PREFIX . $contactId,
           '=',
           1, 0, 0);
-      }
+    }
     }
 
     // create the selector, controller and run - store results in session
@@ -86,15 +86,13 @@ class CRM_Contact_Form_Task_Print extends CRM_Contact_Form_Task {
 
     $returnP = isset($returnPropeties) ? $returnPropeties : "";
     $customSearchClass = $this->get('customSearchClass');
-    eval('$selector   = new ' .
-      $selectorName .
-      '( $customSearchClass,
-         $fv,
-         $params,
-         $returnP,
-         $this->_action,
-         $includeContactIds );'
-    );
+    $selector   = new $selectorName( $customSearchClass,
+                 $fv,
+                 $params,
+                 $returnP,
+                 $this->_action,
+                 $includeContactIds
+      );
     $controller = new CRM_Core_Selector_Controller($selector,
       NULL,
       $sortID,

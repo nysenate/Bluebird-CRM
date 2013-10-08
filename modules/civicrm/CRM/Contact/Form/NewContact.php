@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,14 +50,21 @@ class CRM_Contact_Form_NewContact {
    *
    * @return void
    */
-  static
-  function buildQuickForm(&$form, $blockNo = 1, $extraProfiles = NULL, $required = FALSE, $prefix = '') {
+  static function buildQuickForm(&$form, $blockNo = 1, $extraProfiles = NULL, $required = FALSE, $prefix = '', $label = NULL) {
     // call to build contact autocomplete
-    $attributes = array(
-      'width' => '200px',
-    );
+    $attributes = array('width' => '200px');
 
-    $form->add('text', "{$prefix}contact[{$blockNo}]", ts('Select Contact'), $attributes, $required);
+    if (!$label) {
+      $label = ts('Select Contact');
+    }
+
+    $selectContacts = $form->add('text', "{$prefix}contact[{$blockNo}]", $label, $attributes, $required);
+
+    // use submitted values to set default if form submit fails dues to form rules
+    if ($selectContacts->getValue()) {
+      $form->assign("selectedContacts", $selectContacts->getValue());
+    }
+
     $form->addElement('hidden', "{$prefix}contact_select_id[{$blockNo}]");
 
     if (CRM_Core_Permission::check('edit all contacts') || CRM_Core_Permission::check('add contacts')) {

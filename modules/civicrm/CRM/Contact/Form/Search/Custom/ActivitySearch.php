@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,13 +28,15 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_Search_Interface {
 
-  protected $_formValues; function __construct(&$formValues) {
+  protected $_formValues;
+
+  function __construct(&$formValues) {
     $this->_formValues = $formValues;
 
     /**
@@ -145,11 +147,11 @@ class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_
    * Construct the search query
    */
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE, $onlyIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
 
     // SELECT clause must include contact_id as an alias for civicrm_contact.id
-    if ($onlyIDs) {
+    if ($justIDs) {
       $select = 'contact_a.id as contact_id';
     }
     else {
@@ -195,7 +197,7 @@ class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_
     $sql = " SELECT $select FROM   $from $where ";
 
     //no need to add order when only contact Ids.
-    if (!$onlyIDs) {
+    if (!$justIDs) {
       // Define ORDER BY for query in $sort, with default value
       if (!empty($sort)) {
         if (is_string($sort)) {
@@ -224,22 +226,31 @@ class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_
 
   // Regular JOIN statements here to limit results to contacts who have activities.
   function from() {
+    $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+    $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
+    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+
     return "
-        civicrm_contact contact_a
-            JOIN civicrm_activity activity 
-                 ON contact_a.id = activity.source_contact_id
-            JOIN civicrm_option_value ov1 
+        civicrm_activity activity
+            LEFT JOIN civicrm_activity_contact target
+                 ON activity.id = target.activity_id AND target.record_type_id = {$targetID}
+            JOIN civicrm_contact contact_a
+                 ON contact_a.id = target.contact_id
+            JOIN civicrm_option_value ov1
                  ON activity.activity_type_id = ov1.value AND ov1.option_group_id = 2
-            JOIN civicrm_option_value ov2 
+            JOIN civicrm_option_value ov2
                  ON activity.status_id = ov2.value AND ov2.option_group_id = {$this->_groupId}
-            JOIN civicrm_contact contact_b 
-                 ON activity.source_contact_id = contact_b.id
-            LEFT JOIN civicrm_case_activity cca 
+            LEFT JOIN civicrm_activity_contact sourceContact
+                 ON activity.id = sourceContact.activity_id AND sourceContact.record_type_id = {$sourceID}
+            JOIN civicrm_contact contact_b
+                 ON sourceContact.contact_id = contact_b.id
+            LEFT JOIN civicrm_case_activity cca
                  ON activity.id = cca.activity_id
-            LEFT JOIN civicrm_activity_assignment assignment 
-                 ON activity.id = assignment.activity_id
-            LEFT JOIN civicrm_contact contact_c 
-                 ON assignment.assignee_contact_id = contact_c.id ";
+            LEFT JOIN civicrm_activity_contact assignment
+                 ON activity.id = assignment.activity_id AND assignment.record_type_id = {$assigneeID}
+            LEFT JOIN civicrm_contact contact_c
+                 ON assignment.contact_id = contact_c.id ";
   }
 
   /*
@@ -254,8 +265,8 @@ class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_
     if (!empty($contactname)) {
       $dao         = new CRM_Core_DAO();
       $contactname = $dao->escape($contactname);
-      $clauses[]   = "(contact_a.sort_name LIKE '%{$contactname}%' OR 
-                           contact_b.sort_name LIKE '%{$contactname}%' OR 
+      $clauses[]   = "(contact_a.sort_name LIKE '%{$contactname}%' OR
+                           contact_b.sort_name LIKE '%{$contactname}%' OR
                            contact_c.display_name LIKE '%{$contactname}%')";
     }
 
@@ -316,9 +327,9 @@ class CRM_Contact_Form_Search_Custom_ActivitySearch implements CRM_Contact_Form_
     return implode(' AND ', $clauses);
   }
 
-  /* 
-     * Functions below generally don't need to be modified
-     */
+  /*
+   * Functions below generally don't need to be modified
+   */
   function count() {
     $sql = $this->all();
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -69,15 +69,21 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
   protected $_preserveDefault = TRUE;
 
   /**
+   * the internal QF names for the state/country/county fields
+   */
+
+  protected $_stateCountryCountyFields = array();
+
+  /**
    * build all the data structures needed to build the form
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     /*
-         * initialize the task and row fields
-         */
-
+     * initialize the task and row fields
+     */
     parent::preProcess();
   }
 
@@ -98,7 +104,6 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
     CRM_Utils_System::setTitle($this->_title);
 
     $this->addDefaultButtons(ts('Save'));
-    $this->_fields = array();
     $this->_fields = CRM_Core_BAO_UFGroup::getFields($ufGroupId, FALSE, CRM_Core_Action::VIEW);
 
     // remove file type field and then limit fields
@@ -113,7 +118,8 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
       }
     }
 
-    $this->_fields = array_slice($this->_fields, 0, $this->_maxFields);
+    //FIX ME: phone ext field is added at the end and it gets removed because of below code
+    //$this->_fields = array_slice($this->_fields, 0, $this->_maxFields);
 
     $this->addButtons(array(
         array(
@@ -140,10 +146,20 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
       'household_name',
     );
 
+    $stateCountryMap = array();
+
     foreach ($this->_contactIds as $contactId) {
       $profileFields = $this->_fields;
       CRM_Core_BAO_Address::checkContactSharedAddressFields($profileFields, $contactId);
       foreach ($profileFields as $name => $field) {
+
+        // Link state to country, county to state per location per contact
+        list($prefixName, $index) = CRM_Utils_System::explode('-', $name, 2);
+        if ($prefixName == 'state_province' || $prefixName == 'country' || $prefixName == 'county') {
+          $stateCountryMap["$index-$contactId"][$prefixName] = "field_{$contactId}_{$field['name']}";
+          $this->_stateCountryCountyFields["$index-$contactId"][$prefixName] = "field[{$contactId}][{$field['name']}]";
+        }
+
         CRM_Core_BAO_UFGroup::buildProfile($this, $field, NULL, $contactId);
 
         if (in_array($field['name'], $preserveDefaultsArray)) {
@@ -152,13 +168,17 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
       }
     }
 
+    CRM_Core_BAO_Address::addStateCountryMap($stateCountryMap);
+
+
+
     $this->assign('fields', $this->_fields);
 
     // don't set the status message when form is submitted.
     $buttonName = $this->controller->getButtonName('submit');
 
     if ($suppressFields && $buttonName != '_qf_BatchUpdateProfile_next') {
-      CRM_Core_Session::setStatus("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded.");
+      CRM_Core_Session::setStatus(ts("File or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded."), ts('Some Fields Excluded'), 'info');
     }
 
     $this->addDefaultButtons(ts('Update Contacts'));
@@ -176,7 +196,7 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
     if (empty($this->_fields)) {
       return;
     }
-    
+
     $defaults = $sortName = array();
     foreach ($this->_contactIds as $contactId) {
       $details[$contactId] = array();
@@ -192,6 +212,9 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
 
     $this->assign('sortName', $sortName);
 
+    // now fix all state country selectors
+    CRM_Core_BAO_Address::fixAllStateSelects($this, $defaults, $this->_stateCountryCountyFields);
+
     return $defaults;
   }
 
@@ -204,8 +227,7 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
    * @access public
    * @static
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $errors = array();
     $externalIdentifiers = array();
     foreach ($fields['field'] as $componentId => $field) {
@@ -260,18 +282,20 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task {
       }
     }
 
-    $statusMsg = ts("Your updates have been saved.");
-
+    CRM_Core_Session::setStatus('', ts("Updates Saved"), 'success');
     if ($inValidSubtypeCnt) {
-      $statusMsg .= ' ' . ts('Contact SubType field of %1 number of contact(s) has not been updated.', array(1 => $inValidSubtypeCnt));
+      CRM_Core_Session::setStatus(ts('Contact SubType field of 1 contact has not been updated.', array('plural' => 'Contact SubType field of %count contacts has not been updated.', 'count' => $inValidSubtypeCnt)), ts('Invalid Subtype'));
     }
-    CRM_Core_Session::setStatus("{$statusMsg}");
   }
   //end of function
-  function parseStreetAddress(&$contactValues, &$form) {
-    if (!is_array($contactValues) ||
-      !is_array($form->_fields)
-    ) {
+
+  /**
+   * parse street address
+   * @param array $contactValues contact values
+   * @param object $form form object
+   */
+  public static function parseStreetAddress(&$contactValues, &$form) {
+    if (!is_array($contactValues) || !is_array($form->_fields)) {
       return;
     }
 

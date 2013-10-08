@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,7 +50,6 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
    * class constructor
    */
   function __construct($title = NULL, $modal = TRUE, $action = CRM_Core_Action::NONE) {
-
     parent::__construct($title, $modal);
 
     $this->_stateMachine = new CRM_Contact_StateMachine_Search($this, $action);
@@ -65,5 +64,35 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
   public function selectorName() {
     return $this->get('selectorName');
   }
+
+  public function invalidKey() {
+    $message = ts('Because your session timed out, we have reset the search page.');
+    CRM_Core_Session::setStatus($message);
+
+    // see if we can figure out the url and redirect to the right search form
+    // note that this happens really early on, so we cant use any of the form or controller
+    // variables
+    $config  = CRM_Core_Config::singleton();
+    $qString = $_GET[$config->userFrameworkURLVar];
+    $args = "reset=1";
+    $path = 'civicrm/contact/search/advanced';
+    if (strpos($qString, 'basic') !== FALSE) {
+      $path = 'civicrm/contact/search/basic';
+    }
+    else if (strpos($qString, 'builder') !== FALSE) {
+      $path = 'civicrm/contact/search/builder';
+    }
+    else if (
+      strpos($qString, 'custom') !== FALSE &&
+      isset($_REQUEST['csid'])
+    ) {
+      $path = 'civicrm/contact/search/custom';
+      $args = "reset=1&csid={$_REQUEST['csid']}";
+    }
+
+    $url = CRM_Utils_System::url($path, $args);
+    CRM_Utils_System::redirect($url);
+  }
+
 }
 

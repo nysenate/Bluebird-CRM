@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -78,9 +78,9 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
    * form values that we will be using
    *
    * @var array
-   * @access protected
+   * @access public
    */
-  protected $_formValues;
+  public $_formValues;
 
   /**
    * the params that are sent to the query
@@ -149,10 +149,9 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
     $this->defaults = array();
 
     /*
-         * we allow the controller to set force/reset externally, useful when we are being
-         * driven by the wizard framework
-         */
-
+     * we allow the controller to set force/reset externally, useful when we are being
+     * driven by the wizard framework
+     */
 
     $this->_reset   = CRM_Utils_Request::retrieve('reset', 'Boolean', CRM_Core_DAO::$_nullObject);
     $this->_force   = CRM_Utils_Request::retrieve('force', 'Boolean', $this, FALSE);
@@ -249,13 +248,31 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
       )
     );
 
+    $this->_group = CRM_Core_PseudoConstant::group();
+
+    // multiselect for groups
+    if ($this->_group) {
+      $this->add('select', 'group', ts('Groups'), $this->_group, FALSE,
+        array('id' => 'group', 'multiple' => 'multiple', 'title' => ts('- select -'))
+      );
+    }
+
+    // multiselect for tags
+    require_once 'CRM/Core/BAO/Tag.php';
+    $contactTags = CRM_Core_BAO_Tag::getTags();
+
+    if ($contactTags) {
+      $this->add('select', 'contact_tags', ts('Tags'), $contactTags, FALSE,
+        array('id' => 'contact_tags', 'multiple' => 'multiple', 'title' => ts('- select -'))
+      );
+    }
+
     CRM_Contribute_BAO_Query::buildSearchForm($this);
 
     /*
-         * add form checkboxes for each row. This is needed out here to conform to QF protocol
-         * of all elements being declared in builQuickForm
-         */
-
+     * add form checkboxes for each row. This is needed out here to conform to QF protocol
+     * of all elements being declared in builQuickForm
+     */
 
     $rows = $this->get('rows');
     if (is_array($rows)) {
@@ -341,11 +358,8 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
 
     $this->fixFormValues();
 
-    // we don't show test contributions in Contact Summary / User Dashboard
-    // in Search mode by default we hide test contributions
-    if (!CRM_Utils_Array::value('contribution_test',
-        $this->_formValues
-      )) {
+    // We don't show test records in summaries or dashboards
+    if (empty($this->_formValues['contribution_test']) && $this->_force) {
       $this->_formValues["contribution_test"] = 0;
     }
 
@@ -354,6 +368,37 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
       if (isset($this->_formValues[$f])) {
         $this->_formValues[$f] = CRM_Utils_Rule::cleanMoney($this->_formValues[$f]);
       }
+    }
+
+    $config = CRM_Core_Config::singleton();
+    $tags = CRM_Utils_Array::value('contact_tags', $this->_formValues);
+    if ($tags && !is_array($tags)) {
+      unset($this->_formValues['contact_tags']);
+      $this->_formValues['contact_tags'][$tags] = 1;
+    }
+
+    if ($tags && is_array($tags)) {
+      unset($this->_formValues['contact_tags']);
+      foreach($tags as $notImportant => $tagID) {
+          $this->_formValues['contact_tags'][$tagID] = 1;
+      }
+    }
+
+
+    if (!$config->groupTree) {
+      $group = CRM_Utils_Array::value('group', $this->_formValues);
+      if ($group && !is_array($group)) {
+        unset($this->_formValues['group']);
+        $this->_formValues['group'][$group] = 1;
+      }
+
+      if ($group && is_array($group)) {
+        unset($this->_formValues['group']);
+        foreach($group as $notImportant => $groupID) {
+            $this->_formValues['group'][$groupID] = 1;
+        }
+      }
+
     }
 
     CRM_Core_BAO_CustomValue::fixFieldValueOfTypeMemo($this->_formValues);
@@ -368,7 +413,7 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
       // check actionName and if next, then do not repeat a search, since we are going to the next page
 
       // hack, make sure we reset the task values
-      $stateMachine = &$this->controller->getStateMachine();
+      $stateMachine = $this->controller->getStateMachine();
       $formName = $stateMachine->getTaskFormName();
       $this->controller->resetPage($formName);
       return;
@@ -465,6 +510,11 @@ class CRM_Contribute_Form_Search extends CRM_Core_Form {
       $highDate = CRM_Utils_Type::escape($highDate, 'Timestamp');
       $date = CRM_Utils_Date::setDateDefaults($highDate);
       $this->_formValues['contribution_date_high'] = $this->_defaults['contribution_date_high'] = $date[0];
+    }
+
+    if ($highDate || $lowDate) {
+      //set the Choose Date Range value
+      $this->_formValues['contribution_date_relative'] = 0;
     }
 
     $this->_limit = CRM_Utils_Request::retrieve('limit', 'Positive',

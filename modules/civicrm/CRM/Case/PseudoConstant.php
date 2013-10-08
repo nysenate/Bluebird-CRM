@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -194,7 +194,7 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant {
                      civicrm_option_group g
               WHERE  v.option_group_id = g.id
                      AND  g.name         = 'activity_type'
-                     AND  v.is_active    = 1 
+                     AND  v.is_active    = 1
                      AND  g.is_active    = 1";
 
       if (!$all) {
@@ -261,6 +261,22 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant {
     }
 
     return self::$caseTypePair[$caseId][$column];
+  }
+
+  /**
+   * Flush given pseudoconstant so it can be reread from db
+   * next time it's requested.
+   *
+   * @access public
+   * @static
+   *
+   * @param boolean $name pseudoconstant to be flushed
+   *
+   */
+  public static function flush($name = 'cache') {
+   if (isset(self::$$name)) {
+      self::$$name = NULL;
+    }
   }
 }
 

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -48,8 +48,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType {
    * @access public
    * @static
    */
-  static
-  function retrieve(&$params, &$defaults) {
+  static function retrieve(&$params, &$defaults) {
     $contactType = new CRM_Contact_DAO_ContactType();
     $contactType->copyValues($params);
     if ($contactType->find(TRUE)) {
@@ -59,8 +58,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType {
     return NULL;
   }
 
-  static
-  function isActive($contactType) {
+  static function isActive($contactType) {
     $contact = self::contactTypeInfo(FALSE);
     $active = array_key_exists($contactType, $contact) ? TRUE : FALSE;
     return $active;
@@ -74,8 +72,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType {
    *@static
    *
    */
-  static
-  function &basicTypeInfo($all = FALSE) {
+  static function &basicTypeInfo($all = FALSE) {
     static $_cache = NULL;
 
     if ($_cache === NULL) {
@@ -121,13 +118,11 @@ WHERE  parent_id IS NULL
    *@static
    *
    */
-  static
-  function basicTypes($all = FALSE) {
+  static function basicTypes($all = FALSE) {
     return array_keys(self::basicTypeInfo($all));
   }
 
-  static
-  function basicTypePairs($all = FALSE, $key = 'name') {
+  static function basicTypePairs($all = FALSE, $key = 'name') {
     $subtypes = self::basicTypeInfo($all);
 
     $pairs = array();
@@ -147,8 +142,7 @@ WHERE  parent_id IS NULL
    *@static
    *
    */
-  static
-  function &subTypeInfo($contactType = NULL, $all = FALSE, $ignoreCache = FALSE, $reset = FALSE) {
+  static function &subTypeInfo($contactType = NULL, $all = FALSE, $ignoreCache = FALSE, $reset = FALSE) {
     static $_cache = NULL;
 
     if ($reset === TRUE) {
@@ -214,9 +208,7 @@ WHERE  subtype.name IS NOT NULL AND subtype.parent_id IS NOT NULL {$ctWHERE}
    *@static
    *
    */
-
-  static
-  function subTypes($contactType = NULL, $all = FALSE, $columnName = 'name', $ignoreCache = FALSE) {
+  static function subTypes($contactType = NULL, $all = FALSE, $columnName = 'name', $ignoreCache = FALSE) {
     if ($columnName == 'name') {
       return array_keys(self::subTypeInfo($contactType, $all, $ignoreCache));
     }
@@ -234,8 +226,7 @@ WHERE  subtype.name IS NOT NULL AND subtype.parent_id IS NOT NULL {$ctWHERE}
    *@static
    *
    */
-  static
-  function subTypePairs($contactType = NULL, $all = FALSE, $labelPrefix = '- ', $ignoreCache = FALSE) {
+  static function subTypePairs($contactType = NULL, $all = FALSE, $labelPrefix = '- ', $ignoreCache = FALSE) {
     $subtypes = self::subTypeInfo($contactType, $all, $ignoreCache);
 
     $pairs = array();
@@ -253,8 +244,7 @@ WHERE  subtype.name IS NOT NULL AND subtype.parent_id IS NOT NULL {$ctWHERE}
    *@static
    *
    */
-  static
-  function contactTypes($all = FALSE) {
+  static function contactTypes($all = FALSE) {
     return array_keys(self::contactTypeInfo($all));
   }
 
@@ -266,8 +256,7 @@ WHERE  subtype.name IS NOT NULL AND subtype.parent_id IS NOT NULL {$ctWHERE}
    *@static
    *
    */
-  static
-  function contactTypeInfo($all = FALSE, $reset = FALSE) {
+  static function contactTypeInfo($all = FALSE, $reset = FALSE) {
     static $_cache = NULL;
 
     if ($reset === TRUE) {
@@ -326,8 +315,7 @@ WHERE  type.name IS NOT NULL
    *@static
    *
    */
-  static
-  function contactTypePairs($all = FALSE, $typeName = NULL, $delimiter = NULL) {
+  static function contactTypePairs($all = FALSE, $typeName = NULL, $delimiter = NULL) {
     $types = self::contactTypeInfo($all);
 
     if ($typeName && !is_array($typeName)) {
@@ -351,8 +339,7 @@ WHERE  type.name IS NOT NULL
     return !$delimiter ? $pairs : implode($delimiter, $pairs);
   }
 
-  static
-  function &getSelectElements($all = FALSE,
+  static function &getSelectElements($all = FALSE,
     $isSeperator = TRUE,
     $seperator = CRM_Core_DAO::VALUE_SEPARATOR
   ) {
@@ -429,8 +416,7 @@ AND   ( p.is_active = 1 OR p.id IS NULL )
    *@static
    *
    */
-  static
-  function isaSubType($subType, $ignoreCache = FALSE) {
+  static function isaSubType($subType, $ignoreCache = FALSE) {
     return in_array($subType, self::subTypes(NULL, TRUE, 'name', $ignoreCache));
   }
 
@@ -443,8 +429,7 @@ AND   ( p.is_active = 1 OR p.id IS NULL )
    *@static
    *
    */
-  static
-  function getBasicType($subType) {
+  static function getBasicType($subType) {
     static $_cache = NULL;
     if ($_cache === NULL) {
       $_cache = array();
@@ -486,8 +471,7 @@ WHERE  subtype.name IN ('" . implode("','", $subType) . "' )";
    *@static
    *
    */
-  static
-  function suppressSubTypes(&$subTypes, $ignoreCache = FALSE) {
+  static function suppressSubTypes(&$subTypes, $ignoreCache = FALSE) {
     $subTypes = array_diff($subTypes, self::subTypes(NULL, TRUE, 'name', $ignoreCache));
     return $subTypes;
   }
@@ -502,8 +486,7 @@ WHERE  subtype.name IN ('" . implode("','", $subType) . "' )";
    *@static
    *
    */
-  static
-  function isExtendsContactType($subType, $contactType, $ignoreCache = FALSE, $columnName = 'name') {
+  static function isExtendsContactType($subType, $contactType, $ignoreCache = FALSE, $columnName = 'name') {
     if (!is_array($subType)) {
       $subType = explode(CRM_Core_DAO::VALUE_SEPARATOR, trim($subType, CRM_Core_DAO::VALUE_SEPARATOR));
     }
@@ -520,8 +503,7 @@ WHERE  subtype.name IN ('" . implode("','", $subType) . "' )";
    *@static
    *
    */
-  static
-  function getCreateNewList() {
+  static function getCreateNewList() {
     $shortCuts = array();
     $contactTypes = self::getSelectElements();
     foreach ($contactTypes as $key => $value) {
@@ -550,8 +532,7 @@ WHERE  subtype.name IN ('" . implode("','", $subType) . "' )";
    * @access public
    * @static
    */
-  static
-  function del($contactTypeId) {
+  static function del($contactTypeId) {
 
     if (!$contactTypeId) {
       return FALSE;
@@ -604,8 +585,7 @@ WHERE name = %1";
    * @access public
    * @static
    */
-  static
-  function add($params) {
+  static function add($params) {
 
     // label or name
     if (!CRM_Utils_Array::value('label', $params)) {
@@ -673,8 +653,7 @@ WHERE name = %1";
    * @return Object             DAO object on success, null otherwise
    * @static
    */
-  static
-  function setIsActive($id, $is_active) {
+  static function setIsActive($id, $is_active) {
     $params = array('id' => $id);
     self::retrieve($params, $contactinfo);
     $params = array('name' => "New $contactinfo[name]");
@@ -686,8 +665,7 @@ WHERE name = %1";
     );
   }
 
-  static
-  function getLabel($typeName) {
+  static function getLabel($typeName) {
     $types = self::contactTypeInfo(TRUE);
 
     if (array_key_exists($typeName, $types)) {
@@ -707,8 +685,7 @@ WHERE name = %1";
    * @return boolean true/false.
    * @static
    */
-  static
-  function isAllowEdit($contactId, $subType = NULL) {
+  static function isAllowEdit($contactId, $subType = NULL) {
 
     if (!$contactId) {
       return TRUE;
@@ -728,8 +705,7 @@ WHERE name = %1";
     return TRUE;
   }
 
-  static
-  function hasCustomData($contactType, $contactId = NULL) {
+  static function hasCustomData($contactType, $contactId = NULL) {
     $subTypeClause = '';
 
     if (self::isaSubType($contactType)) {
@@ -759,8 +735,7 @@ WHERE name = %1";
     return FALSE;
   }
 
-  static
-  function hasRelationships($contactId, $contactType) {
+  static function hasRelationships($contactId, $contactType) {
     $subTypeClause = NULL;
     if (self::isaSubType($contactType)) {
       $subType       = $contactType;
@@ -789,8 +764,7 @@ LIMIT 1";
     return FALSE;
   }
 
-  static
-  function getSubtypeCustomPair($contactType, $subtypeSet = array(
+  static function getSubtypeCustomPair($contactType, $subtypeSet = array(
     )) {
     if (empty($subtypeSet)) {
       return $subtypeSet;
@@ -812,8 +786,7 @@ WHERE extends = %1 AND " . implode(" OR ", $subTypeClause);
     return array_unique($customSet);
   }
 
-  static
-  function deleteCustomSetForSubtypeMigration($contactID,
+  static function deleteCustomSetForSubtypeMigration($contactID,
     $contactType,
     $oldSubtypeSet = array(),
     $newSubtypeSet = array()

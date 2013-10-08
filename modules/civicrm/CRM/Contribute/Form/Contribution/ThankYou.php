@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -106,7 +106,7 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
     if ($productID) {
       CRM_Contribute_BAO_Premium::buildPremiumBlock($this, $this->_id, FALSE, $productID, $option);
     }
-    if ($this->_priceSetId && !CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', $this->_priceSetId, 'is_quick_config')) {
+    if ($this->_priceSetId && !CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', $this->_priceSetId, 'is_quick_config')) {
       $this->assign('lineItem', $this->_lineItem);
     } else {
       if (is_array($membershipTypeID)) {
@@ -119,7 +119,6 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
     $this->assign('useForMember', $this->get('useForMember'));
 
     $params = $this->_params;
-
     $honor_block_is_active = $this->get('honor_block_is_active');
     if ($honor_block_is_active &&
       ((!empty($params["honor_first_name"]) && !empty($params["honor_last_name"])) ||
@@ -129,8 +128,8 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
       $this->assign('honor_block_is_active', $honor_block_is_active);
       $this->assign('honor_block_title', CRM_Utils_Array::value('honor_block_title', $this->_values));
 
-      $prefix = CRM_Core_PseudoConstant::individualPrefix();
-      $honor = CRM_Core_PseudoConstant::honor();
+      $prefix = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'prefix_id');
+      $honor = CRM_Core_PseudoConstant::get('CRM_Contribute_DAO_Contribution', 'honor_type_id');
       $this->assign('honor_type', $honor[$params["honor_type_id"]]);
       $this->assign('honor_prefix', ($params["honor_prefix_id"]) ? $prefix[$params["honor_prefix_id"]] : ' ');
       $this->assign('honor_first_name', $params["honor_first_name"]);
@@ -138,7 +137,7 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
       $this->assign('honor_email', $params["honor_email"]);
     }
 
-        $qParams = "reset=1&amp;id={$this->_id}";
+    $qParams = "reset=1&amp;id={$this->_id}";
     //pcp elements
     if ($this->_pcpId) {
       $qParams .= "&amp;pcpId={$this->_pcpId}";
@@ -151,7 +150,7 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
       }
     }
 
-        $this->assign( 'qParams' , $qParams );
+    $this->assign( 'qParams' , $qParams );
 
     if ($membershipTypeID) {
       $transactionID    = $this->get('membership_trx_id');
@@ -163,10 +162,11 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
 
       CRM_Member_BAO_Membership::buildMembershipBlock($this,
         $this->_id,
+        $this->_membershipContactID,
         FALSE,
         $membershipTypeID,
-        TRUE, NULL,
-        $this->_membershipContactID
+        TRUE,
+        NULL
       );
     }
 
@@ -207,9 +207,7 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
     );
 
     $defaults = array();
-    $options = array();
     $fields = array();
-    $removeCustomFieldTypes = array('Contribution');
     foreach ($this->_fields as $name => $dontCare) {
       if ($name == 'onbehalf') {
         foreach ($dontCare as $key => $value) {
@@ -228,11 +226,11 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
         foreach ($dontCare as $key => $value) {
           //$defaults[$key] = $contact['onbehalf'][$key];
           if (isset($contact['onbehalf'][$key])) {
-            $defaults[$key] = $contact['onbehalf'][$key];
-          }
+          $defaults[$key] = $contact['onbehalf'][$key];
+        }
           if (isset($contact['onbehalf']["{$key}_id"])) {
             $defaults["{$key}_id"] = $contact['onbehalf']["{$key}_id"];
-          }
+      }
 
         }
       }
@@ -251,13 +249,13 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
         }
       }
     }
-    
+
     // now fix all state country selectors
     CRM_Core_BAO_Address::fixAllStateSelects($this, $defaults);
 
     $this->_submitValues = array_merge($this->_submitValues, $defaults);
     $this->setDefaults($defaults);
-    
+
     $values['entity_id'] = $this->_id;
     $values['entity_table'] = 'civicrm_contribution_page';
 

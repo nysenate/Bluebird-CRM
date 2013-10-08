@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -188,7 +188,7 @@ class CRM_Contact_Form_Task_SaveSearch extends CRM_Contact_Form_Task {
     $savedSearch->search_custom_id = $this->get('customSearchID');
     $savedSearch->save();
     $this->set('ssID', $savedSearch->id);
-    CRM_Core_Session::setStatus(ts('Your smart group has been saved as \'%1\'.', array(1 => $formValues['title'])));
+    CRM_Core_Session::setStatus(ts("Your smart group has been saved as '%1'.", array(1 => $formValues['title'])), ts('Group Saved'), 'success');
 
     // also create a group that is associated with this saved search only if new saved search
     $params = array();

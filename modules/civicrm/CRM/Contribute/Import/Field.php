@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -89,7 +89,9 @@ class CRM_Contribute_Import_Field {
    * this is soft credit field
    * @var string
    */
-  public $_softCreditField; function __construct($name, $title, $type = CRM_Utils_Type::T_INT, $headerPattern = '//', $dataPattern = '//', $softCreditField = NULL) {
+  public $_softCreditField;
+
+  function __construct($name, $title, $type = CRM_Utils_Type::T_INT, $headerPattern = '//', $dataPattern = '//', $softCreditField = NULL) {
     $this->_name = $name;
     $this->_title = $title;
     $this->_type = $type;
@@ -119,8 +121,8 @@ class CRM_Contribute_Import_Field {
 
     switch ($this->_name) {
       case 'contact_id':
-        // note: we validate extistence of the contact in API, upon
-        // insert (it would be too costlty to do a db call here)
+        // note: we validate existence of the contact in API, upon
+        // insert (it would be too costly to do a db call here)
         return CRM_Utils_Rule::integer($this->_value);
 
       case 'receive_date':
@@ -153,10 +155,10 @@ class CRM_Contribute_Import_Field {
       case 'currency':
         return CRM_Utils_Rule::currencyCode($this->_value);
 
-      case 'contribution_type':
+        case 'financial_type':
         static $contributionTypes = NULL;
         if (!$contributionTypes) {
-          $contributionTypes = CRM_Contribute_PseudoConstant::contributionType();
+                $contributionTypes = CRM_Contribute_PseudoConstant::financialType();
         }
         if (in_array($this->_value, $contributionTypes)) {
           return TRUE;

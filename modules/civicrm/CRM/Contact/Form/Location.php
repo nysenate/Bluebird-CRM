@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,7 +39,7 @@ class CRM_Contact_Form_Location {
    *
    * @return void
    */
-  function preProcess(&$form) {
+  static function preProcess(&$form) {
     $form->_addBlockName = CRM_Utils_Request::retrieve('block', 'String', CRM_Core_DAO::$_nullObject);
     $additionalblockCount = CRM_Utils_Request::retrieve('count', 'Positive', CRM_Core_DAO::$_nullObject);
 
@@ -107,7 +107,8 @@ class CRM_Contact_Form_Location {
         }
 
         $form->set($blockName . '_Block_Count', $instance);
-        eval('CRM_Contact_Form_Edit_' . $blockName . '::buildQuickForm( $form );');
+        $formName = 'CRM_Contact_Form_Edit_' . $blockName;
+        $formName::buildQuickForm( $form );
       }
     }
 

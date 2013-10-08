@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,7 +38,9 @@
  */
 class CRM_Campaign_Page_Survey extends CRM_Core_Page {
 
-  private static $_actionLinks; function &actionLinks() {
+  private static $_actionLinks;
+
+  function &actionLinks() {
     // check if variable _actionsLinks is populated
     if (!isset(self::$_actionLinks)) {
 
@@ -63,8 +65,8 @@ class CRM_Campaign_Page_Survey extends CRM_Core_Page {
         ),
         CRM_Core_Action::DELETE => array(
           'name' => ts('Delete'),
-          'url' => 'civicrm/survey/add',
-          'qs' => 'action=delete&id=%%id%%&reset=1',
+          'url' => 'civicrm/survey/delete',
+          'qs' => 'id=%%id%%&reset=1',
           'title' => ts('Delete Survey'),
         ),
       );
@@ -103,7 +105,7 @@ class CRM_Campaign_Page_Survey extends CRM_Core_Page {
   }
 
   function run() {
-    if (!CRM_Core_Permission::check('administer CiviCampaign')) {
+    if (!CRM_Campaign_BAO_Campaign::accessCampaign()) {
       CRM_Utils_System::permissionDenied();
     }
 

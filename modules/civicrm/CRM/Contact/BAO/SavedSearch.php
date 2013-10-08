@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -161,8 +161,8 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch {
       if (CRM_Utils_Array::value('customSearchID', $params)) {
         // this has not yet been implemented
       } else {
-        return CRM_Contact_BAO_Query::getWhereClause($params, NULL, $tables, $whereTables);
-      }
+      return CRM_Contact_BAO_Query::getWhereClause($params, NULL, $tables, $whereTables);
+    }
     }
     return NULL;
   }
