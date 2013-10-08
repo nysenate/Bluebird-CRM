@@ -530,21 +530,68 @@
     height: 100%;
     top: 0px;
     z-index: -1; }
+  #JSTree-container.BBTreeContainer .JSTree-resize, #BBTreeContainer .JSTree-resize {
+    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat white -51px -229px;
+    height: 6px;
+    width: 10px;
+    margin: 0 auto; }
+    #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
+      cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
     background-color: #fff;
+    position: relative;
+    padding-bottom: 8px;
+    width: 100%;
+    overflow-x: hidden;
     border-bottom-left-radius: 3px;
     -webkit-border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
     -webkit-border-bottom-right-radius: 3px;
     -moz-border-radius-bottomleft: 3px;
     -moz-border-radius-bottomright: 3px; }
-    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
-      background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
-      height: 6px;
-      width: 10px;
-      margin: 0 auto; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
-        cursor: s-resize; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody {
+      display: none;
+      overflow: hidden;
+      padding-top: 5px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token {
+        background-color: #a6a6a6;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        padding: 2px 6px;
+        margin-bottom: 1px;
+        display: inline-block;
+        margin-left: 2px;
+        letter-spacing: 1px;
+        float: left;
+        -webkit-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        -moz-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        color: #fff;
+        min-height: 12px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover {
+        text-decoration: line-through;
+        color: #ff4d4d;
+        cursor: pointer; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"] {
+        background-color: #5ad170; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"] {
+        background-color: #6fd5e3; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"] {
+        background-color: #ebb931; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine {
+      height: 16px; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options, #BBTreeContainer .JSTree-tokenHolder .JSTree-options {
+      position: absolute;
+      right: 0px;
+      height: 15px;
+      width: 16%; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .button {
+        height: 15px;
+        width: 15px;
+        background: url(sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle {
+        background-position: -10px -10px; }
   #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
     display: none; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {

@@ -21,6 +21,8 @@ window.jstree["views"] =
       resize = new Resize
       resize.addResize(instance,@view)
     else
+      # TODO - instead of remove make sure that tagHolers don't
+      # delete on dropdown
       @view.cj_tokenHolder.resize.remove()
   changeEntity: (entity_id) ->
     # get entity id from instance
@@ -95,10 +97,19 @@ class View
         if @entityList.length > 0
           @applyTaggedKWIC()
           @applyTaggedPositions()
-        else
-          @addPositionReminderText(@cj_selectors.tagBox.find(".top-292"))
-
+          for id in @entityList
+            @addTagsToHolder(id)
+          @cj_tokenHolder.body.slideToggle(400)
       )
+  addTagsToHolder:(id) ->
+      cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
+      killToken = =>
+        cjDT.find("input.checkbox").trigger("change").prop("checked",false)
+      name = cjDT.data("name")
+      type = cjDT.data("tree")
+      @cj_tokenHolder.body
+      token = new Token(@cj_tokenHolder.body)
+      token.create(@cj_tokenHolder.body,name,type,id,killToken)
   removeAllTagsFromEntity:() ->
     cjDTs = @cj_selectors.tagBox.find("dt")
     cjDTs.find("dt").removeClass("shaded").removeClass("shadedChildren")
@@ -144,6 +155,8 @@ class View
       cjDTs.addClass("shaded")
       cjDTs.find(".fCB input.checkbox").prop("checked",true)
       @trees = trees
+    else
+      @addPositionReminderText(@cj_selectors.tagBox.find(".top-292"))
 
   # controls the writers for the initial HTML to create the box
   writeContainers: () ->
@@ -290,14 +303,15 @@ class View
   # html for token. should be moved to its own class
   # you can use __super__ to overwrite the html if you have to
   tokenHolderHtml: (name) ->
+    # <div class='#{name.left}'></div>
     return "
         <div class='#{name.box}'>
-         <div class='#{name.resize}'></div>
-         <div class='#{name.body}'>
-          <div class='#{name.left}'></div>
-          <div class='#{name.options}'></div>
+         <div class='#{name.options}'>
+          <div class='showToggle'></div>
          </div>
+         <div class='#{name.body}'></div>
         </div>
+        <div class='#{name.resize}'></div>
       "
   # html for where the 'tags' live. should be moved to its own class
   # you can use __super__ to overwrite the html if you have to
@@ -1286,8 +1300,9 @@ class Resize
       ev.preventDefault()
       cj(document).on("mousemove", (ev,tagBox) =>
           @view.toggleDropdown()
-          if ev.pageY-cj(".JSTree").offset().top < maxHeight
-            @tagBox.css("height",ev.pageY-cj(".JSTree").offset().top)
+          tagBoxHeight = (ev.pageY-(cj(".JSTree").offset().top+cj(".JSTree-tokenHolder").height()))
+          if tagBoxHeight < maxHeight
+            @tagBox.css("height",tagBoxHeight)
         )
     )
 
@@ -1800,3 +1815,25 @@ class Node
               <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}'></dl>
             "
     return html
+class Token
+  constructor: (cjLocation) ->
+    
+    # there's 2 children to start
+    if cjLocation.children().length == 2
+      console.log "2 kids empty"
+    else
+      console.log "plenty of kids"
+
+  dropdown: (cjLocation) ->  
+
+  create:(cjLocation,name,type,id,cb) ->
+    console.log "create"
+    html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>
+                #{name}
+             </div>
+           "
+    cjLocation.append(html)
+    cjLocation.find(".token-#{id}").on "click", =>
+      cb.call(@)
+      cjLocation.find(".token-#{id}").remove()
+    return @
