@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +32,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Pledge
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: Pledge.php
  *
  */
@@ -88,7 +87,8 @@ function _civicrm_api3_pledge_delete_spec(&$params) {
   // set as not required as pledge_id also acceptable & no either/or std yet
   $params['id']['api.aliases'] = array('pledge_id');
 }
-/*
+
+/**
  * return field specification specific to get requests
  */
 function _civicrm_api3_pledge_get_spec(&$params) {
@@ -99,20 +99,23 @@ function _civicrm_api3_pledge_get_spec(&$params) {
     'api.filter' => 0,
     'api.return' => 1,
   );
+  $params['pledge_is_test']['api.default'] = 0;
+  $params['pledge_financial_type_id']['api.aliases'] = array('contribution_type_id', 'contribution_type');
+
 }
 
-/*
+/**
  * return field specification specific to get requests
  */
 function _civicrm_api3_pledge_create_spec(&$params) {
 
-  $required = array('contact_id', 'amount', 'installments', 'start_date', 'pledge_contribution_type_id');
+  $required = array('contact_id', 'amount', 'installments', 'start_date', 'financial_type_id');
   foreach ($required as $required_field) {
     $params[$required_field]['api.required'] = 1;
   }
   // @todo this can come from xml
   $params['amount']['api.aliases'] = array('pledge_amount');
-  $params['pledge_contribution_type_id']['api.aliases'] = array('contribution_type_id');
+  $params['financial_type_id']['api.aliases'] = array('contribution_type_id', 'contribution_type');
 }
 
 /**
@@ -128,8 +131,6 @@ function _civicrm_api3_pledge_create_spec(&$params) {
 function civicrm_api3_pledge_get($params) {
 
   $options = _civicrm_api3_get_options_from_params($params, TRUE, 'pledge','get');
-  require_once 'CRM/Pledge/BAO/Query.php';
-  require_once 'CRM/Contact/BAO/Query.php';
   if (empty($options['return'])) {
     $options['return'] = CRM_Pledge_BAO_Query::defaultReturnProperties(CRM_Contact_BAO_Query::MODE_PLEDGE);
   }
@@ -155,7 +156,7 @@ function civicrm_api3_pledge_get($params) {
   return civicrm_api3_create_success($pledge, $params, 'pledge', 'get', $dao);
 }
 
-/*
+/**
  * Set default to not return test params
  */
 function _civicrm_api3_pledge_get_defaults() {
@@ -199,7 +200,6 @@ function _civicrm_api3_pledge_format_params(&$values, $create = FALSE) {
     //status id is left null for pledge payments in BAO
     // so we are hacking in the addition of the pledge_status_id to pending here
     if (empty($values['status_id']) && $values['installments'] == 1) {
-      require_once 'CRM/Contribute/PseudoConstant.php';
       $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
       $values['status_id'] = array_search('Pending', $contributionStatus);
     }

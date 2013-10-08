@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,14 +32,13 @@
  * @package CiviCRM_APIv3
  * @subpackage API_EntityTag
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: EntityTag.php 30879 2010-11-22 15:45:55Z shot $
  */
 
 /**
  * Include utility functions
  */
-require_once 'CRM/Core/BAO/EntityTag.php';
 
 /**
  * {@getfields EntityTag_get}
@@ -52,58 +50,29 @@ require_once 'CRM/Core/BAO/EntityTag.php';
  */
 function civicrm_api3_entity_tag_get($params) {
 
-
-  $values = CRM_Core_BAO_EntityTag::getTag($params['entity_id'], $params['entity_table']);
-  $result = array();
-  foreach ($values as $v) {
-    $result[$v] = array('tag_id' => $v);
+  if(empty($params['entity_id'])) {
+    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
   }
-  return civicrm_api3_create_success($result, $params);
+  else{
+    //do legacy non-standard behaviour
+    $values = CRM_Core_BAO_EntityTag::getTag($params['entity_id'], $params['entity_table']);
+    $result = array();
+    foreach ($values as $v) {
+      $result[$v] = array('tag_id' => $v);
+    }
+    return civicrm_api3_create_success($result, $params);
+  }
 }
-/*
+
+/**
  * Adjust Metadata for Get action
  *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
 function _civicrm_api3_entity_tag_get_spec(&$params) {
-  $params['entity_id']['api.required'] = 1;
   $params['entity_id']['api.aliases'] = array('contact_id');
   $params['entity_table']['api.default'] = 'civicrm_contact';
-}
-
-/**
- *
- * @param <type> $params
- *
- * @return <type>
- * @todo EM 7 Jan 2011 - believe this should be deleted
- * @deprecated
- */
-function civicrm_api3_entity_tag_display($params) {
-
-  civicrm_api3_verify_one_mandatory($params, NULL, array('entity_id', 'contact_id'));
-
-  $entityID = NULL;
-  $entityTable = 'civicrm_contact';
-
-  if (!($entityID = CRM_Utils_Array::value('entity_id', $params))) {
-    $entityID = CRM_Utils_Array::value('contact_id', $params);
-  }
-
-
-  if (CRM_Utils_Array::value('entity_table', $params)) {
-    $entityTable = $params['entity_table'];
-  }
-
-  require_once 'CRM/Core/BAO/EntityTag.php';
-  $values = CRM_Core_BAO_EntityTag::getTag($entityID, $entityTable);
-  $result = array();
-  $tags   = CRM_Core_PseudoConstant::tag();
-  foreach ($values as $v) {
-    $result[] = $tags[$v];
-  }
-  return implode(',', $result);
 }
 
 /**
@@ -115,8 +84,6 @@ function civicrm_api3_entity_tag_display($params) {
  * @example EntityTagCreate.php
  */
 function civicrm_api3_entity_tag_create($params) {
-
-
   return _civicrm_api3_entity_tag_common($params, 'add');
 }
 
@@ -132,7 +99,8 @@ function civicrm_api3_entity_tag_delete($params) {
 
   return _civicrm_api3_entity_tag_common($params, 'remove');
 }
-/*
+
+/**
  * modify metadata
  */
 function _civicrm_api3_entity_tag_delete_spec(&$params) {
@@ -173,7 +141,6 @@ function _civicrm_api3_entity_tag_common($params, $op = 'add') {
     return civicrm_api3_create_error('tag_id is a required field');
   }
 
-  require_once 'CRM/Core/BAO/EntityTag.php';
   $values = array('is_error' => 0);
   if ($op == 'add') {
     $values['total_count'] = $values['added'] = $values['not_added'] = 0;

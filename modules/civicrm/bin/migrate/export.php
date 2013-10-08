@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,8 @@ function run() {
 
   require_once 'CRM/Utils/Migrate/Export.php';
   $export = new CRM_Utils_Migrate_Export();
-
-  $export->run();
+  $export->build();
+  CRM_Utils_System::download('CustomGroupData.xml', 'text/plain', $export->toXML());
 }
 
 run();

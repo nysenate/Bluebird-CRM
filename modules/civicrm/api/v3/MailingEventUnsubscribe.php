@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +32,7 @@
  *
  * @package CiviCRM_APIv3
  * @subpackage API_MailerGroup
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -50,16 +49,15 @@
  */
 function civicrm_api3_mailing_event_unsubscribe_create($params) {
 
-  $job   = $params['job_id'];
+  $job = $params['job_id'];
   $queue = $params['event_queue_id'];
-  $hash  = $params['hash'];
+  $hash = $params['hash'];
   if (empty($params['org_unsubscribe'])) {
     $groups = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_mailing($job, $queue, $hash);
     if (count($groups)) {
       CRM_Mailing_Event_BAO_Unsubscribe::send_unsub_response($queue, $groups, FALSE, $job);
       return civicrm_api3_create_success($params);
     }
-    if (!groups) {}
   }
   else {
     $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain($job, $queue, $hash);
@@ -74,9 +72,10 @@ function civicrm_api3_mailing_event_unsubscribe_create($params) {
 
   return civicrm_api3_create_error('Queue event could not be found');
 }
-/*
+
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
