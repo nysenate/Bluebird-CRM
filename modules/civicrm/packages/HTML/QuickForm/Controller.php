@@ -149,9 +149,9 @@ class HTML_QuickForm_Controller
     * @param  string                name of the action
     * @param  HTML_QuickForm_Action the handler for the action
     */
-    function addAction($actionName, &$action)
+    function addAction($actionName, $action)
     {
-        $this->_actions[$actionName] =& $action;
+        $this->_actions[$actionName] = $action;
     }
 
 
