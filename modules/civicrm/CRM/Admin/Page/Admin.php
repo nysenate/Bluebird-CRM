@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,6 +38,7 @@
  */
 class CRM_Admin_Page_Admin extends CRM_Core_Page {
   function run() {
+    $errorMessage = '';
     // ensure that all CiviCRM tables are InnoDB, else abort
     // this is not a very fast operation, so we do it randomly 10% of the times
     // but we do it for most / all tables
@@ -45,12 +46,12 @@ class CRM_Admin_Page_Admin extends CRM_Core_Page {
     if (rand(1, 10) == 3 &&
       CRM_Core_DAO::isDBMyISAM(150)
     ) {
-      $errorMessage = 'Your database is configured to use the MyISAM database engine. CiviCRM  requires InnoDB. You will need to convert any MyISAM tables in your database to InnoDB. Using MyISAM tables will result in data integrity issues.';
-      CRM_Core_Session::setStatus($errorMessage);
+      $errorMessage = ts('Your database is configured to use the MyISAM database engine. CiviCRM requires InnoDB. You will need to convert any MyISAM tables in your database to InnoDB. Using MyISAM tables will result in data integrity issues.');
+      CRM_Core_Session::setStatus($errorMessage, ts('Warning'), "alert");
     }
 
     if (!CRM_Utils_System::isDBVersionValid($errorMessage)) {
-      CRM_Core_Session::setStatus($errorMessage);
+      CRM_Core_Session::setStatus($errorMessage, ts('Warning'), "alert", array('expires' => 0));
     }
 
     $groups = array('Customize Data and Screens' => ts('Customize Data and Screens'),
@@ -93,24 +94,23 @@ class CRM_Admin_Page_Admin extends CRM_Core_Page {
 
     $this->_showHide = new CRM_Core_ShowHideBlocks();
     foreach ($groups as $group => $title) {
-      $this->_showHide->addShow("id_{$group}_show");
-      $this->_showHide->addHide("id_{$group}");
-      $v = CRM_Core_ShowHideBlocks::links($this, $group, '', '', FALSE);
+      $groupId = str_replace(' ', '_', $group);
+
+      $this->_showHide->addShow("id_{$groupId}_show");
+      $this->_showHide->addHide("id_{$groupId}");
+      $v = CRM_Core_ShowHideBlocks::links($this, $groupId, '', '', FALSE);
       if (isset($values[$group])) {
-        $adminPanel[$group] = $values[$group];
-        $adminPanel[$group]['show'] = $v['show'];
-        $adminPanel[$group]['hide'] = $v['hide'];
-        $adminPanel[$group]['title'] = $title;
+        $adminPanel[$groupId] = $values[$group];
+        $adminPanel[$groupId]['show'] = $v['show'];
+        $adminPanel[$groupId]['hide'] = $v['hide'];
+        $adminPanel[$groupId]['title'] = $title;
       } else {
-        $adminPanel[$group] = array();
-        $adminPanel[$group]['show'] = '';
-        $adminPanel[$group]['hide'] = '';
-        $adminPanel[$group]['title'] = $title;
+        $adminPanel[$groupId] = array();
+        $adminPanel[$groupId]['show'] = '';
+        $adminPanel[$groupId]['hide'] = '';
+        $adminPanel[$groupId]['title'] = $title;
       }
     }
-    $versionCheck = CRM_Utils_VersionCheck::singleton();
-    $this->assign('newVersion', $versionCheck->newerVersion());
-    $this->assign('localVersion', $versionCheck->localVersion);
     $this->assign('adminPanel', $adminPanel);
     $this->_showHide->addToTemplate();
     return parent::run();

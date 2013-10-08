@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -155,7 +155,7 @@ class CRM_Admin_Page_Job extends CRM_Core_Page_Basic {
       $jm = new CRM_Core_JobManager();
       $jm->executeJobById($this->_id);
 
-      CRM_Core_Session::setStatus(ts('Selected Scheduled Job has been executed. See the log for details.'));
+      CRM_Core_Session::setStatus(ts('Selected Scheduled Job has been executed. See the log for details.'), ts("Executed"), "success");
     }
 
     $sj = new CRM_Core_JobManager();

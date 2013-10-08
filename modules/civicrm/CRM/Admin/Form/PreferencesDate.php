@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -98,8 +98,7 @@ class CRM_Admin_Form_PreferencesDate extends CRM_Admin_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $errors = array();
 
     if ($fields['name'] == 'activityDateTime' && !$fields['time_format']) {
@@ -118,7 +117,7 @@ class CRM_Admin_Form_PreferencesDate extends CRM_Admin_Form {
    */
   public function postProcess() {
     if (!($this->_action & CRM_Core_Action::UPDATE)) {
-      CRM_Core_Session::setStatus(ts('Preferences Date Options can only be updated'));
+      CRM_Core_Session::setStatus(ts('Preferences Date Options can only be updated'), ts('Sorry'), 'error');
       return;
     }
 
@@ -136,10 +135,8 @@ class CRM_Admin_Form_PreferencesDate extends CRM_Admin_Form {
 
     $dao->save();
 
-    CRM_Core_Session::setStatus(ts('The date type \'%1\' has been saved.',
+    CRM_Core_Session::setStatus(ts("The date type '%1' has been saved.",
         array(1 => $params['name'])
-      ));
+      ), ts('Saved'), 'success');
   }
-  //end of function
 }
-

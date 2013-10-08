@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -42,8 +40,7 @@ class CRM_ACL_BAO_Cache extends CRM_ACL_DAO_Cache {
 
   static $_cache = NULL;
 
-  static
-  function &build($id) {
+  static function &build($id) {
     if (!self::$_cache) {
       self::$_cache = array();
     }
@@ -64,8 +61,7 @@ class CRM_ACL_BAO_Cache extends CRM_ACL_DAO_Cache {
     return self::$_cache[$id];
   }
 
-  static
-  function retrieve($id) {
+  static function retrieve($id) {
     $query = "
 SELECT acl_id
   FROM civicrm_acl_cache
@@ -86,8 +82,7 @@ SELECT acl_id
     return $cache;
   }
 
-  static
-  function store($id, &$cache) {
+  static function store($id, &$cache) {
     foreach ($cache as $aclID => $data) {
       $dao = new CRM_ACL_DAO_Cache();
       if ($id) {
@@ -101,8 +96,7 @@ SELECT acl_id
     }
   }
 
-  static
-  function deleteEntry($id) {
+  static function deleteEntry($id) {
     if (self::$_cache &&
       array_key_exists($id, self::$_cache)
     ) {
@@ -117,8 +111,7 @@ WHERE contact_id = %1
     $dao = CRM_Core_DAO::executeQuery($query, $params);
   }
 
-  static
-  function updateEntry($id) {
+  static function updateEntry($id) {
     // rebuilds civicrm_acl_cache
     self::deleteEntry($id);
     self::build($id);
@@ -128,28 +121,34 @@ WHERE contact_id = %1
   }
 
   // deletes all the cache entries
-  static
-  function resetCache() {
+  static function resetCache() {
     // reset any static caching
     self::$_cache = NULL;
 
     // reset any db caching
     $config = CRM_Core_Config::singleton();
-    $smartGroupCacheTimeout = isset($config->smartGroupCacheTimeout) && is_numeric($config->smartGroupCacheTimeout) ? $config->smartGroupCacheTimeout : 0;
+    $smartGroupCacheTimeout = CRM_Contact_BAO_GroupContactCache::smartGroupCacheTimeout();
 
     //make sure to give original timezone settings again.
-    $originalTimezone = date_default_timezone_get();
-    date_default_timezone_set('UTC');
-    $now = date('YmdHis');
-    date_default_timezone_set($originalTimezone);
+    $now = CRM_Utils_Date::getUTCTime();
 
     $query = "
-DELETE FROM civicrm_acl_cache 
-WHERE  modified_date IS NULL OR (TIMESTAMPDIFF(MINUTE, modified_date, $now) >= $smartGroupCacheTimeout)
+DELETE
+FROM   civicrm_acl_cache
+WHERE  modified_date IS NULL
+   OR  (TIMESTAMPDIFF(MINUTE, modified_date, $now) >= $smartGroupCacheTimeout)
 ";
     CRM_Core_DAO::singleValueQuery($query);
 
-    CRM_Core_DAO::singleValueQuery("TRUNCATE TABLE civicrm_acl_contact_cache");
+    // CRM_Core_DAO::singleValueQuery("TRUNCATE TABLE civicrm_acl_contact_cache"); // No, force-commits transaction
+    // CRM_Core_DAO::singleValueQuery("DELETE FROM civicrm_acl_contact_cache"); // Transaction-safe
+    if (CRM_Core_Transaction::isActive()) {
+      CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, function(){
+        CRM_Core_DAO::singleValueQuery("TRUNCATE TABLE civicrm_acl_contact_cache");
+      });
+    } else {
+      CRM_Core_DAO::singleValueQuery("TRUNCATE TABLE civicrm_acl_contact_cache");
+    }
   }
 }
 

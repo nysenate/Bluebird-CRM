@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -62,10 +62,11 @@ class CRM_Activity_Form_Task_Batch extends CRM_Activity_Form_Task {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     /*
-         * initialize the task and row fields
-         */
+     * initialize the task and row fields
+     */
 
     parent::preProcess();
 
@@ -184,8 +185,8 @@ class CRM_Activity_Form_Task_Batch extends CRM_Activity_Form_Task {
     // don't set the status message when form is submitted.
     // $buttonName = $this->controller->getButtonName('submit');
 
-    if ($suppressFields && $buttonName != '_qf_Batch_next') {
-      CRM_Core_Session::setStatus("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update and have been excluded.");
+    if ($suppressFields) {
+      CRM_Core_Session::setStatus(ts("FILE or Autocomplete Select type field(s) in the selected profile are not supported for Batch Update."), ts("Some fields have been excluded"), "info");
     }
 
     $this->addDefaultButtons(ts('Update Activities'));
@@ -256,10 +257,14 @@ class CRM_Activity_Form_Task_Batch extends CRM_Activity_Form_Task {
         }
 
         $query = "
-SELECT activity_type_id , source_contact_id 
-FROM   civicrm_activity 
-WHERE  id = %1";
-        $params = array(1 => array($key, 'Integer'));
+SELECT a.activity_type_id, ac.contact_id
+FROM   civicrm_activity a
+JOIN   civicrm_activity_contact ac ON ( ac.activity_id = a.id
+AND    ac.record_type_id = %2 )
+WHERE  a.id = %1 ";
+        $activityContacts = CRM_Core_PseudoConstant::activityContacts('name');
+        $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
+        $params = array(1 => array($key, 'Integer'), 2 => array($sourceID, 'Integer'));
         $dao = CRM_Core_DAO::executeQuery($query, $params);
         $dao->fetch();
 
@@ -267,7 +272,7 @@ WHERE  id = %1";
         $value['activity_type_id'] = $dao->activity_type_id;
 
         // Get Conatct ID
-        $value['source_contact_id'] = $dao->source_contact_id;
+        $value['source_contact_id'] = $dao->contact_id;
 
         // make call use API 3
         $value['version'] = 3;
@@ -281,10 +286,10 @@ WHERE  id = %1";
           CRM_Core_BAO_CustomValueTable::store($value['custom'], 'civicrm_activity', $activityId['id']);
         }
       }
-      CRM_Core_Session::setStatus("Your updates have been saved.");
+      CRM_Core_Session::setStatus("", ts("Updates Saved"), "success");
     }
     else {
-      CRM_Core_Session::setStatus("No updates have been saved.");
+      CRM_Core_Session::setStatus("", ts("No Updates Saved"), "info");
     }
   }
   //end of function

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -67,8 +67,8 @@ class CRM_Admin_Form extends CRM_Core_Form {
     if (isset($this->_id)) {
       $params = array('id' => $this->_id);
       // this is needed if the form is outside the CRM name space
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->_BAOName) . ".php");
-      eval($this->_BAOName . '::retrieve( $params, $this->_values );');
+      $baoName = $this->_BAOName;
+      $baoName::retrieve($params, $this->_values );
     }
   }
 
@@ -84,8 +84,8 @@ class CRM_Admin_Form extends CRM_Core_Form {
     if (isset($this->_id) && empty($this->_values)) {
       $this->_values = array();
       $params = array('id' => $this->_id);
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->_BAOName) . ".php");
-      eval($this->_BAOName . '::retrieve( $params, $this->_values );');
+      $baoName = $this->_BAOName;
+      $baoName::retrieve($params, $this->_values );
     }
     $defaults = $this->_values;
 

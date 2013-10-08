@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,9 +51,13 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page {
     $this->assign('context', 'activity');
 
     // also create the form element for the activity filter box
-    $controller = new CRM_Core_Controller_Simple('CRM_Activity_Form_ActivityFilter',
-      ts('Activity Filter'), NULL
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Activity_Form_ActivityFilter',
+      ts('Activity Filter'),
+      NULL,
+      FALSE, FALSE, TRUE
     );
+    $controller->set('contactId', $this->_contactId);
     $controller->setEmbedded(TRUE);
     $controller->run();
   }
@@ -137,15 +141,19 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page {
     $this->assign('action', $this->_action);
 
     // also create the form element for the activity links box
-    $controller = new CRM_Core_Controller_Simple('CRM_Activity_Form_ActivityLinks',
-      ts('Activity Links'), NULL
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Activity_Form_ActivityLinks',
+      ts('Activity Links'),
+      NULL,
+      FALSE, FALSE, TRUE
     );
     $controller->setEmbedded(TRUE);
     $controller->run();
   }
 
   function delete() {
-    $controller = new CRM_Core_Controller_Simple('CRM_Activity_Form_Activity',
+    $controller = new CRM_Core_Controller_Simple(
+      'CRM_Activity_Form_Activity',
       ts('Activity Record'),
       $this->_action
     );
