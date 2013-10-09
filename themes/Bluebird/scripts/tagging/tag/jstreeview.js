@@ -134,34 +134,45 @@ View = (function() {
         }
         _this.cj_tokenHolder.options.find(".showToggle").off("click");
         _this.cj_tokenHolder.options.find(".showToggle").on("click", function() {
-          var autoHeight, curHeight;
-          _this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
-          if (_this.cj_tokenHolder.body.height() <= 20) {
-            curHeight = _this.cj_tokenHolder.body.height();
-            _this.cj_tokenHolder.body.css('height', 'auto');
-            autoHeight = _this.cj_tokenHolder.body.height();
-            _this.cj_tokenHolder.body.height(curHeight);
-            return _this.cj_tokenHolder.body.animate({
-              height: autoHeight
-            }, 500, function() {});
-          } else {
-            return _this.cj_tokenHolder.body.animate({
-              height: "16px"
-            }, 500, function() {});
-          }
+          return _this.slideTokenHolder();
         });
-        if (_this.settings.dropdown) {
-          _this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
-          curHeight = _this.cj_tokenHolder.body.height();
-          _this.cj_tokenHolder.body.css('height', 'auto');
-          autoHeight = _this.cj_tokenHolder.body.height();
-          _this.cj_tokenHolder.body.height(curHeight);
-          return _this.cj_tokenHolder.body.animate({
+        if (_this.cj_tokenHolder.box.hasClass("closed")) {
+          curHeight = _this.cj_tokenHolder.box.height();
+          _this.cj_tokenHolder.box.css('height', 'auto');
+          autoHeight = _this.cj_tokenHolder.box.height();
+          _this.cj_tokenHolder.box.height(curHeight);
+          return _this.cj_tokenHolder.box.animate({
             height: autoHeight
-          }, 500, function() {});
+          }, 100, function() {
+            _this.cj_tokenHolder.box.css('height', 'auto');
+            _this.cj_tokenHolder.box.removeClass("closed");
+            if (_this.settings.dropdown) {
+              return _this.slideTokenHolder();
+            }
+          });
         }
       }
     });
+  };
+
+  View.prototype.slideTokenHolder = function() {
+    var autoHeight, curHeight,
+      _this = this;
+    if (this.cj_tokenHolder.body.height() <= 20) {
+      this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
+      curHeight = this.cj_tokenHolder.body.height();
+      this.cj_tokenHolder.body.css('height', 'auto');
+      autoHeight = this.cj_tokenHolder.body.height();
+      this.cj_tokenHolder.body.height(curHeight);
+      return this.cj_tokenHolder.body.animate({
+        height: autoHeight
+      }, 500, function() {});
+    } else {
+      this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
+      return this.cj_tokenHolder.body.animate({
+        height: "16px"
+      }, 500, function() {});
+    }
   };
 
   View.prototype.addTagsToHolder = function(id) {
@@ -251,10 +262,6 @@ View = (function() {
     var height, tagBox;
     this.formatPageElements();
     this.createSelectors();
-    console.log(this.settings);
-    if (this.settings.tagging) {
-      this.cj_tokenHolder.box.show();
-    }
     tagBox = new Resize;
     if (tagBox != null) {
       if (tagBox.height === 0) {
@@ -447,7 +454,7 @@ View = (function() {
 
   View.prototype.tokenHolderHtml = function(name) {
     var html;
-    return html = "        <div class='" + name.box + "'>         <div class='" + name.options + "' >          <div class='showToggle' title='Toggle Tokens'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
+    return html = "        <div class='" + name.box + " closed'>         <div class='" + name.options + "' >          <div class='showToggle' title='Toggle Tokens'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
   };
 
   View.prototype.dataHolderHtml = function() {

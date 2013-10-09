@@ -262,6 +262,7 @@ _parseTree =
     instance.treeNames = @treeNames
   positionList: (obj) ->
     for k,v of obj
+      # console.log v
       a =
         "name": _utils.removePositionTextFromBill(v.name)
         "posName": v.name

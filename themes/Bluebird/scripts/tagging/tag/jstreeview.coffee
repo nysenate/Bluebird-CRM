@@ -92,38 +92,43 @@ class View
   # applies tags to entity, by procuring them from instance.getEntity,
   applyTagged:() ->
     @instance.getEntity(@entity_id, (tags) =>
-        if @entityList.length > 0
-          @removeAllTagsFromEntity()
-          @cj_tokenHolder.body.empty()
-        @entityList = tags
-        if @entityList.length > 0
-          @applyTaggedKWIC()
-          @applyTaggedPositions()
-          for id in @entityList
-            @addTagsToHolder(id)
-          @cj_tokenHolder.options.find(".showToggle").off "click"
-          @cj_tokenHolder.options.find(".showToggle").on "click", =>
-            @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
-            if @cj_tokenHolder.body.height() <= 20
-              curHeight = @cj_tokenHolder.body.height()
-              @cj_tokenHolder.body.css('height','auto')
-              autoHeight = @cj_tokenHolder.body.height()
-              @cj_tokenHolder.body.height(curHeight)
-              @cj_tokenHolder.body.animate({height:autoHeight},500, =>
-              )
-            else
-              @cj_tokenHolder.body.animate({height:"16px"},500, =>
-              )
-            # @cj_tokenHolder.body.slideToggle(400)
-          if @settings.dropdown
-            @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
-            curHeight = @cj_tokenHolder.body.height()
-            @cj_tokenHolder.body.css('height','auto')
-            autoHeight = @cj_tokenHolder.body.height()
-            @cj_tokenHolder.body.height(curHeight)
-            @cj_tokenHolder.body.animate({height:autoHeight},500, =>
-            )
+      if @entityList.length > 0
+        @removeAllTagsFromEntity()
+        @cj_tokenHolder.body.empty()
+      @entityList = tags
+      if @entityList.length > 0
+        @applyTaggedKWIC()
+        @applyTaggedPositions()
+        for id in @entityList
+          @addTagsToHolder(id)
+        @cj_tokenHolder.options.find(".showToggle").off "click"
+        @cj_tokenHolder.options.find(".showToggle").on "click", =>
+          @slideTokenHolder()
+        if @cj_tokenHolder.box.hasClass("closed")
+          curHeight = @cj_tokenHolder.box.height()
+          @cj_tokenHolder.box.css('height','auto')
+          autoHeight = @cj_tokenHolder.box.height()
+          @cj_tokenHolder.box.height(curHeight)
+          @cj_tokenHolder.box.animate({height:autoHeight},100, =>
+            @cj_tokenHolder.box.css('height','auto')
+            @cj_tokenHolder.box.removeClass("closed") 
+            @slideTokenHolder() if @settings.dropdown
+          )
       )
+  slideTokenHolder: () ->
+    if @cj_tokenHolder.body.height() <= 20 
+      @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
+      curHeight = @cj_tokenHolder.body.height()
+      @cj_tokenHolder.body.css('height','auto')
+      autoHeight = @cj_tokenHolder.body.height()
+      @cj_tokenHolder.body.height(curHeight)
+      @cj_tokenHolder.body.animate({height:autoHeight},500, =>
+      )
+    else
+      @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
+      @cj_tokenHolder.body.animate({height:"16px"},500, =>
+      )
+    # @cj_tokenHolder.body.slideToggle(400)
   addTagsToHolder:(id) ->
     cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
     killToken = =>
@@ -185,9 +190,6 @@ class View
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
-    console.log @settings
-    if @settings.tagging
-      @cj_tokenHolder.box.show()
     tagBox = new Resize
     if tagBox?
       if tagBox.height == 0
@@ -331,7 +333,7 @@ class View
   tokenHolderHtml: (name) ->
     # <div class='#{name.left}'></div>
     html = "
-        <div class='#{name.box}'>
+        <div class='#{name.box} closed'>
          <div class='#{name.options}' >
           <div class='showToggle' title='Toggle Tokens'></div>
          </div>
