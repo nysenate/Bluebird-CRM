@@ -284,6 +284,7 @@ _parseTree =
 _parseAutocomplete =  
   pre: (obj) ->
     _parseAutocomplete.level++
+    return true if obj.name == "Inbox Polling Unprocessed"
     hasChildren = false
     if obj.children.length > 0
       hasChildren = true 

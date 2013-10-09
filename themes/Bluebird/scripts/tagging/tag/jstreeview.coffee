@@ -130,7 +130,7 @@ class View
       cjDT.find("input.checkbox").prop("checked",false).trigger("change")
     name = cjDT.data("name")
     type = cjDT.data("tree")
-    @cj_tokenHolder.body
+    # @cj_tokenHolder.body
     token = new Token(@cj_tokenHolder.body)
     token.create(@cj_tokenHolder.body,name,type,id,killToken)
   removeAllTagsFromEntity:() ->
@@ -185,6 +185,9 @@ class View
   writeContainers: () ->
     @formatPageElements()
     @createSelectors()
+    console.log @settings
+    if @settings.tagging
+      @cj_tokenHolder.box.show()
     tagBox = new Resize
     if tagBox?
       if tagBox.height == 0
@@ -327,7 +330,7 @@ class View
   # you can use __super__ to overwrite the html if you have to
   tokenHolderHtml: (name) ->
     # <div class='#{name.left}'></div>
-    return "
+    html = "
         <div class='#{name.box}'>
          <div class='#{name.options}' >
           <div class='showToggle' title='Toggle Tokens'></div>
@@ -1664,7 +1667,7 @@ class Tree
 
   removeNode:(nodeId) ->
     realTree = "#JSTree-container .JSTree"
-    return false if !@hasChildren(cj(realTree),nodeId)
+    return false if @hasChildren(cj(realTree),nodeId)
     for obj,i in @tagList
       if parseInt(obj.id) == nodeId
         @tagList.splice(i,1)
@@ -1674,21 +1677,18 @@ class Tree
       cjDT = cj(i).find("#tagLabel_#{nodeId}")
       cjDL = cj(i).find("#tagDropdown_#{nodeId}")
       parentId = cjDT.data('parentid')
+      cjDT.remove()
+      cjDL.remove()
       if !@hasChildren(i,parentId)
         cjParentDT = cj(i).find("#tagLabel_#{parentId}")
         cjParentDT.removeClass("open")
         cjParentDT.find(".ddControl").removeClass("treeButton")
-    for i in removeFrom
-      cjDT = cj(i).find("#tagLabel_#{nodeId}")
-      cjDL = cj(i).find("#tagDropdown_#{nodeId}")
-      cjDT.remove()
-      cjDL.remove()
 
   hasChildren:(tree,nodeId) ->
     cjDL = cj(tree).find("#tagDropdown_#{nodeId}")
     # are there siblings
-    return false if cjDL.children().length > 0
-    return true
+    return true if cjDL.children().length > 0
+    return false 
 
 
 
