@@ -1019,6 +1019,11 @@ class Action
     node = Object.getPrototypeOf(@view.trees[cjDT.data("tree")]).nodeList[id]
     settings = cj.extend({},node.data,data)
     node.setValues(settings)
+    
+    backout = @view.trees[parseInt(data.type)].appendNode(settings,settings.parent_id,node.html,true)
+    @instance.appendToAC(settings)
+    
+    # now we remodify it
     cjNode = cj("<div>#{node.html}</div>")
     cjNode.find("#tagLabel_#{id}").addClass("open") if cjDT.hasClass("open")
     if node.children
@@ -1755,20 +1760,47 @@ class Tree
     else
       _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
   # really, we're prepending, but, it's still an 'appending'
-  appendNode:(node,parent,html) ->
-    cjParentDT = cj(".JSTree #tagLabel_#{node.parent_id}")
-    return false if cjParentDT.length == 0
-    @tagList.push node
-    cj(@domList).find(".JSTree .tagLabel_#{parent}").prepend(html)
-    cj(@html).find(".JSTree .tagLabel_#{parent}").prepend(html)
-    cjParentDL = cj(".JSTree #tagDropdown_#{node.parent_id}")
+  appendNode:(node,parent,html,noAdd=false) ->
+    console.log node
+    topLevel = false
+    if parseInt(parent) == 291 or parseInt(parent) == 292 or parseInt(parent) == 296
+      topLevel = true
+      if noAdd
+        parentDT = "#tagLabel_#{node.id}"
+        parentDL = "#tagDropdown_#{node.id}"
+        for obj,i in @tagList
+          console.log node.id == obj.id
+          if obj.id == node.id
+            @tagList.splice(i,1)
+            @tagList.splice(i,0,node)
+            break
+      else
+        parentDT = ""
+        parentDL = ".JSTree .top-#{node.type}"
+        cjParentDT = cj(parentDT)
+        @tagList.push node
+    else
+      parentDT = ".JSTree #tagLabel_#{parent}"
+      parentDL = ".JSTree #tagDropdown_#{parent}"
+      cjParentDT = cj(parentDT)
+      return false if cjParentDT.length == 0
+      @tagList.push node
+    if noAdd
+      cj(@domList).find(parentDT).replaceWith(html)
+      cj(@html).find(parentDT).replaceWith(html)
+    else
+      cj(@domList).find(parentDT).prepend(html)
+      cj(@html).find(parentDT).prepend(html)
+    return true if noAdd
+    cjParentDL = cj(parentDL)
     cjParentDL.show().prepend(html)
+    return true if topLevel
     cjParentDT.addClass("open")
     cjParentDT.find(".ddControl").addClass("treeButton")
     # make sure to add buttons after calling AppendNode
     return true
 
-  removeNode:(nodeId) ->
+  removeNode:(nodeId,noDel) ->
     realTree = "#JSTree-container .JSTree"
     return false if @hasChildren(cj(realTree),nodeId)
     for obj,i in @tagList
@@ -1786,7 +1818,6 @@ class Tree
         cjParentDT = cj(i).find("#tagLabel_#{parentId}")
         cjParentDT.removeClass("open")
         cjParentDT.find(".ddControl").removeClass("treeButton")
-
   hasChildren:(tree,nodeId) ->
     cjDL = cj(tree).find("#tagDropdown_#{nodeId}")
     # are there siblings
@@ -1816,12 +1847,8 @@ _treeUtils =
     treeList
   # event for what happens when you click on a slide button
   makeDropdown: (cjTree) ->
-    console.log cjTree.find(".treeButton")
     cjTree.find(".treeButton").off "click"
-    console.log "made it this far"
     cjTree.find(".treeButton").on "click", ->
-      console.log "clicked"
-      console.log cj(@).parent().parent()
       _treeUtils.dropdownItem(cj(@).parent().parent())
   # executes a dropdown on a particular tag
   # useful for individuall picking and choosing tags

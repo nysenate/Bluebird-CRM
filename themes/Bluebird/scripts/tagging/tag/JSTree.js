@@ -2032,7 +2032,7 @@
     };
 
     Action.prototype.updateEntity = function(message) {
-      var cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
+      var backout, cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
       data = {};
       id = message.id;
       data.id = "" + id;
@@ -2054,6 +2054,8 @@
       node = Object.getPrototypeOf(this.view.trees[cjDT.data("tree")]).nodeList[id];
       settings = cj.extend({}, node.data, data);
       node.setValues(settings);
+      backout = this.view.trees[parseInt(data.type)].appendNode(settings, settings.parent_id, node.html, true);
+      this.instance.appendToAC(settings);
       cjNode = cj("<div>" + node.html + "</div>");
       if (cjDT.hasClass("open")) {
         cjNode.find("#tagLabel_" + id).addClass("open");
@@ -3096,23 +3098,64 @@
       }
     };
 
-    Tree.prototype.appendNode = function(node, parent, html) {
-      var cjParentDL, cjParentDT;
-      cjParentDT = cj(".JSTree #tagLabel_" + node.parent_id);
-      if (cjParentDT.length === 0) {
-        return false;
+    Tree.prototype.appendNode = function(node, parent, html, noAdd) {
+      var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _len, _ref;
+      if (noAdd == null) {
+        noAdd = false;
       }
-      this.tagList.push(node);
-      cj(this.domList).find(".JSTree .tagLabel_" + parent).prepend(html);
-      cj(this.html).find(".JSTree .tagLabel_" + parent).prepend(html);
-      cjParentDL = cj(".JSTree #tagDropdown_" + node.parent_id);
+      console.log(node);
+      topLevel = false;
+      if (parseInt(parent) === 291 || parseInt(parent) === 292 || parseInt(parent) === 296) {
+        topLevel = true;
+        if (noAdd) {
+          parentDT = "#tagLabel_" + node.id;
+          parentDL = "#tagDropdown_" + node.id;
+          _ref = this.tagList;
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            obj = _ref[i];
+            console.log(node.id === obj.id);
+            if (obj.id === node.id) {
+              this.tagList.splice(i, 1);
+              this.tagList.splice(i, 0, node);
+              break;
+            }
+          }
+        } else {
+          parentDT = "";
+          parentDL = ".JSTree .top-" + node.type;
+          cjParentDT = cj(parentDT);
+          this.tagList.push(node);
+        }
+      } else {
+        parentDT = ".JSTree #tagLabel_" + parent;
+        parentDL = ".JSTree #tagDropdown_" + parent;
+        cjParentDT = cj(parentDT);
+        if (cjParentDT.length === 0) {
+          return false;
+        }
+        this.tagList.push(node);
+      }
+      if (noAdd) {
+        cj(this.domList).find(parentDT).replaceWith(html);
+        cj(this.html).find(parentDT).replaceWith(html);
+      } else {
+        cj(this.domList).find(parentDT).prepend(html);
+        cj(this.html).find(parentDT).prepend(html);
+      }
+      if (noAdd) {
+        return true;
+      }
+      cjParentDL = cj(parentDL);
       cjParentDL.show().prepend(html);
+      if (topLevel) {
+        return true;
+      }
       cjParentDT.addClass("open");
       cjParentDT.find(".ddControl").addClass("treeButton");
       return true;
     };
 
-    Tree.prototype.removeNode = function(nodeId) {
+    Tree.prototype.removeNode = function(nodeId, noDel) {
       var cjDL, cjDT, cjParentDT, i, obj, parentId, realTree, removeFrom, _i, _j, _len, _len1, _ref, _results;
       realTree = "#JSTree-container .JSTree";
       if (this.hasChildren(cj(realTree), nodeId)) {
@@ -3183,12 +3226,8 @@
       return treeList;
     },
     makeDropdown: function(cjTree) {
-      console.log(cjTree.find(".treeButton"));
       cjTree.find(".treeButton").off("click");
-      console.log("made it this far");
       return cjTree.find(".treeButton").on("click", function() {
-        console.log("clicked");
-        console.log(cj(this).parent().parent());
         return _treeUtils.dropdownItem(cj(this).parent().parent());
       });
     },
