@@ -80,4 +80,8 @@
   height:6px;
   padding-bottom:0px;
   min-height:0px;
+  overflow-y:hidden;
+  .JSTree-options {
+    display:none;
+  }
 }

@@ -616,13 +616,17 @@ class View
       if hits?
         for k,v of hits
           @getTagHeight(@cj_selectors.tagBox.find(".top-#{k}"))
-        @cj_selectors.container.css("position","static")
+        @cj_selectors.container.css("position","static").css("border-bottom-width","0px").css("border-right-width","0px")
         @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
+        @cj_selectors.tagBox.css("border-right","1px solid #ccc")
+        @cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom","1px solid #bbb")
         @setOverlay()
       else
         boxHeight = new Resize()
-        @cj_selectors.container.css("position","relative")
+        @cj_selectors.container.css("position","relative").css("border-bottom-width","1px").css("border-right-width","1px")
         @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)
+        @cj_selectors.tagBox.css("border-right","0px")
+        @cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom","0px")
         @setOverlay()
   # queries the height of the tag box so that it can inform the selector
   # how large the tags are in the box, based on their DOM height
@@ -747,15 +751,25 @@ class Action
       url: '/civicrm/ajax/tag/delete'
       data:
         id: ""
+    updateTag:
+      url: '/civicrm/ajax/tag/update'
+      data:
+        name: ""
+        description: ""
+        id: ""
+        is_reserved: true
   fields:
     addTag: ["Tag Name","Description","Is Reserved"]
     removeTag: []
+    updateTag: ["Tag Name","Description","Is Reserved"]
   requiredFields:
     addTag: ["Tag Name"]
     removeTag: []
+    updateTag: ["Tag Name"]
   requiredValidation:
     addTag: ["isRequired","appliesNullToText"]
     removeTag: ["noChildren"]
+    updateTag: ["isRequired","appliesNullToText"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
   constructor: (@view, @instance, @tagId, action, @cb) ->
@@ -881,8 +895,6 @@ class Action
           )
       doSubmit.call(@)
     )
-
-
   removeTag: () ->
     @slideHtml = @gatherRemoveLabelHTML()
     @setRequiredFields("removeTag")
@@ -917,8 +929,42 @@ class Action
   mergeTag: () ->
     @createSlide()
   updateTag: () ->
-    # gather values
-    # addTag values
+    checked = ""
+    checked = "checked" if @cjDT.data("isreserved") == 1
+    values =
+      tagName: @cjDT.data("name")
+      description: @cjDT.find(".tag .description").text()  || ""
+      isReserved: checked
+    @slideHtml = @gatherUpdateLabelHTML(values)
+    @setRequiredFields("updateTag")
+    @createSlide(=>
+      @view.unbindTabClick()
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          @removeErrors(data)
+          # if there's errors
+          if bbUtils.objSize(data.errors) > 0
+            @markErrors(data.errors)
+          else
+            @ajax.updateTag.data.name = data.fields.tagName
+            @ajax.updateTag.data.description = data.fields.description
+            @ajax.updateTag.data.is_reserved = data.fields.isReserved
+            @ajax.updateTag.data.id = data.tagId
+            @convertSubmitToLoading()
+            # undefined middle callback for some reason.
+            @tagAjax(data.tagId, "updateTag", undefined, (message) =>
+              if message == "DB Error: already exists"
+                @revertSubmitFromLoading()
+                @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+                doSubmit.call(@)
+              else
+                @updateEntity(message)
+                @revertSubmitFromLoading()
+                @destroySlideBox()
+            )
+          )
+      doSubmit.call(@)
+    )
   addEntityToTree: (parent,message) ->
     node = {}
     if message.created_date?
@@ -951,6 +997,38 @@ class Action
     nodeType = @cjDT.data("tree")
     @instance.removeFromAC(id)
     @view.trees[parseInt(nodeType)].removeNode(id)
+  updateEntity: (message) ->
+    data = {}
+    id = message.id
+    data.id = "#{id}"
+    data.is_reserved = "0"
+    if message.is_reserved == "true" or message.is_reserved == true
+      data.is_reserved = "1"
+    cjDT = @view.cj_selectors.tagBox.find("dt#tagLabel_#{id}")
+    cjDL = @view.cj_selectors.tagBox.find("dl#tagDropdown_#{id}")
+    data.parent_id = "#{cjDT.data('parentid')}"
+    data.children = false
+    if cjDL.children().length > 0
+      data.children = true
+    data.level = parseInt(cjDT.data("level"))
+    data.type = "#{cjDT.data("tree")}"
+    data.name = message.name
+    data.description = message.description
+    
+    # major hack. nodes should be centrally accessable instead as an easy 'get' from the tree
+    node = Object.getPrototypeOf(@view.trees[cjDT.data("tree")]).nodeList[id]
+    settings = cj.extend({},node.data,data)
+    node.setValues(settings)
+    cjNode = cj("<div>#{node.html}</div>")
+    cjNode.find("#tagLabel_#{id}").addClass("open") if cjDT.hasClass("open")
+    if node.children
+      nodeDL = cjNode.find("#tagDropdown_#{id}")
+      nodeDL.replaceWith(cjDL[0].outerHTML)
+    cjDL.remove()
+    cjDT.replaceWith(cjNode.html())
+    _treeUtils.makeDropdown(@view.cj_selectors.tagBox.find(".top-#{data.type}"))
+    new Buttons(@view,"#tagDropdown_#{id}")
+    new Buttons(@view,"#tagLabel_#{id}")
   removeErrors: (data)->
     notErrored = []
     for k,v of data.fields
@@ -1079,6 +1157,29 @@ class Action
     html += label.buildLabel("cancel","","cancel")
     html += "</div>"
     return html
+  gatherUpdateLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    if @tagName?
+      html += label.buildLabel("header","Update Tag","Update Tag:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+    else
+      html += label.buildLabel("header","Update Tag","Update Tag")
+    for field in @fields.addTag
+      html += "<div class='elementGroup'>"
+      # creates label
+      html += label.buildLabel("label",field,field)
+      # in update tag, this is important
+      if field is "Is Reserved"
+        html += label.buildLabel("checkBox",field,values[_utils.camelCase(field)])
+      else
+        html += label.buildLabel("textBox",field,values[_utils.camelCase(field)])
+      html += "</div>"
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
   gatherRemoveLabelHTML: (values="") ->
     label = new Label
     html = ""
@@ -1159,10 +1260,10 @@ class Label
   textBox:() ->
     @passed.className ?= @.defaults.textBox.className
     @passed.value ?= @.defaults.textBox.value
-    return "<input type='text' class='#{@.defaults.textBox.className} #{@passed.className}' name='#{@passed.className}'>"
+    return "<input type='text' class='#{@.defaults.textBox.className} #{@passed.className}' name='#{@passed.className}' value='#{@passed.value}'>"
   checkBox:() ->
     @passed.className ?= @.defaults.textBox.className
-    return "<input type='checkbox' class='#{@.defaults.checkBox.className} #{@passed.className}' name='#{@passed.className}'>"
+    return "<input type='checkbox' class='#{@.defaults.checkBox.className} #{@passed.className}' name='#{@passed.className}' #{@passed.value}>"
   
 
 # buttons handles creating and removing checkboxes, and fCB tags
@@ -1715,8 +1816,12 @@ _treeUtils =
     treeList
   # event for what happens when you click on a slide button
   makeDropdown: (cjTree) ->
+    console.log cjTree.find(".treeButton")
     cjTree.find(".treeButton").off "click"
+    console.log "made it this far"
     cjTree.find(".treeButton").on "click", ->
+      console.log "clicked"
+      console.log cj(@).parent().parent()
       _treeUtils.dropdownItem(cj(@).parent().parent())
   # executes a dropdown on a particular tag
   # useful for individuall picking and choosing tags
@@ -1758,6 +1863,9 @@ class Node
   # which is only good because it still shows the state
   # of unmodified vs modified nodes
   constructor: (node) ->
+    @setValues(node)
+    return @
+  setValues: (node) ->
     @data = node
     @parent = node.parent
     @hasDesc = ""
@@ -1768,6 +1876,7 @@ class Node
     @name = node.name
     @nameLength = ""
     @billNo = node.billNo
+    @isreserved = node.is_reserved
     if node.type == 292
       @billNo ?= node.name
       @name = node.posName
@@ -1783,8 +1892,8 @@ class Node
       @name = @name.toRet.join('<br />')
       @nameLength = "longName"
     @name = cj.trim(@name)
-    @html = @html(node)
-    return @
+    @html = @getHtml(node)
+    return true
   # processes a description and attaches classes based on parameters
   descLength: (@description) ->
     if @description == null or @description == "null"
@@ -1815,7 +1924,7 @@ class Node
   # basically, send a node class the right parameters, and you'll
   # get an actionable node. and you don't have to worry about putting in dependencies
   # because you're using dom characteristics to create tags
-  html: (node) ->
+  getHtml: (node) ->
     if node.children then treeButton = "treeButton" else treeButton = ""
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
@@ -1823,6 +1932,7 @@ class Node
              data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' 
              data-parentid='#{node.parent}' data-billno='#{@billNo}'
              data-position='#{@position}' data-level='#{node.level}'
+             data-isreserved='#{@isreserved}'
             >"
     html += "
               <div class='tag'>

@@ -609,7 +609,10 @@
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder.closed, #BBTreeContainer .JSTree-tokenHolder.closed {
     height: 6px;
     padding-bottom: 0px;
-    min-height: 0px; }
+    min-height: 0px;
+    overflow-y: hidden; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder.closed .JSTree-options, #BBTreeContainer .JSTree-tokenHolder.closed .JSTree-options {
+      display: none; }
   #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
     display: none; }
   #JSTree-container.BBTreeContainer .JSTree.dropdown ~ .JSTree-resize, #BBTreeContainer .JSTree.dropdown ~ .JSTree-resize {

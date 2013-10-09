@@ -831,13 +831,17 @@ View = (function() {
           v = hits[k];
           this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
         }
-        this.cj_selectors.container.css("position", "static");
+        this.cj_selectors.container.css("position", "static").css("border-bottom-width", "0px").css("border-right-width", "0px");
         this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
+        this.cj_selectors.tagBox.css("border-right", "1px solid #ccc");
+        this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "1px solid #bbb");
         return this.setOverlay();
       } else {
         boxHeight = new Resize();
-        this.cj_selectors.container.css("position", "relative");
+        this.cj_selectors.container.css("position", "relative").css("border-bottom-width", "1px").css("border-right-width", "1px");
         this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
+        this.cj_selectors.tagBox.css("border-right", "0px");
+        this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "0px");
         return this.setOverlay();
       }
     }
@@ -1006,22 +1010,34 @@ Action = (function() {
       data: {
         id: ""
       }
+    },
+    updateTag: {
+      url: '/civicrm/ajax/tag/update',
+      data: {
+        name: "",
+        description: "",
+        id: "",
+        is_reserved: true
+      }
     }
   };
 
   Action.prototype.fields = {
     addTag: ["Tag Name", "Description", "Is Reserved"],
-    removeTag: []
+    removeTag: [],
+    updateTag: ["Tag Name", "Description", "Is Reserved"]
   };
 
   Action.prototype.requiredFields = {
     addTag: ["Tag Name"],
-    removeTag: []
+    removeTag: [],
+    updateTag: ["Tag Name"]
   };
 
   Action.prototype.requiredValidation = {
     addTag: ["isRequired", "appliesNullToText"],
-    removeTag: ["noChildren"]
+    removeTag: ["noChildren"],
+    updateTag: ["isRequired", "appliesNullToText"]
   };
 
   function Action(view, instance, tagId, action, cb) {
@@ -1247,7 +1263,53 @@ Action = (function() {
     return this.createSlide();
   };
 
-  Action.prototype.updateTag = function() {};
+  Action.prototype.updateTag = function() {
+    var checked, values,
+      _this = this;
+    checked = "";
+    if (this.cjDT.data("isreserved") === 1) {
+      checked = "checked";
+    }
+    values = {
+      tagName: this.cjDT.data("name"),
+      description: this.cjDT.find(".tag .description").text() || "",
+      isReserved: checked
+    };
+    this.slideHtml = this.gatherUpdateLabelHTML(values);
+    this.setRequiredFields("updateTag");
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          _this.removeErrors(data);
+          if (bbUtils.objSize(data.errors) > 0) {
+            return _this.markErrors(data.errors);
+          } else {
+            _this.ajax.updateTag.data.name = data.fields.tagName;
+            _this.ajax.updateTag.data.description = data.fields.description;
+            _this.ajax.updateTag.data.is_reserved = data.fields.isReserved;
+            _this.ajax.updateTag.data.id = data.tagId;
+            _this.convertSubmitToLoading();
+            return _this.tagAjax(data.tagId, "updateTag", void 0, function(message) {
+              if (message === "DB Error: already exists") {
+                _this.revertSubmitFromLoading();
+                _this.markErrors({
+                  tagName: "Tag " + data.fields.tagName + " already exists."
+                });
+                return doSubmit.call(_this);
+              } else {
+                _this.updateEntity(message);
+                _this.revertSubmitFromLoading();
+                return _this.destroySlideBox();
+              }
+            });
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
+  };
 
   Action.prototype.addEntityToTree = function(parent, message) {
     var backout, cjParent, node, node_parsed;
@@ -1297,6 +1359,44 @@ Action = (function() {
     nodeType = this.cjDT.data("tree");
     this.instance.removeFromAC(id);
     return this.view.trees[parseInt(nodeType)].removeNode(id);
+  };
+
+  Action.prototype.updateEntity = function(message) {
+    var cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
+    data = {};
+    id = message.id;
+    data.id = "" + id;
+    data.is_reserved = "0";
+    if (message.is_reserved === "true" || message.is_reserved === true) {
+      data.is_reserved = "1";
+    }
+    cjDT = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + id);
+    cjDL = this.view.cj_selectors.tagBox.find("dl#tagDropdown_" + id);
+    data.parent_id = "" + (cjDT.data('parentid'));
+    data.children = false;
+    if (cjDL.children().length > 0) {
+      data.children = true;
+    }
+    data.level = parseInt(cjDT.data("level"));
+    data.type = "" + (cjDT.data("tree"));
+    data.name = message.name;
+    data.description = message.description;
+    node = Object.getPrototypeOf(this.view.trees[cjDT.data("tree")]).nodeList[id];
+    settings = cj.extend({}, node.data, data);
+    node.setValues(settings);
+    cjNode = cj("<div>" + node.html + "</div>");
+    if (cjDT.hasClass("open")) {
+      cjNode.find("#tagLabel_" + id).addClass("open");
+    }
+    if (node.children) {
+      nodeDL = cjNode.find("#tagDropdown_" + id);
+      nodeDL.replaceWith(cjDL[0].outerHTML);
+    }
+    cjDL.remove();
+    cjDT.replaceWith(cjNode.html());
+    _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + data.type));
+    new Buttons(this.view, "#tagDropdown_" + id);
+    return new Buttons(this.view, "#tagLabel_" + id);
   };
 
   Action.prototype.removeErrors = function(data) {
@@ -1499,6 +1599,38 @@ Action = (function() {
     return html;
   };
 
+  Action.prototype.gatherUpdateLabelHTML = function(values) {
+    var field, html, label, _i, _len, _ref;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Update Tag", "Update Tag:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+    } else {
+      html += label.buildLabel("header", "Update Tag", "Update Tag");
+    }
+    _ref = this.fields.addTag;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      field = _ref[_i];
+      html += "<div class='elementGroup'>";
+      html += label.buildLabel("label", field, field);
+      if (field === "Is Reserved") {
+        html += label.buildLabel("checkBox", field, values[_utils.camelCase(field)]);
+      } else {
+        html += label.buildLabel("textBox", field, values[_utils.camelCase(field)]);
+      }
+      html += "</div>";
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
   Action.prototype.gatherRemoveLabelHTML = function(values) {
     var html, label;
     if (values == null) {
@@ -1619,7 +1751,7 @@ Label = (function() {
     if ((_base1 = this.passed).value == null) {
       _base1.value = this.defaults.textBox.value;
     }
-    return "<input type='text' class='" + this.defaults.textBox.className + " " + this.passed.className + "' name='" + this.passed.className + "'>";
+    return "<input type='text' class='" + this.defaults.textBox.className + " " + this.passed.className + "' name='" + this.passed.className + "' value='" + this.passed.value + "'>";
   };
 
   Label.prototype.checkBox = function() {
@@ -1627,7 +1759,7 @@ Label = (function() {
     if ((_base = this.passed).className == null) {
       _base.className = this.defaults.textBox.className;
     }
-    return "<input type='checkbox' class='" + this.defaults.checkBox.className + " " + this.passed.className + "' name='" + this.passed.className + "'>";
+    return "<input type='checkbox' class='" + this.defaults.checkBox.className + " " + this.passed.className + "' name='" + this.passed.className + "' " + this.passed.value + ">";
   };
 
   return Label;
@@ -2381,8 +2513,12 @@ _treeUtils = {
     return treeList;
   },
   makeDropdown: function(cjTree) {
+    console.log(cjTree.find(".treeButton"));
     cjTree.find(".treeButton").off("click");
+    console.log("made it this far");
     return cjTree.find(".treeButton").on("click", function() {
+      console.log("clicked");
+      console.log(cj(this).parent().parent());
       return _treeUtils.dropdownItem(cj(this).parent().parent());
     });
   },
@@ -2434,6 +2570,11 @@ _descWidths = {
 
 Node = (function() {
   function Node(node) {
+    this.setValues(node);
+    return this;
+  }
+
+  Node.prototype.setValues = function(node) {
     var levelModifier;
     this.data = node;
     this.parent = node.parent;
@@ -2445,6 +2586,7 @@ Node = (function() {
     this.name = node.name;
     this.nameLength = "";
     this.billNo = node.billNo;
+    this.isreserved = node.is_reserved;
     if (node.type === 292) {
       if (this.billNo == null) {
         this.billNo = node.name;
@@ -2471,9 +2613,9 @@ Node = (function() {
       this.nameLength = "longName";
     }
     this.name = cj.trim(this.name);
-    this.html = this.html(node);
-    return this;
-  }
+    this.html = this.getHtml(node);
+    return true;
+  };
 
   Node.prototype.descLength = function(description) {
     var desc, i, tempDesc, text, _i, _len, _ref;
@@ -2516,7 +2658,7 @@ Node = (function() {
     }
   };
 
-  Node.prototype.html = function(node) {
+  Node.prototype.getHtml = function(node) {
     var html, treeButton;
     if (node.children) {
       treeButton = "treeButton";
@@ -2528,7 +2670,7 @@ Node = (function() {
     } else {
       this.reserved = false;
     }
-    html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'            >";
+    html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
     html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
     if (this.hasDesc.length > 0) {
       html += "                <div class='description'>" + this.description + "</div>            ";

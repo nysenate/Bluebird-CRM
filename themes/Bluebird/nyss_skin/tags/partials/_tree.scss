@@ -71,17 +71,6 @@
   font-size: 1.2em;
 
 }
-// .JSTree.dropdown {
-//   &.top-291-active .JSTree-overlay {
-//     @include tag-lightness($issueCodesColor,.3);
-//   }
-//   &.top-296-active .JSTree-overlay {
-//     @include tag-lightness($keywordsColor,.3);
-//   }
-//   &.top-292-active .JSTree-overlay {
-//     @include tag-lightness($positionsColor,.5);
-//   }
-// }
 .JSTree-overlay {
   position: relative;
   z-index: 1;
