@@ -18,7 +18,8 @@
   margin: 15px auto;
   border-radius: 3px;
   -moz-border-radius: 3px;
-  -webkit-border-radius: 3px; }
+  -webkit-border-radius: 3px;
+  border: 1px solid #ccc; }
   #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
   #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
@@ -540,6 +541,7 @@
     #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
       cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
+    display: none;
     background-color: #fff;
     position: relative;
     padding-bottom: 8px;
