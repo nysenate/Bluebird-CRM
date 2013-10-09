@@ -541,7 +541,6 @@
     #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
       cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
-    display: none;
     background-color: #fff;
     position: relative;
     padding-bottom: 8px;
@@ -587,11 +586,10 @@
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine {
       height: 16px; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options, #BBTreeContainer .JSTree-tokenHolder .JSTree-options {
-      position: absolute;
-      right: 0px;
+      float: right;
       height: 15px;
       width: 8%;
-      margin-top: 5px;
+      margin-top: 6px;
       border-top-left-radius: 3px;
       -webkit-border-top-left-radius: 3px;
       border-bottom-left-radius: 3px;
@@ -608,10 +606,15 @@
         background-position: -48px -64px; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp {
         background-position: -191px -49px; }
+  #JSTree-container.BBTreeContainer .JSTree-tokenHolder.closed, #BBTreeContainer .JSTree-tokenHolder.closed {
+    height: 6px;
+    padding-bottom: 0px;
+    min-height: 0px; }
   #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
     display: none; }
   #JSTree-container.BBTreeContainer .JSTree.dropdown ~ .JSTree-resize, #BBTreeContainer .JSTree.dropdown ~ .JSTree-resize {
-    bottom: 6px; }
+    bottom: 6px;
+    margin-bottom: -6px; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {
