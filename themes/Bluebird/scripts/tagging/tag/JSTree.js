@@ -557,6 +557,9 @@
     pre: function(obj) {
       var hasChildren, item;
       _parseAutocomplete.level++;
+      if (obj.name === "Inbox Polling Unprocessed") {
+        return true;
+      }
       hasChildren = false;
       if (obj.children.length > 0) {
         hasChildren = true;
@@ -840,7 +843,6 @@
       };
       name = cjDT.data("name");
       type = cjDT.data("tree");
-      this.cj_tokenHolder.body;
       token = new Token(this.cj_tokenHolder.body);
       return token.create(this.cj_tokenHolder.body, name, type, id, killToken);
     };
@@ -919,6 +921,10 @@
       var height, tagBox;
       this.formatPageElements();
       this.createSelectors();
+      console.log(this.settings);
+      if (this.settings.tagging) {
+        this.cj_tokenHolder.box.show();
+      }
       tagBox = new Resize;
       if (tagBox != null) {
         if (tagBox.height === 0) {
@@ -1110,7 +1116,8 @@
     };
 
     View.prototype.tokenHolderHtml = function(name) {
-      return "        <div class='" + name.box + "'>         <div class='" + name.options + "' >          <div class='showToggle' title='Toggle Tokens'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
+      var html;
+      return html = "        <div class='" + name.box + "'>         <div class='" + name.options + "' >          <div class='showToggle' title='Toggle Tokens'></div>         </div>         <div class='" + name.body + "'></div>        </div>        <div class='" + name.resize + "'></div>      ";
     };
 
     View.prototype.dataHolderHtml = function() {
@@ -2967,9 +2974,9 @@
     };
 
     Tree.prototype.removeNode = function(nodeId) {
-      var cjDL, cjDT, cjParentDT, i, obj, parentId, realTree, removeFrom, _i, _j, _k, _len, _len1, _len2, _ref, _results;
+      var cjDL, cjDT, cjParentDT, i, obj, parentId, realTree, removeFrom, _i, _j, _len, _len1, _ref, _results;
       realTree = "#JSTree-container .JSTree";
-      if (!this.hasChildren(cj(realTree), nodeId)) {
+      if (this.hasChildren(cj(realTree), nodeId)) {
         return false;
       }
       _ref = this.tagList;
@@ -2981,24 +2988,21 @@
         }
       }
       removeFrom = [this.domList, this.html, realTree];
+      _results = [];
       for (_j = 0, _len1 = removeFrom.length; _j < _len1; _j++) {
         i = removeFrom[_j];
         cjDT = cj(i).find("#tagLabel_" + nodeId);
         cjDL = cj(i).find("#tagDropdown_" + nodeId);
         parentId = cjDT.data('parentid');
+        cjDT.remove();
+        cjDL.remove();
         if (!this.hasChildren(i, parentId)) {
           cjParentDT = cj(i).find("#tagLabel_" + parentId);
           cjParentDT.removeClass("open");
-          cjParentDT.find(".ddControl").removeClass("treeButton");
+          _results.push(cjParentDT.find(".ddControl").removeClass("treeButton"));
+        } else {
+          _results.push(void 0);
         }
-      }
-      _results = [];
-      for (_k = 0, _len2 = removeFrom.length; _k < _len2; _k++) {
-        i = removeFrom[_k];
-        cjDT = cj(i).find("#tagLabel_" + nodeId);
-        cjDL = cj(i).find("#tagDropdown_" + nodeId);
-        cjDT.remove();
-        _results.push(cjDL.remove());
       }
       return _results;
     };
@@ -3007,9 +3011,9 @@
       var cjDL;
       cjDL = cj(tree).find("#tagDropdown_" + nodeId);
       if (cjDL.children().length > 0) {
-        return false;
+        return true;
       }
-      return true;
+      return false;
     };
 
     return Tree;
