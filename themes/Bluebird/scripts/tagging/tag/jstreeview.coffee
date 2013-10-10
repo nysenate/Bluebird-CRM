@@ -608,6 +608,7 @@ class View
     cjlocation.html(positionText)
 
   # shortcut for the toggleClass on a tagbox
+  # TODO: this is probably what breaks the page on weird queries
   toggleTagBox: () ->
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
   # this turns on/off the dropdown based on the tagging/edit functionality
@@ -628,6 +629,7 @@ class View
         @cj_selectors.tagBox.css("border-right","0px")
         @cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom","0px")
         @setOverlay()
+    @setOverlay()
   # queries the height of the tag box so that it can inform the selector
   # how large the tags are in the box, based on their DOM height
   getTagHeight:(tagBox,maxHeight = 180) ->
@@ -642,9 +644,9 @@ class View
         if closestTo > maxHeight
           break
         closestTo += parseInt(v)
-      cj(tagBox).height(closestTo)
+      return cj(tagBox).height(closestTo)
     else
-      cj(tagBox).height(propHeight)
+      return cj(tagBox).height(propHeight)
 
   # if there's more than 8 elements, show only those 8
   # i think this is primarily to not cut off individual
@@ -758,22 +760,29 @@ class Action
         description: ""
         id: ""
         is_reserved: true
+    moveTag:
+      url: '/civicrm/ajax/tag/update'
+      data:
+        id: ""
+        parent_id: ""
   fields:
     addTag: ["Tag Name","Description","Is Reserved"]
     removeTag: []
     updateTag: ["Tag Name","Description","Is Reserved"]
+    moveTag: []
   requiredFields:
     addTag: ["Tag Name"]
     removeTag: []
     updateTag: ["Tag Name"]
+    moveTag: []
   requiredValidation:
     addTag: ["isRequired","appliesNullToText"]
     removeTag: ["noChildren"]
     updateTag: ["isRequired","appliesNullToText"]
+    moveTag: ["noChildren"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
   constructor: (@view, @instance, @tagId, action, @cb) ->
-    # 
     for k,v of @ajax
       v.data["call_uri"] = window.location.href
       v["dataType"] = "json"
@@ -785,9 +794,10 @@ class Action
   createSlide: (cb) ->
     # remove the ability to swap tabs
     resize = new Resize
-    @view.cj_selectors.tagBox.addClass("hasSlideBox")
     if resize.height > 190
+      @view.cj_selectors.tagBox.addClass("hasSlideBox")
       @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
+      @bottom = false
       # memoize this
       @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
       @cj_slideBox.css("right","#{@findGutterSpace()}px")
@@ -799,6 +809,20 @@ class Action
         cb()
       )
     else
+      @bottom = true
+      containerHeight = @view.cj_selectors.container.height()
+      menuHeight = @view.cj_menuSelectors.menu.height()
+      activeTreeId = @view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid")
+      offset = -(containerHeight - menuHeight + 15);
+      @view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-#{activeTreeId}'></div></div>")
+      @cj_slideBoxContainer = cj(".JSTree-slideBox")
+      @cj_slideBoxContainer.css("top","#{offset}px")
+      @cj_slideBox = @cj_slideBoxContainer.find(".slideBox")
+      @cj_slideBox.animate({height:"210px"}, 500, =>
+        @cj_slideBox.append(@slideHtml)
+        @setCancel()
+        cb()
+      )
       # it adds a dropdown
   setCancel:() ->
     @cj_slideBox.find(".label.cancel").off "click"
@@ -807,11 +831,17 @@ class Action
 
   destroySlideBox:() ->
     @cj_slideBox.empty()
-    @cj_slideBox.animate({width:'0%'}, 500, =>
+    if @bottom
+      animate = {height:"0px"}
+    else
+      animate = {width:"0%"}
+    @cj_slideBox.animate(animate, 500, =>
       @cj_slideBox.find(".label.cancel").off "click"
       @cj_slideBox.remove()
       @view.cj_selectors.tagBox.removeClass("hasSlideBox")
       @view.createTabClick()
+      if @cj_slideBoxContainer?
+        @cj_slideBoxContainer.remove()
     )
   # creates a tag from thin air, for positions.
   # this should be broken up into separate non-private functions
@@ -925,7 +955,34 @@ class Action
     )
 
   moveTag: () ->
-    @createSlide()
+    @slideHtml = @gatherMoveLabelHTML()
+    @setRequiredFields("moveTag")
+    @createSlide(=>
+      @view.unbindTabClick()
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          @removeErrors(data)
+          # if there's errors
+          if bbUtils.objSize(data.errors) > 0
+            @markErrors(data.errors)
+          else
+            @ajax.moveTag.data.parent_id = data.parent_id
+            @ajax.moveTag.data.id = data.id
+            @convertSubmitToLoading()
+            # undefined middle callback for some reason.
+            # @tagAjax(data.tagId,"moveTag", undefined, (message) =>
+            #   if message == "DB Error: already exists"
+            #     @revertSubmitFromLoading()
+            #     @markErrors({tagName:"Tag #{data.fields.tagName} cannot be removed."})
+            #     doSubmit.call(@)
+            #   else
+            #     @removeEntityFromTree(data.id)
+            #     @revertSubmitFromLoading()
+            #     @destroySlideBox()
+            # )
+        )
+      doSubmit.call(@)
+    )
   mergeTag: () ->
     @createSlide()
   updateTag: () ->
@@ -1193,6 +1250,23 @@ class Action
       html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
     else
       html += label.buildLabel("error","error","Cannot Find Tag to Remove")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherMoveLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Move Tag","Move Tag:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","to")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Move")
       return html
     html += "<div class='actionButtons'>"
     html += label.buildLabel("submit","","submit")
@@ -1726,7 +1800,7 @@ class Tree
         @domList = @domList.add("<div></div>")
     else
       @domList = cj()
-      @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
+      @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer' data-treeid='#{@tagId}'></div>")
     @iterate(@tagList)
   # because we know how to attach each tag to a parent, it's not a DAG...
   iterate: (ary) ->

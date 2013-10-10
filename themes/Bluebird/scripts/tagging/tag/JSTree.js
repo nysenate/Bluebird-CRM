@@ -1505,16 +1505,17 @@
           this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
           this.cj_selectors.tagBox.css("border-right", "1px solid #ccc");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "1px solid #bbb");
-          return this.setOverlay();
+          this.setOverlay();
         } else {
           boxHeight = new Resize();
           this.cj_selectors.container.css("position", "relative").css("border-bottom-width", "1px").css("border-right-width", "1px");
           this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
           this.cj_selectors.tagBox.css("border-right", "0px");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "0px");
-          return this.setOverlay();
+          this.setOverlay();
         }
       }
+      return this.setOverlay();
     };
 
     View.prototype.getTagHeight = function(tagBox, maxHeight) {
@@ -1689,25 +1690,35 @@
           id: "",
           is_reserved: true
         }
+      },
+      moveTag: {
+        url: '/civicrm/ajax/tag/update',
+        data: {
+          id: "",
+          parent_id: ""
+        }
       }
     };
 
     Action.prototype.fields = {
       addTag: ["Tag Name", "Description", "Is Reserved"],
       removeTag: [],
-      updateTag: ["Tag Name", "Description", "Is Reserved"]
+      updateTag: ["Tag Name", "Description", "Is Reserved"],
+      moveTag: []
     };
 
     Action.prototype.requiredFields = {
       addTag: ["Tag Name"],
       removeTag: [],
-      updateTag: ["Tag Name"]
+      updateTag: ["Tag Name"],
+      moveTag: []
     };
 
     Action.prototype.requiredValidation = {
       addTag: ["isRequired", "appliesNullToText"],
       removeTag: ["noChildren"],
-      updateTag: ["isRequired", "appliesNullToText"]
+      updateTag: ["isRequired", "appliesNullToText"],
+      moveTag: ["noChildren"]
     };
 
     function Action(view, instance, tagId, action, cb) {
@@ -1728,12 +1739,13 @@
     }
 
     Action.prototype.createSlide = function(cb) {
-      var resize, sideWidth, slideWidth,
+      var activeTreeId, containerHeight, menuHeight, offset, resize, sideWidth, slideWidth,
         _this = this;
       resize = new Resize;
-      this.view.cj_selectors.tagBox.addClass("hasSlideBox");
       if (resize.height > 190) {
+        this.view.cj_selectors.tagBox.addClass("hasSlideBox");
         this.view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>");
+        this.bottom = false;
         this.cj_slideBox = this.view.cj_selectors.tagBox.find(".slideBox");
         this.cj_slideBox.css("right", "" + (this.findGutterSpace()) + "px");
         if (this.view.settings.wide) {
@@ -1749,7 +1761,22 @@
           return cb();
         });
       } else {
-
+        this.bottom = true;
+        containerHeight = this.view.cj_selectors.container.height();
+        menuHeight = this.view.cj_menuSelectors.menu.height();
+        activeTreeId = this.view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid");
+        offset = -(containerHeight - menuHeight + 15);
+        this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
+        this.cj_slideBoxContainer = cj(".JSTree-slideBox");
+        this.cj_slideBoxContainer.css("top", "" + offset + "px");
+        this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
+        return this.cj_slideBox.animate({
+          height: "210px"
+        }, 500, function() {
+          _this.cj_slideBox.append(_this.slideHtml);
+          _this.setCancel();
+          return cb();
+        });
       }
     };
 
@@ -1762,15 +1789,26 @@
     };
 
     Action.prototype.destroySlideBox = function() {
-      var _this = this;
+      var animate,
+        _this = this;
       this.cj_slideBox.empty();
-      return this.cj_slideBox.animate({
-        width: '0%'
-      }, 500, function() {
+      if (this.bottom) {
+        animate = {
+          height: "0px"
+        };
+      } else {
+        animate = {
+          width: "0%"
+        };
+      }
+      return this.cj_slideBox.animate(animate, 500, function() {
         _this.cj_slideBox.find(".label.cancel").off("click");
         _this.cj_slideBox.remove();
         _this.view.cj_selectors.tagBox.removeClass("hasSlideBox");
-        return _this.view.createTabClick();
+        _this.view.createTabClick();
+        if (_this.cj_slideBoxContainer != null) {
+          return _this.cj_slideBoxContainer.remove();
+        }
       });
     };
 
@@ -1926,7 +1964,26 @@
     };
 
     Action.prototype.moveTag = function() {
-      return this.createSlide();
+      var _this = this;
+      this.slideHtml = this.gatherMoveLabelHTML();
+      this.setRequiredFields("moveTag");
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.unbindTabClick();
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.moveTag.data.parent_id = data.parent_id;
+              _this.ajax.moveTag.data.id = data.id;
+              return _this.convertSubmitToLoading();
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
     };
 
     Action.prototype.mergeTag = function() {
@@ -2315,6 +2372,30 @@
         html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
       } else {
         html += label.buildLabel("error", "error", "Cannot Find Tag to Remove");
+        return html;
+      }
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
+    Action.prototype.gatherMoveLabelHTML = function(values) {
+      var html, label;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += "<div class='openArrow'></div>";
+      if (this.tagName != null) {
+        html += label.buildLabel("header", "Move Tag", "Move Tag:");
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+        html += label.buildLabel("header", "header3", "to");
+        html += label.buildLabel("headerdescription", "To Tag", "");
+      } else {
+        html += label.buildLabel("error", "error", "Cannot Find Tag to Move");
         return html;
       }
       html += "<div class='actionButtons'>";
@@ -3054,7 +3135,7 @@
         }
       } else {
         this.domList = cj();
-        this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer'></div>");
+        this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer' data-treeid='" + this.tagId + "'></div>");
       }
       return this.iterate(this.tagList);
     };

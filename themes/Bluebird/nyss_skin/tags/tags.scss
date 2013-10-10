@@ -1,7 +1,7 @@
 @import "utils/tagsUtil";
 
 /*pagestructure*/
-
+@import "partials/slideBox";
 #JSTree-container.BBTreeContainer, #BBTreeContainer{
 	@import "utils/reset";
   width:$inputBoxWidthFull;

@@ -1,14 +1,5 @@
-.tagContainer {
-  position:relative;
-  dt:hover {
-    .fCB {
-      display:none;
-    }
-    background-color:transparent;
-  }
-}
 $defaultSideBoxLabelColor:#999;
-.slideBox {
+#JSTree-container .slideBox, .JSTree-slideBox .slideBox{
   position:absolute;
   width:0%;
   height:inherit;
@@ -55,6 +46,10 @@ $defaultSideBoxLabelColor:#999;
     font-size:.9em;
     min-height: 8px;
   }
+  .toTag {
+    @extend .headerdescription;
+    height:10px;
+  }
   .submit {
     @extend .label;
     background-color:$defaultSideBoxLabelColor;
@@ -98,60 +93,88 @@ $defaultSideBoxLabelColor:#999;
     width:100%;
   }
 }
-&.top-291-active .slideBox {
-  .label,.headerdescription {
-    background-color:$issueCodesColor;
-  }
-  .submit,.header {
-    background-color:darken($issueCodesColor,10%);
-  }
-  .cancel {
-    background-color:lighten($issueCodesColor,10%);
-  }
-  .errorLabel {
-    background-color:red;
-  }
-  .loadingGif {
-    height:12px;
-    width:12px;
-    background-color:white;
+.slideBox.bottom {
+  position:relative;
+  width:auto;
+  // hack because of demo_table_jui.css
+  border:0px;
+  padding:0px;
+}
+.dropdown ~.slideBox.bottom {
+  right:0px;
+  width:30%;
+
+}
+.JSTree-slideBox {
+  width:522px;
+  position:relative;
+  margin: 0px auto;
+  height:0px;
+  line-height:12px;
+  .slideBox {
+    width:40%;
+    right:0px;
+    position:absolute;
+    @include round-bottom-corners(3px);
   }
 }
-&.top-292-active .slideBox{
-  .label,.headerdescription {
-    background-color:$positionsColor;
+#JSTree-container, .JSTree-slideBox {
+  .JSTree.top-291-active .slideBox, .top-291.slideBox {
+    .label,.headerdescription {
+      background-color:$issueCodesColor;
+    }
+    .submit,.header {
+      background-color:darken($issueCodesColor,10%);
+    }
+    .cancel {
+      background-color:lighten($issueCodesColor,10%);
+    }
+    .errorLabel {
+      background-color:red;
+    }
+    .loadingGif {
+      height:12px;
+      width:12px;
+      background-color:white;
+    }
   }
-  .submit,.header {
-    background-color:darken($positionsColor,10%);
+  .JSTree.top-292-active .slideBox, .top-292.slideBox{
+    .label,.headerdescription {
+      background-color:$positionsColor;
+    }
+    .submit,.header {
+      background-color:darken($positionsColor,10%);
+    }
+    .cancel {
+      background-color:lighten($positionsColor,10%);
+    }
+    .errorLabel {
+      background-color:red;
+    }
+    .loadingGif {
+      height:12px;
+      width:12px;
+      background-color:white;
+    }
   }
-  .cancel {
-    background-color:lighten($positionsColor,10%);
-  }
-  .errorLabel {
-    background-color:red;
-  }
-  .loadingGif {
-    height:12px;
-    width:12px;
-    background-color:white;
-  }
-}
-&.top-296-active .slideBox{
-  .label,.headerdescription {
-    background-color:$keywordsColor;
-  }
-  .submit,.header {
-    background-color:darken($keywordsColor,10%);
-  }
-  .cancel {
-    background-color:lighten($keywordsColor,10%);
-  }
-  .errorLabel {
-    background-color:red;
-  }
-  .loadingGif {
-    height:12px;
-    width:12px;
-    background-color:white;
+
+  .JSTree.top-296-active .slideBox, .top-296.slideBox{
+    .label,.headerdescription {
+      background-color:$keywordsColor;
+    }
+    .submit,.header {
+      background-color:darken($keywordsColor,10%);
+    }
+    .cancel {
+      background-color:lighten($keywordsColor,10%);
+    }
+    .errorLabel {
+      background-color:red;
+    }
+    .loadingGif {
+      height:12px;
+      width:12px;
+      background-color:white;
+    }
   }
 }
