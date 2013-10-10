@@ -61,7 +61,15 @@
     @include round-bottom-corners(3px);
   }
   &.hasSlideBox {
-    @import "slideBox";
+    .tagContainer {
+      position:relative;
+      dt:hover {
+        .fCB {
+          display:none;
+        }
+        background-color:transparent;
+      }
+    }
   }
 }
 .top-292 .position-box-text-reminder {
@@ -87,7 +95,7 @@
   top:0px;
   z-index:-1;
 }
-  
+// not in BBTree
 @import "tokenHolder";
 .BBTree.dropdown.open {
   // might not work cross browser

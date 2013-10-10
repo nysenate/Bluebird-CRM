@@ -102,7 +102,6 @@
         <div class="JSTreeInit"></div>
         {literal}
         <script>
-            console.log("trying");
             var jsTreePageSettings = {
               pageElements: {
                 wrapper: ['BBTreeContainer'],
@@ -126,7 +125,6 @@
                 // url: 'localtagdata.json'
               }
             }
-            console.log("trying");
             jstree.init(jsTreePageSettings, jstree.views);
         </script>
         {/literal}
