@@ -1039,6 +1039,13 @@ Action = (function() {
         parent_id: ""
       }
     },
+    convertTag: {
+      url: '/civicrm/ajax/tag/update',
+      data: {
+        id: "",
+        parent_id: ""
+      }
+    },
     mergeTag: {
       url: '/civicrm/ajax/mergeTags',
       type: 'POST',
@@ -1051,6 +1058,7 @@ Action = (function() {
     removeTag: [],
     updateTag: ["Tag Name", "Description", "Is Reserved"],
     moveTag: [],
+    convertTag: [],
     mergeTag: []
   };
 
@@ -1059,6 +1067,7 @@ Action = (function() {
     removeTag: [],
     updateTag: ["Tag Name"],
     moveTag: [],
+    convertTag: [],
     mergeTag: []
   };
 
@@ -1067,6 +1076,7 @@ Action = (function() {
     removeTag: ["noChildren"],
     updateTag: ["isRequired", "appliesNullToText"],
     moveTag: ["noChildren"],
+    convertTag: ["noChildren"],
     mergeTag: ["noChildren"]
   };
 
@@ -1350,6 +1360,63 @@ Action = (function() {
               _this.ajax.moveTag.data.id = data.id;
               _this.convertSubmitToLoading();
               return _this.tagAjax(data.id, "moveTag", void 0, function(message) {
+                if (message == null) {
+                  console.log("no response");
+                }
+                if (message.code != null) {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.removeEntityFromTree(data.id);
+                  _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
+  };
+
+  Action.prototype.convertTag = function() {
+    var a, buttons,
+      _this = this;
+    this.slideHtml = this.gatherConvertLabelHTML();
+    this.setRequiredFields("convertTag");
+    this.view.cj_selectors.tagBox.addClass("radio");
+    buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+    a = this;
+    this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+      a.cj_slideBox.find(".submit").removeClass("inactive");
+      return a.sendDtToPanel(cj(this).closest("dt"));
+    });
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      _this.cj_slideBox.find(".submit").addClass("inactive");
+      _this.view.showTags(291, "issue-codes");
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+            return _this.markErrors({
+              toTag: "Must specify a destination"
+            });
+          } else {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+              data.id = _this.cjDT.data("tagid");
+              _this.ajax.moveTag.data.id = data.id;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.id, "convertTag", void 0, function(message) {
                 if (message == null) {
                   console.log("no response");
                 }
@@ -1835,6 +1902,30 @@ Action = (function() {
       html += label.buildLabel("headerdescription", "To Tag", "");
     } else {
       html += label.buildLabel("error", "error", "Cannot Find Tag to Move");
+      return html;
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
+  Action.prototype.gatherConvertLabelHTML = function(values) {
+    var html, label;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    html += "<div class='openArrow'></div>";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Convert Tag", "Convert Keyword:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      html += label.buildLabel("header", "header3", "To Issue Code Under:");
+      html += label.buildLabel("headerdescription", "To Tag", "");
+    } else {
+      html += label.buildLabel("error", "error", "Cannot Find Tag to Place Keyword Under");
       return html;
     }
     html += "<div class='actionButtons'>";

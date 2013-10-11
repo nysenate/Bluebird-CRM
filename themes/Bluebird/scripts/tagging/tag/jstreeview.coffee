@@ -774,6 +774,11 @@ class Action
       data:
         id: ""
         parent_id: ""
+    convertTag:
+      url: '/civicrm/ajax/tag/update'
+      data:
+        id: ""
+        parent_id: ""
     mergeTag:
       url: '/civicrm/ajax/mergeTags'
       type: 'POST'
@@ -785,18 +790,21 @@ class Action
     removeTag: []
     updateTag: ["Tag Name","Description","Is Reserved"]
     moveTag: []
+    convertTag: []
     mergeTag: []
   requiredFields:
     addTag: ["Tag Name"]
     removeTag: []
     updateTag: ["Tag Name"]
     moveTag: []
+    convertTag: []
     mergeTag: []
   requiredValidation:
     addTag: ["isRequired","appliesNullToText"]
     removeTag: ["noChildren"]
     updateTag: ["isRequired","appliesNullToText"]
     moveTag: ["noChildren"]
+    convertTag: ["noChildren"]
     mergeTag: ["noChildren"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
@@ -1005,6 +1013,54 @@ class Action
               @convertSubmitToLoading()
               # undefined middle callback for some reason.
               @tagAjax(data.id,"moveTag", undefined, (message) =>
+                if !message?
+                  console.log "no response"
+                if message.code?
+                  # if message == "DB Error: already exists"
+                    @revertSubmitFromLoading()
+                    @markErrors({tagName:"Tag #{data.fields.tagName} cannot be removed."})
+                    doSubmit.call(@)
+                else
+                  @removeEntityFromTree(data.id)
+                  @addEntityToTree(@ajax.moveTag.data.parent_id,message)
+                  @revertSubmitFromLoading()
+                  @destroySlideBox()
+              )
+        )
+      doSubmit.call(@)
+    )
+  convertTag: () ->
+    @slideHtml = @gatherConvertLabelHTML()
+    @setRequiredFields("convertTag")
+    @view.cj_selectors.tagBox.addClass("radio")
+    buttons = new Buttons(@view,@cjDT.data("tagid"),true)
+    a = @
+    @view.cj_selectors.tagBox.find("dt input.radio").on("click", (event) ->
+      # 
+      a.cj_slideBox.find(".submit").removeClass("inactive")
+      a.sendDtToPanel(cj(@).closest("dt"))
+    )
+    
+    @createSlide(=>
+      @view.unbindTabClick()
+      @cj_slideBox.find(".submit").addClass("inactive")
+      @view.showTags 291,"issue-codes"
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          if @cj_slideBox.find(".submit").hasClass("inactive")
+            @markErrors({toTag:"Must specify a destination"})
+          else
+            @removeErrors(data)
+            # if there's errors
+            if bbUtils.objSize(data.errors) > 0
+              @markErrors(data.errors)
+            else
+              @ajax.moveTag.data.parent_id = @view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value")
+              data.id = @cjDT.data("tagid")
+              @ajax.moveTag.data.id = data.id
+              @convertSubmitToLoading()
+              # undefined middle callback for some reason.
+              @tagAjax(data.id,"convertTag", undefined, (message) =>
                 if !message?
                   console.log "no response"
                 if message.code?
@@ -1348,6 +1404,23 @@ class Action
       html += label.buildLabel("headerdescription","To Tag","")
     else
       html += label.buildLabel("error","error","Cannot Find Tag to Move")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherConvertLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Convert Tag","Convert Keyword:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","To Issue Code Under:")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Place Keyword Under")
       return html
     html += "<div class='actionButtons'>"
     html += label.buildLabel("submit","","submit")
