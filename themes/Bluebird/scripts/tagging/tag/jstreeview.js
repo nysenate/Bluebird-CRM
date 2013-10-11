@@ -1038,6 +1038,11 @@ Action = (function() {
         id: "",
         parent_id: ""
       }
+    },
+    mergeTag: {
+      url: '/civicrm/ajax/mergeTags',
+      type: 'POST',
+      data: ""
     }
   };
 
@@ -1045,21 +1050,24 @@ Action = (function() {
     addTag: ["Tag Name", "Description", "Is Reserved"],
     removeTag: [],
     updateTag: ["Tag Name", "Description", "Is Reserved"],
-    moveTag: []
+    moveTag: [],
+    mergeTag: []
   };
 
   Action.prototype.requiredFields = {
     addTag: ["Tag Name"],
     removeTag: [],
     updateTag: ["Tag Name"],
-    moveTag: []
+    moveTag: [],
+    mergeTag: []
   };
 
   Action.prototype.requiredValidation = {
     addTag: ["isRequired", "appliesNullToText"],
     removeTag: ["noChildren"],
     updateTag: ["isRequired", "appliesNullToText"],
-    moveTag: ["noChildren"]
+    moveTag: ["noChildren"],
+    mergeTag: ["noChildren"]
   };
 
   function Action(view, instance, tagId, action, cb) {
@@ -1342,6 +1350,9 @@ Action = (function() {
               _this.ajax.moveTag.data.id = data.id;
               _this.convertSubmitToLoading();
               return _this.tagAjax(data.id, "moveTag", void 0, function(message) {
+                if (message == null) {
+                  console.log("no response");
+                }
                 if (message.code != null) {
                   _this.revertSubmitFromLoading();
                   _this.markErrors({
@@ -1364,7 +1375,56 @@ Action = (function() {
   };
 
   Action.prototype.mergeTag = function() {
-    return this.createSlide();
+    var a, buttons,
+      _this = this;
+    this.slideHtml = this.gatherMergeLabelHTML();
+    this.setRequiredFields("mergeTag");
+    this.view.cj_selectors.tagBox.addClass("radio");
+    buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+    a = this;
+    this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+      a.cj_slideBox.find(".submit").removeClass("inactive");
+      return a.sendDtToPanel(cj(this).closest("dt"));
+    });
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      _this.cj_slideBox.find(".submit").addClass("inactive");
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          var currentId, destinationId;
+          if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+            return _this.markErrors({
+              toTag: "Must specify a destination"
+            });
+          } else {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              destinationId = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+              currentId = _this.cjDT.data("tagid");
+              _this.ajax.mergeTag.data = "fromId=" + currentId + "&toId=" + destinationId;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(currentId, "mergeTag", void 0, function(message) {
+                if (!message.status) {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "" + message.message
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.removeEntityFromTree(currentId);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
   };
 
   Action.prototype.updateTag = function() {
@@ -1573,6 +1633,7 @@ Action = (function() {
 
   Action.prototype.convertSubmitToLoading = function() {
     var cjSubmitButton;
+    this.cj_slideBox.find(".label.cancel").addClass("inactive");
     cjSubmitButton = this.cj_slideBox.find(".label.submit");
     cjSubmitButton.addClass("loadingGif");
     cjSubmitButton.data("text", cjSubmitButton.text());
@@ -1783,6 +1844,30 @@ Action = (function() {
     return html;
   };
 
+  Action.prototype.gatherMergeLabelHTML = function(values) {
+    var html, label;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    html += "<div class='openArrow'></div>";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Merge Tag", "Merge Tag:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      html += label.buildLabel("header", "header3", "Into");
+      html += label.buildLabel("headerdescription", "To Tag", "");
+    } else {
+      html += label.buildLabel("error", "error", "Cannot Find Tag to Merge");
+      return html;
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
   Action.prototype.tagAjax = function(tagId, type, action, locCb) {
     var request,
       _this = this;
@@ -1792,7 +1877,11 @@ Action = (function() {
         if (data.code === 0) {
           return locCb(data);
         } else {
-          return locCb(data.message);
+          if (data["status"] === true) {
+            return locCb(data);
+          } else {
+            return locCb(data.message);
+          }
         }
       } else if (_this.cb != null) {
         return _this.cb(data.message);
