@@ -29,4 +29,7 @@
   &.short.narrow {
     @import "shape/shortnarrow";
   }
+  &.dropdown {
+    position: static; border-bottom-width: 0px; border-right-width: 0px;
+  }
 }

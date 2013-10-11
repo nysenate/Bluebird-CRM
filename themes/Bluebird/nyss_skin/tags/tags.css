@@ -75,6 +75,9 @@
     float: left;
     clear: both;
     width: 100%; }
+  #JSTree-container .slideBox .submit.inactive, #JSTree-container .slideBox .inactive.cancel, .JSTree-slideBox .slideBox .submit.inactive, .JSTree-slideBox #JSTree-container .slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .slideBox .inactive.cancel, .JSTree-slideBox .slideBox .inactive.cancel {
+    background-color: #999999;
+    cursor: pointer; }
 
 .slideBox.bottom {
   position: relative;
@@ -88,7 +91,7 @@
 
 .JSTree-slideBox {
   width: 522px;
-  position: relative;
+  position: absolute;
   margin: 0px auto;
   height: 0px;
   line-height: 12px; }
@@ -115,6 +118,8 @@
   height: 12px;
   width: 12px;
   background-color: white; }
+#JSTree-container .JSTree.top-291-active .slideBox .submit.inactive, #JSTree-container .JSTree.top-291-active .slideBox .inactive.cancel, #JSTree-container .top-291.slideBox .submit.inactive, #JSTree-container .top-291.slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-291-active .slideBox .submit.inactive, .JSTree-slideBox .JSTree.top-291-active #JSTree-container .slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .JSTree.top-291-active .slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-291-active .slideBox .inactive.cancel, .JSTree-slideBox .top-291.slideBox .submit.inactive, .JSTree-slideBox #JSTree-container .top-291.slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .top-291.slideBox .inactive.cancel, .JSTree-slideBox .top-291.slideBox .inactive.cancel {
+  background-color: #999999; }
 #JSTree-container .JSTree.top-292-active .slideBox .label, #JSTree-container .JSTree.top-292-active .slideBox .header, #JSTree-container .JSTree.top-292-active .slideBox .headerdescription, #JSTree-container .JSTree.top-292-active .slideBox .toTag, #JSTree-container .JSTree.top-292-active .slideBox .submit, #JSTree-container .JSTree.top-292-active .slideBox .cancel, #JSTree-container .JSTree.top-292-active .slideBox .headerdescription, #JSTree-container .JSTree.top-292-active .slideBox .toTag, #JSTree-container .top-292.slideBox .label, #JSTree-container .top-292.slideBox .header, #JSTree-container .top-292.slideBox .headerdescription, #JSTree-container .top-292.slideBox .toTag, #JSTree-container .top-292.slideBox .submit, #JSTree-container .top-292.slideBox .cancel, #JSTree-container .top-292.slideBox .headerdescription, #JSTree-container .top-292.slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active .slideBox .label, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .header, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .header, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .headerdescription, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active .slideBox .header, .JSTree-slideBox .JSTree.top-292-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .submit, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .submit, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .cancel, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .submit, .JSTree-slideBox .JSTree.top-292-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .top-292.slideBox .label, .JSTree-slideBox #JSTree-container .top-292.slideBox .header, #JSTree-container .JSTree-slideBox .top-292.slideBox .header, .JSTree-slideBox #JSTree-container .top-292.slideBox .headerdescription, #JSTree-container .JSTree-slideBox .top-292.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-292.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-292.slideBox .toTag, .JSTree-slideBox .top-292.slideBox .header, .JSTree-slideBox .top-292.slideBox .headerdescription, .JSTree-slideBox .top-292.slideBox .toTag, .JSTree-slideBox #JSTree-container .top-292.slideBox .submit, #JSTree-container .JSTree-slideBox .top-292.slideBox .submit, .JSTree-slideBox #JSTree-container .top-292.slideBox .cancel, #JSTree-container .JSTree-slideBox .top-292.slideBox .cancel, .JSTree-slideBox .top-292.slideBox .submit, .JSTree-slideBox .top-292.slideBox .cancel, .JSTree-slideBox .top-292.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-292.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-292.slideBox .toTag, .JSTree-slideBox .top-292.slideBox .toTag {
   background-color: #6fd5e3; }
 #JSTree-container .JSTree.top-292-active .slideBox .submit, #JSTree-container .JSTree.top-292-active .slideBox .cancel, #JSTree-container .JSTree.top-292-active .slideBox .header, #JSTree-container .JSTree.top-292-active .slideBox .headerdescription, #JSTree-container .JSTree.top-292-active .slideBox .toTag, #JSTree-container .top-292.slideBox .submit, #JSTree-container .top-292.slideBox .cancel, #JSTree-container .top-292.slideBox .header, #JSTree-container .top-292.slideBox .headerdescription, #JSTree-container .top-292.slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active .slideBox .submit, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .cancel, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .header, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .headerdescription, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-292-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-292-active .slideBox .toTag, .JSTree-slideBox .top-292.slideBox .submit, .JSTree-slideBox #JSTree-container .top-292.slideBox .cancel, #JSTree-container .JSTree-slideBox .top-292.slideBox .cancel, .JSTree-slideBox .top-292.slideBox .cancel, .JSTree-slideBox .top-292.slideBox .header, .JSTree-slideBox #JSTree-container .top-292.slideBox .headerdescription, #JSTree-container .JSTree-slideBox .top-292.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-292.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-292.slideBox .toTag, .JSTree-slideBox .top-292.slideBox .headerdescription, .JSTree-slideBox .top-292.slideBox .toTag {
@@ -127,6 +132,8 @@
   height: 12px;
   width: 12px;
   background-color: white; }
+#JSTree-container .JSTree.top-292-active .slideBox .submit.inactive, #JSTree-container .JSTree.top-292-active .slideBox .inactive.cancel, #JSTree-container .top-292.slideBox .submit.inactive, #JSTree-container .top-292.slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .submit.inactive, .JSTree-slideBox .JSTree.top-292-active #JSTree-container .slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .JSTree.top-292-active .slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-292-active .slideBox .inactive.cancel, .JSTree-slideBox .top-292.slideBox .submit.inactive, .JSTree-slideBox #JSTree-container .top-292.slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .top-292.slideBox .inactive.cancel, .JSTree-slideBox .top-292.slideBox .inactive.cancel {
+  background-color: #999999; }
 #JSTree-container .JSTree.top-296-active .slideBox .label, #JSTree-container .JSTree.top-296-active .slideBox .header, #JSTree-container .JSTree.top-296-active .slideBox .headerdescription, #JSTree-container .JSTree.top-296-active .slideBox .toTag, #JSTree-container .JSTree.top-296-active .slideBox .submit, #JSTree-container .JSTree.top-296-active .slideBox .cancel, #JSTree-container .JSTree.top-296-active .slideBox .headerdescription, #JSTree-container .JSTree.top-296-active .slideBox .toTag, #JSTree-container .top-296.slideBox .label, #JSTree-container .top-296.slideBox .header, #JSTree-container .top-296.slideBox .headerdescription, #JSTree-container .top-296.slideBox .toTag, #JSTree-container .top-296.slideBox .submit, #JSTree-container .top-296.slideBox .cancel, #JSTree-container .top-296.slideBox .headerdescription, #JSTree-container .top-296.slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active .slideBox .label, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .header, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .header, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .headerdescription, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active .slideBox .header, .JSTree-slideBox .JSTree.top-296-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .submit, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .submit, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .cancel, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .submit, .JSTree-slideBox .JSTree.top-296-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .top-296.slideBox .label, .JSTree-slideBox #JSTree-container .top-296.slideBox .header, #JSTree-container .JSTree-slideBox .top-296.slideBox .header, .JSTree-slideBox #JSTree-container .top-296.slideBox .headerdescription, #JSTree-container .JSTree-slideBox .top-296.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-296.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-296.slideBox .toTag, .JSTree-slideBox .top-296.slideBox .header, .JSTree-slideBox .top-296.slideBox .headerdescription, .JSTree-slideBox .top-296.slideBox .toTag, .JSTree-slideBox #JSTree-container .top-296.slideBox .submit, #JSTree-container .JSTree-slideBox .top-296.slideBox .submit, .JSTree-slideBox #JSTree-container .top-296.slideBox .cancel, #JSTree-container .JSTree-slideBox .top-296.slideBox .cancel, .JSTree-slideBox .top-296.slideBox .submit, .JSTree-slideBox .top-296.slideBox .cancel, .JSTree-slideBox .top-296.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-296.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-296.slideBox .toTag, .JSTree-slideBox .top-296.slideBox .toTag {
   background-color: #ebb931; }
 #JSTree-container .JSTree.top-296-active .slideBox .submit, #JSTree-container .JSTree.top-296-active .slideBox .cancel, #JSTree-container .JSTree.top-296-active .slideBox .header, #JSTree-container .JSTree.top-296-active .slideBox .headerdescription, #JSTree-container .JSTree.top-296-active .slideBox .toTag, #JSTree-container .top-296.slideBox .submit, #JSTree-container .top-296.slideBox .cancel, #JSTree-container .top-296.slideBox .header, #JSTree-container .top-296.slideBox .headerdescription, #JSTree-container .top-296.slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active .slideBox .submit, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .cancel, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .header, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .headerdescription, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .JSTree.top-296-active .slideBox .headerdescription, .JSTree-slideBox .JSTree.top-296-active .slideBox .toTag, .JSTree-slideBox .top-296.slideBox .submit, .JSTree-slideBox #JSTree-container .top-296.slideBox .cancel, #JSTree-container .JSTree-slideBox .top-296.slideBox .cancel, .JSTree-slideBox .top-296.slideBox .cancel, .JSTree-slideBox .top-296.slideBox .header, .JSTree-slideBox #JSTree-container .top-296.slideBox .headerdescription, #JSTree-container .JSTree-slideBox .top-296.slideBox .headerdescription, .JSTree-slideBox #JSTree-container .top-296.slideBox .toTag, #JSTree-container .JSTree-slideBox .top-296.slideBox .toTag, .JSTree-slideBox .top-296.slideBox .headerdescription, .JSTree-slideBox .top-296.slideBox .toTag {
@@ -139,6 +146,8 @@
   height: 12px;
   width: 12px;
   background-color: white; }
+#JSTree-container .JSTree.top-296-active .slideBox .submit.inactive, #JSTree-container .JSTree.top-296-active .slideBox .inactive.cancel, #JSTree-container .top-296.slideBox .submit.inactive, #JSTree-container .top-296.slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .submit.inactive, .JSTree-slideBox .JSTree.top-296-active #JSTree-container .slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .JSTree.top-296-active .slideBox .inactive.cancel, .JSTree-slideBox .JSTree.top-296-active .slideBox .inactive.cancel, .JSTree-slideBox .top-296.slideBox .submit.inactive, .JSTree-slideBox #JSTree-container .top-296.slideBox .inactive.cancel, #JSTree-container .JSTree-slideBox .top-296.slideBox .inactive.cancel, .JSTree-slideBox .top-296.slideBox .inactive.cancel {
+  background-color: #999999; }
 
 #JSTree-container.BBTreeContainer, #BBTreeContainer {
   width: 522px;
@@ -218,6 +227,8 @@
       padding-left: 3px;
       margin: 0px;
       height: 20px; }
+    #JSTree-container.BBTreeContainer .BBTree-menu.noResults, #BBTreeContainer .BBTree-menu.noResults {
+      border-bottom: 6px solid white; }
   #JSTree-container.BBTreeContainer .BBTree, #BBTreeContainer .BBTree {
     background-color: #fff;
     border-bottom-left-radius: 3px;
@@ -473,6 +484,7 @@
     #JSTree-container.BBTreeContainer .BBTree .tagContainer.active, #BBTreeContainer .BBTree .tagContainer.active {
       display: block; }
     #JSTree-container.BBTreeContainer .BBTree.dropdown, #BBTreeContainer .BBTree.dropdown {
+      height: 0px;
       display: none;
       border-bottom-left-radius: 3px;
       -webkit-border-bottom-left-radius: 3px;
@@ -534,11 +546,22 @@
           background-color: rgba(242, 209, 119, 0.75); }
         #JSTree-container.BBTreeContainer .BBTree.dropdown.top-296-active dt.active, #BBTreeContainer .BBTree.dropdown.top-296-active dt.active {
           background-color: rgba(242, 209, 119, 0.75); }
-    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer, #BBTreeContainer .BBTree.hasSlideBox .tagContainer {
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer, #BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer {
       position: relative; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover {
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB, #BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB {
+        display: inline;
+        float: left;
+        margin: 0px;
+        padding: 0px;
+        margin-right: 5px;
+        position: static; }
+        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB input, #BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB input {
+          margin-top: 2px; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer {
+      position: relative; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover {
         background-color: transparent; }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox .tagContainer dt:hover .fCB {
+        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB {
           display: none; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
@@ -660,3 +683,7 @@
       width: 295px; }
       #JSTree-container.BBTreeContainer.narrow .BBTree.dropdown dt .tag .name, #BBTreeContainer.narrow .BBTree.dropdown dt .tag .name {
         font-size: 11px; }
+  #JSTree-container.BBTreeContainer.dropdown, #BBTreeContainer.dropdown {
+    position: static;
+    border-bottom-width: 0px;
+    border-right-width: 0px; }

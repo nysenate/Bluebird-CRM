@@ -64,7 +64,13 @@
       var get,
         _this = this;
       get = cj.ajax(ajaxStructure);
-      return get.done(function(data) {
+      return get.done(function(data, textStatus, xhr) {
+        if (xhr.status === 503 || xhr.status === 500 || xhr.status === 404) {
+          return _this.callback({
+            status: "error",
+            errorType: xhr.status
+          });
+        }
         return _this.callback(_this.ripApartQueryData(data.response.metadata, data.response.results));
       });
     };
@@ -1223,11 +1229,21 @@
     };
 
     View.prototype.setOverlay = function() {
-      var cjOverlay;
+      var cjOverlay, height;
       if (this.cj_selectors.tagBox.hasClass("dropdown")) {
         cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        height = this.cj_selectors.tagBox.height();
         cjOverlay.height(this.cj_selectors.tagBox.height());
-        return cjOverlay.width(this.cj_selectors.tagBox.width());
+        cjOverlay.width(this.cj_selectors.tagBox.width());
+        if (this.cj_selectors.tagBox.hasClass("filtered")) {
+          if (height === 0) {
+            return this.cj_menuSelectors.menu.addClass("noResults");
+          } else {
+            return this.cj_menuSelectors.menu.removeClass("noResults");
+          }
+        } else {
+          return this.cj_menuSelectors.menu.removeClass("noResults");
+        }
       } else {
         cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
         cjOverlay.css("height", "100%");
@@ -1240,6 +1256,7 @@
       tabName = this.getTabNameFromId(id, true);
       this.cj_menuSelectors.tabs.find("div").removeClass("active");
       this.cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display", "none");
+      this.setOverlay();
       this.cj_menuSelectors.tabs.find(".tab-" + tabName).addClass("active");
       this.cj_selectors.tagBox.find(".top-" + id).addClass("active").css("display", "block");
       return this.cj_selectors.tagBox.addClass("top-" + id + "-active");
@@ -1501,14 +1518,14 @@
             v = hits[k];
             this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
           }
-          this.cj_selectors.container.css("position", "static").css("border-bottom-width", "0px").css("border-right-width", "0px");
+          this.cj_selectors.container.addClass("dropdown");
           this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
           this.cj_selectors.tagBox.css("border-right", "1px solid #ccc");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "1px solid #bbb");
           this.setOverlay();
         } else {
           boxHeight = new Resize();
-          this.cj_selectors.container.css("position", "relative").css("border-bottom-width", "1px").css("border-right-width", "1px");
+          this.cj_selectors.container.removeClass("dropdown");
           this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
           this.cj_selectors.tagBox.css("border-right", "0px");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "0px");
@@ -1739,7 +1756,7 @@
     }
 
     Action.prototype.createSlide = function(cb) {
-      var activeTreeId, containerHeight, menuHeight, offset, resize, sideWidth, slideWidth,
+      var activeTreeId, containerPosition, menuHeight, resize, sideWidth, slideWidth,
         _this = this;
       resize = new Resize;
       if (resize.height > 190) {
@@ -1762,13 +1779,13 @@
         });
       } else {
         this.bottom = true;
-        containerHeight = this.view.cj_selectors.container.height();
+        this.view.cj_selectors.tagBox.addClass("hasSlideBox");
+        containerPosition = this.view.cj_selectors.container.offset();
         menuHeight = this.view.cj_menuSelectors.menu.height();
         activeTreeId = this.view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid");
-        offset = -(containerHeight - menuHeight + 15);
         this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
         this.cj_slideBoxContainer = cj(".JSTree-slideBox");
-        this.cj_slideBoxContainer.css("top", "" + offset + "px");
+        this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + containerPosition.left + "px");
         this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
         return this.cj_slideBox.animate({
           height: "210px"
@@ -1804,11 +1821,12 @@
       return this.cj_slideBox.animate(animate, 500, function() {
         _this.cj_slideBox.find(".label.cancel").off("click");
         _this.cj_slideBox.remove();
-        _this.view.cj_selectors.tagBox.removeClass("hasSlideBox");
+        _this.view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio");
         _this.view.createTabClick();
         if (_this.cj_slideBoxContainer != null) {
-          return _this.cj_slideBoxContainer.remove();
+          _this.cj_slideBoxContainer.remove();
         }
+        return new Buttons(_this.view);
       });
     };
 
@@ -1963,22 +1981,57 @@
       });
     };
 
+    Action.prototype.sendDtToPanel = function(cjDT) {
+      this.cj_slideBox.find(".toTag").removeClass("errorLabel");
+      return this.cj_slideBox.find(".toTag").html(cjDT.data("name"));
+    };
+
     Action.prototype.moveTag = function() {
-      var _this = this;
+      var a, buttons,
+        _this = this;
       this.slideHtml = this.gatherMoveLabelHTML();
       this.setRequiredFields("moveTag");
+      this.view.cj_selectors.tagBox.addClass("radio");
+      buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+      a = this;
+      this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+        a.cj_slideBox.find(".submit").removeClass("inactive");
+        return a.sendDtToPanel(cj(this).closest("dt"));
+      });
       return this.createSlide(function() {
         var doSubmit;
         _this.view.unbindTabClick();
+        _this.cj_slideBox.find(".submit").addClass("inactive");
         doSubmit = function() {
           return _this.submitButton(true, function(data) {
-            _this.removeErrors(data);
-            if (bbUtils.objSize(data.errors) > 0) {
-              return _this.markErrors(data.errors);
+            if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+              return _this.markErrors({
+                toTag: "Must specify a destination"
+              });
             } else {
-              _this.ajax.moveTag.data.parent_id = data.parent_id;
-              _this.ajax.moveTag.data.id = data.id;
-              return _this.convertSubmitToLoading();
+              _this.removeErrors(data);
+              if (bbUtils.objSize(data.errors) > 0) {
+                return _this.markErrors(data.errors);
+              } else {
+                _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+                data.id = _this.cjDT.data("tagid");
+                _this.ajax.moveTag.data.id = data.id;
+                _this.convertSubmitToLoading();
+                return _this.tagAjax(data.id, "moveTag", void 0, function(message) {
+                  if (message.code != null) {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                    });
+                    return doSubmit.call(_this);
+                  } else {
+                    _this.removeEntityFromTree(data.id);
+                    _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                    _this.revertSubmitFromLoading();
+                    return _this.destroySlideBox();
+                  }
+                });
+              }
             }
           });
         };
@@ -2041,7 +2094,7 @@
     Action.prototype.addEntityToTree = function(parent, message) {
       var backout, cjParent, node, node_parsed;
       node = {};
-      if (message.created_date != null) {
+      if ((message.created_date != null) && message.created_date.length > 0) {
         node.created_date = _manipTags.createDate(message.created_date);
       }
       if (message.name != null) {
@@ -2063,7 +2116,7 @@
       node.children = false;
       cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
       node.level = cjParent.data("level") + 1;
-      node.type = "" + (cjParent.data("tree"));
+      node.type = ("" + (cjParent.data("tree"))) || "291";
       if (message.is_reserved = "false") {
         node.is_reserved = "0";
       } else {
@@ -2072,6 +2125,7 @@
       node_parsed = new Node(node);
       this.instance.appendToAC(node);
       backout = this.view.trees[parseInt(node.type)].appendNode(node, node.parent_id, node_parsed.html);
+      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
       if (!backout) {
         console.log("bad things happened");
         return false;
@@ -2123,7 +2177,7 @@
       }
       cjDL.remove();
       cjDT.replaceWith(cjNode.html());
-      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + data.type));
+      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
       new Buttons(this.view, "#tagDropdown_" + id);
       return new Buttons(this.view, "#tagLabel_" + id);
     };
@@ -2411,7 +2465,11 @@
       request = cj.when(cj.ajax(this.ajax[type]));
       request.done(function(data) {
         if (locCb != null) {
-          return locCb(data.message);
+          if (data.code === 0) {
+            return locCb(data);
+          } else {
+            return locCb(data.message);
+          }
         } else if (_this.cb != null) {
           return _this.cb(data.message);
         }
@@ -2427,12 +2485,12 @@
     createDate: function(mDate) {
       var date;
       date = "";
-      date += "" + (mDate.substring(0, 3)) + "-";
-      date += "" + (mDate.substring(4, 5)) + "-";
-      date += "" + (mDate.substring(6, 7)) + " ";
-      date += "" + (mDate.substring(8, 9)) + ":";
-      date += "" + (mDate.substring(10, 11)) + ":";
-      date += "" + (mDate.substring(12, 13));
+      date += "" + (mDate.substring(0, 4)) + "-";
+      date += "" + (mDate.substring(4, 6)) + "-";
+      date += "" + (mDate.substring(6, 8)) + " ";
+      date += "" + (mDate.substring(8, 10)) + ":";
+      date += "" + (mDate.substring(10, 12)) + ":";
+      date += "" + (mDate.substring(12, 14));
       return date;
     }
   };
@@ -2538,18 +2596,28 @@
 
     Buttons.prototype.issuecodes = ["addTag", "removeTag", "updateTag", "moveTag", "mergeTag"];
 
-    function Buttons(view, finder) {
+    Buttons.prototype.radioButtons = false;
+
+    function Buttons(view, finder, radio) {
       this.view = view;
       if (finder == null) {
         finder = "";
       }
-      if (this.view.settings.tagging) {
-        this.removeFCB();
-        this.createTaggingCheckboxes(finder);
-      }
-      if (this.view.settings.edit) {
+      if (radio === true) {
         this.removeTaggingCheckboxes();
-        this.createFCB();
+        this.removeFCB();
+        this.radioButtons = true;
+        this.createRadioButtons(finder);
+      } else {
+        this.removeRadioButtons();
+        if (this.view.settings.tagging) {
+          this.removeFCB();
+          this.createTaggingCheckboxes(finder);
+        }
+        if (this.view.settings.edit) {
+          this.removeTaggingCheckboxes();
+          this.createFCB();
+        }
       }
     }
 
@@ -2565,7 +2633,24 @@
     };
 
     Buttons.prototype.removeTaggingCheckboxes = function() {
-      return this.view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove();
+      return this.view.cj_selectors.tagBox.find("dt .tag .fCB").remove();
+    };
+
+    Buttons.prototype.createRadioButtons = function(finder) {
+      var a;
+      a = this;
+      return this.view.cj_selectors.tagBox.find("dt .tag .name").before(function() {
+        if (cj(this).parent().parent().data("tagid") !== finder) {
+          return a.createButtons(cj(this).parent().parent().data("tagid"));
+        }
+      });
+    };
+
+    Buttons.prototype.removeRadioButtons = function() {
+      var cjDT;
+      cjDT = this.view.cj_selectors.tagBox.find("dt");
+      cjDT.find(".tag .fCB").remove();
+      return cjDT.off("click");
     };
 
     Buttons.prototype.createFCB = function() {
@@ -2604,7 +2689,9 @@
         v = _ref[k];
         cjTreeTop = this.view.cj_selectors.tagBox.find(".top-" + k).find("dt");
         cjTreeTop.off("mouseenter");
-        _results.push(cjTreeTop.off("mouseleave"));
+        cjTreeTop.off("mouseleave");
+        cjTreeTop.off("click");
+        _results.push(cjTreeTop.find(".fCB").remove());
       }
       return _results;
     };
@@ -2613,31 +2700,37 @@
       var html, tag, _i, _j, _len, _len1, _ref, _ref1;
       html = "<div class='fCB'>";
       html += "<ul>";
-      if (this.view.settings.edit) {
-        if (parseInt(treeTop) === 291) {
-          _ref = this.issuecodes;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            tag = _ref[_i];
-            html += this[tag];
-          }
-        }
-        if (parseInt(treeTop) === 296) {
-          _ref1 = this.keywords;
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            tag = _ref1[_j];
-            html += this[tag];
-          }
-        }
-      } else {
+      if (this.radioButtons) {
         html += "<li>";
-        html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+        html += _utils.createRadioButton("tag", "" + treeTop, "radio");
         html += "</li>";
+      } else {
+        if (this.view.settings.edit) {
+          if (parseInt(treeTop) === 291) {
+            _ref = this.issuecodes;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              tag = _ref[_i];
+              html += this[tag];
+            }
+          }
+          if (parseInt(treeTop) === 296) {
+            _ref1 = this.keywords;
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              tag = _ref1[_j];
+              html += this[tag];
+            }
+          }
+        } else {
+          if (this.view.settings.tagging) {
+            html += "<li>";
+            html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+            html += "</li>";
+          }
+        }
       }
       html += "</ul>";
       return html += "</div>";
     };
-
-    Buttons.prototype.addRadios = function(treeTop) {};
 
     Buttons.prototype.executeButton = function(cjDT) {
       var _this = this;
@@ -2887,6 +2980,9 @@
           _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
           return openLeg.query(nextPage, function(results) {
             var addButtonsTo, filteredList, k, poses, v;
+            if (results.status != null) {
+              console.log(results);
+            }
             poses = _this.addPositionsToTags(results.results);
             filteredList = {
               292: poses
@@ -2952,6 +3048,9 @@
         "term": terms
       }, function(results) {
         var filteredList, hitCount, poses;
+        if (results.status != null) {
+          console.log(results);
+        }
         poses = _this.addPositionsToTags(results.results);
         filteredList = {
           292: poses
@@ -3180,11 +3279,10 @@
     };
 
     Tree.prototype.appendNode = function(node, parent, html, noAdd) {
-      var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _len, _ref;
+      var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _j, _len, _len1, _ref, _ref1;
       if (noAdd == null) {
         noAdd = false;
       }
-      console.log(node);
       topLevel = false;
       if (parseInt(parent) === 291 || parseInt(parent) === 292 || parseInt(parent) === 296) {
         topLevel = true;
@@ -3194,7 +3292,6 @@
           _ref = this.tagList;
           for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
             obj = _ref[i];
-            console.log(node.id === obj.id);
             if (obj.id === node.id) {
               this.tagList.splice(i, 1);
               this.tagList.splice(i, 0, node);
@@ -3230,6 +3327,13 @@
       cjParentDL.show().prepend(html);
       if (topLevel) {
         return true;
+      }
+      _ref1 = this.tagList;
+      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+        obj = _ref1[i];
+        if (parent === obj.id) {
+          obj.children = true;
+        }
       }
       cjParentDT.addClass("open");
       cjParentDT.find(".ddControl").addClass("treeButton");

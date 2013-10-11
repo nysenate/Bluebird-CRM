@@ -29,6 +29,7 @@
    
   }
   &.dropdown {
+    height:0px;
     display:none;
     &.open {
       display:block;
@@ -60,7 +61,24 @@
     }
     @include round-bottom-corners(3px);
   }
-  &.hasSlideBox {
+  &.hasSlideBox.radio {
+    .tagContainer {
+      position:relative;
+      .fCB {
+        display:inline;
+        float:left;
+        margin: 0px;
+        padding: 0px;
+        margin-right:5px;
+        position:static;
+        input {
+          // width:0px;
+          margin-top:2px;
+        }
+      }
+    }
+  }
+  &.hasSlideBox:not(.radio) {
     .tagContainer {
       position:relative;
       dt:hover {
@@ -71,6 +89,8 @@
       }
     }
   }
+
+
 }
 .top-292 .position-box-text-reminder {
   text-align: center;

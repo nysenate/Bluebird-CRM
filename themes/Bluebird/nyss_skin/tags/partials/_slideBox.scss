@@ -92,6 +92,10 @@ $defaultSideBoxLabelColor:#999;
     clear:both;
     width:100%;
   }
+  .submit.inactive {
+    background-color:$defaultSideBoxLabelColor;
+    cursor:pointer;
+  }
 }
 .slideBox.bottom {
   position:relative;
@@ -107,7 +111,7 @@ $defaultSideBoxLabelColor:#999;
 }
 .JSTree-slideBox {
   width:522px;
-  position:relative;
+  position:absolute;
   margin: 0px auto;
   height:0px;
   line-height:12px;
@@ -137,6 +141,9 @@ $defaultSideBoxLabelColor:#999;
       width:12px;
       background-color:white;
     }
+    .submit.inactive {
+      background-color:$defaultSideBoxLabelColor;
+    }
   }
   .JSTree.top-292-active .slideBox, .top-292.slideBox{
     .label,.headerdescription {
@@ -155,6 +162,9 @@ $defaultSideBoxLabelColor:#999;
       height:12px;
       width:12px;
       background-color:white;
+    }
+    .submit.inactive {
+      background-color:$defaultSideBoxLabelColor;
     }
   }
 
@@ -175,6 +185,9 @@ $defaultSideBoxLabelColor:#999;
       height:12px;
       width:12px;
       background-color:white;
+    }
+    .submit.inactive {
+      background-color:$defaultSideBoxLabelColor;
     }
   }
 }
