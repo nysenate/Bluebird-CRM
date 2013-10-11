@@ -183,6 +183,11 @@
       }
     }
   });
+
+  //7093 close tag lookup select when clicking tabs
+  cj('li.crm-tab-button a').click(function(){
+    cj('div.token-input-dropdown-facebook').hide();
+  });
 </script>
 {/literal}
 
