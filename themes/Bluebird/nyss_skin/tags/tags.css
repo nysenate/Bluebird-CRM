@@ -18,7 +18,8 @@
   margin: 15px auto;
   border-radius: 3px;
   -moz-border-radius: 3px;
-  -webkit-border-radius: 3px; }
+  -webkit-border-radius: 3px;
+  border: 1px solid #ccc; }
   #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
   #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
@@ -209,7 +210,9 @@
     #JSTree-container.BBTreeContainer .BBTree dt .fCB, #BBTreeContainer .BBTree dt .fCB {
       display: none;
       padding: 1px 0;
-      float: right; }
+      position: absolute;
+      z-index: 5;
+      right: 0px; }
       #JSTree-container.BBTreeContainer .BBTree dt .fCB ul, #BBTreeContainer .BBTree dt .fCB ul {
         margin: 0; }
         #JSTree-container.BBTreeContainer .BBTree dt .fCB ul li, #BBTreeContainer .BBTree dt .fCB ul li {
@@ -283,16 +286,12 @@
         position: absolute;
         bottom: 2px;
         left: 2px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.description .fCB, #BBTreeContainer .BBTree dt.description .fCB {
-        margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.description.longName, #BBTreeContainer .BBTree dt.description.longName {
         line-height: 12px;
         height: 50px; }
         #JSTree-container.BBTreeContainer .BBTree dt.description.longName .tag, #BBTreeContainer .BBTree dt.description.longName .tag {
           height: 50px;
           line-height: 12px; }
-        #JSTree-container.BBTreeContainer .BBTree dt.description.longName .fCB, #BBTreeContainer .BBTree dt.description.longName .fCB {
-          margin-top: 10px; }
     #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description, #BBTreeContainer .BBTree dt.shortdescription.description {
       height: 30px; }
       #JSTree-container.BBTreeContainer .BBTree dt.shortdescription.description .tag, #BBTreeContainer .BBTree dt.shortdescription.description .tag {
@@ -322,8 +321,6 @@
         position: absolute;
         bottom: 2px;
         left: 2px; }
-      #JSTree-container.BBTreeContainer .BBTree dt.longdescription .fCB, #BBTreeContainer .BBTree dt.longdescription .fCB {
-        margin-top: 10px; }
       #JSTree-container.BBTreeContainer .BBTree dt.longdescription .tag, #BBTreeContainer .BBTree dt.longdescription .tag {
         height: 52px; }
     #JSTree-container.BBTreeContainer .BBTree.tagging dt .tag .name, #BBTreeContainer .BBTree.tagging dt .tag .name {
@@ -334,7 +331,8 @@
       float: left;
       margin: 0px;
       padding: 0px;
-      margin-right: 5px; }
+      margin-right: 5px;
+      position: static; }
       #JSTree-container.BBTreeContainer .BBTree.tagging .fCB input.checkbox, #BBTreeContainer .BBTree.tagging .fCB input.checkbox {
         margin-top: 2px; }
     #JSTree-container.BBTreeContainer .BBTree.tagging dt.description div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #JSTree-container.BBTreeContainer .BBTree.tagging dt.longdescription div.description, #BBTreeContainer .BBTree.tagging dt.description div.description, #BBTreeContainer .BBTree.tagging dt.shortdescription div.description, #BBTreeContainer .BBTree.tagging dt.longdescription div.description {
@@ -358,7 +356,8 @@
         width: 438px;
         z-index: 10;
         background-color: white;
-        height: 150px; }
+        height: 150px;
+        max-height: 600px; }
       #JSTree-container.BBTreeContainer .BBTree.dropdown.top-292-active, #BBTreeContainer .BBTree.dropdown.top-292-active {
         background-color: rgba(175, 232, 239, 0.5); }
         #JSTree-container.BBTreeContainer .BBTree.dropdown.top-292-active dt.shaded, #BBTreeContainer .BBTree.dropdown.top-292-active dt.shaded {
@@ -417,13 +416,99 @@
       background-color: rgba(0, 0, 0, 0.2);
       z-index: 15;
       right: 0px; }
-    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .label, #BBTreeContainer .BBTree.hasSlideBox .label {
-      background-color: #ccc;
-      border-radius: 5px;
-      -moz-border-radius: 5px;
-      -webkit-border-radius: 5px;
-      color: #fff;
-      padding: 4px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .label, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        background-color: #a6a6a6;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        color: #fff;
+        padding: 4px;
+        display: inline-block;
+        margin-left: 2%;
+        letter-spacing: 1px;
+        -webkit-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        -moz-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35); }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .header, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription {
+        background-color: #999999;
+        margin: 5px 0 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-align: center;
+        display: block; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .textBox, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox {
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        margin-left: 2%;
+        margin-bottom: 5px;
+        width: 90%; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorBox {
+        border: 2px solid red;
+        margin-bottom: 3px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox .slideBox .headerdescription {
+        margin-top: -10px;
+        margin-bottom: 10px;
+        font-weight: normal;
+        font-size: .9em;
+        min-height: 8px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .submit, #BBTreeContainer #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #JSTree-container.BBTreeContainer #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        background-color: #999999;
+        margin-top: 5px;
+        font-weight: bold;
+        text-transform: capitalize;
+        float: right;
+        margin-right: 2%;
+        cursor: pointer;
+        clear: none; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .cancel {
+        float: right;
+        background-color: #bfbfbf; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox .slideBox .errorLabel {
+        background-color: red; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input, #BBTreeContainer .BBTree.hasSlideBox .slideBox .isReserved:input {
+        margin-left: 10px; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox .slideBox .actionButtons, #BBTreeContainer .BBTree.hasSlideBox .slideBox .actionButtons {
+        float: left;
+        clear: both;
+        width: 100%; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription {
+      background-color: #5ad170; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .headerdescription {
+      background-color: #36c250; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .cancel {
+      background-color: #82dc93; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-291-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription {
+      background-color: #6fd5e3; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .headerdescription {
+      background-color: #44c9db; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .cancel {
+      background-color: #9ae1eb; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-292-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .label, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .label, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription {
+      background-color: #ebb931; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .submit, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .header, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .headerdescription {
+      background-color: #d4a115; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .cancel {
+      background-color: #f0c95f; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .errorLabel, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .errorLabel {
+      background-color: red; }
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .loadingGif, #BBTreeContainer .BBTree.hasSlideBox.top-296-active .slideBox .loadingGif {
+      height: 12px;
+      width: 12px;
+      background-color: white; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
     font-style: italic;
@@ -447,23 +532,92 @@
     height: 100%;
     top: 0px;
     z-index: -1; }
+  #JSTree-container.BBTreeContainer .JSTree-resize, #BBTreeContainer .JSTree-resize {
+    background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat white -51px -229px;
+    height: 6px;
+    width: 10px;
+    margin: 0 auto;
+    position: relative; }
+    #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
+      cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
     background-color: #fff;
+    position: relative;
+    padding-bottom: 8px;
+    width: 100%;
+    overflow-x: hidden;
     border-bottom-left-radius: 3px;
     -webkit-border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
     -webkit-border-bottom-right-radius: 3px;
     -moz-border-radius-bottomleft: 3px;
-    -moz-border-radius-bottomright: 3px; }
-    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize {
-      background: url("/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png") no-repeat transparent -51px -229px;
-      height: 6px;
-      width: 10px;
-      margin: 0 auto; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-resize:hover {
-        cursor: s-resize; }
+    -moz-border-radius-bottomright: 3px;
+    min-height: 16px; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody {
+      height: 16px;
+      overflow: hidden;
+      padding-top: 5px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token {
+        background-color: #a6a6a6;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        padding: 2px 6px;
+        margin-bottom: 1px;
+        display: inline-block;
+        margin-left: 2px;
+        letter-spacing: 1px;
+        float: left;
+        -webkit-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        -moz-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
+        color: #fff;
+        min-height: 12px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover {
+        text-decoration: line-through;
+        color: #ff4d4d;
+        cursor: pointer; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"] {
+        background-color: #5ad170; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"] {
+        background-color: #6fd5e3; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"] {
+        background-color: #ebb931; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine {
+      height: 16px; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options, #BBTreeContainer .JSTree-tokenHolder .JSTree-options {
+      float: right;
+      height: 15px;
+      width: 8%;
+      margin-top: 6px;
+      border-top-left-radius: 3px;
+      -webkit-border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px;
+      -webkit-border-bottom-left-radius: 3px;
+      -moz-border-radius-topleft: 3px;
+      -moz-border-radius-bottomleft: 3px;
+      background-color: #ccc; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .button, #BBTreeContainer #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #JSTree-container.BBTreeContainer #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle {
+        height: 15px;
+        width: 15px;
+        background: url(/sites/default/themes/Bluebird/nyss_skin/images/icons-3e3e3e.png) transparent;
+        cursor: pointer; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle {
+        background-position: -48px -64px; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp, #BBTreeContainer .JSTree-tokenHolder .JSTree-options .showToggle.slideUp {
+        background-position: -191px -49px; }
+  #JSTree-container.BBTreeContainer .JSTree-tokenHolder.closed, #BBTreeContainer .JSTree-tokenHolder.closed {
+    height: 6px;
+    padding-bottom: 0px;
+    min-height: 0px;
+    overflow-y: hidden; }
+    #JSTree-container.BBTreeContainer .JSTree-tokenHolder.closed .JSTree-options, #BBTreeContainer .JSTree-tokenHolder.closed .JSTree-options {
+      display: none; }
   #JSTree-container.BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder, #BBTreeContainer .BBTree.dropdown.open ~ .BBTree-tokenHolder {
     display: none; }
+  #JSTree-container.BBTreeContainer .JSTree.dropdown ~ .JSTree-resize, #BBTreeContainer .JSTree.dropdown ~ .JSTree-resize {
+    bottom: 6px;
+    margin-bottom: -6px; }
   #JSTree-container.BBTreeContainer.narrow, #BBTreeContainer.narrow {
     width: 294px; }
     #JSTree-container.BBTreeContainer.narrow .BBTree-tabs div, #BBTreeContainer.narrow .BBTree-tabs div {

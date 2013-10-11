@@ -19,6 +19,7 @@ jstree =
       view["done"].call(@, instance)
       )
     instance
+  
 setProp = (properties..., instance) ->
   for k, v of properties[0]
     instance.set k,v
@@ -125,10 +126,17 @@ class Instance
     if entityId == 0
       dataSettings = @get 'dataSettings'
       entityId = dataSettings.entity_id
-      # @set 'dataSettings', dataSettings
     @entity = new Entity(entityId, (tags) =>
       cb.call(@,tags)
     )
+  appendToAC:(node) ->
+    @_autocomplete.push node
+    true
+  removeFromAC:(node) ->
+    for v,i in @_autocomplete
+      if parseInt(node.id) == parseInt(v.id)
+        console.log "removeAC #{i}"
+        @_autocomplete.splice(i,1)
 
 _utils =
   removeDupFromExtend: (obj) =>
@@ -191,8 +199,17 @@ _utils =
     
   hyphenize: (text) ->
     text.replace(" ","-")
-  createLabel: (labelName, className...) ->
-
+  camelCase: (text) ->
+    a = text.split(" ")
+    b = ""
+    for word,i in a
+      if i isnt 0
+        word = word.toLowerCase()
+        word = word.charAt(0).toUpperCase() + word.substring(1)
+      else
+        word = word.toLowerCase()
+      b += word
+    return b
   _createInputBox: (type,name,value = "",classNames...) ->
     classes = classNames.join(" ")
     return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"
@@ -245,6 +262,7 @@ _parseTree =
     instance.treeNames = @treeNames
   positionList: (obj) ->
     for k,v of obj
+      # console.log v
       a =
         "name": _utils.removePositionTextFromBill(v.name)
         "posName": v.name
@@ -267,6 +285,7 @@ _parseTree =
 _parseAutocomplete =  
   pre: (obj) ->
     _parseAutocomplete.level++
+    return true if obj.name == "Inbox Polling Unprocessed"
     hasChildren = false
     if obj.children.length > 0
       hasChildren = true 

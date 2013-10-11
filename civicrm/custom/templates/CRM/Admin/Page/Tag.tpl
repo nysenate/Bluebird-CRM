@@ -68,7 +68,13 @@
         wrapper: ['BBTreeContainer'],
         tagHolder: ['BBTree'],
         prefix: ['BBtree']
-      }
+      },
+      displaySettings: {
+        wide:true,
+        // lock:false
+        edit:true
+        // tagging:true
+      },
     }
     jstree.init(jsTreePageSettings, jstree.views);
   </script>

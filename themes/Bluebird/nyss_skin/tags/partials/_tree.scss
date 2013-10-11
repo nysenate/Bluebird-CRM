@@ -38,6 +38,7 @@
       z-index:10;
       background-color:white;
       height: 150px;
+      max-height:600px;
     }
     // .top-291{
     //   @include addColors($issueCodesColor,.3);
@@ -70,17 +71,6 @@
   font-size: 1.2em;
 
 }
-// .JSTree.dropdown {
-//   &.top-291-active .JSTree-overlay {
-//     @include tag-lightness($issueCodesColor,.3);
-//   }
-//   &.top-296-active .JSTree-overlay {
-//     @include tag-lightness($keywordsColor,.3);
-//   }
-//   &.top-292-active .JSTree-overlay {
-//     @include tag-lightness($positionsColor,.5);
-//   }
-// }
 .JSTree-overlay {
   position: relative;
   z-index: 1;
@@ -104,4 +94,8 @@
   ~.BBTree-tokenHolder {
     display:none;
   }
+}
+.JSTree.dropdown ~.JSTree-resize{
+  bottom:6px;
+  margin-bottom:-6px;
 }
