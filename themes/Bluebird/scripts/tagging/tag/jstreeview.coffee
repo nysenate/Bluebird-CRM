@@ -774,21 +774,30 @@ class Action
       data:
         id: ""
         parent_id: ""
+    mergeTag:
+      url: '/civicrm/ajax/mergeTags'
+      type: 'POST'
+      data: ""
+      # 'fromId='+ currentId + '&toId='+ destinationId
+      
   fields:
     addTag: ["Tag Name","Description","Is Reserved"]
     removeTag: []
     updateTag: ["Tag Name","Description","Is Reserved"]
     moveTag: []
+    mergeTag: []
   requiredFields:
     addTag: ["Tag Name"]
     removeTag: []
     updateTag: ["Tag Name"]
     moveTag: []
+    mergeTag: []
   requiredValidation:
     addTag: ["isRequired","appliesNullToText"]
     removeTag: ["noChildren"]
     updateTag: ["isRequired","appliesNullToText"]
     moveTag: ["noChildren"]
+    mergeTag: ["noChildren"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
   constructor: (@view, @instance, @tagId, action, @cb) ->
@@ -996,6 +1005,8 @@ class Action
               @convertSubmitToLoading()
               # undefined middle callback for some reason.
               @tagAjax(data.id,"moveTag", undefined, (message) =>
+                if !message?
+                  console.log "no response"
                 if message.code?
                   # if message == "DB Error: already exists"
                     @revertSubmitFromLoading()
@@ -1011,7 +1022,48 @@ class Action
       doSubmit.call(@)
     )
   mergeTag: () ->
-    @createSlide()
+
+    @slideHtml = @gatherMergeLabelHTML()
+    @setRequiredFields("mergeTag")
+    @view.cj_selectors.tagBox.addClass("radio")
+    buttons = new Buttons(@view,@cjDT.data("tagid"),true)
+    a = @
+    @view.cj_selectors.tagBox.find("dt input.radio").on("click", (event) ->
+      # 
+      a.cj_slideBox.find(".submit").removeClass("inactive")
+      a.sendDtToPanel(cj(@).closest("dt"))
+    )
+    @createSlide(=>
+      @view.unbindTabClick()
+      @cj_slideBox.find(".submit").addClass("inactive")
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          if @cj_slideBox.find(".submit").hasClass("inactive")
+            @markErrors({toTag:"Must specify a destination"})
+          else
+            @removeErrors(data)
+            # if there's errors
+            if bbUtils.objSize(data.errors) > 0
+              @markErrors(data.errors)
+            else
+              destinationId = @view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value")
+              currentId = @cjDT.data("tagid")
+              @ajax.mergeTag.data = "fromId=#{currentId}&toId=#{destinationId}"
+              @convertSubmitToLoading()
+              # undefined middle callback for some reason.
+              @tagAjax(currentId,"mergeTag", undefined, (message) =>
+                if !message.status
+                  @revertSubmitFromLoading()
+                  @markErrors({tagName:"#{message.message}"})
+                  doSubmit.call(@)
+                else
+                  @removeEntityFromTree(currentId)
+                  @revertSubmitFromLoading()
+                  @destroySlideBox()
+              )
+        )
+      doSubmit.call(@)
+    )
   updateTag: () ->
     checked = ""
     checked = "checked" if @cjDT.data("isreserved") == 1
@@ -1159,6 +1211,7 @@ class Action
     text = cjSubmitButton.data("text")
     cjSubmitButton.text(text)
   convertSubmitToLoading:() ->
+    @cj_slideBox.find(".label.cancel").addClass("inactive")
     cjSubmitButton = @cj_slideBox.find(".label.submit")
     cjSubmitButton.addClass("loadingGif")
     cjSubmitButton.data("text",cjSubmitButton.text())
@@ -1301,6 +1354,23 @@ class Action
     html += label.buildLabel("cancel","","cancel")
     html += "</div>"
     return html
+  gatherMergeLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Merge Tag","Merge Tag:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","Into")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Merge")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
 
   # addTag is merely a validation and request wrapper. should be explicitly called
   # and provide methods based on tagId properties which are discernable from 
@@ -1312,7 +1382,10 @@ class Action
           if data.code == 0
             locCb(data)
           else
-            locCb(data.message)
+            if data["status"] == true
+              locCb(data)
+            else
+              locCb(data.message)
         else if @cb?
           @cb(data.message)
       )
