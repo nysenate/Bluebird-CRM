@@ -138,7 +138,7 @@ function nyss_ioimport_form() {
    
   $form['datahandling']['addtogroup_handling'] = array(
     '#type' => 'radios',
-    '#title' => t('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Group Handling'),
+    '#title' => t('Add to Group Handling'),
     '#options' => array( 'all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None') ),
     '#attributes' => array( 'class' => 'addtogroup_handling-wrapper' ),
     '#default_value' => 'none',
@@ -166,11 +166,16 @@ function nyss_ioimport_form() {
     '#description' => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
   );
 
-  $form['datahandling']['disablegreeting'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Disable Greeting Generation'),
-    '#default_value' => 0,
-    '#description' => t('By default, postal/email/addressee greetings are generated for imported contacts that do not already have a value set (updated contacts with an existing value are skipped). Selecting this option will skip the greeting generation process and improve import performance.'),
+  $form['datahandling']['greetinggeneration'] = array(
+    '#type' => 'radios',
+    '#title' => t('Greeting Generation'),
+    '#options' => array(
+      'imported' => t('Process Imported Contacts Only'),
+      'all' => t('Process All Contacts'),
+      'none' => t('Disable Greeting Generation'),
+    ),
+    '#default_value' => 'imported',
+    '#description' => t('By default, only imported contacts will have greetings generated. If you choose, you may run the greeting generation script across the entire database, or disable it altogether.'),
   );
 
   $form['import']['submit'] = array(
@@ -609,8 +614,25 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     nyss_out('status', $dupePriCleanup, TRUE);
 
     //run greetings update on all null values unless disable greeting option is selected
-    if ( !$form_state['values']['disablegreeting'] ) {
-      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'].' --quiet';
+    nyss_out('debug', "greeting generation using option: {$form_state['values']['greetinggeneration']}...", TRUE);
+    if ( $form_state['values']['greetinggeneration'] != 'none' ) {
+      $tblOpt = '';
+      if ( $form_state['values']['greetinggeneration'] == 'imported' ) {
+        //if only processing imported, we store in a temp table and pass the table name to the greeting script
+        $rnd = date('Ymdhis');
+        $tmpTbl = "nyss_temp_greetings_$rnd";
+        $sql = "CREATE TABLE $tmpTbl (id INT NOT NULL PRIMARY KEY) ENGINE = myisam;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+        //insert ids from stored arrays
+        $allIDs = array_merge($updated_contacts, $new_contacts);
+        $sql = "INSERT INTO {$tmpTbl} (id) VALUES (".implode('), (',$allIDs).")";
+        CRM_Core_DAO::executeQuery($sql);
+
+        $tblOpt = " --idtbl={$tmpTbl}";
+      }
+
+      $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'].' --quiet'.$tblOpt;
       $greetingCreate = shell_exec( $greetingScript );
       nyss_out('status', $greetingCreate, TRUE);
     }
@@ -1592,6 +1614,7 @@ function _processTags($tagContacts) {
     }
   }
   else {
+    nyss_out('debug', "tags to be processed...", TRUE);
     nyss_out('debug', $tagContacts, TRUE);
   }
 }//_processTags
