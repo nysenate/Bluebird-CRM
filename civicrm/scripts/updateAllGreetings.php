@@ -136,8 +136,10 @@ function run()
   }
 
   //7247 remove temp table
-  $sql = "DROP TABLE IF EXISTS {$idTbl};";
-  CRM_Core_DAO::executeQuery($sql);
+  if ( !empty($idTbl) ) {
+    $sql = "DROP TABLE IF EXISTS {$idTbl};";
+    CRM_Core_DAO::executeQuery($sql);
+  }
 
   echo "[{$optlist['site']}] Finished processing greetings for $cnt contacts.\n";
 }
