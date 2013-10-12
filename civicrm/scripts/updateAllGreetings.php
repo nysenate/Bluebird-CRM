@@ -20,14 +20,13 @@ define('BATCHSIZE', 250);
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
-
 function run()
 {
   $prog = basename(__FILE__);
-  $shortopts = 'c:nfq';
-  $longopts = array('ct=', 'dry-run', 'force', 'quiet');
+  $shortopts = 'c:nfq:t';
+  $longopts = array('ct=', 'dry-run', 'force', 'quiet', 'idtbl=');
   $stdusage = civicrm_script_usage();
-  $usage = "[--ct|-c {Individual|Household|Organization}] [--dry-run|-n] [--force|-f] [--quiet|-q]";
+  $usage = "[--ct|-c {Individual|Household|Organization}] [--dry-run|-n] [--force|-f] [--quiet|-q] [--idtbl TABLENAME|-t]";
   $contactOpts = array(
     'i' => 'Individual',
     'h' => 'Household',
@@ -71,8 +70,25 @@ function run()
     $dao->contact_type = $contactType;
   }
 
-  if ($optlist['force'] == false) {
-    $dao->whereAdd("addressee_display is null or addressee_display='' or email_greeting_display is null or email_greeting_display='' or postal_greeting_display is null or postal_greeting_display=''");
+  if ($optlist['force'] == FALSE) {
+    $dao->whereAdd("
+      addressee_display IS NULL OR
+      addressee_display='' OR
+      email_greeting_display IS NULL OR
+      email_greeting_display='' OR
+      postal_greeting_display IS NULL OR
+      postal_greeting_display=''
+    ");
+  }
+
+  //7247 option to restrict by IDs in temp table
+  if ( !empty($optlist['idtbl']) ) {
+    //make sure table exists
+    $idTbl = $optlist['idtbl'];
+    if ( CRM_Core_DAO::singleValueQuery("SHOW TABLES LIKE '{$idTbl}'") ) {
+      //limit to ids found in the import set
+      $dao->whereAdd("id IN (SELECT id FROM {$idTbl})");
+    }
   }
 
   $dao->find(false);
@@ -80,7 +96,7 @@ function run()
   $cnt = 0;
 
   if ($optlist['dry-run'] == true) {
-    echo "(The dry-run option is enabled.  No contacts will be updated.)\n";
+    echo "(The dry-run option is enabled. No contacts will be updated.)\n";
   }
   else {
     require_once 'CRM/Core/Transaction.php';
@@ -118,6 +134,10 @@ function run()
       unset($transaction);
     }
   }
+
+  //7247 remove temp table
+  $sql = "DROP TABLE IF EXISTS {$idTbl};";
+  CRM_Core_DAO::executeQuery($sql);
 
   echo "[{$optlist['site']}] Finished processing greetings for $cnt contacts.\n";
 }

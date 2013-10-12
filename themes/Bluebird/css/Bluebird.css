@@ -1468,34 +1468,40 @@ div#crm-toolTip {
 	background-color: #F7F7F7;
 }
 #nyss-ioimport-form fieldset legend {
-    font-weight: normal;
+  font-weight: normal;
 	font-size: 18px;
 	color: #666666;
 }
 #nyss-ioimport-form fieldset .description {
-    padding-left: 23px;
+  font-style: italic;
 }
 #nyss-ioimport-form #edit-deduperule-wrapper label,
 #nyss-ioimport-form #edit-deduperule-wrapper div.description {
-	padding-left: 23px;
 	float: left;
 	clear: left;
-	
 }
 #nyss-ioimport-form #edit-deduperule-wrapper select {
-    margin-left: 23px;
+  margin-left: 23px;
 	float: left;
 	clear: left;
 }
 #nyss-ioimport-form #edit-addtogroup-wrapper label,
 #nyss-ioimport-form #edit-addtogroup-wrapper input {
-    margin-left: 23px;
+  margin-left: 23px;
 }
 #nyss-ioimport-form div.addtogroup_handling-wrapper {
-    margin: 0 16px;
+  margin: 0 16px;
 }
-#nyss-ioimport-form div.addtogroup_handling-wrapper div {
+#nyss-ioimport-form div#edit-addtogroup-handling div,
+#nyss-ioimport-form div#edit-greetinggeneration div {
 	display: inline-block;
+}
+#nyss-ioimport-form div.form-item label {
+  font-weight: bold;
+}
+#nyss-ioimport-form div.form-item div label,
+#nyss-ioimport-form div.form-item.form-type-checkbox label {
+  font-weight: normal;
 }
 
 /* print prod export */
