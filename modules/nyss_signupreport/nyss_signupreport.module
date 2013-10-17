@@ -3,8 +3,7 @@ $this_dir = dirname(__FILE__);
 $root_dir = realpath("$this_dir/../..");
 require_once realpath("$root_dir/civicrm/scripts/script_utils.php");
 require_once realpath("$root_dir/civicrm/scripts/bluebird_config.php");
-error_reporting(E_ALL);
-ini_set('display_errors', true);
+
 function nyss_signupreport_menu() {
   $items = array();
   $items['nyss_signupreport'] = array (
