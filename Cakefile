@@ -29,18 +29,26 @@
 # From there, install NPM
 # And then 
 # npm install coffee-script
+# npm install cake
 
 # Installing Sass
 # First Step: Install Ruby
 # Linux
 # Assume you have curl, if not, slowly back away and make someone get curl for you
 # \curl -L https://get.rvm.io | bash
+# rvm install ruby-head
 # Windows/OSX
 # just use the binaries
 # http://railsinstaller.org/en#osx
 # from cmd line
+# rvm use ruby-head (or 1.9.3)
 # (sudo) gem install sass
 # done and done!
+
+# install package manager in sublime
+# 
+# https://github.com/Xavura/CoffeeScript-Sublime-Plugin
+# 
 
 
 # It's generally not advisable to directly modify the .js and .css 
