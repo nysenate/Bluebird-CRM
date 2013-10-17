@@ -20,6 +20,7 @@ jstree =
       )
     instance
   
+
 setProp = (properties..., instance) ->
   for k, v of properties[0]
     instance.set k,v
