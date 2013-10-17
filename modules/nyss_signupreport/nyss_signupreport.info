@@ -5,5 +5,4 @@ dependencies[] = civicrm
 package = CiviCRM
 core = 7.x
 version = 4.2
-files[]= nyss_signupreport.module
-filse[]= nyss_signupreport_download.php
+stylesheets[all][] = nyss_signupreport.css
