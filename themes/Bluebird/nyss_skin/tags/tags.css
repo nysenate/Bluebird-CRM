@@ -159,8 +159,7 @@
   border-radius: 3px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
-  border: 1px solid #ccc;
-  /* legend */ }
+  border: 1px solid #ccc; }
   #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
   #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
@@ -170,7 +169,8 @@
     font-size: 12px;
     font-weight: normal; }
   #JSTree-container.BBTreeContainer .BBTree-menu, #BBTreeContainer .BBTree-menu {
-    width: 100%; }
+    width: 100%;
+    /* legend */ }
     #JSTree-container.BBTreeContainer .BBTree-menu input[type=text]::-ms-clear, #BBTreeContainer .BBTree-menu input[type=text]::-ms-clear {
       display: none; }
     #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-top, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-bottom, #BBTreeContainer .BBTree-menu .BBTree-top, #BBTreeContainer .BBTree-menu .BBTree-bottom {
@@ -230,11 +230,13 @@
       height: 20px; }
     #JSTree-container.BBTreeContainer .BBTree-menu.noResults, #BBTreeContainer .BBTree-menu.noResults {
       border-bottom: 6px solid white; }
-  #JSTree-container.BBTreeContainer .JSTree-settings .add, #BBTreeContainer .JSTree-settings .add {
-    background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
-    cursor: pointer;
-    background-color: transparent;
-    background-position: 0; }
+    #JSTree-container.BBTreeContainer .BBTree-menu .JSTree-settings .add, #BBTreeContainer .BBTree-menu .JSTree-settings .add {
+      background-image: url("/sites/default/themes/Bluebird/nyss_skin/images/fcb.png") !important;
+      cursor: pointer;
+      background-color: transparent;
+      background-position: 0;
+      height: 16px;
+      width: 16px; }
   #JSTree-container.BBTreeContainer .BBTree, #BBTreeContainer .BBTree {
     background-color: #fff;
     border-bottom-left-radius: 3px;

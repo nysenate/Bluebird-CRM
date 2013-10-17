@@ -326,13 +326,23 @@
       return b;
     },
     _createInputBox: function() {
-      var classNames, classes, name, type, value;
+      var cName, checked, classNames, classes, name, type, value, _i, _len, _ref;
       type = arguments[0], name = arguments[1], value = arguments[2], classNames = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
       if (value == null) {
         value = "";
       }
-      classes = classNames.join(" ");
-      return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "'>";
+      checked = "";
+      if (type === "radio") {
+        _ref = classNames[0];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          cName = _ref[_i];
+          if (cName.toLowerCase() === "checked") {
+            checked = "checked";
+          }
+        }
+      }
+      classes = classNames[0].join(" ");
+      return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "' " + checked + ">";
     },
     createTextBox: function() {
       var classNames, name, value;
@@ -1069,6 +1079,17 @@
       return _results;
     };
 
+    View.prototype.toggleSettingsAdd = function(name, undo) {
+      if (undo == null) {
+        undo = false;
+      }
+      if (undo) {
+        return window.jstree.menuSettings.bindButton(name);
+      } else {
+        return window.jstree.menuSettings.unbindButton(name);
+      }
+    };
+
     View.prototype.createTabClick = function() {
       var k, onTabClick, tabName, v, _ref, _results;
       this.unbindTabClick();
@@ -1642,7 +1663,7 @@
       var k, v, _ref;
       this.view = view;
       this.instance = instance;
-      this.tagId = tagId;
+      this.tagId = tagId != null ? tagId : 291;
       this.cb = cb;
       _ref = this.ajax;
       for (k in _ref) {
@@ -1650,8 +1671,14 @@
         v.data["call_uri"] = window.location.href;
         v["dataType"] = "json";
       }
-      this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "']");
-      this.tagName = this.cjDT.data("name");
+      if (parseInt(this.tagId) === 291) {
+        this.cjDT = this.view.cj_selectors.tagBox.find(".top-" + tagID);
+        this.tagName = this.view.cj_menuSelectors.autocomplete.val();
+        console.log(this.cjDT, this.tagName);
+      } else {
+        this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "']");
+        this.tagName = this.cjDT.data("name");
+      }
       this[action].apply(this, [action]);
     }
 
@@ -1720,6 +1747,7 @@
       }
       return this.cj_slideBox.animate(animate, 500, function() {
         _this.cj_slideBox.find(".label.cancel").off("click");
+        _this.view.toggleSettingsAdd("add", true);
         _this.cj_slideBox.remove();
         _this.view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio");
         _this.view.createTabClick();
@@ -1803,6 +1831,48 @@
         this.requiredFields.push(_utils.camelCase(i));
       }
       return this.requiredValidation = this.requiredValidation[type];
+    };
+
+    Action.prototype.quickTag = function(values) {
+      var _this = this;
+      if (values == null) {
+        values = "";
+      }
+      this.slideHtml = this.gatherQuickLabelHTML();
+      this.setRequiredFields("addTag");
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.toggleSettingsAdd("add");
+        _this.view.unbindTabClick();
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.addTag.data.name = data.fields.tagName;
+              _this.ajax.addTag.data.description = data.fields.description;
+              _this.ajax.addTag.data.is_reserved = data.fields.isReserved;
+              _this.ajax.addTag.data.parent_id = data.tagId;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.tagId, "addTag", void 0, function(message) {
+                if (message === "DB Error: already exists") {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "Tag " + data.fields.tagName + " already exists."
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.addEntityToTree(data.tagId, message);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
     };
 
     Action.prototype.addTag = function(values) {
@@ -2392,6 +2462,39 @@
       return html;
     };
 
+    Action.prototype.gatherQuickLabelHTML = function(values) {
+      var field, html, label, _i, _len, _ref;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += label.buildLabel("header", "Add Tag", "Add Tag");
+      _ref = this.fields.addTag;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        field = _ref[_i];
+        html += "<div class='elementGroup'>";
+        html += label.buildLabel("label", field, field);
+        if (field === "Is Reserved") {
+          html += label.buildLabel("checkBox", field, "");
+        } else {
+          html += label.buildLabel("textBox", field, "");
+        }
+        html += "</div>";
+      }
+      html += "<div class='typeCheck'>";
+      html += label.buildLabel("label", "left", "Keywords");
+      html += _utils.createRadioButton("tag", "tag[296]", "radio", "checked");
+      html += label.buildLabel("label", "right", "Issue Codes");
+      html += _utils.createRadioButton("tag", "tag[291]", "radio");
+      html += "</div>";
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
     Action.prototype.gatherUpdateLabelHTML = function(values) {
       var field, html, label, _i, _len, _ref;
       if (values == null) {
@@ -2837,24 +2940,61 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         a = _ref[_i];
         this.cj_top_settings.append(this.addButton(a));
+        console.log("" + a + "Hook");
+        this["" + a + "Hook"].call(this, a, this.returnCJLoc("top"));
       }
       _ref1 = icons.bottom;
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
-        _results.push(this.cj_bottom_settings.append(this.addButton(b)));
+        this.cj_bottom_settings.append(this.addButton(b));
+        console.log("" + b + "Hook");
+        _results.push(this["" + b + "Hook"].call(this, b, this.returnCJLoc("bottom")));
       }
       return _results;
     };
 
-    icons = {
-      top: ['setting', 'add', 'print'],
-      bottom: ['slide']
+    Settings.prototype.unbindButton = function(name) {
+      return this.view.cj_menuSelectors.settings.find("." + name).off("click");
     };
 
-    Settings.prototype.addButton = function(name) {
+    Settings.prototype.bindButton = function(name) {
+      name = name.toLowerCase();
+      return this["" + name + "Hook"].call(this, name, this.view.cj_menuSelectors.settings);
+    };
+
+    icons = {
+      top: ['setting', 'print'],
+      bottom: ['add', 'slide']
+    };
+
+    Settings.prototype.returnCJLoc = function(loc) {
+      if (loc === "top") {
+        return this.cj_top_settings;
+      }
+      if (loc === "bottom") {
+        return this.cj_bottom_settings;
+      }
+    };
+
+    Settings.prototype.addButton = function(name, cjLoc) {
       return "<div class='" + name + "'></div>";
     };
+
+    Settings.prototype.settingHook = function(name, cjLoc) {};
+
+    Settings.prototype.printHook = function(name, cjLoc) {};
+
+    Settings.prototype.addHook = function(name, cjLoc) {
+      var _this = this;
+      console.log(cjLoc.find("." + name));
+      cjLoc.find("." + name).off("click");
+      return cjLoc.find("." + name).on("click", function() {
+        return _this.view.createAction(null, "quickTag");
+      });
+    };
+
+    Settings.prototype.slideHook = function(name, cjLoc) {};
 
     return Settings;
 
