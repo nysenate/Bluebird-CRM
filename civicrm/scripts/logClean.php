@@ -126,26 +126,6 @@ class CRM_cleanLogs {
     foreach ( $tbls as $tbl ) {
       bbscript_log("info", "processing {$tbl}...");
 
-      //first remove log col-based duplicates using an index so that we can compare unique rows below
-      //there is a bug in MySQL such that the IGNORE flag doesn't work when adding an index to InnoDB
-      //http://bugs.mysql.com/bug.php?id=40344
-      //consequently, we convert to MyISAM, apply the index to remove dupes, then change back to InnoDB
-      $idxFieldsList = implode(',', $idxFields);
-      $sqls = array(
-        "ALTER TABLE {$logDB}.{$tbl} ENGINE MyISAM;",
-        "ALTER IGNORE TABLE {$logDB}.{$tbl} ADD UNIQUE INDEX dupeRemove ({$idxFieldsList});",
-        "DROP INDEX dupeRemove ON {$logDB}.{$tbl};",
-        "ALTER TABLE {$logDB}.{$tbl} ENGINE InnoDB;",
-      );
-      if ( $optlist['dryrun'] ) {
-        bbscript_log("debug", 'logClean index-based dedupe', $sql);
-      }
-      else {
-        foreach ( $sqls as $sql ) {
-          CRM_Core_DAO::executeQuery($sql);
-        }
-      }
-
       //retrieve logs for the table and order so we can meaningfully cycle through them
       //use mysql unbuffered query to try to reduce memory usage
       $sql = "
@@ -204,9 +184,10 @@ class CRM_cleanLogs {
                 'log_date' => $r['log_date'],
                 'log_action' => $r['log_action'],
               );
-              bbscript_log("info", 'Deleting log record:', $dryLog);
+              bbscript_log("info", "{$tbl}: deleting log record:", $dryLog);
             }
             else {
+              //bbscript_log("info", "{$tbl}: deleting: {$r['id']} | {$r['log_conn_id']} | {$r['log_date']} | {$r['log_action']}");
               $deleteRows[] = "
                 DELETE FROM {$logDB}.{$tbl}
                 WHERE id = {$r['id']}
@@ -223,9 +204,20 @@ class CRM_cleanLogs {
             $lastRecord = $thisRecord;
           }
         }
+
+        //process row deletion in batches to avoid excessive memory consumption
+        if ( !empty($deleteRows) && (intval($stats[$tbl]) % 10000 === 0) ) {
+          $deleteCount = count($deleteRows);
+          bbscript_log("info", "deleting {$deleteCount} log records for: {$tbl}...");
+
+          foreach ( $deleteRows as $sql ) {
+            CRM_Core_DAO::executeQuery($sql);
+          }
+          $deleteRows = array();
+        }
       }
 
-      //now delete records from this table
+      //delete remaining records for this table
       if ( !empty($deleteRows) ) {
         $deleteCount = count($deleteRows);
         bbscript_log("info", "deleting {$deleteCount} log records for: {$tbl}...");
@@ -236,7 +228,7 @@ class CRM_cleanLogs {
       }
 
       //free DAO
-      //$r->free();
+      mysql_free_result($rq);
     }//end table loop
 
     bbscript_log("info", 'final stats: ', $stats);
