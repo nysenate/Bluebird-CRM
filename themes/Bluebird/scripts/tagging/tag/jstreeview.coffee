@@ -30,6 +30,7 @@ window.jstree["views"] =
     @view.entity_id = entity_id
     @view.applyTagged()
 
+
 class View
   @property "trees",
     get: -> @_trees
@@ -384,6 +385,11 @@ class View
   unbindTabClick: () ->
     for k,v of @instance.treeNames
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k,true)}").off "click"
+  toggleSettingsAdd: (name,undo=false) ->
+    if undo
+      window.jstree.menuSettings.bindButton(name)
+    else
+      window.jstree.menuSettings.unbindButton(name)
   # jquery for functionality when you click on a menu tab
   createTabClick: () ->
     @unbindTabClick()
@@ -808,12 +814,18 @@ class Action
     mergeTag: ["noChildren"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
-  constructor: (@view, @instance, @tagId, action, @cb) ->
+  constructor: (@view, @instance, @tagId=291, action, @cb) ->
     for k,v of @ajax
       v.data["call_uri"] = window.location.href
       v["dataType"] = "json"
-    @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}']")
-    @tagName = @cjDT.data("name")
+    # conditional if it's the parent box
+    if parseInt(@tagId) == 291
+      @cjDT = @view.cj_selectors.tagBox.find(".top-#{tagID}")
+      @tagName = @view.cj_menuSelectors.autocomplete.val()
+      console.log @cjDT, @tagName
+    else
+      @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}']")
+      @tagName = @cjDT.data("name")
     @[action].apply(@,[action])
   # createSlide pulls a slider from right side to provide a platform for editing tags
   # if it's tall enough, if not, uses the bottom.
@@ -861,6 +873,7 @@ class Action
       animate = {width:"0%"}
     @cj_slideBox.animate(animate, 500, =>
       @cj_slideBox.find(".label.cancel").off "click"
+      @view.toggleSettingsAdd("add",true)
       @cj_slideBox.remove()
       @view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio")
       @view.createTabClick()
@@ -917,6 +930,39 @@ class Action
     for i in reqFields
       @requiredFields.push _utils.camelCase(i)
     @requiredValidation = @requiredValidation[type]
+  # quickadd
+  quickTag: (values="") ->
+    @slideHtml = @gatherQuickLabelHTML()
+    @setRequiredFields("addTag")
+    @createSlide(=>
+      @view.toggleSettingsAdd("add")
+      @view.unbindTabClick()
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          @removeErrors(data)
+          # if there's errors
+          if bbUtils.objSize(data.errors) > 0
+            @markErrors(data.errors)
+          else
+            @ajax.addTag.data.name = data.fields.tagName
+            @ajax.addTag.data.description = data.fields.description
+            @ajax.addTag.data.is_reserved = data.fields.isReserved
+            @ajax.addTag.data.parent_id = data.tagId
+            @convertSubmitToLoading()
+            # undefined middle callback for some reason.
+            @tagAjax(data.tagId, "addTag", undefined, (message) =>
+              if message == "DB Error: already exists"
+                @revertSubmitFromLoading()
+                @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+                doSubmit.call(@)
+              else
+                @addEntityToTree(data.tagId,message)
+                @revertSubmitFromLoading()
+                @destroySlideBox()
+            )
+          )
+      doSubmit.call(@)
+    )
   # values provides a shell for updateTag to use same field
   # but add in values
   addTag: (values="") ->
@@ -1295,6 +1341,7 @@ class Action
         validations.createError.call(@,name,"cannot be contain spaces.")
 
       isRequired: (name,val) ->
+        # if empty, shows up as "undefined"
         if @requiredFields.indexOf(name) != -1
           passing = true
           if val.length > 0
@@ -1351,6 +1398,31 @@ class Action
       else
         html += label.buildLabel("textBox",field,"")
       html += "</div>"
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherQuickLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += label.buildLabel("header","Add Tag","Add Tag")
+    for field in @fields.addTag
+      html += "<div class='elementGroup'>"
+      # creates label
+      html += label.buildLabel("label",field,field)
+      # in update tag, this is important
+      if field is "Is Reserved"
+        html += label.buildLabel("checkBox",field,"")
+      else
+        html += label.buildLabel("textBox",field,"")
+      html += "</div>"
+    html += "<div class='typeCheck'>"
+    html += label.buildLabel("label","left","Keywords")
+    html += _utils.createRadioButton("tag","tag[296]","radio","checked")
+    html += label.buildLabel("label","right","Issue Codes")
+    html += _utils.createRadioButton("tag","tag[291]","radio")
+    html += "</div>"
     html += "<div class='actionButtons'>"
     html += label.buildLabel("submit","","submit")
     html += label.buildLabel("cancel","","cancel")
@@ -1660,15 +1732,38 @@ class Settings
     @cj_bottom_settings = cj(".#{@view.menuSelectors.bottom.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
     for a in icons.top 
       @cj_top_settings.append(@addButton(a))
+      console.log "#{a}Hook"
+      @["#{a}Hook"].call(@,a,@returnCJLoc("top"))
     for b in icons.bottom 
       @cj_bottom_settings.append(@addButton(b))
-    # onclicks
+      console.log "#{b}Hook"
+      @["#{b}Hook"].call(@,b,@returnCJLoc("bottom"))
+  unbindButton: (name) ->
+    @view.cj_menuSelectors.settings.find(".#{name}").off "click"
+  bindButton: (name) ->
+    name = name.toLowerCase()
+    @["#{name}Hook"].call(@,name,@view.cj_menuSelectors.settings)
   icons =
-    top: ['setting','add','print']
-    bottom: ['slide']
-
-  addButton: (name) ->
+    top: ['setting','print']
+    bottom: ['add','slide']
+  returnCJLoc: (loc) ->
+    return @cj_top_settings if loc == "top"
+    return @cj_bottom_settings if loc == "bottom"
+  addButton: (name,cjLoc) ->
     return "<div class='#{name}'></div>"
+
+  settingHook: (name,cjLoc) ->
+
+  printHook: (name,cjLoc) ->
+
+  addHook: (name,cjLoc) ->
+    # createAction: (tagId="",action,cb)
+    console.log cjLoc.find(".#{name}")
+    cjLoc.find(".#{name}").off "click"
+    cjLoc.find(".#{name}").on "click", =>
+      @view.createAction(null,"quickTag")
+  slideHook: (name,cjLoc) ->
+
 
 # resize specifically relates to the height of the tagbox
 class Resize

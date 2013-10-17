@@ -212,8 +212,12 @@ _utils =
       b += word
     return b
   _createInputBox: (type,name,value = "",classNames...) ->
-    classes = classNames.join(" ")
-    return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}'>"
+    checked = ""
+    if type == "radio"
+      for cName in classNames[0]
+        checked = "checked" if cName.toLowerCase() == "checked"
+    classes = classNames[0].join(" ")
+    return "<input type='#{type}' class='#{classes}' name='#{name}' value='#{value}' #{checked}>"
   createTextBox: (name,value,classNames...) ->
     return _utils._createInputBox("text",name,value,classNames)
   createCheckBox: (name,value,classNames...) ->
