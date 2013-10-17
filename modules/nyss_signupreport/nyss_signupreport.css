@@ -1,0 +1,25 @@
+.headers {
+  clear:both;
+  margin-left:5%;
+  font-size:1.5em;
+}
+.headers div {
+  float:left;
+}
+.entry {
+  clear:both;
+  border-bottom:1px solid #ccc;
+  margin-left:5%;
+}
+.entry div {
+  float:left;
+}
+.filepath {
+  width:50%;
+}
+.modtime {
+  width:25%;
+}
+.filesize {
+  width:25%;
+}

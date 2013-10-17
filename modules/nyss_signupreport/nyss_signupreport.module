@@ -16,43 +16,50 @@ function nyss_signupreport_menu() {
   $items['nyss_signupreport_download'] = array (
     'page callback' => 'nyss_signupreport_download_page',
     'access callback' => TRUE,
-    'access arguments' => array('access content'), 
     'type' => MENU_CALLBACK,
   );
   return $items;
 }
-
 function nyss_signupreport_page($args = 'all') {
   $instance = new Instance();
   return $instance->write_template();
 }
 function nyss_signupreport_download_page() {
+
   $instance = new Instance();
   $filename = $_GET['filename'];
-  $path = $instance->entries["$filename"];
-  ini_set('include_path', '$instance->path');
-  $filesize = filesize($path);
+  $file = $instance->entries["$filename"];
+  $filesize = filesize($file);
+  // header("Pragma: public");
+  // header("Expires: 0");
+  // header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+  // header('Content-Disposition: attachment; filename="' .$filename. '"');
+  // echo $filesize;
+  // echo $file;
+  // echo $filename;
   if (!is_dir($instance->path) || !is_readable($instance->path)) {
-    die("Inexistant or inaccessible folder. $this->path");
+    die("Inexistant or inaccessible folder. $this->file");
   } else {
-    error_log($filename);
-    error_log($filesize);
-    error_log($path);
+    if (file_exists($file)) {
+      header("Pragma: public", true);
+      header("Expires: 0"); // set expiration time
+      header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+      header("Content-Type: application/force-download");
+      header("Content-Type: application/octet-stream");
+      header("Content-Type: application/download");
+      header("Content-Disposition: attachment; filename=".basename($file));
+      header("Content-Transfer-Encoding: binary");
+      header("Content-Length: ".filesize($file));
+      ob_clean();
+      flush();
+      die(readfile($file));
+    } 
+    else {
+      error_log("Error: File not Found.");
+      die("Error: File not found.");
+    }
+    
   }
-  if (file_exists($path)) {
-    header("Pragma: public");
-    header("Expires: 0");
-    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("Content-Type: application/octet-stream");
-    header('Content-Disposition: attachment; filename="' .$filename. '"');
-    header("Content-Transfer-Encoding:­ binary");
-    header("Content-Length: " . filesize($file));
-    readfile($file);
-    return NULL;
-  } else {
-    error_log("Error: File not Found.");
-    die("Error: File not found.");
-  } 
 }
 
 class Instance {
@@ -68,14 +75,17 @@ class Instance {
     $this->get_path();
   }
   public function write_template() {
+    $out = "<div id='nyss-web-signup-reports'>";
+    $out .= "<div class='headers'><div class='filepath'>File Name</div><div class='modtime'>Last Modified</div><div class='filesize'>File Size</div></div>";
     foreach ($this->entries as $k => $v) {
-      $this->output .= $this->convert_path_to_link($k);
+      $out .= "<div class='entry'>";
+      $out .= "<div class='filepath'>".$this->convert_path_to_link($k)."</div>";
+      $out .= "<div class='modtime'>".date ('F d Y H:i:s', filemtime($v))."</div>";
+      $out .= "<div class='filesize'>".$this->filesize_formatted($v)."</div>";
+      $out .= "</div>";
     }
-    $this->output .= "attempting to readfile";
-    $this->output .= $this->entries["signups_20130813.xls"];
-    $this->output .= readfile($this->entries["signups_20130813.xls"]);
-    $this->output .= "endreadfile";
-    return $this->output;
+    $out .= "</div>";
+    return $this->output = $out;
   }
   public function convert_path_to_link($k) {
     return l(t($k), 'nyss_signupreport_download', array('query' => array('filename' => $k)));
@@ -94,6 +104,16 @@ class Instance {
       }
       closedir($handle);
     }
+  }
+  private function filesize_formatted($path) {
+    $size = filesize($path);
+    $units = array( 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+    $power = $size > 0 ? floor(log($size, 1024)) : 0;
+    $ret = number_format($size / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
+    if($power == 0) {
+      $ret = number_format($size / pow(1024, $power), 0, '.', ',') . ' ' . $units[$power];
+    }
+    return $ret;
   }
   private function chop_trailing_slash($k,$v) {
     if(substr($v,-1) == "/")  {
