@@ -1,0 +1,9 @@
+; $Id: nyss_signupreport.info,v 1.0 2013/10/16  Exp $
+name = NYSS Signup Reports
+description = Displays a listing of all of the senator's web signup reports.
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 4.2
+files[]= nyss_signupreport.module
+filse[]= nyss_signupreport_download.php
