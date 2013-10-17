@@ -1,0 +1,103 @@
+<?php
+$this_dir = dirname(__FILE__);
+$root_dir = realpath("$this_dir/../..");
+require_once realpath("$root_dir/civicrm/scripts/script_utils.php");
+require_once realpath("$root_dir/civicrm/scripts/bluebird_config.php");
+error_reporting(E_ALL);
+ini_set('display_errors', true);
+function nyss_signupreport_menu() {
+  $items = array();
+  $items['nyss_signupreport'] = array (
+    'title' => 'NYSS Web Signup Report',
+    'page callback' => 'nyss_signupreport_page',
+    'access callback' => TRUE,
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $items['nyss_signupreport_download'] = array (
+    'page callback' => 'nyss_signupreport_download_page',
+    'access callback' => TRUE,
+    'access arguments' => array('access content'), 
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function nyss_signupreport_page($args = 'all') {
+  $instance = new Instance();
+  return $instance->write_template();
+}
+function nyss_signupreport_download_page() {
+  $instance = new Instance();
+  $filename = $_GET['filename'];
+  $path = $instance->entries["$filename"];
+  ini_set('include_path', '$instance->path');
+  $filesize = filesize($path);
+  if (!is_dir($instance->path) || !is_readable($instance->path)) {
+    die("Inexistant or inaccessible folder. $this->path");
+  } else {
+    error_log($filename);
+    error_log($filesize);
+    error_log($path);
+  }
+  if (file_exists($path)) {
+    header("Pragma: public");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header("Content-Type: application/octet-stream");
+    header('Content-Disposition: attachment; filename="' .$filename. '"');
+    header("Content-Transfer-Encoding:­ binary");
+    header("Content-Length: " . filesize($file));
+    readfile($file);
+    return NULL;
+  } else {
+    error_log("Error: File not Found.");
+    die("Error: File not found.");
+  } 
+}
+
+class Instance {
+  public $output = "";
+  function __construct() {
+    $instance_cfg = get_bluebird_instance_config();
+    $this->data_root = $instance_cfg["data.rootdir"];
+    $this->data_instance_name = $instance_cfg["data_dirname"];
+    $this->signups_dirname = $instance_cfg["signups.reports.dirname"];
+    foreach (get_object_vars($this) as $k => $v) {
+      $this->chop_trailing_slash($k,$v);
+    }
+    $this->get_path();
+  }
+  public function write_template() {
+    foreach ($this->entries as $k => $v) {
+      $this->output .= $this->convert_path_to_link($k);
+    }
+    $this->output .= "attempting to readfile";
+    $this->output .= $this->entries["signups_20130813.xls"];
+    $this->output .= readfile($this->entries["signups_20130813.xls"]);
+    $this->output .= "endreadfile";
+    return $this->output;
+  }
+  public function convert_path_to_link($k) {
+    return l(t($k), 'nyss_signupreport_download', array('query' => array('filename' => $k)));
+  }
+  private function get_path() {
+    $root = realpath($_SERVER["DOCUMENT_ROOT"]);
+    $this->path = "$root/../../../..$this->data_root/$this->data_instance_name/$this->signups_dirname";
+    if (!is_dir($this->path) || !is_readable($this->path))
+      die("Inexistant or inaccessible folder. $this->path");
+    if ($handle = opendir($this->path)) {
+      $this->entries = array();
+      while(false !== ($entry = readdir($handle))) {
+        if ($entry != "." && $entry != "..") {
+          $this->entries["$entry"] = "$this->path/$entry";
+        }
+      }
+      closedir($handle);
+    }
+  }
+  private function chop_trailing_slash($k,$v) {
+    if(substr($v,-1) == "/")  {
+      $this->$k  = substr($v,0,-1);
+    }
+  }
+}
