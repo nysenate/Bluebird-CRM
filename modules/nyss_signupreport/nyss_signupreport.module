@@ -3,8 +3,7 @@ $this_dir = dirname(__FILE__);
 $root_dir = realpath("$this_dir/../..");
 require_once realpath("$root_dir/civicrm/scripts/script_utils.php");
 require_once realpath("$root_dir/civicrm/scripts/bluebird_config.php");
-error_reporting(E_ALL);
-ini_set('display_errors', true);
+
 function nyss_signupreport_menu() {
   $items = array();
   $items['nyss_signupreport'] = array (
@@ -30,13 +29,6 @@ function nyss_signupreport_download_page() {
   $filename = $_GET['filename'];
   $file = $instance->entries["$filename"];
   $filesize = filesize($file);
-  // header("Pragma: public");
-  // header("Expires: 0");
-  // header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-  // header('Content-Disposition: attachment; filename="' .$filename. '"');
-  // echo $filesize;
-  // echo $file;
-  // echo $filename;
   if (!is_dir($instance->path) || !is_readable($instance->path)) {
     die("Inexistant or inaccessible folder. $this->file");
   } else {
