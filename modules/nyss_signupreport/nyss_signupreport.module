@@ -30,13 +30,6 @@ function nyss_signupreport_download_page() {
   $filename = $_GET['filename'];
   $file = $instance->entries["$filename"];
   $filesize = filesize($file);
-  // header("Pragma: public");
-  // header("Expires: 0");
-  // header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-  // header('Content-Disposition: attachment; filename="' .$filename. '"');
-  // echo $filesize;
-  // echo $file;
-  // echo $filename;
   if (!is_dir($instance->path) || !is_readable($instance->path)) {
     die("Inexistant or inaccessible folder. $this->file");
   } else {
