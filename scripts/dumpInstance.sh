@@ -110,7 +110,7 @@ fi
 if [ $no_drup -eq 0 ]; then
   echo "Dumping Drupal database for instance [$instance]"
   ( set -x
-    $execSql --dump --db-name $db_drup_prefix$db_basename > "$drup_file"
+    $execSql --dump -e sessions --db-name $db_drup_prefix$db_basename > "$drup_file"
   ) || errcode=$(($errcode | 2))
 fi
 
