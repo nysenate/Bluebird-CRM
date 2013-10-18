@@ -10,6 +10,7 @@
 # Revised: 2013-01-07 (The world continued)
 # Revised: 2013-05-10 (Implement --force pass-through option.)
 # Revised: 2013-07-12 - Major interface change: removed -i option, added -n
+# Revised: 2013-10-17 - Added ability to skip tables when dumping a db
 #
 
 prog=`basename $0`
@@ -20,7 +21,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -31,7 +32,8 @@ fi
 sqlfile=
 sqlcmd=
 dump_db=0
-tabnames=
+dump_tabs=
+skip_tabs=
 instance=
 dbhost=
 dbuser=
@@ -49,7 +51,8 @@ while [ $# -gt 0 ]; do
     -f|--sqlfile) shift; sqlfile="$1" ;;
     -c|--cmd) shift; sqlcmd="$1" ;;
     -d|--dump) dump_db=1 ;;
-    -t|--dump-table) shift; tabnames="$tabnames $1"; dump_db=1 ;;
+    -e|--skip-table) shift; skip_tabs="$skip_tabs $1" ;;
+    -t|--dump-table) shift; dump_tabs="$dump_tabs $1"; dump_db=1 ;;
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
@@ -101,7 +104,13 @@ mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
-  mysqldump -R $common_args $dbname $tabnames
+  ignore_tabs_arg=
+  if [ "$skip_tabs" ]; then
+    for tab in $skip_tabs; do
+      ignore_tabs_arg="$ignore_tabs_arg --ignore-table $dbname.$tab"
+    done
+  fi
+  mysqldump -R $common_args $ignore_tabs_arg $dbname $dump_tabs
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
