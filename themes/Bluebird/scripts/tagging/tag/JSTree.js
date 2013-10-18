@@ -1017,7 +1017,7 @@
     };
 
     View.prototype.menuHtml = function(name) {
-      return "      <div class='" + name.menu + "'>       <div class='" + name.top + "'>        <div class='" + name.tabs + "'></div>        <div class='" + name.settings + "'></div>       </div>       <div class='" + name.bottom + "'>        <div class='" + name.autocomplete + "'>         <input type='text' id='JSTree-ac'>        </div>        <div class='" + name.settings + "'></div>       </div>      </div>    ";
+      return "      <div class='" + name.menu + "'>       <div class='" + name.top + "'>        <div class='" + name.tabs + "'></div>        <div class='" + name.settings + "'></div>       </div>       <div class='" + name.bottom + "'>        <div class='" + name.autocomplete + "'>         <input type='text' id='JSTree-ac' tabindex='1'>        </div>        <div class='" + name.settings + "'></div>       </div>      </div>    ";
     };
 
     View.prototype.tokenHolderHtml = function(name) {
@@ -1713,8 +1713,6 @@
         this.cj_slideBoxContainer = cj(".JSTree-slideBox");
         this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + containerPosition.left + "px");
         this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
-	this.cj_slideBox.css("top", "0px");
-	console.log(this.cj_slideBox);
         return this.cj_slideBox.animate({
           height: "210px"
         }, 500, function() {
@@ -2981,7 +2979,16 @@
     };
 
     Settings.prototype.addButton = function(name, cjLoc) {
-      return "<div class='" + name + "'></div>";
+      var tabIndex;
+      tabIndex = "";
+      if (name === "add") {
+        tabIndex = "tabindex='2'";
+      }
+      return "<button class='" + name + "' name='" + name + "' type='button'" + tabIndex + "></button>";
+    };
+
+    Settings.prototype.tabIndex = {
+      add: 2
     };
 
     Settings.prototype.settingHook = function(name, cjLoc) {};
@@ -2990,7 +2997,6 @@
 
     Settings.prototype.addHook = function(name, cjLoc) {
       var _this = this;
-      console.log(cjLoc.find("." + name));
       cjLoc.find("." + name).off("click");
       return cjLoc.find("." + name).on("click", function() {
         return _this.view.createAction(null, "quickTag");
@@ -3769,7 +3775,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'             data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
       html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
       if (this.hasDesc.length > 0) {
         html += "                <div class='description'>" + this.description + "</div>            ";
