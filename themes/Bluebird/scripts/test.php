@@ -93,14 +93,14 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
       dataSettings: {
         pullSets: [291,296,292],
         // pullSets: [291],
-        // entity_id: 18002
+        entity_id: 18002
         // entity_id: 15103
       },
       displaySettings: {
         // wide:false,
         // lock:false
-        edit:true
-        // tagging:true
+        // edit:true
+        tagging:true
       },
       callAjax: {
         data: undefined,

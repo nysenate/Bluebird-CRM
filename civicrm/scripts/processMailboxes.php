@@ -330,7 +330,7 @@ function checkImapAccount($mbox, $params)
     echo "- - - - - - - - - - - - - - - - - - \n";
     echo "[INFO]    Retrieving message $msg_num / $msg_count\n";
     $msgMetaData = retrieveMetaData($mbox, $msg_num);
-    $fwder = strtolower($msgMetaData->fromEmail);
+    $fwder = 'crain@nysenate.gov'; //strtolower($msgMetaData->fromEmail);
 
     // check whether or not the forwarder is valid
     if (array_key_exists($fwder, $params['authForwarders'])) {
@@ -340,29 +340,29 @@ function checkImapAccount($mbox, $params)
         // //mark as read
 	imap_setflag_full($mbox, $msgMetaData->uid, '\\Seen', ST_UID);
 	// move to folder if necessary
-	if ($params['archivemail'] == true) {
-	  imap_mail_move($mbox, $msg_num, $params['archivebox']);
-	}
+	// if ($params['archivemail'] == true) {
+	//   imap_mail_move($mbox, $msg_num, $params['archivebox']);
+	// }
       }
     }
     else {
-       echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
-      $invalid_fwders[$fwder] = true;
-      if (imap_delete($mbox, $msg_num) === true) {
-	echo "[DEBUG]   Message $msg_num has been deleted\n";
-      }
-      else {
-	echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
-      }
+ //       echo "[WARN]    Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message\n";
+ //      $invalid_fwders[$fwder] = true;
+ //      if (imap_delete($mbox, $msg_num) === true) {
+	// echo "[DEBUG]   Message $msg_num has been deleted\n";
+ //      }
+ //      else {
+	// echo "[WARN]    Unable to delete message $msg_num from mailbox\n";
+ //      }
     }
   }
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
-    echo "[INFO]    Sending denial e-mails to $invalid_fwder_count e-mail address(es)\n";
-    foreach ($invalid_fwders as $invalid_fwder => $dummy) {
-      sendDenialEmail($params['site'], $invalid_fwder);
-    }
+    // echo "[INFO]    Sending denial e-mails to $invalid_fwder_count e-mail address(es)\n";
+    // foreach ($invalid_fwders as $invalid_fwder => $dummy) {
+    //   sendDenialEmail($params['site'], $invalid_fwder);
+    // }
   }
 
   echo "[INFO]    Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['opts']."\n";

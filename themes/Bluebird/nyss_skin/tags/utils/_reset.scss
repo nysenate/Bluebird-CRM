@@ -1,6 +1,17 @@
 dl {
   margin: 0;
 }
+dt {
+  clear: none;
+  float: none;
+  font-size: 1em;
+  padding:0;
+  text-align: left;
+  vertical-align: auto;
+  white-space: normal;
+  width:auto;
+}
+
 * {
   line-height: 1em;
   color:$textColor;

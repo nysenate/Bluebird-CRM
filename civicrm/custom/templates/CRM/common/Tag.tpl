@@ -102,6 +102,9 @@
         <div class="JSTreeInit"></div>
         {literal}
         <script>
+	    if(typeof test === "undefined"){
+		test=false;
+	    }
             var jsTreePageSettings = {
               pageElements: {
                 wrapper: ['BBTreeContainer'],
@@ -112,7 +115,8 @@
                 pullSets: [291,296,292],
                 // pullSets: [291],
                 // entity_id: 18002
-                entity_id: BBCID
+		entity_id: BBCID,
+		onSave:test
               },
               displaySettings: {
                 // wide:false
