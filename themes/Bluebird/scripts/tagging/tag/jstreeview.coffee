@@ -323,7 +323,7 @@ class View
        </div>
        <div class='#{name.bottom}'>
         <div class='#{name.autocomplete}'>
-         <input type='text' id='JSTree-ac'>
+         <input type='text' id='JSTree-ac' tabindex='1'>
         </div>
         <div class='#{name.settings}'></div>
        </div>
@@ -1756,15 +1756,18 @@ class Settings
     return @cj_top_settings if loc == "top"
     return @cj_bottom_settings if loc == "bottom"
   addButton: (name,cjLoc) ->
-    return "<div class='#{name}'></div>"
-
+    # return "<a name='#{name}'><div class='#{name}'></div></a>"
+    tabIndex = ""
+    tabIndex = "tabindex='2'" if name == "add"
+    return "<button class='#{name}' name='#{name}' type='button'#{tabIndex}></button>"
+  tabIndex:
+    add: 2
   settingHook: (name,cjLoc) ->
 
   printHook: (name,cjLoc) ->
 
   addHook: (name,cjLoc) ->
     # createAction: (tagId="",action,cb)
-    console.log cjLoc.find(".#{name}")
     cjLoc.find(".#{name}").off "click"
     cjLoc.find(".#{name}").on "click", =>
       @view.createAction(null,"quickTag")
