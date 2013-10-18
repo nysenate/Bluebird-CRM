@@ -790,14 +790,14 @@
       _results = [];
       for (a in _ref) {
         b = _ref[a];
-        name = _utils.removePositionTextFromBill(cjDT.name);
+        name = _utils.remposovePositionTextFromBill(cjDT.name);
         _results.push(position = cjDT.data("position"));
       }
       return _results;
     };
 
     View.prototype.applyTaggedPositions = function() {
-      var a, b, cjDTs, iO, posList, trees, _ref;
+      var a, b, buttons, cjDTs, iO, posList, trees, _ref;
       posList = [];
       trees = this.trees;
       _ref = this.instance.positionList;
@@ -816,7 +816,7 @@
         } else {
           this.cj_selectors.tagBox.find(".top-292").css("display", "none");
         }
-        new Buttons(this, ".top-292");
+        buttons = new Buttons(this, ".top-292");
         cjDTs = this.cj_selectors.tagBox.find(".top-292 dt");
         cjDTs.addClass("shaded");
         cjDTs.find(".fCB input.checkbox").prop("checked", true);
@@ -1257,7 +1257,7 @@
     };
 
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var activeTree, delay, k, latestQuery, t, v,
+      var activeTree, buttons, delay, k, latestQuery, t, v,
         _this = this;
       if (hits == null) {
         hits = {};
@@ -1322,7 +1322,7 @@
           }
         }
       }
-      new Buttons(this);
+      buttons = new Buttons(this);
       if (this.settings.tagging) {
         if (this.entityList != null) {
           this.applyTaggedKWIC();
@@ -1351,7 +1351,7 @@
     };
 
     View.prototype.rebuildInitialTree = function() {
-      var activeTree, k, t, v, _ref;
+      var activeTree, buttons, k, t, v, _ref;
       if (this.cj_selectors.tagBox.hasClass("filtered")) {
         this.cj_selectors.tagBox.removeClass("filtered");
         this.cj_selectors.tagBox.find(".filtered").remove();
@@ -1376,7 +1376,7 @@
             }
           }
         }
-        new Buttons(this);
+        buttons = new Buttons(this);
         if (this.settings.tagging) {
           this.applyTaggedKWIC();
         }
@@ -1674,7 +1674,6 @@
       if (parseInt(this.tagId) === 291) {
         this.cjDT = this.view.cj_selectors.tagBox.find(".top-" + tagID);
         this.tagName = this.view.cj_menuSelectors.autocomplete.val();
-        console.log(this.cjDT, this.tagName);
       } else {
         this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "']");
         this.tagName = this.cjDT.data("name");
@@ -1748,6 +1747,7 @@
         };
       }
       return this.cj_slideBox.animate(animate, 500, function() {
+        var buttons;
         _this.cj_slideBox.find(".label.cancel").off("click");
         _this.view.toggleSettingsAdd("add", true);
         _this.cj_slideBox.remove();
@@ -1756,12 +1756,12 @@
         if (_this.cj_slideBoxContainer != null) {
           _this.cj_slideBoxContainer.remove();
         }
-        return new Buttons(_this.view);
+        return buttons = new Buttons(_this.view);
       });
     };
 
-    Action.prototype.addTagFromPosition = function(tagId, action) {
-      var cjDT, k, manipBox, message, response, v, _ref,
+    Action.prototype.addTagFromPosition = function(action) {
+      var cjDT, k, manipBox, message, response, tagId, v, _ref,
         _this = this;
       manipBox = function(tagId, messageId) {
         var cjDL;
@@ -1773,7 +1773,8 @@
         cjDT.removeClass("tag-" + tagId).addClass("tag-" + messageId);
         return cjDT.find("input.checkbox").attr("name", "tag[" + messageId + "]");
       };
-      cjDT = this.view.cj_selectors.tagBox.find("#tagLabel_" + tagId);
+      cjDT = this.cjDT;
+      tagId = cjDT.data("tagid");
       this.ajax.addTag.data.name = cjDT.find(".tag .name").text();
       this.ajax.addTag.data.description = cjDT.find(".tag .description").text();
       this.ajax.addTag.data.parent_id = "292";
@@ -2173,7 +2174,7 @@
     };
 
     Action.prototype.addEntityToTree = function(parent, message) {
-      var backout, cjParent, node, node_parsed;
+      var backout, buttons, cjParent, node, node_parsed;
       node = {};
       if ((message.created_date != null) && message.created_date.length > 0) {
         node.created_date = _manipTags.createDate(message.created_date);
@@ -2211,7 +2212,7 @@
         console.log("bad things happened");
         return false;
       }
-      return new Buttons(this.view, "#tagLabel_" + node.id);
+      return buttons = new Buttons(this.view, "#tagLabel_" + node.id);
     };
 
     Action.prototype.removeEntityFromTree = function() {
@@ -2224,7 +2225,7 @@
     };
 
     Action.prototype.updateEntity = function(message) {
-      var backout, cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
+      var backout, buttons, cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
       data = {};
       id = message.id;
       data.id = "" + id;
@@ -2259,8 +2260,8 @@
       cjDL.remove();
       cjDT.replaceWith(cjNode.html());
       _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
-      new Buttons(this.view, "#tagDropdown_" + id);
-      return new Buttons(this.view, "#tagLabel_" + id);
+      buttons = new Buttons(this.view, "#tagDropdown_" + id);
+      return buttons = new Buttons(this.view, "#tagLabel_" + id);
     };
 
     Action.prototype.removeErrors = function(data) {
@@ -2778,7 +2779,9 @@
       } else {
         this.removeRadioButtons();
         if (this.view.settings.tagging) {
-          this.removeFCB();
+          if (finder.length === 0) {
+            this.removeFCB();
+          }
           this.createTaggingCheckboxes(finder);
         }
         if (this.view.settings.edit) {
@@ -2816,7 +2819,7 @@
     Buttons.prototype.removeRadioButtons = function() {
       var cjDT;
       cjDT = this.view.cj_selectors.tagBox.find("dt");
-      cjDT.find(".tag .fCB").remove();
+      cjDT.find(".tag .fCB input.radio").parent().parent().parent().remove();
       return cjDT.off("click");
     };
 
@@ -2942,7 +2945,6 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         a = _ref[_i];
         this.cj_top_settings.append(this.addButton(a));
-        console.log("" + a + "Hook");
         this["" + a + "Hook"].call(this, a, this.returnCJLoc("top"));
       }
       _ref1 = icons.bottom;
@@ -2950,7 +2952,6 @@
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
         this.cj_bottom_settings.append(this.addButton(b));
-        console.log("" + b + "Hook");
         _results.push(this["" + b + "Hook"].call(this, b, this.returnCJLoc("bottom")));
       }
       return _results;
@@ -3183,7 +3184,7 @@
           };
           _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
           return openLeg.query(nextPage, function(results) {
-            var addButtonsTo, filteredList, k, poses, v;
+            var addButtonsTo, buttons, filteredList, k, poses, v;
             if (results.status != null) {
               console.log(results);
             }
@@ -3198,7 +3199,7 @@
               v = nextPage[k];
               addButtonsTo += "." + k + "-" + v;
             }
-            new Buttons(_this.view, addButtonsTo);
+            buttons = new Buttons(_this.view, addButtonsTo);
             _this.openLegQueryDone = true;
             return _this.buildPositions();
           });
