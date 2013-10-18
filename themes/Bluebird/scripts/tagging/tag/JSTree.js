@@ -42,7 +42,7 @@
 
   Instance = (function() {
     function Instance(_rawData, _autocomplete, _treeNames, _trees) {
-      var callAjax, dataSettings, displaySettings, onSave, pageElements,
+      var callAjax, dataSettings, displaySettings, pageElements,
         _this = this;
       this._rawData = _rawData;
       this._autocomplete = _autocomplete;
@@ -59,10 +59,10 @@
         autocomplete: 'autocomplete',
         tokenHolder: 'tokens'
       };
-      onSave = false;
       dataSettings = {
         pullSets: [291, 296, 292],
-        entity_id: 0
+        entity_id: 0,
+        onSave: false
       };
       displaySettings = {
         defaultTree: 291,
@@ -108,7 +108,7 @@
         return getRet;
       };
       this.set = function(name, obj) {
-        var ready;
+        var onSave, ready;
         if ('pageElements' === name) {
           obj = _utils.checkForArray(pageElements, obj);
           cj.extend(true, pageElements, obj);
@@ -910,6 +910,7 @@
       this.selectors.dropdown = pageElements.tagDropdown;
       this.selectors.initHolder = pageElements.init;
       this.entity_id = dataSettings.entity_id;
+      this.onSave = dataSettings.onSave;
       this.settings = displaySettings;
       this.settingCollection = ["settings", "menuSelectors", "tokenHolder", "selectors"];
       _ref = pageElements.tagHolder;
@@ -1542,6 +1543,7 @@
         cjDT = cj(this).parents("dt").first();
         if (cjDT.data("tree") === 292 && parseInt(cjDT.data("tagid")) >= 292000) {
           o = this;
+          console.log(cjDT.data("tagid"), "hey");
           return a.createAction(cjDT.data("tagid"), "addTagFromPosition", function(response) {
             var newDT;
             newDT = response.cjDT;
@@ -1713,6 +1715,8 @@
         this.cj_slideBoxContainer = cj(".JSTree-slideBox");
         this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + containerPosition.left + "px");
         this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
+        this.cj_slideBox.css("top", "0px");
+        console.log(this.cj_slideBox);
         return this.cj_slideBox.animate({
           height: "210px"
         }, 500, function() {
@@ -1777,6 +1781,8 @@
       this.ajax.addTag.data.description = cjDT.find(".tag .description").text();
       this.ajax.addTag.data.parent_id = "292";
       this.ajax.addTag.data.is_reserved = true;
+      console.log(this.ajax.addTag);
+      console.log(tagId);
       _ref = this.instance.positionList;
       for (k in _ref) {
         v = _ref[k];
@@ -3775,7 +3781,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'             data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
       html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
       if (this.hasDesc.length > 0) {
         html += "                <div class='description'>" + this.description + "</div>            ";

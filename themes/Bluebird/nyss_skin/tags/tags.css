@@ -163,6 +163,15 @@
   border: 1px solid #ccc; }
   #JSTree-container.BBTreeContainer dl, #BBTreeContainer dl {
     margin: 0; }
+  #JSTree-container.BBTreeContainer dt, #BBTreeContainer dt {
+    clear: none;
+    float: none;
+    font-size: 1em;
+    padding: 0;
+    text-align: left;
+    vertical-align: auto;
+    white-space: normal;
+    width: auto; }
   #JSTree-container.BBTreeContainer *, #BBTreeContainer * {
     line-height: 1em;
     color: black;

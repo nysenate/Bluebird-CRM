@@ -1,7 +1,7 @@
 Function::property = (prop, desc) ->
   Object.defineProperty @prototype, prop, desc
 
-jstree = 
+jstree =
   init: (settings,view) ->
     # build the instance of data
     instance = new Instance()
@@ -19,7 +19,7 @@ jstree =
       view["done"].call(@, instance)
       )
     instance
-  
+
 
 setProp = (properties..., instance) ->
   for k, v of properties[0]
@@ -42,7 +42,6 @@ class Instance
       autocomplete: 'autocomplete'
       tokenHolder: 'tokens'
     #interrupts ajax tag save process to not happen for edit type pages
-    onSave = false
     dataSettings =
       #Set [one] or [other] to show only one use [291,296] for both (when you want to show KW & IC)
       # pullSets: [291, 296]
@@ -50,7 +49,8 @@ class Instance
       #contact is set to 0 and SHOULD appear on most contact inits
       entity_id: 0
       # activity_id
-      
+      onSave: false
+
     displaySettings =
       #IssueCodes = 291 KW = 296. Sets default tree to show first.
       defaultTree: 291
@@ -88,21 +88,21 @@ class Instance
       if 'ready' is name then return ready
       getRet
     @set = (name,obj)  =>
-      if 'pageElements' is name 
+      if 'pageElements' is name
         obj = _utils.checkForArray(pageElements, obj)
         cj.extend true,pageElements,obj
-      if 'onSave' is name 
+      if 'onSave' is name
         onSave = obj
       if 'dataSettings' is name
-        obj = _utils.checkForArray(dataSettings, obj) 
+        obj = _utils.checkForArray(dataSettings, obj)
         cj.extend true,dataSettings,obj
-      if 'displaySettings' is name 
-        obj = _utils.checkForArray(displaySettings, obj) 
+      if 'displaySettings' is name
+        obj = _utils.checkForArray(displaySettings, obj)
         cj.extend true,displaySettings,obj
       if 'callAjax' is name
-        obj = _utils.checkForArray(callAjax, obj) 
+        obj = _utils.checkForArray(callAjax, obj)
         cj.extend true,callAjax,obj
-      if 'ready' is name 
+      if 'ready' is name
         ready = obj
   # accessors
   @property "rawData",
@@ -151,8 +151,8 @@ _utils =
       if cj.isArray(def) && cj.isArray(propDefault[k])
         a = propDefault[k].sort()
         b = def.sort()
-        for c, i in a 
-          if c isnt b[i] 
+        for c, i in a
+          if c isnt b[i]
             for ar in def
               if propDefault[k].indexOf(ar) < 0
                 propDefault[k].push(ar)
@@ -168,7 +168,7 @@ _utils =
       retObj.toRet = ["#{text}"]
       return retObj
     lastEnd = 0
-    for a in [0..numberOfSegs] 
+    for a in [0..numberOfSegs]
       seg = text.slice(length*a,length*(a+1))
       if !seg.match(rx) and seg.length >= length
         # if there's no spaces or any line breaks
@@ -192,12 +192,12 @@ _utils =
             killFutureSegs = true
           retObj.toRet.push text.slice(lastEnd,currentLastSpace)
           lastEnd = currentLastSpace
-          if killFutureSegs? 
+          if killFutureSegs?
             retObj.segs = a+1
             break
 
     return retObj
-    
+
   hyphenize: (text) ->
     text.replace(" ","-")
   camelCase: (text) ->
@@ -287,13 +287,13 @@ _parseTree =
   ac: []
   treeNames: {}
 
-_parseAutocomplete =  
+_parseAutocomplete =
   pre: (obj) ->
     _parseAutocomplete.level++
     return true if obj.name == "Inbox Polling Unprocessed"
     hasChildren = false
     if obj.children.length > 0
-      hasChildren = true 
+      hasChildren = true
     item =
       "name": obj.name
       "id": obj.id
@@ -321,7 +321,7 @@ _parseAutocomplete =
 
 class Entity
   tags: []
-  entity_id: 0 
+  entity_id: 0
   _get:
     url: '/civicrm/ajax/entity_tag/get'
     data:

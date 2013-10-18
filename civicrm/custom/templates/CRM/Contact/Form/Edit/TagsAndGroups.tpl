@@ -33,14 +33,11 @@ var BBActionConst = {/literal}{$action}{literal};
 {/literal}{else}{literal}
 	var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
 {/literal}{/if}{literal}
+var test =true;
 </script>
 {/literal}
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<script>
-BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true});
-</script>
 {/literal}
 {if $title}
 <div id="dialog">
