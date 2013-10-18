@@ -161,7 +161,7 @@ class View
   findPositionLocalMatch:(cjDT) ->
     name = cjDT.find(".tag .name").text()
     for a,b of @instance.positionList
-      name = _utils.removePositionTextFromBill(cjDT.name)
+      name = _utils.remposovePositionTextFromBill(cjDT.name)
       position = cjDT.data("position")
   # tags the positions, as opposed to applyTaggedKWIC on initial load
   # to show all currently tagged positions on an entity
@@ -179,7 +179,7 @@ class View
 
       else
         @cj_selectors.tagBox.find(".top-292").css("display","none")
-      new Buttons(@,".top-292")
+      buttons = new Buttons(@,".top-292")
       cjDTs = @cj_selectors.tagBox.find(".top-292 dt")
       cjDTs.addClass("shaded")
       cjDTs.find(".fCB input.checkbox").prop("checked",true)
@@ -546,7 +546,7 @@ class View
                   # cjDTs.find(".fCB input.checkbox").prop("checked",true)
             )
 
-    new Buttons(@)
+    buttons = new Buttons(@)
     if @settings.tagging
       if @entityList?
         @applyTaggedKWIC()
@@ -594,7 +594,7 @@ class View
             @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
           else
             @applyTaggedPositions()
-      new Buttons(@)
+      buttons = new Buttons(@)
       if @settings.tagging
         @applyTaggedKWIC()
       @setActiveTree(@getIdFromTabName(activeTree))
@@ -715,6 +715,7 @@ class View
           addTag.call(@,null)
         else
           removeTag.call(@,null)
+      
       entity = a.instance.entity
       cjDT = cj(@).parents("dt").first()
 
@@ -723,13 +724,13 @@ class View
         # create new position
         o = @
         a.createAction(cjDT.data("tagid"),"addTagFromPosition", (response)->
-            newDT = response.cjDT
-            if response == false
-              # console.log "response false"
-            else
-              action.tagId = response["message"]["id"]
-              toggleClass.call(newDT.find("input.checkbox")[0],newDT)
-          )
+          newDT = response.cjDT
+          if response == false
+            # console.log "response false"
+          else
+            action.tagId = response["message"]["id"]
+            toggleClass.call(newDT.find("input.checkbox")[0],newDT)
+        )
       else
         tagId = cjDT.data("tagid")
         action.tagId = tagId
@@ -822,7 +823,6 @@ class Action
     if parseInt(@tagId) == 291
       @cjDT = @view.cj_selectors.tagBox.find(".top-#{tagID}")
       @tagName = @view.cj_menuSelectors.autocomplete.val()
-      console.log @cjDT, @tagName
     else
       @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}']")
       @tagName = @cjDT.data("name")
@@ -879,11 +879,11 @@ class Action
       @view.createTabClick()
       if @cj_slideBoxContainer?
         @cj_slideBoxContainer.remove()
-      new Buttons(@view)
+      buttons = new Buttons(@view)
     )
   # creates a tag from thin air, for positions.
   # this should be broken up into separate non-private functions
-  addTagFromPosition:(tagId,action) ->
+  addTagFromPosition:(action) ->
     manipBox = (tagId,messageId) =>
       cjDL = @view.cj_selectors.tagBox.find("#tagDropdown_#{tagId}")
       cjDL.attr("id","tagDropdown_#{messageId}")
@@ -892,7 +892,15 @@ class Action
       cjDT.attr("id","tagLabel_#{messageId}")
       cjDT.removeClass("tag-#{tagId}").addClass("tag-#{messageId}")
       cjDT.find("input.checkbox").attr("name","tag[#{messageId}]")
-    cjDT = @view.cj_selectors.tagBox.find("#tagLabel_#{tagId}")
+    # cjDT = @view.cj_selectors.tagBox.find("#tagLabel_#{tagId}")
+    # ToDo: HACK
+    # this was written first, and not in the 'new style', so, to conform
+    # to the new style, it only takes one parameter, like all apply
+    # Here's a good mnemonic. 
+    # Apply uses Arrays and Always takes one or two Arguments. 
+    # When you use Call you have to Count the number of arguments.
+    cjDT = @cjDT
+    tagId = cjDT.data("tagid")
     @ajax.addTag.data.name = cjDT.find(".tag .name").text()
     @ajax.addTag.data.description = cjDT.find(".tag .description").text()
     @ajax.addTag.data.parent_id = "292"
@@ -1229,7 +1237,7 @@ class Action
     if !backout
       console.log "bad things happened"
       return false
-    new Buttons(@view,"#tagLabel_#{node.id}")
+    buttons = new Buttons(@view,"#tagLabel_#{node.id}")
   removeEntityFromTree: () ->
     id = @cjDT.data("tagid")
     cjDL = @view.cj_selectors.tagBox.find("dl#tagDropdown_#{id}")
@@ -1271,8 +1279,8 @@ class Action
     cjDL.remove()
     cjDT.replaceWith(cjNode.html())
     _treeUtils.makeDropdown(@view.cj_selectors.tagBox.find(".top-#{node.type}"))
-    new Buttons(@view,"#tagDropdown_#{id}")
-    new Buttons(@view,"#tagLabel_#{id}")
+    buttons = new Buttons(@view,"#tagDropdown_#{id}")
+    buttons = new Buttons(@view,"#tagLabel_#{id}")
   removeErrors: (data)->
     notErrored = []
     for k,v of data.fields
@@ -1615,7 +1623,7 @@ class Buttons
     else
       @removeRadioButtons()
       if @view.settings.tagging
-        @removeFCB()
+        @removeFCB() if finder.length == 0
         @createTaggingCheckboxes(finder)
       if @view.settings.edit
         @removeTaggingCheckboxes()
@@ -1645,7 +1653,7 @@ class Buttons
     # @view.cj_selectors.tagBox.find("dt .tag .fCB input.radio").animate({width:"13px"})
   removeRadioButtons: () ->
     cjDT = @view.cj_selectors.tagBox.find("dt")
-    cjDT.find(".tag .fCB").remove()
+    cjDT.find(".tag .fCB input.radio").parent().parent().parent().remove()
     cjDT.off("click")
   # fcb = floating control box
   # as opposed to previous iterations, now just appends and deletes
@@ -1732,11 +1740,9 @@ class Settings
     @cj_bottom_settings = cj(".#{@view.menuSelectors.bottom.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
     for a in icons.top 
       @cj_top_settings.append(@addButton(a))
-      console.log "#{a}Hook"
       @["#{a}Hook"].call(@,a,@returnCJLoc("top"))
     for b in icons.bottom 
       @cj_bottom_settings.append(@addButton(b))
-      console.log "#{b}Hook"
       @["#{b}Hook"].call(@,b,@returnCJLoc("bottom"))
   unbindButton: (name) ->
     @view.cj_menuSelectors.settings.find(".#{name}").off "click"
@@ -1914,7 +1920,7 @@ class Autocomplete
               addButtonsTo = ""
               for k,v of nextPage
                 addButtonsTo += ".#{k}-#{v}"
-              new Buttons(@view,addButtonsTo)
+              buttons = new Buttons(@view,addButtonsTo)
               @openLegQueryDone = true
               @buildPositions()
             )
