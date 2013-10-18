@@ -785,7 +785,7 @@
 
     View.prototype.findPositionLocalMatch = function(cjDT) {
       var a, b, name, position, _ref, _results;
-      name = cjDT.find(".tag .name").text;
+      name = cjDT.find(".tag .name").text();
       _ref = this.instance.positionList;
       _results = [];
       for (a in _ref) {

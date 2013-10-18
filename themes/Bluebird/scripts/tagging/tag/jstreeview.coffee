@@ -159,7 +159,7 @@ class View
   # based on their name, i.e. "S2953-2013", and by removing the position from them
   # via regex
   findPositionLocalMatch:(cjDT) ->
-    name = cjDT.find(".tag .name").text
+    name = cjDT.find(".tag .name").text()
     for a,b of @instance.positionList
       name = _utils.removePositionTextFromBill(cjDT.name)
       position = cjDT.data("position")
