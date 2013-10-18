@@ -15,7 +15,8 @@
   height: inherit;
   background-color: rgba(0, 0, 0, 0.2);
   z-index: 15;
-  right: 0px; }
+  right: 0px;
+  bottom: 12px; }
   #JSTree-container .slideBox .label, #JSTree-container .slideBox .header, #JSTree-container .slideBox .headerdescription, #JSTree-container .slideBox .toTag, #JSTree-container .slideBox .submit, #JSTree-container .slideBox .cancel, .JSTree-slideBox .slideBox .label, .JSTree-slideBox #JSTree-container .slideBox .header, #JSTree-container .JSTree-slideBox .slideBox .header, .JSTree-slideBox .slideBox .header, .JSTree-slideBox #JSTree-container .slideBox .headerdescription, #JSTree-container .JSTree-slideBox .slideBox .headerdescription, .JSTree-slideBox .slideBox .headerdescription, .JSTree-slideBox #JSTree-container .slideBox .toTag, #JSTree-container .JSTree-slideBox .slideBox .toTag, .JSTree-slideBox .slideBox .toTag, .JSTree-slideBox #JSTree-container .slideBox .submit, #JSTree-container .JSTree-slideBox .slideBox .submit, .JSTree-slideBox .slideBox .submit, .JSTree-slideBox #JSTree-container .slideBox .cancel, #JSTree-container .JSTree-slideBox .slideBox .cancel, .JSTree-slideBox .slideBox .cancel {
     background-color: #a6a6a6;
     border-radius: 5px;
