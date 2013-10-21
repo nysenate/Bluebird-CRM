@@ -35,7 +35,7 @@
 
   <div id="output" style="display: none;">
     <h3>Deleting Contacts...</h3>
-    <div class="content">Please be patient, this may take some time. You will receive notification when the process is complete.<br />Working...<br /><br /></div>
+    <div class="content">Please be patient, this may take some time. You will receive notification when the process is complete.<br /><br />Working...<br /><br /></div>
     <div class="final"></div>
   </div>
 
