@@ -117,7 +117,7 @@ class View
           )
       )
   slideTokenHolder: () ->
-    if @cj_tokenHolder.body.height() <= 20
+    if @cj_tokenHolder.body.height() <= 50
       @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
       curHeight = @cj_tokenHolder.body.height()
       @cj_tokenHolder.body.css('height','auto')
@@ -127,7 +127,7 @@ class View
       )
     else
       @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
-      @cj_tokenHolder.body.animate({height:"16px"},500, =>
+      @cj_tokenHolder.body.animate({height:"50px"},500, =>
       )
     # @cj_tokenHolder.body.slideToggle(400)
   addTagsToHolder:(id) ->
@@ -743,7 +743,7 @@ class View
         tagId = cjDT.data("tagid")
         action.tagId = tagId
         toggleClass.call(@,cjDT)
-  )
+    )
   # checks to see if a given tag has descendants that are checked as well
   # so we can provide inheritance tracking
   hasTaggedChildren: (cjDT) ->

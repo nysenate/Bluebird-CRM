@@ -726,7 +726,7 @@
     View.prototype.slideTokenHolder = function() {
       var autoHeight, curHeight,
         _this = this;
-      if (this.cj_tokenHolder.body.height() <= 20) {
+      if (this.cj_tokenHolder.body.height() <= 50) {
         this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
         curHeight = this.cj_tokenHolder.body.height();
         this.cj_tokenHolder.body.css('height', 'auto');
@@ -738,7 +738,7 @@
       } else {
         this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
         return this.cj_tokenHolder.body.animate({
-          height: "16px"
+	  height: "50px"
         }, 500, function() {});
       }
     };
@@ -1505,18 +1505,26 @@
           var _removeTag,
             _this = this;
           _removeTag = entity.removeTag(tagId);
-          return _removeTag.done(function(i) {
+	  if (a.onSave) {
             return doAction.apply(null, [i, "remove"]);
-          });
+	  } else {
+	    return _removeTag.done(function(i) {
+	      return doAction.apply(null, [i, "remove"]);
+	    });
+	  }
         };
         addTag = function() {
           var _addTag,
             _this = this;
           a.addTagsToHolder(cjDT.data("tagid"));
           _addTag = entity.addTag(tagId);
-          return _addTag.done(function(i) {
+	  if (a.onSave) {
             return doAction.apply(null, [i, "add"]);
-          });
+	  } else {
+	    return _addTag.done(function(i) {
+	      return doAction.apply(null, [i, "add"]);
+	    });
+	  }
         };
         doAction = function(res, typeOfAction) {
           action["action"] = typeOfAction;
@@ -1543,7 +1551,6 @@
         cjDT = cj(this).parents("dt").first();
         if (cjDT.data("tree") === 292 && parseInt(cjDT.data("tagid")) >= 292000) {
           o = this;
-          console.log(cjDT.data("tagid"), "hey");
           return a.createAction(cjDT.data("tagid"), "addTagFromPosition", function(response) {
             var newDT;
             newDT = response.cjDT;
