@@ -613,48 +613,73 @@
     #JSTree-container.BBTreeContainer .JSTree-resize:hover, #BBTreeContainer .JSTree-resize:hover {
       cursor: s-resize; }
   #JSTree-container.BBTreeContainer .JSTree-tokenHolder, #BBTreeContainer .JSTree-tokenHolder {
-    background-color: #fff;
+    background-color: #e1e1e1;
     position: relative;
     padding-bottom: 8px;
     width: 100%;
     overflow-x: hidden;
+    border-top: 1px solid #ccc;
     border-bottom-left-radius: 3px;
     -webkit-border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
     -webkit-border-bottom-right-radius: 3px;
     -moz-border-radius-bottomleft: 3px;
     -moz-border-radius-bottomright: 3px;
-    min-height: 16px; }
+    min-height: 50px; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody {
-      height: 16px;
+      height: 50px;
       overflow: hidden;
       padding-top: 5px; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token {
-        background-color: #a6a6a6;
-        border-radius: 5px;
-        -moz-border-radius: 5px;
-        -webkit-border-radius: 5px;
-        padding: 2px 6px;
+	background-color: #f2f2f2;
+	padding: 4px 6px 4px 15px;
         margin-bottom: 1px;
         display: inline-block;
-        margin-left: 2px;
+	margin-left: 4px;
+	margin-bottom: 5px;
         letter-spacing: 1px;
         float: left;
-        -webkit-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
-        -moz-box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
-        box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.35);
-        color: #fff;
-        min-height: 12px; }
+	color: #000;
+	min-height: 12px;
+	border: 1px solid #8c8c8c; }
       #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover {
-        text-decoration: line-through;
-        color: #ff4d4d;
-        cursor: pointer; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"] {
-        background-color: #5ad170; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"] {
-        background-color: #6fd5e3; }
-      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"], #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"] {
-        background-color: #ebb931; }
+	color: #fff;
+	cursor: pointer;
+	background-color: #ff4d4d;
+	border: 1px solid #990000; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"]:after,
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"]:after,
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"]:after, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"]:after,
+      #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"]:after,
+      #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"]:after {
+	float: left;
+	height: 10px;
+	margin: -4px 5px -4px -15px;
+	padding: 5px 0;
+	text-align: center;
+	width: 20px;
+	font-size: 13px;
+	font-family: Georgia, Times, serif;
+	font-weight: bold; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"]:after, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="291"]:after {
+	content: "I";
+	background-color: #5ad170;
+	color: #1a5e27; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"]:after, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="292"]:after {
+	content: "P";
+	background-color: #6fd5e3;
+	color: #1a7986; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"]:after, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody [data-type="296"]:after {
+	content: "K";
+	background-color: #ebb931;
+	color: #604909; }
+      #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover:after, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody .token:hover:after {
+	background-color: #ff8080;
+	content: "X";
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: thin;
+	font-size: 12px;
+	color: #a30000; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine, #BBTreeContainer .JSTree-tokenHolder .JSTree-tokenBody.oneLine {
       height: 16px; }
     #JSTree-container.BBTreeContainer .JSTree-tokenHolder .JSTree-options, #BBTreeContainer .JSTree-tokenHolder .JSTree-options {

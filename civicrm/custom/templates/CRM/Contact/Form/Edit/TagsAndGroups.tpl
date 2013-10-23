@@ -12,7 +12,7 @@
  |                                                                    |
  | CiviCRM is distributed in the hope that it will be useful, but     |
  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               | 
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
  | See the GNU Affero General Public License for more details.        |
  |                                                                    |
  | You should have received a copy of the GNU Affero General Public   |
@@ -45,7 +45,7 @@ var test =true;
 </div>
 <div class="crm-accordion-wrapper crm-tagGroup-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
+  <div class="icon crm-accordion-pointer"></div>
 	<a href="#" class="whiteanchor">{$title}</a>
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="tagGroup">
@@ -69,7 +69,7 @@ var test =true;
 	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-		
+
 			{if $key eq 'tag'}
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				  <div id="crm-tagListWrap">
@@ -95,7 +95,7 @@ var test =true;
 							    </td>
 							</tr>
 						    {/if}
-						{/foreach}   
+						{/foreach}
 					    </table>
 				    </div>
 				</td>

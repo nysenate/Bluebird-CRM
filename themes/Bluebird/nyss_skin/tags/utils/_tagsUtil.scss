@@ -150,7 +150,7 @@ $default_rounded_amount: 5px;
   border-#{$position}-radius: $amount;
   -webkit-border-#{$position}-radius: $amount;
 }
- 
+
 @mixin round-corner-mozilla($position, $amount: $default_rounded_amount){
   -moz-border-radius-#{$position}: $amount;
 }
@@ -160,28 +160,28 @@ $default_rounded_amount: 5px;
   @include round-corner("bottom-left", $amount);
   @include round-corner-mozilla("topleft", $amount);
   @include round-corner-mozilla("bottomleft", $amount);
-} 
+}
 // Round right corners by amount
 @mixin round-right-corners($amount: $default_rounded_amount){
   @include round-corner("top-right", $amount);
   @include round-corner("bottom-right", $amount);
   @include round-corner-mozilla("topright", $amount);
   @include round-corner-mozilla("bottomright", $amount);
-} 
+}
 // Round top corners by amount
 @mixin round-top-corners($amount: $default_rounded_amount){
   @include round-corner("top-left", $amount);
   @include round-corner("top-right", $amount);
   @include round-corner-mozilla("topleft", $amount);
   @include round-corner-mozilla("topright", $amount);
-} 
+}
 // Round bottom corners by amount
 @mixin round-bottom-corners($amount: $default_rounded_amount){
   @include round-corner("bottom-left", $amount);
   @include round-corner("bottom-right", $amount);
   @include round-corner-mozilla("bottomleft", $amount);
   @include round-corner-mozilla("bottomright", $amount);
-} 
+}
 // Round all corners by amount
 @mixin round-corners($amount: $default_rounded_amount){
   border-radius: $amount;
