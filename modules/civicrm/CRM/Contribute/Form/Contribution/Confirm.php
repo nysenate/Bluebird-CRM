@@ -494,6 +494,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             'name' => $contribButton,
             'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
             'isDefault' => TRUE,
+            'js' => array('onclick' => "return submitOnce(this,'" . $this->_name . "','" . ts('Processing') . "');"),
           ),
           array(
             'type' => 'back',
@@ -556,8 +557,6 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     $this->setDefaults($defaults);
 
     $this->freeze();
-
-    parent::buildQuickForm();
   }
 
   /**
@@ -820,6 +819,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
       self::processOnBehalfOrganization($behalfOrganization, $contactID, $this->_values,
         $this->_params, $ufFields
       );
+    } else if (!empty($this->_membershipContactID) && $contactID != $this->_membershipContactID) {
+      // this is an onbehalf renew case for inherited membership. For e.g a permissioned member of household, 
+      // store current user id as related contact for later use for mailing / activity..
+      $this->_values['related_contact'] = $contactID;
+      $this->_params['related_contact'] = $contactID;
+      // swap contact like we do for on-behalf-org case, so parent/primary membership is affected
+      $contactID = $this->_membershipContactID;
     }
 
     // lets store the contactID in the session

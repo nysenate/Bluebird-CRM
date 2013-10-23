@@ -200,17 +200,11 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     // current contribution page id
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
     if (!$this->_id) {
-      $pastContributionID = $session->get('pastContributionID');
-      if (!$pastContributionID) {
-        CRM_Core_Error::fatal(ts('We can\'t load the requested web page due to an incomplete link. This can be caused by using your browser\'s Back button or by using an incomplete or invalid link.'));
-      }
-      else {
-        CRM_Core_Error::fatal(ts('An error occurred during form submission. This page requires form data to be submitted for processing and no form data was submitted or processed. We are sorry for any inconvience. Please click <a href=\'%1\'>here</a> to visit the contribution page and re-start the contribution process.', array(1 => CRM_Utils_System::url('civicrm/contribute/transact', 'reset=1&id=' . $pastContributionID))));
-      }
+      // seems like the session is corrupted and/or we lost the id trail
+      // lets just bump this to a regular session error and redirect user to main page
+      $this->controller->invalidKeyRedirect();
     }
-    else {
-      $session->set('pastContributionID', $this->_id);
-    }
+
     // this was used prior to the cleverer this_>getContactID - unsure now
     $this->_userID = $session->get('userID');
 
@@ -225,19 +219,26 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
         if ($membership->find(TRUE)) {
           $this->_defaultMemTypeId = $membership->membership_type_id;
           if ($membership->contact_id != $this->_contactID) {
+            $validMembership = FALSE;
             $employers = CRM_Contact_BAO_Relationship::getPermissionedEmployer($this->_userID);
-            if (!empty($employers)) {
-              if (array_key_exists($membership->contact_id, $employers)) {
-                $this->_membershipContactID = $membership->contact_id;
-                $this->assign('membershipContactID', $this->_membershipContactID);
-                $this->assign('membershipContactName', $employers[$this->_membershipContactID]['name']);
-              }
-              else {
-                CRM_Core_Session::setStatus(ts("Oops. The membership you're trying to renew appears to be invalid. Contact your site administrator if you need assistance. If you continue, you will be issued a new membership."), ts('Membership Invalid'), 'alert');
+            if (!empty($employers) && array_key_exists($membership->contact_id, $employers)) {
+              $this->_membershipContactID = $membership->contact_id;
+              $this->assign('membershipContactID', $this->_membershipContactID);
+              $this->assign('membershipContactName', $employers[$this->_membershipContactID]['name']);
+              $validMembership = TRUE;
+            } else {
+              $membershipType = new CRM_Member_BAO_MembershipType();
+              $membershipType->id = $membership->membership_type_id;
+              if ($membershipType->find(TRUE)) {
+                $permContacts = CRM_Contact_BAO_Relationship::getPermissionedContacts($this->_userID, $membershipType->relationship_type_id);
+                if (array_key_exists($membership->contact_id, $permContacts)) {
+                  $this->_membershipContactID = $membership->contact_id;
+                  $validMembership = TRUE;
+                }
               }
             }
-            else {
-              $this->_membershipContactID = $membership->contact_id;
+            if (!$validMembership) {
+              CRM_Core_Session::setStatus(ts("Oops. The membership you're trying to renew appears to be invalid. Contact your site administrator if you need assistance. If you continue, you will be issued a new membership."), ts('Membership Invalid'), 'alert');
             }
           }
         }

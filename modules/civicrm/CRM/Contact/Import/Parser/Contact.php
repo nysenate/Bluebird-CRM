@@ -662,31 +662,24 @@ class CRM_Contact_Import_Parser_Contact extends CRM_Contact_Import_Parser {
 
     //fixed CRM-4148
     //now we create new contact in update/fill mode also.
-    if ($createNewContact) {
+    $contactID = NULL;
+    if ($createNewContact || $this->_updateWithId) {
 
       //CRM-4430, don't carry if not submitted.
-      foreach (array(
-        'prefix',
-        'suffix',
-        'gender',
-      ) as $name) {
-        if (array_key_exists($name, $formatted)) {
-          if (in_array($name, array(
-                'prefix',
-                'suffix',
-              ))) {
-            $formattedName = "individual_{$name}";
-            $formatted[$formattedName] = CRM_Core_OptionGroup::getValue($formattedName, (string) $formatted[$name]);
-          }
-          else {
-            $formatted[$name] = CRM_Core_OptionGroup::getValue($name, (string) $formatted[$name]);
+      foreach (array('prefix_id', 'suffix_id', 'gender_id') as $name) {
+        if (!empty($formatted[$name])) {
+          $options = CRM_Contact_BAO_Contact::buildOptions($name, 'get');
+          if (!isset($options[$formatted[$name]])) {
+            $formatted[$name] = CRM_Utils_Array::key((string) $formatted[$name], $options);
           }
         }
       }
-      $newContact = $this->createContact($formatted, $contactFields, $onDuplicate, NULL, TRUE, $this->_dedupeRuleGroupID);
+      if ($this->_updateWithId && !empty($params['id'])) {
+        $contactID = $params['id'];
+      }
+      $newContact = $this->createContact($formatted, $contactFields, $onDuplicate, $contactID, TRUE, $this->_dedupeRuleGroupID);
     }
 
-    $contactID = NULL;
     if (isset($newContact) && is_object($newContact) && ($newContact instanceof CRM_Contact_BAO_Contact)) {
       $relationship = TRUE;
       $newContact = clone($newContact);

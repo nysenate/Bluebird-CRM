@@ -182,7 +182,7 @@ class CRM_Core_Payment_Form {
       'title' => ts('Card Type'),
       'cc_field' => TRUE,
       'attributes' => $creditCardType,
-      'is_required' => TRUE,
+      'is_required' => FALSE,
     );
   }
 
@@ -237,7 +237,7 @@ class CRM_Core_Payment_Form {
   /**
    * Function to add all the credit card fields
    *
-   * @return None
+   * @return void
    * @access public
    */
   static function buildCreditCard(&$form, $useRequired = FALSE) {
@@ -262,7 +262,7 @@ class CRM_Core_Payment_Form {
       );
 
       $form->addRule('credit_card_exp_date',
-        ts('Credit card expiration date cannot be a past date.'),
+        ts('Card expiration date cannot be a past date.'),
         'currentDate', TRUE
       );
 
@@ -355,13 +355,16 @@ class CRM_Core_Payment_Form {
       if (!empty($values['credit_card_number']) &&
         !CRM_Utils_Rule::creditCardNumber($values['credit_card_number'], $values['credit_card_type'])
       ) {
-        $errors['credit_card_number'] = ts('Please enter a valid Credit Card Number');
+        $errors['credit_card_number'] = ts('Please enter a valid Card Number');
       }
       if (!empty($values['cvv2']) &&
         !CRM_Utils_Rule::cvv($values['cvv2'], $values['credit_card_type'])
       ) {
-        $errors['cvv2'] = ts('Please enter a valid Credit Card Verification Number');
+        $errors['cvv2'] = ts('Please enter a valid Card Verification Number');
       }
+    }
+    elseif (!empty($values['credit_card_number'])) {
+      $errors['credit_card_number'] = ts('Please enter a valid Card Number');
     }
   }
 

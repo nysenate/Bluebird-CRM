@@ -279,14 +279,17 @@ class CRM_Report_Form extends CRM_Core_Form {
     // Get all custom groups
     $allGroups = CRM_Core_PseudoConstant::get('CRM_Core_DAO_CustomField', 'custom_group_id');
 
-    // Get the custom groupIds for which the user have VIEW permission
-    require_once 'CRM/ACL/API.php';
-    $permCustomGroupIds = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_custom_group', $allGroups, NULL);
-
-    // do not allow custom data for reports if user don't have
-    // permission to access custom data.
-    if (!empty($this->_customGroupExtends) && !CRM_Core_Permission::check('access all custom data') && empty($permCustomGroupIds)) {
-      $this->_customGroupExtends = array();
+    // Get the custom groupIds for which the user has VIEW permission
+    // If the user has 'access all custom data' permission, we'll leave $permCustomGroupIds empty
+    // and addCustomDataToColumns() will allow access to all custom groups.
+    $permCustomGroupIds = array();
+    if (!CRM_Core_Permission::check('access all custom data')) {
+      $permCustomGroupIds = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_custom_group', $allGroups, NULL);
+      // do not allow custom data for reports if user doesn't have
+      // permission to access custom data.
+      if (!empty($this->_customGroupExtends) && empty($permCustomGroupIds)) {
+        $this->_customGroupExtends = array();
+      }
     }
 
     // merge custom data columns to _columns list, if any
@@ -588,7 +591,7 @@ class CRM_Report_Form extends CRM_Core_Form {
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
-          if (!array_key_exists('no_display', $field)) {
+          if (!CRM_Utils_Array::value('no_display', $field)) {
             if (isset($field['required'])) {
               // set default
               $this->_defaults['fields'][$fieldName] = 1;
@@ -731,7 +734,7 @@ class CRM_Report_Form extends CRM_Core_Form {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
           $groupTitle = '';
-          if (!array_key_exists('no_display', $field)) {
+          if (!CRM_Utils_Array::value('no_display', $field)) {
             foreach ( array('table', 'field') as $var) {
               if (!empty(${$var}['grouping'])) {
                 if (!is_array(${$var}['grouping'])) {
@@ -936,7 +939,7 @@ class CRM_Report_Form extends CRM_Core_Form {
 
       if ($this->_autoIncludeIndexedFieldsAsOrderBys && array_key_exists('extends', $table) && !empty($table['extends'])) {
         foreach ($table['fields'] as $fieldName => $field) {
-          if (!array_key_exists('no_display', $field)) {
+          if (!CRM_Utils_Array::value('no_display', $field)) {
             $options[$fieldName] = $field['title'];
           }
         }
@@ -1687,7 +1690,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     // unset columns not to be displayed.
     foreach ($this->_columnHeaders as $key => $value) {
-      if (is_array($value) && isset($value['no_display'])) {
+      if (CRM_Utils_Array::value('no_display', $value)) {
         unset($this->_columnHeaders[$key]);
       }
     }
@@ -2601,7 +2604,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $this->set(CRM_Utils_Pager::PAGE_ID, $pageId);
       $offset = ($pageId - 1) * $rowCount;
 
-      $this->_limit = " LIMIT $offset, " . $rowCount;
+      $offset = CRM_Utils_Type::escape($offset, 'Int');
+      $rowCount = CRM_Utils_Type::escape($rowCount, 'Int');
+
+      $this->_limit = " LIMIT $offset, $rowCount";
       return array($offset, $rowCount);
     }
   }

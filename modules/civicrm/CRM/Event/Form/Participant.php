@@ -924,7 +924,11 @@ loadCampaign( {$this->_eID}, {$eventCampaigns} );
     );
 
     $path = CRM_Utils_System::currentPath();
-    if (strpos($path, 'civicrm/contact/search') !== 0) {
+    $excludeForPaths = array(
+      'civicrm/contact/search',
+      'civicrm/group/search'
+    );
+    if (!in_array($path, $excludeForPaths)) {
       $buttons[] = array(
         'type' => 'upload',
         'name' => ts('Save and New'),
@@ -932,6 +936,7 @@ loadCampaign( {$this->_eID}, {$eventCampaigns} );
         'js' => $confirmJS,
       );
     }
+
     $buttons[] = array(
       'type' => 'cancel',
       'name' => ts('Cancel'),
@@ -1451,6 +1456,9 @@ loadCampaign( {$this->_eID}, {$eventCampaigns} );
           $contributionParams['is_pay_later'] = 1;
         }
         if ($this->_single) {
+          if (empty($ids)) {
+            $ids = array();
+          }
           $contributions[] = CRM_Contribute_BAO_Contribution::create($contributionParams, $ids);
         }
         else {
@@ -1462,7 +1470,7 @@ loadCampaign( {$this->_eID}, {$eventCampaigns} );
         }
 
         //insert payment record for this participation
-        if (!$ids['contribution']) {
+        if (empty($ids['contribution'])) {
           foreach ($this->_contactIds as $num => $contactID) {
             $ppDAO = new CRM_Event_DAO_ParticipantPayment();
             $ppDAO->participant_id = $participants[$num]->id;

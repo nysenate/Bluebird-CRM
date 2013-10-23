@@ -113,7 +113,9 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
     }
     else {
       // check for duplicate relationship
-
+      //@todo this code doesn't cope well with updates - causes e-Notices. API has a lot of code to work around
+      // this but should review this code & remove the extra handling from the api
+      // it seems doubtful any of this is relevant if the contact fields & relationship type fields are not set
       if (
         self::checkDuplicateRelationship(
           $params,
@@ -196,13 +198,14 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
    * @access public
    * @static
    */
-  static function add(&$params, &$ids, $contactId) {
-    if (CRM_Utils_Array::value('relationship', $ids)) {
-      CRM_Utils_Hook::pre('edit', 'Relationship', $ids['relationship'], $params);
+  static function add(&$params, $ids = array(), $contactId = NULL) {
+    $relationshipId = CRM_Utils_Array::value('relationship', $ids, CRM_Utils_Array::value('id', $params));
+    $hook = 'create';
+    if($relationshipId) {
+      $hook = 'edit';
     }
-    else {
-      CRM_Utils_Hook::pre('create', 'Relationship', NULL, $params);
-    }
+    //@todo hook are called from create and add - remove one
+    CRM_Utils_Hook::pre($hook , 'Relationship', $relationshipId, $params);
 
     $relationshipTypes = CRM_Utils_Array::value('relationship_type_id', $params);
 
@@ -219,10 +222,12 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
     }
 
     $relationship = new CRM_Contact_BAO_Relationship();
+    //@todo this code needs to be updated for the possibility that not all fields are set
+    // (update)
     $relationship->contact_id_b = $contact_b;
     $relationship->contact_id_a = $contact_a;
     $relationship->relationship_type_id = $type;
-    $relationship->id = CRM_Utils_Array::value('relationship', $ids);
+    $relationship->id = $relationshipId;
 
     $dateFields = array('end_date', 'start_date');
 
@@ -238,7 +243,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
           $relationship->$defaultField = $params[$defaultField];
         }
       }
-      elseif(empty($relationship->id)){
+      elseif(!$relationshipId){
         $relationship->$defaultField = $defaultValue;
       }
     }
@@ -252,12 +257,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
 
     $relationship->free();
 
-    if (CRM_Utils_Array::value('relationship', $ids)) {
-      CRM_Utils_Hook::post('edit', 'Relationship', $relationship->id, $relationship);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'Relationship', $relationship->id, $relationship);
-    }
+    CRM_Utils_Hook::post($hook, 'Relationship', $relationshipId, $relationship);
 
     return $relationship;
   }
@@ -729,9 +729,15 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
    * @static
    */
   static function setIsActive($id, $is_active) {
-    CRM_Core_DAO::setFieldValue('CRM_Contact_DAO_Relationship', $id, 'is_active', $is_active);
+    // as both the create & add functions have a bunch of logic in them that
+    // doesn't seem to cope with a normal update we will call the api which
+    // has tested handling for this
+    // however, a longer term solution would be to simplify the add, create & api functions
+    // to be more standard. It is debatable @ that point whether it's better to call the BAO
+    // direct as the api is more tested.
+    civicrm_api3('relationship', 'create', array('id' => $id, 'is_active' => $is_active));
 
-    // call hook
+    // call (undocumented possibly deprecated) hook
     CRM_Utils_Hook::enableDisable('CRM_Contact_BAO_Relationship', $id, $is_active);
 
     return TRUE;
@@ -1417,38 +1423,59 @@ WHERE id IN ( {$contacts} )
    * @return array array of employers.
    *
    */
-  static function getPermissionedEmployer($contactID, $name = '%') {
-    $employers = array();
-
+  static function getPermissionedEmployer($contactID, $name = NULL) {
     //get the relationship id
     $relTypeId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType',
       'Employee of', 'id', 'name_a_b'
     );
 
+    return self::getPermissionedContacts($contactID, $relTypeId, $name);
+  }
+
+
+ /**
+  * Function to return list of permissioned contacts for a given contact and relationship type
+  *
+  * @param $contactID int contact id whose permissioned contacts are to be found.
+  * @param $relTypeId relationship type id
+  * @param $name string
+  *
+  * @static
+  *
+  * @return array of contacts
+  */
+  static function getPermissionedContacts($contactID, $relTypeId, $name = NULL) {
+    $contacts = array();
+
     if ($relTypeId) {
       $query = "
 SELECT cc.id as id, cc.sort_name as name
 FROM civicrm_relationship cr, civicrm_contact cc
-WHERE cr.contact_id_a = $contactID AND
-cr.relationship_type_id = $relTypeId AND
-cr.is_permission_a_b = 1 AND
+WHERE
+cr.contact_id_a         = %1 AND
+cr.relationship_type_id = %2 AND
+cr.is_permission_a_b    = 1 AND
 IF(cr.end_date IS NULL, 1, (DATEDIFF( CURDATE( ), cr.end_date ) <= 0)) AND
 cr.is_active = 1 AND
-cc.id = cr.contact_id_b AND
-cc.sort_name LIKE '%$name%'";
+cc.id = cr.contact_id_b";
 
-      $nullArray = array();
-      $dao = CRM_Core_DAO::executeQuery($query, $nullArray);
+      if (!empty($name)) {
+        $name   = CRM_Utils_Type::escape($name, 'String');
+        $query .= "
+AND cc.sort_name LIKE '%$name%'";
+      }
+
+      $args = array(1 => array($contactID, 'Integer'), 2 => array($relTypeId, 'Integer'));
+      $dao  = CRM_Core_DAO::executeQuery($query, $args);
 
       while ($dao->fetch()) {
-        $employers[$dao->id] = array(
+        $contacts[$dao->id] = array(
           'name' => $dao->name,
           'value' => $dao->id,
         );
       }
     }
-
-    return $employers;
+    return $contacts;
   }
 
   static function getValidContactTypeList($relType) {

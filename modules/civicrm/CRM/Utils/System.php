@@ -47,11 +47,15 @@ class CRM_Utils_System {
    * pager, sort and qfc
    *
    * @param string $urlVar the url variable being considered (i.e. crmPageID, crmSortID etc)
+   * @param boolean $includeReset - should we include or ignore the reset GET string (if present)
+   * @param boolean $includeForce - should we include or ignore the force GET string (if present)
+   * @param string  $path - the path to use for the new url
+   * @param string  $absolute - do we need a absolute or relative URL?
    *
    * @return string the url fragment
    * @access public
    */
-  static function makeURL($urlVar, $includeReset = FALSE, $includeForce = TRUE, $path = NULL) {
+  static function makeURL($urlVar, $includeReset = FALSE, $includeForce = TRUE, $path = NULL, $absolute = FALSE) {
     if (empty($path)) {
       $config = CRM_Core_Config::singleton();
       $path = CRM_Utils_Array::value($config->userFrameworkURLVar, $_GET);
@@ -60,9 +64,12 @@ class CRM_Utils_System {
       }
     }
 
-    return self::url($path,
-      CRM_Utils_System::getLinksUrl($urlVar, $includeReset, $includeForce)
-    );
+    return
+      self::url(
+        $path,
+        CRM_Utils_System::getLinksUrl($urlVar, $includeReset, $includeForce),
+        $absolute
+      );
   }
 
   /**
@@ -131,7 +138,12 @@ class CRM_Utils_System {
     $querystring = array_merge($querystring, array_unique($arrays));
     $querystring = array_map('htmlentities', $querystring);
 
-    return implode('&amp;', $querystring) . (!empty($querystring) ? '&amp;' : '') . $urlVar . '=';
+    $url = implode('&amp;', $querystring);
+    if ($urlVar) {
+      $url .= (!empty($querystring) ? '&amp;' : '') . $urlVar . '=';
+    }
+
+    return $url;
   }
 
   /**
@@ -178,7 +190,7 @@ class CRM_Utils_System {
    * Generate an internal CiviCRM URL
    *
    * @param $path     string   The path being linked to, such as "civicrm/add"
-     * @param $query    mixed    A query string to append to the link, or an array of key-value pairs
+   * @param $query    mixed    A query string to append to the link, or an array of key-value pairs
    * @param $absolute boolean  Whether to force the output to be an absolute link (beginning with http:).
    *                           Useful for links that will be displayed outside the site, such as in an
    *                           RSS feed.
@@ -964,8 +976,8 @@ class CRM_Utils_System {
   static function isSSL( ) {
     return
       (isset($_SERVER['HTTPS']) &&
-      !empty($_SERVER['HTTPS']) &&
-      strtolower($_SERVER['HTTPS']) != 'off') ? true : false;
+        !empty($_SERVER['HTTPS']) &&
+        strtolower($_SERVER['HTTPS']) != 'off') ? true : false;
   }
 
   static function redirectToSSL($abort = FALSE) {
@@ -993,13 +1005,13 @@ class CRM_Utils_System {
   }
 
   /*
-     * Get logged in user's IP address.
-     *
-     * Get IP address from HTTP Header. If the CMS is Drupal then use the Drupal function
-     * as this also handles reverse proxies (based on proper configuration in settings.php)
-     *
-     * @return string ip address of logged in user
-     */
+   * Get logged in user's IP address.
+   *
+   * Get IP address from HTTP Header. If the CMS is Drupal then use the Drupal function
+   * as this also handles reverse proxies (based on proper configuration in settings.php)
+   *
+   * @return string ip address of logged in user
+   */
   static function ipAddress($strictIPV4 = TRUE) {
     $address = CRM_Utils_Array::value('REMOTE_ADDR', $_SERVER);
 
@@ -1257,14 +1269,14 @@ class CRM_Utils_System {
 
     // reset various static arrays used here
     CRM_Contact_BAO_Contact::$_importableFields =
-    CRM_Contact_BAO_Contact::$_exportableFields =
-    CRM_Contribute_BAO_Contribution::$_importableFields =
-    CRM_Contribute_BAO_Contribution::$_exportableFields =
-    CRM_Pledge_BAO_Pledge::$_exportableFields =
-    CRM_Contribute_BAO_Query::$_contributionFields =
-    CRM_Core_BAO_CustomField::$_importFields =
-    CRM_Core_BAO_Cache::$_cache =
-    CRM_Core_DAO::$_dbColumnValueCache = NULL;
+      CRM_Contact_BAO_Contact::$_exportableFields =
+      CRM_Contribute_BAO_Contribution::$_importableFields =
+      CRM_Contribute_BAO_Contribution::$_exportableFields =
+      CRM_Pledge_BAO_Pledge::$_exportableFields =
+      CRM_Contribute_BAO_Query::$_contributionFields =
+      CRM_Core_BAO_CustomField::$_importFields =
+      CRM_Core_BAO_Cache::$_cache =
+      CRM_Core_DAO::$_dbColumnValueCache = NULL;
 
     CRM_Core_OptionGroup::flushAll();
     CRM_Utils_PseudoConstant::flushAll();

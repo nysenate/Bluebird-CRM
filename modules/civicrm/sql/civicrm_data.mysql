@@ -1706,8 +1706,8 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (2927, 1085, "72", "Xanthi"),
 (2928, 1085, "21", "Zakynthos"),
 (2929, 1085, "69", "Agio Oros"),
-(2930, 1090, "AV", "Alta Verapez"),
-(2931, 1090, "BV", "Baja Verapez"),
+(2930, 1090, "AV", "Alta Verapaz"),
+(2931, 1090, "BV", "Baja Verapaz"),
 (2932, 1090, "CM", "Chimaltenango"),
 (2933, 1090, "CQ", "Chiquimula"),
 (2934, 1090, "PR", "El Progreso"),
@@ -1720,11 +1720,11 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (2941, 1090, "PE", "Peten"),
 (2942, 1090, "QZ", "Quetzaltenango"),
 (2943, 1090, "QC", "Quiche"),
-(2944, 1090, "RE", "Reta.thuleu"),
+(2944, 1090, "RE", "Retalhuleu"),
 (2945, 1090, "SA", "Sacatepequez"),
 (2946, 1090, "SM", "San Marcos"),
 (2947, 1090, "SR", "Santa Rosa"),
-(2948, 1090, "SO", "Solol6"),
+(2948, 1090, "SO", "Sololá"),
 (2949, 1090, "SU", "Suchitepequez"),
 (2950, 1090, "TO", "Totonicapan"),
 (2951, 1090, "ZA", "Zacapa"),
@@ -2701,7 +2701,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (3948, 1161, "20", "Finnmark"),
 (3949, 1161, "04", "Hedmark"),
 (3950, 1161, "12", "Hordaland"),
-(3951, 1161, "15", "Møre ag Romsdal"),
+(3951, 1161, "15", "Møre og Romsdal"),
 (3952, 1161, "18", "Nordland"),
 (3953, 1161, "17", "Nord-Trøndelag"),
 (3954, 1161, "05", "Oppland"),
@@ -4515,7 +4515,7 @@ VALUES
     ('Mailing Footer','Footer','Descriptive Title for this Footer.','Sample Footer for HTML formatted content<br/><a href=\"{action.optOutUrl}\">Unsubscribe</a>  <br/> {domain.address}','to unsubscribe: {action.optOutUrl}\n{domain.address}',1,1),
     ('Subscribe Message','Subscribe','Subscription Confirmation Request','You have a pending subscription to the {subscribe.group} mailing list. To confirm this subscription, reply to this email or click <a href=\"{subscribe.url}\">here</a>.','You have a pending subscription to the {subscribe.group} mailing list. To confirm this subscription, reply to this email or click on this link: {subscribe.url}',1,1),
     ('Welcome Message','Welcome','Your Subscription has been Activated','Welcome. Your subscription to the {welcome.group} mailing list has been activated.','Welcome. Your subscription to the {welcome.group} mailing list has been activated.',1,1),
-    ('Unsubscribe Message','Unsubscribe','Un-subscribe Confirmation','You have been un-subscribed from the following groups: {unsubscribe.group}. You can re-subscribe by mailing {action.resubscribe} or clicking <a href=\"{action.resubscribeUrl}\">here</a>.','You have been un-subscribed from the following groups: {unsubscribe.group}. You can re-subscribe by mailing {action.resubscribe} or clicking %3',1,1),
+    ('Unsubscribe Message','Unsubscribe','Un-subscribe Confirmation','You have been un-subscribed from the following groups: {unsubscribe.group}. You can re-subscribe by mailing {action.resubscribe} or clicking <a href=\"{action.resubscribeUrl}\">here</a>.','You have been un-subscribed from the following groups: {unsubscribe.group}. You can re-subscribe by mailing {action.resubscribe} or clicking ',1,1),
     ('Resubscribe Message','Resubscribe','Re-subscribe Confirmation','You have been re-subscribed to the following groups: {resubscribe.group}. You can un-subscribe by mailing {action.unsubscribe} or clicking <a href=\"{action.unsubscribeUrl}\">here</a>.','You have been re-subscribed to the following groups: {resubscribe.group}. You can un-subscribe by mailing {action.unsubscribe} or clicking {action.unsubscribeUrl}',1,1),
     ('Opt-out Message','OptOut','Opt-out Confirmation','Your email address has been removed from {domain.name} mailing lists.','Your email address has been removed from {domain.name} mailing lists.',1,1),
     ('Auto-responder','Reply','Please Send Inquiries to Our Contact Email Address','This is an automated reply from an un-attended mailbox. Please send any inquiries to the contact email address listed on our web-site.','This is an automated reply from an un-attended mailbox. Please send any inquiries to the contact email address listed on our web-site.',1,1);
@@ -4761,8 +4761,8 @@ VALUES
    (@option_group_id_act, 'Edit Batch', 43, 'Edit Batch', NULL, 1, 0, 43, 'Edit Batch', 0, 1, 1, @contributeCompId, NULL),
 
 -- new sms options
-   (@option_group_id_act, 'SMS delivery', 44, 'SMS delivery', NULL, 1, NULL, 44, 'SMS delivery.', 0, 1, 1, NULL, NULL),
-   (@option_group_id_act, 'Inbound SMS',  45, 'Inbound SMS', NULL, 1, NULL,  45, 'Inbound SMS.', 0, 1, 1, NULL, NULL),
+   (@option_group_id_act, 'SMS delivery', 44, 'SMS delivery', NULL, 1, NULL, 44, 'SMS delivery', 0, 1, 1, NULL, NULL),
+   (@option_group_id_act, 'Inbound SMS',  45, 'Inbound SMS', NULL, 1, NULL,  45, 'Inbound SMS', 0, 1, 1, NULL, NULL),
 
    (@option_group_id_gender, 'Female',      1, 'Female',      NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
    (@option_group_id_gender, 'Male',        2, 'Male',        NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
@@ -19571,4 +19571,4 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     (  @domainID, 'Survey Details', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 'access CiviReport', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviReport";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 
- UPDATE civicrm_domain SET version = '4.4.beta4';
+ UPDATE civicrm_domain SET version = '4.4.0';
