@@ -90,7 +90,14 @@
       }
     }
   }
+  .hideCheckbox {
+    .fCB {
+      display:none;
+    }
+    input.checkbox {
 
+    }
+  }
 
 }
 .top-292 .position-box-text-reminder {

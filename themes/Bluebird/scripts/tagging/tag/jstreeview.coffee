@@ -903,7 +903,13 @@ class Action
       @view.createTabClick()
       if @cj_slideBoxContainer?
         @cj_slideBoxContainer.remove()
-      buttons = new Buttons(@view)
+      # don't have to reload the tags (which is important for tagging)
+      # because there's no reset of entity tags being called (it can be)
+      # but this is easier
+      if @view.cj_selectors.tagBox.find(".tagContainer.active").hasClass("hideCheckbox")
+        @view.cj_selectors.tagBox.find(".tagContainer.active").removeClass("hideCheckbox")
+      else
+        buttons = new Buttons(@view)
     )
   # creates a tag from thin air, for positions.
   # this should be broken up into separate non-private functions
@@ -929,8 +935,6 @@ class Action
     @ajax.addTag.data.description = cjDT.find(".tag .description").text()
     @ajax.addTag.data.parent_id = "292"
     @ajax.addTag.data.is_reserved = true
-    console.log @ajax.addTag
-    console.log tagId
 
     for k,v of @instance.positionList
       # need to figure out a better way to implement this?
@@ -969,6 +973,7 @@ class Action
   quickTag: (values="") ->
     @slideHtml = @gatherQuickLabelHTML()
     @setRequiredFields("addTag")
+    @view.cj_selectors.tagBox.find(".tagContainer.active").addClass("hideCheckbox")
     @createSlide(=>
       @view.toggleSettingsAdd("add")
       @view.unbindTabClick()
@@ -983,18 +988,20 @@ class Action
             @ajax.addTag.data.description = data.fields.description
             @ajax.addTag.data.is_reserved = data.fields.isReserved
             @ajax.addTag.data.parent_id = data.tagId
+            console.log data
+            console.log @ajax.addTag
             @convertSubmitToLoading()
             # undefined middle callback for some reason.
-            @tagAjax(data.tagId, "addTag", undefined, (message) =>
-              if message == "DB Error: already exists"
-                @revertSubmitFromLoading()
-                @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
-                doSubmit.call(@)
-              else
-                @addEntityToTree(data.tagId,message)
-                @revertSubmitFromLoading()
-                @destroySlideBox()
-            )
+            # @tagAjax(data.tagId, "addTag", undefined, (message) =>
+            #   if message == "DB Error: already exists"
+            #     @revertSubmitFromLoading()
+            #     @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+            #     doSubmit.call(@)
+            #   else
+            #     @addEntityToTree(data.tagId,message)
+            #     @revertSubmitFromLoading()
+            #     @destroySlideBox()
+            # )
           )
       doSubmit.call(@)
     )
@@ -1335,10 +1342,14 @@ class Action
       errors: {}
     cj.each(cjFields, (i,el) =>
       cjEl = cj(el)
-      if cjEl.attr("type").toLowerCase() == "checkbox"
-        data.fields[cjEl.attr("name")] = cjEl.prop("checked")
-      else
-        data.fields[cjEl.attr("name")] = cjEl.val()
+      switch cjEl.attr("type").toLowerCase()
+        when "checkbox"
+          data.fields[cjEl.attr("name")] = cjEl.prop("checked")
+        when "radio"
+          data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[","").replace("]","")
+        else
+          data.fields[cjEl.attr("name")] = cjEl.val()
+        
     )
     @validateValues(data)
 
@@ -1395,10 +1406,9 @@ class Action
         name = cjDL.data("name")
         unless passing
           validations.createError.call(@,"headerdescription","cannot be deleted because it has children.")
-
     for k,v of data.fields
       cjEl = @cj_slideBox.find("input[name='#{k}']")
-      if cjEl.attr("name").toLowerCase() == "checkbox"
+      if cjEl.attr("type").toLowerCase() == "checkbox"
         continue
       for test in @requiredValidation
         validations[test].call(@,k,v)
