@@ -139,6 +139,8 @@ class View
     # @cj_tokenHolder.body
     token = new Token(@cj_tokenHolder.body)
     token.create(@cj_tokenHolder.body,name,type,id,killToken)
+  removeTagsFromHolder:(id) ->
+    @cj_tokenHolder.body.find(".token-#{id}").remove()
   removeAllTagsFromEntity:() ->
     cjDTs = @cj_selectors.tagBox.find("dt")
     cjDTs.find("dt").removeClass("shaded").removeClass("shadedChildren")
@@ -692,30 +694,33 @@ class View
       action =
         type: "checkbox"
       removeTag = () ->
-        _removeTag = entity.removeTag(tagId)
+        a.removeTagsFromHolder(cjDT.data("tagid"))
         if a.onSave
-          doAction.apply(null,["remove"])
+          doAction.apply(null,[1,"remove"])
         else
+          _removeTag = entity.removeTag(tagId)
           _removeTag.done((i) =>
             doAction.apply(null,[i,"remove"])
           )
-
+        return true
       addTag = () ->
         a.addTagsToHolder(cjDT.data("tagid"))
-        _addTag = entity.addTag(tagId)
-
         if a.onSave
-          doAction.apply(null,["add"])
+          doAction.apply(null,[1,"add"])
         else
+          _addTag = entity.addTag(tagId)
           _addTag.done((i) =>
             doAction.apply(null,[i,"add"])
           )
+        return true
       doAction = (res, typeOfAction) ->
         action["action"] = typeOfAction
-        if res.code != 1
+        # 1 is good.
+        if res.code != 1 and res != 1
           removeTag.call(null,null) if typeOfAction == "add"
           addTag.call(null,null) if typeOfAction == "remove"
-        new ActivityLog(res,action)
+        # new ActivityLog(res,action)
+        return true
       toggleClass = (cjDT) ->
         # requires addTag (if doesn't already exist)
         cjDT.toggleClass("shaded")

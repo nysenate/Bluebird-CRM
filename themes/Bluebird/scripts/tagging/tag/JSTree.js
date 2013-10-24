@@ -756,6 +756,10 @@
       return token.create(this.cj_tokenHolder.body, name, type, id, killToken);
     };
 
+    View.prototype.removeTagsFromHolder = function(id) {
+      return this.cj_tokenHolder.body.find(".token-" + id).remove();
+    };
+
     View.prototype.removeAllTagsFromEntity = function() {
       var cjDTs;
       cjDTs = this.cj_selectors.tagBox.find("dt");
@@ -1504,31 +1508,34 @@
         removeTag = function() {
           var _removeTag,
             _this = this;
-          _removeTag = entity.removeTag(tagId);
+          a.removeTagsFromHolder(cjDT.data("tagid"));
           if (a.onSave) {
-            return doAction.apply(null, ["remove"]);
+            doAction.apply(null, [1, "remove"]);
           } else {
-            return _removeTag.done(function(i) {
+            _removeTag = entity.removeTag(tagId);
+            _removeTag.done(function(i) {
               return doAction.apply(null, [i, "remove"]);
             });
           }
+          return true;
         };
         addTag = function() {
           var _addTag,
             _this = this;
           a.addTagsToHolder(cjDT.data("tagid"));
-          _addTag = entity.addTag(tagId);
           if (a.onSave) {
-            return doAction.apply(null, ["add"]);
+            doAction.apply(null, [1, "add"]);
           } else {
-            return _addTag.done(function(i) {
+            _addTag = entity.addTag(tagId);
+            _addTag.done(function(i) {
               return doAction.apply(null, [i, "add"]);
             });
           }
+          return true;
         };
         doAction = function(res, typeOfAction) {
           action["action"] = typeOfAction;
-          if (res.code !== 1) {
+          if (res.code !== 1 && res !== 1) {
             if (typeOfAction === "add") {
               removeTag.call(null, null);
             }
@@ -1536,7 +1543,7 @@
               addTag.call(null, null);
             }
           }
-          return new ActivityLog(res, action);
+          return true;
         };
         toggleClass = function(cjDT) {
           cjDT.toggleClass("shaded");
