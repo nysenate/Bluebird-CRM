@@ -1,11 +1,9 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -238,8 +236,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @access public
    *
    */
-  static
-  function &links($context = NULL, $contextMenu = NULL, $key = NULL) {
+  static function &links() {
+    list($context, $contextMenu, $key) = func_get_args();
     $extraParams = ($key) ? "&key={$key}" : NULL;
     $searchContext = ($context) ? "&context=$context" : NULL;
 
@@ -379,7 +377,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           ),
         );
 
-        $locationTypes = CRM_Core_PseudoConstant::locationType();
+        $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
         foreach ($this->_fields as $name => $field) {
           if (CRM_Utils_Array::value('in_selector', $field) &&
@@ -451,22 +449,17 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         }
 
         if (strpos($prop, '-')) {
-          //list($loc, $fld, $phoneType) = explode('-', $prop);
-          list($loc, $fld, $phoneType) = CRM_Utils_System::explode('-', $prop, 3);//NYSS 5518
+          list($loc, $fld, $phoneType) = CRM_Utils_System::explode('-', $prop, 3);
           $title = $this->_query->_fields[$fld]['title'];
           if (trim($phoneType) && !is_numeric($phoneType) && strtolower($phoneType) != $fld) {
             $title .= "-{$phoneType}";
           }
           $title .= " ($loc)";
         }
-        else {
-          //NYSS 5518
-          //$title = $this->_query->_fields[$prop]['title'];
-          if (isset($this->_query->_fields[$prop])) {
-            $title = $this->_query->_fields[$prop]['title'];
-          } else {
-            $title = '';
-          }
+        elseif (isset($this->_query->_fields[$prop]) && isset($this->_query->_fields[$prop]['title'])) {
+          $title = $this->_query->_fields[$prop]['title'];
+        } else {
+          $title = '';
         }
 
         self::$_columnHeaders[] = array('name' => $title, 'sort' => $prop);
@@ -498,8 +491,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    * @access public
    */
   function getTotalCount($action) {
-    //NYSS 6723
-    //return $this->_query->searchQuery(0, 0, NULL, TRUE);
     // Use count from cache during paging/sorting
     if (!empty($_GET['crmPID']) || !empty($_GET['crmSID'])) {
       $count = CRM_Core_BAO_Cache::getItem('Search Results Count', $this->_key);
@@ -539,8 +530,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // note the formvalues were given by CRM_Contact_Form_Search to us
     // and contain the search criteria (parameters)
     // note that the default action is basic
-    //NYSS 6723
-    //$result = $this->_query->searchQuery($offset, $rowCount, $sort, FALSE, $includeContactIds);
     if ($rowCount) {
       $cacheKey = $this->buildPrevNextCache($sort);
       $result = $this->_query->getCachedContacts($cacheKey, $offset, $rowCount, $includeContactIds);
@@ -565,12 +554,13 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     }
 
     if ($this->_ufGroupID) {
-      $locationTypes = CRM_Core_PseudoConstant::locationType();
+      $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
       $names = array();
       static $skipFields = array('group', 'tag');
       foreach ($this->_fields as $key => $field) {
-        if (CRM_Utils_Array::value('in_selector', $field) &&
+        if (
+          CRM_Utils_Array::value('in_selector', $field) &&
           !in_array($key, $skipFields)
         ) {
           if (strpos($key, '-') !== FALSE) {
@@ -615,33 +605,26 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       $names = self::$_properties;
     }
 
-    //hack for student data (checkboxs)
     $multipleSelectFields = array('preferred_communication_method' => 1);
-    if (CRM_Core_Permission::access('Quest')) {
-      $multipleSelectFields = CRM_Quest_BAO_Student::$multipleSelectFields;
-    }
 
     $links = self::links($this->_context, $this->_contextMenu, $this->_key);
 
     //check explicitly added contact to a Smart Group.
     $groupID = CRM_Utils_Array::key('1', $this->_formValues['group']);
 
+    $pseudoconstants = array();
     // for CRM-3157 purposes
-    if (in_array('country', $names)) {
-      $countries = CRM_Core_PseudoConstant::country();
-    }
-
-    if (in_array('state_province', $names)) {
-      $provinces = CRM_Core_PseudoConstant::stateProvince();
-    }
-
     if (in_array('world_region', $names)) {
-      $regions = CRM_Core_PseudoConstant::worldRegion();
+      $pseudoconstants['world_region'] = array(
+        'dbName' => 'world_region_id',
+        'values' => CRM_Core_PseudoConstant::worldRegion()
+      );
     }
 
     $seenIDs = array();
     while ($result->fetch()) {
       $row = array();
+      $this->_query->convertToPseudoNames($result);
 
       // the columns we are interested in
       foreach ($names as $property) {
@@ -649,50 +632,28 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           continue;
         }
         if ($cfID = CRM_Core_BAO_CustomField::getKeyID($property)) {
-          $row[$property] = CRM_Core_BAO_CustomField::getDisplayValue($result->$property,
+          $row[$property] = CRM_Core_BAO_CustomField::getDisplayValue(
+            $result->$property,
             $cfID,
             $this->_options,
             $result->contact_id
           );
         }
-        elseif ($multipleSelectFields &&
+        elseif (
+          $multipleSelectFields &&
           array_key_exists($property, $multipleSelectFields)
         ) {
-          //fix to display student checkboxes
           $key = $property;
           $paramsNew = array($key => $result->$property);
+          $name = array($key => array('newName' => $key, 'groupName' => $key));
 
-          if ($key == 'test_tutoring') {
-            $name = array($key => array('newName' => $key, 'groupName' => 'test'));
-            // for  readers group
-          }
-          elseif (substr($key, 0, 4) == 'cmr_') {
-            $name = array($key => array('newName' => $key, 'groupName' => substr($key, 0, -3)));
-          }
-          else {
-            $name = array($key => array('newName' => $key, 'groupName' => $key));
-          }
           CRM_Core_OptionGroup::lookupValues($paramsNew, $name, FALSE);
           $row[$key] = $paramsNew[$key];
-        }
-        elseif (isset($tmfFields) && $tmfFields && array_key_exists($property, $tmfFields)
-          || substr($property, 0, 12) == 'participant_'
-        ) {
-          if (substr($property, -3) == '_id') {
-            $key       = substr($property, 0, -3);
-            $paramsNew = array($key => $result->$property);
-            $name      = array($key => array('newName' => $key, 'groupName' => $key));
-            CRM_Core_OptionGroup::lookupValues($paramsNew, $name, FALSE);
-            $row[$key] = $paramsNew[$key];
-          }
-          else {
-            $row[$property] = $result->$property;
-          }
         }
         elseif (strpos($property, '-im')) {
           $row[$property] = $result->$property;
           if (!empty($result->$property)) {
-            $imProviders    = CRM_Core_PseudoConstant::IMProvider();
+            $imProviders    = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
             $providerId     = $property . "-provider_id";
             $providerName   = $imProviders[$result->$providerId];
             $row[$property] = $result->$property . " ({$providerName})";
@@ -703,22 +664,22 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           $greeting = $property . '_display';
           $row[$property] = $result->$greeting;
         }
-        elseif ($property == 'country') {
-          $row[$property] = CRM_Utils_Array::value($result->country_id, $countries);
-        }
         elseif ($property == 'state_province') {
-          $row[$property] = CRM_Utils_Array::value($result->state_province_id, $provinces);
+          $row[$property] = $result->state_province_name;
         }
-        elseif ($property == 'world_region') {
-          //$row[$property] = $regions[$result->world_region_id];
-          $row[$property] = CRM_Utils_Array::value($result->worldregion_id, $regions);//NYSS 5518
+        elseif (isset($pseudoconstants[$property])) {
+          $row[$property] = CRM_Utils_Array::value(
+            $result->{$pseudoconstants[$property]['dbName']},
+            $pseudoconstants[$property]['values']
+          );
         }
         elseif (strpos($property, '-url') !== FALSE) {
           $websiteUrl = '';
           $websiteKey = 'website-1';
-          $websiteFld = $websiteKey . '-' . array_pop(explode('-', $property));
+          $propertyArray = explode('-', $property);
+          $websiteFld = $websiteKey . '-' . array_pop($propertyArray);
           if (!empty($result->$websiteFld)) {
-            $websiteTypes = CRM_Core_PseudoConstant::websiteType();
+            $websiteTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
             $websiteType  = $websiteTypes[$result->{"$websiteKey-website_type_id"}];
             $websiteValue = $result->$websiteFld;
             $websiteUrl   = "<a href=\"{$websiteValue}\">{$websiteValue}  ({$websiteType})</a>";
@@ -818,8 +779,9 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
           $result->contact_id
         );
 
-        $row['contact_type_orig'] = $result->contact_type;
-        $row['contact_sub_type'] = $result->contact_sub_type;
+        $row['contact_type_orig'] = $result->contact_sub_type ? $result->contact_sub_type : $result->contact_type;
+        $row['contact_sub_type']  = $result->contact_sub_type ?
+          CRM_Contact_BAO_ContactType::contactTypePairs(FALSE, $result->contact_sub_type, ', ') : $result->contact_sub_type;
         $row['contact_id'] = $result->contact_id;
         $row['sort_name'] = $result->sort_name;
         if (array_key_exists('id', $row)) {
@@ -834,28 +796,19 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       }
     }
 
-    //NYSS 6723
-    //$this->buildPrevNextCache($sort);
-
     return $rows;
   }
 
   function buildPrevNextCache($sort) {
-    //NYSS 6723
-    //$cacheKey = CRM_Utils_Array::value('qfKey', $this->_formValues);
     $cacheKey = 'civicrm search ' . $this->_key;
 
     // Get current page requested
-    //NYSS temporarily explicitly ref REQUEST (default in 4.4)
-    $pageNum = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject, FALSE, NULL, 'REQUEST');
+    $pageNum = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
     // When starting from scratch, clear any old cache
     if (!$pageNum) {
       CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
       $pageNum = 1;
     }
-
-    //for prev/next pagination
-    //$crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer', CRM_Core_DAO::$_nullObject);
 
     $pageSize = CRM_Utils_Request::retrieve('crmRowCount', 'Integer', CRM_Core_DAO::$_nullObject, FALSE, 50);
     $firstRecord = ($pageNum - 1) * $pageSize;
@@ -864,22 +817,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     $sortByCharacter = CRM_Utils_Request::retrieve('sortByCharacter', 'String', CRM_Core_DAO::$_nullObject);
 
     //for text field pagination selection save
-    //$countRow = CRM_Core_BAO_PrevNextCache::getCount("%civicrm search {$cacheKey}%", NULL, "entity_table = 'civicrm_contact'", "LIKE");
     $countRow = CRM_Core_BAO_PrevNextCache::getCount($cacheKey, NULL, "entity_table = 'civicrm_contact'");
 
-    /*if (!$crmPID && $countRow == 0 && !$sortByCharacter) {
-      $this->fillupPrevNextCache($sort);
-    }
-    elseif ($sortByCharacter) {
-      $cacheKeyCharacter = "civicrm search {$cacheKey}_alphabet";
-      if ($sortByCharacter == 'all') {
-        //delete the alphabet key corresponding records in prevnext_cache
-        CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKeyCharacter, 'civicrm_contact');
-      }
-      else {
-        $this->fillupPrevNextCache($sort, $cacheKeyCharacter);
-      }
-    }*/
     // $sortByCharacter triggers a refresh in the prevNext cache
     if ($sortByCharacter && $sortByCharacter != 'all') {
       $cacheKey .= "_alphabet";
@@ -951,16 +890,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       // allow components to add more actions
       CRM_Core_Component::searchAction($row, $row['contact_id']);
 
-      $contactType = null;
-      if ( CRM_Utils_Array::value('contact_sub_type', $row) ) {
-        $contactType = $row['contact_sub_type'];
-      }
-      elseif ( CRM_Utils_Array::value('contact_type_orig', $row) ) {
-        $contactType = $row['contact_type_orig'];
-      }
-      
-      if ( $contactType ) { 
-        $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($contactType,
+      if (!empty($row['contact_type_orig'])) {
+        $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($row['contact_type_orig'],
           FALSE, $row['contact_id']);
       }
       //NYSS 5055/4899 - this is used for temporary purposes and should now be removed
@@ -975,16 +906,14 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     }
   }
 
-  //NYSS 6723
-  //function fillupPrevNextCache($sort, $cacheKey = NULL) {
+  /**
+   * @param object $sort
+   * @param string $cacheKey
+   * @param int $start
+   * @param int $end
+   */
   function fillupPrevNextCache($sort, $cacheKey, $start = 0, $end = 500) {
-    //if (!$cacheKey) {
-      //$cacheKey = "civicrm search {$this->_key}";
-    //}
 
-    //CRM_Core_BAO_PrevNextCache::deleteItem(NULL, $cacheKey, 'civicrm_contact');
-
-    //NYSS 6723
     // For custom searches, use the contactIDs method
     if (is_a($this, 'CRM_Contact_Selector_Custom')) {
       $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);
@@ -1000,11 +929,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
       $replaceSQL = "SELECT contact_a.id as id";
     }
 
-    // lets fill up the prev next cache here, so view can scroll thru
-    /*$sql = $this->_query->searchQuery(0, 0, $sort,
-      FALSE, FALSE,
-      FALSE, TRUE, TRUE, NULL
-    );*/
     // CRM-9096
     // due to limitations in our search query writer, the above query does not work
     // in cases where the query is being sorted on a non-contact table
@@ -1018,8 +942,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 INSERT INTO civicrm_prevnext_cache ( entity_table, entity_id1, entity_id2, cacheKey, data )
 SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.display_name
 ";
-    /*$replaceSQL = "SELECT contact_a.id as id";*/
-
 
     $sql = str_replace($replaceSQL, $insertSQL, $sql);
 
@@ -1174,6 +1096,16 @@ SELECT 'civicrm_contact', contact_a.id, contact_a.id, '$cacheKey', contact_a.dis
     $properties = array();
     foreach ($returnProperties as $name => $value) {
       if ($name != 'location') {
+        // special handling for group and tag
+        if (in_array($name, array('group', 'tag'))) {
+          $name = "{$name}s";
+        }
+
+        // special handling for notes
+        if (in_array($name, array('note', 'note_subject', 'note_body'))) {
+          $name = "notes";
+        }
+
         $properties[] = $name;
       }
       else {

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -53,7 +53,7 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
         $crmPID  = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
       }
 
-      $this->assign( 'instanceUrl', CRM_Utils_System::url( "civicrm/report/instance/{$loggingReport}", "reset=1&force=1&snippet=4&section=2&altered_contact_id_op=eq&altered_contact_id_value={$this->_contactId}&cid={$this->_contactId}{$crmPID}{$context}", FALSE, NULL, FALSE ) );
+      $this->assign('instanceUrl', CRM_Utils_System::url( "civicrm/report/instance/{$loggingReport}", "reset=1&force=1&snippet=4&section=2&altered_contact_id_op=eq&altered_contact_id_value={$this->_contactId}&cid={$this->_contactId}{$crmPID}{$context}", FALSE, NULL, FALSE ) );
       return;
     }
 
