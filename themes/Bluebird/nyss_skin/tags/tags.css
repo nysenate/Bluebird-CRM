@@ -575,12 +575,14 @@
         position: static; }
         #JSTree-container.BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB input, #BBTreeContainer .BBTree.hasSlideBox.radio .tagContainer .fCB input {
           margin-top: 2px; }
-    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer {
+    #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio), #BBTreeContainer .BBTree.hasSlideBox:not(.radio) {
       position: relative; }
-      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover {
-        background-color: transparent; }
-        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB {
-          display: none; }
+      #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer {
+        position: relative; }
+        #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover {
+          background-color: transparent; }
+          #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB {
+            display: none; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
     font-style: italic;

@@ -79,6 +79,7 @@
     }
   }
   &.hasSlideBox:not(.radio) {
+    position:relative;
     .tagContainer {
       position:relative;
       dt:hover {
