@@ -694,7 +694,7 @@ class View
       removeTag = () ->
         _removeTag = entity.removeTag(tagId)
         if a.onSave
-          doAction.apply(null,[i,"remove"])
+          doAction.apply(null,["remove"])
         else
           _removeTag.done((i) =>
             doAction.apply(null,[i,"remove"])
@@ -703,8 +703,9 @@ class View
       addTag = () ->
         a.addTagsToHolder(cjDT.data("tagid"))
         _addTag = entity.addTag(tagId)
+
         if a.onSave
-          doAction.apply(null,[i,"add"])
+          doAction.apply(null,["add"])
         else
           _addTag.done((i) =>
             doAction.apply(null,[i,"add"])
