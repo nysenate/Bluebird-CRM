@@ -3810,7 +3810,7 @@
       var html,
         _this = this;
       html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>                " + name + "             </div>           ";
-      cjLocation.append(html);
+      cjLocation.prepend(html);
       cjLocation.find(".token-" + id).on("click", function() {
         cb.call(_this);
         return cjLocation.find(".token-" + id).remove();

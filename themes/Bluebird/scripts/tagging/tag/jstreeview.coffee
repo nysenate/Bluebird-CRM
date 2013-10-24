@@ -2397,7 +2397,7 @@ class Token
                 #{name}
              </div>
            "
-    cjLocation.append(html)
+    cjLocation.prepend(html)
     cjLocation.find(".token-#{id}").on "click", =>
       cb.call(@)
       cjLocation.find(".token-#{id}").remove()
