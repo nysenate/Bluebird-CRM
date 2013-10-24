@@ -253,19 +253,19 @@ class CRM_Activity_BAO_Query {
           //NYSS 5009 TODO - if created by field has comma, reconstruct to search multiple values
           /*if ($values[2] == 1 &&
             strpos( $name, ',') !== false ) {
-              $aValues  = explode( ',', $name );
-          foreach ( $aValues as $aVal ) {
-            $aVal = trim($aVal);
-            if ( !empty($aVal) ) {
-              $aValArray[] = "contact_activity_source.sort_name LIKE '%{$aVal}%'";
+            $aValues  = explode( ',', $name );
+            foreach ( $aValues as $aVal ) {
+              $aVal = trim($aVal);
+              if ( !empty($aVal) ) {
+                $aValArray[] = "contact_activity_source.sort_name LIKE '%{$aVal}%'";
+              }
             }
+            $aString = implode( ' OR ', $aValArray );
+            $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND ( $aString )";
+            //CRM_Core_Error::debug_var('$query->_where[$grouping]', $query->_where[$grouping]);
           }
-          $aString = implode( ' OR ', $aValArray );
-          $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND ( $aString )";
-          //CRM_Core_Error::debug_var('$query->_where[$grouping]', $query->_where[$grouping]);
-        }
-        else {
-          $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND contact_activity_source.sort_name LIKE '%{$name}%'";
+          else {
+            $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND contact_activity_source.sort_name LIKE '%{$name}%'";
           }*/
         }
         break;
