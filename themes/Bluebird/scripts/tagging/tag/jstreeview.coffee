@@ -134,7 +134,7 @@ class View
     cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
     killToken = =>
       cjDT.find("input.checkbox").prop("checked",false).trigger("change")
-    name = cjDT.data("name")
+    name = cj.trim(cjDT.data("name"))
     type = cjDT.data("tree")
     # @cj_tokenHolder.body
     token = new Token(@cj_tokenHolder.body)
@@ -2407,10 +2407,7 @@ class Token
 
   create:(cjLocation,name,type,id,cb) ->
     # console.log "create"
-    html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>
-                #{name}
-             </div>
-           "
+    html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>#{name}</div> "
     cjLocation.prepend(html)
     cjLocation.find(".token-#{id}").on "click", =>
       cb.call(@)
