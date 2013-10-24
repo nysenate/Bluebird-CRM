@@ -750,7 +750,7 @@
       killToken = function() {
         return cjDT.find("input.checkbox").prop("checked", false).trigger("change");
       };
-      name = cjDT.data("name");
+      name = cj.trim(cjDT.data("name"));
       type = cjDT.data("tree");
       token = new Token(this.cj_tokenHolder.body);
       return token.create(this.cj_tokenHolder.body, name, type, id, killToken);
@@ -3813,7 +3813,7 @@
     Token.prototype.create = function(cjLocation, name, type, id, cb) {
       var html,
         _this = this;
-      html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>                " + name + "             </div>           ";
+      html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>" + name + "</div> ";
       cjLocation.prepend(html);
       cjLocation.find(".token-" + id).on("click", function() {
         cb.call(_this);
