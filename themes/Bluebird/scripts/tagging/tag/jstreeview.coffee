@@ -846,37 +846,45 @@ class Action
   createSlide: (cb) ->
     # remove the ability to swap tabs
     resize = new Resize
-    if resize.height > 190
-      @view.cj_selectors.tagBox.addClass("hasSlideBox")
-      @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
-      @bottom = false
-      # memoize this
-      @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
-      @cj_slideBox.css("right","#{@findGutterSpace()}px")
-      if @view.settings.wide then slideWidth = '40%' else sideWidth = '60%'
+    # if resize.height > 190
+    #   @view.cj_selectors.tagBox.addClass("hasSlideBox")
+    #   @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
+    #   @bottom = false
+    #   # memoize this
+    #   @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
+    #   @cj_slideBox.css("right","#{@findGutterSpace()}px")
+    #   if @view.settings.wide then slideWidth = '40%' else sideWidth = '60%'
 
-      @cj_slideBox.animate({width:slideWidth}, 500, =>
-        @cj_slideBox.append(@slideHtml)
-        @setCancel()
-        cb()
-      )
+    #   @cj_slideBox.animate({width:slideWidth}, 500, =>
+    #     @cj_slideBox.append(@slideHtml)
+    #     @setCancel()
+    #     cb()
+    #   )
+    # else
+    @bottom = true
+    @view.cj_selectors.tagBox.addClass("hasSlideBox")
+    containerPosition = @view.cj_selectors.container.offset()
+    menuHeight = @view.cj_menuSelectors.menu.height()
+    cjActiveTagBox = @view.cj_selectors.tagBox.find(".tagContainer.active")
+    activeTreeId = cjActiveTagBox.data("treeid")
+    @view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-#{activeTreeId}'></div></div>")
+    @cj_slideBoxContainer = cj(".JSTree-slideBox")
+    if @view.cj_selectors.tagBox.hasClass("dropdown")
+      leftPos = containerPosition.left
     else
-      @bottom = true
-      @view.cj_selectors.tagBox.addClass("hasSlideBox")
-      containerPosition = @view.cj_selectors.container.offset()
-      menuHeight = @view.cj_menuSelectors.menu.height()
-      activeTreeId = @view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid")
-      @view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-#{activeTreeId}'></div></div>")
-      @cj_slideBoxContainer = cj(".JSTree-slideBox")
-      @cj_slideBoxContainer.css("top","#{containerPosition.top+menuHeight}px").css("left","#{containerPosition.left}px")
-      @cj_slideBox = @cj_slideBoxContainer.find(".slideBox")
-      @cj_slideBox.css("top","0px")
-      console.log @cj_slideBox
-      @cj_slideBox.animate({height:"210px"}, 500, =>
-        @cj_slideBox.append(@slideHtml)
-        @setCancel()
-        cb()
-      )
+      leftPos = containerPosition.left - @findGutterSpace()
+    @cj_slideBoxContainer.css("top","#{containerPosition.top+menuHeight}px").css("left","#{leftPos}px")
+    @cj_slideBox = @cj_slideBoxContainer.find(".slideBox")
+    @cj_slideBox.css("top","0px")
+    if resize.height < 210
+      slideHeight = 210
+    else
+      slideHeight = resize.height
+    @cj_slideBox.animate({height:"#{slideHeight}px"}, 500, =>
+      @cj_slideBox.append(@slideHtml)
+      @setCancel()
+      cb()
+    )
   setCancel:() ->
     @cj_slideBox.find(".label.cancel").off "click"
     @cj_slideBox.find(".label.cancel").on "click", =>

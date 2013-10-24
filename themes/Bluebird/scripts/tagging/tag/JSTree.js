@@ -1698,47 +1698,37 @@
     }
 
     Action.prototype.createSlide = function(cb) {
-      var activeTreeId, containerPosition, menuHeight, resize, sideWidth, slideWidth,
+      var activeTreeId, cjActiveTagBox, containerPosition, leftPos, menuHeight, resize, slideHeight,
         _this = this;
       resize = new Resize;
-      if (resize.height > 190) {
-        this.view.cj_selectors.tagBox.addClass("hasSlideBox");
-        this.view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>");
-        this.bottom = false;
-        this.cj_slideBox = this.view.cj_selectors.tagBox.find(".slideBox");
-        this.cj_slideBox.css("right", "" + (this.findGutterSpace()) + "px");
-        if (this.view.settings.wide) {
-          slideWidth = '40%';
-        } else {
-          sideWidth = '60%';
-        }
-        return this.cj_slideBox.animate({
-          width: slideWidth
-        }, 500, function() {
-          _this.cj_slideBox.append(_this.slideHtml);
-          _this.setCancel();
-          return cb();
-        });
+      this.bottom = true;
+      this.view.cj_selectors.tagBox.addClass("hasSlideBox");
+      containerPosition = this.view.cj_selectors.container.offset();
+      menuHeight = this.view.cj_menuSelectors.menu.height();
+      cjActiveTagBox = this.view.cj_selectors.tagBox.find(".tagContainer.active");
+      activeTreeId = cjActiveTagBox.data("treeid");
+      this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
+      this.cj_slideBoxContainer = cj(".JSTree-slideBox");
+      if (this.view.cj_selectors.tagBox.hasClass("dropdown")) {
+        leftPos = containerPosition.left;
       } else {
-        this.bottom = true;
-        this.view.cj_selectors.tagBox.addClass("hasSlideBox");
-        containerPosition = this.view.cj_selectors.container.offset();
-        menuHeight = this.view.cj_menuSelectors.menu.height();
-        activeTreeId = this.view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid");
-        this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
-        this.cj_slideBoxContainer = cj(".JSTree-slideBox");
-        this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + containerPosition.left + "px");
-        this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
-        this.cj_slideBox.css("top", "0px");
-        console.log(this.cj_slideBox);
-        return this.cj_slideBox.animate({
-          height: "210px"
-        }, 500, function() {
-          _this.cj_slideBox.append(_this.slideHtml);
-          _this.setCancel();
-          return cb();
-        });
+        leftPos = containerPosition.left - this.findGutterSpace();
       }
+      this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + leftPos + "px");
+      this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
+      this.cj_slideBox.css("top", "0px");
+      if (resize.height < 210) {
+        slideHeight = 210;
+      } else {
+        slideHeight = resize.height;
+      }
+      return this.cj_slideBox.animate({
+        height: "" + slideHeight + "px"
+      }, 500, function() {
+        _this.cj_slideBox.append(_this.slideHtml);
+        _this.setCancel();
+        return cb();
+      });
     };
 
     Action.prototype.setCancel = function() {
