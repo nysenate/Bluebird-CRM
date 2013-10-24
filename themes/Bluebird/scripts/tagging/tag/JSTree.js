@@ -738,7 +738,7 @@
       } else {
         this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
         return this.cj_tokenHolder.body.animate({
-	  height: "50px"
+          height: "50px"
         }, 500, function() {});
       }
     };
@@ -1505,26 +1505,26 @@
           var _removeTag,
             _this = this;
           _removeTag = entity.removeTag(tagId);
-	  if (a.onSave) {
-            return doAction.apply(null, [i, "remove"]);
-	  } else {
-	    return _removeTag.done(function(i) {
-	      return doAction.apply(null, [i, "remove"]);
-	    });
-	  }
+          if (a.onSave) {
+            return doAction.apply(null, ["remove"]);
+          } else {
+            return _removeTag.done(function(i) {
+              return doAction.apply(null, [i, "remove"]);
+            });
+          }
         };
         addTag = function() {
           var _addTag,
             _this = this;
           a.addTagsToHolder(cjDT.data("tagid"));
           _addTag = entity.addTag(tagId);
-	  if (a.onSave) {
-            return doAction.apply(null, [i, "add"]);
-	  } else {
-	    return _addTag.done(function(i) {
-	      return doAction.apply(null, [i, "add"]);
-	    });
-	  }
+          if (a.onSave) {
+            return doAction.apply(null, ["add"]);
+          } else {
+            return _addTag.done(function(i) {
+              return doAction.apply(null, [i, "add"]);
+            });
+          }
         };
         doAction = function(res, typeOfAction) {
           action["action"] = typeOfAction;
