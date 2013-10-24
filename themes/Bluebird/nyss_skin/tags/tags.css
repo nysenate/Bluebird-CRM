@@ -583,6 +583,8 @@
           background-color: transparent; }
           #JSTree-container.BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB, #BBTreeContainer .BBTree.hasSlideBox:not(.radio) .tagContainer dt:hover .fCB {
             display: none; }
+    #JSTree-container.BBTreeContainer .BBTree .hideCheckbox .fCB, #BBTreeContainer .BBTree .hideCheckbox .fCB {
+      display: none; }
   #JSTree-container.BBTreeContainer .top-292 .position-box-text-reminder, #BBTreeContainer .top-292 .position-box-text-reminder {
     text-align: center;
     font-style: italic;

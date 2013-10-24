@@ -1762,7 +1762,11 @@
         if (_this.cj_slideBoxContainer != null) {
           _this.cj_slideBoxContainer.remove();
         }
-        return buttons = new Buttons(_this.view);
+        if (_this.view.cj_selectors.tagBox.find(".tagContainer.active").hasClass("hideCheckbox")) {
+          return _this.view.cj_selectors.tagBox.find(".tagContainer.active").removeClass("hideCheckbox");
+        } else {
+          return buttons = new Buttons(_this.view);
+        }
       });
     };
 
@@ -1785,8 +1789,6 @@
       this.ajax.addTag.data.description = cjDT.find(".tag .description").text();
       this.ajax.addTag.data.parent_id = "292";
       this.ajax.addTag.data.is_reserved = true;
-      console.log(this.ajax.addTag);
-      console.log(tagId);
       _ref = this.instance.positionList;
       for (k in _ref) {
         v = _ref[k];
@@ -1851,6 +1853,7 @@
       }
       this.slideHtml = this.gatherQuickLabelHTML();
       this.setRequiredFields("addTag");
+      this.view.cj_selectors.tagBox.find(".tagContainer.active").addClass("hideCheckbox");
       return this.createSlide(function() {
         var doSubmit;
         _this.view.toggleSettingsAdd("add");
@@ -1865,20 +1868,9 @@
               _this.ajax.addTag.data.description = data.fields.description;
               _this.ajax.addTag.data.is_reserved = data.fields.isReserved;
               _this.ajax.addTag.data.parent_id = data.tagId;
-              _this.convertSubmitToLoading();
-              return _this.tagAjax(data.tagId, "addTag", void 0, function(message) {
-                if (message === "DB Error: already exists") {
-                  _this.revertSubmitFromLoading();
-                  _this.markErrors({
-                    tagName: "Tag " + data.fields.tagName + " already exists."
-                  });
-                  return doSubmit.call(_this);
-                } else {
-                  _this.addEntityToTree(data.tagId, message);
-                  _this.revertSubmitFromLoading();
-                  return _this.destroySlideBox();
-                }
-              });
+              console.log(data);
+              console.log(_this.ajax.addTag);
+              return _this.convertSubmitToLoading();
             }
           });
         };
@@ -2320,10 +2312,13 @@
       cj.each(cjFields, function(i, el) {
         var cjEl;
         cjEl = cj(el);
-        if (cjEl.attr("type").toLowerCase() === "checkbox") {
-          return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
-        } else {
-          return data.fields[cjEl.attr("name")] = cjEl.val();
+        switch (cjEl.attr("type").toLowerCase()) {
+          case "checkbox":
+            return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
+          case "radio":
+            return data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[", "").replace("]", "");
+          default:
+            return data.fields[cjEl.attr("name")] = cjEl.val();
         }
       });
       return this.validateValues(data);
@@ -2411,7 +2406,7 @@
       for (k in _ref) {
         v = _ref[k];
         cjEl = this.cj_slideBox.find("input[name='" + k + "']");
-        if (cjEl.attr("name").toLowerCase() === "checkbox") {
+        if (cjEl.attr("type").toLowerCase() === "checkbox") {
           continue;
         }
         _ref1 = this.requiredValidation;
