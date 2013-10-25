@@ -316,39 +316,53 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $sql .= " WHERE c.is_deceased = 0 AND c.is_deleted = 0 AND c.do_not_mail = 0 AND c.do_not_trade = 0 ";
 
     //exclude empty last name, empty org name (if org type), and empty address
-    $sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
-    $sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
-    $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
+    $sql .= " AND (
+      (c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '') OR
+      (c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '') OR
+      (c.contact_type != 'Individual')
+    ) ";
+    $sql .= " AND (
+      (c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '') OR
+      (c.contact_type != 'Organization')
+    ) ";
+    $sql .= " AND (
+      (a.street_address IS NOT NULL AND a.street_address != '') OR
+      (a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '')
+    ) ";
 
     //exclude impossibly old contacts
-    $sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
+    $sql .= " AND (
+      c.birth_date IS NULL OR
+      c.birth_date = '' OR
+      c.birth_date > '1901-01-01'
+    ) ";
 
     //exclude mailing exclusion group
     $sql .= " AND ( cgc.id IS NULL ) ";
 
     //exclude RTs
     if ( $exclude_rt != null ) {
-      $sql .= "
-        AND ( cvci.record_type_61 IS NULL OR
-              cvci.record_type_61 NOT IN ($exclude_rt) OR
-              ( cvci.record_type_61 IN ($exclude_rt) AND t.id IN ($localSeedsList) )
-             )";
+      $sql .= " AND (
+        cvci.record_type_61 IS NULL OR
+        cvci.record_type_61 NOT IN ($exclude_rt) OR
+        (cvci.record_type_61 IN ($exclude_rt) AND t.id IN ($localSeedsList))
+      )";
     }
 
     //restrict by district ID
     if ( $restrictDistrict != null ) {
-      $sql .= "
-        AND ( di.ny_senate_district_47 = $restrictDistrict OR
-              ( di.ny_senate_district_47 != $restrictDistrict AND t.id IN ($localSeedsList) )
-             )";
+      $sql .= " AND (
+        di.ny_senate_district_47 = $restrictDistrict OR
+        (di.ny_senate_district_47 != $restrictDistrict AND t.id IN ($localSeedsList))
+      )";
     }
 
     //restrict by state
     if ( !empty($restrictState) ) {
-      $sql .= "
-        AND ( a.state_province_id = $restrictState OR
-              ( a.state_province_id != $restrictState AND t.id IN ($localSeedsList) )
-             )";
+      $sql .= " AND (
+        a.state_province_id = $restrictState OR
+        (a.state_province_id != $restrictState AND t.id IN ($localSeedsList))
+      )";
     }
 
     //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
