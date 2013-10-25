@@ -110,7 +110,7 @@ task 'sbuild', 'Build all Coffee files', ->
             throw err if err
             console.log 'Removed Residual app.coffee file.'
       fs.existsSync "#{path}/#{tempName}.coffee", (exists) ->
-	if exists then console.log('still exists')
+        if exists then console.log('still exists')            
       for file, index in files then do (files, index) ->
         if fspath.extname(file) is ".coffee"
           filesToRead.push(file)
@@ -129,7 +129,7 @@ task 'sbuild', 'Build all Coffee files', ->
               throw err if err
             if err
               console.log "errored?"
-	    fs.rename "#{path}/#{tempName}.js", "#{path}/#{outputName}.js"
+            fs.rename "#{path}/#{tempName}.js", "#{path}/#{outputName}.js" 
             # console.log stdout + stderr
             console.log "wrote #{path}/#{outputName}.js"
             time = new Date()
