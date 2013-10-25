@@ -1698,15 +1698,14 @@
     }
 
     Action.prototype.createSlide = function(cb) {
-      var activeTreeId, cjActiveTagBox, containerPosition, leftPos, menuHeight, resize, slideHeight,
+      var activeTreeId, containerPosition, leftPos, menuHeight, resize, slideHeight,
         _this = this;
       resize = new Resize;
       this.bottom = true;
       this.view.cj_selectors.tagBox.addClass("hasSlideBox");
       containerPosition = this.view.cj_selectors.container.offset();
       menuHeight = this.view.cj_menuSelectors.menu.height();
-      cjActiveTagBox = this.view.cj_selectors.tagBox.find(".tagContainer.active");
-      activeTreeId = cjActiveTagBox.data("treeid");
+      activeTreeId = this.view.getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g, "")));
       this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
       this.cj_slideBoxContainer = cj(".JSTree-slideBox");
       if (this.view.cj_selectors.tagBox.hasClass("dropdown")) {
@@ -1717,8 +1716,8 @@
       this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + leftPos + "px");
       this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
       this.cj_slideBox.css("top", "0px");
-      if (resize.height < 210) {
-        slideHeight = 210;
+      if (resize.height < 230) {
+        slideHeight = 230;
       } else {
         slideHeight = resize.height;
       }
@@ -1832,6 +1831,9 @@
       var innerWidth, outerWidth;
       outerWidth = this.view.cj_selectors.tagBox.width();
       innerWidth = this.view.cj_selectors.tagBox.find(".tagContainer.active").width();
+      if (innerWidth == null) {
+        innerWidth = this.view.cj_selectors.tagBox[0].scrollWidth;
+      }
       return outerWidth - innerWidth;
     };
 
@@ -1867,10 +1869,28 @@
               _this.ajax.addTag.data.name = data.fields.tagName;
               _this.ajax.addTag.data.description = data.fields.description;
               _this.ajax.addTag.data.is_reserved = data.fields.isReserved;
-              _this.ajax.addTag.data.parent_id = data.tagId;
-              console.log(data);
-              console.log(_this.ajax.addTag);
-              return _this.convertSubmitToLoading();
+              _this.tagId = data.fields.tag;
+              _this.ajax.addTag.data.parent_id = _this.tagId;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.tagId, "addTag", void 0, function(message) {
+                var button;
+                console.log(message);
+                console.log(message.code);
+                if (message.code != null) {
+                  if (message.message === "DB Error: already exists") {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "Tag " + data.fields.tagName + " already exists."
+                    });
+                    return doSubmit.call(_this);
+                  }
+                } else {
+                  _this.addEntityToTree(_this.tagId, message);
+                  button = new Buttons(_this.view, "dt#tagLabel_" + message.id);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
             }
           });
         };
@@ -2174,7 +2194,7 @@
     };
 
     Action.prototype.addEntityToTree = function(parent, message) {
-      var backout, buttons, cjParent, node, node_parsed;
+      var backout, buttons, cjParent, node, node_parsed, _ref;
       node = {};
       if ((message.created_date != null) && message.created_date.length > 0) {
         node.created_date = _manipTags.createDate(message.created_date);
@@ -2196,9 +2216,15 @@
         node.id = message.id;
       }
       node.children = false;
-      cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
-      node.level = cjParent.data("level") + 1;
-      node.type = ("" + (cjParent.data("tree"))) || "291";
+      if ((_ref = parseInt(parent)) === 291 || _ref === 296 || _ref === 292) {
+        cjParent = this.view.cj_selectors.tagBox.find(".tagContainer.top-" + parent);
+        node.level = 1;
+        node.type = parseInt(parent);
+      } else {
+        cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
+        node.level = cjParent.data("level") + 1;
+        node.type = ("" + (cjParent.data("tree"))) || "291";
+      }
       if (message.is_reserved = "false") {
         node.is_reserved = "0";
       } else {
@@ -2314,7 +2340,10 @@
         cjEl = cj(el);
         switch (cjEl.attr("type").toLowerCase()) {
           case "checkbox":
-            return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
+            if (cjEl.is(":checked")) {
+              return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
+            }
+            break;
           case "radio":
             return data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[", "").replace("]", "");
           default:
@@ -2427,6 +2456,7 @@
 
     Action.prototype.submitButton = function(gather, cb) {
       var _this = this;
+      this.cj_slideBox.find(".label.submit").off("click");
       return this.cj_slideBox.find(".label.submit").on("click", function() {
         if (gather) {
           return cb(_this.gatherValuesFromSlideBox());
@@ -2476,15 +2506,29 @@
       label = new Label;
       html = "";
       html += label.buildLabel("header", "Add Tag", "Add Tag");
+      this.tagName = cj("#JSTree-ac").val();
+      if (this.tagName.length === 0) {
+        this.tagName = "";
+      }
+      if (this.tagName !== "Type in a partial or complete name of an tag or keyword.") {
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      } else {
+        this.tagName = "";
+      }
       _ref = this.fields.addTag;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         field = _ref[_i];
         html += "<div class='elementGroup'>";
         html += label.buildLabel("label", field, field);
-        if (field === "Is Reserved") {
-          html += label.buildLabel("checkBox", field, "");
-        } else {
-          html += label.buildLabel("textBox", field, "");
+        switch (field) {
+          case "Is Reserved":
+            html += label.buildLabel("checkBox", field, "");
+            break;
+          case "Tag Name":
+            html += label.buildLabel("textBox", field, this.tagName);
+            break;
+          default:
+            html += label.buildLabel("textBox", field, "");
         }
         html += "</div>";
       }
@@ -2796,8 +2840,9 @@
 
     Buttons.prototype.createTaggingCheckboxes = function(finder) {
       var a;
+      finder = ("" + finder) || ("" + finder + " dt");
       a = this;
-      this.view.cj_selectors.tagBox.find("" + finder + " dt .tag .name").before(function() {
+      this.view.cj_selectors.tagBox.find("" + finder + " .tag .name").before(function() {
         if (cj(this).siblings(".fCB").length === 0) {
           return a.createButtons(cj(this).parent().parent().data("tagid"));
         }

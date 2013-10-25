@@ -865,8 +865,8 @@ class Action
     @view.cj_selectors.tagBox.addClass("hasSlideBox")
     containerPosition = @view.cj_selectors.container.offset()
     menuHeight = @view.cj_menuSelectors.menu.height()
-    cjActiveTagBox = @view.cj_selectors.tagBox.find(".tagContainer.active")
-    activeTreeId = cjActiveTagBox.data("treeid")
+    # THERE MAY NOT BE ACTIVE TAGS WHEN FILTERED
+    activeTreeId = @view.getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
     @view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-#{activeTreeId}'></div></div>")
     @cj_slideBoxContainer = cj(".JSTree-slideBox")
     if @view.cj_selectors.tagBox.hasClass("dropdown")
@@ -876,8 +876,8 @@ class Action
     @cj_slideBoxContainer.css("top","#{containerPosition.top+menuHeight}px").css("left","#{leftPos}px")
     @cj_slideBox = @cj_slideBoxContainer.find(".slideBox")
     @cj_slideBox.css("top","0px")
-    if resize.height < 210
-      slideHeight = 210
+    if resize.height < 230
+      slideHeight = 230
     else
       slideHeight = resize.height
     @cj_slideBox.animate({height:"#{slideHeight}px"}, 500, =>
@@ -961,6 +961,8 @@ class Action
   findGutterSpace: () ->
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
+    if !innerWidth?
+      innerWidth = @view.cj_selectors.tagBox[0].scrollWidth
     return outerWidth-innerWidth
   # destructive method
   setRequiredFields: (type) ->
@@ -987,21 +989,22 @@ class Action
             @ajax.addTag.data.name = data.fields.tagName
             @ajax.addTag.data.description = data.fields.description
             @ajax.addTag.data.is_reserved = data.fields.isReserved
-            @ajax.addTag.data.parent_id = data.tagId
-            console.log data
-            console.log @ajax.addTag
+            @tagId = data.fields.tag
+            @ajax.addTag.data.parent_id = @tagId
             @convertSubmitToLoading()
             # undefined middle callback for some reason.
-            # @tagAjax(data.tagId, "addTag", undefined, (message) =>
-            #   if message == "DB Error: already exists"
-            #     @revertSubmitFromLoading()
-            #     @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
-            #     doSubmit.call(@)
-            #   else
-            #     @addEntityToTree(data.tagId,message)
-            #     @revertSubmitFromLoading()
-            #     @destroySlideBox()
-            # )
+            @tagAjax(data.tagId, "addTag", undefined, (message) =>
+              if message.code?
+                if message.message == "DB Error: already exists"
+                  @revertSubmitFromLoading()
+                  @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+                  doSubmit.call(@)
+              else
+                @addEntityToTree(@tagId,message)
+                button = new Buttons(@view,"dt#tagLabel_#{message.id}")
+                @revertSubmitFromLoading()
+                @destroySlideBox()
+            )
           )
       doSubmit.call(@)
     )
@@ -1258,9 +1261,14 @@ class Action
     node.parent = node.parent_id = message.parent_id if message.parent_id?
     node.id = message.id if message.id?
     node.children = false
-    cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
-    node.level = cjParent.data("level")+1
-    node.type = "#{cjParent.data("tree")}" || "291"
+    if parseInt(parent) in [291,296,292]
+      cjParent = @view.cj_selectors.tagBox.find(".tagContainer.top-#{parent}")
+      node.level = 1
+      node.type = parseInt(parent)
+    else    
+      cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
+      node.level = cjParent.data("level")+1
+      node.type = "#{cjParent.data("tree")}" || "291"
     if message.is_reserved = "false" then node.is_reserved = "0" else node.is_reserved = "1"
     # get node
     node_parsed = new Node(node)
@@ -1344,7 +1352,8 @@ class Action
       cjEl = cj(el)
       switch cjEl.attr("type").toLowerCase()
         when "checkbox"
-          data.fields[cjEl.attr("name")] = cjEl.prop("checked")
+          if cjEl.is(":checked")
+            data.fields[cjEl.attr("name")] = cjEl.prop("checked")
         when "radio"
           data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[","").replace("]","")
         else
@@ -1419,6 +1428,7 @@ class Action
     data
 
   submitButton: (gather,cb) ->
+    @cj_slideBox.find(".label.submit").off "click"
     @cj_slideBox.find(".label.submit").on "click", =>
       if gather
         cb(@gatherValuesFromSlideBox())
@@ -1452,15 +1462,26 @@ class Action
     label = new Label
     html = ""
     html += label.buildLabel("header","Add Tag","Add Tag")
+    @tagName = cj("#JSTree-ac").val()
+    if @tagName.length == 0
+      @tagName = ""
+    
+    if @tagName != "Type in a partial or complete name of an tag or keyword."
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+    else
+      @tagName = ""
     for field in @fields.addTag
       html += "<div class='elementGroup'>"
       # creates label
       html += label.buildLabel("label",field,field)
       # in update tag, this is important
-      if field is "Is Reserved"
-        html += label.buildLabel("checkBox",field,"")
-      else
-        html += label.buildLabel("textBox",field,"")
+      switch field
+        when "Is Reserved"
+          html += label.buildLabel("checkBox",field,"")
+        when "Tag Name"
+          html += label.buildLabel("textBox",field,@tagName)
+        else
+          html += label.buildLabel("textBox",field,"")
       html += "</div>"
     html += "<div class='typeCheck'>"
     html += label.buildLabel("label","left","Keywords")
@@ -1672,8 +1693,9 @@ class Buttons
   # specifically targeting the tree or div of tagboxes
   # the div is used in positions for the ajax loaded content
   createTaggingCheckboxes: (finder) ->
+    finder = "#{finder}" || "#{finder} dt"
     a = @
-    @view.cj_selectors.tagBox.find("#{finder} dt .tag .name").before( ->
+    @view.cj_selectors.tagBox.find("#{finder} .tag .name").before( ->
       if cj(@).siblings(".fCB").length == 0
         a.createButtons(cj(@).parent().parent().data("tagid"))
     )
