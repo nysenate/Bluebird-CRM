@@ -802,7 +802,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
       elseif ( !empty($l['current_employer']) ) {
         //if display name is empty, we have no indiv name data; if current_employer is set, we can assume org contact
         $l['contact_type'] = 'Organization';
-        $l['display_name'] = $l['sort_name'] = $l['current_employer'];
+        $l['display_name'] = $l['sort_name'] = $l['organization_name'] = $l['current_employer'];
         $l['current_employer'] = '';
       }
     }
