@@ -1874,8 +1874,6 @@
               _this.convertSubmitToLoading();
               return _this.tagAjax(data.tagId, "addTag", void 0, function(message) {
                 var button;
-                console.log(message);
-                console.log(message.code);
                 if (message.code != null) {
                   if (message.message === "DB Error: already exists") {
                     _this.revertSubmitFromLoading();

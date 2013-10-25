@@ -174,8 +174,11 @@ class CRM_Contact_Form_Edit_TagsandGroups {
       }
 
       // build tag widget
-      $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
-            
+      // $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
+      // array(2) { [296]=> string(8) "Keywords" [292]=> string(9) "Positions" }
+      $parentNames[291] = "Issue Codes";
+      $parentNames[296] = "Keywords";
+      $parentNames[292] = "Positions";
       //NYSS #3726 - accommodate additional params
       CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, FALSE, FALSE);
     }
