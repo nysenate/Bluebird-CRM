@@ -375,7 +375,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         parse_str($call_uri['query'],$cid);
         $entityId = $cid['cid'];
-
+        $view_only = false;
         $session = CRM_Core_Session::singleton();
         $userid = $session->get('userID');
 
