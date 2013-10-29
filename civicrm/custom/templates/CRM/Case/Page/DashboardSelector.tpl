@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@
     <th>{ts}Status{/ts}</th>
     <th>{ts}Type{/ts}</th>
     <th>{ts}My Role{/ts}</th>
-    <th>{ts}Case Manager{/ts}</th>      
+    <th>{ts}Case Manager{/ts}</th>
     <th>{if $context eq 'dashboard' && $list eq 'upcoming'}Next/Recent{elseif $list eq 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>{*NYSS*}
 
     <th></th>
@@ -41,19 +41,19 @@
 
   {counter start=0 skip=1 print=false}
   {foreach from=$rows item=row}
- 
+
   <tr id='{$context}-{$list}-rowid-{$row.case_id}' class="crm-case crm-case_{$row.case_id}">
-	<td>
+  <td>
         {* &nbsp;{$row.contact_type_icon}<br /> *}
         <span id="{$context}{$list}{$row.case_id}_show">
-	    <a href="#" onclick="{$context}{$list}CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}'); 
-	       			 showCaseActivities('{$row.case_id}','{$list}', '{$context}');
+      <a href="#" onclick="{$context}{$list}CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}', '{$context}');
+                showCaseActivities('{$row.case_id}','{$list}', '{$context}');
                              return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
-	</span>
-	<span id="minus{$context}{$list}{$row.case_id}_hide">
-	    <a href="#" onclick="hideCaseActivities('{$row.case_id}','{$list}', '{$context}');
+  </span>
+  <span id="minus{$context}{$list}{$row.case_id}_hide">
+      <a href="#" onclick="hideCaseActivities('{$row.case_id}','{$list}', '{$context}');
                              return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
-	</td>
+  </td>
 
     <td class="crm-case-phone"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a>{if $row.phone}<br /><span class="description">{$row.phone}</span>{/if}<br /><span class="description">{ts}Case ID{/ts}: {$row.case_id}</span></td>
     <td class="crm-case-case_subject">{$row.case_subject}</td>
@@ -62,50 +62,31 @@
     <td class="crm-case-case_role">{if $row.case_role}{$row.case_role}{else}---{/if}</td>
     <td class="crm-case-casemanager">{if $row.casemanager_id}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.casemanager_id`"}">{$row.casemanager}</a>{else}---{/if}</td>
     {if $list eq 'upcoming' || $list eq 'all'}{*NYSS*}
-    	 <td class="crm-case-case_scheduled_activity">
-	   {if $row.case_upcoming_activity_viewable}
-	      <a href="javascript:{$list}viewActivity({$row.case_scheduled_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_scheduled_activity_type}</a>
-	   {else}
-	      {if $row.case_scheduled_activity_type}
-             {$row.case_scheduled_activity_type}
-          {elseif $row.case_activity_type}
-             <a href="javascript:{$list}viewActivity({$row.case_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_activity_type}</a>
-          {/if}
-	   {/if}    
-	     &nbsp;&nbsp;
-	   {if $row.case_upcoming_activity_editable}
-	     <a href="{crmURL p="civicrm/case/activity" q="reset=1&cid=`$row.contact_id`&caseid=`$row.case_id`&action=update&id=`$row.case_scheduled_activity_id`"}" title="{ts}Edit this activity.{/ts}"><span class="icon edit-icon"></span></a>
-	   {/if} 
-	   <br />
-       {if $row.case_scheduled_activity_date}
-	      {$row.case_scheduled_activity_date|crmDate}
-       {else}
-          {$row.case_activity_date|crmDate}
-       {/if}
+       <td class="crm-case-case_scheduled_activity">
+     {if $row.case_upcoming_activity_viewable}
+        <a href="#" onclick="{$list}viewActivity({$row.case_scheduled_activity_id}, {$row.contact_id}, '{$list}'); return false;" title="{ts}View this activity.{/ts}">{$row.case_scheduled_activity_type}</a>
+     {else}
+        {$row.case_scheduled_activity_type}
+     {/if}
+       &nbsp;&nbsp;
+     {if $row.case_upcoming_activity_editable}
+       <a href="{crmURL p="civicrm/case/activity" q="reset=1&cid=`$row.contact_id`&caseid=`$row.case_id`&action=update&id=`$row.case_scheduled_activity_id`"}" title="{ts}Edit this activity.{/ts}"><span class="icon edit-icon"></span></a>
+     {/if}
+     <br />
+     {$row.case_scheduled_activity_date|crmDate}
          </td>
-        
+
     {elseif $list eq 'recent'}
-    	 <td class="crm-case-case_recent_activity">
-	 {if $row.case_recent_activity_viewable}	
-	     <a href="javascript:{$list}viewActivity({$row.case_recent_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_recent_activity_type}</a>
-	  {else}
-	     {$row.case_recent_activity_type}
-	  {/if}   
-	  {if $row.case_recent_activity_editable and $row.case_recent_activity_type_name != 'Inbound Email' && $row.case_recent_activity_type_name != 'Email'}&nbsp;&nbsp;<a href="{crmURL p="civicrm/case/activity" q="reset=1&cid=`$row.contact_id`&caseid=`$row.case_id`&action=update&id=`$row.case_recent_activity_id`"}" title="{ts}Edit this activity.{/ts}"><span class="icon edit-icon"></span></a>
-	  {/if}<br /> 
+       <td class="crm-case-case_recent_activity">
+   {if $row.case_recent_activity_viewable}
+       <a href="#" onclick="{$list}viewActivity({$row.case_recent_activity_id}, {$row.contact_id}, '{$list}'); return false;" title="{ts}View this activity.{/ts}">{$row.case_recent_activity_type}</a>
+    {else}
+       {$row.case_recent_activity_type}
+    {/if}
+    {if $row.case_recent_activity_editable and $row.case_recent_activity_type_name != 'Inbound Email' && $row.case_recent_activity_type_name != 'Email'}&nbsp;&nbsp;<a href="{crmURL p="civicrm/case/activity" q="reset=1&cid=`$row.contact_id`&caseid=`$row.case_id`&action=update&id=`$row.case_recent_activity_id`"}" title="{ts}Edit this activity.{/ts}"><span class="icon edit-icon"></span></a>
+    {/if}<br />
           {$row.case_recent_activity_date|crmDate}
-	 </td>   
-    {elseif $list eq 'recent'}
-    	 <td class="crm-case-case_recent_activity">
-	 {if $row.case_recent_activity_viewable}	
-	     <a href="javascript:{$list}viewActivity({$row.case_recent_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_recent_activity_type}</a>
-	  {else}
-	     {$row.case_recent_activity_type}
-	  {/if}   
-	  {if $row.case_recent_activity_editable and $row.case_recent_activity_type_name != 'Inbound Email' && $row.case_recent_activity_type_name != 'Email'}&nbsp;&nbsp;<a href="{crmURL p="civicrm/case/activity" q="reset=1&cid=`$row.contact_id`&caseid=`$row.case_id`&action=update&id=`$row.case_recent_activity_id`"}" title="{ts}Edit this activity.{/ts}"><span class="icon edit-icon"></span></a>
-	  {/if}<br /> 
-          {$row.case_recent_activity_date|crmDate}
-	 </td>
+   </td>
     {/if}
 
     <td>{$row.action}{$row.moreActions}</td>
@@ -113,12 +94,12 @@
    <tr id="{$list}{$row.case_id}_hide" class="crm-case_{$row.case_id}">
      <td>
      </td>
-     <td colspan="8" width="99%" class="enclosingNested crm-case_{$row.case_id}">{*NYSS 4394*}
-        <div id="{$context}-{$list}-casedetails-{$row.case_id}"></div>
+     <td colspan="8" width="99%" class="enclosingNested crm-case_{$row.case_id}">
+        <div id="{$context}-{$list}-casedetails-{$row.case_id}"></div>{*NYSS 4394*}
      </td>
    </tr>
  <script type="text/javascript">
-     hide('minus{$context}{$list}{$row.case_id}_hide');
+     cj('#minus{$context}{$list}{$row.case_id}_hide').hide();
  </script>
   {/foreach}
 
@@ -149,7 +130,7 @@ function {/literal}{$context}{$list}{literal}CaseDetails( caseId, contactId, typ
             dataType: "html",
             timeout : 5000, //Time in milliseconds
             success : function( data ){
-			            cj( '#'+ context + '-' + type +'-casedetails-' + caseId ).html( data );
+                  cj( '#'+ context + '-' + type +'-casedetails-' + caseId ).html( data );
                       },
             error   : function( XMLHttpRequest, textStatus, errorThrown ) {
                         console.error( 'Error: '+ textStatus );
@@ -158,15 +139,15 @@ function {/literal}{$context}{$list}{literal}CaseDetails( caseId, contactId, typ
 }
 
 function showCaseActivities( caseId, type, context ) {
-    show( context + '-' + type +'-casedetails-'+ caseId , 'table-row' );
-    hide( context+type+caseId+'_show' );
-    show( 'minus'+context+type+caseId+'_hide' );
+    cj('#' + context + '-' + type +'-casedetails-'+ caseId).show();
+    cj('#' + context+type+caseId+'_show').hide();
+    cj('#minus'+context+type+caseId+'_hide').show();
 }
 
 function hideCaseActivities( caseId , type, context ) {
-    hide( context + '-' + type +'-casedetails-' + caseId );
-    show( context+type+caseId+'_show', 'table-row' );
-    hide( 'minus'+context+type+caseId+'_hide' );
+    cj('#' + context + '-' + type +'-casedetails-' + caseId).hide();
+    cj('#' + context+type+caseId+'_show').show();
+    cj('#minus'+context+type+caseId+'_hide').hide();
 }
 
 </script>
