@@ -98,7 +98,7 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
         onSave:false
       },
       displaySettings: {
-        // wide:false,
+	wide:true,
         // lock:false
         // edit:true
         tagging:true

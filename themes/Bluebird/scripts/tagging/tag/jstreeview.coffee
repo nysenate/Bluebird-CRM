@@ -320,15 +320,15 @@ class View
   menuHtml: (name) ->
     return "
       <div class='#{name.menu}'>
-       <div class='#{name.top}'>
-        <div class='#{name.tabs}'></div>
-        <div class='#{name.settings}'></div>
+	<div class='#{name.bottom}'>
+	  <div class='#{name.autocomplete}'>
+	    <input type='text' id='JSTree-ac' tabindex='1'>
+	  </div>
+	  <div class='#{name.settings}'></div>
        </div>
-       <div class='#{name.bottom}'>
-        <div class='#{name.autocomplete}'>
-         <input type='text' id='JSTree-ac' tabindex='1'>
-        </div>
-        <div class='#{name.settings}'></div>
+       <div class='#{name.top}'>
+	  <div class='#{name.tabs}'></div>
+	  <div class='#{name.settings}'></div>
        </div>
       </div>
     "
@@ -1265,7 +1265,7 @@ class Action
       cjParent = @view.cj_selectors.tagBox.find(".tagContainer.top-#{parent}")
       node.level = 1
       node.type = parseInt(parent)
-    else    
+    else
       cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
       node.level = cjParent.data("level")+1
       node.type = "#{cjParent.data("tree")}" || "291"
@@ -1358,7 +1358,7 @@ class Action
           data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[","").replace("]","")
         else
           data.fields[cjEl.attr("name")] = cjEl.val()
-        
+
     )
     @validateValues(data)
 
