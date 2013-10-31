@@ -553,11 +553,21 @@ View = (function() {
   };
 
   View.prototype.setOverlay = function() {
-    var cjOverlay;
+    var cjOverlay, height;
     if (this.cj_selectors.tagBox.hasClass("dropdown")) {
       cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+      height = this.cj_selectors.tagBox.height();
       cjOverlay.height(this.cj_selectors.tagBox.height());
-      return cjOverlay.width(this.cj_selectors.tagBox.width());
+      cjOverlay.width(this.cj_selectors.tagBox.width());
+      if (this.cj_selectors.tagBox.hasClass("filtered")) {
+        if (height === 0) {
+          return this.cj_menuSelectors.menu.addClass("noResults");
+        } else {
+          return this.cj_menuSelectors.menu.removeClass("noResults");
+        }
+      } else {
+        return this.cj_menuSelectors.menu.removeClass("noResults");
+      }
     } else {
       cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
       cjOverlay.css("height", "100%");
@@ -570,6 +580,7 @@ View = (function() {
     tabName = this.getTabNameFromId(id, true);
     this.cj_menuSelectors.tabs.find("div").removeClass("active");
     this.cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display", "none");
+    this.setOverlay();
     this.cj_menuSelectors.tabs.find(".tab-" + tabName).addClass("active");
     this.cj_selectors.tagBox.find(".top-" + id).addClass("active").css("display", "block");
     return this.cj_selectors.tagBox.addClass("top-" + id + "-active");
@@ -831,20 +842,21 @@ View = (function() {
           v = hits[k];
           this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
         }
-        this.cj_selectors.container.css("position", "static").css("border-bottom-width", "0px").css("border-right-width", "0px");
+        this.cj_selectors.container.addClass("dropdown");
         this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
         this.cj_selectors.tagBox.css("border-right", "1px solid #ccc");
         this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "1px solid #bbb");
-        return this.setOverlay();
+        this.setOverlay();
       } else {
         boxHeight = new Resize();
-        this.cj_selectors.container.css("position", "relative").css("border-bottom-width", "1px").css("border-right-width", "1px");
+        this.cj_selectors.container.removeClass("dropdown");
         this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
         this.cj_selectors.tagBox.css("border-right", "0px");
         this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "0px");
-        return this.setOverlay();
+        this.setOverlay();
       }
     }
+    return this.setOverlay();
   };
 
   View.prototype.getTagHeight = function(tagBox, maxHeight) {
@@ -1019,25 +1031,53 @@ Action = (function() {
         id: "",
         is_reserved: true
       }
+    },
+    moveTag: {
+      url: '/civicrm/ajax/tag/update',
+      data: {
+        id: "",
+        parent_id: ""
+      }
+    },
+    convertTag: {
+      url: '/civicrm/ajax/tag/update',
+      data: {
+        id: "",
+        parent_id: ""
+      }
+    },
+    mergeTag: {
+      url: '/civicrm/ajax/mergeTags',
+      type: 'POST',
+      data: ""
     }
   };
 
   Action.prototype.fields = {
     addTag: ["Tag Name", "Description", "Is Reserved"],
     removeTag: [],
-    updateTag: ["Tag Name", "Description", "Is Reserved"]
+    updateTag: ["Tag Name", "Description", "Is Reserved"],
+    moveTag: [],
+    convertTag: [],
+    mergeTag: []
   };
 
   Action.prototype.requiredFields = {
     addTag: ["Tag Name"],
     removeTag: [],
-    updateTag: ["Tag Name"]
+    updateTag: ["Tag Name"],
+    moveTag: [],
+    convertTag: [],
+    mergeTag: []
   };
 
   Action.prototype.requiredValidation = {
     addTag: ["isRequired", "appliesNullToText"],
     removeTag: ["noChildren"],
-    updateTag: ["isRequired", "appliesNullToText"]
+    updateTag: ["isRequired", "appliesNullToText"],
+    moveTag: ["noChildren"],
+    convertTag: ["noChildren"],
+    mergeTag: ["noChildren"]
   };
 
   function Action(view, instance, tagId, action, cb) {
@@ -1058,12 +1098,13 @@ Action = (function() {
   }
 
   Action.prototype.createSlide = function(cb) {
-    var resize, sideWidth, slideWidth,
+    var activeTreeId, containerPosition, menuHeight, resize, sideWidth, slideWidth,
       _this = this;
     resize = new Resize;
-    this.view.cj_selectors.tagBox.addClass("hasSlideBox");
     if (resize.height > 190) {
+      this.view.cj_selectors.tagBox.addClass("hasSlideBox");
       this.view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>");
+      this.bottom = false;
       this.cj_slideBox = this.view.cj_selectors.tagBox.find(".slideBox");
       this.cj_slideBox.css("right", "" + (this.findGutterSpace()) + "px");
       if (this.view.settings.wide) {
@@ -1079,7 +1120,22 @@ Action = (function() {
         return cb();
       });
     } else {
-
+      this.bottom = true;
+      this.view.cj_selectors.tagBox.addClass("hasSlideBox");
+      containerPosition = this.view.cj_selectors.container.offset();
+      menuHeight = this.view.cj_menuSelectors.menu.height();
+      activeTreeId = this.view.cj_selectors.tagBox.find(".tagContainer.active").data("treeid");
+      this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
+      this.cj_slideBoxContainer = cj(".JSTree-slideBox");
+      this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + containerPosition.left + "px");
+      this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
+      return this.cj_slideBox.animate({
+        height: "210px"
+      }, 500, function() {
+        _this.cj_slideBox.append(_this.slideHtml);
+        _this.setCancel();
+        return cb();
+      });
     }
   };
 
@@ -1092,15 +1148,27 @@ Action = (function() {
   };
 
   Action.prototype.destroySlideBox = function() {
-    var _this = this;
+    var animate,
+      _this = this;
     this.cj_slideBox.empty();
-    return this.cj_slideBox.animate({
-      width: '0%'
-    }, 500, function() {
+    if (this.bottom) {
+      animate = {
+        height: "0px"
+      };
+    } else {
+      animate = {
+        width: "0%"
+      };
+    }
+    return this.cj_slideBox.animate(animate, 500, function() {
       _this.cj_slideBox.find(".label.cancel").off("click");
       _this.cj_slideBox.remove();
-      _this.view.cj_selectors.tagBox.removeClass("hasSlideBox");
-      return _this.view.createTabClick();
+      _this.view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio");
+      _this.view.createTabClick();
+      if (_this.cj_slideBoxContainer != null) {
+        _this.cj_slideBoxContainer.remove();
+      }
+      return new Buttons(_this.view);
     });
   };
 
@@ -1255,12 +1323,175 @@ Action = (function() {
     });
   };
 
+  Action.prototype.sendDtToPanel = function(cjDT) {
+    this.cj_slideBox.find(".toTag").removeClass("errorLabel");
+    return this.cj_slideBox.find(".toTag").html(cjDT.data("name"));
+  };
+
   Action.prototype.moveTag = function() {
-    return this.createSlide();
+    var a, buttons,
+      _this = this;
+    this.slideHtml = this.gatherMoveLabelHTML();
+    this.setRequiredFields("moveTag");
+    this.view.cj_selectors.tagBox.addClass("radio");
+    buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+    a = this;
+    this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+      a.cj_slideBox.find(".submit").removeClass("inactive");
+      return a.sendDtToPanel(cj(this).closest("dt"));
+    });
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      _this.cj_slideBox.find(".submit").addClass("inactive");
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+            return _this.markErrors({
+              toTag: "Must specify a destination"
+            });
+          } else {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+              data.id = _this.cjDT.data("tagid");
+              _this.ajax.moveTag.data.id = data.id;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.id, "moveTag", void 0, function(message) {
+                if (message == null) {
+                  console.log("no response");
+                }
+                if (message.code != null) {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.removeEntityFromTree(data.id);
+                  _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
+  };
+
+  Action.prototype.convertTag = function() {
+    var a, buttons,
+      _this = this;
+    this.slideHtml = this.gatherConvertLabelHTML();
+    this.setRequiredFields("convertTag");
+    this.view.cj_selectors.tagBox.addClass("radio");
+    buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+    a = this;
+    this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+      a.cj_slideBox.find(".submit").removeClass("inactive");
+      return a.sendDtToPanel(cj(this).closest("dt"));
+    });
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      _this.cj_slideBox.find(".submit").addClass("inactive");
+      _this.view.showTags(291, "issue-codes");
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+            return _this.markErrors({
+              toTag: "Must specify a destination"
+            });
+          } else {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+              data.id = _this.cjDT.data("tagid");
+              _this.ajax.moveTag.data.id = data.id;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.id, "convertTag", void 0, function(message) {
+                if (message == null) {
+                  console.log("no response");
+                }
+                if (message.code != null) {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.removeEntityFromTree(data.id);
+                  _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
   };
 
   Action.prototype.mergeTag = function() {
-    return this.createSlide();
+    var a, buttons,
+      _this = this;
+    this.slideHtml = this.gatherMergeLabelHTML();
+    this.setRequiredFields("mergeTag");
+    this.view.cj_selectors.tagBox.addClass("radio");
+    buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+    a = this;
+    this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+      a.cj_slideBox.find(".submit").removeClass("inactive");
+      return a.sendDtToPanel(cj(this).closest("dt"));
+    });
+    return this.createSlide(function() {
+      var doSubmit;
+      _this.view.unbindTabClick();
+      _this.cj_slideBox.find(".submit").addClass("inactive");
+      doSubmit = function() {
+        return _this.submitButton(true, function(data) {
+          var currentId, destinationId;
+          if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+            return _this.markErrors({
+              toTag: "Must specify a destination"
+            });
+          } else {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              destinationId = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+              currentId = _this.cjDT.data("tagid");
+              _this.ajax.mergeTag.data = "fromId=" + currentId + "&toId=" + destinationId;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(currentId, "mergeTag", void 0, function(message) {
+                if (!message.status) {
+                  _this.revertSubmitFromLoading();
+                  _this.markErrors({
+                    tagName: "" + message.message
+                  });
+                  return doSubmit.call(_this);
+                } else {
+                  _this.removeEntityFromTree(currentId);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          }
+        });
+      };
+      return doSubmit.call(_this);
+    });
   };
 
   Action.prototype.updateTag = function() {
@@ -1314,7 +1545,7 @@ Action = (function() {
   Action.prototype.addEntityToTree = function(parent, message) {
     var backout, cjParent, node, node_parsed;
     node = {};
-    if (message.created_date != null) {
+    if ((message.created_date != null) && message.created_date.length > 0) {
       node.created_date = _manipTags.createDate(message.created_date);
     }
     if (message.name != null) {
@@ -1336,7 +1567,7 @@ Action = (function() {
     node.children = false;
     cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
     node.level = cjParent.data("level") + 1;
-    node.type = "" + (cjParent.data("tree"));
+    node.type = ("" + (cjParent.data("tree"))) || "291";
     if (message.is_reserved = "false") {
       node.is_reserved = "0";
     } else {
@@ -1345,6 +1576,7 @@ Action = (function() {
     node_parsed = new Node(node);
     this.instance.appendToAC(node);
     backout = this.view.trees[parseInt(node.type)].appendNode(node, node.parent_id, node_parsed.html);
+    _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
     if (!backout) {
       console.log("bad things happened");
       return false;
@@ -1396,7 +1628,7 @@ Action = (function() {
     }
     cjDL.remove();
     cjDT.replaceWith(cjNode.html());
-    _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + data.type));
+    _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
     new Buttons(this.view, "#tagDropdown_" + id);
     return new Buttons(this.view, "#tagLabel_" + id);
   };
@@ -1468,6 +1700,7 @@ Action = (function() {
 
   Action.prototype.convertSubmitToLoading = function() {
     var cjSubmitButton;
+    this.cj_slideBox.find(".label.cancel").addClass("inactive");
     cjSubmitButton = this.cj_slideBox.find(".label.submit");
     cjSubmitButton.addClass("loadingGif");
     cjSubmitButton.data("text", cjSubmitButton.text());
@@ -1654,13 +1887,93 @@ Action = (function() {
     return html;
   };
 
+  Action.prototype.gatherMoveLabelHTML = function(values) {
+    var html, label;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    html += "<div class='openArrow'></div>";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Move Tag", "Move Tag:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      html += label.buildLabel("header", "header3", "to");
+      html += label.buildLabel("headerdescription", "To Tag", "");
+    } else {
+      html += label.buildLabel("error", "error", "Cannot Find Tag to Move");
+      return html;
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
+  Action.prototype.gatherConvertLabelHTML = function(values) {
+    var html, label;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    html += "<div class='openArrow'></div>";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Convert Tag", "Convert Keyword:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      html += label.buildLabel("header", "header3", "To Issue Code Under:");
+      html += label.buildLabel("headerdescription", "To Tag", "");
+    } else {
+      html += label.buildLabel("error", "error", "Cannot Find Tag to Place Keyword Under");
+      return html;
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
+  Action.prototype.gatherMergeLabelHTML = function(values) {
+    var html, label;
+    if (values == null) {
+      values = "";
+    }
+    label = new Label;
+    html = "";
+    html += "<div class='openArrow'></div>";
+    if (this.tagName != null) {
+      html += label.buildLabel("header", "Merge Tag", "Merge Tag:");
+      html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      html += label.buildLabel("header", "header3", "Into");
+      html += label.buildLabel("headerdescription", "To Tag", "");
+    } else {
+      html += label.buildLabel("error", "error", "Cannot Find Tag to Merge");
+      return html;
+    }
+    html += "<div class='actionButtons'>";
+    html += label.buildLabel("submit", "", "submit");
+    html += label.buildLabel("cancel", "", "cancel");
+    html += "</div>";
+    return html;
+  };
+
   Action.prototype.tagAjax = function(tagId, type, action, locCb) {
     var request,
       _this = this;
     request = cj.when(cj.ajax(this.ajax[type]));
     request.done(function(data) {
       if (locCb != null) {
-        return locCb(data.message);
+        if (data.code === 0) {
+          return locCb(data);
+        } else {
+          if (data["status"] === true) {
+            return locCb(data);
+          } else {
+            return locCb(data.message);
+          }
+        }
       } else if (_this.cb != null) {
         return _this.cb(data.message);
       }
@@ -1676,12 +1989,12 @@ _manipTags = {
   createDate: function(mDate) {
     var date;
     date = "";
-    date += "" + (mDate.substring(0, 3)) + "-";
-    date += "" + (mDate.substring(4, 5)) + "-";
-    date += "" + (mDate.substring(6, 7)) + " ";
-    date += "" + (mDate.substring(8, 9)) + ":";
-    date += "" + (mDate.substring(10, 11)) + ":";
-    date += "" + (mDate.substring(12, 13));
+    date += "" + (mDate.substring(0, 4)) + "-";
+    date += "" + (mDate.substring(4, 6)) + "-";
+    date += "" + (mDate.substring(6, 8)) + " ";
+    date += "" + (mDate.substring(8, 10)) + ":";
+    date += "" + (mDate.substring(10, 12)) + ":";
+    date += "" + (mDate.substring(12, 14));
     return date;
   }
 };
@@ -1787,18 +2100,28 @@ Buttons = (function() {
 
   Buttons.prototype.issuecodes = ["addTag", "removeTag", "updateTag", "moveTag", "mergeTag"];
 
-  function Buttons(view, finder) {
+  Buttons.prototype.radioButtons = false;
+
+  function Buttons(view, finder, radio) {
     this.view = view;
     if (finder == null) {
       finder = "";
     }
-    if (this.view.settings.tagging) {
-      this.removeFCB();
-      this.createTaggingCheckboxes(finder);
-    }
-    if (this.view.settings.edit) {
+    if (radio === true) {
       this.removeTaggingCheckboxes();
-      this.createFCB();
+      this.removeFCB();
+      this.radioButtons = true;
+      this.createRadioButtons(finder);
+    } else {
+      this.removeRadioButtons();
+      if (this.view.settings.tagging) {
+        this.removeFCB();
+        this.createTaggingCheckboxes(finder);
+      }
+      if (this.view.settings.edit) {
+        this.removeTaggingCheckboxes();
+        this.createFCB();
+      }
     }
   }
 
@@ -1814,7 +2137,24 @@ Buttons = (function() {
   };
 
   Buttons.prototype.removeTaggingCheckboxes = function() {
-    return this.view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove();
+    return this.view.cj_selectors.tagBox.find("dt .tag .fCB").remove();
+  };
+
+  Buttons.prototype.createRadioButtons = function(finder) {
+    var a;
+    a = this;
+    return this.view.cj_selectors.tagBox.find("dt .tag .name").before(function() {
+      if (cj(this).parent().parent().data("tagid") !== finder) {
+        return a.createButtons(cj(this).parent().parent().data("tagid"));
+      }
+    });
+  };
+
+  Buttons.prototype.removeRadioButtons = function() {
+    var cjDT;
+    cjDT = this.view.cj_selectors.tagBox.find("dt");
+    cjDT.find(".tag .fCB").remove();
+    return cjDT.off("click");
   };
 
   Buttons.prototype.createFCB = function() {
@@ -1853,7 +2193,9 @@ Buttons = (function() {
       v = _ref[k];
       cjTreeTop = this.view.cj_selectors.tagBox.find(".top-" + k).find("dt");
       cjTreeTop.off("mouseenter");
-      _results.push(cjTreeTop.off("mouseleave"));
+      cjTreeTop.off("mouseleave");
+      cjTreeTop.off("click");
+      _results.push(cjTreeTop.find(".fCB").remove());
     }
     return _results;
   };
@@ -1862,31 +2204,37 @@ Buttons = (function() {
     var html, tag, _i, _j, _len, _len1, _ref, _ref1;
     html = "<div class='fCB'>";
     html += "<ul>";
-    if (this.view.settings.edit) {
-      if (parseInt(treeTop) === 291) {
-        _ref = this.issuecodes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          tag = _ref[_i];
-          html += this[tag];
-        }
-      }
-      if (parseInt(treeTop) === 296) {
-        _ref1 = this.keywords;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          tag = _ref1[_j];
-          html += this[tag];
-        }
-      }
-    } else {
+    if (this.radioButtons) {
       html += "<li>";
-      html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+      html += _utils.createRadioButton("tag", "" + treeTop, "radio");
       html += "</li>";
+    } else {
+      if (this.view.settings.edit) {
+        if (parseInt(treeTop) === 291) {
+          _ref = this.issuecodes;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            tag = _ref[_i];
+            html += this[tag];
+          }
+        }
+        if (parseInt(treeTop) === 296) {
+          _ref1 = this.keywords;
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            tag = _ref1[_j];
+            html += this[tag];
+          }
+        }
+      } else {
+        if (this.view.settings.tagging) {
+          html += "<li>";
+          html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+          html += "</li>";
+        }
+      }
     }
     html += "</ul>";
     return html += "</div>";
   };
-
-  Buttons.prototype.addRadios = function(treeTop) {};
 
   Buttons.prototype.executeButton = function(cjDT) {
     var _this = this;
@@ -2136,6 +2484,9 @@ Autocomplete = (function() {
         _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
         return openLeg.query(nextPage, function(results) {
           var addButtonsTo, filteredList, k, poses, v;
+          if (results.status != null) {
+            console.log(results);
+          }
           poses = _this.addPositionsToTags(results.results);
           filteredList = {
             292: poses
@@ -2201,6 +2552,9 @@ Autocomplete = (function() {
       "term": terms
     }, function(results) {
       var filteredList, hitCount, poses;
+      if (results.status != null) {
+        console.log(results);
+      }
       poses = _this.addPositionsToTags(results.results);
       filteredList = {
         292: poses
@@ -2384,7 +2738,7 @@ Tree = (function() {
       }
     } else {
       this.domList = cj();
-      this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer'></div>");
+      this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer' data-treeid='" + this.tagId + "'></div>");
     }
     return this.iterate(this.tagList);
   };
@@ -2429,11 +2783,10 @@ Tree = (function() {
   };
 
   Tree.prototype.appendNode = function(node, parent, html, noAdd) {
-    var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _len, _ref;
+    var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _j, _len, _len1, _ref, _ref1;
     if (noAdd == null) {
       noAdd = false;
     }
-    console.log(node);
     topLevel = false;
     if (parseInt(parent) === 291 || parseInt(parent) === 292 || parseInt(parent) === 296) {
       topLevel = true;
@@ -2443,7 +2796,6 @@ Tree = (function() {
         _ref = this.tagList;
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
           obj = _ref[i];
-          console.log(node.id === obj.id);
           if (obj.id === node.id) {
             this.tagList.splice(i, 1);
             this.tagList.splice(i, 0, node);
@@ -2479,6 +2831,13 @@ Tree = (function() {
     cjParentDL.show().prepend(html);
     if (topLevel) {
       return true;
+    }
+    _ref1 = this.tagList;
+    for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+      obj = _ref1[i];
+      if (parent === obj.id) {
+        obj.children = true;
+      }
     }
     cjParentDT.addClass("open");
     cjParentDT.find(".ddControl").addClass("treeButton");

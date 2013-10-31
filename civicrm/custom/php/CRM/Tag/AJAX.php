@@ -179,6 +179,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         }
         if(array_key_exists('entity_id', $_GET)) {
             $entity_id = $_GET['entity_id'];
+            $entity_type = $_GET['entity_type'];
 
             //Get the tags for the specifed entity
             $params = array('version'=>3,
@@ -374,7 +375,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         parse_str($call_uri['query'],$cid);
         $entityId = $cid['cid'];
-
+        $view_only = false;
         $session = CRM_Core_Session::singleton();
         $userid = $session->get('userID');
 
@@ -406,8 +407,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
             "view_only"=>$view_only,
             "userId"=>$userid,
             "message"=> $message, 
-            'build_time'=>(microtime(TRUE)-$start),
-            'bt_time'=>$bt_time
+            'build_time'=>(microtime(TRUE)-$start)
         );
 
         if($return == 'true'){

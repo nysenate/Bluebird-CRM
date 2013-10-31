@@ -12,7 +12,7 @@
  |                                                                    |
  | CiviCRM is distributed in the hope that it will be useful, but     |
  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               | 
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
  | See the GNU Affero General Public License for more details.        |
  |                                                                    |
  | You should have received a copy of the GNU Affero General Public   |
@@ -33,14 +33,11 @@ var BBActionConst = {/literal}{$action}{literal};
 {/literal}{else}{literal}
 	var BBLoadTaglist = [{/literal}{foreach key=tagID item=i from=$form.tag.value name=activeTagset}"{$tagID}"{if !$smarty.foreach.activeTagset.last},{/if}{/foreach}{literal}];
 {/literal}{/if}{literal}
+var test =true;
 </script>
 {/literal}
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<script src="/sites/default/themes/Bluebird/scripts/bbtree.js" type="text/javascript"></script>
-<script>
-BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true});
-</script>
 {/literal}
 {if $title}
 <div id="dialog">
@@ -48,7 +45,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 </div>
 <div class="crm-accordion-wrapper crm-tagGroup-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
+  <div class="icon crm-accordion-pointer"></div>
 	<a href="#" class="whiteanchor">{$title}</a>
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="tagGroup">
@@ -72,7 +69,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-		
+
 			{if $key eq 'tag'}
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				  <div id="crm-tagListWrap">
@@ -98,7 +95,7 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 							    </td>
 							</tr>
 						    {/if}
-						{/foreach}   
+						{/foreach}
 					    </table>
 				    </div>
 				</td>

@@ -1,32 +1,38 @@
 @import "utils/tagsUtil";
 
 /*pagestructure*/
+@import "partials/slideBox";
 
-#JSTree-container.BBTreeContainer, #BBTreeContainer{
-	@import "utils/reset";
-  width:$inputBoxWidthFull;
-	// background-color:#fff;
-	overflow-x:hidden;
-	// border:1px solid #ccc;
-	cursor:default;
-  position:relative;
-  margin: 0 auto; 
-	// temp
-	margin:15px auto;
-  @include round-corners(3px);
-  border:1px solid #ccc;
-	// endtemp
-  @import "partials/menu";
-  @import "partials/tree";
-  &.short {
-    // width: $inputBoxWidthShort;
-    @import "shape/short";
-  }
-  &.narrow {
-    width: 294px;
-    @import "shape/narrow";
-  }
-  &.short.narrow {
-    @import "shape/shortnarrow";
-  }
+#JSTree-container.BBTreeContainer, #BBTreeContainer {
+    @import "utils/reset";
+    width: $inputBoxWidthFull;
+    // background-color:#fff;
+    overflow-x: hidden;
+    // border:1px solid #ccc;
+    cursor: default;
+    position: relative;
+    margin: 0 auto;
+    // temp
+    margin: 15px auto;
+    @include round-corners(3px);
+    border: 1px solid #ccc;
+    // endtemp
+    @import "partials/menu";
+    @import "partials/tree";
+    &.short {
+        // width: $inputBoxWidthShort;
+        @import "shape/short";
+    }
+    &.narrow {
+        width: 294px;
+        @import "shape/narrow";
+    }
+    &.short.narrow {
+        @import "shape/shortnarrow";
+    }
+    &.dropdown {
+        position: static;
+        border-bottom-width: 0px;
+        border-right-width: 0px;
+    }
 }

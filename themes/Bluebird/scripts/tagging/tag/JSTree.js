@@ -5,118 +5,6 @@
     _this = this,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  OpenLeg = (function() {
-    var ajaxStructure, queryDefaults;
-
-    function OpenLeg() {}
-
-    OpenLeg.prototype.query = function(args, callback) {
-      var page, term, year;
-      this.callback = callback;
-      if (!((args.term != null) || args.term.length >= 3)) {
-        return false;
-      }
-      this.pSearch = args.term.search(/\-20[0-9][0-9]/g);
-      if (this.pSearch > -1) {
-        year = args.term.slice(this.pSearch + 1, this.pSearch + 5);
-        term = args.term.slice(0, this.pSearch);
-        this.term = args.term;
-      } else {
-        this.term = term = args.term;
-      }
-      if (year == null) {
-        year = args.year;
-      }
-      page = args.page || 0;
-      this.page = ajaxStructure.data.pageIdx = page;
-      return this.buildQuery(term, year, page);
-    };
-
-    OpenLeg.prototype.buildQuery = function(term, year) {
-      var fOType, fOid, fTerm, fText, fYear, validjsonpterm;
-      fTerm = "(" + term + "~ OR " + term + "*)";
-      fOType = "(otype:" + queryDefaults.otype + ")";
-      fYear = "(year:" + (this.getCurrentSessionYear(year)) + ")";
-      fText = "(full:" + term + "~ OR full:" + term + "*)";
-      fOid = "(oid:" + queryDefaults.oid + ")";
-      validjsonpterm = bbUtils.spaceTo("underscore", term);
-      if (this.pSearch > -1) {
-        ajaxStructure.data.term = "(oid:" + term + "-" + year + ")";
-      } else {
-        ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
-      }
-      return this.getQuery();
-    };
-
-    OpenLeg.prototype.getCurrentSessionYear = function(year) {
-      var dateobject;
-      if ((year == null) || isNaN(parseInt(year))) {
-        dateobject = new Date();
-        year = dateobject.getFullYear();
-      }
-      if (year % 2 === 0) {
-        year = parseInt(year) - 1;
-      }
-      return year;
-    };
-
-    OpenLeg.prototype.getQuery = function() {
-      var get,
-        _this = this;
-      get = cj.ajax(ajaxStructure);
-      return get.done(function(data) {
-        return _this.callback(_this.ripApartQueryData(data.response.metadata, data.response.results));
-      });
-    };
-
-    OpenLeg.prototype.ripApartQueryData = function(metadata, results) {
-      var index, pagesLeft, result, returnStructure, rs, _i, _len;
-      pagesLeft = Math.floor((metadata.totalresults - results.length) / ajaxStructure.data.pageSize) - ajaxStructure.data.pageIdx;
-      returnStructure = {
-        seeXmore: metadata.totalresults - results.length,
-        page: this.page,
-        pagesLeft: pagesLeft,
-        term: this.term,
-        results: []
-      };
-      for (index = _i = 0, _len = results.length; _i < _len; index = ++_i) {
-        result = results[index];
-        rs = {
-          noname: "" + result.oid + " - (" + result.data.bill.sponsor.fullname + ")",
-          forname: "" + result.oid + " - FOR (" + result.data.bill.sponsor.fullname + ")",
-          againstname: "" + result.oid + " - AGAINST (" + result.data.bill.sponsor.fullname + ")",
-          description: "" + result.data.bill.title,
-          billNo: "" + result.oid,
-          url: "" + result.url
-        };
-        returnStructure.results.push(rs);
-      }
-      return returnStructure;
-    };
-
-    queryDefaults = {
-      otype: 'bill',
-      oid: 'A*',
-      sort: 'modified',
-      sortOrder: false
-    };
-
-    ajaxStructure = {
-      url: 'http://open.nysenate.gov/legislation/2.0/search.jsonp',
-      crossDomain: true,
-      dataType: "jsonp",
-      cache: true,
-      data: {
-        term: '',
-        pageSize: 10,
-        pageIdx: 0
-      }
-    };
-
-    return OpenLeg;
-
-  })();
-
   Function.prototype.property = function(prop, desc) {
     return Object.defineProperty(this.prototype, prop, desc);
   };
@@ -154,7 +42,7 @@
 
   Instance = (function() {
     function Instance(_rawData, _autocomplete, _treeNames, _trees) {
-      var callAjax, dataSettings, displaySettings, onSave, pageElements,
+      var callAjax, dataSettings, displaySettings, pageElements,
         _this = this;
       this._rawData = _rawData;
       this._autocomplete = _autocomplete;
@@ -171,10 +59,10 @@
         autocomplete: 'autocomplete',
         tokenHolder: 'tokens'
       };
-      onSave = false;
       dataSettings = {
         pullSets: [291, 296, 292],
-        entity_id: 0
+        entity_id: 0,
+        onSave: false
       };
       displaySettings = {
         defaultTree: 291,
@@ -220,7 +108,7 @@
         return getRet;
       };
       this.set = function(name, obj) {
-        var ready;
+        var onSave, ready;
         if ('pageElements' === name) {
           obj = _utils.checkForArray(pageElements, obj);
           cj.extend(true, pageElements, obj);
@@ -438,13 +326,23 @@
       return b;
     },
     _createInputBox: function() {
-      var classNames, classes, name, type, value;
+      var cName, checked, classNames, classes, name, type, value, _i, _len, _ref;
       type = arguments[0], name = arguments[1], value = arguments[2], classNames = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
       if (value == null) {
         value = "";
       }
-      classes = classNames.join(" ");
-      return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "'>";
+      checked = "";
+      if (type === "radio") {
+        _ref = classNames[0];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          cName = _ref[_i];
+          if (cName.toLowerCase() === "checked") {
+            checked = "checked";
+          }
+        }
+      }
+      classes = classNames[0].join(" ");
+      return "<input type='" + type + "' class='" + classes + "' name='" + name + "' value='" + value + "' " + checked + ">";
     },
     createTextBox: function() {
       var classNames, name, value;
@@ -828,7 +726,7 @@
     View.prototype.slideTokenHolder = function() {
       var autoHeight, curHeight,
         _this = this;
-      if (this.cj_tokenHolder.body.height() <= 20) {
+      if (this.cj_tokenHolder.body.height() <= 50) {
         this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
         curHeight = this.cj_tokenHolder.body.height();
         this.cj_tokenHolder.body.css('height', 'auto');
@@ -840,7 +738,7 @@
       } else {
         this.cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp");
         return this.cj_tokenHolder.body.animate({
-          height: "16px"
+          height: "50px"
         }, 500, function() {});
       }
     };
@@ -852,10 +750,14 @@
       killToken = function() {
         return cjDT.find("input.checkbox").prop("checked", false).trigger("change");
       };
-      name = cjDT.data("name");
+      name = cj.trim(cjDT.data("name"));
       type = cjDT.data("tree");
       token = new Token(this.cj_tokenHolder.body);
       return token.create(this.cj_tokenHolder.body, name, type, id, killToken);
+    };
+
+    View.prototype.removeTagsFromHolder = function(id) {
+      return this.cj_tokenHolder.body.find(".token-" + id).remove();
     };
 
     View.prototype.removeAllTagsFromEntity = function() {
@@ -887,19 +789,19 @@
 
     View.prototype.findPositionLocalMatch = function(cjDT) {
       var a, b, name, position, _ref, _results;
-      name = cjDT.find(".tag .name").text;
+      name = cjDT.find(".tag .name").text();
       _ref = this.instance.positionList;
       _results = [];
       for (a in _ref) {
         b = _ref[a];
-        name = _utils.removePositionTextFromBill(cjDT.name);
+        name = _utils.remposovePositionTextFromBill(cjDT.name);
         _results.push(position = cjDT.data("position"));
       }
       return _results;
     };
 
     View.prototype.applyTaggedPositions = function() {
-      var a, b, cjDTs, iO, posList, trees, _ref;
+      var a, b, buttons, cjDTs, iO, posList, trees, _ref;
       posList = [];
       trees = this.trees;
       _ref = this.instance.positionList;
@@ -918,7 +820,7 @@
         } else {
           this.cj_selectors.tagBox.find(".top-292").css("display", "none");
         }
-        new Buttons(this, ".top-292");
+        buttons = new Buttons(this, ".top-292");
         cjDTs = this.cj_selectors.tagBox.find(".top-292 dt");
         cjDTs.addClass("shaded");
         cjDTs.find(".fCB input.checkbox").prop("checked", true);
@@ -1012,6 +914,7 @@
       this.selectors.dropdown = pageElements.tagDropdown;
       this.selectors.initHolder = pageElements.init;
       this.entity_id = dataSettings.entity_id;
+      this.onSave = dataSettings.onSave;
       this.settings = displaySettings;
       this.settingCollection = ["settings", "menuSelectors", "tokenHolder", "selectors"];
       _ref = pageElements.tagHolder;
@@ -1119,7 +1022,7 @@
     };
 
     View.prototype.menuHtml = function(name) {
-      return "      <div class='" + name.menu + "'>       <div class='" + name.top + "'>        <div class='" + name.tabs + "'></div>        <div class='" + name.settings + "'></div>       </div>       <div class='" + name.bottom + "'>        <div class='" + name.autocomplete + "'>         <input type='text' id='JSTree-ac'>        </div>        <div class='" + name.settings + "'></div>       </div>      </div>    ";
+      return "      <div class='" + name.menu + "'>        <div class='" + name.bottom + "'>          <div class='" + name.autocomplete + "'>            <input type='text' id='JSTree-ac' tabindex='1'>          </div>          <div class='" + name.settings + "'></div>       </div>       <div class='" + name.top + "'>          <div class='" + name.tabs + "'></div>          <div class='" + name.settings + "'></div>       </div>      </div>    ";
     };
 
     View.prototype.tokenHolderHtml = function(name) {
@@ -1181,6 +1084,17 @@
       return _results;
     };
 
+    View.prototype.toggleSettingsAdd = function(name, undo) {
+      if (undo == null) {
+        undo = false;
+      }
+      if (undo) {
+        return window.jstree.menuSettings.bindButton(name);
+      } else {
+        return window.jstree.menuSettings.unbindButton(name);
+      }
+    };
+
     View.prototype.createTabClick = function() {
       var k, onTabClick, tabName, v, _ref, _results;
       this.unbindTabClick();
@@ -1223,11 +1137,21 @@
     };
 
     View.prototype.setOverlay = function() {
-      var cjOverlay;
+      var cjOverlay, height;
       if (this.cj_selectors.tagBox.hasClass("dropdown")) {
         cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
+        height = this.cj_selectors.tagBox.height();
         cjOverlay.height(this.cj_selectors.tagBox.height());
-        return cjOverlay.width(this.cj_selectors.tagBox.width());
+        cjOverlay.width(this.cj_selectors.tagBox.width());
+        if (this.cj_selectors.tagBox.hasClass("filtered")) {
+          if (height === 0) {
+            return this.cj_menuSelectors.menu.addClass("noResults");
+          } else {
+            return this.cj_menuSelectors.menu.removeClass("noResults");
+          }
+        } else {
+          return this.cj_menuSelectors.menu.removeClass("noResults");
+        }
       } else {
         cjOverlay = this.cj_selectors.container.find(".JSTree-overlay");
         cjOverlay.css("height", "100%");
@@ -1240,6 +1164,7 @@
       tabName = this.getTabNameFromId(id, true);
       this.cj_menuSelectors.tabs.find("div").removeClass("active");
       this.cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display", "none");
+      this.setOverlay();
       this.cj_menuSelectors.tabs.find(".tab-" + tabName).addClass("active");
       this.cj_selectors.tagBox.find(".top-" + id).addClass("active").css("display", "block");
       return this.cj_selectors.tagBox.addClass("top-" + id + "-active");
@@ -1337,7 +1262,7 @@
     };
 
     View.prototype.writeFilteredList = function(list, term, hits) {
-      var activeTree, delay, k, latestQuery, t, v,
+      var activeTree, buttons, delay, k, latestQuery, t, v,
         _this = this;
       if (hits == null) {
         hits = {};
@@ -1402,7 +1327,7 @@
           }
         }
       }
-      new Buttons(this);
+      buttons = new Buttons(this);
       if (this.settings.tagging) {
         if (this.entityList != null) {
           this.applyTaggedKWIC();
@@ -1431,7 +1356,7 @@
     };
 
     View.prototype.rebuildInitialTree = function() {
-      var activeTree, k, t, v, _ref;
+      var activeTree, buttons, k, t, v, _ref;
       if (this.cj_selectors.tagBox.hasClass("filtered")) {
         this.cj_selectors.tagBox.removeClass("filtered");
         this.cj_selectors.tagBox.find(".filtered").remove();
@@ -1456,7 +1381,7 @@
             }
           }
         }
-        new Buttons(this);
+        buttons = new Buttons(this);
         if (this.settings.tagging) {
           this.applyTaggedKWIC();
         }
@@ -1501,20 +1426,21 @@
             v = hits[k];
             this.getTagHeight(this.cj_selectors.tagBox.find(".top-" + k));
           }
-          this.cj_selectors.container.css("position", "static").css("border-bottom-width", "0px").css("border-right-width", "0px");
+          this.cj_selectors.container.addClass("dropdown");
           this.cj_selectors.tagBox.css("height", "auto").addClass("open").css("overflow-y", "auto");
           this.cj_selectors.tagBox.css("border-right", "1px solid #ccc");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "1px solid #bbb");
-          return this.setOverlay();
+          this.setOverlay();
         } else {
           boxHeight = new Resize();
-          this.cj_selectors.container.css("position", "relative").css("border-bottom-width", "1px").css("border-right-width", "1px");
+          this.cj_selectors.container.removeClass("dropdown");
           this.cj_selectors.tagBox.removeClass("open").css("overflow-y", "scroll").height(boxHeight.height);
           this.cj_selectors.tagBox.css("border-right", "0px");
           this.cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom", "0px");
-          return this.setOverlay();
+          this.setOverlay();
         }
       }
+      return this.setOverlay();
     };
 
     View.prototype.getTagHeight = function(tagBox, maxHeight) {
@@ -1582,23 +1508,34 @@
         removeTag = function() {
           var _removeTag,
             _this = this;
-          _removeTag = entity.removeTag(tagId);
-          return _removeTag.done(function(i) {
-            return doAction.apply(null, [i, "remove"]);
-          });
+          a.removeTagsFromHolder(cjDT.data("tagid"));
+          if (a.onSave) {
+            doAction.apply(null, [1, "remove"]);
+          } else {
+            _removeTag = entity.removeTag(tagId);
+            _removeTag.done(function(i) {
+              return doAction.apply(null, [i, "remove"]);
+            });
+          }
+          return true;
         };
         addTag = function() {
           var _addTag,
             _this = this;
           a.addTagsToHolder(cjDT.data("tagid"));
-          _addTag = entity.addTag(tagId);
-          return _addTag.done(function(i) {
-            return doAction.apply(null, [i, "add"]);
-          });
+          if (a.onSave) {
+            doAction.apply(null, [1, "add"]);
+          } else {
+            _addTag = entity.addTag(tagId);
+            _addTag.done(function(i) {
+              return doAction.apply(null, [i, "add"]);
+            });
+          }
+          return true;
         };
         doAction = function(res, typeOfAction) {
           action["action"] = typeOfAction;
-          if (res.code !== 1) {
+          if (res.code !== 1 && res !== 1) {
             if (typeOfAction === "add") {
               removeTag.call(null, null);
             }
@@ -1606,7 +1543,7 @@
               addTag.call(null, null);
             }
           }
-          return new ActivityLog(res, action);
+          return true;
         };
         toggleClass = function(cjDT) {
           cjDT.toggleClass("shaded");
@@ -1689,32 +1626,60 @@
           id: "",
           is_reserved: true
         }
+      },
+      moveTag: {
+        url: '/civicrm/ajax/tag/update',
+        data: {
+          id: "",
+          parent_id: ""
+        }
+      },
+      convertTag: {
+        url: '/civicrm/ajax/tag/update',
+        data: {
+          id: "",
+          parent_id: ""
+        }
+      },
+      mergeTag: {
+        url: '/civicrm/ajax/mergeTags',
+        type: 'POST',
+        data: ""
       }
     };
 
     Action.prototype.fields = {
       addTag: ["Tag Name", "Description", "Is Reserved"],
       removeTag: [],
-      updateTag: ["Tag Name", "Description", "Is Reserved"]
+      updateTag: ["Tag Name", "Description", "Is Reserved"],
+      moveTag: [],
+      convertTag: [],
+      mergeTag: []
     };
 
     Action.prototype.requiredFields = {
       addTag: ["Tag Name"],
       removeTag: [],
-      updateTag: ["Tag Name"]
+      updateTag: ["Tag Name"],
+      moveTag: [],
+      convertTag: [],
+      mergeTag: []
     };
 
     Action.prototype.requiredValidation = {
       addTag: ["isRequired", "appliesNullToText"],
       removeTag: ["noChildren"],
-      updateTag: ["isRequired", "appliesNullToText"]
+      updateTag: ["isRequired", "appliesNullToText"],
+      moveTag: ["noChildren"],
+      convertTag: ["noChildren"],
+      mergeTag: ["noChildren"]
     };
 
     function Action(view, instance, tagId, action, cb) {
       var k, v, _ref;
       this.view = view;
       this.instance = instance;
-      this.tagId = tagId;
+      this.tagId = tagId != null ? tagId : 291;
       this.cb = cb;
       _ref = this.ajax;
       for (k in _ref) {
@@ -1722,35 +1687,47 @@
         v.data["call_uri"] = window.location.href;
         v["dataType"] = "json";
       }
-      this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "']");
-      this.tagName = this.cjDT.data("name");
+      if (parseInt(this.tagId) === 291) {
+        this.cjDT = this.view.cj_selectors.tagBox.find(".top-" + tagID);
+        this.tagName = this.view.cj_menuSelectors.autocomplete.val();
+      } else {
+        this.cjDT = this.view.cj_selectors.tagBox.find("dt[data-tagid='" + this.tagId + "']");
+        this.tagName = this.cjDT.data("name");
+      }
       this[action].apply(this, [action]);
     }
 
     Action.prototype.createSlide = function(cb) {
-      var resize, sideWidth, slideWidth,
+      var activeTreeId, containerPosition, leftPos, menuHeight, resize, slideHeight,
         _this = this;
       resize = new Resize;
+      this.bottom = true;
       this.view.cj_selectors.tagBox.addClass("hasSlideBox");
-      if (resize.height > 190) {
-        this.view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>");
-        this.cj_slideBox = this.view.cj_selectors.tagBox.find(".slideBox");
-        this.cj_slideBox.css("right", "" + (this.findGutterSpace()) + "px");
-        if (this.view.settings.wide) {
-          slideWidth = '40%';
-        } else {
-          sideWidth = '60%';
-        }
-        return this.cj_slideBox.animate({
-          width: slideWidth
-        }, 500, function() {
-          _this.cj_slideBox.append(_this.slideHtml);
-          _this.setCancel();
-          return cb();
-        });
+      containerPosition = this.view.cj_selectors.container.offset();
+      menuHeight = this.view.cj_menuSelectors.menu.height();
+      activeTreeId = this.view.getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g, "")));
+      this.view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-" + activeTreeId + "'></div></div>");
+      this.cj_slideBoxContainer = cj(".JSTree-slideBox");
+      if (this.view.cj_selectors.tagBox.hasClass("dropdown")) {
+        leftPos = containerPosition.left;
       } else {
-
+        leftPos = containerPosition.left - this.findGutterSpace();
       }
+      this.cj_slideBoxContainer.css("top", "" + (containerPosition.top + menuHeight) + "px").css("left", "" + leftPos + "px");
+      this.cj_slideBox = this.cj_slideBoxContainer.find(".slideBox");
+      this.cj_slideBox.css("top", "0px");
+      if (resize.height < 230) {
+        slideHeight = 230;
+      } else {
+        slideHeight = resize.height;
+      }
+      return this.cj_slideBox.animate({
+        height: "" + slideHeight + "px"
+      }, 500, function() {
+        _this.cj_slideBox.append(_this.slideHtml);
+        _this.setCancel();
+        return cb();
+      });
     };
 
     Action.prototype.setCancel = function() {
@@ -1762,20 +1739,38 @@
     };
 
     Action.prototype.destroySlideBox = function() {
-      var _this = this;
+      var animate,
+        _this = this;
       this.cj_slideBox.empty();
-      return this.cj_slideBox.animate({
-        width: '0%'
-      }, 500, function() {
+      if (this.bottom) {
+        animate = {
+          height: "0px"
+        };
+      } else {
+        animate = {
+          width: "0%"
+        };
+      }
+      return this.cj_slideBox.animate(animate, 500, function() {
+        var buttons;
         _this.cj_slideBox.find(".label.cancel").off("click");
+        _this.view.toggleSettingsAdd("add", true);
         _this.cj_slideBox.remove();
-        _this.view.cj_selectors.tagBox.removeClass("hasSlideBox");
-        return _this.view.createTabClick();
+        _this.view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio");
+        _this.view.createTabClick();
+        if (_this.cj_slideBoxContainer != null) {
+          _this.cj_slideBoxContainer.remove();
+        }
+        if (_this.view.cj_selectors.tagBox.find(".tagContainer.active").hasClass("hideCheckbox")) {
+          return _this.view.cj_selectors.tagBox.find(".tagContainer.active").removeClass("hideCheckbox");
+        } else {
+          return buttons = new Buttons(_this.view);
+        }
       });
     };
 
-    Action.prototype.addTagFromPosition = function(tagId, action) {
-      var cjDT, k, manipBox, message, response, v, _ref,
+    Action.prototype.addTagFromPosition = function(action) {
+      var cjDT, k, manipBox, message, response, tagId, v, _ref,
         _this = this;
       manipBox = function(tagId, messageId) {
         var cjDL;
@@ -1787,7 +1782,8 @@
         cjDT.removeClass("tag-" + tagId).addClass("tag-" + messageId);
         return cjDT.find("input.checkbox").attr("name", "tag[" + messageId + "]");
       };
-      cjDT = this.view.cj_selectors.tagBox.find("#tagLabel_" + tagId);
+      cjDT = this.cjDT;
+      tagId = cjDT.data("tagid");
       this.ajax.addTag.data.name = cjDT.find(".tag .name").text();
       this.ajax.addTag.data.description = cjDT.find(".tag .description").text();
       this.ajax.addTag.data.parent_id = "292";
@@ -1835,6 +1831,9 @@
       var innerWidth, outerWidth;
       outerWidth = this.view.cj_selectors.tagBox.width();
       innerWidth = this.view.cj_selectors.tagBox.find(".tagContainer.active").width();
+      if (innerWidth == null) {
+        innerWidth = this.view.cj_selectors.tagBox[0].scrollWidth;
+      }
       return outerWidth - innerWidth;
     };
 
@@ -1847,6 +1846,54 @@
         this.requiredFields.push(_utils.camelCase(i));
       }
       return this.requiredValidation = this.requiredValidation[type];
+    };
+
+    Action.prototype.quickTag = function(values) {
+      var _this = this;
+      if (values == null) {
+        values = "";
+      }
+      this.slideHtml = this.gatherQuickLabelHTML();
+      this.setRequiredFields("addTag");
+      this.view.cj_selectors.tagBox.find(".tagContainer.active").addClass("hideCheckbox");
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.toggleSettingsAdd("add");
+        _this.view.unbindTabClick();
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            _this.removeErrors(data);
+            if (bbUtils.objSize(data.errors) > 0) {
+              return _this.markErrors(data.errors);
+            } else {
+              _this.ajax.addTag.data.name = data.fields.tagName;
+              _this.ajax.addTag.data.description = data.fields.description;
+              _this.ajax.addTag.data.is_reserved = data.fields.isReserved;
+              _this.tagId = data.fields.tag;
+              _this.ajax.addTag.data.parent_id = _this.tagId;
+              _this.convertSubmitToLoading();
+              return _this.tagAjax(data.tagId, "addTag", void 0, function(message) {
+                var button;
+                if (message.code != null) {
+                  if (message.message === "DB Error: already exists") {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "Tag " + data.fields.tagName + " already exists."
+                    });
+                    return doSubmit.call(_this);
+                  }
+                } else {
+                  _this.addEntityToTree(_this.tagId, message);
+                  button = new Buttons(_this.view, "dt#tagLabel_" + message.id);
+                  _this.revertSubmitFromLoading();
+                  return _this.destroySlideBox();
+                }
+              });
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
     };
 
     Action.prototype.addTag = function(values) {
@@ -1925,12 +1972,175 @@
       });
     };
 
+    Action.prototype.sendDtToPanel = function(cjDT) {
+      this.cj_slideBox.find(".toTag").removeClass("errorLabel");
+      return this.cj_slideBox.find(".toTag").html(cjDT.data("name"));
+    };
+
     Action.prototype.moveTag = function() {
-      return this.createSlide();
+      var a, buttons,
+        _this = this;
+      this.slideHtml = this.gatherMoveLabelHTML();
+      this.setRequiredFields("moveTag");
+      this.view.cj_selectors.tagBox.addClass("radio");
+      buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+      a = this;
+      this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+        a.cj_slideBox.find(".submit").removeClass("inactive");
+        return a.sendDtToPanel(cj(this).closest("dt"));
+      });
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.unbindTabClick();
+        _this.cj_slideBox.find(".submit").addClass("inactive");
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+              return _this.markErrors({
+                toTag: "Must specify a destination"
+              });
+            } else {
+              _this.removeErrors(data);
+              if (bbUtils.objSize(data.errors) > 0) {
+                return _this.markErrors(data.errors);
+              } else {
+                _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+                data.id = _this.cjDT.data("tagid");
+                _this.ajax.moveTag.data.id = data.id;
+                _this.convertSubmitToLoading();
+                return _this.tagAjax(data.id, "moveTag", void 0, function(message) {
+                  if (message == null) {
+                    console.log("no response");
+                  }
+                  if (message.code != null) {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                    });
+                    return doSubmit.call(_this);
+                  } else {
+                    _this.removeEntityFromTree(data.id);
+                    _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                    _this.revertSubmitFromLoading();
+                    return _this.destroySlideBox();
+                  }
+                });
+              }
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
+    };
+
+    Action.prototype.convertTag = function() {
+      var a, buttons,
+        _this = this;
+      this.slideHtml = this.gatherConvertLabelHTML();
+      this.setRequiredFields("convertTag");
+      this.view.cj_selectors.tagBox.addClass("radio");
+      buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+      a = this;
+      this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+        a.cj_slideBox.find(".submit").removeClass("inactive");
+        return a.sendDtToPanel(cj(this).closest("dt"));
+      });
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.unbindTabClick();
+        _this.cj_slideBox.find(".submit").addClass("inactive");
+        _this.view.showTags(291, "issue-codes");
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+              return _this.markErrors({
+                toTag: "Must specify a destination"
+              });
+            } else {
+              _this.removeErrors(data);
+              if (bbUtils.objSize(data.errors) > 0) {
+                return _this.markErrors(data.errors);
+              } else {
+                _this.ajax.moveTag.data.parent_id = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+                data.id = _this.cjDT.data("tagid");
+                _this.ajax.moveTag.data.id = data.id;
+                _this.convertSubmitToLoading();
+                return _this.tagAjax(data.id, "convertTag", void 0, function(message) {
+                  if (message == null) {
+                    console.log("no response");
+                  }
+                  if (message.code != null) {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "Tag " + data.fields.tagName + " cannot be removed."
+                    });
+                    return doSubmit.call(_this);
+                  } else {
+                    _this.removeEntityFromTree(data.id);
+                    _this.addEntityToTree(_this.ajax.moveTag.data.parent_id, message);
+                    _this.revertSubmitFromLoading();
+                    return _this.destroySlideBox();
+                  }
+                });
+              }
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
     };
 
     Action.prototype.mergeTag = function() {
-      return this.createSlide();
+      var a, buttons,
+        _this = this;
+      this.slideHtml = this.gatherMergeLabelHTML();
+      this.setRequiredFields("mergeTag");
+      this.view.cj_selectors.tagBox.addClass("radio");
+      buttons = new Buttons(this.view, this.cjDT.data("tagid"), true);
+      a = this;
+      this.view.cj_selectors.tagBox.find("dt input.radio").on("click", function(event) {
+        a.cj_slideBox.find(".submit").removeClass("inactive");
+        return a.sendDtToPanel(cj(this).closest("dt"));
+      });
+      return this.createSlide(function() {
+        var doSubmit;
+        _this.view.unbindTabClick();
+        _this.cj_slideBox.find(".submit").addClass("inactive");
+        doSubmit = function() {
+          return _this.submitButton(true, function(data) {
+            var currentId, destinationId;
+            if (_this.cj_slideBox.find(".submit").hasClass("inactive")) {
+              return _this.markErrors({
+                toTag: "Must specify a destination"
+              });
+            } else {
+              _this.removeErrors(data);
+              if (bbUtils.objSize(data.errors) > 0) {
+                return _this.markErrors(data.errors);
+              } else {
+                destinationId = _this.view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value");
+                currentId = _this.cjDT.data("tagid");
+                _this.ajax.mergeTag.data = "fromId=" + currentId + "&toId=" + destinationId;
+                _this.convertSubmitToLoading();
+                return _this.tagAjax(currentId, "mergeTag", void 0, function(message) {
+                  if (!message.status) {
+                    _this.revertSubmitFromLoading();
+                    _this.markErrors({
+                      tagName: "" + message.message
+                    });
+                    return doSubmit.call(_this);
+                  } else {
+                    _this.removeEntityFromTree(currentId);
+                    _this.revertSubmitFromLoading();
+                    return _this.destroySlideBox();
+                  }
+                });
+              }
+            }
+          });
+        };
+        return doSubmit.call(_this);
+      });
     };
 
     Action.prototype.updateTag = function() {
@@ -1982,9 +2192,9 @@
     };
 
     Action.prototype.addEntityToTree = function(parent, message) {
-      var backout, cjParent, node, node_parsed;
+      var backout, buttons, cjParent, node, node_parsed, _ref;
       node = {};
-      if (message.created_date != null) {
+      if ((message.created_date != null) && message.created_date.length > 0) {
         node.created_date = _manipTags.createDate(message.created_date);
       }
       if (message.name != null) {
@@ -2004,9 +2214,15 @@
         node.id = message.id;
       }
       node.children = false;
-      cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
-      node.level = cjParent.data("level") + 1;
-      node.type = "" + (cjParent.data("tree"));
+      if ((_ref = parseInt(parent)) === 291 || _ref === 296 || _ref === 292) {
+        cjParent = this.view.cj_selectors.tagBox.find(".tagContainer.top-" + parent);
+        node.level = 1;
+        node.type = parseInt(parent);
+      } else {
+        cjParent = this.view.cj_selectors.tagBox.find("dt#tagLabel_" + parent);
+        node.level = cjParent.data("level") + 1;
+        node.type = ("" + (cjParent.data("tree"))) || "291";
+      }
       if (message.is_reserved = "false") {
         node.is_reserved = "0";
       } else {
@@ -2015,11 +2231,12 @@
       node_parsed = new Node(node);
       this.instance.appendToAC(node);
       backout = this.view.trees[parseInt(node.type)].appendNode(node, node.parent_id, node_parsed.html);
+      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
       if (!backout) {
         console.log("bad things happened");
         return false;
       }
-      return new Buttons(this.view, "#tagLabel_" + node.id);
+      return buttons = new Buttons(this.view, "#tagLabel_" + node.id);
     };
 
     Action.prototype.removeEntityFromTree = function() {
@@ -2032,7 +2249,7 @@
     };
 
     Action.prototype.updateEntity = function(message) {
-      var backout, cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
+      var backout, buttons, cjDL, cjDT, cjNode, data, id, node, nodeDL, settings;
       data = {};
       id = message.id;
       data.id = "" + id;
@@ -2066,9 +2283,9 @@
       }
       cjDL.remove();
       cjDT.replaceWith(cjNode.html());
-      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + data.type));
-      new Buttons(this.view, "#tagDropdown_" + id);
-      return new Buttons(this.view, "#tagLabel_" + id);
+      _treeUtils.makeDropdown(this.view.cj_selectors.tagBox.find(".top-" + node.type));
+      buttons = new Buttons(this.view, "#tagDropdown_" + id);
+      return buttons = new Buttons(this.view, "#tagLabel_" + id);
     };
 
     Action.prototype.removeErrors = function(data) {
@@ -2119,10 +2336,16 @@
       cj.each(cjFields, function(i, el) {
         var cjEl;
         cjEl = cj(el);
-        if (cjEl.attr("type").toLowerCase() === "checkbox") {
-          return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
-        } else {
-          return data.fields[cjEl.attr("name")] = cjEl.val();
+        switch (cjEl.attr("type").toLowerCase()) {
+          case "checkbox":
+            if (cjEl.is(":checked")) {
+              return data.fields[cjEl.attr("name")] = cjEl.prop("checked");
+            }
+            break;
+          case "radio":
+            return data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[", "").replace("]", "");
+          default:
+            return data.fields[cjEl.attr("name")] = cjEl.val();
         }
       });
       return this.validateValues(data);
@@ -2138,6 +2361,7 @@
 
     Action.prototype.convertSubmitToLoading = function() {
       var cjSubmitButton;
+      this.cj_slideBox.find(".label.cancel").addClass("inactive");
       cjSubmitButton = this.cj_slideBox.find(".label.submit");
       cjSubmitButton.addClass("loadingGif");
       cjSubmitButton.data("text", cjSubmitButton.text());
@@ -2209,7 +2433,7 @@
       for (k in _ref) {
         v = _ref[k];
         cjEl = this.cj_slideBox.find("input[name='" + k + "']");
-        if (cjEl.attr("name").toLowerCase() === "checkbox") {
+        if (cjEl.attr("type").toLowerCase() === "checkbox") {
           continue;
         }
         _ref1 = this.requiredValidation;
@@ -2230,6 +2454,7 @@
 
     Action.prototype.submitButton = function(gather, cb) {
       var _this = this;
+      this.cj_slideBox.find(".label.submit").off("click");
       return this.cj_slideBox.find(".label.submit").on("click", function() {
         if (gather) {
           return cb(_this.gatherValuesFromSlideBox());
@@ -2264,6 +2489,53 @@
         }
         html += "</div>";
       }
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
+    Action.prototype.gatherQuickLabelHTML = function(values) {
+      var field, html, label, _i, _len, _ref;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += label.buildLabel("header", "Add Tag", "Add Tag");
+      this.tagName = cj("#JSTree-ac").val();
+      if (this.tagName.length === 0) {
+        this.tagName = "";
+      }
+      if (this.tagName !== "Type in a partial or complete name of an tag or keyword.") {
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+      } else {
+        this.tagName = "";
+      }
+      _ref = this.fields.addTag;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        field = _ref[_i];
+        html += "<div class='elementGroup'>";
+        html += label.buildLabel("label", field, field);
+        switch (field) {
+          case "Is Reserved":
+            html += label.buildLabel("checkBox", field, "");
+            break;
+          case "Tag Name":
+            html += label.buildLabel("textBox", field, this.tagName);
+            break;
+          default:
+            html += label.buildLabel("textBox", field, "");
+        }
+        html += "</div>";
+      }
+      html += "<div class='typeCheck'>";
+      html += label.buildLabel("label", "left", "Keywords");
+      html += _utils.createRadioButton("tag", "tag[296]", "radio", "checked");
+      html += label.buildLabel("label", "right", "Issue Codes");
+      html += _utils.createRadioButton("tag", "tag[291]", "radio");
+      html += "</div>";
       html += "<div class='actionButtons'>";
       html += label.buildLabel("submit", "", "submit");
       html += label.buildLabel("cancel", "", "cancel");
@@ -2324,13 +2596,93 @@
       return html;
     };
 
+    Action.prototype.gatherMoveLabelHTML = function(values) {
+      var html, label;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += "<div class='openArrow'></div>";
+      if (this.tagName != null) {
+        html += label.buildLabel("header", "Move Tag", "Move Tag:");
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+        html += label.buildLabel("header", "header3", "to");
+        html += label.buildLabel("headerdescription", "To Tag", "");
+      } else {
+        html += label.buildLabel("error", "error", "Cannot Find Tag to Move");
+        return html;
+      }
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
+    Action.prototype.gatherConvertLabelHTML = function(values) {
+      var html, label;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += "<div class='openArrow'></div>";
+      if (this.tagName != null) {
+        html += label.buildLabel("header", "Convert Tag", "Convert Keyword:");
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+        html += label.buildLabel("header", "header3", "To Issue Code Under:");
+        html += label.buildLabel("headerdescription", "To Tag", "");
+      } else {
+        html += label.buildLabel("error", "error", "Cannot Find Tag to Place Keyword Under");
+        return html;
+      }
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
+    Action.prototype.gatherMergeLabelHTML = function(values) {
+      var html, label;
+      if (values == null) {
+        values = "";
+      }
+      label = new Label;
+      html = "";
+      html += "<div class='openArrow'></div>";
+      if (this.tagName != null) {
+        html += label.buildLabel("header", "Merge Tag", "Merge Tag:");
+        html += label.buildLabel("headerdescription", "headerdescription", "" + this.tagName);
+        html += label.buildLabel("header", "header3", "Into");
+        html += label.buildLabel("headerdescription", "To Tag", "");
+      } else {
+        html += label.buildLabel("error", "error", "Cannot Find Tag to Merge");
+        return html;
+      }
+      html += "<div class='actionButtons'>";
+      html += label.buildLabel("submit", "", "submit");
+      html += label.buildLabel("cancel", "", "cancel");
+      html += "</div>";
+      return html;
+    };
+
     Action.prototype.tagAjax = function(tagId, type, action, locCb) {
       var request,
         _this = this;
       request = cj.when(cj.ajax(this.ajax[type]));
       request.done(function(data) {
         if (locCb != null) {
-          return locCb(data.message);
+          if (data.code === 0) {
+            return locCb(data);
+          } else {
+            if (data["status"] === true) {
+              return locCb(data);
+            } else {
+              return locCb(data.message);
+            }
+          }
         } else if (_this.cb != null) {
           return _this.cb(data.message);
         }
@@ -2346,12 +2698,12 @@
     createDate: function(mDate) {
       var date;
       date = "";
-      date += "" + (mDate.substring(0, 3)) + "-";
-      date += "" + (mDate.substring(4, 5)) + "-";
-      date += "" + (mDate.substring(6, 7)) + " ";
-      date += "" + (mDate.substring(8, 9)) + ":";
-      date += "" + (mDate.substring(10, 11)) + ":";
-      date += "" + (mDate.substring(12, 13));
+      date += "" + (mDate.substring(0, 4)) + "-";
+      date += "" + (mDate.substring(4, 6)) + "-";
+      date += "" + (mDate.substring(6, 8)) + " ";
+      date += "" + (mDate.substring(8, 10)) + ":";
+      date += "" + (mDate.substring(10, 12)) + ":";
+      date += "" + (mDate.substring(12, 14));
       return date;
     }
   };
@@ -2457,25 +2809,38 @@
 
     Buttons.prototype.issuecodes = ["addTag", "removeTag", "updateTag", "moveTag", "mergeTag"];
 
-    function Buttons(view, finder) {
+    Buttons.prototype.radioButtons = false;
+
+    function Buttons(view, finder, radio) {
       this.view = view;
       if (finder == null) {
         finder = "";
       }
-      if (this.view.settings.tagging) {
-        this.removeFCB();
-        this.createTaggingCheckboxes(finder);
-      }
-      if (this.view.settings.edit) {
+      if (radio === true) {
         this.removeTaggingCheckboxes();
-        this.createFCB();
+        this.removeFCB();
+        this.radioButtons = true;
+        this.createRadioButtons(finder);
+      } else {
+        this.removeRadioButtons();
+        if (this.view.settings.tagging) {
+          if (finder.length === 0) {
+            this.removeFCB();
+          }
+          this.createTaggingCheckboxes(finder);
+        }
+        if (this.view.settings.edit) {
+          this.removeTaggingCheckboxes();
+          this.createFCB();
+        }
       }
     }
 
     Buttons.prototype.createTaggingCheckboxes = function(finder) {
       var a;
+      finder = ("" + finder) || ("" + finder + " dt");
       a = this;
-      this.view.cj_selectors.tagBox.find("" + finder + " dt .tag .name").before(function() {
+      this.view.cj_selectors.tagBox.find("" + finder + " .tag .name").before(function() {
         if (cj(this).siblings(".fCB").length === 0) {
           return a.createButtons(cj(this).parent().parent().data("tagid"));
         }
@@ -2484,7 +2849,24 @@
     };
 
     Buttons.prototype.removeTaggingCheckboxes = function() {
-      return this.view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove();
+      return this.view.cj_selectors.tagBox.find("dt .tag .fCB").remove();
+    };
+
+    Buttons.prototype.createRadioButtons = function(finder) {
+      var a;
+      a = this;
+      return this.view.cj_selectors.tagBox.find("dt .tag .name").before(function() {
+        if (cj(this).parent().parent().data("tagid") !== finder) {
+          return a.createButtons(cj(this).parent().parent().data("tagid"));
+        }
+      });
+    };
+
+    Buttons.prototype.removeRadioButtons = function() {
+      var cjDT;
+      cjDT = this.view.cj_selectors.tagBox.find("dt");
+      cjDT.find(".tag .fCB input.radio").parent().parent().parent().remove();
+      return cjDT.off("click");
     };
 
     Buttons.prototype.createFCB = function() {
@@ -2523,7 +2905,9 @@
         v = _ref[k];
         cjTreeTop = this.view.cj_selectors.tagBox.find(".top-" + k).find("dt");
         cjTreeTop.off("mouseenter");
-        _results.push(cjTreeTop.off("mouseleave"));
+        cjTreeTop.off("mouseleave");
+        cjTreeTop.off("click");
+        _results.push(cjTreeTop.find(".fCB").remove());
       }
       return _results;
     };
@@ -2532,31 +2916,37 @@
       var html, tag, _i, _j, _len, _len1, _ref, _ref1;
       html = "<div class='fCB'>";
       html += "<ul>";
-      if (this.view.settings.edit) {
-        if (parseInt(treeTop) === 291) {
-          _ref = this.issuecodes;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            tag = _ref[_i];
-            html += this[tag];
-          }
-        }
-        if (parseInt(treeTop) === 296) {
-          _ref1 = this.keywords;
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            tag = _ref1[_j];
-            html += this[tag];
-          }
-        }
-      } else {
+      if (this.radioButtons) {
         html += "<li>";
-        html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+        html += _utils.createRadioButton("tag", "" + treeTop, "radio");
         html += "</li>";
+      } else {
+        if (this.view.settings.edit) {
+          if (parseInt(treeTop) === 291) {
+            _ref = this.issuecodes;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              tag = _ref[_i];
+              html += this[tag];
+            }
+          }
+          if (parseInt(treeTop) === 296) {
+            _ref1 = this.keywords;
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              tag = _ref1[_j];
+              html += this[tag];
+            }
+          }
+        } else {
+          if (this.view.settings.tagging) {
+            html += "<li>";
+            html += _utils.createCheckBox("tag[" + treeTop + "]", "", "checkbox");
+            html += "</li>";
+          }
+        }
       }
       html += "</ul>";
       return html += "</div>";
     };
-
-    Buttons.prototype.addRadios = function(treeTop) {};
 
     Buttons.prototype.executeButton = function(cjDT) {
       var _this = this;
@@ -2601,24 +2991,67 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         a = _ref[_i];
         this.cj_top_settings.append(this.addButton(a));
+        this["" + a + "Hook"].call(this, a, this.returnCJLoc("top"));
       }
       _ref1 = icons.bottom;
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         b = _ref1[_j];
-        _results.push(this.cj_bottom_settings.append(this.addButton(b)));
+        this.cj_bottom_settings.append(this.addButton(b));
+        _results.push(this["" + b + "Hook"].call(this, b, this.returnCJLoc("bottom")));
       }
       return _results;
     };
 
-    icons = {
-      top: ['setting', 'add', 'print'],
-      bottom: ['slide']
+    Settings.prototype.unbindButton = function(name) {
+      return this.view.cj_menuSelectors.settings.find("." + name).off("click");
     };
 
-    Settings.prototype.addButton = function(name) {
-      return "<div class='" + name + "'></div>";
+    Settings.prototype.bindButton = function(name) {
+      name = name.toLowerCase();
+      return this["" + name + "Hook"].call(this, name, this.view.cj_menuSelectors.settings);
     };
+
+    icons = {
+      top: ['setting', 'print'],
+      bottom: ['add', 'slide']
+    };
+
+    Settings.prototype.returnCJLoc = function(loc) {
+      if (loc === "top") {
+        return this.cj_top_settings;
+      }
+      if (loc === "bottom") {
+        return this.cj_bottom_settings;
+      }
+    };
+
+    Settings.prototype.addButton = function(name, cjLoc) {
+      var tabIndex;
+      tabIndex = "";
+      if (name === "add") {
+        tabIndex = "tabindex='2'";
+      }
+      return "<button class='" + name + "' name='" + name + "' type='button'" + tabIndex + "></button>";
+    };
+
+    Settings.prototype.tabIndex = {
+      add: 2
+    };
+
+    Settings.prototype.settingHook = function(name, cjLoc) {};
+
+    Settings.prototype.printHook = function(name, cjLoc) {};
+
+    Settings.prototype.addHook = function(name, cjLoc) {
+      var _this = this;
+      cjLoc.find("." + name).off("click");
+      return cjLoc.find("." + name).on("click", function() {
+        return _this.view.createAction(null, "quickTag");
+      });
+    };
+
+    Settings.prototype.slideHook = function(name, cjLoc) {};
 
     return Settings;
 
@@ -2805,7 +3238,10 @@
           };
           _this.cjTagBox.find(".top-292.tagContainer").append(_this.addPositionLoader());
           return openLeg.query(nextPage, function(results) {
-            var addButtonsTo, filteredList, k, poses, v;
+            var addButtonsTo, buttons, filteredList, k, poses, v;
+            if (results.status != null) {
+              console.log(results);
+            }
             poses = _this.addPositionsToTags(results.results);
             filteredList = {
               292: poses
@@ -2817,7 +3253,7 @@
               v = nextPage[k];
               addButtonsTo += "." + k + "-" + v;
             }
-            new Buttons(_this.view, addButtonsTo);
+            buttons = new Buttons(_this.view, addButtonsTo);
             _this.openLegQueryDone = true;
             return _this.buildPositions();
           });
@@ -2871,6 +3307,9 @@
         "term": terms
       }, function(results) {
         var filteredList, hitCount, poses;
+        if (results.status != null) {
+          console.log(results);
+        }
         poses = _this.addPositionsToTags(results.results);
         filteredList = {
           292: poses
@@ -3054,7 +3493,7 @@
         }
       } else {
         this.domList = cj();
-        this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer'></div>");
+        this.domList = this.domList.add("<div class='top-" + this.tagId + " " + filter + " tagContainer' data-treeid='" + this.tagId + "'></div>");
       }
       return this.iterate(this.tagList);
     };
@@ -3099,11 +3538,10 @@
     };
 
     Tree.prototype.appendNode = function(node, parent, html, noAdd) {
-      var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _len, _ref;
+      var cjParentDL, cjParentDT, i, obj, parentDL, parentDT, topLevel, _i, _j, _len, _len1, _ref, _ref1;
       if (noAdd == null) {
         noAdd = false;
       }
-      console.log(node);
       topLevel = false;
       if (parseInt(parent) === 291 || parseInt(parent) === 292 || parseInt(parent) === 296) {
         topLevel = true;
@@ -3113,7 +3551,6 @@
           _ref = this.tagList;
           for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
             obj = _ref[i];
-            console.log(node.id === obj.id);
             if (obj.id === node.id) {
               this.tagList.splice(i, 1);
               this.tagList.splice(i, 0, node);
@@ -3149,6 +3586,13 @@
       cjParentDL.show().prepend(html);
       if (topLevel) {
         return true;
+      }
+      _ref1 = this.tagList;
+      for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+        obj = _ref1[i];
+        if (parent === obj.id) {
+          obj.children = true;
+        }
       }
       cjParentDT.addClass("open");
       cjParentDT.find(".ddControl").addClass("treeButton");
@@ -3379,7 +3823,7 @@
       } else {
         this.reserved = false;
       }
-      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'              data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
+      html = "<dt class='lv-" + node.level + " " + this.hasDesc + " tag-" + node.id + " " + this.nameLength + "' id='tagLabel_" + node.id + "'             data-tagid='" + node.id + "' data-tree='" + node.type + "' data-name='" + node.name + "'             data-parentid='" + node.parent + "' data-billno='" + this.billNo + "'             data-position='" + this.position + "' data-level='" + node.level + "'             data-isreserved='" + this.isreserved + "'            >";
       html += "              <div class='tag'>                <div class='ddControl " + treeButton + "'></div>                <div class='name'>" + this.name + "</div>            ";
       if (this.hasDesc.length > 0) {
         html += "                <div class='description'>" + this.description + "</div>            ";
@@ -3407,8 +3851,8 @@
     Token.prototype.create = function(cjLocation, name, type, id, cb) {
       var html,
         _this = this;
-      html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>                " + name + "             </div>           ";
-      cjLocation.append(html);
+      html = "<div class='token token-" + id + "' data-name='" + name + "' data-type='" + type + "'>" + name + "</div> ";
+      cjLocation.prepend(html);
       cjLocation.find(".token-" + id).on("click", function() {
         cb.call(_this);
         return cjLocation.find(".token-" + id).remove();
@@ -3417,6 +3861,124 @@
     };
 
     return Token;
+
+  })();
+
+  OpenLeg = (function() {
+    var ajaxStructure, queryDefaults;
+
+    function OpenLeg() {}
+
+    OpenLeg.prototype.query = function(args, callback) {
+      var page, term, year;
+      this.callback = callback;
+      if (!((args.term != null) || args.term.length >= 3)) {
+        return false;
+      }
+      this.pSearch = args.term.search(/\-20[0-9][0-9]/g);
+      if (this.pSearch > -1) {
+        year = args.term.slice(this.pSearch + 1, this.pSearch + 5);
+        term = args.term.slice(0, this.pSearch);
+        this.term = args.term;
+      } else {
+        this.term = term = args.term;
+      }
+      if (year == null) {
+        year = args.year;
+      }
+      page = args.page || 0;
+      this.page = ajaxStructure.data.pageIdx = page;
+      return this.buildQuery(term, year, page);
+    };
+
+    OpenLeg.prototype.buildQuery = function(term, year) {
+      var fOType, fOid, fTerm, fText, fYear, validjsonpterm;
+      fTerm = "(" + term + "~ OR " + term + "*)";
+      fOType = "(otype:" + queryDefaults.otype + ")";
+      fYear = "(year:" + (this.getCurrentSessionYear(year)) + ")";
+      fText = "(full:" + term + "~ OR full:" + term + "*)";
+      fOid = "(oid:" + queryDefaults.oid + ")";
+      validjsonpterm = bbUtils.spaceTo("underscore", term);
+      if (this.pSearch > -1) {
+        ajaxStructure.data.term = "(oid:" + term + "-" + year + ")";
+      } else {
+        ajaxStructure.data.term = "" + fTerm + " AND " + fOType + " AND " + fYear + " AND " + fText + " NOT " + fOid;
+      }
+      return this.getQuery();
+    };
+
+    OpenLeg.prototype.getCurrentSessionYear = function(year) {
+      var dateobject;
+      if ((year == null) || isNaN(parseInt(year))) {
+        dateobject = new Date();
+        year = dateobject.getFullYear();
+      }
+      if (year % 2 === 0) {
+        year = parseInt(year) - 1;
+      }
+      return year;
+    };
+
+    OpenLeg.prototype.getQuery = function() {
+      var get,
+        _this = this;
+      get = cj.ajax(ajaxStructure);
+      return get.done(function(data, textStatus, xhr) {
+        if (xhr.status === 503 || xhr.status === 500 || xhr.status === 404) {
+          return _this.callback({
+            status: "error",
+            errorType: xhr.status
+          });
+        }
+        return _this.callback(_this.ripApartQueryData(data.response.metadata, data.response.results));
+      });
+    };
+
+    OpenLeg.prototype.ripApartQueryData = function(metadata, results) {
+      var index, pagesLeft, result, returnStructure, rs, _i, _len;
+      pagesLeft = Math.floor((metadata.totalresults - results.length) / ajaxStructure.data.pageSize) - ajaxStructure.data.pageIdx;
+      returnStructure = {
+        seeXmore: metadata.totalresults - results.length,
+        page: this.page,
+        pagesLeft: pagesLeft,
+        term: this.term,
+        results: []
+      };
+      for (index = _i = 0, _len = results.length; _i < _len; index = ++_i) {
+        result = results[index];
+        rs = {
+          noname: "" + result.oid + " - (" + result.data.bill.sponsor.fullname + ")",
+          forname: "" + result.oid + " - FOR (" + result.data.bill.sponsor.fullname + ")",
+          againstname: "" + result.oid + " - AGAINST (" + result.data.bill.sponsor.fullname + ")",
+          description: "" + result.data.bill.title,
+          billNo: "" + result.oid,
+          url: "" + result.url
+        };
+        returnStructure.results.push(rs);
+      }
+      return returnStructure;
+    };
+
+    queryDefaults = {
+      otype: 'bill',
+      oid: 'A*',
+      sort: 'modified',
+      sortOrder: false
+    };
+
+    ajaxStructure = {
+      url: 'http://open.nysenate.gov/legislation/2.0/search.jsonp',
+      crossDomain: true,
+      dataType: "jsonp",
+      cache: true,
+      data: {
+        term: '',
+        pageSize: 10,
+        pageIdx: 0
+      }
+    };
+
+    return OpenLeg;
 
   })();
 

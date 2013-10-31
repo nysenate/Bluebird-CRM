@@ -42,7 +42,9 @@ class OpenLeg
 
   getQuery: () ->
     get = cj.ajax(ajaxStructure)
-    get.done((data) =>
+    get.done((data,textStatus,xhr) =>
+      if xhr.status == 503 || xhr.status == 500 || xhr.status == 404
+        return @callback({status: "error", errorType: xhr.status})
       return @callback(@ripApartQueryData(data.response.metadata,data.response.results))
     )
   ripApartQueryData: (metadata,results) ->

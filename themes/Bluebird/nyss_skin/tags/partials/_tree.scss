@@ -29,6 +29,7 @@
    
   }
   &.dropdown {
+    height:0px;
     display:none;
     &.open {
       display:block;
@@ -60,9 +61,44 @@
     }
     @include round-bottom-corners(3px);
   }
-  &.hasSlideBox {
-    @import "slideBox";
+  &.hasSlideBox.radio {
+    .tagContainer {
+      position:relative;
+      .fCB {
+        display:inline;
+        float:left;
+        margin: 0px;
+        padding: 0px;
+        margin-right:5px;
+        position:static;
+        input {
+          // width:0px;
+          margin-top:2px;
+        }
+      }
+    }
   }
+  &.hasSlideBox:not(.radio) {
+    position:relative;
+    .tagContainer {
+      position:relative;
+      dt:hover {
+        .fCB {
+          display:none;
+        }
+        background-color:transparent;
+      }
+    }
+  }
+  .hideCheckbox {
+    .fCB {
+      display:none;
+    }
+    input.checkbox {
+
+    }
+  }
+
 }
 .top-292 .position-box-text-reminder {
   text-align: center;
@@ -87,7 +123,7 @@
   top:0px;
   z-index:-1;
 }
-  
+// not in BBTree
 @import "tokenHolder";
 .BBTree.dropdown.open {
   // might not work cross browser

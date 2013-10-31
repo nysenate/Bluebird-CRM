@@ -60,7 +60,13 @@ OpenLeg = (function() {
     var get,
       _this = this;
     get = cj.ajax(ajaxStructure);
-    return get.done(function(data) {
+    return get.done(function(data, textStatus, xhr) {
+      if (xhr.status === 503 || xhr.status === 500 || xhr.status === 404) {
+        return _this.callback({
+          status: "error",
+          errorType: xhr.status
+        });
+      }
       return _this.callback(_this.ripApartQueryData(data.response.metadata, data.response.results));
     });
   };

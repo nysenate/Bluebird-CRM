@@ -30,6 +30,7 @@ window.jstree["views"] =
     @view.entity_id = entity_id
     @view.applyTagged()
 
+
 class View
   @property "trees",
     get: -> @_trees
@@ -111,12 +112,12 @@ class View
           @cj_tokenHolder.box.height(curHeight)
           @cj_tokenHolder.box.animate({height:autoHeight},100, =>
             @cj_tokenHolder.box.css('height','auto')
-            @cj_tokenHolder.box.removeClass("closed") 
+            @cj_tokenHolder.box.removeClass("closed")
             @slideTokenHolder() if @settings.dropdown
           )
       )
   slideTokenHolder: () ->
-    if @cj_tokenHolder.body.height() <= 20 
+    if @cj_tokenHolder.body.height() <= 50
       @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
       curHeight = @cj_tokenHolder.body.height()
       @cj_tokenHolder.body.css('height','auto')
@@ -126,18 +127,20 @@ class View
       )
     else
       @cj_tokenHolder.options.find(".showToggle").toggleClass("slideUp")
-      @cj_tokenHolder.body.animate({height:"16px"},500, =>
+      @cj_tokenHolder.body.animate({height:"50px"},500, =>
       )
     # @cj_tokenHolder.body.slideToggle(400)
   addTagsToHolder:(id) ->
     cjDT = @cj_selectors.tagBox.find("#tagLabel_#{id}")
     killToken = =>
       cjDT.find("input.checkbox").prop("checked",false).trigger("change")
-    name = cjDT.data("name")
+    name = cj.trim(cjDT.data("name"))
     type = cjDT.data("tree")
     # @cj_tokenHolder.body
     token = new Token(@cj_tokenHolder.body)
     token.create(@cj_tokenHolder.body,name,type,id,killToken)
+  removeTagsFromHolder:(id) ->
+    @cj_tokenHolder.body.find(".token-#{id}").remove()
   removeAllTagsFromEntity:() ->
     cjDTs = @cj_selectors.tagBox.find("dt")
     cjDTs.find("dt").removeClass("shaded").removeClass("shadedChildren")
@@ -151,16 +154,16 @@ class View
     cjDTs.addClass("shaded")
     cj.each(cjDTs, (i,DT) =>
       cj(DT).find(".fCB input.checkbox").prop("checked",true)
-      @hasTaggedChildren(cj(DT))  
+      @hasTaggedChildren(cj(DT))
     )
   # turns the arbitrarily ID's incoming positions into their real, local DB value
   # based on procuring the values from the DB and applying them
   # based on their name, i.e. "S2953-2013", and by removing the position from them
   # via regex
   findPositionLocalMatch:(cjDT) ->
-    name = cjDT.find(".tag .name").text
+    name = cjDT.find(".tag .name").text()
     for a,b of @instance.positionList
-      name = _utils.removePositionTextFromBill(cjDT.name)
+      name = _utils.remposovePositionTextFromBill(cjDT.name)
       position = cjDT.data("position")
   # tags the positions, as opposed to applyTaggedKWIC on initial load
   # to show all currently tagged positions on an entity
@@ -178,7 +181,7 @@ class View
 
       else
         @cj_selectors.tagBox.find(".top-292").css("display","none")
-      new Buttons(@,".top-292")
+      buttons = new Buttons(@,".top-292")
       cjDTs = @cj_selectors.tagBox.find(".top-292 dt")
       cjDTs.addClass("shaded")
       cjDTs.find(".fCB input.checkbox").prop("checked",true)
@@ -198,7 +201,7 @@ class View
         @setDescWidths()
     if @settings.tall
       if tagBox?
-        if tagBox.height > 0  
+        if tagBox.height > 0
           height = " style='height:#{tagBox.height}px'"
           @addClassesToElement(height)
         else
@@ -260,6 +263,7 @@ class View
     @selectors.dropdown = pageElements.tagDropdown
     @selectors.initHolder = pageElements.init
     @entity_id = dataSettings.entity_id
+    @onSave = dataSettings.onSave
     @settings = displaySettings
     @settingCollection = ["settings","menuSelectors","tokenHolder","selectors"]
     for v in pageElements.tagHolder
@@ -277,11 +281,11 @@ class View
         continue if typeof(o) != "string" or o.length == 0
         if @["#{v}"].idedKeys?
           if @["#{v}"].idedKeys.indexOf(k) >= 0
-            if @["#{v}"].addPrefix?  
+            if @["#{v}"].addPrefix?
               if @["#{v}"].addPrefix.indexOf(k) >= 0
                 @["#{v}"][k] = "#{@prefixes[0]}-#{o}"
                 @["#{v}"].addPrefix.splice(@["#{v}"].addPrefix.indexOf(k),1)
-        if @["#{v}"].addPrefix?  
+        if @["#{v}"].addPrefix?
           if @["#{v}"].addPrefix.indexOf(k) >= 0
             name = ""
             for a,i in @prefixes
@@ -313,18 +317,18 @@ class View
 
   # html for menu. should be moved to its own class
   # you can use __super__ to overwrite the html if you have to
-  menuHtml: (name) -> 
+  menuHtml: (name) ->
     return "
       <div class='#{name.menu}'>
-       <div class='#{name.top}'>
-        <div class='#{name.tabs}'></div>
-        <div class='#{name.settings}'></div>
+	<div class='#{name.bottom}'>
+	  <div class='#{name.autocomplete}'>
+	    <input type='text' id='JSTree-ac' tabindex='1'>
+	  </div>
+	  <div class='#{name.settings}'></div>
        </div>
-       <div class='#{name.bottom}'>
-        <div class='#{name.autocomplete}'>
-         <input type='text' id='JSTree-ac'>
-        </div>
-        <div class='#{name.settings}'></div>
+       <div class='#{name.top}'>
+	  <div class='#{name.tabs}'></div>
+	  <div class='#{name.settings}'></div>
        </div>
       </div>
     "
@@ -345,7 +349,7 @@ class View
   # you can use __super__ to overwrite the html if you have to
   dataHolderHtml: () ->
     return "<div id='JSTree-data' style='display:none'></div>"
-  
+
   # init is called on execution of the inital response of tag data from the server
   # once it's been processed, it re-executes the selectors and updates them
   # based on changes in the dom
@@ -384,6 +388,11 @@ class View
   unbindTabClick: () ->
     for k,v of @instance.treeNames
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(k,true)}").off "click"
+  toggleSettingsAdd: (name,undo=false) ->
+    if undo
+      window.jstree.menuSettings.bindButton(name)
+    else
+      window.jstree.menuSettings.unbindButton(name)
   # jquery for functionality when you click on a menu tab
   createTabClick: () ->
     @unbindTabClick()
@@ -398,13 +407,13 @@ class View
       onTabClick.call(@,k,"#{tabName}")
       if parseInt(k) == 292 && !@settings.tagging
         @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
-    
+
   # changes shown tags based on current tree and previous tree.
   showTags: (currentTree, tabName, noPrev) ->
     if currentTree != _treeVisibility.currentTree
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(_treeVisibility.currentTree,true)}").removeClass("active")
       @cj_selectors.tagBox.removeClass("top-#{_treeVisibility.currentTree}-active")
-      @cj_selectors.tagBox.find(".top-#{_treeVisibility.currentTree}").toggle().removeClass("active") 
+      @cj_selectors.tagBox.find(".top-#{_treeVisibility.currentTree}").toggle().removeClass("active")
       _treeVisibility.previousTree = _treeVisibility.currentTree
       _treeVisibility.currentTree = currentTree
       @cj_menuSelectors.tabs.find(".tab-#{@getTabNameFromId(currentTree,true)}").addClass("active")
@@ -418,8 +427,16 @@ class View
   setOverlay:() ->
     if @cj_selectors.tagBox.hasClass("dropdown")
       cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
+      height = @cj_selectors.tagBox.height()
       cjOverlay.height(@cj_selectors.tagBox.height())
       cjOverlay.width(@cj_selectors.tagBox.width())
+      if @cj_selectors.tagBox.hasClass("filtered")
+        if height == 0
+          @cj_menuSelectors.menu.addClass("noResults")
+        else
+          @cj_menuSelectors.menu.removeClass("noResults")
+      else
+        @cj_menuSelectors.menu.removeClass("noResults")
     else
       cjOverlay = @cj_selectors.container.find(".JSTree-overlay")
       cjOverlay.css("height","100%")
@@ -429,6 +446,7 @@ class View
     tabName = @getTabNameFromId(id,true)
     @cj_menuSelectors.tabs.find("div").removeClass("active")
     @cj_selectors.tagBox.find(".tagContainer").removeClass("active").css("display","none")
+    @setOverlay()
     @cj_menuSelectors.tabs.find(".tab-#{tabName}").addClass("active")
     @cj_selectors.tagBox.find(".top-#{id}").addClass("active").css("display","block")
     @cj_selectors.tagBox.addClass("top-#{id}-active")
@@ -531,7 +549,7 @@ class View
                   # cjDTs.find(".fCB input.checkbox").prop("checked",true)
             )
 
-    new Buttons(@)
+    buttons = new Buttons(@)
     if @settings.tagging
       if @entityList?
         @applyTaggedKWIC()
@@ -555,7 +573,7 @@ class View
           "
     cj(".JSTree").append(noResults)
 
-  # when you go to zero length of the text input, you should go back to 
+  # when you go to zero length of the text input, you should go back to
   # the initial state of the tree, which uses memoized trees to
   # quickly shift back and forth
   rebuildInitialTree: () ->
@@ -579,7 +597,7 @@ class View
             @addPositionReminderText(@cj_selectors.tagBox.find(".top-#{k}"))
           else
             @applyTaggedPositions()
-      new Buttons(@)
+      buttons = new Buttons(@)
       if @settings.tagging
         @applyTaggedKWIC()
       @setActiveTree(@getIdFromTabName(activeTree))
@@ -598,7 +616,7 @@ class View
     else
       @cj_menuSelectors.tabs.find("span").remove()
 
-  # this is useful on 
+  # this is useful on
   addPositionReminderText: (cjlocation) ->
     positionText = "
               <div class='position-box-text-reminder'>
@@ -608,6 +626,7 @@ class View
     cjlocation.html(positionText)
 
   # shortcut for the toggleClass on a tagbox
+  # TODO: this is probably what breaks the page on weird queries
   toggleTagBox: () ->
     @cj_selectors.tagBox.toggle().toggleClass("dropdown")
   # this turns on/off the dropdown based on the tagging/edit functionality
@@ -616,18 +635,19 @@ class View
       if hits?
         for k,v of hits
           @getTagHeight(@cj_selectors.tagBox.find(".top-#{k}"))
-        @cj_selectors.container.css("position","static").css("border-bottom-width","0px").css("border-right-width","0px")
+        @cj_selectors.container.addClass("dropdown")
         @cj_selectors.tagBox.css("height","auto").addClass("open").css("overflow-y","auto")
         @cj_selectors.tagBox.css("border-right","1px solid #ccc")
         @cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom","1px solid #bbb")
         @setOverlay()
       else
         boxHeight = new Resize()
-        @cj_selectors.container.css("position","relative").css("border-bottom-width","1px").css("border-right-width","1px")
+        @cj_selectors.container.removeClass("dropdown")
         @cj_selectors.tagBox.removeClass("open").css("overflow-y","scroll").height(boxHeight.height)
         @cj_selectors.tagBox.css("border-right","0px")
         @cj_menuSelectors.bottom.find(".JSTree-settings").css("border-bottom","0px")
         @setOverlay()
+    @setOverlay()
   # queries the height of the tag box so that it can inform the selector
   # how large the tags are in the box, based on their DOM height
   getTagHeight:(tagBox,maxHeight = 180) ->
@@ -642,9 +662,9 @@ class View
         if closestTo > maxHeight
           break
         closestTo += parseInt(v)
-      cj(tagBox).height(closestTo)
+      return cj(tagBox).height(closestTo)
     else
-      cj(tagBox).height(propHeight)
+      return cj(tagBox).height(propHeight)
 
   # if there's more than 8 elements, show only those 8
   # i think this is primarily to not cut off individual
@@ -659,7 +679,7 @@ class View
         return false
     )
     return heightTotal
-  
+
   # this is view's action wrapper
   createAction: (tagId="",action,cb) ->
     new Action(@,@instance,tagId,action,cb)
@@ -674,22 +694,33 @@ class View
       action =
         type: "checkbox"
       removeTag = () ->
-        _removeTag = entity.removeTag(tagId)
-        _removeTag.done((i) =>
-          doAction.apply(null,[i,"remove"])
-        )
+        a.removeTagsFromHolder(cjDT.data("tagid"))
+        if a.onSave
+          doAction.apply(null,[1,"remove"])
+        else
+          _removeTag = entity.removeTag(tagId)
+          _removeTag.done((i) =>
+            doAction.apply(null,[i,"remove"])
+          )
+        return true
       addTag = () ->
         a.addTagsToHolder(cjDT.data("tagid"))
-        _addTag = entity.addTag(tagId)
-        _addTag.done((i) =>
-          doAction.apply(null,[i,"add"])
-        )
+        if a.onSave
+          doAction.apply(null,[1,"add"])
+        else
+          _addTag = entity.addTag(tagId)
+          _addTag.done((i) =>
+            doAction.apply(null,[i,"add"])
+          )
+        return true
       doAction = (res, typeOfAction) ->
         action["action"] = typeOfAction
-        if res.code != 1
+        # 1 is good.
+        if res.code != 1 and res != 1
           removeTag.call(null,null) if typeOfAction == "add"
           addTag.call(null,null) if typeOfAction == "remove"
-        new ActivityLog(res,action)
+        # new ActivityLog(res,action)
+        return true
       toggleClass = (cjDT) ->
         # requires addTag (if doesn't already exist)
         cjDT.toggleClass("shaded")
@@ -698,6 +729,7 @@ class View
           addTag.call(@,null)
         else
           removeTag.call(@,null)
+
       entity = a.instance.entity
       cjDT = cj(@).parents("dt").first()
 
@@ -706,13 +738,13 @@ class View
         # create new position
         o = @
         a.createAction(cjDT.data("tagid"),"addTagFromPosition", (response)->
-            newDT = response.cjDT
-            if response == false
-              # console.log "response false"
-            else
-              action.tagId = response["message"]["id"]
-              toggleClass.call(newDT.find("input.checkbox")[0],newDT)
-          )
+          newDT = response.cjDT
+          if response == false
+            # console.log "response false"
+          else
+            action.tagId = response["message"]["id"]
+            toggleClass.call(newDT.find("input.checkbox")[0],newDT)
+        )
       else
         tagId = cjDT.data("tagid")
         action.tagId = tagId
@@ -733,7 +765,7 @@ class View
       if cj(dl).find("dt.shaded").length > 0
         cjSiblingDT.addClass("shadedChildren")
       else
-        cjSiblingDT.removeClass("shadedChildren") 
+        cjSiblingDT.removeClass("shadedChildren")
 
 
 # action creates the events required to interact with tag manipulation
@@ -758,64 +790,130 @@ class Action
         description: ""
         id: ""
         is_reserved: true
+    moveTag:
+      url: '/civicrm/ajax/tag/update'
+      data:
+        id: ""
+        parent_id: ""
+    convertTag:
+      url: '/civicrm/ajax/tag/update'
+      data:
+        id: ""
+        parent_id: ""
+    mergeTag:
+      url: '/civicrm/ajax/mergeTags'
+      type: 'POST'
+      data: ""
+      # 'fromId='+ currentId + '&toId='+ destinationId
+
   fields:
     addTag: ["Tag Name","Description","Is Reserved"]
     removeTag: []
     updateTag: ["Tag Name","Description","Is Reserved"]
+    moveTag: []
+    convertTag: []
+    mergeTag: []
   requiredFields:
     addTag: ["Tag Name"]
     removeTag: []
     updateTag: ["Tag Name"]
+    moveTag: []
+    convertTag: []
+    mergeTag: []
   requiredValidation:
     addTag: ["isRequired","appliesNullToText"]
     removeTag: ["noChildren"]
     updateTag: ["isRequired","appliesNullToText"]
+    moveTag: ["noChildren"]
+    convertTag: ["noChildren"]
+    mergeTag: ["noChildren"]
   # constructor uses name based applications to call functions
   # so you only have to remember to call new Action
-  constructor: (@view, @instance, @tagId, action, @cb) ->
-    # 
+  constructor: (@view, @instance, @tagId=291, action, @cb) ->
     for k,v of @ajax
       v.data["call_uri"] = window.location.href
       v["dataType"] = "json"
-    @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}']")
-    @tagName = @cjDT.data("name")
+    # conditional if it's the parent box
+    if parseInt(@tagId) == 291
+      @cjDT = @view.cj_selectors.tagBox.find(".top-#{tagID}")
+      @tagName = @view.cj_menuSelectors.autocomplete.val()
+    else
+      @cjDT = @view.cj_selectors.tagBox.find("dt[data-tagid='#{@tagId}']")
+      @tagName = @cjDT.data("name")
     @[action].apply(@,[action])
   # createSlide pulls a slider from right side to provide a platform for editing tags
   # if it's tall enough, if not, uses the bottom.
   createSlide: (cb) ->
     # remove the ability to swap tabs
     resize = new Resize
-    @view.cj_selectors.tagBox.addClass("hasSlideBox")
-    if resize.height > 190
-      @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
-      # memoize this
-      @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
-      @cj_slideBox.css("right","#{@findGutterSpace()}px")
-      if @view.settings.wide then slideWidth = '40%' else sideWidth = '60%'
+    # if resize.height > 190
+    #   @view.cj_selectors.tagBox.addClass("hasSlideBox")
+    #   @view.cj_selectors.tagBox.prepend("<div class='slideBox'></div>")
+    #   @bottom = false
+    #   # memoize this
+    #   @cj_slideBox = @view.cj_selectors.tagBox.find(".slideBox")
+    #   @cj_slideBox.css("right","#{@findGutterSpace()}px")
+    #   if @view.settings.wide then slideWidth = '40%' else sideWidth = '60%'
 
-      @cj_slideBox.animate({width:slideWidth}, 500, =>
-        @cj_slideBox.append(@slideHtml)
-        @setCancel()
-        cb()
-      )
+    #   @cj_slideBox.animate({width:slideWidth}, 500, =>
+    #     @cj_slideBox.append(@slideHtml)
+    #     @setCancel()
+    #     cb()
+    #   )
+    # else
+    @bottom = true
+    @view.cj_selectors.tagBox.addClass("hasSlideBox")
+    containerPosition = @view.cj_selectors.container.offset()
+    menuHeight = @view.cj_menuSelectors.menu.height()
+    # THERE MAY NOT BE ACTIVE TAGS WHEN FILTERED
+    activeTreeId = @view.getIdFromTabName(cj.trim(cj(".JSTree-tabs .active").attr("class").replace(/active/g,"")))
+    @view.cj_selectors.container.after("<div class='JSTree-slideBox'><div class='slideBox top-#{activeTreeId}'></div></div>")
+    @cj_slideBoxContainer = cj(".JSTree-slideBox")
+    if @view.cj_selectors.tagBox.hasClass("dropdown")
+      leftPos = containerPosition.left
     else
-      # it adds a dropdown
+      leftPos = containerPosition.left - @findGutterSpace()
+    @cj_slideBoxContainer.css("top","#{containerPosition.top+menuHeight}px").css("left","#{leftPos}px")
+    @cj_slideBox = @cj_slideBoxContainer.find(".slideBox")
+    @cj_slideBox.css("top","0px")
+    if resize.height < 230
+      slideHeight = 230
+    else
+      slideHeight = resize.height
+    @cj_slideBox.animate({height:"#{slideHeight}px"}, 500, =>
+      @cj_slideBox.append(@slideHtml)
+      @setCancel()
+      cb()
+    )
   setCancel:() ->
     @cj_slideBox.find(".label.cancel").off "click"
     @cj_slideBox.find(".label.cancel").on "click", =>
       @destroySlideBox()
-
   destroySlideBox:() ->
     @cj_slideBox.empty()
-    @cj_slideBox.animate({width:'0%'}, 500, =>
+    if @bottom
+      animate = {height:"0px"}
+    else
+      animate = {width:"0%"}
+    @cj_slideBox.animate(animate, 500, =>
       @cj_slideBox.find(".label.cancel").off "click"
+      @view.toggleSettingsAdd("add",true)
       @cj_slideBox.remove()
-      @view.cj_selectors.tagBox.removeClass("hasSlideBox")
+      @view.cj_selectors.tagBox.removeClass("hasSlideBox").removeClass("radio")
       @view.createTabClick()
+      if @cj_slideBoxContainer?
+        @cj_slideBoxContainer.remove()
+      # don't have to reload the tags (which is important for tagging)
+      # because there's no reset of entity tags being called (it can be)
+      # but this is easier
+      if @view.cj_selectors.tagBox.find(".tagContainer.active").hasClass("hideCheckbox")
+        @view.cj_selectors.tagBox.find(".tagContainer.active").removeClass("hideCheckbox")
+      else
+        buttons = new Buttons(@view)
     )
   # creates a tag from thin air, for positions.
   # this should be broken up into separate non-private functions
-  addTagFromPosition:(tagId,action) ->
+  addTagFromPosition:(action) ->
     manipBox = (tagId,messageId) =>
       cjDL = @view.cj_selectors.tagBox.find("#tagDropdown_#{tagId}")
       cjDL.attr("id","tagDropdown_#{messageId}")
@@ -824,11 +922,20 @@ class Action
       cjDT.attr("id","tagLabel_#{messageId}")
       cjDT.removeClass("tag-#{tagId}").addClass("tag-#{messageId}")
       cjDT.find("input.checkbox").attr("name","tag[#{messageId}]")
-    cjDT = @view.cj_selectors.tagBox.find("#tagLabel_#{tagId}")
+    # cjDT = @view.cj_selectors.tagBox.find("#tagLabel_#{tagId}")
+    # ToDo: HACK
+    # this was written first, and not in the 'new style', so, to conform
+    # to the new style, it only takes one parameter, like all apply
+    # Here's a good mnemonic.
+    # Apply uses Arrays and Always takes one or two Arguments.
+    # When you use Call you have to Count the number of arguments.
+    cjDT = @cjDT
+    tagId = cjDT.data("tagid")
     @ajax.addTag.data.name = cjDT.find(".tag .name").text()
     @ajax.addTag.data.description = cjDT.find(".tag .description").text()
     @ajax.addTag.data.parent_id = "292"
     @ajax.addTag.data.is_reserved = true
+
     for k,v of @instance.positionList
       # need to figure out a better way to implement this?
       if _utils.removePositionTextFromBill(@ajax.addTag.data.name) == v.name
@@ -850,10 +957,12 @@ class Action
         @cb(response)
     )
   # finds the gutter space for active tag containers
-  # so that create slide doesn't overlap the scroll bar 
+  # so that create slide doesn't overlap the scroll bar
   findGutterSpace: () ->
     outerWidth = @view.cj_selectors.tagBox.width()
     innerWidth = @view.cj_selectors.tagBox.find(".tagContainer.active").width()
+    if !innerWidth?
+      innerWidth = @view.cj_selectors.tagBox[0].scrollWidth
     return outerWidth-innerWidth
   # destructive method
   setRequiredFields: (type) ->
@@ -862,6 +971,43 @@ class Action
     for i in reqFields
       @requiredFields.push _utils.camelCase(i)
     @requiredValidation = @requiredValidation[type]
+  # quickadd
+  quickTag: (values="") ->
+    @slideHtml = @gatherQuickLabelHTML()
+    @setRequiredFields("addTag")
+    @view.cj_selectors.tagBox.find(".tagContainer.active").addClass("hideCheckbox")
+    @createSlide(=>
+      @view.toggleSettingsAdd("add")
+      @view.unbindTabClick()
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          @removeErrors(data)
+          # if there's errors
+          if bbUtils.objSize(data.errors) > 0
+            @markErrors(data.errors)
+          else
+            @ajax.addTag.data.name = data.fields.tagName
+            @ajax.addTag.data.description = data.fields.description
+            @ajax.addTag.data.is_reserved = data.fields.isReserved
+            @tagId = data.fields.tag
+            @ajax.addTag.data.parent_id = @tagId
+            @convertSubmitToLoading()
+            # undefined middle callback for some reason.
+            @tagAjax(data.tagId, "addTag", undefined, (message) =>
+              if message.code?
+                if message.message == "DB Error: already exists"
+                  @revertSubmitFromLoading()
+                  @markErrors({tagName:"Tag #{data.fields.tagName} already exists."})
+                  doSubmit.call(@)
+              else
+                @addEntityToTree(@tagId,message)
+                button = new Buttons(@view,"dt#tagLabel_#{message.id}")
+                @revertSubmitFromLoading()
+                @destroySlideBox()
+            )
+          )
+      doSubmit.call(@)
+    )
   # values provides a shell for updateTag to use same field
   # but add in values
   addTag: (values="") ->
@@ -924,10 +1070,147 @@ class Action
       doSubmit.call(@)
     )
 
+  sendDtToPanel: (cjDT) ->
+    @cj_slideBox.find(".toTag").removeClass("errorLabel")
+    @cj_slideBox.find(".toTag").html(cjDT.data("name"))
   moveTag: () ->
-    @createSlide()
+    @slideHtml = @gatherMoveLabelHTML()
+    @setRequiredFields("moveTag")
+    @view.cj_selectors.tagBox.addClass("radio")
+    buttons = new Buttons(@view,@cjDT.data("tagid"),true)
+    a = @
+    @view.cj_selectors.tagBox.find("dt input.radio").on("click", (event) ->
+      #
+      a.cj_slideBox.find(".submit").removeClass("inactive")
+      a.sendDtToPanel(cj(@).closest("dt"))
+    )
+
+    @createSlide(=>
+      @view.unbindTabClick()
+      @cj_slideBox.find(".submit").addClass("inactive")
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          if @cj_slideBox.find(".submit").hasClass("inactive")
+            @markErrors({toTag:"Must specify a destination"})
+          else
+            @removeErrors(data)
+            # if there's errors
+            if bbUtils.objSize(data.errors) > 0
+              @markErrors(data.errors)
+            else
+              @ajax.moveTag.data.parent_id = @view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value")
+              data.id = @cjDT.data("tagid")
+              @ajax.moveTag.data.id = data.id
+              @convertSubmitToLoading()
+              # undefined middle callback for some reason.
+              @tagAjax(data.id,"moveTag", undefined, (message) =>
+                if !message?
+                  console.log "no response"
+                if message.code?
+                  # if message == "DB Error: already exists"
+                    @revertSubmitFromLoading()
+                    @markErrors({tagName:"Tag #{data.fields.tagName} cannot be removed."})
+                    doSubmit.call(@)
+                else
+                  @removeEntityFromTree(data.id)
+                  @addEntityToTree(@ajax.moveTag.data.parent_id,message)
+                  @revertSubmitFromLoading()
+                  @destroySlideBox()
+              )
+        )
+      doSubmit.call(@)
+    )
+  convertTag: () ->
+    @slideHtml = @gatherConvertLabelHTML()
+    @setRequiredFields("convertTag")
+    @view.cj_selectors.tagBox.addClass("radio")
+    buttons = new Buttons(@view,@cjDT.data("tagid"),true)
+    a = @
+    @view.cj_selectors.tagBox.find("dt input.radio").on("click", (event) ->
+      #
+      a.cj_slideBox.find(".submit").removeClass("inactive")
+      a.sendDtToPanel(cj(@).closest("dt"))
+    )
+
+    @createSlide(=>
+      @view.unbindTabClick()
+      @cj_slideBox.find(".submit").addClass("inactive")
+      @view.showTags 291,"issue-codes"
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          if @cj_slideBox.find(".submit").hasClass("inactive")
+            @markErrors({toTag:"Must specify a destination"})
+          else
+            @removeErrors(data)
+            # if there's errors
+            if bbUtils.objSize(data.errors) > 0
+              @markErrors(data.errors)
+            else
+              @ajax.moveTag.data.parent_id = @view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value")
+              data.id = @cjDT.data("tagid")
+              @ajax.moveTag.data.id = data.id
+              @convertSubmitToLoading()
+              # undefined middle callback for some reason.
+              @tagAjax(data.id,"convertTag", undefined, (message) =>
+                if !message?
+                  console.log "no response"
+                if message.code?
+                  # if message == "DB Error: already exists"
+                    @revertSubmitFromLoading()
+                    @markErrors({tagName:"Tag #{data.fields.tagName} cannot be removed."})
+                    doSubmit.call(@)
+                else
+                  @removeEntityFromTree(data.id)
+                  @addEntityToTree(@ajax.moveTag.data.parent_id,message)
+                  @revertSubmitFromLoading()
+                  @destroySlideBox()
+              )
+        )
+      doSubmit.call(@)
+    )
   mergeTag: () ->
-    @createSlide()
+
+    @slideHtml = @gatherMergeLabelHTML()
+    @setRequiredFields("mergeTag")
+    @view.cj_selectors.tagBox.addClass("radio")
+    buttons = new Buttons(@view,@cjDT.data("tagid"),true)
+    a = @
+    @view.cj_selectors.tagBox.find("dt input.radio").on("click", (event) ->
+      #
+      a.cj_slideBox.find(".submit").removeClass("inactive")
+      a.sendDtToPanel(cj(@).closest("dt"))
+    )
+    @createSlide(=>
+      @view.unbindTabClick()
+      @cj_slideBox.find(".submit").addClass("inactive")
+      doSubmit = =>
+        @submitButton(true,(data) =>
+          if @cj_slideBox.find(".submit").hasClass("inactive")
+            @markErrors({toTag:"Must specify a destination"})
+          else
+            @removeErrors(data)
+            # if there's errors
+            if bbUtils.objSize(data.errors) > 0
+              @markErrors(data.errors)
+            else
+              destinationId = @view.cj_selectors.tagBox.find("input[name=tag]:checked").attr("value")
+              currentId = @cjDT.data("tagid")
+              @ajax.mergeTag.data = "fromId=#{currentId}&toId=#{destinationId}"
+              @convertSubmitToLoading()
+              # undefined middle callback for some reason.
+              @tagAjax(currentId,"mergeTag", undefined, (message) =>
+                if !message.status
+                  @revertSubmitFromLoading()
+                  @markErrors({tagName:"#{message.message}"})
+                  doSubmit.call(@)
+                else
+                  @removeEntityFromTree(currentId)
+                  @revertSubmitFromLoading()
+                  @destroySlideBox()
+              )
+        )
+      doSubmit.call(@)
+    )
   updateTag: () ->
     checked = ""
     checked = "checked" if @cjDT.data("isreserved") == 1
@@ -967,30 +1250,36 @@ class Action
     )
   addEntityToTree: (parent,message) ->
     node = {}
-    if message.created_date?
+    if message.created_date? && message.created_date.length > 0
       node.created_date = _manipTags.createDate(message.created_date)
     node.name = message.name if message.name?
     if message.description?
       if message.description == null
         node.description = ""
       else
-        node.description = message.description 
+        node.description = message.description
     node.parent = node.parent_id = message.parent_id if message.parent_id?
     node.id = message.id if message.id?
     node.children = false
-    cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
-    node.level = cjParent.data("level")+1
-    node.type = "#{cjParent.data("tree")}"
+    if parseInt(parent) in [291,296,292]
+      cjParent = @view.cj_selectors.tagBox.find(".tagContainer.top-#{parent}")
+      node.level = 1
+      node.type = parseInt(parent)
+    else
+      cjParent = @view.cj_selectors.tagBox.find("dt#tagLabel_#{parent}")
+      node.level = cjParent.data("level")+1
+      node.type = "#{cjParent.data("tree")}" || "291"
     if message.is_reserved = "false" then node.is_reserved = "0" else node.is_reserved = "1"
     # get node
     node_parsed = new Node(node)
     # append the node to the autocomplete & tree
     @instance.appendToAC(node)
     backout = @view.trees[parseInt(node.type)].appendNode(node,node.parent_id,node_parsed.html)
+    _treeUtils.makeDropdown(@view.cj_selectors.tagBox.find(".top-#{node.type}"))
     if !backout
       console.log "bad things happened"
       return false
-    new Buttons(@view,"#tagLabel_#{node.id}")
+    buttons = new Buttons(@view,"#tagLabel_#{node.id}")
   removeEntityFromTree: () ->
     id = @cjDT.data("tagid")
     cjDL = @view.cj_selectors.tagBox.find("dl#tagDropdown_#{id}")
@@ -1014,15 +1303,15 @@ class Action
     data.type = "#{cjDT.data("tree")}"
     data.name = message.name
     data.description = message.description
-    
+
     # major hack. nodes should be centrally accessable instead as an easy 'get' from the tree
     node = Object.getPrototypeOf(@view.trees[cjDT.data("tree")]).nodeList[id]
     settings = cj.extend({},node.data,data)
     node.setValues(settings)
-    
+
     backout = @view.trees[parseInt(data.type)].appendNode(settings,settings.parent_id,node.html,true)
     @instance.appendToAC(settings)
-    
+
     # now we remodify it
     cjNode = cj("<div>#{node.html}</div>")
     cjNode.find("#tagLabel_#{id}").addClass("open") if cjDT.hasClass("open")
@@ -1031,9 +1320,9 @@ class Action
       nodeDL.replaceWith(cjDL[0].outerHTML)
     cjDL.remove()
     cjDT.replaceWith(cjNode.html())
-    _treeUtils.makeDropdown(@view.cj_selectors.tagBox.find(".top-#{data.type}"))
-    new Buttons(@view,"#tagDropdown_#{id}")
-    new Buttons(@view,"#tagLabel_#{id}")
+    _treeUtils.makeDropdown(@view.cj_selectors.tagBox.find(".top-#{node.type}"))
+    buttons = new Buttons(@view,"#tagDropdown_#{id}")
+    buttons = new Buttons(@view,"#tagLabel_#{id}")
   removeErrors: (data)->
     notErrored = []
     for k,v of data.fields
@@ -1051,7 +1340,7 @@ class Action
         cjEl.data("oldname",cjEl.text())
         cjEl.addClass("errorLabel").text(v)
       @cj_slideBox.find("input[name='#{k}']").addClass("errorBox")
-  # split this up into data elswhere so i don't have to call this 
+  # split this up into data elswhere so i don't have to call this
   # for the data values
   gatherValuesFromSlideBox: () ->
     cjFields = @cj_slideBox.find("input")
@@ -1061,19 +1350,25 @@ class Action
       errors: {}
     cj.each(cjFields, (i,el) =>
       cjEl = cj(el)
-      if cjEl.attr("type").toLowerCase() == "checkbox"
-        data.fields[cjEl.attr("name")] = cjEl.prop("checked")
-      else
-        data.fields[cjEl.attr("name")] = cjEl.val()
+      switch cjEl.attr("type").toLowerCase()
+        when "checkbox"
+          if cjEl.is(":checked")
+            data.fields[cjEl.attr("name")] = cjEl.prop("checked")
+        when "radio"
+          data.fields[cjEl.attr("name")] = cjEl.prop("value").replace("tag[","").replace("]","")
+        else
+          data.fields[cjEl.attr("name")] = cjEl.val()
+
     )
     @validateValues(data)
-    
+
   revertSubmitFromLoading:() ->
     cjSubmitButton = @cj_slideBox.find(".label.submit")
     cjSubmitButton.removeClass("loadingGif")
     text = cjSubmitButton.data("text")
     cjSubmitButton.text(text)
   convertSubmitToLoading:() ->
+    @cj_slideBox.find(".label.cancel").addClass("inactive")
     cjSubmitButton = @cj_slideBox.find(".label.submit")
     cjSubmitButton.addClass("loadingGif")
     cjSubmitButton.data("text",cjSubmitButton.text())
@@ -1101,6 +1396,7 @@ class Action
         validations.createError.call(@,name,"cannot be contain spaces.")
 
       isRequired: (name,val) ->
+        # if empty, shows up as "undefined"
         if @requiredFields.indexOf(name) != -1
           passing = true
           if val.length > 0
@@ -1119,10 +1415,9 @@ class Action
         name = cjDL.data("name")
         unless passing
           validations.createError.call(@,"headerdescription","cannot be deleted because it has children.")
-
     for k,v of data.fields
       cjEl = @cj_slideBox.find("input[name='#{k}']")
-      if cjEl.attr("name").toLowerCase() == "checkbox"
+      if cjEl.attr("type").toLowerCase() == "checkbox"
         continue
       for test in @requiredValidation
         validations[test].call(@,k,v)
@@ -1133,6 +1428,7 @@ class Action
     data
 
   submitButton: (gather,cb) ->
+    @cj_slideBox.find(".label.submit").off "click"
     @cj_slideBox.find(".label.submit").on "click", =>
       if gather
         cb(@gatherValuesFromSlideBox())
@@ -1157,6 +1453,42 @@ class Action
       else
         html += label.buildLabel("textBox",field,"")
       html += "</div>"
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherQuickLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += label.buildLabel("header","Add Tag","Add Tag")
+    @tagName = cj("#JSTree-ac").val()
+    if @tagName.length == 0
+      @tagName = ""
+    
+    if @tagName != "Type in a partial or complete name of an tag or keyword."
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+    else
+      @tagName = ""
+    for field in @fields.addTag
+      html += "<div class='elementGroup'>"
+      # creates label
+      html += label.buildLabel("label",field,field)
+      # in update tag, this is important
+      switch field
+        when "Is Reserved"
+          html += label.buildLabel("checkBox",field,"")
+        when "Tag Name"
+          html += label.buildLabel("textBox",field,@tagName)
+        else
+          html += label.buildLabel("textBox",field,"")
+      html += "</div>"
+    html += "<div class='typeCheck'>"
+    html += label.buildLabel("label","left","Keywords")
+    html += _utils.createRadioButton("tag","tag[296]","radio","checked")
+    html += label.buildLabel("label","right","Issue Codes")
+    html += _utils.createRadioButton("tag","tag[291]","radio")
+    html += "</div>"
     html += "<div class='actionButtons'>"
     html += label.buildLabel("submit","","submit")
     html += label.buildLabel("cancel","","cancel")
@@ -1199,15 +1531,72 @@ class Action
     html += label.buildLabel("cancel","","cancel")
     html += "</div>"
     return html
+  gatherMoveLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Move Tag","Move Tag:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","to")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Move")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherConvertLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Convert Tag","Convert Keyword:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","To Issue Code Under:")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Place Keyword Under")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
+  gatherMergeLabelHTML: (values="") ->
+    label = new Label
+    html = ""
+    html += "<div class='openArrow'></div>"
+    if @tagName?
+      html += label.buildLabel("header","Merge Tag","Merge Tag:")
+      html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
+      html += label.buildLabel("header","header3","Into")
+      html += label.buildLabel("headerdescription","To Tag","")
+    else
+      html += label.buildLabel("error","error","Cannot Find Tag to Merge")
+      return html
+    html += "<div class='actionButtons'>"
+    html += label.buildLabel("submit","","submit")
+    html += label.buildLabel("cancel","","cancel")
+    html += "</div>"
+    return html
 
   # addTag is merely a validation and request wrapper. should be explicitly called
-  # and provide methods based on tagId properties which are discernable from 
+  # and provide methods based on tagId properties which are discernable from
   # the tagId (via a jQuery search)
   tagAjax: (tagId,type,action,locCb) ->
     request = cj.when(cj.ajax(@ajax[type]))
     request.done((data) =>
         if locCb?
-          locCb(data.message)
+          if data.code == 0
+            locCb(data)
+          else
+            if data["status"] == true
+              locCb(data)
+            else
+              locCb(data.message)
         else if @cb?
           @cb(data.message)
       )
@@ -1216,12 +1605,12 @@ class Action
 _manipTags =
   createDate:(mDate)->
     date = ""
-    date += "#{mDate.substring(0,3)}-"
-    date += "#{mDate.substring(4,5)}-"
-    date += "#{mDate.substring(6,7)} "
-    date += "#{mDate.substring(8,9)}:"
-    date += "#{mDate.substring(10,11)}:"
-    date += "#{mDate.substring(12,13)}"
+    date += "#{mDate.substring(0,4)}-"
+    date += "#{mDate.substring(4,6)}-"
+    date += "#{mDate.substring(6,8)} "
+    date += "#{mDate.substring(8,10)}:"
+    date += "#{mDate.substring(10,12)}:"
+    date += "#{mDate.substring(12,14)}"
     date
 
 class Label
@@ -1269,7 +1658,7 @@ class Label
   checkBox:() ->
     @passed.className ?= @.defaults.textBox.className
     return "<input type='checkbox' class='#{@.defaults.checkBox.className} #{@passed.className}' name='#{@passed.className}' #{@passed.value}>"
-  
+
 
 # buttons handles creating and removing checkboxes, and fCB tags
 class Buttons
@@ -1282,26 +1671,49 @@ class Buttons
   convertTag: "<li class='convertTag' title='Convert Keyword' data-do='convert'></li>"
   keywords: ["removeTag","updateTag","mergeTag","convertTag"]
   issuecodes: ["addTag","removeTag","updateTag","moveTag","mergeTag"]
-  constructor: (@view,finder="") ->
-    if @view.settings.tagging
-      @removeFCB()
-      @createTaggingCheckboxes(finder)
-    if @view.settings.edit
+  radioButtons: false
+  constructor: (@view,finder="",radio) ->
+    if radio == true
       @removeTaggingCheckboxes()
-      @createFCB()
+      @removeFCB()
+      @radioButtons = true
+      @createRadioButtons(finder)
+    else
+      @removeRadioButtons()
+      if @view.settings.tagging
+        @removeFCB() if finder.length == 0
+        @createTaggingCheckboxes(finder)
+      if @view.settings.edit
+        @removeTaggingCheckboxes()
+        @createFCB()
+
+
+
   # finder is a prefix to buttons that allows for
   # specifically targeting the tree or div of tagboxes
   # the div is used in positions for the ajax loaded content
   createTaggingCheckboxes: (finder) ->
+    finder = "#{finder}" || "#{finder} dt"
     a = @
-    @view.cj_selectors.tagBox.find("#{finder} dt .tag .name").before( ->
+    @view.cj_selectors.tagBox.find("#{finder} .tag .name").before( ->
       if cj(@).siblings(".fCB").length == 0
         a.createButtons(cj(@).parent().parent().data("tagid"))
     )
     @view.toggleCheckInBox()
-
   removeTaggingCheckboxes: () ->
-    @view.cj_selectors.tagBox.find("dt .tag .name .fCB").remove()
+    @view.cj_selectors.tagBox.find("dt .tag .fCB").remove()
+  createRadioButtons: (finder) ->
+    a = @
+    @view.cj_selectors.tagBox.find("dt .tag .name").before( ->
+      if cj(@).parent().parent().data("tagid") != finder
+        a.createButtons(cj(@).parent().parent().data("tagid"))
+        # @executeButton(cj(@).parent().parent())
+    )
+    # @view.cj_selectors.tagBox.find("dt .tag .fCB input.radio").animate({width:"13px"})
+  removeRadioButtons: () ->
+    cjDT = @view.cj_selectors.tagBox.find("dt")
+    cjDT.find(".tag .fCB input.radio").parent().parent().parent().remove()
+    cjDT.off("click")
   # fcb = floating control box
   # as opposed to previous iterations, now just appends and deletes
   # instead of adding extra page weight with 1400 pieces of html
@@ -1327,31 +1739,36 @@ class Buttons
       cjTreeTop = @view.cj_selectors.tagBox.find(".top-#{k}").find("dt")
       cjTreeTop.off("mouseenter")
       cjTreeTop.off("mouseleave")
+      cjTreeTop.off("click")
+      cjTreeTop.find(".fCB").remove()
   # function for creating buttons using predefined lists
   # of what appears for each tree
   createButtons: (treeTop) ->
     html = "<div class='fCB'>"
     html += "<ul>"
-    if @view.settings.edit
-      if parseInt(treeTop) == 291
-        for tag in @issuecodes
-          html += @[tag]
-      if parseInt(treeTop) == 296
-        for tag in @keywords
-          html += @[tag]
-      # if parseInt(treeTop) == 292
-      #   for tag in @keywords
-      #     html += @[tag]
-    else
+    if @radioButtons
       html += "<li>"
-      html += _utils.createCheckBox("tag[#{treeTop}]","","checkbox")
+      html += _utils.createRadioButton("tag","#{treeTop}","radio")
+      # ?_utils._createInputBox("radio",name,value,classNames)
       html += "</li>"
+    else
+      if @view.settings.edit
+        if parseInt(treeTop) == 291
+          for tag in @issuecodes
+            html += @[tag]
+        if parseInt(treeTop) == 296
+          for tag in @keywords
+            html += @[tag]
+        # if parseInt(treeTop) == 292
+        #   for tag in @keywords
+        #     html += @[tag]
+      else
+        if @view.settings.tagging
+          html += "<li>"
+          html += _utils.createCheckBox("tag[#{treeTop}]","","checkbox")
+          html += "</li>"
     html += "</ul>"
     html += "</div>"
-  # radio buttons are used during selecting move candidates
-  addRadios: (treeTop) ->
-    # "<input type="radio" class="selectRadio" name="selectTag">"
-
   # execute creates an action in the view, for logging
   executeButton: (cjDT) ->
     cjDT.off("click")
@@ -1364,7 +1781,6 @@ class Buttons
     else
       # i think there's another on li somewhere else
       cjDT.on("click", "li", (button) =>
-        # cj(button.target).data("do")
       )
 # activity log powers the errors
 # not currently implemented
@@ -1381,17 +1797,41 @@ class Settings
   createButtons: () ->
     @cj_top_settings = cj(".#{@view.menuSelectors.top.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
     @cj_bottom_settings = cj(".#{@view.menuSelectors.bottom.split(" ").join(".")} .#{@view.menuSelectors.settings.split(" ").join(".")}")
-    for a in icons.top 
+    for a in icons.top
       @cj_top_settings.append(@addButton(a))
-    for b in icons.bottom 
+      @["#{a}Hook"].call(@,a,@returnCJLoc("top"))
+    for b in icons.bottom
       @cj_bottom_settings.append(@addButton(b))
-    # onclicks
+      @["#{b}Hook"].call(@,b,@returnCJLoc("bottom"))
+  unbindButton: (name) ->
+    @view.cj_menuSelectors.settings.find(".#{name}").off "click"
+  bindButton: (name) ->
+    name = name.toLowerCase()
+    @["#{name}Hook"].call(@,name,@view.cj_menuSelectors.settings)
   icons =
-    top: ['setting','add','print']
-    bottom: ['slide']
+    top: ['setting','print']
+    bottom: ['add','slide']
+  returnCJLoc: (loc) ->
+    return @cj_top_settings if loc == "top"
+    return @cj_bottom_settings if loc == "bottom"
+  addButton: (name,cjLoc) ->
+    # return "<a name='#{name}'><div class='#{name}'></div></a>"
+    tabIndex = ""
+    tabIndex = "tabindex='2'" if name == "add"
+    return "<button class='#{name}' name='#{name}' type='button'#{tabIndex}></button>"
+  tabIndex:
+    add: 2
+  settingHook: (name,cjLoc) ->
 
-  addButton: (name) ->
-    return "<div class='#{name}'></div>"
+  printHook: (name,cjLoc) ->
+
+  addHook: (name,cjLoc) ->
+    # createAction: (tagId="",action,cb)
+    cjLoc.find(".#{name}").off "click"
+    cjLoc.find(".#{name}").on "click", =>
+      @view.createAction(null,"quickTag")
+  slideHook: (name,cjLoc) ->
+
 
 # resize specifically relates to the height of the tagbox
 class Resize
@@ -1493,7 +1933,7 @@ class Autocomplete
   # inithint is the hint text "type in a partial or complete name"
   # and cheks that if it exists
   initHint = true
-  
+
   # because it's not always there, the hint text needs to be styled as it comes in
   # and unstyled as it leaves
   hintText: (cjac,params) ->
@@ -1517,11 +1957,11 @@ class Autocomplete
         return obj(@,event,searchmonger,cjac)
       else
         return false
-    
+
   # builds the recursive positions list once the inital call's been made
   # and there's more than one page left.
   buildPositions: (list,term,hits) ->
-    if @positionPagesLeft > 1 
+    if @positionPagesLeft > 1
       openLeg = new OpenLeg
       options =
         scrollBox: ".JSTree"
@@ -1532,6 +1972,9 @@ class Autocomplete
             page: @positionPage
           @cjTagBox.find(".top-292.tagContainer").append(@addPositionLoader())
           openLeg.query(nextPage, (results) =>
+              if results.status?
+                # if there's a 503 or whatnot error. it should show up here
+                console.log results
               poses = @addPositionsToTags(results.results)
               filteredList = {292: poses}
               @getNextPositionRound(results)
@@ -1539,7 +1982,8 @@ class Autocomplete
               addButtonsTo = ""
               for k,v of nextPage
                 addButtonsTo += ".#{k}-#{v}"
-              new Buttons(@view,addButtonsTo)
+              # nyss 7270
+              buttons = new Buttons(@view,addButtonsTo)
               @openLegQueryDone = true
               @buildPositions()
             )
@@ -1586,6 +2030,8 @@ class Autocomplete
     openLeg = new OpenLeg
     terms = cj("#JSTree-ac").val()
     openLeg.query({"term":terms}, (results) =>
+        if results.status?
+          console.log results
         # console.log "exec: term: #{terms} #{new Date().getSeconds()}.#{new Date().getMilliseconds()}"
         poses = @addPositionsToTags(results.results)
         filteredList = {292: poses}
@@ -1667,7 +2113,7 @@ class Autocomplete
       format.push(agipos)
       format.push(neupos)
       @positionIdNumber = @positionIdNumber + 10
-    @positionListing = format 
+    @positionListing = format
   # sorts an unorganized list of tags into
   # categories based upon it's type
   sortSearchedTags: (tags) ->
@@ -1710,7 +2156,7 @@ class Tree
   # build tree creates a blank tree, with dom elements to be inserted, and then
   # appended to the tree required
   buildTree: () ->
-    if @filter then filter = "filtered" else filter = "" 
+    if @filter then filter = "filtered" else filter = ""
     if @location?
       if @location == "init"
         @append = "292"
@@ -1726,7 +2172,7 @@ class Tree
         @domList = @domList.add("<div></div>")
     else
       @domList = cj()
-      @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer'></div>")
+      @domList = @domList.add("<div class='top-#{@tagId} #{filter} tagContainer' data-treeid='#{@tagId}'></div>")
     @iterate(@tagList)
   # because we know how to attach each tag to a parent, it's not a DAG...
   iterate: (ary) ->
@@ -1761,7 +2207,6 @@ class Tree
       _treeUtils.readDropdownsFromLocal(@tagId,@tagList)
   # really, we're prepending, but, it's still an 'appending'
   appendNode:(node,parent,html,noAdd=false) ->
-    console.log node
     topLevel = false
     if parseInt(parent) == 291 or parseInt(parent) == 292 or parseInt(parent) == 296
       topLevel = true
@@ -1769,7 +2214,6 @@ class Tree
         parentDT = "#tagLabel_#{node.id}"
         parentDL = "#tagDropdown_#{node.id}"
         for obj,i in @tagList
-          console.log node.id == obj.id
           if obj.id == node.id
             @tagList.splice(i,1)
             @tagList.splice(i,0,node)
@@ -1795,6 +2239,9 @@ class Tree
     cjParentDL = cj(parentDL)
     cjParentDL.show().prepend(html)
     return true if topLevel
+    for obj,i in @tagList
+      if parent == obj.id
+        obj.children = true
     cjParentDT.addClass("open")
     cjParentDT.find(".ddControl").addClass("treeButton")
     # make sure to add buttons after calling AppendNode
@@ -1822,7 +2269,7 @@ class Tree
     cjDL = cj(tree).find("#tagDropdown_#{nodeId}")
     # are there siblings
     return true if cjDL.children().length > 0
-    return false 
+    return false
 
 
 
@@ -1833,14 +2280,14 @@ class Tree
 _treeUtils =
   # don't remember what this does
   selectByParent: (list, parent) ->
-    childList = [] 
+    childList = []
     for b in list
       if b.parent == parent
         childList.push b
     childList
   # don't remember what this does
   selectByTree: (list, tree) ->
-    treeList = [] 
+    treeList = []
     for b in list
       if b.type == tree
         treeList.push b
@@ -1868,7 +2315,7 @@ _treeUtils =
   # and opens them again
   readDropdownsFromLocal: (cjTree) ->
     if parseInt(cjTree) == 291
-      if bbUtils.localStorage("tagViewSettings")    
+      if bbUtils.localStorage("tagViewSettings")
         _openTags = bbUtils.localStorage("tagViewSettings")
         for tag, bool of bbUtils.localStorage("tagViewSettings")
           if bool
@@ -1880,7 +2327,7 @@ _treeUtils =
 
 # closured settings for determining how many characters a node
 # should be, in name and description
-_descWidths = 
+_descWidths =
   normal: 75
   long: 150
 
@@ -1924,7 +2371,7 @@ class Node
   # processes a description and attaches classes based on parameters
   descLength: (@description) ->
     if @description == null or @description == "null"
-      @description = "" 
+      @description = ""
       return true
     if @description?
       if @description.length > 0
@@ -1956,7 +2403,7 @@ class Node
     if parseFloat(node.is_reserved) != 0 then @reserved = true  else @reserved = false
     # dt first
     html = "<dt class='lv-#{node.level} #{@hasDesc} tag-#{node.id} #{@nameLength}' id='tagLabel_#{node.id}'
-             data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}' 
+             data-tagid='#{node.id}' data-tree='#{node.type}' data-name='#{node.name}'
              data-parentid='#{node.parent}' data-billno='#{@billNo}'
              data-position='#{@position}' data-level='#{node.level}'
              data-isreserved='#{@isreserved}'
@@ -1973,7 +2420,7 @@ class Node
     html += "
               </div>
               </dt>
-            " 
+            "
     # dl second
     html += "
               <dl class='lv-#{node.level}' id='tagDropdown_#{node.id}' data-tagid='#{node.id}' data-name='#{node.name}'></dl>
@@ -1981,22 +2428,19 @@ class Node
     return html
 class Token
   constructor: (cjLocation) ->
-    
+
     # there's 2 children to start
     if cjLocation.children().length == 2
       # console.log "2 kids empty"
     else
       # console.log "plenty of kids"
 
-  dropdown: (cjLocation) ->  
+  dropdown: (cjLocation) ->
 
   create:(cjLocation,name,type,id,cb) ->
     # console.log "create"
-    html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>
-                #{name}
-             </div>
-           "
-    cjLocation.append(html)
+    html = "<div class='token token-#{id}' data-name='#{name}' data-type='#{type}'>#{name}</div> "
+    cjLocation.prepend(html)
     cjLocation.find(".token-#{id}").on "click", =>
       cb.call(@)
       cjLocation.find(".token-#{id}").remove()
