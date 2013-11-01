@@ -187,10 +187,13 @@
       height: 20px;
       border-bottom: 1px solid #ccc;
       background-color: #fff; }
-    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete, #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs, #BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-tabs {
+    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete, #BBTreeContainer .BBTree-menu .BBTree-autocomplete {
+      float: left;
+      width: 100%; }
+    #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs, #BBTreeContainer .BBTree-menu .BBTree-tabs {
       float: left;
       width: 84%; }
-      #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-autocomplete div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'] {
+      #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'], #BBTreeContainer .BBTree-menu .BBTree-tabs div[class*='tab-'] {
         float: left; }
     #JSTree-container.BBTreeContainer .BBTree-menu .BBTree-settings, #BBTreeContainer .BBTree-menu .BBTree-settings {
       float: right;
@@ -232,12 +235,11 @@
         background-color: rgba(235, 185, 49, 0.8);
         font-weight: bold; }
     #JSTree-container.BBTreeContainer .BBTree-menu input#JSTree-ac, #BBTreeContainer .BBTree-menu input#JSTree-ac {
-      border-style: none;
+      border: none;
+      border-bottom: 1px solid #ccc;
       width: 100%;
-      padding: 0px;
-      padding-left: 3px;
-      margin: 0px;
-      height: 20px; }
+      padding: 5px;
+      margin: 0px; }
     #JSTree-container.BBTreeContainer .BBTree-menu.noResults, #BBTreeContainer .BBTree-menu.noResults {
       border-bottom: 6px solid white; }
     #JSTree-container.BBTreeContainer .BBTree-menu .JSTree-settings .add, #BBTreeContainer .BBTree-menu .JSTree-settings .add {
@@ -249,6 +251,8 @@
       width: 16px; }
   #JSTree-container.BBTreeContainer .BBTree, #BBTreeContainer .BBTree {
     background-color: #fff;
+    float: left;
+    width: 100%;
     border-bottom-left-radius: 3px;
     -webkit-border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;

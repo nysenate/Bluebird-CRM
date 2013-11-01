@@ -1,15 +1,20 @@
 // code
 .BBTree-menu {
-  input[type=text]::-ms-clear { 
-    display: none; 
-  }  
+  input[type=text]::-ms-clear {
+    display: none;
+  }
   width:100%;
   .BBTree-top, .BBTree-bottom {
     height:20px;
     border-bottom:1px solid #ccc;
     background-color:#fff;
   }
-  .BBTree-autocomplete, .BBTree-tabs{
+  .BBTree-autocomplete{
+    float:left;
+    width:100%;
+
+  }
+  .BBTree-tabs{
     float:left;
     width:84%;
     div[class*='tab-'] {
@@ -46,12 +51,12 @@
     @include in-and-out-hover-opacity($keywordsColor)
   }
   input#JSTree-ac {
-    border-style:none;
+    border:none;
+    border-bottom:1px solid #ccc;
     width: 100%;
-    padding:0px;
-    padding-left:3px;
+    padding:5px;
     margin:0px;
-    height:20px;
+    // height:30px;
   }
   &.noResults {
     border-bottom:6px solid white;

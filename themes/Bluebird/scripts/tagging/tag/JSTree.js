@@ -1022,7 +1022,7 @@
     };
 
     View.prototype.menuHtml = function(name) {
-      return "      <div class='" + name.menu + "'>        <div class='" + name.bottom + "'>          <div class='" + name.autocomplete + "'>            <input type='text' id='JSTree-ac' tabindex='1'>          </div>          <div class='" + name.settings + "'></div>       </div>       <div class='" + name.top + "'>          <div class='" + name.tabs + "'></div>          <div class='" + name.settings + "'></div>       </div>      </div>    ";
+      return "      <div class='" + name.menu + "'>	<div class='" + name.bottom + "'>	  <div class='" + name.autocomplete + "'>	    <input type='text' id='JSTree-ac' tabindex='1'>	  </div>       </div>       <div class='" + name.top + "'>	  <div class='" + name.tabs + "'></div>	  <div class='" + name.settings + "'></div>       </div>      </div>    ";
     };
 
     View.prototype.tokenHolderHtml = function(name) {

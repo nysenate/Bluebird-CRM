@@ -1,5 +1,7 @@
 .BBTree {
   background-color:#fff;
+  float: left;
+  width: 100%;
   .tagContainer {
     height:100%;
   }
@@ -26,7 +28,7 @@
     display:block;
   }
   .tagContainer {
-   
+
   }
   &.dropdown {
     height:0px;

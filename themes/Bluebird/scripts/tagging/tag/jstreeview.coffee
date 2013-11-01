@@ -324,7 +324,6 @@ class View
 	  <div class='#{name.autocomplete}'>
 	    <input type='text' id='JSTree-ac' tabindex='1'>
 	  </div>
-	  <div class='#{name.settings}'></div>
        </div>
        <div class='#{name.top}'>
 	  <div class='#{name.tabs}'></div>
@@ -1465,7 +1464,7 @@ class Action
     @tagName = cj("#JSTree-ac").val()
     if @tagName.length == 0
       @tagName = ""
-    
+
     if @tagName != "Type in a partial or complete name of an tag or keyword."
       html += label.buildLabel("headerdescription","headerdescription","#{@tagName}")
     else

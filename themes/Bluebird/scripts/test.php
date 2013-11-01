@@ -98,15 +98,17 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
         onSave:false
       },
       displaySettings: {
-	wide:true,
+	// wide:false,
         // lock:false
         // edit:true
         tagging:true
       },
-      callAjax: {
-        data: undefined,
-        url: 'localtagdata.json'
-      }
+      // Local dev reloads take a while so a manual cache is stored here
+      // to update load results from civicrm/ajax/tag/tree into localtagdata.json
+      // callAjax: {
+      //   data: undefined,
+      //   url: 'localtagdata.json'
+      // }
     }
     jstree.init(jsTreePageSettings, jstree.views);
   </script>
