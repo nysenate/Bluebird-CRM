@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,78 +23,76 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="messages status float-right no-popup">{*NYSS 4448*}
-    {ts}Total Recipients:{/ts} <strong>{$count|crmNumberFormat}</strong><br />
-   {if $action eq 256 & $ssid eq null}
-   <div id="popupContainer">
-     {include file="CRM/common/pager.tpl" location="top" noForm=1}
-<table>
-<tr class="columnheader">
-   <th>{ts}Name{/ts}</th>
-</tr>
-{foreach from=$value item="row"}
-<tr class="{cycle values="odd-row,even-row"}">
-    <td>{$row}<br/></td>
-</tr>
-{/foreach}
-</table>
- {include file="CRM/common/pager.tpl" location="bottom" noForm=1}
-</div>
-   {*NYSS 5912 temporarily remove*}
-   {*<a href="#" id="button"title="Contacts selected in the Find Contacts page"> {ts}View Selected Contacts{/ts}</a>*}
-   {/if}
+<div class="messages status float-right no-popup">
+  {ts}Total Recipients:{/ts} <strong>{$count|crmNumberFormat}</strong>
 </div>
 {if $action eq 256 & $ssid eq null}
+  <div class="status float-right">
+    <div id="popupContainer">
+      <table id="selectedRecords" class="display crm-copy-fields">
+        <thead>
+          <tr class="columnheader">
+            <th class="contact_details">Name</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {foreach from=$value item='row'}
+          <tr class="{cycle values="odd-row,even-row"}">
+                 <td class="name">{$row}</td>
+              {/foreach}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+     {*NYSS 5912*}
+     {*<a href="#" id="button"title="Contacts selected in the Find Contacts page"> {ts}View Selected Contacts{/ts}</a>*}
+  </div>
 {literal}
 <script type="text/javascript">
-cj("#popupContainer").css({
-	"background-color":"#E0E0E0"		
-});
-cj("#button").click(function(){
-cj("#popupContainer").dialog({
-	title: "Selected Contacts",
-	width:600,
-	height:400,
-	modal: true,
-	overlay: {
-            		opacity: 0.5,
-             		background: "black"
-             	}
-});
-});
-
-var url=location.href.split('&');
-	if(url[3])
-	{
-		cj("#popupContainer").dialog({
-			title: "Selected Contacts",
-			width:600,
-			height:400,
-			modal: true,
-			overlay: {
-					opacity: 0.5,
-             			 	background: "black"
-             			 }
-		});
-	}
-else
-{
-cj(document).ready(function(){
 cj("#popupContainer").hide();
 cj("#button").click(function(){
-		cj("#popupContainer").dialog({
-			title: "Selected Contacts",
-			width:600,
-			height:400,
-			modal: true,
-			overlay: {
-					opacity: 0.5,
-             				background: "black"
-             			}
-			});
-		});
-});
-}
+  cj("#popupContainer").dialog({
+    title: "Selected Contacts",
+    width:700,
+    height:500,
+    modal: true,
+    overlay: {
+                 opacity: 0.5,
+                  background: "black"
+                  }
+     });
+  });
+
+    cj( function( ) {
+        var count = 0; var columns=''; var sortColumn = '';
+
+        cj('#selectedRecords th').each( function( ) {
+          if ( cj(this).attr('class') == 'contact_details' ) {
+      sortColumn += '[' + count + ', "asc" ],';
+      columns += '{"sClass": "contact_details"},';
+    } else {
+      columns += '{ "bSortable": false },';
+    }
+    count++;
+  });
+
+  columns    = columns.substring(0, columns.length - 1 );
+  sortColumn = sortColumn.substring(0, sortColumn.length - 1 );
+  eval('sortColumn =[' + sortColumn + ']');
+  eval('columns =[' + columns + ']');
+
+  //load jQuery data table.
+        cj('#selectedRecords').dataTable( {
+    "sPaginationType": "full_numbers",
+    "bJQueryUI"  : true,
+    "aaSorting"  : sortColumn,
+    "aoColumns"  : columns,
+    "bFilter"    : false
+        });
+
+    });
+
 </script>
 {/literal}
 {/if}

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
@@ -41,14 +41,12 @@
 </div>
 {literal}
 <script type="text/javascript">
-  //NYSS 6698
   cj(function($) {
     var oTable;
 
     buildMailingContact();
 
     function buildMailingContact() {
-      var columns = '';
       var sourceUrl = {/literal}'{crmURL p="civicrm/ajax/contactmailing" h=0 q="contact_id=$contactId"}'{literal};
 
       var ZeroRecordText = {/literal}'{ts escape="js"}No mailings found{/ts}.'{literal};
@@ -60,7 +58,7 @@
         "aoColumns": [
           {sClass: 'crm-mailing-contact-subject'},
           {sClass: 'crm-mailing-contact_created'},
-          {sClass: 'crm-contact-activity_contact'},
+          {sClass: 'crm-contact-activity_contact', bSortable:false},
           {sClass: 'crm-mailing-contact-date'},
           {sClass: 'crm-mailing_openstats', bSortable:false},
           {sClass: 'crm-mailing-contact-links', bSortable: false}
@@ -103,11 +101,12 @@
 
         CRM.confirm( ''
           ,{
-            title: ts('Change Activity Status'),
+            title: ts('Email Message'),
             message: o,
-            width: 'auto'
-          }
-
+            width : "680px", // don't remove px
+            height: "560"
+          },
+          ts('Done')
         );
         return false;
       });
