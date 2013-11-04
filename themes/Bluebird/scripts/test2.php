@@ -110,7 +110,7 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
 
     var select = cj('#select-unified').selectize({
       // theme: 'repositories',
-      valueField: 'id',
+      valueField: 'name',
       labelField: 'name',
       searchField:  ['name', 'iso'],
       preload: true,
@@ -134,40 +134,47 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
       render: {
         option: function(item, escape) {
 	  var path = '';
-	  for (var i = 0, n = item.path.length; i < n; i++) {
+	  if(typeof item.path != 'undefined'){
+	    for (var i = 0, n = item.path.length; i < n; i++) {
 	    path = path+('<span class="path-name">' + escape(item.path[i].name) + '</span><span class="slash">/</span>');
-	  }
+	  }}
+
+	  // IssueCodes = 291 - show tree
+	  // Positions  = 292
+	  // Keywords   = 296
+	  type_class = 'single-item';
 	  if (escape(item.parent) == 291) {
 	    type_short = "I";
-	    type= "Issue Code";
+	    type = "Issue Code";
+	    type_class = "multi-item";
 	  }else if (escape(item.parent) == 292) {
-	    type_short = "K";
-	    type= "keyword";
-	  }else if (escape(item.parent) == 296){
 	    type_short = "P";
-	    type= "Position";
+	    type = "Position";
+	  }else if (escape(item.parent) == 296){
+	    type_short = "K";
+	    type = "Keyword";
 	  } ;
-	  return '<div class="name">' +
-	    '<span title="'+type+'"class="large-parent parent-'+escape(item.parent)+' ">'+type_short+'</span>' +
+	  return '<div class="name '+type_class+'">' +
+	    '<span title="'+type+'"class="short-'+escape(item.parent)+' ">'+type_short+'</span>' +
 	    '<ul>' +
 	      '<li>' + escape(item.name) + '</li>' +
 	      (item.path ? '<li class="path">' + path + '</li>' : '') +
 	    '</ul>' +
-            '</div>';
-	},
-	item: function(item, escape) {
-	  if (escape(item.parent) == 291) {
-	    type_short = "I";
-	    type= "Issue Code";
-	  }else if (escape(item.parent) == 292) {
-	    type_short = "K";
-	    type= "keyword";
-	  }else if (escape(item.parent) == 296){
-	    type_short = "P";
-	    type= "Position";
-	  } ;
-	  return '<div class="item" data-value="'+escape(item.id)+'"><span title="'+type+'" class="parent-'+escape(item.parent)+'">'+type_short+'</span>'+escape(item.name)+'</div>';
-        }
+		  '</div>';
+      },
+      item: function(item, escape) {
+	if (escape(item.parent) == 291) {
+	  type_short = "I";
+	  type= "Issue Code";
+	}else if (escape(item.parent) == 292) {
+	  type_short = "P";
+	  type= "Position";
+	}else if (escape(item.parent) == 296){
+	  type_short = "K";
+	  type= "keyword";
+	} ;
+	return '<div class="item" data-value="'+escape(item.id)+'"><span title="'+type+'" class="short-'+escape(item.parent)+'">'+type_short+'</span>'+escape(item.name)+'</div>';
+	    }
 
 
       },
