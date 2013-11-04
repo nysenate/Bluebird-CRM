@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,20 +43,16 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 </script>
 {/literal}
 {if $title}
-<div id="dialog">
+<div id="dialog"></div>{*NYSS*}
 
-</div>
-<div class="crm-accordion-wrapper crm-tagGroup-accordion crm-accordion-closed">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-	<a href="#" class="whiteanchor">{$title}</a>
-  </div><!-- /.crm-accordion-header -->
+<div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
+  <div class="crm-accordion-header">{$title}</div>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
-  <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
+    <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
     <tr>
       {if $groupElementType eq 'crmasmSelect'}
-        <td style="width:45%;"><span class="label">{if $title}{$form.group.label}{/if}</span>
+          <td><span class="label">{if $title}{$form.group.label}{/if}</span>
           {$form.group.html}
           {literal}
           <script type="text/javascript">
@@ -72,7 +68,6 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-		
 			{if $key eq 'tag'}
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				  <div id="crm-tagListWrap">
@@ -110,7 +105,6 @@ BBTree.startInstance({pullSets: [291, 296], buttonType: 'tagging', onSave: true}
 	  </tr>
   </table>
 {if $title}
- </div><!-- /.crm-accordion-body -->
+  </div>
 </div><!-- /.crm-accordion-wrapper -->
-
 {/if}

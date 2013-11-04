@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* This file provides the template for inline editing of emails *}
+{$form.oplock_ts.html}
 <table class="crm-inline-edit-form">
     <tr>
       <td colspan="5">
@@ -35,7 +36,7 @@
     <tr>
       <td>{ts}Email{/ts}&nbsp; 
       {if $actualBlockCount lt 5 }
-      <span id="add-more-email" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
+        <span id="add-more-email" title="{ts}click to add more{/ts}"><a class="crm-link-action add-more-inline">{ts}add{/ts}</a></span>
       {/if}
       </td>
       <td>{ts}On Hold?{/ts}</td>
@@ -46,7 +47,7 @@
     {section name='i' start=1 loop=$totalBlocks}
     {assign var='blockId' value=$smarty.section.i.index}
         <tr id="Email_Block_{$blockId}" {if $blockId gt $actualBlockCount}class="hiddenElement"{/if}>
-            <td>{$form.email.$blockId.email.html|crmReplace:class:eighteen}&nbsp;{$form.email.$blockId.location_type_id.html}
+            <td>{$form.email.$blockId.email.html|crmAddClass:email}&nbsp;{$form.email.$blockId.location_type_id.html}
             </td>
             <td align="center">{$form.email.$blockId.on_hold.html}</td>
             {if $multipleBulk}
@@ -57,85 +58,35 @@
             <td align="center" class="crm-email-is_primary">{$form.email.$blockId.is_primary.1.html}</td>
             <td>
               {if $blockId gt 1}
-                <a title="{ts}delete email block{/ts}" class="crm-delete-email crm-link-action">{ts}delete{/ts}</a>
+                <a title="{ts}delete email block{/ts}" class="crm-delete-inline crm-link-action">{ts}delete{/ts}</a>
               {/if}
             </td>
         </tr>
     {/section}
 </table>
 
-{include file="CRM/Contact/Form/Inline/InlineCommon.tpl"}
-
 {literal}
 <script type="text/javascript">
-    cj( function() {
+    cj(function($) {
       // check first primary radio
-      cj('#Email_1_IsPrimary').prop('checked', true );
+      $('#Email_1_IsPrimary').prop('checked', true );
       //NYSS
       cj('.crm-email-is_primary input').each(function(){
         if ( cj(this).attr('checked') && cj(this).attr('id') != 'Email_1_IsPrimary'  ) {
           cj('#Email_1_IsPrimary').attr('checked', false );
         }
       });
-     
-      // make sure only one is primary radio is checked
-      cj('.crm-email-is_primary input').click(function(){
-        cj('.crm-email-is_primary input').each(function(){
-          cj(this).prop('checked', false);
-        });
-        cj(this).prop('checked', true);
-      });
-
-      // make sure only one bulkmail radio is checked
-      cj('.crm-email-bulkmail input').click(function(){
-        cj('.crm-email-bulkmail input').each(function(){
-          cj(this).prop('checked', false);
-        });
-        cj(this).prop('checked', true);
-      });
-
-      // handle delete of block
-      cj('.crm-delete-email').click( function(){
-        cj(this).closest('tr').each(function(){
-          cj(this).find('input').val('');
-          //if the primary is checked for deleted block
-          //unset and set first as primary
-          if (cj(this).find('.crm-email-is_primary input').prop('checked') ) {
-            cj(this).find('.crm-email-is_primary input').prop('checked', false);
-            cj('#Email_1_IsPrimary').prop('checked', true );
-          }
-          cj(this).addClass('hiddenElement');
-        });
-      });
-
-      // add more and set focus to new row
-      cj('#add-more-email').click(function() {
-        var rowSelector = cj('tr[id^="Email_Block_"][class="hiddenElement"] :first').parent(); 
-        rowSelector.removeClass('hiddenElement');
-        var rowId = rowSelector.attr('id').replace('Email_Block_', '');
-        cj('#email_' + rowId + '_email').focus();
-        
-        if ( cj('tr[id^="Email_Block_"][class="hiddenElement"]').length == 0  ) {
-          cj('#add-more-email').hide();
-        }
-      });
-      if ( cj('tr[id^="Email_Block_5"] input#email_5_email').val().length != 0  ) {
-        cj('#add-more-email').hide();
-      }
 
       // error handling / show hideen elements duing form validation
       cj('tr[id^="Email_Block_"]' ).each( function() {
-          if( cj(this).find('td:first span').length > 0 ||
-		      cj(this).find('td:first input').val().length > 0 ) {
-            cj(this).removeClass('hiddenElement');
-          }
-          //NYSS 4775
-          cj(this).find('td:first input').addClass('eighteen');
+        if( cj(this).find('td:first span').length > 0 ||
+		    cj(this).find('td:first input').val().length > 0 
+        ) {
+          cj(this).removeClass('hiddenElement');
+        }
+        //NYSS 4775
+        cj(this).find('td:first input').addClass('eighteen');
       });
-
-      // add ajax form submitting
-      inlineEditForm( 'Email', 'email-block', {/literal}{$contactId}{literal} );
-            
     });
 
   //4980 on hold select

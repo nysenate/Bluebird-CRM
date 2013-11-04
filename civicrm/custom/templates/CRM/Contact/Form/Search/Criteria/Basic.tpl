@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,11 +25,12 @@
 *}
   <table class="form-layout">
     <tr>
-            <td><label>{ts}Complete OR Partial Name{/ts}</label>&nbsp;{help id='id-advanced-intro'}<br />
-                {$form.sort_name.html|crmReplace:class:big}
+    <td><label>{ts}Complete OR Partial Name{/ts}</label><br />
+      {$form.sort_name.html}
             </td>
             <td>
                 <label>{ts}Complete OR Partial Email{/ts}</label><br />
+{*NYSS*}
                 {$form.email.html|crmReplace:class:big}<br />
                 {$form.email_primary.html} {$form.email_primary.label}
             </td>
@@ -62,7 +63,6 @@
               <div class="crm-submit-buttons reset-advanced-search">
                 <a href="{crmURL p='civicrm/contact/search/advanced' q='reset=1'}" id="resetAdvancedSearch" class="button" style="width:80px; text-align:center;"><span>{ts}Reset Form{/ts}</span></a>
               </div>
-    
             </td>       
         </tr>
     <tr>
