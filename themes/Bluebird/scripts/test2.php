@@ -88,232 +88,88 @@ jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":
 </head>
 <body>
  <div id="wrapper">
-<!--    <div class="demo">
-<div id="tabs">
-  <ul>
-    <li><a href="#tabs-1">Issue Codes</a></li>
-    <li><a href="#tabs-2">Positions</a></li>
-    <li><a href="#tabs-3">Keywords</a></li>
-  </ul>
-  <div id="tabs-1">
-    <div class="control-group">
-      <select id="select-one" class="contacts" placeholder="Search for a tag or keyword."></select>
-    </div>
-  </div>
-  <div id="tabs-2">
-   <div class="control-group">
-      <select id="select-two" class="contacts" placeholder="Pick some people..."></select>
-    </div>
-  </div>
-  <div id="tabs-3">
-   <div class="control-group">
-      <select id="select-three" class="contacts" placeholder="Pick some people..."></select>
-    </div>
-  </div>
-</div>
 
- <script>
-cj(function() {
-  cj( "#tabs" ).tabs();
-});
-</script>
-
-
-    <script>
-
-    cj('#select-one').selectize({
-      theme: 'repositories',
-      valueField: 'url',
-      labelField: 'name',
-      searchField: 'name',
-      options: [],
-      create: false,
-      render: {
-      option: function(item, escape) {
-      return '<div>' +
-        '<span class="title">' +
-          '<span class="name"><i class="icon ' + (item.fork ? 'fork' : 'source') + '"></i>' + escape(item.name) + '</span>' +
-          '<span class="by">' + escape(item.username) + '</span>' +
-        '</span>' +
-        '<span class="description">' + escape(item.description) + '</span>' +
-        // '<ul class="meta">' +
-        //   (item.language ? '<li class="language">' + escape(item.language) + '</li>' : '') +
-        //   '<li class="watchers"><span>' + escape(item.watchers) + '</span> watchers</li>' +
-        //   '<li class="forks"><span>' + escape(item.forks) + '</span> forks</li>' +
-        // '</ul>' +
-      '</div>';
-      }
-      },
-      score: function(search) {
-        var score = this.getScoreFunction(search);
-        return function(item) {
-          return score(item) * (1 + Math.min(item.watchers / 100, 1));
-        };
-      },
-      load: function(query, callback) {
-        if (!query.length) return callback();
-        $.ajax({
-          url: 'https://api.github.com/legacy/repos/search/' + encodeURIComponent(query),
-          type: 'GET',
-          error: function() {
-            callback();
-          },
-          success: function(res) {
-            callback(res.repositories.slice(0, 10));
-          }
-      });
-    }
-    });
-
-   // cj('#select-two').selectize({
-   //    persist: false,
-   //    maxItems: null,
-   //    valueField: 'email',
-   //    labelField: 'name',
-   //    searchField: ['first_name', 'last_name', 'email'],
-   //    sortField: [
-   //      {field: 'first_name', direction: 'asc'},
-   //      {field: 'last_name', direction: 'asc'}
-   //    ],
-   //    options: [
-   //      {email: 'nikola@tesla.com', first_name: 'Nikola', last_name: 'Tesla'},
-   //      {email: 'brian@thirdroute.com', first_name: 'Brian', last_name: 'Reavis'},
-   //      {email: 'someone@gmail.com'}
-   //    ],
-   //    render: {
-   //      item: function(item, escape) {
-   //        var name = formatName(item);
-   //        return '<div>' +
-   //          (name ? '<span class="name">' + escape(name) + '</span>' : '') +
-   //          (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
-   //        '</div>';
-   //      },
-   //      option: function(item, escape) {
-   //        var name = formatName(item);
-   //        var label = name || item.email;
-   //        var caption = name ? item.email : null;
-   //        return '<div>' +
-   //          '<span class="label">' + escape(label) + '</span>' +
-   //          (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
-   //        '</div>';
-   //      }
-   //    },
-   //    create: function(input) {
-   //      if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-   //              return {email: input};
-   //      }
-   //      var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-   //      if (match) {
-   //        var name = $.trim(match[1]);
-   //        var pos_space = name.indexOf(' ');
-   //        var first_name = name.substring(0, pos_space);
-   //        var last_name = name.substring(pos_space + 1);
-
-   //        return {
-   //          email: match[2],
-   //          first_name: first_name,
-   //          last_name: last_name
-   //        };
-   //      }
-   //      alert('Invalid email address.');
-   //      return false;
-   //    }
-   //  });
-   // cj('#select-three').selectize({
-   //    persist: false,
-   //    maxItems: null,
-   //    valueField: 'email',
-   //    labelField: 'name',
-   //    searchField: ['first_name', 'last_name', 'email'],
-   //    sortField: [
-   //      {field: 'first_name', direction: 'asc'},
-   //      {field: 'last_name', direction: 'asc'}
-   //    ],
-   //    options: [
-   //      {email: 'nikola@tesla.com', first_name: 'Nikola', last_name: 'Tesla'},
-   //      {email: 'brian@thirdroute.com', first_name: 'Brian', last_name: 'Reavis'},
-   //      {email: 'someone@gmail.com'}
-   //    ],
-   //    render: {
-   //      item: function(item, escape) {
-   //        var name = formatName(item);
-   //        return '<div>' +
-   //          (name ? '<span class="name">' + escape(name) + '</span>' : '') +
-   //          (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
-   //        '</div>';
-   //      },
-   //      option: function(item, escape) {
-   //        var name = formatName(item);
-   //        var label = name || item.email;
-   //        var caption = name ? item.email : null;
-   //        return '<div>' +
-   //          '<span class="label">' + escape(label) + '</span>' +
-   //          (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
-   //        '</div>';
-   //      }
-   //    },
-   //    create: function(input) {
-   //      if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-   //              return {email: input};
-   //      }
-   //      var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-   //      if (match) {
-   //        var name = $.trim(match[1]);
-   //        var pos_space = name.indexOf(' ');
-   //        var first_name = name.substring(0, pos_space);
-   //        var last_name = name.substring(pos_space + 1);
-
-   //        return {
-   //          email: match[2],
-   //          first_name: first_name,
-   //          last_name: last_name
-   //        };
-   //      }
-   //      alert('Invalid email address.');
-   //      return false;
-   //    }
-   //  });
-    </script>
-  </div>
- -->
 
 
 <div class="demo">
 
     <div class="control-group">
       <select id="select-unified" class="contacts" placeholder="Search for a tag or keyword."></select>
-      <!-- echo '<option value="' . htmlentities($option['name']) . '" data-data="' . htmlentities(json_encode($option)) . '">' . htmlentities($option['name']) . '</option>'; -->
+      <!-- echo '<option value="' . htmlentities(cjoption['name']) . '" data-data="' . htmlentities(json_encode(cjoption)) . '">' . htmlentities(cjoption['name']) . '</option>'; -->
     </div>
+    <!-- <div class="buttons">
+      <input type="button" value="clear()" id="button-clear">
+      <input type="button" value="clearOptions()" id="button-clearoptions">
+      <input type="button" value="addOption()" id="button-addoption">
+      <input type="button" value="addItem()" id="button-additem">
+      <input type="button" value="setValue()" id="button-setvalue">
+    </div> -->
+
+
     <script>
 
-    cj('#select-unified').selectize({
+    var select = cj('#select-unified').selectize({
       // theme: 'repositories',
       valueField: 'id',
       labelField: 'name',
-      searchField: 'name',
+      searchField:  ['name', 'iso'],
       preload: true,
       maxItems: 1000,
+      hideSelected: true,
+
+      // scrollDuration: 100,
       // dataAttr: 'data-data'
       // options: [
       //   {id: 1, name: 'Spectrometer'},
       //   {id: 2, name: 'Star Chart'},
       //   {id: 3, name: 'Electrical Tape'}
       // ],
-      create: false,
+      create: true,
+      // plugins: ['remove_button','restore_on_backspace'],
+      plugins: ['remove_button'],
+
+      delimiter: ',',
+      persist: true,
+
       render: {
         option: function(item, escape) {
-        var path = '';
-        for (var i = 0, n = item.path.length; i < n; i++) {
-          path = path+('<span class="path-name">' + escape(item.path[i].name) + '</span><span class="slash">/</span>');
-        }
-          return '<div>' +
-            '<span class="name">' +
-            '<span class="name"><i class="icon icon-'+escape(item.parent)+' "></i>' +
-            escape(item.name) + '</span>' +
-
-            (item.path ? '<span class="path">' + path + '</span>' : '') +
+	  var path = '';
+	  for (var i = 0, n = item.path.length; i < n; i++) {
+	    path = path+('<span class="path-name">' + escape(item.path[i].name) + '</span><span class="slash">/</span>');
+	  }
+	  if (escape(item.parent) == 291) {
+	    type_short = "I";
+	    type= "Issue Code";
+	  }else if (escape(item.parent) == 292) {
+	    type_short = "K";
+	    type= "keyword";
+	  }else if (escape(item.parent) == 296){
+	    type_short = "P";
+	    type= "Position";
+	  } ;
+	  return '<div class="name">' +
+	    '<span title="'+type+'"class="large-parent parent-'+escape(item.parent)+' ">'+type_short+'</span>' +
+	    '<ul>' +
+	      '<li>' + escape(item.name) + '</li>' +
+	      (item.path ? '<li class="path">' + path + '</li>' : '') +
+	    '</ul>' +
             '</div>';
+	},
+	item: function(item, escape) {
+	  if (escape(item.parent) == 291) {
+	    type_short = "I";
+	    type= "Issue Code";
+	  }else if (escape(item.parent) == 292) {
+	    type_short = "K";
+	    type= "keyword";
+	  }else if (escape(item.parent) == 296){
+	    type_short = "P";
+	    type= "Position";
+	  } ;
+	  return '<div class="item" data-value="'+escape(item.id)+'"><span title="'+type+'" class="parent-'+escape(item.parent)+'">'+type_short+'</span>'+escape(item.name)+'</div>';
         }
+
+
       },
       score: function(search) {
         var score = this.getScoreFunction(search);
@@ -323,7 +179,7 @@ cj(function() {
       },
       load: function(query, callback) {
         // if (!query.length) return callback();
-        $.ajax({
+	cj.ajax({
           // http://sd99_dev/civicrm/ajax/tag/tree?call_uri=http%3A%2F%2Fsd99_dev%2Fsites%2Fdefault%2Fthemes%2FBluebird%2Fscripts%2Ftest.php
           url: 'localtagdata.json',
           type: 'GET',
@@ -334,7 +190,46 @@ cj(function() {
             callback(res);
           }
         });
+      },
+      onItemRemove: function(values) {
+	console.log("removed: "+values);
+
+	//return confirm(values.length > 1 ? 'Are you sure you want to remove these ' + values.length + ' items?' : 'Are you sure you want to remove "' + values[0] + '"?');
+      },
+      onOptionAdd: function(values) {
+	// console.log("created: "+values);
+	// return confirm(values.length > 1 ? 'Are you sure you want to add these ' + values.length + ' items?' : 'Are you sure you want to add "' + values[0] + '"?');
+      },
+      onItemAdd: function(values) {
+	console.log("added: "+values);
+	//return confirm(values.length > 1 ? 'Are you sure you want to add these ' + values.length + ' items?' : 'Are you sure you want to add "' + values[0] + '"?');
       }
+    });
+    var control = select[0].selectize;
+
+    cj('#button-clear').on('click', function() {
+      control.clear();
+    });
+
+    // cj('#button-clearoptions').on('click', function() {
+    //   control.clearOptions();
+    // });
+
+    cj('#button-addoption').on('click', function() {
+      control.addOption({
+	id: 4000,
+	parent: 292,
+	name: 'Something New',
+	path: ['http://google.com']
+      });
+    });
+
+    cj('#button-additem').on('click', function() {
+      control.addItem(2);
+    });
+
+    cj('#button-setvalue').on('click', function() {
+      control.setValue([2, 3]);
     });
     </script>
   </div>
