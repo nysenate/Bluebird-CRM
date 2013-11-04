@@ -356,6 +356,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
         $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
         $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact details for this contact.");
         $entryFound = TRUE;
+      }
       
       // strip out the activity targets (could be multiple)
       if ( array_key_exists('civicrm_activity_activity_type_id', $row ) &&
@@ -373,13 +374,15 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
         //CRM_Core_Error::debug('at', $targets);
         
         // build links
-        require_once 'api/v2/Contact.php';
         $atlist = array();
         foreach ( $targets as $target ) {
           $turl = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$target, $this->_absoluteUrl );
-                  $tc_params = array( 'contact_id' => $target );
-          $tc_contacts = civicrm_contact_get( $tc_params );
-          $atlist[] = '<a href="'.$turl.'">'.$tc_contacts[$target]['display_name'].'</a>';
+          $tc_params = array(
+            'version' => 3,
+            'id' => $target
+          );
+          $tc_contacts = civicrm_api('contact', 'getsingle', $tc_params);
+          $atlist[] = '<a href="'.$turl.'">'.$tc_contacts['display_name'].'</a>';
         }
         $stlist = implode( ', ', $atlist );
         //CRM_Core_Error::debug('stlist', $stlist);

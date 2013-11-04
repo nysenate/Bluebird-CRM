@@ -110,16 +110,21 @@ $now = time() + (60 * 60 * $offset);
           <?php //insert first name in header greeting; #2288
 					civicrm_initialize( );
 					require_once 'CRM/Core/Config.php';
-					$config =& CRM_Core_Config::singleton( );
+					$config = CRM_Core_Config::singleton( );
 
-					require_once "api/v2/UFGroup.php";
-					$uid = $user->uid;
-					$contactid = civicrm_uf_match_id_get( $uid );
+					require_once 'api/api.php';
+          $params = array(
+            'version' => 3,
+            'uf_id' => $user->uid
+          );
+          $uf = civicrm_api('uf_match', 'getsingle', $params);
 
-					require_once "api/v2/Contact.php";
-					$params = array( 'contact_id' => $contactid );
-					$contactrecord = civicrm_contact_get( $params );
-					echo $contactrecord[$contactid]['first_name'];
+					$params = array(
+            'version' => 3,
+            'id' => $uf['contact_id'],
+          );
+          $contact = civicrm_api('contact', 'getsingle', $params);
+					echo $contact['first_name'];
 				?>
 
   			</div>

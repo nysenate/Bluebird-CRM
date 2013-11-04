@@ -78,16 +78,18 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 
     //NYSS 2551 need to retrieve activity logs for the current record
     //NYSS 4592 remove bulk email activities from displaying
-    require_once 'api/v2/ActivityContact.php';
-    $params = array('contact_id' => $this->_contactId);
-    $activities = civicrm_activity_contact_get($params);
+    $params = array(
+      'version' => 3,
+      'contact_id' => $this->_contactId,
+    );
+    $activities = civicrm_api('activity', 'get', $params);
     //CRM_Core_Error::debug($activities);
 
     $activityIDs = array();
     $activitySubject = array();
     $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
 
-		foreach ( $activities['result'] as $activityID => $activityDetail ) {
+		foreach ( $activities['values'] as $activityID => $activityDetail ) {
 			if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {
 			    $activityIDs[] = $activityID;
 			    $activitySubject[$activityID] = $activityDetail['subject'];
