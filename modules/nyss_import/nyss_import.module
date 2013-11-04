@@ -20,19 +20,20 @@ function nyss_import_civicrm_import( $object, $usage, &$objectRef, &$params ) {
 		$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
 	
 		if ( $taglist ) {
-
-			require_once 'api/v2/Tag.php';
-			require_once 'api/v2/EntityTag.php';
 			require_once 'CRM/Core/BAO/EntityTag.php';
 	
 			$keywords = array();
 			$keywords = explode( '|', $taglist );
 	
 			foreach ( $keywords as $keyword ) {
-				$params = array( 'name' => $keyword, 'parent_id' => '296' );
+				$params = array(
+          'version' => 3,
+          'name' => $keyword,
+          'parent_id' => '296'
+        );
 			
 				//lookup tag; create new if nonexist
-				$tag = civicrm_tag_get($params);
+				$tag = civicrm_api('tag', 'getsingle', $params);
 				if ( $tag['is_error'] ) {
 					$tag = civicrm_tag_create($params);
 					$tagid = $tag['tag_id'];
@@ -41,10 +42,14 @@ function nyss_import_civicrm_import( $object, $usage, &$objectRef, &$params ) {
 				}
 					
 				//only add tag to contact if not already present
-				$entityTags =& CRM_Core_BAO_EntityTag::getTag($contactID);
+				$entityTags = CRM_Core_BAO_EntityTag::getTag($contactID);
 				if ( !in_array($tagid, $entityTags) ) {
-					$entityParams = array('tag_id' => $tagid, 'contact_id' => $contactID );
-					$entityTag = civicrm_entity_tag_add( $entityParams );
+					$entityParams = array(
+            'version' => 3,
+            'tag_id' => $tagid,
+            'contact_id' => $contactID
+          );
+					civicrm_api('entity_tag', 'create', $entityParams);
 				}
 			}
 		}
