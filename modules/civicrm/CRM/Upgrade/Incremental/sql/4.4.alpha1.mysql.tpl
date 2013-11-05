@@ -1,5 +1,5 @@
 {include file='../CRM/Upgrade/4.4.alpha1.msg_template/civicrm_msg_template.tpl'}
-
+SET foreign_key_checks = 0;
 -- CRM-12357
 SELECT @option_group_id_cvOpt := max(id) FROM civicrm_option_group WHERE name = 'contact_view_options';
 SELECT @max_val := MAX(ROUND(op.value)) FROM civicrm_option_value op  WHERE op.option_group_id  = @option_group_id_cvOpt;
