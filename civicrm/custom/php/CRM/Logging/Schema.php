@@ -209,7 +209,8 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
       $this->fixSchemaDifferencesForALL();
     }
     // invoke the meta trigger creation call
-    CRM_Core_DAO::triggerRebuild();
+    //NYSS force column rebuild
+    CRM_Core_DAO::triggerRebuild(NULL, TRUE);
   }
 
   /**
@@ -247,7 +248,7 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
 
     // for any obsolete columns (not null) we just make the column nullable.
     if (!empty($cols['OBSOLETE'])) {
-      $create = $this->_getCreateQuery("log_{$table}");
+      $create = $this->_getCreateQuery("`{$this->db}`.log_{$table}");
       foreach ($cols['OBSOLETE'] as $col) {
         $line = $this->_getColumnQuery($col, $create);
         // This is just going to make a not null column to nullable
@@ -267,7 +268,7 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     $dao->fetch();
     $create = explode("\n", $dao->Create_Table);
     return $create;
-    }
+  }
 
   private function _getColumnQuery($col, $createQuery) {
     $line = preg_grep("/^  `$col` /", $createQuery);
@@ -282,7 +283,8 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     foreach ($this->tables as $table) {
       if (empty($this->logs[$table])) {
         $this->createLogTableFor($table);
-      } else {
+      }
+      else {
         $diffs[$table] = $this->columnsWithDiffSpecs($table, "log_$table");
       }
     }
@@ -292,9 +294,9 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     }
 
     if ($rebuildTrigger) {
-    // invoke the meta trigger creation call
-    CRM_Core_DAO::triggerRebuild($table);
-  }
+      // invoke the meta trigger creation call
+      CRM_Core_DAO::triggerRebuild($table);
+    }
   }
 
   /*
@@ -341,12 +343,13 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
   /**
    * Get an array of column names of the given table.
    */
-  private function columnsOf($table) {
+  //NYSS
+  private function columnsOf($table, $force = FALSE) {
     static $columnsOf = array();
 
     $from = (substr($table, 0, 4) == 'log_') ? "`{$this->db}`.$table" : $table;
 
-    if (!isset($columnsOf[$table])) {
+    if (!isset($columnsOf[$table]) || $force) {
       CRM_Core_Error::ignoreException();
       $dao = CRM_Core_DAO::executeQuery("SHOW COLUMNS FROM $from");
       CRM_Core_Error::setCallback();
@@ -358,6 +361,7 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         $columnsOf[$table][] = $dao->Field;
       }
     }
+    //CRM_Core_Error::debug_var("columnsOf[{$table}] (force = {$force})", $columnsOf[$table]);
 
     return $columnsOf[$table];
   }
@@ -414,6 +418,11 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     // NOTE: we consider only those columns for modifications where there is a spec change, and that the column definition
     // wasn't deliberately modified by fixTimeStampAndNotNullSQL() method.
     foreach ($civiTableSpecs as $col => $colSpecs) {
+      //NYSS
+      if ( !is_array($logTableSpecs[$col]) ) {
+        $logTableSpecs[$col] = array();
+      }
+
       $specDiff = array_diff($civiTableSpecs[$col], $logTableSpecs[$col]);
       if (!empty($specDiff) && $col != 'id' && !array_key_exists($col, $diff['ADD'])) {
         // ignore 'id' column for any spec changes, to avoid any auto-increment mysql errors
@@ -534,7 +543,7 @@ COLS;
     return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
   }
 
-  function triggerInfo(&$info, $tableName = NULL) {
+  function triggerInfo(&$info, $tableName = NULL, $force = FALSE) {
     // check if we have logging enabled
     $config = &CRM_Core_Config::singleton();
     if (!$config->logging) {
@@ -554,7 +563,7 @@ COLS;
 
     // logging is enabled, so now lets create the trigger info tables
     foreach ($tableNames as $table) {
-      $columns = $this->columnsOf($table);
+      $columns = $this->columnsOf($table, $force);
 
       // only do the change if any data has changed
       $cond = array( );
