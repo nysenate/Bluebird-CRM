@@ -31,7 +31,7 @@
       {ts}Report Configuration{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
-      <div id="mainTabContainer" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+      <div id="mainTabContainer">
         {*tab navigation bar*}
         <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
           {if $colGroups}
@@ -98,8 +98,10 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmAccordions();
+  cj().crmAccordions();
+  cj("#mainTabContainer").tabs();
 });
+
 </script>
 {/literal}
 
