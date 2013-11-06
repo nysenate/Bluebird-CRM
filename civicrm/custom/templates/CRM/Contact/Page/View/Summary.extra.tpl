@@ -137,13 +137,16 @@
     cj('#custom-set-block-1 .crm-config-option a').html(custLink1);
   }
 
-  if ( cj('#custom-set-block-3').length ) {
+  //removed in 4.4 - link text is simpler in core
+  /*if ( cj('#custom-set-block-3').length ) {
     var custLink3 = cj('#custom-set-block-3 .crm-config-option a').html().replace('add or edit custom set', 'add or edit constituent information');
     cj('#custom-set-block-3 .crm-config-option a').html(custLink3);
   }
 
-  var custLink2 = cj('#custom-set-block-5 .crm-config-option a').html().replace('add or edit custom set', 'add or edit attachments');
-  cj('#custom-set-block-5 .crm-config-option a').html(custLink2);
+  if ( cj('#custom-set-block-3').length ) {
+    var custLink2 = cj('#custom-set-block-5 .crm-config-option a').html().replace('add or edit custom set', 'add or edit attachments');
+    cj('#custom-set-block-5 .crm-config-option a').html(custLink2);
+  }*/
 
   //5779 truncate file name
   cj('.crm-fileURL a').each(function(){
