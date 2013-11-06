@@ -327,13 +327,13 @@ table.sticky-header {
 	position:fixed;
 	width:100%;
 	left:0px;
-	}
+}
 
 #footer .block	 {
 	margin-bottom:0px;
 	padding:4px 0px;
 	float:left;
-	}
+}
 
 #footer #dashboard-link-wrapper {
 	background-color: #405362;
@@ -343,14 +343,17 @@ table.sticky-header {
 	-moz-border-radius-topright: 4px;
 	width: 87px;
 	float: left;
-	}
-	#footer #dashboard-link-wrapper a {
-		color:#FFF;
-		}
-	#footer #dashboard-link-wrapper .dashboard-icon {
-		background: transparent url(../images/dashboard.gif) no-repeat top left;
-		
-		}
+}
+#footer #dashboard-link-wrapper a {
+	color:#FFF;
+}
+#footer #dashboard-link-wrapper .dashboard-icon {
+	background: transparent url(../images/dashboard.gif) no-repeat top left;
+  height: 16px;
+  width: 16px;
+  float: left;
+  text-indent: -10000px;
+}
 
 #footer #block-civicrm-2 {
 	font-size:11px;
@@ -359,7 +362,7 @@ table.sticky-header {
 	height: 19px;
 	overflow: hidden;
 	line-height: 18px;
-	}
+}
 	
 
 #footer #block-civicrm-2 h2 {

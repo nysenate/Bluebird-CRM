@@ -294,7 +294,7 @@ cj( document ).ready( function( ) {
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+  cj().crmAccordions();
 });
 </script>
 {/literal}

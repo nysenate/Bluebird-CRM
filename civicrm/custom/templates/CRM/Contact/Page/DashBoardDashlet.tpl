@@ -25,8 +25,8 @@
 *}
 {include file="CRM/common/dashboard.tpl"}
 {include file="CRM/common/openFlashChart.tpl"}
-{*NYSS disable these messages*} {*
 {* Alerts for critical configuration settings. *}
+{*NYSS disable these messages*} {*
 {if ! $fromEmailOK || ! $ownerOrgOK || ! $defaultMailboxOK}
     <div class="help">
     <div class="finalconf-intro">

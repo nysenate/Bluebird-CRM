@@ -239,7 +239,7 @@ should be restored and limited to issue codes (or just exclude positions)-->
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+  cj().crmAccordions();
 });
 
 {/literal}{if $invalidGroupName}{literal}

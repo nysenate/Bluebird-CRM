@@ -47,7 +47,7 @@
 {literal}
 <script type="text/javascript">
   cj(function() {
-    cj().crmaccordions();
+    cj().crmAccordions();
   });
 
   var procTime = 0;

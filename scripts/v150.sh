@@ -42,6 +42,8 @@ $execSql -i $instance -c "$sql"
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
+## TODO remove personal campaign page menu item
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance

@@ -104,14 +104,8 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmtooltip(); 
-   cj().crmaccordions(); 
-});
-cj(document).ready(function() {
-  advmultiselectResize();
-});
-cj(window).resize(function() {
-  advmultiselectResize();
+  cj().crmtooltip();
+  cj().crmAccordions();
 });
 </script>
 {/literal}
