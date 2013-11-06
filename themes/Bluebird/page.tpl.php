@@ -138,8 +138,8 @@ $now = time() + (60 * 60 * $offset);
 	}
 	  if ( $jobuser ) { ?>
     	<div class="sos_job">
-    	    [<?php if ( isset($_SESSION['CiviCRM']['jobID']) and $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
-        	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job#</a>]
+        [<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Job ID</a>
+    	  <?php if (isset($_SESSION['CiviCRM']['jobID']) && $_SESSION['CiviCRM']['jobID']) { echo ':: '.$_SESSION['CiviCRM']['jobID']; } ?>]
       </div>
     <?php } ?>
 

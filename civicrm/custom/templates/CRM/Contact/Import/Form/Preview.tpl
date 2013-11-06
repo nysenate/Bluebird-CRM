@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -47,7 +47,7 @@ function pollLoop( ){
 }
 
 function verify( ) {
-    if (! confirm('{/literal}{ts}Are you sure you want to Import now{/ts}{literal}?') ) {
+    if (! confirm('{/literal}{ts escape='js'}Are you sure you want to Import now{/ts}{literal}?') ) {
         return false;
     }
 	
@@ -143,13 +143,12 @@ function verify( ) {
  </table>
 
  {* Table for mapping preview *}
- {include file="CRM/Import/Form/MapTable.tpl"}
+ {include file="CRM/Contact/Import/Form/MapTable.tpl"}
  
  {* Group options *}
  {* New Group *}
-<div id="new-group" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+<div id="new-group" class="crm-accordion-wrapper collapsed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
     {ts}Add imported records to a new group{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
@@ -169,9 +168,8 @@ function verify( ) {
 
       {* Existing Group *}
 
-<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion {if $form.groups}crm-accordion-open{else}crm-accordion-closed{/if}">
+<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion {if $form.groups} {else}collapsed{/if}">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
   {$form.groups.label}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
@@ -184,10 +182,9 @@ function verify( ) {
 
     {* Tag options *}
     {* New Tag *}
-<div id="new-tag" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+<div id="new-tag" class="crm-accordion-wrapper collapsed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
-  {ts}Create a new keyword and assign it to imported records.{/ts}{*NYSS*}            
+  {ts}Create a new keyword and assign it to imported records.{/ts}{*NYSS*}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
   
@@ -243,11 +240,11 @@ cj(function() {
 });
 
 {/literal}{if $invalidGroupName}{literal}
-cj("#new-group").removeClass( 'crm-accordion-closed' ).addClass( 'crm-accordion-open' );
+cj("#new-group.collapsed").crmAccordionToggle();
 {/literal}{/if}{literal}
 
 {/literal}{if $invalidTagName}{literal}
-cj("#new-tag").removeClass( 'crm-accordion-closed' ).addClass( 'crm-accordion-open' );
+cj("#new-tag.collapsed").crmAccordionToggle();
 {/literal}{/if}{literal}
 
 </script>

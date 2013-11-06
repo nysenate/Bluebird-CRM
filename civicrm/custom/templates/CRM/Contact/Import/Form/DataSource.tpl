@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -160,7 +160,7 @@
                                                        cj("#contact-subtype").show();   
                                                        cj("#subType").empty();                                   
 
-                                                       cj("#subType").append("<option value=''>- {/literal}{ts}select{/ts}{literal} -</option>");  
+                                                       cj("#subType").append("<option value=''>- {/literal}{ts escape='js'}select{/ts}{literal} -</option>");
                                                        for ( var key in  subtype ) {
                                                            // stick these new options in the subtype select 
                                                            cj("#subType").append("<option value="+key+">"+subtype[key]+" </option>");  
@@ -175,7 +175,7 @@
 
       function buildDedupeRules( )
       {
-        element = cj("'input[name=contactType]:checked'").val();
+        element = cj("input[name=contactType]:checked").val();
         var postUrl = {/literal}"{crmURL p='civicrm/ajax/dedupeRules' h=0 }"{literal};
         var param = 'parentId='+ element;
         cj.ajax({ type: "POST", url: postUrl, data: param, async: false, dataType: 'json',
@@ -188,7 +188,7 @@
                                                        cj("#contact-dedupe").show();   
                                                        cj("#dedupe").empty();                                   
 
-                                                       cj("#dedupe").append("<option value=''>- {/literal}{ts}select{/ts}{literal} -</option>");  
+                                                       cj("#dedupe").append("<option value=''>- {/literal}{ts escape='js'}select{/ts}{literal} -</option>");
                                                        for ( var key in  dedupe ) {
                                                            // stick these new options in the dedupe select 
                                                            cj("#dedupe").append("<option value="+key+">"+dedupe[key]+" </option>");  

@@ -243,13 +243,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables {
           array(1 => array($userID, 'Integer'))
         );
       }
-      //NYSS JobID handling
-      $jobID = $session->get('jobID');
-      if ($jobID) {
-        CRM_Core_DAO::executeQuery('SET @jobID = %1',
-          array(1 => array($jobID, 'String'))
-        );
-      }
+
       // initialize authentication source
       self::$_singleton->initAuthSrc();
     }
