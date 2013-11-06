@@ -208,7 +208,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
 
     $click = self::getTableName();
     $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
-    $job = CRM_Mailing_BAO_Job::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailingIDs = implode(',', $mailingIDs);
 
     $query = "

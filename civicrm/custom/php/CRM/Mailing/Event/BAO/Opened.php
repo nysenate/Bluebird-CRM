@@ -177,7 +177,7 @@ class CRM_Mailing_Event_BAO_Opened extends CRM_Mailing_Event_DAO_Opened {
 
     $open    = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
     $mailingIDs = implode(',', $mailingIDs);
 
     $query = "

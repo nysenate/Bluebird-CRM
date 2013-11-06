@@ -2790,7 +2790,7 @@ WHERE  civicrm_mailing_job.id = %1
     return TRUE;
   }
   //NYSS 4717
-  private function addMultipleEmails($mailingID, $dedupeEmail = false) {
+  private function addMultipleEmails($mailingID, $dedupeEmail = FALSE) {
     $sql = "
 INSERT INTO civicrm_mailing_recipients
     (mailing_id, email_id, contact_id)
