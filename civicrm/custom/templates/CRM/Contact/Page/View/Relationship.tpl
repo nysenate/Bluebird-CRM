@@ -51,10 +51,11 @@
         <tr>
             <th>{ts}Relationship{/ts}</th>
             <th></th>
-            <th id="start_date">{ts}Start{/ts}</th>
-            <th id="end_date">{ts}End{/ts}</th>
+            {*NYSS remove some columns*}
+            {*<th id="start_date">{ts}Start{/ts}</th>*}
+            {*<th id="end_date">{ts}End{/ts}</th>*}
             <th>{ts}City{/ts}</th>
-            {*<th>{ts}State/Prov{/ts}</th>*}{*NYSS*}
+            {*<th>{ts}State/Prov{/ts}</th>*}
             <th>{ts}Email{/ts}</th>
             <th>{ts}Phone{/ts}</th>
             <th></th>
@@ -63,13 +64,6 @@
         </tr>
         </thead>
         {foreach from=$currentRelationships item=rel}
-            {*assign var = "rtype" value = "" }
-            {if $rel.contact_a eq $contactId }
-                {assign var = "rtype" value = "a_b" }
-            {else}
-                {assign var = "rtype" value = "b_a" }
-            {/if*}
-            
             <tr id="rel_{$rel.id}" class="{cycle values="odd-row,even-row"} row-relationship {if $rel.is_permission_a_b eq 1 or $rel.is_permission_b_a eq 1}row-highlight{/if}">
 
             {if $relationshipTabContext}
@@ -92,10 +86,11 @@
                 <td class="bold">{$rel.relation}</strong></td>
                 <td>{$rel.name}</td>
             {/if}
-                <td class="crm-rel-start_date">{$rel.start_date}</td>
-                <td class="crm-rel-end_date">{$rel.end_date}</td>
+                {*NYSS remove some columns*}
+                {*<td class="crm-rel-start_date">{$rel.start_date}</td>*}
+                {*<td class="crm-rel-end_date">{$rel.end_date}</td>*}
                 <td>{$rel.city}</td>
-                {*<td>{$rel.state}</td>*}{*NYSS*}
+                {*<td>{$rel.state}</td>*}
                 <td>{$rel.email}</td>
                 <td>{$rel.phone}</td> 
                 <td class="nowrap">{$rel.action|replace:'xx':$rel.id}</td>
