@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,7 +36,7 @@
 /**
  * This class acts like a psuedo-BAO for transient import job tables
  */
-class CRM_Import_ImportJob {
+class CRM_Contact_Import_ImportJob {
 
   protected $_tableName;
   protected $_primaryKeyName;
@@ -137,17 +137,18 @@ class CRM_Import_ImportJob {
 
   public function setJobParams(&$params) {
     foreach ($params as $param => $value) {
-      eval("\$this->_$param = \$value;");
+      $fldName = "_$param";
+      $this->$fldName = $value;
     }
   }
 
   public function runImport(&$form, $timeout = 55) {
     $mapper        = $this->_mapper;
     $mapperFields  = array();
-    $phoneTypes    = CRM_Core_PseudoConstant::phoneType();
-    $imProviders   = CRM_Core_PseudoConstant::IMProvider();
-    $websiteTypes  = CRM_Core_PseudoConstant::websiteType();
-    $locationTypes = CRM_Core_PseudoConstant::locationType();
+    $phoneTypes    = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
+    $imProviders   = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
+    $websiteTypes  = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
+    $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
 
     //initialize mapper perperty value.
     $mapperPeroperties = array(
@@ -168,8 +169,8 @@ class CRM_Import_ImportJob {
       //set respective mapper value to null.
       foreach (array_values($mapperPeroperties) as $perpertyVal)$$perpertyVal = NULL;
 
-      $header = array();
       $fldName = CRM_Utils_Array::value(0, $mapper[$key]);
+      $header = array($this->_mapFields[$fldName]);
       $selOne = CRM_Utils_Array::value(1, $mapper[$key]);
       $selTwo = CRM_Utils_Array::value(2, $mapper[$key]);
       $selThree = CRM_Utils_Array::value(3, $mapper[$key]);
@@ -245,7 +246,7 @@ class CRM_Import_ImportJob {
       }
     }
 
-    $this->_parser = new CRM_Import_Parser_Contact(
+    $this->_parser = new CRM_Contact_Import_Parser_Contact(
       $this->_mapperKeys,
       $this->_mapperLocTypes,
       $this->_mapperPhoneTypes,
@@ -269,7 +270,7 @@ class CRM_Import_ImportJob {
       $this->_statusID,
       $this->_totalRowCount,
       $this->_doGeocodeAddress,
-      CRM_Import_Parser::DEFAULT_TIMEOUT,
+      CRM_Contact_Import_Parser::DEFAULT_TIMEOUT,
       $this->_contactSubType,
       $this->_dedupe
     );
@@ -384,7 +385,7 @@ class CRM_Import_ImportJob {
         'title' => $newTagName,
         'description' => $newTagDesc,
         'is_selectable' => TRUE,
-		'parent_id'	   => 296, //NYSS new tags during import should be imported as keywords
+		'parent_id'	=> 296, //NYSS new tags during import should be imported as keywords
         'used_for' => 'civicrm_contact',
       );
       $id = array();

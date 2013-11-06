@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,13 +37,15 @@
  * This class delegates to the chosen DataSource to grab the data to be
  *  imported.
  */
-class CRM_Import_Form_DataSource extends CRM_Core_Form {
+class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
 
   private $_dataSource;
 
   private $_dataSourceIsValid = FALSE;
 
   private $_dataSourceClassFile;
+
+  private $_dataSourceClass;
 
   /**
    * Function to set variables up before form is built
@@ -82,8 +84,13 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
       CRM_Core_Error::fatal(ts('<b>%1</b> file(s) in %2 directory are not writable. Listed file(s) might be used during the import to log the errors occurred during Import process. Contact your site administrator for assistance.', array(1 => implode(', ', $results), 2 => $config->uploadDir)));
     }
     $this->_dataSourceIsValid = FALSE;
-    $this->_dataSource = CRM_Utils_Request::retrieve('dataSource', 'String',
-      CRM_Core_DAO::$_nullObject
+    $this->_dataSource = CRM_Utils_Request::retrieve(
+      'dataSource',
+      'String',
+      CRM_Core_DAO::$_nullObject,
+      FALSE,
+      NULL,
+      'GET'
     );
 
     $this->_params = $this->controller->exportValues($this->_name);
@@ -105,7 +112,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
       $this->_dataSourceIsValid = TRUE;
       $this->assign('showDataSourceFormPane', TRUE);
       $dataSourcePath = explode('_', $this->_dataSource);
-      $templateFile = "CRM/Import/Form/" . $dataSourcePath[3] . ".tpl";
+      $templateFile = "CRM/Contact/Import/Form/" . $dataSourcePath[3] . ".tpl";
       $this->assign('dataSourceFormTemplateFile', $templateFile);
     }
   }
@@ -124,7 +131,8 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
     if ($this->_dataSourceIsValid) {
       $this->_dataSourceClassFile = str_replace('_', '/', $this->_dataSource) . ".php";
       require_once $this->_dataSourceClassFile;
-      eval("{$this->_dataSource}::buildQuickForm( \$this );");
+      $this->_dataSourceClass = new $this->_dataSource;
+      $this->_dataSourceClass->buildQuickForm( $this );
     }
 
     // Get list of data sources and display them as options
@@ -257,7 +265,8 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
       ) {
         $dataSourceClass = "CRM_Import_DataSource_" . $matches[1];
         require_once $dataSourceDir . DIRECTORY_SEPARATOR . $dataSourceFile;
-        eval("\$object = new $dataSourceClass(); \$info = \$object->getInfo();");
+        $object = new $dataSourceClass;
+        $info   = $object->getInfo();
         $dataSources[$dataSourceClass] = $info['title'];
       }
     }
@@ -332,15 +341,14 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $this->_params['import_table_name'] = 'civicrm_import_job_' . md5(uniqid(rand(), TRUE));
       }
 
-      require_once $this->_dataSourceClassFile;
-      eval("$this->_dataSource::postProcess( \$this->_params, \$db, \$this );");
+      $this->_dataSourceClass->postProcess( $this->_params, $db, $this );
 
       // We should have the data in the DB now, parse it
       $importTableName = $this->get('importTableName');
       $fieldNames      = $this->_prepareImportTable($db, $importTableName);
       $mapper          = array();
 
-      $parser = new CRM_Import_Parser_Contact($mapper);
+      $parser = new CRM_Contact_Import_Parser_Contact($mapper);
       $parser->setMaxLinesToProcess(100);
       $parser->run($importTableName,
         $mapper,
@@ -350,7 +358,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $fieldNames['status'],
         CRM_Import_Parser::DUPLICATE_SKIP,
         NULL, NULL, FALSE,
-        CRM_Import_Parser::DEFAULT_TIMEOUT,
+        CRM_Contact_Import_Parser::DEFAULT_TIMEOUT,
         $contactSubType,
         $dedupe
       );
