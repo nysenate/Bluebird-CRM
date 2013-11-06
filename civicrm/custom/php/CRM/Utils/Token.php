@@ -685,7 +685,7 @@ class CRM_Utils_Token {
     }
 
     //NYSS 5472
-    $imProvider = CRM_Core_PseudoConstant::IMProvider();
+    $imProvider = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
     if ( $token == 'im_provider' && !empty($value) ) {
       $value = $imProvider[$value];
     }

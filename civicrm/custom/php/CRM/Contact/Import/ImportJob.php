@@ -277,20 +277,24 @@ class CRM_Contact_Import_ImportJob {
 
     $contactIds = $this->_parser->getImportedContacts();
         
-    // NYSS 4053 - New Dedupe Process Hook
-    // Create a new group and add all the newly imported contacts to it!
+    // NYSS 4053
+    // Create a new group and add all the newly imported contacts to it
     // Make sure to save the new group id to the import record
     $group_params = array(
-      'title'       => substr($this->_tableName, 19),
+      'title' => substr($this->_tableName, 19),
       'description' => '',
-      'is_active'   => true,
-      'is_hidden'   => true,
-      'group_type'  => 'imported_contacts'
+      'is_active' => TRUE,
+      'is_hidden' => TRUE,
+      'group_type' => 'imported_contacts'
     );
     $group = CRM_Contact_BAO_Group::create($group_params);
-    $gc_result = CRM_Contact_BAO_GroupContact::addContactsToGroup($contactIds, $group->id);
-    $form->set('importGroupId',$group->id);
-    CRM_Core_DAO::executeQuery("UPDATE civicrm_importer_jobs SET contact_group_id={$group->id}, created_on = NOW() WHERE table_name='{$this->_tableName}'");
+    CRM_Contact_BAO_GroupContact::addContactsToGroup($contactIds, $group->id);
+    $form->set('importGroupId', $group->id);
+    CRM_Core_DAO::executeQuery("
+      UPDATE civicrm_importer_jobs
+      SET contact_group_id={$group->id}, created_on = NOW()
+      WHERE table_name='{$this->_tableName}'
+    ");
 
     //get the related contactIds. CRM-2926
     $relatedContactIds = $this->_parser->getRelatedImportedContacts();

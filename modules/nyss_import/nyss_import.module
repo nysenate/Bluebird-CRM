@@ -1,65 +1,109 @@
-<?php 
+<?php
+function nyss_import_civicrm_buildForm($formName, &$form) {
+  if ( $formName == 'CRM_Contact_Import_Form_DataSource' ) {
+    //collect import job name
+    $form->add('text', 'import_job_name', 'Import Job Name', '', true);
+
+    $dataSource = $form->getElement('dataSource');
+    $dataSource->freeze();
+  }
+  if ( $formName == 'CRM_Contact_Import_Form_Summary' ) {
+    //collect the set of fuzzy rules to show the user
+    $dao = new CRM_Dedupe_DAO_RuleGroup();
+    $dao->contact_type = 'Individual';
+    $dao->find();
+    $form->dedupeRules = array();
+    while ( $dao->fetch() ) {
+      $form->dedupeRules[$dao->id] = $dao->title;
+    }
+
+    $importGroupId = $form->get('importGroupId');
+    $form->assign( 'importGroupId', $importGroupId );
+
+    $form->add('select', 'dedupeRules', ts('Dedupe with a different rule'), $form->dedupeRules, false, array());
+  }
+}//buildForm
+
+function nyss_import_civicrm_postProcess($formName, &$form) {
+  if ( $formName == 'CRM_Contact_Import_Form_DataSource' ) {
+    //make a record for the preferences with a unique name and user id
+    //TODO: raise an error when the name is not unique
+    $session = CRM_Core_Session::singleton();
+    $cid = $session->get('userID');
+
+    $importJobName = str_replace(' ','_',$form->_params['import_job_name']);
+    $importTableName = "civicrm_import_job_$importJobName";
+
+    // Make a new entry into the civicrm_importer_jobs table. This should save all import job related
+    // Settings so that the job can be resumed by anyone with permissions at a later point in time.
+    // I'll be adding settings here as I discover their location and relevance to the process.
+    $sql = "
+      INSERT INTO civicrm_importer_jobs
+       (name, table_name, source_file, file_type, field_separator, created_on, created_by)
+      VALUES
+       ('$importJobName',
+        '{$importTableName}',
+        '{$form->_params['uploadFile']['name']}',
+        '{$form->_params['dataSource']}',
+        '{$form->_params['fieldSeparator']}',
+        NOW(),
+        {$cid}
+       )
+    ";
+    CRM_Core_DAO::executeQuery($sql);
+  }
+}//postProcess
+
 function nyss_import_civicrm_import( $object, $usage, &$objectRef, &$params ) {
-	
-	//during import, accept special tag_import column for processing
-	$cType           = $objectRef->_contactType;
-	$dupeType        = $objectRef->_onDuplicate;
-	$contactID       = $params['contactID'];
-	$importID        = $params['importID'];
-	$importTempTable = $params['importTempTable'];
-	$fields          = $params['fields'];
-	
-	require_once 'CRM/Core/DAO.php';
-	
-	//only proceed if tag_import exists in import
-	if ( CRM_Core_DAO::checkFieldExists($importTempTable, 'tag_import') ) {
-	
-		$sqlTags = "SELECT tag_import
-					FROM $importTempTable
-					WHERE _id = $importID;";
-		$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
-	
-		if ( $taglist ) {
-			require_once 'CRM/Core/BAO/EntityTag.php';
-	
-			$keywords = array();
-			$keywords = explode( '|', $taglist );
-	
-			foreach ( $keywords as $keyword ) {
-				$params = array(
+  //during import, accept special tag_import column for processing
+  $cType = $objectRef->_contactType;
+  $dupeType = $objectRef->_onDuplicate;
+  $contactID = $params['contactID'];
+  $importID = $params['importID'];
+  $importTempTable = $params['importTempTable'];
+  $fields = $params['fields'];
+
+  //only proceed if tag_import exists in import
+  if ( CRM_Core_DAO::checkFieldExists($importTempTable, 'tag_import') ) {
+    $sqlTags = "
+      SELECT tag_import
+      FROM $importTempTable
+      WHERE _id = $importID;
+    ";
+    $taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
+
+    if ( $taglist ) {
+      $keywords = array();
+      $keywords = explode( '|', $taglist );
+
+      foreach ( $keywords as $keyword ) {
+        $params = array(
           'version' => 3,
           'name' => $keyword,
           'parent_id' => '296'
         );
-			
-				//lookup tag; create new if nonexist
-				$tag = civicrm_api('tag', 'getsingle', $params);
-				if ( $tag['is_error'] ) {
-					$tag = civicrm_tag_create($params);
-					$tagid = $tag['tag_id'];
-				} else {
-					$tagid = $tag['id'];
-				}
-					
-				//only add tag to contact if not already present
-				$entityTags = CRM_Core_BAO_EntityTag::getTag($contactID);
-				if ( !in_array($tagid, $entityTags) ) {
-					$entityParams = array(
+
+        //lookup tag; create new if nonexist
+        $tag = civicrm_api('tag', 'getsingle', $params);
+        if ( $tag['is_error'] ) {
+          $tag = civicrm_tag_create($params);
+          $tagid = $tag['tag_id'];
+        }
+        else {
+          $tagid = $tag['id'];
+        }
+
+        //only add tag to contact if not already present
+        $entityTags = CRM_Core_BAO_EntityTag::getTag($contactID);
+        if ( !in_array($tagid, $entityTags) ) {
+          $entityParams = array(
             'version' => 3,
             'tag_id' => $tagid,
             'contact_id' => $contactID
           );
-					civicrm_api('entity_tag', 'create', $entityParams);
-				}
-			}
-		}
-	}
-	
-	/*//CRM_Core_Error::debug('us', $usage);
-	//CRM_Core_Error::debug('ob', $objectRef);
-	CRM_Core_Error::debug('tb', $importTempTable);
-	CRM_Core_Error::debug('ii, $importIDs);
-	//CRM_Core_Error::debug('fd', $fields);
-	exit();*/
-
+          civicrm_api('entity_tag', 'create', $entityParams);
+        }
+      }
+    }
+  }
 }
