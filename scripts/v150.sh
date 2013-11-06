@@ -44,6 +44,7 @@ echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db
 
 ## set mailing preferences
+echo "setting mailing preferences..."
 sql="
   DELETE FROM civicrm_setting
   WHERE name = 'write_activity_record' OR name = 'disable_mandatory_tokens_check';
@@ -52,6 +53,10 @@ sql="
     ('Mailing Preferences', 'disable_mandatory_tokens_check', 'i:1;', 1, 1, NOW(), 1);
 "
 $execSql -i $instance -c "$sql"
+
+## rebuild dedupe rules
+echo "rebuilding dedupe rules..."
+$script_dir/dedupeSetup.sh $instance -r
 
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
