@@ -550,7 +550,6 @@ FROM   {$this->_componentTable}
 
     return $options;
   }
-}
 
   //NYSS 7197 supports full export for custom searches
   function getContactIds() {

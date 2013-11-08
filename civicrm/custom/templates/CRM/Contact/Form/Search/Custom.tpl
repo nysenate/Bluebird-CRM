@@ -28,7 +28,7 @@
    templateFile() function.*}
 {assign var="panel" value=$smarty.get.panel}{*NYSS*}
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
-<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows && !$panel}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows && !$panel}collapsed{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">
       {ts}Edit Search Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
