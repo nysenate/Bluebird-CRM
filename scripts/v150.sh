@@ -58,6 +58,13 @@ $execSql -i $instance -c "$sql"
 echo "rebuilding dedupe rules..."
 $script_dir/dedupeSetup.sh $instance -r
 
+## remove civicrm blog dashlet
+$sql="
+  DELETE FROM civicrm_dashboard
+  WHERE url = 'civicrm/dashlet/blog&reset=1&snippet=5';
+"
+$execSql -i $instance -c "$sql"
+
 ### Cleanup ###
 echo "Cleaning up by performing clearCache"
 $script_dir/clearCache.sh $instance
