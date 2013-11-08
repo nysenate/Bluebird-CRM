@@ -90,7 +90,6 @@
 {*NYSS 4595*}
 {*
 <tr>
-  {* td intentionally left blank to align the 'is test' widget on the right *}
   <td></td>
   <td colspan="2">
     {$form.activity_test.label} {help id="is-test" file="CRM/Contact/Form/Search/Advanced"}

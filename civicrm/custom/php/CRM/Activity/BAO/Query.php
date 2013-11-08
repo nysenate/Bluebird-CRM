@@ -250,23 +250,30 @@ class CRM_Activity_BAO_Query {
             $query->_where[$grouping][] = " civicrm_activity_contact.record_type_id = $targetID";
             $query->_qill[$grouping][] = ts('Activity targeted to');
           }
-          //NYSS 5009 TODO - if created by field has comma, reconstruct to search multiple values
-          /*if ($values[2] == 1 &&
-            strpos( $name, ',') !== false ) {
-            $aValues  = explode( ',', $name );
-            foreach ( $aValues as $aVal ) {
-              $aVal = trim($aVal);
-              if ( !empty($aVal) ) {
-                $aValArray[] = "contact_activity_source.sort_name LIKE '%{$aVal}%'";
+
+          //NYSS 5009 if created by field has comma, reconstruct to search multiple values
+          if ($values[2] == 1 &&
+            !empty($query->_paramLookup['sort_name'][0][2])
+          ) {
+            $nameVal = $query->_paramLookup['sort_name'][0][2];
+            if ( strpos($nameVal, ',') !== FALSE ) {
+              $aValues = explode( ',', $nameVal );
+              foreach ( $aValues as $aVal ) {
+                $aVal = trim($aVal);
+                if ( !empty($aVal) ) {
+                  $aValArray[] = "contact_a.sort_name LIKE '%{$aVal}%'";
+                }
+              }
+              $aString = implode( ' OR ', $aValArray );
+
+              //recreate query where string for sort_name
+              foreach ( $query->_where[0] as $wKey => $wVal ) {
+                if ( strpos($wVal, 'contact_a.sort_name') !== FALSE ) {
+                  $query->_where[0][$wKey] = "( {$aString} )";
+                }
               }
             }
-            $aString = implode( ' OR ', $aValArray );
-            $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND ( $aString )";
-            //CRM_Core_Error::debug_var('$query->_where[$grouping]', $query->_where[$grouping]);
           }
-          else {
-            $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND contact_activity_source.sort_name LIKE '%{$name}%'";
-          }*/
         }
         break;
 
