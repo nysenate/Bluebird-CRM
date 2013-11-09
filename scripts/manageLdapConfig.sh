@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2010-12-02
 # Revised: 2013-06-21
+# Revised: 2013-11-08 - 
 #
 
 prog=`basename $0`
@@ -74,14 +75,7 @@ if [ "$cmd" = "setup" ]; then
   $0 --set-entries "$ldap_entries" $instance
   $0 --set-mappings "$ldap_mappings" $instance
 else
-  dbhost=`$readConfig --ig $instance db.host` || dbhost="$DEFAULT_DB_HOST"
-  dbuser=`$readConfig --ig $instance db.user` || dbhost="$DEFAULT_DB_USER"
-  dbpass=`$readConfig --ig $instance db.pass` || dbhost="$DEFAULT_DB_PASS"
-  dbdrupprefix=`$readConfig --ig $instance db.drupal.prefix` || dbdrupprefix="$DEFAULT_DB_CIVICRM_PREFIX"
-  dbbasename=`$readConfig -i $instance db.basename` || dbbasename="$instance"
-  dbname=$dbdrupprefix$dbbasename
-
-php $script_dir/manageLdapConfig.php $cmd $dbhost $dbuser $dbpass $dbname "$param"
+  php "$script_dir/manageLdapConfig.php" "$instance" "$cmd" "$param"
 fi
 
 exit $?

@@ -9,27 +9,7 @@
 // Revised: 2013-07-30 - added "scope" parameter
 //
 
-require_once dirname(__FILE__).'/../civicrm/scripts/bluebird_config.php';
-
-
-function getDatabaseConnection($bbcfg)
-{
-  $dbcon = mysql_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass']);
-  if (!$dbcon) {
-    echo mysql_error()."\n";
-    return null;
-  }
-
-  $dbname = (isset($bbcfg['db.basename'])) ? $bbcfg['db.basename'] : $bbcfg['shortname'];
-  $dbname = $bbcfg['db.civicrm.prefix'].$dbname;
-  if (!mysql_select_db($dbname, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
-    mysql_close($dbcon);
-    return null;
-  }
-  return $dbcon;
-} // getDatabaseConnection()
-
+require_once 'common_funcs.php';
 
 
 function sqlPrepareValue($val)
@@ -468,22 +448,14 @@ else {
   $cmd = $argv[2];
   $scope = $argv[3];
 
-  $bbconfig = get_bluebird_instance_config($instance);
-  if (!$bbconfig) {
-    echo "$prog: Unable to configure instance [$instance]\n";
+  $bootstrap = bootstrapScript($prog, $instance, DB_TYPE_CIVICRM);
+  if ($bootstrap == null) {
+    echo "$prog: Unable to bootstrap this script; exiting\n";
     exit(1);
   }
 
-  // Since CiviCRM is not being bootstrapped, CIVICRM_SITE_KEY must be
-  // manually defined here, since the CRM_Utils_Crypt::encrypt() method
-  // depends on it.
-  define('CIVICRM_SITE_KEY', $bbconfig['site.key']);
-
-  $dbcon = getDatabaseConnection($bbconfig);
-  if (!$dbcon) {
-    echo "$prog: Unable to connect to database for instance [$instance]\n";
-    exit(1);
-  }
+  $bbconfig = $bootstrap['bbconfig'];
+  $dbcon = $bootstrap['dbcon'];
 
   $rc = 0;
   $civiConfig = getCiviConfig($dbcon, $scope);
