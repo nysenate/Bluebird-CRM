@@ -28,8 +28,8 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-http_user=`$readConfig --ig $instance http.user` || http_user="$DEFAULT_HTTP_USER"
-http_pass=`$readConfig --ig $instance http.pass` || http_pass="$DEFAULT_HTTP_PASS"
+http_user=`$readConfig --ig $instance http.user`
+http_pass=`$readConfig --ig $instance http.pass`
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
 http_auth=
