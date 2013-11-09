@@ -11,6 +11,7 @@
 # Revised: 2013-05-10 (Implement --force pass-through option.)
 # Revised: 2013-07-12 - Major interface change: removed -i option, added -n
 # Revised: 2013-10-17 - Added ability to skip tables when dumping a db
+# Revised: 2013-11-01 - Added --login-path to support MySQL 5.6 logins
 #
 
 prog=`basename $0`
@@ -21,7 +22,7 @@ DEFAULT_MYSQL_ARGS="--batch --raw"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
+  echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [-l login-path] [-h host] [-u user] [-p password] [--column-names] [--force] [--quiet|-q] [--create] [--drupal|-D] [--log|-L] [--db-name|-n dbName] [instance]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -35,6 +36,7 @@ dump_db=0
 dump_tabs=
 skip_tabs=
 instance=
+dbloginpath=
 dbhost=
 dbuser=
 dbpass=
@@ -53,6 +55,7 @@ while [ $# -gt 0 ]; do
     -d|--dump) dump_db=1 ;;
     -e|--skip-table) shift; skip_tabs="$skip_tabs $1" ;;
     -t|--dump-table) shift; dump_tabs="$dump_tabs $1"; dump_db=1 ;;
+    -l|--login-path) shift; dbloginpath="$1" ;;
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
@@ -95,11 +98,13 @@ if [ "$instance" ]; then
   dbname="$db_prefix$db_basename"
 fi
  
-[ "$dbhost" ] || dbhost=`$readConfig $ig_opt db.host` || dbhost=$DEFAULT_DB_HOST
-[ "$dbuser" ] || dbuser=`$readConfig $ig_opt db.user` || dbhost=$DEFAULT_DB_USER
-[ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass` || dbhost=$DEFAULT_DB_PASS
+[ "$dbloginpath" ] || dbloginpath=`$readConfig $ig_opt db.login_path` || dbloginpath=$DEFAULT_DB_LOGIN_PATH
 
-common_args="-h $dbhost -u $dbuser -p$dbpass"
+common_args=
+[ "$dbloginpath" ] && common_args="$common_args --login-path=$dbloginpath"
+[ "$dbhost" ] && common_args="$common_args --host=$dbhost"
+[ "$dbuser" ] && common_args="$common_args --user=$dbuser"
+[ "$dbpass" ] && common_args="$common_args --pass=$dbpass"
 mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg $force_arg"
 
 if [ $dump_db -eq 1 ]; then
