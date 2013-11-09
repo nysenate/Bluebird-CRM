@@ -6,6 +6,8 @@
 // Revised: 2013-06-21
 //
 
+require_once 'common_funcs.php';
+
 define('SERVER_ID', 'nyss_ldap');
 
 
@@ -188,8 +190,8 @@ function setPhpAuth($dbcon, $codeText)
 
 $prog = basename($argv[0]);
 
-if ($argc != 6 && $argc != 7) {
-  echo "Usage: $prog cmd dbhost dbuser dbpass dbname [param]\n".
+if ($argc != 3 && $argc != 4) {
+  echo "Usage: $prog instance cmd [param]\n".
        "   cmd can be:\n".
        "      listAll, listEntries, listMappings,\n".
        "      listServer, listAuthentication, listAuthorization,\n".
@@ -198,24 +200,17 @@ if ($argc != 6 && $argc != 7) {
   exit(1);
 }
 else {
-  $cmd = $argv[1];
-  $dbhost = $argv[2];
-  $dbuser = $argv[3];
-  $dbpass = $argv[4];
-  $dbname = $argv[5];
-  $param  = ($argc > 6) ? $argv[6] : "";
+  $instance = $argv[1];
+  $cmd = $argv[2];
+  $param  = ($argc > 3) ? $argv[3] : "";
 
-  $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
-  if (!$dbcon) {
-    echo mysql_error()."\n";
+  $bootstrap = bootstrapScript($prog, $instance, DB_TYPE_DRUPAL);
+  if ($bootstrap == null) {
+    echo "$prog: Unable to bootstrap this script; exiting\n";
     exit(1);
   }
 
-  if (!mysql_select_db($dbname, $dbcon)) {
-    echo mysql_error($dbcon)."\n";
-    mysql_close($dbcon);
-    exit(1);
-  }
+  $dbcon = $bootstrap['dbcon'];
 
   $rc = true;
 
@@ -258,6 +253,10 @@ else {
   }
   else if ($cmd == 'setPhpAuth') {
     $rc = setPhpAuth($dbcon, $param);
+  }
+  else {
+    echo "$prog: $cmd: Unknown command\n";
+    $rc = false;
   }
 
   mysql_close($dbcon);
