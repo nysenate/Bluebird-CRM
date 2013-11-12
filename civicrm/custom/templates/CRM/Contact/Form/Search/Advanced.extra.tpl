@@ -15,15 +15,21 @@
 
   //6383 repeat reset form button
   var rfb = cj('div.reset-advanced-search').clone();
+  rfb.css('float', 'left').css('margin-top', '3px');
   cj('input#_qf_Advanced_refresh').after(rfb);
 
   //5647 default open address block
-  cj('#location').trigger('click');
-  cj('.crm-location-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
+  cj('#location').parent().trigger('click');
 
   if ( cj('div.crm-advanced_search_form-accordion div.crm-accordion-header').css('display') == 'block' ) {
-    cj('div.crm-search_criteria_basic-accordion div.crm-accordion-body table tr:first td:first div.helpicon').
+    cj('div.crm-advanced_search_form-accordion div.crm-accordion-header a.helpicon').
       appendTo('div.crm-title h1.title');
   }
+
+  //toggle adv search panel; compensate for wrapper panel method
+  cj('.crm-ajax-accordion').on('click', '.crm-accordion-header', function() {
+    var pid = $(this).attr('id');
+    cj('div.crm-accordion-body.' + pid).toggle();
+  });
 </script>
 {/literal}

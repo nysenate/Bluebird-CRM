@@ -1047,7 +1047,7 @@ ul.token-input-list-facebook { width:265px;}
   padding-top: 2px;
   padding-bottom: 2px;
 }
-#Advanced .crm-accordion-open > .crm-accordion-body {
+#Advanced .crm-accordion-body {
   padding: 4px;
 }
 #Advanced .crm-form-block.crm-search-form-block {
@@ -1055,31 +1055,10 @@ ul.token-input-list-facebook { width:265px;}
 }
 /*these only impact advanced search dropdown*/
 #advanced-search-form .crm-submit-buttons {
-  width: 90px;
+  width: 84px;
 }
-#advanced-search-form #Advanced div.reset-advanced-search {
-  display: block;
-  background: url("../nyss_skin/images/crm-button-bg.gif") repeat-x scroll left top transparent;
-  border: 1px solid #3E3E3E;
-  border-radius: 4px 4px 4px 4px;
-  color: #FFFFFF;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: normal;
-  margin-top: 0;
-  padding: 2px 6px;
-  text-decoration: none;
-  text-shadow: 0 1px 0 black;
-  width: 77px;
-  float: left;
-}
-#advanced-search-form .reset-advanced-search a {
-  color: white;
-  display: block;
-}
-#advanced-search-form #Advanced .advsearch_buttons_top div.reset-advanced-search {
-  float: right;
-  margin-top: 6px;
+#advanced-search-form .crm-submit-buttons a {
+  margin-right: 0;
 }
 
 #crm-container #crm-tagRow291 {
@@ -1197,7 +1176,7 @@ ul.token-input-list-facebook { width:265px;}
 	font-size:11px;
 }
 #_qf_Advanced_refresh {
-	width: 100px;
+	width: 84px;
 	float: left;
 }
 .advsearch_bottom_buttons #_qf_Advanced_refresh {
