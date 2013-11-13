@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,9 +51,8 @@ class CRM_Activity_Page_UserDashboard extends CRM_Contact_Page_View_UserDashBoar
     $controller->reset();
     $controller->set('context', 'user');
     $controller->set('cid', $this->_contactId);
-    $controller->set('status', array(1 => 'on'));
+    $controller->set('status', array(1 => 'on', 7 => 'on'));
     $controller->set('activity_role', 2);
-    $controller->set('activity_contact_name', 'd6');
     $controller->set('force', 1);
     $controller->process();
     $controller->run();

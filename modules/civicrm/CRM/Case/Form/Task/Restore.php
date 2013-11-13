@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -83,11 +83,8 @@ class CRM_Case_Form_Task_Restore extends CRM_Case_Form_Task {
       }
     }
 
-    $status = array(
-      ts('Restored Case(s): %1', array(1 => $restoredCases)),
-      ts('Total Selected Case(s): %1', array(1 => count($this->_caseIds))),
-    );
-    CRM_Core_Session::setStatus($status);
+    CRM_Core_Session::setStatus($restoredCases, ts('Restored Cases'), 'success');
+    CRM_Core_Session::setStatus('', ts('Total Selected Case(s): %1', array(1 => count($this->_caseIds))), 'info');
   }
 }
 

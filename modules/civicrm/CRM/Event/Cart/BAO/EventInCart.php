@@ -5,7 +5,9 @@ class CRM_Event_Cart_BAO_EventInCart extends CRM_Event_Cart_DAO_EventInCart impl
   public $event_cart;
   public $location = NULL;
   public $participants = array(
-    ); function __construct() {
+    );
+
+  function __construct() {
     parent::__construct();
   }
 
@@ -13,7 +15,7 @@ class CRM_Event_Cart_BAO_EventInCart extends CRM_Event_Cart_DAO_EventInCart impl
     $this->participants[$participant->id] = $participant;
   }
 
-  public static function create($params) {
+  public static function create(&$params) {
     $transaction = new CRM_Core_Transaction();
     $event_in_cart = new CRM_Event_Cart_BAO_EventInCart();
     $event_in_cart->copyValues($params);
@@ -29,7 +31,7 @@ class CRM_Event_Cart_BAO_EventInCart extends CRM_Event_Cart_DAO_EventInCart impl
     return $event_in_cart;
   }
 
-  function delete() {
+  function delete($useWhere = false) {
     $this->load_associations();
     $contacts_to_delete = array();
     foreach ($this->participants as $participant) {
@@ -99,8 +101,7 @@ class CRM_Event_Cart_BAO_EventInCart extends CRM_Event_Cart_DAO_EventInCart impl
     unset($this->participants[$participant_id]);
   }
 
-  static
-  function part_key($participant) {
+  static function part_key($participant) {
     return $participant->id;
   }
 
@@ -186,8 +187,7 @@ class CRM_Event_Cart_BAO_EventInCart extends CRM_Event_Cart_DAO_EventInCart impl
     return $result;
   }
 
-  static
-  function get_registration_link($event_id) {
+  static function get_registration_link($event_id) {
     $cart = CRM_Event_Cart_BAO_Cart::find_or_create_for_current_session();
     $cart->load_associations();
     $event_in_cart = $cart->get_event_in_cart_by_event_id($event_id);

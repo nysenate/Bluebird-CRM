@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -76,11 +76,10 @@ class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
    * @access public
    * @static
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields, $files, $options) {
     $errors = array();
 
-    if (is_array($fields['enableComponents'])) {
+    if (array_key_exists('enableComponents', $fields) && is_array($fields['enableComponents'])) {
       if (in_array('CiviPledge', $fields['enableComponents']) &&
         !in_array('CiviContribute', $fields['enableComponents'])
       ) {
@@ -96,7 +95,6 @@ class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
     return $errors;
   }
 
-
   private function _getComponentSelectValues() {
     $ret = array();
     $this->_components = CRM_Core_Component::getComponents();
@@ -110,11 +108,6 @@ class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
   public function postProcess() {
     $params = $this->controller->exportValues($this->_name);
 
-    $params['enableComponentIDs'] = array();
-    foreach ($params['enableComponents'] as $name) {
-      $params['enableComponentIDs'][] = $this->_components[$name]->componentID;
-    }
-
     // if CiviCase is being enabled,
     // load the case related sample data
     if (in_array('CiviCase', $params['enableComponents']) &&
@@ -124,7 +117,8 @@ class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
       CRM_Admin_Form_Setting_Component::loadCaseSampleData($config->dsn, $config->sqlDir . 'case_sample.mysql');
       CRM_Admin_Form_Setting_Component::loadCaseSampleData($config->dsn, $config->sqlDir . 'case_sample1.mysql');
       if (!CRM_Case_BAO_Case::createCaseViews()) {
-        CRM_Core_Error::fatal('Could not create Case views.');
+        $msg = ts("Could not create the MySQL views for CiviCase. Your mysql user needs to have the 'CREATE VIEW' permission");
+        CRM_Core_Error::fatal($msg);
       }
     }
     parent::commonProcess($params);
@@ -135,7 +129,6 @@ class CRM_Admin_Form_Setting_Component extends CRM_Admin_Form_Setting {
 
   public function loadCaseSampleData($dsn, $fileName, $lineMode = FALSE) {
     global $crmPath;
-    require_once 'packages/DB.php';
 
     $db = &DB::connect($dsn);
     if (PEAR::isError($db)) {

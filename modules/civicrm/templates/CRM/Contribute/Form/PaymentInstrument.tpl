@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,16 +28,16 @@
 <fieldset><legend>{if $action eq 1}{ts}New Payment Instrument{/ts}{elseif $action eq 2}{ts}Edit Payment Instrument{/ts}{else}{ts}Delete Payment Instrument{/ts}{/if}</legend>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
    {if $action eq 8}
-      <div class="messages status">
+      <div class="messages status no-popup">
            <div class="icon inform-icon"></div>
-          {ts}WARNING: Deleting this optionsss will result in the loss of all contribution records which use this option.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
+          {ts}WARNING: Deleting this option will result in the loss of all contribution records which use this option.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
      {else}
      <table>
- 	<tr class="crm-contribution-form-block-name"><td class="label">{$form.name.label}</td><td class="html-adjust">{$form.name.html}</td></tr>
-    	<tr class="crm-contribution-form-block-description"><td class="label">{$form.description.label}</td><td class="html-adjust">{$form.description.html}</td></tr>
+   <tr class="crm-contribution-form-block-name"><td class="label">{$form.name.label}</td><td class="html-adjust">{$form.name.html}</td></tr>
+      <tr class="crm-contribution-form-block-description"><td class="label">{$form.description.label}</td><td class="html-adjust">{$form.description.html}</td></tr>
         <tr class="crm-contribution-form-block-is_active"><td class="label">{$form.is_active.label}</td><td class="html-adjust">{$form.is_active.html}</td></tr>
-     </table> 
+     </table>
      {/if}
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </fieldset>

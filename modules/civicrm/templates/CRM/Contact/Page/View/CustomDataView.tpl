@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,27 +26,22 @@
 {* Custom Data view mode*}
 {assign var="customGroupCount" value = 1}
 {foreach from=$viewCustomData item=customValues key=customGroupId}
+  {assign var="cgcount" value=1}
   {assign var="count" value=$customGroupCount%2}
   {if ($count eq $side) or $skipTitle }
     {foreach from=$customValues item=cd_edit key=cvID}
-      <div class="customFieldGroup ui-corner-all {$cd_edit.name} crm-custom-set-block-{$customGroupId}">
-        <table id="{$cd_edit.name}_{$count}" >
-          <tr class="columnheader">
-            <td colspan="2" class="grouplabel">
-              <a href="#" class="show-block {if $cd_edit.collapse_display eq 0 } expanded collapsed {else} collapsed {/if}" >
-                {$cd_edit.title}
-              </a>
-            </td>
-          </tr>
-          <tr class= "{if $cd_edit.collapse_display}hiddenElement{/if}">
-            <td>
-              <div class="crm-summary-block" id="custom-set-block-{$customGroupId}">
-                {include file="CRM/Contact/Page/View/CustomDataFieldView.tpl" customGroupId=$customGroupId}
-              </div>
-            </td>
-          </tr>
-        </table>
+      <div class="customFieldGroup crm-collapsible{if $cd_edit.collapse_display} collapsed{/if} ui-corner-all {$cd_edit.name} crm-custom-set-block-{$customGroupId}">
+        <div class="collapsible-title">
+          {$cd_edit.title}
+        </div>
+        {if $cvID eq 0}
+          {assign var='cvID' value='-1'}
+        {/if}
+        <div class="crm-summary-block" id="custom-set-block-{$customGroupId}-{$cvID}">
+          {include file="CRM/Contact/Page/View/CustomDataFieldView.tpl" customGroupId=$customGroupId customRecId=$cvID cgcount=$cgcount}
+        </div>
       </div>
+      {assign var="cgcount" value=$cgcount+1}
     {/foreach}
   {/if}
   {assign var="customGroupCount" value = $customGroupCount+1}

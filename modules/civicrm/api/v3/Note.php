@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +32,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_Note
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: Note.php 30879 2010-11-22 15:45:55Z shot $
  *
  */
@@ -41,8 +40,6 @@
 /**
  * Files required for this package
  */
-
-require_once 'CRM/Core/BAO/Note.php';
 
 /**
  * Create Note
@@ -60,25 +57,12 @@ require_once 'CRM/Core/BAO/Note.php';
  *
  */
 function civicrm_api3_note_create($params) {
-
-  $ids     = array();
-  $ids     = array('id' => CRM_Utils_Array::value('id', $params));
-  $noteBAO = CRM_Core_BAO_Note::add($params, $ids);
-
-  if (is_a($noteBAO, 'CRM_Core_Error')) {
-    $error = civicrm_api3_create_error("Note could not be created");
-    return $error;
-  }
-  else {
-    $note = array();
-    _civicrm_api3_object_to_array($noteBAO, $note[$noteBAO->id]);
-  }
-  $result = civicrm_api3_create_success($note, $params);
-  return civicrm_api3_create_success($note, $params);
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */
@@ -121,9 +105,10 @@ function civicrm_api3_note_get($params) {
 
   return _civicrm_api3_basic_get('CRM_Core_BAO_Note', $params);
 }
-/*
+
+/**
  * Adjust Metadata for Get action
- * 
+ *
  * The metadata is used for setting defaults, documentation & validation
  * @param array $params array or parameters determined by getfields
  */

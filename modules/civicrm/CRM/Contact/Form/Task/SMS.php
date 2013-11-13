@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,7 +52,9 @@ class CRM_Contact_Form_Task_SMS extends CRM_Contact_Form_Task {
    *
    * @var array
    */
-  public $_templates = NULL; function preProcess() {
+  public $_templates = NULL;
+
+  function preProcess() {
 
     $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this);
 

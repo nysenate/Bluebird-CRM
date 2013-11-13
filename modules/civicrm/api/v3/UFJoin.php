@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,15 +32,10 @@
  * @package CiviCRM_APIv3
  * @subpackage API_UF
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: UFJoin.php 30171 2010-10-14 09:11:27Z mover $
  *
  */
-
-/**
- * Files required for this package
- */
-require_once 'CRM/Core/BAO/UFJoin.php';
 
 /**
  * takes an associative array and creates a uf join in the database
@@ -60,11 +54,12 @@ function civicrm_api3_uf_join_create($params) {
   _civicrm_api3_object_to_array($ufJoin, $ufJoinArray[]);
   return civicrm_api3_create_success($ufJoinArray, $params, 'uf_join', 'create');
 }
-/*
+
+/**
  * Adjust Metadata for Create action
- * 
+ *
  * @param array $params array or parameters determined by getfields
- * @todo - suspect module, weight don't need to be required - need to test 
+ * @todo - suspect module, weight don't need to be required - need to test
  */
 function _civicrm_api3_uf_join_create_spec(&$params) {
   $params['module']['api.required'] = 1;

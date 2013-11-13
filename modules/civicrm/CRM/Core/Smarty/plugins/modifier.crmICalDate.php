@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,8 +28,8 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
- * $Id: modifier.crmICalDate.php 41013 2012-06-13 21:15:02Z kurund $
+ * @copyright CiviCRM LLC (c) 2004-2013
+ * $Id: modifier.crmICalDate.php 45499 2013-02-08 12:31:05Z kurund $
  *
  */
 

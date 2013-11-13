@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,7 +57,7 @@ class CRM_Custom_Form_DeleteGroup extends CRM_Core_Form {
    *
    * @return void
    * @acess protected
-   */ 
+   */
   function preProcess() {
     $this->_id = $this->get('id');
 
@@ -71,7 +71,7 @@ class CRM_Custom_Form_DeleteGroup extends CRM_Core_Form {
     $customField->custom_group_id = $this->_id;
 
     if ($customField->find(TRUE)) {
-      CRM_Core_Session::setStatus(ts("The Group '%1' cannot be deleted! You must Delete all custom fields in this group prior to deleting the group.", array(1 => $this->_title)));
+      CRM_Core_Session::setStatus(ts("The Group '%1' cannot be deleted! You must Delete all custom fields in this group prior to deleting the group.", array(1 => $this->_title)), ts('Deletion Error'), 'error');
       $url = CRM_Utils_System::url('civicrm/admin/custom/group', "reset=1");
       CRM_Utils_System::redirect($url);
       return TRUE;
@@ -116,7 +116,7 @@ class CRM_Custom_Form_DeleteGroup extends CRM_Core_Form {
 
     $wt = CRM_Utils_Weight::delWeight('CRM_Core_DAO_CustomGroup', $this->_id);
     CRM_Core_BAO_CustomGroup::deleteGroup($group);
-    CRM_Core_Session::setStatus(ts("The Group '%1' has been deleted.", array(1 => $group->title)));
+    CRM_Core_Session::setStatus(ts("The Group '%1' has been deleted.", array(1 => $group->title)), '', 'success');
   }
 }
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -121,21 +121,21 @@
   <script type="text/javascript">
      function showMappingOption( )
      {
-		var element = document.getElementsByName("exportOption");
-        //NYSS button renaming
-		if ( element[1].checked ) { 
-	  		show('map');
-			cj('#_qf_Select_next-top').val('Continue >> ');
-			cj('#_qf_Select_next-bottom').val('Continue >> ');
+  var element = document.getElementsByName("exportOption");
+  //NYSS button renaming
+  if ( element[1].checked ) { 
+    cj('#map').show();
+    cj('#_qf_Select_next-top').val('Continue >> ');
+    cj('#_qf_Select_next-bottom').val('Continue >> ');
         } else {
-	  		hide('map');
-			cj('#_qf_Select_next-top').val('Export ');
-			cj('#_qf_Select_next-bottom').val('Export ');
+    cj('#map').hide();
+    cj('#_qf_Select_next-top').val('Export ');
+    cj('#_qf_Select_next-bottom').val('Export ');
 		}
 	 } 
    	 showMappingOption( );
-	 cj('#_qf_Select_cancel-top').val('Back');
-	 cj('#_qf_Select_cancel-bottom').val('Back');
+    cj('#_qf_Select_cancel-top').val('Back');
+    cj('#_qf_Select_cancel-bottom').val('Back');
 
      var matchingContacts = '';
      {/literal}{if $matchingContacts}{literal}
@@ -155,7 +155,7 @@
 
      function showOther( ele ) 
      {
-        if ( cj('option:selected', ele).text( ) == '{/literal}{ts}Other{/ts}{literal}' ) {
+        if ( cj('option:selected', ele).text( ) == '{/literal}{ts escape='js'}Other{/ts}{literal}' ) {
 	   cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );  
         } else {	
           cj('#' + cj(ele).attr('id') + '_other').val('');

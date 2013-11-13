@@ -282,7 +282,7 @@
       {if $pcp_roll_nickname}
        <tr>
         <td {$labelStyle}>
-         {ts}Nick Name{/ts}
+         {ts}Nickname{/ts}
         </td>
         <td {$valueStyle}>
          {$pcp_roll_nickname}
@@ -318,7 +318,7 @@
         </tr>
       {/foreach}
      {/if}
-     
+
      {if ! ($contributeMode eq 'notify' OR $contributeMode eq 'directIPN') and $is_monetary}
       {if $is_pay_later}
        <tr>
@@ -478,7 +478,7 @@
     </table>
    </td>
   </tr>
-  
+
  </table>
 </center>
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,11 +43,25 @@
 
         callbackURL     = {/literal}"{crmURL p='civicrm/ajax/jqState' h=0}"{literal}
 
-        cj( '#' + countryID ).chainSelect( '#' + stateProvinceID, callbackURL, null );
+        cj( '#' + countryID ).chainSelect(
+          '#' + stateProvinceID,
+          callbackURL,
+          {
+            before : function (target) {
+              if (typeof(setdefault) === "undefined") { setdefault = new Array(); }
+              targetid = cj(target).attr("id");
+              eval('setdefault[targetid] = cj(target).val()');
+            },
+            after : function(target) {
+              targetid = cj(target).attr("id");
+              cj(target).val(setdefault[targetid]);
+            }
+          }
+        );
     });
     {/literal}
   {/if}
-  
+
   {if $stateCountryMap.state_province && $stateCountryMap.county}
     {literal}
     cj(function() {
@@ -62,8 +76,20 @@
         }
 
         callbackURL     = {/literal}"{crmURL p='civicrm/ajax/jqCounty' h=0}"{literal}
-        
-        cj( '#' + stateProvinceID ).chainSelect( '#' + countyID, callbackURL, null );
+
+        cj( '#' + stateProvinceID ).chainSelect( '#' + countyID, callbackURL,
+          {
+            before : function (target) {
+              if (typeof(setdefault) === "undefined") { setdefault = new Array(); }
+              targetid = cj(target).attr("id");
+              eval('setdefault[targetid] = cj(target).val()');
+            },
+            after : function(target) {
+              targetid = cj(target).attr("id");
+              cj(target).val(setdefault[targetid]);
+            }
+          }
+        );
     });
     {/literal}
   {/if}

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,8 @@ class CRM_Event_BAO_Query {
     return $fields;
   }
 
-  static function &getParticipantFields($onlyParticipant = FALSE) {
-    $fields = CRM_Event_BAO_Participant::importableFields('Individual', TRUE, $onlyParticipant);
+  static function &getParticipantFields() {
+    $fields = CRM_Event_BAO_Participant::importableFields('Individual', TRUE, TRUE);
     return $fields;
   }
 
@@ -57,9 +57,8 @@ class CRM_Event_BAO_Query {
    */
   static function select(&$query) {
     if (($query->_mode & CRM_Contact_BAO_Query::MODE_EVENT) ||
-      CRM_Utils_Array::value('participant_id', $query->_returnProperties)
+      CRM_Contact_BAO_Query::componentPresent($query->_returnProperties, 'participant_')
     ) {
-
       $query->_select['participant_id'] = "civicrm_participant.id as participant_id";
       $query->_element['participant_id'] = 1;
       $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
@@ -208,7 +207,6 @@ class CRM_Event_BAO_Query {
   }
 
   static function where(&$query) {
-    $isTest = FALSE;
     $grouping = NULL;
     foreach (array_keys($query->_params) as $id) {
       if (!CRM_Utils_Array::value(0, $query->_params[$id])) {
@@ -220,21 +218,9 @@ class CRM_Event_BAO_Query {
         if ($query->_mode == CRM_Contact_BAO_QUERY::MODE_CONTACTS) {
           $query->_useDistinct = TRUE;
         }
-        if ($query->_params[$id][0] == 'participant_test') {
-          $isTest = TRUE;
-        }
         $grouping = $query->_params[$id][3];
         self::whereClauseSingle($query->_params[$id], $query);
       }
-    }
-
-    if ($grouping !== NULL &&
-      !$isTest &&
-      // we dont want to include all tests for sql OR CRM-7827
-      $query->getOperator() != 'OR'
-    ) {
-      $values = array('participant_test', '=', 0, $grouping, 0);
-      self::whereClauseSingle($values, $query);
     }
   }
 
@@ -271,23 +257,26 @@ class CRM_Event_BAO_Query {
         return;
 
       case 'participant_test':
-        $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_participant.is_test",
-          $op,
-          $value,
-          "Integer"
-        );
-        if ($value) {
-          $query->_qill[$grouping][] = ts("Find Test Participants");
+        // We dont want to include all tests for sql OR CRM-7827
+        if (!$value || $query->getOperator() != 'OR') {
+          $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_participant.is_test",
+            $op,
+            $value,
+            "Boolean"
+          );
+          if ($value) {
+            $query->_qill[$grouping][] = ts("Participant is a Test");
+          }
+          $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
         }
-        $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
         return;
 
       case 'participant_fee_id':
-        $feeLabel = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_FieldValue', $value, 'label');
+        $feeLabel = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceFieldValue', $value, 'label');
         $feeLabel = CRM_Core_DAO::escapeString(trim($feeLabel));
         if ($value) {
-          $query->_where[$grouping][] = "civicrm_participant.fee_level $op '$feeLabel'";
-          $query->_qill[$grouping][] = ts("Fee level") . " $op $feeLabel";
+          $query->_where[$grouping][] = "civicrm_participant.fee_level LIKE '%$feeLabel%'";
+          $query->_qill[$grouping][] = ts("Fee level") . " contains $feeLabel";
         }
         $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
         return;
@@ -315,11 +304,9 @@ class CRM_Event_BAO_Query {
         $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_participant.is_pay_later",
           $op,
           $value,
-          "Integer"
+          "Boolean"
         );
-        if ($value) {
-          $query->_qill[$grouping][] = ts("Find Pay Later Participants");
-        }
+        $query->_qill[$grouping][] = $value ? ts("Participant is Pay Later") : ts("Participant is not Pay Later");
         $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
         return;
 
@@ -375,25 +362,29 @@ class CRM_Event_BAO_Query {
           }
         }
         else {
-          $value = array($value => 1);
+          $val = array($value => 1);
         }
 
         $roleTypes = CRM_Event_PseudoConstant::participantRole();
 
         $names = array();
-        if (!empty($val)) {
-          foreach ($val as $id => $dontCare) {
-            $names[] = $roleTypes[$id];
-          }
-        }
-        else {
-          $names[] = $roleTypes[$value];
+        foreach ($val as $id => $dontCare) {
+          $names[] = $roleTypes[$id];
         }
 
-        $query->_qill[$grouping][] = ts('Participant Role %1', array(1 => $op)) . ' ' . implode(' ' . ts('or') . ' ', $names);
-        $query->_where[$grouping][] = " civicrm_participant.role_id REGEXP '[[:<:]]" . implode('[[:>:]]|[[:<:]]', array_keys($value)) . "[[:>:]]' ";
+        if (!empty($names)) {
+          $query->_qill[$grouping][] =
+            ts('Participant Role %1', array(1 => $op)) .
+            ' ' .
+            implode(' ' . ts('or') . ' ', $names);
+          $query->_where[$grouping][] =
+            " civicrm_participant.role_id REGEXP '[[:<:]]" .
+            implode('[[:>:]]|[[:<:]]', array_keys($val)) .
+            "[[:>:]]' ";
 
-        $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
+          $query->_tables['civicrm_participant'] =
+            $query->_whereTables['civicrm_participant'] = 1;
+        }
         return;
 
       case 'participant_source':
@@ -485,13 +476,13 @@ class CRM_Event_BAO_Query {
 
       case 'participant_role':
         $from = " $side JOIN civicrm_option_group option_group_participant_role ON (option_group_participant_role.name = 'participant_role')";
-        $from .= " $side JOIN civicrm_option_value participant_role ON (civicrm_participant.role_id = participant_role.value 
+        $from .= " $side JOIN civicrm_option_value participant_role ON (civicrm_participant.role_id = participant_role.value
                                AND option_group_participant_role.id = participant_role.option_group_id ) ";
         break;
 
       case 'participant_discount_name':
         $from = " $side JOIN civicrm_discount discount ON ( civicrm_participant.discount_id = discount.id )";
-        $from .= " $side JOIN civicrm_option_group discount_name ON ( discount_name.id = discount.option_group_id ) ";
+        $from .= " $side JOIN civicrm_option_group discount_name ON ( discount_name.id = discount.price_set_id ) ";
         break;
     }
     return $from;
@@ -579,7 +570,7 @@ class CRM_Event_BAO_Query {
     $eventTypeId      = &$form->add('hidden', 'event_type_id', '', array('id' => 'event_type_id'));
     $participantFeeId = &$form->add('hidden', 'participant_fee_id', '', array('id' => 'participant_fee_id'));
 
-    CRM_Core_Form_Date::buildDateRange($form, 'event', 1, '_start_date_low', '_end_date_high', ts('From'), FALSE, FALSE);
+    CRM_Core_Form_Date::buildDateRange($form, 'event', 1, '_start_date_low', '_end_date_high', ts('From'), FALSE);
 
     $status = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
     asort($status);
@@ -591,8 +582,8 @@ class CRM_Event_BAO_Query {
       $form->_participantRole = &$form->addElement('checkbox', "participant_role_id[$rId]", NULL, $rName);
     }
 
-    $form->addElement('checkbox', 'participant_test', ts('Find Test Participants?'));
-    $form->addElement('checkbox', 'participant_pay_later', ts('Find Pay Later Participants?'));
+    $form->addYesNo('participant_test', ts('Participant is a Test?'));
+    $form->addYesNo('participant_pay_later', ts('Participant is Pay Later?'));
     $form->addElement('text', 'participant_fee_amount_low', ts('From'), array('size' => 8, 'maxlength' => 8));
     $form->addElement('text', 'participant_fee_amount_high', ts('To'), array('size' => 8, 'maxlength' => 8));
 
@@ -619,6 +610,7 @@ class CRM_Event_BAO_Query {
     CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch($form, 'participant_campaign_id');
 
     $form->assign('validCiviEvent', TRUE);
+    $form->setDefaults(array('participant_test' => 0));
   }
 
   static function searchAction(&$row, $id) {}

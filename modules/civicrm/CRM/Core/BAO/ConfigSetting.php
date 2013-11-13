@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -39,6 +39,23 @@
  *
  */
 class CRM_Core_BAO_ConfigSetting {
+
+  /**
+   * Function to create civicrm settings. This is the same as add but it clears the cache and
+   * reloads the config object
+   *
+   * @params array $params associated array of civicrm variables
+   *
+   * @return null
+   * @static
+   */
+  static function create($params) {
+    self::add($params);
+    $cache = CRM_Utils_Cache::singleton();
+    $cache->delete('CRM_Core_Config');
+    $cache->delete('CRM_Core_Config' . CRM_Core_Config::domainID());
+    $config = CRM_Core_Config::singleton(TRUE, TRUE);
+  }
 
   /**
    * Function to add civicrm settings
@@ -54,10 +71,15 @@ class CRM_Core_BAO_ConfigSetting {
     // also set a template url so js files can use this
     // CRM-6194
     $params['civiRelativeURL'] = CRM_Utils_System::url('CIVI_BASE_TEMPLATE');
-    $params['civiRelativeURL'] = str_replace('CIVI_BASE_TEMPLATE',
-      '',
+    $params['civiRelativeURL'] =
+      str_replace(
+        'CIVI_BASE_TEMPLATE',
+        '',
       $params['civiRelativeURL']
     );
+
+    // also add the version number for use by template / js etc
+    $params['civiVersion'] = CRM_Utils_System::version();
 
     $domain = new CRM_Core_DAO_Domain();
     $domain->id = CRM_Core_Config::domainID();
@@ -202,9 +224,7 @@ class CRM_Core_BAO_ConfigSetting {
     $domain->find(TRUE);
     if ($domain->config_backend) {
       $defaults = unserialize($domain->config_backend);
-      if ($defaults === FALSE ||
-        !is_array($defaults)
-      ) {
+      if ($defaults === FALSE || !is_array($defaults)) {
         $defaults = array();
         return;
       }
@@ -214,16 +234,6 @@ class CRM_Core_BAO_ConfigSetting {
         if (array_key_exists($skip, $defaults)) {
           unset($defaults[$skip]);
         }
-      }
-
-      // since language field won't be present before upgrade.
-      if (CRM_Core_Config::isUpgradeMode()) {
-        // dont add if its empty
-        if (!empty($defaults)) {
-          // retrieve directory and url preferences also
-          CRM_Core_BAO_Setting::retrieveDirectoryAndURLPreferences($defaults);
-        }
-        return;
       }
 
       // check if there are any locale strings
@@ -332,6 +342,19 @@ class CRM_Core_BAO_ConfigSetting {
     if (!empty($defaults)) {
       // retrieve directory and url preferences also
       CRM_Core_BAO_Setting::retrieveDirectoryAndURLPreferences($defaults);
+
+      // Pickup enabled-components from settings table if found.
+      $enableComponents = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'enable_components', NULL, array());
+      if (!empty($enableComponents)) {
+        $defaults['enableComponents'] = $enableComponents;
+
+        $components = CRM_Core_Component::getComponents();
+        $enabledComponentIDs = array();
+        foreach ($defaults['enableComponents'] as $name) {
+          $enabledComponentIDs[] = $components[$name]->componentID;
+        }
+        $defaults['enableComponentIDs'] = $enabledComponentIDs;
+      }
     }
   }
 
@@ -340,7 +363,8 @@ class CRM_Core_BAO_ConfigSetting {
 
     $url = $dir = $siteName = $siteRoot = NULL;
     if ($config->userFramework == 'Joomla') {
-      $url = preg_replace('|administrator/components/com_civicrm/civicrm/|',
+      $url = preg_replace(
+        '|administrator/components/com_civicrm/civicrm/|',
         '',
         $config->userFrameworkResourceURL
       );
@@ -348,17 +372,41 @@ class CRM_Core_BAO_ConfigSetting {
       // lets use imageUploadDir since we dont mess around with its values
       // in the config object, lets kep it a bit generic since folks
       // might have different values etc
-      $dir = preg_replace('|civicrm/templates_c/.*$|',
+      $dir = preg_replace(
+        '|civicrm/templates_c/.*$|',
         '',
         $config->templateCompileDir
       );
-      $siteRoot = preg_replace('|/media/civicrm/.*$|',
+      $siteRoot = preg_replace(
+        '|/media/civicrm/.*$|',
+        '',
+        $config->imageUploadDir
+      );
+    }
+    else if ($config->userFramework == 'WordPress') {
+      $url = preg_replace(
+        '|wp-content/plugins/civicrm/civicrm/|',
+        '',
+        $config->userFrameworkResourceURL
+      );
+
+      // lets use imageUploadDir since we dont mess around with its values
+      // in the config object, lets kep it a bit generic since folks
+      // might have different values etc
+      $dir = preg_replace(
+        '|civicrm/templates_c/.*$|',
+        '',
+        $config->templateCompileDir
+      );
+      $siteRoot = preg_replace(
+        '|/wp-content/plugins/files/civicrm/.*$|',
         '',
         $config->imageUploadDir
       );
     }
     else {
-      $url = preg_replace('|sites/[\w\.\-\_]+/modules/civicrm/|',
+      $url = preg_replace(
+        '|sites/[\w\.\-\_]+/modules/civicrm/|',
         '',
         $config->userFrameworkResourceURL
       );
@@ -366,13 +414,15 @@ class CRM_Core_BAO_ConfigSetting {
       // lets use imageUploadDir since we dont mess around with its values
       // in the config object, lets kep it a bit generic since folks
       // might have different values etc
-      $dir = preg_replace('|/files/civicrm/.*$|',
+      $dir = preg_replace(
+        '|/files/civicrm/.*$|',
         '/files/',
         $config->imageUploadDir
       );
 
       $matches = array();
-      if (preg_match('|/sites/([\w\.\-\_]+)/|',
+      if (preg_match(
+          '|/sites/([\w\.\-\_]+)/|',
           $config->imageUploadDir,
           $matches
         )) {
@@ -391,43 +441,23 @@ class CRM_Core_BAO_ConfigSetting {
     return array($url, $dir, $siteName, $siteRoot);
   }
 
+/**
+ * Return likely default settings
+ * @return array site settings
+ *  -$url,
+ * - $dir Base Directory
+ * - $siteName
+ * - $siteRoot
+ */
   static function getBestGuessSettings() {
     $config = CRM_Core_Config::singleton();
-
-    $url = $config->userFrameworkBaseURL;
-    $siteName = $siteRoot = NULL;
-    if ($config->userFramework == 'Joomla') {
-      $url = preg_replace('|/administrator|',
-        '',
-        $config->userFrameworkBaseURL
-      );
-      $siteRoot = preg_replace('|/media/civicrm/.*$|',
-        '',
-        $config->imageUploadDir
-      );
-    }
-    $dir = preg_replace('|civicrm/templates_c/.*$|',
+    $dir = preg_replace(
+      '|civicrm/templates_c/.*$|',
       '',
       $config->templateCompileDir
     );
 
-    if ($config->userFramework != 'Joomla') {
-      $matches = array();
-      if (preg_match('|/sites/([\w\.\-\_]+)/|',
-          $config->templateCompileDir,
-          $matches
-        )) {
-        $siteName = $matches[1];
-        if ($siteName) {
-          $siteName = "/sites/$siteName/";
-          $siteNamePos = strpos($dir, $siteName);
-          if ($siteNamePos !== FALSE) {
-            $siteRoot = substr($dir, 0, $siteNamePos);
-          }
-        }
-      }
-    }
-
+    list($url, $siteName, $siteRoot) = $config->userSystem->getDefaultSiteSettings($dir);
     return array($url, $dir, $siteName, $siteRoot);
   }
 
@@ -586,48 +616,26 @@ WHERE  option_group_id = (
       return FALSE;
     }
 
-    // get config_backend value
-    $sql = "
-SELECT config_backend
-FROM   civicrm_domain
-WHERE  id = %1
-";
-    $params = array(1 => array(CRM_Core_Config::domainID(), 'Integer'));
-    $configBackend = CRM_Core_DAO::singleValueQuery($sql, $params);
+    // get enabled-components from DB and add to the list
+    $enabledComponents =
+      CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'enable_components', NULL, array());
+    $enabledComponents[] = $componentName;
 
-    if (!$configBackend) {
-      static $alreadyVisited = FALSE;
-      if ($alreadyVisited) {
-        CRM_Core_Error::fatal(ts('Returning early due to unexpected error - civicrm_domain.config_backend column value is NULL. Try visiting CiviCRM Home page.'));
-      }
-
-      $alreadyVisited = TRUE;
-
-      // try to recreate the config backend
-      $config = CRM_Core_Config::singleton(TRUE, TRUE);
-      return self::enableComponent($componentName);
+    $enabledComponentIDs = array();
+    foreach ($enabledComponents as $name) {
+      $enabledComponentIDs[] = $components[$name]->componentID;
     }
-    $configBackend = unserialize($configBackend);
-
-    $configBackend['enableComponents'][] = $componentName;
-    $configBackend['enableComponentIDs'][] = $components[$componentName]->componentID;
 
     // fix the config object
-    $config->enableComponents = $configBackend['enableComponents'];
-    $config->enableComponentIDs = $configBackend['enableComponentIDs'];
+    $config->enableComponents = $enabledComponents;
+    $config->enableComponentIDs = $enabledComponentIDs;
 
     // also force reset of component array
     CRM_Core_Component::getEnabledComponents(TRUE);
 
-    // check if component is already there, is so return
-    $configBackend = serialize($configBackend);
-    $sql = "
-UPDATE civicrm_domain
-SET    config_backend = %2
-WHERE  id = %1
-";
-    $params[2] = array($configBackend, 'String');
-    CRM_Core_DAO::executeQuery($sql, $params);
+    // update DB
+    CRM_Core_BAO_Setting::setItem($enabledComponents,
+      CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,'enable_components');
 
     return TRUE;
   }

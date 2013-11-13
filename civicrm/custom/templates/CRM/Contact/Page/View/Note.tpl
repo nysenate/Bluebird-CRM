@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,10 @@
             <tr><td class="label">{ts}Date:{/ts}</td><td>{$note.modified_date|crmDate}</td></tr>
             <tr><td class="label">{ts}Privacy:{/ts}</td><td>{$note.privacy}</td></tr>
             <tr><td class="label"></td><td>{$note.note|nl2br}</td></tr>
+
+            {if $currentAttachmentInfo}
+               {include file="CRM/Form/attachment.tpl"}
+            {/if}
           </table>
           <div class="crm-submit-buttons"><input type="button" name='cancel' value="{ts}Done{/ts}" onclick="location.href='{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=note'}';"/></div>
 
@@ -44,7 +48,7 @@
                     <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th></tr>
                 </thead>
                 {foreach from=$comments item=comment}
-                    <tr class="{cycle values="odd-row,even-row"}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.modified_date}</td></tr>
+                    <tr class="{cycle values='odd-row,even-row'}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.modified_date}</td></tr>
                 {/foreach}
             </table>
         </fieldset>
@@ -79,6 +83,11 @@
                 <td class="label">{$form.note.label}</td>
                 <td>
                     {$form.note.html}
+                </td>
+            </tr>
+            <tr class="crm-activity-form-block-attachment">
+                <td colspan="2">
+                    {include file="CRM/Form/attachment.tpl"}
                 </td>
             </tr>
         </table>
@@ -179,7 +188,7 @@
             cj('tr#cnote_'+ noteId +' span.icon_comments_show').hide();
             cj('tr#cnote_'+ noteId +' span.icon_comments_hide').show();
         } else {
-            alert('{/literal}{ts}No comments found for this Note{/ts}{literal}');
+            CRM.alert('{/literal}{ts escape="js"}There are no comments for this note{/ts}{literal}', '{/literal}{ts escape="js"}None Found{/ts}{literal}', 'alert');
         }
 
     }
@@ -222,13 +231,13 @@
         <table id="options" class="display">
         <thead>
         <tr>
-	        <th></th>
-        {*NYSS 6016 shuffle column order*}
+          <th></th>
+          {*NYSS 6016 shuffle column order*}
           <th>{ts}Subject{/ts}</th>
-	        <th>{ts}Note{/ts}</th>
-	        <th>{ts}Date{/ts}</th>
-	        <th>{ts}Created By{/ts}</th>
-	        <th></th>
+	      <th>{ts}Note{/ts}</th>
+	      <th>{ts}Date{/ts}</th>
+	      <th>{ts}Created By{/ts}</th>
+	      <th></th>
         </tr>
         </thead>
 
@@ -268,7 +277,7 @@
  </div>
 </div>
 {elseif ! ($action eq 1)}
-   <div class="messages status">
+   <div class="messages status no-popup">
         <div class="icon inform-icon"></div>
         {capture assign=crmURL}{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}{/capture}
         {ts 1=$crmURL}There are no Notes for this contact. You can <a accesskey="N" href='%1'>add one</a>.{/ts}

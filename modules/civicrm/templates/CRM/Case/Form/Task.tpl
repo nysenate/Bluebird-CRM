@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {ts 1=$totalSelectedCases}Number of selected cases: %1{/ts}
 
-{if $rows } 
+{if $rows }
 <div class="crm-block-crm-form-block crm-case-task-form-block">
 <table width="30%">
   <tr class="columnheader">

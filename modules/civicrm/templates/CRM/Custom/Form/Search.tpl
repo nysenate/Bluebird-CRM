@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,12 +25,11 @@
 *}
 {if $groupTree}
 {foreach from=$groupTree item=cd_edit key=group_id}
-  <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open" id="{$cd_edit.name}" >
-    <div class="crm-accordion-header">
-    <div class="icon crm-accordion-pointer"></div> 
-        {$cd_edit.title}	
-    </div><!-- /.crm-accordion-header -->
 
+  <div class="crm-accordion-wrapper crm-contactDetails-accordion {if $form.formName eq 'Advanced' AND $cd_edit.collapse_adv_display eq 1}collapsed{/if}" id="{$cd_edit.name}" >
+    <div class="crm-accordion-header">
+        {$cd_edit.title}
+    </div>
     <div class="crm-accordion-body">
     <table class="form-layout-compressed">
     {foreach from=$cd_edit.fields item=element key=field_id}
@@ -68,7 +67,7 @@
              </tr>
             {if $element.html_type eq 'Radio'}
                 <tr style="line-height: .75em; margin-top: 1px;">
-                    <td> <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span></td>
+                    <td> <span class="crm-clear-link">(<a href="#" title="{ts}unselect{/ts}" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span></td>
                 </tr>
             {/if}
             </table>
@@ -84,24 +83,24 @@
                 <tr>
                 {if $element.data_type neq 'Date'}
                     <td class="label">{$form.$element_name_from.label}</td><td>
-                    {$form.$element_name_from.html|crmReplace:class:six}
-                    &nbsp;&nbsp;{$form.$element_name_to.label}&nbsp;&nbsp;{$form.$element_name_to.html|crmReplace:class:six}
+                    {$form.$element_name_from.html|crmAddClass:six}
+                    &nbsp;&nbsp;{$form.$element_name_to.label}&nbsp;&nbsp;{$form.$element_name_to.html|crmAddClass:six}
                 {elseif $element.skip_calendar NEQ true }
                     <td class="label">{$form.$element_name_from.label}</td><td>
                     {include file="CRM/common/jcalendar.tpl" elementName=$element_name_from}
                     &nbsp;&nbsp;{$form.$element_name_to.label}&nbsp;&nbsp;
                     {include file="CRM/common/jcalendar.tpl" elementName=$element_name_to}
-                {/if}  
+                {/if}
             {else}
                 <td class="label">{$form.$element_name.label}</td><td>
                 {if $element.data_type neq 'Date'}
                     {$form.$element_name.html}
                 {elseif $element.skip_calendar NEQ true }
-                    {include file="CRM/common/jcalendar.tpl" elementName=$element_name}    
+                    {include file="CRM/common/jcalendar.tpl" elementName=$element_name}
                 {/if}
             {/if}
             {if $element.html_type eq 'Radio'}
-                &nbsp; <a href="#" title="unselect" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;">{ts}unselect{/ts}</a>
+                &nbsp; <span class="crm-clear-link">(<a href="#" title="{ts}unselect{/ts}" onclick="unselectRadio('{$element_name}', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
             {elseif $element.html_type eq 'Autocomplete-Select'}
                 {if $element.data_type eq 'ContactReference'}
                     {include file="CRM/Custom/Form/ContactReference.tpl"}
@@ -111,19 +110,12 @@
             {/if}
             </td>
           </tr>
-	    {/if}
-	    {/foreach}
-	   </table>
+      {/if}
+      {/foreach}
+     </table>
     </div><!-- /.crm-accordion-body -->
   </div><!-- /.crm-accordion-wrapper -->
 
-{if  $form.formName eq 'Advanced'}
-<script type="text/javascript">
-{if $cd_edit.collapse_adv_display eq 1}
-	cj("#{$cd_edit.name}").removeClass('crm-accordion-open').addClass('crm-accordion-closed');
-{/if}
-</script>
-{/if}
 {/foreach}
 {/if}
 

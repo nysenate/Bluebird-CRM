@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {if $groupCount == 0 and $mailingCount == 0}
   <div class="status">
-	<div class="icon inform-icon"></div>
+  <div class="icon inform-icon"></div>
         {ts}To send a Mass SMS, you must have a valid group of recipients - either at least one group that's a Mailing List{/ts}
   </div>
 {else}
@@ -33,14 +33,13 @@
 {include file="CRM/common/WizardHeader.tpl"}
 
   <table class="form-layout">
-   <tr class="crm-mailing-group-form-block-name"><td class="label">{$form.name.label}</td><td>{$form.name.html} {help id="sms-name"}</td></tr>   
+   <tr class="crm-mailing-group-form-block-name"><td class="label">{$form.name.label}</td><td>{$form.name.html} {help id="sms-name"}</td></tr>
   </table>
 
 
 <div id="id-additional" class="form-item">
-<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper ">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
 {ts}Mailing Recipients{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
@@ -71,7 +70,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

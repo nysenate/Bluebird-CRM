@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -193,12 +193,10 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule {
    * @return rule fields array associated to rule group
    * @access public
    */
-  static
-  function dedupeRuleFields($params) {
+  static function dedupeRuleFields($params) {
     $rgBao               = new CRM_Dedupe_BAO_RuleGroup();
-    $rgBao->level        = $params['level'];
+    $rgBao->used         = $params['used'];
     $rgBao->contact_type = $params['contact_type'];
-    $rgBao->is_default   = 1;
     $rgBao->find(TRUE);
 
     $ruleBao = new CRM_Dedupe_BAO_Rule();

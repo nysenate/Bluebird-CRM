@@ -102,6 +102,25 @@ class line
 	{
 		$this->tip = $tip;
 	}
+
+	function set_null_gap( $gap )
+	{
+		$tmp = 'null-gap';
+		$this->$tmp = $gap;
+	}
+
+	function set_key_on_click( $action )
+	{
+		$tmp = 'key-on-click';
+		$this->$tmp = $action;
+	}
+
+	function set_group_id( $id )
+	{
+		$this->id = $id;
+	}
+
+
 	
 	/**
 	 * @param $text as string. A javascript function name as a string. The chart will

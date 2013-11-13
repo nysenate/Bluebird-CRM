@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -47,9 +47,9 @@
 
 var unclosedCaseUrl = {/literal}"{crmURL p='civicrm/case/ajax/unclosed' h=0}"{literal};
 cj( "#unclosed_cases" ).autocomplete( unclosedCaseUrl, { width : 250, selectFirst : false, matchContains:true
-                                    }).result( function(event, data, formatted) { 
+                                    }).result( function(event, data, formatted) {
                                       cj( "#unclosed_case_id" ).val( data[1] );
-                                    }).bind( 'click', function( ) { 
+                                    }).bind( 'click', function( ) {
                                       cj( "#unclosed_case_id" ).val('');
                                     });
 {/literal}

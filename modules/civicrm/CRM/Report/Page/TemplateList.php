@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -40,24 +39,34 @@
  */
 class CRM_Report_Page_TemplateList extends CRM_Core_Page {
 
-  public static function &info() {
+  public static function &info($compID = NULL) {
     $all = CRM_Utils_Request::retrieve('all', 'Boolean', CRM_Core_DAO::$_nullObject,
       FALSE, NULL, 'GET'
     );
+
+    $compClause = '';
+    if ($compID) {
+      if ($compID == 99) {
+        $compClause = " AND v.component_id IS NULL ";
+      } else {
+        $compClause = " AND v.component_id = {$compID} ";
+      }
+    }
+
     $sql = "
-SELECT  v.id, v.value, v.label, v.description, v.component_id, 
-        inst.id as instance_id, ifnull( SUBSTRING(comp.name, 5), 'Contact' ) as component_name 
+SELECT  v.id, v.value, v.label, v.description, v.component_id,
+        inst.id as instance_id, ifnull( SUBSTRING(comp.name, 5), 'Contact' ) as component_name
 FROM    civicrm_option_value v
-INNER JOIN civicrm_option_group g 
+INNER JOIN civicrm_option_group g
         ON (v.option_group_id = g.id AND g.name = 'report_template')
-LEFT  JOIN civicrm_report_instance inst 
+LEFT  JOIN civicrm_report_instance inst
         ON v.value = inst.report_id
-LEFT  JOIN civicrm_component comp 
+LEFT  JOIN civicrm_component comp
         ON v.component_id = comp.id
 ";
 
     if (!$all) {
-      $sql .= " WHERE v.is_active = 1 ";
+      $sql .= " WHERE v.is_active = 1 {$compClause}";
     }
     $sql .= " ORDER BY  v.weight ";
 
@@ -89,7 +98,8 @@ LEFT  JOIN civicrm_component comp
    * @return void
    */
   function run() {
-    $rows = self::info();
+    $compID = CRM_Utils_Request::retrieve('compid', 'Positive', $this);
+    $rows = self::info($compID);
     $this->assign('list', $rows);
 
     return parent::run();

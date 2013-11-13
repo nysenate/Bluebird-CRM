@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,12 +28,19 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Upgrade_Form extends CRM_Core_Form {
   CONST QUEUE_NAME = 'CRM_Upgrade';
+
+  /**
+   * Minimum size of MySQL's thread_stack option
+   *
+   * @see install/index.php MINIMUM_THREAD_STACK
+   */
+  const MINIMUM_THREAD_STACK = 192;
 
   protected $_config;
 
@@ -114,7 +121,8 @@ class CRM_Upgrade_Form extends CRM_Core_Form {
     $versionName = self::$_numberMap[$versionParts[0]] . self::$_numberMap[$versionParts[1]];
 
     if (!array_key_exists($versionName, $incrementalPhpObject)) {
-      eval("\$incrementalPhpObject['$versionName'] = new CRM_Upgrade_Incremental_php_{$versionName};");
+      $className = "CRM_Upgrade_Incremental_php_{$versionName}";
+      $incrementalPhpObject[$versionName] = new $className();
     }
     return $incrementalPhpObject[$versionName];
   }
@@ -380,22 +388,30 @@ SET    version = '$version'
       );
     }
 
-    $config = CRM_Core_Config::singleton();
-    if ($config->logging == TRUE) {
-      $error = ts('Upgrade to CiviCRM %1 with the logging feature enabled is currently not supported. You will need to disable logging (Administer > System Settings > Undelete, Logging and ReCAPTCHA), run the upgrade, and then re-enable logging. This should not affect existing log entries, but you should always test the upgrade on a COPY of your production database to verify.',
-               array(1 => $latestVer)
-      );
+    $phpVersion = phpversion();
+    $minPhpVersion = '5.3.3';
+    if (version_compare($phpVersion, $minPhpVersion) < 0) {
+      $error = ts('CiviCRM %3 requires PHP version %1 (or newer), but the current system uses %2 ',
+               array(
+                 1 => $minPhpVersion,
+                 2 => $phpVersion,
+                 3 => $latestVer
+               ));
     }
 
-    $phpVersion = phpversion();
-    $minPhpVersion = '5.3.0';
-    if (version_compare($phpVersion, $minPhpVersion) <= 0) {
-      $error = ts('CiviCRM %3 requires PHP version %1 (or newer), but the current system uses %2 ', array(
-        1 => $minPhpVersion,
-        2 => $phpVersion,
-        3 => $latestVer,
+    // check for mysql trigger privileges
+    if (!CRM_Core_DAO::checkTriggerViewPermission(FALSE, TRUE)) {
+      $error = ts('CiviCRM %1 requires MySQL trigger privileges.',
+               array(1 => $latestVer));
+    }
+
+    if (CRM_Core_DAO::getGlobalSetting('thread_stack', 0) < (1024*self::MINIMUM_THREAD_STACK)) {
+      $error = ts('CiviCRM %1 requires MySQL thread stack >= %2k', array(
+        1 => $latestVer,
+        2 => self::MINIMUM_THREAD_STACK
       ));
     }
+
     return $error;
   }
 
@@ -474,7 +490,7 @@ SET    version = '$version'
           // callback
           array('CRM_Upgrade_Form', 'doIncrementalUpgradeFinish'),
           // arguments
-          array($rev),
+          array($rev, $currentVer, $latestVer, $postUpgradeMessageFile),
           "Finish Upgrade DB to $rev"
         );
         $queue->createItem($task);
@@ -582,10 +598,13 @@ SET    version = '$version'
    * @param $latestVer string, the target (final) revision
    * @param $postUpgradeMessageFile string, path of a modifiable file which lists the post-upgrade messages
    */
-  static function doIncrementalUpgradeFinish(CRM_Queue_TaskContext $ctx, $rev) {
+  static function doIncrementalUpgradeFinish(CRM_Queue_TaskContext $ctx, $rev, $currentVer, $latestVer, $postUpgradeMessageFile) {
     $upgrade = new CRM_Upgrade_Form();
     $upgrade->setVersion($rev);
     CRM_Utils_System::flushCache();
+
+    $config = CRM_Core_Config::singleton();
+    $config->userSystem->flush();
     return TRUE;
   }
 
@@ -595,9 +614,23 @@ SET    version = '$version'
     // Seems extraneous in context, but we'll preserve old behavior
     $upgrade->setVersion($latestVer);
 
+    // lets rebuild the config array in case we've made a few changes in the
+    // code base
+    // this also helps us always store the latest version of civi in the DB
+    $params = array();
+    CRM_Core_BAO_ConfigSetting::add($params);
+
+    // CRM-12804 comment-51411 : add any missing settings
+    // at the end of upgrade
+    CRM_Core_BAO_Setting::updateSettingsFromMetaData();
+
     // cleanup caches CRM-8739
     $config = CRM_Core_Config::singleton();
-    $config->cleanupCaches(1, FALSE);
+    $config->cleanupCaches(1);
+
+    // Rebuild all triggers and re-enable logging if needed
+    $logging = new CRM_Logging_Schema();
+    $logging->fixSchemaDifferences();
   }
 
   /**
@@ -619,10 +652,10 @@ SET    version = '$version'
         version_compare($rev, '3.2.alpha1') > 0
       ) {
         $versionObject = $this->incrementalPhpObject($rev);
-        if (is_callable(array(
+         if (is_callable(array(
           $versionObject, 'setPreUpgradeMessage'))) {
-          $versionObject->setPreUpgradeMessage($preUpgradeMessage, $rev);
-        }
+           $versionObject->setPreUpgradeMessage($preUpgradeMessage, $rev, $currentVer);
+         }
       }
     }
   }

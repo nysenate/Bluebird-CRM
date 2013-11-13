@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -21,14 +21,14 @@
  | with this program; if not, contact CiviCRM LLC                     |
  | at info[AT]civicrm[DOT]org. If you have questions about the        |
  | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |    
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
 
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -143,7 +143,8 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     $this->set('searchFormName', 'Search');
 
     /**
@@ -156,11 +157,10 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
     $this->_done = FALSE;
     $this->defaults = array();
 
-    /* 
-         * we allow the controller to set force/reset externally, useful when we are being 
-         * driven by the wizard framework 
-         */
-
+    /*
+     * we allow the controller to set force/reset externally, useful when we are being
+     * driven by the wizard framework
+     */
     $this->_reset   = CRM_Utils_Request::retrieve('reset', 'Boolean', CRM_Core_DAO::$_nullObject);
     $this->_force   = CRM_Utils_Request::retrieve('force', 'Boolean', $this, FALSE);
     $this->_limit   = CRM_Utils_Request::retrieve('limit', 'Positive', $this);
@@ -237,11 +237,10 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
 
     CRM_Event_BAO_Query::buildSearchForm($this);
 
-    /* 
-         * add form checkboxes for each row. This is needed out here to conform to QF protocol 
-         * of all elements being declared in builQuickForm 
-         */
-
+    /*
+     * add form checkboxes for each row. This is needed out here to conform to QF protocol
+     * of all elements being declared in builQuickForm
+     */
     $rows = $this->get('rows');
     if (is_array($rows)) {
       $lineItems = $eventIds = array();
@@ -272,20 +271,23 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
       if (count($eventIds) == 1) {
         //convert form values to clause.
         $seatClause = array();
-        $clauseParams = array('participant_status_id', 'participant_role_id');
+        // Filter on is_test if specified in search form
+        if (CRM_Utils_Array::value('participant_test', $this->_formValues) == '1' || CRM_Utils_Array::value('participant_test', $this->_formValues) == '0' ) {
+          $seatClause[] = "( participant.is_test = {$this->_formValues['participant_test']} )";
+        }
         if (CRM_Utils_Array::value('participant_status_id', $this->_formValues)) {
           $statuses = array_keys($this->_formValues['participant_status_id']);
-
           $seatClause[] = '( participant.status_id IN ( ' . implode(' , ', $statuses) . ' ) )';
         }
         if (CRM_Utils_Array::value('participant_role_id', $this->_formValues)) {
           $roles = array_keys($this->_formValues['participant_role_id']);
-          $seatClause[] = '( participant.status_id IN ( ' . implode(' , ', $roles) . ' ) )';
+          $seatClause[] = '( participant.role_id IN ( ' . implode(' , ', $roles) . ' ) )';
         }
         $clause = NULL;
         if (!empty($seatClause)) {
           $clause = implode(' AND ', $seatClause);
         }
+
         $participantCount = CRM_Event_BAO_Event::eventTotalSeats(array_pop($eventIds), $clause);
       }
       $this->assign('participantCount', $participantCount);
@@ -383,11 +385,8 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
       $this->_formValues = CRM_Contact_BAO_SavedSearch::getFormValues($this->_ssID);
     }
 
-    // we don't show test registrations in Contact Summary / User Dashboard
-    // in Search mode by default we hide test registrations
-    if (!CRM_Utils_Array::value('participant_test',
-        $this->_formValues
-      )) {
+    // We don't show test records in summaries or dashboards
+    if (empty($this->_formValues['participant_test']) && $this->_force) {
       $this->_formValues["participant_test"] = 0;
     }
 
@@ -403,7 +402,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
       // check actionName and if next, then do not repeat a search, since we are going to the next page
 
       // hack, make sure we reset the task values
-      $stateMachine = &$this->controller->getStateMachine();
+      $stateMachine = $this->controller->getStateMachine();
       $formName = $stateMachine->getTaskFormName();
       $this->controller->resetPage($formName);
       return;
@@ -446,7 +445,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
     );
     $controller->setEmbedded(TRUE);
 
-    $query = &$selector->getQuery();
+    $query = $selector->getQuery();
     if ($this->_context == 'user') {
       $query->setSkipPermission(TRUE);
     }
@@ -475,8 +474,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields) {
+  static function formRule($fields) {
     $errors = array();
 
     if ($fields['event_name'] && !is_numeric($fields['event_id'])) {
@@ -500,7 +498,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form {
    *
    * @return array the default array reference
    */
-  function &setDefaultValues() {
+  function setDefaultValues() {
     $defaults = array();
     $defaults = $this->_formValues;
     return $defaults;

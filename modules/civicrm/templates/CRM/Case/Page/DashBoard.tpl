@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,11 +30,11 @@
     {include file="CRM/Case/Page/ConfigureError.tpl"}
 {else}
 
-{capture assign=newCaseURL}{crmURL p="civicrm/contact/view/case" q="action=add&context=standalone&reset=1"}{/capture}
+{capture assign=newCaseURL}{crmURL p="civicrm/case/add" q="action=add&context=standalone&reset=1"}{/capture}
 
 <div class="crm-submit-buttons crm-case-dashboard-buttons">
-    {if $newClient and $allowToAddNewCase}	
-	    <a href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
+    {if $newClient and $allowToAddNewCase}
+      <a href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
     {/if}
     <a class="button" name="find_my_cases" href="{crmURL p="civicrm/case/search" q="reset=1&case_owner=2&force=1"}"><span>{ts}Find My Cases{/ts}</span></a>
 
@@ -85,8 +85,6 @@
 </table>
 {capture assign=findCasesURL}<a href="{crmURL p="civicrm/case/search" q="reset=1"}">{ts}Find Cases{/ts}</a>{/capture}
 
-<span id='fileOnCaseStatusMsg' style="display:none;"></span><!-- Displays status from copy to case -->
-
 <div class="spacer"></div>
     <h3>{if $myCases}{ts}My Cases With Upcoming Activities{/ts}{else}{ts}All Cases With Upcoming Activities{/ts}{/if}</h3>
     {if $upcomingCases}
@@ -94,8 +92,8 @@
         {include file="CRM/Case/Page/DashboardSelector.tpl" context="dashboard" list="upcoming" rows=$upcomingCases}
     </div>
     {else}
-        <div class="messages status">
-	    {ts 1=$findCasesURL}There are no open cases with activities scheduled in the next two weeks. Use %1 to expand your search.{/ts}
+        <div class="messages status no-popup">
+      {ts 1=$findCasesURL}There are no open cases with activities scheduled in the next two weeks. Use %1 to expand your search.{/ts}
         </div>
     {/if}
 
@@ -106,8 +104,8 @@
         {include file="CRM/Case/Page/DashboardSelector.tpl" context="dashboard" list="recent" rows=$recentCases}
     </div>
     {else}
-        <div class="messages status">
-	    {ts 1=$findCasesURL}There are no cases with activities scheduled in the past two weeks. Use %1 to expand your search.{/ts}
+        <div class="messages status no-popup">
+      {ts 1=$findCasesURL}There are no cases with activities scheduled in the past two weeks. Use %1 to expand your search.{/ts}
         </div>
     {/if}
 {/if}

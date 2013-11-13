@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,17 +25,11 @@
 *}
 {* Form elements for displaying and running action tasks on search results *}
 {capture assign=advSearchURL}
-{if $context EQ 'smog'}
-     {crmURL p='civicrm/group/search/advanced' q="gid=`$group.id`&reset=1&force=1"}
-{elseif $context EQ 'amtg'}
-     {crmURL p='civicrm/contact/search/advanced' q="context=amtg&amtgID=`$group.id`&reset=1&force=1"}
-{else}
-    {crmURL p='civicrm/contact/search/advanced' q="reset=1"}
-{/if}
-{/capture}
-{capture assign=searchBuilderURL}
-    {crmURL p='civicrm/contact/search/builder' q="reset=1"}
-{/capture}
+{if $context EQ 'smog'}{crmURL p='civicrm/group/search/advanced' q="gid=`$group.id`&reset=1&force=1"}
+{elseif $context EQ 'amtg'}{crmURL p='civicrm/contact/search/advanced' q="context=amtg&amtgID=`$group.id`&reset=1&force=1"}
+{else}{crmURL p='civicrm/contact/search/advanced' q="reset=1"}
+{/if}{/capture}
+{capture assign=searchBuilderURL}{crmURL p='civicrm/contact/search/builder' q="reset=1"}{/capture}
 
  <div id="search-status">
   <div class="float-right right">
@@ -45,9 +39,9 @@
             <a href="{$searchBuilderURL}">&raquo; {ts}Search Builder{/ts}</a><br />
         {/if}
         {if $context eq 'smog'}
-            {help id="id-smog-criteria"}
+            {help id="id-smog-criteria" group_id=$group.id group_title=$group.title ssID=$ssID ssMappingID=$ssMappingID permissionedForGroup=$permissionedForGroup}
         {elseif $context eq 'amtg'}
-            {help id="id-amtg-criteria"}
+            {help id="id-amtg-criteria" group_title=$group.title}
         {else}
             {help id="id-basic-criteria"}
         {/if}

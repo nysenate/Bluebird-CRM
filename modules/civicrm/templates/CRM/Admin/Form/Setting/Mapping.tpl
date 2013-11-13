@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,8 +36,8 @@
          </tr>
          <tr class="crm-map-form-block-mapAPIKey">
              <td>{$form.mapAPIKey.label}</td>
-             <td>{$form.mapAPIKey.html|crmReplace:class:huge}<br />
-             <span class="description">{ts}Enter your API Key or Application ID.{/ts}</span></td>
+             <td>{$form.mapAPIKey.html|crmAddClass:huge}<br />
+             <span class="description">{ts}Enter your API Key or Application ID. An API Key is currently optional for Google Maps API, but may be helpful diagnosing any problems and required for higher volumes of requests. Refer to developers.google.com for the latest information.{/ts}</span></td>
          </tr>
          <tr class="crm-map-form-block-geoProvider">
              <td>{$form.geoProvider.label}</td>
@@ -46,30 +46,22 @@
          </tr>
          <tr class="crm-map-form-block-geoAPIKey">
              <td>{$form.geoAPIKey.label}</td>
-             <td>{$form.geoAPIKey.html|crmReplace:class:huge}<br />
-             <span class="description">{ts}Enter the API key or Application ID associated with your geocoding provider.{/ts}</span></td>
+             <td>{$form.geoAPIKey.html|crmAddClass:huge}<br />
+             <span class="description">{ts}Enter the API key or Application ID associated with your geocoding provider (not required for Yahoo).{/ts}</span></td>
          </tr>
     </table>
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
 {literal}
 <script type="text/javascript">
-showHideMapAPIkey( cj('#mapProvider').val( ) );
-showHideGeoAPIkey( cj('#geoProvider').val( ) );
-
+cj(function() {
+  showHideMapAPIkey( cj('#mapProvider').val( ) );
+});
 function showHideMapAPIkey( mapProvider ) {
-  if ( mapProvider && ( mapProvider == 'Google' ||  mapProvider == 'OpenStreetMaps' ) ) {
+  if ( mapProvider && ( mapProvider == 'OpenStreetMaps' ) ) {
     cj('#Mapping tr.crm-map-form-block-mapAPIKey').hide( );
   } else {
     cj('#Mapping tr.crm-map-form-block-mapAPIKey').show( );
-  }
-}
-
-function showHideGeoAPIkey( geoProvider ) {
-  if ( geoProvider && geoProvider == 'Google' ) {
-    cj('#Mapping tr.crm-map-form-block-geoAPIKey').hide( );
-  } else {
-    cj('#Mapping tr.crm-map-form-block-geoAPIKey').show( );
   }
 }
 </script>

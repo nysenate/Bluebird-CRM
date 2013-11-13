@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -43,9 +43,8 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
    * mode of operation: live or test
    *
    * @var object
-   * @static
    */
-  static protected $_mode = NULL;
+  protected $_mode = NULL;
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -62,7 +61,8 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('Google Checkout');
@@ -77,10 +77,9 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
-    if (self::$_singleton[$processorName] === NULL) {
+    if (!isset(self::$_singleton[$processorName]) || self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_Google($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
@@ -302,7 +301,7 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
 
     //turning off the server and peer verification(TrustManager Concept).
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL'));
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL') ? 2 : 0);
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -333,8 +332,7 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
     return self::getArrayFromXML($xmlResponse);
   }
 
-  static
-  function buildXMLQuery($searchParams) {
+  static function buildXMLQuery($searchParams) {
     $xml = '<?xml version="1.0" encoding="UTF-8"?>
 <notification-history-request xmlns="http://checkout.google.com/schema/2">';
 
@@ -367,8 +365,7 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
     return $xml;
   }
 
-  static
-  function getArrayFromXML($xmlData) {
+  static function getArrayFromXML($xmlData) {
     require_once 'Google/library/xml-processing/gc_xmlparser.php';
     $xmlParser = new gc_XmlParser($xmlData);
     $root      = $xmlParser->GetRoot();

@@ -15,6 +15,13 @@
  */
 function civicrm_member_roles_install() {}
 
+/*
+ * Implemenation of hook_enable()
+ */
+function civicrm_member_roles_enable() {
+  db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_member_roles'");
+}
+
 /**
  * Implementation of hook_schema().
  */

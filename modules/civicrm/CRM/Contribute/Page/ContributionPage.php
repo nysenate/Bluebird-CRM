@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -323,7 +323,7 @@ class CRM_Contribute_Page_ContributionPage extends CRM_Core_Page {
     }
     elseif ($action & CRM_Core_Action::COPY) {
       $session = CRM_Core_Session::singleton();
-      CRM_Core_Session::setStatus(ts('A copy of the contribution page has been created'));
+      CRM_Core_Session::setStatus(ts('A copy of the contribution page has been created'), ts('Successfully Copied'), 'success');
       $this->copy();
     }
     elseif ($action & CRM_Core_Action::DELETE) {
@@ -339,14 +339,14 @@ class CRM_Contribute_Page_ContributionPage extends CRM_Core_Page {
       );
       $query = "
 SELECT      ccp.title
-FROM        civicrm_contribution_page ccp 
+FROM        civicrm_contribution_page ccp
 JOIN        civicrm_pcp cp ON ccp.id = cp.page_id
 WHERE       cp.page_id = {$id}
 AND         cp.page_type = 'contribute'
 ";
 
       if ($pageTitle = CRM_Core_DAO::singleValueQuery($query)) {
-        CRM_Core_Session::setStatus(ts('The \'%1\' cannot be deleted! You must Delete all Personal Campaign Page(s) related with this contribution page prior to deleting the page.', array(1 => $pageTitle)));
+        CRM_Core_Session::setStatus(ts('The \'%1\' cannot be deleted! You must Delete all Personal Campaign Page(s) related with this contribution page prior to deleting the page.', array(1 => $pageTitle)), ts('Deletion Error'), 'error');
 
         CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/contribute', 'reset=1'));
       }
@@ -562,7 +562,7 @@ ORDER BY title asc
       }
     }
 
-    $value = $this->get('contribution_type_id');
+        $value = $this->get( 'financial_type_id' );
     $val = array();
     if ($value) {
       if (is_array($value)) {
@@ -574,7 +574,7 @@ ORDER BY title asc
         $type = implode(',', $val);
       }
 
-      $clauses[] = "contribution_type_id IN ({$type})";
+             $clauses[] = "financial_type_id IN ({$type})";
     }
 
     if ($sortBy &&

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,142 +24,68 @@
  +--------------------------------------------------------------------+
 *}
 {if $notConfigured} {* Case types not present. Component is not configured for use. *}
-    {include file="CRM/Case/Page/ConfigureError.tpl"}
+{include file="CRM/Case/Page/ConfigureError.tpl"}
 {else}
+<tr>
+  <td><label>{ts}Case Start Date{/ts}</label></td>{include file="CRM/Core/DateRange.tpl" fieldName="case_from" from='_start_date_low' to='_start_date_high'}
+</tr>
+<tr>
+  <td><label>{ts}Case End Date{/ts}</label></td>{include file="CRM/Core/DateRange.tpl" fieldName="case_to" from='_end_date_low' to='_end_date_high'}
+</tr>
+
 <tr id='case_search_form'>
-  <td class="crm-case-common-form-block-case_type" width="25%"><label>{ts}Case Type{/ts}</label>
-    <br />
-      <div class="listing-box" style="width: auto; height: 120px">
-       {foreach from=$form.case_type_id item="case_type_id_val"}
-        <div class="{cycle values="odd-row,even-row"}">
-                {$case_type_id_val.html}
+  <td colspan="2" class="crm-case-common-form-block-case_type" width="25%">
+    <label>{ts}Case Type{/ts}</label><br />
+    <div class="listing-box">
+      {foreach from=$form.case_type_id item="case_type_id_val"}
+        <div class="{cycle values='odd-row,even-row'}">
+          {$case_type_id_val.html}
         </div>
       {/foreach}
-      </div><br />
+    </div><br />
   </td>
-  
+
   <td class="crm-case-common-form-block-case_status_id" width="25%">
-    {$form.case_status_id.label}<br /> 
-    {$form.case_status_id.html}<br /><br />	
-    {if $accessAllCases}
-    {$form.case_owner.html} <span class="crm-clear-link">(<a href="javascript:unselectCaseRadio('case_owner', '{$form.formName}')">{ts}clear{/ts}</a>)</span><br />
-    {/if}
-    {if $form.case_deleted}	
-        {$form.case_deleted.html}	
-        {$form.case_deleted.label}	
-    {/if}
-  </td>
-  {if $form.case_tags }
-  <td class="crm-case-common-form-block-case_tags">
-  <label>{ts}Case Tag(s){/ts}</label>
-    <div id="Tag" class="listing-box">
-      {foreach from=$form.case_tags item="tag_val"} 
-        <div class="{cycle values="odd-row,even-row"}">
-        	{$tag_val.html} 
+    <label>{ts}Status{/ts}</label><br />
+    <div class="listing-box">
+      {foreach from=$form.case_status_id item="case_status_id_val"}
+        <div class="{cycle values='odd-row,even-row'}">
+          {$case_status_id_val.html}
         </div>
       {/foreach}
+    </div>
+    {if $accessAllCases}
+      <br />
+      {$form.case_owner.html}
+    {/if}
+    {if $form.case_deleted}
+      <br />
+      {$form.case_deleted.html}
+      {$form.case_deleted.label}
+    {/if}
   </td>
-{/if}
+  {if $form.case_tags}
+    <td class="crm-case-common-form-block-case_tags">
+      <label>{ts}Case Tag(s){/ts}</label>
+      <div id="Tag" class="listing-box">
+        {foreach from=$form.case_tags item="tag_val"}
+          <div class="{cycle values='odd-row,even-row'}">
+            {$tag_val.html}
+          </div>
+        {/foreach}
+    </td>
+  {/if}
 </tr>
 
 <tr><td colspan="3">{include file="CRM/common/Tag.tpl" tagsetType='case'}</td></tr>
 
-{if $caseGroupTree }
-<tr>
+  {if $caseGroupTree}
+  <tr>
     <td colspan="4">
-       {include file="CRM/Custom/Form/Search.tpl" groupTree=$caseGroupTree showHideLinks=false}
+    {include file="CRM/Custom/Form/Search.tpl" groupTree=$caseGroupTree showHideLinks=false}
     </td>
-</tr>
+  </tr>
+  {/if}
+
 {/if}
 
-{literal}
-<script type="text/javascript">
-    var verifyCaseInput = new Array();
-    cj( function() {
-       
-        var countCaseInputs = 1;
-        cj("#case_search_form input,#case_search_form select").each(function () {
-            cj(this).attr('case_pref', countCaseInputs);
-            countCaseInputs++;
-        });
-
-        cj("#case_search_form input,#case_search_form select").each(function () {
-        if (  cj(this).attr('case_pref') ) {
-            switch( cj(this).attr('type') ) { 
-          
-                case 'checkbox':
-                    var caseRef =  cj(this).attr('case_pref');
-                    if( cj(this).attr('checked') ) {
-      		            verifyCaseInput[caseRef] = 1;
-    		        } else {
-                        verifyCaseInput[caseRef] = 0;
-                    } 
-
-                    cj(this).click( function(){
-                    if( cj(this).attr('checked') ) {
-      		            verifyCaseInput[caseRef] = 1;
-    		        } else {
- 		                verifyCaseInput[caseRef] = 0;
-                    }
-                        alterCaseFilters( ); 
-                    });
-                    countCaseInputs++;
-                break;
-
-                case 'select-one':
-                    var caseRef =  cj(this).attr('case_pref');
-                    if ( cj(this).val( ) ) {
-                        verifyCaseInput[caseRef] = 1;
-                    } else {
-                        verifyCaseInput[caseRef] = 0;
-                    }
-                    cj(this).change( function() {
-                        if( cj(this).val() ) {
-                            verifyCaseInput[caseRef] = 1;
-                        } else {
-                            verifyCaseInput[caseRef] = 0;  
-                        }
-                        alterCaseFilters( ); 
-                    });
-                    countCaseInputs++;
-                break;    
-            }
-        }     
-      });
-    });
-
-           
-    function alterCaseFilters( ) {
-        var isChecked = 0;
-        cj("#case_search_form input[name='case_owner']").each( function( ) {
-            if ( (cj(this).attr('type') == 'radio' && cj(this).attr('checked') ) ) {
-                isChecked = 1;
-            }    
-        });
-           
-        if ( isChecked ) {
-            return true;
-        }
-
-        if ( cj.inArray( 1, verifyCaseInput ) != -1 ) {
-            cj("#case_search_form input[name='case_owner']").each( function( ) {
-                if ( (cj(this).attr('type') == 'radio' && cj(this).val( ) == 1) ) {
-                    cj(this).click();
-                }    
-            });
-        }
-    }
- 
-    function unselectCaseRadio( eleName, thisForm ) {
-        if ( cj.inArray( 1, verifyCaseInput ) != -1 ) {
-            alert( 'It is mandatory to select either Search All Cases or Only My Cases if any of the case serach criteria is selected' );
-            return;
-        }
-        unselectRadio( eleName, thisForm);
-
-    }
-
-</script>      
-{/literal} 
-{/if}
- 

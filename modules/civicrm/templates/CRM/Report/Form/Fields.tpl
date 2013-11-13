@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,25 +26,23 @@
 {if !$printOnly} {* NO print section starts *}
 {if $criteriaForm}
 <div> {* criteria section starts *}
-<div class="crm-accordion-wrapper crm-report_criteria-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-report_criteria-accordion {if $rows}collapsed{/if}">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-  	{ts}Report Criteria{/ts}
+    {ts}Report Criteria{/ts}
    </div><!-- /.crm-accordion-header -->
- <div class="crm-accordion-body">	
+ <div class="crm-accordion-body">
         <div id="id_{$formTpl}"> {* search section starts *}
                 {include file="CRM/Report/Form/Criteria.tpl"}
         </div> {* search div section ends *}
   </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->       
+</div><!-- /.crm-accordion-wrapper -->
 </div> {* criteria section ends *}
 {/if}
 
 {if $instanceForm OR $instanceFormError} {* settings section starts *}
-<div class="crm-accordion-wrapper crm-report_setting-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
- <div class="crm-accordion-header" {if $updateReportButton} onclick="hide('update-button'); return false;" {/if} >
-  <div class="icon crm-accordion-pointer"></div> 
-  	{if $mode eq 'template'}{ts}Create Report{/ts}{else}{ts}Report Settings{/ts}{/if}
+<div class="crm-accordion-wrapper crm-report_setting-accordion {if $rows}collapsed{/if}">
+ <div class="crm-accordion-header" {if $updateReportButton} onclick="cj('#update-button').hide(); return false;" {/if} >
+    {if $mode eq 'template'}{ts}Create Report{/ts}{else}{ts}Report Settings{/ts}{/if}
      </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
         <div id="id_{$instanceForm}">
@@ -61,12 +59,12 @@
                 </div>
         </div>
  </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->  
+</div><!-- /.crm-accordion-wrapper -->
 {if $updateReportButton}
 <div id='update-button' class="crm-submit-buttons">
    {$form.$save.html}
-   {if $mode neq 'template' && $form.$next}
-       {$form.$next.html}
+   {if $mode neq 'template' && $form.$next} {* Removed Save a Copy button here since user doesn't have chance to set a new title. *}
+       <span class="description">{ts}To save a copy with updated criteria click Report Settings above and update the Report Title. Then click Save a Copy.{/ts}</span>
    {/if}
 </div>
 {/if}
@@ -75,7 +73,7 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmAccordions();
 });
 </script>
 {/literal}

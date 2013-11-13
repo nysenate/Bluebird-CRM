@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -135,9 +135,9 @@ class CRM_Utils_Mail_EmailProcessor {
       EMAIL_ACTIVITY_TYPE_ID :
       CRM_Core_OptionGroup::getValue(
         'activity_type',
-        'Inbound Email',
-        'name'
-      );
+      'Inbound Email',
+      'name'
+    );
 
     if (!$emailActivityTypeId) {
       CRM_Core_Error::fatal(ts('Could not find a valid Activity Type ID for Inbound Email'));
@@ -159,12 +159,15 @@ class CRM_Utils_Mail_EmailProcessor {
     // a tighter regex for finding bounce info in soft bounces’ mail bodies
     $rpRegex = '/Return-Path: ' . preg_quote($dao->localpart) . '(b)' . $twoDigitString . '([0-9a-f]{16})@' . preg_quote($dao->domain) . '/';
 
+    // a regex for finding bound info X-Header
+    $rpXheaderRegex = '/X-CiviMail-Bounce: ' . preg_quote($dao->localpart) . '(b)' . $twoDigitString . '([0-9a-f]{16})@' . preg_quote($dao->domain) . '/';
+
     // retrieve the emails
     try {
       $store = CRM_Mailing_MailStore::getStore($dao->name);
     }
     catch(Exception$e) {
-      $message = ts('Could not connect to MailStore') . '<p>';
+      $message = ts('Could not connect to MailStore for ') . $dao->username . '@' . $dao->server .'<p>';
       $message .= ts('Error message: ');
       $message .= '<pre>' . $e->getMessage() . '</pre><p>';
       CRM_Core_Error::fatal($message);
@@ -202,6 +205,12 @@ class CRM_Utils_Mail_EmailProcessor {
             list($match, $action, $job, $queue, $hash) = $matches;
           }
 
+          // if $matches is still empty, look for the X-CiviMail-Bounce header
+          // CRM-9855
+          if (!$matches and preg_match($rpXheaderRegex, $mail->generateBody(), $matches)) {
+            list($match, $action, $job, $queue, $hash) = $matches;
+          }
+
           // if all else fails, check Delivered-To for possible pattern
           if (!$matches and preg_match($regex, $mail->getHeader('Delivered-To'), $matches)) {
             list($match, $action, $job, $queue, $hash) = $matches;
@@ -213,7 +222,7 @@ class CRM_Utils_Mail_EmailProcessor {
           // if its the activities that needs to be processed ..
           $mailParams = CRM_Utils_Mail_Incoming::parseMailingObject($mail);
 
-          require_once 'api/v3/DeprecatedUtils.php';
+          require_once 'CRM/Utils/DeprecatedUtils.php';
           $params = _civicrm_api3_deprecated_activity_buildmailparams($mailParams, $emailActivityTypeId);
 
           $params['version'] = 3;
@@ -294,7 +303,9 @@ class CRM_Utils_Mail_EmailProcessor {
                 $text = $mail->generateBody();
 
                 // if text is still empty, lets fudge a blank text so the api call below will succeed
-                $text = ts('We could not extract the mail body from this bounce message.');
+                if (empty($text)) {
+                  $text = ts('We could not extract the mail body from this bounce message.');
+                }
               }
 
               $params = array(

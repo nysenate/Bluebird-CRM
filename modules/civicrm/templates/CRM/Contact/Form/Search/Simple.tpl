@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,25 +29,25 @@ cj(function()
 {
 {/literal}
         countryID       = '#country_id'
-	    stateProvinceID = '#state_province_id'
+      stateProvinceID = '#state_province_id'
         callbackURL     = '{$stateCountryURL}'
 {literal}
-	cj(countryID).chainSelect(stateProvinceID,
+  cj(countryID).chainSelect(stateProvinceID,
                                   callbackURL,
-				                  null);
+                          null);
 });
 </script>
 {/literal}
 <table>
-        <tr> 
+        <tr>
             <td class="label">{$form.country_id.label}</td>
             <td class="nowrap">{$form.country_id.html}</td>
         </tr>
-        <tr> 
-            <td class="label">{$form.state_province_id.label}</td> 
+        <tr>
+            <td class="label">{$form.state_province_id.label}</td>
             <td class="nowrap">{$form.state_province_id.html}</td>
         </tr>
-        <tr> 
+        <tr>
             <td colspan=2>{$form.buttons.html}</td>
         </tr>
 

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,10 +28,10 @@
 <fieldset><legend>{if $action eq 1}{ts}New ACL{/ts}{elseif $action eq 2}{ts}Edit ACL{/ts}{else}{ts}Delete ACL{/ts}{/if}</legend>
 
 {if $action eq 8}
-  <div class="messages status">
+  <div class="messages status no-popup">
     <dl>
       <dt><div class="icon inform-icon"></div></dt>
-      <dd>    
+      <dd>
         {ts}WARNING: Delete will remove this permission from the specified ACL Role.{/ts} {ts}Do you want to continue?{/ts}
       </dd>
     </dl>
@@ -52,9 +52,9 @@
 </dd>
   </dl>
 {/if}
-  <dl> 
+  <dl>
     <dt></dt><dd>{$form.buttons.html}</dd>
-  </dl> 
+  </dl>
 </fieldset>
 </div>
 

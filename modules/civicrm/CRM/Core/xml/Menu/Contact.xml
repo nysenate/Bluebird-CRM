@@ -80,9 +80,10 @@
   <item>
      <path>civicrm/contact/add</path>
      <title>New Contact</title>
+     <access_callback>CRM_Core_Permission::checkMenu</access_callback>
+     <access_arguments>access CiviCRM;edit my contact;view my contact</access_arguments>
      <page_callback>CRM_Contact_Form_Contact</page_callback>
      <page_arguments>addSequence=1</page_arguments>
-     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
      <path>civicrm/contact/add/individual</path>
@@ -113,7 +114,7 @@
      <title>Edit Related Contact</title>
      <page_callback>CRM_Contact_Form_RelatedContact</page_callback>
      <access_arguments>access Contact Dashboard</access_arguments>
-	 <is_public>true</is_public>
+   <is_public>true</is_public>
   </item>
   <item>
      <path>civicrm/contact/merge</path>
@@ -141,6 +142,8 @@
      <path>civicrm/contact/view</path>
      <path_arguments>cid=%%cid%%</path_arguments>
      <title>Contact Summary</title>
+     <access_callback>CRM_Core_Permission::checkMenu</access_callback>
+     <access_arguments>access CiviCRM;edit my contact;view my contact</access_arguments>
      <page_callback>CRM_Contact_Page_View_Summary</page_callback>
   </item>
   <item>
@@ -171,7 +174,7 @@
      <path_arguments>action=add</path_arguments>
      <title>Activities</title>
      <page_callback>CRM_Contact_Form_Task_PDF</page_callback>
-  </item> 
+  </item>
   <item>
      <path>civicrm/contact/view/rel</path>
      <path_arguments>cid=%%cid%%</path_arguments>
@@ -183,6 +186,12 @@
      <path_arguments>cid=%%cid%%</path_arguments>
      <title>Groups</title>
      <page_callback>CRM_Contact_Page_View_GroupContact</page_callback>
+  </item>
+  <item>
+    <path>civicrm/contact/view/smartgroup</path>
+    <path_arguments>cid=%%cid%%</path_arguments>
+    <title>Smart Groups</title>
+    <page_callback>CRM_Contact_Page_View_ContactSmartGroup</page_callback>
   </item>
   <item>
      <path>civicrm/contact/view/sunlight</path>
@@ -234,6 +243,11 @@
      <path>civicrm/dashlet/activity</path>
      <title>Activity Dashlet</title>
      <page_callback>CRM_Dashlet_Page_Activity</page_callback>
+  </item>
+  <item>
+     <path>civicrm/dashlet/blog</path>
+     <title>CiviCRM Blog</title>
+     <page_callback>CRM_Dashlet_Page_Blog</page_callback>
   </item>
   <item>
     <path>civicrm/ajax/state</path>

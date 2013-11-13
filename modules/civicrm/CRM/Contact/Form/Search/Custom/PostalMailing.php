@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,8 +57,12 @@ class CRM_Contact_Form_Search_Custom_PostalMailing extends CRM_Contact_Form_Sear
   }
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
+    $includeContactIDs = FALSE, $justIDs = FALSE
   ) {
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
     $selectClause = "
 DISTINCT contact_a.id  as contact_id  ,
 contact_a.contact_type  as contact_type,
@@ -66,6 +70,8 @@ contact_a.sort_name     as sort_name,
 address.street_address  as address,
 state_province.name     as state_province
 ";
+    }
+
     return $this->sql($selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, NULL
@@ -74,7 +80,7 @@ state_province.name     as state_province
 
   function from() {
     return "
-FROM      civicrm_group_contact as cgc, 
+FROM      civicrm_group_contact as cgc,
           civicrm_contact       as contact_a
 LEFT JOIN civicrm_address address               ON (address.contact_id       = contact_a.id AND
                                                     address.is_primary       = 1 )
@@ -96,8 +102,8 @@ LEFT JOIN civicrm_state_province state_province ON  state_province.id = address.
     }
 
     $clause[] = "cgc.status   = 'Added'";
-    $clause[] = "contact_a.id = IF( EXISTS(select cr.id from civicrm_relationship cr where (cr.contact_id_a = cgc.contact_id AND (cr.relationship_type_id = 7 OR cr.relationship_type_id = 6))), 
-                                       (select cr.contact_id_b from civicrm_relationship cr where (cr.contact_id_a = cgc.contact_id AND (cr.relationship_type_id = 7 OR cr.relationship_type_id = 6))), 
+    $clause[] = "contact_a.id = IF( EXISTS(select cr.id from civicrm_relationship cr where (cr.contact_id_a = cgc.contact_id AND (cr.relationship_type_id = 7 OR cr.relationship_type_id = 6))),
+                                       (select cr.contact_id_b from civicrm_relationship cr where (cr.contact_id_a = cgc.contact_id AND (cr.relationship_type_id = 7 OR cr.relationship_type_id = 6))),
                                         cgc.contact_id )";
     $clause[] = "contact_a.contact_type IN ('Individual','Household')";
 

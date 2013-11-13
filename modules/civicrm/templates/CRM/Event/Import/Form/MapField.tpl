@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,9 +39,9 @@
  <table class="form-layout">
    <tr>
      <td>
-	<div id="crm-submit-buttons">
+  <div id="crm-submit-buttons">
          {include file="CRM/common/formButtons.tpl" location="top"}
-	</div> 
+  </div>
      </td>
    </tr>
    <tr>
@@ -51,9 +51,9 @@
    </tr>
    <tr>
      <td>
-	<div id="crm-submit-buttons">
+  <div id="crm-submit-buttons">
          {include file="CRM/common/formButtons.tpl" location="bottom"}
-	</div> 
+  </div>
      </td>
    </tr>
  </table>
@@ -64,6 +64,6 @@
 if ( document.getElementsByName("saveMapping")[0].checked ) {
     document.getElementsByName("updateMapping")[0].checked = true;
     document.getElementsByName("saveMapping")[0].checked = false;
-} 
+}
 </script>
 {/literal}

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,8 +41,7 @@ class CRM_Admin_Page_AJAX {
   /**
    * Function to build menu tree
    */
-  static
-  function getNavigationList() {
+  static function getNavigationList() {
     echo CRM_Core_BAO_Navigation::buildNavigation(TRUE, FALSE);
     CRM_Utils_System::civiExit();
   }
@@ -50,8 +49,7 @@ class CRM_Admin_Page_AJAX {
   /**
    * Function to process drag/move action for menu tree
    */
-  static
-  function menuTree() {
+  static function menuTree() {
     echo CRM_Core_BAO_Navigation::processNavigation($_GET);
     CRM_Utils_System::civiExit();
   }
@@ -60,8 +58,7 @@ class CRM_Admin_Page_AJAX {
    * Function to build status message while
    * enabling/ disabling various objects
    */
-  static
-  function getStatusMsg() {
+  static function getStatusMsg() {
     $recordID  = CRM_Utils_Type::escape($_POST['recordID'], 'Integer');
     $recordBAO = CRM_Utils_Type::escape($_POST['recordBAO'], 'String');
     $op        = CRM_Utils_Type::escape($_POST['op'], 'String');
@@ -85,10 +82,10 @@ class CRM_Admin_Page_AJAX {
           }
           break;
 
-        case 'CRM_Price_BAO_Set':
+        case 'CRM_Price_BAO_PriceSet':
           require_once (str_replace('_', DIRECTORY_SEPARATOR, $recordBAO) . '.php');
-          $usedBy = CRM_Price_BAO_Set::getUsedBy($recordID);
-          $priceSet = CRM_Price_BAO_Set::getTitle($recordID);
+          $usedBy = CRM_Price_BAO_PriceSet::getUsedBy($recordID);
+          $priceSet = CRM_Price_BAO_PriceSet::getTitle($recordID);
 
           if (!CRM_Utils_System::isNull($usedBy)) {
             $template = CRM_Core_Smarty::singleton();
@@ -96,6 +93,7 @@ class CRM_Admin_Page_AJAX {
             $comps = array(
               'Event' => 'civicrm_event',
               'Contribution' => 'civicrm_contribution_page',
+              'EventTemplate' => 'civicrm_event_template'
             );
             $contexts = array();
             foreach ($comps as $name => $table) {
@@ -131,15 +129,25 @@ class CRM_Admin_Page_AJAX {
           $status = ts('Are you sure you want to disable this relationship type?') . '<br/><br/>' . ts('Users will no longer be able to select this value when adding or editing relationships between contacts.');
           break;
 
-        case 'CRM_Contribute_BAO_ContributionType':
-          $status = ts('Are you sure you want to disable this contribution type?');
+        case 'CRM_Financial_BAO_FinancialType':
+          $status = ts('Are you sure you want to disable this financial type?');
           break;
 
-        case 'CRM_Core_BAO_PaymentProcessor':
+        case 'CRM_Financial_BAO_FinancialAccount':
+          if (!CRM_Financial_BAO_FinancialAccount::getARAccounts($recordID)) {
+            $show   = 'noButton';
+            $status = ts('The selected financial account cannot be disabled because at least one Accounts Receivable type account is required (to ensure that accounting transactions are in balance).');
+          }
+          else {
+            $status = ts('Are you sure you want to disable this financial account?');
+          }
+          break;
+
+        case 'CRM_Financial_BAO_PaymentProcessor':
           $status = ts('Are you sure you want to disable this payment processor?') . ' <br/><br/>' . ts('Users will no longer be able to select this value when adding or editing transaction pages.');
           break;
 
-        case 'CRM_Core_BAO_PaymentProcessorType':
+        case 'CRM_Financial_BAO_PaymentProcessorType':
           $status = ts('Are you sure you want to disable this payment processor type?');
           break;
 
@@ -163,7 +171,7 @@ class CRM_Admin_Page_AJAX {
           $status = ts('Are you sure you want to disable this custom data group? Any profile fields that are linked to custom fields of this group will be disabled.');
           break;
 
-        case 'CRM_Core_BAO_MessageTemplates':
+        case 'CRM_Core_BAO_MessageTemplate':
           $status = ts('Are you sure you want to disable this message tempate?');
           break;
 
@@ -183,7 +191,7 @@ class CRM_Admin_Page_AJAX {
           $status = ts('Are you sure you want to disable this membership status rule?');
           break;
 
-        case 'CRM_Price_BAO_Field':
+        case 'CRM_Price_BAO_PriceField':
           $status = ts('Are you sure you want to disable this price field?');
           break;
 
@@ -215,6 +223,27 @@ class CRM_Admin_Page_AJAX {
           }
           break;
 
+        case 'CRM_Batch_BAO_Batch':
+          if ($op == 'close') {
+            $status = ts('Are you sure you want to close this batch?');
+          }
+          elseif ($op == 'open') {
+            $status = ts('Are you sure you want to reopen this batch?');
+          }
+          elseif ($op == 'delete') {
+            $status = ts('Are you sure you want to delete this batch?');
+          }
+          elseif ($op == 'remove') {
+            $status = ts('Are you sure you want to remove this financial transaction?');
+          }
+          elseif ($op == 'export') {
+            $status = ts('Are you sure you want to close and export this batch?');
+          }
+          else {
+            $status = ts('Are you sure you want to assign this financial transaction to the batch?');
+          }
+          break;
+
         default:
           $status = ts('Are you sure you want to disable this record?');
           break;
@@ -227,8 +256,7 @@ class CRM_Admin_Page_AJAX {
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function getTagList() {
+  static function getTagList() {
     $name = CRM_Utils_Type::escape($_GET['name'], 'String');
     $parentId = CRM_Utils_Type::escape($_GET['parentId'], 'Integer');
 
@@ -266,8 +294,7 @@ class CRM_Admin_Page_AJAX {
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function mergeTagList() {
+  static function mergeTagList() {
     $name   = CRM_Utils_Type::escape($_GET['s'], 'String');
     $fromId = CRM_Utils_Type::escape($_GET['fromId'], 'Integer');
     $limit  = CRM_Utils_Type::escape($_GET['limit'], 'Integer');
@@ -287,11 +314,11 @@ class CRM_Admin_Page_AJAX {
     // query to list mergable tags
     $query = "
 SELECT t1.name, t1.id, t1.used_for, t2.name as parent
-FROM   civicrm_tag t1 
+FROM   civicrm_tag t1
 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
-WHERE  t1.id <> {$fromId} AND 
+WHERE  t1.id <> {$fromId} AND
        t1.name LIKE '%{$name}%' AND
-       ({$usedForClause}) 
+       ({$usedForClause})
 LIMIT $limit";
     $dao = CRM_Core_DAO::executeQuery($query);
 
@@ -311,8 +338,7 @@ LIMIT $limit";
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function processTags() {
+  static function processTags() {
     $skipTagCreate = $skipEntityAction = $entityId = NULL;
     $action        = CRM_Utils_Type::escape($_POST['action'], 'String');
     $parentId      = CRM_Utils_Type::escape($_POST['parentId'], 'Integer');
@@ -451,8 +477,7 @@ LIMIT $limit";
     CRM_Utils_System::civiExit();
   }
 
-  static
-  function mergeTags() {
+  static function mergeTags() {
     $tagAId = CRM_Utils_Type::escape($_POST['fromId'], 'Integer');
     $tagBId = CRM_Utils_Type::escape($_POST['toId'], 'Integer');
 
@@ -486,7 +511,7 @@ LIMIT $limit";
         $values = CRM_Event_PseudoConstant::participantStatus();
         break;
 
-      case 'Participant Role':
+      case 'participant_role':
         $values = CRM_Event_PseudoConstant::participantRole();
         break;
 

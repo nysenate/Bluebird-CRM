@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -88,11 +88,8 @@ class CRM_Grant_Form_Task_Delete extends CRM_Grant_Form_Task {
       }
     }
 
-    $status = array(
-      ts('Deleted Grant(s): %1', array(1 => $deletedGrants)),
-      ts('Total Selected Grant(s): %1', array(1 => count($this->_grantIds))),
-    );
-    CRM_Core_Session::setStatus($status);
+    CRM_Core_Session::setStatus(ts('Deleted Grant(s): %1', array(1 => $deletedGrants)), '', 'info');
+    CRM_Core_Session::setStatus(ts('Total Selected Grant(s): %1', array(1 => count($this->_grantIds))), '', 'info');
   }
 }
 

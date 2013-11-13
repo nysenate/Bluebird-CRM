@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@ class CRM_Upgrade_Page_Cleanup  extends CRM_Core_Page {
     $rows     = CRM_Upgrade_Incremental_php_FourTwo::deleteInvalidPairs();
     $template = CRM_Core_Smarty::singleton();
 
-    $columnHeaders = array("Contact ID", "ContributionID", "Contribution Status", "MembershipID", 
+    $columnHeaders = array("Contact ID", "ContributionID", "Contribution Status", "MembershipID",
                            "Membership Type", "Start Date", "End Date", "Membership Status", "Action");
     $template->assign('columnHeaders', $columnHeaders);
     $template->assign('rows', $rows);
@@ -43,6 +43,6 @@ class CRM_Upgrade_Page_Cleanup  extends CRM_Core_Page {
     $template->assign('postMessage', $postMessage);
 
     $content = $template->fetch('CRM/common/upgradeCleanup.tpl');
-    echo CRM_Utils_System::theme('page', $content, TRUE, FALSE, FALSE, TRUE);
+    echo CRM_Utils_System::theme($content, FALSE, TRUE);
   }
 }

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -106,6 +106,10 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     //custom group id
     $this->_gid = CRM_Utils_Request::retrieve('gid', 'Positive', $this);
 
+    if ($isReserved = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $this->_gid, 'is_reserved', 'id')) {
+      CRM_Core_Error::fatal("You cannot add or edit fields in a reserved custom field-set.");
+    }
+
     if ($this->_gid) {
       $url = CRM_Utils_System::url('civicrm/admin/custom/group/field',
         "reset=1&action=browse&gid={$this->_gid}"
@@ -123,6 +127,8 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     if ($this->_id) {
       $params = array('id' => $this->_id);
       CRM_Core_BAO_CustomField::retrieve($params, $this->_values);
+      // note_length is an alias for the text_length field
+      $this->_values['note_length'] = CRM_Utils_Array::value('text_length', $this->_values);
     }
 
     if (self::$_dataToLabels == NULL) {
@@ -445,9 +451,16 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
       $attributes['note_rows'],
       FALSE
     );
+    $this->add('text',
+      'note_length',
+      ts('Maximum length') . ' ',
+      $attributes['text_length'], // note_length is an alias for the text-length field
+      FALSE
+    );
 
     $this->addRule('note_columns', ts('Value should be a positive number'), 'positiveInteger');
     $this->addRule('note_rows', ts('Value should be a positive number'), 'positiveInteger');
+    $this->addRule('note_length', ts('Value should be a positive number'), 'positiveInteger');
 
     // weight
     $this->add('text', 'weight', ts('Order'),
@@ -541,8 +554,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
    * @static
    * @access public
    */
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $default = CRM_Utils_Array::value('default_value', $fields);
 
     $errors = array();
@@ -550,10 +562,12 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
     //validate field label as well as name.
     $title  = $fields['label'];
     $name   = CRM_Utils_String::munge($title, '_', 64);
-    $query  = 'select count(*) from civicrm_custom_field where ( name like %1 OR label like %2 ) and id != %3';
+    $gId    = $self->_gid;  // CRM-7564
+    $query  = 'select count(*) from civicrm_custom_field where ( name like %1 OR label like %2 ) and id != %3 and custom_group_id = %4';
     $fldCnt = CRM_Core_DAO::singleValueQuery($query, array(1 => array($name, 'String'),
         2 => array($title, 'String'),
         3 => array((int)$self->_id, 'Integer'),
+        4 => array($gId, 'Integer'),
       ));
     if ($fldCnt) {
       $errors['label'] = ts('Custom field \'%1\' already exists in Database.', array(1 => $title));
@@ -630,7 +644,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
         case 'StateProvince':
           if (!empty($default)) {
             $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_state_province
  WHERE name = %1
     OR abbreviation = %1";
@@ -931,8 +945,8 @@ AND    option_group_id = %2";
           $fieldStateProvince = $strtolower($params['default_value']);
           $query = "
 SELECT id
-  FROM civicrm_state_province 
- WHERE LOWER(name) = '$fieldStateProvince' 
+  FROM civicrm_state_province
+ WHERE LOWER(name) = '$fieldStateProvince'
     OR abbreviation = '$fieldStateProvince'";
           $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
           if ($dao->fetch()) {
@@ -945,7 +959,7 @@ SELECT id
           $query = "
 SELECT id
   FROM civicrm_country
- WHERE LOWER(name) = '$fieldCountry' 
+ WHERE LOWER(name) = '$fieldCountry'
     OR iso_code = '$fieldCountry'";
           $dao = CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
           if ($dao->fetch()) {
@@ -953,6 +967,12 @@ SELECT id
           }
           break;
       }
+    }
+
+    // The text_length attribute for Memo fields is in a different input as there
+    // are different label, help text and default value than for other type fields
+    if ($params['data_type'] == "Memo") {
+      $params['text_length'] = $params['note_length'];
     }
 
     // need the FKEY - custom group id
@@ -969,12 +989,12 @@ SELECT id
 
     CRM_Core_Session::setStatus(ts('Your custom field \'%1\' has been saved.',
         array(1 => $customField->label)
-      ));
+      ), ts('Saved'), 'success');
 
     $buttonName = $this->controller->getButtonName();
     $session = CRM_Core_Session::singleton();
     if ($buttonName == $this->getButtonName('next', 'new')) {
-      CRM_Core_Session::setStatus(ts(' You can add another custom field.'));
+      CRM_Core_Session::setStatus(ts(' You can add another custom field.'), '', 'info');
       $session->replaceUserContext(CRM_Utils_System::url('civicrm/admin/custom/group/field/add',
           'reset=1&action=add&gid=' . $this->_gid
         ));

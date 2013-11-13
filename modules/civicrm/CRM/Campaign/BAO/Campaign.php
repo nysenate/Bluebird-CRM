@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -47,8 +47,7 @@ Class CRM_Campaign_BAO_Campaign extends CRM_Campaign_DAO_Campaign {
    * @access public
    * @static
    */
-  static
-  function create(&$params) {
+  static function create(&$params) {
     if (empty($params)) {
       return;
     }
@@ -145,7 +144,8 @@ Class CRM_Campaign_BAO_Campaign extends CRM_Campaign_DAO_Campaign {
    * @return $campaigns a set of campaigns.
    * @access public
    */
-  public static function getCampaigns($includeId = NULL,
+  public static function getCampaigns(
+    $includeId = NULL,
     $excludeId          = NULL,
     $onlyActive         = TRUE,
     $onlyCurrent        = TRUE,
@@ -188,7 +188,7 @@ Class CRM_Campaign_BAO_Campaign extends CRM_Campaign_DAO_Campaign {
       }
 
       $query = "
-  SELECT  camp.id, 
+  SELECT  camp.id,
           camp.title,
           camp.start_date,
           camp.end_date
@@ -204,8 +204,7 @@ Order By  camp.title";
         $title = $campaign->title;
         if ($appendDatesToTitle) {
           $dates = array();
-          foreach (array(
-            'start_date', 'end_date') as $date) {
+          foreach (array('start_date', 'end_date') as $date) {
             if ($campaign->$date) {
               $dates[] = CRM_Utils_Date::customFormat($campaign->$date, $config->dateformatFull);
             }
@@ -285,10 +284,9 @@ Order By  camp.title";
   }
 
   /*
-     * Is CiviCampaign enabled.
-     *
-     */
-
+   * Is CiviCampaign enabled.
+   *
+   */
   public static function isCampaignEnable() {
     static $isEnable = NULL;
 
@@ -308,8 +306,7 @@ Order By  camp.title";
    *
    * @static
    */
-  static
-  function getCampaignSummary($params = array(
+  static function getCampaignSummary($params = array(
     ), $onlyCount = FALSE) {
     $campaigns = array();
 
@@ -341,7 +338,7 @@ INNER JOIN civicrm_option_group grp ON ( status.option_group_id = grp.id AND grp
       elseif ($sortParams['sort'] == 'campaign_type') {
         $orderOnCampaignTable = FALSE;
         $lookupTableJoins = "
- LEFT JOIN civicrm_option_value campaign_type ON ( campaign_type.value = campaign.campaign_type_id 
+ LEFT JOIN civicrm_option_value campaign_type ON ( campaign_type.value = campaign.campaign_type_id
                                                    OR campaign.campaign_type_id IS NULL )
 INNER JOIN civicrm_option_group grp ON ( campaign_type.option_group_id = grp.id AND grp.name = 'campaign_type' )";
         $orderByClause = "ORDER BY campaign_type.label {$sortParams['sortOrder']}";
@@ -458,8 +455,7 @@ SELECT  campaign.id               as id,
    *
    * @static
    */
-  static
-  function getCampaignCount() {
+  static function getCampaignCount() {
     return (int)CRM_Core_DAO::singleValueQuery('SELECT COUNT(*) FROM civicrm_campaign');
   }
 
@@ -470,8 +466,7 @@ SELECT  campaign.id               as id,
    *
    * @static
    */
-  static
-  function getCampaignGroups($campaignId) {
+  static function getCampaignGroups($campaignId) {
     static $campaignGroups;
     if (!$campaignId) {
       return array();
@@ -481,9 +476,9 @@ SELECT  campaign.id               as id,
       $campaignGroups[$campaignId] = array();
 
       $query = "
-    SELECT  grp.title, grp.id 
-      FROM  civicrm_campaign_group campgrp 
-INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id ) 
+    SELECT  grp.title, grp.id
+      FROM  civicrm_campaign_group campgrp
+INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id )
      WHERE  campgrp.group_type = 'Include'
        AND  campgrp.entity_table = 'civicrm_group'
        AND  campgrp.campaign_id = %1";
@@ -506,13 +501,11 @@ INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id )
    * @return Object             DAO object on sucess, null otherwise
    * @static
    */
-  static
-  function setIsActive($id, $is_active) {
+  static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Campaign_DAO_Campaign', $id, 'is_active', $is_active);
   }
 
-  static
-  function accessCampaign() {
+  static function accessCampaign() {
     static $allow = NULL;
 
     if (!isset($allow)) {
@@ -528,11 +521,10 @@ INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id )
   }
 
   /*
-     * Add select element for campaign 
-     * and assign needful info to templates.
-     *
-     */
-
+   * Add select element for campaign
+   * and assign needful info to templates.
+   *
+   */
   public static function addCampaign(&$form, $connectedCampaignId = NULL) {
     //some forms do set default and freeze.
     $appendDates = TRUE;
@@ -609,11 +601,10 @@ INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id )
   }
 
   /*
-     * Add campaign in compoent search.
-     * and assign needful info to templates.
-     *
-     */
-
+   * Add campaign in compoent search.
+   * and assign needful info to templates.
+   *
+   */
   public static function addCampaignInComponentSearch(&$form, $elementName = 'campaign_id') {
     $campaignInfo    = array();
     $campaignDetails = self::getPermissionedCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);

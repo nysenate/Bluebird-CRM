@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -58,7 +58,8 @@ class CRM_Contact_Form_Task_RemoveFromTag extends CRM_Contact_Form_Task {
    * @access public
    *
    * @return void
-   */ function buildQuickForm() {
+   */
+  function buildQuickForm() {
     // add select for tag
     $this->_tags = CRM_Core_BAO_Tag::getTags();
     foreach ($this->_tags as $tagID => $tagName) {
@@ -68,15 +69,14 @@ class CRM_Contact_Form_Task_RemoveFromTag extends CRM_Contact_Form_Task {
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_contact', NULL, TRUE, FALSE, TRUE);
 
-    $this->addDefaultButtons(ts('Remove Tag Contacts'));
+    $this->addDefaultButtons(ts('Remove Tags from Contacts'));
   }
 
   function addRules() {
     $this->addFormRule(array('CRM_Contact_Form_Task_RemoveFromTag', 'formRule'));
   }
 
-  static
-  function formRule($form, $rule) {
+  static function formRule($form, $rule) {
     $errors = array();
     if (empty($form['tag']) && empty($form['contact_taglist'])) {
       $errors['_qf_default'] = "Please select atleast one tag.";
@@ -129,18 +129,14 @@ class CRM_Contact_Form_Task_RemoveFromTag extends CRM_Contact_Form_Task {
       $this->_name[] = $this->_tags[$key];
 
       list($total, $removed, $notRemoved) = CRM_Core_BAO_EntityTag::removeEntitiesFromTag($this->_contactIds, $key);
-      $status = array(
-        'Contact(s) tagged as: ' . implode(',', $this->_name),
-        'Total Selected Contact(s): ' . $total,
-      );
+
+      $status = array(ts('%count contact un-tagged', array('count' => $removed, 'plural' => '%count contacts un-tagged')));
+      if ($notRemoved) {
+        $status[] = ts('1 contact already did not have this tag', array('count' => $notRemoved, 'plural' => '%count contacts already did not have this tag'));
+      }
+      $status = '<ul><li>' . implode('</li><li>', $status) . '</li></ul>';
+      CRM_Core_Session::setStatus($status, ts("Removed Tag <em>%1</em>", array(1 => $this->_tags[$key])), 'success', array('expires' => 0));
     }
-    if ($removed) {
-      $status[] = 'Total Contact(s) to be  removed from tag: ' . $removed;
-    }
-    if ($notRemoved) {
-      $status[] = 'Total Contact(s) already removed: ' . $notRemoved;
-    }
-    CRM_Core_Session::setStatus($status);
   }
   //end of function
 }

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,8 +38,7 @@
  */
 class CRM_Utils_Address_USPS {
 
-  static
-  function checkAddress(&$values) {
+  static function checkAddress(&$values) {
     if (!isset($values['street_address']) ||
       (!isset($values['city']) &&
         !isset($values['state_province']) &&
@@ -64,11 +63,10 @@ class CRM_Utils_Address_USPS {
     }
 
     $address2 = str_replace(',', '', $values['street_address']);
-        
-        //NYSS current code passes supp add 1 to Address1 field; but API intends address unit data for that field
-		//altered to pass street_unit
-		//http://senatedev.senate.state.ny.us/issues/show/2388
-        $XMLQuery = '<AddressValidateRequest USERID="'.$userID.'"><Address ID="0"><Address1>'.$values['street_unit'].'</Address1><Address2>'.$address2.'</Address2><City>'.$values['city'].'</City><State>'.$values['state_province'].'</State><Zip5>'.$values['postal_code'].'</Zip5><Zip4>'.$values['postal_code_suffix'].'</Zip4></Address></AddressValidateRequest>';
+
+    //NYSS current code passes supp add 1 to Address1 field; but API intends address unit data for that field
+		//altered to pass street_unit; http://senatedev.senate.state.ny.us/issues/show/2388
+    $XMLQuery = '<AddressValidateRequest USERID="'.$userID.'"><Address ID="0"><Address1>'.$values['street_unit'].'</Address1><Address2>'.$address2.'</Address2><City>'.$values['city'].'</City><State>'.$values['state_province'].'</State><Zip5>'.$values['postal_code'].'</Zip5><Zip4>'.$values['postal_code_suffix'].'</Zip4></Address></AddressValidateRequest>';
                 
     require_once 'HTTP/Request.php';
     $request = new HTTP_Request();

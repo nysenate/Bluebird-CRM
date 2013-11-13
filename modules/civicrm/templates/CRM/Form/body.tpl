@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,17 +35,17 @@
 
 {if ! $suppressForm and count($form.errors) gt 0}
    <div class="messages crm-error">
-   		<div class="icon red-icon alert-icon"></div>
-	   {ts}Please correct the following errors in the form fields below:{/ts}
-	   <ul id="errorList">
-	   {foreach from=$form.errors key=errorName item=error}
-	      {if is_array($error)}
-	         <li>{$error.label} {$error.message}</li>
-	      {else}
-	         <li>{$error}</li>
-	      {/if}
-	   {/foreach}
-	   </ul>
+       <div class="icon red-icon alert-icon"></div>
+     {ts}Please correct the following errors in the form fields below:{/ts}
+     <ul id="errorList">
+     {foreach from=$form.errors key=errorName item=error}
+        {if is_array($error)}
+           <li>{$error.label} {$error.message}</li>
+        {else}
+           <li>{$error}</li>
+        {/if}
+     {/foreach}
+     </ul>
    </div>
 {/if}
 
@@ -53,7 +53,7 @@
 {if $beginHookFormElements}
   <table class="form-layout-compressed">
   {foreach from=$beginHookFormElements key=dontCare item=hookFormElement}
-      <tr><td class="label nowrap">{$form.$hookFormElement.label}</td><td>{$form.$hookFormElement.html}</td></tr>    
+      <tr><td class="label nowrap">{$form.$hookFormElement.label}</td><td>{$form.$hookFormElement.html}</td></tr>
   {/foreach}
   </table>
 {/if}

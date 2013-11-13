@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,16 +29,15 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
 class CRM_Report_Utils_Report {
 
-  static
-  function getValueFromUrl($instanceID = NULL) {
+  static function getValueFromUrl($instanceID = NULL) {
     if ($instanceID) {
-      $optionVal = CRM_Core_DAO::getFieldValue('CRM_Report_DAO_Instance',
+      $optionVal = CRM_Core_DAO::getFieldValue('CRM_Report_DAO_ReportInstance',
         $instanceID,
         'report_id'
       );
@@ -59,20 +57,18 @@ class CRM_Report_Utils_Report {
     return $optionVal;
   }
 
-  static
-  function getValueIDFromUrl($instanceID = NULL) {
+  static function getValueIDFromUrl($instanceID = NULL) {
     $optionVal = self::getValueFromUrl($instanceID);
 
     if ($optionVal) {
       $templateInfo = CRM_Core_OptionGroup::getRowValues('report_template', "{$optionVal}", 'value');
-      return array($templateInfo['id'], $optionVal);
+      return array(CRM_Utils_Array::value('id', $templateInfo), $optionVal);
     }
 
     return FALSE;
   }
 
-  static
-  function getInstanceIDForValue($optionVal) {
+  static function getInstanceIDForValue($optionVal) {
     static $valId = array();
 
     if (!array_key_exists($optionVal, $valId)) {
@@ -86,8 +82,7 @@ WHERE  report_id = %1";
     return $valId[$optionVal];
   }
 
-  static
-  function getInstanceIDForPath($path = NULL) {
+  static function getInstanceIDForPath($path = NULL) {
     static $valId = array();
 
     // if $path is null, try to get it from url
@@ -104,13 +99,17 @@ WHERE  TRIM(BOTH '/' FROM CONCAT(report_id, '/', name)) = %1";
     return CRM_Utils_Array::value($path, $valId);
   }
 
-  static
-  function getNextUrl($urlValue, $query = 'reset=1', $absolute = FALSE, $instanceID = NULL) {
+  static function getNextUrl($urlValue, $query = 'reset=1', $absolute = FALSE, $instanceID = NULL, $drilldownReport = array()) {
     if ($instanceID) {
-      $instanceID = self::getInstanceIDForValue($urlValue);
+      $drilldownInstanceID = false;
+      if (array_key_exists($urlValue, $drilldownReport))
+        $drilldownInstanceID = CRM_Core_DAO::getFieldValue('CRM_Report_DAO_ReportInstance', $instanceID, 'drilldown_id', 'id');
 
-      if ($instanceID) {
-        return CRM_Utils_System::url("civicrm/report/instance/{$instanceID}",
+      if (!$drilldownInstanceID)
+        $drilldownInstanceID = self::getInstanceIDForValue($urlValue);
+
+      if ($drilldownInstanceID) {
+        return CRM_Utils_System::url("civicrm/report/instance/{$drilldownInstanceID}",
           "{$query}", $absolute
         );
       }
@@ -126,8 +125,9 @@ WHERE  TRIM(BOTH '/' FROM CONCAT(report_id, '/', name)) = %1";
   }
 
   // get instance count for a template
-  static
-  function getInstanceCount($optionVal) {
+  static function getInstanceCount($optionVal) {
+    if (empty($optionVal)) return 0;
+
     $sql = "
 SELECT count(inst.id)
 FROM   civicrm_report_instance inst
@@ -138,8 +138,7 @@ WHERE  inst.report_id = %1";
     return $count;
   }
 
-  static
-  function mailReport($fileContent, $instanceID = NULL, $outputMode = 'html', $attachments = array(
+  static function mailReport($fileContent, $instanceID = NULL, $outputMode = 'html', $attachments = array(
     )) {
     if (!$instanceID) {
       return FALSE;
@@ -151,7 +150,7 @@ WHERE  inst.report_id = %1";
 
     $params = array('id' => $instanceID);
     $instanceInfo = array();
-    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_Instance',
+    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_ReportInstance',
       $params,
       $instanceInfo
     );
@@ -174,8 +173,7 @@ WHERE  inst.report_id = %1";
     return CRM_Utils_Mail::send($params);
   }
 
-  static
-  function export2csv(&$form, &$rows) {
+  static function export2csv(&$form, &$rows) {
     //Mark as a CSV file.
     header('Content-Type: text/csv');
 
@@ -190,8 +188,7 @@ WHERE  inst.report_id = %1";
    * Utility function for export2csv and CRM_Report_Form::endPostProcess
    * - make CSV file content and return as string.
    */
-  static
-  function makeCsv(&$form, &$rows) {
+  static function makeCsv(&$form, &$rows) {
     $config = CRM_Core_Config::singleton();
     $csv = '';
 
@@ -249,8 +246,7 @@ WHERE  inst.report_id = %1";
     return $csv;
   }
 
-  static
-  function getInstanceID() {
+  static function getInstanceID() {
 
     $config = CRM_Core_Config::singleton();
     $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
@@ -264,8 +260,7 @@ WHERE  inst.report_id = %1";
     }
   }
 
-  static
-  function getInstancePath() {
+  static function getInstancePath() {
     $config = CRM_Core_Config::singleton();
     $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
 
@@ -278,15 +273,14 @@ WHERE  inst.report_id = %1";
     }
   }
 
-  static
-  function isInstancePermissioned($instanceId) {
+  static function isInstancePermissioned($instanceId) {
     if (!$instanceId) {
       return TRUE;
     }
 
     $instanceValues = array();
     $params = array('id' => $instanceId);
-    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_Instance',
+    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_ReportInstance',
       $params,
       $instanceValues
     );
@@ -311,15 +305,14 @@ WHERE  inst.report_id = %1";
    * @static
    * @access public
    */
-  static
-  function isInstanceGroupRoleAllowed($instanceId) {
+  static function isInstanceGroupRoleAllowed($instanceId) {
     if (!$instanceId) {
       return TRUE;
     }
 
     $instanceValues = array();
     $params = array('id' => $instanceId);
-    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_Instance',
+    CRM_Core_DAO::commonRetrieve('CRM_Report_DAO_ReportInstance',
       $params,
       $instanceValues
     );
@@ -337,17 +330,16 @@ WHERE  inst.report_id = %1";
     return TRUE;
   }
 
-  static
-  function processReport($params) {
-
+  static function processReport($params) {
     $instanceId = CRM_Utils_Array::value('instanceId', $params);
 
     // hack for now, CRM-8358
-    $_GET['instanceId'] = $instanceId;
-    $_GET['sendmail'] = CRM_Utils_Array::value('sendmail', $params, 1);
+    $_REQUEST['instanceId'] = $instanceId;
+    $_REQUEST['sendmail'] = CRM_Utils_Array::value('sendmail', $params, 1);
+
     // if cron is run from terminal --output is reserved, and therefore we would provide another name 'format'
-    $_GET['output'] = CRM_Utils_Array::value('format', $params, CRM_Utils_Array::value('output', $params, 'pdf'));
-    $_GET['reset'] = CRM_Utils_Array::value('reset', $params, 1);
+    $_REQUEST['output'] = CRM_Utils_Array::value('format', $params, CRM_Utils_Array::value('output', $params, 'pdf'));
+    $_REQUEST['reset'] = CRM_Utils_Array::value('reset', $params, 1);
 
     $optionVal = self::getValueFromUrl($instanceId);
     $messages = array("Report Mail Triggered...");
@@ -357,7 +349,7 @@ WHERE  inst.report_id = %1";
     $is_error     = 0;
     if (strstr(CRM_Utils_Array::value('name', $templateInfo), '_Form')) {
       $instanceInfo = array();
-      CRM_Report_BAO_Instance::retrieve(array('id' => $instanceId), $instanceInfo);
+      CRM_Report_BAO_ReportInstance::retrieve(array('id' => $instanceId), $instanceInfo);
 
       if (!empty($instanceInfo['title'])) {
         $obj->assign('reportTitle', $instanceInfo['title']);
@@ -367,12 +359,17 @@ WHERE  inst.report_id = %1";
       }
 
       $wrapper = new CRM_Utils_Wrapper();
-      $arguments['urlToSession'] = array(
-        array('urlVar' => 'instanceId',
-          'type' => 'Positive',
-          'sessionVar' => 'instanceId',
-          'default' => 'null',
-        ));
+      $arguments = array(
+        'urlToSession' => array(
+          array(
+            'urlVar' => 'instanceId',
+            'type' => 'Positive',
+            'sessionVar' => 'instanceId',
+            'default' => 'null',
+          ),
+        ),
+        'ignoreKey' => TRUE
+      );
       $messages[] = $wrapper->run($templateInfo['name'], NULL, $arguments);
     }
     else {
@@ -402,8 +399,7 @@ WHERE  inst.report_id = %1";
    *
    * @return string URL query string
    */
-  static
-  function getPreviewCriteriaQueryParams($defaults = array(
+  static function getPreviewCriteriaQueryParams($defaults = array(
     ), $params = array()) {
     static $query_string;
     if (!isset($query_string)) {
@@ -472,5 +468,22 @@ WHERE  inst.report_id = %1";
     }
     return $query_string;
   }
-}
 
+  static function getInstanceList($reportUrl) {
+    static $instanceDetails = array();
+
+    if (!array_key_exists($reportUrl, $instanceDetails )) {
+      $instanceDetails[$reportUrl] = array();
+
+      $sql = "
+SELECT id, title FROM civicrm_report_instance
+WHERE  report_id = %1";
+      $params = array(1 => array($reportUrl, 'String'));
+      $result = CRM_Core_DAO::executeQuery($sql, $params);
+      while( $result->fetch()) {
+        $instanceDetails[$reportUrl][$result->id] = $result->title . " (ID: {$result->id})";
+      }
+    }
+    return $instanceDetails[$reportUrl];
+  }
+}

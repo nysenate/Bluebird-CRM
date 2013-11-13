@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -150,15 +150,11 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
     $sort     = ($n > 2) ? func_get_arg(2) : NULL;
     // what action do we want to perform ? (store it for smarty too.. :)
 
-    $this->_action = CRM_Utils_Request::retrieve('action', 'String',
-      $this, FALSE, 'browse'
-    );
+    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
     $this->assign('action', $this->_action);
 
     // get 'id' if present
-    $id = CRM_Utils_Request::retrieve('id', 'Positive',
-      $this, FALSE, 0
-    );
+    $id = CRM_Utils_Request::retrieve('id', 'Positive', $this, FALSE, 0);
 
     require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->getBAOName()) . ".php");
 
@@ -217,8 +213,8 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
     if ($action & CRM_Core_Action::ENABLE) {
       $action -= CRM_Core_Action::ENABLE;
     }
-
-    eval('$object = new ' . $this->getBAOName() . '( );');
+    $baoString = $this->getBAOName();
+    $object = new $baoString();
 
     $values = array();
 
@@ -267,7 +263,7 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
           $this->action($object, $action, $values[$object->id], $links, $permission);
 
           if (isset($object->mapping_type_id)) {
-            $mappintTypes = CRM_Core_PseudoConstant::mappingTypes();
+            $mappintTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Mapping', 'mapping_type_id');
             $values[$object->id]['mapping_type'] = $mappintTypes[$object->mapping_type_id];
           }
         }
@@ -311,7 +307,14 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
         $values['class'] = 'reserved';
         // check if object is relationship type
         $object_type = get_class($object);
-        if ($object_type == 'CRM_Contact_BAO_RelationshipType' || $object_type == 'CRM_Core_BAO_LocationType') {
+
+        $exceptions = array(
+          'CRM_Contact_BAO_RelationshipType',
+          'CRM_Core_BAO_LocationType',
+          'CRM_Badge_BAO_Layout',
+        );
+
+        if (in_array($object_type, $exceptions)) {
           $newAction = CRM_Core_Action::VIEW + CRM_Core_Action::UPDATE;
         }
         else {

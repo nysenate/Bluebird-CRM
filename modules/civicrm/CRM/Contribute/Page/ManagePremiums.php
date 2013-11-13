@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -167,7 +167,12 @@ class CRM_Contribute_Page_ManagePremiums extends CRM_Core_Page_Basic {
         $action,
         array('id' => $dao->id)
       );
+           //Financial Type
+                if( !empty( $dao->financial_type_id )  ){
+                    require_once 'CRM/Core/DAO.php';
+                    $premiums[$dao->id]['financial_type_id'] = CRM_Core_DAO::getFieldValue( 'CRM_Financial_DAO_FinancialType', $dao->financial_type_id, 'name' );
     }
+        }
     $this->assign('rows', $premiums);
   }
 

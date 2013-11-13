@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +32,7 @@
  * @package CiviCRM_APIv3
  * @subpackage API_CustomField
  *
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * @version $Id: CustomField.php 30879 2010-11-22 15:45:55Z shot $
  */
 
@@ -41,9 +40,6 @@
  * Files required for this package
  */
 
-require_once 'CRM/Core/BAO/CustomField.php';
-require_once 'CRM/Core/BAO/CustomGroup.php';
-require_once 'CRM/Core/BAO/CustomValueTable.php';
 
 /**
  * Sets custom values for an entity.
@@ -75,8 +71,10 @@ require_once 'CRM/Core/BAO/CustomValueTable.php';
  *
  */
 function civicrm_api3_custom_value_create($params) {
-  civicrm_api3_verify_mandatory($params, NULL, array('entity_id'));
-  if (substr($params['entity_table'], 0, 7) == 'civicrm') {
+  // @todo it's not clear where the entity_table is used as  CRM_Core_BAO_CustomValueTable::setValues($create)
+  // didn't seem to use it
+  // so not clear if it's relevant
+  if (!empty($params['entity_table']) && substr($params['entity_table'], 0, 7) == 'civicrm') {
     $params['entity_table'] = substr($params['entity_table'], 8, 7);
   }
   $create = array('entityID' => $params['entity_id']);
@@ -87,11 +85,11 @@ function civicrm_api3_custom_value_create($params) {
     if (is_array($param)) {
       $param = $sp . implode($sp, $param) . $sp;
     }
-    list($c, $id) = explode('_', $id, 2);
+    list($c, $id) = CRM_Utils_System::explode('_', $id, 2);
     if ($c != 'custom') {
       continue;
     }
-    list($i, $n, $x) = explode(':', $id);
+    list($i, $n, $x) = CRM_Utils_System::explode(':', $id, 3);
     if (is_numeric($i)) {
       $key = $i;
       $x = $n;
@@ -110,11 +108,20 @@ function civicrm_api3_custom_value_create($params) {
   }
   $result = CRM_Core_BAO_CustomValueTable::setValues($create);
   if ($result['is_error']) {
-    return civicrm_api3_create_error($result['error_message']);
+    throw new Exception($result['error_message']);
   }
   return civicrm_api3_create_success(TRUE, $params);
 }
 
+/**
+ * Adjust Metadata for Create action
+ *
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_custom_value_create_spec(&$params) {
+  $params['entity_id']['api.required'] = 1;
+}
 /**
  * Use this API to get existing custom values for an entity.
  *
@@ -129,14 +136,12 @@ function civicrm_api3_custom_value_create($params) {
  * @return array.
  *
  * @access public
- *
- **/
+ */
 function civicrm_api3_custom_value_get($params) {
-  civicrm_api3_verify_mandatory($params, NULL, array('entity_id'));
 
   $getParams = array(
     'entityID' => $params['entity_id'],
-    'entityType' => $params['entity_table'],
+    'entityType' => CRM_Utils_Array::value('entity_table', $params, ''),
   );
   if (strstr($getParams['entityType'], 'civicrm_')) {
     $getParams['entityType'] = ucfirst(substr($getParams['entityType'], 8));
@@ -145,14 +150,14 @@ function civicrm_api3_custom_value_get($params) {
   foreach ($params as $id => $param) {
     if ($param && substr($id, 0, 6) == 'return') {
       $id = substr($id, 7);
-      list($c, $i) = explode('_', $id, 2);
+      list($c, $i) = CRM_Utils_System::explode('_', $id, 2);
       if ($c == 'custom' && is_numeric($i)) {
         $names['custom_' . $i] = 'custom_' . $i;
         $id = $i;
       }
       else {
         // Lookup names if ID was not supplied
-        list($group, $field) = explode(':', $id, 2);
+        list($group, $field) = CRM_Utils_System::explode(':', $id, 2);
         $id = CRM_Core_BAO_CustomField::getCustomFieldID($field, $group);
         if (!$id) {
           continue;
@@ -171,7 +176,7 @@ function civicrm_api3_custom_value_get($params) {
       return civicrm_api3_create_success($values, $params);
     }
     else {
-      return civicrm_api3_create_error($result['error_message']);
+      throw new API_Exception($result['error_message']);
     }
   }
   else {
@@ -219,3 +224,12 @@ function civicrm_api3_custom_value_get($params) {
   }
 }
 
+/**
+ * Adjust Metadata for Get action
+ *
+ * The metadata is used for setting defaults, documentation & validation
+ * @param array $params array or parameters determined by getfields
+ */
+function _civicrm_api3_custom_value_get_spec(&$params) {
+  $params['entity_id']['api.required'] = 1;
+}

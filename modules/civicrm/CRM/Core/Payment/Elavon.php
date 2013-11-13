@@ -1,7 +1,7 @@
 <?php
 /*
  +----------------------------------------------------------------------------+
- | Elavon (Nova) Virtual Merchant Core Payment Module for CiviCRM version 4.2 |
+ | Elavon (Nova) Virtual Merchant Core Payment Module for CiviCRM version 4.4 |
  +----------------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0            |
  |                                                                            |
@@ -59,8 +59,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_Elavon($mode, $paymentProcessor);
@@ -83,7 +82,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
     // credit card name
     $requestFields['ssl_first_name'] = $params['billing_first_name'];
     // credit card name
-    //$requestFields['ssl_middle_name']	     = $params['billing_middle_name'];
+    //$requestFields['ssl_middle_name']       = $params['billing_middle_name'];
     // credit card name
     $requestFields['ssl_last_name'] = $params['billing_last_name'];
     // contact name
@@ -91,7 +90,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
     // contact name
     $requestFields['ssl_ship_to_last_name'] = $params['last_name'];
     $requestFields['ssl_card_number'] = $params['credit_card_number'];
-    $requestFields['ssl_amount'] = $params['amount'];
+    $requestFields['ssl_amount'] = trim($params['amount']);
     $requestFields['ssl_exp_date'] = sprintf('%02d', (int) $params['month']) . substr($params['year'], 2, 2);;
     $requestFields['ssl_cvv2cvc2'] = $params['cvv2'];
     // CVV field passed to processor
@@ -105,8 +104,12 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
     // 32 character string
     $requestFields['ssl_invoice_number'] = $params['invoiceID'];
     $requestFields['ssl_transaction_type'] = "CCSALE";
-    $requestFields['ssl_description'] = $params['description'];
+    $requestFields['ssl_description'] = empty($params['description']) ? "backoffice payment" : $params['description'];
     $requestFields['ssl_customer_number'] = substr($params['credit_card_number'], -4);
+    // Added two lines below to allow commercial cards to go through as per page 15 of Elavon developer guide
+    $requestFields['ssl_customer_code'] = '1111';
+    $requestFields['ssl_salestax'] = 0.0;
+
 
     /************************************************************************************
      *  Fields available from civiCRM not implemented for Elavon
@@ -114,7 +117,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
      *  $params['qfKey'];
      *  $params['amount_other'];
      *  $params['ip_address'];
-     *  $params['contributionType_name'	];
+     *  $params['contributionType_name'  ];
      *  $params['contributionPageID'];
      *  $params['contributionType_accounting_code'];
      *  $params['amount_level'];
@@ -128,7 +131,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
    * the processor
    **********************************************************/
   function doDirectPayment(&$params) {
-    if ($params['is_recur'] == TRUE) {
+    if (isset($params['is_recur']) && $params['is_recur'] == TRUE) {
       CRM_Core_Error::fatal(ts('Elavon - recurring payments not implemented'));
     }
 
@@ -148,7 +151,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
          */
 
     $requestFields['ssl_merchant_id'] = $this->_paymentProcessor['user_name'];
-    $requestFields['user_id'] = $this->_paymentProcessor['password'];
+    $requestFields['ssl_user_id'] = $this->_paymentProcessor['password'];
     $requestFields['ssl_pin'] = $this->_paymentProcessor['signature'];
     $host = $this->_paymentProcessor['url_site'];
 
@@ -182,7 +185,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
       return self::errorExit(9004, 'Could not initiate connection to payment gateway');
     }
 
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL') ? 2 : 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'verifySSL'));
     // return the result on success, FALSE on failure
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -247,7 +250,7 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
     curl_close($ch);
 
     /**********************************************************
-     * Payment succesfully sent to gateway - process the response now
+     * Payment successfully sent to gateway - process the response now
      **********************************************************/
 
     $processorResponse = self::decodeXMLResponse($responseData);
@@ -387,18 +390,18 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment {
     $xmlFieldLength['ssl_transaction_type'] = 20;
     $xmlFieldLength['ssl_description'] = 255;
     $xmlFieldLength['ssl_merchant_id'] = 15;
-    $xmlFieldLength['user_id'] = 15;
-    $xmlFieldLength['ssl_pin'] = 6;
+    $xmlFieldLength['ssl_user_id'] = 15;
+    $xmlFieldLength['ssl_pin'] = 128;
     $xmlFieldLength['ssl_test_mode'] = 5;
+    $xmlFieldLength['ssl_salestax'] = 10;
+    $xmlFieldLength['ssl_customer_code'] = 17;
+    $xmlFieldLength['ssl_customer_number'] = 25;
 
     $xml = '<txn>';
     foreach ($requestFields as $key => $value) {
       $xml .= '<' . $key . '>' . self::tidyStringforXML($value, $xmlFieldLength[$key]) . '</' . $key . '>';
-
-      //  $xml .= '<' . $key . '>' . rawurlencode($value) . '</' . $key . '>';
     }
-    // sales tax appears to be required even though the dev guide says it isn't - not used by civi
-    $xml .= '<ssl_salestax>0.00</ssl_salestax></txn>';
+    $xml .= '</txn>';
     return $xml;
   }
 

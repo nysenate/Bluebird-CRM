@@ -11,7 +11,6 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: AuthorizeNet.php 42195 2012-08-31 11:51:58Z deepak $
  */
 
 /* NOTE:
@@ -25,9 +24,9 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   CONST AUTH_ERROR = 3;
   CONST TIMEZONE = 'America/Denver';
 
-  static protected $_mode = NULL;
+  protected $_mode = NULL;
 
-  static protected $_params = array();
+  protected $_params = array();
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -44,7 +43,8 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('Authorize.net');
@@ -65,15 +65,17 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    * singleton function used to manage this object
    *
    * @param string $mode the mode of operation: live or test
+   * @param object  $paymentProcessor the details of the payment processor being invoked
+   * @param object  $paymentForm      reference to the form object if available
+   * @param boolean $force            should we force a reload of this payment object
    *
    * @return object
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor, &$paymentForm = NULL, $force = FALSE) {
     $processorName = $paymentProcessor['name'];
-    if (self::$_singleton[$processorName] === NULL) {
+    if (!isset(self::$_singleton[$processorName]) || self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_AuthorizeNet($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
@@ -93,11 +95,10 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     }
 
     /*
-         * recurpayment function does not compile an array & then proces it -
-         * - the tpl does the transformation so adding call to hook here
-         * & giving it a change to act on the params array
-         */
-
+     * recurpayment function does not compile an array & then proces it -
+     * - the tpl does the transformation so adding call to hook here
+     * & giving it a change to act on the params array
+     */
     $newParams = $params;
     if (CRM_Utils_Array::value('is_recur', $params) &&
       $params['contributionRecurID']
@@ -184,7 +185,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     // hence treat that also as test mode transaction
     // fix for CRM-2566
     if (($this->_mode == 'test') || $response_fields[6] == 0) {
-      $query             = "SELECT MAX(trxn_id) FROM civicrm_contribution WHERE trxn_id LIKE 'test%'";
+      $query             = "SELECT MAX(trxn_id) FROM civicrm_contribution WHERE trxn_id RLIKE 'test[0-9]+'";
       $p                 = array();
       $trxn_id           = strval(CRM_Core_Dao::singleValueQuery($query, $p));
       $trxn_id           = str_replace('test', '', $trxn_id);
@@ -260,12 +261,25 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     else {
       $startDate = date_create();
     }
-    // Format start date in Mountain Time to avoid Authorize.net error E00017
-    $startDate->setTimezone(new DateTimeZone(self::TIMEZONE));
+    /* Format start date in Mountain Time to avoid Authorize.net error E00017
+     * we do this only if the day we are setting our start time to is LESS than the current
+     * day in mountaintime (ie. the server time of the A-net server). A.net won't accept a date
+     * earlier than the current date on it's server so if we are in PST we might need to use mountain
+     * time to bring our date forward. But if we are submitting something future dated we want
+     * the date we entered to be respected
+     */
+    $minDate = date_create('now', new DateTimeZone(self::TIMEZONE));
+    if(strtotime($startDate->format('Y-m-d')) < strtotime($minDate->format('Y-m-d'))){
+      $startDate->setTimezone(new DateTimeZone(self::TIMEZONE));
+    }
+
     $template->assign( 'startDate', $startDate->format('Y-m-d') );
-    // for open ended subscription totalOccurrences has to be 9999
+
     $installments = $this->_getParam('installments');
-    $template->assign('totalOccurrences', $installments ? $installments : 9999);
+
+    // for open ended subscription totalOccurrences has to be 9999
+    $installments = empty($installments) ? 9999 : $installments;
+    $template->assign('totalOccurrences', $installments);
 
     $template->assign('amount', $this->_getParam('amount'));
 
@@ -327,7 +341,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
   function _getAuthorizeNetFields() {
     $amount = $this->_getParam('total_amount');//Total amount is from the form contribution field
-    if(empty($amount)){//CRM-9894 would this ever be the case?? 
+    if(empty($amount)){//CRM-9894 would this ever be the case??
       $amount = $this->_getParam('amount');
     }
     $fields = array();
@@ -543,8 +557,9 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    */
   function _getParam($field, $xmlSafe = FALSE) {
     $value = CRM_Utils_Array::value($field, $this->_params, '');
-    if ($xmlSafe)
+    if ($xmlSafe) {
       $value = str_replace(array( '&', '"', "'", '<', '>' ), '', $value);
+    }
     return $value;
   }
 

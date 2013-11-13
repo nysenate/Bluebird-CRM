@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,7 +37,9 @@
  * This file is used to build the form configuring mass sms details
  */
 class CRM_SMS_Form_Upload extends CRM_Core_Form {
-  public $_mailingID; function preProcess() {
+  public $_mailingID;
+
+  function preProcess() {
     $this->_mailingID = $this->get('mailing_id');
     if (CRM_Core_Permission::check('administer CiviCRM')) {
       $this->assign('isAdmin', 1);
@@ -83,7 +85,7 @@ class CRM_SMS_Form_Upload extends CRM_Core_Form {
       $this->assign('templateSelected', $templateId ? $templateId : 0);
       if (isset($defaults['msg_template_id']) && !$templateId) {
         $defaults['template'] = $defaults['msg_template_id'];
-        $messageTemplate = new CRM_Core_DAO_MessageTemplates();
+        $messageTemplate = new CRM_Core_DAO_MessageTemplate();
         $messageTemplate->id = $defaults['msg_template_id'];
         $messageTemplate->selectAdd();
         $messageTemplate->selectAdd('msg_text');
@@ -250,7 +252,7 @@ class CRM_SMS_Form_Upload extends CRM_Core_Form {
 
         $templateParams['id'] = $formValues['template'];
 
-        $msgTemplate = CRM_Core_BAO_MessageTemplates::add($templateParams);
+        $msgTemplate = CRM_Core_BAO_MessageTemplate::add($templateParams);
       }
 
       if (CRM_Utils_Array::value('saveTemplate', $composeParams)) {
@@ -261,7 +263,7 @@ class CRM_SMS_Form_Upload extends CRM_Core_Form {
 
         $templateParams['msg_title'] = $composeParams['saveTemplateName'];
 
-        $msgTemplate = CRM_Core_BAO_MessageTemplates::add($templateParams);
+        $msgTemplate = CRM_Core_BAO_MessageTemplate::add($templateParams);
       }
 
       if (isset($msgTemplate->id)) {
@@ -294,8 +296,7 @@ class CRM_SMS_Form_Upload extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function formRule($params, $files, $self) {
+  static function formRule($params, $files, $self) {
     if (CRM_Utils_Array::value('_qf_Import_refresh', $_POST)) {
       return TRUE;
     }
@@ -411,7 +412,7 @@ class CRM_SMS_Form_Upload extends CRM_Core_Form {
       }
     }
 
-    $templateName = CRM_Core_BAO_MessageTemplates::getMessageTemplates();
+    $templateName = CRM_Core_BAO_MessageTemplate::getMessageTemplates();
     if (CRM_Utils_Array::value('saveTemplate', $params)
       && in_array(CRM_Utils_Array::value('saveTemplateName', $params), $templateName)
     ) {

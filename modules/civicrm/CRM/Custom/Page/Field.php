@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -66,7 +66,7 @@ class CRM_Custom_Page_Field extends CRM_Core_Page {
    *
    * @return array  array of action links that we need to display for the browse screen
    * @access public
-   */ 
+   */
   function &actionLinks() {
     if (!isset(self::$_actionLinks)) {
       $deleteExtra = ts('Are you sure you want to delete this custom data field?');
@@ -231,6 +231,11 @@ class CRM_Custom_Page_Field extends CRM_Core_Page {
     $this->_gid = CRM_Utils_Request::retrieve('gid', 'Positive',
       $this
     );
+
+    if ($isReserved = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $this->_gid, 'is_reserved', 'id')) {
+      CRM_Core_Error::fatal("You cannot add or edit fields in a reserved custom field-set.");
+    }
+
     $action = CRM_Utils_Request::retrieve('action', 'String',
       // default to 'browse'
       $this, FALSE, 'browse'

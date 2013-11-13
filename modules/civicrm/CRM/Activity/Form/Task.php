@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -81,12 +81,12 @@ class CRM_Activity_Form_Task extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     self::preProcessCommon($this);
   }
 
-  static
-  function preProcessCommon(&$form, $useTable = FALSE) {
+  static function preProcessCommon(&$form, $useTable = FALSE) {
     $form->_activityHolderIds = array();
 
     $values = $form->controller->exportValues($form->get('searchFormName'));
@@ -114,9 +114,9 @@ class CRM_Activity_Form_Task extends CRM_Core_Form {
 
       while ($result->fetch()) {
         if(!empty($result->activity_id)) {
-          $ids[] = $result->activity_id;
-        }
+        $ids[] = $result->activity_id;
       }
+    }
     }
 
     if (!empty($ids)) {
@@ -151,14 +151,18 @@ class CRM_Activity_Form_Task extends CRM_Core_Form {
    */
   public function setContactIDs() {
     $IDs = implode(',', $this->_activityHolderIds);
+
+    $activityContacts = CRM_Core_PseudoConstant::activityContacts('name');
+    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
     $query = "
-SELECT source_contact_id
-  FROM civicrm_activity
- WHERE id IN ( $IDs )
-";
+SELECT contact_id
+FROM   civicrm_activity_contact
+WHERE  activity_id IN ( $IDs ) AND
+       record_type_id = {$sourceID}";
+
     $dao = CRM_Core_DAO::executeQuery($query);
     while ($dao->fetch()) {
-      $contactIDs[] = $dao->source_contact_id;
+      $contactIDs[] = $dao->contact_id;
     }
     $this->_contactIds = $contactIDs;
   }
@@ -173,7 +177,7 @@ SELECT source_contact_id
    * @return void
    * @access public
    */
-  function addDefaultButtons($title, $nextType = 'next', $backType = 'back') {
+  function addDefaultButtons($title, $nextType = 'next', $backType = 'back', $submitOnce = FALSE) {
     $this->addButtons(array(
         array(
           'type' => $nextType,

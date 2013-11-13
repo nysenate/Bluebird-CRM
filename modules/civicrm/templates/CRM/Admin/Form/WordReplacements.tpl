@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 {* add single row *}
 {if $soInstance}
 <tr id="string_override_row_{$soInstance}">
-  <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>	
+  <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>
   <td class="even-row">{$form.old.$soInstance.html}</td>
   <td class="even-row">{$form.new.$soInstance.html}</td>
   <td class="even-row checkbox">{$form.cb.$soInstance.html}</td>
@@ -40,46 +40,46 @@
     {ts}Use <strong>Word Replacements</strong> to change all occurrences of a word or phrase in CiviCRM screens (e.g. replace all occurences of 'Contribution' with 'Donation').{/ts} {help id="id-word_replace"}
 </div>
 <table class="form-layout-compressed">
-	<tr>
-	    <td>
-      	    <table>
-		    <tr class="columnheader">
-		        <td>{ts}Enabled{/ts}</td>
-		        <td>{ts}Original{/ts}</td>
-    		    <td>{ts}Replacement{/ts}</td>
-    		    <td>{ts}Exact Match?{/ts}</td>
-    		</tr>
+  <tr>
+      <td>
+            <table>
+        <tr class="columnheader">
+            <td>{ts}Enabled{/ts}</td>
+            <td>{ts}Original{/ts}</td>
+            <td>{ts}Replacement{/ts}</td>
+            <td>{ts}Exact Match?{/ts}</td>
+        </tr>
 
-     		{section name="numStrings" start=1 step=1 loop=$numStrings+1}
-    		{assign var='soInstance' value=$smarty.section.numStrings.index}
+         {section name="numStrings" start=1 step=1 loop=$numStrings+1}
+        {assign var='soInstance' value=$smarty.section.numStrings.index}
 
-    		<tr id="string_override_row_{$soInstance}">
-    		    <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>	
-      		    <td class="even-row">{$form.old.$soInstance.html}</td>
-      		    <td class="even-row">{$form.new.$soInstance.html}</td>
-    		    <td class="even-row checkbox">{$form.cb.$soInstance.html}</td>
-    		</tr>
+        <tr id="string_override_row_{$soInstance}">
+            <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>
+              <td class="even-row">{$form.old.$soInstance.html}</td>
+              <td class="even-row">{$form.new.$soInstance.html}</td>
+            <td class="even-row checkbox">{$form.cb.$soInstance.html}</td>
+        </tr>
 
-        	{/section}
-    	    </table>
-       	</td>
-	</tr>
+          {/section}
+          </table>
+         </td>
+  </tr>
 </table>
  <div class="crm-submit-buttons" ><a class="button" onClick="Javascript:buildStringOverrideRow( false );return false;"><span><div class="icon add-icon"></div>{ts}Add row{/ts}</span></a>{include file="CRM/common/formButtons.tpl"} </div>
-	
+
 </div>
 {/if}
 
 {literal}
 <script type="text/javascript">
-function buildStringOverrideRow( curInstance ) 
+function buildStringOverrideRow( curInstance )
 {
    var rowId = 'string_override_row_';
 
    if ( curInstance ) {
       if ( curInstance <= 10 ) return;
       currentInstance  = curInstance;
-      previousInstance = currentInstance - 1;  
+      previousInstance = currentInstance - 1;
    } else {
       var previousInstance = cj( '[id^="'+ rowId +'"]:last' ).attr('id').slice( rowId.length );
       var currentInstance = parseInt( previousInstance ) + 1;
@@ -87,16 +87,16 @@ function buildStringOverrideRow( curInstance )
 
    var dataUrl  = {/literal}"{crmURL q='snippet=4' h=0}"{literal} ;
    dataUrl     += "&instance="+currentInstance;
-   
+
    var prevInstRowId = '#string_override_row_' + previousInstance;
-  
-   cj.ajax({ url     : dataUrl,   
+
+   cj.ajax({ url     : dataUrl,
              async   : false,
-             success : function( html ) { 
-	     cj( prevInstRowId ).after( html ); 
-	     cj('#old_'+currentInstance).TextAreaResizer();
-	     cj('#new_'+currentInstance).TextAreaResizer();
-	     }	     
+             success : function( html ) {
+       cj( prevInstRowId ).after( html );
+       cj('#old_'+currentInstance).TextAreaResizer();
+       cj('#new_'+currentInstance).TextAreaResizer();
+       }
    });
 }
 
@@ -105,7 +105,7 @@ cj( function( ) {
   {if $stringOverrideInstances}
      {foreach from=$stringOverrideInstances key="index" item="instance"}
         buildStringOverrideRow( {$instance} );
-     {/foreach}  
+     {/foreach}
   {/if}
   {literal}
 });

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
   <div id="help">
     {ts}Choose Relationship Type and Target Household{/ts}
   </div>
-    <table class="form-layout-compressed"> 
+    <table class="form-layout-compressed">
         <tr><td></td><td>{include file="CRM/Contact/Form/Task.tpl"}</td></tr>
             {if $action EQ 2} {* action = update *}
                 <tr><td><label>{$sort_name}</label></td></tr>
@@ -35,7 +35,7 @@
                 <tr class="crm-contact-task-addtohousehold-form-block-relationship_type_id">
                     <td>{$form.relationship_type_id.label}</td>
                     <td>{$form.relationship_type_id.html}</td>
-                </tr>   
+                </tr>
                 <tr><td></td></tr>
                 <tr class="crm-contact-task-addtohousehold-form-block-name">
                     <td>{$form.name.label}</td>
@@ -75,13 +75,15 @@
                         </fieldset>
                     {else} {* too many results - we're only displaying 50 *}
                         </div></fieldset>
-                        {capture assign=infoMessage}{ts}Too many matching results. Please narrow your search by entering a more complete target contact name.{/ts}{/capture}
+                        {capture assign=infoTitle}{ts}Too many matching results{/ts}{/capture}
+                        {capture assign=infoMessage}{ts}Please narrow your search by entering a more complete target contact name.{/ts}{/capture}
                         {include file="CRM/common/info.tpl"}
                     {/if}
                 {else} {* no valid matches for name + contact_type *}
                         </div></fieldset>
-                        {capture assign=infoMessage}{ts}No matching results for{/ts} <ul><li>{ts 1=$form.name.value}Name like: %1{/ts}</li><li>{ts}Contact type{/ts}: {$contact_type_display}</li></ul><br />{ts}Check your spelling, or try fewer letters for the target contact name.{/ts}{/capture}
-                        {include file="CRM/common/info.tpl"}                
+                        {capture assign=infoTitle}{ts}No matching results for{/ts}{/capture}
+                        {capture assign=infoMessage}<ul><li>{ts 1=$form.name.value}Name like: %1{/ts}</li><li>{ts}Contact type{/ts}: {$contact_type_display}</li></ul>{ts}Check your spelling, or try fewer letters for the target contact name.{/ts}{/capture}
+                        {include file="CRM/common/info.tpl"}
                 {/if} {* end if searchCount *}
               {else}
                 </div></fieldset>
@@ -91,16 +93,16 @@
         {* Only show buttons if action=update, OR if we have $contacts (results)*}
         {if $searchRows OR $action EQ 2}
             <div class="form-item">
-              
+
                     <div class="description">
 
                     </div>
                <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
             </div>
-	<div class="form-item">
-	{$form.status.label} {$form.status.html}
-	</div>
+  <div class="form-item">
+  {$form.status.label} {$form.status.html}
+  </div>
 
 
             </div></fieldset>
-	{/if}
+  {/if}

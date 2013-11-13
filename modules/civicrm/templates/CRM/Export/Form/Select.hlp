@@ -1,4 +1,8 @@
 {* Help for Export - select options form *}
+
+{htxt id="id-export_merge_options-title"}
+  {ts}Merge Options{/ts}
+{/htxt}
 {htxt id="id-export_merge_options"}
 <p>{ts}Use one of the merge contact options when exporting records to reduce your mailing size by sending a single piece of mail to each
 address.{/ts}</p>

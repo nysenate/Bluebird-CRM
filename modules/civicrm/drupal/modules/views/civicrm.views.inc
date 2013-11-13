@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -64,7 +64,7 @@
  * Implements of hook_views_data().
  * Run hook_views_data for active CiviCRM components
  */
-function civicrm_views_data() {
+function civicrm_views_data_alter(&$data) {
 
   if (!civicrm_initialize()) {
     return;
@@ -76,12 +76,13 @@ function civicrm_views_data() {
   require_once 'CRM/Core/Error.php';
   require_once 'CRM/Contact/BAO/Contact.php';
   require_once 'CRM/Event/BAO/Query.php';
+  require_once 'CRM/Case/BAO/Case.php';
   require_once 'components/civicrm.core.inc';
 
   // Get list of enabled CiviCRM components
   $enabled = CRM_Core_Component::getEnabledComponents();
 
-  $data = array();
+ // $data = array();
   // Load Core CiviCRM data
   _civicrm_core_data($data, $enabled);
 
@@ -113,6 +114,10 @@ function civicrm_views_data() {
   if (isset($enabled['CiviMember'])) {
     include_once 'components/civicrm.member.inc';
     _civicrm_member_data($data, $enabled);
+  }
+  if (isset($enabled['CiviCase'])) {
+    include_once 'components/civicrm.case.inc';
+    _civicrm_case_data($data, $enabled);
   }
 
   return $data;
@@ -312,9 +317,12 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
     case "Individual":
     case "Household":
     case "Organization":
-    case "Address":
     case "Group":
       $jointable = 'civicrm_contact';
+      break;
+
+    case "Address":
+      $jointable = 'civicrm_address';
       break;
 
     case "Event":
@@ -349,12 +357,16 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
     case "Survey":
       $jointable = 'civicrm_campaign';
       break;
+
+    case "Case":
+      $jointable = 'civicrm_case';
+      break;
   }
 
   foreach ($tree as $groupkey => $currentgroup) {
     if ($groupkey == 'info') {
       return $data;
-      // dodges an invalid argument call after all the groups go through // have a look at what $tree outputs to to see why.
+    // dodges an invalid argument call after all the groups go through // have a look at what $tree outputs to to see why.
     }
     $data[$currentgroup['table_name']]['table']['group'] = t('CiviCRM Custom: ') . $currentgroup['title'];
 
@@ -375,6 +387,15 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
         'left_field' => 'id',
         'field' => 'entity_id',
       );
+
+      // expose custom data to contact view, too
+      if ($jointable != 'civicrm_contact') {
+        $data[$currentgroup['table_name']]['table']['join']['civicrm_contact'] = array(
+          'left_table' => $jointable,
+          'left_field' => 'id',
+          'field' => 'entity_id',
+        );
+      }
     }
     $currentgroupfields = $currentgroup['fields'];
     $customHTMLTypes = array(
@@ -399,7 +420,7 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
         $handler = array('handler' => 'civicrm_handler_field_custom',
                    'click sortable' => TRUE,);
       } else if ( $currentfield['html_type'] == 'File' ) {
-        $handler = array('handler' => 'views_handler_field',
+        $handler = array('handler' => 'civicrm_handler_field_custom_file',
                    'click sortable' => TRUE,);
       } else {
         $handler = civicrm_get_field_handler($currentfield['data_type']);
@@ -413,6 +434,9 @@ function civicrm_views_custom_data_cache(&$data, $entity_type, $groupID, $subTyp
 
       if ($currentfield['html_type'] == 'Multi-Select Country') {
         $filter_handler = array('handler' => 'civicrm_handler_filter_country_multi');
+      }
+      elseif ($currentfield['html_type'] == 'Multi-Select State/Province') {
+        $filter_handler = array('handler' => 'civicrm_handler_filter_state_multi');
       }
       elseif (!empty($currentfield['option_group_id']) &&
         in_array($currentfield['html_type'], $customMultiValueHTMLTypes)
@@ -688,6 +712,8 @@ function civicrm_date_views_fields($field) {
     case 'civicrm_activity.activity_date_time':
     case 'civicrm_campaign.start_date':
     case 'civicrm_campaign.end_date':
+    case 'civicrm_case.start_date':
+    case 'civicrm_case.end_date':
       return $values;
   }
 }
@@ -699,6 +725,7 @@ function civicrm_date_views_tables() {
   return array(
     'civicrm_mailing_job',
     'civicrm_event',
+    'civicrm_case',
     'civicrm_activity',
     'civicrm_campaign',
   );
@@ -740,6 +767,18 @@ function civicrm_views_plugins() {
           'dao class' => 'CRM_Activity_DAO_Activity',
           'title field' => 'subject',
         ),
+	'civicrm_case_calendar' => array(
+          'title' => t('Case Items'),
+          'help' => t('Displays each selected case as a Calendar item.'),
+          'handler' => 'calendar_plugin_row_civicrm',
+          'path' => "$civicrm_module_path/modules/views/plugins",
+          'base' => array('civicrm_case'),
+          'uses options' => TRUE,
+          'uses fields' => TRUE,
+          'type' => 'normal',
+          'dao class' => 'CRM_Case_DAO_Case',
+          'title field' => 'subject',
+        ),
         'civicrm_mail_calendar' => array(
           'title' => t('Calendar Items'),
           'help' => t('Displays each selected mailing as a Calendar item.'),
@@ -749,7 +788,7 @@ function civicrm_views_plugins() {
           'uses options' => TRUE,
           'uses fields' => TRUE,
           'type' => 'normal',
-          'dao class' => 'CRM_Mailing_DAO_Job',
+          'dao class' => 'CRM_Mailing_DAO_MailingJob',
           // @TODO come up with a better title field
           'title field' => 'mailing_id',
         ),

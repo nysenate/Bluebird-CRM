@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,8 +31,8 @@
       <table class="crm-info-panel">
         <tr>
             <td class="label">{ts}Added By{/ts}</td><td class="view-value">{$values.source_contact}</td>
-        </tr> 
-       {if $values.target_contact_value} 
+        </tr>
+       {if $values.target_contact_value}
            <tr>
                 <td class="label">{ts}With Contact{/ts}</td><td class="view-value">{$values.target_contact_value}</td>
            </tr>
@@ -49,30 +49,55 @@
                 {/if}
                 </td>
            </tr>
-       {/if} 
+       {/if}
         <tr>
             <td class="label">{ts}Subject{/ts}</td><td class="view-value">{$values.subject}</td>
-        </tr>  
+        </tr>
 
-	{if $values.campaign}
+  {if $values.campaign}
         <tr>
             <td class="label">{ts}Campaign{/ts}</td><td class="view-value">{$values.campaign}</td>
         </tr>
         {/if}
-        
-	{if $values.engagement_level AND 
-	    call_user_func( array( 'CRM_Campaign_BAO_Campaign', 'isCampaignEnable' ) )}
-	    <td class="label">{ts}Engagement Level{/ts}</td><td class="view-value">{$values.engagement_level}</td>
-	{/if}
-	
+
+  {if $values.engagement_level AND
+      call_user_func( array( 'CRM_Campaign_BAO_Campaign', 'isCampaignEnable' ) )}
+      <td class="label">{ts}Engagement Level{/ts}</td><td class="view-value">{$values.engagement_level}</td>
+  {/if}
+
         <tr>
             <td class="label">{ts}Date and Time{/ts}</td><td class="view-value">{$values.activity_date_time|crmDate }</td>
-        </tr> 
+        </tr>
         {if $values.mailingId}
+            <tr>
+                <td class="label nowrap">
+                   # of opens
+
+                </td>
+                <td  class="view-value">{$openreport|@count}
+                {if $openreport|@count > 0 and $openreport|@count < 50}<br />Open times:
+                  {foreach from=$openreport item=opens}
+                    {$opens.date} <br />
+                  {/foreach}
+                {/if}
+             </tr>
+             <tr>
+               <td class="label">
+               # of click-throughs
+               </td>
+               <td class="view-value"> {$clickreport|@count}
+                {if $clickreport|@count > 0 and $clickreport|@count < 50}<br />Click times:
+                  {foreach from=$clickreport item=clicks}
+                    {$clicks.date}: <a href ='{$clicks.url}'>{$clicks.url|truncate:40:' .... ':true:true}</a> <br />
+                  {/foreach}
+                {/if}
+
+                </td>
+            </tr>
             <tr>
                 <td class="label">{ts}Details{/ts}</td>
                 <td class="view-value report">
-                    
+
                     <fieldset>
                     <legend>{ts}Content / Components{/ts}</legend>
                     {strip}
@@ -101,7 +126,7 @@
                               <td class="label nowrap">{ts}HTML Message{/ts}</td>
                               <td>
                                   {$mailingReport.mailing.body_html|mb_truncate:30|escape|nl2br}
-                                  <br/>                         
+                                  <br/>
                                   {if $values.mailingId}
                                     <strong><a href='{$htmlViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
                                   {/if}
@@ -133,23 +158,23 @@
                               </td>
                               </tr>
                       {/if}
-                      
+
                     </table>
                     {/strip}
                     </fieldset>
                 </td>
-            </tr>  
+            </tr>
         {else}
              <tr>
                  <td class="label">{ts}Details{/ts}</td><td class="view-value report">{$values.details|crmStripAlternatives|nl2br}</td>
              </tr>
-        {/if}  
+        {/if}
 {if $values.attachment}
         <tr>
             <td class="label">{ts}Attachment(s){/ts}</td><td class="view-value report">{$values.attachment}</td>
-        </tr>  
+        </tr>
 {/if}
      </table>
      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-</div>  
- 
+</div>
+

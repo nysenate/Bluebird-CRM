@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="adjust-payment-amount-title"}
+  {ts}Payment Amount{/ts}
+{/htxt}
 {htxt id="adjust-payment-amount"}
 {ts}If you enter an amount which is different than the current scheduled amount, choose one of these options:{/ts}
 <p>

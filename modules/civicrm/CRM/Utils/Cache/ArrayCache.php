@@ -1,5 +1,5 @@
 <?php
-class CRM_Utils_Cache_Arraycache {
+class CRM_Utils_Cache_Arraycache implements CRM_Utils_Cache_Interface {
 
   /**
    * The cache storage container, an in memory array by default
@@ -13,7 +13,7 @@ class CRM_Utils_Cache_Arraycache {
    *
    * @return void
    */
-  function __construct(&$config) {
+  function __construct($config) {
     $this->_cache = array();
   }
 

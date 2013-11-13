@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
 <div id="groupContact">
  <p>
     <div class="form-item">
-    {if $groupCount > 0 }  	
+    {if $groupCount > 0 }
        <table>
        <tr class="columnheader"><th>{ts}Group Listings{/ts}</th><th>{ts}In Date{/ts}</th><th>{ts}Out Date{/ts}</th><th></th></tr>
        {foreach from=$groupContact item=row}
@@ -40,15 +40,15 @@
             <td> {$row.name}</td>
             <td>{$row.in_date|crmDate}</td>
             <td>{$row.out_date|crmDate}</td>
-	    <td><a href="#">{ts}View{/ts}</a></td>
+      <td><a href="#">{ts}View{/ts}</a></td>
          </tr>
        {/foreach}
        </table>
      {else}
-     <div class="messages status">	
+     <div class="messages status no-popup">
      <div class="icon inform-icon"></div> &nbsp;
       {ts}This contact does not belong to any groups.{/ts}
-     </div>	
+     </div>
      {/if}
     </div>
  </p>

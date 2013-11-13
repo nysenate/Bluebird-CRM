@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,10 +43,10 @@
 
 jQuery(document).ready(function(){initTagTree()});
 function initTagTree() {
-	$("#tagtree").treeview({
-		animated: "fast",
-		collapsed: true,
-		unique: true
+  $("#tagtree").treeview({
+    animated: "fast",
+    collapsed: true,
+    unique: true
           });
         $('#tagtree>li:odd').addClass('odd-row');
         $('#tagtree>li:even').addClass('even-row');
@@ -64,17 +64,17 @@ function initTagTree() {
 <span {if $node.children}class="hit"{/if}>{$node.name}</span>
       {if $node.children}<ul>
       {foreach from=$node.children item="subnode" key="subid"}
-	 <li id="tag_{$subid}">
+   <li id="tag_{$subid}">
             <input id="check_{$subid}" name="tag[{$subid}]" type="checkbox" />
             <span {if $subnode.children}class="hit"{/if}>{$subnode.name}</span>
             {if $subnode.children}<ul>
-	       {foreach from=$subnode.children item="subsubnode" key="subsubid"}
-		  <li id="tag_{$subsubid}"><span><input id="check_{$subsubid}" name="tag[{$subsubid}]" type="checkbox" />{$subsubnode.name}</span></li>
-	       {/foreach} 
-	    </ul>{/if}
-	 </li>	 
-      {/foreach} 
+         {foreach from=$subnode.children item="subsubnode" key="subsubid"}
+      <li id="tag_{$subsubid}"><span><input id="check_{$subsubid}" name="tag[{$subsubid}]" type="checkbox" />{$subsubnode.name}</span></li>
+         {/foreach}
       </ul>{/if}
-   </li>	 
-   {/foreach} 
+   </li>
+      {/foreach}
+      </ul>{/if}
+   </li>
+   {/foreach}
 </ul>

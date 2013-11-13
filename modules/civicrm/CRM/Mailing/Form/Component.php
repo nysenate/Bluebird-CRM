@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -51,7 +51,9 @@ class CRM_Mailing_Form_Component extends CRM_Core_Form {
    *
    * @var string
    */
-  protected $_BAOName; function preProcess() {
+  protected $_BAOName;
+
+  function preProcess() {
     $this->_id = $this->get('id');
     $this->_BAOName = $this->get('BAOName');
   }
@@ -116,8 +118,8 @@ class CRM_Mailing_Form_Component extends CRM_Core_Form {
 
     if (isset($this->_id)) {
       $params = array('id' => $this->_id);
-      require_once (str_replace('_', DIRECTORY_SEPARATOR, $this->_BAOName) . ".php");
-      eval($this->_BAOName . '::retrieve( $params, $defaults );');
+      $baoName = $this->_BAOName;
+      $baoName::retrieve($params, $defaults);
     }
     $defaults['is_active'] = 1;
 
@@ -154,8 +156,7 @@ class CRM_Mailing_Form_Component extends CRM_Core_Form {
    * @access public
    * @static
    */
-  static
-  function dataRule($params, $files, $options) {
+  static function dataRule($params, $files, $options) {
     if ($params['component_type'] == 'Header' || $params['component_type'] == 'Footer') {
       $InvalidTokens = array();
     }

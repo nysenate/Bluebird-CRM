@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /*
  +--------------------------------------------------------------------+
  | CiviCRM version 4.2                                                |
@@ -34,10 +32,7 @@
  * @subpackage API_IM
  *
  * @copyright CiviCRM LLC (c) 2004-2013
- * @version $Id: IM.php 2013-01-15 BrianShaughnessy $
  */
-
-require_once 'CRM/Core/BAO/IM.php';
 
 /**
  *  Add an IM for a contact
@@ -47,16 +42,12 @@ require_once 'CRM/Core/BAO/IM.php';
  *
  * @return array of newly created IM property values.
  * @access public
- * @todo convert to using basic create - BAO function non-std
  */
 function civicrm_api3_im_create($params) {
-  $imBAO = CRM_Core_BAO_IM::add($params);
-    $values = array();
-    _civicrm_api3_object_to_array($imBAO, $values[$imBAO->id]);
-    return civicrm_api3_create_success($values, $params, 'im', 'get');
-
+  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
-/*
+
+/**
  * Adjust Metadata for Create action
  *
  * The metadata is used for setting defaults, documentation & validation
@@ -77,20 +68,7 @@ function _civicrm_api3_im_create_spec(&$params) {
  * @todo convert to using Basic delete - BAO function non standard
  */
 function civicrm_api3_im_delete($params) {
-  $imID = CRM_Utils_Array::value('id', $params);
-
-  require_once 'CRM/Core/DAO/IM.php';
-  $imDAO = new CRM_Core_DAO_IM();
-  $imDAO->id = $imID;
-  if ($imDAO->find()) {
-    while ($imDAO->fetch()) {
-      $imDAO->delete();
-      return civicrm_api3_create_success(1, $params, 'im', 'delete');
-    }
-  }
-  else {
-    return civicrm_api3_create_error('Could not delete IM with id ' . $imID);
-  }
+  return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
 
 /**

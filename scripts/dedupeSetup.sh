@@ -53,8 +53,10 @@ fi
 
 if [ $rebuildRuleGroups -eq 1 ]; then
     $execSql $instance --quiet -c "
-        TRUNCATE TABLE civicrm_dedupe_rule;
-        TRUNCATE TABLE civicrm_dedupe_rule_group;
+      SET foreign_key_checks = 0;
+      TRUNCATE TABLE civicrm_dedupe_rule;
+      TRUNCATE TABLE civicrm_dedupe_rule_group;
+      SET foreign_key_checks = 1;
     "
     $execSql $instance -f $dedupe_dir/rules.sql
 fi

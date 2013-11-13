@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -79,6 +79,10 @@ class CRM_Custom_Form_Option extends CRM_Core_Form {
     $this->_fid = CRM_Utils_Request::retrieve('fid', 'Positive', $this);
 
     $this->_gid = CRM_Utils_Request::retrieve('gid', 'Positive', $this);
+
+    if ($isReserved = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $this->_gid, 'is_reserved', 'id')) {
+      CRM_Core_Error::fatal("You cannot add or edit muliple choice options in a reserved custom field-set.");
+    }
     if (!isset($this->_gid) && $this->_fid) {
       $this->_gid = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField',
         $this->_fid,
@@ -242,19 +246,20 @@ class CRM_Custom_Form_Option extends CRM_Core_Form {
    * @access public
    */
   static function formRule($fields, $files, $form) {
-    $optionLabel   = CRM_Utils_Type::escape($fields['label'], 'String');
-    $optionValue   = CRM_Utils_Type::escape($fields['value'], 'String');
+    $optionLabel   = $fields['label'];
+    $optionValue   = $fields['value'];
     $fieldId       = $form->_fid;
     $optionGroupId = $form->_optionGroupID;
 
     $temp = array();
     if (empty($form->_id)) {
       $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_option_value
  WHERE option_group_id = %1
    AND label = %2";
-      $params = array(1 => array($optionGroupId, 'Integer'),
+      $params = array(
+        1 => array($optionGroupId, 'Integer'),
         2 => array($optionLabel, 'String'),
       );
       if (CRM_Core_DAO::singleValueQuery($query, $params) > 0) {
@@ -262,11 +267,12 @@ SELECT count(*)
       }
 
       $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_option_value
  WHERE option_group_id = %1
    AND value = %2";
-      $params = array(1 => array($optionGroupId, 'Integer'),
+      $params = array(
+        1 => array($optionGroupId, 'Integer'),
         2 => array($optionValue, 'String'),
       );
       if (CRM_Core_DAO::singleValueQuery($query, $params) > 0) {
@@ -279,12 +285,13 @@ SELECT count(*)
 
       //check label duplicates within a custom field
       $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_option_value
  WHERE option_group_id = %1
    AND id != %2
    AND label = %3";
-      $params = array(1 => array($optionGroupId, 'Integer'),
+      $params = array(
+        1 => array($optionGroupId, 'Integer'),
         2 => array($optionId, 'Integer'),
         3 => array($optionLabel, 'String'),
       );
@@ -294,12 +301,13 @@ SELECT count(*)
 
       //check value duplicates within a custom field
       $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_option_value
  WHERE option_group_id = %1
    AND id != %2
    AND value = %3";
-      $params = array(1 => array($optionGroupId, 'Integer'),
+      $params = array(
+        1 => array($optionGroupId, 'Integer'),
         2 => array($optionId, 'Integer'),
         3 => array($optionValue, 'String'),
       );
@@ -309,7 +317,7 @@ SELECT count(*)
     }
 
     $query = "
-SELECT data_type 
+SELECT data_type
   FROM civicrm_custom_field
  WHERE id = %1";
     $params = array(1 => array($fieldId, 'Integer'));
@@ -363,7 +371,7 @@ SELECT data_type
           if (!empty($fields["value"])) {
             $params = array(1 => array($fields['value'], 'String'));
             $query = "
-SELECT count(*) 
+SELECT count(*)
   FROM civicrm_state_province
  WHERE name = %1
     OR abbreviation = %1";
@@ -394,7 +402,7 @@ SELECT count(*)
       $fieldValues = array('option_group_id' => $this->_optionGroupID);
       $wt = CRM_Utils_Weight::delWeight('CRM_Core_DAO_OptionValue', $this->_id, $fieldValues);
       CRM_Core_BAO_CustomOption::del($this->_id);
-      CRM_Core_Session::setStatus(ts('Your multiple choice option has been deleted'));
+      CRM_Core_Session::setStatus(ts('Your multiple choice option has been deleted'), ts('Deleted'), 'success');
       return;
     }
 
@@ -414,19 +422,27 @@ SELECT count(*)
     }
 
     $fieldValues = array('option_group_id' => $this->_optionGroupID);
-    $customOption->weight = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_OptionValue', $oldWeight, $params['weight'], $fieldValues);
+    $customOption->weight =
+      CRM_Utils_Weight::updateOtherWeights(
+        'CRM_Core_DAO_OptionValue',
+        $oldWeight,
+        $params['weight'],
+        $fieldValues);
 
     $customOption->option_group_id = $this->_optionGroupID;
 
     $customField = new CRM_Core_DAO_CustomField();
     $customField->id = $this->_fid;
-    if ($customField->find(TRUE) &&
-      ($customField->html_type == 'CheckBox' ||
+    if (
+      $customField->find(TRUE) &&
+      (
+        $customField->html_type == 'CheckBox' ||
         $customField->html_type == 'AdvMulti-Select' ||
         $customField->html_type == 'Multi-Select'
       )
     ) {
-      $defVal = explode(CRM_Core_DAO::VALUE_SEPARATOR,
+      $defVal = explode(
+        CRM_Core_DAO::VALUE_SEPARATOR,
         substr($customField->default_value, 1, -1)
       );
       if (CRM_Utils_Array::value('default_value', $params)) {
@@ -437,7 +453,10 @@ SELECT count(*)
           else {
             $defVal[] = $customOption->value;
           }
-          $customField->default_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $defVal) . CRM_Core_DAO::VALUE_SEPARATOR;
+          $customField->default_value =
+            CRM_Core_DAO::VALUE_SEPARATOR .
+            implode(CRM_Core_DAO::VALUE_SEPARATOR, $defVal) .
+            CRM_Core_DAO::VALUE_SEPARATOR;
           $customField->save();
         }
       }
@@ -449,7 +468,10 @@ SELECT count(*)
           }
         }
 
-        $customField->default_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $tempVal) . CRM_Core_DAO::VALUE_SEPARATOR;
+        $customField->default_value =
+          CRM_Core_DAO::VALUE_SEPARATOR .
+          implode(CRM_Core_DAO::VALUE_SEPARATOR, $tempVal) .
+          CRM_Core_DAO::VALUE_SEPARATOR;
         $customField->save();
       }
     }
@@ -481,14 +503,18 @@ SELECT count(*)
 
     $customOption->save();
 
-    CRM_Core_Session::setStatus(ts('Your multiple choice option \'%1\' has been saved', array(1 => $customOption->label)));
+    $msg = ts('Your multiple choice option \'%1\' has been saved', array(1 => $customOption->label));
+    CRM_Core_Session::setStatus($msg, '', 'success');
     $buttonName = $this->controller->getButtonName();
     $session = CRM_Core_Session::singleton();
     if ($buttonName == $this->getButtonName('next', 'new')) {
-      CRM_Core_Session::setStatus(ts(' You can add another option.'));
-      $session->replaceUserContext(CRM_Utils_System::url('civicrm/admin/custom/group/field/option',
+      CRM_Core_Session::setStatus(ts('You can add another option.'), '', 'info');
+      $session->replaceUserContext(
+        CRM_Utils_System::url(
+          'civicrm/admin/custom/group/field/option',
           'reset=1&action=add&fid=' . $this->_fid . '&gid=' . $this->_gid
-        ));
+        )
+      );
     }
   }
 }

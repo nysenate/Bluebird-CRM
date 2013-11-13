@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,14 +27,14 @@
 {include file="CRM/common/WizardHeader.tpl"}
 
 <div id="help">
-    {ts}You can either <strong>upload</strong> the mailing content from your computer OR <strong>compose</strong> the content on this screen.{/ts} {help id="content-intro"} 
+    {ts}You can either <strong>upload</strong> the mailing content from your computer OR <strong>compose</strong> the content on this screen.{/ts} {help id="content-intro"}
 </div>
 
 {include file="CRM/Mailing/Form/Count.tpl"}
 
 <table class="form-layout-compressed">
     <tr class="crm-mailing-upload-form-block-from_email_address"><td class="label">{$form.from_email_address.label}</td>
-        <td>{$form.from_email_address.html} {help id ="id-from_email"}</td>
+        <td>{$form.from_email_address.html} {help id ="id-from_email" isAdmin=$isAdmin}</td>
     </tr>
     {if $trackReplies}
     <tr class="crm-mailing-upload-form-block-reply_to_address">
@@ -48,11 +48,11 @@
     </tr>
     {/if}
     <tr class="crm-mailing-upload-form-block-template">
-    	<td class="label">{$form.template.label}</td>
-	<td>{$form.template.html}</td>
+      <td class="label">{$form.template.label}</td>
+  <td>{$form.template.html}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-subject"><td class="label">{$form.subject.label}</td>
-        <td colspan="2">{$form.subject.html|crmReplace:class:huge}
+        <td colspan="2">{$form.subject.html|crmAddClass:huge}
                         <a href="#" onClick="return showToken('Subject', 3);">{$form.token3.label}</a>
                         {help id="id-token-subject" file="CRM/Contact/Form/Task/Email.hlp"}
                         <div id='tokenSubject' style="display:none">
@@ -103,7 +103,7 @@
                 <span class="description">{ts}You may choose to include a pre-configured Footer block below your message. This is a good place to include the required unsubscribe, opt-out and postal address tokens.{/ts}</span>
             </td>
         </tr>
-    </table> 
+    </table>
   </fieldset>
 
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
@@ -115,15 +115,15 @@
 <script type="text/javascript">
     showHideUpload();
     function showHideUpload()
-    { 
-	if (document.getElementsByName("upload_type")[0].checked) {
-            hide('compose_id');
-	    cj('.crm-mailing-upload-form-block-template').hide();
-	    show('upload_id');	
+    {
+  if (document.getElementsByName("upload_type")[0].checked) {
+            cj('#compose_id').hide();
+      cj('.crm-mailing-upload-form-block-template').hide();
+      cj('#upload_id').show();
         } else {
-            show('compose_id');
-	    cj('.crm-mailing-upload-form-block-template').show();
-	    hide('upload_id');
+            cj('#compose_id').show();
+      cj('.crm-mailing-upload-form-block-template').show();
+      cj('#upload_id').hide();
             verify( );
         }
     }

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,10 +30,10 @@
 </div>
     <legend>{$profileTitle}</legend>
     <table class="crm-copy-fields">
-	  <thead class="sticky">
+    <thead class="sticky">
             <tr class="columnheader">
              {foreach from=$readOnlyFields item=fTitle key=fName}
-	            <th>{$fTitle}</th>
+              <th>{$fTitle}</th>
             {/foreach}
 
              {foreach from=$fields item=field key=fieldName}
@@ -43,16 +43,16 @@
           </thead>
             {foreach from=$componentIds item=cid}
              <tr class="{cycle values="odd-row,even-row"}" entity_id="{$cid}">
-	      {foreach from=$readOnlyFields item=fTitle key=fName}
-	         <td>{$contactDetails.$cid.$fName}</td>
-	      {/foreach}
+        {foreach from=$readOnlyFields item=fTitle key=fName}
+           <td>{$contactDetails.$cid.$fName}</td>
+        {/foreach}
 
               {foreach from=$fields item=field key=fieldName}
                 {assign var=n value=$field.name}
                 {if ( $fields.$n.data_type eq 'Date') or ( $n eq 'thankyou_date' ) or ( $n eq 'cancel_date' ) or ( $n eq 'receipt_date' ) or ( $n eq 'receive_date' )}
                    <td class="compressed">{include file="CRM/common/jcalendar.tpl" elementName=$n elementIndex=$cid batchUpdate=1}</td>
                 {else}
-                   <td class="compressed">{$form.field.$cid.$n.html}</td> 
+                   <td class="compressed">{$form.field.$cid.$n.html}</td>
                 {/if}
               {/foreach}
              </tr>

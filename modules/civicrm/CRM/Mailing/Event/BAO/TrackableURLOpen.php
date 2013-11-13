@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -60,7 +60,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
          * prevents foreign key violations. */
 
 
-    $job  = CRM_Mailing_BAO_Job::getTableName();
+    $job  = CRM_Mailing_BAO_MailingJob::getTableName();
     $eq   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $turl = CRM_Mailing_BAO_TrackableURL::getTableName();
 
@@ -115,7 +115,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     $click   = self::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
 
     $query = "
             SELECT      COUNT($click.id) as opened
@@ -152,6 +152,45 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
   }
 
   /**
+   * CRM-12814
+   * Get tracked url count for each mailing for a given set of mailing IDs
+   *
+   * @param int $contactID  ID of the mailing
+   *
+   * @return array          trackable url count per mailing ID
+   * @access public
+   * @static
+   */
+  public static function getMailingTotalCount($mailingIDs) {
+    $dao = new CRM_Core_DAO();
+    $clickCount = array();
+
+    $click = self::getTableName();
+    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $job = CRM_Mailing_BAO_MailingJob::getTableName();
+    $mailingIDs = implode(',', $mailingIDs);
+
+    $query = "
+      SELECT $job.mailing_id as mailingID, COUNT($click.id) as opened
+      FROM $click
+      INNER JOIN $queue
+        ON  $click.event_queue_id = $queue.id
+      INNER JOIN $job
+        ON  $queue.job_id = $job.id
+        AND $job.is_test = 0
+      WHERE $job.mailing_id IN ({$mailingIDs})
+      GROUP BY civicrm_mailing_job.mailing_id
+    ";
+
+    $dao->query($query);
+
+    while ( $dao->fetch() ) {
+      $clickCount[$dao->mailingID] = $dao->opened;
+    }
+    return $clickCount;
+  }
+
+  /**
    * Get rows for the event browser
    *
    * @param int $mailing_id       ID of the mailing
@@ -161,6 +200,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
    * @param int $offset           Offset
    * @param int $rowCount         Number of rows
    * @param array $sort           sort array
+   * @param int $contact_id       optional contact ID
    *
    * @return array                Result set
    * @access public
@@ -168,7 +208,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
    */
   public static function &getRows($mailing_id, $job_id = NULL,
     $is_distinct = FALSE, $url_id,
-    $offset = NULL, $rowCount = NULL, $sort = NULL
+    $offset = NULL, $rowCount = NULL, $sort = NULL, $contact_id = NULL
   ) {
 
     $dao = new CRM_Core_Dao();
@@ -177,7 +217,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     $url     = CRM_Mailing_BAO_TrackableURL::getTableName();
     $queue   = CRM_Mailing_Event_BAO_Queue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
-    $job     = CRM_Mailing_BAO_Job::getTableName();
+    $job     = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact = CRM_Contact_BAO_Contact::getTableName();
     $email   = CRM_Core_BAO_Email::getTableName();
 
@@ -203,6 +243,10 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
                     AND $job.is_test = 0
             WHERE       $mailing.id = " . CRM_Utils_Type::escape($mailing_id, 'Integer');
 
+    if (!empty($contact_id)) {
+      $query .= " AND $contact.id = " . CRM_Utils_Type::escape($contact_id, 'Integer');
+    }
+
     if (!empty($job_id)) {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
     }
@@ -218,6 +262,7 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
     $orderBy = "sort_name ASC, {$click}.time_stamp DESC";
     if ($sort) {
       if (is_string($sort)) {
+        $sort = CRM_Utils_Type::escape($sort, 'String');
         $orderBy = $sort;
       }
       else {

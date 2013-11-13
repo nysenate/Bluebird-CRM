@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -145,7 +145,8 @@ class CRM_Grant_Selector_Search extends CRM_Core_Selector_Base implements CRM_Co
    *
    * @return CRM_Contact_Selector
    * @access public
-   */ function __construct(&$queryParams,
+   */
+  function __construct(&$queryParams,
     $action      = CRM_Core_Action::NONE,
     $grantClause = NULL,
     $single      = FALSE,
@@ -184,8 +185,7 @@ class CRM_Grant_Selector_Search extends CRM_Core_Selector_Base implements CRM_Co
    * @access public
    *
    */
-  static
-  function &links($key = NULL) {
+  static function &links($key = NULL) {
     $cid = CRM_Utils_Request::retrieve('cid', 'Integer', $this);
     $extraParams = ($key) ? "&key={$key}" : NULL;
 

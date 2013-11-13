@@ -27,6 +27,7 @@ function civicrm_contact_ref_field_info() {
       'description' => t('Reference a CiviCRM contact.'),
       'default_widget' => 'options_select',
       'default_formatter' => 'civicrm_contact_ref_link',
+      'property_type' => 'integer', // note that this property is used by entity.module
     ),
   );
 }
@@ -420,3 +421,29 @@ WHERE  id = %1";
   return $titles["{$cid}_{$field}"];
 }
 
+/**
+ * Implements hook_field_views_data() to allow for views relationships
+ */
+function civicrm_contact_ref_field_views_data($field) {
+  $data = field_views_field_default_views_data($field);
+  $storage = $field['storage']['details']['sql'];
+
+  foreach ($storage as $age => $table_data) {
+    $table = key($table_data);
+    $columns = current($table_data);
+    $id_column = $columns['contact_id'];
+    if (isset($data[$table])) {
+      // Relationship.
+      $data[$table][$id_column]['relationship'] = array(
+        'handler' => 'views_handler_relationship',
+        'base' => 'civicrm_contact',
+        'base field' => 'id',
+        'field' => $id_column,
+        'label' => $field['field_name'],
+        'field_name' => $field['field_name'],
+      );
+    }
+  }
+
+  return $data;
+}

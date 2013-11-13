@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,21 +28,21 @@
 <fieldset><legend>{if $action eq 1}{ts}New Membership Status{/ts}{elseif $action eq 2}{ts}Edit Membership Status{/ts}{else}{ts}Delete Membership Status{/ts}{/if}</legend>
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
    {if $action eq 8}
-      <div class="messages status">
-         <div class="icon inform-icon"></div>  
+      <div class="messages status no-popup">
+         <div class="icon inform-icon"></div>
           {ts}WARNING: Deleting this option will result in the loss of all membership records of this status.{/ts} {ts}This may mean the loss of a substantial amount of data, and the action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
    {else}
     <table class="form-layout-compressed">
-      {if $action eq 2}	   
+      {if $action eq 2}
       <tr class="crm-membership-status-form-block-name">
-	<td class="label">{$form.name.label}</td>
+  <td class="label">{$form.name.label}</td>
         <td class="html-adjust">{$form.name.html}</td>
       </tr>
       {/if}
 
       <tr class="crm-membership-status-form-block-label">
-	<td class="label">{$form.label.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_membership_status' field='label' id=$id}{/if}</td>
+  <td class="label">{$form.label.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_membership_status' field='label' id=$id}{/if}</td>
         <td class="html-adjust">{$form.label.html}<br />
            <span class="description">{ts}Display name for this Membership status (e.g. New, Current, Grace, Expired...).{/ts}</span>
         </td>
@@ -88,19 +88,19 @@
         <td class="html-adjust">&nbsp;{$form.weight.html}<br />
            <span class="description">{ts}Weight sets the order of precedence for automatic assignment of status to a membership. It also sets the order for status displays. EXAMPLE: The default 'New' and 'Current' statuses have overlapping ranges. Memberships that meet both status range criteria are assigned the status with the lower weight.{/ts}</span>
         </td>
-      </tr> 
+      </tr>
       <tr class="crm-membership-status-form-block-is_default">
         <td class="label">{$form.is_default.label}</td>
         <td class="html-adjust">{$form.is_default.html}<br />
            <span class="description">{ts}The default status is assigned when there are no matching status rules for a membership.{/ts}</span>
         </td>
-      </tr>   
+      </tr>
       <tr class="crm-membership-status-form-block-is_active">
         <td class="label">{$form.is_active.label}</td>
         <td class="html-adjust">{$form.is_active.html}<br />
            <span class="description">{ts}Is this status enabled.{/ts}</span>
         </td>
-      </tr>     
+      </tr>
     </table>
     {/if}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>

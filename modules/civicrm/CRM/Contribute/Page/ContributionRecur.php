@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -57,7 +57,7 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
       // if there is a payment processor ID, get the name of the payment processor
       if (CRM_Utils_Array::value('payment_processor_id', $values)) {
         $values['payment_processor'] = CRM_Core_DAO::getFieldValue(
-          'CRM_Core_DAO_PaymentProcessor',
+          'CRM_Financial_DAO_PaymentProcessor',
           $values['payment_processor_id'],
           'name'
         );

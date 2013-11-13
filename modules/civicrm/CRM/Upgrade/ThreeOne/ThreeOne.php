@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -267,7 +267,7 @@ class CRM_Upgrade_ThreeOne_ThreeOne extends CRM_Upgrade_Form {
     $totalCount   = 0;
     $addressQuery = "
      UPDATE civicrm_address as address
-INNER JOIN ( SELECT id, contact_id FROM civicrm_address WHERE is_primary = 1 GROUP BY contact_id HAVING count( id ) > 1 ) as dup_address 
+INNER JOIN ( SELECT id, contact_id FROM civicrm_address WHERE is_primary = 1 GROUP BY contact_id HAVING count( id ) > 1 ) as dup_address
          ON ( address.contact_id = dup_address.contact_id AND address.id != dup_address.id )
         SET address.is_primary = 0";
     CRM_Core_DAO::executeQuery($addressQuery);

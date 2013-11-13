@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -41,7 +41,8 @@ class CRM_Pledge_Page_Tab extends CRM_Core_Page {
    *
    * return null
    * @access public
-   */ function browse() {
+   */
+  function browse() {
     $controller = new CRM_Core_Controller_Simple('CRM_Pledge_Form_Search', ts('Pledges'), $this->_action);
     $controller->setEmbedded(TRUE);
     $controller->reset();
@@ -130,15 +131,7 @@ class CRM_Pledge_Page_Tab extends CRM_Core_Page {
     $this->preProcess();
 
     // check if we can process credit card registration
-    $processors = CRM_Core_PseudoConstant::paymentProcessor(FALSE, FALSE,
-      "billing_mode IN ( 1, 3 )"
-    );
-    if (count($processors) > 0) {
-      $this->assign('newCredit', TRUE);
-    }
-    else {
-      $this->assign('newCredit', FALSE);
-    }
+    CRM_Core_Payment::allowBackofficeCreditCard($this);
 
     $this->setContext();
 
@@ -149,14 +142,7 @@ class CRM_Pledge_Page_Tab extends CRM_Core_Page {
       $this->edit();
     }
     elseif ($this->_action & CRM_Core_Action::DETACH) {
-      CRM_Pledge_BAO_PledgePayment::updatePledgePaymentStatus($this->_id, NULL, NULL,
-        array_search('Cancelled',
-          CRM_Contribute_PseudoConstant::contributionStatus(NULL,
-            'name'
-          )
-        )
-      );
-
+      CRM_Pledge_BAO_Pledge::cancel($this->_id);
       $session = CRM_Core_Session::singleton();
       $session->setStatus(ts('Pledge has been Cancelled and all scheduled (not completed) payments have been cancelled.<br />'));
       CRM_Utils_System::redirect($session->popUserContext());

@@ -1,9 +1,8 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright Tech To The People (c) 2010                              |
  +--------------------------------------------------------------------+
@@ -38,8 +37,6 @@
  * Include utility functions
  */
 require_once 'api/v3/utils.php';
-require_once 'CRM/Utils/Rule.php';
-require_once 'CRM/Campaign/BAO/Petition.php';
 
 /**
  * Get the list of signatories
@@ -65,7 +62,7 @@ function civicrm_api3_survey_respondant_get(&$params) {
   $interviewerID = NULL;
   if (array_key_exists('interviewer_id', $params)) {
     $interviewerID = $params['interviewer_id'];
-  }
+}
 
   $statusIds = array();
   if (array_key_exists('status_id', $params)) {
@@ -77,7 +74,7 @@ function civicrm_api3_survey_respondant_get(&$params) {
   return (civicrm_api3_create_success($respondants, $params));
 }
 
-/*
+/**
  * @deprecated - api currently not supported
  */
 function &civicrm_api3_survey_respondant_count($params) {

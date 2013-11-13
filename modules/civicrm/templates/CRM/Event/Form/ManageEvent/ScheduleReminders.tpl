@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright (C) 2011 Marty Wright                                    |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -32,7 +32,7 @@
       {include file="CRM/Admin/Page/Reminders.tpl"}
 
       <div class="action-link">
-    	  <a href="{crmURL q="action=update&reset=1&id=$eventId&new=1"}" id="newScheduleReminder" class="button"><span><div class="icon add-icon"></div>{ts}Add Reminder{/ts}</span></a>
+        <a href="{crmURL q="action=update&reset=1&id=$eventId&new=1"}" id="newScheduleReminder" class="button"><span><div class="icon add-icon"></div>{ts}Add Reminder{/ts}</span></a>
       </div>
     </div>
 
@@ -42,8 +42,8 @@
     {include file="CRM/common/formButtons.tpl" location="top"}
  </div>
 {if $action eq 8}
-  <div class="messages status">  
-      <div class="icon inform-icon"></div> 
+  <div class="messages status no-popup">
+      <div class="icon inform-icon"></div>
         {ts 1=$reminderName}WARNING: You are about to delete the Reminder titled <strong>%1</strong>.{/ts} {ts}Do you want to continue?{/ts}
   </div>
 {else}
@@ -53,7 +53,7 @@
     var recipient_manual = '';
     var recipient_manual_id = null;
     var toDataUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' q='id=1&noemail=1' h=0 }{literal}"; {/literal}
-    
+
     {if $recipients}
     {foreach from=$recipients key=id item=name}
          {literal} recipient_manual += '{"name":"'+{/literal}"{$name}"{literal}+'","id":"'+{/literal}"{$id}"{literal}+'"},';{/literal}
@@ -74,11 +74,11 @@
 
     var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
     var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
-    var hintText = "{/literal}{ts}Type in a partial or complete name of an existing recipient.{/ts}{literal}";
+    var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name of an existing recipient.{/ts}{literal}";
     cj( "#recipient_manual_id").tokenInput( tokenDataUrl, { prePopulate: recipient_manual, classes: tokenClass, hintText: hintText });
     cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
     cj('#source_contact_id').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 1
-                                }).result( function(event, data, formatted) { 
+                                }).result( function(event, data, formatted) {
                                 }).bind( 'click', function( ) {  });
     });
     </script>
@@ -87,105 +87,101 @@
     <tr class="crm-scheduleReminder-form-block-title">
         <td class="right">{$form.title.label}</td><td colspan="3">{$form.title.html}</td>
     </tr>
-
-     <tr>	
+     <tr>
         <td class="label">{$form.entity.label}</td>
         <td>{$form.entity.html}</td>
     </tr>
-
     <tr class="crm-scheduleReminder-form-block-when">
         <td class="right">{$form.start_action_offset.label}</td>
-	<td colspan="3">{include file="CRM/common/jcalendar.tpl" elementName=absolute_date} <strong>{ts}OR{/ts}</strong><br />  
-	</td>
+    <td colspan="3">{include file="CRM/common/jcalendar.tpl" elementName=absolute_date} <strong>{ts}OR{/ts}</strong><br /></td>
     </tr>
-
-   <tr id="relativeDate" class="crm-scheduleReminder-form-block-description">
+    <tr id="relativeDate" class="crm-scheduleReminder-form-block-description">
         <td class="right"></td>
-	<td colspan="3">{$form.start_action_offset.html}&nbsp;&nbsp;&nbsp;{$form.start_action_unit.html}&nbsp;&nbsp;&nbsp;{$form.start_action_condition.html}&nbsp;&nbsp;&nbsp;{$form.start_action_date.html}
-	</td>
+    <td colspan="3">{$form.start_action_offset.html}&nbsp;&nbsp;&nbsp;{$form.start_action_unit.html}&nbsp;&nbsp;&nbsp;{$form.start_action_condition.html}&nbsp;&nbsp;&nbsp;{$form.start_action_date.html}</td>
+    </tr>
+    <tr id="recordActivity" class="crm-scheduleReminder-form-block-record_activity">
+      <td class="label" width="20%">{$form.record_activity.label}</td>
+        <td>{$form.record_activity.html}</td>
     </tr>
     <tr id="relativeDateRepeat" class="crm-scheduleReminder-form-block-is_repeat"><td class="label" width="20%">{$form.is_repeat.label}</td>
         <td>{$form.is_repeat.html}&nbsp;&nbsp;<span class="description">{ts}Enable repetition.{/ts}</span></td>
     </tr>
-    <tr id="repeatFields" class="crm-scheduleReminder-form-block-repeatFields"><td></td><td>
+    <tr id="repeatFields" class="crm-scheduleReminder-form-block-repeatFields">
+      <td></td>
+      <td>
         <table class="form-layout-compressed">
             <tr class="crm-scheduleReminder-form-block-repetition_frequency_interval">
-	    	<td class="label">{$form.repetition_frequency_interval.label}&nbsp;&nbsp;&nbsp;{$form.repetition_frequency_interval.html}</td>
-		<td>{$form.repetition_frequency_unit.html}</td>
+                <td class="label">{$form.repetition_frequency_interval.label}&nbsp;&nbsp;&nbsp;{$form.repetition_frequency_interval.html}</td>
+        <td>{$form.repetition_frequency_unit.html}</td>
             </tr>
-	    <tr class="crm-scheduleReminder-form-block-repetition_frequency_interval">
-	    	<td class="label">{$form.end_frequency_interval.label}&nbsp;&nbsp;&nbsp;{$form.end_frequency_interval.html}
-		<td>{$form.end_frequency_unit.html}&nbsp;&nbsp;&nbsp;{$form.end_action.html}&nbsp;&nbsp;&nbsp;{$form.end_date.html}</td>
+            <tr class="crm-scheduleReminder-form-block-repetition_frequency_interval">
+              <td class="label">{$form.end_frequency_interval.label}&nbsp;&nbsp;&nbsp;{$form.end_frequency_interval.html}
+        <td>{$form.end_frequency_unit.html}&nbsp;&nbsp;&nbsp;{$form.end_action.html}&nbsp;&nbsp;&nbsp;{$form.end_date.html}</td>
             </tr>
         </table>
-        </td>
+      </td>
     </tr>
     <tr class="crm-scheduleReminder-form-block-recipient">
-        <td class="right">{$form.recipient.label}</td><td colspan="3">{$form.recipient.html}</td>
+        <td class="right">{$form.recipient.label}</td><td colspan="3">{$form.limit_to.html}&nbsp;&nbsp;{$form.recipient.html}&nbsp;&nbsp;{help id="recipient" file="CRM/Admin/Page/ScheduleReminders.hlp" title=$form.recipient.label}</td>
     </tr>
     <tr id="recipientList" class="crm-scheduleReminder-form-block-recipientListing">
         <td class="right">{$form.recipient_listing.label}</td><td colspan="3">{$form.recipient_listing.html}</td>
     </tr>
     <tr id="recipientManual" class="crm-scheduleReminder-form-block-recipient_manual_id">
-    	<td class="label">{$form.recipient_manual_id.label}</td>
-        <td>{$form.recipient_manual_id.html}
-	    {edit}<span class="description">{ts}You can manually send out the reminders to these recipients.{/ts}</span>{/edit}
-        </td>
+        <td class="label">{$form.recipient_manual_id.label}</td>
+        <td>{$form.recipient_manual_id.html}{edit}<span class="description">{ts}You can manually send out the reminders to these recipients.{/ts}</span>{/edit}</td>
     </tr>
-
     <tr id="recipientGroup" class="crm-scheduleReminder-form-block-recipient_group_id">
-    	<td class="label">{$form.group_id.label}</td>
-        <td>{$form.group_id.html}
-        </td>
+        <td class="label">{$form.group_id.label}</td>
+        <td>{$form.group_id.html}</td>
     </tr>
 
   </table>
   <fieldset id="compose_id"><legend>{ts}Email{/ts}</legend>
-   	<table id="email-field-table" class="form-layout-compressed">
-	    <tr class="crm-scheduleReminder-form-block-active">
-             	<td class="label"></td>
-	     	<td>{$form.is_active.html}&nbsp;{$form.is_active.label}</td>
-    	    </tr>
-            <tr class="crm-scheduleReminder-form-block-template">
-             	<td class="label">{$form.template.label}</td>
-	     	<td>{$form.template.html}</td>
-    	    </tr>
-	    <tr class="crm-scheduleReminder-form-block-subject">
-             	<td class="label">{$form.subject.label}</td>
-	     	<td>{$form.subject.html}</td>
-    	    </tr>
-	 
-	</table>
+     <table id="email-field-table" class="form-layout-compressed">
+       <tr class="crm-scheduleReminder-form-block-active">
+           <td class="label"></td>
+           <td>{$form.is_active.html}&nbsp;{$form.is_active.label}</td>
+       </tr>
+       <tr class="crm-scheduleReminder-form-block-template">
+           <td class="label">{$form.template.label}</td>
+           <td>{$form.template.html}</td>
+       </tr>
+       <tr class="crm-scheduleReminder-form-block-subject">
+           <td class="label">{$form.subject.label}</td>
+           <td>{$form.subject.html}</td>
+       </tr>
+  </table>
         {include file="CRM/Contact/Form/Task/EmailCommon.tpl" upload=1 noAttach=1}
   </fieldset>
-{/if} 
+{/if}
 
  <div class="crm-submit-buttons">
       {include file="CRM/common/formButtons.tpl" location="bottom"}</div>
  </div>
 {/if}
-{include file="CRM/common/showHideByFieldValue.tpl" 
+{include file="CRM/common/showHideByFieldValue.tpl"
     trigger_field_id    = "is_repeat"
     trigger_value       = "true"
-    target_element_id   = "repeatFields" 
+    target_element_id   = "repeatFields"
     target_element_type = "table-row"
     field_type          = "radio"
     invert              = "false"
 }
 
-{include file="CRM/common/showHideByFieldValue.tpl" 
+{include file="CRM/common/showHideByFieldValue.tpl"
     trigger_field_id    ="recipient"
     trigger_value       = 'manual'
-    target_element_id   ="recipientManual" 
+    target_element_id   ="recipientManual"
     target_element_type ="table-row"
     field_type          ="select"
     invert              = 0
 }
 
-{include file="CRM/common/showHideByFieldValue.tpl" 
+{include file="CRM/common/showHideByFieldValue.tpl"
     trigger_field_id    ="recipient"
     trigger_value       = 'group'
-    target_element_id   ="recipientGroup" 
+    target_element_id   ="recipientGroup"
     target_element_type ="table-row"
     field_type          ="select"
     invert              = 0
@@ -201,36 +197,37 @@
      });
 
      function populateRecipient( ) {
-     	  var recipient = cj("#recipient option:selected").text();    
-	  var postUrl = "{/literal}{crmURL p='civicrm/ajax/populateRecipient' h=0}{literal}";
-	  if(recipient == 'Participant Status' || recipient == 'Participant Role'){
-   	  var elementID = '#recipient_listing';
+         var recipientMapping = eval({/literal}{$recipientMapping}{literal});
+         var recipient = cj("#recipient option:selected").val();
+    var postUrl = "{/literal}{crmURL p='civicrm/ajax/populateRecipient' h=0}{literal}";
+    if(recipientMapping[recipient] == 'Participant Status' || recipientMapping[recipient] == 'participant_role'){
+       var elementID = '#recipient_listing';
           cj( elementID ).html('');
-	    cj.post(postUrl, {recipient: recipient},
-	    	function ( response ) {
-  		response = eval( response );
-  		for (iota = 0; iota < response.length; iota++) {
+      cj.post(postUrl, {recipient: recipientMapping[recipient]},
+        function ( response ) {
+      response = eval( response );
+      for (iota = 0; iota < response.length; iota++) {
                      cj( elementID ).get(0).add(new Option(response[iota].name, response[iota].value), document.all ? iota : null);
                  }
-		}	    
-	    );
-	    cj("#recipientList").show();	     
-	  } else {
-	    cj("#recipientList").hide();
-	  }
+    }
+      );
+      cj("#recipientList").show();
+    } else {
+      cj("#recipientList").hide();
+    }
      }
 
       cj('#absolute_date_display').click( function( ) {
-	 if(cj('#absolute_date_display').val()) {
-	     cj('#relativeDate').hide();
-	     cj('#relativeDateRepeat').hide();
-	     cj('#repeatFields').hide();
-	   } else {
-	     cj('#relativeDate').show();
-	     cj('#relativeDateRepeat').show();
-	   }
-      }); 
+   if(cj('#absolute_date_display').val()) {
+       cj('#relativeDate').hide();
+       cj('#relativeDateRepeat').hide();
+       cj('#repeatFields').hide();
+     } else {
+       cj('#relativeDate').show();
+       cj('#relativeDateRepeat').show();
+     }
+      });
 
  </script>
  {/literal}
- 
+

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,6 +37,13 @@ function civicrm_group_roles_install() {
 
   $here = l(t('here'), 'admin/config/civicrm/civicrm_group_roles/add_rule');
   drupal_set_message(t('CiviGroup Roles Sync installed. You will need to specify sync rules !1.', array('!1' => $here)));
+}
+
+/**
+ * Implementation of hook_enable().
+ */
+function civicrm_group_roles_enable() {
+  db_query("UPDATE {system} SET weight = 110 WHERE name = 'civicrm_group_roles'");
 }
 
 /**

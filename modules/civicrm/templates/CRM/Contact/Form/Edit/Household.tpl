@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,11 +27,11 @@
 <table class="form-layout-compressed">
     <tr>
        <td>{$form.household_name.label}<br/>
-         {$form.household_name.html|crmReplace:class:big}
+         {$form.household_name.html}
        </td>
 
        <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html|crmReplace:class:big}</td>
+       {$form.nick_name.html}</td>
 
        <td>{if $action == 1 and $contactSubType}&nbsp;{else}
               {$form.contact_sub_type.label}<br />

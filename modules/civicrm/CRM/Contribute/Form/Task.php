@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -81,12 +81,12 @@ class CRM_Contribute_Form_Task extends CRM_Core_Form {
    *
    * @return void
    * @access public
-   */ function preProcess() {
+   */
+  function preProcess() {
     self::preProcessCommon($this);
   }
 
-  static
-  function preProcessCommon(&$form, $useTable = FALSE) {
+  static function preProcessCommon(&$form, $useTable = FALSE) {
     $form->_contributionIds = array();
 
     $values = $form->controller->exportValues($form->get('searchFormName'));
@@ -105,13 +105,18 @@ class CRM_Contribute_Form_Task extends CRM_Core_Form {
     }
     else {
       $queryParams = $form->get('queryParams');
+      $sortOrder = null;
+      if ( $form->get( CRM_Utils_Sort::SORT_ORDER  ) ) {
+        $sortOrder = $form->get( CRM_Utils_Sort::SORT_ORDER );
+      }
+
       $query = new CRM_Contact_BAO_Query($queryParams, NULL, NULL, FALSE, FALSE,
         CRM_Contact_BAO_Query::MODE_CONTRIBUTE
       );
-      $query->_distinctComponentClause = " civicrm_contribution.id";
-      $query->_groupByComponentClause = " GROUP BY civicrm_contribution.id ";
+      $query->_distinctComponentClause = ' civicrm_contribution.id';
+      $query->_groupByComponentClause = ' GROUP BY civicrm_contribution.id ';
 
-      $result = $query->searchQuery(0, 0, NULL);
+      $result = $query->searchQuery(0, 0, $sortOrder);
       while ($result->fetch()) {
         $ids[] = $result->contribution_id;
       }
@@ -166,7 +171,7 @@ class CRM_Contribute_Form_Task extends CRM_Core_Form {
    * @return void
    * @access public
    */
-  function addDefaultButtons($title, $nextType = 'next', $backType = 'back') {
+  function addDefaultButtons($title, $nextType = 'next', $backType = 'back', $submitOnce = FALSE) {
     $this->addButtons(array(
         array(
           'type' => $nextType,

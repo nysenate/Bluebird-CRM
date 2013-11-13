@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -95,6 +95,15 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
    */
   protected $_activityId = NULL;
 
+  protected $_multiRecord = NULL;
+
+  protected $_recordId = NULL;
+
+  /*
+   * fetch multirecord as well as non-multirecord fields
+   */
+  protected $_allFields = NULL;
+
   /**
    * class constructor
    *
@@ -103,13 +112,39 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
    *
    * @return void
    * @access public
-   */ function __construct($id, $gid, $restrict, $skipPermission = FALSE, $profileIds = NULL) {
+   */
+  function __construct($id, $gid, $restrict, $skipPermission = FALSE, $profileIds = NULL) {
     parent::__construct();
 
     $this->_id = $id;
     $this->_gid = $gid;
     $this->_restrict = $restrict;
     $this->_skipPermission = $skipPermission;
+
+    if (!array_key_exists('multiRecord', $_GET)) {
+      $this->set('multiRecord', NULL);
+    }
+    if (!array_key_exists('recordId', $_GET)) {
+      $this->set('recordId', NULL);
+    }
+    if (!array_key_exists('allFields', $_GET)) {
+      $this->set('allFields', NULL);
+    }
+
+    //specifies the action being done on a multi record field
+    $multiRecordAction = CRM_Utils_Request::retrieve('multiRecord', 'String', $this);
+
+    $this->_multiRecord = (!is_numeric($multiRecordAction)) ?
+      CRM_Core_Action::resolve($multiRecordAction) : $multiRecordAction;
+    if ($this->_multiRecord) {
+      $this->set('multiRecord', $this->_multiRecord);
+    }
+
+    if ($this->_multiRecord & CRM_Core_Action::VIEW) {
+      $this->_recordId  = CRM_Utils_Request::retrieve('recordId', 'Positive', $this);
+      $this->_allFields = CRM_Utils_Request::retrieve('allFields', 'Integer', $this);
+    }
+
     if ($profileIds) {
       $this->_profileIds = $profileIds;
     }
@@ -163,21 +198,7 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
             $limitListingsGroupsID
           )) {
           CRM_Utils_System::setTitle(ts('Profile View - Permission Denied'));
-          return CRM_Core_Session::setStatus(ts('You do not have permission to view this contact record. Contact the site administrator if you need assistance.'));
-        }
-      }
-
-      $values = array();
-      $fields = CRM_Core_BAO_UFGroup::getFields($this->_profileIds, FALSE, CRM_Core_Action::VIEW,
-        NULL, NULL, FALSE, $this->_restrict,
-        $this->_skipPermission, NULL,
-        CRM_Core_Permission::VIEW
-      );
-
-      if ($this->_isContactActivityProfile && $this->_gid) {
-        $errors = CRM_Profile_Form::validateContactActivityProfile($this->_activityId, $this->_id, $this->_gid);
-        if (!empty($errors)) {
-          CRM_Core_Error::fatal(array_pop($errors));
+          return CRM_Core_Session::setStatus(ts('You do not have permission to view this contact record. Contact the site administrator if you need assistance.'), ts('Permission Denied'), 'error');
         }
       }
 
@@ -185,6 +206,7 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
       $userID = $session->get('userID');
 
       $this->_isPermissionedChecksum = FALSE;
+      $permissionType = CRM_Core_Permission::VIEW;
       if ($this->_id != $userID) {
         // do not allow edit for anon users in joomla frontend, CRM-4668, unless u have checksum CRM-5228
         if ($config->userFrameworkFrontend) {
@@ -194,13 +216,22 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
           $this->_isPermissionedChecksum = CRM_Contact_BAO_Contact_Permission::validateChecksumContact($this->_id, $this, FALSE);
         }
       }
+      // CRM-10853
+      // Users with create or edit permission should be allowed to view their own profile
+      if ($this->_id == $userID || $this->_isPermissionedChecksum) {
+        if (!CRM_Core_Permission::check('profile view')) {
+          if (CRM_Core_Permission::check('profile create') || CRM_Core_Permission::check('profile edit')) {
+            $this->_skipPermission = TRUE;
+          }
+        }
+      }
 
       // make sure we dont expose all fields based on permission
       $admin = FALSE;
       if ((!$config->userFrameworkFrontend &&
           (CRM_Core_Permission::check('administer users') ||
             CRM_Core_Permission::check('view all contacts') ||
-            CRM_Contact_BAO_Contact_Permission::allow($this->_id, CRM_Core_Permission::VIEW)
+            CRM_Contact_BAO_Contact_Permission::allow($this->_id)
           )
         ) ||
         $this->_id == $userID ||
@@ -209,18 +240,33 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
         $admin = TRUE;
       }
 
-      if (!$admin) {
-        foreach ($fields as $name => $field) {
-          // make sure that there is enough permission to expose this field
-          if ($field['visibility'] == 'User and User Admin Only') {
-            unset($fields[$name]);
-          }
+      $values = array();
+      $fields = CRM_Core_BAO_UFGroup::getFields($this->_profileIds, FALSE, CRM_Core_Action::VIEW,
+        NULL, NULL, FALSE, $this->_restrict,
+        $this->_skipPermission, NULL,
+        $permissionType
+      );
+
+      if ($this->_multiRecord & CRM_Core_Action::VIEW && $this->_recordId && !$this->_allFields) {
+        CRM_Core_BAO_UFGroup::shiftMultiRecordFields($fields, $multiRecordFields);
+        $fields = $multiRecordFields;
+      }
+      if ($this->_isContactActivityProfile && $this->_gid) {
+        $errors = CRM_Profile_Form::validateContactActivityProfile($this->_activityId, $this->_id, $this->_gid);
+        if (!empty($errors)) {
+          CRM_Core_Error::fatal(array_pop($errors));
         }
       }
 
-      // also eliminate all formatting fields
+      //reformat fields array
       foreach ($fields as $name => $field) {
+        // also eliminate all formatting fields
         if (CRM_Utils_Array::value('field_type', $field) == 'Formatting') {
+          unset($fields[$name]);
+        }
+
+        // make sure that there is enough permission to expose this field
+        if (!$admin && $field['visibility'] == 'User and User Admin Only') {
           unset($fields[$name]);
         }
       }
@@ -249,7 +295,22 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
         }
       }
       else {
-        CRM_Core_BAO_UFGroup::getValues($this->_id, $fields, $values);
+        $customWhereClause = NULL;
+        if ($this->_multiRecord & CRM_Core_Action::VIEW && $this->_recordId) {
+          if ($this->_allFields) {
+            $copyFields = $fields;
+            CRM_Core_BAO_UFGroup::shiftMultiRecordFields($copyFields, $multiRecordFields);
+            $fieldKey = key($multiRecordFields);
+          } else {
+            $fieldKey = key($fields);
+          }
+          if ($fieldID = CRM_Core_BAO_CustomField::getKeyID($fieldKey)) {
+            $tableColumnGroup = CRM_Core_BAO_CustomField::getTableColumnGroup($fieldID);
+            $columnName = "{$tableColumnGroup[0]}.id";
+            $customWhereClause = $columnName . ' = ' . $this->_recordId;
+          }
+        }
+        CRM_Core_BAO_UFGroup::getValues($this->_id, $fields, $values, TRUE, NULL, FALSE, $customWhereClause);
       }
 
       // $profileFields array can be used for customized display of field labels and values in Profile/View.tpl
@@ -272,12 +333,21 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
     }
 
     $name = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $this->_gid, 'name');
+    $this->assign('ufGroupName', $name);
+    CRM_Utils_Hook::viewProfile($name);
 
     if (strtolower($name) == 'summary_overlay') {
       $template->assign('overlayProfile', TRUE);
     }
 
-    $title = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $this->_gid, 'title');
+    if (($this->_multiRecord & CRM_Core_Action::VIEW) && $this->_recordId && !$this->_allFields) {
+      $fieldDetail = reset($fields);
+      $fieldId = CRM_Core_BAO_CustomField::getKeyID($fieldDetail['name']);
+      $customGroupDetails = CRM_Core_BAO_CustomGroup::getGroupTitles(array($fieldId));
+      $title = $customGroupDetails[$fieldId]['groupTitle'];
+    } else {
+      $title = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $this->_gid, 'title');
+    }
 
     //CRM-4131.
     $displayName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_id, 'display_name');
@@ -301,7 +371,7 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
     // invoke the pagRun hook, CRM-3906
     CRM_Utils_Hook::pageRun($this);
 
-    return trim($template->fetch($this->getTemplateFileName()));
+    return trim($template->fetch($this->getHookedTemplateFileName()));
   }
 
   function checkTemplateFileExists($suffix = '') {

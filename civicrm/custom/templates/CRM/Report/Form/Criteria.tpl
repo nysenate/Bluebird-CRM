@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{*NYSS UI mods throughout*}
 {* Report form criteria section *}
 {if $colGroups}
   <div id="col-groups" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom">
@@ -35,9 +36,8 @@
       {assign  var="count" value="0"}
       {* Wrap custom field sets in collapsed accordion pane. *}
       {if $grpFields.group_title}
-        <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                <div class="crm-accordion-wrapper crm-accordion collapsed">
           <div class="crm-accordion-header">
-              <div class="icon crm-accordion-pointer"></div>
               {$grpFields.group_title}
           </div><!-- /.crm-accordion-header -->
           <div class="crm-accordion-body">
@@ -72,7 +72,7 @@
       <tr class="crm-report crm-report-criteria-groupby">
         {foreach from=$groupByElements item=gbElem key=dnc}
           {assign var="count" value=`$count+1`}
-          <td width="25%" {if $form.fields.$gbElem} onClick="selectGroupByFields('{$gbElem}');"{/if}>
+                    <td width="25%" {if $form.fields.$gbElem}"{/if}>
             {$form.group_bys[$gbElem].html}
             {if $form.group_bys_freq[$gbElem].html}:<br>
               &nbsp;&nbsp;{$form.group_bys_freq[$gbElem].label}&nbsp;{$form.group_bys_freq[$gbElem].html}
@@ -107,7 +107,7 @@
       <tr id="optionField_{$index}" class="form-item {cycle values="odd-row,even-row"}">
         <td>
           {if $index GT 1}
-            <a onclick="hideRow({$index});" name="orderBy_{$index}" href="javascript:void(0)" class="form-link"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}hide field or section{/ts}"/></a>
+            <a onclick="hideRow({$index}); return false;" name="orderBy_{$index}" href="#" class="form-link"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}hide field or section{/ts}"/></a>
           {/if}
         </td>
         <td> {$form.order_bys.$index.column.html}</td>
@@ -117,7 +117,7 @@
     {/section}
     </table>
     <div id="optionFieldLink" class="add-remove-link">
-      <a onclick="showHideRow();" name="optionFieldLink" href="javascript:void(0)" class="form-link"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}show field or section{/ts}"/>{ts}another column{/ts}</a>
+            <a onclick="showHideRow(); return false;" name="optionFieldLink" href="#" class="form-link"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}show field or section{/ts}"/>{ts}another column{/ts}</a>
     </div>
     <script type="text/javascript">
       var showRows   = new Array({$showBlocks});
@@ -146,7 +146,7 @@
   </div>
 {/if}
 
-{if $form.options.html || $form.options.html}
+{if $form.options.html}
   <div id="other-options" class="civireport-criteria ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide">
     <h3>Other Options</h3>
     <table class="report-layout">
@@ -174,9 +174,8 @@
 	         	</table>
 			      {assign var="counter" value=0}
 		      {/if}
-          <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                    <div class="crm-accordion-wrapper crm-accordion collapsed">
           <div class="crm-accordion-header">
-            <div class="icon crm-accordion-pointer"></div>
             {$colGroups.$tableName.group_title}
           </div><!-- /.crm-accordion-header -->
           <div class="crm-accordion-body">
@@ -204,14 +203,13 @@
             </tr>
           {/if}
         {/foreach}
-
         {if $colGroups.$tableName.group_title}
               </table>
             </div><!-- /.crm-accordion-body -->
           </div><!-- /.crm-accordion-wrapper -->
-          {assign var=closed value=1} {*-- ie table tags are closed-- *}
+                    {assign var=closed     value=1"} {*-- ie table tags are closed-- *}
         {else}
-          {assign var=closed value=0} {*-- ie table tags are not closed-- *}
+                     {assign var=closed     value=0"} {*-- ie table tags are not closed-- *}
         {/if}
 
       {/foreach}
@@ -240,34 +238,25 @@
     if ( val == "bw" || val == "nbw" ) {
       cj('#' + fldVal ).hide();
       cj('#' + fldMinMax ).show();
-    }
-    else if (val =="nll" || val == "nnll") {
+            } else if (val =="nll" || val == "nnll") {
       cj('#' + fldVal).hide() ;
       cj('#' + field + '_value').val('');
       cj('#' + fldMinMax ).hide();
-    }
-    else {
+            } else {
       cj('#' + fldVal ).show();
       cj('#' + fldMinMax ).hide();
     }
   }
 	    
-	function selectGroupByFields(id) {
-    var field = 'fields\['+ id+'\]';
-    var group = 'group_bys\['+ id+'\]';
-    var groups = document.getElementById( group ).checked;
-    if ( groups == 1 ) {
-      document.getElementById( field ).checked = true;
-    }
-    else {
-      document.getElementById( field ).checked = false;
-    }
-	}
-
-  var selectedTab = 'col-groups';
-  cj( function() {
-    var tabIndex = cj('#tab_' + selectedTab).prevAll().length
-    cj("#mainTabContainer").tabs( {selected: tabIndex} );
+    cj(document).ready(function(){
+      cj('.crm-report-criteria-groupby input:checkbox').click(function() {
+        cj('#fields_' + this.id.substr(10)).prop('checked', this.checked);
+      });
+      {/literal}{if $displayToggleGroupByFields}{literal}
+      cj('.crm-report-criteria-field input:checkbox').click(function() {
+        cj('#group_bys_' + this.id.substr(7)).prop('checked', this.checked);
+      });
+      {/literal}{/if}{literal}
   });
 </script>
 {/literal}

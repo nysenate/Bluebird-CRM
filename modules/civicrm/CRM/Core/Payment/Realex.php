@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,9 +41,9 @@
 class CRM_Core_Payment_Realex extends CRM_Core_Payment {
   CONST AUTH_APPROVED = '00';
 
-  static protected $_mode = NULL;
+  protected $_mode = NULL;
 
-  static protected $_params = array();
+  protected $_params = array();
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -60,7 +60,8 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
    * @param string $mode the mode of operation: live or test
    *
    * @return void
-   */ function __construct($mode, &$paymentProcessor) {
+   */
+  function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('Realex');
@@ -83,8 +84,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
    * @static
    *
    */
-  static
-  function &singleton($mode, &$paymentProcessor) {
+  static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === NULL) {
       self::$_singleton[$processorName] = new CRM_Core_Payment_Realex($mode, $paymentProcessor);
@@ -144,30 +144,30 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
 
     // Generate the request xml that is send to Realex Payments.
     $request_xml = "<request type='auth' timestamp='{$this->_getParam('timestamp')}'>
-			    <merchantid>{$this->_getParam('merchant_ref')}</merchantid>
-			    <account>{$this->_getParam('account')}</account>
-			    <orderid>{$this->_getParam('order_id')}</orderid>
-			    <amount currency='{$this->_getParam('currency')}'>{$this->_getParam('amount')}</amount>
-			    <card>
-				<number>{$this->_getParam('card_number')}</number>
-				<expdate>{$this->_getParam('exp_date')}</expdate>
-				<type>{$this->_getParam('card_type')}</type>
-				<chname>{$this->_getParam('card_name')}</chname>
-				<issueno>{$this->_getParam('issue_number')}</issueno>
-				<cvn>
-				    <number>{$this->_getParam('cvn')}</number>
-				    <presind>1</presind>
-				</cvn>
-			    </card>
-			    <autosettle flag='1'/>
-			    <sha1hash>$sha1hash</sha1hash>
+          <merchantid>{$this->_getParam('merchant_ref')}</merchantid>
+          <account>{$this->_getParam('account')}</account>
+          <orderid>{$this->_getParam('order_id')}</orderid>
+          <amount currency='{$this->_getParam('currency')}'>{$this->_getParam('amount')}</amount>
+          <card>
+        <number>{$this->_getParam('card_number')}</number>
+        <expdate>{$this->_getParam('exp_date')}</expdate>
+        <type>{$this->_getParam('card_type')}</type>
+        <chname>{$this->_getParam('card_name')}</chname>
+        <issueno>{$this->_getParam('issue_number')}</issueno>
+        <cvn>
+            <number>{$this->_getParam('cvn')}</number>
+            <presind>1</presind>
+        </cvn>
+          </card>
+          <autosettle flag='1'/>
+          <sha1hash>$sha1hash</sha1hash>
           <comments>
             <comment id='1'>{$this->_getParam('comments')}</comment>
           </comments>
           <tssinfo>
             <varref>{$this->_getParam('varref')}</varref>
           </tssinfo>
-			</request>";
+      </request>";
 
     /**********************************************************
      * Send to the payment processor using cURL
@@ -325,7 +325,7 @@ class CRM_Core_Payment_Realex extends CRM_Core_Payment {
   }
 
   /**
-   *	Format the params from the form ready for sending to Realex.  Also perform some validation
+   *  Format the params from the form ready for sending to Realex.  Also perform some validation
    */
   function setRealexFields(&$params) {
     if ((int)$params['amount'] <= 0) {

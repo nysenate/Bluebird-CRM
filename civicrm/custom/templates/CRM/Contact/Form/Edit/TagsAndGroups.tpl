@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,20 +40,16 @@ var test =true;
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
 {/literal}
 {if $title}
-<div id="dialog">
+<div id="dialog"></div>{*NYSS*}
 
-</div>
-<div class="crm-accordion-wrapper crm-tagGroup-accordion crm-accordion-closed">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div>
-	<a href="#" class="whiteanchor">{$title}</a>
-  </div><!-- /.crm-accordion-header -->
+<div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
+  <div class="crm-accordion-header">{$title}</div>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
-  <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}" style="width:98%">
+    <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
     <tr>
       {if $groupElementType eq 'crmasmSelect'}
-        <td style="width:45%;"><span class="label">{if $title}{$form.group.label}{/if}</span>
+          <td><span class="label">{if $title}{$form.group.label}{/if}</span>
           {$form.group.html}
           {literal}
           <script type="text/javascript">
@@ -69,7 +65,6 @@ var test =true;
 	  {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-
 			{if $key eq 'tag'}
 				<td width="100%" class="crm-tagList"><div class="label" onClick="rollDownGroup('.crm-tagList');"><div class="arrow"></div>{if $title}{$form.$key.label}{/if}</div>
 				  <div id="crm-tagListWrap">
@@ -86,7 +81,7 @@ var test =true;
 						    {if $k|is_numeric}
 							<tr class={cycle values="'odd-row','even-row'" name=$key} id="crm-tagRow{$k}">
 							    <td>
-			                   			<strong>{$it.html}</strong><br /> *}{*LCD retain for groups list*}{*
+			                   			<strong>{$it.html}</strong><br /> *}{*NYSS retain for groups list*}{*
 								{if $item.$k.description}
 								    <div class="description">
 									{$item.$k.description}
@@ -107,7 +102,6 @@ var test =true;
 	  </tr>
   </table>
 {if $title}
- </div><!-- /.crm-accordion-body -->
+  </div>
 </div><!-- /.crm-accordion-wrapper -->
-
 {/if}

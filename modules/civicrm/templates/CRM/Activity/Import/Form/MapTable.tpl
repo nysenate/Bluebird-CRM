@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -95,9 +95,9 @@
       </div>
       <script type="text/javascript">
              {if $mappingDetailsError }
-                show('saveDetails');
+                cj('#saveDetails').show();
              {else}
-              hide('saveDetails');
+              cj('#saveDetails').hide();
              {/if}
 
            {literal}

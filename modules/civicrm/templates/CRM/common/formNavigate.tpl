@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 {literal}
 <script type="text/javascript">
      cj( function( ) {
-         cj("#{/literal}{$form.formName}{literal}").FormNavigate("{/literal}{ts}You have unsaved changes.{/ts}{literal}"); 
+         cj("#{/literal}{$form.formName}{literal}").FormNavigate("{/literal}{ts escape='js'}You have unsaved changes.{/ts}{literal}"); 
      });
 </script>
 {/literal}

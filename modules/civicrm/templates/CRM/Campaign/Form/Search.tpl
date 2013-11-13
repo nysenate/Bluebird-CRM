@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,17 +36,17 @@
     {* Search request has returned 1 or more matching rows. Display results and collapse the search criteria fieldset. *}
     {assign var="showBlock" value="'searchForm_show'"}
     {assign var="hideBlock" value="'searchForm'"}
-    
+
     {* Search request has returned 1 or more matching rows. *}
     <fieldset>
-    
+
        {* This section handles form elements for action task select and submit *}
        {include file="CRM/common/searchResultTasks.tpl" context="Campaign"}
 
        {* This section displays the rows along and includes the paging controls *}
        <p></p>
        {include file="CRM/Campaign/Form/Selector.tpl" context="Search"}
-       
+
     </fieldset>
     {* END Actions/Results section *}
 
@@ -56,23 +56,23 @@
 {literal}
 <script type="text/javascript">
     cj(function() {
-      cj().crmaccordions(); 
+      cj().crmAccordions();
     });
 
   //load interviewer autocomplete.
   var interviewerDataUrl = "{/literal}{$dataUrl}{literal}";
-  var hintText = "{/literal}{ts}Type in a partial or complete name of an existing contact.{/ts}{literal}";
-  cj( "#survey_interviewer_name" ).autocomplete( interviewerDataUrl, 
-                                                 { width : 256, 
-                                                   selectFirst : false, 
-                                                   hintText: hintText, 
-                                                   matchContains: true, 
+  var hintText = "{/literal}{ts escape='js'}Type in a partial or complete name of an existing contact.{/ts}{literal}";
+  cj( "#survey_interviewer_name" ).autocomplete( interviewerDataUrl,
+                                                 { width : 256,
+                                                   selectFirst : false,
+                                                   hintText: hintText,
+                                                   matchContains: true,
                                                    minChars: 1
                                                   }
-                                                 ).result( function( event, data, formatted ) { 
-				                              cj( "#survey_interviewer_id" ).val( data[1] );
-                                                         }).bind( 'click', function( ) { 
-                                                              cj( "#survey_interviewer_id" ).val(''); 
+                                                 ).result( function( event, data, formatted ) {
+                                      cj( "#survey_interviewer_id" ).val( data[1] );
+                                                         }).bind( 'click', function( ) {
+                                                              cj( "#survey_interviewer_id" ).val('');
                                                          });
 
 

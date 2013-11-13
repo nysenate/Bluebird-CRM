@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,32 +39,32 @@
     <td class="crm-pledge-pledge_amount">{$row.pledge_amount|crmMoney:$row.pledge_currency}</td>
     <td class="crm-pledge-pledge_total_paid">{$row.pledge_total_paid|crmMoney:$row.pledge_currency}</td>
     <td class="crm-pledge-pledge_amount">{$row.pledge_amount-$row.pledge_total_paid|crmMoney:$row.pledge_currency}</td>
-    <td class="crm-pledge-pledge_contribution_type">{$row.pledge_contribution_type}</td>
+    <td class="crm-pledge-pledge_contribution_type">{$row.pledge_financial_type}</td>
     <td class="crm-pledge-pledge_create_date">{$row.pledge_create_date|truncate:10:''|crmDate}</td>
     <td class="crm-pledge-pledge_next_pay_date">{$row.pledge_next_pay_date|truncate:10:''|crmDate}</td>
     <td class="crm-pledge-pledge_next_pay_amount">{$row.pledge_next_pay_amount|crmMoney:$row.pledge_currency}</td>
     <td class="crm-pledge-pledge_status crm-pledge-pledge_status_{$row.pledge_status}">{$row.pledge_status}</td>
     <td>{if $row.pledge_contribution_page_id and ($row.pledge_status_name neq 'Completed') and ( $row.contact_id eq $loggedUserID ) }<a href="{crmURL p='civicrm/contribute/transact' q="reset=1&id=`$row.pledge_contribution_page_id`&pledgeId=`$row.pledge_id`"}">{ts}Make Payment{/ts}</a><br/>{/if}
-	<div id="{$row.pledge_id}_show">
-	    <a href="#" onclick="show('paymentDetails{$row.pledge_id}', 'table-row'); buildPaymentDetails('{$row.pledge_id}','{$row.contact_id}'); hide('{$row.pledge_id}_show');show('{$row.pledge_id}_hide','table-row');return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/>{ts}Payments{/ts}</a>
-	</div>
+  <div id="{$row.pledge_id}_show">
+      <a href="#" onclick="cj('#paymentDetails{$row.pledge_id}').show(); buildPaymentDetails('{$row.pledge_id}','{$row.contact_id}'); cj('#{$row.pledge_id}_show').hide();cj('#{$row.pledge_id}_hide').show();return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/>{ts}Payments{/ts}</a>
+  </div>
     </td>
    </tr>
    <tr id="{$row.pledge_id}_hide">
      <td colspan="11">
-         <a href="#" onclick="show('{$row.pledge_id}_show', 'table-row');hide('{$row.pledge_id}_hide');return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/>{ts}Payments{/ts}</a>
+         <a href="#" onclick="cj('#{$row.pledge_id}_show').show();cj('#{$row.pledge_id}_hide').hide();return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/>{ts}Payments{/ts}</a>
        <br/>
        <div id="paymentDetails{$row.pledge_id}"></div>
      </td>
   </tr>
  <script type="text/javascript">
-     hide('{$row.pledge_id}_hide');
+     cj('#{$row.pledge_id}_hide').hide();
  </script>
   {/foreach}
 </table>
 {/strip}
 {else}
-<div class="messages status">
+<div class="messages status no-popup">
          <div class="icon inform-icon"></div>
              {ts}There are no Pledges for your record.{/ts}
          </div>
@@ -72,36 +72,36 @@
 {*pledge row if*}
 
 {*Display honor block*}
-{if $pledgeHonor && $pledgeHonorRows}	
+{if $pledgeHonor && $pledgeHonorRows}
 {strip}
 <div id="help">
     <p>{ts}Pledges made in your honor.{/ts}</p>
 </div>
   <table class="selector">
     <tr class="columnheader">
-        <th>{ts}Pledger{/ts}</th> 
+        <th>{ts}Pledger{/ts}</th>
         <th>{ts}Amount{/ts}</th>
-	<th>{ts}Contribution Type{/ts}</th>
+  <th>{ts}Financial Type{/ts}</th>
         <th>{ts}Create date{/ts}</th>
         <th>{ts}Acknowledgment Sent{/ts}</th>
-	 <th>{ts}Acknowledgment Date{/ts}</th>
+   <th>{ts}Acknowledgment Date{/ts}</th>
         <th>{ts}Status{/ts}</th>
-        <th></th>   
+        <th></th>
     </tr>
-	{foreach from=$pledgeHonorRows item=row}
-	   <tr id='rowid{$row.honorId}' class="{cycle values="odd-row,even-row"}">
-	   <td class="crm-pledge-display_name"><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$row.honorId`"}" id="view_contact">{$row.display_name}</a></td>
-	   <td class="crm-pledge-amount">{$row.amount|crmMoney:$row.pledge_currency}</td>
+  {foreach from=$pledgeHonorRows item=row}
+     <tr id='rowid{$row.honorId}' class="{cycle values="odd-row,even-row"}">
+     <td class="crm-pledge-display_name"><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$row.honorId`"}" id="view_contact">{$row.display_name}</a></td>
+     <td class="crm-pledge-amount">{$row.amount|crmMoney:$row.pledge_currency}</td>
            <td class="crm-pledge-type">{$row.type}</td>
            <td class="crm-pledge-create_date">{$row.create_date|truncate:10:''|crmDate}</td>
            <td align="center">{if $row.acknowledge_date}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}</td>
            <td class="crm-pledge-acknowledge_date">{$row.acknowledge_date|truncate:10:''|crmDate}</td>
            <td class="crm-pledge-status">{$row.status}</td>
-	  </tr>
+    </tr>
         {/foreach}
 </table>
 {/strip}
-{/if} 
+{/if}
 </div>
 {* main if close*}
 {/if}
@@ -124,7 +124,7 @@ function buildPaymentDetails( pledgeId, contactId )
                error   : function( XMLHttpRequest, textStatus, errorThrown ) {
                                  console.error( 'Error: '+ textStatus );
                         }
-         });	
+         });
 }
 </script>
 {/literal}

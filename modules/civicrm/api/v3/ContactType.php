@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,10 +31,9 @@
  *
  * @package CiviCRM_APIv3
  * @subpackage API_Survey
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  */
 
-//require_once 'CRM/Campaign/BAO/ContactType.php';
 require_once 'api/v3/utils.php';
 
 /**
@@ -53,7 +51,6 @@ require_once 'api/v3/utils.php';
  * @access public
  */
 function civicrm_api3_contact_type_create($params) {
-  require_once 'CRM/Utils/String.php';
   civicrm_api3_verify_mandatory($params, _civicrm_api3_get_DAO(__FUNCTION__), array('name', 'parent_id'));
   if (!array_key_exists('label', $params)) {
     $params['label'] = $params['name'];

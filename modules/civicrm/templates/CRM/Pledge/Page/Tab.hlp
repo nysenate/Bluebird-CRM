@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,6 +23,9 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+{htxt id="id-payment-reminders-title"}
+  {ts}Payment Reminders{/ts}
+{/htxt}
 {htxt id="id-payment-reminders"}
 <p>
 {ts}One or more payment reminders can be emailed to this contributor based on the values entered in this section. If a 'Self-service Payments Page' has been selected, the reminder will include a link for the contributor to make their payment online.{/ts}

@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -60,7 +60,8 @@ class CRM_Contact_Form_Task_AddToTag extends CRM_Contact_Form_Task {
    * @access public
    *
    * @return void
-   */ function buildQuickForm() {
+   */
+  function buildQuickForm() {
     // add select for tag
     $this->_tags = CRM_Core_BAO_Tag::getTags();
 
@@ -78,8 +79,7 @@ class CRM_Contact_Form_Task_AddToTag extends CRM_Contact_Form_Task {
     $this->addFormRule(array('CRM_Contact_Form_Task_AddToTag', 'formRule'));
   }
 
-  static
-  function formRule($form, $rule) {
+  static function formRule($form, $rule) {
     $errors = array();
     if (empty($form['tag']) && empty($form['contact_taglist'])) {
       $errors['_qf_default'] = ts("Please select at least one tag.");
@@ -140,20 +140,14 @@ class CRM_Contact_Form_Task_AddToTag extends CRM_Contact_Form_Task {
 
       list($total, $added, $notAdded) = CRM_Core_BAO_EntityTag::addEntitiesToTag($this->_contactIds, $key);
 
-      $status = array(
-        'Contact(s) tagged as: ' . implode(',', $this->_name),
-        'Total Selected Contact(s): ' . $total,
-      );
+      $status = array(ts('%count contact tagged', array('count' => $added, 'plural' => '%count contacts tagged')));
+      if ($notAdded) {
+        $status[] = ts('%count contact already had this tag', array('count' => $notAdded, 'plural' => '%count contacts already had this tag'));
+      }
+      $status = '<ul><li>' . implode('</li><li>', $status) . '</li></ul>';
+      CRM_Core_Session::setStatus($status, ts("Added Tag <em>%1</em>", array(1 => $this->_tags[$key])), 'success', array('expires' => 0));
     }
 
-    if ($added) {
-      $status[] = 'Total Contact(s) tagged: ' . $added;
-    }
-    if ($notAdded) {
-      $status[] = 'Total Contact(s) already tagged: ' . $notAdded;
-    }
-
-    CRM_Core_Session::setStatus($status);
   }
   //end of function
 }

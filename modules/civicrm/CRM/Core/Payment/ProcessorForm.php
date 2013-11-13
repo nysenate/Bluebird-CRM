@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -37,6 +37,7 @@
  * base class for building payment block for online contribution / event pages
  */
 class CRM_Core_Payment_ProcessorForm {
+
   static function preProcess(&$form, $type = NULL, $mode = NULL ) {
     if ($type) {
       $form->_type = $type;
@@ -46,10 +47,9 @@ class CRM_Core_Payment_ProcessorForm {
     }
 
     if ($form->_type) {
-      $form->_paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($form->_type, $form->_mode);
+      $form->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($form->_type, $form->_mode);
     }
 
-    //$form->_paymentProcessor['processorName'] = $form->_paymentObject->_processorName;
     $form->set('paymentProcessor', $form->_paymentProcessor);
 
     // also set cancel subscription url
@@ -102,26 +102,32 @@ class CRM_Core_Payment_ProcessorForm {
 
       CRM_Core_Error::fatal(ts('This contribution page is configured to support separate contribution and membership payments. This %1 plugin does not currently support multiple simultaneous payments, or the option to "Execute real-time monetary transactions" is disabled. Please contact the site administrator and notify them of this error',
           array(1 => $form->_paymentProcessor['payment_processor_type'])
-        ));
-    }
-
-    $profileAddressFields = $form->get('profileAddressFields');
-    if (!empty( $profileAddressFields)){
-      $form->assign('profileAddressFields', $profileAddressFields);
+        )
+      );
     }
   }
 
   static function buildQuickform(&$form) {
     $form->addElement('hidden', 'hidden_processor', 1);
 
-    if (($form->_paymentProcessor['payment_type'] &
-        CRM_Core_Payment::PAYMENT_TYPE_DIRECT_DEBIT
-      )) {
+    $profileAddressFields = $form->get('profileAddressFields');
+    if (!empty($profileAddressFields)) {
+      $form->assign('profileAddressFields', $profileAddressFields);
+    }
+
+    // before we do this lets see if the payment processor has implemented a buildForm method
+    if (method_exists($form->_paymentProcessor['instance'], 'buildForm') &&
+      is_callable(array($form->_paymentProcessor['instance'], 'buildForm'))) {
+      // the payment processor implements the buildForm function, let the payment
+      // processor do the work
+      $form->_paymentProcessor['instance']->buildForm($form);
+      return;
+    }
+
+    if (($form->_paymentProcessor['payment_type'] & CRM_Core_Payment::PAYMENT_TYPE_DIRECT_DEBIT)) {
       CRM_Core_Payment_Form::buildDirectDebit($form);
     }
-    elseif (($form->_paymentProcessor['payment_type'] &
-        CRM_Core_Payment::PAYMENT_TYPE_CREDIT_CARD
-      )) {
+    elseif (($form->_paymentProcessor['payment_type'] & CRM_Core_Payment::PAYMENT_TYPE_CREDIT_CARD)) {
       CRM_Core_Payment_Form::buildCreditCard($form);
     }
   }

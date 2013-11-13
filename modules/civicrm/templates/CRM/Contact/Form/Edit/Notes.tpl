@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,10 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-accordion-wrapper crm-notesBlock-accordion crm-accordion-closed">
+<div class="crm-accordion-wrapper crm-notesBlock-accordion collapsed">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-        <a href="#" class="whiteanchor">{$title}</a>
+   
+    {$title}
   </div><!-- /.crm-accordion-header -->
   <div class="crm-accordion-body" id="notesBlock">
    <table class="form-layout-compressed">

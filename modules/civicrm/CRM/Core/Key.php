@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -44,8 +44,7 @@ class CRM_Core_Key {
    * @static
    * @access private
    */
-  static
-  function privateKey() {
+  static function privateKey() {
     if (!self::$_key) {
       $session = CRM_Core_Session::singleton();
       self::$_key = $session->get('qfPrivateKey');
@@ -57,8 +56,7 @@ class CRM_Core_Key {
     return self::$_key;
   }
 
-  static
-  function sessionID() {
+  static function sessionID() {
     if (!self::$_sessionID) {
       $session = CRM_Core_Session::singleton();
       self::$_sessionID = $session->get('qfSessionID');
@@ -81,8 +79,7 @@ class CRM_Core_Key {
    * @static
    * @acess public
    */
-  static
-  function get($name, $addSequence = FALSE) {
+  static function get($name, $addSequence = FALSE) {
     $privateKey = self::privateKey();
     $sessionID  = self::sessionID();
     $key        = md5($sessionID . $name . $privateKey);
@@ -105,8 +102,7 @@ class CRM_Core_Key {
    * @static
    * @acess public
    */
-  static
-  function validate($key, $name, $addSequence = FALSE) {
+  static function validate($key, $name, $addSequence = FALSE) {
     if (!is_string($key)) {
       return NULL;
     }
@@ -129,8 +125,7 @@ class CRM_Core_Key {
     return $key;
   }
 
-  static
-  function valid($key) {
+  static function valid($key) {
     // a valid key is a 32 digit hex number
     // followed by an optional _ and a number between 1 and 10000
     if (strpos('_', $key) !== FALSE) {

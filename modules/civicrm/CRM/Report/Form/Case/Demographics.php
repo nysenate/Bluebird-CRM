@@ -1,11 +1,10 @@
 <?php
-// $Id$
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -40,7 +39,8 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
 
   protected $_emailField = FALSE;
 
-  protected $_phoneField = FALSE; function __construct() {
+  protected $_phoneField = FALSE;
+  function __construct() {
     $this->_columns = array(
       'civicrm_contact' =>
       array(
@@ -119,18 +119,18 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
           ),
         ),
         /*
-                          'filters'   =>             
+                          'filters'   =>
                           array(
-                             'country_id' => 
+                             'country_id' =>
                                  array( 'title'   => ts( 'Country' ),
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                         'options' => CRM_Core_PseudoConstant::country( ),
-                                        ), 
-                                 'state_province_id' =>  
-                                 array( 'title'   => ts( 'State / Province' ), 
+                                        ),
+                                 'state_province_id' =>
+                                 array( 'title'   => ts( 'State / Province' ),
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'options' => CRM_Core_PseudoConstant::stateProvince( ), ), 
-                                 ), 
+                                        'options' => CRM_Core_PseudoConstant::stateProvince( ), ),
+                                 ),
 */
       ),
       'civicrm_phone' =>
@@ -234,7 +234,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
       );
     }
 
-    $this->_genders = CRM_Core_PseudoConstant::gender();
+    $this->_genders = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
 
     parent::__construct();
   }
@@ -270,8 +270,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
     $this->_select = "SELECT " . implode(', ', $select) . " ";
   }
 
-  static
-  function formRule($fields, $files, $self) {
+  static function formRule($fields, $files, $self) {
     $errors = $grouping = array();
     return $errors;
   }
@@ -279,13 +278,13 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
   function from() {
     $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']}
-            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-                   ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
+            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
+                   ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND
                       {$this->_aliases['civicrm_address']}.is_primary = 1 )
             LEFT JOIN civicrm_case_contact ccc ON ccc.contact_id = {$this->_aliases['civicrm_contact']}.id
             LEFT JOIN civicrm_case {$this->_aliases['civicrm_case']} ON {$this->_aliases['civicrm_case']}.id = ccc.case_id
             LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
-            LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id 
+            LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id
         ";
 
     foreach ($this->_columns as $t => $c) {
@@ -297,15 +296,15 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
 
     if ($this->_emailField) {
       $this->_from .= "
-            LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
+            LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']}
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1) ";
     }
 
     if ($this->_phoneField) {
       $this->_from .= "
-            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
-                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
+            LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
+                   ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
     }
   }

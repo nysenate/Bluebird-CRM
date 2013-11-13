@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,39 +25,16 @@
 *}
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/Bluebird/nyss_skin/tags/tags.css" />
-<style>
-/*.crm-tagListInfo {
-    padding:15px;
-    float:left;
-    width:370px;
-}
-.tagInfoBody {
-    margin-top:15px;
-}
-.tagInfoBody div {
-    margin-top:2px;
-    line-height:24px;
-}
-.crm-tagTreeDisplay {
-    float:right;
-}
-#BBTreeContainer .BBTree {
-    border:0;
-    border-left:1px solid #ccc;
-}
-.container #status {
-    display:none;
-}*/
-</style>
 {/literal}
-{capture assign=docLink}{docURL page="Tags Admin"}{/capture}
+{capture assign=docLink}{docURL page="user/organising-your-data/groups-and-tags"}{/capture}
+
 {if $action eq 1 or $action eq 2 or $action eq 8}
-    {include file="CRM/Admin/Form/Tag.tpl"} 
+    {include file="CRM/Admin/Form/Tag.tpl"}
 {else}
 <div class="crm-content-block">
-  <div id="help">
-    {ts 1=$docLink}Tags can be assigned to any contact record, and are a convenient way to find contacts. You can create as many tags as needed to organize and segment your records.{/ts} {*$docLink*}{*NYSS 6163*}
-  </div>
+    <div id="help">
+        {ts 1=$docLink}Tags can be assigned to any contact record, and are a convenient way to find contacts. You can create as many tags as needed to organize and segment your records.{/ts} {*$docLink*}{*NYSS 6163*}
+    </div>
   <div id="dialog">
   </div>
   <div class="JSTreeInit"></div>
@@ -81,3 +58,4 @@
   {/literal}
 </div>
 {/if}
+{include file="CRM/common/crmeditable.tpl"}

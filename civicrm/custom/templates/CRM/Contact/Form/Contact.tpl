@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,17 +27,20 @@
 
 {*NYSS need to retrieve and assign custom record id as its unique to each record*}
 {foreach from=$form item=field}
-    {if $field.name|substring:0:6 eq 'custom'}
-        {assign var=customfield value="_"|explode:$field.name}
-        {if $customfield.2|substring:0:1 neq '-'}
-                {assign var=customId value=$customfield.2}
-        {/if}
+  {if $field.name|substring:0:6 eq 'custom'}
+    {assign var=customfield value="_"|explode:$field.name}
+    {if $customfield.2|substring:0:1 neq '-'}
+      {assign var=customId value=$customfield.2}
     {/if}
+  {/if}
 {/foreach}
 
 {if $addBlock}
-{include file="CRM/Contact/Form/Edit/$blockName.tpl"}
+  {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
+  {if $contactId}
+    {include file="CRM/Contact/Form/Edit/Lock.tpl"}
+  {/if}
 <div class="crm-form-block crm-search-form-block">
 {*NYSS - remove
 {if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
@@ -63,11 +66,13 @@
     {include file="CRM/common/formButtons.tpl" location="top"}
   {/if}
 </div>
-<div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
+
+    {* include overlay js *}
+    {include file="CRM/common/overlay.tpl"}
+
+    <div class="crm-accordion-wrapper crm-contactDetails-accordion">
  <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
 	{ts}Contact Details{/ts}
-	
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="contactDetails">
     <table>
@@ -200,199 +205,191 @@
 		{include file="CRM/Contact/Form/Edit/$name.tpl"}
 	    {/if}
     {/foreach}
-<div class="crm-submit-buttons">
+    <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="bottom"}
-</div>
+    </div>
+  </div>
+  {literal}
 
-</div>
-{literal}
-<script type="text/javascript" >
-var action = "{/literal}{$action}{literal}";
-var removeCustomData = true;
-showTab[0] = {"spanShow":"span#contact","divShow":"div#contactDetails"};
-cj(function( ) {
-    cj().crmaccordions( ); 
-	cj(showTab).each( function(){ 
-        if( this.spanShow ) {
-            cj(this.spanShow).removeClass( ).addClass('crm-accordion-open');
-            cj(this.divShow).show( );
-        }
+  <script type="text/javascript" >
+  cj(function($) {
+    var action = "{/literal}{$action}{literal}";
+    $().crmAccordions();
+
+    $('.crm-accordion-body').each( function() {
+      //remove tab which doesn't have any element
+      if ( ! $.trim( $(this).text() ) ) {
+        ele     = $(this);
+        prevEle = $(this).prev();
+        $(ele).remove();
+        $(prevEle).remove();
+      }
+      //open tab if form rule throws error
+      if ( $(this).children().find('span.crm-error').text().length > 0 ) {
+        $(this).parents('.collapsed').crmAccordionToggle();
+      }
+    });
+    if (action == '2') {
+      $('.crm-accordion-wrapper').not('.crm-accordion-wrapper .crm-accordion-wrapper').each(function() {
+        highlightTabs(this);
+	
+	    //NYSS 1748 call validate plugin
+        cj("#Contact").validate( );
+      });
+      $('#crm-container').on('change click', '.crm-accordion-body :input, .crm-accordion-body a', function() {
+        highlightTabs($(this).parents('.crm-accordion-wrapper'));
+      });
+    }
+    function highlightTabs(tab) {
+      //highlight the tab having data inside.
+      $('.crm-accordion-body :input', tab).each( function() {
+        var active = false;
+          switch($(this).prop('type')) {
+            case 'checkbox':
+            case 'radio':
+              if($(this).is(':checked') && !$(this).is('[id$=IsPrimary],[id$=IsBilling]')) {
+                $('.crm-accordion-header:first', tab).addClass('active');
+                return false;
+              }
+              break;
+
+            case 'text':
+            case 'textarea':
+              if($(this).val()) {
+                $('.crm-accordion-header:first', tab).addClass('active');
+                return false;
+              }
+              break;
+
+            case 'select-one':
+            case 'select-multiple':
+              if($(this).val() && $('option[value=""]', this).length > 0) {
+                $('.crm-accordion-header:first', tab).addClass('active');
+                return false;
+              }
+              break;
+
+            case 'file':
+              if($(this).next().html()) {
+                $('.crm-accordion-header:first', tab).addClass('active');
+                return false;
+              }
+              break;
+          }
+          $('.crm-accordion-header:first', tab).removeClass('active');
+      });
+    }
+
+    $('a#expand').click( function() {
+      if( $(this).attr('href') == '#expand') {
+        var message = {/literal}"{ts escape='js'}Collapse all tabs{/ts}"{literal};
+        $(this).attr('href', '#collapse');
+        $('.crm-accordion-wrapper.collapsed').crmAccordionToggle();
+      }
+      else {
+        var message = {/literal}"{ts escape='js'}Expand all tabs{/ts}"{literal};
+        $('.crm-accordion-wrapper:not(.collapsed)').crmAccordionToggle();
+        $(this).attr('href', '#expand');
+      }
+      $(this).html(message);
+      return false;
     });
 
-	cj('.crm-accordion-body').each( function() {
-		//remove tab which doesn't have any element
-		if ( ! cj.trim( cj(this).text() ) ) { 
-			ele     = cj(this);
-			prevEle = cj(this).prev();
-			cj( ele ).remove();
-			cj( prevEle).remove();
-		}
-		//open tab if form rule throws error
-		if ( cj(this).children( ).find('span.crm-error').text( ).length > 0 ) {
-			cj(this).parent( ).removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
-		}
-	});
+    $('.customDataPresent').change(function() {
+      //$('.crm-custom-accordion').remove();
+      var values = $("#contact_sub_type").val();
+      var contactType = {/literal}"{$contactType}"{literal};
+      CRM.buildCustomData(contactType, values);
+      loadMultiRecordFields(values);
+      $('.crm-custom-accordion').each(function() {
+        highlightTabs(this);
+      });
+    });
 
-	highlightTabs( );
-	
-	//NYSS 1748 call validate plugin
-    cj("#Contact").validate( );
-});
-
-cj('a#expand').click( function( ){
-    if( cj(this).attr('href') == '#expand') {   
-        var message     = {/literal}"{ts}Collapse all tabs{/ts}"{literal};
-        cj(this).attr('href', '#collapse');
-        cj('.crm-accordion-closed').removeClass('crm-accordion-closed').addClass('crm-accordion-open');
-    } else {
-        var message     = {/literal}"{ts}Expand all tabs{/ts}"{literal};
-        cj('.crm-accordion-open').removeClass('crm-accordion-open').addClass('crm-accordion-closed');
-        cj(this).attr('href', '#expand');
+    function loadMultiRecordFields(subTypeValues) {
+      if (subTypeValues == false) {
+        var subTypeValues = null;
+      }
+        else if (!subTypeValues) {
+        var subTypeValues = {/literal}"{$paramSubType}"{literal};
+      }
+      {/literal}
+      {foreach from=$customValueCount item="groupCount" key="groupValue"}
+      {if $groupValue}{literal}
+        for ( var i = 1; i < {/literal}{$groupCount}{literal}; i++ ) {
+          CRM.buildCustomData( {/literal}"{$contactType}"{literal}, subTypeValues, null, i, {/literal}{$groupValue}{literal}, true );
+        }
+      {/literal}
+      {/if}
+      {/foreach}
+      {literal}
     }
-    cj(this).html(message);
-    return false;
-});
 
-function showHideSignature( blockId ) {
-    cj('#Email_Signature_' + blockId ).toggle( );   
-}
+    loadMultiRecordFields();
 
-function highlightTabs( ) {
-    if ( action == 2 ) {
-	//highlight the tab having data inside.
-	cj('.crm-accordion-body :input').each( function() { 
-		var element = cj(this).closest(".crm-accordion-body").attr("id");
-		if (element) {
-		eval('var ' + element + ' = "";');
-		switch( cj(this).attr('type') ) {
-		case 'checkbox':
-		case 'radio':
-		  if( cj(this).is(':checked') ) {
-		    eval( element + ' = true;'); 
-		  }
-		  break;
-		  
-		case 'text':
-		case 'textarea':
-		  if( cj(this).val() ) {
-		    eval( element + ' = true;');
-		  }
-		  break;
-		  
-		case 'select-one':
-		case 'select-multiple':
-		  if( cj('select option:selected' ) && cj(this).val() ) {
-		    eval( element + ' = true;');
-		  }
-		  break;		
-		  
-		case 'file':
-		  if( cj(this).next().html() ) eval( element + ' = true;');
-		  break;
-  		}
-		if( eval( element + ';') ) { 
-		  cj(this).closest(".crm-accordion-wrapper").addClass('crm-accordion-hasContent');
-		}
-	     }
-       });
+    {/literal}{if $oldSubtypes}{literal}
+    $('input[name=_qf_Contact_upload_view], input[name=_qf_Contact_upload_new]').click(function() {
+      var submittedSubtypes = $('#contact_sub_type').val();
+      var oldSubtypes = {/literal}{$oldSubtypes}{literal};
+
+      var warning = false;
+      $.each(oldSubtypes, function(index, subtype) {
+        if ( $.inArray(subtype, submittedSubtypes) < 0 ) {
+          warning = true;
+        }
+      });
+      if ( warning ) {
+        return confirm({/literal}'{ts escape="js"}One or more contact subtypes have been de-selected from the list for this contact. Any custom data associated with de-selected subtype will be removed. Click OK to proceed, or Cancel to review your changes before saving.{/ts}'{literal});
+      }
+      return true;
+    });
+    {/literal}{/if}{literal}
+
+    $("select#contact_sub_type").crmasmSelect({
+      addItemTarget: 'bottom',
+      animate: false,
+      highlight: true,
+      respectParents: true
+    });
+  });
+
+  //NYSS 3527 - set comm preferences
+  function processDeceased( ) {
+    if ( cj("#is_deceased").is(':checked') ) {
+      cj('#privacy_do_not_phone').attr('checked', 'checked').attr('onclick', 'return false');
+      cj('#privacy_do_not_email').attr('checked', 'checked').attr('onclick', 'return false');
+      cj('#privacy_do_not_mail').attr('checked', 'checked').attr('onclick', 'return false');
+      cj('#privacy_do_not_sms').attr('checked', 'checked').attr('onclick', 'return false');
+      cj('#privacy_do_not_trade').attr('checked', 'checked').attr('onclick', 'return false');
+      cj('#is_opt_out').attr('checked', 'checked').attr('onclick', 'return false');
+
+      cj('#preferred_communication_method_1').removeAttr('checked').attr('onclick', 'return false');
+      cj('#preferred_communication_method_2').removeAttr('checked').attr('onclick', 'return false');
+      cj('#preferred_communication_method_3').removeAttr('checked').attr('onclick', 'return false');
+      cj('#preferred_communication_method_4').removeAttr('checked').attr('onclick', 'return false');
+      cj('#preferred_communication_method_5').removeAttr('checked').attr('onclick', 'return false');
     }
-}
+    else {
+      cj('#privacy_do_not_phone').removeAttr('onclick');
+      cj('#privacy_do_not_email').removeAttr('onclick');
+      cj('#privacy_do_not_mail').removeAttr('onclick');
+      cj('#privacy_do_not_sms').removeAttr('onclick');
+      cj('#privacy_do_not_trade').removeAttr('onclick');
+      cj('#is_opt_out').removeAttr('onclick');
 
-/*function removeDefaultCustomFields( ) {
-     //execute only once
-     if (removeCustomData) {
-	 cj(".crm-accordion-wrapper").children().each( function() {
-	    var eleId = cj(this).attr("id");
-	    if ( eleId.substr(0,10) == "customData" ) { cj(this).parent("div").remove(); }
-	 });
-	 removeCustomData = false;
-     }
-}*/
-
-//NYSS 3527 - set comm preferences
-function processDeceased( ) {
-  if ( cj("#is_deceased").is(':checked') ) {
-    cj('#privacy_do_not_phone').attr('checked', 'checked').attr('onclick', 'return false');
-    cj('#privacy_do_not_email').attr('checked', 'checked').attr('onclick', 'return false');
-    cj('#privacy_do_not_mail').attr('checked', 'checked').attr('onclick', 'return false');
-    cj('#privacy_do_not_sms').attr('checked', 'checked').attr('onclick', 'return false');
-    cj('#privacy_do_not_trade').attr('checked', 'checked').attr('onclick', 'return false');
-    cj('#is_opt_out').attr('checked', 'checked').attr('onclick', 'return false');
-
-    cj('#preferred_communication_method_1').removeAttr('checked').attr('onclick', 'return false');
-    cj('#preferred_communication_method_2').removeAttr('checked').attr('onclick', 'return false');
-    cj('#preferred_communication_method_3').removeAttr('checked').attr('onclick', 'return false');
-    cj('#preferred_communication_method_4').removeAttr('checked').attr('onclick', 'return false');
-    cj('#preferred_communication_method_5').removeAttr('checked').attr('onclick', 'return false');
+      cj('#preferred_communication_method_1').removeAttr('onclick');
+      cj('#preferred_communication_method_2').removeAttr('onclick');
+      cj('#preferred_communication_method_3').removeAttr('onclick');
+      cj('#preferred_communication_method_4').removeAttr('onclick');
+      cj('#preferred_communication_method_5').removeAttr('onclick');
+    }
   }
-  else {
-    cj('#privacy_do_not_phone').removeAttr('onclick');
-    cj('#privacy_do_not_email').removeAttr('onclick');
-    cj('#privacy_do_not_mail').removeAttr('onclick');
-    cj('#privacy_do_not_sms').removeAttr('onclick');
-    cj('#privacy_do_not_trade').removeAttr('onclick');
-    cj('#is_opt_out').removeAttr('onclick');
-
-    cj('#preferred_communication_method_1').removeAttr('onclick');
-    cj('#preferred_communication_method_2').removeAttr('onclick');
-    cj('#preferred_communication_method_3').removeAttr('onclick');
-    cj('#preferred_communication_method_4').removeAttr('onclick');
-    cj('#preferred_communication_method_5').removeAttr('onclick');
-  }
-}
-processDeceased();
- 
+  processDeceased();
 </script>
 {/literal}
-{literal}
-<script type="text/javascript">
-cj('#current_employer').addClass('loading-on');
-var dataUrl        = "{/literal}{$employerDataURL}{literal}";
-var newContactText = "{/literal}({ts}new contact record{/ts}){literal}";
-cj('#current_employer').autocomplete( dataUrl, { 
-                                      width        : 250, 
-                                      selectFirst  : false,
-                                      matchCase    : true, 
-                                      matchContains: true
-    }).result( function(event, data, formatted) {
-        var foundContact   = ( parseInt( data[1] ) ) ? cj( "#current_employer_id" ).val( data[1] ) : cj( "#current_employer_id" ).val('');
-        if ( ! foundContact.val() ) {
-            cj('div#employer_address').html(newContactText).show();    
-        } else {
-            cj('div#employer_address').html('').hide();    
-        }
-    }).bind('change blur', function() {
-        if ( !cj( "#current_employer_id" ).val( ) ) {
-            cj('div#employer_address').html(newContactText).show();    
-        }
-});
 
-// remove current employer id when current employer removed.
-cj("form").submit(function() {
-  if ( !cj('#current_employer').val() ) cj( "#current_employer_id" ).val('');
-});
-
-//current employer default setting
-var employerId = "{/literal}{$currentEmployer}{literal}";
-if ( employerId ) {
-    var dataUrl = "{/literal}{crmURL p='civicrm/ajax/rest' h=0 q="className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&id=" }{literal}" + employerId ;
-    cj.ajax({ 
-        url     : dataUrl,   
-        async   : false,
-        success : function(html){
-            //fixme for showing address in div
-            htmlText = html.split( '|' , 2);
-            cj('input#current_employer').val(htmlText[0]);
-            cj('input#current_employer_id').val(htmlText[1]);
-        }
-    }); 
-}
-
-cj("input#current_employer").click( function( ) {
-    cj("input#current_employer_id").val('');
-});
-</script>
-{/literal}
+{* jQuery validate *}
+{include file="CRM/Form/validate.tpl"}
 
 {* include common additional blocks tpl *}
 {include file="CRM/common/additionalBlocks.tpl"}

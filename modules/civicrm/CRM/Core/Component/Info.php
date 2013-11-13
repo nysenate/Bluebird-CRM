@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * for a component to introduce itself to the system.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -38,78 +38,75 @@
 abstract class CRM_Core_Component_Info {
 
   /*
-     * Name of the class (minus component namespace path) 
-     * of the component invocation class'es name. 
+     * Name of the class (minus component namespace path)
+     * of the component invocation class'es name.
      */
   CONST COMPONENT_INVOKE_CLASS = 'Invoke';
 
   /*
-     * Name of the class (minus component namespace path) 
+     * Name of the class (minus component namespace path)
      * of the component configuration class'es name.
      */
   CONST COMPONENT_CONFIG_CLASS = 'Config';
 
   /*
-     * Name of the class (minus component namespace path) 
+     * Name of the class (minus component namespace path)
      * of the component BAO Query class'es name.
      */
   CONST COMPONENT_BAO_QUERY_CLASS = 'BAO_Query';
 
   /*
-     * Name of the class (minus component namespace path) 
+     * Name of the class (minus component namespace path)
      * of the component user dashboard plugin.
      */
   CONST COMPONENT_USERDASHBOARD_CLASS = 'Page_UserDashboard';
 
   /*
-     * Name of the class (minus component namespace path) 
+     * Name of the class (minus component namespace path)
      * of the component tab offered to contact record view.
      */
   CONST COMPONENT_TAB_CLASS = 'Page_Tab';
 
   /*
-     * Name of the class (minus component namespace path) 
+     * Name of the class (minus component namespace path)
      * of the component tab offered to contact record view.
      */
   CONST COMPONENT_ADVSEARCHPANE_CLASS = 'Form_Search_AdvancedSearchPane';
 
   /*
-     * Name of the directory (assumed in component directory) 
+     * Name of the directory (assumed in component directory)
      * where xml resources used by this component live.
      */
   CONST COMPONENT_XML_RESOURCES = 'xml';
 
   /*
-     * Name of the directory (assumed in xml resources path) 
+     * Name of the directory (assumed in xml resources path)
      * containing component menu definition XML file names.
      */
   CONST COMPONENT_MENU_XML = 'Menu';
 
   /*
-     * Stores component information.
-     * @var array component settings as key/value pairs
-     */
-
+   * Stores component information.
+   * @var array component settings as key/value pairs
+   */
   public $info;
 
   /*
-     * Stores component keyword
-     * @var string name of component keyword
-     */
-
+   * Stores component keyword
+   * @var string name of component keyword
+   */
   protected $keyword;
 
   /*
-     * Class constructor, sets name and namespace (those are stored
-     * in the component registry (database) and no need to duplicate
-     * them here, as well as populates the info variable.
-     * 
-     * @param string $name name of the component
-     * @param string $namespace namespace prefix for component's files
-     * @access public
-     * 
-     */
-
+   * Class constructor, sets name and namespace (those are stored
+   * in the component registry (database) and no need to duplicate
+   * them here, as well as populates the info variable.
+   *
+   * @param string $name name of the component
+   * @param string $namespace namespace prefix for component's files
+   * @access public
+   *
+   */
   public function __construct($name, $namespace, $componentID) {
     $this->name        = $name;
     $this->namespace   = $namespace;
@@ -130,15 +127,27 @@ abstract class CRM_Core_Component_Info {
   abstract public function getInfo();
 
   /**
+   * Get a list of entities to register via API
+   *
+   * @return array list of entities; same format as CRM_Utils_Hook::managedEntities(&$entities)
+   * @see CRM_Utils_Hook::managedEntities
+   */
+  public function getManagedEntities() {
+    return array();
+  }
+
+  /**
    * Provides permissions that are used by component.
    * Needs to be implemented in component's information
    * class.
    *
+   * NOTE: if using conditionally permission return,
+   * implementation of $getAllUnconditionally is required.
    * @return array|null collection of permissions, null if none
    * @access public
    *
    */
-  abstract public function getPermissions();
+  abstract public function getPermissions($getAllUnconditionally = FALSE);
 
   /**
    * Provides information about user dashboard element

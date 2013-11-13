@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,13 +26,12 @@
 {if !$printOnly} {* NO print section starts *}
 {if $criteriaForm}
 <div class="crm-report-criteria"> {* criteria section starts *}
-  <div class="crm-accordion-wrapper crm-report_criteria-accordion crm-accordion_title-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-report_criteria-accordion {if $rows}collapsed{/if}">
     <div class="crm-accordion-header">
-      <div class="icon crm-accordion-pointer"></div>
       {ts}Report Configuration{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
-      <div id="mainTabContainer" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+      <div id="mainTabContainer">
         {*tab navigation bar*}
         <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
           {if $colGroups}
@@ -99,8 +98,10 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-  cj().crmaccordions();
+  cj().crmAccordions();
+  cj("#mainTabContainer").tabs();
 });
+
 </script>
 {/literal}
 

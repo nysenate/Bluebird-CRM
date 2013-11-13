@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,7 +36,9 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
 
   protected $_groupTree;
   protected $_tables;
-  protected $_options; function __construct(&$formValues) {
+  protected $_options;
+
+  function __construct(&$formValues) {
     parent::__construct($formValues);
 
     $this->_groupTree = CRM_Core_BAO_CustomGroup::getTree("'Contact', 'Individual', 'Organization', 'Household'",
@@ -104,7 +106,7 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
     $form->addElement('select', 'group', ts('in'), $group);
 
     // add select for tags
-    $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::tag();
+    $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
     $form->addElement('select', 'tag', ts('Tagged'), $tag);
 
     if (empty($this->_groupTree)) {
@@ -127,9 +129,7 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
     return NULL;
   }
 
-  function all($offset = 0, $rowcount = 0, $sort = NULL,
-    $includeContactIDs = FALSE
-  ) {
+  function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE, $justIDs = FALSE) {
     //redirect if custom group not select in search criteria
     if (!CRM_Utils_Array::value('custom_group', $this->_formValues)) {
       CRM_Core_Error::statusBounce(ts("You must select at least one Custom Group as a search criteria."),
@@ -139,11 +139,17 @@ class CRM_Contact_Form_Search_Custom_MultipleValues extends CRM_Contact_Form_Sea
         )
       );
     }
-    $selectClause = "
+
+    if ($justIDs) {
+      $selectClause = "contact_a.id as contact_id";
+    }
+    else {
+      $selectClause = "
 contact_a.id           as contact_id  ,
 contact_a.contact_type as contact_type,
 contact_a.sort_name    as sort_name,
 ";
+    }
 
     $customClauses = array();
     foreach ($this->_tables as $tableName => $fields) {
@@ -172,12 +178,12 @@ contact_a.sort_name    as sort_name,
 
     // This prevents duplicate rows when contacts have more than one tag any you select "any tag"
     if ($this->_tag) {
-      $from .= " LEFT JOIN civicrm_entity_tag t ON (t.entity_table='civicrm_contact' 
+      $from .= " LEFT JOIN civicrm_entity_tag t ON (t.entity_table='civicrm_contact'
                        AND contact_a.id = t.entity_id)";
     }
 
     if ($this->_group) {
-      $from .= " LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id 
+      $from .= " LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id
                        AND cgc.status = 'Added')";
     }
 

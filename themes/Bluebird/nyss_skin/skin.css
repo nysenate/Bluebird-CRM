@@ -1,7 +1,7 @@
 /* non civi skin elements */
 body {
-	background:#7fcdfe url(images/bluebird_back.jpg) repeat-x top left;
-	}
+  background:#7fcdfe url(images/bluebird_back.jpg) repeat-x top left;
+}
 
 /**
  * base text color: 2f2f2f
@@ -57,26 +57,26 @@ div.error, .error, div.crm-error {background:#f5c4c4;color:#8d2c27;border-color:
 a,
 a:link,
 a:visited {
-	color:#2a71b4;
-	text-decoration: none;
-	}
+  color:#2a71b4;
+  text-decoration: none;
+}
 
 a:hover {
-	color:#ec5401;
-	}
-	
+  color:#ec5401;
+}
+  
 input.form-submit {
-	background:transparent url(images/crm-button-bg.gif) repeat-x scroll left top;
-    border:1px solid #3E3E3E;
-    color:#FFFFFF;
-    cursor:pointer;
-    font-size:12px;
-    font-weight:normal;
-    margin-right:6px;
-    padding:2px 6px;
-    text-decoration:none;
-    text-shadow:0 1px 0 black;
-	}	
+  background:transparent url(images/crm-button-bg.gif) repeat-x scroll left top;
+  border:1px solid #3E3E3E;
+  color:#FFFFFF;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:normal;
+  margin-right:6px;
+  padding:2px 6px;
+  text-decoration:none;
+  text-shadow:0 1px 0 black;
+}
 
 #crm-container .crm-content-block { 
   padding:4px;
@@ -91,38 +91,38 @@ input.form-submit {
 
 /* icons */
 .skin-icon { 
-	height:16px;
-	width:16px;
-	background:transparent url("images/icons-FFFFFF.png") no-repeat top right;
-	float:left;
-	}
-	:hover .skin-icon {background-image:url("images/icons-FFFFFF.png")}
+  height:16px;
+  width:16px;
+  background:transparent url("images/icons-FFFFFF.png") no-repeat top right;
+  float:left;
+}
+  :hover .skin-icon {background-image:url("images/icons-FFFFFF.png")}
 
-	.link-icon {
-		float: right;
-		background-position: -49px -30px;
-		}
-	.logout-icon { float: right;}
-	
-#header-access div.helpicon,		
+  .link-icon {
+  float: right;
+  background-position: -49px -30px;
+}
+  .logout-icon { float: right;}
+  
+#header-access div.helpicon,  
 #edit-profile .settings-icon,
 #edit-profile .logout-icon,
 #edit-profile .key-icon,
 #edit-profile .flag-icon { 
-	background-image:url(images/icons-4EBAFF.png);
-	}
+  background-image:url(images/icons-4EBAFF.png);
+}
 #edit-profile .settings-icon{
-	background-position: -177px -111px;
-	float: right;
-	}
+  background-position: -177px -111px;
+  float: right;
+}
 #edit-profile .key-icon{
-	background-position: -113px -127px;
-	float: right;
-	}
+  background-position: -113px -127px;
+  float: right;
+}
 .flag-icon {
-	background-position: -14px -113px;
-	float: right;
-	}
+  background-position: -14px -113px;
+  float: right;
+}
 /* dropdowns */
 
 
@@ -136,38 +136,38 @@ input.form-submit {
 #crm-container .contextMenu li,
 #crm-container .crm-contact-actions-list-inner,
 .ac_results-inner {
-	background-color:#405362;
-	}
+  background-color:#405362;
+}
 
 #crm-container .panel li a, 
 #crm-container .contextMenu a,
 #crm-container .contextMenu a:link {
-	color:#7FCDFE;
-	font-size: 12px;
-	}
+  color:#7FCDFE;
+  font-size: 12px;
+}
 
 #crm-container .panel li a:hover, 
 #crm-container .contextMenu li.hover a {
-	color:#FFF;
-	background-color: transparent;
-	}
+  color:#FFF;
+  background-color: transparent;
+}
 
 .ac_results li {color:#7FCDFE}
 
 .ac_results li.ac_over {
-	background-color:transparent;
-	color:white;
-	}
+  background-color:transparent;
+  color:white;
+}
 
 #crm-create-new-wrapper, 
 #crm-contact-actions-wrapper {
-    z-index: 11;
-    }
-    
+  z-index: 11;
+}
+  
 div.token-input-dropdown-facebook {
-    max-height: 400px;
-    overflow: auto;
-    }
+  max-height: 400px;
+  overflow: auto;
+}
 
 #crm-container div.section-hidden-border {background-color: transparent;}
 
@@ -182,82 +182,79 @@ div.token-input-dropdown-facebook {
 #nyss-menu {margin:0px;}
 
 .civi-menu li.menumain {
-    list-style-type: none;
-    border-right:none;
-    padding:2px 6px;
-    margin-right:10px;
-    background:2px right;
-    }
+  list-style-type: none;
+  border-right:none;
+  padding:2px 6px;
+  margin-right:10px;
+  background:2px right;
+}
 .civi-menu li.activetarget {
-    background-color: #405362;
-    }
+  background-color: #405362;
+}
 div.outerbox {
-    background-color: #405362;
-    padding: 0px!important;    
-    }    
-        
+  background-color: #405362;
+  padding: 0px!important;  
+}
+  
 #civicrm-menu, 
 #root-menu-div ul {
-    background:transparent none repeat-x scroll 0 0;
-    color:white;
-    cursor:default;
-    list-style-image:none;
-    list-style-position:outside;
-    list-style-type:none;
-    margin:0;
-    padding:0;
-    border:none;
-    }
+  background:transparent none repeat-x scroll 0 0;
+  color:white;
+  cursor:default;
+  list-style-image:none;
+  list-style-position:outside;
+  list-style-type:none;
+  margin:0;
+  padding:0;
+  border:none;
+}
 .menu-ul li.active {
-    background-color: transparent;
-    }    
-    
+  background-color: transparent;
+}
+  
 #root-menu-div .menu-ul li {
-    margin:2px 4px;
-    padding:2px;
-    }
-    
-    #root-menu-div .menu-ul li.menu-separator {
-        padding: 0px;        
-        }
+  margin:2px 4px;
+  padding:2px;
+}
+  
+#root-menu-div .menu-ul li.menu-separator {
+  padding: 0px;  
+}
 
 .ui-datepicker {border:1px solid #999999;} 
 
 .ac_results li.ac_over strong, 
 #crm-container .ac_results li.ac_over strong {
-color:#FFF;
-}       
-        
+  color:#FFF;
+}
+  
 /* icons */
-.crm-icon {
-	background-image: url('images/crm-icons.png');
-	margin:2px 4px 0 0;
-	}
+.crm-container .crm-icon {
+  background-image: url('images/crm-icons.png');
+  margin:2px 4px 0 0;
+}
+.block-civicrm #crm-recently-viewed .crm-icon {
+  background-image: url('images/crm-icons-dark.png');
+  margin:2px 4px 0 0;
+}
 
-.block-civicrm #recently-viewed .crm-icon {
-	background-image: url('images/crm-icons-dark.png');
-	margin:2px 4px 0 0;
-	}
-
-.Individual-icon { 	background-position: 0px 	-162px; }
-.Group-icon { 		background-position: 0px 	-178px; }
-.Household-icon { 	background-position: 0px 	-48px; }
-
-.Individual-subtype-icon { 		background-position: 0px 	-162px; }
-.Household-subtype-icon { 		background-position: 0px 	-48px; }
-.Organization-subtype-icon { 	background-position: 0px 	-112px; }
-
-.Organization-icon { 	background-position: 0px -112px; }
-.Activity-icon { 		background-position: 0px -64px; }	
-.Case-icon { 			background-position: 0px -82px; }
-.Grant-icon { 			background-position: 0px -144px; }
-.Contribution-icon { 	background-position: 0px -128px; }
-.Pledge-icon { 			background-position: 0px -129px; }
-.Membership-icon { 		background-position: 0px 0px; }
-.Participant-icon { 	background-position: 0px  -32px; }
-.Note-icon { 			background-position: 0px -16px; }
-.Relationship-icon { 	background-position: 0px 0px; }
- 
+/*icon sprite locations*/
+.crm-container .Individual-icon { background-position: 0 -162px; }
+.crm-container .Group-icon {background-position: 0px -178px; }
+.crm-container .Household-icon {background-position: 0px -48px; }
+.crm-container .Individual-subtype-icon {background-position: 0px -162px; }
+.crm-container .Household-subtype-icon {background-position: 0px -48px; }
+.crm-container .Organization-subtype-icon {background-position: 0px -112px; }
+.crm-container .Organization-icon {background-position: 0px -112px; }
+.crm-container .Activity-icon {background-position: 0px -64px; }
+.crm-container .Case-icon {background-position: 0px -82px; }
+.crm-container .Grant-icon {background-position: 0px -144px; }
+.crm-container .Contribution-icon {background-position: 0px -128px; }
+.crm-container .Pledge-icon {background-position: 0px -129px; }
+.crm-container .Membership-icon {background-position: 0px 0px; }
+.crm-container .Participant-icon {background-position: 0px  -32px; }
+.crm-container .Note-icon {background-position: 0px -16px; }
+.crm-container .Relationship-icon {background-position: 0px 0px; }
 
 /* blue theme buttons */
 #crm-container .crm-actions-ribbon a.button, 
@@ -269,9 +266,9 @@ color:#FFF;
 #crm-container .crm-dashboard-buttons a.button:link, 
 #crm-container .crm-content-block a.button:link, 
 #crm-container .crm-content-block .crm-button { 
-    padding:0px 0 0 6px;
-    border: none;
-    }
+  padding:0px 0 0 6px;
+  border: none;
+}
 
 #crm-contact-actions-link span, 
 #crm-container .crm-actions-ribbon a.button span,
@@ -283,7 +280,6 @@ color:#FFF;
   text-shadow: none;
   white-space: nowrap;
 }
-
 
 #crm-contact-actions-link,
 #crm-container .crm-content-block .crm-button,
@@ -298,18 +294,18 @@ color:#FFF;
 #crm-container .crm-dashboard-buttons a.button,
 #crm-container .crm-content-block a.button,
 #crm-container .crm-content-block a.button:link,
-#crm-container .crm-content-block .crm-button { background:transparent url(images/button.png) no-repeat scroll left 0px;	 }
+#crm-container .crm-content-block .crm-button { background:transparent url(images/button.png) no-repeat scroll left 0px;}
 #crm-contact-actions-link span,
 #crm-container .crm-actions-ribbon a.button span,
 #crm-container .crm-dashboard-buttons a.button span,
 #crm-container .crm-content-block a.button span,
 #crm-container .crm-content-block .crm-button input,
-#crm-container .crm-content-block .crm-button input.form-submit { background:transparent url(images/button.png) no-repeat scroll right -25px;	 }
+#crm-container .crm-content-block .crm-button input.form-submit { background:transparent url(images/button.png) no-repeat scroll right -25px;}
 #crm-contact-actions-link:hover,
 #crm-container .crm-content-block a.button:hover,
-#crm-container .crm-content-block .crm-button:hover { background:transparent url(images/button.png) no-repeat scroll left -50px;		 }
+#crm-container .crm-content-block .crm-button:hover { background:transparent url(images/button.png) no-repeat scroll left -50px;}
 #crm-contact-actions-link:hover span,
 #crm-container .crm-content-block a.button:hover span,
-#crm-container .crm-content-block .crm-button:hover input { background:transparent url(images/button.png) no-repeat scroll right -75px;	 }
+#crm-container .crm-content-block .crm-button:hover input { background:transparent url(images/button.png) no-repeat scroll right -75px;}
 #crm-container .crm-content-block .crm-button-type-cancel input { color:#e0e0d4; }
-	.button:hover .icon {background-image:url("images/button-icon-highlight.png")}
+  .button:hover .icon {background-image:url("images/button-icon-highlight.png")}

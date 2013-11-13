@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
 {/if}
 {assign var=defaultZoom value=16}
 {literal}
-<script src="//maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+<script src="//maps.googleapis.com/maps/api/js?{/literal}{if $mapKey}key={$mapKey}{/if}{literal}&sensor=false" type="text/javascript"></script>
 <script type="text/javascript">
     function initMap() {
         var latlng = new google.maps.LatLng({/literal}{$center.lat},{$center.lng}{literal});
@@ -44,41 +44,41 @@
 
     function setMapOptions(map) {
         bounds = new google.maps.LatLngBounds( );
-	{/literal}
-	{foreach from=$locations item=location}
-	    {if $location.url and ! $profileGID}
-		{literal}
-		var data = "{/literal}<a href='{$location.url}'>{$location.displayName}</a><br />{if !$skipLocationType}{$location.location_type}<br />{/if}{$location.address}<br /><br />{ts}Get Directions FROM:{/ts}&nbsp;<input type=hidden id=to value='{$location.displayAddress}'><input type=text id=from size=20>&nbsp;<a href=\"javascript:gpopUp();\">&raquo; Go</a>";
-	    {else}
-		{capture assign="profileURL"}{crmURL p='civicrm/profile/view' q="reset=1&id=`$location.contactID`&gid=$profileGID"}{/capture}
-		{literal}
-		var data = "{/literal}<a href='{$profileURL}'>{$location.displayName}</a><br />{if !$skipLocationType}{$location.location_type}<br />{/if}{$location.address}<br /><br />{ts}Get Directions FROM:{/ts}&nbsp;<input type=hidden id=to value='{$location.displayAddress}'><input type=text id=from size=20>&nbsp;<a href=\"javascript:gpopUp();\">&raquo; Go</a>";
-	    {/if}
-	    {literal}
-	    var address = "{/literal}{$location.address}{literal}";
-	    {/literal}
-	    {if $location.lat}
-		var point  = new google.maps.LatLng({$location.lat},{$location.lng});
-		var image  = null;
-		{if $location.image && ( $location.marker_class neq 'Event' ) }
- 		  image = '{$location.image}';
-		{else}
+  {/literal}
+  {foreach from=$locations item=location}
+      {if $location.url and ! $profileGID}
+    {literal}
+      var data = "{/literal}<a href='{$location.url}'>{$location.displayName}</a><br />{if !$skipLocationType}{$location.location_type}<br />{/if}{$location.address}<br /><br />{ts}Get Directions FROM:{/ts}&nbsp;<input type=hidden id=to value='{$location.displayAddress}'><input type=text id=from size=20>&nbsp;<a href=\"#\" onclick=\"gpopUp(); return false;\">&raquo; Go</a>";
+      {else}
+    {capture assign="profileURL"}{crmURL p='civicrm/profile/view' q="reset=1&id=`$location.contactID`&gid=$profileGID"}{/capture}
+    {literal}
+      var data = "{/literal}<a href='{$profileURL}'>{$location.displayName}</a><br />{if !$skipLocationType}{$location.location_type}<br />{/if}{$location.address}<br /><br />{ts}Get Directions FROM:{/ts}&nbsp;<input type=hidden id=to value='{$location.displayAddress}'><input type=text id=from size=20>&nbsp;<a href=\"#\" onclick=\"gpopUp(); return false;\">&raquo; Go</a>";
+      {/if}
+      {literal}
+      var address = "{/literal}{$location.address}{literal}";
+      {/literal}
+      {if $location.lat}
+    var point  = new google.maps.LatLng({$location.lat},{$location.lng});
+    var image  = null;
+    {if $location.image && ( $location.marker_class neq 'Event' ) }
+       image = '{$location.image}';
+    {else}
                  {if $location.marker_class eq 'Individual'}
- 		      image = "{$config->resourceBase}i/contact_ind.gif";
- 		  {/if}
- 		  {if $location.marker_class eq 'Household'}
- 		      image = "{$config->resourceBase}i/contact_house.png";
- 		  {/if}
- 		  {if $location.marker_class eq 'Organization'}
-  		      image = "{$config->resourceBase}i/contact_org.gif";
- 		  {/if}
+           image = "{$config->resourceBase}i/contact_ind.gif";
+       {/if}
+       {if $location.marker_class eq 'Household'}
+           image = "{$config->resourceBase}i/contact_house.png";
+       {/if}
+       {if $location.marker_class eq 'Organization'}
+            image = "{$config->resourceBase}i/contact_org.gif";
+       {/if}
                 {/if}
- 	        {literal}
+           {literal}
                 createMarker(map, point, data, image);
                 bounds.extend(point);
                 {/literal}
-	    {/if}
-	{/foreach}
+      {/if}
+  {/foreach}
         map.setCenter(bounds.getCenter());
         {if count($locations) gt 1}
             map.fitBounds(bounds);
@@ -88,7 +88,7 @@
         {else}
             map.setZoom({$defaultZoom});
         {/if}
-	{literal}
+  {literal}
     }
 
     function createMarker(map, point, data, image) {
@@ -103,12 +103,12 @@
     }
 
     function gpopUp() {
-	var from   = document.getElementById('from').value;
-	var to     = document.getElementById('to').value;
-	var URL    = "http://maps.google.com/maps?saddr=" + from + "&daddr=" + to;
-	day = new Date();
-	id  = day.getTime();
-	eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=780,height=640,left = 202,top = 100');");
+  var from   = document.getElementById('from').value;
+  var to     = document.getElementById('to').value;
+  var URL    = "http://maps.google.com/maps?saddr=" + from + "&daddr=" + to;
+  day = new Date();
+  id  = day.getTime();
+  eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=780,height=640,left = 202,top = 100');");
     }
 
     if (window.addEventListener) {

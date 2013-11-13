@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,10 +25,10 @@
 *}
 {if $error}
   <span class="crm-error crm-error-label">
-  	{$label} 
-  	{if $required}
-   		<span class="crm-marker" title="{ts}This field is required.{/ts}">*</span>
-	{/if}
+    {$label}
+    {if $required}
+       <span class="crm-marker" title="{ts}This field is required.{/ts}">*</span>
+  {/if}
   </span>
 {else}
   {$label}

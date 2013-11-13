@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,6 +27,11 @@
 {* include wysiysg editor files *}
 {if $includeWysiwygEditor}
     {if $defaultWysiwygEditor eq 1}
+        <script>
+          {* this version of tinymce requires jquery *}
+          if (typeof(jQuery) != 'function')
+            var jQuery = cj;
+        </script>
         <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
         <script type="text/javascript" src="{$config->resourceBase}packages/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
     {elseif $defaultWysiwygEditor eq 2}

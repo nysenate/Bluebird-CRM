@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -36,7 +36,9 @@ class CRM_Utils_Migrate_ImportJSON {
 
   protected $_lookupCache;
 
-  protected $_saveMapping; function __construct() {
+  protected $_saveMapping;
+
+  function __construct() {
     $this->_lookupCache = array();
     $this->_saveMapping = array();
   }
@@ -169,8 +171,7 @@ class CRM_Utils_Migrate_ImportJSON {
   }
 
   function restore(&$chunk, $daoName, $lookUpMapping = NULL) {
-    require_once (str_replace('_', DIRECTORY_SEPARATOR, $daoName) . ".php");
-    eval('$object   = new ' . $daoName . '( );');
+    $object   = new $daoName();
     $tableName = $object->__table;
 
     if (is_array($lookUpMapping)) {
@@ -188,7 +189,7 @@ class CRM_Utils_Migrate_ImportJSON {
     $columns = $chunk[0];
     foreach ($chunk as $key => $value) {
       if ($key) {
-        eval('$object   = new ' . $daoName . '( );');
+        $object   = new $daoName();
         foreach ($columns as $k => $column) {
           if ($column == 'id') {
             $childID = $value[$k];

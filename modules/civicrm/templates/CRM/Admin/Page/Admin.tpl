@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,18 +24,13 @@
  +--------------------------------------------------------------------+
 *}
 {* Displays Administer CiviCRM Control Panel *}
-{if $newVersion}
-    <div class="messages status">
-        <div class="icon inform-icon"></div>&nbsp;
-        {ts 1=$newVersion 2=$localVersion}A newer version of CiviCRM is available: %1 (this site is currently running %2).{/ts}
-        {ts 1='http://civicrm.org/' 2='http://civicrm.org/go/download/'}Read about the new version on <a href='%1'>our website</a> and <a href='%2'>download it here</a>.{/ts}
-        <div class="messages status">
-          <table>
-	    <tr><td class="tasklist">
-              {ts 1='http://civicrm.org/civicrm/profile/create?reset=1&gid=15'}Have you registered this site at CiviCRM.org? If not, please help strengthen the CiviCRM ecosystem by taking a few minutes to <a href="%1" target="_blank">fill out the site registration form</a>. The information collected will help us prioritize improvements, target our communications and build the community. If you have a technical role for this site, be sure to check "Keep in Touch" to receive technical updates (a low volume mailing list).{/ts}</td>
-	    </tr>
-	  </table>
-        </div>
+{if $newer_civicrm_version}
+    <div class="messages status no-popup">
+      <table>
+        <tr><td class="tasklist">
+          {ts 1='http://civicrm.org/civicrm/profile/create?reset=1&gid=15'}Have you registered this site at CiviCRM.org? If not, please help strengthen the CiviCRM ecosystem by taking a few minutes to <a href="%1" target="_blank">fill out the site registration form</a>. The information collected will help us prioritize improvements, target our communications and build the community. If you have a technical role for this site, be sure to check "Keep in Touch" to receive technical updates (a low volume mailing list).{/ts}</td>
+        </tr>
+      </table>
     </div>
 {/if}
 
@@ -47,7 +42,7 @@
 {strip}
 <div class="crm-content-block">
 {foreach from=$adminPanel key=groupName item=group name=adminLoop}
- <div id = "id_{$groupName}_show" class="section-hidden label{if $smarty.foreach.adminLoop.last eq false} section-hidden-border{/if}">
+ <div id="id_{$groupName}_show" class="section-hidden{if $smarty.foreach.adminLoop.last eq false} section-hidden-border{/if}">
     <table class="form-layout">
     <tr>
         <td width="20%" class="font-size11pt" style="vertical-align: top;">{$group.show} {$group.title}</td>
@@ -55,7 +50,7 @@
 
             <table class="form-layout" width="100%">
             <tr>
-	       <td width="50%" style="padding: 0px;">
+         <td width="50%" style="padding: 0px;">
                 {foreach from=$group.fields item=panelItem  key=panelName name=groupLoop}
                     &raquo;&nbsp;<a href="{$panelItem.url}"{if $panelItem.extra} {$panelItem.extra}{/if} id="idc_{$panelItem.id}">{$panelItem.title}</a><br />
                     {if $smarty.foreach.groupLoop.iteration EQ $group.perColumn}

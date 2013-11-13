@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,48 +24,61 @@
  +--------------------------------------------------------------------+
 *}
 <div id="relationship" class="form-item">
-    <table class="form-layout">
-         <tr>
-            <td>
-               {$form.relation_type_id.label}<br />
-               {$form.relation_type_id.html}
-            </td>
-            <td>
-               {$form.relation_target_name.label}<br />
-               {$form.relation_target_name.html|crmReplace:class:huge}
-                <div class="description font-italic">
-                    {ts}Complete OR partial contact name.{/ts}
-                </div>
-              
-              {$form.relation_target_group.label} {help id="id-relationship-target-group" file="CRM/Contact/Form/Search/Advanced.hlp"}<br />
-              {$form.relation_target_group.html|crmReplace:class:huge}
-              <div class="description font-italic">
-                  {ts}Limit search results to relationships where the related contact(s) are in one of these groups.{/ts}
-              </div>
-              {literal}
-                <script type="text/javascript">
-                cj("#relation_target_group").crmasmSelect({
-                    addItemTarget: 'bottom',
-                    animate: false,
-                    highlight: true,
-                    sortable: true,
-                    respectParents: true
-                });
-                </script>
-              {/literal}
-              
-            </td>
-            <td>
-               {$form.relation_status.label}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('relation_status', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span><br />
-               {$form.relation_status.html}
-            </td>
-         </tr>
-         {if $relationshipGroupTree}
-         <tr>
-	        <td colspan="4">
-	        {include file="CRM/Custom/Form/Search.tpl" groupTree=$relationshipGroupTree showHideLinks=false}
-            </td>
-         </tr>
-         {/if}
-    </table>         
+  <table class="form-layout">
+    <tr>
+      <td>
+        {$form.relation_type_id.label}<br />
+        {$form.relation_type_id.html}
+      </td>
+      <td>
+         <div>
+           {$form.relation_target_name.label}<br />
+           {$form.relation_target_name.html|crmAddClass:huge}
+            <div class="description font-italic">
+                {ts}Complete OR partial contact name.{/ts}
+            </div>
+          </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+         {$form.relation_status.label}<br />
+         {$form.relation_status.html}
+      </td>
+      <td>
+        {$form.relation_target_group.label} {help id="id-relationship-target-group" file="CRM/Contact/Form/Search/Advanced.hlp"}<br />
+        {$form.relation_target_group.html|crmAddClass:huge}
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><label>{ts}Start Date{/ts}</label></td>
+    </tr>
+    <tr>
+      {include file="CRM/Core/DateRange.tpl" fieldName="relation_start_date" from='_low' to='_high'}
+    </tr>
+    <tr>
+      <td colspan="2"><label>{ts}End Date{/ts}</label></td>
+    </tr>
+    <tr>
+      {include file="CRM/Core/DateRange.tpl" fieldName="relation_end_date" from='_low' to='_high'}
+    </tr>
+    {if $relationshipGroupTree}
+      <tr>
+      <td colspan="2">
+        {include file="CRM/Custom/Form/Search.tpl" groupTree=$relationshipGroupTree showHideLinks=false}
+      </td>
+      </tr>
+    {/if}
+  </table>
+  {literal}
+    <script type="text/javascript">
+      cj("#relation_target_group").crmasmSelect({
+          addItemTarget: 'bottom',
+          animate: false,
+          highlight: true,
+          sortable: true,
+          respectParents: true
+      });
+    </script>
+  {/literal}
 </div>

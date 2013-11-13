@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,8 +28,8 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
- * $Id: Email.php 41497 2012-07-11 06:31:17Z yashodha $
+ * @copyright CiviCRM LLC (c) 2004-2013
+ * $Id: Email.php 45499 2013-02-08 12:31:05Z kurund $
  *
  */
 
@@ -67,7 +67,7 @@ class CRM_Member_Form_Task_Email extends CRM_Member_Form_Task {
    *
    * @return void
    * @access public
-   */ 
+   */
   function preProcess() {
     CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
     parent::preProcess();

@@ -55,6 +55,10 @@ td.active {
   background-color: #ddd;
 }
 
+td.label {
+  background: none;
+}
+
 /*
 ** Menu styles
 */
@@ -245,77 +249,6 @@ tr.light .form-item, tr.dark .form-item {
   text-align: right;
 }
 
-
-/* Stylesheet elements ported from Drupal Bluemarine them */
-/*
-** HTML elements
-*/
-body {
-  padding: 0;
-  color: #000;
-  background-color: #fff;
-  font: 76%;
-}
-tr.dark td, tr.light td {
-  padding: 0.3em;
-}
-h1, h2, h3, h4, h5, h6 {
-  margin-bottom: 0.5em;
-}
-h1 {
-  font-size: 1.3em;
-}
-h2 {
-  font-size: 1.2em;
-}
-h3, h4, h5, h6 {
-  font-size: 1.1em;
-}
-p {
-  margin-top: 0.5em;
-  margin-bottom: 0.9em;
-}
-a {
-  text-decoration: none;
-}
-a:link {
-  color: #39c;
-}
-a:visited {
-  color: #369;
-}
-a:hover {
-  color: #39c;
-  text-decoration: underline;
-}
-fieldset {
-  border: 1px solid #ccc;
-}
-pre {
-  background-color: #eee;
-  padding: 0.75em 1.5em;
-  font-size: 12px;
-  border: 1px solid #ddd;
-}
-table {
-  /* make <td> sizes relative to body size! */
-  font-size: 1em;
-}
-.form-item label {
-  font-size: 1em;
-  color: #222;
-}
-.item-list .title {
-  font-size: 1em;
-  color: #222;
-}
-.links {
-  margin-bottom: 0em;
-}
-.comment .links {
-  margin-bottom: 0em;
-}
-
 /*
 ** Page layout blocks / IDs
 */
@@ -399,7 +332,7 @@ table {
 }
 
 #content-right {
-	background-color: #FFFFFF;
+  background-color: #FFFFFF;
 }
 
 #footer {
@@ -420,7 +353,7 @@ table {
   margin: 0 auto 0 auto;  /* decrease default margins for h<x>.title */
 }
 .block-civicrm #recently-viewed .crm-icon, .crm-icon {
-	margin-top: 0 !important;
+  margin-top: 0 !important;
 }
 .submitted {
   color: #999;
@@ -449,13 +382,13 @@ table {
 }
 
 #module-status, .version {
-	font-size:11px;
+  font-size:11px;
 }
 #module-status a {
-	font-weight: normal;
+  font-weight: normal;
 }
 .main {
-	text-align:left;
+  text-align:left;
 }
 
 /* Joomla Admin Menu alterations */
@@ -467,16 +400,16 @@ ul#civicrm-menu {
     border: none;
     left:0px;
     height:0px;
-    padding: 2px 0px 22px 2px !important;
-    padding-bottom:22px !important; /*moz bottom */
+    padding: 2px 0px 25px 2px !important;
+    padding-bottom:25px !important; /*moz bottom */
     padding-bottom:2px; /*ie bottom */
 }
 
 div#toolbar-box div.m {
     padding: 0px !important;
-	min-height: 0;
-	border: 0;
-	margin-top: 8px;
+  min-height: 0;
+  border: 0;
+  margin-top: 8px;
 }
 
 div#toolbar-box, div#toolbar-box div.m{
@@ -488,26 +421,50 @@ ul#civicrm-menu li#crm-qsearch {
 }
 .crm-tab-button,
 .ui-tabs .ui-tabs-nav li {
-	border: 1px;
-	font-size: 110%;
+  border: 1px;
+  font-size: 110%;
 }
 .ui-tabs .ui-tabs-nav {
-	padding: 0.2em 3px 1px;
+  padding: 0.2em 3px 1px;
 }
 #mainTabContainer li.crm-tab-button {
-	margin:0 3px 3px 0;
-	border: 1px solid #F5F6F1 !important;
+  margin:0 3px 3px 0;
+  border: 1px solid #F5F6F1 !important;
 }
 #mainTabContainer li.crm-tab-button.ui-tabs-selected {
-	padding-bottom: 0;
-	border: 1px solid #999 !important;
+  padding-bottom: 0;
+  border: 1px solid #999 !important;
+}
+#crm-container {
+  font-size: 11px;
 }
 #crm-container .col1 {
-	margin: 0;
+  margin: 0;
 }
 #crm-container .footer {
-	font-size: 1em;
+  font-size: 1em;
 }
 .ac_results .ac_odd {
-	background-color: #444;
+  background-color: #444;
+}
+
+#crm-notification-container {
+  top: 100px;
+}
+
+#crm-container textarea,
+#crm-container input,
+#crm-container select {
+  font-size: 12px;
+  margin-bottom: auto;
+  margin-right: 4px;
+  width: auto;
+  padding: 2px 4px;
+}
+#crm-container textarea,
+#crm-container input {
+  height: auto;
+}
+#crm-container input[type=submit] {
+  height: auto;
 }

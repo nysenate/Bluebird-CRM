@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -77,7 +77,7 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base {
     'pledge_status',
     'pledge_is_test',
     'pledge_contribution_page_id',
-    'pledge_contribution_type',
+    'pledge_financial_type',
     'pledge_campaign_id',
     'pledge_currency',
   );
@@ -148,7 +148,8 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base {
    *
    * @return CRM_Contact_Selector
    * @access public
-   */ function __construct(&$queryParams,
+   */
+  function __construct(&$queryParams,
     $action           = CRM_Core_Action::NONE,
     $additionalClause = NULL,
     $single           = FALSE,
@@ -187,8 +188,11 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base {
    * @access public
    *
    */
-  static
-  function &links($hideOption, $key = NULL) {
+  static function &links() {
+    $args = func_get_args();
+    $hideOption = CRM_Utils_Array::value(0, $args);
+    $key = CRM_Utils_Array::value(1, $args);
+
     $extraParams = ($key) ? "&key={$key}" : NULL;
 
     $cancelExtra = ts('Cancelling this pledge will also cancel any scheduled (and not completed) pledge payments.') . ' ' . ts('This action cannot be undone.') . ' ' . ts('Do you want to continue?');
@@ -396,7 +400,7 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base {
         ),
         array(
           'name' => ts('Pledged For'),
-          'sort' => 'pledge_contribution_type',
+          'sort' => 'pledge_financial_type',
           'direction' => CRM_Utils_Sort::DONTCARE,
         ),
         array(

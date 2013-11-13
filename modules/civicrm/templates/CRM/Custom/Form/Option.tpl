@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,12 @@
         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     {/if} {* $action ne view *}
     {if $action eq 8}
-      <div class="messages status">
-          <div class="icon inform-icon"></div> 
+      <div class="messages status no-popup">
+          <div class="icon inform-icon"></div>
           {ts}WARNING: Deleting this custom field option will result in the loss of all related data.{/ts} {ts}This action cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
     {else}
-	<table class="{if $action eq 4}crm-info-panel{else}form-layout{/if}">
+  <table class="{if $action eq 4}crm-info-panel{else}form-layout{/if}">
         <tr class="crm-custom_option-form-block-label">
             <td class="label">{$form.label.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_option_value' field='label' id=$id}{/if}</td>
             <td>{$form.label.html}</td>
@@ -50,14 +50,14 @@
             <td class="label">{$form.is_active.label}</td>
             <td>{$form.is_active.html}</td>
         </tr>
-	    <tr class="crm-custom_option-form-block-default_value">
+      <tr class="crm-custom_option-form-block-default_value">
             <td class="label">{$form.default_value.label}</td>
             <td>{$form.default_value.html}<br />
             <span class="description">{ts}Make this option value 'selected' by default?{/ts}</span></td>
         </tr>
-	</table>
-    {/if} 
-    
+  </table>
+    {/if}
+
     {if $action ne 4}
         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
     {else}

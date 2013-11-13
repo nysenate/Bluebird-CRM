@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -52,26 +52,31 @@ function civicrm_uninstall() {
 }
 
 function civicrm_requirements($phase) {
+  global $base_url;
+  $civicrm_path = drupal_get_path('module', 'civicrm');
+
+  //remove the last occurrence of 'drupal' from path
+  $pos = strrpos($civicrm_path, 'drupal');
+
+  if ($pos !== false) {
+    $civicrm_path = substr_replace($civicrm_path, '', $pos, strlen($civicrm_path));
+  }
+
+  $url = $base_url . '/' . $civicrm_path . 'install/index.php';
+
   $settings = glob('sites/*/civicrm.settings.php');
   $problems = array();
-  if (empty($settings) &&
-    $phase == 'install'
-  ) {
+  if (empty($settings) && $phase == 'install') {
     $problems[] = array(
       'title' => t('CiviCRM settings does not exist'),
-      'description' =>
+      'value' =>
       t('CiviCRM settings file does not exist. It should be created by CiviCRM <a href="!link">install</a>',
-        array('!link' => substr(dirname(dirname(__FILE__)),
-            strlen(getcwd())
-          ) . '/install/index.php')
-      ),
+        array('!link' => $url)),
       'severity' => REQUIREMENT_ERROR,
     );
   }
 
-  if (!empty($problems)) {
-    return $problems;
-  }
+  return $problems;
 }
 
 /**

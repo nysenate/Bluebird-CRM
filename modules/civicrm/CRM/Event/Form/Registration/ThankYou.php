@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -62,7 +62,9 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration {
     $customGroup = $this->get('customProfile');
     $this->assign('customProfile', $customGroup);
 
+    $this->assign('primaryParticipantProfile', $this->get('primaryParticipantProfile'));
     $this->assign('addParticipantProfile', $this->get('addParticipantProfile'));
+
     CRM_Utils_System::setTitle(CRM_Utils_Array::value('thankyou_title', $this->_values['event']));
   }
 
@@ -90,21 +92,27 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration {
    */
   public function buildQuickForm() {
     // Assign the email address from a contact id lookup as in CRM_Event_BAO_Event->sendMail()
-    if (isset($this->_params[0]['contact_id'])) {
-      list($displayName, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($this->_params[0]['contact_id']);
+    $primaryContactId = $this->get('primaryContactId');
+    if ($primaryContactId) {
+      list($displayName, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($primaryContactId);
       $this->assign('email', $email);
     }
     $this->assignToTemplate();
 
-    $this->buildCustom($this->_values['custom_pre_id'], 'customPre', TRUE);
-    $this->buildCustom($this->_values['custom_post_id'], 'customPost', TRUE);
-
-    if ($this->_priceSetId && !CRM_Core_DAO::getFieldValue('CRM_Price_DAO_Set', $this->_priceSetId, 'is_quick_config')) {
-
-      $this->assign('lineItem', $this->_lineItem);
-
+    if ($this->_priceSetId && !CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', $this->_priceSetId, 'is_quick_config')) {
+      $lineItemForTemplate = array();
+      foreach ($this->_lineItem as $key => $value) {
+        if (!empty($value)) {
+          $lineItemForTemplate[$key] = $value;
+        }
+      }
+      if (!empty($lineItemForTemplate)) {
+        $this->assign('lineItem', $lineItemForTemplate);
+      }
     }
+
     $this->assign('totalAmount', $this->_totalAmount);
+
     $hookDiscount = $this->get('hookDiscount');
     if ($hookDiscount) {
       $this->assign('hookDiscount', $hookDiscount);
@@ -149,10 +157,9 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration {
 
     $this->setDefaults($defaults);
 
-
     $params['entity_id'] = $this->_eventId;
     $params['entity_table'] = 'civicrm_event';
-
+    $data = array();
     CRM_Friend_BAO_Friend::retrieve($params, $data);
     if (CRM_Utils_Array::value('is_active', $data)) {
       $friendText = $data['title'];
@@ -184,20 +191,19 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration {
     $this->assign('isRequireApproval', $isRequireApproval);
 
     // find pcp info
-    $eventId           = $this->_eventId;
     $dao               = new CRM_PCP_DAO_PCPBlock();
     $dao->entity_table = 'civicrm_event';
-    $dao->entity_id    = $eventId;
+    $dao->entity_id    = $this->_eventId;
     $dao->is_active    = 1;
     $dao->find(TRUE);
 
     if ($dao->id) {
-      $this->assign('pcpLink', CRM_Utils_System::url('civicrm/contribute/campaign', 'action=add&reset=1&pageId=' . $eventId . '&component=event'));
+      $this->assign('pcpLink', CRM_Utils_System::url('civicrm/contribute/campaign', 'action=add&reset=1&pageId=' . $this->_eventId . '&component=event'));
       $this->assign('pcpLinkText', $dao->link_text);
     }
 
     // Assign Participant Count to Lineitem Table
-    $this->assign('pricesetFieldsCount', CRM_Price_BAO_Set::getPricesetCount($this->_priceSetId));
+    $this->assign('pricesetFieldsCount', CRM_Price_BAO_PriceSet::getPricesetCount($this->_priceSetId));
 
     // can we blow away the session now to prevent hackery
     $this->controller->reset();

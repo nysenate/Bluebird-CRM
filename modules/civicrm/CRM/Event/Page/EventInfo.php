@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
+ | CiviCRM version 4.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2012                                |
+ | Copyright CiviCRM LLC (c) 2004-2013                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2012
+ * @copyright CiviCRM LLC (c) 2004-2013
  * $Id$
  *
  */
@@ -88,6 +88,9 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
       CRM_Core_Error::fatal(ts('The page you requested is currently unavailable.'));
     }
 
+    // Add Event Type to $values in case folks want to display it
+    $values['event']['event_type'] = CRM_Utils_Array::value($values['event']['event_type_id'], CRM_Event_PseudoConstant::eventType());
+    
     $this->assign('isShowLocation', CRM_Utils_Array::value('is_show_location', $values['event']));
 
     // show event fees.
@@ -98,19 +101,19 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
         $values['event'],
         $config->defaultCurrency
       );
-      
+
       //CRM-10434
       $discountId= CRM_Core_BAO_Discount::findSet($this->_id, 'civicrm_event');
       if ($discountId) {
-        $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Discount', $discountId, 'option_group_id');
+        $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Discount', $discountId, 'price_set_id');
       } else {
-        $priceSetId = CRM_Price_BAO_Set::getFor('civicrm_event', $this->_id);
+        $priceSetId = CRM_Price_BAO_PriceSet::getFor('civicrm_event', $this->_id);
       }
-      
+
       // get price set options, - CRM-5209
       if ($priceSetId) {
-        $setDetails = CRM_Price_BAO_Set::getSetDetail($priceSetId, TRUE, TRUE);
-        
+        $setDetails = CRM_Price_BAO_PriceSet::getSetDetail($priceSetId, TRUE, TRUE);
+
         $priceSetFields = $setDetails[$priceSetId]['fields'];
         if (is_array($priceSetFields)) {
           $fieldCnt = 1;
@@ -149,7 +152,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
         $this->assign('isPriceSet', 1);
         $this->assign('isQuickConfig', $setDetails[$priceSetId]['is_quick_config']);
       }
-    }
+        }
 
     $params = array('entity_id' => $this->_id, 'entity_table' => 'civicrm_event');
     $values['location'] = CRM_Core_BAO_Location::getValues($params, TRUE);
